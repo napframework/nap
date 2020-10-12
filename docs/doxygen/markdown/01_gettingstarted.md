@@ -1,21 +1,27 @@
 Getting Started {#getting_started}
 =======================
+* [Overview](@ref getting_started_overview)
 * [Create a New Project](@ref create_blank_app)
-* [Add Audio Module](@ref add_module)
+* [Add a Module](@ref add_module)
 * [Compile and Run](@ref compile_run)
 * [Add Content](@ref add_content)
     * [Resource](@ref audio_resource)
     * [Entity](@ref audio_entity)
     * [Component](@ref audio_components)
     * [Scene](@ref content_scene)
-* [App Logic](@ref app_logic)
+* [Application](@ref app_logic)
     * [Init](@ref app_init)
     * [Update](@ref app_update)
     * [Render](@ref app_render)
 
+Overview {#getting_started_overview}
+=======================
+
+In this tutorial we're going to make a new application that plays an audio file from disk. You can start / stop playback using a button that is rendered to screen. 
+
 Create a New Project {#create_blank_app}
 =======================
-In this tutorial we're going to make a new application that plays an audio file from disk. You can start / stop playback using a button that is rendered to screen. To create a new project:
+To create a new project:
 
 - Use a terminal to navigate to the `tools` directory, inside the NAP installation root.
 - Run `create_project NewProject` (Windows) or  `./create_project NewProject` (macOS and Linux)
@@ -40,7 +46,7 @@ After creation your new project is located at `projects/newproject`. This direct
 }
 ```
 
-Add Audio Module {#add_module}
+Add a Module {#add_module}
 =======================
 
 The `RequiredModules` field tells the build system which modules to include for your project. The most important module is `mod_newproject`. This is your custom application module, located inside the `module` directory of your project. By default the application module links to `mod_naprender`, `mod_napscene` and `mod_napparameter`. This means your application (and custom module) can make use of all the building blocks exposed by those modules. What's missing here is audio functionality, we can link in audio by adding `mod_napaudio` to the list of `RequiredModules`:
@@ -183,12 +189,12 @@ You should see a blank window and hear the audio file being played on the defaul
 
 ![](@ref content/napkin_audioscene.png)
 
-App Logic {#app_logic}
+Application {#app_logic}
 ==========================
 
 Open the `newprojectapp.h` file located inside the `src` directory. This document, together with the `.cpp` file, contains the application runtime code. It allows you to control the flow of data and render specific objects to screen using the resources we just created.
 
-## Init
+## Init {#app_init}
 
 The `init` method is used to initialize important parts of your application and store references to resources. For this example we need access to the `AudioEntity`. To do so, declare the following variable at the bottom of the `NewProjectApp` class header.
 
@@ -204,7 +210,7 @@ mAudioEntity = mScene->findEntity("AudioEntity");
 
 We just initialized a pointer (link) to the audio entity. We can use this pointer to manipulate the entity and it's components when the app is running.
 
-## Update
+## Update {#app_update}
 
 The `update` method is called every frame. The parameter `deltaTime` indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering.
 
@@ -235,8 +241,8 @@ else
 ImGui::End();
 ~~~
 
-When we compile and run the app you should see a button in a window to start and stop the playback of the audio file. That concludes this little tutorial.
+When we compile and run the app you should see a button. Click on it to start / stop the playback of the audio file. That concludes this little tutorial.
 
-## Rendering
+## Rendering {#app_render}
 
 `render` is called after `update`. You use this call to render geometry and UI elements to a window or render target. You have to tell the renderer what you want to render and where to render it to. The button (recorded on `update`) is rendered when `mGuiService->draw()` is called. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). 
