@@ -28,13 +28,13 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PaintObjectApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-namespace nap 
+namespace nap
 {
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
 	bool PaintObjectApp::init(utility::ErrorState& error)
-	{		
+	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
 		mSceneService	= getCore().getService<nap::SceneService>();
@@ -74,13 +74,13 @@ namespace nap
 
 		return true;
 	}
-	
-	
+
+
 	/**
 	 * Forward all the received input messages to the camera input components.
 	 * The input router is used to filter the input events and to forward them
 	 * to the input components of a set of entities, in this case our camera.
-	 * 
+	 *
 	 * The camera has two input components: KeyInputComponent and PointerInputComponent
 	 * The key input component receives key events, the pointer input component receives pointer events
 	 * The orbit controller listens to both of them
@@ -102,7 +102,8 @@ namespace nap
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "hold left mouse button to spray paint on object, hold spacebar + left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(clr, "hold left mouse button to spray paint on object");
+		ImGui::TextColored(clr, "Hold spacebar + left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Display render textures
@@ -166,6 +167,7 @@ namespace nap
 			// End headless recording
 			mRenderService->endHeadlessRecording();
 		}
+
 		// End frame
 		mRenderService->endFrame();
 	}
@@ -217,43 +219,52 @@ namespace nap
 		mRenderService->endFrame();
 	}
 
-	void PaintObjectApp::resetRenderTexture()
+	void PaintObjectApp::removeAllPaint()
 	{
-		//
-		nap::RenderToTextureComponentInstance& render_to_texture = mWorldEntity->getComponent<nap::RenderToTextureComponentInstance>();
+		// Get the render to texture component
+		auto& render_to_texture = mWorldEntity->getComponent<nap::RenderToTextureComponentInstance>();
+
+		// Get the ubo struct uniform
 		auto* ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
 
-		nap::UniformFloatInstance* alpha_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inAlphaMultiplier");
+		// Get the alpha multiplier uniform
+		// Set it to zero, so we will render texture with all pixels set to 0, 0, 0, 0 rgba
+		auto* alpha_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inAlphaMultiplier");
 		alpha_multiplier->setValue(0.0f);
 
+		// Let the renderservice know we begin a new frame
+		mRenderService->beginFrame();
+
+		// Start recording
 		if (mRenderService->beginHeadlessRecording())
 		{
+			// Draw into the render texture
 			render_to_texture.draw();
 
+			// End recording
 			mRenderService->endHeadlessRecording();
 		}
 
-		alpha_multiplier->setValue(1.0f);
+		// End rendering
+		mRenderService->endFrame();
 	}
 
-	
+
 	/**
 	 * Render loop is rather straight forward:
-	 * Set the camera position in the world shader for the halo effect
-	 * make the main window active, this makes sure that all subsequent render calls are 
-	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
-	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
-	 * Next we clear the render target, render the world and after that the text. 
-	 * Finally we swap the main window back-buffer, making sure the rendered image is blitted to screen.
+	 * Render the brush texture that is used to render the paint
+	 * Then render the paint on the UV position of the mouse on the object
+	 * Use the rendered paint texture, together with the light and camera position, to render the object
 	 */
 	void PaintObjectApp::render()
 	{
-		// First, render the brush 
-		renderBrush();
-
-		// Is the mouse on object and down
+		// Render new paint if necessary
 		if (mDrawMode && mMouseOnObject && mMouseDown)
 		{
+			// First, render the brush
+			renderBrush();
+
+			// Now, render the new paint
 			renderPaint();
 		}
 
@@ -296,7 +307,7 @@ namespace nap
 
 			// Draw our GUI
 			mGuiService->draw();
-			
+
 			// End the render pass
 			mRenderWindow->endRendering();
 
@@ -307,8 +318,8 @@ namespace nap
 		// Signal the ending of the frame
 		mRenderService->endFrame();
 	}
-	
-	
+
+
 	/**
 	 * Occurs when the event handler receives a window message.
 	 * You generally give it to the render service which in turn forwards it to the right internal window. 
@@ -342,7 +353,7 @@ namespace nap
 
 			if (press_event->mKey == nap::EKeyCode::KEY_c)
 			{
-				resetRenderTexture();
+				removeAllPaint();
 			}
 
 			if (press_event->mKey == nap::EKeyCode::KEY_SPACE)
@@ -389,9 +400,10 @@ namespace nap
 		if (mMouseDown)
 		{
 			// Perform trace when the mouse isn't down
-			if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)))
+			if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)) ||
+				inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 			{
-				nap::PointerMoveEvent* event = static_cast<nap::PointerMoveEvent*>(inputEvent.get());
+				nap::PointerEvent* event = static_cast<nap::PointerEvent*>(inputEvent.get());
 				doTrace(*event);
 			}
 
@@ -401,7 +413,6 @@ namespace nap
 		{
 			mMouseOnObject = false;
 		}
-
 	}
 
 

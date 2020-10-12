@@ -196,6 +196,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -393,7 +394,7 @@
                     "ShaderAttributeID": "in_Color0"
                 }
             ],
-            "BlendMode": "Additive",
+            "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
         {
@@ -488,9 +489,9 @@
             "Name": "Brush Color",
             "Value": {
                 "Values": [
-                    1.0,
-                    0.0,
-                    0.0
+                    0.7843137383460999,
+                    0.4117647111415863,
+                    0.4117647111415863
                 ]
             }
         },
@@ -516,7 +517,7 @@
                 "x": 0.0,
                 "y": 0.0,
                 "z": 0.0,
-                "w": 1.0
+                "w": 0.0
             },
             "ColorTexture": "PaintTexture"
         },

@@ -84,7 +84,7 @@ namespace nap
 
 		void renderPaint();
 
-		void resetRenderTexture();
+		void removeAllPaint();
 
 		// Nap Services
 		RenderService*		mRenderService		= nullptr;				//< Render Service that handles render calls

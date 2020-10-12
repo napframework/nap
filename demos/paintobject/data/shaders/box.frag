@@ -4,7 +4,6 @@
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
-in vec4 passColor;						//< frag color
 in mat4 passModelMatrix;				//< model matrix
 in vec3	cameraLocation;					//< World Space location of the camera
 in vec3 passVert;						// The vertex position

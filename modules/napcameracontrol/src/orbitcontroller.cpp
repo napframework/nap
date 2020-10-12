@@ -103,12 +103,18 @@ namespace nap
 
 	void OrbitControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
 	{
+		if (!mEnabled)
+			return;
+
 		mMode = EMode::Idle;
 	}
 
 
 	void OrbitControllerInstance::onMouseMove(const PointerMoveEvent& pointerMoveEvent)
 	{
+		if (!mEnabled)
+			return;
+
 		if (mMode == EMode::Rotating)
 		{
 			// We are using the relative movement of the mouse to update the camera
