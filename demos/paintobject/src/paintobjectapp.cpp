@@ -48,14 +48,15 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow			= mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mPaintTexture			= mResourceManager->findObject<nap::RenderTexture2D>("PaintTexture");
-		mBrushTexture			= mResourceManager->findObject<nap::RenderTexture2D>("BrushTexture");
+		mPaintTexture			= mResourceManager->findObject<nap::RenderTexture2D>("PaintRenderTexture");
+		mBrushTexture			= mResourceManager->findObject<nap::RenderTexture2D>("BrushRenderTexture");
 		mBrushColorParam		= mResourceManager->findObject<nap::ParameterRGBColorFloat>("BrushColorParam");
-		mBrushSizeParam			= mResourceManager->findObject<nap::ParameterFloat>("Brush Size");
+		mBrushSizeParam			= mResourceManager->findObject<nap::ParameterFloat>("BrushSizeParam");
 		mBrushSoftnessParam		= mResourceManager->findObject<nap::ParameterFloat>("BrushSoftnessParam");
 		mBrushFalloffParam		= mResourceManager->findObject<nap::ParameterFloat>("BrushFallOffParam");
 		mLightIntensityParam	= mResourceManager->findObject<nap::ParameterFloat>("LightIntensityParam");
 		mEraserModeParam		= mResourceManager->findObject<nap::ParameterBool>("EraserModeParam");
+		mMeshSelectionParam		= mResourceManager->findObject<nap::ParameterInt>("MeshSelectionParam");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -71,6 +72,9 @@ namespace nap
 		// Start in draw mode, so disable orbit controller
 		OrbitControllerInstance& orbit_controller = mPerspectiveCamEntity->getComponent<OrbitControllerInstance>();
 		orbit_controller.disable();
+
+		//
+		mSelectedMeshRendererID = "PigRenderer";
 
 		return true;
 	}
@@ -120,10 +124,16 @@ namespace nap
 		// Display brush and paint parameters
 		if (ImGui::CollapsingHeader("Parameters"))
 		{
+			// Mesh Selection
+			if( ImGui::SliderInt("Mesh Selection", &mMeshSelectionParam->mValue, mMeshSelectionParam->mMinimum, mMeshSelectionParam->mMaximum))
+			{
+				switchMesh(mMeshSelectionParam->mValue);
+			}
+
 			// Brush parameters
 			ImGui::SliderFloat("Brush Softness", &mBrushSoftnessParam->mValue, mBrushSoftnessParam->mMinimum, mBrushSoftnessParam->mMaximum);
 			ImGui::SliderFloat("Brush Falloff", &mBrushFalloffParam->mValue, mBrushFalloffParam->mMinimum, mBrushFalloffParam->mMaximum);
-			ImGui::SliderFloat("Brush Size", &mBrushSizeParam->mValue, 0.001f, 1.0f);
+			ImGui::SliderFloat("Brush Size", &mBrushSizeParam->mValue, mBrushSizeParam->mMinimum, mBrushSizeParam->mMaximum);
 
 			// Eraser mode
 			ImGui::Checkbox("Eraser mode", &mEraserModeParam->mValue);
@@ -281,16 +291,13 @@ namespace nap
 
 			// Find the world and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-			components_to_render.emplace_back(&renderable_world);
+			nap::RenderableMeshComponentInstance& renderable_mesh = *mWorldEntity->findComponentByID<nap::RenderableMeshComponentInstance>(mSelectedMeshRendererID);
+			components_to_render.emplace_back(&renderable_mesh);
 
-			// Update the camera location in the world shader for the halo effect
-			// To do that we fetch the material associated with the world mesh and query the camera location uniform
-			// Once we have the uniform we can set it to the camera world space location
-			nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-			nap::UniformStructInstance* ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+			// Update the material of the mesh that renders the object
+			nap::UniformStructInstance* ubo = renderable_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 
-			// Give light position uniform
+			// Set light position uniform
 			nap::UniformVec3Instance* light_pos_uniform = ubo->getOrCreateUniform<UniformVec3Instance>("LightPosition");
 			nap::TransformComponentInstance& light_transform = mLightEntity->getComponent<nap::TransformComponentInstance>();
 			light_pos_uniform->setValue(math::extractPosition(light_transform.getGlobalTransform()));
@@ -436,7 +443,7 @@ namespace nap
 
 		// Get the attributes we need, the vertices (position data) is used to perform a world space triangle intersection
 		// The uv attribute is to compute the uv coordinates when a triangle is hit
-		MeshInstance& mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>().getMeshInstance();
+		MeshInstance& mesh = mWorldEntity->findComponentByID<nap::RenderableMeshComponentInstance>(mSelectedMeshRendererID)->getMeshInstance();
 		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(vertexid::position);
 		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
 
@@ -486,5 +493,24 @@ namespace nap
 		{
 			mMouseOnObject = false;
 		}
+	}
+
+
+	void PaintObjectApp::switchMesh(int selection)
+	{
+		switch(selection)
+		{
+		case 0:
+			mSelectedMeshRendererID = "PigRenderer";
+			break;
+		case 1:
+			mSelectedMeshRendererID = "WorldRenderer";
+			break;
+		case 2:
+			mSelectedMeshRendererID = "BearRenderer";
+			break;
+		}
+
+		removeAllPaint();
 	}
 }

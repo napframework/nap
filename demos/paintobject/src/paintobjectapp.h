@@ -86,6 +86,8 @@ namespace nap
 
 		void removeAllPaint();
 
+		void switchMesh(int selection);
+
 		// Nap Services
 		RenderService*		mRenderService		= nullptr;				//< Render Service that handles render calls
 		ResourceManager*	mResourceManager	= nullptr;				//< Manages all the loaded resources
@@ -113,6 +115,7 @@ namespace nap
 		ObjectPtr<ParameterFloat>			mBrushFalloffParam		= nullptr;
 		ObjectPtr<ParameterFloat>			mLightIntensityParam	= nullptr;
 		ObjectPtr<ParameterBool>			mEraserModeParam		= nullptr;
+		ObjectPtr<ParameterInt>				mMeshSelectionParam		= nullptr;
 
 		// Text Highlight Color
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
@@ -123,5 +126,9 @@ namespace nap
 		bool mDrawMode					= true;
 		glm::vec2 mMousePosOnObject		= glm::vec2(0, 0);
 		glm::vec4 mBrushColor			= glm::vec4(1, 0, 0, 1);
+
+
+		// Selected mesh renderer
+		std::string mSelectedMeshRendererID;
 	};
 }
