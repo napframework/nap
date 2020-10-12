@@ -1026,14 +1026,12 @@ void MultiWindowApp::render()
 Offscreen Rendering {#offscreen_rendering}
 =======================
 
-Often you want to render a selection of objects to a texture instead of a screen. But you can't render to a texture directly, you need a [render target](@ref nap::RenderTarget) to do that for you. To see how this works take a look at the video modulation demo. In this demo a video is applied to a plane and rendered to a texture. This texture is used as an input for two materials. 
-
-Every render target requires a link to a color texture. The result of the render step is stored in the texture. You can declare a render target in JSON just like any other resource:
+Often you want to render a selection of objects to a texture instead of a screen. But you can't render to a texture directly, you need a [render target](@ref nap::RenderTarget) to do that for you. Every render target requires a link to a color texture. The result of the render step is stored in the texture. You can declare a render target in JSON just like any other resource:
 
 ```
 {
     "Type": "nap::RenderTexture2D",
-    "mID": "VideoColorTexture",
+    "mID": "OutputColorTexture",
     "Usage": "Static",
     "Width": 1920,
     "Height": 1080,
@@ -1051,7 +1049,7 @@ Every render target requires a link to a color texture. The result of the render
         "z": 0.0,
     	"w": 1.0
     },
-   	"ColorTexture": "VideoColorTexture"
+   	"ColorTexture": "OutputColorTexture"
 }
 ```
 
@@ -1067,7 +1065,7 @@ void VideoModulationApp::render()
 	// Start recording into the headless recording buffer.
 	if (mRenderService->beginHeadlessRecording())
 	{
-		// Render the video into the video target
+		// Render into the render target
 		mVideoRenderTarget->beginRendering();
 		...
 		mVideoRenderTarget->endRendering();
@@ -1081,7 +1079,7 @@ void VideoModulationApp::render()
 }
 ~~~~~~~~~~~~~~~
 
-Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component renders directly to a texture without having to define a render target or mesh and can be used to apply a 'post process' render step. The video modulation demo uses this component to convert the video output into a greyscale texture.
+Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component allows you to render to a texture directly in screen space, without the need to define a render target or mesh, and can be used to apply a 'post process' render step. The video modulation demo uses this component to convert the output of a video player into a greyscale texture.
 
 Cameras {#cameras}
 =======================
