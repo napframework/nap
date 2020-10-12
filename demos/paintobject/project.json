@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "PaintObject", 
+    "Version": "1.0.0", 
+    "RequiredModules": [
+        "mod_napapp", 
+        "mod_napimgui", 
+        "mod_napcameracontrol"
+    ], 
+    "Data": "data/paintobject.json", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
+}
