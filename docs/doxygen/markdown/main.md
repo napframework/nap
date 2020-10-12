@@ -1,11 +1,11 @@
-New Amsterdam Platform
+NAP Framework
 =======================
 
 # Description
 
-NAP framework is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
+[NAP framework](https://www.napframework.com) is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
 
-Use any protocol (OSC, MIDI, Art-Net, Websockets etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and outputdevices: many speakers, many lights, many screens, many sensors.
+Use any protocol (OSC, MIDI, Art-Net, Websockets etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many speakers, many lights, many screens, many sensors.
 	
 NAPs design is intended to be as open as possible: there is little fixed functionality, but there are a lot of useful blocks that can be tied together by a user to create the experience you desire. As a user, you can build new blocks yourself and throw them in the mix to fulfill your creative vision. To push creativity, NAP is built to provide extremely fast iteration times.
 
@@ -21,32 +21,17 @@ Central to NAP are a couple of key philosophies:
 - NAP is completely cross-platform and supports all modern desktop environments
 - NAP app content can be edited using an editor
 
+## Features
+
+NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, an audio engine for music playback, recording and analysis, a data sequencer, an editor to author application content, a system for creating and loading presets, a video player powered by FFMPEG and a Python programming interface.
+
+NAP also has built in support for many common protocols and standards, including: Websocket, Midi, OSC, Artnet, Serial, Ethercat, OpenCV, SQLite and many others. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
+
+![](@ref content/Vulkan_White_170px_Dec16.png)
+
 ## Why
 
 Projects are growing in scope. Therefore the need for stable and performant software is increasing. Software needs to run for years without having to string together multiple applications or environments. To meet expectations NAP offers you a set of handles to tackle the most demanding creative problems.
-
-## Modules
-
-NAP ships with many useful modules, including (a): 
-
-- Vulkan 2D and 3D Render Engine
-- Audio Engine (playback, recording & analysis)
-- Sequencer
-- Editor
-- Video Playback using FFMPEG
-- Preset System
-- Font Rendering
-- Websockets
-- ImGUI
-- OpenCV
-- OSC
-- Midi
-- Artnet
-- Serial
-- Database
-- Ethercat
-- Python Interface
-- Many more...
 
 ## Want to know more?
 
