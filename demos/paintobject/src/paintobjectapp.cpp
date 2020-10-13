@@ -208,9 +208,9 @@ namespace nap
 		nap::UniformFloatInstance* eraser_mode = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inEraserAmount");
 		eraser_mode->setValue((float)mEraserModeParam->mValue);
 
-		// Set alpha multiplier, used to clear the paint texture
-		nap::UniformFloatInstance* alpha_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inAlphaMultiplier");
-		alpha_multiplier->setValue(1.0f);
+		// Set final multiplier, used to clear the paint texture
+		nap::UniformFloatInstance* final_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
+		final_multiplier->setValue(1.0f);
 
 		// Let the renderservice know we begin a new frame
 		mRenderService->beginFrame();
@@ -237,10 +237,10 @@ namespace nap
 		// Get the ubo struct uniform
 		auto* ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
 
-		// Get the alpha multiplier uniform
+		// Get the final multiplier uniform
 		// Set it to zero, so we will render texture with all pixels set to 0, 0, 0, 0 rgba
-		auto* alpha_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inAlphaMultiplier");
-		alpha_multiplier->setValue(0.0f);
+		auto* final_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
+		final_multiplier->setValue(0.0f);
 
 		// Let the renderservice know we begin a new frame
 		mRenderService->beginFrame();
