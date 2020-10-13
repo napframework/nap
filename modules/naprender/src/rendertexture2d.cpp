@@ -4,7 +4,11 @@
 
 RTTI_BEGIN_ENUM(nap::RenderTexture2D::EFormat)
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA8,	"RGBA8"),
-	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R8,		"R8")
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R8,		"R8"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA16,	"RGBA16"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R16,		"R16"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA32,	"RGBA32"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R32,		"R32")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
@@ -28,7 +32,6 @@ namespace nap
 		SurfaceDescriptor settings;
 		settings.mWidth = mWidth;
 		settings.mHeight = mHeight;
-		settings.mDataType = ESurfaceDataType::BYTE;
 		settings.mColorSpace = mColorSpace;
 
 		// Figure out if the texture needs to be filled
@@ -41,11 +44,37 @@ namespace nap
 		{
 			case RenderTexture2D::EFormat::RGBA8:
 			{
+				settings.mDataType = ESurfaceDataType::BYTE;
 				settings.mChannels = ESurfaceChannels::RGBA;
 				return Texture2D::init(settings, false, clear_mode, errorState);
 			}
 			case RenderTexture2D::EFormat::R8:
 			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::R;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::RGBA16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::R16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				settings.mChannels = ESurfaceChannels::R;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::RGBA32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::R32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
 				settings.mChannels = ESurfaceChannels::R;
 				return Texture2D::init(settings, false, clear_mode, errorState);
 			}
