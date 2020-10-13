@@ -26,7 +26,7 @@ To create a new project:
 - Use a terminal to navigate to the `tools` directory, inside the NAP installation root.
 - Run `create_project NewProject` (Windows) or  `./create_project NewProject` (macOS and Linux)
 
-After creation your new project is located at `projects/newproject`. This directory contains the application source-code, scenes, assets and build instructions. The `project.json` file (located in the root of the project) controls how your application is called and what modules it requires:
+After creation your new project is located at `projects/newproject`. This directory contains the application source-code, scenes, assets and build instructions. The `project.json` files, in the root of the directory, defines how you application is called and which modules it requires:
 
 ```
 {
