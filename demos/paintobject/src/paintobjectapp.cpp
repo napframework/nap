@@ -73,7 +73,7 @@ namespace nap
 		OrbitControllerInstance& orbit_controller = mPerspectiveCamEntity->getComponent<OrbitControllerInstance>();
 		orbit_controller.disable();
 
-		//
+		// Begin with pigmesh as object to paint on
 		mSelectedMeshRendererID = "PigRenderer";
 
 		return true;
@@ -106,7 +106,7 @@ namespace nap
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "hold left mouse button to spray paint on object");
+		ImGui::TextColored(clr, "Hold left mouse button to spray paint on object");
 		ImGui::TextColored(clr, "Hold spacebar + left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
@@ -152,7 +152,9 @@ namespace nap
 		ImGui::End();
 	}
 
-
+	/**
+	 * Renders the procedurally generated brush texture which is used to draw the paint
+	 */
 	void PaintObjectApp::renderBrush()
 	{
 		// Get the brush render to texture component instance
@@ -182,7 +184,9 @@ namespace nap
 		mRenderService->endFrame();
 	}
 
-
+	/*
+	 * Renders the paint texture using the rendered brush
+	 */
 	void PaintObjectApp::renderPaint()
 	{
 		// Get the render to texture component
@@ -229,6 +233,10 @@ namespace nap
 		mRenderService->endFrame();
 	}
 
+	/**
+	 * Removes all paint from paint texture in one pass
+	 * This is done by setting the inFinalMultiplier float uniform to zero, which renders all pixels in the render texture black with no alpha
+	 */
 	void PaintObjectApp::removeAllPaint()
 	{
 		// Get the render to texture component
@@ -358,11 +366,13 @@ namespace nap
 				mRenderWindow->toggleFullscreen();
 			}
 
+			// If 'c' is pressed, clear all paint on painted render texture
 			if (press_event->mKey == nap::EKeyCode::KEY_c)
 			{
 				removeAllPaint();
 			}
 
+			// If 'space' is down, move the camera with the mouse instead of painting on object
 			if (press_event->mKey == nap::EKeyCode::KEY_SPACE)
 			{
 				mDrawMode = false;
@@ -371,7 +381,7 @@ namespace nap
 				TransformComponentInstance& world_xform = mWorldEntity->getComponent<TransformComponentInstance>();
 				orbit_controller.enable(world_xform.getTranslate());
 			}
-		}
+		} // if 'space' is released, go back to paint mode and stop the mouse from moving the camera
 		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyReleaseEvent)))
 		{
 			nap::KeyReleaseEvent* release_event = static_cast<nap::KeyReleaseEvent*>(inputEvent.get());
@@ -404,22 +414,22 @@ namespace nap
 			}
 		}
 
-		if (mMouseDown)
+		if (mMouseDown && mDrawMode)
 		{
-			// Perform trace when the mouse isn't down
+			// Perform trace when the mouse is down
 			if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)) ||
 				inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 			{
 				nap::PointerEvent* event = static_cast<nap::PointerEvent*>(inputEvent.get());
 				doTrace(*event);
 			}
-
-			mInputService->addEvent(std::move(inputEvent));
 		}
 		else
 		{
 			mMouseOnObject = false;
 		}
+
+		mInputService->addEvent(std::move(inputEvent));
 	}
 
 
@@ -428,7 +438,12 @@ namespace nap
 		return 0;
 	}
 
-
+	/**
+	 * Performs a raycast and looks for any intersecting triangles
+	 * When intersection occurs, lookup the UV coordinate of the mouse position on the object
+	 * This will be the position we use to add paint in UV space
+	 * @param event the pointer event
+	 */
 	void PaintObjectApp::doTrace(const PointerEvent& event)
 	{
 		// Get the camera and camera transform
@@ -495,7 +510,10 @@ namespace nap
 		}
 	}
 
-
+	/**
+	 * Switch mesh on which we want to paint
+	 * @param selection integer between 0-3
+	 */
 	void PaintObjectApp::switchMesh(int selection)
 	{
 		switch(selection)

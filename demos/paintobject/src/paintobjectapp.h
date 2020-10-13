@@ -22,18 +22,15 @@ namespace nap
 	using namespace rtti;
 
 	/**
-	 * Demo application that is called from within the main loop
+	 * Demo application that shows how to use multiple render texture components to draw on 3D objects
 	 *
-	 * Shows a rotating textured sphere in the center of the viewport
-	 * You can use the left mouse button to orbit around the object and 
-	 * the right mouse button to zoom in on the object
+	 * Shows an object that can be painted using the left mouse button.
+	 * By holding down the 'space bar' you can rotate the camera around the object
 	 * 
-	 * This demo uses 3 important modules: mod_naprender, mod_napinput, mod_napcameracontrol
-	 * The sphere is rendered using a simple material that blends 2 colors based on a texture's alpha value.
-	 * The sphere is positioned by a transform component and rotated along the y axis by a rotate component.
-	 * The camera is placed away from the origin but can be moved using the mouse. The camera looks at
-	 * the sphere and uses that information to orbit around the object.
-	 * Text is rendered in the middle of the viewport, on top of the sphere, using a nap::Renderable2DTextComponent.
+	 * The application uses a rendertexturecomponent to generate a brush texture.
+	 * Then the brush texture is used to render the brush stroke in another rendertexturecomponent
+	 * The UV location of where to draw is determined by by tracing the position of the mouse on the mesh
+	 * and then calculating the UV coordinates of that position on the mesh
 	 *
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
@@ -126,7 +123,6 @@ namespace nap
 		bool mDrawMode					= true;
 		glm::vec2 mMousePosOnObject		= glm::vec2(0, 0);
 		glm::vec4 mBrushColor			= glm::vec4(1, 0, 0, 1);
-
 
 		// Selected mesh renderer
 		std::string mSelectedMeshRendererID;
