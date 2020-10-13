@@ -35,11 +35,12 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param view reference to view
+		 * @param state object that contains the active gui state
 		 */
 		SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
 		/**
-		 * Deconstructor
+		 * Destructor
 		 */
         virtual ~SequenceTrackView(){};
         

@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 * Initializes this bitmap based on the provided settings. 
 		 * Memory is allocated but the GPU pixel data is NOT copied over
-		 * @param settings the settings used to initialize this texture.
+		 * @param surfaceDescriptor the settings used to initialize this texture.
 		 */
 		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
 

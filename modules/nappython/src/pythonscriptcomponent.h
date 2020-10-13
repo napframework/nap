@@ -85,6 +85,7 @@ namespace nap
          * If the call fails the error will be logged in errorState.
 		 * @param identifier python method to call.
 		 * @param errorState contains the error if the call fails.
+		 * @param returnValue the populated return value
 		 * @param args variable number of input arguments.
 		 * @return if the call succeeded.
          */
@@ -97,7 +98,8 @@ namespace nap
          * If the call fails the error will be logged in errorState.
 		 * @param identifier python method to call
 		 * @param errorState contains the error if the call fails
-		 * @param ergs variable number of input arguments.
+		 * @param args variable number of input arguments.
+		 * @return if the call succeeded
          */
         template <typename ...Args>
         bool call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);

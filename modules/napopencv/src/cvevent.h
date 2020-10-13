@@ -33,14 +33,14 @@ namespace nap
 		CVFrameEvent& operator=(const CVFrameEvent& other);
 
 		/**
-		 * Constructor that takes multiple frames asn an input argument.
-		 * @param frame frames associated with this event.
+		 * Constructor that takes multiple frames as an input argument.
+		 * @param frames frames associated with this event.
 		 */
 		CVFrameEvent(const std::vector<CVFrame>& frames);
 
 		/**
-		 * Constructor that takes multiple frames asn an input argument.
-		 * @param frame frames associated with this event.
+		 * Constructor that takes multiple frames as an input argument.
+		 * @param frames frames associated with this event.
 		 */
 		CVFrameEvent(const std::vector<CVFrame>&& frames);
 

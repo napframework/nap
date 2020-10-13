@@ -113,13 +113,12 @@ namespace nap
 
 		/**
 	 	 * Starts playback of the current video at the given offset in seconds.
-		 * @param startTimeSecs The offset in seconds to start the video at.
+		 * @param startTime The offset in seconds to start the video at.
 		 */
 		void play(double startTime = 0.0);
 
 		/**
 		 * Stops playback of the current video.
-		 * @param blocking when set to true the thread calling this function will wait until playback is stopped.
 		 */
 		void stopPlayback()											{ getVideo().stop(true); }
 

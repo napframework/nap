@@ -23,6 +23,7 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param player reference to player
+		 * @param editor reference to the sequence editor
 		 */
 		SequenceControllerEvent(SequencePlayer & player, SequenceEditor& editor) : SequenceController(player, editor) { }
 
@@ -30,7 +31,7 @@ namespace nap
 		 * edits event message
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
-		 * @param message the new message
+		 * @param value the new message
 		 */
 		 template<typename T>
 		void editEventSegment(const std::string& trackID, const std::string& segmentID, const T& value);

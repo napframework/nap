@@ -75,7 +75,8 @@ namespace nap
 		/**
 		 * Set the text to draw at the given line index. 
 		 * Only set or change text on app update, not render.
-		 * @param text the new line of text to draw.
+		 * @param lineIndex the line index
+		 * @param text the new line of text
 		 * @param error list of unsupported characters
 		 * @return if all characters in the text are supported and can be drawn.
 		 */
@@ -163,6 +164,8 @@ namespace nap
 		/**
 		 * Draws the text into to active render target using the provided matrices.
 		 * Call this in derived classes based on extracted matrices.
+		 * @param renderTarget bound render target
+		 * @param commandBuffer active command buffer
 		 * @param viewMatrix the camera world space location
 		 * @param projectionMatrix the camera projection matrix
 		 * @param modelMatrix the location of the text in the world
@@ -181,7 +184,6 @@ namespace nap
 
 		/**
 		 * Loads the shader and initializes this component, call this in a derived class on initialization.
-		 * @param depthMode text shading depth mode
 		 * @param errorState holds the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */

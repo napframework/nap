@@ -72,7 +72,6 @@ namespace nap
 		 * Constructor
 		 * @param mesh the mesh that is rendered
 		 * @param materialInstance the material the mesh is rendered with
-		 * @param vaoHandle issued by the render service based on mesh / material combination
 		 */
 		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance);
 

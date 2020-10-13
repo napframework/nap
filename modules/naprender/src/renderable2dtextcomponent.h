@@ -199,11 +199,12 @@ namespace nap
 		 * You can only use an orthographic camera when rendering 2D text.
 		 * The x/y location of the parent entity is taken into account if there is a transform component.
 		 * Note that the orientation mode is also taken into account when rendering this way.
+		 * @param renderTarget target to render to
+		 * @param commandBuffer current command buffer
 		 * @param viewMatrix the camera world space location
 		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
 		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
-
 
 	private:
 		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;

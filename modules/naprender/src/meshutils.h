@@ -17,15 +17,18 @@ namespace nap
 		using MeshConnectivityMap = std::vector<std::vector<Triangle>>;
 
 		/**
-		* @param shape the mesh shape to check.
-		* @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
-		*/
+		 * Returns if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+		 * @param meshInstance the mesh to check
+		 * @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+		 */
 		bool NAPAPI isTriangleMesh(const nap::MeshInstance& meshInstance);
 
 		/**
-		* @return the number of triangles associated with a mesh
-		*/
-		int NAPAPI getTriangleCount(const MeshInstance& mesh);
+		 * Returns the total number of triangles associated with a mesh.
+		 * @param meshInstance the mesh to inspect.
+		 * @return the total number of triangles associated with a mesh
+		 */
+		int NAPAPI getTriangleCount(const MeshInstance& meshInstance);
 
 		/**
 		* Computes the normal that is associated with a triangular face. The normal is weighted (not normalized)

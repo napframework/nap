@@ -98,6 +98,7 @@ namespace nap
 		/**
 		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when a new frame is captured, not immediately.
+		 * @param adapter the adapter to set the property for.
 		 * @param propID the property to set.
 		 * @param value the new property value.
 		 */

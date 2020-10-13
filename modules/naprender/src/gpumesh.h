@@ -55,7 +55,7 @@ namespace nap
 		/**
 		 * Creates and adds a new vertex buffer to the mesh.
 		 * @param id name of the vertex buffer to create and add.
-		 * @param type format vertex buffer format.
+		 * @param format vertex buffer format.
 		 */
 		void addVertexBuffer(const std::string& id, VkFormat format);
 

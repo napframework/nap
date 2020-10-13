@@ -85,10 +85,10 @@ namespace nap
 		 * Updates GPU buffer content, called by derived classes.
 		 * @param data pointer to the data to upload.
 		 * @param elementSize size in bytes of the element to upload
-		 * @param numVertices the number of vertices to upload, @data should be: numVertices * elementSize.
+		 * @param numVertices the number of vertices to upload, data should be: numVertices * elementSize.
 		 * @param reservedNumVertices needs to be >= numVertices, allows the buffer to allocate more memory then required
 		 * @param usage how the data is used at runtime
-		 * @param errorState contains error when data could not be set.
+		 * @param error contains error when data could not be set.
 		 * @return if the data was set
 		 */
 		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);

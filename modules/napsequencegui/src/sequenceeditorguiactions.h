@@ -71,10 +71,10 @@ namespace nap
 			RTTI_ENABLE(Action)
 		public:
 			/**
-			* Constructor
-			* @param trackID trackID of segment being dragged
-			* @param segmentID segmentID of segment being dragged
-			*/
+			 * Constructor
+			 * @param trackId trackID of segment being dragged
+			 * @param segmentID segmentID of segment being dragged
+			 */
 			DraggingSegment(std::string trackId, std::string segmentID)
 				: mTrackID(trackId), mSegmentID(segmentID) {}
 
@@ -91,8 +91,8 @@ namespace nap
 		public:
 			/**
 			* Constructor
-			* @param trackID trackID of segment being dragged
-			* @param segmentID segmentID of segment being dragged
+			* @param trackId id of track being dragged
+			* @param segmentID id of segment being dragged
 			*/
 			StartDraggingSegment(std::string trackId, std::string segmentID)
 				: mTrackID(trackId), mSegmentID(segmentID) {}

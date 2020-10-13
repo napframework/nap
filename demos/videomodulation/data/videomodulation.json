@@ -29,6 +29,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "ReadOnly"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -118,6 +119,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -517,7 +519,7 @@
             "Usage": "Static",
             "Width": 1920,
             "Height": 1080,
-            "Format": "RGBA8",
+            "Format": "RGBA32",
             "ColorSpace": "Linear"
         },
         {

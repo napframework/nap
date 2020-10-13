@@ -64,7 +64,7 @@ namespace nap
 
 		/**
 		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
-		 * @param fileName JSON resource file to load.
+		 * @param filename JSON resource file to load.
 		 * @param errorState contains the error when the load operation fails.
 		 * @return if the file loaded successfully.
 		 */
@@ -72,7 +72,7 @@ namespace nap
 
 		/**
 		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
-		 * @param fileName JSON resource file to load.
+		 * @param filename JSON resource file to load.
 		 * @return if the file loaded successfully.
 		 */
         bool loadFile(const std::string& filename);
@@ -157,13 +157,9 @@ namespace nap
 		rtti::Factory& getFactory();
 
 		/**
-		 * Select the current working directory to monitor for file changes.
-		 * All files linked to by the application that reside in this directory will be monitored.
+		 * All files linked to by the application that reside in the current working directory will be monitored.
 		 * If a file change is detected to any of the files, the resource manager
 		 * will attempt to hot-load the changes directly into the running application
-		 * @param directory the directory to monitor
-		 * @param error contains the error if the operation fails
-		 * @return if the directory is being monitored
 		 */
 		void watchDirectory();
 

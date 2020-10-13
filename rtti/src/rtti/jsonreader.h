@@ -115,7 +115,6 @@ namespace nap
 		 * @param json string to parse
 		 * @param document output document
 		 * @param errorState contains the error if string can't be parsed
-		 * @param if operation succeeded.
 		 */
 		bool NAPAPI JSONDocumentFromString(const std::string& json, rapidjson::Document& document, nap::utility::ErrorState& errorState);
 

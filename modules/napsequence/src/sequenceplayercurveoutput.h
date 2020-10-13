@@ -34,15 +34,16 @@ namespace nap
 
 		/**
 		 * registers a parameter setter to the output. Parameter setters are called from main thread
-		 * @param parameterSetter ptr to parameter setter
+		 * @param curveAdapter adapter to register
 		 */
 		void registerAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
 
 		/**
 		 * removes parameter setter
-		 * @param parameterSetter ptr to parameter setter
+		 * @param curveAdapter ptr to parameter setter
 		 */
 		void removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
+
 	protected:
 		/**
 		 * called from update loop sequence service main thread

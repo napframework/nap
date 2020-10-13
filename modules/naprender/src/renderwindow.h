@@ -178,8 +178,8 @@ namespace nap
 		virtual void setClearColor(const glm::vec4& color) override;
 
 		/**
-		 * Sets the window clear color.
-		 * @param color the new clear color
+		 * Returns the window clear color.
+		 * @return the window clear color.
 		 */
 		virtual const glm::vec4& getClearColor() const override;
 

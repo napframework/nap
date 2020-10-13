@@ -179,7 +179,9 @@ namespace nap
 			using GetBaseTypesFunction = std::function<void(std::vector<std::string>&)>;
 
 			/**
-			 * Returns a global python module for @param moduleName.
+			 * Returns the global python module for the given module name.
+			 * @param moduleName name of the module to get
+			 * @return the python module
 			 */
 			static PythonModule& get(const char* moduleName);
 

@@ -149,9 +149,9 @@ namespace nap
 
 		/**
 		 * Formats a string based on the incoming arguments
-		 * example: "%s contains %d number of items", object.name().c_str(), i
+		 * example: utility::stringFormat("%s contains %d number of items", object.name().c_str(), i)
 		 * @param format the string to format
-		 * @param Args... the arguments to replace in @format
+		 * @param args the arguments to replace
 		 * @return the formatted string
 		 */
 		template <typename... Args>
@@ -185,9 +185,8 @@ namespace nap
 		 * 		result:
 		 * 			My snake's name is Donald, it's a good snake.
 		 *
-		 * @param subject The string to search and replace keys in.
+		 * @param subjects The strings to search and replace keys in.
 		 * @param rep The keys and values used in the replacement operation.
-		 * @return The resulting strings after replacement
 		 */
 		void namedFormat(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep);
 

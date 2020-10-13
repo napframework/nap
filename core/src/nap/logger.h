@@ -202,7 +202,7 @@ namespace nap
 
 		/**
 		 * Sets the current log level for all handlers.
-		 * @param lvl new log level, messages lower than the selected log level won't be displayed.
+		 * @param level new log level, messages lower than the selected log level won't be displayed.
 		 */
 		void setCurrentLevel(const LogLevel& level);
 

@@ -232,7 +232,7 @@ namespace nap
 		 * @param slave index of the slave, starting at 1. 
 		 * @param index the index to write, 1 = first slave, 0 = master
 		 * @param subindex the subindex to write
-		 * @param CA false = single subindex, true = Complete Access, all subindexes written.
+		 * @param ca false = single subindex, true = Complete Access, all subindexes written.
 		 * @param psize size in bytes of parameter buffer
 		 * @param p pointer to parameter buffer
 		 */
@@ -244,7 +244,7 @@ namespace nap
 		 * @param slave index of the slave, starting at 1.
 		 * @param index the index to read, 1 = first slave, 0 = master
 		 * @param subindex the subindex to read
-		 * @param CA false = single subindex, true = Complete Access, all subindexes written.
+		 * @param ca false = single subindex, true = Complete Access, all subindexes written.
 		 * @param psize size in bytes of parameter buffer, returns bytes read from SDO.
 		 * @param p pointer to parameter buffer
 		 */

@@ -54,7 +54,7 @@ namespace nap
 		 *		addArgument<OSCFloat>(1.0f) 
 		 *		addArgument<OSCString>("ola!")
 		 *
-		 * @args the arguments that are used for constructing the specified OSCValue. 
+		 * @param args the arguments that are used for constructing the specified OSCValue. 
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>

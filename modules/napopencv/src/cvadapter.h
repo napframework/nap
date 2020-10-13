@@ -127,7 +127,7 @@ namespace nap
 		 * Needs to be implemented in a derived class. 
 		 * An empty return frame is interpreted as a decoding error by the processing device.
 		 * @param captureDevice the device to capture the frame from.
-		 * @param outFrame contains the new decoded frame
+		 * @param error contains the error if decoding failed
 		 * @return the decoded frame, return an empty frame on failure.
 		 */
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) = 0;

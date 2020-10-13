@@ -68,10 +68,8 @@ namespace nap
 		int getHeight() const;
 
 		/**
-		 * Sets and applies new camera settings the next time a frame is captured.
+		 * Applies new camera settings, occurs when the next time a frame is captured.
 		 * @param settings the camera settings to set and apply
-		 * @param error contains the error message if the operation fails
-		 * @return if the operation succeeded
 		 */
 		void setSettings(const nap::CVCameraSettings& settings);
 
@@ -119,8 +117,8 @@ namespace nap
 		/**
 		 * This method decodes and returns the just grabbed frame.
 		 * @param captureDevice the device to capture the frame from.
-		 * @param outFrame contains the new decoded frame
-		 * @return if decoding succeeded.
+		 * @param error contains the error if the decoding operation failed
+		 * @return The decoded frame, empty if the operation failed
 		 */
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) override;
 

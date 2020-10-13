@@ -50,6 +50,8 @@ namespace nap
 		 * @param data pointer to the block of data that needs to be uploaded.
 		 * @param numVertices number of vertices represented by data.
 		 * @param reservedNumVertices used to calculate final buffer size, needs to be >= numVertices
+		 * @param error contains the error if upload operation failed
+		 * @return if upload succeeded
 		 */
 		bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error);
 

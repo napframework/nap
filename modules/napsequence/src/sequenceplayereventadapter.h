@@ -27,13 +27,13 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param track reference to sequence event track
-		 * @param receiver reference to event receiver
-		 * @param time at which adapter is created
+		 * @param output reference to event receiver
+		 * @param player reference to the sequence player
 		 */
 		SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player);
 
 		/**
-		 * Deconstructor
+		 * Destructor
 		 */
 		virtual ~SequencePlayerEventAdapter() {}
 

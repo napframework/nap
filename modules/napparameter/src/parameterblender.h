@@ -176,9 +176,8 @@ namespace nap
 		virtual void onSync() override;
 
 		/**
-		* Occurs when the target is updated, ensures the current blend value is cached.
-		* @param target new parameter target to blend towards.
-		*/
+		 * Occurs when the target is updated, ensures the current blend value is cached.
+		 */
 		virtual void onTargetSet() override;
 
 	private:

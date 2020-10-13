@@ -24,7 +24,7 @@ namespace nap
 
 		/**
 		 * creates a default sequence
-		 * @param createdObject a reference to a vector that will be filled with unique pointers of created objects
+		 * @param createdObjects a reference to a vector that will be filled with unique pointers of created objects
 		 * @param objectIDs a list of unique ids, used to created unique ids for each object in this sequence
 		 * @return a raw pointer to the newly created sequence, ownership of sequence is stored as a unique pointer in createdObjects
 		 */

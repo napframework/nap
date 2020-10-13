@@ -398,6 +398,7 @@ namespace nap
 		 * @param renderTarget target that is rendered too.
 		 * @param mesh the mesh that is drawn.
 		 * @param materialInstance the material applied to the mesh.
+		 * @param errorState contains the error if the pipeline can't be created
 		 * @return new or cached pipeline.
 		 */
 		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);

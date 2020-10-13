@@ -131,9 +131,9 @@ namespace nap
 		 *
 		 * It is therefore required that core is able to find and load the provided project.json file that contains a 'nap::ProjectInfo' resource.
 		 *
-         * @param context whether initializing for project or Napkin
+		 * @param projectInfofile absolute path to the project file on disk.
+		 * @param context whether initializing for application or editor
 		 * @param error contains the error code when initialization fails
-		 * @param projectInfo Use this instead of automatically loading the project info, used in editor mode.
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
@@ -265,8 +265,7 @@ namespace nap
         /**
          * Load path mapping file and replace any template vars with their respective values
          * @param projectInfo The current project info
-         * @param editorMode True if this is invoked from Napkin, false otherwise
-         * @param err The resulting errors if there were any
+         * @param err Contains the error if the path mapping operation failed
          * @return The path mapping that was loaded or nullptr if loading failed
          */
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
