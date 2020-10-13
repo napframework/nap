@@ -79,7 +79,7 @@ To follow this example it's good to read the high level [system](@ref system) do
 
 Some parts might look familiar, others are new. The most important new parts are the material, render and rotate component. The rotate component rotates the sphere along the y axis, the render component ties a renderable [mesh](@ref nap::IMesh) to a material. Every material points to a shader. The material is applied to the mesh before being rendered to (in this case) the screen. You will notice that the actual application will contain almost no code, most of the functionality is defined by the various objects and components. The only thing we have to do is tell the renderer to render the sphere using a particular camera.
 
-But let's begin by defining some of the resources in JSON. Alternatively you can use [Napkin](@ref napkin), our JSON editor:
+But let's begin by defining some of the resources in JSON. It is recommended to use [Napkin](@ref napkin), our JSON editor, to do this for you:
 
 ```
 {
@@ -90,7 +90,9 @@ But let's begin by defining some of the resources in JSON. Alternatively you can
     "Visible": true,
     "Title": "Window 1",
     "Width": 1280,
-    "Height": 720
+    "Height": 720,
+   	"Mode": "Immediate",
+   	"Samples": "Four"
 },
 {
 	"Type": "nap::ImageFromFile",
@@ -100,10 +102,10 @@ But let's begin by defining some of the resources in JSON. Alternatively you can
 	"GenerateLods": true
 },
 {
-	"Type" : "nap::Shader",
+	"Type" : "nap::ShaderFromFile",
 	"mID": "WorldShader",
-	"mVertShader": "shaders/world.vert",
-	"mFragShader": "shaders/world.frag"
+	"VertShader": "shaders/world.vert",
+	"FragShader": "shaders/world.frag"
 },
 {
 	"Type": "nap::SphereMesh",
