@@ -63,7 +63,7 @@ namespace nap
 		virtual VkRenderPass getRenderPass() const = 0;
 
 		/**
-		 * @return number of MSAA samples
+		 * @return number of samples
 		 */
 		virtual VkSampleCountFlagBits getSampleCount() const = 0;
 

@@ -148,7 +148,7 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 
 		/**
-		 * @return current number of MSAA samples used when rendering to the window.
+		 * @return used number of samples when rendering to the target.
 		 */
 		virtual VkSampleCountFlagBits getSampleCount() const override;
 		
@@ -160,7 +160,7 @@ namespace nap
 	public:
 		bool								mSampleShading = false;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		glm::vec4							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
-		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of MSAA samples used during Rasterization. For even better results turn on 'SampleShading'.
+		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of samples used during Rasterization. For even better results turn on 'SampleShading'.
 		nap::ResourcePtr<RenderTexture2D>	mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
 
 	private:

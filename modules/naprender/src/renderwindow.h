@@ -239,7 +239,7 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 		
 		/**
-		 * @return current number of MSAA samples used when rendering to the window.
+		 * @return used number of samples when rendering to the window.
 		 */
 		virtual VkSampleCountFlagBits getSampleCount() const override				{ return mRasterizationSamples; }
 		
@@ -267,7 +267,7 @@ namespace nap
 		EPresentationMode		mMode			= EPresentationMode::Immediate;				///< Property: 'Mode' the image presentation mode to use
 		std::string				mTitle			= "";										///< Property: 'Title' window title
 		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };				///< Property: 'ClearColor' background clear color
-		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;			///< Property: 'Samples' The number of MSAA samples used during Rasterization. For even better results enable 'SampleShading'.
+		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;			///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
 		int						mAddedSwapImages = 1;										///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 
 	private:

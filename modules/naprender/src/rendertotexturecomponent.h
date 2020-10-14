@@ -56,7 +56,7 @@ namespace nap
 		bool							mSampleShading = false;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;							///< Property: 'OutputTexture' the target of the render step
 		MaterialInstanceResource		mMaterialInstanceResource;							///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
-		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of MSAA samples used during Rasterization. Should be 1 when rendering to target 'full screen'. For better results enable 'SampleShading'.
+		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'.
 		RGBColor8						mClearColor = { 255, 255, 255 };					///< Property: 'ClearColor' the color that is used to clear the render target
 	};
 
