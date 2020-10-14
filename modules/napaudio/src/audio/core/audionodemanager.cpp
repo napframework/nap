@@ -12,7 +12,8 @@ namespace nap
 		NodeManager::~NodeManager()
 		{
 			// Tell the nodes that their node manager is outta here, so they won't try to unregister themselves in their dtors.
-			for (auto& node : mNodes) {
+			for (auto& node : mNodes)
+			{
 				node->mNodeManager = nullptr;
 				node->mRegisteredWithNodeManager.store(false);
 			}
@@ -29,7 +30,8 @@ namespace nap
 				mInputBuffer[channel] = inputBuffer[channel];
 			
 			mInternalBufferOffset = 0;
-			while (mInternalBufferOffset < framesPerBuffer) {
+			while (mInternalBufferOffset < framesPerBuffer)
+			{
 				mTaskQueue.process();
 				for (auto& channelMapping : mOutputMapping)
 					channelMapping.clear();
@@ -64,7 +66,8 @@ namespace nap
 				mInputBuffer[channel] = inputBuffer[channel]->data();
 			
 			mInternalBufferOffset = 0;
-			while (mInternalBufferOffset < framesPerBuffer) {
+			while (mInternalBufferOffset < framesPerBuffer)
+			{
 				mTaskQueue.process();
 				for (auto& channelMapping : mOutputMapping)
 					channelMapping.clear();

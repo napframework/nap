@@ -90,7 +90,8 @@ namespace nap
 		
 		void InputPin::disconnect(OutputPin& input)
 		{
-			if (&input == mInput) {
+			if (&input == mInput)
+			{
 				mInput->mOutputs.erase(this);
 				mInput = nullptr;
 			}
@@ -99,7 +100,8 @@ namespace nap
 		
 		void InputPin::disconnectAll()
 		{
-			if (mInput) {
+			if (mInput)
+			{
 				mInput->mOutputs.erase(this);
 				mInput = nullptr;
 			}
@@ -154,7 +156,8 @@ namespace nap
 		
 		void MultiInputPin::disconnectAll()
 		{
-			while (!mInputs.empty()) {
+			while (!mInputs.empty())
+			{
 				auto input = *mInputs.begin();
 				input->mOutputs.erase(this);
 				auto it = std::find(mInputs.begin(), mInputs.end(), input);

@@ -48,14 +48,16 @@ namespace nap
 			
 			mMeter = nodeManager.makeSafe<LevelMeterNode>(nodeManager);
 			
-			if (mResource->mFilterInput) {
+			if (mResource->mFilterInput)
+			{
 				mFilter = nodeManager.makeSafe<FilterNode>(nodeManager);
 				mFilter->setMode(FilterNode::EMode::BandPass);
 				mFilter->setFrequency(mResource->mCenterFrequency);
 				mFilter->setGain(mResource->mFilterGain);
 				mFilter->audioInput.connect(*mInput->getOutputForChannel(mResource->mChannel));
 				mMeter->input.connect(mFilter->audioOutput);
-			} else {
+			}
+			else {
 				mMeter->input.connect(*mInput->getOutputForChannel(mResource->mChannel));
 			}
 			

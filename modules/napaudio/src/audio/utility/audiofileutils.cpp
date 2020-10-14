@@ -37,7 +37,8 @@ namespace nap
 			
 			// Acquire a mpg123 handle
 			mpgHandle = mpg123_new(NULL, &error);
-			if (mpgHandle == nullptr) {
+			if (mpgHandle == nullptr)
+			{
 				errorState.fail("Error loading mp3 while acquiring mpg123 handle.");
 				return false;
 			}
@@ -52,7 +53,8 @@ namespace nap
 					"Error loading mp3 while setting format.");
 			
 			// Clean up when an error has occured
-			if (!errorState.toString().empty()) {
+			if (!errorState.toString().empty())
+			{
 				mpg123_delete(mpgHandle);
 				return false;
 			}
@@ -63,7 +65,8 @@ namespace nap
 			
 			// Open the file on the handle
 			error = mpg123_open(mpgHandle, fileName.c_str());
-			if (error != MPG123_OK) {
+			if (error != MPG123_OK)
+			{
 				errorState.fail("Mp3 file failed to open: %s", fileName.c_str());
 				mpg123_delete(mpgHandle);
 				return false;
@@ -71,7 +74,8 @@ namespace nap
 			
 			// Request the format
 			error = mpg123_getformat(mpgHandle, &sampleRate, &channelCount, &encoding);
-			if (error != MPG123_OK) {
+			if (error != MPG123_OK)
+			{
 				errorState.fail("Failed to retrieve format.");
 				mpg123_delete(mpgHandle);
 				return false;
@@ -80,7 +84,8 @@ namespace nap
 			
 			// Request the size in bytes of one audio sample
 			auto sampleSize = mpg123_encsize(encoding);
-			if (sampleSize <= 0) {
+			if (sampleSize <= 0)
+			{
 				errorState.fail("Error requesting the sample size");
 				mpg123_delete(mpgHandle);
 				return false;
@@ -91,7 +96,8 @@ namespace nap
 			
 			auto formattedBuffer = reinterpret_cast<float*>(buffer.data());
 			
-			while (mpg123_read(mpgHandle, buffer.data(), bufferSize, &done) == MPG123_OK) {
+			while (mpg123_read(mpgHandle, buffer.data(), bufferSize, &done) == MPG123_OK)
+			{
 				auto frameCount = done / (sampleSize * channelCount);
 				auto offset = output.getSize();
 				output.resize(channelCount, output.getSize() + frameCount);
@@ -119,7 +125,8 @@ namespace nap
 			
 			// try to open sound file
 			auto sndFile = sf_open(fileName.c_str(), SFM_READ, &info);
-			if (sf_error(sndFile) != SF_ERR_NO_ERROR) {
+			if (sf_error(sndFile) != SF_ERR_NO_ERROR)
+			{
 				errorState.fail("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
 				return false;
 			}
@@ -130,7 +137,8 @@ namespace nap
 			
 			// do the reading
 			sf_readf_float(sndFile, readBuffer.data(), info.frames);
-			if (sf_error(sndFile) != SF_ERR_NO_ERROR) {
+			if (sf_error(sndFile) != SF_ERR_NO_ERROR)
+			{
 				errorState.fail("Failed to load audio file %s: %s", fileName.c_str(), sf_strerror(sndFile));
 				return false;
 			}
@@ -139,7 +147,8 @@ namespace nap
 			output.resize(info.channels, info.frames);
 			int i = 0;
 			for (auto frame = 0; frame < info.frames; ++frame)
-				for (auto channel = 0; channel < info.channels; ++channel) {
+				for (auto channel = 0; channel < info.channels; ++channel)
+				{
 					output[channel][frame] = readBuffer[i];
 					i++;
 				}

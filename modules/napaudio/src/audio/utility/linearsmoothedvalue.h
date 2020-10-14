@@ -40,7 +40,8 @@ namespace nap
 			 */
 			T getNextValue()
 			{
-				if (mNewDestination != mDestination) {
+				if (mNewDestination != mDestination)
+				{
 					mDestination = mNewDestination;
 					mStepCounter = mStepCount;
 					if (mStepCounter == 0)
@@ -49,7 +50,8 @@ namespace nap
 						mIncrement = (mDestination - mValue) / T(mStepCount);
 				}
 				
-				if (mStepCounter > 0) {
+				if (mStepCounter > 0)
+				{
 					mValue = mValue + mIncrement;
 					mStepCounter--;
 					if (mStepCounter == 0)

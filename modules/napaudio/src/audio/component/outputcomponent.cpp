@@ -39,22 +39,26 @@ namespace nap
 			}
 			
 			for (auto channel = 0; channel < channelCount; ++channel)
-				if (resource->mChannelRouting[channel] >= mInput->getChannelCount()) {
+				if (resource->mChannelRouting[channel] >= mInput->getChannelCount())
+				{
 					errorState.fail("%s: Trying to rout input channel that is out of bounds.", resource->mID.c_str());
 					return false;
 				}
 			
-			for (auto channel = 0; channel < channelCount; ++channel) {
+			for (auto channel = 0; channel < channelCount; ++channel)
+			{
 				if (resource->mChannelRouting[channel] < 0)
 					continue;
 				
-				if (channel >= nodeManager.getOutputChannelCount()) {
+				if (channel >= nodeManager.getOutputChannelCount())
+				{
 					// If the channel is out of bounds we create a PullNode instead of an OutputNode in order to process the connected DSP branch.
 					auto pullNode = nodeManager.makeSafe<PullNode>(nodeManager);
 					pullNode->audioInput.connect(*mInput->getOutputForChannel(resource->mChannelRouting[channel]));
 					mOutputs.emplace_back(std::move(pullNode));
 					continue;
-				} else {
+				}
+				else {
 					auto outputNode = nodeManager.makeSafe<OutputNode>(nodeManager);
 					outputNode->setOutputChannel(channel);
 					outputNode->audioInput.connect(*mInput->getOutputForChannel(resource->mChannelRouting[channel]));
@@ -73,7 +77,8 @@ namespace nap
 			AudioComponentBaseInstance* inputPtr = &input;
 			mAudioService->enqueueTask([&, inputPtr, resource]() {
 				auto channelCount = resource->mChannelRouting.size();
-				for (auto channel = 0; channel < channelCount; ++channel) {
+				for (auto channel = 0; channel < channelCount; ++channel)
+				{
 					auto outputNode = mOutputs[channel].getRaw();
 					
 					//
@@ -81,13 +86,11 @@ namespace nap
 					
 					// in case of a normal output node
 					if (outputNode->get_type().is_derived_from(RTTI_OF(OutputNode)))
-						static_cast<OutputNode*>(outputNode)->audioInput.connect(
-								*inputPtr->getOutputForChannel(inputChannel));
+						static_cast<OutputNode*>(outputNode)->audioInput.connect(*inputPtr->getOutputForChannel(inputChannel));
 					
 					// in case this actual output channel is not available on the device we are dealing with a pulling node
 					if (outputNode->get_type().is_derived_from(RTTI_OF(PullNode)))
-						static_cast<PullNode*>(outputNode)->audioInput.connect(
-								*inputPtr->getOutputForChannel(inputChannel));
+						static_cast<PullNode*>(outputNode)->audioInput.connect(*inputPtr->getOutputForChannel(inputChannel));
 				}
 			});
 		}

@@ -42,26 +42,28 @@ namespace nap
 			 * @param size: size of the buffer in samples
 			 */
 			MultiSampleBuffer(std::size_t channelCount, std::size_t size)
-			{ resize(channelCount, size); }
+			{
+				resize(channelCount, size);
+			}
 			
 			/**
 			 * Used to access the samples in the buffer
 			 * example: myBuffer[channelNumber][sampleIndex]
 			 */
 			SampleBuffer& operator[](std::size_t index)
-			{ return channels[index]; }
+			{
+				return channels[index];
+			}
 			
 			/**
 			 * @return: number of channels in the buffer
 			 */
-			std::size_t getChannelCount() const
-			{ return channels.size(); }
+			std::size_t getChannelCount() const { return channels.size(); }
 			
 			/**
 			 * @return: the size of the buffer in samples
 			 */
-			std::size_t getSize() const
-			{ return channels.empty() ? 0 : channels.front().size(); }
+			std::size_t getSize() const { return channels.empty() ? 0 : channels.front().size(); }
 			
 			/**
 			 * Resize the buffer

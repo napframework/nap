@@ -34,10 +34,13 @@ namespace nap
 			mGainControl = nodeManager->makeSafe<ControlNode>(*nodeManager);
 			mGainControl->setValue(mGain);
 			
-			for (auto channel = 0; channel < resource->mChannels.size(); ++channel) {
-				if (resource->mChannels[channel] >= nodeManager->getInputChannelCount()) {
+			for (auto channel = 0; channel < resource->mChannels.size(); ++channel)
+			{
+				if (resource->mChannels[channel] >= nodeManager->getInputChannelCount())
+				{
 					// The input channel is out of bounds, in case we allow out of bounds channels we create a zero node instead
-					if (audioService->getAllowChannelCountFailure()) {
+					if (audioService->getAllowChannelCountFailure())
+					{
 						auto zeroNode = nodeManager->makeSafe<ControlNode>(*nodeManager);
 						zeroNode->setValue(0);
 						auto gainNode = nodeManager->makeSafe<MultiplyNode>(*nodeManager);
@@ -48,7 +51,8 @@ namespace nap
 						mGainNodes.emplace_back(std::move(gainNode));
 						
 						continue;
-					} else {
+					}
+					else {
 						errorState.fail("%s: Input channel out of bounds", resource->mID.c_str());
 						return false;
 					}

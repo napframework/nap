@@ -52,7 +52,8 @@ namespace nap
 		
 		void Delay::clear()
 		{
-			for (unsigned int i = 0; i < mBuffer.size(); i++) {
+			for (unsigned int i = 0; i < mBuffer.size(); i++)
+			{
 				mBuffer[i] = 0.0;
 			}
 		}

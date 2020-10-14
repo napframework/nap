@@ -26,7 +26,8 @@ namespace nap
 		
 		void Process::update()
 		{
-			if (mLastCalculatedSample < getSampleTime()) {
+			if (mLastCalculatedSample < getSampleTime())
+			{
 				process();
 				mLastCalculatedSample = getSampleTime();
 			}
@@ -78,7 +79,8 @@ namespace nap
 		
 		void ParentProcess::processSequential()
 		{
-			for (auto& child : mChildren) {
+			for (auto& child : mChildren)
+			{
 				if (child != nullptr)
 					child->update();
 			}
@@ -89,7 +91,8 @@ namespace nap
 		{
 			auto parallelCount = std::min<int>(mThreadPool.getThreadCount(), mChildren.size());
 			mAsyncObserver.setBarrier(parallelCount);
-			for (auto threadIndex = 0; threadIndex < parallelCount; ++threadIndex) {
+			for (auto threadIndex = 0; threadIndex < parallelCount; ++threadIndex)
+			{
 				mThreadPool.execute([&, threadIndex]() {
 					auto i = threadIndex;
 					while (i < mChildren.size()) {
@@ -107,7 +110,8 @@ namespace nap
 		
 		void ParentProcess::process()
 		{
-			switch (mMode) {
+			switch (mMode)
+			{
 				case Mode::Sequential:
 					processSequential();
 					break;

@@ -26,7 +26,9 @@ namespace nap
 		
 		
 		SampleBuffer& Node::getOutputBuffer(OutputPin& output)
-		{ return output.mBuffer; }
+		{
+			return output.mBuffer;
+		}
 		
 		
 		void Node::setBufferSize(int bufferSize)

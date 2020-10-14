@@ -44,8 +44,7 @@ namespace nap
 			/**
 			 * default constructor
 			 */
-			TableTranslator(unsigned int size)
-			{ mTable.resize(size); }
+			TableTranslator(unsigned int size) { mTable.resize(size); }
 			
 			/**
 			 * perform the translation, input is clipped between 0 and 1. and spread across the size of the table, interpolating between the values
@@ -60,7 +59,8 @@ namespace nap
 			 */
 			void fill(FillFunction fillFunction)
 			{
-				for (int i = 0; i < mTable.size(); i++) {
+				for (int i = 0; i < mTable.size(); i++)
+				{
 					mTable[i] = fillFunction(i / T(mTable.size() - 1));
 				}
 			}

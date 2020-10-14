@@ -111,7 +111,8 @@ namespace nap
 			void updateRamp()
 			{
 				// if there are zero steps we reach the destination of the ramp immediately
-				if (mStepCount <= 0) {
+				if (mStepCount <= 0)
+				{
 					mStepCounter = 0;
 					mValue = mDestination;
 					destinationReachedSignal(mValue);
@@ -120,7 +121,8 @@ namespace nap
 				
 				mStepCounter = mStepCount;
 				
-				switch (mRampMode) {
+				switch (mRampMode)
+				{
 					case RampMode::Linear:
 						mIncrement = (mDestination - mValue) / T(mStepCount);
 						break;
@@ -132,11 +134,13 @@ namespace nap
 							         smallestFactor; // this is a 140dB ramp up from mValue to mDestination
 						
 						// avoid divisions by zero by avoiding mDestination = 0
-						if (mDestination == 0) {
+						if (mDestination == 0)
+						{
 							mDestination =
 									mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
 							mDestinationZero = true;
-						} else
+						}
+						else
 							mDestinationZero = false;
 						
 						// calculate the increment factor

@@ -36,7 +36,8 @@ namespace nap
 		void DeletionQueue::clear()
 		{
 			std::unique_ptr<SafeOwnerBase::Data> toBeDeleted = nullptr;
-			while (mQueue.try_dequeue(toBeDeleted)) {
+			while (mQueue.try_dequeue(toBeDeleted))
+			{
 				toBeDeleted = nullptr;
 			}
 		}

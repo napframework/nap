@@ -23,7 +23,8 @@ namespace nap
 		bool AudioFileResource::init(utility::ErrorState& errorState)
 		{
 			float sampleRate;
-			if (readAudioFile(mAudioFilePath, *getBuffer(), sampleRate, errorState)) {
+			if (readAudioFile(mAudioFilePath, *getBuffer(), sampleRate, errorState))
+			{
 				setSampleRate(sampleRate);
 				return true;
 			}
@@ -35,13 +36,16 @@ namespace nap
 		{
 			float sampleRate = 0;
 			
-			if (mAudioFilePaths.empty()) {
+			if (mAudioFilePaths.empty())
+			{
 				errorState.fail("MultiAudioFileResource: need at least one audio file path");
 				return false;
 			}
 			
-			for (auto i = 0; i < mAudioFilePaths.size(); ++i) {
-				if (readAudioFile(mAudioFilePaths[i], *getBuffer(), sampleRate, errorState)) {
+			for (auto i = 0; i < mAudioFilePaths.size(); ++i)
+			{
+				if (readAudioFile(mAudioFilePaths[i], *getBuffer(), sampleRate, errorState))
+				{
 					if (i == 0)
 						setSampleRate(sampleRate);
 					else {
