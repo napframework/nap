@@ -37,7 +37,7 @@ namespace nap
 		DECLARE_COMPONENT(RenderVideoComponent, RenderVideoComponentInstance)
 	public:
 
-		bool							mSampleShading = false;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		bool							mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
 		ResourcePtr<VideoPlayer>		mVideoPlayer = nullptr;								///< Property: 'VideoPlayer' the video player to render to texture
 		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;							///< Property: 'OutputTexture' the RGB8 texture to render output to
 		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'.
