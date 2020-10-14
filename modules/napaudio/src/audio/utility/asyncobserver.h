@@ -1,7 +1,12 @@
 #pragma once
 
+// Nap includes
+#include <utility/dllexport.h>
+
+// Std includes
 #include <thread>
 #include <condition_variable>
+
 
 namespace nap
 {
