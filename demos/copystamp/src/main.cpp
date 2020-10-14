@@ -11,7 +11,7 @@
 #include <guiappeventhandler.h>
 
 /**
- * Copy Stamp Demo
+ * Copy Stamp Demo. Note that this demo does not run well in Debug mode!
  * refer to copystampapp.h for a more detailed description of the application
  */
 int main(int argc, char *argv[])

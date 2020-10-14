@@ -23,7 +23,7 @@ namespace nap
 
 	/**
 	 * Demo application that is called from within the main loop.
-	 * Note that this demo won't run well on integrated graphics cards!
+	 * Note that this demo does not run well in Debug mode!
 	 *
 	 * This demo application shows you how to write a custom nap::RenderableComponent.
 	 * The component in this demo (nap::RenderableCopyMeshComponent) copies 3D meshes onto the vertices of a reference mesh.
