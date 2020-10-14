@@ -528,15 +528,13 @@ The [mesh data usage flag](@ref nap::EMeshDataUsage) determines how the mesh dat
 Text {#text}
 =======================
 
-Rendering text is similar to rendering meshes. Text also needs a [material](@ref nap::Material) but instead of a mesh every [component](@ref nap::Renderable2DTextComponent) that can draw text links to a [font](@ref nap::Font). You can change text at runtime by calling setText() or declare a line of text in json.
+Rendering text is similar to rendering meshes, but instead of a mesh every [component](@ref nap::Renderable2DTextComponent) that can draw text links to a [font](@ref nap::Font). You can change text at runtime by calling setText() or declare a line of text in json.
 
 The [font resource](@ref nap::Font) loads a font file from disk. All well known font formats are supported, including ttf en otf. Fonts can scale up to any size and are always rendered in their native resolution when using the [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent). This ensures a perfect text representation at every size.
 
 There are currently two components that can draw text to screen: [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent) and [Renderable3DTextComponent](@ref nap::Renderable3DTextComponent). When rendering text in screen space use the 2D version, when placing text somewhere in the world use the 3D version.
 
-The [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent) has a draw call that can be used to draw text directly at a specific location. The provided coordinates are in screen space (pixels), where 0,0 is the bottom left corner of your screen or back-buffer. Alternatively you can use the [render service](@ref nap::RenderService) to render your 2D text. This is similar to rendering meshes. 3D text is always rendered using the render-service.
-
-The component that renders text expects to find a texture uniform on the material called 'glyph'. If that uniform is not available your application will not start because the component can not bind the requested [glyph](@ref nap::Glyph) (character) to the material. It is also important to set the blend mode of the material to [AlphaBlend](@ref nap::EBlendMode). This ensures that text is rendered as a transparent object. 
+The [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent) has a draw call that can be used to draw text directly at a specific location. The provided coordinates are in screen space (pixels), where 0,0 is the bottom left corner of your screen or back-buffer. Alternatively you can use the [render service](@ref nap::RenderService) to render your 2D text. This is similar to rendering meshes. 3D text is always rendered using the render-service. The component that renders text uses it's own hard coded [shader](@ref nap::FontShader) so you don't have to link in a custom material.
 
 The HelloWorld demo shows you how to set this up.
 
