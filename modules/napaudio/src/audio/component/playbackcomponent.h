@@ -33,8 +33,7 @@ namespace nap
 		DECLARE_COMPONENT(PlaybackComponent, PlaybackComponentInstance)
 		
 		public:
-			PlaybackComponent() : AudioComponentBase()
-			{}
+			PlaybackComponent() : AudioComponentBase() { }
 			
 			// Properties
 			ResourcePtr<AudioBufferResource> mBuffer = nullptr; ///< property: 'Buffer' The buffer containing the audio to be played back
@@ -51,10 +50,7 @@ namespace nap
 			/**
 			 * Returns if the playback consists of 2 audio channels
 			 */
-			bool isStereo() const
-			{ return mChannelRouting.size() == 2; }
-		
-		private:
+			bool isStereo() const { return mChannelRouting.size() == 2; }
 		};
 		
 		
@@ -65,9 +61,7 @@ namespace nap
 		{
 			RTTI_ENABLE(AudioComponentBaseInstance)
 		public:
-			PlaybackComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentBaseInstance(entity,
-			                                                                                                    resource)
-			{}
+			PlaybackComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentBaseInstance(entity, resource) { }
 			
 			// Inherited from ComponentInstance
 			bool init(utility::ErrorState& errorState) override;
