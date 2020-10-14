@@ -11,7 +11,6 @@
 
 namespace nap
 {
-	
 	namespace audio
 	{
 		

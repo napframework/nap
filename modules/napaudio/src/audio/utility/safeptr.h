@@ -42,13 +42,13 @@ namespace nap
 		
 		protected:
 			/**
-			 * Transfer ownership of the object in @source to this. Source will be pointing to nothing.
+			 * Transfer ownership of the object in source to this. Source will be pointing to nothing.
 			 * If we are currently holding any object it will be deleted safely using the DeletionQueue.
 			 */
 			void assign(SafeOwnerBase& source);
 		
 		private:
-			// These methods are internally used by @assign() and will be overwritted by SafeOwner<T> to support polymorphism.
+			// These methods are internally used by assign() and will be overwritted by SafeOwner<T> to support polymorphism.
 			virtual void* getData() = 0;
 			
 			virtual void setData(void* data) = 0;
@@ -63,7 +63,7 @@ namespace nap
 		
 		/**
 		 * The DeletionQueue holds the data that was previously owned by @SafeOwner smart-pointers before they went out of scope.
-		 * SafeOwner's destructor disposes it's owned data in the DeletionQueue and the DeletionQueue takes over ownership over this data. The data does not only contain a pointer to the owned object but also a list of all SafePtrs that point to the object.
+		 * SafeOwner's destructor disposes it's owned data in the DeletionQueue and the DeletionQueue takes over ownership over this data.
 		 * The DeletionQueue needs to be cleared regularly using the clear() method to free the heap of disposed data. When the DeletionQueue is cleared all SafePtrs that point to an object held by the queue will be cleared as well.
 		 * By making use of the DeletionQueue in combination with @SafeOwner and @SafePtr the programmer can control or restrict the moment where objects are destructed and also choose the thread on which this will happen.
 		 */
@@ -100,6 +100,9 @@ namespace nap
 				mQueue.enqueue(std::move(ownerData));
 			}
 			
+			/**
+			 * Enqueue all safe owners in the system for destruction.
+			 */
 			void enqueueAll();
 			
 			/**
@@ -109,7 +112,7 @@ namespace nap
 			void clear();
 		
 		private:
-			moodycamel::ConcurrentQueue<std::unique_ptr<SafeOwnerBase::Data>> mQueue; // Lockfree queue that holds lambda's that each delete one object in the DeletionQueue. The pointer to the data to be deleted is held in the capture list of the lambda.
+			moodycamel::ConcurrentQueue<std::unique_ptr<SafeOwnerBase::Data>> mQueue; // Lockfree queue that holds SafeOwner::Data objects to be deleted because the enclosing SafeOwner went out of scope.
 			std::set<SafeOwnerBase*> mSafeOwnerList; // List of all safe owners that exist that are referencing this deletion queue.
 		};
 		
@@ -130,7 +133,7 @@ namespace nap
 		
 		private:
 			/**
-			 * The data that SafeOwner manages does not only consist of the managed object but also contains a list of all SafePtrs that point to the object.
+			 * The data that SafeOwner manages holds the managed object in a unique_ptr. It also keeps a shared_ptr to itself that will be shared with SafePtrs pointing to the object.
 			 */
 			class Data : public SafeOwnerBase::Data
 			{
@@ -148,9 +151,8 @@ namespace nap
 			
 			public:
 				std::unique_ptr<T> mObject = nullptr; ///< The pointer to the object managed by the SafeOwner internally.
-				std::shared_ptr<Data*> mSharedSafePtr = nullptr;
-				std::atomic<bool> mEnqueuedForDeletion = {
-						false}; ///< Indicates wether the object has moved into the deletion queue.
+				std::shared_ptr<Data*> mSharedSafePtr = nullptr; ///< Shared pointer to self that will be shared across SafePtrs pointing to the SafeOwner.
+				std::atomic<bool> mEnqueuedForDeletion = { false }; ///< Indicates wether the object has moved into the deletion queue.
 			};
 		
 		public:
@@ -175,8 +177,7 @@ namespace nap
 			}
 			
 			// Copy constructor with nullptr
-			SafeOwner(const std::nullptr_t)
-			{}
+			SafeOwner(const std::nullptr_t) { }
 			
 			// Assignment operator with nullptr
 			SafeOwner& operator=(const std::nullptr_t)
@@ -187,14 +188,10 @@ namespace nap
 			
 			// Copy and move are not allowed because the SafeOwner (just like unique_ptr) holds ownership
 			SafeOwner(const SafeOwner& other) = delete;
-			
 			SafeOwner& operator=(const SafeOwner& other) = delete;
 			
 			// Move ctor is fine, as unique_ptr's can be moved
-			SafeOwner(SafeOwner<T>&& other)
-			{
-				assign(other);
-			}
+			SafeOwner(SafeOwner<T>&& other) { assign(other); }
 			
 			// Move assignment operator
 			SafeOwner<T>& operator=(SafeOwner<T>&& other)
@@ -205,10 +202,7 @@ namespace nap
 			
 			// Move constructor with different type
 			template<typename OTHER>
-			SafeOwner(SafeOwner<OTHER>&& other)
-			{
-				assign(other);
-			}
+			SafeOwner(SafeOwner<OTHER>&& other) { assign(other); }
 			
 			// Move assignment operator with different type
 			template<typename OTHER>
@@ -257,13 +251,11 @@ namespace nap
 			
 			bool operator==(const std::nullptr_t) const
 			{
-				
 				return mData == nullptr;
 			}
 			
 			bool operator!=(const std::nullptr_t) const
 			{
-				
 				return mData != nullptr;
 			}
 			
@@ -288,28 +280,22 @@ namespace nap
 			/**
 			 * Returns a raw pointer to the owned object.
 			 */
-			T* getRaw()
-			{ return mData->mObject.get(); }
+			T* getRaw() { return mData->mObject.get(); }
 			
 			/**
 			 * Returns a const raw pointer to the owned object.
 			 */
-			T* getRaw() const
-			{ return mData->mObject.get(); }
+			T* getRaw() const { return mData->mObject.get(); }
 		
 		protected:
 			// Inherited from SafeOwnerBase for polymorphism support
-			void* getData() override
-			{ return mData.release(); }
+			void* getData() override { return mData.release(); }
 			
-			void setData(void* data) override
-			{ mData = std::unique_ptr<Data>(static_cast<Data*>(data)); }
+			void setData(void* data) override { mData = std::unique_ptr<Data>(static_cast<Data*>(data)); }
 			
-			DeletionQueue* getDeletionQueue() override
-			{ return mDeletionQueue; }
+			DeletionQueue* getDeletionQueue() override { return mDeletionQueue; }
 			
-			void setDeletionQueue(DeletionQueue* queue) override
-			{ mDeletionQueue = queue; }
+			void setDeletionQueue(DeletionQueue* queue) override { mDeletionQueue = queue; }
 		
 		private:
 			/**

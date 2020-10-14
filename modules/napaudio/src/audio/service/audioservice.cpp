@@ -18,25 +18,25 @@
 
 
 RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
-		RTTI_PROPERTY("HostApi", &nap::audio::AudioServiceConfiguration::mHostApi,
+	RTTI_PROPERTY("HostApi", &nap::audio::AudioServiceConfiguration::mHostApi,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("InputDevice", &nap::audio::AudioServiceConfiguration::mInputDevice,
+	RTTI_PROPERTY("InputDevice", &nap::audio::AudioServiceConfiguration::mInputDevice,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("OutputDevice", &nap::audio::AudioServiceConfiguration::mOutputDevice,
+	RTTI_PROPERTY("OutputDevice", &nap::audio::AudioServiceConfiguration::mOutputDevice,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioServiceConfiguration::mInputChannelCount,
+	RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioServiceConfiguration::mInputChannelCount,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioServiceConfiguration::mOutputChannelCount,
+	RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioServiceConfiguration::mOutputChannelCount,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::AudioServiceConfiguration::mAllowChannelCountFailure,
+	RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::AudioServiceConfiguration::mAllowChannelCountFailure,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::AudioServiceConfiguration::mAllowDeviceFailure,
+	RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::AudioServiceConfiguration::mAllowDeviceFailure,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
+	RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::mBufferSize,
+	RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::mBufferSize,
 		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("InternalBufferSize", &nap::audio::AudioServiceConfiguration::mInternalBufferSize,
+	RTTI_PROPERTY("InternalBufferSize", &nap::audio::AudioServiceConfiguration::mInternalBufferSize,
 		              nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -44,11 +44,12 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
 		RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
+
 namespace nap
 {
-	
 	namespace audio
 	{
+		
 		/*
          * The audio callback will be called by portaudio to process a buffer of audio input/output
          */
@@ -542,7 +543,9 @@ namespace nap
 		
 		
 		bool AudioService::isActive()
-		{ return Pa_IsStreamActive(mStream) == 1; }
+		{
+			return Pa_IsStreamActive(mStream) == 1;
+		}
 		
 		
 	}

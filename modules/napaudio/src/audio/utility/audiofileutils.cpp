@@ -17,7 +17,6 @@ using namespace std;
 
 namespace nap
 {
-	
 	namespace audio
 	{
 		

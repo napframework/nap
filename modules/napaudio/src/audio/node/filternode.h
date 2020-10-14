@@ -10,7 +10,6 @@
 
 namespace nap
 {
-	
 	namespace audio
 	{
 		
@@ -115,5 +114,4 @@ namespace nap
 		};
 		
 	}
-	
 }

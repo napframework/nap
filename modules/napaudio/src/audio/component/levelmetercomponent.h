@@ -20,7 +20,7 @@ namespace nap
 		
 		/**
 		 * Component to measure the amplitude level of the audio signal from an @AudioComponentBase.
-		 * A specific frequency band to be meusured can be specified.
+		 * A specific frequency band to be measured can be specified.
 		 */
 		class NAPAPI LevelMeterComponent : public Component
 		{

@@ -45,16 +45,12 @@ namespace nap
 			/**
 			 * @return: return the maximum delay. (equalling the size of the buffer)
 			 */
-			unsigned int getMaxDelay()
-			{ return mBuffer.size(); }
+			unsigned int getMaxDelay() { return mBuffer.size(); }
 			
 			/**
 			 * Operator to read from the delay line without interpolation at @index before the write position
 			 */
-			inline SampleValue operator[](unsigned int index)
-			{
-				return read(index);
-			}
+			inline SampleValue operator[](unsigned int index) { return read(index); }
 		
 		private:
 			

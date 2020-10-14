@@ -12,7 +12,7 @@ namespace nap
 		 * The AsyncObserver will assist you when one or more threads need to wait for any number of other threads to finish performing certain tasks.
 		 * We will call these threads respectively the waiting threads and the performing threads.
 		 */
-		class AsyncObserver
+		class NAPAPI AsyncObserver
 		{
 		public:
 			AsyncObserver();
@@ -25,14 +25,23 @@ namespace nap
 			void setBarrier(uint32_t numberOfNotifications = 1);
 			
 			/**
-			 *
+			 * A performing thread needs to call this method to notify the waiting threads that it has finished.
 			 */
 			void notifyBarrier();
 			
+			/**
+			 * The waiting threads call this method to wait for all performing threads to finish.
+			 */
 			void waitForNotifications();
 			
+			/**
+			 * In the case of a single waiting thread, a performing thread can call this method to wake up the waiting thread and continue its execution.
+			 */
 			void notifyOne();
 			
+			/**
+			 * In case of multiple waiting threads, a performing thread can call this method to wake up the waiting threads and continue their execution.
+			 */
 			void notifyAll();
 			
 		private:

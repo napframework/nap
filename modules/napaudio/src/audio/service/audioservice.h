@@ -16,11 +16,15 @@ namespace nap
 {
 	namespace audio
 	{
+		
+		// Forward declarations
 		class AudioService;
+		
 		
 		class NAPAPI AudioServiceConfiguration : public ServiceConfiguration
 		{
-		RTTI_ENABLE(ServiceConfiguration)
+			RTTI_ENABLE(ServiceConfiguration)
+			
 		public:
 			virtual rtti::TypeInfo getServiceType()
 			{ return RTTI_OF(AudioService); }

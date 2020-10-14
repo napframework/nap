@@ -14,7 +14,6 @@
 
 namespace nap
 {
-	
 	namespace audio
 	{
 		
@@ -61,10 +60,7 @@ namespace nap
 			/**
 			 * Stop the current ramp.
 			 */
-			void stop()
-			{
-				mStepCounter = 0;
-			}
+			void stop() { mStepCounter = 0; }
 			
 			/**
 			 * Take the next step in the current ramp.
@@ -95,20 +91,16 @@ namespace nap
 			}
 			
 			/**
-			 * Returns the current value.
+			 * @return the current value.
 			 * Should only be called from the audio thread
 			 */
-			T getValue() const
-			{
-				return mValue;
-			}
+			T getValue() const { return mValue; }
 			
 			/**
-			 * Returns true when currently playing a ramp.
+			 * @return true when currently playing a ramp.
 			 * Should only be called from the audio thread.
 			 */
-			bool isRamping() const
-			{ return mStepCounter > 0; }
+			bool isRamping() const { return mStepCounter > 0; }
 			
 			/**
 			 * Signal emitted when the destination of a ramp has been reached.
@@ -170,5 +162,4 @@ namespace nap
 		
 		
 	}
-	
 }

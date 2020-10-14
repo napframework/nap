@@ -11,7 +11,6 @@
 
 namespace nap
 {
-	
 	namespace audio
 	{
 		
@@ -22,8 +21,7 @@ namespace nap
 		class Translator
 		{
 		public:
-			virtual ~Translator()
-			{}
+			virtual ~Translator() { }
 			
 			virtual T translate(const T& inputValue) = 0;
 		
@@ -67,7 +65,6 @@ namespace nap
 				}
 			}
 			
-			
 			/**
 			 * perform the translation static, input is clipped between 0 and 1. and spread across the size of the table, interpolatinf between the values
 			 */
@@ -87,15 +84,6 @@ namespace nap
 					return inTable[floor];
 			}
 			
-			
-			/**
-			 * perform the translation static,
-			 */
-			static inline T periodic(const T& inputValue, const std::vector<T>& inTable)
-			{
-
-			}
-		
 		private:
 			std::vector<T> mTable;
 		};
@@ -122,6 +110,5 @@ namespace nap
 		};
 		
 	}
-	
 }
 

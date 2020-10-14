@@ -51,6 +51,7 @@ namespace nap
 			 */
 			void setType(Type type) { mType = type; }
 			
+			// Inherited from Node
 			void process() override;
 		
 		private:

@@ -16,20 +16,17 @@ namespace nap
 		class DirtyFlag
 		{
 		public:
-			DirtyFlag()
-			{ mUpToDate.test_and_set(); }
+			DirtyFlag() { mUpToDate.test_and_set(); }
 			
 			/**
 			 * Set the flag to dirty in one atomic operation.
 			 */
-			inline void set()
-			{ mUpToDate.clear(); }
+			inline void set() { mUpToDate.clear(); }
 			
 			/**
 			 * Returns wether the flag is dirty and sets it to non-dirty at the same time in one atomic operation.
 			 */
-			inline bool check()
-			{ return !mUpToDate.test_and_set(); }
+			inline bool check() { return !mUpToDate.test_and_set(); }
 		
 		private:
 			std::atomic_flag mUpToDate = ATOMIC_FLAG_INIT;

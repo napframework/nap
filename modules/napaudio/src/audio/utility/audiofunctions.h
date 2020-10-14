@@ -4,23 +4,27 @@
 
 namespace nap
 {
-	
 	namespace audio
 	{
 		
 		/**
-		 * Wraps value @inc within the range of @bufferSize.
-		 * @bufferSize is required to be a power of 2!
+		 * Wraps index value within the range of a buffer size.
+		 * @param index value to be wrapped
+		 * @param bufferSize size to be wrapped within, needs to be a power of two!
 		 */
-		inline unsigned int wrap(unsigned int inc, unsigned int bufferSize)
+		inline unsigned int wrap(unsigned int index, unsigned int bufferSize)
 		{
 			unsigned int bitMask = bufferSize - 1;
-			return inc & bitMask;
+			return index & bitMask;
 		}
 		
 		
 		/**
-		 * Linear interpolation between v0 and v1. v0 is returned when t = 0 and v1 is returned when t = 1.
+		 * Linear interpolation between two values.
+		 * @param v0 start value of the interpolation which is returned when t = 0
+		 * @param v1 end value of the interpolation which is returned when t = 1.
+		 * @param t value between 0 and zero
+		 * @return the result of the interpolation
 		 */
 		template<typename T>
 		inline T lerp(const T& v0, const T& v1, const T& t)
@@ -44,6 +48,8 @@ namespace nap
 		
 		/**
 		 * Convert a midi notenumber format pitch (floating point for microtonal precision) to a frequency in Herz.
+		 * @param pitch in semitones. A pitch of 57 equals 220Hz.
+		 * @return frequency in Hz.
 		 */
 		inline float mtof(float pitch)
 		{
@@ -57,6 +63,8 @@ namespace nap
 		
 		/**
 		 * Convert amplitude to decibel value.
+		 * @param amplitude Amplitude scaling factor. A value of 1.0 results in 0dB.
+		 * @return intensity in dB.
 		 */
 		inline float toDB(float amplitude)
 		{
@@ -66,6 +74,9 @@ namespace nap
 		
 		/**
 		 * Convert decibel value to amplitude.
+		 * @param db in dB.
+		 * @param zero specifies the lowest possible dB input value, which will result in a zero return value.
+		 * @return amplitude scaling factor.
 		 */
 		inline float dbToA(float db, float zero = -48)
 		{
@@ -77,5 +88,4 @@ namespace nap
 		
 		
 	}
-	
 }
