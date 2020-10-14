@@ -500,13 +500,13 @@ namespace nap
 		VkDevice getDevice() const													{ return mDevice; }
 
 		/**
-		 * Returns the max number of hardware supported rasterization samples.
+		 * Returns the max number of hardware supported MSAA rasterization samples.
 		 * @return the max number of rasterization samples supported by the hardware.
 		 */
 		VkSampleCountFlagBits getMaxRasterizationSamples() const;
 
 		/**
-		 * Returns max supported rasterization samples based on the requested number of samples.
+		 * Returns max supported MSAA rasterization samples based on the requested number of samples.
 		 * The output is automatically clamped if the requested number of samples exceeds the hardware limit.
 		 * @return if requested number of samples is supported by hardware.
 		 * @param requestedSamples requested number of samples.

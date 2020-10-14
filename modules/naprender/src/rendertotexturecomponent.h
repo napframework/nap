@@ -53,11 +53,11 @@ namespace nap
 		RTTI_ENABLE(RenderableComponent)
 		DECLARE_COMPONENT(RenderToTextureComponent, RenderToTextureComponentInstance)
 	public:
-		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;					///< Property: 'OutputTexture' the target of the render step
-		MaterialInstanceResource		mMaterialInstanceResource;					///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
-		RGBColor8						mClearColor = { 255, 255, 255 };			///< Property: 'ClearColor' the color that is used to clear the render target
-		std::string						mProjectMatrixUniform = "projectionMatrix";	///< Property: 'ProjectionMatrixUniform' name of the projection matrix uniform in the shader.
-		std::string						mModelMatrixUniform = "modelMatrix";		///< Property: 'ModelMatrixUniform' name of the model matrix uniform in the shader.
+		bool							mSampleShading = false;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;							///< Property: 'OutputTexture' the target of the render step
+		MaterialInstanceResource		mMaterialInstanceResource;							///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
+		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of MSAA samples used during Rasterization. Should be 1 when rendering to target 'full screen'. For better results enable 'SampleShading'.
+		RGBColor8						mClearColor = { 255, 255, 255 };					///< Property: 'ClearColor' the color that is used to clear the render target
 	};
 
 

@@ -54,7 +54,7 @@ namespace nap
 
 
 	/**
-	 * All supported number of rasterization samples
+	 * Number of MSAA rasterization samples
 	 */
 	enum class ERasterizationSamples : int
 	{
