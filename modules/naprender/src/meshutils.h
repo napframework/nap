@@ -124,7 +124,7 @@ namespace nap
 
 		/**
 		 * Calculates the intersection of a ray and a triangle in 3 dimensions
-		 * Based on the Möller–Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+		 * Based on the Moller Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 		 * Back-facing triangles relative to the ray direction are not considered
 		 * @param rayOrigin the origin of the ray, often the world space position of a camera
 		 * @param rayDirection the direction of the ray from it's origin
