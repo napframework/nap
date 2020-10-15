@@ -30,7 +30,7 @@ namespace nap
 			// Create resources
             audio::VideoAudioComponent* resource = getComponent<VideoAudioComponent>();
             audio::AudioService& audioService = getAudioService();
-            mNode = audioService.makeSafe<VideoNode>(audioService.getNodeManager(), resource->mChannelCount, resource->mProcessAudio);
+            mNode = audioService.getNodeManager().makeSafe<VideoNode>(audioService.getNodeManager(), resource->mChannelCount, resource->mProcessAudio);
 
 			// Listen to video changes
 			mVideoPlayer = resource->mVideoPlayer.get();
