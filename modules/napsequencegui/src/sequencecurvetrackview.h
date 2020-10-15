@@ -146,6 +146,11 @@ namespace nap
 		void handleCurveTypePopup();
 
 		/**
+		 * handles tanpoint action popup
+		 */
+		void handleTanPointActionPopup();
+
+		/**
 		 * Draws min/max range of inspector
 		 * @tparam T type
 		 * @param track reference to track
@@ -355,15 +360,46 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			DraggingTanPoint(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex,
-							 SequenceCurveEnums::TanPointTypes type)
-				: mTrackID(trackId), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
+			DraggingTanPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes type)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
 			int mControlPointIndex;
             int mCurveIndex;
 			SequenceCurveEnums::TanPointTypes mType;
+		};
+
+		class OpenEditTanPointPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes type, float value, float time)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+			SequenceCurveEnums::TanPointTypes mType;
+			float mValue;
+			float mTime;
+		};
+
+		class EditingTanPointPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			EditingTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes type, float value, float time)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time){}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+			SequenceCurveEnums::TanPointTypes mType;
+			float mValue;
+			float mTime;
 		};
 
 		class OpenEditCurveSegmentPopup : public Action

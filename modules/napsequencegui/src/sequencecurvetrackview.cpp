@@ -107,6 +107,8 @@ namespace nap
 		handleSegmentValueActionPopup<glm::vec3>();
 
 		handleSegmentValueActionPopup<glm::vec4>();
+
+		handleTanPointActionPopup();
 	}
 
 
@@ -868,6 +870,16 @@ namespace nap
 									controlPointIndex,
 									curveIndex,
 									type);
+							}else if(ImGui::IsMouseDown(1)) // open edit popup
+							{
+								mState.mAction = createAction<OpenEditTanPointPopup>(
+									track.mID,
+									segment.mID,
+									controlPointIndex,
+									curveIndex,
+									type,
+									(float)tan_complex.mValue,
+									tan_complex.mTime);
 							}
 						}
 						else
@@ -1216,8 +1228,7 @@ namespace nap
 				action->mValue,
 				action->mTime,
 				action->mMinimum,
-				action->mMaximum
-				);
+				action->mMaximum );
 			ImGui::OpenPopup("Curve Point Actions");
 		}
 
@@ -1258,6 +1269,73 @@ namespace nap
 				}
 
 				if (ImGui::Button("Cancel"))
+				{
+					mState.mAction = createAction<None>();
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// click outside popup so cancel action
+				mState.mAction = createAction<None>();
+			}
+		}
+	}
+
+
+	void SequenceCurveTrackView::handleTanPointActionPopup()
+	{
+		if (mState.mAction->isAction<OpenEditTanPointPopup>())
+		{
+			auto* action = mState.mAction->getDerived<OpenEditTanPointPopup>();
+			mState.mAction = createAction<EditingTanPointPopup>(
+				action->mTrackID,
+				action->mSegmentID,
+				action->mControlPointIndex,
+				action->mCurveIndex,
+				action->mType,
+				action->mValue,
+				action->mTime);
+
+			ImGui::OpenPopup("Tan Point Actions");
+		}
+
+		if (mState.mAction->isAction<EditingTanPointPopup>())
+		{
+			if (ImGui::BeginPopup("Tan Point Actions"))
+			{
+				auto* action = mState.mAction->getDerived<EditingTanPointPopup>();
+				int curveIndex = action->mCurveIndex;
+
+				bool change = false;
+				if (ImGui::InputFloat("time", &action->mTime))
+				{
+					change = true;
+				}
+
+				if (ImGui::InputFloat("value", &action->mValue))
+				{
+					change = true;
+				}
+
+				if(change)
+				{
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.changeTanPoint(
+						action->mTrackID,
+						action->mSegmentID,
+						action->mControlPointIndex,
+						action->mCurveIndex,
+						action->mType,
+						action->mTime,
+						action->mValue);
+					mState.mDirty = true;
+				}
+
+				if (ImGui::Button("Done"))
 				{
 					mState.mAction = createAction<None>();
 
