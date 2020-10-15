@@ -519,7 +519,7 @@
             "Usage": "Static",
             "Width": 1920,
             "Height": 1080,
-            "Format": "RGBA32",
+            "Format": "RGBA8",
             "ColorSpace": "Linear"
         },
         {
