@@ -24,6 +24,8 @@ module_json_to_cmake()
 set(LIBRARIES napcore portaudio libsndfile libmpg123)
 if(APPLE)
     list(APPEND LIBRARIES "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
+elseif(UNIX)
+    list(APPEND LIBRARIES atomic)
 endif()
 
 set(INCLUDES src ${PORTAUDIO_INCLUDE_DIR} ${LIBSNDFILE_INCLUDE_DIR} ${LIBMPG123_INCLUDE_DIR})
@@ -76,7 +78,7 @@ elseif(UNIX)
     set(LINUX_EXTRA_RPATH ../../../../thirdparty/mpg123/lib)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/libsndfile/lib)
-endif()    
+endif()
 package_module()
 
 # Package mpg123 into platform release
@@ -91,7 +93,7 @@ if(WIN32)
             DESTINATION thirdparty/mpg123/include)
     file(GLOB MPG123_LIBFILES ${THIRDPARTY_DIR}/mpg123/install/msvc/*.lib)
     install(FILES ${MPG123_LIBFILES}
-            DESTINATION thirdparty/mpg123/lib)   
+            DESTINATION thirdparty/mpg123/lib)
 elseif(APPLE)
     # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -128,7 +130,7 @@ if(WIN32)
             DESTINATION thirdparty/libsndfile/bin)
     file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
     install(FILES ${LIBSNDFILE_IMPLIBS}
-            DESTINATION thirdparty/libsndfile/lib)  
+            DESTINATION thirdparty/libsndfile/lib)
 elseif(ANDROID)
     install(DIRECTORY ${LIBSNDFILE_DIR}/android/install/lib/
             DESTINATION thirdparty/libsndfile/lib
