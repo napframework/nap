@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // local includes
@@ -46,8 +50,8 @@ namespace nap
 		virtual void update(double deltaTime) override ;
 
 		/**
-		 * called from sequence player thread, adds event to queue
-		 * @param the event ptr that needs to be dispatched. Receiver takes ownership of the event
+		 * called from sequence player thread, adds event to queue.
+		 * @param event the event ptr that needs to be dispatched. Receiver takes ownership of the event
 		 */
 		void addEvent(SequenceEventPtr event);
 	private:

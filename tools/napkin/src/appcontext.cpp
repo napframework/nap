@@ -1,4 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "appcontext.h"
+#include "napkinglobals.h"
+#include "napkinlinkresolver.h"
 
 // std
 #include <fstream>
@@ -15,8 +21,6 @@
 // local
 #include <naputils.h>
 #include <utility/fileutils.h>
-#include "napkinglobals.h"
-#include "napkinlinkresolver.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;

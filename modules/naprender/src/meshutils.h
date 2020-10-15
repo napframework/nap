@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <utility/dllexport.h>
@@ -13,15 +17,18 @@ namespace nap
 		using MeshConnectivityMap = std::vector<std::vector<Triangle>>;
 
 		/**
-		* @param shape the mesh shape to check.
-		* @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
-		*/
+		 * Returns if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+		 * @param meshInstance the mesh to check
+		 * @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+		 */
 		bool NAPAPI isTriangleMesh(const nap::MeshInstance& meshInstance);
 
 		/**
-		* @return the number of triangles associated with a mesh
-		*/
-		int NAPAPI getTriangleCount(const MeshInstance& mesh);
+		 * Returns the total number of triangles associated with a mesh.
+		 * @param meshInstance the mesh to inspect.
+		 * @return the total number of triangles associated with a mesh
+		 */
+		int NAPAPI getTriangleCount(const MeshInstance& meshInstance);
 
 		/**
 		* Computes the normal that is associated with a triangular face. The normal is weighted (not normalized)
@@ -117,7 +124,7 @@ namespace nap
 
 		/**
 		 * Calculates the intersection of a ray and a triangle in 3 dimensions
-		 * Based on the Möller–Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+		 * Based on the Moller Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
 		 * Back-facing triangles relative to the ray direction are not considered
 		 * @param rayOrigin the origin of the ray, often the world space position of a camera
 		 * @param rayDirection the direction of the ray from it's origin

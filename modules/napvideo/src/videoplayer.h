@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -109,13 +113,12 @@ namespace nap
 
 		/**
 	 	 * Starts playback of the current video at the given offset in seconds.
-		 * @param startTimeSecs The offset in seconds to start the video at.
+		 * @param startTime The offset in seconds to start the video at.
 		 */
 		void play(double startTime = 0.0);
 
 		/**
 		 * Stops playback of the current video.
-		 * @param blocking when set to true the thread calling this function will wait until playback is stopped.
 		 */
 		void stopPlayback()											{ getVideo().stop(true); }
 

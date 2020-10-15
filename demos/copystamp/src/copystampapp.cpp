@@ -1,8 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "copystampapp.h"
 #include "renderablecopymeshcomponent.h"
 
-// Nap includes
+// External Includes
 #include <nap/core.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>

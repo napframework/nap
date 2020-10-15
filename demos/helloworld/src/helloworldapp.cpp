@@ -1,6 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "helloworldapp.h"
 
-// Nap includes
+// External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
@@ -58,15 +62,8 @@ namespace nap
 	
 	/**
 	 * Forward all the received input messages to the camera input components.
-	 * The input router is used to filter the input events and to forward them
-	 * to the input components of a set of entities, in this case our camera.
-	 * 
-	 * The camera has two input components: KeyInputComponent and PointerInputComponent
-	 * The key input component receives key events, the pointer input component receives pointer events
-	 * The orbit controller listens to both of them
-	 * When an input component receives a message it sends a signal to the orbit controller.
-	 * The orbit controller validates if it's something useful and acts accordingly,
-	 * in this case by rotating around or zooming in on the sphere.
+	 * The camera has two input components: KeyInputComponent and PointerInputComponent.
+	 * The key input component receives key events, the pointer input component receives pointer events.
 	 */
 	void HelloWorldApp::update(double deltaTime)
 	{
@@ -110,13 +107,7 @@ namespace nap
 
 	
 	/**
-	 * Render loop is rather straight forward:
-	 * Set the camera position in the world shader for the halo effect
-	 * make the main window active, this makes sure that all subsequent render calls are 
-	 * associated with that window. When you have multiple windows and don't activate the right window subsequent
-	 * render calls could end up being associated with the wrong context, resulting in undefined behavior.
-	 * Next we clear the render target, render the world and after that the text. 
-	 * Finally we swap the main window back-buffer, making sure the rendered image is blitted to screen.
+	 * Renders the world and text.
 	 */
 	void HelloWorldApp::render()
 	{

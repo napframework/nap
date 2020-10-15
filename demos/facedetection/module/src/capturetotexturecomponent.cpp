@@ -1,3 +1,8 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "capturetotexturecomponent.h"
 
 // External Includes
@@ -111,18 +116,6 @@ namespace nap
 		// Ensure channel count is the same
 		const CVFrame& cv_frame = *frame;
 
-		/*
-		TODO: Support getChannelCount()
-		int cv_channels = cv_frame[mMatrixIndex].channels();
-		int te_channels = mRenderTexture->getChannelCount();
-		if (!(cv_channels == te_channels))
-		{
-			nap::Logger::warn("%s: invalid number of channels, got %d, expect: %d", mID.c_str(),
-				cv_channels, te_channels);
-			return;
-		}
-		*/
-
 		// Ensure dimensions are the same
 		glm::vec2 tex_size = mRenderTexture->getSize();
 		if (cv_frame[mMatrixIndex].cols != tex_size.x || cv_frame[mMatrixIndex].rows != tex_size.y)
@@ -135,7 +128,10 @@ namespace nap
 			return;
 		}
 		
+		// Convert to RGBA, required by the Texture2D
 		cv::cvtColor(cv_frame[mMatrixIndex], mConversionFrame[0], cv::COLOR_RGB2RGBA);
+
+		// Update texture on GPU
 		mRenderTexture->update(mConversionFrame[0].getMat(cv::ACCESS_READ).data, mRenderTexture->getDescriptor());
 	}
 }

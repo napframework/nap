@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -144,7 +148,7 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 
 		/**
-		 * @return current number of MSAA samples used when rendering to the window.
+		 * @return used number of samples when rendering to the target.
 		 */
 		virtual VkSampleCountFlagBits getSampleCount() const override;
 		
@@ -156,7 +160,7 @@ namespace nap
 	public:
 		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		glm::vec4							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
-		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results turn on 'SampleShading'.
+		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		nap::ResourcePtr<RenderTexture2D>	mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
 
 	private:

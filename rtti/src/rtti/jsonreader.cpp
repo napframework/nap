@@ -1,8 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "jsonreader.h"
 #include "factory.h"
-#include "utility/errorstate.h"
-#include "rtti/object.h"
+#include "object.h"
 
+// External Includes
+#include <utility/errorstate.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/error/en.h>

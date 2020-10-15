@@ -1,4 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "thememanager.h"
+#include "appcontext.h"
+#include "napkin-resources.h"
+#include "napkinglobals.h"
 
 #include <QDir>
 #include <QFontDatabase>
@@ -10,10 +17,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 #include <utility/fileutils.h>
-
-#include "appcontext.h"
-#include "napkin-resources.h"
-#include "napkinglobals.h"
 
 using namespace napkin;
 

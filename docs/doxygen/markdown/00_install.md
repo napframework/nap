@@ -13,7 +13,7 @@ Install {#install}
 
 # Overview {#build_env_overview}
 
-Installing the NAP beta release involves extracting the archive and running our script to guide you through dependency installation.
+Installing the NAP release involves extracting the archive and running our script to guide you through dependency installation.
 
 Projects within the NAP beta reside within the framework folder structure, and as such we recommend extracting the release into a user directory instead of a system directory.  For example on Windows something like My Documents is a more suitable location than C:\\Program Files.
 

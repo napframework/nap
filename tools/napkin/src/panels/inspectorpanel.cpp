@@ -1,4 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "inspectorpanel.h"
+#include "appcontext.h"
+#include "commands.h"
+#include "napkinglobals.h"
+#include "standarditemsproperty.h"
+#include "naputils.h"
 
 #include <QApplication>
 #include <QMimeData>
@@ -6,13 +15,7 @@
 
 #include <utility/fileutils.h>
 #include <napkinfiltertree.h>
-
-#include "appcontext.h"
-#include "commands.h"
-#include "napkinglobals.h"
-#include "standarditemsproperty.h"
 #include <napqt/filterpopup.h>
-#include "naputils.h"
 
 using namespace nap::rtti;
 using namespace napkin;

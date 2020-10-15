@@ -1,9 +1,11 @@
-// main.cpp : Defines the entry point for the console application.
-//
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "lineblendingapp.h"
 
-// Nap includes
+// External includes
 #include <nap/logger.h>
 #include <apprunner.h>
 #include <guiappeventhandler.h>

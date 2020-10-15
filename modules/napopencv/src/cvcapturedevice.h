@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -94,6 +98,7 @@ namespace nap
 		/**
 		 * Sets an OpenCV capture property. This call is thread safe.
 		 * The actual property is applied when a new frame is captured, not immediately.
+		 * @param adapter the adapter to set the property for.
 		 * @param propID the property to set.
 		 * @param value the new property value.
 		 */

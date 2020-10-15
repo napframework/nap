@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -32,7 +36,8 @@ namespace nap
 
 		/**
 		 * Loads a new video, the adapter is restarted.
-		 * @param file new video file to load
+		 * @param video new video file to load
+		 * @param error contains the error if the operation failed
 		 * @return if the video loaded successfully. 
 		 */
 		bool changeVideo(const std::string& video, nap::utility::ErrorState& error);
@@ -115,14 +120,15 @@ namespace nap
 		 * @param captureDevice device to open
 		 * @param api api back-end to use
 		 * @param error contains the error if the opening operation fails
+		 * @return if the video file or image sequence opened successfully.
 		 */
 		virtual bool onOpen(cv::VideoCapture& captureDevice, int api, nap::utility::ErrorState& error) override;
 
 		/**
 		 * This method decodes and returns the just grabbed frame.
 		 * @param captureDevice the device to capture the frame from.
-		 * @param outFrame contains the new decoded frame
-		 * @return if decoding succeeded.
+		 * @param error contains the error if the decoding operation failed
+		 * @return decoded frame, empty frame if operation failed
 		 */
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) override;
 

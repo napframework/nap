@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -123,7 +127,7 @@ namespace nap
 		 * Needs to be implemented in a derived class. 
 		 * An empty return frame is interpreted as a decoding error by the processing device.
 		 * @param captureDevice the device to capture the frame from.
-		 * @param outFrame contains the new decoded frame
+		 * @param error contains the error if decoding failed
 		 * @return the decoded frame, return an empty frame on failure.
 		 */
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) = 0;

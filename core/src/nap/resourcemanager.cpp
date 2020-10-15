@@ -1,17 +1,20 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "resourcemanager.h"
 #include "objectgraph.h"
 #include "logger.h"
 #include "core.h"
 #include "python.h"
 #include "rttiobjectgraphitem.h"
+#include "device.h"
+#include "corefactory.h"
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
 #include <rtti/linkresolver.h>
-#include <nap/core.h>
-#include <nap/device.h>
-#include <nap/corefactory.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)

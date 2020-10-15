@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local includes
@@ -50,7 +54,7 @@ namespace nap
 		 *		addArgument<OSCFloat>(1.0f) 
 		 *		addArgument<OSCString>("ola!")
 		 *
-		 * @args the arguments that are used for constructing the specified OSCValue. 
+		 * @param args the arguments that are used for constructing the specified OSCValue. 
 		 * @return the newly created and added argument
 		 */
 		template<typename T, typename... Args>

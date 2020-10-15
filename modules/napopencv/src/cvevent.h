@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local includes
@@ -29,14 +33,14 @@ namespace nap
 		CVFrameEvent& operator=(const CVFrameEvent& other);
 
 		/**
-		 * Constructor that takes multiple frames asn an input argument.
-		 * @param frame frames associated with this event.
+		 * Constructor that takes multiple frames as an input argument.
+		 * @param frames frames associated with this event.
 		 */
 		CVFrameEvent(const std::vector<CVFrame>& frames);
 
 		/**
-		 * Constructor that takes multiple frames asn an input argument.
-		 * @param frame frames associated with this event.
+		 * Constructor that takes multiple frames as an input argument.
+		 * @param frames frames associated with this event.
 		 */
 		CVFrameEvent(const std::vector<CVFrame>&& frames);
 

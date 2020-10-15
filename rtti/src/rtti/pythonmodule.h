@@ -1,15 +1,19 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <functional>
 #include <vector>
-#include "utility/dllexport.h"
+#include <utility/dllexport.h>
 
-#include "pybind11/pybind11.h"
-#include "pybind11/embed.h"
-#include "pybind11/stl.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
+#include <pybind11/stl.h>
 
 // Note: including rttr headers directly here instead of going through typeinfo.h to avoid circular dependencies between the two headers
-#include "rttr/detail/misc/misc_type_traits.h"
+#include <rttr/detail/misc/misc_type_traits.h>
 #include <rttr/type>
 
 namespace nap
@@ -175,7 +179,9 @@ namespace nap
 			using GetBaseTypesFunction = std::function<void(std::vector<std::string>&)>;
 
 			/**
-			 * Returns a global python module for @param moduleName.
+			 * Returns the global python module for the given module name.
+			 * @param moduleName name of the module to get
+			 * @return the python module
 			 */
 			static PythonModule& get(const char* moduleName);
 

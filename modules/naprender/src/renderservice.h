@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -394,6 +398,7 @@ namespace nap
 		 * @param renderTarget target that is rendered too.
 		 * @param mesh the mesh that is drawn.
 		 * @param materialInstance the material applied to the mesh.
+		 * @param errorState contains the error if the pipeline can't be created
 		 * @return new or cached pipeline.
 		 */
 		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);
