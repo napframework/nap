@@ -115,6 +115,7 @@ Allows you to step into the NAP Framework source code and make changes if requir
 A packaged version of NAP will include all of the following:
 * core components
 * standard modules
+* editor
 * demos
 * your own project(s) - only if specified
 
