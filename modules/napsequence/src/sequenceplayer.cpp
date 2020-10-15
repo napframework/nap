@@ -49,7 +49,7 @@ namespace nap
 			nap::Logger::info(*this, errorState.toString());
 			nap::Logger::info(*this, "Error loading default show, creating default sequence");
 
-			mSequence = sequenceutils::createEmptySequence(mReadObjects, mReadObjectIDs);
+			mSequence = sequenceutils::createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
 
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
@@ -367,7 +367,7 @@ namespace nap
 
 		if (track == nullptr)
 		{
-			nap::Logger::error("No track found with id %s", trackID.c_str());
+			nap::Logger::error(*this,"No track found with id %s", trackID.c_str());
 			return false;
 		}
 
@@ -389,7 +389,7 @@ namespace nap
 
 		if (output == nullptr)
 		{
-			nap::Logger::error("No output found with id %s", inputID.c_str());
+			nap::Logger::error(*this,"No output found with id %s", inputID.c_str());
 			return false;
 		}
 
@@ -397,7 +397,7 @@ namespace nap
 
 		if (adapter == nullptr)
 		{
-			nap::Logger::error("Unable to create adapter with track id %s and output id %s", trackID.c_str(), inputID.c_str());
+			nap::Logger::error(*this,"Unable to create adapter with track id %s and output id %s", trackID.c_str(), inputID.c_str());
 			return false;
 		}
 

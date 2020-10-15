@@ -1,11 +1,19 @@
 #include "sequenceplayereventoutput.h"
 #include "sequenceservice.h"
+#include "sequenceutils.h"
+#include "sequencetrackevent.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerEventOutput)
 RTTI_END_CLASS
 
 namespace nap
 {
+	static bool registerDefaultTrackCreator = sequenceutils::registerDefaultTrackCreator(
+		RTTI_OF(SequencePlayerEventOutput), [](const SequencePlayerOutput* output) -> std::unique_ptr<SequenceTrack> {
+			return std::make_unique<SequenceTrackEvent>();
+		});
+
+
 	static bool registerObjectCreator = SequenceService::registerObjectCreator([](SequenceService* service)->std::unique_ptr<rtti::IObjectCreator>
 	{
 		return std::make_unique<SequencePlayerEventInputObjectCreator>(*service);

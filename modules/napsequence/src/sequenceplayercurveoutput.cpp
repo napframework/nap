@@ -1,6 +1,7 @@
 #include "sequenceplayercurveoutput.h"
 #include "sequenceservice.h"
 #include "sequenceplayercurveadapter.h"
+#include "sequenceutils.h"
 
 #include <nap/logger.h>
 
@@ -15,6 +16,33 @@ namespace nap
 	{
 		return std::make_unique<SequencePlayerCurveInputObjectCreator>(*service);
 	});
+
+
+	static bool registerDefaultTrackCreator = sequenceutils::registerDefaultTrackCreator(
+		RTTI_OF(SequencePlayerCurveOutput), [](const SequencePlayerOutput* output) -> std::unique_ptr<SequenceTrack> {
+			assert(RTTI_OF(SequencePlayerCurveOutput) == output->get_type()); // type mismatch
+
+			// cast the output to a curve output
+			const SequencePlayerCurveOutput* curve_output = static_cast<const SequencePlayerCurveOutput*>(output);
+
+			// check the parameter
+			// if its not null, check what type of parameter it is
+			if (curve_output->mParameter != nullptr)
+			{
+				// vec2? create vec2 curve, else vec3
+				if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
+				{
+					return std::make_unique<SequenceTrackCurveVec2>();
+				}
+				else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
+				{
+					return std::make_unique<SequenceTrackCurveVec3>();
+				}
+			}
+
+			// by default, always make a curve float track
+			return std::make_unique<SequenceTrackCurveFloat>();
+		});
 
 
 	SequencePlayerCurveOutput::SequencePlayerCurveOutput(SequenceService& service)
