@@ -212,6 +212,7 @@ namespace nap
 	/**
 	 * Removes all paint from paint texture in one pass
 	 * This is done by setting the inFinalMultiplier float uniform to zero, which renders all pixels in the render texture black with no alpha
+	 * Should be called after beginHeadlessRecording() and before endHeadlessRecording() on the render service
 	 */
 	void PaintObjectApp::removeAllPaint()
 	{
@@ -226,15 +227,8 @@ namespace nap
 		auto* final_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
 		final_multiplier->setValue(0.0f);
 
-		// Start recording
-		if (mRenderService->beginHeadlessRecording())
-		{
-			// Draw into the render texture
-			render_to_texture.draw();
-
-			// End recording
-			mRenderService->endHeadlessRecording();
-		}
+		// Draw into the render texture
+		render_to_texture.draw();
 	}
 
 
@@ -246,21 +240,28 @@ namespace nap
 	 */
 	void PaintObjectApp::render()
 	{
-		// Render new paint if necessary
-		if (mDrawMode && mMouseOnObject && mMouseDown)
+		// Let the render service now we are beginning to render to off-screen buffers
+		if (mRenderService->beginHeadlessRecording())
 		{
-			// Let the render service now we are beginning to render to off-screen buffers
-			if (mRenderService->beginHeadlessRecording())
+			// Clear paint if necessary
+			if( mClearPaint )
+			{
+				removeAllPaint();
+				mClearPaint = false;
+			}
+
+			// Render new paint if necessary
+			if (mDrawMode && mMouseOnObject && mMouseDown)
 			{
 				// First, render the brush
 				renderBrush();
 
 				// Now, render the new paint
 				renderPaint();
-
-				// Let the render service now we are finished rendering to off-screen buffers
-				mRenderService->endHeadlessRecording();
 			}
+
+			// Let the render service now we are finished rendering to off-screen buffers
+			mRenderService->endHeadlessRecording();
 		}
 
 		// Signal the beginning of a new frame, allowing it to be recorded.
@@ -346,7 +347,7 @@ namespace nap
 			// If 'c' is pressed, clear all paint on painted render texture
 			if (press_event->mKey == nap::EKeyCode::KEY_c)
 			{
-				removeAllPaint();
+				mClearPaint = true;
 			}
 
 			// If 'space' is down, move the camera with the mouse instead of painting on object
@@ -506,6 +507,6 @@ namespace nap
 			break;
 		}
 
-		removeAllPaint();
+		mClearPaint = true;
 	}
 }

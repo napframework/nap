@@ -121,6 +121,7 @@ namespace nap
 		bool mMouseOnObject				= false;
 		bool mMouseDown					= false;
 		bool mDrawMode					= true;
+		bool mClearPaint				= false;
 		glm::vec2 mMousePosOnObject		= glm::vec2(0, 0);
 		glm::vec4 mBrushColor			= glm::vec4(1, 0, 0, 1);
 
