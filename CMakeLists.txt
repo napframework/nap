@@ -115,6 +115,8 @@ add_subdirectory(qt)
 # tools targets
 add_subdirectory(tools/fbxconverter)
 add_subdirectory(tools/napkin)
+add_subdirectory(tools/keygen)
+add_subdirectory(tools/licensegenerator)
 
 # START_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 # executable targets
@@ -123,6 +125,8 @@ add_subdirectory(test/render)
 # app targets, add your own app targets here!
 add_subdirectory(apps/example)
 add_subdirectory(apps/example/module)
+add_subdirectory(apps/anima)
+add_subdirectory(apps/anima/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
