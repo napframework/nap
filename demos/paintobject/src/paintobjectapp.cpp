@@ -154,6 +154,7 @@ namespace nap
 
 	/**
 	 * Renders the procedurally generated brush texture which is used to draw the paint
+	 * Should be called after beginHeadlessRecording() and before endHeadlessRecording() on the render service
 	 */
 	void PaintObjectApp::renderBrush()
 	{
@@ -167,25 +168,13 @@ namespace nap
 		auto* falloff = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFalloff");
 		falloff->setValue(mBrushFalloffParam->mValue);
 
-		// Start a new frame to start headless recording
-		mRenderService->beginFrame();
-
-		// Let the renderservice now we start a headless recording
-		if (mRenderService->beginHeadlessRecording())
-		{
-			// Draw the brush
-			brush_renderer.draw();
-
-			// End headless recording
-			mRenderService->endHeadlessRecording();
-		}
-
-		// End frame
-		mRenderService->endFrame();
+		// Draw the brush
+		brush_renderer.draw();
 	}
 
 	/*
 	 * Renders the paint texture using the rendered brush
+	 * Should be called after beginHeadlessRecording() and before endHeadlessRecording() on the render service
 	 */
 	void PaintObjectApp::renderPaint()
 	{
@@ -216,21 +205,8 @@ namespace nap
 		nap::UniformFloatInstance* final_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
 		final_multiplier->setValue(1.0f);
 
-		// Let the renderservice know we begin a new frame
-		mRenderService->beginFrame();
-
-		// Begin headless recording
-		if (mRenderService->beginHeadlessRecording())
-		{
-			// Draw the render texture
-			render_to_texture.draw();
-
-			// End headless recording
-			mRenderService->endHeadlessRecording();
-		}
-
-		// End rendering
-		mRenderService->endFrame();
+		// Draw the render texture
+		render_to_texture.draw();
 	}
 
 	/**
@@ -250,9 +226,6 @@ namespace nap
 		auto* final_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
 		final_multiplier->setValue(0.0f);
 
-		// Let the renderservice know we begin a new frame
-		mRenderService->beginFrame();
-
 		// Start recording
 		if (mRenderService->beginHeadlessRecording())
 		{
@@ -262,9 +235,6 @@ namespace nap
 			// End recording
 			mRenderService->endHeadlessRecording();
 		}
-
-		// End rendering
-		mRenderService->endFrame();
 	}
 
 
@@ -279,11 +249,18 @@ namespace nap
 		// Render new paint if necessary
 		if (mDrawMode && mMouseOnObject && mMouseDown)
 		{
-			// First, render the brush
-			renderBrush();
+			// Let the render service now we are beginning to render to off-screen buffers
+			if (mRenderService->beginHeadlessRecording())
+			{
+				// First, render the brush
+				renderBrush();
 
-			// Now, render the new paint
-			renderPaint();
+				// Now, render the new paint
+				renderPaint();
+
+				// Let the render service now we are finished rendering to off-screen buffers
+				mRenderService->endHeadlessRecording();
+			}
 		}
 
 		// Signal the beginning of a new frame, allowing it to be recorded.
