@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
 	if (!signLicense(commandLine.mKey, lic_content.str(), key_loc.str(), lic_loc.str()))
 		return -1;
 
-	std::cout << "Successfully signed license" << std::endl;
+	std::cout << "Successfully created and signed license" << std::endl;
 	std::cout << "Key location:         " << key_loc.str() << std::endl;
 	std::cout << "License location:     " << lic_loc.str() << std::endl;
 
