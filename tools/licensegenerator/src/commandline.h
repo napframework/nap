@@ -30,16 +30,16 @@ public:
 		{
 			CmdLine							command					("LicenseGenerator");
 			ValueArg<std::string>			output_directory		("o",  "outdir", "Output directory (absolute)", true, "", "path_to_output_directory");
-			ValueArg<std::string>			private_key				("k",  "key", "Private key", true, "", "path_to_private_key_file");
-			ValueArg<std::string>			signature				("s",  "signature", "Application signature", true, "", "application_signature");
+			ValueArg<std::string>			private_key				("k",  "key", "Path to private key file", true, "", "path_to_private_key_file");
+			ValueArg<std::string>			application				("a",  "application", "Application name", true, "", "application_name");
 			ValueArg<std::string>			first_name				("f",  "first_name", "First name", true, "", "first_name");
 			ValueArg<std::string>			last_name				("l",  "last_name", "Last name", true, "", "last_name");
-			ValueArg<std::string>			mail					("m",  "mail", "Client mail", false, "", "client_mail");
-			ValueArg<std::string>			date					("d",  "date", "Date", false, "", "license_expiry_date, for_example: '30/12/2021'");
+			ValueArg<std::string>			mail					("m",  "mail", "Client mail address", false, "", "client_mail");
+			ValueArg<std::string>			date					("d",  "date", "Expiry date, format: day/month/year -> 30/12/2025", false, "", "expiry_date");
 
 			command.add(output_directory);
 			command.add(private_key);
-			command.add(signature);
+			command.add(application);
 			command.add(first_name);
 			command.add(last_name);
 			command.add(mail);
@@ -48,7 +48,7 @@ public:
 
 			commandLine.mOutputDirectory = output_directory.getValue();
 			commandLine.mKey  = private_key.getValue();
-			commandLine.mSignature = signature.getValue();
+			commandLine.mApplication = application.getValue();
 			commandLine.mFistName = first_name.getValue();
 			commandLine.mLastName = last_name.getValue();
 			commandLine.mMail = mail.getValue();
@@ -68,5 +68,5 @@ public:
 	std::string					mFistName;
 	std::string					mLastName;
 	std::string					mDate;
-	std::string					mSignature;
+	std::string					mApplication;
 };

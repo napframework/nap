@@ -52,22 +52,22 @@ int main(int argc, char* argv[])
 	// Signed license output file
 	std::ostringstream key_loc;
 	key_loc << commandLine.mOutputDirectory << "/" 
-		<< commandLine.mSignature << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
+		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
 		"_key.txt";
 
 	// License output file
 	std::ostringstream lic_loc;
 	lic_loc << commandLine.mOutputDirectory << "/" 
-		<< commandLine.mSignature << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
+		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
 		"_license.txt";
 
 	// Create license content
 	std::ostringstream lic_content;
 	lic_content << "LICENSE@" <<
-		commandLine.mSignature << ":" <<
-		commandLine.mFistName << "_" << commandLine.mLastName << ":" <<
-		commandLine.mMail << ":" <<
-		commandLine.mDate;
+		"application:" << commandLine.mApplication << "|" <<
+		"name:" << commandLine.mFistName << "_" << commandLine.mLastName << "|" <<
+		"mail:" << commandLine.mMail << "|" <<
+		"date:" << commandLine.mDate;
 
 	// Create license
 	if (!signLicense(commandLine.mKey, lic_content.str(), key_loc.str(), lic_loc.str()))
