@@ -114,7 +114,6 @@ namespace nap
 
 	bool LicenseService::init(utility::ErrorState& error)
 	{
-		// Get configuration and check if a license is provided
 		// Providing no license (at all) is allowed, validation will in that case always fail
 		nap::LicenseConfiguration* license_config = getConfiguration<LicenseConfiguration>();
 		mLicense = license_config->mLicense;
@@ -171,5 +170,4 @@ namespace nap
 		outDate = createTimestamp(std::stoi(parts[2]), std::stoi(parts[1]), std::stoi(parts[0]), 0, 0);
 		return true;
 	}
-
 }
