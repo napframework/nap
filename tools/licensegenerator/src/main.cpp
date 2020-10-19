@@ -15,6 +15,7 @@
 using namespace CryptoPP;
 using namespace std;
 
+constexpr const char* licenceToken = "LICENSE@";
 
 /**
  * Creates, signs and saves the license
@@ -23,7 +24,7 @@ using namespace std;
  * @param signatureFilename path to signature file
  * @param licenseFileName to license file
  */
-bool signLicense(const std::string& privFilename, const std::string& license, const std::string& signatureFilename, const std::string& licenseFileName)
+static bool signLicense(const std::string& privFilename, const std::string& license, const std::string& signatureFilename, const std::string& licenseFileName)
 {
 	try
 	{
@@ -47,8 +48,8 @@ bool signLicense(const std::string& privFilename, const std::string& license, co
 
 
 /**
- * Creates, signs and saves a license
- * Use this tool to create a signed license, based on input arguments, that is compatible with mod_naplicense.
+ * Creates, signs and saves a license.
+ * Use this tool to create a signed license that is compatible with mod_naplicense.
  *
  * Required arguments: 
  * -k	path to private key
@@ -62,6 +63,8 @@ bool signLicense(const std::string& privFilename, const std::string& license, co
  * -d	license expiry date
  * 
  * If the date is not specified the license is not bound to an end date.
+ * Output format of human readable license = '.license'
+ * Output format of signed license = '.key'
  * Returns 0 on success, -1 on failure
  *
  * Example:
@@ -80,19 +83,19 @@ int main(int argc, char* argv[])
 	std::ostringstream key_loc;
 	key_loc << commandLine.mOutputDirectory << "/" 
 		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
-		"_key.txt";
+		".key";
 
 	// License output file
 	std::ostringstream lic_loc;
 	lic_loc << commandLine.mOutputDirectory << "/" 
 		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
-		"_license.txt";
+		".license";
 
 	// Create license content
 	std::ostringstream lic_content;
-	lic_content << "LICENSE@" <<
+	lic_content << LicenceToken <<
 		"application:" << commandLine.mApplication << "|" <<
-		"name:" << commandLine.mFistName << "_" << commandLine.mLastName << "|" <<
+		"name:" << commandLine.mFistName << " " << commandLine.mLastName << "|" <<
 		"mail:" << commandLine.mMail << "|" <<
 		"date:" << commandLine.mDate;
 

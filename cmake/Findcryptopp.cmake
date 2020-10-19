@@ -32,9 +32,9 @@ endif()
 
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(etherdream REQUIRED_VARS CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DEBUG CRYPTOPP_DLL_DEBUG CRYPTOPP_LIB_RELEASE CRYPTOPP_DLL_RELEASE)
+find_package_handle_standard_args(cryptopp REQUIRED_VARS CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DEBUG CRYPTOPP_DLL_DEBUG CRYPTOPP_LIB_RELEASE CRYPTOPP_DLL_RELEASE)
  
-# Copy the etherdream dynamic linked lib into the build directory
+# Copy the cryptopp dynamic linked lib into the build directory
 macro(copy_cryptopp_dll)
     add_custom_command(
             TARGET ${PROJECT_NAME}
