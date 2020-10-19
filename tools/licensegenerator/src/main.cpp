@@ -52,13 +52,13 @@ bool signLicense(const std::string& privFilename, const std::string& license, co
  *
  * Required arguments: 
  * -k	path to private key
- * -o	output directory
  * -a	application name
- * -f	first name
- * -l	last name
+ * -f	client first name
+ * -l	client last name
+ * -o	output directory
  *
  * Optional arguments:
- * -m	mail address
+ * -m	client mail address
  * -d	license expiry date
  * 
  * If the date is not specified the license is not bound to an end date.
