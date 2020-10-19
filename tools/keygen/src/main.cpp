@@ -52,6 +52,11 @@ bool GenerateRSAKey(unsigned int keyLength, const std::string& privFilename, con
  * -s	key seed, for example the name of the app
  * -n	key name, defaults to 'key'
  * Returns 0 on success, -1 on failure
+ *
+ * Example:
+ * ~~~~~
+ * keygen.exe -n new_key -o c:/keys
+ * ~~~~~
  */
 int main(int argc, char* argv[])
 {

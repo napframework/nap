@@ -16,6 +16,13 @@ using namespace CryptoPP;
 using namespace std;
 
 
+/**
+ * Creates, signs and saves the license
+ * @param privFilename path to private key, used to sign the license
+ * @param license the license to sign and save
+ * @param signatureFilename path to signature file
+ * @param licenseFileName to license file
+ */
 bool signLicense(const std::string& privFilename, const std::string& license, const std::string& signatureFilename, const std::string& licenseFileName)
 {
 	try
@@ -40,7 +47,27 @@ bool signLicense(const std::string& privFilename, const std::string& license, co
 
 
 /**
- * Creates a signed license.
+ * Creates, signs and saves a license
+ * Use this tool to create a signed license, based on input arguments, that is compatible with mod_naplicense.
+ *
+ * Required arguments: 
+ * -k	path to private key
+ * -o	output directory
+ * -a	application name
+ * -f	first name
+ * -l	last name
+ *
+ * Optional arguments:
+ * -m	mail address
+ * -d	license expiry date
+ * 
+ * If the date is not specified the license is not bound to an end date.
+ * Returns 0 on success, -1 on failure
+ *
+ * Example:
+ * ~~~~~
+ * licensegenerator.exe -k c:/keys/key.private -f ben -l davis -a myapp -m ben@davis.com -d 30/12/2025 -o c:/license
+ * ~~~~~
  */
 int main(int argc, char* argv[])
 {
