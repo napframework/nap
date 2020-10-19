@@ -250,6 +250,7 @@ namespace nap
 		auto lock = std::unique_lock<std::mutex>(mMutex);
 		mTime = time;
 		mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
+		playerTimeChanged(mTime);
 	}
 
 
@@ -331,6 +332,7 @@ namespace nap
 							else if (mTime > mSequence->mDuration)
 							{
 								mTime = fmod(mTime, mSequence->mDuration);
+								playerTimeChanged(mTime);
 							}
 						}
 						else
