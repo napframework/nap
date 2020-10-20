@@ -17,14 +17,14 @@ using namespace std;
 
 namespace nap
 {
+	
 	namespace audio
 	{
 		
 		
-		bool readMp3File(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate,
-		                 nap::utility::ErrorState& errorState)
+		bool readMp3File(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
 		{
-			mpg123_handle* mpgHandle;
+			mpg123_handle *mpgHandle;
 			std::vector<unsigned char> buffer;
 			
 			int error;
@@ -45,12 +45,8 @@ namespace nap
 			
 			// Set the format settings for the handle
 			errorState.check(mpg123_format_none(mpgHandle) == MPG123_OK, "Error loading mp3 while setting format.");
-			errorState.check(
-					mpg123_format(mpgHandle, 44100, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK,
-					"Error loading mp3 while setting format.");
-			errorState.check(
-					mpg123_format(mpgHandle, 48000, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK,
-					"Error loading mp3 while setting format.");
+			errorState.check(mpg123_format(mpgHandle, 44100, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format.");
+			errorState.check(mpg123_format(mpgHandle, 48000, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format.");
 			
 			// Clean up when an error has occured
 			if (!errorState.toString().empty())
@@ -91,8 +87,8 @@ namespace nap
 				return false;
 			}
 			
-			output.clear();
-			output.resize(channelCount, 0);
+			auto channelOffset = output.getSize();
+			output.resize(channelOffset + channelCount, 0);
 			
 			auto formattedBuffer = reinterpret_cast<float*>(buffer.data());
 			
@@ -100,10 +96,11 @@ namespace nap
 			{
 				auto frameCount = done / (sampleSize * channelCount);
 				auto offset = output.getSize();
-				output.resize(channelCount, output.getSize() + frameCount);
+				output.resize(channelOffset + channelCount, output.getSize() + frameCount);
 				auto i = 0;
 				for (auto frame = 0; frame < frameCount; ++frame)
-					for (auto channel = 0; channel < channelCount; ++channel) {
+					for (auto channel = channelOffset; channel < channelOffset + channelCount; ++channel)
+					{
 						output[channel][offset + frame] = formattedBuffer[i];
 						i++;
 					}
@@ -118,8 +115,7 @@ namespace nap
 		}
 		
 		
-		bool readLibSndFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate,
-		                    nap::utility::ErrorState& errorState)
+		bool readLibSndFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
 		{
 			SF_INFO info;
 			
@@ -144,10 +140,11 @@ namespace nap
 			}
 			
 			// copy the read buffer into the output, also performs de-interleaving of the data into separate channels
-			output.resize(info.channels, info.frames);
+			auto channelOffset = output.getChannelCount();
+			output.resize(channelOffset + info.channels, info.frames);
 			int i = 0;
 			for (auto frame = 0; frame < info.frames; ++frame)
-				for (auto channel = 0; channel < info.channels; ++channel)
+				for (auto channel = channelOffset; channel < channelOffset + info.channels; ++channel)
 				{
 					output[channel][frame] = readBuffer[i];
 					i++;
@@ -165,8 +162,7 @@ namespace nap
 		}
 		
 		
-		bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate,
-		                   nap::utility::ErrorState& errorState)
+		bool readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState)
 		{
 			if (utility::toLower(utility::getFileExtension(fileName)) == "mp3")
 				return readMp3File(fileName, output, outSampleRate, errorState);
@@ -177,4 +173,3 @@ namespace nap
 		
 	}
 }
-
