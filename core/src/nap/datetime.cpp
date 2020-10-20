@@ -83,7 +83,7 @@ namespace nap
 		return std::string(fmtstr);
 	}
 
-	SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second, int millisecond)
+	SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second, int millisecond, bool daylightSaving)
 	{
 		std::tm tm{};
 		tm.tm_year = year - 1900;
@@ -92,6 +92,7 @@ namespace nap
 		tm.tm_hour = hour;
 		tm.tm_min = minute;
 		tm.tm_sec = second;
+		tm.tm_isdst = daylightSaving ? -1 : 0;
 		time_t time = std::mktime(&tm);
 		return std::chrono::system_clock::from_time_t(time) + std::chrono::milliseconds(millisecond);
 	}
