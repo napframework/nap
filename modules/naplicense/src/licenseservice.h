@@ -46,9 +46,9 @@ namespace nap
 		bool canExpire() const { return mExpires; }
 
 		/**
-		 * Returns if the license expired.
+		 * Returns if the license expired. Always false when the license has no expiration date
 		 * Use it at runtime to check if the license is still valid.
-		 * @return if this license expired
+		 * @return if this license expired, false when the license has no expiration date
 		 */
 		bool expired();
 	};

@@ -10,6 +10,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <unordered_map>
+#include <nap/assert.h>
 
 #ifdef _WIN32 
 	#include <dll.h>
@@ -103,13 +104,10 @@ namespace nap
 			}
 
 			// Check if it's expired
-			DateTime current_time = getCurrentDateTime();
-			if (!error.check(current_time.getTimeStamp() < expiration_date, "License expired"))
-				return false;
-
-			// Set date
-			outInformation.mTime.setTimeStamp(expiration_date);
 			outInformation.mExpires = true;
+			outInformation.mTime.setTimeStamp(expiration_date);
+			if (!error.check(!outInformation.expired(), "License expired"))
+				return false;
 		}
 		return true;
 	}
@@ -194,9 +192,7 @@ namespace nap
 	bool LicenseService::getExpirationDate(const std::string& date, SystemTimeStamp& outDate, utility::ErrorState& error)
 	{
 		std::vector<std::string> parts = utility::splitString(date, '/');
-		if (!error.check(parts.size() == 3, "%s: Invalid date, format should be: '31/12/2025'", date.c_str()))
-			return false;
-
+		NAP_ASSERT_MSG(parts.size() == 3, "invalid date format");
 		outDate = createTimestamp(std::stoi(parts[2]), std::stoi(parts[1]), std::stoi(parts[0]), 0, 0);
 		return true;
 	}
