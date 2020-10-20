@@ -49,10 +49,6 @@ namespace nap
 	{ }
 
 
-	LicenseService::~LicenseService()
-	{ }
-
-
 	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
 		// Ensure the user provided a license
@@ -106,6 +102,7 @@ namespace nap
 				return false;
 
 			// Set date
+			outInformation.mTimeStamp = expiration_date;
 			outInformation.mDate = Date(expiration_date);
 		}
 
@@ -202,5 +199,12 @@ namespace nap
 
 		outDate = createTimestamp(std::stoi(parts[2]), std::stoi(parts[1]), std::stoi(parts[0]), 0, 0);
 		return true;
+	}
+
+
+	bool LicenseInformation::expired()
+	{
+		return this->canExpire() ? 
+			getCurrentDateTime().getTimeStamp() > mTimeStamp : false;
 	}
 }

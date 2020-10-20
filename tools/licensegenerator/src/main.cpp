@@ -96,10 +96,16 @@ int main(int argc, char* argv[])
 	// Create license content
 	std::ostringstream lic_content;
 	lic_content << licenceToken <<
-		"application:" << commandLine.mApplication << "|" <<
-		"name:" << commandLine.mFistName << " " << commandLine.mLastName << "|" <<
-		"mail:" << commandLine.mMail << "|" <<
-		"date:" << commandLine.mDate;
+		"application:" << commandLine.mApplication <<
+		"|name:" << commandLine.mFistName << " " << commandLine.mLastName;
+
+	// Add mail if provided
+	if (!commandLine.mMail.empty())
+		lic_content << "|mail:" << commandLine.mMail;
+
+	// Add date if provided
+	if (!commandLine.mDate.empty())
+		lic_content << "|date:" << commandLine.mDate;
 
 	// Create license
 	if (!signLicense(commandLine.mKey, lic_content.str(), key_loc.str(), lic_loc.str()))

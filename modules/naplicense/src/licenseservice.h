@@ -34,15 +34,23 @@ namespace nap
 	 */
 	struct NAPAPI LicenseInformation
 	{
-		std::string		mName;					///< Extracted user name
-		std::string		mMail;					///< Extracted user mail
-		std::string		mApp;					///< Extracted application signature
-		Date			mDate;					///< License expiry date
+		std::string			mName;					///< Extracted user name
+		std::string			mMail;					///< Extracted user mail
+		std::string			mApp;					///< Extracted application signature
+		Date				mDate;					///< License expiry date
+		SystemTimeStamp		mTimeStamp;				///< License expiry date as system timestamp
 
 		/**
 		 * @return if the license can expire
 		 */
-		bool canExpire() const					{ return mDate.mMonth != EMonth::Unknown; }
+		bool canExpire() const { return mDate.mMonth != EMonth::Unknown; }
+
+		/**
+		 * Returns if the license expired.
+		 * Use it at runtime to check if the license is still valid.
+		 * @return if this license expired
+		 */
+		bool expired();
 	};
 
 
@@ -57,11 +65,6 @@ namespace nap
 		 *	Default constructor
 		 */
 		LicenseService(ServiceConfiguration* configuration);
-
-		/**
-		 *	Explicitly frees the yoctopuce API
-		 */
-		virtual ~LicenseService() override;
 
 		/**
 		 * Validates the user provided license using a public RSA key.
