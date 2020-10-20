@@ -37,13 +37,13 @@ namespace nap
 		std::string			mName;					///< Extracted user name
 		std::string			mMail;					///< Extracted user mail
 		std::string			mApp;					///< Extracted application signature
-		Date				mDate;					///< License expiry date
-		SystemTimeStamp		mTimeStamp;				///< License expiry date as system timestamp
+		bool				mExpires = false;		///< If this license can expire
+		DateTime			mTime;					///< License expiry date as system timestamp
 
 		/**
 		 * @return if the license can expire
 		 */
-		bool canExpire() const { return mDate.mMonth != EMonth::Unknown; }
+		bool canExpire() const { return mExpires; }
 
 		/**
 		 * Returns if the license expired.

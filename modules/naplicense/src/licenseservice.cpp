@@ -85,14 +85,20 @@ namespace nap
 				arguments.emplace(std::make_pair(argument[0], argument[1]));
 		}
 
+		// Populate standards arguments
+		setArgument(arguments, "mail", outInformation.mMail);
+		setArgument(arguments, "name", outInformation.mName);
+		setArgument(arguments, "application", outInformation.mApp);
+
 		// If an expiration date is specified check if it expired
+		outInformation.mExpires = false;
 		auto it = arguments.find("date");
 		if (it != arguments.end())
 		{
 			SystemTimeStamp expiration_date;
 			if (!getExpirationDate((*it).second, expiration_date, error))
 			{
-				error.fail("Unable to extract expiration date");
+				error.fail("Unable to extract license expiration date");
 				return false;
 			}
 
@@ -102,15 +108,9 @@ namespace nap
 				return false;
 
 			// Set date
-			outInformation.mTimeStamp = expiration_date;
-			outInformation.mDate = Date(expiration_date);
+			outInformation.mTime.setTimeStamp(expiration_date);
+			outInformation.mExpires = true;
 		}
-
-		// Populate other arguments
-		setArgument(arguments, "mail", outInformation.mMail);
-		setArgument(arguments, "name", outInformation.mName);
-		setArgument(arguments, "application", outInformation.mApp);
-
 		return true;
 	}
 
@@ -205,6 +205,6 @@ namespace nap
 	bool LicenseInformation::expired()
 	{
 		return this->canExpire() ? 
-			getCurrentDateTime().getTimeStamp() > mTimeStamp : false;
+			getCurrentDateTime().getTimeStamp() > mTime.getTimeStamp() : false;
 	}
 }
