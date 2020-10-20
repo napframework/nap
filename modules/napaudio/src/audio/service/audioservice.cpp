@@ -36,6 +36,8 @@ RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::AudioServiceConfiguration::mAllowDeviceFailure,
 		              nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HasInput", &nap::audio::AudioServiceConfiguration::mHasInput,
+		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::mBufferSize,
@@ -150,17 +152,23 @@ namespace nap
 				return false;
 			}
 			
-			if (configuration->mInputDevice.empty())
-				inputDeviceIndex = Pa_GetDefaultInputDevice();
-			else
-				inputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mInputDevice);
-			if (inputDeviceIndex < 0) {
-				if (!configuration->mAllowDeviceFailure)
-				{
-					errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
-					return false;
-				} else
-					Logger::info("Audio input device not found: %s", configuration->mInputDevice.c_str());
+			if (configuration->mHasInput == false)
+			{
+				inputDeviceIndex = -1;
+			}
+			else {
+				if (configuration->mInputDevice.empty())
+					inputDeviceIndex = Pa_GetDefaultInputDevice();
+				else
+					inputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mInputDevice);
+				if (inputDeviceIndex < 0) {
+					if (!configuration->mAllowDeviceFailure)
+					{
+						errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
+						return false;
+					} else
+						Logger::info("Audio input device not found: %s", configuration->mInputDevice.c_str());
+				}
 			}
 			
 			if (configuration->mOutputDevice.empty())

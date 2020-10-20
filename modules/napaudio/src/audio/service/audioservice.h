@@ -76,6 +76,11 @@ namespace nap
 			bool mAllowDeviceFailure = true;
 			
 			/**
+			 * If set to false the audio will start with only an output device.
+			 */
+			bool mHasInput = true;
+			
+			/**
 			 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
 			 */
 			float mSampleRate = 44100;
