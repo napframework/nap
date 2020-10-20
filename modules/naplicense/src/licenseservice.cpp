@@ -17,8 +17,7 @@
 #include <rsa.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
-	RTTI_PROPERTY("License",	&nap::LicenseConfiguration::mLicense,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Key",		&nap::LicenseConfiguration::mKey,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LicenseService)
@@ -27,7 +26,22 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	constexpr const char* LicenceToken = "LICENSE@";
+	constexpr const char* licenceToken = "LICENSE@";
+	constexpr const char* licenseExtension = "license";
+	constexpr const char* keyExtension = "key";
+
+
+	static bool findFile(const char* extension, const std::vector<std::string>& files, std::string& outFile)
+	{
+		auto it = std::find_if(files.begin(), files.end(), [&](const auto& it)
+		{
+			return utility::getFileExtension(it) == extension;
+		});
+
+		bool file_found = it != files.end();
+		outFile = file_found ? *it : "";
+		return file_found;
+	}
 
 
 	LicenseService::LicenseService(ServiceConfiguration* configuration) :
@@ -42,36 +56,28 @@ namespace nap
 	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
 		// Ensure the user provided a license
-		if (!error.check(hasLicense(), "No license provided"))
+		if (!error.check(hasLicense(), "No .%s file found in: %s", licenseExtension, mDirectory.c_str()))
 			return false;
-
-		// Ensure license exists
-		std::string lf = utility::stringFormat("%s/%s", getCore().getProjectInfo()->getProjectDir().c_str(), mLicense.c_str());
-		if (!error.check(utility::fileExists(lf), "Can't find license: %s", lf.c_str()))
-			return false;
+		assert(utility::fileExists(mLicense));
 
 		// Ensure the user provided a key
-		if (!error.check(hasKey(), "No license key provided"))
+		if (!error.check(hasKey(), "No .%s file found in: %s", keyExtension, mDirectory.c_str()))
 			return false;
-
-		// Ensure signature (key) exists
-		std::string sf = utility::stringFormat("%s/%s", getCore().getProjectInfo()->getProjectDir().c_str(), mSignature.c_str());
-		if (!error.check(utility::fileExists(lf), "Can't find license key: %s", sf.c_str()))
-			return false;
+		assert(utility::fileExists(mSignature));
 
 		// Verify license using provided public application key
-		if (!error.check(RSAVerifyFile(publicKey.getKey(), lf, sf), "Invalid license"))
+		if (!error.check(RSAVerifyFile(publicKey.getKey(), mLicense, mSignature), "Invalid license"))
 			return false;
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
 		// I am unable to first load the file to string and use that as a source for the verification operation -> runtime memory error
 		std::string user_license;
-		if (!utility::readFileToString(lf, user_license, error))
+		if (!utility::readFileToString(mLicense, user_license, error))
 			return false;
 
 		// Remove first part
-		assert(utility::startsWith(user_license, LicenceToken, true));
-		user_license.erase(0, strlen(LicenceToken));
+		assert(utility::startsWith(user_license, licenceToken, true));
+		user_license.erase(0, strlen(licenceToken));
 
 		// Split using delimiter and create map of arguments
 		std::vector<std::string> output = utility::splitString(user_license, '|');
@@ -116,8 +122,35 @@ namespace nap
 	{
 		// Providing no license (at all) is allowed, validation will in that case always fail
 		nap::LicenseConfiguration* license_config = getConfiguration<LicenseConfiguration>();
-		mLicense = license_config->mLicense;
-		mSignature = license_config->mKey;
+		
+		// Patch license directory
+		mDirectory = license_config->mDirectory;
+		getCore().getProjectInfo()->patchPath(mDirectory);
+
+		// ensure it exists
+		if (!utility::dirExists(mDirectory))
+		{
+			nap::Logger::warn("License directory does not exist: %s", mDirectory.c_str());
+			return true;
+		}
+
+		// Get all the files in that directory
+		std::vector<std::string> license_files;
+		utility::listDir(mDirectory.c_str(), license_files, true);
+
+		// Find .license file
+		if (!findFile(licenseExtension, license_files, mLicense))
+		{
+			nap::Logger::warn("Unable to find: .%s file in: %s", licenseExtension, mDirectory.c_str());
+			return true;
+		}
+
+		// Find .key file
+		if (!findFile(keyExtension, license_files, mSignature))
+		{
+			nap::Logger::warn("Unable to find: .%s file in: %s", keyExtension, mDirectory.c_str());
+			return true;
+		}
 		return true;
 	}
 

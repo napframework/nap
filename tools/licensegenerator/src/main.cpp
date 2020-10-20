@@ -16,6 +16,8 @@ using namespace CryptoPP;
 using namespace std;
 
 constexpr const char* licenceToken = "LICENSE@";
+constexpr const char* licenseExtension = "license";
+constexpr const char* keyExtension = "key";
 
 /**
  * Creates, signs and saves the license
@@ -83,17 +85,17 @@ int main(int argc, char* argv[])
 	std::ostringstream key_loc;
 	key_loc << commandLine.mOutputDirectory << "/" 
 		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
-		".key";
+		"." << keyExtension;
 
 	// License output file
 	std::ostringstream lic_loc;
 	lic_loc << commandLine.mOutputDirectory << "/" 
 		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
-		".license";
+		"." << licenseExtension;
 
 	// Create license content
 	std::ostringstream lic_content;
-	lic_content << LicenceToken <<
+	lic_content << licenceToken <<
 		"application:" << commandLine.mApplication << "|" <<
 		"name:" << commandLine.mFistName << " " << commandLine.mLastName << "|" <<
 		"mail:" << commandLine.mMail << "|" <<
