@@ -8,7 +8,7 @@ set(MODULE_NAME_EXTRA_LIBS cryptopp)
 # add_include_to_interface_target(mod_napyoctopuce ${YOCTOPUCE_INCLUDE_DIRS})
 
 if(WIN32)
-    # Add post-build step to set copy yoctopuce to bin
+    # Add post-build step to copy cryptopp to bin
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND ${CMAKE_COMMAND} 
@@ -21,4 +21,5 @@ elseif(UNIX)
     install(FILES $<TARGET_FILE:cryptopp> DESTINATION lib)
 endif()
 
-# TODO Install cryptopp license with packaged app if we find one
+# Install cryptopp license into packaged project
+install(FILES ${THIRDPARTY_DIR}/cryptopp/License.txt DESTINATION licenses/cryptopp)

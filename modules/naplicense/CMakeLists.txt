@@ -73,3 +73,6 @@ elseif(APPLE)
 else()
     install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/linux/64bits/libyocto.so.1.0.1 DESTINATION thirdparty/yoctopuce/bin)
 endif()
+
+# install crypto pp license
+install(FILES ${THIRDPARTY_DIR}/cryptopp/License.txt DESTINATION thirdparty/cryptopp)
