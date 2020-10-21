@@ -36,7 +36,7 @@ RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::AudioServiceConfiguration::mAllowDeviceFailure,
 		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HasInput", &nap::audio::AudioServiceConfiguration::mHasInput,
+	RTTI_PROPERTY("DisableInput", &nap::audio::AudioServiceConfiguration::mDisableInput,
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
 		              nap::rtti::EPropertyMetaData::Default)
@@ -152,7 +152,7 @@ namespace nap
 				return false;
 			}
 			
-			if (configuration->mHasInput == false)
+			if (configuration->mDisableInput)
 			{
 				inputDeviceIndex = -1;
 			}
