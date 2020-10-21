@@ -51,7 +51,8 @@ package_module()
 
 # Package cryptopp into platform release
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc DESTINATION thirdparty/cryptopp)
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/include DESTINATION thirdparty/cryptopp)
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/lib DESTINATION thirdparty/cryptopp)
 elseif(APPLE)
     SET(YOCTO_DYLIB ${THIRDPARTY_DIR}/yoctopuce/Binaries/osx/libyocto.dylib)
     install(FILES ${YOCTO_DYLIB} DESTINATION thirdparty/yoctopuce/bin)
