@@ -16,6 +16,16 @@ if(WIN32)
                                $<TARGET_FILE:cryptopp>
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
+
+    # TODO: Only do this on install, don't include
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} 
+                               -E copy_directory
+                               ${NAP_ROOT}/tools/license
+                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/licensegenerator
+                       )
+
 elseif(UNIX)
     # Install yoctopuce lib into packaged app
     install(FILES $<TARGET_FILE:cryptopp> DESTINATION lib)
@@ -23,3 +33,6 @@ endif()
 
 # Install cryptopp license into packaged project
 install(FILES ${THIRDPARTY_DIR}/cryptopp/License.txt DESTINATION licenses/cryptopp)
+
+# Install licensegenerator
+install(DIRECTORY ${NAP_ROOT}/tools/license DESTINATION licensegenerator)
