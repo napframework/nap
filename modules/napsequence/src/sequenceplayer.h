@@ -141,14 +141,10 @@ namespace nap
 		const Sequence& getSequenceConst() const;
 		
 		/**
-		 * Signal triggered when the player time is changed through a call to setPlayerTime()
+		 * Signal triggered when the player time changes.
+		 * This occurs either when setPlayerTime() is called or the sequence loops.
 		 */
 		Signal<double> playerTimeChanged;
-		
-		/**
-		 * Signal emitted when the sequence is looping and the end of a loop has been reached.
-		 */
-		Signal<double> loopEndReached;
 		
 	public:
 		// properties

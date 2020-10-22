@@ -332,7 +332,7 @@ namespace nap
 							else if (mTime > mSequence->mDuration)
 							{
 								mTime = fmod(mTime, mSequence->mDuration);
-								loopEndReached(mTime);
+								playerTimeChanged(mTime);
 							}
 						}
 						else
