@@ -59,22 +59,23 @@ namespace nap
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
 
+
 		//
-		std::unique_ptr<TweenHandle<float>> tween_one = mTweenService->createTween<float>(0.0f, 1.0f, 10.0f, Easing::LINEAR);
-		tween_one->UpdateSignal.connect([this](float value){
+		std::unique_ptr<TweenHandle<float>> tween_one_handle = mTweenService->createTween<float>(0.0f, 1.0f, 10.0f, TweenEasing::CUBIC_OUT);
+		Tween<float>& tween_one = tween_one_handle->getTween();
+		tween_one.UpdateSignal.connect([this](const float& value){
 		  nap::Logger::info("tween one update! %f", value);
 		});
-		tween_one->CompleteSignal.connect([this](float value){
+		tween_one.CompleteSignal.connect([this](const float& value){
 			nap::Logger::info("tween one complete! %f", value);
 		});
-		mTweens.emplace_back(std::move(tween_one));
+		mTweens.emplace_back(std::move(tween_one_handle));
 
-		std::unique_ptr<TweenHandle<glm::vec2>> tween_two = mTweenService->createTween<glm::vec2>({0, 0}, {1, 1}, 5.0f, Easing::LINEAR);
-		tween_two->UpdateSignal.connect([this](glm::vec2 value){
-			if( value.x > 0.5 )
-				mTweens.clear();
+		std::unique_ptr<TweenHandle<glm::vec2>> tween_two_handle = mTweenService->createTween<glm::vec2>({0, 0}, {1, 1}, 5.0f, TweenEasing::CUBIC_INOUT);
+		Tween<glm::vec2>& tween_two = tween_two_handle->getTween();
+		tween_two.UpdateSignal.connect([this](const glm::vec2& value){
 		});
-		mTweens.emplace_back(std::move(tween_two));
+		mTweens.emplace_back(std::move(tween_two_handle));
 
 		return true;
 	}

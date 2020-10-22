@@ -9,8 +9,9 @@
 #include <rtti/factory.h>
 
 // local includes
-#include "easing.h"
+#include "tweeneasing.h"
 #include "tween.h"
+#include "tweenhandle.h"
 
 namespace nap
 {
@@ -37,7 +38,7 @@ namespace nap
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(TweenService*));
 
 		template<typename T>
-		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, Easing easeType);
+		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, TweenEasing easeType);
 
 		/**
 		 * removes a tween
@@ -69,7 +70,7 @@ namespace nap
 	};
 
 	template<typename T>
-	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, Easing easeType)
+	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, TweenEasing easeType)
 	{
 		std::unique_ptr<Tween<T>> tween = std::make_unique<Tween<T>>(startValue, endValue, duration);
 		tween->setEase(easeType);

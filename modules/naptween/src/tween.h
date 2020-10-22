@@ -5,7 +5,7 @@
 #pragma once
 
 // internal includes
-#include "easing.h"
+#include "tweeneasing.h"
 
 // external includes
 #include <mathutils.h>
@@ -34,43 +34,18 @@ namespace nap
 
 		void update(double deltaTime) override;
 
-		void setEase(Easing easing);
+		void setEase(TweenEasing easing);
 	public:
-		Signal<T> UpdateSignal;
-		Signal<T> CompleteSignal;
+		Signal<const T&> UpdateSignal;
+		Signal<const T&> CompleteSignal;
 	private:
-		std::unique_ptr<EaseBase<T>> mEase = nullptr;
+		std::unique_ptr<TweenEaseBase<T>> mEase = nullptr;
 
 		float 	mTime = 0.0f;
 		T 		mStart;
 		T		mEnd;
 		float 	mDuration;
 		bool 	mComplete = false;
-	};
-
-	class TweenHandleBase
-	{
-	public:
-		TweenHandleBase(TweenService& tweenService);
-
-		virtual ~TweenHandleBase();
-	protected:
-		TweenService& 	mService;
-		TweenBase*		mTweenBase;
-	};
-
-	template<typename T>
-	class TweenHandle : public TweenHandleBase
-	{
-	public:
-		TweenHandle(TweenService& tweenService, Tween<T>* tween);
-
-		void setEase(Easing easing){ mTween->setEase(easing); }
-	public:
-		Signal<T>& UpdateSignal;
-		Signal<T>& CompleteSignal;
-	private:
-		Tween<T>* mTween;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -81,9 +56,6 @@ namespace nap
 	using TweenVec2 	= Tween<glm::vec2>;
 	using TweenVec3 	= Tween<glm::vec3>;
 
-	using TweenHandleFloat 	= TweenHandle<float>;
-	using TweenHandleVec2 	= TweenHandle<glm::vec2>;
-
 	//////////////////////////////////////////////////////////////////////////
 	// explicit MSVC template specialization exports
 	//////////////////////////////////////////////////////////////////////////
@@ -92,9 +64,6 @@ namespace nap
 	template class NAPAPI Tween<glm::vec2>;
 	template class NAPAPI Tween<glm::vec3>;
 
-	template class NAPAPI TweenHandle<float>;
-	template class NAPAPI TweenHandle<glm::vec2>;
-
 	//////////////////////////////////////////////////////////////////////////
 	// template definition
 	//////////////////////////////////////////////////////////////////////////
@@ -102,7 +71,7 @@ namespace nap
 	Tween<T>::Tween(T start, T end, float duration)
 		: TweenBase(), mStart(start), mEnd(end), mDuration(duration)
 	{
-		setEase(Easing::LINEAR);
+		setEase(TweenEasing::LINEAR);
 	}
 
 	template<typename T>
@@ -128,24 +97,104 @@ namespace nap
 	}
 
 	template<typename T>
-	void Tween<T>::setEase(Easing easing)
+	void Tween<T>::setEase(TweenEasing easing)
 	{
 		switch (easing)
 		{
-		case Easing::LINEAR:
-			mEase = std::make_unique<EaseLinear<T>>();
+		case TweenEasing::LINEAR:
+			mEase = std::make_unique<TweenEaseLinear<T>>();
 			break;
-		case Easing::OUT_CUBIC:
+		case TweenEasing::CUBIC_INOUT:
+			mEase = std::make_unique<TweenEaseOutCubic<T>>();
+			break;
+		case TweenEasing::CUBIC_OUT:
+			mEase = std::make_unique<TweenEaseInOutCubic<T>>();
+			break;
+		case TweenEasing::CUBIC_IN:
+			mEase = std::make_unique<TweenEaseInCubic<T>>();
+			break;
+		case TweenEasing::BACK_OUT:
+			mEase = std::make_unique<TweenEaseOutBack<T>>();
+			break;
+		case TweenEasing::BACK_INOUT:
+			mEase = std::make_unique<TweenEaseInOutBack<T>>();
+			break;
+		case TweenEasing::BACK_IN:
+			mEase = std::make_unique<TweenEaseInBack<T>>();
+			break;
+		case TweenEasing::BOUNCE_OUT:
+			mEase = std::make_unique<TweenEaseOutBounce<T>>();
+			break;
+		case TweenEasing::BOUNCE_INOUT:
+			mEase = std::make_unique<TweenEaseInOutBounce<T>>();
+			break;
+		case TweenEasing::BOUNCE_IN:
+			mEase = std::make_unique<TweenEaseInBounce<T>>();
+			break;
+		case TweenEasing::CIRC_OUT:
+			mEase = std::make_unique<TweenEaseOutCirc<T>>();
+			break;
+		case TweenEasing::CIRC_INOUT:
+			mEase = std::make_unique<TweenEaseInOutCirc<T>>();
+			break;
+		case TweenEasing::CIRC_IN:
+			mEase = std::make_unique<TweenEaseInCirc<T>>();
+			break;
+		case TweenEasing::ELASTIC_OUT:
+			mEase = std::make_unique<TweenEaseOutElastic<T>>();
+			break;
+		case TweenEasing::ELASTIC_INOUT:
+			mEase = std::make_unique<TweenEaseInOutElastic<T>>();
+			break;
+		case TweenEasing::ELASTIC_IN:
+			mEase = std::make_unique<TweenEaseInElastic<T>>();
+			break;
+		case TweenEasing::EXPO_OUT:
+			mEase = std::make_unique<TweenEaseOutExpo<T>>();
+			break;
+		case TweenEasing::EXPO_INOUT:
+			mEase = std::make_unique<TweenEaseInOutExpo<T>>();
+			break;
+		case TweenEasing::EXPO_IN:
+			mEase = std::make_unique<TweenEaseInExpo<T>>();
+			break;
+		case TweenEasing::QUAD_OUT:
+			mEase = std::make_unique<TweenEaseOutQuad<T>>();
+			break;
+		case TweenEasing::QUAD_INOUT:
+			mEase = std::make_unique<TweenEaseInOutQuad<T>>();
+			break;
+		case TweenEasing::QUAD_IN:
+			mEase = std::make_unique<TweenEaseInQuad<T>>();
+			break;
+		case TweenEasing::QUART_OUT:
+			mEase = std::make_unique<TweenEaseOutQuart<T>>();
+			break;
+		case TweenEasing::QUART_INOUT:
+			mEase = std::make_unique<TweenEaseInOutQuart<T>>();
+			break;
+		case TweenEasing::QUART_IN:
+			mEase = std::make_unique<TweenEaseInQuart<T>>();
+			break;
+		case TweenEasing::QUINT_OUT:
+			mEase = std::make_unique<TweenEaseOutQuint<T>>();
+			break;
+		case TweenEasing::QUINT_INOUT:
+			mEase = std::make_unique<TweenEaseInOutQuint<T>>();
+			break;
+		case TweenEasing::QUINT_IN:
+			mEase = std::make_unique<TweenEaseInQuint<T>>();
+			break;
+		case TweenEasing::SINE_OUT:
+			mEase = std::make_unique<TweenEaseOutSine<T>>();
+			break;
+		case TweenEasing::SINE_INOUT:
+			mEase = std::make_unique<TweenEaseInOutSine<T>>();
+			break;
+		case TweenEasing::SINE_IN:
+			mEase = std::make_unique<TweenEaseInSine<T>>();
 			break;
 		}
-	}
-
-
-	template<typename T>
-	TweenHandle<T>::TweenHandle(TweenService& tweenService, Tween<T>* tween)
-		: TweenHandleBase(tweenService), mTween(tween), UpdateSignal(tween->UpdateSignal), CompleteSignal(tween->CompleteSignal)
-	{
-		mTweenBase = tween;
 	}
 }
 

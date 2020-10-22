@@ -6,6 +6,10 @@
 
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 /**
  * From https://github.com/jesusgollonet/ofpennereasing
  */
@@ -189,7 +193,7 @@ T nap::math::Back::easeInOut(T t, T b, T c, T d)
 template <typename T>
 T nap::math::Bounce::easeIn(T t, T b, T c, T d)
 {
-	return c - easeOut(d - t, 0, c, d) + b;
+	return c - easeOut<T>(d - t, 0, c, d) + b;
 }
 
 template <typename T>
@@ -216,9 +220,9 @@ template <typename T>
 T nap::math::Bounce::easeInOut(T t, T b, T c, T d)
 {
 	if (t < d / 2)
-		return easeIn(t * 2, 0, c, d) * .5f + b;
+		return easeIn<T>(t * 2, 0, c, d) * .5f + b;
 	else
-		return easeOut(t * 2 - d, 0, c, d) * .5f + c * .5f + b;
+		return easeOut<T>(t * 2 - d, 0, c, d) * .5f + c * .5f + b;
 }
 
 template <typename T>
