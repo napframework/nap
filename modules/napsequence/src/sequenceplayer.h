@@ -12,7 +12,6 @@
 // external includes
 #include <rtti/factory.h>
 #include <nap/device.h>
-#include <nap/signalslot.h>
 #include <future>
 #include <mutex>
 
@@ -139,13 +138,6 @@ namespace nap
 		 * @return get const reference to sequence
 		 */
 		const Sequence& getSequenceConst() const;
-		
-		/**
-		 * Signal triggered when the player time changes.
-		 * This occurs either when setPlayerTime() is called or the sequence loops.
-		 */
-		Signal<double> playerTimeChanged;
-		
 	public:
 		// properties
 		std::string 			mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
