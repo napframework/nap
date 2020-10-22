@@ -17,13 +17,18 @@ namespace nap
 
 	class TweenBase
 	{
+		friend class TweenHandleBase;
 	public:
 		TweenBase();
 
 		virtual ~TweenBase();
 
 		virtual void update(double deltaTime) = 0;
-	private:
+	public:
+		Signal<> KilledSignal;
+	protected:
+		bool 	mKilled 	= false;
+		bool 	mComplete 	= false;
 	};
 
 	template<typename T>
@@ -45,7 +50,6 @@ namespace nap
 		T 		mStart;
 		T		mEnd;
 		float 	mDuration;
-		bool 	mComplete = false;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -77,6 +81,9 @@ namespace nap
 	template<typename T>
 	void Tween<T>::update(double deltaTime)
 	{
+		if(mKilled)
+			return;
+
 		if(!mComplete)
 		{
 			mTime += deltaTime;

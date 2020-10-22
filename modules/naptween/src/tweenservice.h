@@ -38,7 +38,7 @@ namespace nap
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(TweenService*));
 
 		template<typename T>
-		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, TweenEasing easeType);
+		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, TweenEasing easeType = TweenEasing::LINEAR);
 
 		/**
 		 * removes a tween
@@ -72,13 +72,17 @@ namespace nap
 	template<typename T>
 	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, TweenEasing easeType)
 	{
+		// construct tween
 		std::unique_ptr<Tween<T>> tween = std::make_unique<Tween<T>>(startValue, endValue, duration);
 		tween->setEase(easeType);
 
+		// construct handle
 		std::unique_ptr<TweenHandle<T>> tween_handle = std::make_unique<TweenHandle<T>>(*this, tween.get());
 
+		// move ownership of tween
 		mTweens.emplace_back(std::move(tween));
 
+		// return unique_ptr to handle
 		return std::move(tween_handle);
 	}
 }

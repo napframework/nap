@@ -59,6 +59,7 @@ namespace nap
 
 	void TweenService::update(double deltaTime)
 	{
+		// update tweens
 		auto itr = mTweens.begin();
 		while (itr!=mTweens.end())
 		{
@@ -66,6 +67,7 @@ namespace nap
 			++itr;
 		}
 
+		// remove any killed tweens
 		for(auto* tween : mTweensToRemove)
 		{
 			int index = -1;
