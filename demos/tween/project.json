@@ -4,12 +4,13 @@
     "Title": "Tween", 
     "Version": "1.0.0", 
     "RequiredModules": [
-        "mod_napapp", 
+        "mod_napapp",
+        "mod_naprender",
         "mod_napimgui", 
         "mod_napcameracontrol",
 		"mod_naptween"
     ], 
-    "Data": "data/helloworld.json", 
+    "Data": "data/tween.json", 
     "ServiceConfig": "", 
     "PathMapping": "cache/path_mapping.json"
 }

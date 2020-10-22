@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "helloworldapp.h"
+#include "tweenapp.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -11,8 +11,8 @@
 #include <guiappeventhandler.h>
 
 /**
- * Hello World Demo
- * refer to helloworldapp.h for a more detailed description of the application
+ * Curveball Demo.
+ * Refer to curveballapp.h for a more detailed description of the application.
  */
 int main(int argc, char *argv[])
 {
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner using default event handler
-	nap::AppRunner<nap::HelloWorldApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::TweenApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;
