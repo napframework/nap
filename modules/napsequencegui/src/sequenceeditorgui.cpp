@@ -584,10 +584,17 @@ namespace nap
 				mState.mWindowPos.y + mState.mTimelineControllerPos.y + 15.0f - mState.mScroll.y
 		};
 
-		auto* overlay_drawlist = ImGui::GetOverlayDrawList();
-		overlay_drawlist->AddLine({ pos.x, pos.y },
-								  { pos.x, pos.y + sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f },
-								  guicolors::red, 2.0f);
+		// if player position in inside the sequencer window, draw it
+		if( pos.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f && pos.x > mState.mWindowPos.x )
+		{
+			auto* overlay_drawlist = ImGui::GetOverlayDrawList();
+
+			overlay_drawlist->AddLine({ pos.x, math::max<float>( mState.mWindowPos.y + 25, pos.y ) }, // clip line to top of window,
+									  { pos.x, pos.y + math::min<float>( // clip the line to bottom of window
+														  sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f ,
+														  mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y - 25.0f)},
+									  guicolors::red, 2.0f);
+		}
 	}
 
 
