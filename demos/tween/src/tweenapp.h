@@ -77,6 +77,7 @@ namespace nap
 		glm::vec3 mTarget;
 		float mTweenDuration = 1.0f;
 		int mCurrentTweenType = 2;
+		int mCurrentTweenMode = 0;
 		std::unique_ptr<TweenHandle<glm::vec3>> mActiveTweenHandle;
 	};
 }

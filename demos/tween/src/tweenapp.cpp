@@ -63,6 +63,14 @@ const char* ease_types[] =
 	"SINE_OUT"
 };
 
+const char* tween_modes[] =
+{
+	"NORMAL",
+	"LOOP",
+	"PING_PONG",
+	"REVERSE"
+};
+
 namespace nap
 {
 	/**
@@ -159,11 +167,16 @@ namespace nap
 
 			}
 
+			if( ImGui::Combo("Mode", &mCurrentTweenMode, tween_modes, IM_ARRAYSIZE(tween_modes)))
+			{
+
+			}
+
 			if( ImGui::Button("Do Tween") )
 			{
 				auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
 				glm::vec3 sphere_position = math::extractPosition(sphere_transform.getGlobalTransform());
-				mActiveTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, mTarget, mTweenDuration, (TweenEasing)mCurrentTweenType);
+				mActiveTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, mTarget, mTweenDuration, (TweenEasing)mCurrentTweenType, (TweenMode)mCurrentTweenMode);
 				Tween<glm::vec3>& tween = mActiveTweenHandle->getTween();
 				tween.UpdateSignal.connect([this](const glm::vec3& value){
 				  	auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();

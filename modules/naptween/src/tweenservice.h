@@ -12,6 +12,7 @@
 #include "tweeneasing.h"
 #include "tween.h"
 #include "tweenhandle.h"
+#include "tweenmode.h"
 
 namespace nap
 {
@@ -38,7 +39,7 @@ namespace nap
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(TweenService*));
 
 		template<typename T>
-		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, TweenEasing easeType = TweenEasing::LINEAR);
+		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, TweenEasing easeType = TweenEasing::LINEAR, TweenMode mode = TweenMode::NORMAL);
 
 		/**
 		 * removes a tween
@@ -70,11 +71,12 @@ namespace nap
 	};
 
 	template<typename T>
-	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, TweenEasing easeType)
+	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, TweenEasing easeType, TweenMode mode)
 	{
 		// construct tween
 		std::unique_ptr<Tween<T>> tween = std::make_unique<Tween<T>>(startValue, endValue, duration);
 		tween->setEase(easeType);
+		tween->setMode(mode);
 
 		// construct handle
 		std::unique_ptr<TweenHandle<T>> tween_handle = std::make_unique<TweenHandle<T>>(*this, tween.get());

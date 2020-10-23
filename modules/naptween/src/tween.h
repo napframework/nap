@@ -6,6 +6,7 @@
 
 // internal includes
 #include "tweeneasing.h"
+#include "tweenmode.h"
 
 // external includes
 #include <mathutils.h>
@@ -40,16 +41,34 @@ namespace nap
 		void update(double deltaTime) override;
 
 		void setEase(TweenEasing easing);
+
+		void setMode(TweenMode mode);
+
+		const TweenMode getMode() const { return mMode; }
+
+		const TweenEasing getEase() const{ return mEasing; }
+
+		const float getTime() const { return mTime; }
+
+		const float getDuration() const { return mDuration; }
+
+		const T getStartValue() const { return mStart; }
+
+		const T getEndValue() const { return mEnd; }
 	public:
 		Signal<const T&> UpdateSignal;
 		Signal<const T&> CompleteSignal;
 	private:
 		std::unique_ptr<TweenEaseBase<T>> mEase = nullptr;
 
-		float 	mTime = 0.0f;
-		T 		mStart;
-		T		mEnd;
-		float 	mDuration;
+		std::function<void(double)> mUpdateFunc;
+
+		float 		mTime 		= 0.0f;
+		T 			mStart;
+		T			mEnd;
+		float 		mDuration;
+		TweenMode 	mMode 		= TweenMode::NORMAL;
+		TweenEasing mEasing 	= TweenEasing::LINEAR;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -76,6 +95,7 @@ namespace nap
 		: TweenBase(), mStart(start), mEnd(end), mDuration(duration)
 	{
 		setEase(TweenEasing::LINEAR);
+		setMode(TweenMode::NORMAL);
 	}
 
 	template<typename T>
@@ -84,28 +104,123 @@ namespace nap
 		if(mKilled)
 			return;
 
-		if(!mComplete)
+		mUpdateFunc(deltaTime);
+	}
+
+	template<typename T>
+	void Tween<T>::setMode(TweenMode mode)
+	{
+		mMode = mode;
+
+		switch (mode)
 		{
-			mTime += deltaTime;
-
-			if( mTime > mDuration )
+		case NORMAL:
+		{
+			mUpdateFunc = [this](double deltaTime)
 			{
-				mTime = mDuration;
-				mComplete = true;
+			  if(!mComplete)
+			  {
+				  mTime += deltaTime;
 
-				T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-				CompleteSignal.trigger(value);
-			}else
+				  if( mTime > mDuration )
+				  {
+					  mTime = mDuration;
+					  mComplete = true;
+
+					  T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					  CompleteSignal.trigger(value);
+				  }else
+				  {
+					  T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					  UpdateSignal.trigger(value);
+				  }
+			  }
+			};
+		}
+			break;
+		case PING_PONG:
+		{
+			float direction = 1.0f;
+			mUpdateFunc = [this, direction](double deltaTime) mutable
 			{
-				T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-				UpdateSignal.trigger(value);
-			}
+				mTime += deltaTime * direction;
+
+				if( mTime > mDuration )
+				{
+					mTime = mDuration - ( mTime - mDuration );
+					direction = -1.0f;
+
+					T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					UpdateSignal.trigger(value);
+				}else if( mTime < 0.0f )
+				{
+					mTime = -mTime;
+					direction = 1.0f;
+
+					T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					UpdateSignal.trigger(value);
+				}else
+				{
+					T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					UpdateSignal.trigger(value);
+				}
+			};
+		}
+			break;
+		case LOOP:
+		{
+			mUpdateFunc = [this](double deltaTime)
+			{
+				if(!mComplete)
+				{
+					mTime += deltaTime;
+
+					if( mTime > mDuration )
+					{
+						mTime = mDuration - mTime;
+
+						T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+						UpdateSignal.trigger(value);
+					}else
+					{
+						T value = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+						UpdateSignal.trigger(value);
+					}
+				}
+			};
+		}
+			break;
+		case REVERSE:
+		{
+			mUpdateFunc = [this](double deltaTime)
+			{
+				if(!mComplete)
+				{
+					mTime += deltaTime;
+
+					if( mTime > mDuration )
+					{
+					  	mTime = mDuration;
+
+					  	T value = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
+					  	CompleteSignal.trigger(value);
+					}else
+					{
+					  	T value = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
+					  	UpdateSignal.trigger(value);
+					}
+				}
+			};
+		}
+			break;
 		}
 	}
 
 	template<typename T>
 	void Tween<T>::setEase(TweenEasing easing)
 	{
+		mEasing = easing;
+
 		switch (easing)
 		{
 		case TweenEasing::LINEAR:
