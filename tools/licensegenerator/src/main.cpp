@@ -11,9 +11,12 @@
 #endif
 #include <rsa.h>
 #include <validate.h>
+#include <chrono>
 
 using namespace CryptoPP;
 using namespace std;
+using SystemClock = std::chrono::system_clock;
+using SystemTimeStamp = std::chrono::time_point<SystemClock>;
 
 constexpr const char* licenceToken = "LICENSE@";
 constexpr const char* licenseExtension = "license";
@@ -196,6 +199,15 @@ int main(int argc, char* argv[])
 			return -1;
 		lic_content << "|date:" << commandLine.mDate;
 	}
+
+	// Add tag (additional information) if provided
+	if (!commandLine.mTag.empty())
+		lic_content << "|tag:" << commandLine.mTag;
+
+	// Add issue time -> minutes since epoch
+	SystemTimeStamp ctime = SystemClock::now();
+	auto seconds = std::chrono::time_point_cast<std::chrono::minutes>(ctime);
+	lic_content << "|issued:" << seconds.time_since_epoch().count();
 
 	// Create license
 	if (!signLicense(commandLine.mKey, lic_content.str(), key_loc.str(), lic_loc.str()))

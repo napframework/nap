@@ -31,7 +31,6 @@ namespace nap
 	constexpr const char* licenseExtension = "license";
 	constexpr const char* keyExtension = "key";
 
-
 	static bool findFile(const char* extension, const std::vector<std::string>& files, std::string& outFile)
 	{
 		auto it = std::find_if(files.begin(), files.end(), [&](const auto& it)
@@ -86,10 +85,28 @@ namespace nap
 				arguments.emplace(std::make_pair(argument[0], argument[1]));
 		}
 
+		// Get issue date (minutes since epoch)
+		auto issue_it = arguments.find("issued");
+		if (!error.check(issue_it != arguments.end(), "License has no issue date"))
+			return false;
+
+		// Convert to system time
+		std::chrono::minutes dur(std::stoi((*issue_it).second));
+		SystemTimeStamp stamp_issued(dur);
+
+		// If the current system time is less than the license issue time,
+		// someone tried to reverse the clock or clock is not up to date
+		if (!error.check(getCurrentTime() >= stamp_issued, "License expired"))
+		{
+			error.fail("Your system clock is not up to date");
+			return false;
+		}
+
 		// Populate standards arguments
 		setArgument(arguments, "mail", outInformation.mMail);
 		setArgument(arguments, "name", outInformation.mName);
 		setArgument(arguments, "application", outInformation.mApp);
+		setArgument(arguments, "tag", outInformation.mTag);
 
 		// If an expiration date is specified check if it expired
 		outInformation.mExpires = false;
@@ -109,6 +126,7 @@ namespace nap
 			if (!error.check(!outInformation.expired(), "License expired"))
 				return false;
 		}
+
 		return true;
 	}
 
