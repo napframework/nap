@@ -210,7 +210,8 @@ STRIP_FROM_INC_PATH    = $(NAP_WORKING_DIR)\core\src \
                          $(NAP_WORKING_DIR)\modules\napyoctopuce\src \
                          $(NAP_WORKING_DIR)\utility\src \
                          $(NAP_WORKING_DIR)\modules\napsoem\src \
-                         $(NAP_WORKING_DIR)\modules\napcolor\src
+                         $(NAP_WORKING_DIR)\modules\napcolor\src \
+                         $(NAP_WORKING_DIR)\modules\napsequence\src
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter (but
 # less readable) file names. This can be useful is your file systems doesn't
@@ -947,7 +948,9 @@ EXCLUDE                = ..\..\napkin \
                          ..\..\packaging_lib \
                          ..\..\packaging_staging \
                          ../../modules/naprender/src/vk_mem_alloc.cpp \
-                         ../../modules/naprender/src/vk_mem_alloc.h
+                         ../../modules/naprender/src/vk_mem_alloc.h \
+                         ../../license.md \
+                         ../for_source_readme-what_is_where.md
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1066,7 +1069,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE =
+USE_MDFILE_AS_MAINPAGE = main.md
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing

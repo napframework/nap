@@ -1,11 +1,15 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <rttr/type>
 #include <rttr/registration>
 #ifdef NAP_ENABLE_PYTHON
-	#include "rtti/pythonmodule.h"
+	#include "pythonmodule.h"
 #endif
-#include "utility/dllexport.h"
+#include <utility/dllexport.h>
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.

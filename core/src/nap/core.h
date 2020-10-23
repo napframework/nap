@@ -1,8 +1,16 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// std includes
-#include <unordered_map>
-#include <vector>
+// Local Includes
+#include "modulemanager.h"
+#include "resourcemanager.h"
+#include "service.h"
+#include "timer.h"
+#include "coreextension.h"
+#include "projectinfo.h"
 
 // External Includes
 #include <rtti/factory.h>
@@ -10,14 +18,8 @@
 #include <rtti/deserializeresult.h>
 #include <unordered_set>
 #include <utility/dllexport.h>
-
-// Core Includes
-#include "modulemanager.h"
-#include "resourcemanager.h"
-#include "service.h"
-#include "timer.h"
-#include "coreextension.h"
-#include "projectinfo.h"
+#include <unordered_map>
+#include <vector>
 
 // Default name to use when writing the file that contains all the settings for the NAP services.
 constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
@@ -129,9 +131,9 @@ namespace nap
 		 *
 		 * It is therefore required that core is able to find and load the provided project.json file that contains a 'nap::ProjectInfo' resource.
 		 *
-         * @param context whether initializing for project or Napkin
+		 * @param projectInfofile absolute path to the project file on disk.
+		 * @param context whether initializing for application or editor
 		 * @param error contains the error code when initialization fails
-		 * @param projectInfo Use this instead of automatically loading the project info, used in editor mode.
 		 * @return if initialization succeeded
 		 */
 		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
@@ -263,8 +265,7 @@ namespace nap
         /**
          * Load path mapping file and replace any template vars with their respective values
          * @param projectInfo The current project info
-         * @param editorMode True if this is invoked from Napkin, false otherwise
-         * @param err The resulting errors if there were any
+         * @param err Contains the error if the path mapping operation failed
          * @return The path mapping that was loaded or nullptr if loading failed
          */
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);

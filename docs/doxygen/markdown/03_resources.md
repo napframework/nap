@@ -23,7 +23,7 @@ Resources are small stand-alone building blocks that can be added to your applic
 	"Objects" : 
 	[
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "BackgroundImage",
 			"ImagePath" : "background.jpg"
 		},

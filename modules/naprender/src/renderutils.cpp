@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // External Includes
 #include <renderservice.h>
 
@@ -5,7 +9,6 @@
 #include "renderutils.h"
 
 RTTI_BEGIN_ENUM(nap::ERasterizationSamples)
-	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One,		"One"),
 	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Two,		"Two"),
 	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Four,		"Four"),
 	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Eight,		"Eight"),

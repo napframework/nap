@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "videoaudiocomponent.h"
 
 // External Includes
@@ -26,7 +30,7 @@ namespace nap
 			// Create resources
             audio::VideoAudioComponent* resource = getComponent<VideoAudioComponent>();
             audio::AudioService& audioService = getAudioService();
-            mNode = audioService.makeSafe<VideoNode>(audioService.getNodeManager(), resource->mChannelCount, resource->mProcessAudio);
+            mNode = audioService.getNodeManager().makeSafe<VideoNode>(audioService.getNodeManager(), resource->mChannelCount, resource->mProcessAudio);
 
 			// Listen to video changes
 			mVideoPlayer = resource->mVideoPlayer.get();

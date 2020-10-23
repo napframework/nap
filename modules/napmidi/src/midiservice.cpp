@@ -1,11 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "midiservice.h"
-
-#include <nap/logger.h>
-#include <utility/stringutils.h>
-
 #include "midiinputport.h"
 #include "midioutputport.h"
 #include "midiinputcomponent.h"
+
+#include <nap/logger.h>
+#include <utility/stringutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)

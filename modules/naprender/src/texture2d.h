@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -110,7 +114,7 @@ namespace nap
 		 * Uploads CPU data to the texture on the GPU.
 		 * Note that you can only update the contents of a texture once if 'Usage' is 'DynamicRead' or 'Static'.
 		 * @param data pointer to the CPU data.
-		 * @param descriptor texture description.
+		 * @param surfaceDescriptor texture description.
 		 */
 		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 

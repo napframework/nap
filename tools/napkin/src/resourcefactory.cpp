@@ -1,10 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "resourcefactory.h"
+#include "napkin-resources.h"
 
 #include <nap/logger.h>
 #include <entity.h>
 #include <scene.h>
-
-#include "napkin-resources.h"
 
 using namespace nap;
 using namespace nap::rtti;

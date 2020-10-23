@@ -1,11 +1,15 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
 #include "numeric.h"
-#include "utility/dllexport.h"
-#include "utility/errorstate.h"
 
 // External Includes
+#include <utility/dllexport.h>
+#include <utility/errorstate.h>
 #include <rtti/object.h>
 #include <rtti/factory.h>
 #include <set>

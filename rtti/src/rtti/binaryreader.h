@@ -1,16 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// NAP includes
+// Local includes
+#include "rtti.h"
+#include "path.h"
+#include "deserializeresult.h"
+
+// External includes
 #include <utility/memorystream.h>
-#include "utility/dllexport.h"
-
-
-// RTTI includes
-#include <rtti/rtti.h>
-#include <rtti/path.h>
-#include <rtti/deserializeresult.h>
-
-// STL includes
+#include <utility/dllexport.h>
 #include <string>
 
 namespace nap

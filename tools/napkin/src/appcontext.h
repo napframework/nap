@@ -1,24 +1,28 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-#include <vector>
 
+#include "thememanager.h"
+#include "document.h"
+#include "resourcefactory.h"
+
+#include <vector>
 #include <QApplication>
 #include <QObject>
 #include <QProgressDialog>
 #include <QUndoCommand>
 #include <QMainWindow>
 
+#include <nap/projectinfo.h>
 #include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <entity.h>
 #include <QtCore/QSettings>
-
-#include "thememanager.h"
-#include "document.h"
-#include "resourcefactory.h"
-#include "nap/projectinfo.h"
 
 namespace napkin
 {

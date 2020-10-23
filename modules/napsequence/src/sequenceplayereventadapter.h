@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // local includes
@@ -23,13 +27,13 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param track reference to sequence event track
-		 * @param receiver reference to event receiver
-		 * @param time at which adapter is created
+		 * @param output reference to event receiver
+		 * @param player reference to the sequence player
 		 */
 		SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player);
 
 		/**
-		 * Deconstructor
+		 * Destructor
 		 */
 		virtual ~SequencePlayerEventAdapter() {}
 

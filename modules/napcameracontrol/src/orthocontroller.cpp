@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "orthocontroller.h"
 #include "inputevent.h"
 #include "inputcomponent.h"
@@ -7,7 +11,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-
 
 RTTI_BEGIN_CLASS(nap::OrthoController)
 	RTTI_PROPERTY("ZoomSpeed",				&nap::OrthoController::mZoomSpeed,				nap::rtti::EPropertyMetaData::Default)

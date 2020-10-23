@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -69,8 +73,8 @@ namespace nap
 		/**
 		 * This method decodes and returns the just grabbed frame.
 		 * @param captureDevice the device to capture the frame from.
-		 * @param outFrame contains the new decoded frame
-		 * @return if decoding succeeded.
+		 * @param error contains the error if the decoding operation failed
+		 * @return decoded frame, empty if operation failed
 		 */
 		virtual CVFrame onRetrieve(cv::VideoCapture& captureDevice, utility::ErrorState& error) override;
 

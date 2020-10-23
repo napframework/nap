@@ -29,6 +29,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "ReadOnly"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -118,6 +119,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,

@@ -79,7 +79,7 @@ To follow this example it's good to read the high level [system](@ref system) do
 
 Some parts might look familiar, others are new. The most important new parts are the material, render and rotate component. The rotate component rotates the sphere along the y axis, the render component ties a renderable [mesh](@ref nap::IMesh) to a material. Every material points to a shader. The material is applied to the mesh before being rendered to (in this case) the screen. You will notice that the actual application will contain almost no code, most of the functionality is defined by the various objects and components. The only thing we have to do is tell the renderer to render the sphere using a particular camera.
 
-But let's begin by defining some of the resources in JSON. Alternatively you can use [Napkin](@ref napkin), our JSON editor:
+But let's begin by defining some of the resources in JSON. Make sure to use [Napkin](@ref napkin) (our JSON editor) to do this for you:
 
 ```
 {
@@ -90,7 +90,9 @@ But let's begin by defining some of the resources in JSON. Alternatively you can
     "Visible": true,
     "Title": "Window 1",
     "Width": 1280,
-    "Height": 720
+    "Height": 720,
+   	"Mode": "Immediate",
+   	"Samples": "Four"
 },
 {
 	"Type": "nap::ImageFromFile",
@@ -100,10 +102,10 @@ But let's begin by defining some of the resources in JSON. Alternatively you can
 	"GenerateLods": true
 },
 {
-	"Type" : "nap::Shader",
+	"Type" : "nap::ShaderFromFile",
 	"mID": "WorldShader",
-	"mVertShader": "shaders/world.vert",
-	"mFragShader": "shaders/world.frag"
+	"VertShader": "shaders/world.vert",
+	"FragShader": "shaders/world.frag"
 },
 {
 	"Type": "nap::SphereMesh",
@@ -526,15 +528,13 @@ The [mesh data usage flag](@ref nap::EMeshDataUsage) determines how the mesh dat
 Text {#text}
 =======================
 
-Rendering text is similar to rendering meshes. Text also needs a [material](@ref nap::Material) but instead of a mesh every [component](@ref nap::Renderable2DTextComponent) that can draw text links to a [font](@ref nap::Font). You can change text at runtime by calling setText() or declare a line of text in json.
+Rendering text is similar to rendering meshes, but instead of a mesh every [component](@ref nap::Renderable2DTextComponent) that can draw text links to a [font](@ref nap::Font). You can change text at runtime by calling setText() or declare a line of text in json.
 
 The [font resource](@ref nap::Font) loads a font file from disk. All well known font formats are supported, including ttf en otf. Fonts can scale up to any size and are always rendered in their native resolution when using the [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent). This ensures a perfect text representation at every size.
 
 There are currently two components that can draw text to screen: [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent) and [Renderable3DTextComponent](@ref nap::Renderable3DTextComponent). When rendering text in screen space use the 2D version, when placing text somewhere in the world use the 3D version.
 
-The [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent) has a draw call that can be used to draw text directly at a specific location. The provided coordinates are in screen space (pixels), where 0,0 is the bottom left corner of your screen or back-buffer. Alternatively you can use the [render service](@ref nap::RenderService) to render your 2D text. This is similar to rendering meshes. 3D text is always rendered using the render-service.
-
-The component that renders text expects to find a texture uniform on the material called 'glyph'. If that uniform is not available your application will not start because the component can not bind the requested [glyph](@ref nap::Glyph) (character) to the material. It is also important to set the blend mode of the material to [AlphaBlend](@ref nap::EBlendMode). This ensures that text is rendered as a transparent object. 
+The [Renderable2DTextComponent](@ref nap::Renderable2DTextComponent) has a draw call that can be used to draw text directly at a specific location. The provided coordinates are in screen space (pixels), where 0,0 is the bottom left corner of your screen or back-buffer. Alternatively you can use the [render service](@ref nap::RenderService) to render your 2D text. This is similar to rendering meshes. 3D text is always rendered using the render-service. The component that renders text uses it's own hard coded [shader](@ref nap::FontShader) so you don't have to link in a custom material.
 
 The HelloWorld demo shows you how to set this up.
 
@@ -1026,14 +1026,12 @@ void MultiWindowApp::render()
 Offscreen Rendering {#offscreen_rendering}
 =======================
 
-Often you want to render a selection of objects to a texture instead of a screen. But you can't render to a texture directly, you need a [render target](@ref nap::RenderTarget) to do that for you. To see how this works take a look at the video modulation demo. In this demo a video is applied to a plane and rendered to a texture. This texture is used as an input for two materials. 
-
-Every render target requires a link to a color texture. The result of the render step is stored in the texture. You can declare a render target in JSON just like any other resource:
+Often you want to render a selection of objects to a texture instead of a screen. But you can't render to a texture directly, you need a [render target](@ref nap::RenderTarget) to do that for you. Every render target requires a link to a color texture. The result of the render step is stored in the texture. You can declare a render target in JSON just like any other resource:
 
 ```
 {
     "Type": "nap::RenderTexture2D",
-    "mID": "VideoColorTexture",
+    "mID": "OutputColorTexture",
     "Usage": "Static",
     "Width": 1920,
     "Height": 1080,
@@ -1051,7 +1049,7 @@ Every render target requires a link to a color texture. The result of the render
         "z": 0.0,
     	"w": 1.0
     },
-   	"ColorTexture": "VideoColorTexture"
+   	"ColorTexture": "OutputColorTexture"
 }
 ```
 
@@ -1067,7 +1065,7 @@ void VideoModulationApp::render()
 	// Start recording into the headless recording buffer.
 	if (mRenderService->beginHeadlessRecording())
 	{
-		// Render the video into the video target
+		// Render into the render target
 		mVideoRenderTarget->beginRendering();
 		...
 		mVideoRenderTarget->endRendering();
@@ -1081,7 +1079,7 @@ void VideoModulationApp::render()
 }
 ~~~~~~~~~~~~~~~
 
-Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component renders directly to a texture without having to define a render target or mesh and can be used to apply a 'post process' render step. The video modulation demo uses this component to convert the video output into a greyscale texture.
+Alternatively you can use the [RenderToTextureComponent](@ref nap::RenderToTextureComponent). This component allows you to render to a texture directly in screen space, without the need to define a render target or mesh, and can be used to apply a 'post process' render step. The video modulation demo uses this component to convert the output of a video player into a greyscale texture.
 
 Cameras {#cameras}
 =======================

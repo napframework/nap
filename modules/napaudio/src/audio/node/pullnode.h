@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Std includes
@@ -5,58 +9,47 @@
 
 // Audio includes
 #include <audio/core/audionode.h>
+#include <audio/utility/safeptr.h>
+#include <audio/core/process.h>
 
 namespace nap
 {
-    
-    namespace audio
-    {
-    
-        
-        // Forward declarations
-        class AudioService;
-        
-        /**
-         * Node to pull its input without doing anything with it, just to make sure it's processed.
-         * This is handy in order to simulate multispeaker applications processing load properly without needing the actual outputs.
-         * The PullNode is a root node that will be directly processed by the node manager.
-         */
-        class NAPAPI PullNode final : public Node
-        {
-            RTTI_ENABLE(Node)
-        public:
-            /**
-             * @param nodeManager: The manager this node provides output to.
-             * @param active: true if the node is active and being processed from the moment of creation.
-             */
-            PullNode(NodeManager& nodeManager, bool active = true);
-            
-            ~PullNode() override final;
-            
-            /**
-             * The processing chain connected to this input will be processed even when not being used for anything.
-             */
-            InputPin audioInput;
-            
-            /**
-             * Sets wether the node will be processed by the audio node manager.
-             * On creation the node is inactive by default.
-             */
-            void setActive(bool active) { mActive = true; }
-            
-            /**
-             * @return: true if the node is currently active and thus being processed (triggered) on every callback.
-             */
-            bool isActive() const { return mActive; }
-            
-        private:
-            void process() override;
-            
-            std::atomic<bool> mActive = { true };
-        };
-        
-        
-    }
+	namespace audio
+	{
+		
+		// Forward declarations
+		class AudioService;
+		
+		/**
+		 * Node to pull its input without doing anything with it, just to make sure it's processed.
+		 * This is handy in order to simulate multispeaker applications processing load properly without needing the actual outputs.
+		 * The PullNode is a root node that will be directly processed by the node manager.
+		 */
+		class NAPAPI PullNode final : public Node
+		{
+			RTTI_ENABLE(Node)
+		public:
+			/**
+			 * @param nodeManager: The node manager this node runs on
+			 * @param rootProcess: true if the node registered as root process and processed from creation.
+			 */
+			PullNode(NodeManager& nodeManager, bool rootProcess = true);
+			
+			~PullNode() override final;
+			
+			/**
+			 * The processing chain connected to this input will be processed even when not being used for anything.
+			 */
+			InputPin audioInput = {this};
+		
+		private:
+			void process() override;
+			
+			bool mRootProcess = false;
+		};
+		
+		
+	}
 }
 
 

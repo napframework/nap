@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -33,9 +37,11 @@ namespace nap
 		DECLARE_COMPONENT(RenderVideoComponent, RenderVideoComponentInstance)
 	public:
 
-		ResourcePtr<VideoPlayer>		mVideoPlayer = nullptr;				///< Property: 'VideoPlayer' the video player to render to texture
-		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;			///< Property: 'OutputTexture' the RGB8 texture to render output to
-		RGBColor8						mClearColor = { 255, 255, 255 };	///< Property: 'ClearColor' the color that is used to clear the render target
+		bool							mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
+		ResourcePtr<VideoPlayer>		mVideoPlayer = nullptr;								///< Property: 'VideoPlayer' the video player to render to texture
+		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;							///< Property: 'OutputTexture' the RGB8 texture to render output to
+		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'.
+		RGBColor8						mClearColor = { 255, 255, 255 };					///< Property: 'ClearColor' the color that is used to clear the render target
 	};
 
 

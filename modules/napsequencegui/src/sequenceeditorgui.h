@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // internal includes
@@ -66,6 +70,8 @@ namespace nap
 		 * Constructor
 		 * @param editor reference to editor
 		 * @param id id of the GUI resource, used to push ID by IMGUI
+		 * @param renderWindow the render window
+		 * @param drawFullWindow if the editor occupies the entire window space
 		 */
 		SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "rendervideocomponent.h"
 #include "videoshader.h"
@@ -12,8 +16,10 @@
 
 // nap::rendervideototexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderVideoComponent)
+	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SampleShading",	&nap::RenderVideoComponent::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -69,7 +75,9 @@ namespace nap
 
 		// Setup render target and initialize
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
-		mTarget.mColorTexture = resource->mOutputTexture;
+		mTarget.mColorTexture  = resource->mOutputTexture;
+		mTarget.mSampleShading = resource->mSampleShading;
+		mTarget.mRequestedSamples = resource->mRequestedSamples;
 		if (!mTarget.init(errorState))
 			return false;
 

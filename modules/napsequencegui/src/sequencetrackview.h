@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -31,11 +35,12 @@ namespace nap
 		/**
 		 * Constructor
 		 * @param view reference to view
+		 * @param state object that contains the active gui state
 		 */
 		SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
 		/**
-		 * Deconstructor
+		 * Destructor
 		 */
         virtual ~SequenceTrackView(){};
         

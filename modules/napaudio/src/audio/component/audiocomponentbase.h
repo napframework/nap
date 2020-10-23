@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Nap includes
@@ -7,67 +11,60 @@
 
 // Audio includes
 #include <audio/core/audionode.h>
+#include <audio/core/multichannel.h>
 
 namespace nap
 {
-    
-    namespace audio
-    {
-    
-        class AudioService;
-        class AudioComponentBaseInstance;
-        
-        
-        /**
-         * Component that generates audio output for one or more channels.
-         */
-        class NAPAPI AudioComponentBase : public Component
-        {
-            RTTI_ENABLE(nap::Component)
-            DECLARE_COMPONENT(AudioComponent, AudioComponentBaseInstance)
-            
-        public:
-            AudioComponentBase() : nap::Component() { }
-
-        private:
-        };
-
-        
-        /**
-         * Instance of a component that generates audio output for one or more channels.
-         */
-        class NAPAPI AudioComponentBaseInstance : public ComponentInstance
-        {
-            RTTI_ENABLE(nap::ComponentInstance)
-            
-        public:
-            AudioComponentBaseInstance(EntityInstance& entity, Component& resource);
-            
-            /**
-             * Override this method to specify the number of audio channels output by this component.
-             */
-            virtual int getChannelCount() const = 0;
-            
-            /**
-             * Override this to return the output pin that outputs audio data for the specified channel.
-             */
-            virtual OutputPin& getOutputForChannel(int channel) = 0;
-            
-        protected:
-            /**
-             * Returns the node system's node manager that the audio runs on
-             */
-            NodeManager& getNodeManager();
-            
-            /**
-             * Returns the audio service
-             */
-            AudioService& getAudioService() { return *mAudioService; }
-            
-        private:
-            AudioService* mAudioService = nullptr;
-        };
-
-    }
-        
+	namespace audio
+	{
+		
+		// Forward declarations
+		class AudioService;
+		
+		class AudioComponentBaseInstance;
+		
+		
+		/**
+		 * Component that generates audio output for one or more channels.
+		 * Note: does not send the audio to de DAC yet, in order to do this add an OutputComponent as well.
+		 */
+		class NAPAPI AudioComponentBase : public Component
+		{
+			RTTI_ENABLE(nap::Component)
+			DECLARE_COMPONENT(AudioComponent, AudioComponentBaseInstance)
+		
+		public:
+			AudioComponentBase() : nap::Component()
+			{}
+		
+		private:
+		};
+		
+		
+		/**
+		 * Instance of a component that generates audio output for one or more channels.
+		 */
+		class NAPAPI AudioComponentBaseInstance : public ComponentInstance, public IMultiChannelOutput
+		{
+		RTTI_ENABLE(nap::ComponentInstance)
+		
+		public:
+			AudioComponentBaseInstance(EntityInstance& entity, Component& resource);
+		
+		protected:
+			/**
+			 * @return the node system's node manager that the audio runs on
+			 */
+			NodeManager& getNodeManager();
+			
+			/**
+			 * Returns the audio service
+			 */
+			AudioService& getAudioService() { return *mAudioService; }
+		
+		private:
+			AudioService* mAudioService = nullptr;
+		};
+		
+	}
 }

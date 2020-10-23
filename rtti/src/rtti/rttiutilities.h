@@ -1,13 +1,19 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// RTTI Includes
-#include <rtti/rtti.h>
-#include <vector>
-#include <unordered_set>
+// Local Includes
 #include "path.h"
 #include "factory.h"
 #include "unresolvedpointer.h"
-#include "utility/dllexport.h"
+
+// External Includes
+#include <rtti/rtti.h>
+#include <vector>
+#include <unordered_set>
+#include <utility/dllexport.h>
 
 namespace nap
 {

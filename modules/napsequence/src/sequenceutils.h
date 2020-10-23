@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // internal includes
@@ -23,7 +27,7 @@ namespace nap
 
 		/**
 		 * creates a default sequence based on given outputs
-		 * @param createdObject a reference to a vector that will be filled with unique pointers of created objects
+		 * @param createdObjects a reference to a vector that will be filled with unique pointers of created objects
 		 * @param objectIDs a list of unique ids, used to created unique ids for each object in this sequence
 		 * @param outputs a list of player outputs
 		 * @return a raw pointer to the newly created sequence, ownership of sequence is stored as a unique pointer in createdObjects

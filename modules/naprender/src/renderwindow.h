@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -174,8 +178,8 @@ namespace nap
 		virtual void setClearColor(const glm::vec4& color) override;
 
 		/**
-		 * Sets the window clear color.
-		 * @param color the new clear color
+		 * Returns the window clear color.
+		 * @return the window clear color.
 		 */
 		virtual const glm::vec4& getClearColor() const override;
 
@@ -235,7 +239,7 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 		
 		/**
-		 * @return current number of MSAA samples used when rendering to the window.
+		 * @return used number of samples when rendering to the window.
 		 */
 		virtual VkSampleCountFlagBits getSampleCount() const override				{ return mRasterizationSamples; }
 		
@@ -254,7 +258,7 @@ namespace nap
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
-		bool					mSampleShading	= true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		bool					mSampleShading	= true;									///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		int						mWidth			= 512;										///< Property: 'Width' of the window in pixels
 		int						mHeight			= 512;										///< Property: 'Height' of the window in pixels
 		bool					mBorderless		= false;									///< Property: 'Borderless' if the window has any borders
@@ -262,8 +266,8 @@ namespace nap
 		bool					mVisible		= true;										///< Property: 'Visible' if the render window is visible on screen
 		EPresentationMode		mMode			= EPresentationMode::Immediate;				///< Property: 'Mode' the image presentation mode to use
 		std::string				mTitle			= "";										///< Property: 'Title' window title
-		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };	///< Property: 'ClearColor' background clear color
-		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;			///< Property: 'Samples' Controls the number of samples used during Rasterization. For even better results enable 'SampleShading'.
+		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };				///< Property: 'ClearColor' background clear color
+		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;			///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
 		int						mAddedSwapImages = 1;										///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 
 	private:

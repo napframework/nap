@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include "sequencecontroller.h"
@@ -24,7 +28,7 @@ namespace nap
 		 * @param trackID the id of the track
 		 * @param segmentID the id of the segment we need to edit
 		 * @param duration the new duration
-		 * @param new duration of segment
+		 * @return new duration of segment
 	 	 */
 		double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
 
@@ -32,7 +36,7 @@ namespace nap
 		 * changes start time of segment
 		 * @param trackID the trackID of track containing segment
 		 * @param segmentID the segmentID
-		 * @param value the new start time
+		 * @param time the new start time
 		 */
 		void segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
 	
@@ -46,7 +50,7 @@ namespace nap
 		 * changes start or end value of segment of type T
 		 * @param trackID the track id
 		 * @param segmentID id of segment
-		 * @param the new value
+		 * @param newValue the new value
 		 * @param curveIndex the curve index of the value
 		 * @param valueType the segment value type ( first or last value )
 		 */
@@ -106,7 +110,7 @@ namespace nap
 		 * changes curvetype ( linear or bezier )
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
-		 * @param curveType the new curve type
+		 * @param type the new curve type
 		 */
 		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type);
 

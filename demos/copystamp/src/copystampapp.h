@@ -1,9 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local includes
 #include "copystampapp.h"
 
-// Nap includes
+// External Includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
 #include <renderservice.h>
@@ -19,7 +23,7 @@ namespace nap
 
 	/**
 	 * Demo application that is called from within the main loop.
-	 * Note that this demo won't run well on integrated graphics cards!
+	 * Note that this demo does not run well in Debug mode!
 	 *
 	 * This demo application shows you how to write a custom nap::RenderableComponent.
 	 * The component in this demo (nap::RenderableCopyMeshComponent) copies 3D meshes onto the vertices of a reference mesh.

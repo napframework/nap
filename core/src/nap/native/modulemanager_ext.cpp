@@ -1,11 +1,15 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
-#include "nap/modulemanager.h"
-#include "nap/logger.h"
-#include "nap/module.h"
-#include "nap/core.h"
-#include "rtti/jsonreader.h"
+#include <nap/modulemanager.h>
+#include <nap/logger.h>
+#include <nap/module.h>
+#include <nap/core.h>
 
 // External Includes
+#include <rtti/jsonreader.h>
 #include <utility/fileutils.h>
 
 namespace nap
