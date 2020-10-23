@@ -89,7 +89,7 @@ namespace nap
 	}
 
 
-	void TweenService::removeTween(TweenBase* tween)
+	void TweenService::removeTween(const TweenBase* tween)
 	{
 		mTweensToRemove.emplace_back(tween);
 	}

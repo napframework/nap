@@ -45,7 +45,7 @@ namespace nap
 		 * removes a tween
 		 * @param pointer to tween
 		 */
-		void removeTween(TweenBase* tween);
+		void removeTween(const TweenBase* tween);
 	protected:
 		/**
 		 * registers all objects that need a specific way of construction
@@ -67,7 +67,7 @@ namespace nap
 		virtual void update(double deltaTime) override;
 	private:
 		std::vector<std::unique_ptr<TweenBase>> mTweens;
-		std::vector<TweenBase*> 				mTweensToRemove;
+		std::vector<const TweenBase*> 			mTweensToRemove;
 	};
 
 	template<typename T>

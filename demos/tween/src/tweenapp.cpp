@@ -103,6 +103,8 @@ namespace nap
 
 		mGuiService->selectWindow(mRenderWindow);
 
+		createTween();
+
 		return true;
 	}
 
@@ -174,19 +176,30 @@ namespace nap
 
 			if( ImGui::Button("Do Tween") )
 			{
-				auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
-				glm::vec3 sphere_position = math::extractPosition(sphere_transform.getGlobalTransform());
-				mActiveTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, mTarget, mTweenDuration, (TweenEasing)mCurrentTweenType, (TweenMode)mCurrentTweenMode);
-				Tween<glm::vec3>& tween = mActiveTweenHandle->getTween();
-				tween.UpdateSignal.connect([this](const glm::vec3& value){
-				  	auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
-					sphere_transform.setTranslate(value);
-				});
+				createTween();
 			}
 		}
 		ImGui::End();
 	}
 
+
+	void TweenApp::createTween()
+	{
+		auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
+		glm::vec3 sphere_position = math::extractPosition(sphere_transform.getGlobalTransform());
+		mActiveTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, mTarget, mTweenDuration, (TweenEasing)mCurrentTweenType, (TweenMode)mCurrentTweenMode);
+		Tween<glm::vec3>& tween = mActiveTweenHandle->getTween();
+		tween.UpdateSignal.connect([this](const glm::vec3& value){
+		  auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
+		  sphere_transform.setTranslate(value);
+		});
+		tween.CompleteSignal.connect([this](const glm::vec3& value){
+			nap::Logger::info("tween complete");
+		});
+		tween.KilledSignal.connect([this](){
+			nap::Logger::info("tween killed");
+		});
+	}
 
 	/**
 	 * Render loop is rather straight forward.

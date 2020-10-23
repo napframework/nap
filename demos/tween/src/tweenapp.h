@@ -74,10 +74,11 @@ namespace nap
 		ObjectPtr<EntityInstance> mSphereEntity = nullptr;				//< Pointer to the bouncing ball entity
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;				//< Pointer to the plane entity
 
-		glm::vec3 mTarget;
+		glm::vec3 mTarget = { 0.0f, 1.0f, 0.0f };
 		float mTweenDuration = 1.0f;
 		int mCurrentTweenType = 2;
-		int mCurrentTweenMode = 0;
+		int mCurrentTweenMode = 2;
 		std::unique_ptr<TweenHandle<glm::vec3>> mActiveTweenHandle;
+		void createTween();
 	};
 }

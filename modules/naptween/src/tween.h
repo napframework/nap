@@ -227,10 +227,10 @@ namespace nap
 			mEase = std::make_unique<TweenEaseLinear<T>>();
 			break;
 		case TweenEasing::CUBIC_INOUT:
-			mEase = std::make_unique<TweenEaseOutCubic<T>>();
+			mEase = std::make_unique<TweenEaseInOutCubic<T>>();
 			break;
 		case TweenEasing::CUBIC_OUT:
-			mEase = std::make_unique<TweenEaseInOutCubic<T>>();
+			mEase = std::make_unique<TweenEaseOutCubic<T>>();
 			break;
 		case TweenEasing::CUBIC_IN:
 			mEase = std::make_unique<TweenEaseInCubic<T>>();
