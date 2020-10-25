@@ -24,7 +24,7 @@ namespace nap
 		class NAPAPI AsyncObserver
 		{
 		public:
-			AsyncObserver();
+			AsyncObserver() = default;
 			~AsyncObserver() = default;
 			
 			/**
