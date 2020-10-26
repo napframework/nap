@@ -5,8 +5,6 @@ if(NOT TARGET cryptopp)
 endif()
 set(MODULE_NAME_EXTRA_LIBS cryptopp)
 
-# add_include_to_interface_target(mod_napyoctopuce ${YOCTOPUCE_INCLUDE_DIRS})
-
 if(WIN32)
     # Add post-build step to copy cryptopp to bin
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -17,14 +15,9 @@ if(WIN32)
                                $<TARGET_FILE_DIR:${PROJECT_NAME}> 
                        )
 
-    # TODO: Only do this on install, don't include
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} 
-                               -E copy_directory
-                               ${NAP_ROOT}/tools/license
-                               $<TARGET_FILE_DIR:${PROJECT_NAME}>/licensegenerator
-                       )
+    # Install cryptopp library for licensegenerator
+    # install(FILES ${THIRDPARTY_DIR}/cryptopp/lib/release/cryptopp.dll DESTINATION licensegenerator)
+    install(FILES $<TARGET_FILE:cryptopp> DESTINATION licensegenerator)
 endif()
 
 # Install cryptopp license into packaged project
