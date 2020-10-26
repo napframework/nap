@@ -62,8 +62,9 @@ namespace nap
 		 * inserts segment in track, must be overloaded
 		 * @param trackID the trackID in which to insert new segment
 		 * @param time the time at which to insert the segment
+		 * @return const pointer to newly created segment
 		 */
-		virtual void insertSegment(const std::string& trackID, double time) = 0;
+		virtual const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) = 0;
 
 		/**
 		 * deleted segment from track, must be overloaded

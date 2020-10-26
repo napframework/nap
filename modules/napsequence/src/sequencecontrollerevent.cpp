@@ -46,9 +46,10 @@ namespace nap
 	}
 
 
-	void SequenceControllerEvent::insertSegment(const std::string& trackID, double time)
+	const SequenceTrackSegment* SequenceControllerEvent::insertSegment(const std::string& trackID, double time)
 	{
 		nap::Logger::warn("insertSegment not used, use insertEventSegment instead");
+		return nullptr;
 	}
 
 

@@ -100,9 +100,9 @@ namespace nap
 	}
 
 
-	void SequenceControllerCurve::insertSegment(const std::string& trackID, double time)
+	const SequenceTrackSegment* SequenceControllerCurve::insertSegment(const std::string& trackID, double time)
 	{
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(const std::string&, double)> insertSegmentMap
+		static std::unordered_map<rttr::type, const SequenceTrackSegment*(SequenceControllerCurve::*)(const std::string&, double)> insertSegmentMap
 		{
 			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<float> },
 			{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::insertCurveSegment<glm::vec2> },
@@ -119,9 +119,11 @@ namespace nap
 			assert(it != insertSegmentMap.end()); // type not found
 			if (it != insertSegmentMap.end())
 			{
-				(*this.*it->second)(trackID, time);
+				return (*this.*it->second)(trackID, time);
 			}
 		}
+
+		return nullptr;
 	}
 
 
@@ -196,7 +198,7 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceControllerCurve::insertCurveSegment(const std::string& trackID, double time)
+	const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment(const std::string& trackID, double time)
 	{
 		static std::unordered_map<rttr::type, int> s_curve_count_map
 		{
@@ -206,7 +208,9 @@ namespace nap
 			{ RTTI_OF(glm::vec4), 4 }
 		};
 
-		performEditAction([this, trackID, time]()
+		SequenceTrackSegment* return_ptr;
+
+		performEditAction([this, trackID, time, &return_ptr]() mutable
 		{
 			auto it = s_curve_count_map.find(RTTI_OF(T));
 			assert(it != s_curve_count_map.end()); // type not found
@@ -287,6 +291,8 @@ namespace nap
 						  ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
 						  track->mSegments.insert(track->mSegments.begin() + segment_count, new_segment_resource_ptr);
 
+						  return_ptr = new_segment.get();
+
 						  // move ownership to sequence player
 						  getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
@@ -320,6 +326,8 @@ namespace nap
 						  ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
 						  track->mSegments.emplace_back(new_segment_resource_ptr);
 
+						  return_ptr = new_segment.get();
+
 						  // move ownership to sequence player
 						  getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
@@ -328,7 +336,6 @@ namespace nap
 
 						  break;
 					  }
-
 
 					  segment_count++;
 				  }
@@ -358,16 +365,24 @@ namespace nap
 					  ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
 					  track->mSegments.emplace_back(new_segment_resource_ptr);
 
+					  //
+					  return_ptr = new_segment.get();
+
 					  // move ownership to sequence player
 					  getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
 					  //
 					  updateCurveSegments<T>(*(track.get()));
+
+
+					  break;
 				  }
 				  break;
 			  }
 			}
 		});
+
+		return return_ptr;
 	}
 
 
@@ -884,10 +899,10 @@ namespace nap
 	template NAPAPI void SequenceControllerCurve::addNewCurveTrack<glm::vec3>();
 	template NAPAPI void SequenceControllerCurve::addNewCurveTrack<glm::vec4>();
 
-	template NAPAPI void SequenceControllerCurve::insertCurveSegment<float>(const std::string& trackID, double time);
-	template NAPAPI void SequenceControllerCurve::insertCurveSegment<glm::vec2>(const std::string& trackID, double time);
-	template NAPAPI void SequenceControllerCurve::insertCurveSegment<glm::vec3>(const std::string& trackID, double time);
-	template NAPAPI void SequenceControllerCurve::insertCurveSegment<glm::vec4>(const std::string& trackID, double time);
+	template NAPAPI const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment<float>(const std::string& trackID, double time);
+	template NAPAPI const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment<glm::vec2>(const std::string& trackID, double time);
+	template NAPAPI const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment<glm::vec3>(const std::string& trackID, double time);
+	template NAPAPI const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment<glm::vec4>(const std::string& trackID, double time);
 
 	template NAPAPI void SequenceControllerCurve::insertCurvePoint<float>(SequenceTrackSegment& segment, float pos, int curveIndex);
 	template NAPAPI void SequenceControllerCurve::insertCurvePoint<glm::vec2>(SequenceTrackSegment& segment, float pos, int curveIndex);

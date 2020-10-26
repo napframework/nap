@@ -9,6 +9,7 @@
 #include "sequencetrackview.h"
 #include "sequenceeditorguistate.h"
 #include "sequenceeditorguiactions.h"
+#include "sequenceeditorguiclipboard.h"
 
 // external includes
 #include <imgui/imgui.h>

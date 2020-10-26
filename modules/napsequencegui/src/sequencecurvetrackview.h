@@ -489,6 +489,21 @@ namespace nap
 		};
 	}
 
+	namespace SequenceGUIClipboards
+	{
+		class CurveSegmentClipboard :
+			public Clipboard
+		{
+			RTTI_ENABLE(Clipboard)
+		public:
+			CurveSegmentClipboard(const SequenceTrackSegmentCurveFloat* curveFloat);
+
+			SequenceTrackSegmentCurveFloat* deserialize(std::vector<std::unique_ptr<rtti::Object>>& readObjects);
+		private:
+			std::string mSerializedSegment;
+		};
+	}
+
 	template<>
 	void SequenceCurveTrackView::handleCurvePointActionPopup<float>();
 

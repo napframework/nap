@@ -7,6 +7,7 @@
 // Local Includes
 #include "sequenceeditorgui.h"
 #include "sequenceeditorguiactions.h"
+#include "sequenceeditorguiclipboard.h"
 
 // External Includes
 #include <imgui/imgui.h>
@@ -22,6 +23,9 @@ namespace nap
 	public:
 		// action 
 		SequenceGUIActions::SequenceActionPtr mAction = nullptr;
+
+		// clipboard
+		SequenceGUIClipboards::SequenceClipboardPtr mClipboard = nullptr;
 
 		// dirty means view has changed, and potentially content of tracks need to be redrawn and cached
 		bool mDirty = false;
