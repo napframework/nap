@@ -118,8 +118,9 @@ namespace nap
 		 * overloaded insert segment function
 		 * @param trackID the track id
 		 * @param time time
+		 * @return const pointer to newly created segment
 		 */
-		virtual void insertSegment(const std::string& trackID, double time) override;
+		virtual const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
 
 		/**
 		 * overloaded delete segment function
@@ -149,7 +150,7 @@ namespace nap
 		 * @param time the time at when to insert segment
 		 */
 		template <typename T>
-		void insertCurveSegment(const std::string& trackID, double time);
+		const SequenceTrackSegment* insertCurveSegment(const std::string& trackID, double time);
 
 		/**
 		 * changes tangent of curve point. Tangents are always aligned
