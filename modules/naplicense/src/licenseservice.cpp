@@ -215,7 +215,6 @@ namespace nap
 
 	bool LicenseInformation::expired()
 	{
-		return this->canExpire() ? 
-			getCurrentDateTime().getTimeStamp() > mTime.getTimeStamp() : false;
+		return this->canExpire() ? getCurrentTime() > mTime.getTimeStamp() : false;
 	}
 }
