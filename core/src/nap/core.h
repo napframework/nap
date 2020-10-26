@@ -310,14 +310,19 @@ namespace nap
 		bool addService(const rtti::TypeInfo& type, ServiceConfiguration* configuration, std::vector<Service*>& outServices, utility::ErrorState& errorState);
 
 		/**
-		 * Loads the service configuration resources from file. The file must exist.
+		 * Loads the service configurations from file.
+		 * If the service configuration file does not exist a warning is issued and system defaults are used.
+		 * Loading fails if the file can be deserialized but contains duplicate IDs or 
+		 * objects not derived from nap::ServiceConfiguration.
 		 * @param err contains the error if loading fails.
 		 * @return if loading succeeded.
 		 */
 		bool loadServiceConfigurations(nap::utility::ErrorState& err);
 
 		/**
-		 * Load the service configuration file
+		 * Load the service configuration file.
+		 * If the service configuration file does not exist a warning is issued and system defaults are used.
+		 * Loading fails if the file contains duplicate IDs or objects not derived from nap::ServiceConfiguration.
 		 * @param filename The name of the file to read
 		 * @param deserialize_result contains the result after reading the config file
 		 * @param errorState contains the error if deserialization fails
