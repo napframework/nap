@@ -17,10 +17,7 @@
 
 // external includes
 #include <iostream>
-#include <rtti/jsonwriter.h>
-#include <rtti/jsonreader.h>
-#include <rtti/defaultlinkresolver.h>
-#include <fstream>
+
 
 namespace nap
 {
@@ -1013,7 +1010,7 @@ namespace nap
 							auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 
 							std::vector<std::unique_ptr<rtti::Object>> read_objects;
-							auto* curve_segment = curve_segment_clipboard->deserialize(read_objects);
+							auto* curve_segment = curve_segment_clipboard->deserialize<SequenceTrackSegmentCurveFloat>(read_objects);
 
 							if( curve_segment != nullptr )
 							{
@@ -1026,7 +1023,6 @@ namespace nap
 								{
 									curve_controller.insertCurvePoint(action->mTrackID, new_segment->mID, curve_segment->mCurves[0]->mPoints[i].mPos.mTime, 0);
 								}
-
 
 								for(int i = 0 ; i < curve_segment->mCurves[0]->mPoints.size(); i++)
 								{
@@ -1542,14 +1538,17 @@ namespace nap
 				auto& controller = getEditor().getController<SequenceControllerCurve>();
 				auto* action = mState.mAction->getDerived<EditingCurveSegment>();
 
-				if( action->mSegmentType == RTTI_OF( SequenceTrackSegmentCurveFloat ))
+				if( ImGui::Button("Copy") )
 				{
-					if( ImGui::Button("Copy") )
+					const auto* curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+					mState.mClipboard = createClipboard<CurveSegmentClipboard>();
+					if( !mState.mClipboard->serialize(curve_segment) )
 					{
-						mState.mClipboard = createClipboard<CurveSegmentClipboard>(static_cast<const SequenceTrackSegmentCurveFloat*>(controller.getSegment(action->mTrackID, action->mSegmentID)));
-						ImGui::CloseCurrentPopup();
-						mState.mAction = createAction<None>();
+						nap::Logger::error("Error serializing curve segment");
+						mState.mClipboard = createClipboard<Empty>();
 					}
+					ImGui::CloseCurrentPopup();
+					mState.mAction = createAction<None>();
 				}
 
 				if (ImGui::Button("Delete"))
@@ -2011,79 +2010,5 @@ namespace nap
 	{
 		ImGui::PushItemWidth(225.0f);
 		return ImGui::InputFloat4("", &v[0], precision);
-	}
-
-
-	CurveSegmentClipboard::CurveSegmentClipboard(const SequenceTrackSegmentCurveFloat* curveFloat) : Clipboard()
-	{
-		utility::ErrorState errorState;
-		rtti::JSONWriter writer;
-		if (!rtti::serializeObjects(rtti::ObjectList{ const_cast<SequenceTrackSegmentCurveFloat*>( curveFloat ) }, writer, errorState))
-		{
-			nap::Logger::error("Error serializing segment %s ", curveFloat->mID.c_str());
-		}else
-		{
-			mSerializedSegment = writer.GetJSON();
-		}
-	}
-
-
-	SequenceTrackSegmentCurveFloat* CurveSegmentClipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& readObjects)
-	{
-		//
-		rtti::DeserializeResult result;
-		utility::ErrorState errorState;
-
-		//
-		rtti::Factory factory;
-		if (!rtti::deserializeJSON(
-			mSerializedSegment,
-			rtti::EPropertyValidationMode::DisallowMissingProperties,
-			rtti::EPointerPropertyMode::NoRawPointers,
-			factory,
-			result,
-			errorState))
-		{
-			nap::Logger::error("Error deserializing, error : %s " , errorState.toString().c_str());
-			return nullptr;
-		}
-
-		// Resolve links
-		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
-		{
-			nap::Logger::error("Error resolving links : %s " , errorState.toString().c_str());
-
-			return nullptr;
-		}
-
-		//
-		SequenceTrackSegmentCurveFloat* return_ptr = nullptr;
-
-		// Move ownership of read objects
-		readObjects.clear();
-		for (auto& read_object : result.mReadObjects)
-		{
-			//
-			if (read_object->get_type().is_derived_from<SequenceTrackSegmentCurveFloat>())
-			{
-				return_ptr = dynamic_cast<SequenceTrackSegmentCurveFloat*>(read_object.get());
-			}
-
-			readObjects.emplace_back(std::move(read_object));
-		}
-
-		// init objects
-		for (auto& object_ptr : readObjects)
-		{
-			if (!object_ptr->init(errorState))
-				return false;
-		}
-
-		if( return_ptr == nullptr )
-		{
-			nap::Logger::error("return object is null");
-		}
-
-		return return_ptr;
 	}
 }
