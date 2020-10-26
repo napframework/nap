@@ -16,6 +16,8 @@
 	#include <dll.h>
 #endif
 #include <rsa.h>
+#include <hex.h>
+#include <files.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
 	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)

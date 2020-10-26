@@ -11,6 +11,7 @@
 #endif
 #include <rsa.h>
 #include <validate.h>
+#include <osrng.h>
 
 using namespace CryptoPP;
 using namespace std;

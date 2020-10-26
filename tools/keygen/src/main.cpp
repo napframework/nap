@@ -10,6 +10,9 @@
 	#include <dll.h>
 #endif
 #include <rsa.h>
+#include <hex.h>
+#include <randpool.h>
+#include <files.h>
 
 /**
  * Generates a public / private RSA key pair.

@@ -25,14 +25,11 @@ if(WIN32)
                                ${NAP_ROOT}/tools/license
                                $<TARGET_FILE_DIR:${PROJECT_NAME}>/licensegenerator
                        )
-
-elseif(UNIX)
-    # Install yoctopuce lib into packaged app
-    install(FILES $<TARGET_FILE:cryptopp> DESTINATION lib)
 endif()
 
 # Install cryptopp license into packaged project
 install(FILES ${THIRDPARTY_DIR}/cryptopp/License.txt DESTINATION licenses/cryptopp)
 
 # Install licensegenerator
-install(DIRECTORY ${NAP_ROOT}/tools/license DESTINATION licensegenerator)
+file(GLOB LICENSE_GENERATOR_BIN ${NAP_ROOT}/tools/license/licensegenerator*)
+install(PROGRAMS ${LICENSE_GENERATOR_BIN} DESTINATION licensegenerator)
