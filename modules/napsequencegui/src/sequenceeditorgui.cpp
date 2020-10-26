@@ -587,13 +587,20 @@ namespace nap
 		// if player position in inside the sequencer window, draw it
 		if( pos.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f && pos.x > mState.mWindowPos.x )
 		{
-			auto* overlay_drawlist = ImGui::GetOverlayDrawList();
+			ImVec2 line_begin 	= { pos.x, math::max<float>( mState.mWindowPos.y + 25, pos.y ) }; // clip line to top of window
+			ImVec2 line_end 	= { pos.x, 	pos.y + math::min<float>( // clip the line to bottom of window
+											sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f ,
+											mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y - 25.0f)};
 
-			overlay_drawlist->AddLine({ pos.x, math::max<float>( mState.mWindowPos.y + 25, pos.y ) }, // clip line to top of window,
-									  { pos.x, pos.y + math::min<float>( // clip the line to bottom of window
-														  sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f ,
-														  mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y - 25.0f)},
-									  guicolors::red, 2.0f);
+			ImGui::SetNextWindowPos(line_begin);
+			if( ImGui::BeginChild("PlayerPosition", { line_end.x - line_begin.x, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
+			{
+				auto* drawlist = ImGui::GetWindowDrawList();
+				drawlist->AddLine( 	line_begin,
+									line_end,
+									guicolors::red, 2.0f);
+				ImGui::EndChild();
+			}
 		}
 	}
 
