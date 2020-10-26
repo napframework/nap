@@ -210,7 +210,6 @@ namespace nap
 					sequence_player.setIsPaused(true);
 				}
 			}
-			
 
 			ImGui::SameLine();
 			if (ImGui::Button("Rewind"))
@@ -250,6 +249,14 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
+
+			// allow mouse zoom-in with mouse wheel and ctrl
+			if( ImGui::GetIO().KeyCtrl )
+			{
+				mState.mHorizontalResolution += ImGui::GetIO().MouseWheel * 5.0f;
+				mState.mHorizontalResolution = math::max<float>(mState.mHorizontalResolution, 2.5f);
+				mState.mDirty = true;
+			}
 
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
