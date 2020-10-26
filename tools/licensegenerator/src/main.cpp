@@ -206,8 +206,8 @@ int main(int argc, char* argv[])
 
 	// Add issue time -> minutes since epoch
 	SystemTimeStamp ctime = SystemClock::now();
-	auto seconds = std::chrono::time_point_cast<std::chrono::minutes>(ctime);
-	lic_content << "|issued:" << seconds.time_since_epoch().count();
+	auto minutes = std::chrono::time_point_cast<std::chrono::minutes>(ctime);
+	lic_content << "|issued:" << minutes.time_since_epoch().count();
 
 	// Create license
 	if (!signLicense(commandLine.mKey, lic_content.str(), key_loc.str(), lic_loc.str()))

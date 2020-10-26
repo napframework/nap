@@ -96,11 +96,8 @@ namespace nap
 
 		// If the current system time is less than the license issue time,
 		// someone tried to reverse the clock or clock is not up to date
-		if (!error.check(getCurrentTime() >= stamp_issued, "License expired"))
-		{
-			error.fail("Your system clock is not up to date");
+		if (!error.check(getCurrentTime() >= stamp_issued, "Invalid system clock"))
 			return false;
-		}
 
 		// Populate standards arguments
 		setArgument(arguments, "mail", outInformation.mMail);
