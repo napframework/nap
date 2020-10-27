@@ -2053,10 +2053,9 @@ namespace nap
 			{
 				for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
 				{
-					if (i > 0)
-						curve_controller.changeCurvePoint(trackId, new_segment->mID, i, c,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
+					curve_controller.changeCurvePoint(trackId, new_segment->mID, i, c,
+													  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
+													  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
 
 					curve_controller.changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
 													curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,

@@ -194,6 +194,9 @@ namespace nap
 		template <typename  T>
 		void changeCurvePoint(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
 
+		template <typename T>
+		void SequenceControllerCurve::changeLastCurvePoint(SequenceTrackSegment& segment, const int curveIndex, float time, float value);
+
 		/**
 		 * deletes point from curve
 		 * @paramt type of curve track
