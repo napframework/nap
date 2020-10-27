@@ -53,7 +53,8 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow			= mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mPaintTexture			= mResourceManager->findObject<nap::RenderTexture2D>("PaintRenderTexture");
+		mPaintTextureA			= mResourceManager->findObject<nap::RenderTexture2D>("PaintRenderTextureA");
+		mPaintTextureB			= mResourceManager->findObject<nap::RenderTexture2D>("PaintRenderTextureB");
 		mBrushTexture			= mResourceManager->findObject<nap::RenderTexture2D>("BrushRenderTexture");
 		mBrushColorParam		= mResourceManager->findObject<nap::ParameterRGBColorFloat>("BrushColorParam");
 		mBrushSizeParam			= mResourceManager->findObject<nap::ParameterFloat>("BrushSizeParam");
@@ -134,13 +135,12 @@ namespace nap
 		if (ImGui::CollapsingHeader("Textures"))
 		{
 			float col_width = ImGui::GetColumnWidth();
-			float ratio = (float)mPaintTexture->getHeight() / (float)mPaintTexture->getWidth();
+			float ratio = (float)mPaintTextureA->getHeight() / (float)mPaintTextureA->getWidth();
 			ImGui::Text("Paint Texture");
-			ImGui::Image(*mPaintTexture, ImVec2(col_width, col_width * ratio));
+			ImGui::Image(*mPaintTextureA, ImVec2(col_width, col_width * ratio));
 			ImGui::Text("Brush Texture");
 			ImGui::Image(*mBrushTexture, ImVec2(col_width, col_width * ratio));
 		}
-
 		ImGui::End();
 	}
 
@@ -153,12 +153,12 @@ namespace nap
 		// Get the brush render to texture component instance
 		auto& brush_renderer = mBrushEntity->getComponent<nap::RenderToTextureComponentInstance>();
 
-		// Set falloff and softness uniforms
-		auto* ubo = brush_renderer.getMaterialInstance().getOrCreateUniform("UBO");
-		auto* softness = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inSoftness");
-		softness->setValue(mBrushSoftnessParam->mValue);
-		auto* falloff = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFalloff");
-		falloff->setValue(mBrushFalloffParam->mValue);
+		// Set brush uniforms
+		auto* brush_ubo = brush_renderer.getMaterialInstance().getOrCreateUniform("UBO");
+		auto* brush_softness = brush_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inSoftness");
+		brush_softness->setValue(mBrushSoftnessParam->mValue);
+		auto* brush_falloff = brush_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFalloff");
+		brush_falloff->setValue(mBrushFalloffParam->mValue);
 
 		// Draw the brush
 		brush_renderer.draw();
@@ -171,57 +171,53 @@ namespace nap
 	void PaintObjectApp::renderPaint()
 	{
 		// Get the render to texture component
-		auto& render_to_texture = mWorldEntity->getComponent<nap::RenderToTextureComponentInstance>();
+		auto& render_to_texture = ((*mWorldEntity)[mPaintIndex]).getComponent<nap::RenderToTextureComponentInstance>();
+		auto* paint_ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
+		nap::UniformFloatInstance* apply_spray = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inSpray");
 
-		// Fetch the ubo struct uniform
-		auto* ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
+		if (mClearPaint)
+		{
+			// Removes all paint from paint texture in one pass
+			// This is done by setting the inFinalMultiplier float uniform to zero, which renders all pixels in the render texture black with no alpha
+			nap::UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
+			final_multiplier->setValue(0.0f);
+			apply_spray->setValue(1.0f);
+			mClearPaint = false;
+		}
+		else if (mDrawMode && mMouseOnObject && mMouseDown)
+		{
+			// Set the brush color
+			auto* brush_color = paint_ubo->getOrCreateUniform<nap::UniformVec4Instance>("inBrushColor");
+			auto col = mBrushColorParam->getValue();
+			brush_color->setValue({ col.toVec3(), 1.0f });
 
-		// Set the brush color
-		auto* brush_color = ubo->getOrCreateUniform<nap::UniformVec4Instance>("inBrushColor");
-		auto col = mBrushColorParam->getValue();
-		brush_color->setValue({ col.toVec3(), 1.0f });
+			// Give mouse position in UV space
+			auto* mouse_pos = paint_ubo->getOrCreateUniform<nap::UniformVec2Instance>("inMousePosition");
+			mouse_pos->setValue(mMousePosOnObject);
 
-		// Give mouse position in UV space
-		auto* mouse_pos = ubo->getOrCreateUniform<nap::UniformVec2Instance>("inMousePosition");
-		mouse_pos->setValue(mMousePosOnObject);
+			// Set brush size
+			nap::UniformFloatInstance* brush_size = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inBrushSize");
+			brush_size->setValue(mBrushSizeParam->mValue);
 
-		// Set brush size
-		nap::UniformFloatInstance* brush_size = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inBrushSize");
-		brush_size->setValue(mBrushSizeParam->mValue);
+			// Set eraser mode
+			nap::UniformFloatInstance* eraser_mode = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inEraserAmount");
+			eraser_mode->setValue((float)mEraserModeParam->mValue);
 
-		// Set eraser mode
-		nap::UniformFloatInstance* eraser_mode = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inEraserAmount");
-		eraser_mode->setValue((float)mEraserModeParam->mValue);
+			// Set final multiplier, used to clear the paint texture
+			nap::UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
+			final_multiplier->setValue(1.0f);
 
-		// Set final multiplier, used to clear the paint texture
-		nap::UniformFloatInstance* final_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
-		final_multiplier->setValue(1.0f);
+			// Apply paint
+			apply_spray->setValue(1.0f);
+		}
+		else
+		{
+			// Nothing is painted
+			apply_spray->setValue(0.0f);
+		}
 
 		// Draw the render texture
 		render_to_texture.draw();
-	}
-
-	/**
-	 * Removes all paint from paint texture in one pass
-	 * This is done by setting the inFinalMultiplier float uniform to zero, which renders all pixels in the render texture black with no alpha
-	 * Should be called after beginHeadlessRecording() and before endHeadlessRecording() on the render service
-	 */
-	void PaintObjectApp::removeAllPaint()
-	{
-		// Get the render to texture component
-		auto& render_to_texture = mWorldEntity->getComponent<nap::RenderToTextureComponentInstance>();
-
-		// Get the ubo struct uniform
-		auto* ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
-
-		// Get the final multiplier uniform
-		// Set it to zero, so we will render texture with all pixels set to 0, 0, 0, 0 rgba
-		auto* final_multiplier = ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
-		final_multiplier->setValue(0.0f);
-
-		// Draw into the render texture
-		render_to_texture.draw();
-		mClearPaint = false;
 	}
 
 
@@ -233,31 +229,23 @@ namespace nap
 	 */
 	void PaintObjectApp::render()
 	{
-		// Let the render service now we are beginning to render to off-screen buffers
-		if (mRenderService->beginHeadlessRecording())
-		{
-			// Clear paint if necessary
-			if( mClearPaint )
-				removeAllPaint();
-
-			// Render new paint if necessary
-			if (mDrawMode && mMouseOnObject && mMouseDown)
-			{
-				// First, render the brush
-				renderBrush();
-
-				// Now, render the new paint
-				renderPaint();
-			}
-
-			// Let the render service now we are finished rendering to off-screen buffers
-			mRenderService->endHeadlessRecording();
-		}
-
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
+
+		// Let the render service now we are beginning to render to off-screen buffers
+		if (mRenderService->beginHeadlessRecording())
+		{
+			// First, render the brush
+			renderBrush();
+
+			// Now, render the new paint
+			renderPaint();
+
+			// Let the render service now we are finished rendering to off-screen buffers
+			mRenderService->endHeadlessRecording();
+		}
 
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
@@ -269,6 +257,10 @@ namespace nap
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
 			nap::RenderableMeshComponentInstance& renderable_mesh = *mWorldEntity->findComponentByID<nap::RenderableMeshComponentInstance>(mSelectedMeshRendererID);
 			components_to_render.emplace_back(&renderable_mesh);
+
+			// Set the paint texture
+			nap::Sampler2DInstance* sampler = renderable_mesh.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>("inPaintTexture");
+			sampler->setTexture(mPaintIndex == 0 ? *mPaintTextureB : *mPaintTextureA);
 
 			// Update the material of the mesh that renders the object
 			nap::UniformStructInstance* ubo = renderable_mesh.getMaterialInstance().getOrCreateUniform("UBO");
@@ -300,6 +292,9 @@ namespace nap
 
 		// Signal the ending of the frame
 		mRenderService->endFrame();
+
+		// Increment paint index
+		mPaintIndex = ++mPaintIndex % 2;
 	}
 
 

@@ -87,8 +87,6 @@ namespace nap
 
 		void renderPaint();
 
-		void removeAllPaint();
-
 		void switchMesh(int selection);
 
 		// Nap Services
@@ -109,7 +107,8 @@ namespace nap
 		ObjectPtr<EntityInstance>	mBrushEntity			= nullptr;
 
 		// Render Textures
-		ObjectPtr<RenderTexture2D>	mPaintTexture	= nullptr;	//< Pointer to the world texture
+		ObjectPtr<RenderTexture2D>	mPaintTextureA	= nullptr;	//< Pointer to the first paint texture
+		ObjectPtr<RenderTexture2D>	mPaintTextureB  = nullptr;	//< Pointer to the second paint texture
 		ObjectPtr<RenderTexture2D>	mBrushTexture	= nullptr;	//< Pointer to the world texture
 		
 		// Parameters
@@ -138,5 +137,6 @@ namespace nap
 
 		// Selected mesh renderer
 		std::string mSelectedMeshRendererID;
+		int mPaintIndex = 0;
 	};
 }
