@@ -134,9 +134,10 @@ namespace nap
 		 * @param type track type
 		 */
 		virtual void insertTrack(rttr::type type) override;
+
+		void updateCurveSegments(const std::string& trackID);
 	private:
 		/**
-		 * updateCurveSegments
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param track reference to sequence track
 		 */

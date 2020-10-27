@@ -828,6 +828,25 @@ namespace nap
 	}
 
 
+	void SequenceControllerCurve::updateCurveSegments(const std::string& trackID)
+	{
+		auto* track = findTrack(trackID);
+		if(track!= nullptr)
+		{
+			rttr::type type = track->get_type();
+
+			if( type == RTTI_OF(SequenceTrackCurveFloat))
+				updateCurveSegments<float>(*track);
+			if (type == RTTI_OF(SequenceTrackCurveVec2))
+				updateCurveSegments<glm::vec2>(*track);
+			if (type == RTTI_OF(SequenceTrackCurveVec3))
+				updateCurveSegments<glm::vec3>(*track);
+			if (type == RTTI_OF(SequenceTrackCurveVec4))
+				updateCurveSegments<glm::vec4>(*track);
+		}
+	}
+
+
 	template<>
 	void SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum)
 	{

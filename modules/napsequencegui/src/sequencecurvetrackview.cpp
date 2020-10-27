@@ -2040,6 +2040,8 @@ namespace nap
 													curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
 				}
 			}
+
+			curve_controller.updateCurveSegments(trackId);
 		}
 	}
 }
