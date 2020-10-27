@@ -981,6 +981,7 @@ namespace nap
 		{
 			auto* action = mState.mAction->getDerived<InsertingSegment>();
 
+			// check if on track type is of a curve track
 			if (action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
 				action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
 				action->mTrackType == RTTI_OF(SequenceTrackCurveVec3) ||
@@ -988,32 +989,40 @@ namespace nap
 			{
 				if (ImGui::BeginPopup("Insert Segment"))
 				{
+					// display insert button
 					if (ImGui::Button("Insert"))
 					{
+						// obtain action pointer
 						auto* action = mState.mAction->getDerived<InsertingSegment>();
 
+						// obtain curve controller
 						auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+						// insert the segment
 						curve_controller.insertSegment(action->mTrackID, action->mTime);
+
+						// mark dirty and exit popup
+						mState.mDirty = true;
 						mState.mAction = createAction<None>();
-
-						mCurveCache.clear();
-
 						ImGui::CloseCurrentPopup();
-
 					}
 
-					// handle paste
+					// handle paste if we have a clipboard containing a serialized curve-segment
 					if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 					{
+						// obtain derived curve segment clipboard
 						auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 
+						// if serialized curve segment type matches this track type, we can paste the segment here
 						if( curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveFloat) && action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
 							curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec2) && action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
 							curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec3) && action->mTrackType == RTTI_OF(SequenceTrackCurveVec3) ||
 							curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec4) && action->mTrackType == RTTI_OF(SequenceTrackCurveVec4))
 						{
+							// display paste button
 							if( ImGui::Button("Paste") )
 							{
+								// call the correct pasteClipboard method for this track-type
 								if( action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) )
 								{
 									pasteClipboard<SequenceTrackSegmentCurveFloat>(action->mTrackID, action->mTime);
@@ -1025,6 +1034,7 @@ namespace nap
 									pasteClipboard<SequenceTrackSegmentCurveVec4>(action->mTrackID, action->mTime);
 								}
 
+								// mark dirty and exit popup
 								mState.mDirty = true;
 								mState.mAction = createAction<None>();
 								ImGui::CloseCurrentPopup();
@@ -1032,6 +1042,7 @@ namespace nap
 						}
 					}
 
+					// cancel is exit & close
 					if (ImGui::Button("Cancel"))
 					{
 						ImGui::CloseCurrentPopup();
@@ -2008,16 +2019,26 @@ namespace nap
 	template<typename T>
 	void SequenceCurveTrackView::pasteClipboard(const std::string& trackId, double time)
 	{
+		// get clipboard action
 		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+		// create vector & object ptr to be filled by de-serialization
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;
 		rtti::ObjectPtr<T> curve_segment;
+
+		// continue upon succesfull de-serialization
 		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
 		{
+			// obtain controller
 			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+			// insert new segment
 			const auto* new_segment = curve_controller.insertSegment(trackId, time);
 
+			// change duration
 			curve_controller.segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
 
+			// copy curve points
 			for(int c = 0; c < curve_segment->mCurves.size(); c++)
 			{
 				for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
@@ -2026,6 +2047,8 @@ namespace nap
 				}
 			}
 
+			// change all curvepoints to match the copied clipboard curve segment
+			// note that the first point is always determined by the previous segment
 			for(int c = 0; c < curve_segment->mCurves.size(); c++)
 			{
 				for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
@@ -2041,7 +2064,11 @@ namespace nap
 				}
 			}
 
+			// make the controller re-align start & end points of segments
 			curve_controller.updateCurveSegments(trackId);
+		}else
+		{
+			nap::Logger::error("Error trying to paste clipboard");
 		}
 	}
 }
