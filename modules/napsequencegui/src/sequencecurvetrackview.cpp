@@ -55,11 +55,11 @@ namespace nap
 
 
 	static std::unordered_map<rttr::type, std::vector<rttr::type>> sParameterTypesForCurveType
-		{
-			{ RTTI_OF(SequenceTrackCurveFloat), { { RTTI_OF(ParameterFloat), RTTI_OF(ParameterDouble), RTTI_OF(ParameterLong), RTTI_OF(ParameterInt) } } },
-			{ RTTI_OF(SequenceTrackCurveVec2), { { RTTI_OF(ParameterVec2) } } },
-			{ RTTI_OF(SequenceTrackCurveVec3), { { RTTI_OF(ParameterVec3) } } }
-		};
+	{
+		{ RTTI_OF(SequenceTrackCurveFloat), { { RTTI_OF(ParameterFloat), RTTI_OF(ParameterDouble), RTTI_OF(ParameterLong), RTTI_OF(ParameterInt) } } },
+		{ RTTI_OF(SequenceTrackCurveVec2), { { RTTI_OF(ParameterVec2) } } },
+		{ RTTI_OF(SequenceTrackCurveVec3), { { RTTI_OF(ParameterVec3) } } }
+	};
 
 
 	static bool isParameterTypeAllowed(rttr::type curveType, rttr::type parameterType)
@@ -1005,38 +1005,30 @@ namespace nap
 					// handle paste
 					if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 					{
-						action->mTrackType == RTTI_OF(SequenceTrackCurveFloat)
-						if( ImGui::Button("Paste") )
+						auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+						if( curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveFloat) && action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
+							curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec2) && action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
+							curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec3) && action->mTrackType == RTTI_OF(SequenceTrackCurveVec3) ||
+							curve_segment_clipboard->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec4) && action->mTrackType == RTTI_OF(SequenceTrackCurveVec4))
 						{
-							auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-
-							std::vector<std::unique_ptr<rtti::Object>> read_objects;
-							auto* curve_segment = curve_segment_clipboard->deserialize<SequenceTrackSegmentCurveFloat>(read_objects);
-
-							if( curve_segment != nullptr )
+							if( ImGui::Button("Paste") )
 							{
-								auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-								const auto* new_segment = curve_controller.insertSegment(action->mTrackID, action->mTime);
-
-								curve_controller.segmentDurationChange(action->mTrackID, new_segment->mID, curve_segment->mDuration);
-
-								for(int i = 1; i < curve_segment->mCurves[0]->mPoints.size() - 1; i++)
+								if( action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) )
 								{
-									curve_controller.insertCurvePoint(action->mTrackID, new_segment->mID, curve_segment->mCurves[0]->mPoints[i].mPos.mTime, 0);
+									pasteClipboard<SequenceTrackSegmentCurveFloat>(action->mTrackID, action->mTime);
+								}else if( action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ){
+									pasteClipboard<SequenceTrackSegmentCurveVec2>(action->mTrackID, action->mTime);
+								}else if( action->mTrackType == RTTI_OF(SequenceTrackCurveVec3) ){
+									pasteClipboard<SequenceTrackSegmentCurveVec3>(action->mTrackID, action->mTime);
+								}else if( action->mTrackType == RTTI_OF(SequenceTrackCurveVec4) ){
+									pasteClipboard<SequenceTrackSegmentCurveVec4>(action->mTrackID, action->mTime);
 								}
 
-								for(int i = 0 ; i < curve_segment->mCurves[0]->mPoints.size(); i++)
-								{
-									if( i > 0 )
-										curve_controller.changeCurvePoint(action->mTrackID, new_segment->mID, i, 0, curve_segment->mCurves[0]->mPoints[i].mPos.mTime, curve_segment->mCurves[0]->mPoints[i].mPos.mValue);
-
-									curve_controller.changeTanPoint(action->mTrackID, new_segment->mID, i, 0, SequenceCurveEnums::IN, curve_segment->mCurves[0]->mPoints[i].mInTan.mTime, curve_segment->mCurves[0]->mPoints[i].mInTan.mValue);
-								}
+								mState.mDirty = true;
+								mState.mAction = createAction<None>();
+								ImGui::CloseCurrentPopup();
 							}
-
-							mState.mDirty = true;
-							mState.mAction = createAction<None>();
-							ImGui::CloseCurrentPopup();
 						}
 					}
 
@@ -2011,5 +2003,43 @@ namespace nap
 	{
 		ImGui::PushItemWidth(225.0f);
 		return ImGui::InputFloat4("", &v[0], precision);
+	}
+
+	template<typename T>
+	void SequenceCurveTrackView::pasteClipboard(const std::string& trackId, double time)
+	{
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+		std::vector<std::unique_ptr<rtti::Object>> read_objects;
+		rtti::ObjectPtr<T> curve_segment;
+		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
+		{
+			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+			const auto* new_segment = curve_controller.insertSegment(trackId, time);
+
+			curve_controller.segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
+
+			for(int c = 0; c < curve_segment->mCurves.size(); c++)
+			{
+				for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
+				{
+					curve_controller.insertCurvePoint(trackId, new_segment->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
+				}
+			}
+
+			for(int c = 0; c < curve_segment->mCurves.size(); c++)
+			{
+				for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
+				{
+					if (i > 0)
+						curve_controller.changeCurvePoint(trackId, new_segment->mID, i, c,
+														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
+														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
+
+					curve_controller.changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
+													curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
+													curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
+				}
+			}
+		}
 	}
 }

@@ -195,6 +195,9 @@ namespace nap
 		 */
 		virtual void showTrackContent(const SequenceTrack &track, const ImVec2& trackTopLeft) override;
 
+		template<typename T>
+		void pasteClipboard(const std::string& trackId, double time);
+
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
 
