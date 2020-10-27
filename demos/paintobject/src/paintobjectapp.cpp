@@ -112,13 +112,18 @@ namespace nap
 		std::vector<EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
+		// Notify user that painting in debug mode is slow
+#ifdef _DEBUG
+		if (!mOpened)
+			ImGui::OpenPopup("Debug");
+		handlePopup();
+#endif // DEBUG
+
 		// Add some gui elements
 		ImGui::Begin("Controls");
+
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-#ifdef _DEBUG
-		ImGui::TextColored(clr, "Runs better in release mode!");
-#endif // DEBUG
 		ImGui::TextColored(clr, "Hold LMB to spray paint on object");
 		ImGui::TextColored(clr, "Hold space + LMB to rotate, RMB to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
@@ -496,5 +501,20 @@ namespace nap
 		}
 
 		mClearPaint = true;
+	}
+
+
+	void PaintObjectApp::handlePopup()
+	{
+		if (ImGui::BeginPopupModal("Debug"))
+		{
+			ImGui::Text("Painting is slow in Debug mode");
+			if (ImGui::Button("Gotcha"))
+			{
+				mOpened = true;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
 	}
 }

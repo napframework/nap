@@ -138,5 +138,9 @@ namespace nap
 		// Selected mesh renderer
 		std::string mSelectedMeshRendererID;
 		int mPaintIndex = 0;
+
+		// Handle debug popup
+		void handlePopup();
+		bool mOpened = false;
 	};
 }
