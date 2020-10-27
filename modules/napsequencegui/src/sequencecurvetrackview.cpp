@@ -1003,8 +1003,9 @@ namespace nap
 					}
 
 					// handle paste
-					if( mState.mClipboard->isClipboard<CurveSegmentClipboard>() && action->mTrackType == RTTI_OF(SequenceTrackCurveFloat))
+					if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 					{
+						action->mTrackType == RTTI_OF(SequenceTrackCurveFloat)
 						if( ImGui::Button("Paste") )
 						{
 							auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
@@ -1541,7 +1542,7 @@ namespace nap
 				if( ImGui::Button("Copy") )
 				{
 					const auto* curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-					mState.mClipboard = createClipboard<CurveSegmentClipboard>();
+					mState.mClipboard = createClipboard<CurveSegmentClipboard>(action->mSegmentType);
 					if( !mState.mClipboard->serialize(curve_segment) )
 					{
 						nap::Logger::error("Error serializing curve segment");

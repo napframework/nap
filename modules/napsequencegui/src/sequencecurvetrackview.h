@@ -496,6 +496,8 @@ namespace nap
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
+			CurveSegmentClipboard(rttr::type segmentType) : mSegmentType(segmentType){}
+			rttr::type mSegmentType;
 		};
 	}
 
