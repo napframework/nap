@@ -48,7 +48,7 @@ namespace nap
 		 */
 		class NAPAPI AudioInputComponentInstance : public AudioComponentBaseInstance
 		{
-		RTTI_ENABLE(AudioComponentBaseInstance)
+			RTTI_ENABLE(AudioComponentBaseInstance)
 		public:
 			AudioInputComponentInstance(EntityInstance& entity, Component& resource) : AudioComponentBaseInstance(
 					entity, resource)
