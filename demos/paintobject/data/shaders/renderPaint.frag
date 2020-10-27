@@ -52,6 +52,6 @@ void main()
 	// this is useful for cleaning all the paint in one pass
 	out_col 				*= ubo.inFinalMultiplier;
 
-	// finally, set the color
+	// finally, set the color based on mix value
 	out_Color = out_col;
 }

@@ -104,7 +104,7 @@ namespace nap
 	const Triangle TriangleIterator::next()
 	{
 		// Retrieve next value from the current iterator. This cannot fail, because next() should only be called while isDone() returns false
-		Triangle result = Triangle(mCurShapeIndex, mCurIterator->next());
+		Triangle result(mCurShapeIndex, mCurIterator->next());
 
 		// If retrieving the current value finished the current iterator, advance to the next one
 		if (mCurIterator->isDone())

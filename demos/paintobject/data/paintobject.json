@@ -101,6 +101,90 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "PaintEntityA",
+            "Components": [
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "PaintTextureA",
+                    "OutputTexture": "PaintRenderTextureB",
+                    "MaterialInstance": {
+                        "Material": "PaintMaterial",
+                        "Uniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "Sampler2D_680bf2b8",
+                                "Name": "inMainTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "Texture": "PaintRenderTextureA"
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "SampleShading": true,
+                    "Samples": "Four",
+                    "ClearColor": {
+                        "Values": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PaintEntityB",
+            "Components": [
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "PaintTextureB",
+                    "OutputTexture": "PaintRenderTextureA",
+                    "MaterialInstance": {
+                        "Material": "PaintMaterial",
+                        "Uniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "Sampler2D_ac2eac90",
+                                "Name": "inMainTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "Texture": "PaintRenderTextureB"
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "SampleShading": true,
+                    "Samples": "Four",
+                    "ClearColor": {
+                        "Values": [
+                            0,
+                            0,
+                            0
+                        ]
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "PerspectiveCamera",
             "Components": [
                 {
@@ -231,27 +315,6 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderToTextureComponent",
-                    "mID": "PaintRenderToTextureComponent",
-                    "OutputTexture": "PaintRenderTexture",
-                    "MaterialInstance": {
-                        "Material": "PaintMaterial",
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "SampleShading": true,
-                    "Samples": "Four",
-                    "ClearColor": {
-                        "Values": [
-                            0,
-                            0,
-                            0
-                        ]
-                    }
-                },
-                {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "WorldRenderer",
                     "Mesh": "SphereMesh",
@@ -326,7 +389,10 @@
                     }
                 }
             ],
-            "Children": []
+            "Children": [
+                "PaintEntityA",
+                "PaintEntityB"
+            ]
         },
         {
             "Type": "nap::ImageFromFile",
@@ -405,7 +471,7 @@
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
                     "AnisotropicSamples": "Default",
-                    "Texture": "PaintRenderTexture"
+                    "Texture": "PaintRenderTextureB"
                 }
             ],
             "Shader": "ObjectShader",
@@ -431,19 +497,6 @@
             "mID": "PaintMaterial",
             "Uniforms": [],
             "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "RenderTextureInput",
-                    "Name": "inMainTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "PaintRenderTexture"
-                },
                 {
                     "Type": "nap::Sampler2D",
                     "mID": "RenderTextureBrush",
@@ -507,14 +560,14 @@
             "mID": "Parameters",
             "Parameters": [
                 {
-                    "Type": "nap::ParameterRGBColorFloat",
+                    "Type": "nap::ParameterRGBAColor8",
                     "mID": "BrushColorParam",
                     "Name": "Brush Color",
                     "Value": {
                         "Values": [
-                            0.7843137383460999,
-                            0.4117647111415863,
-                            0.4117647111415863
+                            0,
+                            4,
+                            45
                         ]
                     }
                 },
@@ -530,7 +583,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSizeParam",
                     "Name": "Brush Size",
-                    "Value": 0.009999999776482582,
+                    "Value": 0.011,
                     "Minimum": 0.0,
                     "Maximum": 0.10000000149011612
                 },
@@ -563,21 +616,31 @@
             "Type": "nap::RenderTexture2D",
             "mID": "BrushRenderTexture",
             "Usage": "Static",
+            "Fill": true,
             "Width": 512,
             "Height": 512,
             "Format": "RGBA8",
-            "ColorSpace": "sRGB",
-            "Fill": true
+            "ColorSpace": "sRGB"
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "PaintRenderTexture",
+            "mID": "PaintRenderTextureA",
             "Usage": "Static",
+            "Fill": true,
             "Width": 2048,
             "Height": 2048,
             "Format": "RGBA8",
-            "ColorSpace": "sRGB",
-            "Fill": true
+            "ColorSpace": "sRGB"
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "PaintRenderTextureB",
+            "Usage": "Static",
+            "Fill": true,
+            "Width": 2048,
+            "Height": 2048,
+            "Format": "RGBA8",
+            "ColorSpace": "sRGB"
         },
         {
             "Type": "nap::RenderWindow",
@@ -645,8 +708,8 @@
             "Usage": "Static",
             "CullMode": "None",
             "Radius": 1.0,
-            "Rings": 50.0,
-            "Sectors": 50.0
+            "Rings": 25.0,
+            "Sectors": 25.0
         }
     ]
 }

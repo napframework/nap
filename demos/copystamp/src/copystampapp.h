@@ -85,5 +85,9 @@ namespace nap
 		// Updates gui components
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		void updateGui();
+
+		// Handle debug popup
+		void handlePopup();
+		bool mOpened = false;
 	};
 }
