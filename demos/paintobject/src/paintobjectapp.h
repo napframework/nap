@@ -14,12 +14,14 @@
 #include <inputservice.h>
 #include <renderservice.h>
 #include <imguiservice.h>
+#include <parameterservice.h>
 #include <app.h>
 #include <spheremesh.h>
 #include <font.h>
 #include <imagefromfile.h>
 #include <parameternumeric.h>
 #include <parametercolor.h>
+#include <parametergui.h>
 
 namespace nap
 {
@@ -95,6 +97,7 @@ namespace nap
 		SceneService*		mSceneService		= nullptr;				//< Manages all the objects in the scene
 		InputService*		mInputService		= nullptr;				//< Input service for processing input
 		IMGuiService*		mGuiService			= nullptr;				//< Manages gui related update / draw calls
+		ParameterService*	mParameterService	= nullptr;				//< Manages all parameters
 
 		// Render Window
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;	//< Pointer to the render window		
@@ -120,6 +123,10 @@ namespace nap
 
 		// Text Highlight Color
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+
+		// GUI
+		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;	//< Able to draw parameters to screen
+		ObjectPtr<ParameterGroup> mParameterGroup = nullptr;		//< Contains all parameters
 
 		// Draw state variables
 		bool mMouseOnObject				= false;

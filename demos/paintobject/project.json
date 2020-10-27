@@ -5,7 +5,7 @@
     "Version": "1.0.0", 
     "RequiredModules": [
         "mod_napapp", 
-        "mod_napimgui", 
+        "mod_napparametergui", 
         "mod_napcameracontrol"
     ], 
     "Data": "data/paintobject.json", 

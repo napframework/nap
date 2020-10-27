@@ -491,62 +491,69 @@
             "Path": "optimized_pig.mesh"
         },
         {
-            "Type": "nap::ParameterBool",
-            "mID": "EraserModeParam",
-            "Name": "Eraser Mode",
-            "Value": false
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "BrushFallOffParam",
-            "Name": "BrushFallOff",
-            "Value": 0.0,
-            "Minimum": 0.0,
-            "Maximum": 1.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "BrushSizeParam",
-            "Name": "",
-            "Value": 0.009999999776482582,
-            "Minimum": 0.0,
-            "Maximum": 0.10000000149011612
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "BrushSoftnessParam",
-            "Name": "Brush Softness",
-            "Value": 1.0,
-            "Minimum": 0.0,
-            "Maximum": 100.0
-        },
-        {
             "Type": "nap::ParameterFloat",
             "mID": "LightIntensityParam",
-            "Name": "",
-            "Value": 1.0,
+            "Name": "Light Intensity",
+            "Value": 0.75,
             "Minimum": 0.0,
             "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "BrushColorParam",
+                    "Name": "Brush Color",
+                    "Value": {
+                        "Values": [
+                            0.7843137383460999,
+                            0.4117647111415863,
+                            0.4117647111415863
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BrushFallOffParam",
+                    "Name": "Brush Falloff",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BrushSizeParam",
+                    "Name": "Brush Size",
+                    "Value": 0.009999999776482582,
+                    "Minimum": 0.0,
+                    "Maximum": 0.10000000149011612
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BrushSoftnessParam",
+                    "Name": "Brush Softness",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 25.0
+                },
+                {
+                    "Type": "nap::ParameterBool",
+                    "mID": "EraserModeParam",
+                    "Name": "Eraser Mode",
+                    "Value": false
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::ParameterInt",
             "mID": "MeshSelectionParam",
-            "Name": "",
+            "Name": "Mesh Selection",
             "Value": 0,
             "Minimum": 0,
             "Maximum": 2
-        },
-        {
-            "Type": "nap::ParameterRGBColorFloat",
-            "mID": "BrushColorParam",
-            "Name": "Brush Color",
-            "Value": {
-                "Values": [
-                    0.7843137383460999,
-                    0.4117647111415863,
-                    0.4117647111415863
-                ]
-            }
         },
         {
             "Type": "nap::RenderTarget",
@@ -560,19 +567,6 @@
                 "w": 0.0
             },
             "ColorTexture": "BrushRenderTexture"
-        },
-        {
-            "Type": "nap::RenderTarget",
-            "mID": "PaintRenderTarget",
-            "SampleShading": false,
-            "Samples": "One",
-            "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 0.0
-            },
-            "ColorTexture": "PaintRenderTexture"
         },
         {
             "Type": "nap::RenderTexture2D",

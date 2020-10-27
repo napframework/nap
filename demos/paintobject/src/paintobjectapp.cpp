@@ -40,10 +40,11 @@ namespace nap
 	bool PaintObjectApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
-		mRenderService	= getCore().getService<nap::RenderService>();
-		mSceneService	= getCore().getService<nap::SceneService>();
-		mInputService	= getCore().getService<nap::InputService>();
-		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mRenderService		= getCore().getService<nap::RenderService>();
+		mSceneService		= getCore().getService<nap::SceneService>();
+		mInputService		= getCore().getService<nap::InputService>();
+		mGuiService			= getCore().getService<nap::IMGuiService>();
+		mParameterService	= getCore().getService<nap::ParameterService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -61,6 +62,7 @@ namespace nap
 		mLightIntensityParam	= mResourceManager->findObject<nap::ParameterFloat>("LightIntensityParam");
 		mEraserModeParam		= mResourceManager->findObject<nap::ParameterBool>("EraserModeParam");
 		mMeshSelectionParam		= mResourceManager->findObject<nap::ParameterInt>("MeshSelectionParam");
+		mParameterGroup			= mResourceManager->findObject<nap::ParameterGroup>("Parameters");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -79,6 +81,9 @@ namespace nap
 
 		// Begin with pigmesh as object to paint on
 		mSelectedMeshRendererID = "PigRenderer";
+
+		// Create parameter GUI, used to draw parameters
+		mParameterGUI = std::make_unique<ParameterGUI>(*mParameterService);
 
 		return true;
 	}
@@ -110,9 +115,20 @@ namespace nap
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "Hold left mouse button to spray paint on object");
-		ImGui::TextColored(clr, "Hold spacebar + left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(clr, "Hold LMB to spray paint on object");
+		ImGui::TextColored(clr, "Hold space + LMB to rotate, RMB to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		// Mesh Selection
+		if (ImGui::SliderInt(mMeshSelectionParam->mName.c_str(), &mMeshSelectionParam->mValue, mMeshSelectionParam->mMinimum, mMeshSelectionParam->mMaximum))
+			switchMesh(mMeshSelectionParam->mValue);
+
+		// Light Intensity
+		ImGui::SliderFloat(mLightIntensityParam->mName.c_str(), &mLightIntensityParam->mValue, mLightIntensityParam->mMinimum, mLightIntensityParam->mMaximum);
+
+		// Serializable parameters (presets)
+		if(ImGui::CollapsingHeader("Paint"))
+			mParameterGUI->show(mParameterGroup.get(), false);
 
 		// Display render textures
 		if (ImGui::CollapsingHeader("Textures"))
@@ -123,34 +139,6 @@ namespace nap
 			ImGui::Image(*mPaintTexture, ImVec2(col_width, col_width * ratio));
 			ImGui::Text("Brush Texture");
 			ImGui::Image(*mBrushTexture, ImVec2(col_width, col_width * ratio));
-		}
-
-		// Display brush and paint parameters
-		if (ImGui::CollapsingHeader("Parameters"))
-		{
-			// Mesh Selection
-			if( ImGui::SliderInt("Mesh Selection", &mMeshSelectionParam->mValue, mMeshSelectionParam->mMinimum, mMeshSelectionParam->mMaximum))
-			{
-				switchMesh(mMeshSelectionParam->mValue);
-			}
-
-			// Brush parameters
-			ImGui::SliderFloat("Brush Softness", &mBrushSoftnessParam->mValue, mBrushSoftnessParam->mMinimum, mBrushSoftnessParam->mMaximum);
-			ImGui::SliderFloat("Brush Falloff", &mBrushFalloffParam->mValue, mBrushFalloffParam->mMinimum, mBrushFalloffParam->mMaximum);
-			ImGui::SliderFloat("Brush Size", &mBrushSizeParam->mValue, mBrushSizeParam->mMinimum, mBrushSizeParam->mMaximum);
-
-			// Eraser mode
-			ImGui::Checkbox("Eraser mode", &mEraserModeParam->mValue);
-
-			// Brush color
-			glm::vec3 color(mBrushColorParam->mValue.getRed(), mBrushColorParam->mValue.getGreen(), mBrushColorParam->mValue.getBlue());
-			if (ImGui::ColorPicker3("Brush Color", &color.r))
-			{
-				mBrushColorParam->setValue(RGBColorFloat(color.r, color.g, color.b));
-			}
-
-			// Light intensity parameter
-			ImGui::SliderFloat("Light Intensity", &mLightIntensityParam->mValue, mLightIntensityParam->mMinimum, mLightIntensityParam->mMaximum);
 		}
 
 		ImGui::End();
@@ -191,7 +179,7 @@ namespace nap
 		// Set the brush color
 		auto* brush_color = ubo->getOrCreateUniform<nap::UniformVec4Instance>("inBrushColor");
 		auto col = mBrushColorParam->getValue();
-		brush_color->setValue(glm::vec4(col.getRed(), col.getGreen(), col.getBlue(), 1.0f));
+		brush_color->setValue({ col.toVec3(), 1.0f });
 
 		// Give mouse position in UV space
 		auto* mouse_pos = ubo->getOrCreateUniform<nap::UniformVec2Instance>("inMousePosition");
@@ -233,6 +221,7 @@ namespace nap
 
 		// Draw into the render texture
 		render_to_texture.draw();
+		mClearPaint = false;
 	}
 
 
@@ -249,10 +238,7 @@ namespace nap
 		{
 			// Clear paint if necessary
 			if( mClearPaint )
-			{
 				removeAllPaint();
-				mClearPaint = false;
-			}
 
 			// Render new paint if necessary
 			if (mDrawMode && mMouseOnObject && mMouseDown)
@@ -330,8 +316,8 @@ namespace nap
 
 
 	/**
-	 * Called by the app loop. It's best to forward messages to the input service for further processing later on
-	 * In this case we also check if we need to toggle full-screen or exit the running app
+	 * Input event handling, can also be done in a separate component but for
+	 * this demo handling it directly inside the application is sufficient. 
 	 */
 	void PaintObjectApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
@@ -363,7 +349,9 @@ namespace nap
 				TransformComponentInstance& world_xform = mWorldEntity->getComponent<TransformComponentInstance>();
 				orbit_controller.enable(world_xform.getTranslate());
 			}
-		} // if 'space' is released, go back to paint mode and stop the mouse from moving the camera
+		} 
+		
+		// if 'space' is released, go back to paint mode and stop the mouse from moving the camera
 		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyReleaseEvent)))
 		{
 			nap::KeyReleaseEvent* release_event = static_cast<nap::KeyReleaseEvent*>(inputEvent.get());
@@ -376,8 +364,8 @@ namespace nap
 			}
 		}
 
-		//
-		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
+		// Check for mouse down
+		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
 			nap::PointerPressEvent* event = static_cast<nap::PointerPressEvent*>(inputEvent.get());
 			if (event->mButton == EMouseButton::LEFT)
@@ -386,8 +374,8 @@ namespace nap
 			}
 		}
 
-		//
-		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
+		// Check for mouse release
+		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
 		{
 			nap::PointerReleaseEvent* event = static_cast<nap::PointerReleaseEvent*>(inputEvent.get());
 			if (event->mButton == EMouseButton::LEFT)
@@ -396,6 +384,7 @@ namespace nap
 			}
 		}
 
+		// If mouse is down and draw mode is on, perform trace
 		if (mMouseDown && mDrawMode)
 		{
 			// Perform trace when the mouse is down
@@ -420,6 +409,7 @@ namespace nap
 		return 0;
 	}
 
+
 	/**
 	 * Performs a raycast and looks for any intersecting triangles
 	 * When intersection occurs, lookup the UV coordinate of the mouse position on the object
@@ -428,6 +418,10 @@ namespace nap
 	 */
 	void PaintObjectApp::doTrace(const PointerEvent& event)
 	{
+		// If we're not drawing and mouse is not down, skip
+		if (!(mDrawMode && mMouseDown))
+			mMouseOnObject = false;
+
 		// Get the camera and camera transform
 		PerspCameraComponentInstance& camera = mPerspectiveCamEntity->getComponent<PerspCameraComponentInstance>();
 		TransformComponentInstance& camera_xform = mPerspectiveCamEntity->getComponent<TransformComponentInstance>();
@@ -458,37 +452,25 @@ namespace nap
 		// Create the triangle iterator
 		TriangleIterator triangle_it(mesh);
 
-		// Perform intersection test, walk over every triangle in the mesh.
-		// In this case only 2, nice and fast. When there is a hit use the returned barycentric coordinates
-		// to get the interpolated (triangulated) uv attribute value at point of intersection
-
-		if (mDrawMode && mMouseDown)
+		// Perform intersection test, walk over every triangle in the mesh
+		mMouseOnObject = false;
+		while (!triangle_it.isDone())
 		{
-			bool onObject = false;
-			while (!triangle_it.isDone())
+			// Use the indices to get the vertex positions
+			Triangle triangle = triangle_it.next();
+
+			tri_vertices[0] = (math::objectToWorld(vertices[triangle[0]], world_xform.getGlobalTransform()));
+			tri_vertices[1] = (math::objectToWorld(vertices[triangle[1]], world_xform.getGlobalTransform()));
+			tri_vertices[2] = (math::objectToWorld(vertices[triangle[2]], world_xform.getGlobalTransform()));
+
+			glm::vec3 bary_coord;
+			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, bary_coord))
 			{
-				// Use the indices to get the vertex positions
-				Triangle triangle = triangle_it.next();
-
-				tri_vertices[0] = (math::objectToWorld(vertices[triangle[0]], world_xform.getGlobalTransform()));
-				tri_vertices[1] = (math::objectToWorld(vertices[triangle[1]], world_xform.getGlobalTransform()));
-				tri_vertices[2] = (math::objectToWorld(vertices[triangle[2]], world_xform.getGlobalTransform()));
-
-				glm::vec3 bary_coord;
-				if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, bary_coord))
-				{
-					TriangleData<glm::vec3> uv_triangle_data = triangle.getVertexData(uvs);
-					mMousePosOnObject = utility::interpolateVertexAttr<glm::vec3>(uv_triangle_data, bary_coord);
-					onObject = true;
-					break;
-				}
+				TriangleData<glm::vec3> uv_triangle_data = triangle.getVertexData(uvs);
+				mMousePosOnObject = utility::interpolateVertexAttr<glm::vec3>(uv_triangle_data, bary_coord);
+				mMouseOnObject = true;
+				break;
 			}
-
-			mMouseOnObject = onObject;
-		}
-		else
-		{
-			mMouseOnObject = false;
 		}
 	}
 
