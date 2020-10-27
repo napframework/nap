@@ -560,14 +560,14 @@
             "mID": "Parameters",
             "Parameters": [
                 {
-                    "Type": "nap::ParameterRGBColorFloat",
+                    "Type": "nap::ParameterRGBAColor8",
                     "mID": "BrushColorParam",
                     "Name": "Brush Color",
                     "Value": {
                         "Values": [
-                            0.7843137383460999,
-                            0.4117647111415863,
-                            0.4117647111415863
+                            0,
+                            4,
+                            45
                         ]
                     }
                 },
@@ -583,7 +583,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSizeParam",
                     "Name": "Brush Size",
-                    "Value": 0.015,
+                    "Value": 0.011,
                     "Minimum": 0.0,
                     "Maximum": 0.10000000149011612
                 },

@@ -144,10 +144,10 @@ namespace nap
 		{
 			float col_width = ImGui::GetColumnWidth();
 			float ratio = (float)mPaintTextureA->getHeight() / (float)mPaintTextureA->getWidth();
-			ImGui::Text("Paint Texture");
-			ImGui::Image(*mPaintTextureA, ImVec2(col_width, col_width * ratio));
 			ImGui::Text("Brush Texture");
 			ImGui::Image(*mBrushTexture, ImVec2(col_width, col_width * ratio));
+			ImGui::Text("Paint Texture");
+			ImGui::Image(*mPaintTextureA, ImVec2(col_width, col_width * ratio));
 		}
 		ImGui::End();
 	}
@@ -178,65 +178,55 @@ namespace nap
 	 */
 	void PaintObjectApp::renderPaint()
 	{
-		// Only apply paint when it needs to be removed or when actively spraying
-		if (mClearPaint || (mDrawMode && mMouseOnObject && mMouseDown))
-		{
-			// Get the entity that can draw the paint effect
-			nap::EntityInstance& paint_entity = (*mWorldEntity)[mPaintIndex];
-			
-			// Get the struct that contains all the uniforms we want to set
-			auto& render_to_texture = paint_entity.getComponent<RenderToTextureComponentInstance>();
-			auto* paint_ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
+		// Only render paint when it is being applied or needs to be removed
+		if (!isPainting() && !mClearPaint)
+			return;
 
-			// Removes all paint from paint texture in one pass
-			// This is done by setting the inFinalMultiplier float uniform to zero, which renders all pixels in the render texture black with no alpha
-			if (mClearPaint)
-			{
-				UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inFinalMultiplier");
-				final_multiplier->setValue(0.0f);
-				mClearPaint = false;
-			}
-			else
-			{
-				// Set the brush color
-				auto* brush_color = paint_ubo->getOrCreateUniform<UniformVec4Instance>("inBrushColor");
-				auto col = mBrushColorParam->getValue();
-				brush_color->setValue({ col.toVec3(), 1.0f });
+		// Get the component that can draw the paint effect.
+		nap::EntityInstance& paint_entity = (*mWorldEntity)[mPaintIndex];
+		auto& paint_to_texture = paint_entity.getComponent<RenderToTextureComponentInstance>();
 
-				// Give mouse position in UV space
-				auto* mouse_pos = paint_ubo->getOrCreateUniform<UniformVec2Instance>("inMousePosition");
-				mouse_pos->setValue(mMousePosOnObject);
+		// Get the struct that contains all the uniforms we want to set
+		auto* paint_ubo = paint_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
 
-				// Set brush size
-				UniformFloatInstance* brush_size = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inBrushSize");
-				brush_size->setValue(mBrushSizeParam->mValue);
+		// Set the brush color
+		auto* brush_color = paint_ubo->getOrCreateUniform<UniformVec4Instance>("inBrushColor");
+		glm::vec3 col = mBrushColorParam->getValue().convert<RGBColorFloat>().toVec3();
+		brush_color->setValue({ col, 1.0f });
+		
+		// Give mouse position in UV space
+		auto* mouse_pos = paint_ubo->getOrCreateUniform<UniformVec2Instance>("inMousePosition");
+		mouse_pos->setValue(mMousePosOnObject);
 
-				// Set eraser mode
-				UniformFloatInstance* eraser_mode = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inEraserAmount");
-				eraser_mode->setValue((float)mEraserModeParam->mValue);
+		// Set brush size
+		UniformFloatInstance* brush_size = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inBrushSize");
+		brush_size->setValue(mBrushSizeParam->mValue);
 
-				// Set final multiplier, used to clear the paint texture
-				UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inFinalMultiplier");
-				final_multiplier->setValue(1.0f);
-			}
+		// Set eraser mode
+		UniformFloatInstance* eraser_mode = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inEraserAmount");
+		eraser_mode->setValue((float)mEraserModeParam->mValue);
 
-			// Draw the render texture
-			render_to_texture.draw();
+		// Set final multiplier, used to clear the paint texture
+		UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inFinalMultiplier");
+		final_multiplier->setValue(mClearPaint ? 0.0f : 1.0f);
+		mClearPaint = false;
 
-			// Ensure the mesh that is rendered uses the texture we just painted into
-			RenderableMeshComponentInstance& renderable_mesh = *mWorldEntity->findComponentByID<RenderableMeshComponentInstance>(mSelectedMeshRendererID);
-			Sampler2DInstance* sampler = renderable_mesh.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>("inPaintTexture");
-			sampler->setTexture(mPaintIndex == 0 ? *mPaintTextureB : *mPaintTextureA);
+		// Draw the render texture
+		paint_to_texture.draw();
 
-			// Increment paint index. We do this to avoid a feedback loop, where
-			// the render texture is both the target and source, which isn't allowed by Vulkan.
-			// To counter this we use bounce passes:
-			// Frame 1: Read from A, render into B
-			// Frame 2: Read from B, render into A
-			// Frame 3: Read from A, render into B
-			// etc.
-			mPaintIndex = ++mPaintIndex % 2;
-		}
+		// Ensure the mesh that is rendered uses the texture we just painted into
+		RenderableMeshComponentInstance& renderable_mesh = *mWorldEntity->findComponentByID<RenderableMeshComponentInstance>(mSelectedMeshRendererID);
+		Sampler2DInstance* sampler = renderable_mesh.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>("inPaintTexture");
+		sampler->setTexture(paint_to_texture.getOutputTexture());
+
+		// Increment paint index. We do this to avoid a feedback loop, where
+		// the render texture is both the target and source, which isn't allowed by Vulkan.
+		// To counter this we use bounce passes:
+		// Frame 1: Read from texture A, render into texture B
+		// Frame 2: Read from texture B, render into texture A
+		// Frame 3: Read from texture A, render into texture B
+		// etc.
+		mPaintIndex = ++mPaintIndex % 2;
 	}
 
 
@@ -501,6 +491,12 @@ namespace nap
 		}
 
 		mClearPaint = true;
+	}
+
+
+	bool PaintObjectApp::isPainting() const
+	{
+		return mDrawMode && mMouseOnObject && mMouseDown;
 	}
 
 
