@@ -76,6 +76,13 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
+		// Notify user that painting in debug mode is slow
+#ifdef _DEBUG
+		if (!mOpened)
+			ImGui::OpenPopup("Running Debug Build");
+		handlePopup();
+#endif // DEBUG
+
 		// Update gui and check for gui changes
 		updateGui();
 	}
@@ -191,5 +198,20 @@ namespace nap
 			ImGui::SliderFloat("Random Scale", &(copy_comp.mRandomScale), 0.0f, 1.0f);
 		}
 		ImGui::End();
+	}
+
+
+	void CopystampApp::handlePopup()
+	{
+		if (ImGui::BeginPopupModal("Running Debug Build"))
+		{
+			ImGui::Text("Performance is ~100x times better in a release build");
+			if (ImGui::Button("Gotcha"))
+			{
+				mOpened = true;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
 	}
 }

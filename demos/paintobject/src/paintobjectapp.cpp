@@ -115,7 +115,7 @@ namespace nap
 		// Notify user that painting in debug mode is slow
 #ifdef _DEBUG
 		if (!mOpened)
-			ImGui::OpenPopup("Debug");
+			ImGui::OpenPopup("Running Debug Build");
 		handlePopup();
 #endif // DEBUG
 
@@ -246,10 +246,8 @@ namespace nap
 		// Let the render service now we are beginning to render to off-screen buffers
 		if (mRenderService->beginHeadlessRecording())
 		{
-			// First, render the brush
+			// Render brush and paint
 			renderBrush();
-
-			// Now, render the new paint
 			renderPaint();
 
 			// Let the render service now we are finished rendering to off-screen buffers
@@ -408,9 +406,12 @@ namespace nap
 
 
 	/**
-	 * Performs a raycast and looks for any intersecting triangles
+	 * Performs a ray-cast and looks for any intersecting triangles
 	 * When intersection occurs, lookup the UV coordinate of the mouse position on the object
-	 * This will be the position we use to add paint in UV space
+	 * This will be the position we use to add paint in UV space.
+	 * Depending on the complexity of the geometry this call can be slow, as it currently iterates
+	 * over all triangles until it finds a possible match. Can be optimized using faster indexing methods such
+	 * as a KD-tree etc. 
 	 * @param event the pointer event
 	 */
 	void PaintObjectApp::doTrace(const PointerEvent& event)
@@ -502,9 +503,9 @@ namespace nap
 
 	void PaintObjectApp::handlePopup()
 	{
-		if (ImGui::BeginPopupModal("Debug"))
+		if (ImGui::BeginPopupModal("Running Debug Build"))
 		{
-			ImGui::Text("Painting is slow in Debug mode");
+			ImGui::Text("Painting is slow in a debug build");
 			if (ImGui::Button("Gotcha"))
 			{
 				mOpened = true;
