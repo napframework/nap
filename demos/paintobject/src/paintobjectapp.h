@@ -33,10 +33,19 @@ namespace nap
 	 * Shows an object that can be painted using the left mouse button.
 	 * By holding down the 'space bar' you can rotate the camera around the object
 	 * 
-	 * The application uses a rendertexturecomponent to generate a brush texture.
-	 * Then the brush texture is used to render the brush stroke in another rendertexturecomponent
+	 * The application uses a nap::RenderToTextureComponent to generate a brush texture.
+	 * Then the brush texture is used to render the brush stroke (paint) in another nap::RenderToTextureComponent.
 	 * The UV location of where to draw is determined by by tracing the position of the mouse on the mesh
-	 * and then calculating the UV coordinates of that position on the mesh
+	 * and then calculating the UV coordinates of that position on the mesh.
+	 *
+	 * The demo uses a bounce pass to generate the paint texture, because it's not allowed to read
+	 * and write to the same texture in the same render pass. This is how the paint texture is rendered:
+	 *
+	 * Frame 1: Read from texture A, render into texture B
+	 * Frame 2: Read from texture B, render into texture A
+	 * Frame 3: Read from texture A, render into texture B
+	 * etc.
+	 *
 	 *
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
