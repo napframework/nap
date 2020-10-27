@@ -15,6 +15,8 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "SampleShading": true,
+                    "Samples": "Four",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -239,6 +241,8 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "SampleShading": true,
+                    "Samples": "Four",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -556,26 +560,14 @@
             "Maximum": 2
         },
         {
-            "Type": "nap::RenderTarget",
-            "mID": "BrushRenderTarget",
-            "SampleShading": false,
-            "Samples": "One",
-            "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 0.0
-            },
-            "ColorTexture": "BrushRenderTexture"
-        },
-        {
             "Type": "nap::RenderTexture2D",
             "mID": "BrushRenderTexture",
             "Usage": "Static",
             "Width": 512,
             "Height": 512,
             "Format": "RGBA8",
-            "ColorSpace": "sRGB"
+            "ColorSpace": "sRGB",
+            "Fill": true
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -584,7 +576,8 @@
             "Width": 2048,
             "Height": 2048,
             "Format": "RGBA8",
-            "ColorSpace": "sRGB"
+            "ColorSpace": "sRGB",
+            "Fill": true
         },
         {
             "Type": "nap::RenderWindow",
