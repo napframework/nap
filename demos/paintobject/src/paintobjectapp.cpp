@@ -109,13 +109,16 @@ namespace nap
 		nap::DefaultInputRouter input_router;
 
 		// Forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
+		std::vector<EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Add some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+#ifdef _DEBUG
+		ImGui::TextColored(clr, "Runs better in release mode!");
+#endif // DEBUG
 		ImGui::TextColored(clr, "Hold LMB to spray paint on object");
 		ImGui::TextColored(clr, "Hold space + LMB to rotate, RMB to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
@@ -151,13 +154,13 @@ namespace nap
 	void PaintObjectApp::renderBrush()
 	{
 		// Get the brush render to texture component instance
-		auto& brush_renderer = mBrushEntity->getComponent<nap::RenderToTextureComponentInstance>();
+		auto& brush_renderer = mBrushEntity->getComponent<RenderToTextureComponentInstance>();
 
 		// Set brush uniforms
 		auto* brush_ubo = brush_renderer.getMaterialInstance().getOrCreateUniform("UBO");
-		auto* brush_softness = brush_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inSoftness");
+		auto* brush_softness = brush_ubo->getOrCreateUniform<UniformFloatInstance>("inSoftness");
 		brush_softness->setValue(mBrushSoftnessParam->mValue);
-		auto* brush_falloff = brush_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFalloff");
+		auto* brush_falloff = brush_ubo->getOrCreateUniform<UniformFloatInstance>("inFalloff");
 		brush_falloff->setValue(mBrushFalloffParam->mValue);
 
 		// Draw the brush
@@ -170,54 +173,65 @@ namespace nap
 	 */
 	void PaintObjectApp::renderPaint()
 	{
-		// Get the render to texture component
-		auto& render_to_texture = ((*mWorldEntity)[mPaintIndex]).getComponent<nap::RenderToTextureComponentInstance>();
-		auto* paint_ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
-		nap::UniformFloatInstance* apply_spray = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inSpray");
-
-		if (mClearPaint)
+		// Only apply paint when it needs to be removed or when actively spraying
+		if (mClearPaint || (mDrawMode && mMouseOnObject && mMouseDown))
 		{
+			// Get the entity that can draw the paint effect
+			nap::EntityInstance& paint_entity = (*mWorldEntity)[mPaintIndex];
+			
+			// Get the struct that contains all the uniforms we want to set
+			auto& render_to_texture = paint_entity.getComponent<RenderToTextureComponentInstance>();
+			auto* paint_ubo = render_to_texture.getMaterialInstance().getOrCreateUniform("UBO");
+
 			// Removes all paint from paint texture in one pass
 			// This is done by setting the inFinalMultiplier float uniform to zero, which renders all pixels in the render texture black with no alpha
-			nap::UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
-			final_multiplier->setValue(0.0f);
-			apply_spray->setValue(1.0f);
-			mClearPaint = false;
+			if (mClearPaint)
+			{
+				UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inFinalMultiplier");
+				final_multiplier->setValue(0.0f);
+				mClearPaint = false;
+			}
+			else
+			{
+				// Set the brush color
+				auto* brush_color = paint_ubo->getOrCreateUniform<UniformVec4Instance>("inBrushColor");
+				auto col = mBrushColorParam->getValue();
+				brush_color->setValue({ col.toVec3(), 1.0f });
+
+				// Give mouse position in UV space
+				auto* mouse_pos = paint_ubo->getOrCreateUniform<UniformVec2Instance>("inMousePosition");
+				mouse_pos->setValue(mMousePosOnObject);
+
+				// Set brush size
+				UniformFloatInstance* brush_size = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inBrushSize");
+				brush_size->setValue(mBrushSizeParam->mValue);
+
+				// Set eraser mode
+				UniformFloatInstance* eraser_mode = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inEraserAmount");
+				eraser_mode->setValue((float)mEraserModeParam->mValue);
+
+				// Set final multiplier, used to clear the paint texture
+				UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<UniformFloatInstance>("inFinalMultiplier");
+				final_multiplier->setValue(1.0f);
+			}
+
+			// Draw the render texture
+			render_to_texture.draw();
+
+			// Ensure the mesh that is rendered uses the texture we just painted into
+			RenderableMeshComponentInstance& renderable_mesh = *mWorldEntity->findComponentByID<RenderableMeshComponentInstance>(mSelectedMeshRendererID);
+			Sampler2DInstance* sampler = renderable_mesh.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>("inPaintTexture");
+			sampler->setTexture(mPaintIndex == 0 ? *mPaintTextureB : *mPaintTextureA);
+
+			// Increment paint index. We do this to avoid a feedback loop, where
+			// the render texture is both the target and source, which isn't allowed by Vulkan.
+			// To counter this we use bounce passes:
+			// Frame 1: Read from A, render into B
+			// Frame 2: Read from B, render into A
+			// Frame 3: Read from A, render into B
+			// etc.
+			mPaintIndex = ++mPaintIndex % 2;
 		}
-		else if (mDrawMode && mMouseOnObject && mMouseDown)
-		{
-			// Set the brush color
-			auto* brush_color = paint_ubo->getOrCreateUniform<nap::UniformVec4Instance>("inBrushColor");
-			auto col = mBrushColorParam->getValue();
-			brush_color->setValue({ col.toVec3(), 1.0f });
-
-			// Give mouse position in UV space
-			auto* mouse_pos = paint_ubo->getOrCreateUniform<nap::UniformVec2Instance>("inMousePosition");
-			mouse_pos->setValue(mMousePosOnObject);
-
-			// Set brush size
-			nap::UniformFloatInstance* brush_size = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inBrushSize");
-			brush_size->setValue(mBrushSizeParam->mValue);
-
-			// Set eraser mode
-			nap::UniformFloatInstance* eraser_mode = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inEraserAmount");
-			eraser_mode->setValue((float)mEraserModeParam->mValue);
-
-			// Set final multiplier, used to clear the paint texture
-			nap::UniformFloatInstance* final_multiplier = paint_ubo->getOrCreateUniform<nap::UniformFloatInstance>("inFinalMultiplier");
-			final_multiplier->setValue(1.0f);
-
-			// Apply paint
-			apply_spray->setValue(1.0f);
-		}
-		else
-		{
-			// Nothing is painted
-			apply_spray->setValue(0.0f);
-		}
-
-		// Draw the render texture
-		render_to_texture.draw();
 	}
 
 
@@ -254,28 +268,24 @@ namespace nap
 			mRenderWindow->beginRendering();
 
 			// Find the world and add as an object to render
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			nap::RenderableMeshComponentInstance& renderable_mesh = *mWorldEntity->findComponentByID<nap::RenderableMeshComponentInstance>(mSelectedMeshRendererID);
+			std::vector<RenderableComponentInstance*> components_to_render;
+			RenderableMeshComponentInstance& renderable_mesh = *mWorldEntity->findComponentByID<RenderableMeshComponentInstance>(mSelectedMeshRendererID);
 			components_to_render.emplace_back(&renderable_mesh);
 
-			// Set the paint texture
-			nap::Sampler2DInstance* sampler = renderable_mesh.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>("inPaintTexture");
-			sampler->setTexture(mPaintIndex == 0 ? *mPaintTextureB : *mPaintTextureA);
-
 			// Update the material of the mesh that renders the object
-			nap::UniformStructInstance* ubo = renderable_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+			UniformStructInstance* ubo = renderable_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 
 			// Set light position uniform
-			nap::UniformVec3Instance* light_pos_uniform = ubo->getOrCreateUniform<UniformVec3Instance>("LightPosition");
-			nap::TransformComponentInstance& light_transform = mLightEntity->getComponent<nap::TransformComponentInstance>();
+			UniformVec3Instance* light_pos_uniform = ubo->getOrCreateUniform<UniformVec3Instance>("LightPosition");
+			TransformComponentInstance& light_transform = mLightEntity->getComponent<TransformComponentInstance>();
 			light_pos_uniform->setValue(math::extractPosition(light_transform.getGlobalTransform()));
 
 			// Set light intensity uniform
-			nap::UniformFloatInstance* light_intensity_uniform = ubo->getOrCreateUniform<UniformFloatInstance>("LightIntensity");
+			UniformFloatInstance* light_intensity_uniform = ubo->getOrCreateUniform<UniformFloatInstance>("LightIntensity");
 			light_intensity_uniform->setValue(mLightIntensityParam->mValue);
 
 			// Find the perspective camera
-			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
+			PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<PerspCameraComponentInstance>();
 
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(*mRenderWindow, persp_camera, components_to_render);
@@ -292,9 +302,6 @@ namespace nap
 
 		// Signal the ending of the frame
 		mRenderService->endFrame();
-
-		// Increment paint index
-		mPaintIndex = ++mPaintIndex % 2;
 	}
 
 

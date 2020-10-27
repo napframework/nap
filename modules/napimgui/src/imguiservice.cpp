@@ -414,12 +414,12 @@ namespace nap
 			context->second->mMouseWheel = wheel_event.mY > 0 ? 1 : -1;
 		}
 
-		// Pointer Event
+		// Pointer press event
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
 			nap::PointerPressEvent& press_event = static_cast<nap::PointerPressEvent&>(event);
-			assert(press_event.mButton != EMouseButton::UNKNOWN);
-			context->second->mMousePressed[static_cast<int>(press_event.mButton)] = true;
+			if(press_event.mButton != EMouseButton::UNKNOWN)
+				context->second->mMousePressed[static_cast<int>(press_event.mButton)] = true;
 		}
 		return context->second->mContext;
 	}

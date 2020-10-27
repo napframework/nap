@@ -708,8 +708,8 @@
             "Usage": "Static",
             "CullMode": "None",
             "Radius": 1.0,
-            "Rings": 50.0,
-            "Sectors": 50.0
+            "Rings": 25.0,
+            "Sectors": 25.0
         }
     ]
 }

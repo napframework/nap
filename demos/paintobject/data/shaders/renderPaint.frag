@@ -18,7 +18,6 @@ uniform UBO
 	uniform float 	inBrushSize;				//< size of brush relative to uv space
 	uniform float 	inFinalMultiplier;			//< final multiplier
 	uniform float 	inEraserAmount;				//< eraser amount, when 1, brush will clear paint
-	uniform float	inSpray;					//< if the effect is applied
 } ubo;
 
 // unfiorm sampler inputs 			
@@ -54,5 +53,5 @@ void main()
 	out_col 				*= ubo.inFinalMultiplier;
 
 	// finally, set the color based on mix value
-	out_Color = mix(tex_col, out_col, ubo.inSpray);
+	out_Color = out_col;
 }
