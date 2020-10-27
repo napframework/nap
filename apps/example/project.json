@@ -8,7 +8,7 @@
         "mod_napapp",
         "mod_napparametergui"
     ], 
-    "Data": "", 
+    "Data": "data/default.json", 
     "ServiceConfig": "", 
     "PathMapping": "cache/path_mapping.json"
 }

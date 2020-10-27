@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -50,7 +54,7 @@ namespace nap
 		/**
 		 * Initializes this bitmap based on the provided settings. 
 		 * Memory is allocated but the GPU pixel data is NOT copied over
-		 * @param settings the settings used to initialize this texture.
+		 * @param surfaceDescriptor the settings used to initialize this texture.
 		 */
 		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
 

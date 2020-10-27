@@ -1,9 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
+#include "actions.h"
 #include <standarditemsobject.h>
 #include <napqt/filtertreeview.h>
-#include "actions.h"
-
 
 namespace nap
 {
@@ -16,8 +19,6 @@ namespace nap
 
 namespace napkin
 {
-
-
 	/**
 	 * Model containing full list of resources in the system. Hierarchy is represented where possible.
 	 * The data is retrieved through AppContext

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include <nap/core.h>
 #include <nap/logger.h>
@@ -79,27 +83,24 @@ namespace nap
 			foundFilePath = testPath;
 			nap::Logger::debug("Found '%s'...", foundFilePath.c_str());
 			return true;
-		} else
-		{
-			return false;
 		}
+		return false;
 	}
 
 
 	bool Core::loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
 	{
+		// Get path relative to project
 		std::string config_file_path;
-		if (findProjectFilePath(filename, config_file_path))
-		{
-			if (rtti::deserializeJSONFile(config_file_path,
-								   rtti::EPropertyValidationMode::DisallowMissingProperties,
-								   rtti::EPointerPropertyMode::NoRawPointers,
-								   mResourceManager->getFactory(),
-								   deserializeResult,
-								   errorState))
-				return true;
-		}
+		if (!errorState.check(findProjectFilePath(filename, config_file_path), "Unable to find: %s", filename.c_str()))
+			return false;
 
-		return false;
+		// Load
+		return rtti::deserializeJSONFile(config_file_path,
+			rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::NoRawPointers,
+			mResourceManager->getFactory(),
+			deserializeResult,
+			errorState);
 	}
 }

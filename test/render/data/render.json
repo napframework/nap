@@ -67,10 +67,10 @@
 			"ImagePath" : "world_texture.jpg"
 		},		
 		{
-			"Type" : "nap::Shader",
+			"Type" : "nap::ShaderFromFile",
 			"mID": "GeneralShader",
-			"mVertShader": "shaders/shader.vert",
-			"mFragShader": "shaders/shader.frag",
+			"VertShader": "shaders/shader.vert",
+			"FragShader": "shaders/shader.frag",
             "OutputFormat": "RGBA8"
 		},
 		{

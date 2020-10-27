@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -47,8 +51,8 @@ namespace nap
 		/**
 		 * Find a parameter in the current group by id
 		 *
-		 * @param name The unique id of the parameter to find
-		 * @return The parameter if found. Null otherwise.
+		 * @param id The unique id of the parameter to find
+		 * @return The parameter if found, nullptr otherwise.
 		 */
 		ResourcePtr<Parameter> findParameter(const std::string& id) const;
 
@@ -63,8 +67,8 @@ namespace nap
 		/**
 		 * Find a parameter in the current group, or any child of this group, by id
 		 *
-		 * @param name the unique id of the parameter to find
-		 * @return the parameter if found. Null otherwise.
+		 * @param id the unique id of the parameter to find
+		 * @return the parameter if found, nullptr otherwise.
 		 */
 		ResourcePtr<Parameter> findParameterRecursive(const std::string& id) const;
 
@@ -79,8 +83,8 @@ namespace nap
 		/**
 		 * Find a child ParameterGroup with the specified id
 		 *
-		 * @param name The unique id of the group to find
-		 * @return The group if found. Null otherwise.
+		 * @param id The unique id of the group to find
+		 * @return The group if found, nullptr otherwise.
 		 */
 		ResourcePtr<ParameterGroup> findChild(const std::string& id) const;
 

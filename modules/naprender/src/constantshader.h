@@ -31,7 +31,7 @@ namespace nap
 
 		/**
 		 * Cross compiles the constant GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.
-		 * @param error contains the error if initialization fails.
+		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;

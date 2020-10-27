@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Pybind includes
@@ -10,14 +14,15 @@
 #include <rtti/factory.h>
 #include <utility/errorstate.h>
 
-namespace nap {
+namespace nap 
+{
 
     // Forward declarations
     class PythonScriptService;
 
     /**
      * A python script loaded from a text file into a pybind11 module.
-     * Functions within the script can be called using the @call() method and handles to functions and classes can be acquired using @get()
+     * Functions within the script can be called using the call() method and handles to functions and classes can be acquired using get()
      */
     class NAPAPI PythonScript : public Resource
     {
@@ -30,22 +35,29 @@ namespace nap {
         bool init(utility::ErrorState& errorState) override;
 
         /**
-         * Tries to call a method that returns a value with name @identifier in the python script with the specified arguments @args.
-         * The return value will be stored in @returnValue.
+         * Tries to call a method with the given name and arguments. The return value is stored in 'returnValue'.
          * If the call fails the error will be logged in errorState.
+		 * @param identifier the name of the function to call
+		 * @param errorState contains the error if the call fails
+		 * @param returnValue the return value of the call
+		 * @param args additional input arguments
          */
         template <typename ReturnType, typename ...Args>
         bool get(const std::string& identifier, utility::ErrorState& errorState, ReturnType& returnValue, Args&&... args);
 
         /**
-         * Tries to call a method with name @identifier in the python script with the specified arguments @args.
+         * Tries to call a method in the python script with the specified arguments.
          * If the call fails the error will be logged in errorState.
+		 * @param identifier name of the function to call
+		 * @param errorState contains the error if the call fails
+		 * @param args additional input arguments
          */
         template <typename ...Args>
-        bool call	(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);
+        bool call(const std::string& identifier, utility::ErrorState& errorState, Args&&... args);
 
         /**
          * Requests a symbol (in most cases a class or function) from the script and returns its C++ representation.
+		 * @return the python C++ symbol representation
          */
         pybind11::object get(const std::string& symbol);
 

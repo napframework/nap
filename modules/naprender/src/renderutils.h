@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -50,11 +54,10 @@ namespace nap
 
 
 	/**
-	 * All supported number of rasterization samples
+	 * Number of rasterization samples
 	 */
 	enum class ERasterizationSamples : int
 	{
-		One		= 0x00000001,
 		Two		= 0x00000002,
 		Four	= 0x00000004,
 		Eight	= 0x00000008,

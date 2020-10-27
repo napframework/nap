@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local includes
@@ -68,7 +72,6 @@ namespace nap
 		 * Constructor
 		 * @param mesh the mesh that is rendered
 		 * @param materialInstance the material the mesh is rendered with
-		 * @param vaoHandle issued by the render service based on mesh / material combination
 		 */
 		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance);
 

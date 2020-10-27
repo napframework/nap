@@ -1,4 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
+
+#include "propertypath.h"
 
 #include <QStandardItem>
 #include <QFileInfo>
@@ -6,8 +12,6 @@
 #include <rtti/rtti.h>
 #include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
-
-#include "propertypath.h"
 #include <napqt/qtutils.h>
 
 namespace napkin

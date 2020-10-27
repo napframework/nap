@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -111,7 +115,6 @@ namespace nap
 		 * @param json string to parse
 		 * @param document output document
 		 * @param errorState contains the error if string can't be parsed
-		 * @param if operation succeeded.
 		 */
 		bool NAPAPI JSONDocumentFromString(const std::string& json, rapidjson::Document& document, nap::utility::ErrorState& errorState);
 

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -46,6 +50,8 @@ namespace nap
 		 * @param data pointer to the block of data that needs to be uploaded.
 		 * @param numVertices number of vertices represented by data.
 		 * @param reservedNumVertices used to calculate final buffer size, needs to be >= numVertices
+		 * @param error contains the error if upload operation failed
+		 * @return if upload succeeded
 		 */
 		bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error);
 

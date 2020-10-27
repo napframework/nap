@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include "service.h"
@@ -137,9 +141,8 @@ namespace nap
 		 * BUILD_TYPE -> Release
 		 * PROJECT_DIR -> path to project directory
 		 *
-		 * @param path full path that contains the project variables to replace
+		 * @param paths paths that contains the project variables to replace
 		 * @param additionalValues additional variables to resolve
-		 * @return if the path is patched
 		 */
 		void patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
 

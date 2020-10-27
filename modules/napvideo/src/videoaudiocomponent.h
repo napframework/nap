@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -57,7 +61,7 @@ namespace nap
 			 * @param channel index of the output channel.
 			 * @return the output pin associated with the given channel.
 			 */
-            OutputPin& getOutputForChannel(int channel) override	{ return mNode->getOutput(channel); }
+            OutputPin* getOutputForChannel(int channel) override	{ return &mNode->getOutput(channel); }
             
         private:
             SafeOwner<VideoNode> mNode = nullptr;					///< The audio node that polls the Video object for audio output

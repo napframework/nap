@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -39,7 +43,10 @@ namespace nap
 		{}
 
 		/**
-		 * Draws this object to the currently active render target.
+		 * Called by the render service, calls onDraw() if visible.
+		 * Renders the object to the given render target using the provided command buffer, view and projection matrix.
+		 * @param renderTarget target to render to
+		 * @param commandBuffer active command buffer
 		 * @param viewMatrix often the camera world space location.
 		 * @param projectionMatrix often the camera projection matrix.
 		 */
@@ -66,11 +73,13 @@ namespace nap
 
 	protected:
 		/**
-		 * Draws the data to the currently active render target.
+		 * Called by the render service.
 		 * Override this method to implement your own custom draw behavior.
-		 * This method won't be called if the mesh isn't visible!
-		 * @param viewMatrix often the camera world space location
-		 * @param projectionMatrix often the camera projection matrix
+		 * This method won't be called if the mesh isn't visible.
+		 * @param renderTarget currently bound render target
+		 * @param commandBuffer active command buffer
+		 * @param viewMatrix the camera world space location
+		 * @param projectionMatrix the camera projection matrix
 		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
 

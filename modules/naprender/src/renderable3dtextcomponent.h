@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -111,6 +115,8 @@ namespace nap
 		 * In that case the viewMatrix is the world space camera location and the the projection matrix is defined by the camera type.
 		 * This can be orthographic or perspective. It is recommended to only use a perspective camera when rendering text in 3D.
 		 * The TransformComponent of the parent entity is used to place the text and is therefore required.
+		 * @param renderTarget target to render to
+		 * @param commandBuffer current command buffer
 		 * @param viewMatrix the camera world space location
 		 * @param projectionMatrix the camera projection matrix, orthographic or perspective
 		 */

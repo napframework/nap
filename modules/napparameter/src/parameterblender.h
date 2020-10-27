@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <rtti/rtti.h>
@@ -172,9 +176,8 @@ namespace nap
 		virtual void onSync() override;
 
 		/**
-		* Occurs when the target is updated, ensures the current blend value is cached.
-		* @param target new parameter target to blend towards.
-		*/
+		 * Occurs when the target is updated, ensures the current blend value is cached.
+		 */
 		virtual void onTargetSet() override;
 
 	private:

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "rendertotexturecomponent.h"
 #include "rendertarget.h"
@@ -18,6 +22,8 @@
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
 	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -60,11 +66,11 @@ namespace nap
 		// Get resource
 		RenderToTextureComponent* resource = getComponent<RenderToTextureComponent>();
 
-		// Create the render target
+		// Create the render target, link in the output texture
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
-
-		// Bind textures to target
 		mTarget.mColorTexture = resource->mOutputTexture;
+		mTarget.mSampleShading = resource->mSampleShading;
+		mTarget.mRequestedSamples = resource->mRequestedSamples;
 
 		// Initialize target
 		if (!mTarget.init(errorState))

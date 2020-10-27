@@ -1,1 +1,1 @@
-python3 ./generateDocumentation.py
+python ./generateDocumentation.py
