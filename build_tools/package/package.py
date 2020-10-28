@@ -298,7 +298,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     # Build & install to packaging dir
     d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
     for build_type in BUILD_TYPES:
-        call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
+        call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count()), '-arch', 'x86_64'])
 
     # Remove unwanted files (eg. .DS_Store)
     call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])

@@ -123,7 +123,7 @@ class SingleProjectBuilder:
             self.call(build_dir, ['make', project_name, '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', project_name, '-configuration', build_type])
+            self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', project_name, '-configuration', build_type, '-arch', 'x86_64'])
         else:
             # Windows
             cmake = self.get_cmake_path()
@@ -171,7 +171,7 @@ class SingleProjectBuilder:
             self.call(build_dir, ['make', project_name, '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % project_name, '-configuration', build_type])
+            self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % project_name, '-configuration', build_type, '-arch', 'x86_64'])
         else:
             # Windows
             cmake = self.get_cmake_path()
