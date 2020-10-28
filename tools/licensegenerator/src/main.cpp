@@ -10,8 +10,11 @@
 	#include <dll.h>
 #endif
 #include <rsa.h>
-#include <validate.h>
 #include <osrng.h>
+#include <files.h>
+#include <hex.h>
+#include <cctype>
+#include <chrono>
 
 using namespace CryptoPP;
 using namespace std;
