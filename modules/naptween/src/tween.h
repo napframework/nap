@@ -16,7 +16,7 @@ namespace nap
 {
 	class TweenService;
 
-	class TweenBase
+	class NAPAPI TweenBase
 	{
 		friend class TweenHandleBase;
 	public:
