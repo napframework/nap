@@ -78,14 +78,14 @@ Header Files
 Scoping
 -----------------------
 
-###Namespaces
+### Namespaces
 
 With few exceptions, place code in the `nap` namespace. Every namespace should have unique name based on the project. Using namespaces in `.cpp` files is encouraged. Do not use `using` directives (e.g. `using namespace foo`). If so, only in .cpp files.
 
 - Do not use inline namespaces
 - Do not use namespace aliases: `namespace foo_bar = ::foo`
 
-###Static and Global Functions
+### Static and Global Functions
 - Prefer placing nonmember functions in a namespace.
 - Try to avoid global functions
 - Group functions using a namespace instead of a class as if it were a namespace
@@ -94,7 +94,7 @@ With few exceptions, place code in the `nap` namespace. Every namespace should h
 - Static members of a class start with a lowercase word: `ResourceManager::registerCreateFunctions()`
 - If you define a non member function and it's only needed in it's .cpp file, use static linkage, ie: `static int foo()` to limit it's scope.
 
-###Local Variables
+### Local Variables
 - Place a function's variables in the narrowest scope possible, and initialize variables in the declaration
 - Declare variables as close to the first use as possible, except in loops:
 ```
@@ -104,7 +104,7 @@ for (int i = 0; i < 100; ++i)
 ```
 - Prefer initialization using braces: vector<int> v = { 1, 2 };
 
-###Static and Global Variables
+### Static and Global Variables
 - Variables of class type with static storage duration are forbidden: they cause hard-to-find bugs due to indeterminate order of construction and destruction. However, such variables are allowed if they are constexpr: they have no dynamic initialization or destruction.
 - Objects with static storage duration, including global variables, static variables, static class member variables, and function static variables, must be Plain Old Data (POD): only ints, chars, floats, or pointers, or arrays/structs of POD.
 - If you need a static or global variable of a class type, consider initializing a pointer (which will never be freed), from either your `main()` function or from `pthread_once()`. Note that this must be a raw pointer, not a "smart" pointer, since the smart pointer's destructor will have the
@@ -124,12 +124,12 @@ operations unless they are significantly more efficient than the corresponding c
 - Move Constructor
 - Move Assignment Operator
 
-###Constructors
+### Constructors
 - Avoid virtual method calls in constructors
 - Initialize member variables using the `{ }` in the header
 - Use the `=default` directive to add a default constructor
 
-###Destructors
+### Destructors
 - Always make the base class constructors virtual
 - If no specific behaviour is necessary, declare the destructor to be `=default`
 
@@ -177,7 +177,7 @@ bool validate(const std::string& license, utility::errorState& outError)
 
 Parameters to C/C++ functions are either input to the function, output from the function, or both. Input parameters are usually values or const references, while output and input/output parameters will be non-const pointers. When ordering function parameters, put all input-only parameters before any output parameters. In particular, do not add new parameters to the end of the function just because they are new; place new input-only parameters before the output parameters.
 
-###Write Short Functions
+### Write Short Functions
 
 We recognize that long functions are sometimes appropriate, so no hard limit is placed on functions length. If a function exceeds about 40 lines, think about whether it can be broken up without harming the structure of the program.
 
@@ -191,11 +191,11 @@ Even if your long function works perfectly now, someone modifying it in a few mo
 C++ Features
 -----------------------
 
-###Exceptions
+### Exceptions
 - We do not use exceptions. When a third party dependency throws an exception your are allowed to catch it. Keep the error handling code as short and local as possible. Only catch exceptions in `.cpp` files. 
 
 
-###Casting
+### Casting
 - Be as explicit as possible, something like this is not ok and most compilers will throw a warning: 
 	- `float f(0.0f); int x = f;`
 - Instead use: 
@@ -209,7 +209,7 @@ The problem with C casts is the ambiguity of the operation; sometimes you are do
 
 For more information: http://stackoverflow.com/questions/103512/in-c-why-use-static-castintx-instead-of-intx
 
-###Const
+### Const
 - Use const whenever it makes sense
 - We encourage the use of constexpr (C++ 11)
 - We encourage putting const first, so:
@@ -219,24 +219,24 @@ For more information: http://stackoverflow.com/questions/103512/in-c-why-use-sta
 Some variables can be declared constexpr to indicate the variables are true constants, i.e. fixed at compilation/link time. Some functions and   constructors can be declared constexpr which enables them to be used in defining a constexpr variable. Constexpr therefore defines a more robust specification of the constant parts of an interface. Use `constexpr` to specify true constants and the functions that support their definitions. Avoid 
 complexifying function definitions to enable their use with constexpr. Do not use `constexpr` to force inlining.
 
-###Integer Types
+### Integer Types
 - The only actively used signed or unsigned integer type is int (compiler specific, minimum of 32 bits)
 - Use standard library <stdint.h> integer types for different sizes of int
 - NAP defines its own set of integer types based on the types in <stdint.h>
 - Never use short, long etc.
 - When iterating, use `size_t` or `auto`. This helps avoid platform specific warnings
 
-###Macros
+### Macros
 - Try to avoid them as much as possible
 - Prefer inline functions, enums and const variables to macros
 - Don't rely on macros to define pieces of a C++ API
 - Don't use macros to store a constant, use a const variable
 
-###Use nullptr
+### Use nullptr
 - Always use nullptr, never use NULL
 - Use 0 for integers and 0.0 for reals
 
-###Auto
+### Auto
 Auto is permitted, for local variables only, when it increases readability, particularly as described below. Do not use auto for file-scope or namespace-scope variables, or for class members. Never initialize an auto-typed variable with a braced initializer list. 
 
 Programmers have to understand the difference between `auto` and `const auto&` or they'll get copies when they didn't mean to.
@@ -248,7 +248,7 @@ Programmers have to understand the difference between `auto` and `const auto&` o
 	- `for(size_t i=0; i<100; ++i)`
 	- `float v = static_cast<float>(d)`
 
-###Lambdas
+### Lambdas
 - Use lambda expressions where appropriate.
 - Prefer explicit captures when the lambda will escape the current scope.
 
@@ -270,7 +270,7 @@ executor->Schedule([&foo]
 })
 ```
 
-###Aliases
+### Aliases
 - Use `using` instead of `typedef`
 
 Try to limit the number of aliases in the public (header) scope. This will make them available to users of the API and creates unnecessary clutter. Only put it in your public API is you intend it to be used by your clients.
@@ -285,7 +285,7 @@ Tips:
 - Variables should be nouns, representing state.
 - Classes are nouns as well, describing a well defined concept
 
-###General Naming Rules
+### General Naming Rules
 - Names should be descriptive; avoid abbreviation.
 - Do not worry about saving horizontal space, it's more important to make your code understandable
 - Do not use abbreviations that are ambiguous to readers outside of the project
@@ -308,7 +308,7 @@ int pc_reader; 			// Lots of things can be abbreviated "pc".
 int cstmr_id; 			// Deletes internal letters.
 ```
 
-###File Names
+### File Names
 Should all be lowercase and preferably not contain any underscores or dashes
 
 - attributes.h
@@ -319,7 +319,7 @@ Should all be lowercase and preferably not contain any underscores or dashes
 Try to make your filenames very descriptive. For example, use: `httpclientlogs.h` rather than `logs.h`
 
 
-###Type Names
+### Type Names
 Start with a capital letter and have a capital letter for each new work, with no underscores, ie:
 
 - MyNewClass
@@ -334,7 +334,7 @@ Types include:
 - Aliases
 - Template Parameters
 
-###Variable Names
+### Variable Names
 The names of class data members are all upper camelcase, preceded by the letter 'm':
 ```
 float mIntensity; 	//< Public member
@@ -353,7 +353,7 @@ Static variables are upper camelcase
 std::string DefaultOperatorName;
 ```
 
-###Function Names
+### Function Names
 Function names are camelcase
 ```
 getName()
@@ -374,12 +374,12 @@ registerType()
 getRegisteredTypes()
 ```
 
-###Namespace Names
+### Namespace Names
 - Namespace names are all lower case
 - Top level names are based on the project name
 - Avoid nested namespaced that match well known top level namespaces
 
-###Enumerator Names
+### Enumerator Names
 Start with the letter 'E' and are always based on the C++ 11 enumerator classes:
 ```
 enum class EDay : int
@@ -394,7 +394,7 @@ enum class EDay : int
 };
 ```
 
-###Macro Names
+### Macro Names
 If you define one use all uppercase with underscores between words:
 ```
 MY_HORRIBLE_MACRO
@@ -406,10 +406,10 @@ Comments
 -----------------------
 Though a pain to write, comments are absolutely vital to keeping our code readable. The following rules describe what you should comment and where. But remember: while comments are very important, the best code is self-documenting. Giving sensible names to types and variables is much better than using obscure names that you must then explain through comments. When writing your comments, write for your audience: the next contributor who will need to understand your code. Be generous — the next one may be you!
 
-###Comment Style
+### Comment Style
 Use either the `//` or `/** */` syntax, as long as you are consistent.
 
-###Class Comments
+### Class Comments
 Every class declaration should have an accompanying comment that describes what it is and how it should be used! 
 
 The class comment should provide the reader with enough information to know how and when to use the class, as well as any additional considerations necessary to correctly use the class. Document the synchronization assumptions the class makes, if any. If an instance of the class can be accessed by multiple threads, take extra care to document the rules and invariants surrounding multithreaded use. 
@@ -430,7 +430,7 @@ class NAPAPI WebSocketServer : public IWebSocketServer
 {}
 ```
 
-###Function Comments
+### Function Comments
 Almost every function declaration should have comments immediately preceding it that describe what the function does and how to use it. These comments may be omitted only if the function is simple and obvious (e.g. simple accessors for obvious properties of the class). These comments should be descriptive ("Opens the file") rather than imperative ("Open the file"); the comment describes the function, it does not tell the function what to do. In general, these comments do not
 describe how the function performs its task. Instead, that should be left to comments in the
 function definition. 
@@ -461,7 +461,7 @@ Types of things to mention in comments at the function declaration:
 
 If the function is complex and needs a lot of documentation, use the Class style comments to explain functionality. Otherwise use the double slashes `//` preceding the function or, if it's a one-liner, place it after the the function declaration
 
-###Function Definitions
+### Function Definitions
 If there is anything tricky about how a function does its job, the function definition should have an explanatory comment. For example, in the definition comment you might describe any coding tricks you use, give an overview of the steps you go through, or explain why you chose to implement the function in the way you did rather than using a viable alternative. For instance, you might mention why it must acquire a lock for the first half of the function but why it is not needed
 for the second half.
 
@@ -469,7 +469,7 @@ Note you should not just repeat the comments given with the function declaration
 wherever. It's okay to recapitulate briefly what the function does, but the focus of the comments
 should be on how it does it.
 
-###Variable Comments
+### Variable Comments
 - The actual name of the variable should be descriptive enough to give a good idea of what the
 variable is used for.
 - Sometimes more comments are required
@@ -483,29 +483,29 @@ variable is used for.
 std::string	mID;	///< Property: 'mID' unique name of the object. Used as an identifier by the system
 ```
 
-###Line Comments
+### Line Comments
 - Lines that are non obvious should get a comment at the end of the line.
 - Always separate these lined with the code using a minimum of 2 spaces
 - If you have several comments on subsequent lines, it can often be more readable to line them up
 
-###TODO comments
+### TODO comments
 - Use TODO comments for code that is temporary, a short-term solution or not perfect
 
-###Deprecation Comments
+### Deprecation Comments
 - Use `[[deprecated]]` to mark deprecated code
 
 Formatting
 -----------------------
 Coding style and formatting are pretty arbitrary, but a project is much easier to follow if everyone uses the same style. Individuals may not agree with every aspect of the formatting rules, and some of the rules may take some getting used to, but it is important that all project contributors follow the style rules so that they can all read and understand everyone's code easily.
 
-###Line Length
+### Line Length
 - Each line of text in your code should be at most 120 characters long
 - Try to avoid breaking lines
 
-###Spaces vs Tabs
+### Spaces vs Tabs
 - Use only tabs
 
-###Function Declarations and Definitions
+### Function Declarations and Definitions
 - Return type on the same line as function name
 - Parameters on the same line if they fit
 - Wrap parameters if they do not fit on a single line
@@ -551,7 +551,7 @@ digits.erase(std::remove_if(digits.begin(), digits.end(), [&blacklist](int i)
 }), digits.end());
 ```
 
-###Function Calls
+### Function Calls
 - Write a call on a single line or start on a new line properly indented and aligned
 - Split multiple arguments when complex or confusing, create variables that capture that argument in a descriptive name
 ```
@@ -563,7 +563,7 @@ int my_heuristic = scores[x] * y + bases[x];
 bool result = DoSomething(my_heuristic, x, y, z);
 ```
 
-###Conditionals
+### Conditionals
 - No spaces inside parenthesis
 - The if and else keywords belong on a separate line
 - Use braces with multiple line execution statements, otherwise not
@@ -585,7 +585,7 @@ else
 if (condition) { // Good - proper space after IF and before }
 ```
 
-###Switch Statements
+### Switch Statements
 - You may use braces for blocks, following the conditional statement guidelines
 - Braces are optional for single line expressions
 - If not conditional or an enumerated value, switch statements should always have a default case
@@ -607,7 +607,7 @@ default:
 }
 ```
 
-###Loops
+### Loops
 - Curly braces on separate line
 - If a loop is a single statement, line is placed under loop expression
 ```
@@ -623,7 +623,7 @@ for (int i = 0; i < some_number; ++i)
 }
 ```
 
-###Pointer and Reference Expressions
+### Pointer and Reference Expressions
 - No spaces around period or arrow
 - Pointer operators do not have trailing spaces
 - We do not use Hungarian declaration
@@ -634,7 +634,7 @@ x = r.y;
 x = r->y;
 ```
 
-###Variable and Array initializations
+### Variable and Array initializations
 - Use `=`, `()` or `{}`
 - Be careful with braced initialization lists when the type has a std::initializer_list constructor, which is always preferred by the compiler 
 - Use parentheses instead of braces to force a non initializer_list constructor!
@@ -646,7 +646,7 @@ int pi(3.14); 						///< OK -- pi == 3.
 int pi{3.14}; 						///< Compile error: narrowing conversion.
 ```
 
-###Class and Struct Format
+### Class and Struct Format
 - In order: public, protected and private
 - Declarations only in header, no implementation, except for one-liners
 - Use the end of a file or a hpp file for template definitions
@@ -674,7 +674,7 @@ private:
 };
 ```
 
-###Namespace Formatting
+### Namespace Formatting
 The contents of namespaces are indented 1 tab for every namespace
 
 ```
