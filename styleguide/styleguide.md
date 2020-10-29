@@ -4,7 +4,7 @@
 
 C++ Style Guide
 =======================
-####Loosely based on the Google C++ style guide
+Loosely based on the Google C++ style guide
 
 *	[Header Files](#header-files)
 *	[Scoping](#scoping)
