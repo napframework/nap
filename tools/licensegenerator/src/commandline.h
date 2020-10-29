@@ -36,6 +36,7 @@ public:
 			ValueArg<std::string>			last_name				("l",  "last_name", "Last name", true, "", "last_name");
 			ValueArg<std::string>			mail					("m",  "mail", "Client mail address", false, "", "client_mail");
 			ValueArg<std::string>			date					("d",  "date", "Expiry date, format: day/month/year -> 30/12/2025", false, "", "expiry_date");
+			ValueArg<std::string>			tag						("t",  "tag", "Additional information", false, "", "tag");
 
 			command.add(output_directory);
 			command.add(private_key);
@@ -44,6 +45,7 @@ public:
 			command.add(last_name);
 			command.add(mail);
 			command.add(date);
+			command.add(tag);
 			command.parse(argc, argv);
 
 			commandLine.mOutputDirectory = output_directory.getValue();
@@ -53,6 +55,7 @@ public:
 			commandLine.mLastName = last_name.getValue();
 			commandLine.mMail = mail.getValue();
 			commandLine.mDate = date.getValue();
+			commandLine.mTag = tag.getValue();
 		}
 		catch (ArgException& e)
 		{
@@ -69,4 +72,5 @@ public:
 	std::string					mLastName;
 	std::string					mDate;
 	std::string					mApplication;
+	std::string					mTag;
 };

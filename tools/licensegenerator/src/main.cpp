@@ -18,6 +18,8 @@
 
 using namespace CryptoPP;
 using namespace std;
+using SystemClock = std::chrono::system_clock;
+using SystemTimeStamp = std::chrono::time_point<SystemClock>;
 
 constexpr const char* licenceToken = "LICENSE@";
 constexpr const char* licenseExtension = "license";
@@ -171,18 +173,6 @@ int main(int argc, char* argv[])
 	if (!CommandLine::parse(argc, argv, commandLine))
 		return -1;
 
-	// Signed license output file
-	std::ostringstream key_loc;
-	key_loc << commandLine.mOutputDirectory << "/" 
-		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
-		"." << keyExtension;
-
-	// License output file
-	std::ostringstream lic_loc;
-	lic_loc << commandLine.mOutputDirectory << "/" 
-		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName << 
-		"." << licenseExtension;
-
 	// Create license content
 	std::ostringstream lic_content;
 	lic_content << licenceToken <<
@@ -200,6 +190,27 @@ int main(int argc, char* argv[])
 			return -1;
 		lic_content << "|date:" << commandLine.mDate;
 	}
+
+	// Add tag (additional information) if provided
+	if (!commandLine.mTag.empty())
+		lic_content << "|tag:" << commandLine.mTag;
+
+	// Add issue time -> minutes since epoch
+	SystemTimeStamp ctime = SystemClock::now();
+	auto minutes = std::chrono::time_point_cast<std::chrono::minutes>(ctime);
+	lic_content << "|issued:" << minutes.time_since_epoch().count();
+
+	// Signed license output file
+	std::ostringstream key_loc;
+	key_loc << commandLine.mOutputDirectory << "/"
+		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName <<
+		"." << keyExtension;
+
+	// License output file
+	std::ostringstream lic_loc;
+	lic_loc << commandLine.mOutputDirectory << "/"
+		<< commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName <<
+		"." << licenseExtension;
 
 	// Create license
 	if (!signLicense(commandLine.mKey, lic_content.str(), key_loc.str(), lic_loc.str()))

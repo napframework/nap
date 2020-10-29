@@ -92,18 +92,17 @@ namespace nap
 
 	bool Core::loadServiceConfiguration(const std::string& filename, rtti::DeserializeResult& deserializeResult, utility::ErrorState& errorState)
 	{
+		// Get path relative to project
 		std::string config_file_path;
-		if (findProjectFilePath(filename, config_file_path))
-		{
-			if (rtti::deserializeJSONFile(config_file_path,
-								   rtti::EPropertyValidationMode::DisallowMissingProperties,
-								   rtti::EPointerPropertyMode::NoRawPointers,
-								   mResourceManager->getFactory(),
-								   deserializeResult,
-								   errorState))
-				return true;
-		}
+		if (!errorState.check(findProjectFilePath(filename, config_file_path), "Unable to find: %s", filename.c_str()))
+			return false;
 
-		return false;
+		// Load
+		return rtti::deserializeJSONFile(config_file_path,
+			rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::NoRawPointers,
+			mResourceManager->getFactory(),
+			deserializeResult,
+			errorState);
 	}
 }
