@@ -24,6 +24,7 @@ RTTI_END_CLASS
 
 using namespace nap::SequenceGUIActions;
 using namespace nap::SequenceCurveEnums;
+using namespace nap::SequenceGUIClipboards;
 
 namespace nap
 {
@@ -77,6 +78,7 @@ namespace nap
 		: mEditor(editor), mID(id), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
 		mState.mAction = createAction<None>();
+		mState.mClipboard = createClipboard<Empty>();
 
 		for (auto& factory : SequenceTrackView::getFactoryMap())
 		{

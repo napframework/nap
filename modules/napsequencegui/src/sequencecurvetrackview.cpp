@@ -96,7 +96,7 @@ namespace nap
 
 		handleInsertCurvePointPopup();
 
-		handleDeleteSegmentPopup();
+		handleEditSegmentPopup();
 
 		handleCurvePointActionPopup<float>();
 
@@ -1022,16 +1022,20 @@ namespace nap
 							// display paste button
 							if( ImGui::Button("Paste") )
 							{
-								// call the correct pasteClipboard method for this track-type
+								// call the correct pasteClipboardSegment method for this track-type
 								if( action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) )
 								{
-									pasteClipboard<SequenceTrackSegmentCurveFloat>(action->mTrackID, action->mTime);
+									pasteClipboardSegment<SequenceTrackSegmentCurveFloat>(action->mTrackID,
+																						  action->mTime);
 								}else if( action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ){
-									pasteClipboard<SequenceTrackSegmentCurveVec2>(action->mTrackID, action->mTime);
+									pasteClipboardSegment<SequenceTrackSegmentCurveVec2>(action->mTrackID,
+																						 action->mTime);
 								}else if( action->mTrackType == RTTI_OF(SequenceTrackCurveVec3) ){
-									pasteClipboard<SequenceTrackSegmentCurveVec3>(action->mTrackID, action->mTime);
+									pasteClipboardSegment<SequenceTrackSegmentCurveVec3>(action->mTrackID,
+																						 action->mTime);
 								}else if( action->mTrackType == RTTI_OF(SequenceTrackCurveVec4) ){
-									pasteClipboard<SequenceTrackSegmentCurveVec4>(action->mTrackID, action->mTime);
+									pasteClipboardSegment<SequenceTrackSegmentCurveVec4>(action->mTrackID,
+																						 action->mTime);
 								}
 
 								// mark dirty and exit popup
@@ -1516,12 +1520,12 @@ namespace nap
 
 
 
-	void SequenceCurveTrackView::handleDeleteSegmentPopup()
+	void SequenceCurveTrackView::handleEditSegmentPopup()
 	{
 		if (mState.mAction->isAction<OpenEditCurveSegmentPopup>())
 		{
 			// invoke insert sequence popup
-			ImGui::OpenPopup("Delete Segment");
+			ImGui::OpenPopup("Edit Segment");
 
 			auto* action = mState.mAction->getDerived<OpenEditCurveSegmentPopup>();
 
@@ -1537,7 +1541,7 @@ namespace nap
 		// handle delete segment popup
 		if (mState.mAction->isAction<EditingCurveSegment>())
 		{
-			if (ImGui::BeginPopup("Delete Segment"))
+			if (ImGui::BeginPopup("Edit Segment"))
 			{
 				auto& controller = getEditor().getController<SequenceControllerCurve>();
 				auto* action = mState.mAction->getDerived<EditingCurveSegment>();
@@ -1553,6 +1557,42 @@ namespace nap
 					}
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
+					ImGui::EndPopup();
+					return;
+				}
+
+				// handle paste if we have a clipboard containing a serialized curve-segment
+				if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
+				{
+					// obtain derived curve segment clipboard
+					auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+					// if serialized curve segment type matches this track type, we can paste the segment here
+					if( curve_segment_clipboard->mSegmentType == action->mSegmentType )
+					{
+						// display replace button
+						if( ImGui::Button("Replace") )
+						{
+							// call the correct pasteClipboardSegmentInto method for this track-type
+							if( action->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveFloat) )
+							{
+								pasteClipboardSegmentInto<SequenceTrackSegmentCurveFloat>(action->mTrackID, action->mSegmentID);
+							}else if( action->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec2) ){
+								pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec2>(action->mTrackID, action->mSegmentID);
+							}else if( action->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec3) ){
+								pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec3>(action->mTrackID, action->mSegmentID);
+							}else if( action->mSegmentType == RTTI_OF(SequenceTrackSegmentCurveVec4) ){
+								pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec4>(action->mTrackID, action->mSegmentID);
+							}
+
+							// mark dirty and exit popup
+							mState.mDirty = true;
+							mState.mAction = createAction<None>();
+							ImGui::CloseCurrentPopup();
+							ImGui::EndPopup();
+							return;
+						}
+					}
 				}
 
 				if (ImGui::Button("Delete"))
@@ -1775,6 +1815,34 @@ namespace nap
 		ImDrawList* drawList,
 		bool drawStartValue)
 	{
+		bool draw_selection_background = false;
+		if( mState.mAction->isAction<HoveringSegmentValue>())
+		{
+			auto* action = mState.mAction->getDerived<HoveringSegmentValue>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<EditingCurveSegment>() )
+		{
+			auto* action = mState.mAction->getDerived<EditingCurveSegment>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<HoveringSegment>() )
+		{
+			auto* action = mState.mAction->getDerived<HoveringSegment>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<DraggingSegment>() )
+		{
+			auto* action = mState.mAction->getDerived<DraggingSegment>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<DraggingSegmentValue>() )
+		{
+			auto* action = mState.mAction->getDerived<DraggingSegmentValue>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}
+
+		if( draw_selection_background )
+		{
+			drawList->AddRectFilled( { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  guicolors::darkGrey);
+		}
+
 		// curve
 		drawCurves<T>(
 			track,
@@ -2017,7 +2085,7 @@ namespace nap
 	}
 
 	template<typename T>
-	void SequenceCurveTrackView::pasteClipboard(const std::string& trackId, double time)
+	void SequenceCurveTrackView::pasteClipboardSegment(const std::string& trackId, double time)
 	{
 		// get clipboard action
 		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
@@ -2065,6 +2133,82 @@ namespace nap
 
 			// make the controller re-align start & end points of segments
 			curve_controller.updateCurveSegments(trackId);
+		}else
+		{
+			nap::Logger::error("Error trying to paste clipboard");
+		}
+	}
+
+
+	template<typename T>
+	void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentId)
+	{
+		// get clipboard action
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+		// create vector & object ptr to be filled by de-serialization
+		std::vector<std::unique_ptr<rtti::Object>> read_objects;
+		rtti::ObjectPtr<T> curve_segment;
+
+		// continue upon successful de-serialization
+		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
+		{
+			// obtain controller
+			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+			// insert new segment
+			const auto* target_segment = curve_controller.getSegment(trackId, segmentId);
+
+			// upcast target segment to type of T
+			const T* target_segment_upcast = dynamic_cast<const T*>(target_segment);
+			assert(target_segment_upcast != nullptr); // error in upcast
+
+			// proceed upon successful cast
+			if( target_segment_upcast != nullptr )
+			{
+				// delete all points except the first and last one
+				for(size_t c = 0; c < target_segment_upcast->mCurves.size(); c++)
+				{
+					for(size_t p = 1; p < target_segment_upcast->mCurves[c]->mPoints.size() - 1; p++)
+					{
+						curve_controller.deleteCurvePoint(trackId, segmentId, p, c);
+					}
+				}
+
+				// change duration
+				curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
+
+				// copy curve points
+				for(int c = 0; c < curve_segment->mCurves.size(); c++)
+				{
+					for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
+					{
+						curve_controller.insertCurvePoint(trackId, target_segment_upcast->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
+					}
+				}
+
+				// change all curvepoints to match the copied clipboard curve segment
+				// note that the first point is always determined by the previous segment
+				for(int c = 0; c < curve_segment->mCurves.size(); c++)
+				{
+					for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
+					{
+						curve_controller.changeCurvePoint(trackId, target_segment_upcast->mID, i, c,
+														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
+														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
+
+						curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, SequenceCurveEnums::IN,
+														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
+														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
+					}
+				}
+
+				// make the controller re-align start & end points of segments
+				curve_controller.updateCurveSegments(trackId);
+			}else
+			{
+				nap::Logger::error("Error casting target segment");
+			}
 		}else
 		{
 			nap::Logger::error("Error trying to paste clipboard");

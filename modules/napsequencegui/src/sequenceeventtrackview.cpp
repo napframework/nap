@@ -15,6 +15,7 @@
 namespace nap
 {
 	using namespace SequenceGUIActions;
+	using namespace SequenceGUIClipboards;
 
 	static bool trackViewRegistration = SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView));
 
@@ -32,13 +33,22 @@ namespace nap
 			RTTI_OF(SequenceTrackSegmentEventVec3)
 		};
 
-	static std::unordered_map<rttr::type, void(*)(SequenceControllerEvent&, std::string&, double)> sInsertSegmentMap
+	static std::unordered_map<rttr::type, const SequenceTrackSegment*(*)(SequenceControllerEvent&, const std::string&, double)> sInsertSegmentMap
 		{
-			{ RTTI_OF(SequenceTrackSegmentEventString), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<std::string>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventFloat), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<float>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventInt), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<int>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventVec2), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<glm::vec2>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventVec3), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<glm::vec3>(trackID, time); }}
+			{ RTTI_OF(SequenceTrackSegmentEventString), [](SequenceControllerEvent& controller, const std::string& trackID, double time)->const SequenceTrackSegment*{ return controller.insertEventSegment<std::string>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventFloat), [](SequenceControllerEvent& controller, const std::string& trackID, double time)->const SequenceTrackSegment*{ return controller.insertEventSegment<float>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventInt), [](SequenceControllerEvent& controller, const std::string& trackID, double time)->const SequenceTrackSegment*{ return controller.insertEventSegment<int>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventVec2), [](SequenceControllerEvent& controller, const std::string& trackID, double time)->const SequenceTrackSegment*{ return controller.insertEventSegment<glm::vec2>(trackID, time); }},
+			{ RTTI_OF(SequenceTrackSegmentEventVec3), [](SequenceControllerEvent& controller, const std::string& trackID, double time)->const SequenceTrackSegment*{ return controller.insertEventSegment<glm::vec3>(trackID, time); }}
+		};
+
+	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const std::string&, double)> SequenceEventTrackView::sPasteClipboardMap
+		{
+			{ RTTI_OF(SequenceTrackSegmentEventString), &SequenceEventTrackView::pasteClipboard<SequenceTrackSegmentEventString> },
+			{ RTTI_OF(SequenceTrackSegmentEventFloat),  &SequenceEventTrackView::pasteClipboard<SequenceTrackSegmentEventFloat> },
+			{ RTTI_OF(SequenceTrackSegmentEventInt),  &SequenceEventTrackView::pasteClipboard<SequenceTrackSegmentEventInt> },
+			{ RTTI_OF(SequenceTrackSegmentEventVec2),  &SequenceEventTrackView::pasteClipboard<SequenceTrackSegmentEventVec2> },
+			{ RTTI_OF(SequenceTrackSegmentEventVec3),  &SequenceEventTrackView::pasteClipboard<SequenceTrackSegmentEventVec3> }
 		};
 
 	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> SequenceEventTrackView::sHandlePopupsMap
@@ -277,7 +287,7 @@ namespace nap
 	{
 		handleInsertEventSegmentPopup();
 
-		handleDeleteSegmentPopup();
+		handleEditSegmentPopup();
 
 		for(auto& type : sEventTypes)
 		{
@@ -322,6 +332,30 @@ namespace nap
 							ImGui::CloseCurrentPopup();
 							mState.mAction = createAction<None>();
 						}
+					}
+				}
+
+				// if there is a event segment copied in the clipboard, show paste button
+				if( mState.mClipboard->isClipboard<EventSegmentClipboard>())
+				{
+					// show paste button
+					if( ImGui::Button("Paste") )
+					{
+						// obtain clipboard
+						auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
+
+						// find correct paste method for this event segment type
+						auto it = sPasteClipboardMap.find(clipboard->mSegmentType);
+						assert(it!=sPasteClipboardMap.end()); // entry not found
+						if(it!=sPasteClipboardMap.end())
+						{
+							// call the correct paste function
+							(*this.*it->second)(action->mTrackID, action->mTime);
+						}
+
+						// empty action & close clipboard
+						mState.mAction = createAction<None>();
+						ImGui::CloseCurrentPopup();
 					}
 				}
 
@@ -452,7 +486,7 @@ namespace nap
 	}
 
 
-	void SequenceEventTrackView::handleDeleteSegmentPopup()
+	void SequenceEventTrackView::handleEditSegmentPopup()
 	{
 		if (mState.mAction->isAction<OpenEditSegmentValuePopup>())
 		{
@@ -502,6 +536,22 @@ namespace nap
 
 							ImGui::CloseCurrentPopup();
 						}
+
+						if(ImGui::Button("Copy"))
+						{
+							auto& eventController = getEditor().getController<SequenceControllerEvent>();
+							const auto* segment = eventController.getSegment(action->mTrackID, action->mSegmentID);
+
+							auto clipboard = createClipboard<EventSegmentClipboard>(segment->get_type());
+							if( clipboard->serialize(segment) )
+							{
+								mState.mClipboard = std::move(clipboard);
+							}
+
+							// create empty action and close popup
+							mState.mAction = createAction<None>();
+							ImGui::CloseCurrentPopup();
+						}
 					}
 				}
 
@@ -518,6 +568,38 @@ namespace nap
 				// click outside popup so cancel action
 				mState.mAction = createAction<None>();
 			}
+		}
+	}
+
+
+	template<typename T>
+	void SequenceEventTrackView::pasteClipboard(const std::string& trackID, double time)
+	{
+		// get clipboard action
+		auto* event_segment_clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
+
+		// create vector & object ptr to be filled by de-serialization
+		std::vector<std::unique_ptr<rtti::Object>> read_objects;
+		rtti::ObjectPtr<T> event_segment;
+
+		// continue upon succesfull de-serialization
+		if( event_segment_clipboard->deserialize<T>(read_objects, event_segment) )
+		{
+			// obtain controller
+			auto& event_controller = getEditor().getController<SequenceControllerEvent>();
+
+			// insert new segment
+			auto it = sInsertSegmentMap.find(event_segment_clipboard->mSegmentType);
+			assert(it!=sInsertSegmentMap.end()); // entry not found
+			if( it != sInsertSegmentMap.end())
+			{
+				auto* new_segment = it->second(event_controller, trackID, time);
+				assert(new_segment!=nullptr); // returned segment ptr is null
+				event_controller.editEventSegment(trackID, new_segment->mID, event_segment->mValue);
+			}
+		}else
+		{
+			nap::Logger::error("Error deserializing clipboard");
 		}
 	}
 }

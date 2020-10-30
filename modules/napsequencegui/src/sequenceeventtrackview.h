@@ -7,6 +7,7 @@
 #include "sequencetrackview.h"
 #include "sequencecontrollerevent.h"
 #include "sequencetracksegment.h"
+#include "sequenceeditorguiclipboard.h"
 
 namespace nap
 {
@@ -79,7 +80,7 @@ namespace nap
 		/**
 		 * handles delete segment popup
 		 */
-		void handleDeleteSegmentPopup();
+		void handleEditSegmentPopup();
 
 		/**
 		 * creates an event edit action of specified type
@@ -91,11 +92,16 @@ namespace nap
 		template<typename T>
 		void createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID);
 
+		template<typename T>
+		void pasteClipboard(const std::string& trackID, double time);
+
 		// static map of popup function pointers
 		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> sHandlePopupsMap;
 
 		// static map of edit action function pointers
 		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const SequenceTrackSegmentEventBase*, const std::string&, const std::string&)> sEditActionMap;
+
+		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const std::string&, double)> sPasteClipboardMap;
 	};
 
 	namespace SequenceGUIActions
@@ -151,6 +157,18 @@ namespace nap
             ImVec2 mWindowPos;
 			T mValue;			
 			double mStartTime;
+		};
+	}
+
+	namespace SequenceGUIClipboards
+	{
+		class EventSegmentClipboard :
+			public Clipboard
+		{
+			RTTI_ENABLE(Clipboard)
+		public:
+			EventSegmentClipboard(rttr::type segmentType) : mSegmentType(segmentType){}
+			rttr::type mSegmentType;
 		};
 	}
 
