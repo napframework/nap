@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <QWidget>
@@ -13,12 +17,14 @@ namespace nap
 
 	namespace qt
 	{
-
-		class Color : public QObject
+		/**
+		 * The internal color model used by the color picker.
+		 */
+		class ColorModel : public QObject
 		{
 		Q_OBJECT
 		public:
-			Color();
+			ColorModel();
 
 			void setColor(const QColor& col);
 			QColor color() const { return mColor; }
@@ -48,6 +54,9 @@ namespace nap
 			QColor mColor;
 		};
 
+		/**
+		 * The color wheel used by the picker.
+		 */
 		class ColorCircle : public QWidget
 		{
 		Q_OBJECT
@@ -67,7 +76,7 @@ namespace nap
 
 		private:
 		    void updateFromPos(const QPoint& p);
-			QRect fitSquare(const QRect& rec) const;
+			static QRect fitSquare(const QRect& rec) ;
 			QPointF toSquarePoint(const QPoint& p, int margin);
 			QRect circleRect() const;
 
@@ -77,6 +86,9 @@ namespace nap
 			QColor mColor;
 		};
 
+		/**
+		 * A slider widget that displays a color gradient and allows interaction with the slider head.
+		 */
 		class GradientSlider : public QWidget
 		{
 		Q_OBJECT
@@ -85,12 +97,13 @@ namespace nap
 
 			void setGradientStops(const QGradientStops& stops);
 			void setValue(qreal v);
-			qreal value();
+			qreal value() const;
 
 			QSize sizeHint() const override;
 
 		Q_SIGNALS:
 			void valueChanged(qreal value);
+
 		protected:
 			void mousePressEvent(QMouseEvent* event) override;
 			void mouseMoveEvent(QMouseEvent* event) override;
@@ -107,11 +120,14 @@ namespace nap
 			QGradient mGradient;
 		};
 
-		class ChannelSlider : public QWidget
+		/**
+		 * A composite widget containing a GradientSlider and a spinbox to input values numerically.
+		 */
+		class ChannelInput : public QWidget
 		{
 		Q_OBJECT
 		public:
-			ChannelSlider();
+			ChannelInput();
 			qreal value() const;
 			void setValue(qreal value);
 			void setGradientStops(const QGradientStops& stops);
@@ -127,9 +143,11 @@ namespace nap
 			QHBoxLayout mLayout;
 			QDoubleSpinBox mSpinBox;
 			GradientSlider mSlider;
-			const int mMaxValue = 2048; // WARNING: this has effect on the apparent precision of the slider
 		};
 
+		/**
+		 * A simple rectangle displaying a single color
+		 */
 		class ColorSwatch : public QWidget
 		{
 		public:
@@ -144,13 +162,16 @@ namespace nap
 			QColor mColor;
 		};
 
+		/**
+		 * The entire color picker composite widget with a color wheel and several sliders.
+		 */
 		class ColorPicker : public QWidget
 		{
 		Q_OBJECT
 		public:
 			ColorPicker();
 
-			QColor color() const { return mColor.color(); }
+			QColor color() const;
 			void setColor(const QColor& col);
 
 		Q_SIGNALS:
@@ -158,23 +179,23 @@ namespace nap
 
 		private:
 
-			void onColorChanged(QColor col);
+			void onColorChanged(const QColor& col);
 
 			QGridLayout mLayout;
 
-			Color mColor;
+			ColorModel mColor;
 
 			ColorSwatch mColorSwatch;
 			ColorCircle mColorCircle;
 
-			ChannelSlider mSliderRed;
-			ChannelSlider mSliderGreen;
-			ChannelSlider mSliderBlue;
-			ChannelSlider mSliderAlpha;
+			ChannelInput mSliderRed;
+			ChannelInput mSliderGreen;
+			ChannelInput mSliderBlue;
+			ChannelInput mSliderAlpha;
 
-			ChannelSlider mSliderHue;
-			ChannelSlider mSliderSaturation;
-			ChannelSlider mSliderValue;
+			ChannelInput mSliderHue;
+			ChannelInput mSliderSaturation;
+			ChannelInput mSliderValue;
 
 			QLineEdit mHexEdit;
 		};

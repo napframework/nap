@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "colorpicker.h"
 
@@ -10,9 +13,9 @@ qreal pointLength(const QPointF& p)
 	return qSqrt(p.x() * p.x() + p.y() * p.y());
 }
 
-Color::Color() : QObject() {}
+ColorModel::ColorModel() : QObject() {}
 
-void Color::setColor(const QColor& col)
+void ColorModel::setColor(const QColor& col)
 {
 	if (mColor == col)
 		return;
@@ -20,7 +23,7 @@ void Color::setColor(const QColor& col)
 	changed(mColor);
 }
 
-void Color::setRed(qreal r)
+void ColorModel::setRed(qreal r)
 {
 	if (r == red())
 		return;
@@ -28,7 +31,7 @@ void Color::setRed(qreal r)
 	changed(mColor);
 }
 
-void Color::setGreen(qreal g)
+void ColorModel::setGreen(qreal g)
 {
 	if (g == green())
 		return;
@@ -36,7 +39,7 @@ void Color::setGreen(qreal g)
 	changed(mColor);
 }
 
-void Color::setBlue(qreal b)
+void ColorModel::setBlue(qreal b)
 {
 	if (b == blue())
 		return;
@@ -44,7 +47,7 @@ void Color::setBlue(qreal b)
 	changed(mColor);
 }
 
-void Color::setAlpha(qreal a)
+void ColorModel::setAlpha(qreal a)
 {
 	if (a == alpha())
 		return;
@@ -52,7 +55,7 @@ void Color::setAlpha(qreal a)
 	changed(mColor);
 }
 
-void Color::setHue(qreal h)
+void ColorModel::setHue(qreal h)
 {
 	if (h == hue())
 		return;
@@ -60,7 +63,7 @@ void Color::setHue(qreal h)
 	changed(mColor);
 }
 
-void Color::setSaturation(qreal s)
+void ColorModel::setSaturation(qreal s)
 {
 	if (s == saturation())
 		return;
@@ -68,7 +71,7 @@ void Color::setSaturation(qreal s)
 	changed(mColor);
 }
 
-void Color::setValue(qreal v)
+void ColorModel::setValue(qreal v)
 {
 	if (v == value())
 		return;
@@ -76,7 +79,7 @@ void Color::setValue(qreal v)
 	changed(mColor);
 }
 
-void Color::setHex(const QString& hexvalue)
+void ColorModel::setHex(const QString& hexvalue)
 {
 	auto v = hexvalue;
 	if (!v.startsWith('#'))
@@ -88,7 +91,7 @@ void Color::setHex(const QString& hexvalue)
 	changed(mColor);
 }
 
-QString Color::hex() const
+QString ColorModel::hex() const
 {
 	auto s = mColor.name();
 	return s.mid(1, s.length() - 1);
@@ -248,7 +251,7 @@ void ColorCircle::updateFromPos(const QPoint& point)
 	valueChanged(col);
 }
 
-QRect ColorCircle::fitSquare(const QRect& rec) const
+QRect ColorCircle::fitSquare(const QRect& rec)
 {
 	const qreal ratio = (qreal) rec.width() / (qreal) rec.height();
 	auto cRec = rec;
@@ -261,7 +264,7 @@ QRect ColorCircle::fitSquare(const QRect& rec) const
 	{
 		cRec.setY(rec.top() + (rec.height() / 2 - rec.width() / 2));
 		cRec.setHeight(rec.width());
-	};
+	}
 	return cRec;
 }
 
@@ -321,7 +324,7 @@ void GradientSlider::setValue(qreal v)
 	valueChanged(mValue);
 }
 
-qreal GradientSlider::value()
+qreal GradientSlider::value() const
 {
 	return mValue;
 }
@@ -405,7 +408,7 @@ int GradientSlider::rightMargin() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ChannelSlider::ChannelSlider() : QWidget()
+ChannelInput::ChannelInput() : QWidget()
 {
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
@@ -414,16 +417,16 @@ ChannelSlider::ChannelSlider() : QWidget()
 
 	mSpinBox.setSingleStep(0.01);
 
-	connect(&mSlider, &GradientSlider::valueChanged, this, &ChannelSlider::onSliderChanged);
-	connect(&mSpinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ChannelSlider::onSpinboxChanged);
+	connect(&mSlider, &GradientSlider::valueChanged, this, &ChannelInput::onSliderChanged);
+	connect(&mSpinBox, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &ChannelInput::onSpinboxChanged);
 }
 
-qreal ChannelSlider::value() const
+qreal ChannelInput::value() const
 {
 	return mValue;
 }
 
-void ChannelSlider::setValue(qreal value)
+void ChannelInput::setValue(qreal value)
 {
 	if (mValue == value)
 		return;
@@ -441,18 +444,18 @@ void ChannelSlider::setValue(qreal value)
 	changed(mValue);
 }
 
-void ChannelSlider::setGradientStops(const QGradientStops& stops)
+void ChannelInput::setGradientStops(const QGradientStops& stops)
 {
 	mSlider.setGradientStops(stops);
 	update();
 }
 
-void ChannelSlider::onSliderChanged(qreal v)
+void ChannelInput::onSliderChanged(qreal v)
 {
 	setValue(v);
 }
 
-void ChannelSlider::onSpinboxChanged(double v)
+void ChannelInput::onSpinboxChanged(double v)
 {
 	setValue(v);
 }
@@ -534,27 +537,35 @@ ColorPicker::ColorPicker() : QWidget()
 
 	mLayout.addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding), row, 1);
 
-	connect(&mColor, &Color::changed, this, &ColorPicker::onColorChanged);
+	connect(&mColor, &ColorModel::changed, this, &ColorPicker::onColorChanged);
 
-	connect(&mColorCircle, &ColorCircle::valueChanged, &mColor, &Color::setColor);
-	connect(&mSliderRed, &ChannelSlider::changed, &mColor, &Color::setRed);
-	connect(&mSliderGreen, &ChannelSlider::changed, &mColor, &Color::setGreen);
-	connect(&mSliderBlue, &ChannelSlider::changed, &mColor, &Color::setBlue);
-	connect(&mSliderAlpha, &ChannelSlider::changed, &mColor, &Color::setAlpha);
-	connect(&mSliderHue, &ChannelSlider::changed, &mColor, &Color::setHue);
-	connect(&mSliderSaturation, &ChannelSlider::changed, &mColor, &Color::setSaturation);
-	connect(&mSliderValue, &ChannelSlider::changed, &mColor, &Color::setValue);
+	connect(&mColorCircle, &ColorCircle::valueChanged, &mColor, &ColorModel::setColor);
+	connect(&mSliderRed, &ChannelInput::changed, &mColor, &ColorModel::setRed);
+	connect(&mSliderGreen, &ChannelInput::changed, &mColor, &ColorModel::setGreen);
+	connect(&mSliderBlue, &ChannelInput::changed, &mColor, &ColorModel::setBlue);
+	connect(&mSliderAlpha, &ChannelInput::changed, &mColor, &ColorModel::setAlpha);
+	connect(&mSliderHue, &ChannelInput::changed, &mColor, &ColorModel::setHue);
+	connect(&mSliderSaturation, &ChannelInput::changed, &mColor, &ColorModel::setSaturation);
+	connect(&mSliderValue, &ChannelInput::changed, &mColor, &ColorModel::setValue);
 	connect(&mHexEdit, &QLineEdit::editingFinished, [this]() { mColor.setHex(mHexEdit.text().trimmed()); });
 
 	setColor(QColor("#F80"));
 }
 
-void ColorPicker::setColor(const QColor& col)
+QColor ColorPicker::color() const
 {
-	mColor.setColor(col);
+	return mColor.color();
 }
 
-void ColorPicker::onColorChanged(const QColor col)
+void ColorPicker::setColor(const QColor& col)
+{
+	if (mColor.color() == col)
+		return;
+	mColor.setColor(col);
+	colorChanged();
+}
+
+void ColorPicker::onColorChanged(const QColor& col)
 {
 	mColorSwatch.setColor(col);
 
