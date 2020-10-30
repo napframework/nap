@@ -1,9 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 /// local includes
 #include "inputservice.h"
 #include "inputevent.h"
 #include "inputrouter.h"
+#include "window.h"
 
-#include <nap/windowresource.h>
 #include <nap/resource.h>
 #include <nap/logger.h>
 

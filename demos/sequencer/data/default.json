@@ -1,0 +1,145 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "ParameterGroup",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "Float1",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "Vec3",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 100.0
+                },
+                {
+                    "Type": "nap::ParameterVec2",
+                    "mID": "Vec2",
+                    "Name": "",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 100.0
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "Int",
+                    "Name": "",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 100
+                }
+            ],
+            "Groups": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "ParameterWindow",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Parameters",
+            "Width": 512,
+            "Height": 512,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "TimelineWindow",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Timeline",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": []
+        },
+        {
+            "Type": "nap::SequenceEditor",
+            "mID": "SequenceEditor",
+            "Sequence Player": "SequencePlayer"
+        },
+        {
+            "Type": "nap::SequenceEditorGUI",
+            "mID": "SequenceEditorGUI",
+            "Sequence Editor": "SequenceEditor",
+            "Render Window": "TimelineWindow",
+            "Draw Full Window": true
+        },
+        {
+            "Type": "nap::SequencePlayer",
+            "mID": "SequencePlayer",
+            "Default Show": "Default Show.json",
+            "Outputs": [
+                {
+                    "Type": "nap::SequencePlayerEventOutput",
+                    "mID": "SequencePlayerEventOutput"
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Float Output",
+                    "Parameter": "Float1",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Vec3 Output",
+                    "Parameter": "Vec3",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Vec2 Output",
+                    "Parameter": "Vec2",
+                    "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerCurveOutput",
+                    "mID": "Int Output",
+                    "Parameter": "Int",
+                    "Use Main Thread": true
+                }
+            ],
+            "Frequency": 1000.0
+        }
+    ]
+}

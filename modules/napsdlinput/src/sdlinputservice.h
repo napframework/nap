@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -30,8 +34,9 @@ namespace nap
 		 * The SDL controller, when constructed, will try to open a connection
 		 * On destruction the controller will close it's connection (if opened)
 		 */
-		struct NAPAPI SDLController
+		class NAPAPI SDLController final
 		{
+		public:
 			SDLController(int deviceID);
 			~SDLController()					{ close(); }
 
@@ -40,9 +45,7 @@ namespace nap
 			void*	mController = nullptr;		///< Pointer to the controller or joystick
 			bool	mIsJoystick = false;		///< If the controller is a joystick or actual controller
 
-			/**
-			 * Closes the connection
-			 */
+		private:
 			void close();
 		};
 
@@ -70,13 +73,13 @@ namespace nap
 		/**
 		 * Checks if a physical controller with the given number is connected.
 		 * The number is always associated with a physical joystick or game control device
-		 * @param number the number of the controller
+		 * @param controllerNumber the number of the controller
 		 * @return if the controller is online
 		 */
 		bool isConnected(int controllerNumber) const;
 
 		/**
-		 * This call can be used to ensure a controller is known to the system using a unique controller id
+		 * This call can be used to ensure a controller is known to the system using a unique controller id.
 		 * The unique controller id is part of SDL controller and joystick events.
 		 * @return if a controller with the given unique id exists
 		 */

@@ -1,7 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <utility/stringutils.h>
-
 #include <vector>
 #include <string>
 
@@ -68,6 +71,11 @@ namespace nap
 			 * @return The full error message
 			 */
 			const std::string toString() const;
+
+			/**
+			 * @return True if there are any errors, false when everything is okay.
+			 */
+			bool hasErrors() const { return !mErrorList.empty(); }
 
 		private:
 			std::vector<std::string> mErrorList;

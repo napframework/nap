@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "rendercomponent.h"
 
@@ -10,10 +14,11 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	void RenderableComponentInstance::draw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableComponentInstance::draw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		if (!isVisible())
 			return;
-		onDraw(viewMatrix, projectionMatrix);
+
+		onDraw(renderTarget, commandBuffer, viewMatrix, projectionMatrix);
 	}
 }

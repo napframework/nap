@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_project
+from nap_shared import find_project, get_cmake_path
 
 # Exit codes
 ERROR_MISSING_MODULE = 1
@@ -18,7 +18,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     BUILD_DIR = 'msvc64'
 else:
-    BUILD_DIR = 'build'
+    BUILD_DIR = 'build_dir'
 
 def cmake_reconfigure_project(project_name, build_type, show_solution):
     # Find the project
@@ -26,8 +26,9 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
     if project_path is None:
         return ERROR_MISSING_MODULE
 
+    cmake = get_cmake_path()
     if sys.platform.startswith('linux'):    
-        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=project_path)
+        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=project_path)
 
         # Show in Nautilus?
         # Seems a bit pointless if we're not opening it in an IDE from the file browser
@@ -35,7 +36,7 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
         #     call(["nautilus -s %s > /dev/null 2>&1 &" % BUILD_DIR], shell=True)
 
     elif sys.platform == 'darwin':
-        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=project_path)
+        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=project_path)
 
         # Show in Finder
         if exit_code == 0 and show_solution:
@@ -48,7 +49,7 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
             os.makedirs(full_build_dir)
 
         # Generate project
-        exit_code = call(['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=project_path)
+        exit_code = call([cmake, '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=project_path)
 
         # Show in Explorer
         if exit_code == 0 and show_solution:

@@ -1,6 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "heightmapapp.h"
 
-// Nap includes
+// External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
@@ -11,6 +15,7 @@
 #include <inputrouter.h>
 #include<imgui/imgui.h>
 #include <imguiutils.h>
+#include <uniforminstance.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -38,21 +43,15 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");		
-		mHeightMesh = mResourceManager->findObject<nap::HeightMesh>("HeightMesh");
-		mNormalsMaterial = mResourceManager->findObject<nap::Material>("NormalsMaterial");
-		mHeightmapMaterial = mResourceManager->findObject<nap::Material>("HeightMaterial");
 		mHeightmap = mResourceManager->findObject<nap::ImageFromFile>("HeightMapTexture");
-
-		// Position window
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
 
 		// Find the world and camera entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mWorldEntity = scene->findEntity("World");
 		mCameraEntity = scene->findEntity("Camera");
+
+		// Select gui window
+		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
 	}
@@ -84,23 +83,44 @@ namespace nap
 		// Now push the blend values to both materials
 		float normal_blend_value = mBlendNormals ? current_blend_value : 0.0f;
 
-		mNormalsMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
-		mNormalsMaterial->getUniform<UniformFloat>("normalBlendValue").setValue(normal_blend_value);
+		// First get a handle to the individual materials
+		std::vector<nap::RenderableMeshComponentInstance*> heightmap_display_components;
+		mWorldEntity->getComponentsOfType<nap::RenderableMeshComponentInstance>(heightmap_display_components);
+		MaterialInstance& height_material = heightmap_display_components[0]->getMaterialInstance();
+		MaterialInstance& normal_material = heightmap_display_components[1]->getMaterialInstance();
 
-		mHeightmapMaterial->getUniform<UniformFloat>("blendValue").setValue(current_blend_value);
-		mHeightmapMaterial->getUniform<UniformFloat>("normalBlendValue").setValue(normal_blend_value);
+		// Get normal shader vertex UBO and update normal blend values
+		UniformStructInstance* normal_vert_ubo = normal_material.getOrCreateUniform("VERTUBO");	
+		normal_vert_ubo->getOrCreateUniform<UniformFloatInstance>("blendValue")->setValue(current_blend_value);
+		normal_vert_ubo->getOrCreateUniform<UniformFloatInstance>("normalBlendValue")->setValue(normal_blend_value);
+
+		// Get height shader vertex UBO and update normal blend values
+		UniformStructInstance* height_vert_ubo = height_material.getOrCreateUniform("VERTUBO");
+		height_vert_ubo->getOrCreateUniform<UniformFloatInstance>("blendValue")->setValue(current_blend_value);
+		height_vert_ubo->getOrCreateUniform<UniformFloatInstance>("normalBlendValue")->setValue(normal_blend_value);
 
 		// Push all colors
-		pushColor(mValleyColor, *mHeightmapMaterial, "lowerColor");
-		pushColor(mPeakColor, *mHeightmapMaterial, "upperColor");
-		pushColor(mHaloColor, *mHeightmapMaterial, "haloColor");
-		pushColor(mNormalColor, *mNormalsMaterial, "color");
+		pushColor(mValleyColor, height_material, "FRAGUBO", "lowerColor");
+		pushColor(mPeakColor, height_material, "FRAGUBO", "upperColor");
+		pushColor(mHaloColor, height_material, "FRAGUBO", "haloColor");
+		pushColor(mNormalColor, normal_material, "FRAGUBO", "color");
 
-		// Set normal opacity
-		mNormalsMaterial->getUniform<UniformFloat>("opacity").setValue(mNormalOpacity);
+		// Set normal opacity and length in normal material
+		UniformStructInstance* normal_frag_ubo = normal_material.getOrCreateUniform("FRAGUBO");
+		normal_frag_ubo->getOrCreateUniform<UniformFloatInstance>("opacity")->setValue(mNormalOpacity);
+		normal_frag_ubo->getOrCreateUniform<UniformFloatInstance>("nlength")->setValue(mNormalLength);
 
-		// Set the normal length
-		mNormalsMaterial->getUniform<UniformFloat>("length").setValue(mNormalLength);
+		// Set camera position, first get handle to the camera position uniform
+		UniformStructInstance* height_frag_ubo = height_material.getOrCreateUniform("FRAGUBO");
+		nap::UniformVec3Instance* cam_loc_uniform = height_frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+
+		// Extract world space position and set in material
+		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
+		cam_loc_uniform->setValue(global_pos);
+
+		// Update blend state in fragment shader of for height material
+		height_frag_ubo->getOrCreateUniform<UniformFloatInstance>("blendValue")->setValue(current_blend_value);
 	}
 
 	
@@ -115,56 +135,55 @@ namespace nap
 	 */
 	void HeightmapApp::render()
 	{
-		// Update the camera location in the world shader for the halo effect
-		// To do that we fetch the material associated with the world mesh and query the camera location uniform
-		// Once we have the uniform we can set it to the camera world space location
-		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformVec3& cam_loc_uniform = render_mesh.getMaterialInstance().getOrCreateUniform<nap::UniformVec3>("inCameraPosition");
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform.setValue(global_pos);
-
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
-
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
-
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
-
-		// Find the height map related objects (mesh / normals) and add as object to render
-		// We make a selection based on the set we want to visualize
-		std::vector<nap::RenderableComponentInstance*> heightmap_display_components;
-		std::vector<nap::RenderableComponentInstance*> components_to_render;
-		mWorldEntity->getComponentsOfType<nap::RenderableComponentInstance>(heightmap_display_components);
-		switch (mSelection)
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-		case 0:
-			components_to_render.emplace_back(heightmap_display_components[0]);
-			break;
-		case 1:
-			components_to_render.emplace_back(heightmap_display_components[1]);
-			break;
-		case 2:
-			components_to_render = heightmap_display_components;
-			break;
-		default:
-			assert(false);
+			// Begin the render pass
+			mRenderWindow->beginRendering();
+
+			// Find the height map related objects (mesh / normals) and add as object to render
+			// We make a selection based on the set we want to visualize
+			std::vector<nap::RenderableComponentInstance*> heightmap_display_components;
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			mWorldEntity->getComponentsOfType<nap::RenderableComponentInstance>(heightmap_display_components);
+			switch (mSelection)
+			{
+			case 0:
+				components_to_render.emplace_back(heightmap_display_components[0]);
+				break;
+			case 1:
+				components_to_render.emplace_back(heightmap_display_components[1]);
+				break;
+			case 2:
+				components_to_render = heightmap_display_components;
+				break;
+			default:
+				assert(false);
+			}
+
+			// Find the camera
+			nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
+
+			// Render the world with the right camera directly to screen
+			mRenderService->renderObjects(*mRenderWindow, camera, components_to_render);
+
+			// Render GUI to window
+			mGuiService->draw();
+
+			// End render pass
+			mRenderWindow->endRendering();
+			
+			// Stop recording this render pass
+			mRenderService->endRecording();
 		}
 
-		// Find the camera
-		nap::PerspCameraComponentInstance& camera = mCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-
-		// Render the world with the right camera directly to screen
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), camera, components_to_render);
-
-		// Render gui to window
-		mGuiService->draw();
-
-		// Swap screen buffers
-		mRenderWindow->swap();
+		// Signal the ending of the frame
+		mRenderService->endFrame();
 	}
 	
 	
@@ -232,23 +251,21 @@ namespace nap
 			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
 			ImGui::ColorEdit3("Normal Color", mNormalColor.getData());
 			ImGui::SliderFloat("Normal Opacity", &mNormalOpacity, 0.0f, 1.0f);
-		} 
-		if (ImGui::CollapsingHeader("Height Map"))
+		}
+		if (ImGui::CollapsingHeader("Heightmap"))
 		{
-			ImGui::Image(*mHeightmap, { 256, 256 });
+			float col_width = ImGui::GetColumnWidth();
+			float col_ratio = (float)mHeightmap->getHeight() / (float)mHeightmap->getWidth();
+			ImGui::Image(*mHeightmap, ImVec2(col_width, col_width * col_ratio));
 		}
 		ImGui::End();
 	}
 
 
-	void HeightmapApp::pushColor(RGBColorFloat& color, Material& material, const std::string& name)
+	void HeightmapApp::pushColor(RGBColorFloat& color, MaterialInstance& material, const std::string& uboName, const std::string& uniformName)
 	{
-		// Push normal color
-		glm::vec3 clr_data;
-		clr_data.x = color.getRed();
-		clr_data.y = color.getGreen();
-		clr_data.z = color.getBlue();
-		material.getUniform<UniformVec3>(name).setValue(clr_data);
+		UniformStructInstance* frag_ubo = material.getOrCreateUniform(uboName);
+		frag_ubo->getOrCreateUniform<UniformVec3Instance>(uniformName)->setValue(color.toVec3());
 	}
 
 }

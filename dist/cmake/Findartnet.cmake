@@ -16,6 +16,15 @@ elseif(APPLE)
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
     set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libArtnet.dylib)
     set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
+elseif(ANDROID)
+    find_path(
+        ARTNET_DIR
+        NAMES bin/${ANDROID_ABI}/libartnet.so
+        HINTS ${THIRDPARTY_DIR}/libartnet
+    )   
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin/${ANDROID_ABI})
+    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so)
+    set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 else()
     find_path(
         ARTNET_DIR
@@ -31,7 +40,7 @@ mark_as_advanced(ARTNET_LIBS_DIR)
 
 # promote package for find
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(artnet REQUIRED_VARS ARTNET_DIR ARTNET_LIBS ARTNET_LIBS_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(artnet REQUIRED_VARS ARTNET_LIBS_DIR)
 
 add_library(artnet SHARED IMPORTED)
 set_target_properties(artnet PROPERTIES

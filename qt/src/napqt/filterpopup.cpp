@@ -1,85 +1,145 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "filterpopup.h"
-
-#include <QKeyEvent>
-
 #include "qtutils.h"
+#include <QKeyEvent>
+#include <QtDebug>
 
 using namespace nap::qt;
 
-FilterPopup::FilterPopup(QWidget* parent, QStandardItemModel& model) : QMenu(nullptr)
+
+FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
 {
-	mTreeView.setModel(&model);
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
-	mLayout.addWidget(&mTreeView);
-	mTreeView.getTreeView().setHeaderHidden(true);
-	mTreeView.getLineEdit().setFocusPolicy(Qt::StrongFocus);
-	mTreeView.setIsItemSelector(true);
-	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &FilterPopup::confirm);
+	mLayout.setSpacing(0);
+	mLayout.setAlignment(Qt::AlignTop);
+
+	auto& tree = mFilterTree.getTreeView();
+	tree.setRootIsDecorated(false);
+	tree.setHeaderHidden(true);
+	tree.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+
+	mLayout.addWidget(&mFilterTree);
+
+	auto& model = mFilterTree.getFilterModel();
+	connect(&model, &QSortFilterProxyModel::rowsRemoved,
+			[this](const QModelIndex& parent, int first, int last) { updateSize(); });
+	connect(&model, &QSortFilterProxyModel::rowsInserted,
+			[this](const QModelIndex& parent, int first, int last) { updateSize(); });
+	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this] (auto index) { accept(); });
+	updateSize();
 }
 
-void FilterPopup::showEvent(QShowEvent* event)
+
+QString FilterPopup::show(QWidget* parent, const QStringList& items)
 {
-	QMenu::showEvent(event);
-	mTreeView.getLineEdit().setFocus();
+	return show(parent, items, QCursor::pos());
 }
 
-const QString FilterPopup::fromStringList(QWidget* parent, const QList<QString>& strings)
+
+QString FilterPopup::show(QWidget* parent, const QStringList& items, QPoint pos)
 {
-	QStandardItemModel model;
-	for (const auto& string : strings)
-		model.appendRow(new QStandardItem(string));
-
-	FilterPopup dialog(parent, model);
-	dialog.exec(QCursor::pos());
-
-	if (!dialog.wasAccepted())
-		return QString();
-
-	auto selected = dialog.mTreeView.getSelectedItem();
-	if (selected == nullptr)
-		return QString();
-
-	return selected->text();
+	FilterPopup popup(parent);
+	popup.setItems(items);
+	popup.exec(pos);
+	return popup.mChoice;
 }
+
 
 void FilterPopup::keyPressEvent(QKeyEvent* event)
 {
-	QMenu::keyPressEvent(event);
-
-	if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
-		confirm();
-	else if (event->key() == Qt::Key_Up)
-		moveSelection(-1);
-	else if (event->key() == Qt::Key_Down)
-		moveSelection(1);
+	switch (event->key())
+	{
+		case Qt::Key_Down:
+		{
+			moveSelection(1);
+			event->accept();
+			return;
+		}
+		case Qt::Key_Up:
+		{
+			moveSelection(-1);
+			event->accept();
+			return;
+		}
+		case Qt::Key_Enter:
+		case Qt::Key_Return:
+		{
+			event->accept();
+			accept();
+		}
+		default:
+			QMenu::keyPressEvent(event);
+	}
 }
 
-void FilterPopup::moveSelection(int dir)
+
+void FilterPopup::showEvent(QShowEvent* event)
 {
-	auto selectedIndexes = mTreeView.getSelectionModel()->selection().indexes();
-	if (selectedIndexes.empty())
-		return;
-
-	int row = selectedIndexes.at(0).row();
-	int newRow = clamp(row + dir, 0, mTreeView.getModel()->rowCount() - 1);
-
-	if (row == newRow)
-		return;
-
-	auto newIndex = mTreeView.getModel()->index(newRow, 0);
-	mTreeView.getSelectionModel()->setCurrentIndex(newIndex, QItemSelectionModel::SelectCurrent);
-	mTreeView.update();
+	QWidget::showEvent(event);
+	mFilterTree.getLineEdit().setFocus();
 }
 
 
-void FilterPopup::confirm()
+void FilterPopup::setItems(const QStringList& items)
 {
-	mWasAccepted = true;
+	if (mModel)
+	{
+		mFilterTree.setModel(nullptr);
+		delete mModel;
+		mModel = nullptr;
+	}
+
+	mModel = new QStringListModel(items);
+	mFilterTree.setModel(mModel);
+}
+
+
+void FilterPopup::moveSelection(int d)
+{
+	auto& tree = mFilterTree.getTreeView();
+	int row = tree.currentIndex().row();
+	int nextRow = qMax(0, qMin(row + d, mFilterTree.getFilterModel().rowCount() - 1));
+	if (row == nextRow)
+		return;
+
+	tree.setCurrentIndex(mFilterTree.getFilterModel().index(nextRow, 0));
+}
+
+
+void FilterPopup::accept()
+{
+	auto& mTree = mFilterTree.getTreeView();
+	auto idx = mTree.currentIndex();
+	mChoice = mTree.model()->data(idx).toString();
 	close();
 }
 
-QSize FilterPopup::sizeHint() const
+
+void FilterPopup::updateSize()
 {
-	return mSize;
+	auto& model = mFilterTree.getFilterModel();
+
+	// Ensure there is always something selected
+	auto& tree = *dynamic_cast<FilterTree_*>(&mFilterTree.getTreeView());
+	if (!tree.currentIndex().isValid())
+		tree.setCurrentIndex(model.index(0, 0));
+
+	// Adjust size based on contents
+	int height = mFilterTree.getLineEdit().height() + mBottomMargin;
+	int rowCount = model.rowCount();
+	if (rowCount > 0)
+	{
+		QItemSelection selection;
+		selection.select(model.index(0, 0), model.index(rowCount - 1, 0));
+		auto rect = tree.visualRectFor(selection);
+		height += rect.height();
+	}
+
+	height = qMin(height, mMaxHeight);
+	setFixedSize(300, height);
+	adjustSize();
 }

@@ -1,6 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include "appcontext.h"
+
 #include <QUndoView>
 #include <QWidget>
 #include <QtWidgets/QVBoxLayout>
@@ -24,7 +29,7 @@ namespace napkin
 		 */
 		void updateUndoStack();
 
-		QVBoxLayout mLayout; // The main layout
-		QUndoView mUndoView; // The actual undo list
+		std::unique_ptr<QVBoxLayout> mLayout = nullptr; // The main layout
+		std::unique_ptr<QUndoView> mUndoView = nullptr; // The actual undo list
 	};
 };

@@ -1,4 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "thememanager.h"
+#include "appcontext.h"
+#include "napkin-resources.h"
+#include "napkinglobals.h"
 
 #include <QDir>
 #include <QFontDatabase>
@@ -10,10 +17,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 #include <utility/fileutils.h>
-
-#include "appcontext.h"
-#include "napkin-resources.h"
-#include "napkinglobals.h"
 
 using namespace napkin;
 
@@ -45,13 +48,12 @@ bool Theme::loadTheme()
 	rapidjson::ParseResult ok = doc.Parse(data.c_str());
 	if (!ok)
 	{
-		nap::Logger::error("JSON Parse error in %s: %s, offset: %s", mFilename.toStdString().c_str(),
+		nap::Logger::error("JSON Parse error in %s: %s, offset: %d", mFilename.toStdString().c_str(),
 						   rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 		return false;
 	}
 
-	// Read properties
-
+	// get stylesheet
 	mName = QString::fromStdString(doc["name"].GetString());
 
 	if (doc.HasMember("stylesheet"))
@@ -60,13 +62,37 @@ bool Theme::loadTheme()
 		mStylesheetFilename = QFileInfo(mFilename).absolutePath() + "/" + doc["stylesheet"].GetString();
 	}
 
+	// load log colors
 	mLogColors.clear();
-	auto logColors = doc["logColors"].GetObject();
+	auto itLogCols = doc.FindMember("logColors");
+	if (itLogCols == doc.MemberEnd())
+	{
+		nap::Logger::error("Missing 'logColors' element in '%s'", mFilename.toStdString().c_str());
+		return false;
+	}
+	auto logColors = itLogCols->value.GetObject();
 	for (const auto logLevel : nap::Logger::getLevels())
 	{
-		std::string colname = logColors[logLevel->name().c_str()].GetString();
+		const auto& levelName = logLevel->name();
+		auto colname = logColors[levelName.c_str()].GetString();
 		QColor col(QString::fromStdString(colname));
-		mLogColors.insert(logLevel, col);
+		mLogColors.insert(logLevel->level(), col);
+	}
+
+	// load custom colors
+	mColors.clear();
+	auto itCols = doc.FindMember("colors");
+	if (itCols == doc.MemberEnd())
+	{
+		nap::Logger::error("Missing 'colors' element in '%s'", mFilename.toStdString().c_str());
+		return false;
+	}
+	auto colors = itCols->value.GetObject();
+	for (const auto& colpair : colors)
+	{
+		auto key = QString::fromStdString(colpair.name.GetString());
+		QColor col(QString::fromStdString(colpair.value.GetString()));
+		mColors.insert(key, col);
 	}
 
 	return true;
@@ -74,11 +100,21 @@ bool Theme::loadTheme()
 
 QColor Theme::getLogColor(const nap::LogLevel& lvl) const
 {
-	if (mLogColors.contains(&lvl))
-		return mLogColors[&lvl];
-	return QColor();
+	if (mLogColors.contains(lvl.level()))
+		return mLogColors[lvl.level()];
+
+	std::cout << "warning: unable to find color for log level: " << lvl.name().c_str() << std::endl;
+	return QColor(0,0,0);
 }
 
+QColor Theme::getColor(const QString& key) const
+{
+	if (mColors.contains(key))
+		return mColors[key];
+
+	nap::Logger::error("Color not found: %s", key.toStdString().c_str());
+	return {};
+}
 
 ThemeManager::ThemeManager()
 {
@@ -102,7 +138,14 @@ void ThemeManager::setTheme(const Theme* theme)
 
 void ThemeManager::setTheme(const QString& name)
 {
-	nap::Logger::fine("Setting theme: %s", name.toStdString().c_str());
+	if (name.isEmpty())
+	{
+		nap::Logger::error("No theme set");
+	}
+	else
+	{
+		nap::Logger::fine("Setting theme: %s", name.toStdString().c_str());
+	}
 	setTheme(getTheme(name));
 }
 
@@ -246,9 +289,15 @@ void ThemeManager::loadThemes()
 
 QColor ThemeManager::getLogColor(const nap::LogLevel& lvl) const
 {
-	if (mCurrentTheme == nullptr)
-		return {};
+	if (mCurrentTheme)
+		return mCurrentTheme->getLogColor(lvl);
+	return {};
+}
 
-	return mCurrentTheme->getLogColor(lvl);
+QColor ThemeManager::getColor(const QString& key) const
+{
+	if (mCurrentTheme)
+		return mCurrentTheme->getColor(key);
+	return {};
 }
 

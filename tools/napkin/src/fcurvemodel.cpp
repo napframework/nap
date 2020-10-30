@@ -1,5 +1,10 @@
-#include <napqt/qtutils.h>
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "fcurvemodel.h"
+#include "appcontext.h"
+#include <napqt/qtutils.h>
 
 using namespace napkin;
 
@@ -125,12 +130,13 @@ void FCurveAdapter::moveTangents(const QMap<int, QPointF>& inTangents, const QMa
 const PropertyPath FCurveAdapter::pointPath(int pointIndex)
 {
 	std::string pointPath = QString("Points/%1").arg(pointIndex).toStdString();
-	return {sourceCurve(), pointPath};
+	assert(AppContext::isAvailable());
+	return {sourceCurve(), nap::rtti::Path::fromString(pointPath), *AppContext::get().getDocument()};
 }
-
+ 
 const QColor FCurveAdapter::color() const
 {
-	return Qt::green;
+	return QColor(200, 105, 105);
 }
 
 

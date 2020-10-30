@@ -1,10 +1,11 @@
-#include <utility>
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "gridview.h"
 #include "timedisplay.h"
-
 #include <cassert>
-
+#include <utility>
 #include <QMouseEvent>
 #include <QtGui>
 #include <QtDebug>
@@ -80,17 +81,27 @@ void GridView::mouseMoveEvent(QMouseEvent* event)
 	bool lmb = event->buttons() == Qt::LeftButton;
 	bool mmb = event->buttons() == Qt::MiddleButton;
 	bool rmb = event->buttons() == Qt::RightButton;
-	bool altKey = event->modifiers() == Qt::AltModifier;
+	bool altKey = event->modifiers() & Qt::AltModifier;
+	bool shiftKey = event->modifiers() & Qt::ShiftModifier;
 
 	if (altKey && (lmb || mmb))
 	{
 		pan(QPointF(mMouseDelta));
 		event->accept();
-	} else if (altKey && rmb)
+	}
+	else if ((altKey || shiftKey) && rmb)
 	{
-		zoom(QPointF(1, 1) + QPointF(mMouseDelta.x(), -mMouseDelta.y()) * 0.01, mapToScene(mMousePressPos));
+		QPointF delta(1, 1);
+		if (altKey)
+			delta += QPointF(mMouseDelta.x(), 0) * 0.01;
+
+		if (shiftKey)
+			delta += QPointF(0, -mMouseDelta.y()) * 0.01;
+
+		zoom(delta, mapToScene(mMousePressPos));
 		event->accept();
-	} else
+	}
+	else
 	{
 		QGraphicsView::mouseMoveEvent(event);
 	}

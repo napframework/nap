@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include <triangleiterator.h>
 #include "mesh.h"
 
@@ -24,7 +28,6 @@ namespace nap
 	ShapeTriangleListIterator::ShapeTriangleListIterator(const MeshShape& shape) :
 		ShapeTriangleIterator(shape, 0)
 	{
-		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLES);
 		assert(shape.getNumIndices() != 0 && shape.getNumIndices() % 3 == 0);
 	}
 
@@ -44,7 +47,6 @@ namespace nap
 	ShapeTriangleFanIterator::ShapeTriangleFanIterator(const MeshShape& shape) :
 		ShapeTriangleIterator(shape, 2)
 	{
-		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_FAN);
 		assert(shape.getNumIndices() >= 3);
 		
 		// Triangle fans always share the first vertex, so we can just cache it here
@@ -67,7 +69,6 @@ namespace nap
 	ShapeTriangleStripIterator::ShapeTriangleStripIterator(const MeshShape& shape) :
 		ShapeTriangleIterator(shape, 2)
 	{
-		assert(shape.getDrawMode() == opengl::EDrawMode::TRIANGLE_STRIP);
 		assert(shape.getNumIndices() >= 3);
 	}
 
@@ -103,7 +104,7 @@ namespace nap
 	const Triangle TriangleIterator::next()
 	{
 		// Retrieve next value from the current iterator. This cannot fail, because next() should only be called while isDone() returns false
-		Triangle result = Triangle(mCurShapeIndex, mCurIterator->next());
+		Triangle result(mCurShapeIndex, mCurIterator->next());
 
 		// If retrieving the current value finished the current iterator, advance to the next one
 		if (mCurIterator->isDone())
@@ -125,15 +126,15 @@ namespace nap
 		{
 			const MeshShape& shape = mMeshInstance->getShape(mCurShapeIndex);
 
-			switch (shape.getDrawMode())
+			switch (mMeshInstance->getDrawMode())
 			{
-			case opengl::EDrawMode::TRIANGLES:
+			case EDrawMode::Triangles:
 				mCurIterator = new ShapeTriangleListIterator(shape);
 				break;
-			case opengl::EDrawMode::TRIANGLE_STRIP:
+			case EDrawMode::TriangleStrip:
 				mCurIterator = new ShapeTriangleStripIterator(shape);
 				break;
-			case opengl::EDrawMode::TRIANGLE_FAN:
+			case EDrawMode::TriangleFan:
 				mCurIterator = new ShapeTriangleFanIterator(shape);
 				break;
 			default:

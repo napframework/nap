@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -50,8 +54,10 @@ namespace nap
 
 
 	/**
-	 * Font Resource
-	 */
+	 * Loads a font from disk using the specified size and properties.
+	 * The resource creates a nap::FontInstance on initialization.
+	 * Use the getFontInstance() call to access all font related functionality.
+ 	 */
 	class NAPAPI Font : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -116,7 +122,7 @@ namespace nap
 		/**
 		 * Create the instance based on font properties and a service
 		 */
-		FontInstance(const FontService& service);
+		FontInstance(FontService& service);
 
 		/**
 		 *	Destructor
@@ -258,6 +264,7 @@ namespace nap
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
 		FontProperties mProperties = { -1, -1 };						///< Describes current font properties
 		std::string mFont;												///< Font that is loaded
+		FontService* mService;											///< Font service
 		mutable std::vector<std::unique_ptr<GlyphCache>> mGlyphs;		///< All cached glyphs
 	};
 

@@ -38,29 +38,34 @@
             "Type": "nap::OSCReceiver",
             "mID": "OSCReceiver",
             "Port": 7000,
-            "EnableDebugOutput": false
+            "EnableDebugOutput": false,
+            "AllowPortReuse": false
         },
         {
             "Type": "nap::OSCSender",
             "mID": "OSCSender",
             "IpAddress": "localhost",
-            "Port": 7000
+            "Port": 7000,
+            "BufferScale": 2
         },
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
             "Title": "Window 1",
-            "Sync": false,
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
                 "z": 0.14900000393390656,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four"
         },
         {
             "Type": "nap::Scene",

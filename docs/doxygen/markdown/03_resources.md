@@ -23,7 +23,7 @@ Resources are small stand-alone building blocks that can be added to your applic
 	"Objects" : 
 	[
 		{
-			"Type" : "nap::Image",
+			"Type" : "nap::ImageFromFile",
 			"mID" : "BackgroundImage",
 			"ImagePath" : "background.jpg"
 		},
@@ -158,7 +158,7 @@ NAP contains a powerful ‘real-time editing’ engine. This means that it is po
 
 From a programmer perspective there are some rules to adhere to. Each resource follows the same initialization pattern. When a file is loaded, all objects are initialized in the correct order. When an init() call returns false it means that resource could not be initialized correctly. In that case, the entire load is cancelled and the system returns back to the original state before load was called. The returned error message describes what went wrong during (re)loading. It is guaranteed that all the objects remain in their original state until the initialization sequence is completed successfully. When there is no original state (ie, the file is loaded for the first time) and initialization fails the application will exit immediately.
 
-Here are the rules for writing a correct [init](@ref nap::RTTIObject::init) function:
+Here are the rules for writing a correct [init](@ref nap::rtti::Object::init) function:
 - Return true on success, false on failure
 - Only assert (or halt program execution in any other way) on programmer errors, never on user errors
 - If the function fails make sure that a clear error message is presented to the [ErrorState](@ref nap::utility::ErrorState) object that is passed to init().
@@ -296,9 +296,7 @@ This diagram doesn't take [components](@ref nap::Component) into account. You ca
 Devices {#devices}
 =======================
 
-A [device](@ref nap::Device) is a special type of resource. You can think of a device as a class that represents and manages the connection to an external piece of hardware (such as a DAC) or a computer. Every device has a [start()](@ref nap::Device::start) and [stop()](@ref nap::Device::stop) method that you can override. Both methods are called by the resource manager at the appropiate time, ie: when the device is created, has changed or is removed from the resource tree.
-
-The resource manager does not 'stop' a device when it is destroyed. This occurs when the application is terminated. <b>It is important to do that yourself by calling stop() in the destructor of your device</b>.
+A [device](@ref nap::Device) is a special type of resource. You can think of a device as a class that represents and manages the connection to an external piece of hardware (such as a DAC) or a computer. Every device has a [start()](@ref nap::Device::start) and [stop()](@ref nap::Device::stop) method that you can override. Both methods are called by the resource manager at the appropiate time, ie: when the device is created, has changed or is removed from the resource tree. The resource manager 'stops' a device that is running before it is destroyed. 
 
 NAP ships with a couple of devices such as the [OSCReceiver](@ref nap::OSCReceiver), [OSCSender](@ref nap::OSCSender), [ArtnetController](@ref nap::ArtNetController), [EtherDreamDac](@ref nap::EtherDreamDac) etc.
 

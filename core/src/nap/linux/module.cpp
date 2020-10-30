@@ -1,23 +1,26 @@
-#include "../module.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
+#include <nap/module.h>
+
+// External Includes
 #include <utility/fileutils.h>
 #include <assert.h>
-
 #include <dlfcn.h> // Posix shared object loading
 
 namespace nap
 {
 	void initModules()
+	{ }
+
+
+ 	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
 	{
-	}
-
-
-	void* loadModule(const std::string& modulePath, std::string& errorString)
-	{
-		void* result;
-		result = dlopen(modulePath.c_str(), RTLD_LAZY);
-
 		// If we failed to load the module, get the error string
-		if (!result)
+		void* result = dlopen(modulePath.c_str(), RTLD_LAZY);
+		if (result == nullptr)
 			errorString = dlerror();
 
 		return result;
@@ -36,22 +39,6 @@ namespace nap
 	}
 
 
-	std::string getModuleNameFromPath(const std::string& path)
-	{
-		assert(isModule(path));
-		std::string moduleName = utility::getFileNameWithoutExtension(path);
-		assert(moduleName.substr(0, 3) == "lib");
-		moduleName = moduleName.substr(3, std::string::npos);
-		return moduleName;
-	}
-
-
-	NAPAPI bool isModule(const std::string& path)
-	{
-		return utility::getFileExtension(path) == getModuleExtension();
-	}
-	
-	
 	std::string getModuleExtension()
 	{
 		return "so";

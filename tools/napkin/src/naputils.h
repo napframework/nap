@@ -1,4 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
+
+#include "propertypath.h"
 
 #include <QStandardItem>
 #include <QFileInfo>
@@ -6,25 +12,15 @@
 #include <rtti/rtti.h>
 #include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
-
-#include "propertypath.h"
 #include <napqt/qtutils.h>
 
-/**
- * Show a dialog box containing the given properties and a custom message.
- * @param parent The parent widget to attach the dialog to
- * @param props The properties to display in the dialog
- * @param message The custom to display alongside the list of properties
- */
 namespace napkin
 {
-
 	/**
-	 * An item displaying an RTTI Type
-	 */
+	* An item that displays an RTTI Type
+	*/
 	class RTTITypeItem : public QStandardItem
 	{
-
 	public:
 		RTTITypeItem(const nap::rtti::TypeInfo& type);
 
@@ -32,23 +28,33 @@ namespace napkin
 		void refresh();
 
 	private:
-		const nap::rtti::TypeInfo& type;
+		const nap::rtti::TypeInfo& mType;
 	};
 
+
 	/**
-	 * Flat list of objects
-	 */
+	* Flat list of objects
+	*/
 	class FlatObjectModel : public QStandardItemModel
 	{
 	public:
-		FlatObjectModel(const rttr::type& basetype);
-
-	private:
-		const rttr::type mBaseType;
+		FlatObjectModel(const std::vector<nap::rtti::Object*> objects);
 	};
 
-
 	using TypePredicate = std::function<bool(const rttr::type& type)>;
+
+	/**
+	 * @param type the class we want to find immediate derived types for
+	 * @return all immediate derived types of the given class
+	 */
+	std::vector<rttr::type> getImmediateDerivedTypes(const rttr::type& type);
+
+	/**
+	 * Recurse all loaded subclasses of the specified type and write to stdout.
+	 * @param type type to recurse and print
+	 * @param indent additional information to print
+	 */
+	void dumpTypes(rttr::type type, const std::string& indent = "");
 
 	/**
 	 * Filter the provided list of objects
@@ -74,12 +80,11 @@ namespace napkin
 
 	/**
 	 * Display a selection dialog with all available objects, filtered by type T
-	 * @tparam T the base type to filter by
 	 * @param parent The parent widget to attach to.
+	 * @param objects The objects to select from
 	 * @return The selected object or nullptr if no object was selected
 	 */
-	template<typename T>
-	T* showObjectSelector(QWidget* parent) { return rtti_cast<T>(showObjectSelector(parent, RTTI_OF(T))); }
+	nap::rtti::Object* showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects);
 
 	/**
 	 * Show a dialog box containing the given properties and a custom message.
@@ -192,5 +197,45 @@ namespace napkin
 	 * @return An URI
 	 */
 	std::string toURI(const PropertyPath& path);
+
+	/**
+	 * Make a type name more readable, for use in napkin when creating objects
+	 * @param type
+	 * @return
+	 */
+	std::string friendlyTypeName(rttr::type type);
+
+	/**
+	 * Compare two ComponentInstance paths and see if they represent the same component instance
+	 * WARNING: This only works with absolute paths, paths that start from the root entity
+	 *
+	 * @param rootEntity The root entity to start from
+	 * @param comp The component to compare
+	 * @param a First path to compare
+	 * @param b Second path to compare
+	 * @return true if the paths represent the same instance, false otherwise
+	 */
+	bool isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
+									  const std::string& a, const std::string& b);
+
+
+	/**
+	 * Check if every character in this string is a number
+	 * @return true if every character in this string is a number, false otherwise
+	 */
+	bool isNumber(const std::string& s);
+
+
+	/**
+	 * Split a "string:234" into its name "string" and index 234
+	 * @return true if both are found, false if there's only a string part
+	 */
+	bool nameAndIndex(const std::string& nameIndex, std::string& name, int& index);
+
+	/**
+	 * Find a child of an entity using its name and disambiguating index
+	 * @return The entity if found
+	 */
+	nap::Entity* findChild(nap::Entity& parent, const std::string& name, int index=-1);
 
 }

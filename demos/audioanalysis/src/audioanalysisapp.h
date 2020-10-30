@@ -1,14 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// Mod nap render includes
+// External Includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
-
-// Nap includes
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <imguiservice.h>
+#include <renderservice.h>
 #include <app.h>
 #include <spheremesh.h>
 

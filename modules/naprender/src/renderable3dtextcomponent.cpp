@@ -1,3 +1,8 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "renderable3dtextcomponent.h"
 #include "renderglobals.h"
 
@@ -8,6 +13,7 @@
 // nap::Renderable3DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable3DTextComponent)
 	RTTI_PROPERTY("Normalize",	&nap::Renderable3DTextComponent::mNormalize,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",	&nap::Renderable3DTextComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable3DTextComponentInstance run time class definition 
@@ -28,14 +34,18 @@ namespace nap
 
 	bool Renderable3DTextComponentInstance::init(utility::ErrorState& errorState)
 	{
-		if (!RenderableTextComponentInstance::init(errorState))
+		// Setup base class
+		if (!setup(errorState))
 			return false;
 
-		if (!errorState.check(hasTransform(), "%s doesn't have a transform component", getEntityInstance()->mID.c_str()))
+		// Transform is required since text is rendered in 3D in the scene.
+		if (!errorState.check(hasTransform(), "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// Copy flags
-		normalizeText(getComponent<Renderable3DTextComponent>()->mNormalize);
+		Renderable3DTextComponent* resource = getComponent<Renderable3DTextComponent>();
+		getMaterialInstance().setDepthMode(resource->mDepthMode);
+		normalizeText(resource->mNormalize);
 
 		// Ensure that when we render normalized the scaling factor is up to date.
 		if (isNormalized())
@@ -75,7 +85,7 @@ namespace nap
 	}
 
 
-	void Renderable3DTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void Renderable3DTextComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		assert(hasTransform());
 		glm::mat4x4 model_matrix = getTransform()->getGlobalTransform();
@@ -89,10 +99,10 @@ namespace nap
 			const nap::math::Rect& bbox = getBoundingBox();
 			offset.x = 0.0f - ((scale.x * bbox.getWidth())  / 2.0f);
 
-			glm::mat4x4  text_matrix = glm::translate(identityMatrix, offset);
+			glm::mat4x4  text_matrix = glm::translate(glm::mat4(), offset);
 			text_matrix = glm::scale(text_matrix, scale);
 			model_matrix = model_matrix * text_matrix;
 		}
-		Renderable3DTextComponentInstance::draw(viewMatrix, projectionMatrix, model_matrix);
+		Renderable3DTextComponentInstance::draw(renderTarget, commandBuffer, viewMatrix, projectionMatrix, model_matrix);
 	}
 }

@@ -1,24 +1,26 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "core.h"
 #include "resourcemanager.h"
 #include "logger.h"
 #include "serviceobjectgraphitem.h"
 #include "objectgraph.h"
-#include "projectinfomanager.h"
-#include "rtti/jsonreader.h"
+#include "packaginginfo.h"
+#include "python.h"
 
 // External Includes
-#include <rtti/pythonmodule.h>
 #include <iostream>
 #include <utility/fileutils.h>
-#include <packaginginfo.h>
+#include <rtti/jsonreader.h>
+#include <rtti/jsonwriter.h>
 
 // Temporarily bring in stdlib.h for PYTHONHOME environment variable setting
 #if defined(__APPLE__) || defined(__unix__)
 	#include <stdlib.h>
 #endif
-
-using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Core)
 	RTTI_FUNCTION("getService", (nap::Service* (nap::Core::*)(const std::string&))&nap::Core::getService)
@@ -28,16 +30,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static const std::string sPossibleProjectParents[] =
-	{
-		"projects",		// User projects against packaged NAP
-		"examples",		// Example projects
-		"demos",		// Demo projects
-		"apps",			// Applications in NAP source
-		"test"			// Old test projects in NAP source
-	};
-
-
 	/**
 	@brief Constructor
 
@@ -48,6 +40,14 @@ namespace nap
 		// Initialize timer
 		mTimer.reset();
 		mTicks.fill(0);
+		mResourceManager = std::make_unique<ResourceManager>(*this);
+		mModuleManager = std::make_unique<ModuleManager>(*this);
+	}
+
+
+	Core::Core(std::unique_ptr<CoreExtension> coreExtension) : Core()
+	{
+		mExtension = std::move(coreExtension);
 	}
 
 
@@ -55,50 +55,92 @@ namespace nap
 	{
 		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
 		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
-		// Erase it
-		mResourceManager.reset();
+		mResourceManager.reset(nullptr);
+
+		// After that remove all services
+		mServices.clear();
+
+		// Delete all service configurations
+		mServiceConfigs.clear();
+
+		// Delete all module references
+		mModuleManager.reset(nullptr);
+
+		// Delete project information
+		mProjectInfo.reset(nullptr);
+
+		// Delete extensions
+		mExtension.reset(nullptr);
 	}
 
 
-	bool Core::initializeEngine(utility::ErrorState& error, const std::string& forcedDataPath, bool runningInNonProjectContext)
+	bool Core::initializeEngine(utility::ErrorState& error)
 	{
+		// Resolve project file path
+		std::string project_file_path;
+		if (!error.check(findProjectInfoFile(project_file_path),
+			"Failed to find %s", PROJECT_INFO_FILENAME))
+			return false;
+
+		// Initialize engine
+		return initializeEngine(project_file_path, ProjectInfo::EContext::Application, error);
+	}
+
+
+	bool Core::initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error)
+	{
+		// Load project information
+		assert(!mInitialized && mProjectInfo == nullptr);
+		if (!loadProjectInfo(projectInfofile, context, error))
+			return false;
+
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
-		// expected when apps are launched directly from Finder and probably other things too.
+		// expected when apps are launched directly from macOS Finder and probably other things too.
 		nap::utility::changeDir(nap::utility::getExecutableDir());
-		
-		// Setup our Python environment
-		setupPythonEnvironment();
-		
-		// Load our module names from the project info
-		ProjectInfo projectInfo;
-		if (!runningInNonProjectContext)
-		{
-			if (!loadProjectInfoFromJSON(*this, projectInfo, error))
-				return false;
-		}
 
-		// Find our project data
-		if (!determineAndSetWorkingDirectory(error, forcedDataPath))
+		// Setup our Python environment
+#ifdef NAP_ENABLE_PYTHON
+		setupPythonEnvironment();
+#endif
+		// Change directory to data folder
+		assert(mProjectInfo != nullptr);
+		std::string dataDir = mProjectInfo->getDataDirectory();
+		if (!error.check(utility::dirExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
 			return false;
 
-		// Create the resource manager
-		mResourceManager = std::make_unique<ResourceManager>(*this);
+		// Everything from this point on is relative to the data directory
+		utility::changeDir(dataDir);
+
+		// Apply any platform specific environment setup
+		setupPlatformSpecificEnvironment();
 
 		// Load modules
-		if (!mModuleManager.loadModules(projectInfo.mModules, error))
-			return false;
-		
-		// Create the various services based on their dependencies
-		if (!createServices(error))
+		if (!mModuleManager->loadModules(*mProjectInfo, error))
 			return false;
 
+		// If there is a config file, read the service configurations from it.
+		// Note that having a config file is optional, but if there *is* one, it should be valid
+		if(!loadServiceConfigurations(error))
+			return false;
+		
+		// Always create services! 
+		// Failure to create all the required services will result in certain objects unable to be created!
+		// Creation is therefore required, in every context. Initialization happens later. 
+		// After creation we're able to access all special object creation functions.
+		// A default service configuration resource is created for all services that require one and
+		// isn't already created during *loadServiceConfigurations()*
+		if (!createServices(*mProjectInfo, error))
+			return false;
+
+		mInitialized = true;
 		return true;
 	}
 
 
 	bool Core::initializePython(utility::ErrorState& error)
 	{
+#ifdef NAP_ENABLE_PYTHON
 		// Here we register a callback that is called when the nap python module is imported.
 		// We register a 'core' attribute so that we can write nap.core.<function>() in python
 		// to access core functionality as a 'global'.
@@ -106,6 +148,7 @@ namespace nap
 		{
 			module.attr("core") = this;
 		});
+#endif
 		return true;
 	}
 
@@ -123,31 +166,35 @@ namespace nap
 
 		// Listen to potential resource file changes and 
 		// forward those to all registered services
-		mResourceManager->mFileLoadedSignal.connect(mFileLoadedSlot);
+		mResourceManager->mPreResourcesLoadedSignal.connect(mPreResourcesLoadedSlot);
+		mResourceManager->mPostResourcesLoadedSignal.connect(mPostResourcesLoadedSlot);
 
 		return true;
 	}
 
 
-	void Core::resourceFileChanged(const std::string& file)
+	void Core::preResourcesLoaded()
 	{
 		for (auto& service : mServices)
-		{
-			service->resourcesLoaded();
-		}
+			service->preResourcesLoaded();
 	}
 
 
-	void Core::calculateFramerate(uint32 tick)
+	void Core::postResourcesLoaded()
 	{
-		mTicksum -= mTicks[mTickIdx];		// subtract value falling off
-		mTicksum += tick;					// add new value
-		mTicks[mTickIdx] = tick;			// save new value so it can be subtracted later */		
-		if (++mTickIdx == mTicks.size())    // inc buffer index
-		{
+		for (auto& service : mServices)
+			service->postResourcesLoaded();
+	}
+
+
+	void Core::calculateFramerate(double deltaTime)
+	{
+		mTicksum -= mTicks[mTickIdx];			// subtract value falling off
+		mTicksum += deltaTime;					// add new value
+		mTicks[mTickIdx] = deltaTime;			// save new value so it can be subtracted later */
+		if (++mTickIdx == mTicks.size())		// inc buffer index
 			mTickIdx = 0;
-		}
-		mFramerate = 1000.0f / (static_cast<float>(mTicksum) / static_cast<float>(mTicks.size()));
+		mFramerate = static_cast<double>(mTicks.size()) / mTicksum;
 	}
 
 
@@ -160,43 +207,34 @@ namespace nap
 	double Core::update(std::function<void(double)>& updateFunction)
 	{
 		// Get current time in milliseconds
-		uint32 new_tick_time = mTimer.getTicks();
-		
+		double new_elapsed_time = mTimer.getElapsedTime();
+
 		// Calculate amount of milliseconds since last time stamp
-		uint32 delta_ticks = new_tick_time - mLastTimeStamp;
+		double delta_time = new_elapsed_time - mLastTimeStamp;
 
 		// Store time stamp
-		mLastTimeStamp = new_tick_time;
-		
-		// Update framerate
-		calculateFramerate(delta_ticks);
+		mLastTimeStamp = new_elapsed_time;
 
-		// Get delta time in seconds
-		double delta_time = static_cast<double>(delta_ticks) / 1000.0;
+		// Update framerate
+		calculateFramerate(delta_time);
 
 		// Perform update call before we check for file changes
 		for (auto& service : mServices)
-		{
 			service->preUpdate(delta_time);
-		}
 
 		// Check for file changes
 		mResourceManager->checkForFileChanges();
 
 		// Update rest of the services
 		for (auto& service : mServices)
-		{
 			service->update(delta_time);
-		}
 
 		// Call update function
 		updateFunction(delta_time);
 
 		// Update rest of the services
 		for (auto& service : mServices)
-		{
 			service->postUpdate(delta_time);
-		}
 
 		return delta_time;
 	}
@@ -204,8 +242,19 @@ namespace nap
 
 	void Core::shutdownServices()
 	{
+		// Call pre-shutdown on services to give them a chance to reset any state they need
+		// before resources are destroyed.
+		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
+		{
+			Service& service = **it;
+			service.preShutdown();
+		}
+
+		// Destroy the resource manager, which will destroy all loaded resources
 		mResourceManager.reset();
 
+		// Shutdown services after all resources have been destroyed.
+		// This order ensures that resources can still make use of services during destruction
 		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
 		{
 			Service& service = **it;
@@ -215,30 +264,8 @@ namespace nap
 	}
 
 
-	bool Core::createServices(utility::ErrorState& errorState)
+	bool nap::Core::createServices(const nap::ProjectInfo& projectInfo, nap::utility::ErrorState& errorState)
 	{
-		using ConfigurationByTypeMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<ServiceConfiguration>>;
-		ConfigurationByTypeMap configuration_by_type;
-
-		// If there is a config file, read the service configurations from it.
-		// Note that having a config file is optional, but if there *is* one, it should be valid
-		std::string config_file_path;
-		if (findProjectFilePath("config.json", config_file_path))
-		{
-			rtti::DeserializeResult deserialize_result;
-			if (!rtti::readJSONFile(config_file_path, rtti::EPropertyValidationMode::DisallowMissingProperties,  mResourceManager->getFactory(), deserialize_result, errorState))
-				return false;
-
-			for (auto& object : deserialize_result.mReadObjects)
-			{
-				if (!errorState.check(object->get_type().is_derived_from<ServiceConfiguration>(), "Config.json should only contain ServiceConfigurations"))
-					return false;
-
-				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
-				configuration_by_type[config->getServiceType()] = std::move(config);
-			}
-		}
-
 		// Gather all service configuration types
 		std::vector<rtti::TypeInfo> service_configuration_types;
 		rtti::getDerivedTypesRecursive(RTTI_OF(ServiceConfiguration), service_configuration_types);
@@ -247,38 +274,36 @@ namespace nap
 		// so the service doesn't get a nullptr for its ServiceConfiguration if it depends on one
 		for (const rtti::TypeInfo& service_configuration_type : service_configuration_types)
 		{
+			// Skip base class, not associated with any service.
 			if (service_configuration_type == RTTI_OF(ServiceConfiguration))
 				continue;
 
 			assert(service_configuration_type.is_valid());
 			assert(service_configuration_type.can_create_instance());
 
-			// Construct the service configuration
-			std::unique_ptr<ServiceConfiguration> service_configuration(service_configuration_type.create<ServiceConfiguration>());
-			rtti::TypeInfo serviceType = service_configuration->getServiceType();
+			// Construct the service configuration, store in unique ptr
+			std::unique_ptr<ServiceConfiguration> service_config(service_configuration_type.create<ServiceConfiguration>());
+			rtti::TypeInfo service_type = service_config->getServiceType();
 
-			// Insert it in the map if it doesn't exist. Note that if it does exist, the unique_ptr will go out of scope and the default
-			// object will be destroyed
-			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(serviceType);
-			if (pos == configuration_by_type.end())
-				configuration_by_type.insert(std::make_pair(serviceType, std::move(service_configuration)));
+			// Check if the service associated with the configuration isn't already part of the map, if so add as default
+			// Config is automatically destructed otherwise.
+			if (findServiceConfig(service_type) == nullptr)
+				addServiceConfig(std::move(service_config));
 		}
 
 		// First create and add all the services (unsorted)
 		std::vector<Service*> services;
-		for (auto& module : mModuleManager.mModules)
+		for (const auto& module : mModuleManager->mModules)
 		{
-			if (module.mService == rtti::TypeInfo::empty())
+			// No service associated with module
+			if (module->getServiceType() == rtti::TypeInfo::empty())
 				continue;
 
 			// Find the ServiceConfiguration that should be used to construct this service (if any)
-			ServiceConfiguration* configuration = nullptr;
-			ConfigurationByTypeMap::iterator pos = configuration_by_type.find(module.mService);
-			if (pos != configuration_by_type.end())
-				configuration = pos->second.release();
+			ServiceConfiguration* configuration = findServiceConfig(module->getServiceType());
 
 			// Create the service
-			if (!addService(module.mService, configuration, services, errorState))
+			if (!addService(module->getServiceType(), configuration, services, errorState))
 				return false;
 		}
 
@@ -298,16 +323,16 @@ namespace nap
 		// Add services in right order
 		for (auto& node : graph.getSortedNodes())
 		{
-            // Add the service to core
+			// Add the service to core
 			nap::Service* service = node->mItem.mObject;
-            mServices.emplace_back(std::unique_ptr<nap::Service>(service));
-            
-            // This happens within this loop so services are able to query their dependencies while registering object creators
-            service->registerObjectCreators(mResourceManager->getFactory());
-            
-            // Notify the service that is has been created and its core pointer is available
-            // We put this call here so the service's dependencies are present and can already be queried if necessary
-            service->created();
+			mServices.emplace_back(std::unique_ptr<nap::Service>(service));
+
+			// This happens within this loop so services are able to query their dependencies while registering object creators
+			service->registerObjectCreators(mResourceManager->getFactory());
+
+			// Notify the service that is has been created and its core pointer is available
+			// We put this call here so the service's dependencies are present and can already be queried if necessary
+			service->created();
 		}
 		return true;
 	}
@@ -354,7 +379,7 @@ namespace nap
 		Service* service = type.create<Service>({ configuration });
 		service->mCore = this;
 		outServices.emplace_back(service);
-        
+
 		return true;
 	}
 
@@ -379,83 +404,7 @@ namespace nap
 		return mTimer.getStartTime();
 	}
 
-	
-	bool Core::determineAndSetWorkingDirectory(utility::ErrorState& errorState, const std::string& forcedDataPath)
-	{
-		// If we've been provided with an explicit data path let's use that
-		if (!forcedDataPath.empty())
-		{
-			// Verify path exists
-			if (!utility::dirExists(forcedDataPath))
-			{
-				errorState.fail("Specified data path '%s' does not exist", forcedDataPath.c_str());
-				return false;
-			}
-			else {
-				utility::changeDir(forcedDataPath);
-				return true;
-			}
-		}
-		
-		// Check if we have our data dir alongside our exe
-		std::string testDataPath = utility::getExecutableDir() + "/data";
-		if (utility::dirExists(testDataPath))
-		{
-			utility::changeDir(testDataPath);
-			return true;
-		}
-		
-		// Split up our executable path to scrape our project name
-		std::string exeDir = utility::getExecutableDir();
-		std::vector<std::string> dirParts;
-		utility::splitString(exeDir, '/', dirParts);
-		
-		// Find NAP root.  Looks cludgey but we have control of this, it doesn't change.
-		
-		std::string napRoot;
-		std::string projectName;
-#ifdef NAP_PACKAGED_BUILD
-		// We're running from a NAP release
-		if (dirParts.size() >= 3)
-		{
-			// Non-packaged apps against released framework
-			napRoot = utility::getAbsolutePath(exeDir + "/../../../../");
-			projectName = dirParts.end()[-3];
-		}
-		else {
-			errorState.fail("Unexpected path configuration found, could not locate project data");
-			return false;
-		}
-#else // NAP_PACKAGED_BUILD
-		// We're running from NAP source
-		napRoot = utility::getAbsolutePath(exeDir + "/../../");
-		projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
-#endif // NAP_PACKAGED_BUILD
-		
-		// Iterate possible project locations
-		std::string possibleProjectParents[] =
-		{
-			"projects", // User projects against packaged NAP
-			"examples", // Example projects
-			"demos", // Demo projects
-			"apps", // Applications in NAP source
-			"test" // Old test projects in NAP source
-		};
-		for (auto& parentPath : possibleProjectParents)
-		{
-			testDataPath = napRoot + "/" + parentPath + "/" + projectName + "/data";
-			if (utility::dirExists(testDataPath))
-			{
-				utility::changeDir(testDataPath);
-				return true;
-			}
-		}
-		
-		errorState.fail("Couldn't find data for project %s", projectName.c_str());
-		return false;
-	}
 
-	
 	void Core::setupPythonEnvironment()
 	{
 #ifdef _WIN32
@@ -477,80 +426,202 @@ namespace nap
 #if _WIN32
 		if (packagedBuild)
 		{
+			// TODO Explore locating Python instead in third party to reduce duplication on disk
 			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
-			const std::string packagedAppPythonPath = exeDir + "/python36.zip";
+			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
 			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../..";
-			const std::string pythonHome = napRoot + "/../thirdparty/python/msvc/python-embed-amd64/python36.zip";
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "python-embed-amd64", "python36.zip"});
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
-#else	
+#elif ANDROID
+		// TODO ANDROID Need's to be implemented'
+		Logger::warn("Python environment not setup for Android");
+#else
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
-			const std::string packagedAppPythonPath = exeDir + "/lib/python3.6";
+			const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
 			if (utility::dirExists(packagedAppPythonPath)) {
-				setenv("PYTHONHOME", exeDir.c_str(), 1);
+				setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
 			}
 			else {
 				// Set PYTHONHOME to thirdparty location within packaged NAP release
-				const std::string napRoot = exeDir + "/../../../../";
-				const std::string pythonHome = napRoot + "/thirdparty/python/";
+				const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
 				setenv("PYTHONHOME", pythonHome.c_str(), 1);
 			}
-		} 
+		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
-			const std::string napRoot = exeDir + "/../../";
-			const std::string pythonHome = napRoot + "/../thirdparty/python/" + platformPrefix + "/install";
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, "install"});
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
 	}
-	
 
-	bool Core::findProjectFilePath(const std::string& filename, std::string& foundFilePath) const
+
+	nap::ServiceConfiguration* Core::findServiceConfig(rtti::TypeInfo type) const
 	{
-		const std::string exeDir = utility::getExecutableDir();
-		
-		// Check for the file in its normal location, beside the binary
-		const std::string alongsideBinaryPath = utility::getExecutableDir() + "/" + filename;
-		nap::Logger::debug("Looking for '%s'...", alongsideBinaryPath.c_str());
-		if (utility::fileExists(alongsideBinaryPath))
-		{
-			foundFilePath = alongsideBinaryPath;
+		auto it = mServiceConfigs.find(type);
+		return it == mServiceConfigs.end() ? nullptr : it->second.get();
+	}
+
+
+	bool Core::addServiceConfig(std::unique_ptr<nap::ServiceConfiguration> serviceConfig)
+	{
+		rtti::TypeInfo service_type = serviceConfig->getServiceType();
+		auto return_v = mServiceConfigs.emplace(std::make_pair(service_type, std::move(serviceConfig)));
+		return return_v.second;
+	}
+
+
+	bool nap::Core::loadProjectInfo(std::string projectFilename, ProjectInfo::EContext context, nap::utility::ErrorState& err)
+	{
+		// Load ProjectInfo from json
+		mProjectInfo = nap::rtti::getObjectFromJSONFile<nap::ProjectInfo>(
+			projectFilename.c_str(),
+			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+			getResourceManager()->getFactory(),
+			err);
+
+		// Ensure project info is loaded correctly.
+		if (!err.check(mProjectInfo != nullptr,
+			"Failed to load project info %s", projectFilename.c_str()))
+			return false;
+
+		// Set if paths are resolved for editor or application
+		mProjectInfo->mContext = context;
+
+		// Store originating filename so we can reference it later and load path mapping
+		mProjectInfo->mFilename = projectFilename;
+		if(!loadPathMapping(*mProjectInfo, err))
+			return false;
+
+		// Ensure templates/variables are replaced with their intended values
+		mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename);
+		if (!err.check(mProjectInfo->mPathMapping != nullptr,
+					   "Failed to load path mapping %s: %s",
+					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
+			return false;
+
+		// Notify project info is loaded
+		nap::Logger::info("Loading project '%s' ver. %s (%s)",
+						  mProjectInfo->mTitle.c_str(),
+						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
+		return true;
+	}
+
+
+	bool nap::Core::loadServiceConfigurations(nap::utility::ErrorState& err)
+	{
+		// No service configuration specified
+		if (!mProjectInfo->hasServiceConfigFile())
 			return true;
-		}
-#ifndef NAP_PACKAGED_BUILD
-		// When working against NAP source find our file in the tree structure in the project source.
-		// This is effectively a workaround for wanting to keep all binaries in the same root folder on Windows
-		// so that we avoid module DLL copying hell.
 
-		const std::string napRoot = utility::getAbsolutePath(exeDir + "/../../");
-		const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
-
-		// Iterate possible project locations
-		for (auto& parentPath : sPossibleProjectParents)
+		// Extract all user defined service configurations
+		rtti::DeserializeResult deserialize_result;
+		utility::ErrorState deserialize_error;
+		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, deserialize_error))
 		{
-			std::string testDataPath = napRoot + "/" + parentPath + "/" + projectName;
-			nap::Logger::debug("Looking for project.json in '%s'...", testDataPath.c_str());
-			if (!utility::dirExists(testDataPath))
-				continue;
-
-			// We found our project folder, now let's verify we have a our file in there
-			testDataPath += "/";
-			testDataPath += filename;
-			nap::Logger::debug("Looking for '%s'...", testDataPath.c_str());
-			if (utility::fileExists(testDataPath))
+			for (std::unique_ptr<rtti::Object>& object : deserialize_result.mReadObjects)
 			{
-				foundFilePath = testDataPath;
-				return true;
+				// Check if it's indeed a service configuration object
+				rtti::TypeInfo object_type = object->get_type();
+				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
+
+				if (!err.check(config != nullptr,
+					"%s should only contain ServiceConfigurations, found object of type: %s instead",
+						mProjectInfo->mServiceConfigFilename.c_str(), object_type.get_name().to_string().c_str()))
+					return false;
+
+				// Get type before moving and store pointer for
+                nap::ServiceConfiguration* config_ptr = config.get();
+				bool added = addServiceConfig(std::move(config));
+
+				// Duplicates are not allowed
+				if(!err.check(added, "Duplicate service configuration found with id: %s, type: %s",
+							   config_ptr->mID.c_str(), config_ptr->getServiceType().get_name().to_string().c_str()))
+					return false;
 			}
 		}
-#endif // NAP_PACKAGED_BUILD
-		return false;
+		else
+		{
+			// File doesn't exist or can't be deserialized
+			nap::Logger::warn(deserialize_error.toString().c_str());
+		}
+		return true;
 	}
+
+
+	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err)
+	{
+		// Load path mapping (relative to the project.json file)
+		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
+		projectInfo.mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(
+			pathMappingFilename,
+			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+			getResourceManager()->getFactory(),
+			err);
+
+		if (err.hasErrors())
+		{
+			nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
+			return false;
+		}
+
+		// Template/variable replacement
+		projectInfo.patchPaths(projectInfo.mPathMapping->mModulePaths);
+		return true;
+	}
+
+
+    bool Core::writeConfigFile(utility::ErrorState& errorState)
+    {
+	    // Write all available service configurations to a vector
+        std::vector<rtti::Object*> objects;
+        for (auto& service : mServices)
+        {
+            auto configuration = service->getConfiguration<rtti::Object>();
+            if (configuration != nullptr)
+            {
+                // The serializer needs all objects to have a mID set
+                if (configuration->mID.empty())
+                    configuration->mID = configuration->get_type().get_name().to_string();
+                objects.emplace_back(configuration);
+            }
+        }
+
+        // Serialize the configurations to json
+        rtti::JSONWriter writer;
+        if (!serializeObjects(objects, writer, errorState))
+            return false;
+        std::string json = writer.GetJSON();
+
+        // Save the config file besides the binary, the first location that NAP searches
+		assert(getProjectInfo() != nullptr);
+        const std::string configFilePath = getProjectInfo()->getProjectDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
+
+        std::ofstream configFile;
+        configFile.open(configFilePath);
+        configFile << json << std::endl;
+        configFile.close();
+		nap::Logger::info("Wrote configuration to: %s", configFilePath.c_str());
+
+        return true;
+    }
+
+
+	const nap::ProjectInfo* Core::getProjectInfo() const
+	{
+		return mProjectInfo.get();
+	}
+
+
+	bool Core::isInitialized() const
+	{
+		return mInitialized;
+	}
+
 }

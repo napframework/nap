@@ -1,5 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "path.h"
 #include "object.h"
+
+// External Includes
 #include <utility/stringutils.h>
 
 namespace nap
@@ -32,6 +39,9 @@ namespace nap
 						result += utility::stringFormat("/%d", element.ArrayElement.Index);
 					break;
 				}
+				default:
+					assert(false);
+					break;
 				}
 			}
 
@@ -79,8 +89,9 @@ namespace nap
 				// Handle attribute
 				if (element.mType == PathElement::Type::ATTRIBUTE)
 				{
-					// If this is the first element on the path, we need to push a 'root' element. The root element is identical to the attribute element,
-					// with the difference that the root element does not make a copy of the object that the property is on (the attribute element does)
+					// If this is the first element on the path, we need to push a 'root' element.
+					// The root element is identical to the attribute element, with the difference that the root
+					// element does not make a copy of the object that the property is on (the attribute element does)
 					if (index == 0)
 					{
 						// See if the object contains a property with this name. If not, it means the path is invalid
@@ -93,12 +104,15 @@ namespace nap
 					}
 					else
 					{
-						// Retrieve the current value of the resolved path. If there is none, the path is invalid (we're trying to push a nested attribute on an empty path)
+						// Retrieve the current value of the resolved path.
+						// If there is none, the path is invalid
+						// (we're trying to push a nested attribute on an empty path)
 						const rtti::Variant& current_context = resolvedPath.getValue();
 						if (!current_context.is_valid())
 							return false;
 
-						// See if the object that's currently on the resolved path has a property with this name. If not, it means the path is invalid
+						// See if the object that's currently on the resolved path has a property with this name.
+						// If not, it means the path is invalid
 						rtti::Property property = current_context.get_type().get_property(element.Attribute.Name);
 						if (!property.is_valid())
 							return false;
@@ -109,12 +123,14 @@ namespace nap
 				}
 				else if (element.mType == PathElement::Type::ARRAY_ELEMENT)
 				{
-					// Retrieve the current value of the resolved path. If there is none, the path is invalid (we're trying to push a nested attribute on an empty path)
+					// Retrieve the current value of the resolved path. If there is none,
+					// the path is invalid (we're trying to push a nested attribute on an empty path)
 					const rtti::Variant& current_context = resolvedPath.getValue();
 					if (!current_context.is_valid())
 						return false;
 
-					// Since we're pushing an array element, the previous element must be an array. If not, the path is invalid
+					// Since we're pushing an array element, the previous element must be an array.
+					// If not, the path is invalid
 					if (!current_context.is_array())
 						return false;
 
@@ -128,7 +144,8 @@ namespace nap
 
 
 		/**
-		 * Note that while this function gets the value of the property currently on the path, it does so by returning a *copy*. See setValue for more information
+		 * Note that while this function gets the value of the property currently on the path,
+		 * it does so by returning a *copy*. See setValue for more information
 		 */
 		const rtti::Variant ResolvedPath::getValue() const
 		{
@@ -163,21 +180,32 @@ namespace nap
 
 		/**
 		 * There are some important subtleties to the resolving of an RTTIPath.
-		 * Key point is that the RTTI system we use does not allow you to retrieve a direct pointer to a property of an object.
-		 * This means that whenever you get a value, you are getting a *copy* of the value actually stored in the property.
-		 * The implication of this is that you can never directly set the property of an object in a nested hierarchy. For example, consider this path (see RTTIPath documentation):
+		 * The RTTI system we use does not allow you to retrieve a direct pointer to a property of an object.
+		 * This means that whenever you get a value,
+		 * you are getting a *copy* of the value actually stored in the property.
+		 * The implication of this is that you can never directly set the property of an object in a nested hierarchy.
+		 * For example, consider this path (see RTTIPath documentation):
 		 *
 		 *		RTTIPath path;
-		 *		path.PushAttribute("ArrayOfCompounds");		// Push name of the RTTI property on SomeRTTIClass
-		 *		path.PushArrayElement(0);					// Push index into the array 'ArrayOfCompounds' on SomeRTTIClass
-		 *		path.PushAttribute("PointerProperty");		// Push name of the RTTI property on the compound contained in ArrayOfCompounds, namely 'DataStruct'
+		 *
+		 *		// Push name of the RTTI property on SomeRTTIClass
+		 *		path.PushAttribute("ArrayOfCompounds");
+		 *
+		 *		// Push index into the array 'ArrayOfCompounds' on SomeRTTIClass
+		 *		path.PushArrayElement(0);
+		 *
+		 *		// Push name of the RTTI property on the compound contained in ArrayOfCompounds, namely 'DataStruct'
+		 *		path.PushAttribute("PointerProperty");
 		 *
 		 * If we want to set the value of the pointer property, we need to do a couple of things:
-		 * - First, we set the value of the pointer property on a *copy* of the object (DataStruct) that is actually stored in the array
-		 * - Then, we copy the object (DataStruct) to a *copy* of the array that is actually stored in the ArrayOfCompounds property
+		 * - First, we set the value of the pointer property on a *copy* of the object (DataStruct)
+		 *   that is actually stored in the array
+		 * - Then, we copy the object (DataStruct) to a *copy* of the array that is actually stored in
+		 *   the ArrayOfCompounds property
 		 * - Finally, we copy the entire array back to the actual array on the root element
 		 *
-		 * In essence, setting a value is a recursive function where the value to set is recursively copied up the path from the bottom
+		 * In essence, setting a value is a recursive function where the value to set is recursively copied up
+		 * the path from the bottom
 		 */
 		bool ResolvedPath::setValue(const rtti::Variant& value)
 		{
@@ -185,12 +213,14 @@ namespace nap
 			if (isEmpty())
 				return false;
 
-			// We keep track of the value we want to set on the current element of the path. We start with the value the user provided.
+			// We keep track of the value we want to set on the current element of the path.
+			// We start with the value the user provided.
 
 			const rtti::TypeInfo value_type = getType();
 			rtti::Variant value_to_set = value;
 
-			if (value_type != value_to_set.get_type() && !value_to_set.convert(value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type))
+			if (value_type != value_to_set.get_type() &&
+			    !value_to_set.convert(value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type))
 				return false;
 
 			for (int index = mLength - 1; index >= 0; --index)
@@ -209,7 +239,8 @@ namespace nap
 					if (!element.Attribute.Property.set_value(element.Attribute.Variant, value_to_set))
 						return false;
 
-					// Now that we've updated our copy, we need to copy our copy to the original object. So we update value_to_set for the next iteration
+					// Now that we've updated our copy, we need to copy our copy to the original object.
+					// So we update value_to_set for the next iteration
 					value_to_set = element.Attribute.Variant;
 				}
 				else if (element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
@@ -219,7 +250,9 @@ namespace nap
 					if (!array.set_value(element.ArrayElement.Index, value_to_set))
 						return false;
 
-					// Now that we've updated our copy of the array, we need to copy our array copy to the original object. So we update value_to_set for the next iteration
+					// Now that we've updated our copy of the array,
+					// we need to copy our array copy to the original object.
+					// So we update value_to_set for the next iteration
 					value_to_set = element.ArrayElement.Array;
 				}
 			}

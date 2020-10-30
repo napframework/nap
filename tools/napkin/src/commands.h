@@ -1,4 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
+
+#include "typeconversion.h"
 
 #include <rtti/objectptr.h>
 #include <rtti/path.h>
@@ -7,8 +13,6 @@
 #include <QtCore/QVariant>
 #include <propertypath.h>
 #include <scene.h>
-
-#include "typeconversion.h"
 
 namespace napkin
 {
@@ -106,7 +110,7 @@ namespace napkin
 		void redo() override;
 
 	private:
-		const PropertyPath mPath; // The path to the property
+		PropertyPath mPath; // The path to the property
 		QVariant mNewValue; // The new value
 		QVariant mOldValue; // The old value
 	};
@@ -133,13 +137,12 @@ namespace napkin
 
 	private:
 		PropertyPath		mPath;			// The path to the property
-		const std::string	mNewValue;	// The new value
-		std::string			mOldValue;			// The old value
+		std::string			mNewValue;		// The new value
+		std::string			mOldValue;		// The old value
 	};
 
 
 	/**
-	 * TODO: Can this be an 'AddPointerToVectorCommand'?
 	 * Add an entity to a scene
 	 */
 	class AddEntityToSceneCommand : public QUndoCommand
@@ -155,16 +158,40 @@ namespace napkin
 		size_t mIndex;
 	};
 
-	class RemoveEntityFromSceneCommand : public QUndoCommand
+	/**
+	 * Add an Entity as a child to another entity
+	 */
+	class AddChildEntityCommand : public QUndoCommand
 	{
 	public:
-		RemoveEntityFromSceneCommand(nap::Scene& scene, nap::Entity& entity);
+		AddChildEntityCommand(nap::Entity& parent, nap::Entity& child);
 		void redo() override;
 		void undo() override;
 	private:
-		const std::string mSceneID;
-		const std::string mEntityID;
+		const std::string mChildID;
+		const std::string mParentID;
 		size_t mIndex;
+	};
+
+	class RemoveChildEntityCommand : public QUndoCommand
+	{
+	public:
+		RemoveChildEntityCommand(nap::Entity& parent, int index);
+		void redo() override;
+		void undo() override;
+	private:
+		const std::string mParentID;
+		size_t mIndex;
+	};
+
+	class RemoveCommand : public QUndoCommand
+	{
+	public:
+		RemoveCommand(const PropertyPath& path);
+		void redo() override;
+		void undo() override;
+	private:
+		PropertyPath mPath;
 	};
 
 	/**
@@ -281,6 +308,22 @@ namespace napkin
 		size_t mToIndex; ///< The element index to move to
 		size_t mOldIndex; ///< The actual old index (may have been shifted)
 		size_t mNewIndex; ///< The actual new index (may have been shifted)
+	};
+
+	class ReplaceEmbeddedPointerCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * Create or replace an embedded object
+		 */
+		 ReplaceEmbeddedPointerCommand(const PropertyPath& path, rttr::type objectType);
+
+		void redo() override;
+		void undo() override;
+	private:
+		PropertyPath mPath;
+		PropertyPath mCreatedObject;
+		rttr::type mType;
 	};
 
 };

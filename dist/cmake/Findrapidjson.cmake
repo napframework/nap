@@ -49,10 +49,11 @@ foreach(opt RAPIDJSON_INCLUDEDIR RAPIDJSON_USE_SSE2 RAPIDJSON_USE_SSE42)
 endforeach()
 
 find_path(RAPIDJSON_INCLUDE_DIRS
+          NO_CMAKE_FIND_ROOT_PATH
           NAMES rapidjson/rapidjson.h
           HINTS
           ${THIRDPARTY_DIR}/rapidjson/include
-          )
+          )    
 
 mark_as_advanced(RAPIDJSON_INCLUDE_DIRS)
 

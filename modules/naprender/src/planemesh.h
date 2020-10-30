@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -8,17 +12,23 @@
 
 namespace nap
 {
+	// Forward Declares
+	class Core;
+	class RenderService;
+
 	/**
 	 * Predefined rectangular mesh with a specific size centered at the origin on the xy axis. 
-	 * When there is no size given the mesh is a uniform 1m2. The UV coordinates are always 0-1
-	 * By default the plane has 1 row and 1 column
+	 * When there is no size given the mesh is a uniform 1m2. The UV coordinates are always 0-1.
+	 * By default the plane has 1 row and 1 column.
 	 */
 	class NAPAPI PlaneMesh : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		PlaneMesh(Core& core);
+
 		/**
-		 * Sets up and initializes the plane as a mesh based on the provided parameters.
+		 * Sets up, initializes and uploads the plane to the GPU based on the provided parameters.
 		 * @param errorState contains the error message if the mesh could not be created.
 		 * @return if the mesh was successfully created and initialized.
 		 */
@@ -36,25 +46,28 @@ namespace nap
 		/**
 		 *	@return the mesh used for rendering
 		 */
-		virtual MeshInstance& getMeshInstance() override				{ return *mMeshInstance; }
+		virtual MeshInstance& getMeshInstance() override					{ return *mMeshInstance; }
 
 		/**
 		 *	@return the mesh used for rendering
 		 */
-		virtual const MeshInstance& getMeshInstance() const override	{ return *mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const override		{ return *mMeshInstance; }
 
 		/**
 		 *	@return the plane as a rectangle
 		 */
-		const math::Rect& getRect()										{ return mRect; }
+		const math::Rect& getRect()											{ return mRect; }
 
 		// property: the size of the plane
-		glm::vec2	mSize = { 1.0, 1.0 };								///< Property: 'Size' the size of the plane in units
-		glm::vec2	mPosition =	{ 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
-		int			mRows = 1;											///< Property: 'Rows' number of rows
-		int			mColumns = 1;										///< Property: 'Columns' number of columns
+		glm::vec2		mSize = { 1.0, 1.0 };								///< Property: 'Size' the size of the plane in units
+		glm::vec2		mPosition =	{ 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
+		int				mRows = 1;											///< Property: 'Rows' number of rows
+		int				mColumns = 1;										///< Property: 'Columns' number of columns
+		EMeshDataUsage	mUsage = EMeshDataUsage::Static;					///< Property: 'Usage' If the plane is uploaded once or frequently updated.
+		ECullMode		mCullMode = ECullMode::None;						///< Property: 'CullMode' Plane cull mode, defaults to no culling
 
 	private:
+		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 		math::Rect mRect;
 

@@ -1,16 +1,20 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "resourcemanager.h"
 #include "objectgraph.h"
 #include "logger.h"
 #include "core.h"
+#include "python.h"
 #include "rttiobjectgraphitem.h"
+#include "device.h"
+#include "corefactory.h"
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonreader.h>
-#include <rtti/pythonmodule.h>
 #include <rtti/linkresolver.h>
-#include <nap/core.h>
-#include <nap/device.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -88,8 +92,18 @@ namespace nap
 		}
 
 		rtti::ObjectPtrManager::get().patchPointers(mService.mObjects);
+
+		destroyObjects();
 	}
 
+	void ResourceManager::RollbackHelper::destroyObjects()
+	{
+		// Destroy all objects that have been initialized in reversed initialization order
+		for (int index = mInitializedObjects.size() - 1; index >= 0; --index)
+			mInitializedObjects[index]->onDestroy();
+
+		mObjectsToUpdate.clear();
+	}
 
 	void ResourceManager::RollbackHelper::clear()
 	{
@@ -105,6 +119,11 @@ namespace nap
 	void ResourceManager::RollbackHelper::addNewDevice(Device& device)
 	{
 		mNewDevices.push_back(&device);
+	}
+
+	void ResourceManager::RollbackHelper::addInitializedObject(rtti::Object& object)
+	{
+		mInitializedObjects.push_back(&object);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -149,17 +168,21 @@ namespace nap
 
 
 	ResourceManager::ResourceManager(nap::Core& core) :
-		mDirectoryWatcher(std::make_unique<DirectoryWatcher>()),
-		mFactory(std::make_unique<Factory>()),
+		mFactory(std::make_unique<CoreFactory>(core)),
 		mCore(core)
 	{
 	}
 
 
+	ResourceManager::~ResourceManager()
+	{
+		stopAndDestroyAllObjects();
+	}
+
 	/**
 	 * Add all objects from the resource manager into an object graph, overlayed by @param objectsToUpdate.
  	 */
-	bool ResourceManager::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState)
+	void ResourceManager::buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph)
 	{
 		// Build an object graph of all objects in the ResourceMgr. If any object is in the objectsToUpdate list,
 		// that object is added instead. This makes objectsToUpdate and 'overlay'.
@@ -178,10 +201,10 @@ namespace nap
 			if (mObjects.find(kvp.first) == mObjects.end())
 				all_objects.push_back(kvp.second.get());
 
-		if (!objectGraph.build(all_objects, [](rtti::Object* object) { return RTTIObjectGraphItem::create(object); }, errorState))
-			return false;
-
-		return true;
+		// We create a dummy errorState here. The RTTIObjectGraphItem never uses errorState and so the building of the graph will never fail.
+		utility::ErrorState errorState;
+		bool result = objectGraph.build(all_objects, [](rtti::Object* object) { return RTTIObjectGraphItem::create(object); }, errorState);
+		assert(result);
 	}
 	
 
@@ -206,6 +229,66 @@ namespace nap
 	}
 
 
+	void ResourceManager::stopAndDestroyAllObjects()
+	{
+		RTTIObjectGraph object_graph;
+		buildObjectGraph({}, object_graph);
+
+		// Stop and destroy objects in reversed init order. 
+		const std::vector<RTTIObjectGraph::Node*> nodes = object_graph.getSortedNodes();
+		for (int i = nodes.size() - 1; i >= 0; --i)
+		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
+			ObjectByIDMap::iterator pos = mObjects.find(nodes[i]->mItem.getID());
+
+			Device* device = rtti_cast<Device>(pos->second.get());
+			if (device != nullptr)
+				device->stop();
+
+			pos->second->onDestroy();
+		}
+
+		// Destruction of objects is not in any particular order.
+		mObjects.clear();
+	}
+
+
+	void ResourceManager::destroyObjects(const std::unordered_set<std::string>& objectIDsToDelete, const RTTIObjectGraph& objectGraph)
+	{
+		std::unordered_set<std::string> objects_ids_to_delete = objectIDsToDelete;
+
+		// Destroy objects in reversed init order (if they exist in the objectIDsToDelete set)
+		const std::vector<RTTIObjectGraph::Node*> nodes = objectGraph.getSortedNodes();
+		for (int i = nodes.size() - 1; i >= 0; --i)
+		{
+			if (nodes[i]->mItem.mType != RTTIObjectGraphItem::EType::Object)
+				continue;
+
+			const std::string& nodeID = nodes[i]->mItem.getID();
+			if (objectIDsToDelete.find(nodeID) != objectIDsToDelete.end())
+			{
+				objects_ids_to_delete.erase(nodeID);
+
+				ObjectByIDMap::iterator pos = mObjects.find(nodeID);
+
+				// objectIDsToDelete will contain objects that are added, so it is possible that they don't exist in mObjects.
+				if (pos != mObjects.end())
+				{
+					pos->second->onDestroy();
+
+					// Note: we can't just clear mObjects here like we do in other cases, because the set of objects that needs to be destroyed
+					// may be a subset of all objects in the resource manager.
+					mObjects.erase(pos);
+				}
+			}
+		}
+
+		assert(objects_ids_to_delete.empty());
+	}
+
+
 	bool ResourceManager::loadFile(const std::string& filename, utility::ErrorState& errorState)
 	{
 		return loadFile(filename, std::string(), errorState);
@@ -217,10 +300,24 @@ namespace nap
 		// ExternalChangedFile should only be used if it's different from the file being reloaded
 		assert(utility::toComparableFilename(filename) != utility::toComparableFilename(externalChangedFile));
 
+		// Notify listeners
+		mPreResourcesLoadedSignal.trigger();
+
 		// Read objects from disk
 		DeserializeResult read_result;
-		if (!readJSONFile(filename, EPropertyValidationMode::DisallowMissingProperties, getFactory(), read_result, errorState))
+		if (!loadFileAndDeserialize(filename, read_result, errorState))
+		{
+			errorState.fail("Failed to load and deserialize %s", filename.c_str());
 			return false;
+		}
+
+		// We instantiate a helper that will perform three things when an error occurs during loading:
+		// - Perform a rollback of any pointer patching that we have done. We only ever need to rollback the pointer patching, 
+		//   because the resource manager remains untouched until the very end where we know that all init() calls have succeeded.
+		// - Perform a rollback of start/stopped devices in case an error occurs.
+		// - Destroy any new objects that were loaded from file in the correct order. Note that only the objects that need to be pushed
+		//   into the ResourceManager are destroyed in the correct order, any unchanged objects are not managed by RollbackHelper.
+		RollbackHelper rollback_helper(*this);
 
 		// We first gather the objects that require an update. These are the new objects and the changed objects.
 		// Change detection is performed by comparing RTTI attributes. Very important to note is that, after reading
@@ -234,7 +331,7 @@ namespace nap
 		// Finally, we could improve on the unresolved pointer check if we could introduce actual UnresolvedPointer objects
 		// that the pointers are pointing to after loading. These would hold the ID, so that comparisons could be made easier.
 		// The reason we don't do this is because it isn't possible to do so in RTTR as it's very strict in it's type safety.
-		ObjectByIDMap objects_to_update;
+		ObjectByIDMap& objects_to_update = rollback_helper.getObjectsToUpdate();
 		for (auto& read_object : read_result.mReadObjects)
 		{
 			std::string id = read_object->mID;
@@ -247,19 +344,12 @@ namespace nap
 			}
 		}
 
-
 		// Resolve all unresolved pointers. The set of objects to resolve against are the objects in the ResourceManager, with the new/dirty
 		// objects acting as an overlay on the existing objects. In other words, when resolving, objects read from the json file have 
 		// preference over objects in the resource manager as these are the ones that will eventually be (re)placed in the manager.
 		OverlayLinkResolver resolver(*this, objects_to_update);
 		if (!resolver.resolveLinks(read_result.mUnresolvedPointers, errorState))
 			return false;
-
-		// We instantiate a helper that will perform a rollback of any pointer patching that we have done.
-		// In case of success we clear this helper.
-		// We only ever need to rollback the pointer patching, because the resource manager remains untouched
-		// until the very end where we know that all init() calls have succeeded
-		RollbackHelper rollback_helper(*this);
 
 		// Patch ObjectPtrs so that they point to the updated object instead of the old object. We need to do this before determining
 		// init order, otherwise a part of the graph may still be pointing to the old objects.
@@ -268,8 +358,7 @@ namespace nap
 		// Build object graph of all the objects in the manager, overlayed by the objects we want to update. Later, we will
 		// performs queries against this graph to determine init order for both resources and entities.
 		RTTIObjectGraph object_graph;
-		if (!buildObjectGraph(objects_to_update, object_graph, errorState))
-			return false;
+		buildObjectGraph(objects_to_update, object_graph);
 
 		// Find out what objects to init and in what order to init them
 		std::vector<std::string> objects_to_init;
@@ -331,6 +420,9 @@ namespace nap
 			if (!errorState.check(object->init(errorState), "Couldn't initialize object '%s'", id.c_str()))
 				return false;
 
+			// Add the object to the rollback helper after a successfull init, so that onDestroy is automatically called if an error occurs later on
+			rollback_helper.addInitializedObject(*object);
+
 			// If the object is a device, we also need to start it
 			if (object->get_type().is_derived_from<Device>())				
 			{
@@ -343,8 +435,16 @@ namespace nap
 			}
 		}
 
-		// In case all init() operations were successful, we can now replace the objects
-		// in the manager by the new objects. This effectively destroys the old objects as well.
+
+		// In case all init() operations were successful, we can now:
+		// 1) Delete objects in the ResourceManager that we will replace
+		// 2) Insert the new objects into the ResourceManager
+		std::unordered_set<std::string> objects_ids_to_delete;
+		for (auto& kvp : objects_to_update)
+			objects_ids_to_delete.insert(kvp.first);
+
+		destroyObjects(objects_ids_to_delete, object_graph);
+
 		for (auto& kvp : objects_to_update)
 			mObjects[kvp.first] = std::move(kvp.second);
 
@@ -357,7 +457,7 @@ namespace nap
 		rollback_helper.clear();
 
 		// Notify listeners
-		mFileLoadedSignal.trigger(filename);
+		mPostResourcesLoadedSignal.trigger();
 
 		return true;
 	}
@@ -391,61 +491,7 @@ namespace nap
 		}
 		return EFileModified::No;
 	}
-
-	void ResourceManager::checkForFileChanges()
-	{
-		std::vector<std::string> modified_files;
-		if (mDirectoryWatcher->update(modified_files))
-		{
-			for (std::string& modified_file : modified_files)
-			{
-				// Multiple events for the same file may occur, and we do not want to reload for every event given.
-				// Instead we check the filetime and store that filetime in an internal map. If an event comes by that
-				// with a filetime that we already processed, we ignore it.
-				// It may also be possible that events are thrown for files that we do not have access to, or for files
-				// that have been removed in the meantime. For these cases, we ignore events where the filetime check
-				// fails.
-				EFileModified file_modified = isFileModified(modified_file);
-				if (file_modified == EFileModified::Error || file_modified == EFileModified::No)
-					continue;
-
-				modified_file = utility::toComparableFilename(modified_file);
-				std::set<std::string> files_to_reload;
-
-				// Is our modified file a json file that was loaded by the manager?
-				if (mFilesToWatch.find(modified_file) != mFilesToWatch.end())
-				{
-					files_to_reload.insert(modified_file);
-				}
-				else
-				{
-					// Non-json file. Find all the json sources of this file
-					FileLinkMap::iterator file_link = mFileLinkMap.find(modified_file);
-					if (file_link != mFileLinkMap.end())
-						for (const std::string& source_file : file_link->second)
-							files_to_reload.insert(source_file);
-				}
-
-				if (!files_to_reload.empty())
-				{
-					nap::Logger::info("Detected change to %s. Files needing reload:", modified_file.c_str());
-					for (const std::string& source_file : files_to_reload)
-						nap::Logger::info("\t-> %s", source_file.c_str());
-
-					for (const std::string& source_file : files_to_reload)
-					{
-						utility::ErrorState errorState;
-						if (!loadFile(source_file, source_file == modified_file ? std::string() : modified_file, errorState))
-						{
-							nap::Logger::warn("Failed to reload %s (%s)", source_file.c_str(), errorState.toString().c_str());
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
-
+	
 
 	nap::rtti::Factory& ResourceManager::getFactory()
 	{
@@ -532,4 +578,9 @@ namespace nap
 		return rtti::ObjectPtr<Object>(object);
 	}
 
+
+	void ResourceManager::watchDirectory()
+	{
+		mDirectoryWatcher = std::make_unique<DirectoryWatcher>();
+	}
 }

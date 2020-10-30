@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "box.h"
 
 RTTI_BEGIN_CLASS(nap::math::Box)
@@ -16,6 +20,13 @@ namespace nap
 		{
 			mMinCoordinates = { 0.0f - (width / 2.0f), 0.0f - (height / 2.0f) , 0.0f - (depth / 2.0f) };
 			mMaxCoordinates = { 0.0f + (width / 2.0f), 0.0f + (height / 2.0f) , 0.0f + (depth / 2.0f) };
+		}
+
+
+		Box::Box(float width, float height, float depth, const glm::vec3& position)
+		{
+			mMinCoordinates = { position.x - (width / 2.0f), position.y - (height / 2.0f) , position.z - (depth / 2.0f) };
+			mMaxCoordinates = { position.x + (width / 2.0f), position.y + (height / 2.0f) , position.z + (depth / 2.0f) };
 		}
 
 

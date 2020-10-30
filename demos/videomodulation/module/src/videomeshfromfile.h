@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -6,6 +10,9 @@
 
 namespace nap
 {
+	class RenderService;
+	class Core;
+
 	/**
 	 * Loads a .mesh file from disk and adds / applies vertex displacement attributes
 	 * The .mesh file is a converted .fbx file. 
@@ -24,7 +31,7 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
-		virtual ~VideoMeshFromFile();
+		VideoMeshFromFile(Core& core);
 
 		/**
 		* Initialize this object after de-serialization
@@ -46,11 +53,12 @@ namespace nap
 		std::string mPath;														///< Property: "Path" to mesh on disk
 
 	private:
-		std::unique_ptr<MeshInstance> mMeshInstance;							///< Holds the loaded mesh
-		nap::VertexAttribute<glm::vec3>* mDirectionAttribute = nullptr;			///< Displacement direction attribute
-		nap::VertexAttribute<glm::vec3>* mNormalAttribute = nullptr;			///< Normal attribute used for light calculations
-		nap::VertexAttribute<glm::vec3>* mUVAttribute = nullptr;				///< UV attribute
-		nap::VertexAttribute<glm::vec3>* mPositionAttribute = nullptr;			///< Vertex position attribute
-		nap::VertexAttribute<glm::vec3>* mUVCenterAttribute = nullptr;			///< UV center Attribute
+		RenderService*						mRenderService;
+		std::unique_ptr<MeshInstance>		mMeshInstance;						///< Holds the loaded mesh
+		nap::VertexAttribute<glm::vec3>*	mDirectionAttribute = nullptr;		///< Displacement direction attribute
+		nap::VertexAttribute<glm::vec3>*	mNormalAttribute = nullptr;			///< Normal attribute used for light calculations
+		nap::VertexAttribute<glm::vec3>*	mUVAttribute = nullptr;				///< UV attribute
+		nap::VertexAttribute<glm::vec3>*	mPositionAttribute = nullptr;		///< Vertex position attribute
+		nap::VertexAttribute<glm::vec3>*	mUVCenterAttribute = nullptr;		///< UV center Attribute
 	};
 }

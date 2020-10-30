@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local includes
 #include "guiappeventhandler.h"
 #include "imguiservice.h"
@@ -38,8 +42,8 @@ namespace nap
 				if (input_event == nullptr)
 					continue;
 
-				mGuiService->processInputEvent(*input_event);
-				if (!mGuiService->isCapturingMouse())
+				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
+				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
 				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
@@ -52,8 +56,8 @@ namespace nap
 				if (input_event == nullptr)
 					continue;
 
-				mGuiService->processInputEvent(*input_event);
-				if (!mGuiService->isCapturingKeyboard())
+				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
+				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
 				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}

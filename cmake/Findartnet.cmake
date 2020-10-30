@@ -1,5 +1,6 @@
 # default artnet directory
 find_path(ARTNET_DIR
+          NO_CMAKE_FIND_ROOT_PATH
           NAMES artnet/artnet.h
           HINTS ${THIRDPARTY_DIR}/libartnet
           )
@@ -13,6 +14,11 @@ elseif(APPLE)
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/osx/bin/Release)
     set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libArtnet.dylib)
     set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR} ${ARTNET_DIR}/osx)
+    set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
+elseif(ANDROID)
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/android/bin/Release/${ANDROID_ABI})
+    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so)
+    set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR} ${ARTNET_DIR}/android)
     set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 else()
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/linux/bin)
@@ -42,7 +48,7 @@ endif()
 
 # promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(artnetlib REQUIRED_VARS ARTNET_DIR ARTNET_INCLUDE_DIRS ARTNET_LIBS ARTNET_LIBS_DIR)
+find_package_handle_standard_args(artnetlib REQUIRED_VARS ARTNET_DIR)
 
 # Copy the artnet dynamic linked lib into the build directory
 macro(copy_artnet_dll)

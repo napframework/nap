@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "etherdreamdac.h"
 #include "etherdreamservice.h"
 #include <nap/logger.h>
@@ -19,45 +23,38 @@ namespace nap
 	}
 
 
-	EtherDreamDac::~EtherDreamDac()
-	{
-		stop();
-	}
-
-
 	void EtherDreamDac::stop()
 	{
-		// Exit write thread
-		if (mIsRunning)
+		// If we're not connected we don't have to stop anything
+		if (!mConnected)
+			return;
+
+		// Stop writing and wait for thread to finish
+		if (mWriteThread.joinable())
 		{
-			exitWriteThread();
+			mStopWriting = true;
 			mWriteThread.join();
 		}
 
 		// Disconnect
-		if (isConnected())
+		mService->getInterface()->disconnect(mIndex);
+
+		// Stop writing
+		nap::Logger::info("Disconnecting Etherdream DAC: %s, index: %d", mDacName.c_str(), mIndex);
+		if (!mService->getInterface()->stop(mIndex))
 		{
-			// Disconnect
-			mService->getInterface()->disconnect(mIndex);
-
-			// Stop writing
-			nap::Logger::info("Disconnecting Etherdream DAC: %s, index: %d", mDacName.c_str(), mIndex);
-			if (!mService->getInterface()->stop(mIndex))
-			{
-				nap::Logger::warn("Unable to stop Etherdream DAC: %s, index: %d", mDacName.c_str(), mIndex);
-			}
-
-			// Disconnect
-			mService->getInterface()->disconnect(mIndex);
-			mConnected = false;
+			nap::Logger::warn("Unable to stop Etherdream DAC: %s, index: %d", mDacName.c_str(), mIndex);
 		}
+
+		// Disconnect
+		mService->getInterface()->disconnect(mIndex);
+		mConnected = false;
 	}
 
 
 	bool EtherDreamDac::start(utility::ErrorState& errorState)
 	{
 		assert(mService != nullptr);
-		mIsRunning = false;
 		mConnected = false;
 
 		// Add the DAC to the system
@@ -69,7 +66,7 @@ namespace nap
 			return errorState.check(mAllowFailure, error.c_str());
 		}
 
-		// Connect the dac
+		// Connect the DAC, if allow failure is turned on failure to connect is allowed
 		if (!mService->getInterface()->connect(mIndex))
 		{
 			std::string error = nap::utility::stringFormat("Unable to connect to Etherdream DAC with name: %s, index: %d", mDacName.c_str(), mIndex);
@@ -77,10 +74,11 @@ namespace nap
 			return errorState.check(mAllowFailure, error.c_str());
 		}
 
-		nap::Logger::info("Successfully connected to Etherdream DAC with name: %s, index: %d", mDacName.c_str(), mIndex);
 		mConnected = true;
+		nap::Logger::info("Successfully connected to Etherdream DAC with name: %s, index: %d", mDacName.c_str(), mIndex);
 
 		// Start thread
+		mStopWriting = false;
 		mWriteThread = std::thread(std::bind(&EtherDreamDac::writeThread, this));
 
 		return true;
@@ -91,9 +89,6 @@ namespace nap
 	// Continuously writes to thread
 	void EtherDreamDac::writeThread()
 	{
-		// We're running now
-		mIsRunning = true;
-
 		// Timer is used for checking heart-beat
 		SystemTimer timer;
 		timer.start();
@@ -151,14 +146,6 @@ namespace nap
 				timer.reset();
 			}
 		}
-
-		mIsRunning = false;
-	}
-
-
-	void EtherDreamDac::exitWriteThread()
-	{
-		mStopWriting = true;
 	}
 
 

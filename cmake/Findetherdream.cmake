@@ -17,6 +17,16 @@ elseif(APPLE)
     set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/osx/bin/Release)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
+elseif(ANDROID)
+    find_path(ETHERDREAM_DIR
+              NO_CMAKE_FIND_ROOT_PATH
+              NAMES android/include/etherdream.h
+              HINTS ${THIRDPARTY_DIR}/etherdream
+              )
+    set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/android/include)
+    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/android/bin)
+    set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/Release/${ANDROID_ABI}/libetherdream.so)
+    set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
 else()
     find_path(ETHERDREAM_DIR
               NAMES linux/include/etherdream.h
@@ -47,7 +57,7 @@ endif()
 
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(etherdream REQUIRED_VARS ETHERDREAM_DIR ETHERDREAM_INCLUDE_DIRS ETHERDREAM_LIBS ETHERDREAM_LIBS_DIR)
+find_package_handle_standard_args(etherdream REQUIRED_VARS ETHERDREAM_DIR)
 
 # Copy the etherdream dynamic linked lib into the build directory
 macro(copy_etherdream_dll)

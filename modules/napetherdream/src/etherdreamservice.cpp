@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "etherdreamservice.h"
  
@@ -7,7 +11,6 @@
 #include <nap/resourcemanager.h>
 #include <nap/logger.h>
 #include <sceneservice.h>
-#include <renderservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherDreamService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -57,7 +60,6 @@ namespace nap
 	void EtherDreamService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(SceneService));
-		dependencies.emplace_back(RTTI_OF(RenderService));
 	}
 
 

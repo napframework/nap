@@ -1,9 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "heightnormals.h"
 #include "heightmesh.h"
 
+// External Includes
+#include <nap/core.h>
+
 // nap::heightnormals run time class definition 
-RTTI_BEGIN_CLASS(nap::HeightNormals)
-	// Put additional properties here
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightNormals)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -11,7 +19,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	HeightNormals::~HeightNormals()			{ }
+	HeightNormals::HeightNormals(nap::Core& core) : VisualizeNormalsMesh(core)
+	{ }
 
 
 	bool HeightNormals::init(utility::ErrorState& errorState)
@@ -31,7 +40,8 @@ namespace nap
 		if (!setReferenceMesh(*mReferenceMesh, errorState))
 			return false;
 
-		// Calculate our normals
+		// Calculate our normals, result is stored in the "Position"attribute.
+		// This data = normal data of the displaced plane, where normals are calculated based on surrounding triangles.
 		if (!calculateNormals(errorState, false))
 			return false;
 
@@ -40,9 +50,11 @@ namespace nap
 		mHeightMesh = rtti_cast<HeightMesh>(mReferenceMesh.get());
 		assert(mHeightMesh != nullptr);
 
-		// Create original positions attribute
+		// Create original positions attribute, this is the normal data for the original plane
 		mOriginalPosAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("OriginalPosition");
-		mOriginalNorAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("DisplacedPosition");
+
+		// Create displaced position attribute, this is the normal data for the displaced plane. 
+		mDisplacedPosAttr = &getMeshInstance().getOrCreateAttribute<glm::vec3>("DisplacedPosition");
 
 		// Get the number of vertices in the height mesh
 		int vert_count = mHeightMesh->getMeshInstance().getNumVertices();
@@ -86,7 +98,7 @@ namespace nap
 
 		// Set the attribute data
 		mOriginalPosAttr->setData(original_vertices);
-		mOriginalNorAttr->setData(displaced_vertices);
+		mDisplacedPosAttr->setData(displaced_vertices);
 
 		// Initialize our mesh -> create all attributes on the gpu and push data
 		return getMeshInstance().init(errorState);

@@ -1,5 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "linkresolver.h"
 #include "object.h"
+
+// External Includes
 #include <utility/errorstate.h>
 
 namespace nap
@@ -10,20 +17,7 @@ namespace nap
 		{
 			for (const UnresolvedPointer& unresolved_pointer : unresolvedPointers)
 			{
-				ResolvedPath resolved_path;
-				if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
-					return false;
-
-				std::string target_id = unresolved_pointer.mTargetID;
-
-				// If the type that we're processing has a function to translate the ID read from json into a different ID, we call it and use that ID.
-				// This is used for pointers that have a different format in json.
-				rttr::method translate_string_method = findMethodRecursive(resolved_path.getType(), "translateTargetID");
-				if (translate_string_method.is_valid())
-				{
-					rttr::variant translate_result = translate_string_method.invoke(rttr::instance(), target_id);
-					target_id = translate_result.to_string();
-				}
+				std::string target_id = unresolved_pointer.getResourceTargetID();
 
 				// Objects in objectsToUpdate have preference over the manager's objects. 
 				Object* target_object = findTarget(target_id);
@@ -42,6 +36,10 @@ namespace nap
 				}
 
 				assert(target_object != nullptr);
+
+				ResolvedPath resolved_path;
+				if (!errorState.check(unresolved_pointer.mRTTIPath.resolve(unresolved_pointer.mObject, resolved_path), "Failed to resolve RTTIPath %s", unresolved_pointer.mRTTIPath.toString().c_str()))
+					return false;
 
 				TypeInfo resolved_path_type = resolved_path.getType();
 				TypeInfo actual_type = resolved_path_type.is_wrapper() ? resolved_path_type.get_wrapped_type() : resolved_path_type;

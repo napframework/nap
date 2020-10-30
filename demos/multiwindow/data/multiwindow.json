@@ -1,358 +1,91 @@
 {
-	"Objects":
-	[
-		{		
-			"Type" : "nap::RenderWindow",
-			"mID" : "Window0",
-			"Width" : 512,
-			"Height" : 512,
-			"Title" : "Window 1",
-			"Sync" : false,
-			"ClearColor": {
-                "x": 0.0666,
-                "y": 0.0784,
-                "z": 0.1490,
-                "w": 1.0
-            }
-		},
-
-		{		
-			"Type" : "nap::RenderWindow",
-			"mID" : "Window1",
-			"Width" : 512,
-			"Height" : 512,
-			"Title" : "Window 2",
-			"Sync" : false,
-			"ClearColor": {
-                "x": 0.0666,
-                "y": 0.0784,
-                "z": 0.1490,
-                "w": 1.0
-            }
-		},
-
-		{		
-			"Type" : "nap::RenderWindow",
-			"mID" : "Window2",
-			"Width" : 512,
-			"Height" : 512,
-			"Title" : "Window 3",
-			"Sync" : false,
-			"ClearColor": 
-			{
-                "x": 0.0666,
-                "y": 0.0784,
-                "z": 0.1490,
-                "w": 1.0
-            }
-		},
-
-		{
-			"Type" : "nap::ImageFromFile",	
-			"mID" : "WorldTexture",
-			"ImagePath" : "world_texture.png"
-		},
-
-		{
-			"Type" : "nap::ImageFromFile",	
-			"mID" : "TextureOne",
-			"ImagePath" : "texture_one.jpg"
-		},
-
-		{
-			"Type" : "nap::ImageFromFile",	
-			"mID" : "TextureTwo",
-			"ImagePath" : "texture_two.png"
-		},
-
-		{
-			"Type" : "nap::Shader",
-			"mID": "WorldShader",
-			"mVertShader": "shaders/multiwindow/world.vert",
-			"mFragShader": "shaders/multiwindow/world.frag"
-		},
-
-		{
-			"Type" : "nap::Shader",
-			"mID": "PlaneShader",
-			"mVertShader": "shaders/multiwindow/plane.vert",
-			"mFragShader": "shaders/multiwindow/plane.frag"
-		},
-
-		{
-			"Type" : "nap::SphereMesh",
-			"mID" : "WorldMesh"
-		},
-
-		{
-			"Type" : "nap::PlaneMesh",
-			"mID" : "PlaneMesh",
-			"Size" :
-			{
-				"x" : 1,
-				"y" : 1
-			}
-		},
-
-		{
-			"Type" : "nap::Material",
-			"mID": "WorldMaterial",
-			"Shader": "WorldShader",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				},
-				{
-					"MeshAttributeID" : "Normal",
-					"ShaderAttributeID" : "in_Normal"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "inWorldTexture",
-					"Texture" : "WorldTexture"
-				},
-				{
-					"Type" : "nap::UniformVec3",
-					"Name" : "inCameraPosition",
-					"Value" : 
-					{
-						"x" : 0.0,
-						"y" : 0.0,
-						"z" : 4.0
-					}
-				}
-			]			
-		},
-
-		{
-			"Type" : "nap::Material",
-			"mID": "PlaneMaterial",
-			"Shader": "PlaneShader",
-			"BlendMode" : "AlphaBlend",
-			"VertexAttributeBindings" : 
-			[
-				{
-					"MeshAttributeID": "Position",
-					"ShaderAttributeID": "in_Position"
-				},
-				{
-					"MeshAttributeID": "UV0",
-					"ShaderAttributeID": "in_UV0"
-				}
-			],
-			"Uniforms" : 
-			[
-				{
-					"Type" : "nap::UniformTexture2D",
-					"Name" : "inTexture",
-					"Texture" : "TextureOne"
-				}
-			]			
-		},
-
-		{
-			"Type" : "nap::Scene",
-			"mID": "Scene",		
-			"Entities" : 
-			[
-				{
-					"Entity" : "World"
-				},
-				{
-					"Entity" : "PlaneOne"
-				},
-				{
-					"Entity" : "PlaneTwo"
-				},
-				{
-					"Entity" : "PerpectiveCameraOne"
-				},
-				{
-					"Entity" : "PerpectiveCameraTwo"
-				},
-				{
-					"Entity" : "OrthoCamera"
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "World",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "WorldMesh",
-					"MaterialInstance" : 
-					{
-						"mID": "WorldMaterialInstance",
-						"Material": "WorldMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent"
-				},
-				{
-					"Type" : "nap::RotateComponent",
-					"Properties": 
-					{
-						"Axis": 
-						{
-							"x": 0.0,
-							"y": 1.0,
-							"z": 0.0
-						},
-						"Speed": 0.025,
-						"Offset": 0.65
-					}
-				}		
-			]
-		},
-		
-		{
-			"Type" : "nap::Entity",
-			"mID": "PlaneOne",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : 
-					{
-						"mID": "PlaneMaterialInstance",
-						"Material": "PlaneMaterial"
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties" :
-					{
-						"Translate" :
-						{
-							"x" : 256,
-							"y" : 256,
-							"z" : 0
-						},
-						"Scale" : 
-						{
-							"x" : 512,
-							"y" : 512,
-							"z" : 1.0
-						}
-					}
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "PlaneTwo",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::RenderableMeshComponent",
-					"Mesh" : "PlaneMesh",
-					"MaterialInstance" : 
-					{
-						"mID": "PlaneMaterialInstance",
-						"Material": "PlaneMaterial",
-						"Uniforms" : 
-						[
-							{
-								"Type" : "nap::UniformTexture2D",
-								"Name" : "inTexture",
-								"Texture" : "TextureTwo"
-							}
-						]	
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties" :
-					{
-						"Translate" :
-						{
-							"x" : 256,
-							"y" : 256,
-							"z" : 0
-						},
-						"Scale" : 
-						{
-							"x" : 512,
-							"y" : 512,
-							"z" : 1.0
-						}
-					}
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "OrthoCamera",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::OrthoCameraComponent",
-					"Properties": 
-					{
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 4.0
-						}			
-					}
-				}
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "PerpectiveCameraOne",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"mID" : "PerspCameraComponent",
-					"Properties": 
-					{
-						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 4.0
-						}			
-					}
-				},
-				{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "OrthoCamera",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_4",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 4.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PerpectiveCameraOne",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 45.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_5",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 4.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
                     "Type": "nap::KeyInputComponent",
                     "mID": "nap::KeyInputComponent"
                 },
@@ -363,41 +96,62 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.033,
-                    "RotateSpeed": 0.0033,
-                    "PerspCameraComponent": "PerspCameraComponent"
+                    "MovementSpeed": 0.032999999821186069,
+                    "RotateSpeed": 0.0032999999821186067,
+                    "PerspCameraComponent": "PerspCameraComponent",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
                 }
-			]
-		},
-
-		{
-			"Type" : "nap::Entity",
-			"mID": "PerpectiveCameraTwo",
-			"Components" : 
-			[
-				{
-					"Type" : "nap::PerspCameraComponent",
-					"mID" : "PerspCameraComponentTwo",
-					"Properties": 
-					{
-						"FieldOfView": 45.0,
-						"NearClippingPlane" : 0.1,
-						"FarClippingPlane" : 1000.0
-					}
-				},
-				{
-					"Type" : "nap::TransformComponent",
-					"Properties": 
-					{
-						"Translate": 
-						{
-							"x": 0.0,
-							"y": 0.0,
-							"z": 4.0
-						}			
-					}
-				},
-				{
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PerpectiveCameraTwo",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponentTwo",
+                    "Properties": {
+                        "FieldOfView": 45.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_6",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 4.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
                     "Type": "nap::KeyInputComponent",
                     "mID": "nap::KeyInputComponentTwo"
                 },
@@ -408,12 +162,427 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "nap::OrbitControllerTwo",
-                    "MovementSpeed": 0.033,
-                    "RotateSpeed": 0.0033,
-                    "PerspCameraComponent": "PerspCameraComponentTwo"
+                    "MovementSpeed": 0.032999999821186069,
+                    "RotateSpeed": 0.0032999999821186067,
+                    "PerspCameraComponent": "PerspCameraComponentTwo",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
                 }
-			]
-		}
-
-	]
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PlaneOne",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_2",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "PlaneMaterial",
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 256.0,
+                            "y": 256.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 512.0,
+                            "y": 512.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PlaneTwo",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent_3",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "PlaneMaterial",
+                        "Uniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "plane_texture_two_input",
+                                "Name": "inTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "Texture": "TextureTwo"
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_3",
+                    "Properties": {
+                        "Translate": {
+                            "x": 256.0,
+                            "y": 256.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 512.0,
+                            "y": 512.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "World",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "nap::RenderableMeshComponent",
+                    "Mesh": "WorldMesh",
+                    "MaterialInstance": {
+                        "Material": "WorldMaterial",
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "nap::RotateComponent",
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.02500000037252903,
+                        "Offset": 0.6499999761581421
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "TextureOne",
+            "Usage": "Static",
+            "ImagePath": "texture_one.jpg",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "TextureTwo",
+            "Usage": "Static",
+            "ImagePath": "texture_two.png",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "WorldTexture",
+            "Usage": "Static",
+            "ImagePath": "world_texture.png",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "PlaneMaterial",
+            "Uniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2D",
+                    "mID": "plane_texture",
+                    "Name": "inTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "Texture": "TextureOne"
+                }
+            ],
+            "Shader": "PlaneShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "WorldMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "nap::UniformVec3",
+                            "Name": "inCameraPosition",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 4.0
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2D",
+                    "mID": "world_texture_input",
+                    "Name": "inWorldTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "Texture": "WorldTexture"
+                }
+            ],
+            "Shader": "WorldShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Normal",
+                    "ShaderAttributeID": "in_Normal"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Window 1",
+            "Width": 512,
+            "Height": 512,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            },
+            "Samples": "Four"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window1",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Window 2",
+            "Width": 512,
+            "Height": 512,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            },
+            "Samples": "Four"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window2",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Window 3",
+            "Width": 512,
+            "Height": 512,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            },
+            "Samples": "Four"
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "World",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "PlaneOne",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "PlaneTwo",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "PerpectiveCameraOne",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "PerpectiveCameraTwo",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "OrthoCamera",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "PlaneShader",
+            "VertShader": "shaders/multiwindow/plane.vert",
+            "FragShader": "shaders/multiwindow/plane.frag"
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "WorldShader",
+            "VertShader": "shaders/multiwindow/world.vert",
+            "FragShader": "shaders/multiwindow/world.frag"
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "WorldMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "Radius": 1.0,
+            "Rings": 50.0,
+            "Sectors": 50.0
+        }
+    ]
 }

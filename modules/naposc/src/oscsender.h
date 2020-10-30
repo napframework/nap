@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -26,7 +30,7 @@ namespace nap
 {
 	/**
 	 * Sends a single OSC message or bundle of OSC messages.
-	 * This device manages it's own connection and is constructed using a target ip address and port
+	 * This device manages it's own connection and is constructed using a target ip address and port.
 	 */
 	class NAPAPI OSCSender : public Device
 	{
@@ -37,9 +41,6 @@ namespace nap
 
 		// Constructor used by factory
 		OSCSender(OSCService& service);
-
-		// Kills connection
-		virtual ~OSCSender() override;
 
 		std::string mIPAddress = "127.0.0.1";	///< Property: 'IpAddress' target machine ip address
 		int mPort = 8000;			            ///< Property: 'Port' target machine port
@@ -59,7 +60,7 @@ namespace nap
 		/**
 		 * Sends an OSC message immediately without adding it to the queue
 		 * Note that it's more efficient to add a message to the queue and send them as a bundle
-		 * @param oscEVent the event to send
+		 * @param oscEvent the event to send
 		 */
 		bool send(const OSCEvent& oscEvent);
 

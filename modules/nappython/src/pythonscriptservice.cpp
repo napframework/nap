@@ -1,7 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // External Includes
 #include <rtti/pythonmodule.h>
-#include "pythonscriptservice.h"
 #include <utility/fileutils.h>
+
+#include "pythonscriptservice.h"
+#include <pythonscript.h>
 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PythonScriptService)
@@ -15,6 +21,13 @@ namespace nap
 		Service(configuration)
 	{
 	}
+    
+    
+    void PythonScriptService::registerObjectCreators(rtti::Factory& factory)
+    {
+        factory.addObjectCreator(std::make_unique<PythonScriptObjectCreator>(*this));
+    }
+
 
 	bool PythonScriptService::TryLoad(const std::string& modulePath, pybind11::module& module, utility::ErrorState& errorState)
 	{

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -8,7 +12,7 @@
 #include <keyboard.h>
 #include <SDL_events.h>
 #include <inputevent.h>
-#include <nap/windowevent.h>
+#include <windowevent.h>
 
 namespace nap
 {
@@ -64,7 +68,7 @@ namespace nap
 		/**
 		* Utility function to translate an SDL event into a NAP key event
 		* This call assumes that the given SDL event can be translated into a NAP key event!
-		* Use isKeyEvent to verify if the events are compatible
+		* Use isKeyEvent() to verify if the events are compatible
 		* @param sdlEvent the sdl event to translate
 		* @return a nap key event, nullptr if the event could not be translated
 		*/
@@ -78,51 +82,50 @@ namespace nap
 		bool isMouseEvent(SDL_Event& sdlEvent) const;
 
 		/**
-		* Utility function to translate an SDL event into a NAP mouse event
+		* Utility function to translate an SDL event into a NAP mouse event.
 		* This call assumes that the given SDL event can be translated into a NAP pointer (mouse) event!
-		* Use isMouseEvent to verify if the events are compatible
+		* Use isMouseEvent() to verify if the events are compatible.
 		* @param sdlEvent the sdl mouse event to translate
 		* @return a nap pointer event, nullptr if the event could not be translated
 		*/
 		nap::InputEventPtr translateMouseEvent(SDL_Event& sdlEvent);
 
 		/**
-		* Utility functions that checks if this is a controller input event (gamepad or joystick)
+		* Utility functions that checks if this is a controller input event (gamepad or joystick).
 		* @param sdlEvent the sdlEvent to verify, both joystick and controller events are considered valid.
 		* @return if this SDL event is a controller compatible event
 		*/
 		bool isControllerEvent(SDL_Event& sdlEvent) const;
 
 		/**
-		* Utility function to translate an SDL event into a NAP controller event
+		* Utility function to convert an SDL event into a nap controller event.
 		* This call assumes that the given SDL event can be translated into a NAP controller event!
-		* SDL Joystick and SDL Controller events are considered to be valid
-		* Use isControllerEvent to verify if the events are compatible
+		* SDL Joystick and SDL Controller events are considered to be valid.
+		* Use isControllerEvent() to verify if the events are compatible.
 		* @param sdlEvent the SDL event to translate, can be from a joystick or controller
 		* @return a nap controller event, nullptr if event could not be translated
 		*/
 		nap::InputEventPtr translateControllerEvent(SDL_Event& sdlEvent);
 
 		/**
-		 * Utility function to check if the sdl event is a window event
+		 * Utility function to check if the sdl event is a nap window event.
 	 	 * @param sdlEvent the sdl event to verify
 		 * @return if the sdl event is a window event
 		 */
 		bool isWindowEvent(SDL_Event& sdlEvent) const;
 
 		/**
-		* Utility function to translate an SDL event to a generic nap window event
-		* @param sdlEvent The event to translate
-		* @param windowID The window ID that the event is for (output)
-		* @return Null if the sdlEvent is not a window event or if the event is for a window that has already been destroyed. The nap event otherwise.
-		*/
+		 * Utility function to convert a generic SDL event into a generic nap window event
+		 * @param sdlEvent The event to convert to a nap window event.
+		 * @return Null if the sdlEvent is not a window event or if the event is for a window that has already been destroyed. The nap event otherwise.
+		 */
 		nap::WindowEventPtr translateWindowEvent(SDL_Event& sdlEvent);
 
 	private:
 		SDLInputService& mService;
 
 		/**
-		 * Utility that translates an sdl joystick or controller event
+		 * Utility function that translates an SDL joystick or controller event into a nap input event.
 		 * @param sdlEvent the SDL event to translate
 		 * @param sdlType the type of the SDL event
 		 * @param eventType the nap input event to create based on the given sdlType

@@ -1,10 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include "lineblendcomponent.h"
-
 #include <component.h>
 #include <componentptr.h>
 #include <smoothdamp.h>
+#include <parameternumeric.h>
 
 namespace nap
 {
@@ -15,13 +19,13 @@ namespace nap
 	 */
 	struct NAPAPI NoiseProperties
 	{
-		float mFrequency = 1.0f;							// Frequency of the waveform
+		ResourcePtr<ParameterFloat> mFrequency;				// Parameter that controls frequency
 		float mFrequencySmoothTime = 0.1f;					// Freq smooth time
-		float mSpeed = 0.0f;								// Speed in seconds to move the waveform
+		ResourcePtr<ParameterFloat> mSpeed;					// Parameter that controls speed in seconds to move the waveform
 		float mSpeedSmoothTime = 0.1f;						// Speed smooth time
-		float mOffset = 0.0f;								// Offset along the line
+		ResourcePtr<ParameterFloat> mOffset;				// Parameter that controls offset along the line
 		float mOffsetSmoothTime = 0.1f;						// Offset smooth time
-		float mAmplitude = 1.0f;							// Amplitude of the modulation
+		ResourcePtr<ParameterFloat> mAmplitude;				// Parameter that control amplitude of the modulation
 		float mAmplitudeSmoothTime = 0.1f;					// Amplitude smooth time
 	};
 
@@ -43,7 +47,7 @@ namespace nap
 
 
 	/**
-	 * Displaces the vertices of a line based on the line normals and a noise pattern
+	 * Displaces the vertices of a line based on the line normals and a noise pattern.
 	 * the noise is applied in the line's uv space
 	 */
 	class NAPAPI LineNoiseComponentInstance : public ComponentInstance
@@ -67,7 +71,7 @@ namespace nap
 		NoiseProperties mProperties;
 
 	private:
-		ComponentInstancePtr<LineBlendComponent> mBlendComponent = { this, &LineNoiseComponent::mBlendComponent };		// Component that holds the line we want to modulate
+		ComponentInstancePtr<LineBlendComponent> mBlendComponent	= { this, &LineNoiseComponent::mBlendComponent };		// Component that holds the line we want to modulate
 
 		float mCurrentTime = 0.0f;									// Current update time associated with this component
 

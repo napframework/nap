@@ -1,0 +1,122 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::APISignature",
+            "mID": "ChangeText",
+            "Arguments": [
+                {
+                    "Type": "nap::APIString",
+                    "mID": "Argument01",
+                    "Name": "Text",
+                    "Value": ""
+                }
+            ]
+        },
+        {
+            "Type": "nap::APIWebSocketServer",
+            "mID": "WebSocketServer",
+            "EndPoint": "WebSocketServerEndPoint",
+            "Mode": "Both",
+            "Verbose": true
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TextEntity",
+            "Components": [
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "Render2DTextComponent",
+                    "Text": "waiting for a websocket client to change this text",
+                    "Font": "Font",
+                    "TextColor": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite"
+                },
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "APIComponent",
+                    "Methods": [
+                        "ChangeText"
+                    ]
+                },
+                {
+                    "Type": "nap::APIWebSocketHandlerComponent",
+                    "mID": "APIHandler",
+                    "APIComponent": "./APIComponent",
+                    "TextComponent": "./Render2DTextComponent",
+                    "Server": "WebSocketServer"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "Font",
+            "Properties": {
+                "Size": 32,
+                "DPI": 96
+            },
+            "Font": "fonts/Montserrat-Light.otf"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "WebSocketServer",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.066600002348423,
+                "y": 0.07840000092983246,
+                "z": 0.14900000393390656,
+                "w": 1.0
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "TextEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::WebSocketServerEndPoint",
+            "mID": "WebSocketServerEndPoint",
+            "AllowPortReuse": true,
+            "LogConnectionUpdates": true,
+            "Port": 80,
+            "IPAddress": "",
+            "AccessMode": "Reserved",
+            "ConnectionLimit": 20,
+            "LibraryLogLevel": "Warning",
+            "AllowControlOrigin": "*",
+            "Clients": [
+                {
+                    "Type": "nap::WebSocketTicket",
+                    "mID": "WebSocketTicket_060c060d",
+                    "UserName": "napuser",
+                    "Password": "letmein!"
+                }
+            ]
+        }
+    ]
+}

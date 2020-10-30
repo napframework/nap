@@ -1,4 +1,8 @@
-#version 330
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+#version 450 core
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
@@ -12,8 +16,11 @@ const vec3  colorOne  = vec3( 0.545, 0.549, 0.627);
 const vec3  colorTwo  = vec3(0.176,0.180,0.258);
 const float maxOffset = 0.5; 
 
-// Uniforms
-uniform float animationValue;
+// Uniform inputs
+uniform UBO
+{
+	uniform float animationValue;
+} ubo;
 
 // Maps a value from min, max to outmin and outmax
 float fit(float value, float min, float max, float outMin, float outMax)
@@ -32,7 +39,7 @@ void main()
 	float dist = length(passUVs.xy - center);
 
 	// Find color mix value based on curve (animator) value
-	float mix_value = mix(0.1,maxOffset-0.075,animationValue);
+	float mix_value = mix(0.1,maxOffset-0.075, ubo.animationValue);
 
 	// Now mix the two colors based on that
 	float color_mix = fit(dist, mix_value,mix_value+0.005, 0.0,1.0);

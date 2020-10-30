@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -22,7 +26,7 @@ namespace nap
 	{
 		RTTI_ENABLE(VisualizeNormalsMesh)
 	public:
-		virtual ~HeightNormals();
+		HeightNormals(nap::Core& core);
 
 		/**
 		* Initialize this object after de-serialization
@@ -32,7 +36,7 @@ namespace nap
 
 	private:
 		HeightMesh* mHeightMesh = nullptr;						///< Pointer to the normals we want to visualize
-		Vec3VertexAttribute* mOriginalPosAttr = nullptr;		///< Original vertex positions
-		Vec3VertexAttribute* mOriginalNorAttr = nullptr;		///< Displaced but not blended normal direction
+		Vec3VertexAttribute* mOriginalPosAttr  = nullptr;		///< Original vertex positions
+		Vec3VertexAttribute* mDisplacedPosAttr = nullptr;		///< Displaced but not blended normal direction
 	};
 }

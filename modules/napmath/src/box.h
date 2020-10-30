@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <utility/dllexport.h>
@@ -9,9 +13,9 @@ namespace nap
 	namespace math
 	{
 		/**
-		 * Simple 3D box
+		 * Simple 3D box.
 		 * when using the default constructor the box dimensions are 1 unit in every axis 
-		 * normalized around center (0,0,0) 
+		 * normalized around center (0,0,0).
 		 */
 		class NAPAPI Box final
 		{
@@ -26,6 +30,15 @@ namespace nap
 			 * @param depth the depth of the box
 			 */
 			Box(float width, float height, float depth);
+
+			/**
+			 * Creates a box at the given position using the provided dimensions
+			 * @param width the width of the box
+			 * @param height the height of the box
+			 * @param depth the depth of the box
+			 * @param position of the box
+			 */
+			Box(float width, float height, float depth, const glm::vec3& position);
 
 			/**
 			 * Creates a box using the specified dimensions in every axis

@@ -1,6 +1,20 @@
 {
     "Objects": [
         {
+            "Type": "nap::BoxMesh",
+            "mID": "BoxMesh",
+            "Size": {
+                "x": 20.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
             "Type": "nap::Entity",
             "mID": "Camera",
             "Components": [
@@ -96,17 +110,18 @@
                     "Type": "nap::RenderableCopyMeshComponent",
                     "mID": "nap::RenderableCopyMeshComponent",
                     "Orient": false,
-                    "Scale": 1.0,
+                    "Scale": 0.7250000238418579,
                     "RotationSpeed": 2.5,
                     "RandomScale": 0.800000011920929,
                     "RandomRotation": 0.949999988079071,
                     "MaterialInstance": {
                         "Material": "CopyMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
-                    "ColorUniform": "color",
+                    "ColorUniform": "meshColor",
                     "Camera": "CameraTransform",
                     "TargetMesh": "StampPlane",
                     "CopyMeshes": [
@@ -123,16 +138,85 @@
             "mID": "CopyMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "UniformVec3",
-                    "Name": "color",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0
-                    }
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "nap::UniformVec3",
+                            "Name": "meshColor",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformStructArray",
+                            "mID": "nap::UniformStructArray",
+                            "Name": "lights",
+                            "Structs": [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "nap::UniformStruct_2",
+                                    "Name": "",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "nap::UniformVec3_2",
+                                            "Name": "mPosition",
+                                            "Value": {
+                                                "x": 50.0,
+                                                "y": 0.0,
+                                                "z": 100.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "nap::UniformVec3_3",
+                                            "Name": "mIntensity",
+                                            "Value": {
+                                                "x": 0.75,
+                                                "y": 0.75,
+                                                "z": 0.75
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "nap::UniformStruct_3",
+                                    "Name": "",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "nap::UniformVec3_4",
+                                            "Name": "mPosition",
+                                            "Value": {
+                                                "x": 0.0,
+                                                "y": 100.0,
+                                                "z": 100.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "nap::UniformVec3_5",
+                                            "Name": "mIntensity",
+                                            "Value": {
+                                                "x": 0.25,
+                                                "y": 0.25,
+                                                "z": 0.25
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
                 }
             ],
+            "Samplers": [],
             "Shader": "CopyShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -141,18 +225,22 @@
         {
             "Type": "nap::MeshFromFile",
             "mID": "CopyBox",
-            "Path": "box.mesh",
-            "Usage": "Static"
+            "Usage": "Static",
+            "CullMode": "Back",
+            "Path": "box.mesh"
         },
         {
             "Type": "nap::MeshFromFile",
             "mID": "CopyOctahedron",
-            "Path": "octahedron.mesh",
-            "Usage": "Static"
+            "Usage": "Static",
+            "CullMode": "Back",
+            "Path": "octahedron.mesh"
         },
         {
             "Type": "nap::PlaneMesh",
             "mID": "StampPlane",
+            "Usage": "Static",
+            "CullMode": "None",
             "Size": {
                 "x": 110.0,
                 "y": 120.0
@@ -161,24 +249,27 @@
                 "x": 0.0,
                 "y": 0.0
             },
-            "Rows": 50,
-            "Columns": 50
+            "Rows": 64,
+            "Columns": 64
         },
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
             "Title": "Window 1",
-            "Sync": false,
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
                 "z": 0.14900000393390656,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four"
         },
         {
             "Type": "nap::Scene",
@@ -195,14 +286,16 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "CopyShader",
-            "mVertShader": "shaders/copy.vert",
-            "mFragShader": "shaders/copy.frag"
+            "VertShader": "shaders/copy.vert",
+            "FragShader": "shaders/copy.frag"
         },
         {
             "Type": "nap::SphereMesh",
             "mID": "CopySphere",
+            "Usage": "Static",
+            "CullMode": "Back",
             "Radius": 1.0,
             "Rings": 15.0,
             "Sectors": 15.0

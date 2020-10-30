@@ -1,4 +1,9 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "curvepanel.h"
+
 #include <memory>
 #include <fcurvemodel.h>
 #include <appcontext.h>
@@ -21,7 +26,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 		if (!mListenForPropertyChanges)
 			return;
 
-		if (&path.getObject() != &mCurveModel->curve().sourceCurve())
+		if (path.getObject() != &mCurveModel->curve().sourceCurve())
 			return;
 
 		QList < int > indices;
@@ -40,7 +45,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 		if (!mListenForPropertyChanges)
 			return;
 
-		if (&path.getObject() != &mCurveModel->curve().sourceCurve())
+		if (path.getObject() != &mCurveModel->curve().sourceCurve())
 			return;
 
 		mListenForCurveChanges = false;
@@ -56,7 +61,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 		if (!mListenForPropertyChanges)
 			return;
 
-		if (&path.getObject() != &mCurveModel->curve().sourceCurve())
+		if (path.getObject() != &mCurveModel->curve().sourceCurve())
 			return;
 
 		mListenForCurveChanges = false;

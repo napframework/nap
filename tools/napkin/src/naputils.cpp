@@ -1,3 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+#include "naputils.h"
+#include "napkinglobals.h"
+#include "appcontext.h"
+
 #include <QtGui/QtGui>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -7,24 +15,57 @@
 #include <QDialogButtonBox>
 
 #include <component.h>
-#include <nap/logger.h>
 #include <entity.h>
-#include <standarditemsproperty.h>
 #include <standarditemsobject.h>
 #include <panels/finderpanel.h>
-
+#include <cctype>
 #include <napqt/filterpopup.h>
-
-#include "naputils.h"
-#include "napkinglobals.h"
-#include "appcontext.h"
 
 using namespace nap::rtti;
 using namespace nap::utility;
 using namespace napkin;
 
-napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
+std::vector<rttr::type> napkin::getImmediateDerivedTypes(const rttr::type& type)
 {
+	// Cycle over all derived types. This includes all derived types,
+	// including classes that are more than 1 level up. We're only 
+	// interested in immediate derived types, so check if the first
+	// available base type is the type we're interested in and add
+	std::vector<rttr::type> derivedTypes;
+	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
+	{
+		// Check if the first available base class (immediate base level)
+		// is directly derived from the type we're searching for.
+		assert(!derived.get_base_classes().empty());
+		rttr::type base = *derived.get_base_classes().begin();
+		if (base == type)
+			derivedTypes.emplace_back(derived);
+	}
+	return derivedTypes;
+}
+
+
+void napkin::dumpTypes(rttr::type type, const std::string& indent)
+{
+	const void * address = static_cast<const void*>(&type);
+	std::stringstream ss;
+	ss << address;
+	std::string name = ss.str();
+
+	nap::Logger::info("type: " + indent + type.get_name().data() + " (" + ss.str() + ")");
+	for (const auto& derived : getImmediateDerivedTypes(type))
+		dumpTypes(derived, indent + "    ");
+}
+
+
+napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
+{
+
+	const void * address = static_cast<const void*>(&type);
+	std::stringstream ss;
+	ss << address;
+	std::string name = ss.str();
+
 	setText(type.get_name().data());
 	setEditable(false);
 	//    setForeground(getSoftForeground());
@@ -32,14 +73,11 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : type(type)
 	refresh();
 }
 
-napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType(baseType)
+napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 {
-	for (auto& object : AppContext::get().getDocument()->getObjects())
+	for (auto object : objects)
 	{
-		if (!object.get()->get_type().is_derived_from(baseType))
-			continue;
-
-		auto item = new ObjectItem(object.get());
+		auto item = new ObjectItem(object, false);
 		item->setEditable(false);
 		appendRow(item);
 	}
@@ -48,7 +86,8 @@ napkin::FlatObjectModel::FlatObjectModel(const rttr::type& baseType) : mBaseType
 
 void napkin::RTTITypeItem::refresh()
 {
-	for (const nap::rtti::TypeInfo& derived : type.get_derived_classes())
+
+	for (const auto& derived : getImmediateDerivedTypes(mType))
 	{
 		appendRow(new RTTITypeItem(derived));
 	}
@@ -112,55 +151,34 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 			topLevelObjects.push_back(object);
 	}
 
-    // Probably no need to sort
-//	// Pass 3: sort objects on type & ID to ensure files remain consistent after saving (for diffing and such)
-//	std::sort(topLevelObjects.begin(), topLevelObjects.end(), [](RTTIObject* a, RTTIObject* b) {
-//		if (a->get_type() == b->get_type())
-//			return a->mID < b->mID;
-//		else
-//			return a->get_type().get_name().compare(b->get_type().get_name()) < 0;
-//	});
     return topLevelObjects;
 }
 
-
-nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const rttr::type& typeConstraint)
+nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects)
 {
-	FlatObjectModel model(typeConstraint);
-	nap::qt::FilterPopup dialog(parent, model);
+	QStringList ids;
+	for (auto& obj : objects)
+		ids << QString::fromStdString(obj->mID);
 
-	dialog.exec(QCursor::pos());
-	if (!dialog.wasAccepted())
+	auto selectedID = nap::qt::FilterPopup::show(parent, ids).toStdString();
+	if (selectedID.empty())
 		return nullptr;
 
-	auto item = dynamic_cast<ObjectItem*>(dialog.getSelectedItem());
-	if (item != nullptr)
-		return item->getObject();
+	auto it = std::find_if(objects.begin(), objects.end(), [selectedID](auto& a) { return a->mID == selectedID; });
+	if (it == objects.end())
+		return nullptr;
 
-	return nullptr;
+	return *it;
 }
 
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
-	QStandardItemModel model;
-
+	QStringList names;
 	for (const auto& t : getTypes(predicate))
-	{
-		auto typeName = QString::fromUtf8(t.get_name().data());
-		model.appendRow(new QStandardItem(typeName));
-	}
+		names << QString::fromStdString(std::string(t.get_name().data()));
 
-	nap::qt::FilterPopup dialog(parent, model);
-	dialog.exec(QCursor::pos());
-
-	if (!dialog.wasAccepted())
-		return rttr::type::empty();
-
-	auto selected_item = dialog.getSelectedItem();
-	if (selected_item == nullptr)
-		return rttr::type::empty();
-
-	return nap::rtti::TypeInfo::get_by_name(selected_item->text().toStdString().c_str());
+	auto selectedName = nap::qt::FilterPopup::show(parent, names).toStdString();
+	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
 
 
@@ -178,8 +196,12 @@ std::vector<rttr::type> napkin::getComponentTypes()
 
 std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 {
-	nap::rtti::Factory& factory = AppContext::get().getCore().getResourceManager()->getFactory();
 	std::vector<rttr::type> ret;
+	nap::Core& core = AppContext::get().getCore();
+	if (!core.isInitialized())
+		return ret;
+
+	nap::rtti::Factory& factory = core.getResourceManager()->getFactory();
 	std::vector<rttr::type> derived_classes;
 
 	auto rootType = RTTI_OF(nap::rtti::Object);
@@ -271,6 +293,8 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 
 	FinderPanel finder;
 	nap::qt::FilterTreeView* tree = &finder.getTreeView();
+	tree->getTreeView().setHeaderHidden(true);
+	tree->getTreeView().setRootIsDecorated(false);
 
 	// On item double-click, close the dialog and reveal the property
 	finder.connect(&tree->getTreeView(), &QAbstractItemView::doubleClicked,
@@ -306,4 +330,108 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 	dialog.exec();
 
 	return yesclicked;
+}
+
+std::string napkin::friendlyTypeName(rttr::type type)
+{
+	// Strip off namespace prefixes when creating new objects
+	std::string base_name = type.get_name().data();
+	size_t last_colon = base_name.find_last_of(':');
+	if (last_colon != std::string::npos)
+		base_name = base_name.substr(last_colon + 1);
+	return base_name;
+}
+
+bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
+								  const std::string& a, const std::string& b)
+{
+	{
+		auto partsA = nap::utility::splitString(a, '/');
+		auto partsB = nap::utility::splitString(b, '/');
+
+		assert(partsA[0] == ".");
+		assert(partsB[0] == ".");
+
+		std::string nameA;
+		std::string nameB;
+		int indexA;
+		int indexB;
+
+		for (size_t i = 1, len = partsA.size(); i < len; i++)
+		{
+			const auto& partA = partsA[i];
+			const auto& partB = partsB[i];
+
+			// continue finding child entities
+			bool hasIndexA = nameAndIndex(partA, nameA, indexA);
+			bool hasIndexB = nameAndIndex(partB, nameB, indexB);
+
+			// consider no index to be index 0
+			if (!hasIndexA)
+				indexA = 0;
+			if (!hasIndexB)
+				indexB = 0;
+
+			if (nameA != nameB)
+				return false;
+
+			if (indexA != indexB)
+				return false;
+
+		}
+		return true;
+	}
+}
+
+bool napkin::nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
+{
+	std::size_t found = nameIndex.find_last_of(':');
+	if (found != std::string::npos)
+	{
+		auto n = nameIndex.substr(0, found);
+		auto i = nameIndex.substr(found + 1);
+		if (isNumber(i))
+		{
+			name.assign(n);
+			index = std::stoi(i);
+			return true;
+		}
+	}
+	name.assign(nameIndex);
+	return false;
+}
+
+bool napkin::isNumber(const std::string& s)
+{
+	return !s.empty() && std::find_if(s.begin(), s.end(),
+									  [](char c)
+									  {
+										  return !std::isdigit(static_cast<unsigned char>(c));
+									  }) == s.end();
+}
+
+nap::Entity* napkin::findChild(nap::Entity& parent, const std::string& name, int index)
+{
+	if (index < 0)
+	{
+		// Just find by name
+		for (auto e : parent.mChildren)
+			if (e->mID == name)
+				return e.get();
+	}
+	else
+	{
+		int nameFound = 0;
+		for (auto e : parent.mChildren)
+		{
+			if (e->mID != name)
+			continue;
+
+			if (nameFound == index)
+				return e.get();
+
+			++nameFound;
+		}
+	}
+	return nullptr;
 }

@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 #version 330 core
 
 in vec3 pass_Uvs0;			// The global vinyl uvs
@@ -9,18 +13,24 @@ in vec3 pass_Bitangent;		// The bitangent
 
 out vec4 out_Color;
 
+// Fragment uniforms
+uniform UBO
+{
+	uniform vec3	recordColor;			// Color of the record
+	uniform vec3	lightPosition;			// Position of the light (world space)
+	uniform vec3	lightIntensity;			// Intensity of the light
+	uniform float	ambientIntensity;		// Ambient light intensity
+	uniform float	shininess;				// Specular angle ubo.shininess
+	uniform float	specularIntensity;		// Amount of added specular
+	uniform float	attenuationScale;		// Light Falloff
+	uniform float	grooveScale;			// Amount of groove highlight
+	uniform vec3	cameraLocation;			// World space location of the camera
+} ubo;
+
+// Samplers
 uniform sampler2D	vinylLabel;			// Vinyl label texture
 uniform sampler2D	vinylMask;			// Vinyl label mask texture
 uniform sampler2D	grooveNormalMap;	// Normal map used for grooves
-uniform vec3		recordColor;		// Color of the record
-uniform vec3		lightPosition;		// Position of the light (world space)
-uniform vec3		lightIntensity;		// Intensity of the light
-uniform float		ambientIntensity;	// Ambient light intensity
-uniform float		shininess;			// Specular angle shininess
-uniform float		specularIntensity;	// Amount of added specular
-uniform float		attenuationScale;	// Light Falloff
-uniform float		grooveScale;		// Amount of groove highlight
-uniform vec3		cameraLocation;		// World space location of the camera
 
 void main(void)
 {
@@ -29,11 +39,11 @@ void main(void)
 
 	// Label color
 	vec3 label_color = texture(vinylLabel, pass_Uvs0.xy).rgb;
-	vec3 color = mix(recordColor.rgb, label_color.rgb, mask_color);
+	vec3 color = mix(ubo.recordColor.rgb, label_color.rgb, mask_color);
 
 	vec3 groove_color = texture(grooveNormalMap, pass_Uvs0.xy).rgb;
 	vec3 groove_normal = (groove_color *2.0) - 1.0;
-	groove_normal.rg = groove_normal.rg * grooveScale;
+	groove_normal.rg = groove_normal.rg * ubo.grooveScale;
 
 	// Convert normals to world
 	vec3 normal_world = normalize(transpose(inverse(mat3(pass_ModelMatrix))) * pass_Normals);
@@ -50,29 +60,29 @@ void main(void)
     vec3 frag_position = vec3(pass_ModelMatrix * vec4(pass_Vert, 1));
 
 	//calculate the vector that defines the direction of the light to the surface
-	vec3 surfaceToLight = normalize(lightPosition - frag_position);
+	vec3 surfaceToLight = normalize(ubo.lightPosition - frag_position);
 
 	// calculate vector that defines the direction of camera to the surface
-	vec3 cameraPosition = cameraLocation;
+	vec3 cameraPosition = ubo.cameraLocation;
 	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
 
 	// Ambient color
-	vec3 ambient = color.rgb * lightIntensity * ambientIntensity;
+	vec3 ambient = color.rgb * ubo.lightIntensity * ubo.ambientIntensity;
 
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color.rgb * lightIntensity;
+	vec3 diffuse = diffuseCoefficient * color.rgb * ubo.lightIntensity;
 
 	//specular
 	vec3 specularColor = vec3(1.0,1.0,1.0);
 	float specularCoefficient = 0.0;
     if(diffuseCoefficient > 0.0)
-        specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
-    vec3 specular = specularCoefficient * specularColor * lightIntensity * specularIntensity;
+        specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), ubo.shininess);
+    vec3 specular = specularCoefficient * specularColor * ubo.lightIntensity * ubo.specularIntensity;
 
 	//attenuation based on light distance
-    float distanceToLight = length(lightPosition - frag_position);
-    float attenuation = 1.0 / (1.0 + attenuationScale * pow(distanceToLight, 2));
+    float distanceToLight = length(ubo.lightPosition - frag_position);
+    float attenuation = 1.0 / (1.0 + ubo.attenuationScale * pow(distanceToLight, 2));
 
 	//linear color (color before gamma correction)
     vec3 linearColor = ambient + attenuation*(diffuse + specular);

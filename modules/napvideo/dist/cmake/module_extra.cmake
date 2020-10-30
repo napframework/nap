@@ -1,16 +1,17 @@
 find_package(FFmpeg REQUIRED)
-target_link_libraries(${PROJECT_NAME} ${FFMPEG_LIBRARIES})
+set(MODULE_NAME_EXTRA_LIBS ${FFMPEG_LIBRARIES})
 
 if(WIN32)
     # Copy over DLLs post-build on Windows
 	get_filename_component(FFMPEG_LIB_DIR ${FFMPEG_LIBAVCODEC} DIRECTORY)
     file(GLOB FFMPEG_DLLS ${FFMPEG_LIB_DIR}/../bin/*.dll)
 
+    set(DLLCOPY_PATH_SUFFIX "")
     foreach (SINGLE_DLL ${FFMPEG_DLLS})
 	    add_custom_command(
 		    TARGET ${PROJECT_NAME}
 		    POST_BUILD
-	        COMMAND ${CMAKE_COMMAND} -E copy ${SINGLE_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+            COMMAND ${CMAKE_COMMAND} -E copy ${SINGLE_DLL} $<TARGET_FILE_DIR:${PROJECT_NAME}>/${DLLCOPY_PATH_SUFFIX}
 		)
 	endforeach()
 elseif(APPLE)

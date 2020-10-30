@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15.4)
+
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(heightmap)
 
 #add all cpp files to SOURCES

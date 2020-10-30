@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <nap/numeric.h>
@@ -8,6 +12,7 @@
 namespace nap
 {
 	class FontInstance;
+	class Core;
 
 	/**
 	 * Represents a symbol (character) in a font.
@@ -102,7 +107,7 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		IGlyphRepresentation() = default;
+		IGlyphRepresentation(nap::Core& core);
 
 		// Copy is not allowed
 		IGlyphRepresentation(const IGlyphRepresentation& other) = delete;
@@ -130,6 +135,8 @@ namespace nap
 		 * @return if initialization succeeded or failed.
 		 */
 		virtual bool onInit(const Glyph& glyph, utility::ErrorState& error) = 0;
+
+		nap::Core* mCore;	///< Handle to core instance
 	};
 }
 

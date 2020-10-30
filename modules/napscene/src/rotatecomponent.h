@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local includes
@@ -25,7 +29,11 @@ namespace nap
 	class RotateComponentInstance;
 
 	/**
-	 * Resource part of the rotate component
+	 * Resource part of the rotate component.
+	 * Automatically rotates the entity along a certain axis at a certain speed.
+	 * The initial rotation value after initialization is used to rotate along the specified axis.
+	 * This component updates (overrides) the rotate value of the transform component.
+	 * Entities that use this component must have a transform.
 	 */
 	class NAPAPI RotateComponent : public Component
 	{
@@ -48,10 +56,10 @@ namespace nap
 
 	/**
 	 * Instance part of the rotate component. 
-	 * Automatically rotates the entity along a certain axis at a certain speed
-	 * The initial rotation value after initialization is used to rotate along the specified axis
-	 * This component updates (overrides) the rotate value of the transform component
-	 * Entities that use this component must have a transform
+	 * Automatically rotates the entity along a certain axis at a certain speed.
+	 * The initial rotation value after initialization is used to rotate along the specified axis.
+	 * This component updates (overrides) the rotate value of the transform component.
+	 * Entities that use this component must have a transform.
 	 */
 	class NAPAPI RotateComponentInstance : public ComponentInstance
 	{
@@ -61,10 +69,8 @@ namespace nap
 
 		/**
 		 * Initialize this rotate component, copies it's members over and validates
-		 * if a transform component is available that is rotated
-		 * @param resource the resource we're instantiated from
-		 * @param used for creating new entity instances
-		 * @param errorState the error object
+		 * if a transform component is available that can be rotated.
+		 * @param errorState contains the error if initialization fails.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 

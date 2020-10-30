@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -37,7 +41,7 @@ namespace nap
 
 
 	/**
-	 * Automatically uipdates the line selection of a lineselectioncomponent,
+	 * Automatically updates the line selection of a lineselectioncomponent,
 	 * based on the blend value of the LineBlendComponent. Switching can occur
 	 * randomly or based on an explicit next line index
 	 */
@@ -79,11 +83,11 @@ namespace nap
 			Stationary	= 2
 		};
 
-		ComponentInstancePtr<LineSelectionComponent> mSelectorOne	= { this, &LineAutoSwitchComponent::mSelectionComponentOne };		// First line selection component
-		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo	= { this, &LineAutoSwitchComponent::mSelectionComponentTwo };		// Second line selection component
-		ComponentInstancePtr<LineBlendComponent>	mLineBlender	= { this, &LineAutoSwitchComponent::mBlendComponent };				// Line Blender
-		bool mRandom = false;										// If this component randomly picks another line
-		int mNextLine = 0;											// The next line to select (if random is turned off)
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne		= { this, &LineAutoSwitchComponent::mSelectionComponentOne };		// First line selection component
+		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo		= { this, &LineAutoSwitchComponent::mSelectionComponentTwo };		// Second line selection component
+		ComponentInstancePtr<LineBlendComponent>	mLineBlender		= { this, &LineAutoSwitchComponent::mBlendComponent };				// Line Blender
+		bool mRandom = false;											// If this component randomly picks another line
+		int mNextLine = 0;												// The next line to select (if random is turned off)
 
 		float mPrevBlendValue = 0.0f;									// Previous blend value
 		EBlendDirection mPrevDirection = EBlendDirection::Stationary;	// Current blend direction

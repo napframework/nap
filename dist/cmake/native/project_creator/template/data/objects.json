@@ -1,0 +1,20 @@
+{
+    "Objects" : 
+    [
+        {
+              "Type": "nap::RenderWindow",
+              "mID": "Window",
+              "Width": 1280,
+              "Height": 720,
+              "Title": "@PROJECT_NAME_PASCALCASE@",
+              "Mode": "Immediate",
+              "SampleShading": true,
+              "Samples": "Four"
+        },
+        {
+              "Type" : "nap::Scene",
+              "mID": "Scene",   
+              "Entities" : []
+        }    
+    ]
+} 

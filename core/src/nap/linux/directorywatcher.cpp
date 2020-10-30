@@ -1,19 +1,21 @@
-#include "nap/directorywatcher.h"
-#include "nap/linux/FileWatcher/FileWatcher.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
+#include <nap/directorywatcher.h>
+#include <nap/linux/FileWatcher/FileWatcher.h>
+
+// External Includes
 #include <fstream>
 #include <nap/logger.h>
 #include <thread>
 #include <utility/fileutils.h>
-
 #include <unistd.h>
 #include <linux/limits.h>
 
 namespace nap
 {
-	/**
-	 * Directorywatcher
-	 */
 	class DirectoryWatcher::PImpl : public FW::FileWatchListener
 	{
 	public:
@@ -62,7 +64,10 @@ namespace nap
 	}
 
 
-	DirectoryWatcher::~DirectoryWatcher() { mPImpl->fileWatcher.removeWatch(mPImpl->watchID); }
+	DirectoryWatcher::~DirectoryWatcher() 
+	{ 
+		mPImpl->fileWatcher.removeWatch(mPImpl->watchID); 
+	}
 
 
 	/**

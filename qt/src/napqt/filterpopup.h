@@ -1,6 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <QDialog>
+#include <QStringListModel>
 
 #include "filtertreeview.h"
 
@@ -10,59 +15,33 @@ namespace nap
 	{
 
 		/**
-		 * General purpose popup dialog showing a filterable tree.
+		 * A popup list of strings that can be filtered
 		 */
 		class FilterPopup : public QMenu
 		{
-		public:
-			explicit FilterPopup(QWidget* parent, QStandardItemModel& model);
+		private:
+			FilterPopup(QWidget* parent = nullptr);
 
 		public:
-
-
-			/**
-			 * Display a selection dialog with the selected strings. The user can filter the list and select an item.
-			 * @param parent The parent widget to attach to
-			 * @param strings The list of strings to choose from
-			 * @return The selected string
-			 */
-			static const QString fromStringList(QWidget* parent, const QList<QString>& strings);
-
-			/**
-			 * Override to provide a reasonable size
-			 */
-			QSize sizeHint() const override;
-
-			/**
-			 * @return true if the user choice was confirmed, false if the dialog was dismissed
-			 */
-			bool wasAccepted() const { return mWasAccepted; }
-
-			/**
-			 * @return The item selected by the user
-			 */
-			QStandardItem* getSelectedItem() { return mTreeView.getSelectedItem(); }
+			static QString show(QWidget* parent, const QStringList& items);
+			static QString show(QWidget* parent, const QStringList& items, QPoint pos);
 
 		protected:
-			/**
-			 * Set focus etc
-			 */
+			void keyPressEvent(QKeyEvent* event) override;
 			void showEvent(QShowEvent* event) override;
 
-			/**
-			 * Capture keyboard for confirmation etc
-			 */
-			void keyPressEvent(QKeyEvent* event) override;
-
 		private:
-			void moveSelection(int dir);
-			void confirm();
+			void setItems(const QStringList& items);
+			void moveSelection(int d);
+			void accept();
+			void updateSize();
 
-			bool mWasAccepted = false;
-			FilterTreeView mTreeView;
+			int mBottomMargin = 10;
+			int mMaxHeight = 500;
 			QVBoxLayout mLayout;
-			QSize mSize = {400, 400};
-
+			QStringListModel* mModel = nullptr;
+			FilterTreeView mFilterTree;
+			QString mChoice;
 		};
 
 	} // namespace qt

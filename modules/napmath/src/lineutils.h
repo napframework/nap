@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -13,19 +17,19 @@ namespace nap
 	namespace math
 	{
 		/**
-		* Returns an interpolated value along the line based on @location
+		* Returns an interpolated value along the line based on the given location
 		* Note that this function works best with equally distributed vertices, ie: segments of equal length. 
-		* For more accurate results use the @getDistancesAlongLine based on distance
-		* @param vertexData the polyline attribute to sample
-		* @param location parametric normalized location along the spline
+		* For more accurate results use the getDistancesAlongLine() function, based on actual distance.
+		* @param vertexData the polyline attribute to sample, ie position, normal etc.
+		* @param location parametric normalized (0-1) location along the spline
 		* @param closed if the line is closed or not
-		* @param outValue the interpolated value
+		* @param outValue the interpolated attribute value
 		*/
 		template<typename T>
 		void getValueAlongLine(const std::vector<T>& vertexData, float location, bool closed, T& outValue);
 
 		/**
-		* Utility function to up-sample a poly line to @segments
+		* Utility function to up-sample a polyline to the given number of segments
 		* This function distributes the vertices equally among every segment, something that is not desirable with more uneven, complex lines
 		* A weighted distribution method is preferred but for now this will do.
 		* @param vertices the original mesh vertices
@@ -41,16 +45,16 @@ namespace nap
 		 * Utility function to retrieve distances along a line
 		 * This function will calculate the distance of a vertex along the line based on the total length of that line
 		 * The distance map allows you to easily retrieve the closest vertex associated with a certain distance
-		 * @return the total length of the line
-		 * @param positionVertexData the vertex positions
+		 * @param vertexPositions the vertex position data
 		 * @param outDistances a map that has a distance entry for every vertex of the line
 		 * @param closed if the line is closed or not
+		 * @return the total length of the line
 		 */
 		float NAPAPI getDistancesAlongLine(const std::vector<glm::vec3>& vertexPositions, std::map<float, int>& outDistances, bool closed);
 
 		/**
 		 * Utility function that returns a normalized blend value between two line vertices based on a position along the line
-		 * @param distanceMap the per vertex line distance map that can be acquired using the @getDistancesAlongLine function
+		 * @param distanceMap the per vertex line distance map that can be acquired using the getDistancesAlongLine() function
 		 * @param location parametric normalized location along the spline, this value needs to be within the 0-1 range
 		 * @param outMinVertex the lower bound vertex id
 		 * @param outMaxVertex the upper bound vertex id
@@ -61,9 +65,10 @@ namespace nap
 		/**
 		 * Utility function that returns an interpolated attribute value along a line
 		 * This function is more accurate but requires an extra step to perform the interpolation
-		 * @param distanceMap the per vertex line distance map that can be acquired using the @getDistancesAlongLine function
+		 * @param distanceMap the per vertex line distance map that can be acquired using the getDistancesAlongLine() function
 		 * @param vertexData the polyline attribute to sample
 		 * @param location parametric normalized location along the spline, this value needs to be within the 0-1 range
+		 * @param outValue the interpolated attribute value
 		 */
 		template<typename T>
 		void getValueAlongLine(const std::map<float, int>& distanceMap, const std::vector<T>& vertexData, float location, T& outValue);
@@ -72,8 +77,8 @@ namespace nap
 		 * Utility function that returns the interpolated normal value along a line
 		 * This function accurately blends a normal based on the position of a vertex on the line
 		 * Note that normals with a length of 0 will result in an invalid normal as we can't rotate along a normal with no value
-		 * @param distanceMap the per vertex line distance map that can be acquired using the @getDistancesAlongLine function
-		 * @param vertexData the normal data associated with a line
+		 * @param distanceMap the per vertex line distance map that can be acquired using the getDistancesAlongLine function
+		 * @param vertexNormals the normal data associated with a line
 		 * @param location parametric normalized location along the spline, this value needs to be within the 0-1 range
 		 * @param outNormal the interpolated normal
 		 */

@@ -5,17 +5,25 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-
 #include <color.h>
 #include <nap/numeric.h>
 #include <mathutils.h>
+#include <texture2d.h>
+#include <utility/dllexport.h>
 
 //---- Define assertion handler. Defaults to calling assert().
 //#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
-//#define IMGUI_API __declspec( dllexport )
-//#define IMGUI_API __declspec( dllimport )
+#ifdef _WIN32
+#ifdef NAP_SHARED_LIBRARY
+	#define IMGUI_API __declspec(dllexport)    // Export the symbols
+#else
+	#define IMGUI_API __declspec(dllimport)    // Import the symbols
+#endif // NAP_SHARED_LIBRARY
+#else
+	#define IMGUI_API                          // Empty statement, does nothing
+#endif // _WIN32
 
 //---- Don't define obsolete functions names. Consider enabling from time to time or when updating to reduce like hood of using already obsolete function/names
 //#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -48,38 +56,41 @@
 */
 
 #define IM_VEC4_CLASS_EXTRA                                                 \
-        ImVec4(const nap::RGBAColorFloat& f)	{ x = f[0]; y = f[1]; z = f[2]; w = f[3]; }					\
-        operator nap::RGBAColorFloat() const	{ return nap::RGBAColorFloat(x,y,z,w); }					\
-		ImVec4(const nap::RGBColorFloat& f)		{ x = f[0]; y = f[1]; z = f[2]; w = 1.0f; }					\
-		operator nap::RGBColorFloat() const		{ return nap::RGBColorFloat(x, y, z); }						\
-		ImVec4(const nap::RGBAColor8& f)		{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
-													y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
-													z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
-													w = (float)f[3]/(float)nap::math::max<nap::uint8>();}	\
-		operator nap::RGBAColor8() const		{ return nap::RGBAColor8(									\
-													static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((w * (float)nap::math::max<nap::uint8>()))); }  \
-		ImVec4(const nap::RGBColor8& f)			{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
-													y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
-													z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
-													w = 1.0f;}												\
-		operator nap::RGBColor8() const			{ return nap::RGBColor8(									\
-													static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
-													static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>()))); }
+        ImVec4(const nap::RGBAColorFloat& f)			{ x = f[0]; y = f[1]; z = f[2]; w = f[3]; }					\
+        operator nap::RGBAColorFloat() const			{ return nap::RGBAColorFloat(x,y,z,w); }					\
+		ImVec4(const nap::RGBColorFloat& f)				{ x = f[0]; y = f[1]; z = f[2]; w = 1.0f; }					\
+		operator nap::RGBColorFloat() const				{ return nap::RGBColorFloat(x, y, z); }						\
+		ImVec4(const nap::RGBAColor8& f)				{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
+															y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
+															z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
+															w = (float)f[3]/(float)nap::math::max<nap::uint8>();}	\
+		operator nap::RGBAColor8() const				{ return nap::RGBAColor8(									\
+															static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((w * (float)nap::math::max<nap::uint8>()))); }  \
+		ImVec4(const nap::RGBColor8& f)					{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
+															y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
+															z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
+															w = 1.0f;}												\
+		operator nap::RGBColor8() const					{ return nap::RGBColor8(									\
+															static_cast<nap::uint8>((x * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((y * (float)nap::math::max<nap::uint8>())),		\
+															static_cast<nap::uint8>((z * (float)nap::math::max<nap::uint8>()))); }	\
+		ImVec4(const nap::RGBColorFloat& f, float a)	{ x = f[0]; y = f[1]; z = f[2]; w = a; }					\
+		ImVec4(const nap::RGBColor8& f, float a)		{	x = (float)f[0]/(float)nap::math::max<nap::uint8>();	\
+															y = (float)f[1]/(float)nap::math::max<nap::uint8>();	\
+															z = (float)f[2]/(float)nap::math::max<nap::uint8>();	\
+															w = a;}	
 
 
 //---- Use 32-bit vertex indices (instead of default: 16-bit) to allow meshes with more than 64K vertices
-//#define ImDrawIdx unsigned int
+#define ImDrawIdx unsigned int
 
 //---- Tip: You can add extra functions within the ImGui:: namespace, here or in your own headers files.
 //---- e.g. create variants of the ImGui::Value() helper for your low-level math types, or your own widgets/helpers.
-/*
 namespace ImGui
 {
-    void    Value(const char* prefix, const MyMatrix44& v, const char* float_format = NULL);
+
 }
-*/
 

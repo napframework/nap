@@ -10,6 +10,7 @@ _INKSCAPE = None
 _FFMPEG = None
 
 _BASENAME = 'napqt'
+_NAMESPACE = 'nap::qt'
 
 
 def findAppInWindows(appexe):
@@ -147,7 +148,7 @@ def generateHeader():
         fp.write(
             '#pragma once\n\n'
             '#include <QString>\n\n'
-            'namespace %s\n{\n' % _BASENAME
+            'namespace %s\n{\n' % _NAMESPACE
         )
         resdir = resourcePath()
         for f in __resourceFiles():
@@ -160,7 +161,7 @@ def generateHeader():
             fp.write('\tstatic const QString QRC_%s = ":/%s";\n' % (name, p))
 
         fp.write(
-            '} // namespace %s\n\n' % _BASENAME
+            '} // namespace %s\n\n' % _NAMESPACE
         )
 
 

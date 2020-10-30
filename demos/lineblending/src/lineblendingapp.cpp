@@ -1,6 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "lineblendingapp.h"
 
-// Nap includes
+// External includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderablemeshcomponent.h>
@@ -15,6 +19,7 @@
 #include <laseroutputcomponent.h>
 #include <meshutils.h>
 #include <linenoisecomponent.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -30,10 +35,11 @@ namespace nap
 	bool LineBlendingApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
-		mRenderService	= getCore().getService<nap::RenderService>();
-		mSceneService	= getCore().getService<nap::SceneService>();
-		mInputService	= getCore().getService<nap::InputService>();
-		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mRenderService		= getCore().getService<nap::RenderService>();
+		mSceneService		= getCore().getService<nap::SceneService>();
+		mInputService		= getCore().getService<nap::InputService>();
+		mGuiService			= getCore().getService<nap::IMGuiService>();
+		mParameterService	= getCore().getService<nap::ParameterService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -51,25 +57,41 @@ namespace nap
 		mCameraEntity = scene->findEntity("Camera");
 		mLaserEntity = scene->findEntity("LaserEntity");
 
-		// Set initial line colors
-		mColorOne = mLineEntity->getComponent<LineColorComponentInstance>().getFirstColor();
-		mColorTwo = mLineEntity->getComponent<LineColorComponentInstance>().getSecondColor();
-
-		// Set initial line size
-		mLineSize = mLineEntity->getComponent<TransformComponentInstance>().getUniformScale();
+		// Create parameter gui
+		mParameterGUI = std::make_unique<ParameterGUI>(*mParameterService);
+		mParameters = mResourceManager->findObject<ParameterGroup>("Parameters");
+		mLineSizeParam = mResourceManager->findObject<ParameterFloat>("line_size");
+		mLinePositionParam = mResourceManager->findObject<ParameterVec2>("line_position");
 
 		return true;
 	}
 	
 	
 	/**
-	* Forward all the received input messages to the camera input components.
-	* The input router is used to filter the input events and to forward them
-	* to the input components of a set of entities, in this case our camera.
-	* After that we setup the gui.
-	*/
+	 * Forward all the received input messages to the camera input components.
+	 * The input router is used to filter the input events and to forward them
+	 * to the input components of a set of entities, in this case our camera.
+	 * After that we setup the gui.
+	 */
 	void LineBlendingApp::update(double deltaTime)
 	{
+		// Select GUI window
+		mGuiService->selectWindow(mRenderWindow);
+
+		// Draw some gui elements
+		ImGui::Begin("Controls");
+
+		// Show all parameters
+		mParameterGUI->show(mParameters.get(), false);
+
+		// Display some extra info
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
+			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::End();
+
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -78,56 +100,20 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Draw some gui elements
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
-		// Color
-		if (ImGui::CollapsingHeader("Line"))
-		{
-			if (ImGui::ColorEdit3("Color One", mColorOne.getData()))
-			{
-				mLineEntity->getComponent<LineColorComponentInstance>().setFirstColor(mColorOne);
-			}
-			if (ImGui::ColorEdit3("Color Two", mColorTwo.getData()))
-			{
-				mLineEntity->getComponent<LineColorComponentInstance>().setSecondColor(mColorTwo);
-			}
-			if (ImGui::SliderFloat("Size", &mLineSize, 0.01f, 1.0f, "%.3f", 2.0f))
-			{
-				mLineEntity->getComponent<TransformComponentInstance>().setUniformScale(mLineSize);
-			}
-			if (ImGui::DragFloat2("Position", &(mLinePosition.x), 0.002f, 0.0f, 1.0f))
-			{
-				// Compute new line position based on size of output frustrum
-				// Note that for this to work we just assume the canvas is not rotated and constructed in xy space
-				LaserOutputComponentInstance& laser_output = mLaserEntity->getComponent<LaserOutputComponentInstance>();
-				float frust_x = laser_output.mProperties.mFrustum.x / 2.0f;
-				float frust_y = laser_output.mProperties.mFrustum.y / 2.0f;
-				float pos_x = math::lerp<float>(-frust_x, frust_x, mLinePosition.x);
-				float pos_y = math::lerp<float>(-frust_y, frust_y, mLinePosition.y);
-				TransformComponentInstance& line_xform = mLineEntity->getComponent<TransformComponentInstance>();
-				line_xform.setTranslate({ pos_x, pos_y, line_xform.getTranslate().z });
-			}
-		}
-		if (ImGui::CollapsingHeader("Blending"))
-		{
-			float* blend_speed = &(mLineEntity->getComponent<LineBlendComponentInstance>().mBlendSpeed);
-			ImGui::SliderFloat("Blend Speed", blend_speed, 0.0f, 1.0f);
-		}
-		if (ImGui::CollapsingHeader("Noise"))
-		{
-			LineNoiseComponentInstance& line_mod = mLineEntity->getComponent<LineNoiseComponentInstance>();
-			ImGui::SliderFloat("Amplitude", &line_mod.mProperties.mAmplitude, 0.0f, 0.2f, "%.3f", 2.0f);
-			ImGui::SliderFloat("Speed", &line_mod.mProperties.mSpeed, 0.0f, 1.0f, "%.3f", 2.0f);
-			ImGui::SliderFloat("Offset", &line_mod.mProperties.mOffset, 0.0f, 1.0f);
-			ImGui::SliderFloat("Frequency", &line_mod.mProperties.mFrequency, 0.0f, 10.0f, "%.3f", 1.5f);
-		}
-		ImGui::End();
+		// Push some parameter settings to components
+		// Most custom app components directly reference the parameters
+		// except for the transform component
+		mLineEntity->getComponent<TransformComponentInstance>().setUniformScale(mLineSizeParam->mValue);
+		
+		// Compute new line position based on size of output frustrum
+		// Note that for this to work we just assume the canvas is not rotated and constructed in xy space
+		LaserOutputComponentInstance& laser_output = mLaserEntity->getComponent<LaserOutputComponentInstance>();
+		float frust_x = laser_output.mProperties.mFrustum.x / 2.0f;
+		float frust_y = laser_output.mProperties.mFrustum.y / 2.0f;
+		float pos_x = math::lerp<float>(-frust_x, frust_x, mLinePositionParam->mValue.x);
+		float pos_y = math::lerp<float>(-frust_y, frust_y, mLinePositionParam->mValue.y);
+		TransformComponentInstance& line_xform = mLineEntity->getComponent<TransformComponentInstance>();
+		line_xform.setTranslate({ pos_x, pos_y, line_xform.getTranslate().z });
 	}
 
 	
@@ -138,24 +124,33 @@ namespace nap
 	 */
 	void LineBlendingApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Start render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Render all objects in the scene at once
+			// This includes the line + normals and the laser canvas
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
-		// Render all objects in the scene at once
-		// This includes the line + normals and the laser canvas
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), mCameraEntity->getComponent<PerspCameraComponentInstance>());
+			// Draw gui to screen
+			mGuiService->draw();
 
-		// Draw gui to screen
-		mGuiService->draw();
+			// End the render pass
+			mRenderWindow->endRendering();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// End recording framebuffer
+			mRenderService->endRecording();
+		}
+
+		// Signal end of frame capture operation
+		mRenderService->endFrame();
 	}
 	
 	

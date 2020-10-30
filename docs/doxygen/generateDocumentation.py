@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import subprocess
 from sys import platform
@@ -97,6 +97,10 @@ def populateNAPVersionToEnvVars():
     version = chunks[1].strip()
     os.environ["NAP_VERSION_FULL"] = version
     os.environ["NAP_VERSION_MAJOR"] = '.'.join(version.split('.')[:-1])
+
+    nap_dir = os.path.dirname(os.path.realpath(getWorkingDir() + "/..")) 
+    os.environ["NAP_WORKING_DIR"] = nap_dir
+
 
 # main run
 if __name__ == '__main__':

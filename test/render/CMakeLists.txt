@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15.4)
+
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(render)
 
 #add all cpp files to SOURCES
@@ -26,7 +32,7 @@ add_dependencies(${PROJECT_NAME} fbxconverter mod_nappython)
 project_json_to_cmake()
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES} nrender)
+target_link_libraries(${PROJECT_NAME} napcore ${NAP_MODULES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # Package into release, export FBX, other shared source project fixes

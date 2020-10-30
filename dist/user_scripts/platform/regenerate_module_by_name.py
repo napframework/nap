@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 import argparse
 import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_module
+from nap_shared import find_module, get_cmake_path
 
 # Exit codes
 ERROR_MISSING_PROJECT = 1
@@ -18,35 +18,36 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     BUILD_DIR = 'msvc64'
 else:
-    BUILD_DIR = 'build'
+    BUILD_DIR = 'build_dir'
 
 def update_module(module_name, build_type):
     # If module name is prefixed with mod_ remove it
-    if(module_name.startswith('mod_')):
+    if module_name.startswith('mod_'):
         module_name = module_name[4:]
         
     # Find the module
     module_path = find_module(module_name)
     if module_path is None:
         return ERROR_MISSING_PROJECT
-
+        
+    cmake = get_cmake_path()
     if sys.platform.startswith('linux'):
-        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=module_path)
+        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=module_path)
     elif sys.platform == 'darwin':
-        exit_code = call(['cmake', '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=module_path)
+        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=module_path)
     else:
         # Create dir if it doesn't exist
         full_build_dir = os.path.join(module_path, BUILD_DIR)
         if not os.path.exists(full_build_dir):
             os.makedirs(full_build_dir)
 
-        exit_code = call(['cmake', '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=module_path)
+        exit_code = call([cmake, '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 14 2015 Win64', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=module_path)
 
     if exit_code == 0:
         print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
         return 0
     else:
-        return(ERROR_CONFIGURE_FAILURE)
+        return ERROR_CONFIGURE_FAILURE
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -1,8 +1,16 @@
-#version 150 core
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+#version 450 core
+
+// Uniform inputs
+uniform nap
+{
+	uniform mat4 projectionMatrix;
+	uniform mat4 viewMatrix;
+	uniform mat4 modelMatrix;
+} mvp;
 
 in vec3	in_Position;
 in vec3	in_UV0;
@@ -19,7 +27,7 @@ out vec2 passColor;
 void main(void)
 {
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_Position, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
     // Pass normal in object space
 	passNormal = in_Normal;
@@ -28,7 +36,7 @@ void main(void)
 	passPosition = in_Position;
 
 	// Pass model matrix for blob light calculations
-	passModelMatrix = modelMatrix;
+	passModelMatrix = mvp.modelMatrix;
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

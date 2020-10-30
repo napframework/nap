@@ -1,11 +1,15 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 /// local includes
 #include "videoservice.h"
 
 // External includes
 #include <sceneservice.h>
 #include <renderservice.h>
-#include <nap/logger.h>
-#include "nap/datetime.h"
+#include <nap/core.h>
+#include <mathutils.h>
 
 extern "C"
 {
@@ -24,11 +28,11 @@ namespace nap
 	{
 	}
 
+
 	bool VideoService::init(nap::utility::ErrorState& errorState)
 	{
 		av_register_all();
 		avcodec_register_all();
-
 		return true;
 	}
 
@@ -37,28 +41,23 @@ namespace nap
 	{
 		nap::utility::ErrorState error;
 		for (auto& player : mVideoPlayers)
-		{
-			if (!player->update(deltaTime, error))
-			{
-				nap::Logger::warn(error.toString().c_str());
-			}
-		}
+			player->update(deltaTime);
 	}
 
 
 	void VideoService::registerObjectCreators(rtti::Factory& factory)
 	{
-		factory.addObjectCreator(std::make_unique<VideoObjectCreator>(*this));
+		factory.addObjectCreator(std::make_unique<VideoPlayerObjectCreator>(*this));
 	}
 
 
-	void VideoService::registerVideoPlayer(Video& receiver)
+	void VideoService::registerVideoPlayer(VideoPlayer& receiver)
 	{
 		mVideoPlayers.emplace_back(&receiver);
 	}
 
 
-	void VideoService::removeVideoPlayer(Video& receiver)
+	void VideoService::removeVideoPlayer(VideoPlayer& receiver)
 	{
 		auto found_it = std::find_if(mVideoPlayers.begin(), mVideoPlayers.end(), [&](const auto& it)
 		{

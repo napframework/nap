@@ -1,8 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// RTTI includes
+// Local Includes
 #include "object.h"
-#include "utility/dllexport.h"
+
+// External Includes
+#include <utility/dllexport.h>
 
 namespace nap
 {
@@ -74,11 +80,12 @@ namespace nap
 		public:
 			Factory() = default;
 			Factory(const Factory&) = delete;
+			virtual ~Factory() = default;
+
 			Factory& operator=(const Factory&) = delete;
 
 			/**
 			 * Adds association between a type and it's object creator.
-			 * @param typeInfo: the RTTI type to create a mapping for.
 			 * @param objectCreator: the object that can create instances of the type.
 			 */
 			void addObjectCreator(std::unique_ptr<IObjectCreator> objectCreator);
@@ -92,15 +99,19 @@ namespace nap
 			Object* create(rtti::TypeInfo typeInfo);
 
 			/**
-			 * @return If the type in @typeInfo is registered into the Factory, returns true. If the type is not 
+			 * @return If the type is registered into the Factory, returns true. If the type is not 
 			 * registered, the RTTI system is queried if it can be created.
 			 */
 			bool canCreate(rtti::TypeInfo typeInfo) const;
+
+		protected:
+			virtual Object* createDefaultObject(rtti::TypeInfo typeInfo);
 
 		private:
 			using CreatorMap = std::unordered_map<rtti::TypeInfo, std::unique_ptr<IObjectCreator>>;
 			CreatorMap mCreators;
 		};
+
 
 	} //< End Namespace nap
 

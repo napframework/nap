@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "qtutils.h"
 
 #include <QDir>
@@ -6,6 +10,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QtGui>
+#include <cassert>
 
 namespace nap
 {
@@ -126,6 +131,8 @@ namespace nap
 		{
 			if (!index.isValid())
 				return;
+
+			assert(index.model() == view->model());
 
 			if (expanded && !view->isExpanded(index))
 				view->expand(index);

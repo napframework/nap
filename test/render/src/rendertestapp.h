@@ -12,7 +12,9 @@
 #include <rendertarget.h>
 #include <app.h>
 #include <scene.h>
-
+#include <renderservice.h>
+#include <color.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -69,7 +71,7 @@ namespace nap
 		
 		// Nap Services
 		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;	//< Manages all the loaded resources
+		ResourceManager* mResourceManager = nullptr;				//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
 		
 		InputService* mInputService = nullptr;						//< Input service for processing input
@@ -83,11 +85,13 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mCameraEntityRight = nullptr;		//< Camera entity for second/right window
 		rtti::ObjectPtr<EntityInstance> mSplitCameraEntity = nullptr;		//< Split camera entity for world globe moving between windows
 		
-		rtti::ObjectPtr<RenderTarget> mTextureRenderTarget;				//< Render target for first window rotating plane
-		rtti::ObjectPtr<Scene>		mScene;
-		SpawnedEntityInstance	mPigEntity;				//< Pig entity
+		rtti::ObjectPtr<RenderTarget>	mTextureRenderTarget;				//< Render target for first window rotating plane
+		rtti::ObjectPtr<Scene>			mScene;
+		rtti::ObjectPtr<EntityInstance>	mPigEntity;				//< Pig entity
 		rtti::ObjectPtr<EntityInstance> mRotatingPlaneEntity = nullptr;	//< Rotating render target entity
 		rtti::ObjectPtr<EntityInstance> mPlaneEntity = nullptr;			//< Warping custom line entity
 		rtti::ObjectPtr<EntityInstance> mWorldEntity = nullptr;			//< World globe entity
+
+		RGBAColor8 mTextHighColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

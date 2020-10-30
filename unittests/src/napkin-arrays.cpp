@@ -7,6 +7,7 @@ using namespace napkin;
 
 TEST_CASE("Arrays", "napkin-arrays")
 {
+	napkin::AppContext::create();
 	RUN_Q_APPLICATION
 
 	SECTION("Array Value Elements")
@@ -16,11 +17,11 @@ TEST_CASE("Arrays", "napkin-arrays")
 		REQUIRE(resource != nullptr);
 
 		// Check invalid nonexistent path
-		PropertyPath nonExistent(*resource, "NonExistent_________");
+		PropertyPath nonExistent(resource->mID, "NonExistent_________", *doc);
 		REQUIRE(!nonExistent.isValid());
 
 		// Grab a valid path
-		PropertyPath ints2D(*resource, "Ints2D");
+		PropertyPath ints2D(resource->mID, "Ints2D", *doc);
 		REQUIRE(ints2D.isValid());
 
 		// Ensure empty array
@@ -33,7 +34,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 			REQUIRE(ints2D.getArrayLength() == 1);
 
 			// Verify validity of new element
-			REQUIRE(PropertyPath(*resource, "Ints2D/0").isValid());
+			REQUIRE(PropertyPath(resource->mID, "Ints2D/0", *doc).isValid());
 //		 TODO: This should not happen
 //		REQUIRE(!PropertyPath(*resource, "Ints2D/18").isValid());
 		}
@@ -45,8 +46,8 @@ TEST_CASE("Arrays", "napkin-arrays")
 			REQUIRE(ints2D.getArrayLength() == 2);
 
 			// Verify validity of new element
-			REQUIRE(PropertyPath(*resource, "Ints2D/0").isValid());
-			REQUIRE(PropertyPath(*resource, "Ints2D/1").isValid());
+			REQUIRE(PropertyPath(resource->mID, "Ints2D/0", *doc).isValid());
+			REQUIRE(PropertyPath(resource->mID, "Ints2D/1", *doc).isValid());
 		}
 
 		// Remove first element
@@ -67,7 +68,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		auto doc = AppContext::get().newDocument();
 		auto midiinput = doc->addObject<TestResource>();
 		REQUIRE(midiinput != nullptr);
-		PropertyPath strings(*midiinput, "Strings");
+		PropertyPath strings(midiinput->mID, "Strings", *doc);
 		REQUIRE(strings.isValid());
 		REQUIRE(strings.isArray());
 		REQUIRE(!strings.isPointer());
@@ -85,7 +86,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		auto pointee = doc->addObject<TestResource>();
 		REQUIRE(pointee != nullptr);
 
-		PropertyPath respointers(*resource, "ResPointers");
+		PropertyPath respointers(resource->mID, "ResPointers", *doc);
 		REQUIRE(respointers.isValid());
 		REQUIRE(respointers.getArrayLength() == 0);
 
@@ -112,7 +113,7 @@ TEST_CASE("Arrays", "napkin-arrays")
 		REQUIRE(resource != nullptr);
 
 		// Set up an array with four elements
-		PropertyPath pointers(*resource, "ResPointers");
+		PropertyPath pointers(resource->mID, "ResPointers", *doc);
 		REQUIRE(pointers.isValid());
 		doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
 		doc->arrayAddNewObject(pointers, RTTI_OF(TestResource));
@@ -220,4 +221,5 @@ TEST_CASE("Arrays", "napkin-arrays")
 		REQUIRE(doc->arrayGetElement<TestResource*>(pointers, 3) == layer0);
 
 	}
+	napkin::AppContext::destroy();
 }

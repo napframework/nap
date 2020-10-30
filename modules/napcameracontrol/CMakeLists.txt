@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napcameracontrol)
 
 # add all cpp files to SOURCES
@@ -14,6 +19,8 @@ find_package(glm REQUIRED)
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS} src)
@@ -30,6 +37,8 @@ copy_module_json_to_bin()
 # Package into platform release
 if(APPLE)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 endif()
 package_module()

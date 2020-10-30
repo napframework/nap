@@ -1,30 +1,36 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "renderablemeshcomponent.h"
 #include "mesh.h"
-#include "ncamera.h"
-#include "transformcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
+#include "indexbuffer.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <entity.h>
 #include <nap/core.h>
+#include <nap/logger.h>
+#include <transformcomponent.h>
 
 RTTI_BEGIN_CLASS(nap::RenderableMeshComponent)
 	RTTI_PROPERTY("Mesh",				&nap::RenderableMeshComponent::mMesh,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderableMeshComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("LineWidth",			&nap::RenderableMeshComponent::mLineWidth,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClipRect",			&nap::RenderableMeshComponent::mClipRect,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableMeshComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
-	RTTI_FUNCTION("getMaterialInstance", &nap::RenderableMeshComponentInstance::getMaterialInstance)
+	//RTTI_FUNCTION("getMaterialInstance", &nap::RenderableMeshComponentInstance::getMaterialInstance)
 RTTI_END_CLASS
 
 namespace nap
 {
-
 	void RenderableMeshComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.push_back(RTTI_OF(TransformComponent));
@@ -32,34 +38,52 @@ namespace nap
 
 
 	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableComponentInstance(entity, resource)
-	{
-	}
+		RenderableComponentInstance(entity, resource),
+		mRenderService(entity.getCore()->getService<nap::RenderService>())
+	{ }
 
 
 	bool RenderableMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Initialize material based on resource
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
-
-		if (!mMaterialInstance.init(resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
 			return false;
 
-		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh
-		// If it is set, we create a renderablemesh from it
+		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh.
+		// If it is set we create a renderable mesh
 		if (resource->mMesh != nullptr)
 		{
 			mRenderableMesh = createRenderableMesh(*resource->mMesh, mMaterialInstance, errorState);
-			if (!errorState.check(mRenderableMesh.isValid(), "Unable to create renderable mesh"))
+			if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 				return false;
 		}
 
+		// Ensure there is a transform component
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
- 		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+ 		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
  			return false;
 
 		// Copy cliprect. Any modifications are done per instance
 		mClipRect = resource->mClipRect;
 
+		// Copy line width, ensure it's supported
+		mLineWidth = resource->mLineWidth;
+		if (mLineWidth > 1.0f && !mRenderService->getWideLinesSupported())
+		{
+			nap::Logger::warn("Unsupported line width: %.02f", mLineWidth);
+			mLineWidth = 1.0f;
+		}
+
+		// Since the material can't be changed at run-time, cache the matrices to set on draw
+		// If the struct is found, we expect the matrices with those names to be there
+		UniformStructInstance* mvp_struct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (mvp_struct != nullptr)
+		{
+			mModelMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
+			mViewMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
+			mProjectMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
+		}
 		return true;
 	}
 
@@ -85,74 +109,80 @@ namespace nap
 
 
 	// Draw Mesh
-	void RenderableMeshComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderableMeshComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{	
+		// Get material to work with
 		if (!mRenderableMesh.isValid())
 		{
 			assert(false);
 			return;
 		}
 
-		// Get global transform
-		const glm::mat4x4& model_matrix = mTransformComponent->getGlobalTransform();
+		// Set mvp matrices if present in material
+		if(mProjectMatUniform != nullptr)
+			mProjectMatUniform->setValue(projectionMatrix);
+		
+		if(mViewMatUniform != nullptr)
+			mViewMatUniform->setValue(viewMatrix);
 
-		// Bind material
+		if(mModelMatUniform != nullptr)
+			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
+
+		// Acquire new / unique descriptor set before rendering
 		MaterialInstance& mat_instance = getMaterialInstance();
-		mat_instance.bind();
+		VkDescriptorSet descriptor_set = mat_instance.update();
 
-		// Set projection uniform in shader
-		Material* comp_mat = mat_instance.getMaterial();
-		UniformMat4* projectionUniform = comp_mat->findUniform<UniformMat4>(projectionMatrixUniform);
-		if (projectionUniform != nullptr)
-			projectionUniform->setValue(projectionMatrix);
+		// Fetch and bind pipeline
+		utility::ErrorState error_state;
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
-		// Set view uniform in shader
-		UniformMat4* viewUniform = comp_mat->findUniform<UniformMat4>(viewMatrixUniform);
-		if (viewUniform != nullptr)
-			viewUniform->setValue(viewMatrix);
+		// Bind shader descriptors
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
-		// Set model matrix uniform in shader
-		UniformMat4* modelUniform = comp_mat->findUniform<UniformMat4>(modelMatrixUniform);
-		if (modelUniform != nullptr)
-			modelUniform->setValue(model_matrix);
+		// Bind vertex buffers
+		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
+		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
 
-		// Prepare blending
-		mat_instance.pushBlendMode();
-
-		// Push all shader uniforms
-		mat_instance.pushUniforms();
-
-		// Bind mesh for rendering
-		mRenderableMesh.bind();
-
-		// If a cliprect was set, enable scissor and set correct values
-		if (mClipRect.hasWidth() && mClipRect.hasHeight())
+		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
+		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
+		if (has_clip_rect)
 		{
-			opengl::enableScissorTest(false);
-			glScissor(mClipRect.getMin().x, mClipRect.getMin().y, mClipRect.getWidth(), mClipRect.getHeight());
+			VkRect2D rect;
+			rect.offset.x = mClipRect.getMin().x;
+			rect.offset.y = mClipRect.getMin().y;
+			rect.extent.width = mClipRect.getWidth();
+			rect.extent.height = mClipRect.getHeight();
+			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 		}
 
-		// Gather draw info
-		MeshInstance& mesh_instance = getMeshInstance();
-		const opengl::GPUMesh& mesh = mesh_instance.getGPUMesh();
+		// Set line width
+		vkCmdSetLineWidth(commandBuffer, mLineWidth);
 
-		// Draw all shapes associated with the mesh
+		// Draw meshes
+		MeshInstance& mesh_instance = getMeshInstance();
+		GPUMesh& mesh = mesh_instance.getGPUMesh();
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			MeshShape& shape = mesh_instance.getShape(index);
-			const opengl::IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
-			
-			GLenum draw_mode = getGLMode(shape.getDrawMode());
-			GLsizei num_indices = static_cast<GLsizei>(index_buffer.getCount());
-
-			index_buffer.bind();
-			glDrawElements(draw_mode, num_indices, index_buffer.getType(), 0);
-			index_buffer.unbind();
+			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
 
-		mat_instance.unbind();
-		mRenderableMesh.unbind();
-		opengl::enableScissorTest(false);
+		// Restore line width
+		vkCmdSetLineWidth(commandBuffer, 1.0f);
+
+		// Restore clipping
+		if (has_clip_rect)
+		{
+			VkRect2D rect;
+			rect.offset.x = 0;
+			rect.offset.y = 0;
+			rect.extent.width = renderTarget.getBufferSize().x;
+			rect.extent.height = renderTarget.getBufferSize().y;
+			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
+		}
 	}
 
 

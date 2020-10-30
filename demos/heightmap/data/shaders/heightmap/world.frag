@@ -1,4 +1,8 @@
-#version 330
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+#version 450 core
 
 // vertex shader input  
 in vec3 passUVs;						//< frag Uv's
@@ -7,11 +11,16 @@ in vec3 passPosition;					//< frag world space position
 
 // uniform inputs
 uniform sampler2D inHeightmap;			//< World Texture
-uniform vec3 inCameraPosition;			//< Camera World Space Position
-uniform float blendValue;				//< height blend value
-uniform vec3 lowerColor;				//< valley color
-uniform vec3 upperColor;				//< peak color
-uniform vec3 haloColor;					//< halo color
+
+// All uniform fragment inputs
+uniform FRAGUBO
+{
+	uniform vec3 inCameraPosition;		//< Camera World Space Position
+	uniform float blendValue;			//< height blend value
+	uniform vec3 lowerColor;			//< valley color
+	uniform vec3 upperColor;			//< peak color
+	uniform vec3 haloColor;				//< halo color
+} fubo;
 
 // output
 out vec4 out_Color;
@@ -31,14 +40,14 @@ void main()
 {
 	// Use texture alpha to blend between two colors
 	float alpha = texture(inHeightmap, passUVs.xy).r;
-	vec3 world_color = mix(lowerColor, upperColor, pow(alpha,3.0));
+	vec3 world_color = mix(fubo.lowerColor, fubo.upperColor, pow(alpha,3.0));
 
 	// When there is pretty much no displacement, blend to lower color
-	float blend_value = fit(pow(blendValue,0.75), 0.05, 0.9, 0.0, 1.0);
-	world_color = mix(lowerColor, world_color, blend_value);
+	float blend_value = fit(pow(fubo.blendValue,0.75), 0.05, 0.9, 0.0, 1.0);
+	world_color = mix(fubo.lowerColor, world_color, blend_value);
 
 	// Calculate mesh to camera angle for halo effect
-	vec3 cam_normal = normalize(inCameraPosition - passPosition);
+	vec3 cam_normal = normalize(fubo.inCameraPosition - passPosition);
 
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value
@@ -48,7 +57,7 @@ void main()
 	cam_surface_dot = pow(cam_surface_dot, 2.0);
 
 	// Mix in the halo
-	world_color = mix(world_color, haloColor, cam_surface_dot);
+	world_color = mix(world_color, fubo.haloColor, cam_surface_dot);
 
 	// Set fragment color output
 	out_Color =  vec4(world_color,1.0);

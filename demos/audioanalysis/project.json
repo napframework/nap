@@ -1,9 +1,14 @@
 {
-    "title": "AudioAnalysis",
-    "version": "0.2.3",
-    "modules": [
-        "mod_napapp",
-        "mod_napaudio",
+    "Type": "nap::ProjectInfo", 
+    "mID": "ProjectInfo", 
+    "Title": "AudioAnalysis", 
+    "Version": "1.0.0", 
+    "RequiredModules": [
+        "mod_napapp", 
+        "mod_napaudio", 
         "mod_napimgui"
-    ]
+    ], 
+    "Data": "data/audioanalysis.json", 
+    "ServiceConfig": "", 
+    "PathMapping": "cache/path_mapping.json"
 }

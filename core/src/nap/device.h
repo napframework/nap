@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include "resource.h"
@@ -5,14 +9,13 @@
 namespace nap
 {
 	/**
-	 * A device is a special class of resource, intended to deal with cases where there are only a limited number of them allowed to be in existence at the same time.
-	 * For example, if you have a device that can only be opened by a single client, it's possible for the 'open' of the device to fail in case of real-time editing.
-	 * This is because during real-time edit, it's possible for the object being edited to (temporarily) have multiple 'instances'.
+	 * Special type of Resource that represents a device. Only 1 instance of a device is allowed to run at the same time.
+	 * For example: If you have a device that opens a specific port, that port can't be opened twice. Initialization should fail because of this reason. 
+	 * The solution is to start() and stop() the device when 2 (or more) instances of that same device exist during the real-time edit fase. 
+	 * In this specific case the port is closed when the device is stopped (first instance) before being opened on start (second instance).
 	 *
-	 * The Device class deals with this case by providing an explicit start/stop virtual, which are called at appropriate times by the ResourceManager.
-	 * It's important that both start & stop can be called multiple times, but note that they will always be called in pairs.
-	 *
-	 * The device is not stopped when destroyed. It is important to do that yourself by calling stop() in the destructor of your device 
+	 * The Device class deals with this case by providing an explicit start / stop virtual, which are called at appropriate times by the ResourceManager.
+	 * It's important that both start & stop can be called multiple times. start is always called before stop. stop is only called when start succeeded.
 	 */
 	class NAPAPI Device : public Resource
 	{
@@ -20,15 +23,16 @@ namespace nap
 	public:
 
 		/**
-		 * Start the device. Will be called after init()
-		 *
+		 * Start the device. Called after initialization.
+		 * When called it is safe to assume that all dependencies have been resolved up to this point.
 		 * @param errorState The error state
 		 * @return: true on success
 		 */
 		virtual bool start(utility::ErrorState& errorState) { return true; }
 
 		/**
-		 * Stop the device. Will be called before the object is reloaded
+		 * Called when the device needs to be stopped, but only if start has previously been called on this Device. 
+		 * It is safe to assume that when stop is called the device is in a 'started' state. Called in reverse init order.
 		 */
 		virtual void stop() {}
 	};

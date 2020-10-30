@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include <QApplication>
 #include <QPushButton>
@@ -8,7 +11,6 @@
 #include <napqt/curveeditor/curvewidget.h>
 
 #include "curveeditor/curveview.h"
-
 #include "basewindow.h"
 #include "fileselector.h"
 #include "errordialog.h"
@@ -86,7 +88,7 @@ private:
 		for (int i=0; i<100; i++)
 			content << QString::fromStdString(gen.multiple(2, 5));
 
-		auto result = FilterPopup::fromStringList(this, content);
+		auto result = FilterPopup::show(this, content);
 		if (!result.isEmpty())
 			mFilterResult.setText(result);
 	}

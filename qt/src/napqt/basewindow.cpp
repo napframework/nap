@@ -1,8 +1,10 @@
-#include "basewindow.h"
-
-#include <QApplication>
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "autosettings.h"
+#include "basewindow.h"
+#include <QApplication>
 
 using namespace nap::qt;
 
@@ -24,10 +26,7 @@ QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
 	if (widget->objectName().isEmpty())
 		widget->setObjectName(QString("%1_Widget").arg(name));
 
-	QAction* action = mWindowMenu->addAction(name);
-	action->setCheckable(true);
-	action->setChecked(true);
-	connect(action, &QAction::triggered, [dock, action]() { dock->setVisible(action->isChecked()); });
+	mWindowMenu->addAction(dock->toggleViewAction());
 	addDockWidget(area, dock);
 	return dock;
 }

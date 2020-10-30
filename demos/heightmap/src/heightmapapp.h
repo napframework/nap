@@ -1,12 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local includes
 #include "heightmesh.h"
 
-// Nap includes
+// External includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
 #include <imguiservice.h>
+#include <renderservice.h>
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
@@ -90,11 +95,7 @@ namespace nap
 		InputService*			mInputService = nullptr;			//< Input service for processing input
 		IMGuiService*			mGuiService = nullptr;				//< Gui service
 
-		ObjectPtr<RenderWindow> mRenderWindow = nullptr;			//< Pointer to the render window
-		ObjectPtr<HeightMesh>	mHeightMesh = nullptr;				//< Pointer to the height map mesh
-		ObjectPtr<Material>		mNormalsMaterial = nullptr;			//< Material used to draw the normals
-		ObjectPtr<Material>		mHeightmapMaterial = nullptr;		//< Material used to draw the heightmap
-
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;		//< Pointer to the render window
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;			//< Pointer to the entity that holds the sphere
 		ObjectPtr<ImageFromFile>	mHeightmap = nullptr;			//< Texture used as height map
@@ -118,6 +119,6 @@ namespace nap
 		void updateGui();
 
 		// Pushes an rgb color to a shader uniform associated with a material
-		void pushColor(RGBColorFloat& color, Material& material, const std::string& name);
+		void pushColor(RGBColorFloat& color, MaterialInstance& material, const std::string& uboName, const std::string& uniformName);
 	};
 }

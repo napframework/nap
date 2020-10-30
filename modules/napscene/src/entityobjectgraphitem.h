@@ -1,9 +1,15 @@
 #pragma once
 
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
-#include <unordered_map>
 #include "componentresourcepath.h"
-#include "rtti/typeinfo.h"
+
+// External Includes
+#include <unordered_map>
+#include <rtti/typeinfo.h>
 
 namespace nap
 {
@@ -22,7 +28,7 @@ namespace nap
 	public:
 		using Type = rtti::Object*;
 		using ClonedResourceMap = std::unordered_map<rtti::Object*, std::vector<rtti::Object*>>;
-		using ObjectsByTypeMap = std::unordered_map<rtti::TypeInfo, std::vector<rtti::Object*>>;
+		using ObjectsByTypeMap  = std::unordered_map<rtti::TypeInfo, std::vector<rtti::Object*>>;
 
 		enum class EType : uint8_t
 		{
@@ -33,6 +39,8 @@ namespace nap
 		/**
 		 * Creates a graph item.
 		 * @param object Object to wrap in the item that is created.
+		 * @param objectsByType used to track and group objects by type.
+		 * @param clonedResourceMap used to track cloned resources.
 		 */
 		static const EntityObjectGraphItem create(rtti::Object* object, const ObjectsByTypeMap& objectsByType, const ClonedResourceMap& clonedResourceMap);
 
@@ -57,7 +65,7 @@ namespace nap
 		
 		EType						mType;							// Type: file or object
 		std::string					mFilename;						// If type is file, contains filename
-		rtti::Object*			mObject = nullptr;				// If type is object, contains object pointer
+		rtti::Object*				mObject = nullptr;				// If type is object, contains object pointer
 		const ObjectsByTypeMap*		mObjectsByType = nullptr;		// All objects sorted by type
 		const ClonedResourceMap*	mClonedResourceMap = nullptr;	// All cloned resources
 	};

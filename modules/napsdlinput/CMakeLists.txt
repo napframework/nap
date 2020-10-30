@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napsdlinput)
 
 # add all cpp files to SOURCES
@@ -29,6 +34,8 @@ find_package(SDL2 REQUIRED)
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src ${SDL2_INCLUDE_DIR})
@@ -43,7 +50,12 @@ copy_module_json_to_bin()
 
 # Package into platform release
 if(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    if(APPLE)
+        set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
+        set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+    else()
+        set(LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    endif()
     # Workaround for module not having dependent modules but wanting to set extra RPATH
     set(DEPENDENT_NAP_MODULES mod_napsdlwindow) 
 endif()    

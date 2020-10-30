@@ -1,13 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-#include "component.h"
-#include "mesh.h"
-#include "renderablemeshcomponent.h"
+// External includes
+#include <component.h>
+#include <mesh.h>
+#include <renderablemeshcomponent.h>
 
 namespace nap
 {
-	// Forward declares54
-	class TransformComponent;
+	// Forward declares
 	class ParticleEmitterComponentInstance;
 	class ParticleMesh;
 
@@ -42,11 +46,6 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableMeshComponent)
 		DECLARE_COMPONENT(ParticleEmitterComponent, ParticleEmitterComponentInstance)
-
-		/**
-		 * The particle component needs a transform
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override { components.push_back(RTTI_OF(TransformComponent)); }
 
 	public:
 		float				mSpawnRate = 3.0f;				///< Amount of particles to spawn every second

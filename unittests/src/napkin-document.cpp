@@ -6,6 +6,7 @@ using namespace napkin;
 
 TEST_CASE("Document", "napkin-document")
 {
+	napkin::AppContext::create();
     RUN_Q_APPLICATION
 
 	SECTION("general")
@@ -92,4 +93,6 @@ TEST_CASE("Document", "napkin-document")
 		REQUIRE(entity != entity2); //
 		REQUIRE(entity->mID != entity2->mID); // Objects must have unique names
 	}
+
+	napkin::AppContext::destroy();
 }

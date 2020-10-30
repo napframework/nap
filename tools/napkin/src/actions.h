@@ -1,4 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
+
+#include "appcontext.h"
+#include "napkinglobals.h"
 
 #include <QAction>
 #include <QFileDialog>
@@ -10,11 +17,10 @@
 #include <entity.h>
 #include <nap/logger.h>
 
-#include "appcontext.h"
-#include "napkinglobals.h"
-
 namespace napkin
 {
+	class EntityItem;
+
 	/**
 	 * Base class for actions. Each subclass must implement the perform() method in which the actual work will be done.
 	 * In many cases perform() will create an instance of an appropriate command and execute it.
@@ -29,6 +35,15 @@ namespace napkin
 		 * This method will be called if the action is triggered
 		 */
 		virtual void perform() = 0;
+	};
+
+	/**
+	 * Base class for action that operates specifically on a QStandardItem
+	 */
+	class StandardItemAction : public Action
+	{
+	public:
+		virtual bool isValidFor(const QStandardItem& item) { return true; }
 	};
 
 	/**
@@ -49,16 +64,25 @@ namespace napkin
 	/**
 	 * Display a file open dialog and open the file if confirmed.
 	 */
-	class OpenFileAction : public Action
+	class OpenProjectAction : public Action
 	{
 
 	public:
-		OpenFileAction();
+		OpenProjectAction();
 
 	private:
 		/**
 		 * Implemented from Action
 		 */
+		void perform() override;
+	};
+
+	class ReloadFileAction : public Action
+	{
+	public:
+		ReloadFileAction();
+
+	private:
 		void perform() override;
 	};
 
@@ -93,73 +117,61 @@ namespace napkin
 	};
 
 	/**
-	 * Add an entity to the provided parent.
+	 * Create a Resource
 	 */
-	class AddEntityAction : public Action
+	class CreateResourceAction : public StandardItemAction
 	{
 	public:
-        /**
-         * @param parent The parent to add the new entity to
-         */
-		explicit AddEntityAction(nap::Entity* parent);
+		explicit CreateResourceAction();
 
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
-
-		nap::Entity* mParent; // The parent to add the entity to
 	};
 
 	/**
-	 * Add a component of the specified type to the provided Entity.
+	 * Create an Entity
 	 */
-	class AddComponentAction : public Action
+	class CreateEntityAction : public StandardItemAction
 	{
 	public:
-        /**
-         * @param entity The entity to add the component to
-         * @param type The type of the component
-         */
-		AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type);
+		explicit CreateEntityAction();
 
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
-
-	private:
-		nap::Entity& mEntity;
-		nap::rtti::TypeInfo mComponentType;
 	};
 
 	/**
-	 * Add an object of the specified type to the ResourceManager.
+	 * Add an Entity as child of another Entity
 	 */
-	class AddObjectAction : public Action
+	class AddChildEntityAction : public StandardItemAction
 	{
 	public:
-        /**
-         * @param type The type of object to add
-         */
-        explicit AddObjectAction(const rttr::type& type);
+		explicit AddChildEntityAction(nap::Entity& entity);
 
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
 
+		nap::Entity* entity;
+	};
+
+	/**
+	 * Add a Component to an Entity
+	 */
+	class AddComponentAction : public StandardItemAction
+	{
+	public:
+		explicit AddComponentAction(nap::Entity& entity);
+
 	private:
-		rttr::type mType; // The type of object to add
+		void perform() override;
+
+		nap::Entity* entity;
 	};
 
 	/**
 	 * Delete a set of objects
 	 */
-	class DeleteObjectAction : public Action
+	class DeleteObjectAction : public StandardItemAction
 	{
 	public:
         /**
@@ -173,8 +185,34 @@ namespace napkin
 		 */
 		void perform() override;
 
-	private:
 		nap::rtti::Object& mObject;
+	};
+
+	/**
+	 * Remove a child Entity from its parent
+	 */
+	class RemoveChildEntityAction : public StandardItemAction
+	{
+	public:
+		explicit RemoveChildEntityAction(EntityItem& entityItem);
+
+	private:
+		void perform() override;
+
+		EntityItem* entityItem;
+	};
+
+	/**
+	 * Remove something defined by the propertypath
+	 */
+	class RemovePathAction : public Action
+	{
+	public:
+		explicit RemovePathAction(const PropertyPath& path);
+
+	private:
+		void perform() override;
+		PropertyPath mPath;
 	};
 
 	/**

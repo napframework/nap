@@ -1,9 +1,15 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(fbxconverter)
 
 file(GLOB sources src/*.cpp src/*.h)
 include_directories(src)
 
 # Add TCLAP
+set(TCLAP_FIND_QUIETLY TRUE)
 find_package(tclap REQUIRED)
 include_directories(${TCLAP_INCLUDE_DIRS})
 
@@ -11,15 +17,13 @@ add_executable(${PROJECT_NAME} ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
+set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene mod_napfont)
-target_link_libraries(${PROJECT_NAME} napcore nrender ${DEPENDENT_NAP_MODULES})
-
+# Add the runtime paths for RTTR on macOS
 if(APPLE)
-    # Add the runtime path for RTTR on macOS
-    add_macos_rttr_rpath()    
+    add_macos_rttr_rpath()
 endif()
-
 
 # ======================= UNIT TESTS
 enable_testing()
@@ -61,25 +65,37 @@ install(TARGETS ${PROJECT_NAME}
         DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
         CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
+if(UNIX)
+    # Extra RPATH building for Linux and macOS
+    set(PATH_TO_NAP_ROOT "../..")
+    set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)
+    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/vulkansdk/lib)
+endif()
+
 if (WIN32)   
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
     # TODO Update to find the libraries then install locating them via TARGET_FILE
     install(FILES ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
                   ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll
-                  ${THIRDPARTY_DIR}/glew/msvc/bin/Release/x64/glew32.dll
                   ${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll
                   ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll
                   ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll
                   ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
+
+    if(PACKAGE_PDBS)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> 
+                DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
+                CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE}
+                )
+    endif()            
 elseif(APPLE)
-    set(PATH_TO_NAP_ROOT "../..")
-    set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/glew/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
+    # Add extra modules for RPATH building on macOS, likely related to NAP-225
+    list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napcolor)
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
                                                                             "${DEPENDENT_NAP_MODULES}" 
@@ -87,7 +103,7 @@ elseif(APPLE)
                                                                             "../.."
                                                                             "${EXTRA_RPATH}")
 elseif(UNIX)
-    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../..")
+    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
 endif()
 
 # Add tclap license into release

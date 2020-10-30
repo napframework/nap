@@ -13,6 +13,8 @@ find_package(oscpack REQUIRED)
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src ${OSCPACK_INCLUDE_DIRS})
@@ -27,8 +29,11 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${O
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/oscpack/lib)
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/oscpack/lib/Release)
+    set(MACOS_EXTRA_RPATH_DEBUG ../../../../thirdparty/oscpack/lib/Debug)
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/oscpack/lib)
 endif()
 package_module()
 
@@ -43,6 +48,8 @@ if(MSVC)
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/msvc64/ DESTINATION thirdparty/oscpack/lib)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osx/install/lib/ DESTINATION thirdparty/oscpack/lib)
+elseif(ANDROID)
+    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/android/install/lib/ DESTINATION thirdparty/oscpack/lib)
 else()
     install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/install/lib/ DESTINATION thirdparty/oscpack/lib)
 endif()

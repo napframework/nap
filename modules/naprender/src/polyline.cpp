@@ -1,38 +1,54 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
+#include "renderservice.h"
 #include "polyline.h"
+#include "meshutils.h"
+#include "renderglobals.h"
+
+// External Includes
 #include <mathutils.h>
 #include <glm/gtx/rotate_vector.hpp>
-#include <meshutils.h>
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::PolyLineProperties)
-	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",		&nap::PolyLineProperties::mUsage,	nap::rtti::EPropertyMetaData::Default)	
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PolyLine)
-	RTTI_PROPERTY("Properties",	&nap::PolyLine::mLineProperties,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Properties",	&nap::PolyLine::mLineProperties,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Line)
-	RTTI_PROPERTY("Start",		&nap::Line::mStart,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("End",		&nap::Line::mEnd,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Closed",		&nap::Line::mClosed,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Vertices",	&nap::Line::mVertexCount,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Line)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Start",		&nap::Line::mStart,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("End",		&nap::Line::mEnd,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Closed",		&nap::Line::mClosed,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Vertices",	&nap::Line::mVertexCount,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Rectangle)
-	RTTI_PROPERTY("Dimensions", &nap::Rectangle::mDimensions,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Rectangle)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Dimensions", &nap::Rectangle::mDimensions,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Circle)
-	RTTI_PROPERTY("Radius",		&nap::Circle::mRadius,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Segments",	&nap::Circle::mSegments,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Circle)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Radius",		&nap::Circle::mRadius,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Segments",	&nap::Circle::mSegments,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::Hexagon)
-	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,					nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Hexagon)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::TriangleLine)
-	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleLine)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -117,10 +133,10 @@ namespace nap
 	void nap::PolyLine::createVertexAttributes(MeshInstance& instance)
 	{
 		// Create attributes
-		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		instance.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
-		instance.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		instance.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		instance.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		instance.getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
+		instance.getOrCreateAttribute<glm::vec3>(vertexid::normal);
 	}
 
 
@@ -128,7 +144,10 @@ namespace nap
 	bool nap::PolyLine::init(utility::ErrorState& errorState)
 	{
 		// Create the mesh	
-		mMeshInstance = std::make_unique<nap::MeshInstance>();
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<nap::MeshInstance>(*mRenderService);
+		mMeshInstance->setUsage(mLineProperties.mUsage);
+		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 
 		// Create attributes
 		createVertexAttributes(*mMeshInstance);
@@ -169,14 +188,14 @@ namespace nap
 		mMeshInstance->setNumVertices(p_count);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(mClosed ? opengl::EDrawMode::LINE_LOOP : opengl::EDrawMode::LINE_STRIP);
-		utility::generateIndices(shape, p_count);
+		utility::generateIndices(shape, p_count, mClosed);
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
 
 		return true;
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -233,10 +252,8 @@ namespace nap
 
 		// Update mesh vertex count
 		mMeshInstance->setNumVertices(4);
-
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		utility::generateIndices(shape, 4);
+		utility::generateIndices(shape, 4, true);
 
 		// Initialize line
 		bool success = mMeshInstance->init(errorState);
@@ -260,14 +277,16 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(mSegments);
-
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);		
-		utility::generateIndices(shape, mSegments);		
+		utility::generateIndices(shape, mSegments, true);		
 
 		// Initialize line
 		return mMeshInstance->init(errorState);
 	}
+
+
+	Hexagon::Hexagon(nap::Core& core) : PolyLine(core)
+	{ }
 
 
 	bool Hexagon::init(utility::ErrorState& errorState)
@@ -297,10 +316,8 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(6);
-
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		utility::generateIndices(shape, 6);
+		utility::generateIndices(shape, 6, true);
 
 		return mMeshInstance->init(errorState);
 	}
@@ -333,68 +350,80 @@ namespace nap
 
 		// Update
 		mMeshInstance->setNumVertices(3);
+		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 
 		MeshShape& shape = mMeshInstance->createShape();
-		shape.setDrawMode(opengl::EDrawMode::LINE_LOOP);
-		utility::generateIndices(shape, 3);
+		utility::generateIndices(shape, 3, true);
 
 		return mMeshInstance->init(errorState);
 	}
 
 
+	PolyLine::PolyLine(nap::Core& core) : mRenderService(core.getService<nap::RenderService>())
+	{ }
+
+
+	Line::Line(nap::Core& core) : PolyLine(core)
+	{ }
+
+
+	Rectangle::Rectangle(nap::Core& core) : PolyLine(core)
+	{ }
+
+
+	Circle::Circle(nap::Core& core) : PolyLine(core)
+	{ }
+
+
+	TriangleLine::TriangleLine(nap::Core& core) : PolyLine(core)
+	{ }
+
+
 	Vec3VertexAttribute& PolyLine::getPositionAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::position);
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getPositionAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::position);
 	}
 
 
 	Vec4VertexAttribute& PolyLine::getColorAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(vertexid::getColorName(0));
 	}
 
 
 	const nap::Vec4VertexAttribute& PolyLine::getColorAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		return getMeshInstance().getAttribute<glm::vec4>(vertexid::getColorName(0));
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getNormalAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::normal);
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getNormalAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::normal);
 	}
 
 
 	Vec3VertexAttribute& PolyLine::getUvAttr()
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::getUVName(0));
 	}
 
 
 	const nap::Vec3VertexAttribute& PolyLine::getUvAttr() const
 	{
-		return getMeshInstance().getAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-	}
-
-
-	bool PolyLine::isClosed() const
-	{
-		opengl::EDrawMode mode = getMeshInstance().getShape(0).getDrawMode();
-		assert(mode == opengl::EDrawMode::LINE_LOOP || mode == opengl::EDrawMode::LINE_STRIP);
-		return mode == opengl::EDrawMode::LINE_LOOP;
+		return getMeshInstance().getAttribute<glm::vec3>(vertexid::getUVName(0));
 	}
 
 

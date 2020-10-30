@@ -7,6 +7,7 @@ System {#system}
 *   [Core](@ref core)
 *	[Resourcemanager](@ref resourcemanager)
 *	[Events](@ref events)
+*	[Configuration](@ref service_config)
 
 Overview {#system_overview}
 =======================
@@ -21,14 +22,14 @@ Let's start reading the graph left to right. Starting from the left we see an ap
 - Receive messages
 - Etc.
 
-Core is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the ResourceManager. Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the getObject that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialization call of your application is the perfect place to load the file and check for content errors.
+[Core](@ref nap::Core) is the heart of every NAP application and manages (among other things) modules. Core is also the gateway to the [ResourceManager](@ref nap::ResourceManager). Every NAP application requires a Core object. That's the reason you explicitly create one and give it to the [AppRunner](@ref nap::AppRunner) that runs your application. When creating Core you also create a ResourceManager. The resource manager does a lot of things but most importantly: it makes your life easy. It creates all the objects that are associated with your application, initializes them in the right order and keeps track of any content changes. When a change is detected, the resource manager automatically patches the system without having to re-compile your application. The initialization call of your application is the perfect place to load the file and check for content errors.
 
 Modules are libraries that expose building blocks. You can use these building blocks to construct your application. Most modules expose specific building blocks, for example. The OSC module exposes OSC receiving and sending objects, a generic interface to create and extract OSC events and a service that deals with the OSC library and network. Core loads all available modules automatically and initializes them in the right order. After a module is loaded all the building blocks are registered and the module can be initialized. You, as a user, don't have to do anything.
 
 The diagram has four resources from three different modules:
-- One OSC Receiver from the OSC Module
-- Two Windows from the Render Module
-- One Midi Sender from the Midi Module
+- One [OSCReceiver](@ref nap::OSCReceiver) from the OSC Module
+- Two [Windows](@ref nap::RenderWindow) from the Render Module
+- One [MidiSender](@ref nap::MidiOutputPort) from the Midi Module
 
 After initializing core (and therefore all modules) the building blocks can be created by the ResourceManager. We add the building blocks as individual resources to our JSON file and tell the ResourceManager to load the file and voila: 
 - You now have an OSC receiver that already opened it's port and is listening to messages
@@ -57,11 +58,11 @@ It is possible that a service wants to use functionality from other services. NA
 Apps {#apps}
 =======================
 
-The main entrypoint for running an application is the [AppRunner](@ref nap::AppRunner). This objects requires two objects: an [application](@ref nap::App) to run and an [event handler](@ref nap::BaseAppEventHandler). The event handler forwards system events to the application. These events include mouse and keyboard input. Every application needs to be derived from [BaseApp](@ref nap::BaseApp) and every event handler needs to be derived from [BaseAppEventHandler](@ref nap::BaseAppEventHandler).
+The main entrypoint for running an application is the [AppRunner](@ref nap::AppRunner). This objects requires two objects: an [application](@ref nap::App) to run and an [event handler](@ref nap::AppEventHandler). The event handler forwards system events to the application. These events include mouse and keyboard input. Every application needs to be derived from [BaseApp](@ref nap::BaseApp) and every event handler needs to be derived from [AppEventHandler](@ref nap::AppEventHandler).
 
 The easiest way to set up a new project is to:
 - Derive a new applicaton from [App](@ref nap::App) 
-- Use the default [GuiAppEventHandler](@ref nap::GuiAppEventHandler) to pass input events to your application
+- Use the default [GUIAppEventHandler](@ref nap::GUIAppEventHandler) to pass input events to your application
 - Give both of them to the [AppRunner](@ref nap::AppRunner) and start the loop
 
 ~~~~~~~~~~~~~~~{.cpp}
@@ -141,3 +142,56 @@ Events {#events}
 
 NAP uses [events](@ref nap::Event) to signal the occurrence of an action to the running application. Events often originate from an external environment and are handled by their respective services. When the event is generated asynchronously the service makes sure it is consumed before making it available to potential listeners (often components) on the main thread. This is the general design pattern behind event handling in NAP. [Input](@ref nap::InputEvent), [OSC](@ref nap::OSCEvent) and [Midi](@ref nap::MidiEvent) events are handled this way. This also ensures that new messages don't stall the running application.
 
+Configuration {#service_config}
+=======================
+Some services are configurable, including the [audio](@ref nap::AudioService), [render](@ref nap::RenderService) and [gui](@ref nap::IMGuiService) service. Every service that is configurable is initialized using a class derived from [ServiceConfiguration](@ref nap::ServiceConfiguration). The render service is initialized using a [render service configuration](@ref nap::RenderServiceConfiguration) and the audio service is initialized using an [audio service configuration](@ref nap::audio::AudioServiceConfiguration).
+
+All service configurable settings are stored in a `config.json` file, which should be placed next to the executable. This file is not placed in the `data` folder because service configurable settings are system specific, not application specific. You might want to select a different audio output port, change the gui font size or disable high dpi rendering. If no `config.json` file is provided the system defaults are used. 
+
+`config.json` example:
+
+```
+{
+    "Objects": 
+    [
+        {
+            "Type": "nap::IMGuiServiceConfiguration",
+            "mID": "nap::IMGuiServiceConfiguration",
+            "FontSize": 17.0
+        },
+        {
+            "Type": "nap::RenderServiceConfiguration",
+            "mID": "nap::RenderServiceConfiguration",
+            "PreferredGPU": "Discrete",
+            "Layers": 
+            [
+                "VK_LAYER_KHRONOS_validation"
+            ],
+            "Extensions": [],
+            "VulkanMajor": 1,
+            "VulkanMinor": 0,
+            "EnableHighDPI": true,
+            "ShowLayers": false,
+            "ShowExtensions": true,
+            "AnisotropicSamples": 8
+        },
+        {
+            "Type": "nap::audio::AudioServiceConfiguration",
+            "mID": "nap::audio::AudioServiceConfiguration",
+            "InputChannelCount": 1,
+            "OutputChannelCount": 2,
+            "AllowChannelCountFailure": true,
+            "SampleRate": 44100.0,
+            "BufferSize": 1024,
+            "InternalBufferSize": 1024
+        }
+    ]
+}
+```
+
+You can automatically generate a config file, using the currently loaded settings of your application, by calling :
+
+~~~~~~~~~~~~~~~{.cpp}
+	if (!getCore().writeConfigFile(error))
+		return false;
+~~~~~~~~~~~~~~~

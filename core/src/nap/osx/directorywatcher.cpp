@@ -1,15 +1,19 @@
-#include "../directorywatcher.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
+#include <nap/directorywatcher.h>
 #include <utility/fileutils.h>
 
-#include "assert.h"
+// External Includes
+#include <assert.h>
 #include <CoreServices/CoreServices.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <mach-o/dyld.h>
 #include <sys/syslimits.h>
-
 #include <iostream>
 #include <mutex>
 #include <thread>

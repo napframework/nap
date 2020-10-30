@@ -14,9 +14,17 @@ body{
 
 body, table, div, p, dl,
 table.directory, #nav-tree,#nav-tree .label {
-font-family:  'Nunito Sans', sans-serif;
-color: #8B8CA0;
-font-size: 1rem;
+	font-family:  'Nunito Sans', sans-serif;
+	color: #8B8CA0;
+	font-size: 1rem;
+}
+
+.textblock {
+	max-width: 75em;
+}
+
+.memdoc {
+	max-width: 75em;
 }
 
 border-bottom: 6px solid #525369;
@@ -308,10 +316,11 @@ img.formulaInl {
 	vertical-align: middle;
 }
 div.center {
-	text-align: center;
+  text-align: center;
   margin-top: 0px;
   margin-bottom: 0px;
   padding: 0px;
+  max-width: 75em;
 }
 div.center img {
 	border: none;
@@ -485,13 +494,13 @@ table.memberdecls {
 	padding: 0;
 	margin-bottom: 2.5em;
 	margin-right: 5px;
-  -webkit-transition: box-shadow 0.5s linear;
-  -moz-transition: box-shadow 0.5s linear;
-  -ms-transition: box-shadow 0.5s linear;
-  -o-transition: box-shadow 0.5s linear;
-  transition: box-shadow 0.5s linear;
-  display: table !important;
-  width: 100%;
+  	-webkit-transition: box-shadow 0.5s linear;
+  	-moz-transition: box-shadow 0.5s linear;
+  	-ms-transition: box-shadow 0.5s linear;
+  	-o-transition: box-shadow 0.5s linear;
+  	transition: box-shadow 0.5s linear;
+  	display: table !important;
+  	width: 100%;
 }
 .memitem.glow {
    box-shadow: 0 0 15px blue;
@@ -675,7 +684,16 @@ div.dynheader {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	text-align: center;
+	max-width: 75em;
+	margin-top: 2em;
+	margin-bottom: 1em;
+	opacity: 0.5;
 }
+.legend {
+	opacity: 0.0;
+}
+
 address {
 	font-style: normal;
 	color: #2A3D61;

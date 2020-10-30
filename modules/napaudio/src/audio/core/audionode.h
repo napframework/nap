@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Std includes
@@ -10,132 +14,94 @@
 // Audio includes
 #include <audio/utility/audiotypes.h>
 #include <audio/core/audiopin.h>
+#include <audio/core/process.h>
 
 namespace nap
 {
-    
-    namespace audio
-    {
-    
-        
-        // Forward declarations
-        class NodeManager;
-        
-        
-        /**
-         * A node performs audio processing and is the smallest unit of a DSP network.
-         * The node can have an arbitrary number of inputs and outputs, used to connect streams of mono audio between different nodes.
-         * Use this as a base class for custom nodes that generate audio output.
-         */
-        class NAPAPI Node
-        {
-            RTTI_ENABLE()
-            
-            friend class NodeManager;
-            friend class OutputPin;
-            friend class InputPin;
-            friend class MultiInputPin;
-            friend class NodePtrBase;
-            
-        public:
-            /**
-             * @param manager: the node manager that this node will be registered to and processed by. The node receives it's buffersize and samplerate from the manager.
-             */
-            Node(NodeManager& manager);
-            virtual ~Node();
-            
-            /**
-             * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on unique_ptr. Not sure why.
-             */
-            Node(const Node&) = delete;
-            Node& operator=(const Node&) = delete;
-            
-            /**
-             * Returns the internal buffersize of the node system that this node belongs to. 
-             * Output is being pulled through the graph buffers of this size at a time.
-             * Not to be confused with the buffersize that the audio callback runs on!
-             */
-            int getBufferSize() const;
-            
-            /**
-             * Returns the sample rate that the node system runs on
-             */
-            float getSampleRate() const;
-            
-            /**
-             * Returns the current time in samples
-             */
-            DiscreteTimeValue getSampleTime() const;
-            
-            /**
-             * Returns all this node's outputs
-             */
-            const std::set<OutputPin*>& getOutputs() { return mOutputs; }
-            
-            /**
-             * @return: The node manager that this node is processed on
-             */
-            NodeManager& getNodeManager() { return *mNodeManager; }
-            
-        protected:
-            /**
-             * Called whenever the sample rate that the node system runs on changes.
-             * Can be overwritten to respond to changes
-             * @param sampleRate: then new sample rate
-             */
-            virtual void sampleRateChanged(float sampleRate) { }
-            // Called whenever the internal buffer size changes
-
-            /**
-             * Called whenever the buffersize that the node system runs on changes.
-             * Can be overwriten to respond to changes.
-             * @param bufferSize: the new buffersize
-             */
-            virtual void bufferSizeChanged(int bufferSize) { }
-            
-            
-            /**
-             * Use this function within descendants @process() implementation to access the buffers that need to be filled with output.
-             * @param: the output that the buffer is requested for
-             */
-            SampleBuffer& getOutputBuffer(OutputPin& output);
-            
-        private:
-            /*
-             * Override this method to do the actual audio processing and fill the buffers of this node's outputs with new audio data
-             * Use @getOutputBuffer() to access the buffers that have to be filled.
-             */
-            virtual void process() { }
-            
-            /*
-             * Invoked by OutputPin::pull methods
-             * Makes sure all the outputs of this node are being processed up to the current time stamp.
-             * Calls process() call if not up to date.
-             */
-            void update();
-            
-            /*
-             * Used by the node manager to notify the node that the buffer size has changed.
-             * @param bufefrSize: the new value
-             */
-            void setBufferSize(int bufferSize);
-            
-            /*
-             * Used by the node manager to notify the node that the sample rate has changed.
-             * @param sampleRate: the new value
-             */
-            void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
-            
-            std::set<OutputPin*> mOutputs; // Used internally by the node to keep track of all its outputs.
-            
-            DiscreteTimeValue mLastCalculatedSample = 0; // The time stamp of the latest calculated sample by this node
-            
-            NodeManager* mNodeManager = nullptr; // The node manager that this node is processed on            
-        };
-        
-        
-
-    }
+	namespace audio
+	{
+		
+		// Forward declarations
+		class NodeManager;
+		
+		
+		/**
+		 * A node performs audio processing and is the smallest unit of a DSP network.
+		 * The node can have an arbitrary number of inputs and outputs, used to connect streams of mono audio between different nodes.
+		 * Use this as a base class for custom nodes that generate audio output.
+		 */
+		class NAPAPI Node : public Process
+		{
+			RTTI_ENABLE(Process)
+			
+			friend class NodeManager;
+			friend class InputPinBase;
+			friend class InputPin;
+			friend class OutputPin;
+			friend class MultiInputPin;
+			friend class NodePtrBase;
+		
+		public:
+			/**
+			 * @param manager: the node manager that this node will be registered to and processed by. The node receives it's buffersize and samplerate from the manager.
+			 */
+			Node(NodeManager& manager);
+			
+			virtual ~Node();
+			
+			/**
+			 * @return all this node's outputs
+			 */
+			const std::set<OutputPin*>& getOutputs() const
+			{
+				return mOutputs;
+			}
+			
+			/**
+			 * @return all this node's inputs
+			 */
+			const std::set<InputPinBase*>& getInputs() const { return mInputs; }
+			
+			/*
+			 * Override this method to do the actual audio processing and fill the buffers of this node's outputs with new audio data
+			 * Use @getOutputBuffer() to access the buffers that have to be filled.
+			 */
+			void process() override { }
+		
+		protected:
+			/**
+			 * Use this function within descendants @process() implementation to access the buffers that need to be filled with output.
+			 * @param: output the output that the buffer is requested for
+			 */
+			SampleBuffer& getOutputBuffer(OutputPin& output);
+			
+			/**
+			 * @return true if the node is currently registered with a currently existing node manager.
+			 */
+			bool isRegisteredWithNodeManager() const { return mRegisteredWithNodeManager.load(); }
+		
+		private:
+			/*
+			 * Used by the node manager to notify the node that the buffer size has changed.
+			 * @param bufefrSize the new value
+			 */
+			void setBufferSize(int bufferSize);
+			
+			/*
+			 * Used by the node manager to notify the node that the sample rate has changed.
+			 * @param sampleRate: the new value
+			 */
+			void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
+			
+			std::set<OutputPin*> mOutputs; // Used internally by the node to keep track of all its outputs.
+			std::set<InputPinBase*> mInputs; // Used internally by the node to keep track of all its inputs.
+			
+			// Set to true when the node has made itself known with the node manager. This registration is deferred to the audio thread so it has to be tracked by this boolean.
+			std::atomic<bool> mRegisteredWithNodeManager = { false };
+		};
+		
+		
+	}
 }
 
 

@@ -1,11 +1,16 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
+
+#include "propertypath.h"
 
 #include <QStandardItem>
 #include <QVBoxLayout>
 #include <rtti/object.h>
 #include <rtti/path.h>
 #include <panels/inspectorpanel.h>
-#include "propertypath.h"
 
 namespace napkin
 {
@@ -21,8 +26,7 @@ namespace napkin
 	 * @param value The value of the property in this row
 	 * @return a row of items where each item sits in its own column
 	 */
-	QList<QStandardItem*> createPropertyItemRow(rttr::type type, const QString& name, const PropertyPath& path, rttr::property prop,
-													rttr::variant value, rttr::type displayType = rttr::type::empty());
+	QList<QStandardItem*> createPropertyItemRow(const PropertyPath& path);
 
 	/**
 	 * The base for items that represent a property path
@@ -31,26 +35,24 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * @param name Text on the item.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property on the object
 		 */
-		PropertyPathItem(const QString& name, const PropertyPath& path);
+		PropertyPathItem(const PropertyPath& path);
+
+		/**
+		 * Override from QStandardItem
+		 */
+		QVariant data(int role) const override;
 
 		/**
 		 * The path held by this item
 		 */
-		const PropertyPath& getPath() { return mPath; }
+		const PropertyPath& getPath() const { return mPath; }
 
 	protected:
-		const PropertyPath mPath; // The path to the property
+		PropertyPath mPath; // The path to the property
 	};
 
 	/**
@@ -60,18 +62,11 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * @param name Text to display.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property.
 		 */
-		PropertyItem(const QString& name, const PropertyPath& path);
+		PropertyItem(const PropertyPath& path);
 	};
 
 	/**
@@ -81,18 +76,11 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * @param name Text to display.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property.
 		 */
-		CompoundPropertyItem(const QString& name, const PropertyPath& path);
+		CompoundPropertyItem(const PropertyPath& path);
 
 	private:
         /**
@@ -108,32 +96,19 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * @param name Text to display.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property.
 		 * @param prop The property the path is pointing to.
 		 * @param array Because the property is an array, provide a view into the array.
 		 */
-		ArrayPropertyItem(const QString& name, const PropertyPath& path, rttr::property prop,
-						  rttr::variant_array_view array);
-
-		nap::rtti::VariantArray& getArray() { return mArray; }
+		ArrayPropertyItem(const PropertyPath& path);
 
 	private:
         /**
          * Generate child items
          */
 		void populateChildren();
-
-		rttr::property mProperty;
-		nap::rtti::VariantArray mArray;
 	};
 
 	/**
@@ -143,39 +118,25 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * @param name Text to display.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property, pointer.
 		 */
-		PointerItem(const QString& name, const PropertyPath& path);
+		PointerItem(const PropertyPath& path);
 	};
 
     /**
      * This item allows for editing a pointer value
      */
-	class PointerValueItem : public QStandardItem
+	class PointerValueItem : public PropertyPathItem
 	{
 	public:
-		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
 		/**
 		 * @param name Text to display.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property, pointer.
 		 */
-		PointerValueItem(const PropertyPath& path, rttr::type valueType);
+		PointerValueItem(const PropertyPath& path);
 
 		/**
 		 * Reimplemented from QStandardItem
@@ -187,9 +148,6 @@ namespace napkin
 		 */
 		void setData(const QVariant& value, int role) override;
 
-	private:
-		const PropertyPath mPath;		// The path to the property
-		rttr::type mValueType;			// The type of the value represented by the pointer
 	};
 
 	/**
@@ -199,18 +157,11 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * @param name Text to display.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property, pointer.
 		 */
-		EmbeddedPointerItem(const QString& name, const PropertyPath& path);
+		EmbeddedPointerItem(const PropertyPath& path);
 
 	private:
 		/**
@@ -226,19 +177,12 @@ namespace napkin
 	{
 	public:
 		/**
-		 * QStandardItem is not a QObject, so regular QObject polymorphism doesn't work.
-		 * This function is supposed to solve that.
-		 * See: http://doc.qt.io/qt-5/qstandarditem.html#type
-		 */
-		int type() const override;
-
-		/**
 		 * @param name Text to display.
 		 * @param object The object to keep track of.
 		 * @param path The path to the property, pointer.
 		 * @param valueType The type of the value
 		 */
-		PropertyValueItem(const QString& name, const PropertyPath& path, rttr::type valueType);
+		PropertyValueItem(const PropertyPath& path);
 
 		/**
 		 * Reimplemented from QStandardItem
@@ -250,13 +194,6 @@ namespace napkin
 		 */
 		void setData(const QVariant& value, int role) override;
 
-		/**
-		 * @return The type of the value held by the property.
-		 */
-		rttr::type& getValueType();
-
-	private:
-		rttr::type mValueType; // The type of the value held by the property.
 	};
 
 

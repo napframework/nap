@@ -1,13 +1,19 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// RTTI Includes
-#include <rtti/rtti.h>
-#include <vector>
-#include <unordered_set>
+// Local Includes
 #include "path.h"
 #include "factory.h"
 #include "unresolvedpointer.h"
-#include "utility/dllexport.h"
+
+// External Includes
+#include <rtti/rtti.h>
+#include <vector>
+#include <unordered_set>
+#include <utility/dllexport.h>
 
 namespace nap
 {
@@ -37,14 +43,15 @@ namespace nap
 
 		/**
 		 * Creates a new object with the same attributes as it's source.
-		 * @param object: the object to copy rtti attributes from.
+		 * @param object the object to copy rtti attributes from.
+		 * @param factory RTTI object factory.
+		 * @return the cloned object
 		 */
 		template<typename T>
 		std::unique_ptr<T> cloneObject(const T& object, rtti::Factory& factory)
 		{
 			T* copy = static_cast<T*>(factory.create(object.get_type()));
 			copyObject(object, *copy);
-
 			return std::unique_ptr<T>(copy);
 		}
 
@@ -82,7 +89,7 @@ namespace nap
 		int NAPAPI findUnresolvedPointer(const UnresolvedPointerList& unresolvedPointers, const Object* object, const rtti::Path& path);
 
 		/**
-		 * Recursively traverses pointers of @object and puts them in @pointees. Basically traverses the object graph beneath @object.
+		 * Recursively traverses pointers of the given object and puts them in pointees. Basically traverses the object graph beneath object.
 		 * @param object The root object to start traversing pointers from.
 		 * @param pointees The resulting array of objects.
 		 */
@@ -94,7 +101,7 @@ namespace nap
 		 * @param type The type to calculate the version number for
 		 * @return The version number
 		 */
-		std::size_t NAPAPI getRTTIVersion(const rtti::TypeInfo& type);
+		uint64_t NAPAPI getRTTIVersion(const rtti::TypeInfo& type);
 
 		/**
 		 * Recursively get all types derived from the specified type (including the base type itself)

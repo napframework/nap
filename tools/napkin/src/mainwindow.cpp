@@ -1,75 +1,84 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "mainwindow.h"
 
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <fcurve.h>
+#include <QtDebug>
+#include <utility/fileutils.h>
 
 using namespace napkin;
 
 void MainWindow::bindSignals()
 {
-	connect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	connect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	auto ctx = &getContext();
+	connect(ctx, &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	connect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
-	connect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	connect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
+	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	connect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
+	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
 
 void MainWindow::unbindSignals()
 {
-	disconnect(&AppContext::get(), &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
-	disconnect(&AppContext::get(), &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
+	auto ctx = &getContext();
+	disconnect(ctx, &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
+	disconnect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
-	disconnect(&AppContext::get(), &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
-	disconnect(&AppContext::get(), &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
+	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
+	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
 }
 
 
 void MainWindow::showEvent(QShowEvent* event)
 {
-	QSettings defaultSettings(DEFAULT_SETTINGS_FILE, QSettings::IniFormat);
-	if (!QFileInfo::exists(DEFAULT_SETTINGS_FILE))
-		nap::Logger::warn("Settings file not found: %1", DEFAULT_SETTINGS_FILE.toStdString().c_str());
-
 	BaseWindow::showEvent(event);
-	AppContext::get().restoreUI();
+
+	if (mFirstShowEvent)
+	{
+		QSettings settings;
+		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
+		getContext().restoreUI();
+		rebuildRecentMenu();
+		mFirstShowEvent = false;
+	}
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-	if (AppContext::get().getDocument()->isDirty())
+	if (!confirmSaveCurrentFile())
 	{
-		auto result = QMessageBox::question(this, "Save before exit",
-											"The current document has unsaved changes.\n"
-													"Save the changes before exit?",
-											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-		if (result == QMessageBox::Yes)
-		{
-			SaveFileAction action;
-			action.trigger();
-		}
-		else if (result == QMessageBox::Cancel)
-		{
-			event->ignore();
-			return;
-		}
+		event->ignore();
+		return;
 	}
+
 	unbindSignals();
 	BaseWindow::closeEvent(event);
 }
 
 void MainWindow::addDocks()
 {
-//	addDock("Available Types", &mHierarchyPanel);
 //	addDock("History", &mHistoryPanel);
-
+//	addDock("Path Browser", &mPathBrowser);
 	addDock("Resources", &mResourcePanel);
 	addDock("Inspector", &mInspectorPanel);
 	addDock("Log", &mLogPanel);
 	addDock("AppRunner", &mAppRunnerPanel);
     addDock("Scene", &mScenePanel);
 	addDock("Curve", &mCurvePanel);
+	addDock("Modules", &mModulePanel);
+	addDock("Instance Properties", &mInstPropPanel);
 }
 
 
@@ -81,9 +90,11 @@ void MainWindow::addMenu()
 		addAction(newFileAction);
 		filemenu->addAction(newFileAction);
 
-		auto openFileAction = new OpenFileAction();
+		auto openFileAction = new OpenProjectAction();
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
+
+		mRecentProjectsMenu = filemenu->addMenu("Recent Projects");
 
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);
@@ -92,6 +103,10 @@ void MainWindow::addMenu()
 		auto saveFileAsAction = new SaveFileAsAction();
 		addAction(saveFileAction);
 		filemenu->addAction(saveFileAsAction);
+
+		auto reloadFileAction = new ReloadFileAction();
+		addAction(reloadFileAction);
+		filemenu->addAction(reloadFileAction);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 
@@ -102,8 +117,8 @@ void MainWindow::addMenu()
 			auto filename = QFileDialog::getSaveFileName(this, "Save Settings", QString(), "Settings file (*.ini)");
 			if (filename.isEmpty())
 				return;
-			QSettings s(filename, QSettings::IniFormat);
-
+			if (!QFile::copy(QSettings().fileName(), filename))
+				nap::Logger::error("Failed to save settings to file: %s", filename.toStdString().c_str());
 		});
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
@@ -118,16 +133,19 @@ void MainWindow::onDocumentChanged()
 
 void MainWindow::updateWindowTitle()
 {
-	QString filename = AppContext::get().getDocument()->getCurrentFilename();
-	if (filename.isEmpty()) {
-		filename = napkin::TXT_UNTITLED_DOCUMENT;
-	} else {
-		filename = QFileInfo(filename).fileName();
+	// If there is not project information, set to default
+	const nap::ProjectInfo* project_info = getContext().getProjectInfo();
+	if (project_info == nullptr)
+	{
+		setWindowTitle(QApplication::applicationName());
+		return;
 	}
 
-	QString changed = AppContext::get().getDocument()->isDirty() ? "*" : "";
-
-	setWindowTitle(QString("%1%2 - %3").arg(filename, changed, QApplication::applicationName()));
+	// Otherwise display current project
+	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
+	setWindowTitle(QString("%1%2 %3 - %4").arg(QString::fromStdString(project_info->mTitle),
+											   changed, QString::fromStdString(project_info->mVersion),
+											   QApplication::applicationName()));
 }
 
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
@@ -143,24 +161,56 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::onResourceSelectionChanged(QList<nap::rtti::Object*> objects)
+void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 {
-	mInspectorPanel.setObject(objects.isEmpty() ? nullptr : objects.first());
-
-	mCurvePanel.editCurve(nullptr);
-
-	if (!objects.isEmpty()) {
-		auto ob = dynamic_cast<nap::math::FloatFCurve*>(objects.at(0));
-		if (ob) {
-			mCurvePanel.editCurve(ob);
-		}
+	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
+	sceneTreeSelection->blockSignals(true);
+	sceneTreeSelection->clearSelection();
+	sceneTreeSelection->blockSignals(false);
+	if (!paths.isEmpty())
+	{
+		auto path = paths.first();
+		// Don't edit scenes
+		if (!path.getType().is_derived_from<nap::Scene>())
+			mInspectorPanel.setPath(paths.first());
 	}
 
+	// Edit curve?
+	mCurvePanel.editCurve(nullptr);
+	if (!paths.isEmpty())
+	{
+		auto ob = dynamic_cast<nap::math::FloatFCurve*>(paths.first().getObject());
+		if (ob)
+			mCurvePanel.editCurve(ob);
+	}
+
+}
+
+void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
+{
+	auto resTreeSelection = mResourcePanel.treeView().getTreeView().selectionModel();
+	resTreeSelection->blockSignals(true);
+	resTreeSelection->clearSelection();
+	resTreeSelection->blockSignals(false);
+	if (!paths.isEmpty())
+	{
+		auto path = paths.first();
+
+		// Don't edit scenes
+		if (!path.getType().is_derived_from<nap::Scene>())
+			mInspectorPanel.setPath(paths.first());
+	}
+}
+
+void MainWindow::onSceneComponentSelectionRequested(nap::RootEntity* rootEntity, const QString& path)
+{
+	mScenePanel.select(rootEntity, path);
 }
 
 void MainWindow::onDocumentOpened(const QString filename)
 {
 	onDocumentChanged();
+	rebuildRecentMenu();
 }
 
 void MainWindow::onLog(nap::LogMessage msg)
@@ -171,9 +221,92 @@ void MainWindow::onLog(nap::LogMessage msg)
 		showError(msg);
 }
 
+void MainWindow::onBlockingProgress(float fraction, const QString& message)
+{
+	const int scale = 100;
+	if (fraction >= 1)
+	{
+		// Done
+		if (mProgressDialog)
+			mProgressDialog.reset();
+	}
+	else
+	{
+		// In progress
+		if (!mProgressDialog)
+		{
+			mProgressDialog = std::make_unique<QProgressDialog>(message, "Cancel", 0, 0, this);
+            mProgressDialog->setWindowTitle("Working...");
+			mProgressDialog->setCancelButton(nullptr);
+		}
+
+		if (fraction > 0)
+		{
+			mProgressDialog->setRange(0, scale);
+			mProgressDialog->setValue((int) fraction * scale);
+		}
+		else
+		{
+			mProgressDialog->setRange(0, 0);
+			mProgressDialog->setValue(0);
+		}
+		mProgressDialog->show();
+	}
+	QApplication::processEvents();
+}
+
 void MainWindow::showError(nap::LogMessage msg)
 {
 	mErrorDialog.addMessage(QString::fromStdString(msg.text()));
 	mErrorDialog.show();
 }
 
+bool MainWindow::confirmSaveCurrentFile()
+{
+	if (!getContext().hasDocument())
+		return true;
+
+	if (!getContext().getDocument()->isDirty())
+		return true;
+
+	auto result = QMessageBox::question(this, "Confirm save unsaved change",
+									"The current document has unsaved changes.\n"
+									"Save the changes before exit?",
+									QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+	if (result == QMessageBox::Yes)
+	{
+		SaveFileAction action;
+		action.trigger();
+		return true;
+	}
+	return result == QMessageBox::No;
+}
+
+void MainWindow::rebuildRecentMenu()
+{
+	mRecentProjectsMenu->clear();
+
+	auto recentFiles = getContext().getRecentlyOpenedProjects();
+	for (const auto& filename : recentFiles)
+	{
+		auto action = mRecentProjectsMenu->addAction(filename);
+		connect(action, &QAction::triggered, [this, filename]()
+		{
+			if (confirmSaveCurrentFile())
+				getContext().loadProject(filename);
+		});
+	}
+
+	mRecentProjectsMenu->setEnabled(!mRecentProjectsMenu->isEmpty());
+}
+
+
+void MainWindow::onDocked(QDockWidget *dockWidget)
+{
+}
+
+AppContext& MainWindow::getContext() const
+{
+	return AppContext::get();
+}

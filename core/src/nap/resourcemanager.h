@@ -1,16 +1,22 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
-#include "rtti/rtti.h"
-#include "rtti/objectptr.h"
-#include "utility/dllexport.h"
-#include "directorywatcher.h"
 #include "numeric.h"
 #include "signalslot.h"
+#include "corefactory.h"
+#include "directorywatcher.h"
 
 // External Includes
+#include <rtti/rtti.h>
+#include <rtti/objectptr.h>
+#include <utility/dllexport.h>
 #include <rtti/unresolvedpointer.h>
 #include <rtti/factory.h>
+#include <rtti/deserializeresult.h>
 #include <map>
 
 namespace nap
@@ -24,7 +30,28 @@ namespace nap
 	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
 
 	/**
-	 * Manager, owner of all objects, capable of loading and real-time updating of content.
+	 * The resource manager is responsible for loading a JSON file that contains all the resources that are necessary for an application to run. 
+	 *
+	 * When loading a JSON file all the objects declared inside that file are created and initialized by the resource manager. 
+	 * These objects are called 'resources'. Every loaded resource is owned by the resource manager. 
+	 * This means that the lifetime of a resource is fully managed by the resource manager and not by the client.
+	 * The resource manager also updates the content in real-time when a change to the loaded JSON file is detected.
+	 * 
+	 * Every resource has a unique identifier, as declared by the 'mID' property. The name of the object is required to be unique.
+	 * De-serialization will fail when a duplicate object ID is discovered. 
+	 *
+	 * The most important task of a resource is to tell the resource manager if initialization succeeded. 
+	 * If initialization of a resource fails the resource manager will halt execution, return an error message and 
+	 * as a result stop further execution of a program.
+	 *
+	 * File load example:
+	 * 
+	 *~~~~~{.cpp}
+	 *	// Get resource manager and load application JSON
+	 *	mResourceManager = getCore().getResourceManager();
+	 *	if (!mResourceManager->loadFile("helloworld.json", error))
+	 *		return false;
+	 *~~~~~
 	 */
 	class NAPAPI ResourceManager final
 	{
@@ -33,11 +60,21 @@ namespace nap
 	public:
 		ResourceManager(nap::Core& core);
 
+		~ResourceManager();
+
 		/**
-		* Helper that calls loadFile without additional modified objects. See loadFile comments for a full description.
-		*/
+		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
+		 * @param filename JSON resource file to load.
+		 * @param errorState contains the error when the load operation fails.
+		 * @return if the file loaded successfully.
+		 */
 		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
 
+		/**
+		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
+		 * @param filename JSON resource file to load.
+		 * @return if the file loaded successfully.
+		 */
         bool loadFile(const std::string& filename);
 
 		/*
@@ -54,31 +91,57 @@ namespace nap
 		* The client does not need to worry about handling such cases.
 		* In case all init() calls succeed, any old objects are destructed (the cloned and the previously existing objects).
 		*
-		* @param filename: json file containing objects.
-		* @param externalChangedFile: externally changed file that caused load of this file (like texture, shader etc)
-		* @param errorState: if the function returns false, contains error information.
+		* Before objects are destructed, onDestroy is called. onDestroy is called in the reverse initialization order. This way, it is still safe to use any 
+		* pointers to perform cleanup of internal data. 
+		*
+		* @param filename json file containing all objects.
+		* @param externalChangedFile externally changed file that caused load of this file (like texture, shader etc)
+		* @param errorState if the function returns false, contains error information.
+		* @return if the file loaded successfully.
 		*/
 		bool loadFile(const std::string& filename, const std::string& externalChangedFile, utility::ErrorState& errorState);
 
 		/**
-		* Find an object by object ID. Returns null if not found.
-		*/
+		 * Find an object by object ID. Returns null if not found.
+		 * @param id unique id of the object to find.
+		 * @return the object, nullptr if not found.
+		 */
 		const rtti::ObjectPtr<rtti::Object> findObject(const std::string& id);
 
 		/**
-		* Find an object by object ID. Returns null if not found.
-		*/
+		 * Find an object of type T. Returns null if not found.
+		 *
+		 * Example:
+		 *
+		 *~~~~~{.cpp}
+		 * mResourceManager = getCore().getResourceManager();
+		 * auto window = mResourceManager->findObject<nap::RenderWindow>("Window0");
+		 *~~~~~
+		 *
+		 * @param id the unique id of the object to find.
+		 * @return the object of type T, nullptr if not found.
+		 */
 		template<class T>
 		const rtti::ObjectPtr<T> findObject(const std::string& id) { return rtti::ObjectPtr<T>(findObject(id)); }
 
 		/**
-		* Creates an object and adds it to the manager.
-		*/
+		 * Get all objects of a particular type.
+		 * @return all objects of the requested type.
+		 */
+		template<class T>
+		std::vector<rtti::ObjectPtr<T>> getObjects() const;
+
+		/**
+		 * Creates an object and adds it to the manager.
+		 * @param type object type to create.
+		 * @return newly created object.
+		 */
 		const rtti::ObjectPtr<rtti::Object> createObject(const rtti::TypeInfo& type);
 
 		/**
-		* Creates an object and adds it to the manager.
-		*/
+		 * Creates an object of type T and adds it to the manager.
+		 * @return the newly created object.
+		 */
 		template<typename T>
 		const rtti::ObjectPtr<T> createObject() { return rtti::ObjectPtr<T>(createObject(RTTI_OF(T))); }
 
@@ -89,14 +152,21 @@ namespace nap
 		void checkForFileChanges();
 
 		/**
-		* @return object capable of creating objects with custom construction parameters.
-		*/
+		 * @return object capable of creating objects with custom construction parameters.
+		 */
 		rtti::Factory& getFactory();
+
+		/**
+		 * All files linked to by the application that reside in the current working directory will be monitored.
+		 * If a file change is detected to any of the files, the resource manager
+		 * will attempt to hot-load the changes directly into the running application
+		 */
+		void watchDirectory();
 
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::Object>>;	// Map from object ID to object (owned)
-		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;			// Map from target file to multiple source files
+		using FileLinkMap		= std::unordered_map<std::string, std::vector<std::string>>;		// Map from target file to multiple source files
 
 		class OverlayLinkResolver;
 
@@ -111,12 +181,19 @@ namespace nap
 		void removeObject(const std::string& id);
 		void addFileLink(const std::string& sourceFile, const std::string& targetFile);
 
+		/**
+		* Lower level platform dependent function used by loadFile that simply loads the file from disk and deserializes.
+		*/
+		bool loadFileAndDeserialize(const std::string& filename, rtti::DeserializeResult& readResult, utility::ErrorState& errorState);
+
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
 
-		bool buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph, utility::ErrorState& errorState);
+		void buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph);
 		EFileModified isFileModified(const std::string& modifiedFile);
 
-		
+		void stopAndDestroyAllObjects();
+		void destroyObjects(const std::unordered_set<std::string>& objectIDsToDelete, const RTTIObjectGraph& object_graph);
+
 	private:
 
 		/**
@@ -132,12 +209,20 @@ namespace nap
 			void clear();
 			void addExistingDevice(Device& device);
 			void addNewDevice(Device& device);
+			void addInitializedObject(rtti::Object& object);
+
+			ObjectByIDMap& getObjectsToUpdate() { return mObjectsToUpdate; }
 
 		private:
-			ResourceManager&		mService;
-			std::vector<Device*>	mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
-			std::vector<Device*>	mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
-			bool					mRollbackObjects = true;
+			void destroyObjects();
+
+		private:
+			ResourceManager&			mService;
+			ObjectByIDMap				mObjectsToUpdate;			///< Owned map of all objects that need to be pushed into the ResourceManager.
+			std::vector<Device*>		mExistingDevices;			///< This is the list of devices that *already exist* in the ResourceManager which will be updated
+			std::vector<Device*>		mNewDevices;				///< This is the list of devices that have been newly read from the json file, which contain the updated versions of the existing devices
+			std::vector<rtti::Object*>	mInitializedObjects;		///< This is the list of objects that have actually been initted and will need onDestroy called on them in case of an error
+			bool						mRollbackObjects = true;
 		};
 
 		using ModifiedTimeMap = std::unordered_map<std::string, uint64>;
@@ -145,14 +230,33 @@ namespace nap
 		ObjectByIDMap						mObjects;						// Holds all objects
 		std::set<std::string>				mFilesToWatch;					// Files currently loaded, used for watching changes on the files
 		FileLinkMap							mFileLinkMap;					// Map containing links from target to source file, for updating source files if the file monitor sees changes
-		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher;				// File monitor, detects changes on files
+		std::unique_ptr<DirectoryWatcher>	mDirectoryWatcher = nullptr;	// File monitor, detects changes on files
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
-		std::unique_ptr<rtti::Factory>		mFactory;						// Responsible for creating objects when de-serializing
+		std::unique_ptr<CoreFactory>		mFactory = nullptr;				// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
 
 		/**
-		 *	Signal that is emitted when a file has been successfully loaded
+		 *	Signal that is emitted when a file is about to be loaded
 		 */
-		nap::Signal<const std::string&> mFileLoadedSignal;
+		nap::Signal<> mPreResourcesLoadedSignal;
+
+		/**
+		 *	Signal that is emitted after a file has been successfully loaded
+		 */
+		nap::Signal<> mPostResourcesLoadedSignal;
 	};
+
+	template<class T>
+	std::vector<rtti::ObjectPtr<T>> ResourceManager::getObjects() const
+	{
+		std::vector<rtti::ObjectPtr<T>> result;
+		for (auto& kvp : mObjects)
+		{
+			T* object = rtti_cast<T>(kvp.second.get());
+			if (object != nullptr)
+				result.push_back(object);
+		}
+
+		return result;
+	}
 }

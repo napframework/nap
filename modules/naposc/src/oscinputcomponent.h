@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -16,30 +20,28 @@ namespace nap
 	class OSCService;
 
 	/**
-	 * Receives osc events based on the address filter
-	 * The address filter is a list of strings that represent individual osc addresses
-	 * When the osc service forwards an event it checks if one of the names in the address filter starts with the address of the osc event. 
+	 * Resource part of the OSCInputComponent, receives osc events based on the address filter.
+	 * The address filter is a list of strings that represent individual osc addresses.
+	 * The osc service forwards an event when one of the names in the address filter starts with the address of the received osc event.
 	 * If that's the case the instance of this component receives an osc event. 
 	 * When the address filter is empty all events are forwarded.
 	 */
 	class NAPAPI OSCInputComponent : public Component
 	{
 		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(OSCInputComponent, OSCInputComponentInstance)
 	public:
-		virtual const rtti::TypeInfo getInstanceType() const override
-		{
-			return RTTI_OF(OSCInputComponentInstance);
-		}
-
-		std::vector<std::string>		mAddressFilter;		///< Property: 'Addresses' list of OSC addresses this component is allowed to receive, when empty all events are forwarded
+		std::vector<std::string>		mAddressFilter;		///< Property: 'Addresses' list of OSC addresses this component is allowed to receive, when empty all events are forwarded.
 	};
 
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Instance of the OSC input component
-	 * This component will forward any received osc messages to listening components
-	 * Register to the @messageReceived event to receive osc events that match the address pattern
+	 * Instance part of the OSCInputComponent, receives osc events based on the address filter.
+	 * This component will forward any received osc messages to listening components.
+	 * Listen to the messageReceived signal to receive osc events that match the address pattern.
+	 * The osc service forwards an event when one of the names in the address filter starts with the address of the received osc event.
+	 * When the address filter is empty all events are forwarded.
 	 */
 	class NAPAPI OSCInputComponentInstance : public ComponentInstance
 	{
@@ -62,7 +64,11 @@ namespace nap
 		std::vector<std::string>		mAddressFilter;			///< List of available osc addresses, when empty all osc events are forwarded
 		Signal<const OSCEvent&>			messageReceived;		///< Triggered when the component receives an osc message
         
-        Signal<const OSCEvent&>* getMessageReceived() { return &messageReceived; }
+		/**
+		 * Returns the signal that is called when an osc message is received.
+		 * @return the message received signal.
+		 */
+        Signal<const OSCEvent&>* getMessageReceived()			{ return &messageReceived; }
 
 	protected:
 		/**

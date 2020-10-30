@@ -1,6 +1,12 @@
 {
-    "dependencies": [
-        "mod_naprender",
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_naprender", 
         "mod_napaudio"
+    ], 
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/ffmpeg/msvc/install/bin",
+        "{ROOT}/thirdparty/FFmpeg/bin"
     ]
 }

@@ -1,4 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "frustumsynccomponent.h"
+
+// External Includes
 #include <nap/core.h>
 #include <nap/resourcemanager.h>
 
@@ -30,7 +37,7 @@ namespace nap
 
 		// Make sure that the visualizer has a transform
 		mCanvasTransform = laser_draw_entity->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mCanvasTransform != nullptr, "missing transform component"))
+		if (!errorState.check(mCanvasTransform != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		// Move the frustrum back a bit so objects around 0 are sorted correctly

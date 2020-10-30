@@ -1,23 +1,32 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "imagefromfile.h"
-#include "bitmaputils.h"
 
 // External Includes
 #include <nap/logger.h>
+#include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::ImageFromFile)
-	RTTI_PROPERTY_FILELINK("ImagePath", &nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
-	RTTI_PROPERTY("Compressed",			&nap::ImageFromFile::mCompressed,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageFromFile)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY_FILELINK("ImagePath",		&nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
+	RTTI_PROPERTY("GenerateLods",			&nap::ImageFromFile::mGenerateLods,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
+	ImageFromFile::ImageFromFile(Core& core) :
+		Image(core)
+	{ }
+
 
 	// Constructor
-	ImageFromFile::ImageFromFile(const std::string& imgPath) :
+	ImageFromFile::ImageFromFile(Core& core, const std::string& imgPath) :
+		Image(core),
 		mImagePath(imgPath)
-	{
-	}
+	{ }
 
 
 	bool ImageFromFile::init(utility::ErrorState& errorState)
@@ -26,6 +35,7 @@ namespace nap
 		if (!getBitmap().initFromFile(mImagePath, errorState))
 			return false;
 
-		return Texture2D::initFromBitmap(getBitmap(), mCompressed, errorState);
+		// Create 2D texture
+		return Texture2D::init(getBitmap().mSurfaceDescriptor, mGenerateLods, getBitmap().getData(), errorState);
 	}
 }

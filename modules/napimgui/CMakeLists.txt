@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napimgui)
 
 # add all cpp files to SOURCES
@@ -15,6 +20,8 @@ module_json_to_cmake()
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS} ${GUI})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
@@ -29,12 +36,14 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/glew/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/SDL2/lib")
-endif()    
-if(APPLE)    
+if(APPLE)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS. NAP-225.
-    list(APPEND UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
-endif()
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/SDL2/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/vulkansdk/lib)
+endif()    
 package_module()

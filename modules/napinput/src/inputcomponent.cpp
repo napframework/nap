@@ -1,5 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include <inputcomponent.h>
 #include <entity.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputComponent)
 RTTI_END_CLASS
@@ -91,14 +96,14 @@ namespace nap
 		{
 			const ControllerButtonPressEvent& press_event = static_cast<const ControllerButtonPressEvent&>(inEvent);
 			pressed.trigger(press_event);
-			std::cout << "button pressed: " << (int)(press_event.mButton) << "\n";
+			Logger::info("button pressed: %d", (int)(press_event.mButton));
 		}
 
 		else if (event_type == RTTI_OF(nap::ControllerButtonReleaseEvent))
 		{
 			const ControllerButtonReleaseEvent& release_event = static_cast<const ControllerButtonReleaseEvent&>(inEvent);
 			released.trigger(release_event);
-			std::cout << "button released: " << (int)(release_event.mButton) << "\n";
+			Logger::info("button released: %d", (int)(release_event.mButton));
 		}
 
 		else if (event_type == RTTI_OF(nap::ControllerAxisEvent))

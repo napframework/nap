@@ -1,0 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
+#include "parametercolor.h"
+
+DEFINE_SIMPLE_PARAMETER(nap::ParameterRGBColorFloat)
+DEFINE_SIMPLE_PARAMETER(nap::ParameterRGBAColorFloat)
+DEFINE_SIMPLE_PARAMETER(nap::ParameterRGBColor8)
+DEFINE_SIMPLE_PARAMETER(nap::ParameterRGBAColor8)

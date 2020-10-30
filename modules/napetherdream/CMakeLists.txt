@@ -3,7 +3,9 @@ project(mod_napetherdream)
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
-add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}")
+add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}" "${NATIVE_SOURCES}" "${ANDROID_SOURCES}")
+
+# set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY FALSE)
 
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
@@ -15,6 +17,8 @@ find_package(etherdream REQUIRED)
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIRS})
@@ -36,17 +40,22 @@ endif()
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/etherdream/bin)
-endif()
 if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/etherdream/bin)
     # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
-    set(UNIX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
-endif()    
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/etherdream/bin)
+endif()
 package_module()
 
 # Package etherdreamlib into platform release
-install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
+if(ANDROID)
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin/${ANDROID_ABI})
+else()
+    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
+endif()
 # Package etherdreamlib headers
 install(DIRECTORY ${ETHERDREAM_INCLUDE_DIRS}/ DESTINATION thirdparty/etherdream/include)    
 if(WIN32)

@@ -1,5 +1,8 @@
-#include "factory.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "factory.h"
 
 namespace nap
 {
@@ -13,9 +16,14 @@ namespace nap
 	{
 		CreatorMap::iterator creator = mCreators.find(typeInfo);
 		if (creator == mCreators.end())
-			return typeInfo.create<Object>();
+			return createDefaultObject(typeInfo);
 
 		return creator->second->create();
+	}
+
+	rtti::Object* rtti::Factory::createDefaultObject(rtti::TypeInfo typeInfo)
+	{
+		return typeInfo.create<Object>();
 	}
 
 	bool rtti::Factory::canCreate(rtti::TypeInfo typeInfo) const

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "audioanalysisapp.h"
 
 // Nap includes
@@ -46,12 +50,6 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 
-		// Position window
-		glm::ivec2 screen_size = opengl::getScreenSize(0);
-		int offset_x = (screen_size.x - mRenderWindow->getWidth()) / 2;
-		int offset_y = (screen_size.y - mRenderWindow->getHeight()) / 2;
-		mRenderWindow->setPosition(glm::ivec2(offset_x, offset_y));
-
 		// Find the world and camera entities
         ResourcePtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
@@ -65,8 +63,7 @@ namespace nap
         levelMeter->setFilterGain(mAnalysisGain);
         
         // Resize the vector containing the results of the analysis
-        mPlotvalues.resize(128, 0);
-
+        mPlotvalues.resize(512, 0);
 		return true;
 	}
 	
@@ -96,7 +93,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Audio analysis");
-        ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(512, 128)); // Plot the output values
+        ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(ImGui::GetColumnWidth(), 128)); // Plot the output values
         ImGui::SliderFloat("Filter Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Filter Bandwidth", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
@@ -137,20 +134,29 @@ namespace nap
 	 */
 	void AudioAnalysisApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin the render pass
+			mRenderWindow->beginRendering();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Draw our gui
+			mGuiService->draw();
 
-		// Draw our gui
-		mGuiService->draw();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// Stop recording operations for this window
+			mRenderService->endRecording();
+		}
+
+		// End frame capture
+		mRenderService->endFrame();
 	}
 	
 	
@@ -186,7 +192,7 @@ namespace nap
 	
 	void AudioAnalysisApp::setWindowFullscreen(std::string windowIdentifier, bool fullscreen)
 	{
-		mResourceManager->findObject<RenderWindow>(windowIdentifier)->getWindow()->setFullScreen(fullscreen);
+		mResourceManager->findObject<RenderWindow>(windowIdentifier)->toggleFullscreen();
 	}
 
 

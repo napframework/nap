@@ -1,9 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <utility/dllexport.h>
 #include <nap/resource.h>
 #include <glm/glm.hpp>
-#include <GL/glew.h>
+#include "vulkan/vulkan_core.h"
 
 namespace nap
 {
@@ -26,14 +30,8 @@ namespace nap
 		/**
 		 * @return Should return GL type of the attribute. This is used during construction of the vertex attributes on the GPU.
 		 */
-		virtual GLenum getType() const = 0;
+		virtual VkFormat getFormat() const = 0;
 		
-		/**
-		 * @return Should return number of components per value. For instance, float has one attribute, a vec3 has three components. 
-		 * This is used during construction of the vertex attributes on the GPU.
-		 */
-		virtual int getNumComponents() const = 0;
-
 		/**
 		 * @return Should return amount of element in the buffer.
 		 */
@@ -59,7 +57,6 @@ namespace nap
 	 * Typed interface for vertex attributes. 
 	 * CPU data can be read by using getValues().
 	 * CPU data can be updated by using the various other functions. Make sure to call MeshInstance::update() after edits are performed.
-	 * 
 	 * Notice that all known vertex attribute types have specializations for GetType and GetNumComponents.
 	 */
 	template<typename ELEMENTTYPE>
@@ -69,7 +66,8 @@ namespace nap
 	public:
 
 		/**
-		 * Reserves an amount of memory to hold @number amount of elements
+		 * Reserves a certain amount of CPU memory to hold the given number of elements
+		 * @param numElements the number of elements to reserve memory for.
 		 */
 		virtual void reserve(size_t numElements) override		{ mData.reserve(numElements); }
 
@@ -79,7 +77,8 @@ namespace nap
 		virtual size_t getCapacity() const override				{ return mData.capacity(); }
 
 		/**
-		 *	Resizes the data container to hold @number amount of elements
+		 * Resizes the data container to hold the given number of elements.
+		 * @param numElements the new number of elements.
 		 */
 		void resize(size_t numElements)							{ mData.resize(numElements); }
 
@@ -99,14 +98,15 @@ namespace nap
 		std::vector<ELEMENTTYPE>& getData()						{ return mData; }
 
 		/**
-		 * Adds a single element to the buffer.
+		 * Adds a single element to the end of the buffer. Data is copied.
+		 * @param element to add.
 		 */
 		void addData(const ELEMENTTYPE& element)				{ mData.emplace_back(element); }
 
 		/**
-		 * Adds data to the existing data in the buffer.
-		 * @param elements Pointer to the elements to copy.
-		 * @param numElements Amount of elements in @elements to copy.
+		 * Adds data to the existing data in the buffer. Data is copied.
+		 * @param elements pointer to the elements to add.
+		 * @param numElements number of elements in buffer to add.
 		 */
 		void addData(const ELEMENTTYPE* elements, int numElements);
 
@@ -114,28 +114,16 @@ namespace nap
 		 * Sets the internal values based on the contained type
 		 * @param values: the values that will be copied over
 		 */
-		void setData(std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
+		void setData(const std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
 
 		/**
 		 * Sets the entire vertex attribute buffer.
-		 * @param elements Pointer to the elements to copy.
-		 * @param numElements Amount of elements in @elements to copy.
+		 * @param elements pointer to the elements to copy.
+		 * @param numElements amount of elements to copy.
 		 */
 		void setData(const ELEMENTTYPE* elements, int numElements);
 
-		/**
-		 * @return the opengl type associated with this vertex attribute
-		 * Note that this only works for specialized types such as float, int etc.
-		 * Refer to the type definitions for supported vertex attribute types
-		 */
-		virtual GLenum getType() const override;
-
-		/**
-		 * @return the number of components associated with this vertex attribute, 1 for float, 3 for vec3 etc.
-		 * Note that this only works for supported specialized types such as float, int etc.
-		 * Refer to the type definitions for supported vertex attribute types
-		 */
-		virtual int getNumComponents() const override;
+		virtual VkFormat getFormat() const override;
 
 		/**
 		 * @return the number vertices in the buffer
@@ -211,46 +199,25 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	NAPAPI GLenum FloatVertexAttribute::getType() const;
+	NAPAPI VkFormat FloatVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI int FloatVertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat IntVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI GLenum IntVertexAttribute::getType() const;
+	NAPAPI VkFormat ByteVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI int IntVertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat DoubleVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI GLenum ByteVertexAttribute::getType() const;
+	NAPAPI VkFormat Vec2VertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI int ByteVertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat Vec3VertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI GLenum DoubleVertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int DoubleVertexAttribute::getNumComponents() const;
-
-	template<>
-	NAPAPI GLenum Vec2VertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int Vec2VertexAttribute::getNumComponents() const;
-
-	template<>
-	NAPAPI GLenum Vec3VertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int Vec3VertexAttribute::getNumComponents() const;
-
-	template<>
-	NAPAPI GLenum Vec4VertexAttribute::getType() const;
-
-	template<>
-	NAPAPI int Vec4VertexAttribute::getNumComponents() const;
+	NAPAPI VkFormat Vec4VertexAttribute::getFormat() const;
 
 } // nap
 

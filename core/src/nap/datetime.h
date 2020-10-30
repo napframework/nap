@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External includes
@@ -18,6 +22,8 @@ namespace nap
 	using MicroSeconds = std::chrono::microseconds;							///< Microseconds type definition
 	using NanoSeconds = std::chrono::nanoseconds;							///< Nanoseconds type definition
 	using Seconds = std::chrono::seconds;									///< Seconds type definition
+	using Minutes = std::chrono::minutes;									///< Minutes type definition
+	using Hours = std::chrono::hours;										///< Hours type definition
 	using SystemTimeStamp = std::chrono::time_point<SystemClock>;			///< Point in time associated with the SystemClock
 	using HighResTimeStamp = std::chrono::time_point<HighResolutionClock>;	///< Point in time associated with the HighResolutionClock
 
@@ -36,15 +42,16 @@ namespace nap
 	NAPAPI SystemTimeStamp getCurrentTime();
 
 	/**
-	 * @return a structure that contains the current date and time.
+	 * Returns the current system data / time.
 	 * Note that the time will be Local to this computer and includes daylight savings.
+	 * @return a structure that contains the current date and time.
 	 */
 	NAPAPI DateTime	getCurrentDateTime();
 
 	/**
 	 * Populates a DateTime structure that contains the current date and time
 	 * Note that the time will be Local to this computer and includes daylight savings
-	 * @param dateTime the time structure to populate with the current date and time
+	 * @param outDateTime the time structure to populate with the current date and time
 	 */
 	NAPAPI void	getCurrentDateTime(DateTime& outDateTime);
 
@@ -53,7 +60,7 @@ namespace nap
 	 * Also takes care of milliseconds using %ms
 	 * @param time the timestamp to format into a string
 	 * @param format the strftime-like format string
-	 * @param outstring the resulting string
+	 * @return the formatted date / time string
 	 */
 	NAPAPI std::string timeFormat(const SystemTimeStamp& time, const std::string& format = "%Y-%m-%d %H:%M:%S.%ms");
 
@@ -331,9 +338,15 @@ namespace nap
 		TimeStamp() = default;
 
 		/**
-		* Constructor based on given system time. Converts system time to a long that can be serialized.
-		* @param systemTime system time stamp to convert to serializable time stamp.
-		*/
+		 * Default Constructor
+		 * @param timeStamp time since epoch as long
+		 */
+		TimeStamp(int64_t timeStamp) : mTimeStamp(timeStamp)	{ }
+
+		/**
+		 * Constructor based on given system time. Converts system time to a long that can be serialized.
+		 * @param systemTime system time stamp to convert to serializable time stamp.
+		 */
 		TimeStamp(const SystemTimeStamp& systemTime);
 
 		/**
@@ -352,7 +365,7 @@ namespace nap
 		*/
 		inline bool isValid() const { return mTimeStamp >= 0; }
 
-		long long mTimeStamp = -1;		///< Property: 'Time' time since epoch stored as long
+		int64_t mTimeStamp = -1;		///< Property: 'Time' time since epoch stored as long
 	};
 }
 

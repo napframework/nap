@@ -1,4 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "lineblendcomponent.h"
+
+// External Includes
 #include <entity.h>
 #include <mathutils.h>
 #include <nap/logger.h>
@@ -25,9 +32,9 @@ namespace nap
 
 		// Set blend value
 		mBlendValue = getComponent<LineBlendComponent>()->mBlendValue;
-		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed;
+		mBlendSpeed = getComponent<LineBlendComponent>()->mBlendSpeed.get();
 
-		// Copy line
+		// Copy line and set draw mode, we are updating this mesh frequently.
 		mTarget = getComponent<LineBlendComponent>()->mTarget.get();
 
 		// Resample and cache current line selections
@@ -41,7 +48,7 @@ namespace nap
 	void LineBlendComponentInstance::update(double deltaTime)
 	{
 		// Calculate current blend based on speed
-		mCurrentTime += (deltaTime * mBlendSpeed);
+		mCurrentTime += (deltaTime * mBlendSpeed->mValue);
 
 		// Prep value for sin
 		mCurrentBlendValue = (mBlendValue*M_PI) + mCurrentTime;

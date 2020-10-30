@@ -1,12 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "dynamicgeoapp.h"
 
-// Nap includes
+// External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <nap/datetime.h>
+#include <particleemittercomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DynamicGeoApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -27,7 +32,7 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("objects.json", error))
+		if (!mResourceManager->loadFile("dynamicgeo.json", error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
 			return false;                
@@ -37,6 +42,10 @@ namespace nap
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity				= scene->findEntity("CameraEntity");
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
+		mParticleEntity				= scene->findEntity("ParticleEmitterEntity");
+
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -75,24 +84,34 @@ namespace nap
 	 */
 	void DynamicGeoApp::render()
 	{
-		// Get rid of unnecessary resources
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer and starts a render pass
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Begin render pass
+			mRenderWindow->beginRendering();
 
-		// Clear window back-buffer
-		opengl::RenderTarget& backbuffer = mRenderWindow->getWindow()->getBackbuffer();
-		mRenderService->clearRenderTarget(backbuffer);
+			// Render all available geometry
+			PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			mRenderService->renderObjects(*mRenderWindow, frame_cam);
 
-		PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-		mRenderService->renderObjects(backbuffer, frame_cam);
+			// Render GUI elements
+			mGuiService->draw();
 
-		// Render GUI elements
-		mGuiService->draw();
+			// Stop render pass
+			mRenderWindow->endRendering();
 
-		// Swap back buffer
-		mRenderWindow->swap();
+			// End recording
+			mRenderService->endRecording();
+		}
+
+		// Proceed to next frame
+		mRenderService->endFrame();
 	}
 	
 
@@ -135,7 +154,6 @@ namespace nap
 	// Cleanup
 	int DynamicGeoApp::shutdown() 
 	{
-		std::cout << "stopping..." << "\n";
 		return 0;
 	}
 }

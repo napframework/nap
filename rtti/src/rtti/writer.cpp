@@ -1,6 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "writer.h"
 #include "object.h"
 #include "rttiutilities.h"
+
+// External Includes
 #include <cassert>
 
 namespace nap
@@ -106,11 +113,12 @@ namespace nap
 						rttr::method to_string_method = findMethodRecursive(value_type, "toString");
 						if (to_string_method.is_valid())
 						{
+							// This is likely a ComponentPtrBase
 							rttr::variant string_result = to_string_method.invoke(value);
 							pointee_id = string_result.to_string();
 						}
 
-						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with invalid ID"))
+						if (!errorState.check(!pointee_id.empty(), "Encountered pointer to Object with empty ID: %s", pointee->mID.c_str()))
 							return false;
 
 						// Objects we point to must also be serialized, so make sure they are in the set of objects to be serialized

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "cameracontroller.h"
 #include "inputevent.h"
 #include "inputcomponent.h"
@@ -27,19 +31,19 @@ namespace nap
 	{
 		// KeyInputComponent is required to receive input
 		KeyInputComponentInstance* key_component = getEntityInstance()->findComponent<KeyInputComponentInstance>();
-		if (!errorState.check(key_component != nullptr, "Could not find KeyInputComponent"))
+		if (!errorState.check(key_component != nullptr, "%s: missing KeyInputComponent", mID.c_str()))
 			return false;
 
 		mOrbitComponent = getEntityInstance()->findComponent<OrbitControllerInstance>();
-		if (!errorState.check(mOrbitComponent != nullptr, "Could not find OrbitControllerInstance"))
+		if (!errorState.check(mOrbitComponent != nullptr, "%s: missing OrbitControllerInstance", mID.c_str()))
 			return false;
 
 		mFirstPersonComponent = getEntityInstance()->findComponent<FirstPersonControllerInstance>();
-		if (!errorState.check(mFirstPersonComponent != nullptr, "Could not find FirstPersonControllerInstance"))
+		if (!errorState.check(mFirstPersonComponent != nullptr, "%s: missing FirstPersonControllerInstance", mID.c_str()))
 			return false;
 
 		mOrthoComponent = getEntityInstance()->findComponent<OrthoControllerInstance>();
-		if (!errorState.check(mOrthoComponent != nullptr, "Could not find OrthoControllerInstance"))
+		if (!errorState.check(mOrthoComponent != nullptr, "%s: missing OrthoControllerInstance", mID.c_str()))
 			return false;
 
 		key_component->pressed.connect(std::bind(&CameraControllerInstance::onKeyPress, this, std::placeholders::_1));

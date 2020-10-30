@@ -1,0 +1,8 @@
+{
+    "Type": "nap::PathMapping",
+    "mID": "UnixPackagedAppMapping",
+    "ModulePaths": 
+    [
+        "{PROJECT_DIR}/lib"
+    ]
+}

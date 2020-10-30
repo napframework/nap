@@ -1,8 +1,15 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "binaryreader.h"
 #include "rttibinaryversion.h"
 #include "factory.h"
-#include "utility/errorstate.h"
-#include "rtti/object.h"
+#include "object.h"
+
+// External Includes
+#include <utility/errorstate.h>
 #include <fstream>
 #include "rttiutilities.h"
 
@@ -74,7 +81,7 @@ namespace nap
 				stream.readString(type_name);
 
 				// Read saved version
-				size_t version = stream.read<size_t>();
+				uint64_t version = stream.read<uint64_t>();
 
 				// Find type; if it's not found, the type has been removed and we can't deserialize this file
 				rtti::TypeInfo type = rtti::TypeInfo::get_by_name(type_name);
@@ -387,7 +394,7 @@ namespace nap
 					return false;
 
 				// Check version
-				std::size_t version = stream.read<std::size_t>();
+				uint64_t version = stream.read<uint64_t>();
 				if (!errorState.check(version == rtti::getRTTIVersion(type_info), "Type %s found that does not match the expected version (perhaps the type has changed?). Re-export the binary to fix this issue.", object_type.c_str()))
 					return false;
 

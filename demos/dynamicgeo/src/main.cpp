@@ -1,9 +1,11 @@
-// main.cpp : Defines the entry point for the console application.
-//
-// Local Includes
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local includes
 #include "dynamicgeoapp.h"
 
-// Nap includes
+// External includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <apprunner.h>

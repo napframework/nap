@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <utility/dllexport.h>
@@ -13,15 +17,18 @@ namespace nap
 		using MeshConnectivityMap = std::vector<std::vector<Triangle>>;
 
 		/**
-		* @param mesh the mesh to check
-		* @return if the mesh contains triangles, is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
-		*/
-		bool NAPAPI isTriangleMesh(const nap::MeshShape& shape);
+		 * Returns if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+		 * @param meshInstance the mesh to check
+		 * @return if the mesh is of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
+		 */
+		bool NAPAPI isTriangleMesh(const nap::MeshInstance& meshInstance);
 
 		/**
-		* @return the number of triangles associated with a mesh
-		*/
-		int NAPAPI getTriangleCount(const MeshInstance& mesh);
+		 * Returns the total number of triangles associated with a mesh.
+		 * @param meshInstance the mesh to inspect.
+		 * @return the total number of triangles associated with a mesh
+		 */
+		int NAPAPI getTriangleCount(const MeshInstance& meshInstance);
 
 		/**
 		* Computes the normal that is associated with a triangular face. The normal is weighted (not normalized)
@@ -40,7 +47,7 @@ namespace nap
 		* @param indices the new indices
 		* @return if the triangle indices are valid
 		*/
-		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, int number, const std::array<int, 3>& indices);
+		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
 		/**
 		* Computes the bounding box of a mesh using its associated position data
@@ -80,12 +87,13 @@ namespace nap
 		void NAPAPI reverseWindingOrder(nap::MeshInstance& mesh);
 
 		/**
-		* Generates a list of sequential indices from @offset op to @vertexCount + @offset.
+		* Generates a list of sequential indices from offset up to vertexCount + offset.
 		* @param shape The shape to generate indices for.
-		* @param vertexCount The number of indices to generate.
+		* @param vertexCount number of indices to generate.
+		* @param loop an extra index is added at the end, pointing to the the first one. Useful when creating a line loop.
 		* @param offset The first index value.
 		*/
-		void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, int offset = 0);
+		void NAPAPI generateIndices(nap::MeshShape& shape, int vertexCount, bool loop = false, int offset = 0);
 
 		/**
 		* Builds a 'map' that binds points (mesh index values) to faces
@@ -115,16 +123,15 @@ namespace nap
 		float NAPAPI computeArea(nap::MeshInstance& mesh, const nap::VertexAttribute<glm::vec3>& vertices, std::vector<float>& outList);
 
 		/**
-		* Calculates the intersection of a ray and a triangle in 3 dimensions
-		* Based on the Möller–Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-		* Back-facing triangles relative to the ray direction are not considered
-		* @param rayOrigin the origin of the ray, often the world space position of a camera
-		* @param rayDirection the direction of the ray from it's origin
-		* @param indices the triangle indices
-		* @param vertices the triangle vertex positions
-		* @param outBaryPosition barycentric coordinates of point of intersection, where z is the scalar factor for the ray.
-		* @return if the ray intersects the triangle
-		*/
+		 * Calculates the intersection of a ray and a triangle in 3 dimensions
+		 * Based on the Moller Trumbore intersection algorithm: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+		 * Back-facing triangles relative to the ray direction are not considered
+		 * @param rayOrigin the origin of the ray, often the world space position of a camera
+		 * @param rayDirection the direction of the ray from it's origin
+		 * @param vertices the triangle vertex positions
+		 * @param outCoordinates barycentric coordinates of point of intersection, where z is the scalar factor for the ray.
+		 * @return if the ray intersects the triangle
+		 */
 		bool NAPAPI intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const TriangleData<glm::vec3>& vertices, glm::vec3& outCoordinates);
 
 		/**

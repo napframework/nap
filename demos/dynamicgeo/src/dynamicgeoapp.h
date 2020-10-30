@@ -1,10 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// Mod nap render includes
+// External Includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
-
-// Nap includes
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
@@ -12,7 +14,7 @@
 #include <rendertarget.h>
 #include <app.h>
 #include <imguiservice.h>
-
+#include <renderservice.h>
 
 namespace nap
 {
@@ -89,6 +91,7 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointers to the render window
 		ObjectPtr<EntityInstance> mDefaultInputRouter;					//< Routes input events to the input component
 		ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
+		ObjectPtr<EntityInstance> mParticleEntity;						//< Entity that emits the particles
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

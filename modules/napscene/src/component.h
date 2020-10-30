@@ -1,9 +1,15 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <rtti/object.h>
 #include <rtti/objectptr.h>
 #include <utility/dllexport.h>
 #include <nap/resource.h>
+
+#include <cassert>
 
 namespace nap
 {
@@ -17,6 +23,15 @@ namespace nap
 	class EntityInstance;
 	class Component;
 	struct EntityCreationParameters;
+
+	template<class TargetComponentType>
+	class ComponentInstancePtr;
+
+	template<class ComponentType>
+	class ComponentPtr;
+
+	class EntityPtr;
+	class EntityInstancePtr;
 
 	/**
 	 * Runtime version of a Component.
@@ -67,15 +82,19 @@ namespace nap
 		T* getComponent() const;
 
 		/**
-		 * Initialize this component from its resource
-		 *
-		 * @param resource The resource we're being instantiated from
-		 * @param entityCreationParams Parameters required to create new entity instances during init
-		 * @param errorState The error object
+		 * Initializes this component based on it's resource.
+		 * @param errorState contains the error when initialization fails.
+		 * @return if initialization succeeded.
 		 */
         virtual bool init(utility::ErrorState& errorState);
 
 	private:
+		template<typename TargetComponentType, typename SourceComponentType>
+		friend std::vector<ComponentInstancePtr<TargetComponentType>> initComponentInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<ComponentPtr<TargetComponentType>>(SourceComponentType::*componentMemberPointer));
+
+		template<typename SourceComponentType>
+		friend std::vector<EntityInstancePtr> initEntityInstancePtr(ComponentInstance* sourceComponentInstance, std::vector<EntityPtr>(SourceComponentType::*entityMemberPointer));
+
 		template<class TargetComponentType> friend class ComponentInstancePtr;
 		friend class EntityInstancePtr;
 		friend class SceneInstantiation;
@@ -136,7 +155,14 @@ namespace nap
 
 	public:
 		/**
-		 * Populates a list of all component types this component depends on (i.e. must be initialized before this one)
+		 * Populates a list of components this component depends on.
+		 * Every component dependency, when found, is initialized before this component.
+		 * A dependency is NOT a hard requirement. Serialization will not fail if the dependent component 
+		 * isn't declared in JSON. It only means that when a component is declared under the same entity,
+		 * and that component is tagged as a dependency of this component, it is initialized before this component.
+		 * It is your responsibility to return false on initialization if the dependency is a hard requirement 
+		 * and can't be found. To ensure the right order of initialization based on a hard requirement it
+		 * is advised to use a nap::ComponentPtr instead.
 		 * @param components list of component types this resource depends on.
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const { }

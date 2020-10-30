@@ -3,13 +3,6 @@ find_path(FREETYPE_DIR
           HINTS ${THIRDPARTY_DIR}/freetype
           )
 
-if(FREETYPE_DIR)
-    set(FREETYPE_FOUND true)
-else()
-    set(FREETYPE_FOUND false)
-endif()
-mark_as_advanced(FREETYPE_FOUND)
-
 set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include)
 
 if(WIN32)
@@ -38,7 +31,7 @@ mark_as_advanced(FREETYPE_LIBS_DEBUG)
 mark_as_advanced(FREETYPE_LIBS_RELEASE)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(freetype REQUIRED_VARS FREETYPE_INCLUDE_DIRS FREETYPE_LIBS_DEBUG FREETYPE_LIBS_RELEASE)
+find_package_handle_standard_args(freetype REQUIRED_VARS FREETYPE_DIR)
 
 add_library(freetype SHARED IMPORTED)
 
@@ -57,13 +50,6 @@ if(WIN32)
                           )
 endif()
 
-if(FREETYPE_FOUND)
-    message(STATUS "Found freetype in ${FREETYPE_DIR}")
-else()
-    message(STATUS "Unable to find freetype!")
-endif()
-
-
 # Copy the freetype dynamic linked lib into the build directory
 macro(copy_freetype_dll)
     add_custom_command(
@@ -71,7 +57,6 @@ macro(copy_freetype_dll)
             POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different 
                     $<TARGET_FILE:freetype> 
-                   "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
-
+                    "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
             )
 endmacro()

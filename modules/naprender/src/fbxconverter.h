@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <string>
@@ -7,7 +11,9 @@
 
 namespace nap
 {
+	class RenderService;
 	class MeshInstance;
+	
 	namespace utility
 	{
 		class ErrorState;
@@ -23,8 +29,7 @@ namespace nap
 	};
 
 	/**
-	 * Convert (split) a FBX into multiple parts. Currently only converts the meshes.
-	 *
+	 * Converts (splits) an .fbx file into multiple .mesh parts. Currently only converts the meshes.
 	 * @param fbxPath The FBX file to convert
 	 * @param outputDirectory Absolute or relative directory that the converted files should be placed in
 	 * @param convertOptions Options for the convert
@@ -38,9 +43,10 @@ namespace nap
 	 * Load a mesh from the specified mesh. The mesh is expected to be our own mesh format as converted by convertFBX
 	 * The mesh is not yet initialized. Call init() to upload all the mesh data to the GPU. This gives the user
 	 * the option to add additional vertex attributes
+	 * @param renderService the render engine
 	 * @param meshPath Path to the .mesh file to load
 	 * @param errorState The error state if the function fails
 	 * @return The loaded mesh if successful, nullptr on failure
 	 */
-	NAPAPI std::unique_ptr<MeshInstance> loadMesh(const std::string& meshPath, utility::ErrorState& errorState);
+	NAPAPI std::unique_ptr<MeshInstance> loadMesh(RenderService& renderService, const std::string& meshPath, utility::ErrorState& errorState);
 }

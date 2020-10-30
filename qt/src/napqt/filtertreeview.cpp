@@ -1,7 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "filtertreeview.h"
-
+#include "qtutils.h"
 #include <cassert>
-
 #include <QMenu>
 #include <QTimer>
 #include <QDragEnterEvent>
@@ -10,14 +13,21 @@
 #include <QMimeData>
 #include <QtDebug>
 
-#include "qtutils.h"
-
 using namespace nap::qt;
+
+FilterTree_::FilterTree_(QWidget* parent) : QTreeView(parent)
+{
+}
+
+QRect FilterTree_::visualRectFor(const QItemSelection& selection) const
+{
+	return QTreeView::visualRegionForSelection(selection).boundingRect();
+}
 
 FilterTreeView::FilterTreeView(QTreeView* treeview)
 {
 	if (treeview == nullptr)
-		treeview = new QTreeView(this);
+		treeview = new FilterTree_(this);
 
 	mTreeView = treeview;
 	mTreeView->setParent(this);
@@ -29,7 +39,7 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
 	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
 
-	mLineEditFilter.setPlaceholderText("filter");
+	mLineEditFilter.setPlaceholderText("filter...");
 	mLineEditFilter.setClearButtonEnabled(true);
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
 	mLayout.addWidget(&mLineEditFilter);
@@ -67,11 +77,9 @@ void FilterTreeView::selectAndReveal(QStandardItem* item)
 		mSortFilter.exemptSourceIndex(item->index());
 		idx = getFilterModel().mapFromSource(item->index());
 		if (!idx.isValid())
-		{
-			qInfo() << "Nothing to select";
 			return;
-		}
 	}
+
 	// We are going to select an entire row
 	auto botRight = getFilterModel().index(idx.row(), getFilterModel().columnCount(idx.parent()) - 1, idx.parent());
     getTreeView().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
@@ -114,13 +122,20 @@ void FilterTreeView::onFilterChanged(const QString& text)
 void FilterTreeView::onExpandSelected()
 {
 	for (auto& idx : getSelectedIndexes())
-		expandChildren(mTreeView, idx, true);
+	{
+		auto index = mSortFilter.mapFromSource(idx);
+		expandChildren(mTreeView, index, true);
+	}
+
 }
 
 void FilterTreeView::onCollapseSelected()
 {
 	for (auto& idx : getSelectedIndexes())
-		expandChildren(mTreeView, idx, false);
+	{
+		auto index = mSortFilter.mapFromSource(idx);
+		expandChildren(mTreeView, index, false);
+	}
 }
 
 
@@ -140,23 +155,24 @@ void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 	menu.exec(mapToGlobal(pos));
 }
 
-void FilterTreeView::setIsItemSelector(bool b)
-{
-	if (b) {
-		setTopItemSelected();
-	}
-}
-
 void FilterTreeView::setTopItemSelected()
 {
 	auto model = mTreeView->model();
 	if (model->rowCount() == 0)
 		return;
 
-	auto leftIndex = model->index(0, 0);
+	setSelectedAndCurrent(model->index(0, 0));
+}
+
+void FilterTreeView::setSelectedAndCurrent(QModelIndex index)
+{
+	auto row = index.row();
+	auto model = index.model();
+	auto leftIndex = model->index(row, 0);;
 	auto rightIndex = model->index(0, model->columnCount() - 1);
 	QItemSelection selection(leftIndex, rightIndex);
-	getSelectionModel()->select(selection, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+	auto selectionModel = getSelectionModel();
+	selectionModel->setCurrentIndex(leftIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
 }
 
 QWidget& FilterTreeView::getCornerWidget()

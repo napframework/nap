@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -10,6 +14,7 @@
 #include <renderablemeshcomponent.h>
 #include <polyline.h>
 #include <nap/signalslot.h>
+#include <parameternumeric.h>
 
 namespace nap
 {
@@ -27,7 +32,7 @@ namespace nap
 		float mBlendValue = 0.0f;
 
 		// property: the automatic blend speed
-		float mBlendSpeed = 0.0f;
+		ResourcePtr<ParameterFloat> mBlendSpeed;
 
 		// property: Link to selection component one
 		ComponentPtr<LineSelectionComponent> mSelectionComponentOne;
@@ -85,7 +90,6 @@ namespace nap
 		void setPolyLine(PolyLine& line)							{ mTarget = &line; }
 
 		float mBlendValue = 0.0f;									// Blend value
-		float mBlendSpeed = 0.0f;									// Speed to blend between 2 lines
 
 	private:
 		PolyLine* mTarget = nullptr;								// Line that will hold the blended values
@@ -96,8 +100,8 @@ namespace nap
 		// Current blend value
 		float mCurrentBlendValue = 0.0f;
 
-		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };		// First line selection component
-		ComponentInstancePtr<LineSelectionComponent>	mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };		// Second line selection component
+		ComponentInstancePtr<LineSelectionComponent> mSelectorOne = { this, &LineBlendComponent::mSelectionComponentOne };
+		ComponentInstancePtr<LineSelectionComponent> mSelectorTwo = { this, &LineBlendComponent::mSelectionComponentTwo };
 
 		std::map<float, int>			mDistancesLineOne;			// Distance values associated with line 1
 		std::map<float, int>			mDistancesLineTwo;			// Distance values associated with line 2
@@ -111,6 +115,7 @@ namespace nap
 		std::vector<glm::vec3>			mUvsLineOne;				// Interpolated Uvs associated with the first line
 		std::vector<glm::vec3>			mUVsLineTwo;				// Interpolated Uvs associated with the seconds line
 
+		ParameterFloat*					mBlendSpeed = nullptr;		// Parameter that controls blend speed
 
 		/**
 		 * Updates the distance map and re-samples the currently selected curve

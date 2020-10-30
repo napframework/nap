@@ -1,54 +1,93 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "rendertexture2d.h"
+#include "nap/core.h"
+#include "renderservice.h"
 
 RTTI_BEGIN_ENUM(nap::RenderTexture2D::EFormat)
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA8,	"RGBA8"),
-	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGB8,	"RGB8"),
-	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R8,		"R8"),	
-	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::Depth,	"Depth")
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R8,		"R8"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA16,	"RGBA16"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R16,		"R16"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA32,	"RGBA32"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R32,		"R32")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::RenderTexture2D)
-	RTTI_PROPERTY("Width",	&nap::RenderTexture2D::mWidth, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Height", &nap::RenderTexture2D::mHeight, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Format", &nap::RenderTexture2D::mFormat, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Fill",		&nap::RenderTexture2D::mFill,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mFormat,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ColorSpace", &nap::RenderTexture2D::mColorSpace, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
-
 
 namespace nap
 {
+	RenderTexture2D::RenderTexture2D(Core& core) :
+		Texture2D(core)
+	{
+	}
+
 	// Initializes 2D texture. 
 	bool RenderTexture2D::init(utility::ErrorState& errorState)
 	{
-		opengl::Texture2DSettings settings;
+		SurfaceDescriptor settings;
 		settings.mWidth = mWidth;
 		settings.mHeight = mHeight;
+		settings.mColorSpace = mColorSpace;
 
+		// Figure out if the texture needs to be filled
+		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static && !mFill ? 
+			Texture2D::EClearMode::DontClear : 
+			Texture2D::EClearMode::FillWithZero;
+
+		// Initialize based on selected format
 		switch (mFormat)
 		{
-		case EFormat::RGBA8:
-			settings.mFormat			= GL_RGBA;
-			settings.mInternalFormat 	= GL_RGBA8;
-			settings.mType				= GL_UNSIGNED_BYTE;
-			break;
-		case EFormat::RGB8:
-			settings.mFormat			= GL_RGB;
-			settings.mInternalFormat 	= GL_RGB8;
-			settings.mType				= GL_UNSIGNED_BYTE;
-			break;
-		case EFormat::R8:
-			settings.mFormat			= GL_RED;
-			settings.mInternalFormat 	= GL_R8;
-			settings.mType				= GL_UNSIGNED_BYTE;
-			break;
-		case EFormat::Depth:
-			settings.mFormat			= GL_DEPTH_COMPONENT;
-			settings.mInternalFormat 	= GL_DEPTH_COMPONENT;
-			settings.mType				= GL_FLOAT;
-			break;
+			case RenderTexture2D::EFormat::RGBA8:
+			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::R8:
+			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::R;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::RGBA16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::R16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				settings.mChannels = ESurfaceChannels::R;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::RGBA32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			case RenderTexture2D::EFormat::R32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
+				settings.mChannels = ESurfaceChannels::R;
+				return Texture2D::init(settings, false, clear_mode, errorState);
+			}
+			default:
+			{
+				errorState.fail("Unsupported format");
+				return false;
+			}
 		}
-
-		initTexture(settings);
-		return true;
 	}
-
 }

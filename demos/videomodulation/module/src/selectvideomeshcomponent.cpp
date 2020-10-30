@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "selectvideomeshcomponent.h"
 
 // External Includes
@@ -33,8 +37,10 @@ namespace nap
 		nap::SelectVideoMeshComponent* resource = getComponent<SelectVideoMeshComponent>();
 
 		// Get component we want to render the meshes with
-		mRenderComponent = &getEntityInstance()->getComponent<RenderableMeshComponentInstance>();
-		
+		mRenderComponent = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
+		if (!errorState.check(mRenderComponent != nullptr, "%s: missing RenderableMeshComponent", mID.c_str()))
+			return false;
+
 		// Create a link between the material and mesh for every mesh you can select from
 		// This RenderableMesh objects bind a mesh to material and allow it to be rendered
 		// Using the render component

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Inlcludes
@@ -25,9 +29,9 @@ namespace nap
 		virtual void start() override;
 
 		/**
-		* This call polls the various SDL messages and filters them based on GUI activity. 
-		* If a GUI element is actively used the events are not forwarded to the running app.
-		*/
+		 * This call polls the various SDL messages and filters them based on GUI activity. 
+		 * If a GUI element is actively used the events are not forwarded to the running app.
+		 */
 		virtual void process() override;
 
 		/**

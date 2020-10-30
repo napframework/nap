@@ -1,25 +1,39 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "planemesh.h"
-#include "mesh.h"
 #include "material.h"
+#include "renderservice.h"
+#include "renderglobals.h"
+
+// External Includes
 #include <glm/glm.hpp>
+#include <nap/core.h>
 
-
-RTTI_BEGIN_CLASS(nap::PlaneMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Usage",		&nap::PlaneMesh::mUsage,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",	&nap::PlaneMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::PlaneMesh::mPosition, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rows",		&nap::PlaneMesh::mRows,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Columns",	&nap::PlaneMesh::mColumns,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-
+ 
 namespace nap
 {
+	PlaneMesh::PlaneMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{ }
+
+
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
 		if (!setup(errorState))
 			return false;
-
-		// Initialize mesh
 		return mMeshInstance->init(errorState);
 	}
 
@@ -39,7 +53,8 @@ namespace nap
 		math::Rect rect(dsizex, dsizey, mSize.x, mSize.y);
 
 		// Create plane
-		mMeshInstance = std::make_unique<MeshInstance>();
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		constructPlane(rect, *mMeshInstance);
 
 		// Store rect
@@ -96,8 +111,8 @@ namespace nap
 
 		// Create indices, every cell in the grid contains 2 triangles
 		int triangle_count = mRows * mColumns * 2;
-		std::vector<unsigned int> indices(triangle_count * 3, 0);
-		unsigned int* index_ptr = indices.data();
+		std::vector<uint32> indices(triangle_count * 3, 0);
+		uint32* index_ptr = indices.data();
 
 		for (int row = 0; row < mRows; row++)
 		{
@@ -115,13 +130,16 @@ namespace nap
 			}
 		}
 
-		Vec3VertexAttribute& position_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
-		Vec3VertexAttribute& normal_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
-		Vec3VertexAttribute& uv_attribute = mesh.getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(0));
-		Vec4VertexAttribute& color_attribute = mesh.getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(0));
+		Vec3VertexAttribute& position_attribute = mesh.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		Vec3VertexAttribute& normal_attribute = mesh.getOrCreateAttribute<glm::vec3>(vertexid::normal);
+		Vec3VertexAttribute& uv_attribute = mesh.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		Vec4VertexAttribute& color_attribute = mesh.getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		// Set the number of vertices to use
 		mesh.setNumVertices(vert_count);
+		mesh.setDrawMode(EDrawMode::Triangles);
+		mesh.setUsage(mUsage);
+		mesh.setCullMode(mCullMode);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vert_count);
@@ -130,7 +148,6 @@ namespace nap
 		color_attribute.setData(colors.data(), vert_count);
 
 		MeshShape& shape = mesh.createShape();
-		shape.setDrawMode(opengl::EDrawMode::TRIANGLES);
 		shape.setIndices(indices.data(), indices.size());
 	}
 

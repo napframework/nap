@@ -1,16 +1,25 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
+// Std includes
 #include <functional>
 #include <set>
 #include <vector>
 #include <memory>
+#include <iostream>
 
-#include "pybind11/pybind11.h"
+// Pybind includes
+#include "python.h"
 
 namespace nap
 {
+    
+    // Forward declarations
 	template<typename... Args> class Slot;
-
+    
     /**
      * A callable signal to which slots, functions or other signals can be connected to provide loose coupling.
      * The signal variadic template arguments to be able to work with different sets of arguments.
@@ -57,10 +66,12 @@ namespace nap
          */
 		void connect(const Function& inFunction);
 
+#ifdef NAP_ENABLE_PYTHON
         /**
          * Connect a function from a pybind11 python module. Internally the python function is wrapped in a function object.
          */
         void connect(const pybind11::function pythonFunction);
+#endif // NAP_ENABLE_PYTHON
 
         /**
          * Convenience method to connect a member function with one argument.
@@ -185,6 +196,12 @@ namespace nap
 				mFunction(std::forward<Args>(args)...);
 		}
 
+		void copyCauses(const Slot& rhs)
+		{
+			for (auto cause : rhs.mCauses)
+				cause->connect(*this);
+		}
+
 	private:
 		template<typename... Args_> friend class Signal;
 
@@ -301,17 +318,29 @@ namespace nap
 		mFunctionEffects->emplace_back(inFunction);
 	}
     
-    
+#ifdef NAP_ENABLE_PYTHON   
     template <typename... Args>
     void Signal<Args...>::connect(const pybind11::function pythonFunction)
     {
         Function func = [pythonFunction](Args... args)
         {
-            pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
-                                          ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
+            try
+            {
+                pythonFunction(pybind11::cast(std::forward<Args>(args)..., std::is_lvalue_reference<Args>::value
+                                              ? pybind11::return_value_policy::reference : pybind11::return_value_policy::automatic_reference)...);
+            }
+            catch (const pybind11::error_already_set& err)
+            {
+                auto message = std::string("Runtime python error while executing signal: ") + std::string(err.what());
+                
+                // TODO It would be preferable to log python error message using the nap logger.
+                // Unfortunately the logger is not accessible in signalslot.h though because it uses Signals itself.
+                std::cout << message << std::endl;
+            }
         };
         connect(func);
     }
+#endif // NAP_ENABLE_PYTHON
     
     
 	template <typename... Args>

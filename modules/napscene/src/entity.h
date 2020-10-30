@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -47,12 +51,17 @@ namespace nap
 		EntityInstance(Core& core, const Entity* entity);
 
 		/**
-		* Initialize this entity
-		*
+		* Initialize this entity.
+		* @param scene scene this entity belongs to.
 		* @param entityCreationParams Parameters required to create new entity instances during init
-		* @param errorState The error object
+		* @param errorState contains the error if initialization fails.
 		*/
 		bool init(Scene& scene, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
+
+		/**
+		 * Destroy this entity
+		 */
+		virtual void onDestroy() override {}
 
 		/**
 		 * Update this entity hierarchy
@@ -75,15 +84,14 @@ namespace nap
         /**
          * Finds the first component with the specified ID as declared in JSON.
          * @param identifier The name of the component to find.
-         * @return The found component. Null if not found.
+         * @return the found component. Null if not found.
          */
         ComponentInstance* findComponentByID(const std::string& identifier) const;
 
 		/**
 		 * Finds the first component with the specified ID as declared in JSON as type T
 		 * @param identifier The name of the component to find
-		 * @param typeCheck if the component is an exact match or derived from T
-		 * @return The found component. Null if not found or not derived from T
+		 * @return the found component. Null if not found or not derived from T
 		 */
 		template<class T >
 		T* findComponentByID(const std::string& identifier) const;
@@ -143,7 +151,7 @@ namespace nap
 
 		/**
 		 * Convenience function that returns all components of the specified type in the entity structure recursively
-		 * @param all child components of type T, note that this list is not cleared before searching
+		 * @param outComponents all child components of type T, note that this list is not cleared before search
 		 */
 		template<class T>
 		void getComponentsOfTypeRecursive(std::vector<T*>& outComponents);
@@ -173,7 +181,7 @@ namespace nap
 
 		/**
 		 * Removes a single child from the entity instance
-		 * @param EntityInstance to remove.
+		 * @param entityInstance to remove.
 		 */
 		void removeChild(const EntityInstance& entityInstance);
 
@@ -202,12 +210,23 @@ namespace nap
 		/**
 		 * @return Non const component iterator
 		 */
-		ComponentIterator getComponents()					{ return ComponentIterator(mComponents); }
+		ComponentIterator getComponents()									{ return ComponentIterator(mComponents); }
 		
 		/**
 		 *	@return const component iterator
 		 */
-		ComponentConstIterator getComponents() const		{ return ComponentConstIterator(mComponents); }
+		ComponentConstIterator getComponents() const						{ return ComponentConstIterator(mComponents); }
+
+		/**
+		 * 
+		 * @return child entity at index. Asserts when out of range
+		 */
+		EntityInstance& operator[](std::size_t index)						{ assert(index < mChildren.size()); return *(mChildren[index]); }
+
+		/**
+		 * @return child entity at index. Asserts when out of range.
+		 */
+		const EntityInstance& operator[](std::size_t index) const			{ assert(index < mChildren.size()); return *(mChildren[index]); }
 
 	private:
 		Core*			mCore = nullptr;

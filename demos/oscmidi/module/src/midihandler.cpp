@@ -1,6 +1,10 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "midihandler.h"
 
-// Nap includes
+// External includes
 #include <entity.h>
 #include <midiinputcomponent.h>
 
@@ -25,8 +29,12 @@ namespace nap
     bool MidiHandlerComponentInstance::init(utility::ErrorState& errorState)
     {
 		mReceivedEvents.reserve(25);
-        auto& midiInputComponent = getEntityInstance()->getComponent<MidiInputComponentInstance>();
-        midiInputComponent.messageReceived.connect(eventReceivedSlot);
+
+		MidiInputComponentInstance* midi_input = getEntityInstance()->findComponent<MidiInputComponentInstance>();
+		if (!errorState.check(midi_input != nullptr, "%s: missing MidiInputComponent", mID.c_str()))
+			return false;
+
+        midi_input->messageReceived.connect(eventReceivedSlot);
         return true;
     }
     

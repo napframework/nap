@@ -1,0 +1,10 @@
+{
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_naprender", 
+        "mod_napopencv", 
+        "mod_napcameracontrol"
+    ], 
+    "WindowsDllSearchPaths": []
+}

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "orbitcontroller.h"
 #include "inputevent.h"
 #include "inputcomponent.h"
@@ -34,12 +38,12 @@ namespace nap
 	bool OrbitControllerInstance::init(utility::ErrorState& errorState)
 	{
 		PointerInputComponentInstance* pointer_component = getEntityInstance()->findComponent<PointerInputComponentInstance>();
-		if (!errorState.check(pointer_component != nullptr, "Could not find PointerInputComponent"))
+		if (!errorState.check(pointer_component != nullptr, "%s: missing PointerInputComponent", mID.c_str()))
 			return false;
 
 		// TransformComponent is required to move the entity
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Could not find transform component"))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		pointer_component->pressed.connect(std::bind(&OrbitControllerInstance::onMouseDown, this, std::placeholders::_1));
@@ -103,12 +107,18 @@ namespace nap
 
 	void OrbitControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
 	{
+		if (!mEnabled)
+			return;
+
 		mMode = EMode::Idle;
 	}
 
 
 	void OrbitControllerInstance::onMouseMove(const PointerMoveEvent& pointerMoveEvent)
 	{
+		if (!mEnabled)
+			return;
+
 		if (mMode == EMode::Rotating)
 		{
 			// We are using the relative movement of the mouse to update the camera

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -11,7 +15,7 @@ namespace nap
 	namespace math
 	{
 		/**
-		 *	Base class of operator that gradually changes a value towards a desired goal over time
+		 * Base class of operator that gradually changes a value towards a desired goal over time
 		 */
 		class BaseSmoothOperator
 		{
@@ -47,8 +51,12 @@ namespace nap
 
 
 		/**
-		 * Smooth Damp utility class
-		 * This object gradually changes value T towards a desired goal over time
+		 * Smooth Damp utility class. Gradually changes a value of type T towards a desired goal over time.
+		 * This operator needs to be updated every frame! 
+		 * Call update() together with the new deltaTime and desired target value on application update. 
+		 * The update call returns the new smoothed value. Alternatively use getValue()
+		 * to get the current smoothed value after update. 
+		 * This operator is a convenience wrapper around nap::math::smoothDamp<T>()
 		 */
 		template<typename T>
 		class SmoothOperator : public BaseSmoothOperator
@@ -71,6 +79,14 @@ namespace nap
 			SmoothOperator(const T& currentValue, float smoothTime, float maxSpeed);
 
 			/**
+			 * Updates the current blend value based on the given targetValue
+			 * @param targetValue the value to blend to
+			 * @param deltaTime time in seconds it took to complete the last compute cycle
+			 * @return the current blend value
+			 */
+			T& update(const T& targetValue, float deltaTime);
+
+			/**
 			 * @return the current blend value
 			 */
 			const T& getValue() const								{ return mValue; }
@@ -79,6 +95,16 @@ namespace nap
 			 * @return the current blend value
 			 */
 			T& getValue()											{ return mValue; }
+
+			/**
+			 * @return the current target value
+			 */
+			const T& getTarget() const								{ return mTarget; }
+
+			/**
+			 * @return the current target value
+			 */
+			T& getTarget()											{ return mTarget; }
 
 			/**
 			 * @return current velocity
@@ -91,18 +117,10 @@ namespace nap
 			T& getVelocity()										{ return mVelocity; }
 
 			/**
-			 * Updates the current blend value based on @targetValue
-			 * @param targetValue the value to blend to
-			 * @param deltaTime time in seconds it took to complete the last compute cycle
-			 * @return the current blend value
-			 */
-			T& update(const T& targetValue, float deltaTime);
-
-			/**
-			 * Sets the current blend value
+			 * Sets the current blend value.
 			 * @param value the value to set as blend value
 			 */
-			void setValue(const T& value)							{ mValue = value; }
+			void setValue(const T& value);
 
 		protected:
 			/**
@@ -112,6 +130,7 @@ namespace nap
 			void init();
 
 			T mValue;			// Current blend value
+			T mTarget;			// Current blend target
 			T mVelocity;		// Current velocity
 		};
 
@@ -123,6 +142,7 @@ namespace nap
 		template<typename T>
 		T& nap::math::SmoothOperator<T>::update(const T& targetValue, float deltaTime)
 		{
+			mTarget = targetValue;
 			nap::math::smooth<T>(mValue, targetValue, mVelocity, deltaTime, mSmoothTime, mMaxSpeed);
 			return mValue;
 		}
@@ -164,5 +184,17 @@ namespace nap
 
 		template<>
 		NAPAPI void nap::math::SmoothOperator<glm::vec4>::init();
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<float>::setValue(const float& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec2>::setValue(const glm::vec2& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec3>::setValue(const glm::vec3& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<glm::vec4>::setValue(const glm::vec4& value);
 	}
 }

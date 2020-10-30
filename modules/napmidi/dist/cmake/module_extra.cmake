@@ -1,11 +1,19 @@
-find_package(rtmidi REQUIRED)
-if(NOT WIN32)
-    target_link_libraries(${PROJECT_NAME} rtmidi)
-endif()
-target_include_directories(${PROJECT_NAME} PUBLIC ${RTMIDI_INCLUDE_DIRS})
+include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 
-find_package(moodycamel REQUIRED)
-target_include_directories(${PROJECT_NAME} PUBLIC ${MOODYCAMEL_INCLUDE_DIRS})
+if(NOT TARGET rtmidi)
+    find_package(rtmidi REQUIRED)
+endif()
+set(MODULE_NAME_EXTRA_LIBS rtmidi)
+if(WIN32)
+     set(MODULE_NAME_EXTRA_LIBS "${MODULE_NAME_EXTRA_LIBS}" winmm)
+endif()
+add_include_to_interface_target(mod_napmidi ${RTMIDI_INCLUDE_DIRS})
+
+if(NOT TARGET moodycamel)
+    find_package(moodycamel REQUIRED)
+endif()
+add_include_to_interface_target(mod_napmidi ${MOODYCAMEL_INCLUDE_DIRS})
+
 
 # Install rtmidi lib into packaged app
 if(APPLE)

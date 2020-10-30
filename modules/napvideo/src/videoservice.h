@@ -1,9 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
-#include "video.h"
+#include "videoplayer.h"
 
-// Nap Includes
+// External Includes
 #include <nap/service.h>
 
 namespace nap
@@ -14,15 +18,11 @@ namespace nap
 	 */
 	class NAPAPI VideoService : public Service
 	{
-		friend class Video;
+		friend class VideoPlayer;
 		RTTI_ENABLE(Service)
 	public:
 		// Default constructor
 		VideoService(ServiceConfiguration* configuration);
-
-		// Disable copy
-		VideoService(const VideoService& that) = delete;
-		VideoService& operator=(const VideoService&) = delete;
 
 	protected:
 		// This service depends on render and scene
@@ -49,14 +49,15 @@ namespace nap
 		/**
 		* Registers a video player with the service
 		*/
-		void registerVideoPlayer(Video& receiver);
+		void registerVideoPlayer(VideoPlayer& receiver);
 
 		/**
 		* Removes a video player from the service
 		*/
-		void removeVideoPlayer(Video& receiver);
+		void removeVideoPlayer(VideoPlayer& receiver);
 
 	private:
-		std::vector<Video*> mVideoPlayers;			///< All registered video players
+		std::vector<VideoPlayer*> mVideoPlayers;				///< All registered video players
+		bool mVideoMaterialInitialized = false;					///< If the video material is properly initialized
 	};
 }

@@ -1,34 +1,23 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// Local Includes
 #include "jsonreader.h"
 #include "factory.h"
-#include "utility/errorstate.h"
-#include "rtti/object.h"
+#include "object.h"
 
+// External Includes
+#include <utility/errorstate.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
 #include <rapidjson/error/en.h>
-#include <fstream>
 #include <utility/fileutils.h>
 
 namespace nap
 {
 	namespace rtti
 	{
-		struct ReadState
-		{
-			ReadState(EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result) :
-				mPropertyValidationMode(propertyValidationMode),
-				mFactory(factory),
-				mResult(result)
-			{
-			}
-
-			EPropertyValidationMode			mPropertyValidationMode;
-			Path							mCurrentRTTIPath;
-			Factory&						mFactory;
-			DeserializeResult&				mResult;
-			std::unordered_set<std::string>	mObjectIDs;
-		};
 
 		static const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated")
 		{
@@ -42,6 +31,28 @@ namespace nap
 
 			return unique_id;
 		}
+
+
+		/**
+		 * Helper function to give correct error message in case of pointer type mismatch.
+		 */
+		static bool checkPointerProperty(const ReadState& readState, bool isRawPointer, const std::string& rootObjectID, utility::ErrorState& errorState)
+		{
+			if (readState.mPointerPropertyMode == EPointerPropertyMode::OnlyRawPointers && !isRawPointer)
+			{
+				errorState.fail("Encountered a non-raw pointer property {%s}:%s while only raw pointers are supported.", rootObjectID.c_str(), readState.mCurrentRTTIPath.toString().c_str());
+				return false;
+			}
+
+			if (readState.mPointerPropertyMode == EPointerPropertyMode::NoRawPointers && isRawPointer)
+			{
+				errorState.fail("Encountered a raw pointer property {%s}:%s while only pointers like ObjectPtr are supported.", rootObjectID.c_str(), readState.mCurrentRTTIPath.toString().c_str());
+				return false;
+			}
+
+			return true;
+		}
+
 
 		static bool readArrayRecursively(rtti::Object* rootObject, const rtti::Property& property, rtti::VariantArray& array, const rapidjson::Value& jsonArray, ReadState& readState, utility::ErrorState& errorState);
 
@@ -65,7 +76,6 @@ namespace nap
 				case rapidjson::kTrueType:
 				{
 					return jsonValue.GetBool();
-					break;
 				}
 				case rapidjson::kNumberType:
 				{
@@ -81,6 +91,8 @@ namespace nap
 						return jsonValue.GetUint64();
 					break;
 				}
+				default:
+					break;
 			}
 
 			// Unknown type
@@ -167,6 +179,10 @@ namespace nap
 				// If the property is of pointer type, we can't set the property here but need to resolve it later
 				if (wrapped_type.is_pointer())
 				{
+					bool is_raw_pointer = wrapped_type == value_type;
+					if (!checkPointerProperty(readState, is_raw_pointer, rootObject->mID, errorState))
+						return false;
+
 					// Pointer types must point to objects derived from rtti::RTTIObject
 					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
@@ -260,8 +276,14 @@ namespace nap
 						{
 							// Basic JSON type, read value and copy to target
 							rtti::Variant extracted_value = readBasicType(json_value);
-							if (!errorState.check(extracted_value.convert(wrapped_type), "Failed to extract primitive type"))
+							if (!errorState.check(extracted_value.convert(wrapped_type),
+								"Failed to extract primitive type: %s, object: %s", readState.mCurrentRTTIPath.toString().c_str(),
+								rootObject->mID.c_str()))
+							{
+								if (readState.mCurrentRTTIPath.toString() == "Type")
+									errorState.fail("Type is a reserved keyword");
 								return false;
+							}
 
 							property.set_value(compound, extracted_value);
 						}
@@ -323,6 +345,10 @@ namespace nap
 
 				if (wrapped_type.is_pointer())
 				{
+					bool is_raw_pointer = wrapped_type == array_type;
+					if (!checkPointerProperty(readState, is_raw_pointer, rootObject->mID, errorState))
+						return false;
+
 					// Pointer types must point to objects derived from rtti::RTTIObject
 					if (!errorState.check(wrapped_type.get_raw_type().is_derived_from<rtti::Object>(), "Encountered pointer to non-Object. This is not supported"))
 						return false;
@@ -388,8 +414,15 @@ namespace nap
 					{
 						// Array of basic types; read basic type
 						rtti::Variant extracted_value = readBasicType(json_element);
-						if (!errorState.check(extracted_value.convert(wrapped_type), "Failed to extract primitive type"))
+						if (!errorState.check(extracted_value.convert(wrapped_type),
+							"Failed to extract primitive type: %s, object: %s", readState.mCurrentRTTIPath.toString().c_str(),
+							rootObject->mID.c_str()))
+						{
+							if (readState.mCurrentRTTIPath.toString() == "Type")
+								errorState.fail("Type is a reserved keyword");
 							return false;
+						}
+							
 						
 						array.set_value(index, extracted_value);
 					}
@@ -402,7 +435,8 @@ namespace nap
 			return true;
 		}
 
-		rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject, ReadState& readState, utility::ErrorState& errorState)
+		static rtti::Object* readObjectRecursive(const rapidjson::Value& jsonObject, bool isEmbeddedObject,
+										  ReadState& readState, utility::ErrorState& errorState)
 		{
 			// Check whether the object is of a known type
 			rapidjson::Value::ConstMemberIterator type = jsonObject.FindMember("Type");
@@ -419,7 +453,9 @@ namespace nap
 				return nullptr;
 
 			// We only support root-level objects that derive from rtti::RTTIObject (compounds, etc can be of any type)
-			if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::Object)), "Unable to instantiate object %s. Class is not derived from RTTIObject.", typeName))
+			if (!errorState.check(type_info.is_derived_from(RTTI_OF(rtti::Object)),
+								  "Unable to instantiate object %s. Class is not derived from %s.",
+								  typeName, RTTI_OF(rtti::Object).get_name().data()))
 				return nullptr;
 
 			// Create new instance of the object
@@ -438,45 +474,34 @@ namespace nap
 		}
 
 
-		int getLine(const std::string& json, size_t offset)
+		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
-			int line = 1;
-			size_t line_offset = 0;
-			while (true)
-			{
-				line_offset = json.find('\n', line_offset);
-				if (line_offset == std::string::npos || line_offset > offset)
-					break;
-				++line;
-				line_offset += 1;
-			}
-			return line;
-		}
-
-
-		bool deserializeJSON(const std::string& json, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
-		{
-			// Try to parse the json file
 			rapidjson::Document document;
-			rapidjson::ParseResult parse_result = document.Parse(json.c_str());
-			if (!parse_result)
-			{
-				errorState.fail("Error parsing json: %s (line: %d)", rapidjson::GetParseError_En(parse_result.Code()), getLine(json, parse_result.Offset()));
+			if (!JSONDocumentFromString(json, document, errorState))
 				return false;
-			}
 
 			// Read objects
-			ReadState readState(propertyValidationMode, factory, result);
-			rapidjson::Value::ConstMemberIterator objects = document.FindMember("Objects");
-			if (!errorState.check(objects != document.MemberEnd(), "Unable to find required 'Objects' field"))
+			if (!errorState.check(document.HasMember("Objects"), "Unable to find required 'Objects' field"))
 				return false;
 
-			if (!errorState.check(objects->value.IsArray(), "'Objects' field must be an array"))
+			return deserializeObjects(document["Objects"], propertyValidationMode, pointerPropertyMode, factory, result, errorState);
+		}
+
+		bool deserializeObjects(const rapidjson::Value& objects,
+									  EPropertyValidationMode propertyValidationMode,
+									  EPointerPropertyMode pointerPropertyMode,
+									  Factory& factory,
+									  DeserializeResult& result,
+									  utility::ErrorState& errorState)
+		{
+			ReadState readState(propertyValidationMode, pointerPropertyMode, factory, result);
+
+			if (!errorState.check(objects.IsArray(), "Objects field must be an array"))
 				return false;
-	
-			for (std::size_t index = 0; index < objects->value.Size(); ++index)
+
+			for (std::size_t index = 0; index < objects.Size(); ++index)
 			{
-				const rapidjson::Value& json_element = objects->value[index];
+				const rapidjson::Value& json_element = objects[index];
 				if (!readObjectRecursive(json_element, false, readState, errorState))
 					return false;
 			}
@@ -484,13 +509,49 @@ namespace nap
 			return true;
 		}
 
-		bool readJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
+		bool deserializeJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, EPointerPropertyMode pointerPropertyMode, Factory& factory, DeserializeResult& result, utility::ErrorState& errorState)
 		{
 			std::string buffer;
 			if (!utility::readFileToString(path, buffer, errorState))
 				return false;
 
-			return deserializeJSON(buffer, propertyValidationMode, factory, result, errorState);
+			return deserializeJSON(buffer, propertyValidationMode, pointerPropertyMode, factory, result, errorState);
+		}
+
+
+		std::unique_ptr<rtti::Object> getObjectFromJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, utility::ErrorState& errorState)
+		{
+			std::string buffer;
+			if (!utility::readFileToString(path, buffer, errorState))
+				return {nullptr};
+
+			rapidjson::Document document;
+			if (!JSONDocumentFromString(buffer, document, errorState))
+				return {nullptr};
+
+			if (!errorState.check(document.IsObject(), "Document must be an Object"))
+				return {nullptr};
+
+			DeserializeResult result;
+			ReadState readState(propertyValidationMode, rtti::EPointerPropertyMode::OnlyRawPointers, factory, result);
+			if (!readObjectRecursive(document, false, readState, errorState))
+				return {nullptr};
+
+			return std::move(result.mReadObjects[0]);
+		}
+
+
+		bool JSONDocumentFromString(const std::string& json, rapidjson::Document& document, nap::utility::ErrorState& errorState)
+		{
+			rapidjson::ParseResult parse_result = document.Parse(json.c_str());
+			if (!parse_result)
+			{
+				errorState.fail("Error parsing json: %s (line: %d)",
+					rapidjson::GetParseError_En(parse_result.Code()),
+					utility::getLine(json, parse_result.Offset()));
+				return false;
+			}
+			return true;
 		}
 
 	}

@@ -1,0 +1,10 @@
+{
+    "Type": "nap::PathMapping",
+    "mID": "Win64SourceMapping",
+    "ProjectExeToRoot": "../..",
+    "NapkinExeToRoot": "../../..",
+    "ModulePaths": 
+    [
+        "{ROOT}/bin/{BUILD_CONFIG}"
+    ]
+}

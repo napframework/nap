@@ -1,5 +1,9 @@
-#include <rtti/rttiutilities.h>
-#include <rtti/object.h>
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+#include "rttiutilities.h"
+#include "object.h"
 
 namespace nap
 {
@@ -229,7 +233,7 @@ namespace nap
 					{
 						int unresolved_pointer_index = findUnresolvedPointer(unresolvedPointers, unresolvedPointerRootObject, currentRTTIPath);
 						if (unresolved_pointer_index != -1)
-							target_a_id = unresolvedPointers[unresolved_pointer_index].mTargetID;
+							target_a_id = unresolvedPointers[unresolved_pointer_index].getResourceTargetID();
 					}
 					else
 					{
@@ -408,7 +412,7 @@ namespace nap
 		/**
 		 * Calculate the version number of the specified type
 		 */
-		std::size_t getRTTIVersion(const rtti::TypeInfo& type)
+		uint64_t getRTTIVersion(const rtti::TypeInfo& type)
 		{
 			// Build the version string first
 			std::string version_string;
@@ -416,7 +420,7 @@ namespace nap
 
 			// Hash
 			std::size_t hash = std::hash<std::string>()(version_string);
-			return hash;
+			return (uint64_t)hash;
 		}
 
 		

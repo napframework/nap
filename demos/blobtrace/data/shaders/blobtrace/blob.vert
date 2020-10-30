@@ -1,11 +1,25 @@
-#version 330 core
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
-uniform vec3 	inBlobPosition;			//< Blob position in uv space
-uniform float 	inTime;					//< Modulation time
-uniform float 	inVelocity;				//< Velocity used for modulating frequency
+#version 450 core
+
+// All mvp uniform variables
+uniform nap
+{
+	uniform mat4 projectionMatrix;
+	uniform mat4 viewMatrix;
+	uniform mat4 modelMatrix;
+} mvp;
+
+
+// All non mvp uniform variables
+uniform UBOVert
+{
+	uniform vec3 	inBlobPosition;			//< Blob position in uv space
+	uniform float 	inTime;					//< Modulation time
+	uniform float 	inVelocity;				//< Velocity used for modulating frequency
+} ubovert;
 
 // Input Vertex Attributes
 in vec3	in_Position;
@@ -49,12 +63,12 @@ float fit(float value, float inMin, float inMax, float outMin, float outMax, boo
 float calculateDisplacement(vec2 uv)
 {
 	// Distance in uv space from click to frag
-	float uv_dist = distance(inBlobPosition.xy, uv);
-	float currentDistance = mix(minDistance, maxDistance, pow(inVelocity,0.75f));
+	float uv_dist = distance(ubovert.inBlobPosition.xy, uv);
+	float currentDistance = mix(minDistance, maxDistance, pow(ubovert.inVelocity,0.75f));
 
 	// Get mapped normalized value
 	float uv_dist_norm = fit(uv_dist, 0.0, currentDistance, 0.0, 1.0, false);
-	float distribution = mix(minDistribution, maxDistribution, inVelocity);
+	float distribution = mix(minDistribution, maxDistribution, ubovert.inVelocity);
 	uv_dist_norm = pow(uv_dist_norm, distribution);
 
 	// Fit distribution based on distance
@@ -65,10 +79,10 @@ float calculateDisplacement(vec2 uv)
 	float weighted_dist = uv_dist * uv_dist_norm;
 
 	// Apply phase
-	weighted_dist += ((inTime * speed) * -1.0);
+	weighted_dist += ((ubovert.inTime * speed) * -1.0);
 
 	// Apply freq
-	weighted_dist *= mix(minFrequency, maxFrequency, inVelocity);
+	weighted_dist *= mix(minFrequency, maxFrequency, ubovert.inVelocity);
 	
 	// Get sin over distance
 	float displacement_v = (sin(weighted_dist) + 1.0) / 2.0;
@@ -94,7 +108,7 @@ void main(void)
 	vec3 displ_pos = in_Position + (in_Normal * sin_v * displacement);
 
 	// Calculate frag position
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(displ_pos, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(displ_pos, 1.0);
 
     // Pass normal in object space
 	passNormal = in_Normal;
@@ -103,7 +117,7 @@ void main(void)
 	passPosition = displ_pos;
 
 	// Pass model matrix for blob light calculations
-	passModelMatrix = modelMatrix;
+	passModelMatrix = mvp.modelMatrix;
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

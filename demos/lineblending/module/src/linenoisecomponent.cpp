@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "linenoisecomponent.h"
 
@@ -36,16 +40,16 @@ namespace nap
 
 		// Set smooth timing values
 		mAmpSmoother.mSmoothTime = mProperties.mAmplitudeSmoothTime;
-		mAmpSmoother.setValue(mProperties.mAmplitude);
+		mAmpSmoother.setValue(mProperties.mAmplitude->mValue);
 
 		mFreqSmoother.mSmoothTime = mProperties.mFrequencySmoothTime;
-		mFreqSmoother.setValue(mProperties.mFrequency);
+		mFreqSmoother.setValue(mProperties.mFrequency->mValue);
 
 		mOffsetSmoother.mSmoothTime = mProperties.mOffsetSmoothTime;
-		mOffsetSmoother.setValue(mProperties.mOffset);
+		mOffsetSmoother.setValue(mProperties.mOffset->mValue);
 
 		mSpeedSmoother.mSmoothTime = mProperties.mSpeedSmoothTime;
-		mSpeedSmoother.setValue(mProperties.mSpeed);
+		mSpeedSmoother.setValue(mProperties.mSpeed->mValue);
 
 		return true;
 	}
@@ -54,10 +58,10 @@ namespace nap
 	void LineNoiseComponentInstance::update(double deltaTime)
 	{
 		// Update smoothers
-		mSpeedSmoother.update(mProperties.mSpeed, deltaTime);
-		mFreqSmoother.update(mProperties.mFrequency, deltaTime);
-		mAmpSmoother.update(mProperties.mAmplitude, deltaTime);
-		mOffsetSmoother.update(mProperties.mOffset, deltaTime);
+		mSpeedSmoother.update(mProperties.mSpeed->mValue, deltaTime);
+		mFreqSmoother.update(mProperties.mFrequency->mValue, deltaTime);
+		mAmpSmoother.update(mProperties.mAmplitude->mValue, deltaTime);
+		mOffsetSmoother.update(mProperties.mOffset->mValue, deltaTime);
 
 		nap::PolyLine& line = mBlendComponent->getLine();
 

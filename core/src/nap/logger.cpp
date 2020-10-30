@@ -1,5 +1,8 @@
-#include "logger.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "logger.h"
 #include <iostream>
 #include <utility/fileutils.h>
 
@@ -10,20 +13,18 @@ namespace nap
 		: mLevel(&lvl), mMessage(msg), mTimeStamp(getCurrentTime())
 	{}
 
-	std::string basicLogMessageFormatter(const LogMessage& msg)
-	{
-		return utility::stringFormat("[%s] %s", msg.level().name().c_str(), msg.text().c_str());
-	}
 
 	std::string timestampLogMessageFormatter(const LogMessage& msg)
 	{
 		return timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
 	}
 
+
 	LogHandler::LogHandler()
 		: mLevel(&Logger::fineLevel()), mFormatter(&basicLogMessageFormatter)
 	{
 	}
+
 
 	void LogHandler::setFormatter(LogMessageFormatter formatter)
 	{
@@ -31,10 +32,12 @@ namespace nap
 		mFormatter = formatter;
 	}
 
+
 	std::string LogHandler::formatMessage(LogMessage& msg)
 	{
 		return mFormatter(msg);
 	}
+
 
 	Logger::Logger() : mLevel(&fineLevel())
 	{
@@ -65,18 +68,11 @@ namespace nap
 	}
 
 
-	void ConsoleLogHandler::commit(LogMessage message)
+	void Logger::setCurrentLevel(const LogLevel& level)
 	{
-		bool isError = message.level() >= Logger::errorLevel();
-
-		mOutStreamMutex.lock();
-
-		if (isError)
-			std::cerr << formatMessage(message) << std::endl;
-		else
-			std::cout << formatMessage(message) << std::endl;
-
-		mOutStreamMutex.unlock();
+		for (auto& handler : mHandlers)
+			handler->setLogLevel(level);
+		mLevel = &level;
 	}
 
 

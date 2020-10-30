@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "perspcameracomponent.h"
 
@@ -24,15 +28,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
-
 	// 
-	// This is a default function to create an asymmetric projection. This means a projection where the center of projection is not halfway
+	// This is a default function to create an asymmetric projection. An asymmetric projection is a projection where the center of projection is not halfway
 	// the left and right, top and bottom planes, but off-center. 
 	//
 	// This can be used for rendering to multiple render targets with a single camera using modified projection matrices per render target.
 	// For example, consider the following view frustrum V:
 	// 
-	//	*               *
+	//	*---------------*
 	//    *     V     *
 	//      *       *
 	//        *   *
@@ -40,12 +43,33 @@ namespace nap
 	//
 	// We can render this frustum by splitting the projection into a render for the left render target and the right render target:
 	// 
-	//	*       *       *
-	//    *  L  *  R  *
-	//      *   *   *
-	//        * * *
-	//          *
-	// The center of projection is not symmetric anymore, so we need to be able to build a projection matrix with custom planes.
+	//	*-------*----- *    *--------*    *-------* 
+	//    *     *     *        *  L  *	  *  R  *   
+	//      *   *   *            *   *	  *   *     
+	//        * * *                * *	  * *       
+	//          *                    *	  *         
+	//
+	// Or, in a more complicated environment, we could have a single world split into multiple projections:
+	//
+	//
+	//   *---------*---------*---------*
+	//      *   1   *   2   *   3   *
+	//         *     *     *     *
+	//            *   *   *   *
+	//               * * * *
+	//                  *
+	//
+	// Notice how a single projection matrix for a render target can look like:
+	//
+	//
+	//   * ---------*
+	//      *   1   *
+	//         *     *
+	//            *   *
+	//               * *
+	//                  *
+	//
+	// The center of projection is not in the middle of the left or right plane anymore, so we need to be able to build a projection matrix with custom planes.
 	// Because it is hard to find proper documentation why this matrix is built up the way it is, here's a brief explanation of the math
 	// that make this projection matrix different from a regular symmetric matrix:
 	//
@@ -53,7 +77,7 @@ namespace nap
 	// to be converted to clip space (=converted to [-1,1]).
 	// 
 	// Projection onto the near plane is done by using similar triangles. In the following figure you see a point P that needs to be projected
-	// onto the near plane (displayed as P`). In the figure, n is the near plane distance and Pz the z coordinate of point P.
+	// onto the near plane (displayed as P`). In the figure, n is the distance to the near plane and Pz the z coordinate of point P.
 	// 
 	//       P--------
 	//        \      |
@@ -64,34 +88,76 @@ namespace nap
 	//          *  \ |   *
 	//            * \| *
 	//               *
-	// Using similar triangles, we know that P`x = Px * n / Pz. We are using homogenous coordinates so that we can linearly interpolate coordinates
-	// on the GPU. division by z is performed later (by performing div by 'w'). The division by Pz is separated. By placing Pz in w, it will be divided on the GPU.
-	// 
-	// To scale to [-1,1], we divide by the the width of the near plane. For symmetric perspective projections, we can divide by the width of half of the near plane. 
-	// This can be calculated by:
-	//		width = tan(fov * 0.5) * n
-	// That leads to:
-	//		(Px * n) / (tan(fov * 0.5) * n)
-	// The n cancels out, so:
-	//		Px * (1 / tan(fov * 0.5))
-	// This is the value that is put into [0][0] for symmetric projection. For asymmetric projections, this is different. The width of the plane is calculated by:
-	//		r - l, where r and l are the right and left planes.
-	// r and l are calculated separately:
+	// Using similar triangles, we know that P`x = Px * n / Pz.
+	// Note, however, that the z-axis is negative towards the distance (away from the camera). Because 'n' is given as a distance and not the z position of the near plane, we should
+	// divide against -Pz instead. So, the equation becomes:
+	//		P`x = Px * n / -Pz
+	//
+	// We now have the projected point on the near plane, but we need to have it in clip space: [-1..1]. It needs to be -1 on the left side of the near plane, or 1 on the right side. First, let's
+	// calculate the left and right side of the near plane:
 	//		r = (tan(angle_right) * n)
 	//		l = (tan(angle_left) * n)
-	// This leads to:
-	//		(Px * n) / (r-l)
-	// At this point, the scale of the projected values is 1, so we need to multiply by 2 to be able to go to clip space [-1,1]. 
-	//		Px * (2*n)/(r-l)
-	// This is the value that is put into [0][0]. Because the value is still off-center and not in [-1,1] space, we still need to add a bias to it. Important to notice is that as soon as we 
-	// start adding, the division by Pz becomes 'problematic' as it is taken out of the calculation and performed as a poststep. To illustrate:
-	//		(A+B)/Z = A*Z+B*Z
-	//		(A+B*Z)/Z = A*Z + B
-	// So we compensate by multiplying the part that we add by Pz. This is the reason why the shift and bias part is placed in [2][0] (it gets multiplied by Pz).
-	//		The shift and bias is performed by:
+	// 
+	// All we need to do is scale and bias the projected value P`x. To understand how to do this, it is best to start thinking simply about how one would map any value that lies between a 
+	// value 'l' and 'r' to a [-1,1] range. We'd start by mapping it into a [0..1] range first like so:
+	//		(x-l)/(r-l)
+	// Then, we'd need to multiply by two, and subtract one to get into the [-1..1] range:
+	//		2 * (x-l) / (r-l) - 1
+	// This equation contains a scale and bias, let's separate the two first (we'll see why we do this in a moment):
+	//		2x/(r-l) -2l/(r-l) - 1
+	//
+	// Now, let's simplify the bias part:
+	//		-2l/(r-l) -(r-l)/(r-l)
+	//		(-2l -r + l) / (r-l)
+	//		(-l-r) / (r-l)
+	//		-(r+l) / (r-l)
+	// So the full equation becomes:
+	//		2x/(r-l) - (r+l)/(r-l)
+	//
+	// The scale and bias are:
+	//
+	// scale: 2x/(r-l)
+	// bias: -(r+l)/(r-l)
+	//
+	// We substitute x into the scale:
+	//	2 (Px * n) * (1/-Pz) / (r-l), or:
+	//	2 (Px * n) / (r-l) * (1/-Pz)
+	// 1/-Pz is again isolated. We can put [2n / (r-l)] in [0][0] so that it gets multiplied with Px and -Pz in [2][3] so that it ends up in the w component for perspective division later. 
+	// That will yield 2 (Px * n) / (r-l) * (1/-Pz) after division by 'w'.
+	//
+	// To understand why the scale and bias are separated, we need to see what would happen if we would add the bias to [0][0]:
+	//		(A+B)/Z = A/Z+B/Z
+	// This perspective division by Z is undesirable for our bias. We can compensate for the division by -z by multiplying with -z:
+	//		(A+B*Z)/Z = A/Z + B
+	// To do this in our equation, we perform two steps. First we put the bias in [2][0], so that it gets multiplied with Pz. Then, we multiply with -1. Our bias becomes:
 	//		(r+l)/(r-l)
-	// Which is placed in [2][0].
-	// The same applies for the y values as it does for the x values. 
+	// This is what we put in [2][0].
+	// 
+	// The same applies for the y values as it does for the x values, except that the Y gets another multiplication with -1 for the inversion of the y axis. This difference is visible in [1][1].
+	//
+	// The z-conversion is a bit different and a bit tricky. We need to scale and bias it to the (Vulkan) range of z values: [0..1]. We can scale and bias
+	// by using the Pz and Pw components. Because the Pw component is always 1, we can use that to bias the z value. However, the resulting value is always
+	// divided by -Pz after perspective division. So we begin the equation like this:
+	//		P`z = (Pz * S + Pw * B) / -Pz
+	// We know that Pw is 1, so:
+	// 		P`z = (Pz * S + B) / -Pz
+	// We need to find S (scale) and B (bias) so that we can fill it in in the matrix. For Vulkan, the calculated value should be 0 when on the near plane, 
+	// and 1 when on the far plane. We can fill those values in for P`z and Pz and solve for S and B. Note that we need to negate the 'n' and 'f' values 
+	// because they represent distance, and we need the position on the z-axis instead.
+	//		0 = (-nS + B) / -(-n)
+	//		0 = (-nS + B)
+	//		B = nS
+	//
+	//		1 = (-fS + B) / -(-f)
+	//		f = -fS + B
+	//
+	// Substitute B into last equation:
+	//		f = -fS + nS
+	//		f = S(-f + n)
+	//		S = f / (n - f)
+	//
+	// Substituate S into B equation:
+	//		B = (n * f) / (n - f)
 	//
 	static glm::mat4 createASymmetricProjection(float nearPlane, float farPlane, float leftPlane, float rightPlane, float topPlane, float bottomPlane)
 	{
@@ -102,14 +168,14 @@ namespace nap
 		projection[3][0] = 0.0f;
 
 		projection[0][1] = 0.0f;
-		projection[1][1] = (2.0f * nearPlane) / (topPlane - bottomPlane);
+		projection[1][1] = -(2.0f * nearPlane) / (topPlane - bottomPlane);
 		projection[2][1] = (topPlane + bottomPlane) / (topPlane - bottomPlane);
 		projection[3][1] = 0.0f;
 
 		projection[0][2] = 0.0f;
 		projection[1][2] = 0.0f;
-		projection[2][2] = -(farPlane + nearPlane) / (farPlane - nearPlane);
-		projection[3][2] = -2.0f * farPlane * nearPlane / (farPlane - nearPlane);
+		projection[2][2] = farPlane / (nearPlane - farPlane);
+		projection[3][2] = nearPlane * farPlane / (nearPlane - farPlane);
 
 		projection[0][3] = 0.0f;
 		projection[1][3] = 0.0f;
@@ -119,8 +185,7 @@ namespace nap
 		return projection;
 	}
 
-	// Helper function to calculate either left/right or top/bottom camera planes. The output is the physical location )
-	// of the plane in camera space.
+	// Helper function to calculate either left/right or top/bottom camera planes. The output is the physical location of the near plane in camera space.
 	static void calculateCameraPlanes(float fov, float aspectRatio, float nearPlane, int numDimensions, int location, float& min, float& max)
 	{
 		assert(location < numDimensions);
@@ -146,7 +211,7 @@ namespace nap
 	{
 		mProperties = getComponent<PerspCameraComponent>()->mProperties;
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		return true;
@@ -162,6 +227,7 @@ namespace nap
 			setDirty();
 		}
 	}
+
 
 	// Use this function to split the projection into a grid of same-sized rectangles.
 	void PerspCameraComponentInstance::setGridDimensions(int numRows, int numColumns)
@@ -202,9 +268,7 @@ namespace nap
 	}
 
 
-	// Computes projection matrix if dirty, otherwise returns the
-	// cached version
-	const glm::mat4& PerspCameraComponentInstance::getProjectionMatrix() const
+	void PerspCameraComponentInstance::updateProjectionMatrices() const
 	{
 		if (mDirty)
 		{
@@ -217,11 +281,23 @@ namespace nap
 			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
 			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
 
-			mProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
-
+			mRenderProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
+			mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
 			mDirty = false;
 		}
+	}
 
+
+	const glm::mat4& PerspCameraComponentInstance::getRenderProjectionMatrix() const
+	{
+		updateProjectionMatrices();
+		return mRenderProjectionMatrix;
+	}
+
+
+	const glm::mat4& PerspCameraComponentInstance::getProjectionMatrix() const
+	{
+		updateProjectionMatrices();
 		return mProjectionMatrix;
 	}
 

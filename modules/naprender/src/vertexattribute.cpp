@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "vertexattribute.h"
 
@@ -36,7 +40,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	// Only here to make sure this cpp is not removed during optimization, which would cause the RTTI definitions to be missingo
+	// Only here to make sure this cpp is not removed during optimization, which would cause the RTTI definitions to be missing
 	BaseVertexAttribute::BaseVertexAttribute()
 	{
 	}
@@ -44,44 +48,23 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	GLenum FloatVertexAttribute::getType() const { return GL_FLOAT; }
+	VkFormat FloatVertexAttribute::getFormat() const { return VK_FORMAT_R32_SFLOAT; }
 
 	template<>
-	int FloatVertexAttribute::getNumComponents() const { return 1; }
+	VkFormat IntVertexAttribute::getFormat() const { return VK_FORMAT_R32_SINT; }
 
 	template<>
-	GLenum IntVertexAttribute::getType() const { return GL_INT; }
+	VkFormat ByteVertexAttribute::getFormat() const { return VK_FORMAT_R8_SINT; }
 
 	template<>
-	int IntVertexAttribute::getNumComponents() const { return 1; }
+	VkFormat DoubleVertexAttribute::getFormat() const { return VK_FORMAT_R64_SFLOAT; }
 
 	template<>
-	GLenum ByteVertexAttribute::getType() const { return GL_BYTE; }
+	VkFormat Vec2VertexAttribute::getFormat() const { return VK_FORMAT_R32G32_SFLOAT; }
 
 	template<>
-	int ByteVertexAttribute::getNumComponents() const { return 1; }
+	VkFormat Vec3VertexAttribute::getFormat() const { return VK_FORMAT_R32G32B32_SFLOAT; }
 
 	template<>
-	GLenum DoubleVertexAttribute::getType() const { return GL_DOUBLE; }
-
-	template<>
-	int DoubleVertexAttribute::getNumComponents() const { return 1; }
-
-	template<>
-	GLenum Vec2VertexAttribute::getType() const { return GL_FLOAT; }
-
-	template<>
-	int Vec2VertexAttribute::getNumComponents() const { return 2; }
-
-	template<>
-	GLenum Vec3VertexAttribute::getType() const { return GL_FLOAT; }
-
-	template<>
-	int Vec3VertexAttribute::getNumComponents() const { return 3; }
-
-	template<>
-	GLenum Vec4VertexAttribute::getType() const { return GL_FLOAT; }
-
-	template<>
-	int Vec4VertexAttribute::getNumComponents() const { return 4; }
+	VkFormat Vec4VertexAttribute::getFormat() const { return VK_FORMAT_R32G32B32A32_SFLOAT; }
 }

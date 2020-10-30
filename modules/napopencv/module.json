@@ -1,0 +1,12 @@
+{
+    "Type": "nap::ModuleInfo", 
+    "mID": "ModuleInfo", 
+    "RequiredModules": [
+        "mod_napmath", 
+        "mod_napscene"
+    ], 
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/opencv/msvc/x64/vc14/bin",
+        "{ROOT}/thirdparty/opencv/bin"
+    ]
+}

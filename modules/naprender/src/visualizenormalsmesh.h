@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -8,6 +12,10 @@
 
 namespace nap
 {
+	// Forward Declares
+	class Core;
+	class RenderService;
+
 	/**
 	 * This mesh builds a line structure based on the vertices of another mesh
 	 * The line structure represents the normals of the reference mesh and can be drawn to screen. 
@@ -24,6 +32,8 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
+		VisualizeNormalsMesh(Core& core);
+
 		/**
 		 *	Creates the normals from the reference mesh
 		 */
@@ -41,15 +51,14 @@ namespace nap
 
 		/**
 		* Updates the normals based on the data in the reference mesh
-		* @param push if the new positions should be pushed on to the GPU
+		* @param error contains the error when normals could not be pushed to the GPU.
+		* @param push if the new positions should be pushed on to the GPU.
 		*/
 		bool calculateNormals(utility::ErrorState& error, bool push = true);
 
-		// property: pointer to the IMesh that is used as a reference
 		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
-
-		// property: length of the normals
 		float mNormalLength = 1.0f;												///< Property: 'Length' length of the normals
+		EMeshDataUsage	mUsage = EMeshDataUsage::DynamicWrite;					///< Property: 'Usage' If the normals are created once or frequently updated.
 
 		/**
 		* Set the mesh that is used as a reference to build the normals from. Called on init().
@@ -80,6 +89,9 @@ namespace nap
 
 		// The current reference mesh
 		nap::IMesh* mCurrentReferenceMesh = nullptr;
+
+		// The renderer
+		nap::RenderService* mRenderService = nullptr;
 
 		/**
 		 * Creates the mesh instance and single shape associated with that mesh instance

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Mod nap render includes
@@ -15,6 +19,8 @@
 #include <nap/core.h>
 #include <color.h>
 #include <imguiservice.h>
+#include <renderservice.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -75,13 +81,8 @@ namespace nap
 		virtual int shutdown() override;
 
 		/**
-		*	Toggles full screen
-		*/
-		void setWindowFullscreen(std::string windowIdentifier, bool fullscreen);
-
-		/**
-		*	Called when a window event is received
-		*/
+		 *	Called when a window event is received
+		 */
 		void handleWindowEvent(const WindowEvent& windowEvent);
 		
 	private:

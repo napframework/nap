@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "mathutils.h"
 
@@ -8,6 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <ctime>
+#include <utility/stringutils.h>
 
 // Specialization of lerping
 namespace nap
@@ -57,34 +62,37 @@ namespace nap
 		template<>
 		glm::vec4 lerp<glm::vec4>(const glm::vec4& start, const glm::vec4& end, float percent)
 		{
-			glm::vec4 return_v;
-			return_v.x = lerp<float>(start.x, end.x, percent);
-			return_v.y = lerp<float>(start.y, end.y, percent);
-			return_v.z = lerp<float>(start.z, end.z, percent);
-			return_v.w = lerp<float>(start.w, end.w, percent);
-			return return_v;
+			return {
+				lerp<float>(start.x, end.x, percent),
+				lerp<float>(start.y, end.y, percent),
+				lerp<float>(start.z, end.z, percent),
+				lerp<float>(start.w, end.w, percent)
+			};
 		}
 
 
 		template<>
 		glm::vec3 lerp<glm::vec3>(const glm::vec3& start, const glm::vec3& end, float percent)
 		{
-			glm::vec3 return_v;
-			return_v.x = lerp<float>(start.x, end.x, percent);
-			return_v.y = lerp<float>(start.y, end.y, percent);
-			return_v.z = lerp<float>(start.z, end.z, percent);
-			return return_v;
+			return
+			{
+				lerp<float>(start.x, end.x, percent),
+				lerp<float>(start.y, end.y, percent),
+				lerp<float>(start.z, end.z, percent)
+			};
 		}
 
 
 		template<>
 		glm::vec2 lerp<glm::vec2>(const glm::vec2& start, const glm::vec2& end, float percent)
 		{
-			glm::vec2 return_v;
-			return_v.x = lerp<float>(start.x, end.x, percent);
-			return_v.y = lerp<float>(start.y, end.y, percent);
-			return return_v;
+			return
+			{
+				lerp<float>(start.x, end.x, percent),
+				lerp<float>(start.y, end.y, percent)
+			};
 		}
+
 
 
 		template<>
@@ -92,6 +100,7 @@ namespace nap
 		{
 			return glm::mix<double>(start, end, percent);
 		}
+
 
 
 		template<>
@@ -240,6 +249,36 @@ namespace nap
 		{
 			return inverse(objectToWorldMatrix) * glm::vec4(point, 1.0f);
 		}
+
+
+		std::string generateUUID()
+		{
+			static std::random_device rd;
+			static std::mt19937 gen(rd());
+			static std::uniform_int_distribution<> dis(0, 15);
+			static std::uniform_int_distribution<> dis2(8, 11);
+
+			std::stringstream ss;
+			int i;
+			ss << std::hex;
+			for (i = 0; i < 8; i++)
+				ss << dis(gen);
+			ss << "-";
+			for (i = 0; i < 4; i++)
+				ss << dis(gen);
+			ss << "-4"; // UUID4 marker
+			for (i = 0; i < 3; i++)
+				ss << dis(gen);
+			ss << "-";
+			ss << dis2(gen);
+			for (i = 0; i < 3; i++)
+				ss << dis(gen);
+			ss << "-";
+			for (i = 0; i < 12; i++)
+				ss << dis(gen);
+			return ss.str();
+		}
+
 
 		template<>
 		int random(int min, int max)

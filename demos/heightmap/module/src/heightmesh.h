@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -8,6 +12,8 @@
 
 namespace nap
 {
+	class Core;
+
 	/**
 	 * Height Mesh Resource
 	 * This resource is derived from a plane where the plance vertices are displaced along their normal based on a height map
@@ -24,12 +30,12 @@ namespace nap
 	{
 		RTTI_ENABLE(nap::PlaneMesh)
 	public:
-		virtual ~HeightMesh();
+		HeightMesh(Core& core);
 
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
+		 * Initialize this object after de-serialization
+		 * @param errorState contains the error message when initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		// Height map Properties

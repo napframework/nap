@@ -1,16 +1,20 @@
-#include "curveview.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "curveview.h"
 #include "curvemath.h"
+#include "napqt-resources.h"
 
 #include <QMenu>
 #include <QtDebug>
 #include <QtGui>
 #include <QPainter>
 #include <QList>
+#include <QToolButton>
 
 #include <napqt/qtutils.h>
-
-#include "napqt-resources.h"
+#include <napqt/separator.h>
 
 using namespace nap::qt;
 
@@ -116,6 +120,13 @@ void HandleItem::updateRect()
 	mRect.setCoords(-ext, -ext, ext * 2, ext * 2);
 	path.addRect(mRect);
 	setPath(path);
+	mShape = QPainterPath();
+	mShape.addRect(-mShapeExtent, -mShapeExtent, mShapeExtent * 2, mShapeExtent * 2);
+}
+
+QPainterPath HandleItem::shape() const
+{
+	return mShape;
 }
 
 void HandleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -653,7 +664,7 @@ CurveView::CurveView(QWidget* parent) : GridView(parent)
 	setGridIntervalDisplay(std::make_shared<FloatIntervalDisplay>(), std::make_shared<FloatIntervalDisplay>());
 
 	// Flip y axis
-	 setVerticalFlipped(true);
+	setVerticalFlipped(true);
 	frameView(QRectF(0, 0, 1, 1));
 
 	setRenderHint(QPainter::Antialiasing, true);
@@ -991,7 +1002,7 @@ void CurveView::initActions()
 	mSetTangentsAlignedAction.setIcon(QIcon(nap::qt::QRC_ICONS_TANGENTS_ALIGNED));
 	connect(&mSetTangentsAlignedAction, &QAction::triggered,
 			[this]() { setSelectedTangentsAligned(true); });
-	
+
 	mSetTangentsBrokenAction.setText("Broken");
 	mSetTangentsBrokenAction.setIcon(QIcon(nap::qt::QRC_ICONS_TANGENTS_BROKEN));
 	connect(&mSetTangentsBrokenAction, &QAction::triggered,
@@ -1001,7 +1012,12 @@ void CurveView::initActions()
 	mFlattenTangentsAction.setIcon(QIcon(nap::qt::QRC_ICONS_TANGENTS_FLAT));
 	connect(&mFlattenTangentsAction, &QAction::triggered,
 			[this]() { setSelectedTangentsFlat(); });
-	
+
+	mFrameViewAction.setText("Frame Selection");
+	mFrameViewAction.setIcon(QIcon(nap::qt::QRC_ICONS_FRAME_SELECTION));
+	connect(&mFrameViewAction, &QAction::triggered,
+			[this]() { frameSelected(); });
+
 }
 
 void CurveView::deleteSelectedItems()
@@ -1411,7 +1427,7 @@ void CurveView::drawCurveExtrapolation(QPainter* painter, const QRectF& dirtyRec
 	{
 		QPointF firstPos(std::numeric_limits<qreal>::max(), 0);
 		QPointF lastPos(-std::numeric_limits<qreal>::max(), 0);
-		for (int i=0; i < pointCount; i++)
+		for (int i = 0; i < pointCount; i++)
 		{
 			auto pos = curve.pos(i);
 			if (pos.x() < firstPos.x())
@@ -1472,7 +1488,7 @@ void CurveView::setSelectedPointTimes(qreal t)
 
 		auto& pt = curve->pos(idx);
 
-		values[curve][sel->curveSegmentItem().index()] = { t, pt.y() };
+		values[curve][sel->curveSegmentItem().index()] = {t, pt.y()};
 	}
 	mModel->movePoints(values);
 }
@@ -1491,7 +1507,7 @@ void CurveView::setSelectedPointValues(qreal v)
 
 		auto& pt = curve->pos(idx);
 
-		values[curve][sel->curveSegmentItem().index()] = { pt.x(), v };
+		values[curve][sel->curveSegmentItem().index()] = {pt.x(), v};
 	}
 	mModel->movePoints(values);
 }
@@ -1537,34 +1553,59 @@ QList<QAction*> CurveView::tangentActions()
 	return actions;
 }
 
+QList<QAction*> CurveView::auxiliaryActions()
+{
+	QList<QAction*> actions;
+	actions << &mFrameViewAction;
+	return actions;
+}
+
 CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 {
 	setLayout(&mLayout);
 	mLayout.setSpacing(0);
 	mLayout.setContentsMargins(0, 0, 0, 0);
-	mLayout.addWidget(&mToolBar);
+	mLayout.addWidget(&mToolbar);
 	mLayout.addWidget(&mCurveView);
 
-	mToolBar.addWidget(&mTimeSpinbox);
+	mToolbar.setLayout(&mToolbarLayout);
+	mToolbarLayout.setContentsMargins(2, 2, 2, 2);
+	mToolbarLayout.setSpacing(2);
+
+	mToolbarLayout.addWidget(&mTimeSpinbox);
 	mTimeSpinbox.setEnabled(false);
 
-	mToolBar.addWidget(&mValueSpinbox);
+	mToolbarLayout.addWidget(&mValueSpinbox);
 	mValueSpinbox.setEnabled(false);
 
-	mToolBar.addSeparator();
+	mToolbarLayout.addWidget(new Separator(Qt::Vertical));
 
 	for (const auto action : mCurveView.interpActions())
 	{
-		mToolBar.addAction(action);
+		auto btAction = new QToolButton();
+		btAction->setDefaultAction(action);
+		mToolbarLayout.addWidget(btAction);
 		action->setEnabled(false);
 	}
 
-	mToolBar.addSeparator();
+	mToolbarLayout.addWidget(new Separator(Qt::Vertical));
 
 	for (const auto action : mCurveView.tangentActions())
 	{
-		mToolBar.addAction(action);
+		auto btAction = new QToolButton();
+		btAction->setDefaultAction(action);
+		mToolbarLayout.addWidget(btAction);
 		action->setEnabled(false);
+	}
+
+	mToolbarLayout.addWidget(new Separator(Qt::Vertical));
+
+	for (const auto action : mCurveView.auxiliaryActions())
+	{
+		auto btAction = new QToolButton();
+		btAction->setDefaultAction(action);
+		mToolbarLayout.addWidget(btAction);
+//		action->setEnabled(true);
 	}
 
 	connect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
@@ -1572,16 +1613,19 @@ CurveEditor::CurveEditor(QWidget* parent) : QWidget(parent)
 	connect(&mValueSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onValueChanged);
 }
 
-void CurveEditor::onTimeChanged(qreal t) {
+void CurveEditor::onTimeChanged(qreal t)
+{
 	mCurveView.setSelectedPointTimes(t);
 }
 
-void CurveEditor::onValueChanged(qreal v) {
+void CurveEditor::onValueChanged(qreal v)
+{
 	mCurveView.setSelectedPointValues(v);
 }
 
 
-CurveEditor::~CurveEditor() {
+CurveEditor::~CurveEditor()
+{
 	disconnect(&mCurveView, &CurveView::selectionChanged, this, &CurveEditor::onSelectionChanged);
 	disconnect(&mTimeSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onTimeChanged);
 	disconnect(&mValueSpinbox, &FloatLineEdit::valueChanged, this, &CurveEditor::onValueChanged);
@@ -1599,9 +1643,10 @@ void CurveEditor::setModel(AbstractCurveModel* model)
 
 	if (mCurveModel)
 	{
-		for (int i=0, len=mCurveModel->curveCount(); i < len; i++)
+		for (int i = 0, len = mCurveModel->curveCount(); i < len; i++)
 		{
-			connect(model->curve(i), &AbstractCurve::pointsChanged, [this](auto indices, bool finished) {
+			connect(model->curve(i), &AbstractCurve::pointsChanged, [this](auto indices, bool finished)
+			{
 				onPointsChanged();
 			});
 		}

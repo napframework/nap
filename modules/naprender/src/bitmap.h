@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -6,62 +10,28 @@
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
-
-namespace opengl
-{
-	struct Texture2DSettings;
-}
+#include "surfacedescriptor.h"
 
 namespace nap
 {
 	class Texture2D;
+	struct SurfaceDescriptor;
 
 	/**
-	 * 2D image resource that is initially empty, there is no GPU data associated with this object
-	 * When initialized this object holds a set of 2D mapped pixels where every pixel value can have multiple channels
-	 * This object can be declared as a resource using one of the available data and color types
-	 * Every bitmap needs to have a width and height associated with it
-	 * When no settings are provided the bitmap contains: 512x512, RGB8 bit pixels
-	 * This object wraps a Bitmap and allocates the bitmap resource on init()
-	 * The properties associated with the bitmap are set when initialized from texture or file
+	 * 2D image resource that is initially empty, there is no GPU data associated with this object.
+	 * When initialized this object holds a set of 2D mapped pixels where every pixel value can have multiple channels.
+	 * This object can be declared as a resource using one of the available data and color types.
+	 * Every bitmap needs to have a width and height associated with it.
+	 * When no settings are provided the bitmap contains: 512x512, RGB8 bit pixels.
+	 * This object wraps a Bitmap and allocates the bitmap resource on init().
+	 * The properties associated with the bitmap are set when initialized from texture or file.
 	 */
 	class NAPAPI Bitmap : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		/**
-		 *	Supported bitmap data types
-		 */
-		enum class EDataType : int
-		{
-			BYTE		= 0,	
-			USHORT		= 1,	
-			FLOAT		= 2
-		};
-
-		/**
-		 *	Supported bitmap color types
-		 */
-		enum class EChannels : int
-		{
-			R			= 0,	///< R red component
-			RGB			= 1,	///< RGB red, green and blue component
-			RGBA		= 2,	///< RGBA red, green, blue and alpha component
-			BGR			= 3,	///< BGR blue, green and red component
-			BGRA		= 4		///< BGRA blue, green, red and alpha component
-		};
 
 		virtual ~Bitmap();
-
-		/**
-		 * @return The datatype of a pixel in this bitmap
-		 */
-		EDataType getDataType() const { return mType; }
-
-		/**
-		 * @return The channel type of a pixel in this bitmap
-		 */
-		EChannels getChannels() const { return mChannels; }
 
 		/**
 		* The bitmap is initialized using it's associated properties. This means
@@ -75,7 +45,6 @@ namespace nap
 		 * Initializes this bitmap from file. The settings associated with
 		 * this bitmap will match the settings loaded from file. If you want
 		 * to manually allocate pixel data call init() without a path.
-		 * The pixel data associated with the image @path is copied over
 		 * @param path the path to the image on disk to load
 		 * @param errorState contains the error if the image could not be loaded
 		 * @return if the bitmap loaded successfully
@@ -83,12 +52,11 @@ namespace nap
 		virtual bool initFromFile(const std::string& path, nap::utility::ErrorState& errorState);
 
 		/**
-		 * Initializes this bitmap from a 2D texture. 
-		 * The settings associated with this bitmap will match the settings of the 2D texture.
+		 * Initializes this bitmap based on the provided settings. 
 		 * Memory is allocated but the GPU pixel data is NOT copied over
-		 * @param texture the GPU texture to initialize this bitmap from
+		 * @param surfaceDescriptor the settings used to initialize this texture.
 		 */
-		void initFromTexture(const opengl::Texture2DSettings& settings);
+		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
 		 * @return the type of color associated with this bitmap
@@ -104,17 +72,17 @@ namespace nap
 		/**
 		 * @return the width of the bitmap, 0 when not initialized
 		 */
-		int getWidth() const												{ return mWidth; }
+		int getWidth() const												{ return mSurfaceDescriptor.getWidth(); }
 
 		/**
 		 *	@return the height of the bitmap, 0 when not initialized
 		 */
-		int getHeight() const												{ return mHeight; }
+		int getHeight() const												{ return mSurfaceDescriptor.getHeight(); }
  
 		/**
 		 *	@return number of color channels associated with this bitmap
 		 */
-		int getNumberOfChannels() const										{ return mNumChannels; }
+		int getNumberOfChannels() const										{ return mSurfaceDescriptor.getNumChannels(); }
 
 		/**
 		 * @return a pointer to the underlying data in memory
@@ -134,20 +102,52 @@ namespace nap
 		size_t getSizeInBytes() const;
 
 		/**
-		* Creates a color that is compatible with the data stored in this bitmap
-		* This is a utility function that works in conjunction with getPixel() and setPixel().  
-		* Making the pixel once before iterating over all the values in this map avoids unnecessary allocations
-		* @return a new pixel as a color that matches the amount of channels and data type of this bitmap
-		*/
+		 * Creates a color that is compatible with the data stored in this bitmap.
+		 * This is a utility function that works in conjunction with getPixel() and setPixel().
+		 * Making the pixel once before iterating over all the values in this map avoids unnecessary allocations.
+		 *
+		 *~~~~~{.cpp}
+		 * // Create the pixel that will hold the original color value
+		 * auto source_color = mBitmap.makePixel();
+		 *
+		 * // Create color that will hold the converted color values
+		 * RGBColor8 converted_color;
+		 *
+		 * while(...)
+		 * {
+		 *		// retrieve pixel value and convert into requested color
+		 *		mBitmap.getPixel(x, y, *source_color);
+		 *		source_color->convert(converted_color);
+		 * }
+		 *~~~~~
+		 *
+		 * @return a new pixel as a color that matches the amount of channels and data type of this bitmap
+		 */
 		std::unique_ptr<BaseColor> makePixel() const;
 
 		/**
-		* Retrieves the color of a pixel at the x and y pixel coordinates
+		* Retrieves the color of a pixel at the x and y pixel coordinates.
 		* The color is a copy of the pixel values in the bitmap. The result is stored in outPixel.
-		* outPixel needs to be created using makePixel(), this ensures the right number of channels and bitmap value type of the color
-		* outPixel needs to own it's color data and can't point to values in memory
-		* This call does not convert outPixel if the types don't match. In that case this call will assert
-		* To convert the fetched data call .convert() on outPixel
+		* outPixel needs to be created using makePixel(), this ensures the right number of channels and bitmap value type of the color.
+		* outPixel needs to own it's color data and can't point to values in memory.
+		* This call does not convert outPixel if the types don't match. In that case this call will assert.
+		* To convert the fetched data call .convert() on outPixel.
+		*
+		*~~~~~{.cpp}
+		* // Create the pixel that will hold the original color value
+		* auto source_color = mBitmap.makePixel();
+		*
+		* // Create color that will hold the converted color values
+		* RGBColor8 converted_color;
+		*
+		* while(...)
+		* {
+		*		// retrieve pixel value and convert into requested color
+		*		mBitmap.getPixel(x, y, *source_color);
+		*		source_color->convert(converted_color);
+		* }
+		*~~~~~
+		*
 		* @param x the horizontal pixel coordinate
 		* @param y the vertical pixel coordinate
 		* @param outPixel the pixel created using makePixel()
@@ -158,25 +158,25 @@ namespace nap
 		* return a color of type T with the color values of a pixel.
 		* This call converts the pixel data if necessary. 
 		* Note that this call can be slow when iterating over the bitmap!
-		* Use the makePixel / getPixel combination above for faster results
+		* Use the makePixel / getPixel combination above for faster results.
 		* Use this call to get a copy of the color values in the desired color format T where
 		* T can not be a color that points to external value in memory, ie: RGBColorData8 etc.
 		* Valid values for T are RGBColor8, RColorFloat etc.
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
-		* @param outColor holds the converted pixel colors
+		* @return color of pixel at given coordinates
 		*/
 		template<typename T>
 		T getPixel(int x, int y) const;
 
 		/**
-		 * Sets the color of a pixel at the x and y pixel coordinates
+		 * Sets the color of a pixel at the x and y pixel coordinates.
 		 * This call does not convert the color if the value types don't match, best to convert the color client side.
 		 * It's allowed to give an input color can that has less color channels than a pixel in the bitmap.
-		 * This means that an RGB color can be set to a pixel of an RGBA bitmap
-		 * To ensure matching data use makePixel() to create a pixel that is compatible with this bitmap
-		 * You can use the color conversion methods to convert any color into this bitmap's color space
-		 * This call asserts when the color types don't match and when the input color doesn't own it's data: points to values in memory
+		 * This means that an RGB color can be set to a pixel of an RGBA bitmap.
+		 * To ensure matching data use makePixel() to create a pixel that is compatible with this bitmap.
+		 * You can use the color conversion methods to convert any color into this bitmap's color space.
+		 * This call asserts when the color types don't match and when the input color doesn't own it's data: points to values in memory.
 		 * @param x the horizontal pixel coordinate
 		 * @param y the vertical pixel coordinate
 		 * @param color the new pixel color
@@ -184,13 +184,13 @@ namespace nap
 		void setPixel(int x, int y, const BaseColor& color);
 
 		/**
-		 * Sets the color of a pixel at the x and y pixel coordinates
-		 * This call converts the incoming color when the underlying data types do not match
+		 * Sets the color of a pixel at the x and y pixel coordinates.
+		 * This call converts the incoming color when the underlying data types do not match.
 		 * The given color can also point to values in memory, ie: the color doesn't own it's data
 		 * but the data it owns is copied over.
-		 * It's not recommended to use this call in a loop when you know it needs to convert the color
+		 * It's not recommended to use this call in a loop when you know it needs to convert the color.
 		 * It's allowed to give an input color can that has less color channels than a pixel in the bitmap.
-		 * This means that an RGB color can be set to a pixel of an RGBA bitmap
+		 * This means that an RGB color can be set to a pixel of an RGBA bitmap.
 		 * @param x the horizontal pixel coordinate
 		 * @param y the horizontal pixel coordinate
 		 * @param color the new pixel color
@@ -199,9 +199,9 @@ namespace nap
 		void setPixelColor(int x, int y, const T& color);
 
 		/**
-		 * Populates @outColor with the RGB values of a pixel. 
-		 * This call asserts when the bitmap doesn't have 3 channels
-		 * This call does not convert incompatible types and asserts when the data types do not match
+		 * Populates outColor with the RGB values of a pixel. 
+		 * This call asserts when the bitmap doesn't have 3 channels.
+		 * This call does not convert incompatible types and asserts when the data types do not match.
 		 * @param x the horizontal coordinate of the pixel
 		 * @param y the vertical coordinate of the pixel
 		 * @param outColor the RGB color values of the pixel at the requested coordinates
@@ -210,9 +210,9 @@ namespace nap
 		void getRGBColor(int x, int y, RGBColor<Type>& outColor) const;
 
 		/**
-		* Returns the RGB values of a pixel as a color
-		* This call asserts when the bitmap doesn't have 3 channels
-		* This call does not convert incompatible types and asserts when the data types do not match
+		* Returns the RGB values of a pixel as a color.
+		* This call asserts when the bitmap doesn't have 3 channels.
+		* This call does not convert incompatible types and asserts when the data types do not match.
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
 		* @return the RGB values of a pixel as a color
@@ -221,9 +221,9 @@ namespace nap
 		RGBColor<Type> getRGBColor(int x, int y) const;
 
 		/**
-		* Populates @outColor with the RGBA values of a pixel. 
-		* This call asserts when the bitmap doesn't have 4 channels
-		* This call does not convert incompatible types and asserts when the data types don't match
+		* Populates outColor with the RGBA values of a pixel. 
+		* This call asserts when the bitmap doesn't have 4 channels.
+		* This call does not convert incompatible types and asserts when the data types don't match.
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
 		* @param outColor the RGBA color values of the pixel at the requested coordinates
@@ -233,8 +233,8 @@ namespace nap
 
 		/**
 		* Returns a copy of the RGBA values of a pixel as a color.
-		* This call asserts when the bitmap doesn't have 4 channels
-		* This call does not convert incompatible types and asserts when the data types don't match
+		* This call asserts when the bitmap doesn't have 4 channels.
+		* This call does not convert incompatible types and asserts when the data types don't match.
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
 		* @return the RGBA color values of the pixel at the requested coordinates
@@ -243,23 +243,23 @@ namespace nap
 		RGBAColor<Type> getRGBAColor(int x, int y) const;
 
 		/**
-		 * Populates @outValue with the color value @channel
-		 * This call does not convert incompatible types and asserts when the underlying data types don't match
+		 * Populates outValue with the color specified by channel.
+		 * This call does not convert incompatible types and asserts when the underlying data types don't match.
 		 * @param x the horizontal coordinate of the pixel
 		 * @param y the vertical coordinate of the pixel
 		 * @param channel the color channel to get the value for
-		 * @param outValue copy of the color value associated with @channel
+		 * @param outValue copy of the color value specified by channel
 		 */
 		template<typename Type>
 		void getColorValue(int x, int y, nap::EColorChannel channel, RColor<Type>& outValue) const;
 
 		/**
-		* Returns a copy of the color value @channel
+		* Returns a copy of the color specified by channel.
 		* This call does not convert incompatible types and asserts when the underlying data types don't match
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
 		* @param channel the color channel to get the value for
-		* @return copy of the color value associated with @channel
+		* @return copy of the color value specified by channel
 		*/
 		template<typename Type>
 		RColor<Type> getColorValue(int x, int y, nap::EColorChannel channel) const;
@@ -268,10 +268,7 @@ namespace nap
 		 * These properties are read when initializing the bitmap as a resource
 		 * These properties are set  when initializing the bitmap from file or texture
 		 */
-		int mWidth					= 512;						///< property: width of the bitmap in pixels
-		int mHeight					= 512;						///< property: height of the bitmap in pixels
-		EDataType mType				= EDataType::BYTE;			///< property Type: data type of the pixels in the bitmap
-		EChannels mChannels			= EChannels::RGB;			///< property Channels: number and ordering of the channels in the bitmap
+		SurfaceDescriptor		mSurfaceDescriptor;
 
 	private:
 		/**
@@ -281,22 +278,17 @@ namespace nap
 		void updatePixelFormat();
 
 		/**
-		 * Copy data from source with the specified pitch to the internal buffer. Used to initialize from a FreeImage file.
-		 */
-		void setData(uint8_t* source, unsigned int sourcePitch);
-
-		/**
 		 * Get a pointer to the data of the specified pixel
 		 */
 		template<typename T>
 		T* getPixelData(unsigned int x, unsigned int y) const
 		{
-			assert(sizeof(T) == mChannelSize);
-			if (x >= mWidth || y >= mHeight)
+			assert(sizeof(T) == mSurfaceDescriptor.getChannelSize());
+			if (x >= mSurfaceDescriptor.getWidth() || y >= mSurfaceDescriptor.getHeight())
 				return nullptr;
 
 			// Get index in to array offset by number of channels (pixel level)
-			unsigned int offset = ((y * mWidth) + x) * mNumChannels * mChannelSize;
+			unsigned int offset = ((y * mSurfaceDescriptor.getWidth()) + x) * mSurfaceDescriptor.getBytesPerPixel();
 
 			// Update offset (pixel * num_channels * data_size)
 			unsigned char* data_ptr = (unsigned char*)(mData.data()) + offset;
@@ -352,23 +344,23 @@ namespace nap
 		RGBColor<Type*> getRGBColorData(int x, int y) const;
 
 		/**
-		* Populates @outValue with the address of the color value @channel
+		* Populates outValue with the address of the color value of the given channel.
 		* This call is useful to retrieve the memory location of a pixel's color channel in a bitmap
 		* This call does not convert incompatible types and asserts when the underlying data types don't match
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
-		* @param outValue pointer to the color data associated with the @channel
+		* @param outValue pointer to the value found at the given channel.
 		*/
 		template<typename Type>
 		void getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const;
 
 		/**
-		* returns a pointer to the address of the color value @channel
+		* returns a pointer to the address of the color value of the given channel.
 		* This call is useful to retrieve the memory location of a pixel's color channel in a bitmap
 		* This call does not convert incompatible types and asserts when the underlying data types don't match
 		* @param x the horizontal coordinate of the pixel
 		* @param y the vertical coordinate of the pixel
-		* @return pointer to the color data associated with the value @channel
+		* @return pointer to the value found at the given channel.
 		*/
 		template<typename Type>
 		RColor<Type*> getColorValueData(int x, int y, nap::EColorChannel channel) const;
@@ -386,9 +378,7 @@ namespace nap
 		rtti::TypeInfo mValueType = rtti::TypeInfo::empty();	///< Contained value type of the color (byte, float etc.)
 
 	private:
-		std::vector<uint8_t> mData;
-		size_t			mChannelSize;			///< Cached size in bytes of a single channel. This is updated when updatePixelFormat is called.
-		uint8_t			mNumChannels;			///< Cached number of channels. This is updated when updatePixelFormat is called.
+		std::vector<uint8_t>	mData;
 	};
 
 	/**
@@ -471,20 +461,19 @@ namespace nap
 	template<typename Type>
 	void nap::Bitmap::getRGBAColorData(int x, int y, RGBAColor<Type*>& outColor) const
 	{
-		assert(mNumChannels >= outColor.getNumberOfChannels());
+		assert(mSurfaceDescriptor.getNumChannels() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
-//		assert(mBitmap.hasData());
 
 		Type* pixel_data = getPixelData<Type>(x, y);
-		switch (mChannels)
+		switch (mSurfaceDescriptor.getChannels())
 		{
-		case EChannels::BGRA:
+		case ESurfaceChannels::BGRA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 2);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 0);
 			break;
 		}
-		case EChannels::RGBA:
+		case ESurfaceChannels::RGBA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 0);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 2);
@@ -510,22 +499,19 @@ namespace nap
 	template<typename Type>
 	void nap::Bitmap::getRGBColorData(int x, int y, RGBColor<Type*>& outColor) const
 	{
-		assert(mNumChannels >= outColor.getNumberOfChannels());
+		assert(mSurfaceDescriptor.getNumChannels() >= outColor.getNumberOfChannels());
 		assert(outColor.getValueType() == RTTI_OF(Type));
-//		assert(mBitmap.hasData());
 
 		Type* pixel_data = getPixelData<Type>(x, y);
-		switch (mChannels)
+		switch (mSurfaceDescriptor.getChannels())
 		{
-		case EChannels::BGR:
-		case EChannels::BGRA:
+		case ESurfaceChannels::BGRA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 2);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 0);
 			break;
 		}
-		case EChannels::RGB:
-		case EChannels::RGBA:
+		case ESurfaceChannels::RGBA:
 		{
 			outColor.setValue(EColorChannel::Red,  pixel_data + 0);
 			outColor.setValue(EColorChannel::Blue, pixel_data + 2);
@@ -551,13 +537,12 @@ namespace nap
 	void nap::Bitmap::getColorValueData(int x, int y, nap::EColorChannel channel, RColor<Type*>& outValue) const
 	{
 		assert(outValue.getValueType() == RTTI_OF(Type));
-		assert(static_cast<int>(channel) < mNumChannels);
+		assert(static_cast<int>(channel) < mSurfaceDescriptor.getNumChannels());
 
 		int idx = static_cast<int>(channel);
-		switch (mChannels)
+		switch (mSurfaceDescriptor.getChannels())
 		{
-			case EChannels::BGR:
-			case EChannels::BGRA:
+			case ESurfaceChannels::BGRA:
 			{
 				idx = channel == EColorChannel::Red  ? 2 : 
 					  channel == EColorChannel::Blue ? 0 : idx;
@@ -664,24 +649,3 @@ namespace nap
 	}
 }
 
-namespace std
-{
-	template <>
-	struct hash<nap::Bitmap::EChannels>
-	{
-		size_t operator()(const nap::Bitmap::EChannels& v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
-	};
-
-
-	template <>
-	struct hash<nap::Bitmap::EDataType>
-	{
-		size_t operator()(const nap::Bitmap::EDataType& v) const
-		{
-			return hash<int>()(static_cast<int>(v));
-		}
-	};
-}

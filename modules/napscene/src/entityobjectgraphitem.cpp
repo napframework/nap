@@ -1,7 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "entityobjectgraphitem.h"
 #include "component.h"
-#include "rtti/rttiutilities.h"
-#include "rtti/object.h"
+#include <rtti/rttiutilities.h>
+#include <rtti/object.h>
 
 namespace nap
 {
@@ -52,8 +56,8 @@ namespace nap
 			for (rtti::TypeInfo& type : dependent_types)
 			{
 				ObjectsByTypeMap::const_iterator dependent_component = mObjectsByType->find(type);
-				if (!errorState.check(dependent_component != mObjectsByType->end(), "Component %s was unable to find dependent component of type %s", getID().c_str(), type.get_name().data()))
-					return false;
+				if (dependent_component == mObjectsByType->end())
+					return true;
 
 				const std::vector<rtti::Object*> components = dependent_component->second;
 				for (rtti::Object* component : components)

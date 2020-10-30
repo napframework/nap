@@ -1,13 +1,16 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// External Includes
+// Local Includes
+#include "dllexport.h"
+#include "errorstate.h"
+
 // External Includes
 #include <string>
 #include <vector>
-
-// Local Includes
-#include "utility/dllexport.h"
-#include "errorstate.h"
 
 namespace nap
 {
@@ -21,6 +24,13 @@ namespace nap
 		* @return False on failure
 		*/
 		bool listDir(const char* directory, std::vector<std::string>& outFilenames, bool absolute=true);
+
+		/**
+		 * Check if the given path is absolute
+		 * @param path The path to check
+		 * @return True if the path is absolute, false otherwise
+		 */
+		bool isAbsolutePath(const std::string& path);
 
 		/**
 		 * Given a relative path, return an absolute path
@@ -37,14 +47,14 @@ namespace nap
 		std::string getFileExtension(const std::string& filename);
 
 		/**
-		 * @Return the name of the given file with extension, empty string if file has no extension
 		 * @param file the file to extract the name frame
+		 * @return the name of the given file with extension, empty string if file has no extension
 		 */
 		std::string getFileName(const std::string& file);
 
 		/**
-		 * @Return the directory of the given file
-		 * @param file the file to extract the name frame
+		 * @param file the filename
+		 * @return the directory of the given file
 		 */
 		std::string getFileDir(const std::string& file);
 
@@ -99,6 +109,13 @@ namespace nap
 		bool makeDirs(const std::string& directory);
 
 		/**
+		 * Delete the file at the specified path
+		 * @param path The path to the file to delete
+		 * @return true on success, false if it failed
+		 */
+		bool deleteFile(const std::string& path);
+
+		/**
 		 * Dump a string to a file.
 		 * @param filename The name of the file to write to.
 		 * @param contents The string to write
@@ -115,9 +132,9 @@ namespace nap
 		const std::string toComparableFilename(const std::string& filename);
 
 		/**
+		 * @param filenameA filename to compare against filenameB.
+		 * @param filenameB filename to comapre against filenameA.
 		 * @return return true when file are logically equal (uses toComparableFilename).
-		 * @param fileNameA: filename to compare against filenameB.
-		 * @param filenameB: filename to comapre against filenameA.
 		 */
 		bool isFilenameEqual(const std::string& filenameA, const std::string& filenameB);
 
@@ -131,12 +148,12 @@ namespace nap
 		bool getFileModificationTime(const std::string& path, uint64_t& modTime);
 
 		/**
-		 * @param outPath the full path to the executable including the application name
+		 * @return the full path to the executable including the application name
 		 */
 		std::string getExecutablePath();
 
 		/**
-		 * @param outDir the full path to the executable directory
+		 * @return the full path to the executable directory.
 		 */
 		std::string getExecutableDir();
 
@@ -155,5 +172,28 @@ namespace nap
 		 * @return True if the read succeeded, false otherwise
 		 */
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err);
+
+		/**
+		 * Find a file in one of the given directories.
+		 * @param basefilename The base filename to look for
+		 * @param dirs The directories to search in
+		 * @return The absolute path to the found file or an empty string if none was found
+		 */
+		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs);
+
+		/**
+		 * Join parts path parts using the correct path separator for the current platform
+		 */
+		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep = "/");
+
+		/**
+		 * @return The current platform's file path separator
+		 */
+		std::string pathSep();
+
+		/**
+		 * @return A file path with the correct path separator for the current platform
+		 */
+		std::string forceSeparator(const std::string& path);
 	}
 }

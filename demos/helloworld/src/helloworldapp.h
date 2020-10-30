@@ -1,17 +1,21 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// Mod nap render includes
+// External Includes
 #include <renderablemeshcomponent.h>
 #include <renderwindow.h>
-
-// Nap includes
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
 #include <inputservice.h>
+#include <renderservice.h>
 #include <imguiservice.h>
 #include <app.h>
 #include <spheremesh.h>
 #include <font.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
@@ -24,12 +28,12 @@ namespace nap
 	 * You can use the left mouse button to orbit around the object and 
 	 * the right mouse button to zoom in on the object
 	 * 
-	 * This demo uses 3 important modules:
-	 * mod_naprender, mod_napinput, mod_napcameracontrol
-	 * The sphere is rendered using a simple material that blends 2 colors based on a texture's alpha value
-	 * The sphere is positioned by a transform component and rotated along the y axis by a rotate component
+	 * This demo uses 3 important modules: mod_naprender, mod_napinput, mod_napcameracontrol
+	 * The sphere is rendered using a simple material that blends 2 colors based on a texture's alpha value.
+	 * The sphere is positioned by a transform component and rotated along the y axis by a rotate component.
 	 * The camera is placed away from the origin but can be moved using the mouse. The camera looks at
 	 * the sphere and uses that information to orbit around the object.
+	 * Text is rendered in the middle of the viewport, on top of the sphere, using a nap::Renderable2DTextComponent.
 	 *
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
@@ -85,6 +89,7 @@ namespace nap
 		ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ObjectPtr<EntityInstance> mPerspectiveCamEntity = nullptr;		//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
+		ObjectPtr<ImageFromFile> mWorldTexture = nullptr;				//< Pointer to the world texture
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "renderable2dtextcomponent.h"
 #include "renderglobals.h"
 #include "renderservice.h"
@@ -11,8 +15,9 @@
 
 // nap::Renderable2DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
-	RTTI_PROPERTY("Location", &nap::Renderable2DTextComponent::mLocation, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Location",		&nap::Renderable2DTextComponent::mLocation,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Orientation",	&nap::Renderable2DTextComponent::mOrientation,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",		&nap::Renderable2DTextComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable2DTextComponentInstance run time class definition 
@@ -28,14 +33,14 @@ namespace nap
 	bool Renderable2DTextComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Init base class (setting up the plane glyph plane etc.)
-		if (!RenderableTextComponentInstance::init(errorState))
+		if (!setup(errorState))
 			return false;
-
-		// Copy orientation
-		setOrientation(getComponent<Renderable2DTextComponent>()->mOrientation);
-
-		// Copy location
-		setLocation(getComponent<Renderable2DTextComponent>()->mLocation);
+		
+		// Copy flags
+		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
+		getMaterialInstance().setDepthMode(resource->mDepthMode);
+		setOrientation(resource->mOrientation);
+		setLocation(resource->mLocation);
 
 		// Fetch render service
 		mService = getEntityInstance()->getCore()->getService<RenderService>();
@@ -45,7 +50,7 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void Renderable2DTextComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Compute model matrix
 		glm::mat4x4 model_matrix;
@@ -53,10 +58,10 @@ namespace nap
 
 		// Compute new view matrix, don't scale or rotate!
 		glm::vec3 cam_pos = math::extractPosition(viewMatrix);
-		glm::mat4x4 view_matrix = glm::translate(identityMatrix, cam_pos);
+		glm::mat4x4 view_matrix = glm::translate(glm::mat4(), cam_pos);
 
 		// Call base class implementation based on given parameters
-		RenderableTextComponentInstance::draw(view_matrix, projectionMatrix, model_matrix);
+		RenderableTextComponentInstance::draw(renderTarget, commandBuffer, view_matrix, projectionMatrix, model_matrix);
 	}
 
 
@@ -94,7 +99,6 @@ namespace nap
 			rvalue.x += (int)(text_xform.x);
 			rvalue.y += (int)(text_xform.y);
 		}
-
 		return rvalue;
 	}
 
@@ -118,7 +122,7 @@ namespace nap
 		glm::ivec2 pos = getTextPosition();
 
 		// Compose model matrix
-		outMatrix = glm::translate(identityMatrix,
+		outMatrix = glm::translate(glm::mat4(),
 		{
 			(float)pos.x,
 			(float)pos.y,
@@ -127,20 +131,19 @@ namespace nap
 	}
 
 
-	void Renderable2DTextComponentInstance::draw(opengl::RenderTarget& target)
+	void Renderable2DTextComponentInstance::draw(IRenderTarget& target)
 	{
 		// Create projection matrix
-		glm::ivec2 size = target.getSize();
-		glm::mat4 proj_matrix = glm::ortho(0.0f, (float)size.x, 0.0f, (float)size.y);
-		
+		glm::ivec2 size = target.getBufferSize();
+
+		// Create projection matrix
+		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);
+
 		// Compute model matrix
 		glm::mat4x4 model_matrix;
 		computeTextModelMatrix(model_matrix);
 
 		// Draw text in screen space
-		target.bind();
-		mService->pushRenderState();
-		RenderableTextComponentInstance::draw(identityMatrix, proj_matrix, model_matrix);
-		target.unbind();
+		RenderableTextComponentInstance::draw(target, mRenderService->getCurrentCommandBuffer(), glm::mat4(), proj_matrix, model_matrix);
 	}
 }

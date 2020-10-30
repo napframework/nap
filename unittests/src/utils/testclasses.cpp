@@ -1,24 +1,25 @@
 #include "testclasses.h"
+#include <entity.h>
 
 RTTI_BEGIN_ENUM(TestEnum)
-        RTTI_ENUM_VALUE(TestEnum::Undefined, "Undefined"),
-        RTTI_ENUM_VALUE(TestEnum::Alpha,     "Alpha"),
-        RTTI_ENUM_VALUE(TestEnum::Beta,      "Beta"),
-        RTTI_ENUM_VALUE(TestEnum::Gamma,     "Gamma")
+		RTTI_ENUM_VALUE(TestEnum::Undefined, "Undefined"),
+		RTTI_ENUM_VALUE(TestEnum::Alpha, "Alpha"),
+		RTTI_ENUM_VALUE(TestEnum::Beta, "Beta"),
+		RTTI_ENUM_VALUE(TestEnum::Gamma, "Gamma")
 RTTI_END_ENUM
 
 
 RTTI_BEGIN_CLASS(TestPropertiesStruct)
-        RTTI_PROPERTY("String",  &TestPropertiesStruct::mString,  nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Strings", &TestPropertiesStruct::mStrings, nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("String",  &TestPropertiesStruct::mString,  nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Strings", &TestPropertiesStruct::mStrings, nap::rtti::EPropertyMetaData::Default)
 		RTTI_PROPERTY_FILELINK("Filename", &TestPropertiesStruct::mFilename, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Font)
-        RTTI_PROPERTY("Int",     &TestPropertiesStruct::mInt,     nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Ints",    &TestPropertiesStruct::mInts,    nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Ints2D",  &TestPropertiesStruct::mInts2D,  nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Float",   &TestPropertiesStruct::mFloat,   nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Floats",  &TestPropertiesStruct::mFloats,  nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Enum",    &TestPropertiesStruct::mEnum,    nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Enums",   &TestPropertiesStruct::mEnums,   nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Int",     &TestPropertiesStruct::mInt,     nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Ints",    &TestPropertiesStruct::mInts,    nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Ints2D",  &TestPropertiesStruct::mInts2D,  nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Float",   &TestPropertiesStruct::mFloat,   nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Floats",  &TestPropertiesStruct::mFloats,  nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Enum",    &TestPropertiesStruct::mEnum,    nap::rtti::EPropertyMetaData::Default)
+		RTTI_PROPERTY("Enums",   &TestPropertiesStruct::mEnums,   nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -44,6 +45,9 @@ RTTI_BEGIN_CLASS(TestResourceB)
 		RTTI_PROPERTY("EmbedPointers",  &TestResourceB::mEmbedPointers, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(TestComponentInstance)
+		RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(TestComponent)
 		RTTI_PROPERTY("String",    &TestComponent::mString,    nap::rtti::EPropertyMetaData::Default)

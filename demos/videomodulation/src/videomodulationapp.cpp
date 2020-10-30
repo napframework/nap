@@ -1,17 +1,24 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "videomodulationapp.h"
 
-// Nap includes
+// External includes
 #include <nap/core.h>
 #include <nap/logger.h>
-#include <orthocameracomponent.h>
 #include <perspcameracomponent.h>
+#include <orthocameracomponent.h>
 #include <rendertexture2d.h>
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <mathutils.h>
-#include <selectvideocomponent.h>
 #include <selectvideomeshcomponent.h>
 #include <audio/component/levelmetercomponent.h>
+#include <rendertotexturecomponent.h>
+#include <rendervideocomponent.h>
+#include <imguiutils.h>
+#include <uniforminstance.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoModulationApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -20,16 +27,16 @@ RTTI_END_CLASS
 namespace nap 
 {
 	/**
-	 * Initialize all the resources used by this application
-	 */
+	* Initialize all the resources used by this application
+	*/
 	bool VideoModulationApp::init(utility::ErrorState& error)
 	{			
 		// Fetch important services
-		mRenderService	= getCore().getService<RenderService>();
-		mInputService	= getCore().getService<InputService>();
-		mSceneService	= getCore().getService<SceneService>();
-		mVideoService	= getCore().getService<VideoService>();
-		mGuiService		= getCore().getService<IMGuiService>();
+		mRenderService = getCore().getService<RenderService>();
+		mInputService = getCore().getService<InputService>();
+		mSceneService = getCore().getService<SceneService>();
+		mVideoService = getCore().getService<VideoService>();
+		mGuiService = getCore().getService<IMGuiService>();
 
 		// Get the resource manager and load our scene / resources
 		mResourceManager = getCore().getResourceManager();
@@ -44,19 +51,20 @@ namespace nap
 		mDisplacementEntity = scene->findEntity("DisplacementEntity");
 		mPerspCameraEntity = scene->findEntity("PerspCameraEntity");
 
-		// Get render target
-		mVideoRenderTarget = mResourceManager->findObject<RenderTarget>("VideoRenderTarget");
-
 		// Find the window we want to render the output to
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
+
+		// Find the video player
+		mVideoPlayer = mResourceManager->findObject<VideoPlayer>("VideoPlayer");
+		mCurrentVideo = mVideoPlayer->getIndex();
 
 		// Get current video and mesh index for gui later on
 		SelectVideoMeshComponentInstance& mesh_selector = mDisplacementEntity->getComponent<SelectVideoMeshComponentInstance>();
 		mCurrentMesh = mesh_selector.getIndex();
-
-		SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
-		mCurrentVideo = video_selector.getIndex();
-
+		
+		// Start video playback
+		mVideoPlayer->play();
+		
 		return true;
 	}
 	
@@ -80,89 +88,90 @@ namespace nap
 
 		// Push background colors to material
 		MaterialInstance& background_material = mBackgroundEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		background_material.getOrCreateUniform<UniformVec3>("colorOne").setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });
-		background_material.getOrCreateUniform<UniformVec3>("colorTwo").setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
+		background_material.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("colorOne")->setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });		
+		background_material.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("colorTwo")->setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
 
 		// Push displacement properties to material
 		MaterialInstance& displaceme_material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		displaceme_material.getOrCreateUniform<UniformFloat>("displacement").setValue(mDisplacement);
-		displaceme_material.getOrCreateUniform<UniformFloat>("randomness").setValue(mRandomness);
+		displaceme_material.getOrCreateUniform("DisplacementUBO")->getOrCreateUniform<UniformFloatInstance>("value")->setValue(mDisplacement);
+		displaceme_material.getOrCreateUniform("DisplacementUBO")->getOrCreateUniform<UniformFloatInstance>("randomness")->setValue(mRandomness);
 	}
 	
 	
 	/**
 	 * We first render the video to it's off screen texture target. The texture it renders to
 	 * is linked by both the background and displacement material in JSON.
-	 * We don't have to manually bind the rendered texture to a shader input.
-	 * After rendering the off screen pass, the background is rendered using an orthographic camera
+	 * Next we apply a gray-scale effect to the rendered video texture using a RenderToTextureComponent.
+	 * After rendering these passes into their render targets, we render the background using an orthographic camera.
 	 * The mesh is rendered on top of the background using a perspective camera.
-	 * As a last step we render the GUI
+	 * As a last step the GUI is rendered.
 	 */
 	void VideoModulationApp::render()
 	{
-		mRenderService->destroyGLContextResources({mRenderWindow});
-
-		// Make render window active for drawing
-		mRenderWindow->makeActive();
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
 		// Get orthographic camera
 		OrthoCameraComponentInstance& ortho_cam = mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
 
-		// Video render target
+		// Start recording into the headless recording buffer.
+		if (mRenderService->beginHeadlessRecording())
 		{
-			// Clear buffers of video render target
-			mRenderService->clearRenderTarget(mVideoRenderTarget->getTarget());
-			
-			// Get objects to render
-			std::vector<RenderableComponentInstance*> render_objects;
-			render_objects.emplace_back(&mVideoEntity->getComponent<RenderableMeshComponentInstance>());
-			
-			// Render
-			mRenderService->renderObjects(mVideoRenderTarget->getTarget(), ortho_cam, render_objects);
+			// Render video to video texture
+			RenderVideoComponentInstance& video_render_comp = mVideoEntity->getComponent<RenderVideoComponentInstance>();
+			video_render_comp.draw();
+
+			// Render the gray-scale version of the video to the fx texture
+			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance>();
+			fx_comp.draw();
+
+			// Tell the render service we are done rendering into render-targets.
+			// The queue is submitted and executed.
+			mRenderService->endHeadlessRecording(); 
 		}
 
-		// Screen
+		// Render everything to screen
+		// Stat recording commands for the main window
+		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			// Clear target
-			opengl::RenderTarget& render_target = mRenderWindow->getBackbuffer();
-			render_target.setClearColor({ mClearColor.getRed(), mClearColor.getGreen(), mClearColor.getBlue(), 1.0 });
-			mRenderService->clearRenderTarget(render_target);
+			// Clear target and begin render pass
+			mRenderWindow->setClearColor({ mClearColor.toVec3(), 1.0f });
+			mRenderWindow->beginRendering();
 
 			// Get background plane to render
 			std::vector<RenderableComponentInstance*> render_objects;
 			render_objects.emplace_back(&mBackgroundEntity->getComponent<RenderableMeshComponentInstance>());
 
 			// Render background plane
-			mRenderService->renderObjects(render_target, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), render_objects);
+			mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), render_objects);
 
 			// Render displacement mesh
 			render_objects.clear();
 			render_objects.emplace_back(&mDisplacementEntity->getComponent<RenderableMeshComponentInstance>());
-			
+
 			// Set camera position in material
 			nap::MaterialInstance& material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-			UniformVec3& uniform = material.getOrCreateUniform<UniformVec3>("cameraPosition");
+			UniformVec3Instance* uniform = material.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraPosition");
 			const glm::mat4x4 global_xform = mPerspCameraEntity->getComponent<TransformComponentInstance>().getGlobalTransform();
-			uniform.setValue(math::extractPosition(global_xform));
+			uniform->setValue(math::extractPosition(global_xform));
 
 			// Render
-			mRenderService->renderObjects(render_target, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
+			mRenderService->renderObjects(*mRenderWindow, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
+
+			// Draw gui
+			mGuiService->draw();
+
+			// Stop render pass
+			mRenderWindow->endRendering();
+
+			// End recording into command buffer
+			mRenderService->endRecording();
 		}
 
-		// Draw gui
-		mGuiService->draw();
-
-		// Swap GPU buffers
-		mRenderWindow->swap();
-	}
-	
-
-	/**
-	 * Handles the window event
-	 */
-	void VideoModulationApp::handleWindowEvent(const WindowEvent& windowEvent)
-	{
-		
+		// Always tell the render engine we are done recording / rendering into this frame
+		mRenderService->endFrame();
 	}
 	
 	
@@ -211,10 +220,13 @@ namespace nap
 			{
 				mesh_selector.selectMesh(mCurrentMesh);
 			}
-			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
-			if (ImGui::SliderInt("Video", &mCurrentVideo, 0, video_selector.getCount() - 1))
+			if (ImGui::SliderInt("Video", &mCurrentVideo, 0, mVideoPlayer->getCount() - 1))
 			{
-				video_selector.selectVideo(mCurrentVideo);
+				utility::ErrorState sel_err;
+				if (!mVideoPlayer->selectVideo(mCurrentVideo, sel_err))
+					nap::Logger::error(sel_err.toString());
+				else
+					mVideoPlayer->play();
 			}
 		}
 		if (ImGui::CollapsingHeader("Displacement"))
@@ -230,14 +242,28 @@ namespace nap
 		
 		if (ImGui::CollapsingHeader("Playback"))
 		{
-			SelectVideoComponentInstance& video_selector = mVideoEntity->getComponent<SelectVideoComponentInstance>();
-			Video* current_video = video_selector.getCurrentVideo();
-			float currentTime = current_video->getCurrentTime();
-			if (ImGui::SliderFloat("Current Time", &currentTime, 0.0f, current_video->getDuration(), "%.3fs", 1.0f))
-				current_video->seek(currentTime);
-			ImGui::Text("Total time: %fs", current_video->getDuration());
+			float current_time = mVideoPlayer->getCurrentTime();
+			if (ImGui::SliderFloat("Current Time", &current_time, 0.0f, mVideoPlayer->getDuration(), "%.3fs", 1.0f))
+				mVideoPlayer->seek(current_time);
+			ImGui::Text("Total time: %fs", mVideoPlayer->getDuration());
 		}
-		
+		if (ImGui::CollapsingHeader("Video Texture"))		///< The rendered video texture
+		{
+			RenderVideoComponentInstance& video_comp = mVideoEntity->getComponent<RenderVideoComponentInstance>();
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& video_tex = video_comp.getOutputTexture();
+			float ratio_video = static_cast<float>(video_tex.getWidth()) / static_cast<float>(video_tex.getHeight());
+			ImGui::Image(video_tex, { col_width, col_width / ratio_video });
+		}
+		if (ImGui::CollapsingHeader("FX Texture"))			///< The post process effect applied to the video texture
+		{
+			RenderToTextureComponentInstance& fx_comp = mVideoEntity->getComponent<RenderToTextureComponentInstance> ();
+			float col_width = ImGui::GetContentRegionAvailWidth();
+			nap::Texture2D& output_tex = fx_comp.getOutputTexture();
+			float ratio_video = static_cast<float>(output_tex.getWidth()) / static_cast<float>(output_tex.getHeight());
+			ImGui::Image(output_tex, { col_width, col_width / ratio_video });
+		}
+
 		ImGui::End();
 	}
 
@@ -248,19 +274,14 @@ namespace nap
 		float window_heigh = static_cast<float>(mRenderWindow->getHeightPixels());
 
 		// Calculate ratio
-		SelectVideoComponentInstance& vsel = mVideoEntity->getComponent<SelectVideoComponentInstance>();	
-		float video_ratio = static_cast<float>(vsel.getCurrentVideo()->getWidth()) / static_cast<float>(vsel.getCurrentVideo()->getHeight());
+		float video_ratio = static_cast<float>(mVideoPlayer->getWidth()) / static_cast<float>(mVideoPlayer->getHeight());
 		float window_ratio = window_width / window_heigh;
 
 		glm::vec3 plane_size = { window_width, window_heigh, 1.0 };
 		if (window_ratio < video_ratio)
-		{
 			plane_size.y = plane_size.x / video_ratio;
-		}
 		else
-		{
 			plane_size.x = plane_size.y * video_ratio;
-		}
 
 		// Calculate plane offset in pixel coordinates
 		glm::vec2 offset = { window_width / 2, window_heigh / 2 };

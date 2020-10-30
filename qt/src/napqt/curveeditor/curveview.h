@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <QGraphicsScene>
@@ -8,6 +12,7 @@
 #include <napqt/gridview.h>
 #include <QtWidgets/QDoubleSpinBox>
 #include <napqt/floatlineedit.h>
+#include <napqt/flowlayout.h>
 #include "standardcurve.h"
 
 
@@ -36,6 +41,7 @@ namespace nap
 			const CurveSegmentItem& curveSegmentItem() const;
 			void setEmitItemChanged(bool b) { mEmitItemChanges = b; }
 			virtual void updateRect();
+			QPainterPath shape() const override;
 
 		Q_SIGNALS:
 			/**
@@ -58,6 +64,8 @@ namespace nap
 			QBrush mBrushSelected;
 			qreal mExtent = 2;
 			qreal mExtentSelectd = 2;
+			qreal mShapeExtent = 8; // used for hit detection (amongst others)
+			QPainterPath mShape; // shape used for hit detection (amongst others)
 			bool mEmitItemChanges = true;
 			QRectF mRect;
 		};
@@ -70,6 +78,7 @@ namespace nap
 		{
 		public:
 			explicit PointHandleItem(CurveSegmentItem& parent);
+
 		};
 
 		/**
@@ -252,6 +261,11 @@ namespace nap
 			 */
 			QList<QAction*> tangentActions();
 
+			/**
+			 * @return All remaining uncategorized actions
+			 */
+			QList<QAction*> auxiliaryActions();
+
 		Q_SIGNALS:
 			void selectionChanged(QMap<AbstractCurve*, QList<int>> points);
 
@@ -317,6 +331,7 @@ namespace nap
 			QAction mInterpBezierAction;
 			QAction mInterpSteppedAction;
 			QAction mFlattenTangentsAction;
+			QAction mFrameViewAction;
 		};
 
 		/**
@@ -349,7 +364,8 @@ namespace nap
 
 			QVBoxLayout mLayout;
 			CurveView mCurveView;
-			QToolBar mToolBar;
+			QWidget mToolbar;
+			FlowLayout mToolbarLayout;
 			FloatLineEdit mTimeSpinbox;
 			FloatLineEdit mValueSpinbox;
 			AbstractCurveModel* mCurveModel = nullptr;

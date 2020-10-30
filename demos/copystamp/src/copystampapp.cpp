@@ -1,8 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "copystampapp.h"
 #include "renderablecopymeshcomponent.h"
 
-// Nap includes
+// External Includes
 #include <nap/core.h>
 #include <orthocameracomponent.h>
 #include <mathutils.h>
@@ -43,6 +47,9 @@ namespace nap
 		mCameraEntity = scene->findEntity("Camera");
 		mWorldEntity  = scene->findEntity("World");
 
+		// Tell the gui service to which window we are going to render
+		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 	
@@ -61,9 +68,6 @@ namespace nap
 	 */
 	void CopystampApp::update(double deltaTime)
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
-
 		// The default input router forwards messages to key and mouse input components
 		// attached to a set of entities.
 		nap::DefaultInputRouter input_router;
@@ -71,6 +75,13 @@ namespace nap
 		// Forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
+
+		// Notify user that painting in debug mode is slow
+#ifdef _DEBUG
+		if (!mOpened)
+			ImGui::OpenPopup("Running Debug Build");
+		handlePopup();
+#endif // DEBUG
 
 		// Update gui and check for gui changes
 		updateGui();
@@ -83,36 +94,46 @@ namespace nap
 	 */
 	void CopystampApp::render()
 	{
-		// Clear opengl context related resources that are not necessary any more
-		mRenderService->destroyGLContextResources({ mRenderWindow });
+		// Signal the beginning of a new frame, allowing it to be recorded.
+		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
+		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
+		mRenderService->beginFrame();
 
-		// Activate current window for drawing
-		mRenderWindow->makeActive();
+		// Begin recording the render commands for the main render window
+		// This prepares a command buffer.
+		if (mRenderService->beginRecording(*mRenderWindow))
+		{
+			// Get perspective camera
+			PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
-		// Clear back-buffer
-		mRenderService->clearRenderTarget(mRenderWindow->getBackbuffer());
+			// Get mesh to render
+			RenderableCopyMeshComponentInstance& copy_mesh = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
 
-		// Get perspective camera
-		PerspCameraComponentInstance& persp_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			// Set camera location in the shader that draws all the meshes.
+			// The camera location is used for the light computation.
+			TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+			UniformVec3Instance& cam_loc_uniform = *copy_mesh.getMaterial().getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
+			cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 
-		// Get mesh to render
-		RenderableCopyMeshComponentInstance& copy_mesh = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
-		
-		// Set camera location in the shader that draws all the meshes.
-		// The camera location is used for the light computation.
-		TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
-		UniformVec3& cam_loc_uniform = copy_mesh.getMaterial().getOrCreateUniform<UniformVec3>("cameraLocation");
-		cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
-		
-		// Render all copied meshes
-		std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
-		mRenderService->renderObjects(mRenderWindow->getBackbuffer(), persp_camera, renderable_comps);
+			// Begin render pass
+			mRenderWindow->beginRendering();
 
-		// Draw gui
-		mGuiService->draw();
+			// Render all copied meshes
+			std::vector<RenderableComponentInstance*> renderable_comps = { &copy_mesh };
+			mRenderService->renderObjects(*mRenderWindow, persp_camera, renderable_comps);
 
-		// Swap screen buffers
-		mRenderWindow->swap();
+			// Draw gui
+			mGuiService->draw();
+
+			// End render pass
+			mRenderWindow->endRendering();
+
+			// End recording phase
+			mRenderService->endRecording();
+		}
+
+		// submit the queue to GPU for render
+		mRenderService->endFrame();
 	}
 	
 
@@ -177,5 +198,20 @@ namespace nap
 			ImGui::SliderFloat("Random Scale", &(copy_comp.mRandomScale), 0.0f, 1.0f);
 		}
 		ImGui::End();
+	}
+
+
+	void CopystampApp::handlePopup()
+	{
+		if (ImGui::BeginPopupModal("Running Debug Build"))
+		{
+			ImGui::Text("Performance is ~100x times better in a release build");
+			if (ImGui::Button("Gotcha"))
+			{
+				mOpened = true;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
 	}
 }

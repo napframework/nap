@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <QVariant>
@@ -5,7 +9,7 @@
 #include <rtti/typeinfo.h>
 #include <rttr/type.h>
 #include <nap/logger.h>
-
+#include <instanceproperty.h>
 
 namespace napkin
 {
@@ -52,5 +56,10 @@ namespace napkin
 	 * @return The resulting value as an rttr::variant
 	 */
 	rttr::variant fromQVariant(const nap::rtti::TypeInfo& type, const QVariant& variant, bool* ok);
+
+	rttr::variant getInstancePropertyValue(rttr::type type, nap::InstancePropertyValue& instPropValue);
+	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value);
+	void setInstancePropertyValue(rttr::variant& prop, const rttr::type& type, const rttr::variant& value);
+	void removeInstancePropertyValue(rttr::variant& prop, const rttr::type& type);
 }
 

@@ -13,7 +13,7 @@ Install {#install}
 
 # Overview {#build_env_overview}
 
-Installing the NAP beta release involves extracting the archive and running our script to guide you through dependency installation.
+Installing the NAP release involves extracting the archive and running our script to guide you through dependency installation.
 
 Projects within the NAP beta reside within the framework folder structure, and as such we recommend extracting the release into a user directory instead of a system directory.  For example on Windows something like My Documents is a more suitable location than C:\\Program Files.
 
@@ -33,12 +33,11 @@ _Manual Dependency Installation_
 
 Alternatively you can follow the steps below to install the dependencies, however we still recommend running `check_build_environment.bat` afterwards to verify your build environment.
 
-1. Download and install <a href="https://go.microsoft.com/fwlink/?LinkId=532606&clcid=0x409" target="_blank">Visual Studio 2015</a>. This link points to the community edition which can be used for free. Make sure to select `Visual C++` under `programming languages` when installing Visual Studio.
-2. Download and install <a href="http://cmake.org/download" target="_blank">CMake</a>
+1. Download and install <a href="https://go.microsoft.com/fwlink/?LinkId=532606&clcid=0x409" target="_blank">Visual Studio 2015</a>. This link points to the community edition which can be used for free. Make sure to select `Visual C++` under `programming languages` when installing Visual Studio, including `Common Tools for Visual C++ 2015` and `Microsoft Foundation Classes for C++`. 
 
 ## macOS {#setup_build_env_macos}
 
-NAP $(NAP_VERSION_FULL) supports macOS Mojave. Although NAP is known to work on other macOS releases, Mojave is the current supported version.
+NAP $(NAP_VERSION_FULL) supports macOS Catalina with XCode 11.7. Although NAP is known to work on other macOS releases, Catalina is the current supported platform. Other versions of XCode are not supported at this moment.
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
@@ -54,25 +53,19 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 ```    
 xcode-select --install
 ```
-4. Install CMake. 
-  * Download and install <a href="http://cmake.org/download" target="_blank">CMake</a> then add CMake to your path, eg. by adding the following to `.bash_profile` in your home directory:
-```
-export PATH="/Applications/CMake.app/Contents/bin:$PATH"
-```
-  * Alternatively installing via <a href="https://brew.sh/" target="_blank">Homebrew</a> is also possible
 
 ## Linux {#setup_build_env_linux}
 
-NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 18.04 on x86-64 machines using GCC.  Although NAP is known to work on other Ubuntu releases, 18.04 is the current supported version.
+NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 20.04 on x86-64 machines using GCC. Although NAP is known to work on other Ubuntu releases, 20.04 is the current supported version.
 
 Follow these steps for a guided installation:
 1. Extract the release:
 ```
-tar jxvf NAP-0.2.3-Linux.tar.bz2
+tar jxvf NAP-0.4.0-Linux.tar.bz2
 ```
 2. Run the `check_build_environment` script to guide you through installing prerequisites, following the instructions:
 ```
-cd NAP-0.2.3-Linux
+cd NAP-0.4.0-Linux
 ./tools/check_build_environment
 ```
 3. If any changes are required re-run `check_build_environment` after those changes have been made to verify the final environment
@@ -83,7 +76,7 @@ Alternatively you can follow the steps below to install the dependencies, howeve
 
 1. Run the following to install the dependencies via apt:
 ```
-apt-get install build-essential cmake patchelf libglu1-mesa-dev
+apt-get install build-essential patchelf libglu1-mesa-dev
 ```
 
 # Run Your First Demo {#run_demo}
@@ -111,7 +104,7 @@ All demonstration projects can be found within the demos folder within the relea
 
 1. Navigate to the helloworld demo
 ```
-cd NAP-0.2.3-macOS/demos/helloworld
+cd NAP-0.4.0-Linux/demos/helloworld
 ```
 2. Generate the Unix makefiles
 ```
@@ -124,6 +117,6 @@ make
 ```
 4. Run the demo
 ```
-cd ../bin/*Debug*
+cd ../bin/Debug
 ./helloworld
 ```

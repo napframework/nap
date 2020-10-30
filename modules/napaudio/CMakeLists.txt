@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(mod_napaudio)
 
 find_package(portaudio REQUIRED)
@@ -19,12 +24,16 @@ module_json_to_cmake()
 set(LIBRARIES napcore portaudio libsndfile libmpg123)
 if(APPLE)
     list(APPEND LIBRARIES "-framework CoreAudio" "-framework CoreServices" "-framework CoreFoundation" "-framework AudioUnit" "-framework AudioToolbox")
+elseif(UNIX)
+    list(APPEND LIBRARIES atomic)
 endif()
 
 set(INCLUDES src ${PORTAUDIO_INCLUDE_DIR} ${LIBSNDFILE_INCLUDE_DIR} ${LIBMPG123_INCLUDE_DIR})
 
 add_library(${PROJECT_NAME} SHARED ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
@@ -60,11 +69,16 @@ endif()
 copy_module_json_to_bin()
 
 # Package into platform release
-if(UNIX)
-    set(UNIX_EXTRA_RPATH "../../../../thirdparty/mpg123/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/portaudio/lib")
-    list(APPEND UNIX_EXTRA_RPATH "../../../../thirdparty/libsndfile/lib")
-endif()    
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/mpg123/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/portaudio/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/libsndfile/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/mpg123/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/libsndfile/lib)
+endif()
 package_module()
 
 # Package mpg123 into platform release
@@ -79,7 +93,7 @@ if(WIN32)
             DESTINATION thirdparty/mpg123/include)
     file(GLOB MPG123_LIBFILES ${THIRDPARTY_DIR}/mpg123/install/msvc/*.lib)
     install(FILES ${MPG123_LIBFILES}
-            DESTINATION thirdparty/mpg123/lib)   
+            DESTINATION thirdparty/mpg123/lib)
 elseif(APPLE)
     # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -95,6 +109,10 @@ elseif(APPLE)
         ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib
                                                "@loader_path/../../../../thirdparty/mpg123/lib")
     endforeach()
+elseif(ANDROID)
+    install(DIRECTORY ${LIBMPG123_DIR}/install/android/lib/
+            DESTINATION thirdparty/mpg123/lib
+            )
 elseif(UNIX)
     file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${MPG123_DYLIBS}
@@ -112,7 +130,11 @@ if(WIN32)
             DESTINATION thirdparty/libsndfile/bin)
     file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
     install(FILES ${LIBSNDFILE_IMPLIBS}
-            DESTINATION thirdparty/libsndfile/lib)  
+            DESTINATION thirdparty/libsndfile/lib)
+elseif(ANDROID)
+    install(DIRECTORY ${LIBSNDFILE_DIR}/android/install/lib/
+            DESTINATION thirdparty/libsndfile/lib
+            )
 elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
@@ -127,6 +149,10 @@ if(WIN32)
             DESTINATION thirdparty/portaudio/lib)
     install(FILES ${PORTAUDIO_LIBS_RELEASE_DLL}
             DESTINATION thirdparty/portaudio/bin)
+elseif(ANDROID)
+    install(DIRECTORY ${PORTAUDIO_DIR}/android/lib/
+            DESTINATION thirdparty/portaudio/lib
+            )
 elseif(UNIX)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}

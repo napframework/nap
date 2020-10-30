@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <component.h>
@@ -19,9 +23,10 @@ namespace nap
 	class KeyInputComponent;
 
 	/**
-	 * OrbitController is a camera controller for a perspective camera that rotates around a target point.
-	 * 
+	 * Resource part of the orbit controller.
+	 * The controller is a perspective camera controller that rotates the camera around a target point.
 	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
+	 * Requires a nap::PointerInputComponent and nap::TransformComponent to be present on the same entity.
 	 */
 	class NAPAPI OrbitController : public Component
 	{
@@ -42,7 +47,10 @@ namespace nap
 
 
 	/**
-	 * ComponentInstance for the OrbitController.
+	 * Instance part of the orbit controller.
+	 * The controller is a perspective camera controller that rotates the camera around a target point.
+	 * Left mouse button to rotate, right mouse button to zoom in and out on the target.
+	 * Requires a nap::PointerInputComponent and nap::TransformComponent to be present on the same entity.
 	 */
 	class NAPAPI OrbitControllerInstance : public ComponentInstance
 	{
@@ -71,6 +79,11 @@ namespace nap
 		 * Disable responding to input for this controller.
 		 */
 		void disable() { mEnabled = false; }
+
+		/**
+		 * @return the current position the camera controlled by the orbit controller looks at. 
+		 */
+		const glm::vec3 getLookAtPos() const				{ return mLookAtPos; }
 
 		/**
 		 * @return The perspective camera component that we are controlling.

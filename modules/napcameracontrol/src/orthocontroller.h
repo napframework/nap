@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -17,8 +21,12 @@ namespace nap
 	class TransformComponent;
 
 	/**
-	* Resource for the OrbitController
-	*/
+	 * Resource part of the orthographic controller.
+	 * Adds Orthographic camera control to the entity it is attached to.
+	 * It uses the TransformComponent to move the entity and the InputComponent to receive input.
+	 * These components are required to be present on the same entity.
+	 * Hold left mouse button to pan, right mouse button to zoom.
+	 */
 	class NAPAPI OrthoController : public Component
 	{
 		RTTI_ENABLE(Component)
@@ -35,9 +43,10 @@ namespace nap
 
 
 	/**
-	 * The OrthoController is a component that implements orthographic camera control for the entity it is attached to.
-	 * It uses the TransformComponent to move the entity and the InputComponent to receive input
-	 *
+	 * Instance part of the orthographic controller.
+	 * Adds Orthographic camera control to the entity it is attached to.
+	 * It uses the TransformComponent to move the entity and the InputComponent to receive input.
+	 * These components are required to be present on the same entity.
 	 * Hold left mouse button to pan, right mouse button to zoom.
 	 */
 	class NAPAPI OrthoControllerInstance : public ComponentInstance
@@ -52,7 +61,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Enables controlling of the camera while setting the position and rotation.
+		 * Enables orthographic control based on the given camera position and rotation values.
 		 * @param cameraPos Camera translation to set.
 		 * @param cameraRotate Camera rotation to set.
 		 */

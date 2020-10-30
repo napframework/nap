@@ -22,13 +22,13 @@ using namespace nap::utility;
 BaseClass* createTestHierarchy()
 {
 	DerivedClass* pointee = new DerivedClass();
-	pointee->mID								= "Pointee";
-	pointee->mIntProperty						= 42;
-	pointee->mStringProperty					= "Pointee String";
-	pointee->mEnumProperty						= ETestEnum::Two;
-	pointee->mNestedCompound.mFloatProperty		= 16.0f;
-	pointee->mNestedCompound.mPointerProperty	= pointee;
-	pointee->mNestedCompound.mNestedEnum		= DataStruct::ENestedEnum::Eight;
+	pointee->mID = "Pointee";
+	pointee->mIntProperty = 42;
+	pointee->mStringProperty = "Pointee String";
+	pointee->mEnumProperty = ETestEnum::Two;
+	pointee->mNestedCompound.mFloatProperty = 16.0f;
+	pointee->mNestedCompound.mPointerProperty = pointee;
+	pointee->mNestedCompound.mNestedEnum = DataStruct::ENestedEnum::Eight;
 	pointee->mArrayOfInts.push_back(1);
 	pointee->mArrayOfInts.push_back(2);
 	pointee->mArrayOfInts.push_back(3);
@@ -42,11 +42,11 @@ BaseClass* createTestHierarchy()
 	pointee->mArrayOfEmbeddedPointers[0]->mID = "EmbeddedArrayObject";
 
 	BaseClass* root = new BaseClass();
-	root->mID									= "Root";
-	root->mIntProperty							= 42 / 2;
-	root->mStringProperty						= "Root String";
-	root->mPointerProperty						= pointee;
-	root->mObjectPtrProperty					= pointee;
+	root->mID = "Root";
+	root->mIntProperty = 42 / 2;
+	root->mStringProperty = "Root String";
+	root->mPointerProperty = pointee;
+	root->mObjectPtrProperty = pointee;
 
 	return root;
 }
@@ -93,112 +93,112 @@ void testObjectPtr()
 	}
 }
 
-//TEST_CASE("Serialization", "[Serialization]")
-//{
-//	//testObjectPtr();
-//	Logger::setLevel(Logger::debugLevel());
-//
-//	Core core;
-//	nap::utility::ErrorState error;
-//	core.initializeEngine(error);
-//
-//	// TODO: This should be unit testable, currently this fails because of a project json file we're not testing
-//	//	REQUIRE(core.initializeEngine(error));
-//
-//	rtti::TypeInfo::get<std::vector<DataStruct>>();
-//
-//	std::size_t version_datastruct = rtti::getRTTIVersion(RTTI_OF(DataStruct));
-//	std::size_t version_base = rtti::getRTTIVersion(RTTI_OF(BaseClass));
-//	std::size_t version_derived = rtti::getRTTIVersion(RTTI_OF(DerivedClass));
-//
-//	// Create test hierarchy
-//	auto root = createTestHierarchy();
-//
-//	// Create path to float property in array of nested compounds
-//	rtti::Path float_property_path;
-//	float_property_path.pushAttribute("ArrayOfCompounds");
-//	float_property_path.pushArrayElement(0);
-//	float_property_path.pushAttribute("FloatProperty");
-//
-//	// Convert path to string
-//	std::string path_str = float_property_path.toString();
-//
-//	// Convert back and verify the path is the same
-//	rtti::Path path_copy = rtti::Path::fromString(path_str);
-//	REQUIRE(path_copy == float_property_path);
-//
-//	// Resolve the path and verify it succeeded
-//	rtti::ResolvedPath resolved_path;
-//	REQUIRE(float_property_path.resolve(root->mPointerProperty, resolved_path));
-//
-//	// Verify setting the value works
-//	float old_value = resolved_path.getValue().get_value<float>();
-//	REQUIRE(resolved_path.setValue(8.0f));
-//
-//	// Restore value so we can compare later
-//	resolved_path.setValue(old_value);
-//
-//	Factory factory;
-//
-//	{
-//		ErrorState error_state;
-//
-//		// Write to json
-//		JSONWriter writer;
-//		REQUIRE(serializeObjects({ root }, writer, error_state));
-//
-//		// Print json
-//		std::string json = writer.GetJSON();
-////		std::cout << json << std::endl;
-//
-//		// Read json and verify it succeeds
-//		DeserializeResult read_result;
-//		REQUIRE(deserializeJSON(json, EPropertyValidationMode::DisallowMissingProperties, factory, read_result, error_state));
-//
-//		// Resolve links
-//		REQUIRE(DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state));
-//
-//		// Sort read objects into id mapping
-//		std::map<std::string, Object*> objects_by_id;
-//		for (auto& object : read_result.mReadObjects)
-//			objects_by_id.insert({ object->mID, object.get() });
-//
-//// 		// Compare root objects
-//// 		if (!rtti::areObjectsEqual(*objects_by_id["Root"], *root, rtti::EPointerComparisonMode::BY_ID))
-//// 			return -1;
-////
-//// 		// Compare pointee-objects
-//// 		if (!rtti::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, rtti::EPointerComparisonMode::BY_ID))
-//// 			return -1;
-//	}
-//
-//	{
-//		ErrorState error_state;
-//
-//		// Write to binary
-//		BinaryWriter binary_writer;
-//		REQUIRE(serializeObjects({ root }, binary_writer, error_state));
-//
-//		// Read binary and verify it succeeds
-//		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
-//		DeserializeResult read_result;
-//		REQUIRE(deserializeBinary(stream, factory, read_result, error_state));
-//
-//		// Resolve links
-//		REQUIRE(DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state));
-//
-//		// Sort read objects into id mapping
-//		std::map<std::string, Object*> objects_by_id;
-//		for (auto& object : read_result.mReadObjects)
-//			objects_by_id.insert({ object->mID, object.get() });
-//
-//// 		// Compare root objects
-//// 		if (!rtti::areObjectsEqual(*objects_by_id["Root"], *root, rtti::EPointerComparisonMode::BY_ID))
-//// 			return -1;
-////
-//// 		// Compare pointee-objects
-//// 		if (!rtti::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, rtti::EPointerComparisonMode::BY_ID))
-//// 			return -1;
-//	}
-//	delete root;
-//}
+
+TEST_CASE("Serialization", "[Serialization]")
+{
+	using namespace nap;
+
+	//testObjectPtr();
+	Logger::setLevel(Logger::debugLevel());
+
+	Core core;
+	nap::utility::ErrorState error;
+	core.initializeEngine(error);
+
+	// TODO: This should be unit testable, currently this fails because of a project json file we're not testing
+	//	REQUIRE(core.initializeEngine(error));
+
+	rtti::TypeInfo::get<std::vector<DataStruct>>();
+
+	std::size_t version_datastruct = rtti::getRTTIVersion(RTTI_OF(DataStruct));
+	std::size_t version_base = rtti::getRTTIVersion(RTTI_OF(BaseClass));
+	std::size_t version_derived = rtti::getRTTIVersion(RTTI_OF(DerivedClass));
+
+	// Create test hierarchy
+	auto root = createTestHierarchy();
+
+	// Create path to float property in array of nested compounds
+	rtti::Path float_property_path;
+	float_property_path.pushAttribute("ArrayOfCompounds");
+	float_property_path.pushArrayElement(0);
+	float_property_path.pushAttribute("FloatProperty");
+
+	// Convert path to string
+	std::string path_str = float_property_path.toString();
+
+	// Convert back and verify the path is the same
+	rtti::Path path_copy = rtti::Path::fromString(path_str);
+	REQUIRE(path_copy == float_property_path);
+
+	// Resolve the path and verify it succeeded
+	rtti::ResolvedPath resolved_path;
+	REQUIRE(float_property_path.resolve(root->mPointerProperty, resolved_path));
+
+	// Verify setting the value works
+	float old_value = resolved_path.getValue().get_value<float>();
+	REQUIRE(resolved_path.setValue(8.0f));
+
+	// Restore value so we can compare later
+	resolved_path.setValue(old_value);
+
+	rtti::Factory factory;
+
+	{
+		ErrorState error_state;
+
+		// Write to json
+		rtti::JSONWriter writer;
+		REQUIRE(serializeObjects({ root }, writer, error_state));
+
+		// Print json
+		std::string json = writer.GetJSON();
+		//		std::cout << json << std::endl;
+
+		// Read json and verify it succeeds
+		rtti::DeserializeResult read_result;
+		REQUIRE(deserializeJSON(json, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::AllPointerTypes, factory, read_result, error_state));
+
+		// Sort read objects into id mapping
+		std::map<std::string, rtti::Object*> objects_by_id;
+		for (auto& object : read_result.mReadObjects)
+			objects_by_id.insert({ object->mID, object.get() });
+
+		// Compare root objects
+		REQUIRE(rtti::areObjectsEqual(*objects_by_id["Root"], *root, read_result.mUnresolvedPointers));
+
+		// Compare pointee-objects
+		REQUIRE(rtti::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, read_result.mUnresolvedPointers));
+
+		// Resolve links
+		REQUIRE(rtti::DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state));
+	}
+
+	{
+		ErrorState error_state;
+
+		// Write to binary
+		rtti::BinaryWriter binary_writer;
+		if (!serializeObjects({ root }, binary_writer, error_state))
+			FAIL(error_state.toString());
+
+		// Read binary and verify it succeeds
+		MemoryStream stream(binary_writer.getBuffer().data(), binary_writer.getBuffer().size());
+		rtti::DeserializeResult read_result;
+		REQUIRE(deserializeBinary(stream, factory, read_result, error_state));
+
+		// Sort read objects into id mapping
+		std::map<std::string, rtti::Object*> objects_by_id;
+		for (auto& object : read_result.mReadObjects)
+			objects_by_id.insert({ object->mID, object.get() });
+
+		// Compare root objects
+		REQUIRE(rtti::areObjectsEqual(*objects_by_id["Root"], *root, read_result.mUnresolvedPointers));
+		
+		// Compare pointee-objects
+		REQUIRE(rtti::areObjectsEqual(*objects_by_id["Pointee"], *root->mPointerProperty, read_result.mUnresolvedPointers));
+
+		// Resolve links
+		REQUIRE(rtti::DefaultLinkResolver::sResolveLinks(read_result.mReadObjects, read_result.mUnresolvedPointers, error_state));
+	}
+	delete root;
+}

@@ -1,7 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
 #include "componentptr.h"
+
+// External Includes
 #include <rtti/object.h>
 #include <rtti/path.h>
 #include <rtti/objectptr.h>
@@ -51,7 +57,7 @@ namespace nap
 	/**
 	 * Instance property value for pointer type.
 	 */
-	class PointerInstancePropertyValue : public InstancePropertyValue
+	class NAPAPI PointerInstancePropertyValue : public InstancePropertyValue
 	{
 		RTTI_ENABLE(InstancePropertyValue)
 
@@ -72,7 +78,7 @@ namespace nap
 	 * Instance property value a ComponentPtr type. The value contains a path as if it was present on the original attribute. So, any
 	 * relative paths are relative to the original location of the property.
 	 */
-	class ComponentPtrInstancePropertyValue : public InstancePropertyValue
+	class NAPAPI ComponentPtrInstancePropertyValue : public InstancePropertyValue
 	{
 		RTTI_ENABLE(InstancePropertyValue)
 	public:
@@ -122,30 +128,29 @@ namespace nap
 	 * Represents both the path to an attribute as well as the value to override. Together with the target object that must be given 
 	 * in apply(), this can be used to override a property.
 	 */
-	class TargetAttribute
+	class NAPAPI TargetAttribute
 	{
 	public:
 		/**
-		 * Applies the stored override value @mValue on target @target and attribute path @mPath.
+		 * Applies the stored override value on the target and attribute path.
 		 * @param target The object that holds the attribute.
 		 * @param errorState If function returns false, contains error information if an error occurs.
 		 * @return True on success, otherwise false.
 		 */
 		bool apply(rtti::Object& target, utility::ErrorState& errorState) const;
 
-		std::string							mPath;			///< RTTI path to the property
-		rtti::ObjectPtr<InstancePropertyValue>	mValue;			///< Value to override
+		std::string								mPath;		///< RTTI path to the property
+		rtti::ObjectPtr<InstancePropertyValue>	mValue;		///< Value to override
 	};
 
 	/**
-	 * Represents all the properties that are overridden van a single component.
+	 * Represents all the properties that are overridden on a single component.
 	 */
-	class ComponentInstanceProperties
+	class NAPAPI ComponentInstanceProperties
 	{
 	public:
-		using TargetAttributeList = std::vector<TargetAttribute>;
-		ComponentPtr<Component>		mTargetComponent;		///< Component to override properties from
-		TargetAttributeList			mTargetAttributes;		///< List of values that are overridden
+		ComponentPtr<Component>			mTargetComponent = nullptr;		///< Component to override properties from
+		std::vector<TargetAttribute> 	mTargetAttributes;				///< List of values that are overridden
 	};
 
 	/**

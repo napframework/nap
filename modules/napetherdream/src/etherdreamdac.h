@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -36,8 +40,6 @@ namespace nap
 
 		// Constructor used by factory
 		EtherDreamDac(EtherDreamService& service);
-
-		virtual ~EtherDreamDac() override;
 
 		/**
 		 * Initializes this DAC and registers it with the etherdream service.
@@ -80,22 +82,17 @@ namespace nap
 		// Thread used to write frames
 		std::mutex						mWriteMutex;
 		std::thread						mWriteThread;
-		bool							mStopWriting = false;
+		std::atomic<bool>				mStopWriting = { false };
 		std::vector<EtherDreamPoint>	mPoints;
 
 		// Thread that writes frame to laser when available
 		void							writeThread();
 
 		/**
-		 *	Signals the laser write thread to stop writing data and exit
+		 * Write a frame
+		 * @param data, all the points to write
+		 * @param npoints, number of points to write
 		 */
-		void exitWriteThread();
-
-		/**
-		* Write a frame
-		* @param data, all the points to write
-		* @param npoints, number of points to write
-		*/
 		bool writeFrame(EtherDreamPoint* data, uint npoints);
 
 		/**
@@ -106,12 +103,7 @@ namespace nap
 		/**
 		 * If the etherdream dac is connected	
 		 */
-		std::atomic<bool> mConnected;
-
-		/**
-		 * If the etherdream is running and pumping out frames
-		 */
-		bool mIsRunning = false;
+		bool mConnected;
 
 		/**
 		 * Last available DAC communication state	

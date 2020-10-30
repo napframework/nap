@@ -1,8 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
 #include "rendercomponent.h"
 #include "renderablemesh.h"
+#include "materialinstance.h"
 
 // External Includes
 #include <nap/resourceptr.h>
@@ -14,9 +19,21 @@ namespace nap
 	class RenderableMeshComponentInstance;
 	
 	/**
-	 * Resource part of the component used for managing and rendering a mesh.
-	 * The link to the mesh and clipping rectangle (property) are optional. You can set the mesh at runtime if necessary
+	 * Resource part of the renderable mesh component. Renders a mesh to screen or any other render target.
+	 * The link to the mesh and clipping rectangle (property) are optional. You can set the mesh at runtime if necessary.
 	 * The material is required. 
+	 *
+	 * A mesh becomes 'renderable' when it is used in combination with a material. Such a mesh-material combination forms a 'nap::RenderableMesh'. 
+	 * Vertex attributes in both the shader and mesh should match. Otherwise, the RenderableMesh is invalid. 
+	 * The nap::RenderableMesh is created based on the given mesh and the material properties.
+	 *
+	 * It is, however, possible to switch the mesh and / or material from the RenderableMeshComponent to some other mesh and / or material. 
+	 * To do so, other components should create their own nap::RenderableMesh by calling nap::RenderService::createRenderableMesh, 
+	 * and pass the returned object to setMesh(). The object calling nap::RenderService::createRenderableMesh should own the custom mesh and / or material 
+	 * and should validate the result on init().
+	 *
+	 * The model view and projection matrices are automatically set when the vertex shader exposes a struct with the 'uniform::mvpStruct' name.
+	 * If exposed by the shader it is required that the model, view and projection matrix names match those as declared in 'renderglobals.h'.
 	 */
 	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
@@ -24,12 +41,13 @@ namespace nap
 		DECLARE_COMPONENT(RenderableMeshComponent, RenderableMeshComponentInstance)
 	public:
 		/**
-		* RenderableMesh uses a transform to position itself in the world.
-		*/
+		 * RenderableMesh requires a transform to position itself in the world.
+		 * @param components the components this component depends upon.
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		/**
-		* @return Mesh resource.
+		* @return the mesh resource to render.
 		*/
 		IMesh& getMeshResource()			{ return *mMesh; }
 
@@ -37,19 +55,33 @@ namespace nap
 		ResourcePtr<IMesh>					mMesh;								///< Property: 'Mesh' Resource to render
 		MaterialInstanceResource			mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		math::Rect							mClipRect;							///< Property: 'ClipRect' Optional clipping rectangle, in pixel coordinates
+		float								mLineWidth = 1.0f;					///< Property: 'LineWidth' Width of the line when rendered, values higher than 1.0 only work when the GPU supports it
 	};
 
 
 	/**
-	 * Represents a renderable mesh that can be used as a component in an entity hierarchy.
-	 * A mesh becomes 'renderable' when it is used in combination with a material. Such a mesh-material combination
-	 * forms a 'RenderableMesh'. It is validated that a mesh-material combination form a legal combination: vertex attributes
-	 * in shader and mesh should match. Otherwise, the RenderableMesh is invalid. The RenderableMesh is an object that is created
-	 * internally based on the mesh and the material that are set in the RenderableMeshComponent.
-	 * It is, however, also possible to switch the mesh and/or material from the RenderableMeshComponent to some other mesh and/or 
-	 * material. To do so, other components should create their own RenderableMesh by calling createRenderableMesh, and pass the returned
-	 * object to setMesh. The object calling createRenderableMesh should own any custom mesh and/or material and it should validate in it's
-	 * init() that the creation of the renderable mesh succeeded.
+	 * Instance part of the renderable mesh component. Renders a mesh to screen or any other render target.
+	 * You can set the mesh at runtime if necessary.
+	 *
+	 * A mesh becomes 'renderable' when it is used in combination with a material. Such a mesh-material combination forms a 'nap::RenderableMesh'.
+	 * Vertex attributes in both the shader and mesh should match. Otherwise, the RenderableMesh is invalid.
+	 * The nap::RenderableMesh is created based on the given mesh and the material properties.
+	 *
+	 * It is, however, possible to switch the mesh and / or material from the RenderableMeshComponent to some other mesh and / or material.
+	 * To do so, other components should create their own nap::RenderableMesh by calling nap::RenderService::createRenderableMesh,
+	 * and pass the returned object to setMesh(). The object calling nap::RenderService::createRenderableMesh should own the custom mesh and / or material
+	 * and should validate the result on init().
+	 *
+	 * The model view and projection matrices are automatically updated when the vertex shader exposes a struct with the 'uniform::mvpStruct' name.
+	 *
+	 * ~~~~~{.cpp}
+	 * uniform nap
+	 * {
+	 *		mat4 projectionMatrix;		///< Optional
+	 *		mat4 viewMatrix;			///< Optional
+	 *		mat4 modelMatrix;			///< Optional
+	 *	} mvp;							///< Optional
+	 * ~~~~~
 	 */
 	class NAPAPI RenderableMeshComponentInstance : public RenderableComponentInstance
 	{
@@ -126,12 +158,17 @@ namespace nap
 		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.
 	 	 */
-		virtual void onDraw(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
-		TransformComponentInstance*				mTransformComponent;	// Cached pointer to transform
-		MaterialInstance						mMaterialInstance;		// The MaterialInstance as created from the resource. 
-		math::Rect								mClipRect;				// Clipping rectangle for this instance, in pixel coordinates
-		RenderableMesh							mRenderableMesh;		// The currently active renderable mesh, either set during init() or set by setMesh.
+		TransformComponentInstance*				mTransformComponent;			///< Cached pointer to transform
+		MaterialInstance						mMaterialInstance;				///< The MaterialInstance as created from the resource. 
+		math::Rect								mClipRect;						///< Clipping rectangle for this instance, in pixel coordinates
+		RenderableMesh							mRenderableMesh;				///< The currently active renderable mesh, either set during init() or set by setMesh.
+		RenderService*							mRenderService = nullptr;		///< Pointer to the renderer
+		UniformMat4Instance*					mModelMatUniform = nullptr;		///< Pointer to the model matrix uniform
+		UniformMat4Instance*					mViewMatUniform = nullptr;		///< Pointer to the view matrix uniform
+		UniformMat4Instance*					mProjectMatUniform = nullptr;	///< Pointer to the projection matrix uniform
+		float									mLineWidth = 1.0f;				///< Line width, clamped to 1.0 if not supported by GPU
 	};
 }

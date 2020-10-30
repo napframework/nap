@@ -1,8 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Core Includes
-#include "utility/stringutils.h"
+#include "stringutils.h"
 
 // Std Includes
 #include <regex>
+#include <cctype>
 
 namespace nap
 {
@@ -160,6 +165,37 @@ namespace nap
 			return s.substr(first, (last - first + 1));
 		}
 
+		std::string lTrim(const std::string& str)
+		{
+			auto s = str;
+			s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+						return !std::isspace(static_cast<unsigned char>(ch));
+					}));
+			return s;
+		}
+
+		std::string rTrim(const std::string& str)
+		{
+			auto s = str;
+			s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+						return !std::isspace(static_cast<unsigned char>(ch));
+					}).base(), s.end());
+			return s;
+		}
+
+		void namedFormat(std::string& subject, const std::unordered_map<std::string, std::string>& rep)
+		{
+			// TODO: This can be optimized by extracting the template vars and their positions in a single pass first.
+			for (const auto& e : rep)
+				replaceAllInstances(subject, '{' + e.first + '}', e.second);
+		}
+
+		void namedFormat(std::vector<std::string>& subjects, const std::unordered_map<std::string, std::string>& rep)
+		{
+			for (auto& s : subjects)
+				namedFormat(s, rep);
+		}
+
 		std::string replaceTemplateType(const std::string& typeName, const std::string& templateTypeName) {
 			size_t bracketIndex = typeName.find('<');
 			return typeName.substr(0, bracketIndex) + "<" + templateTypeName + ">";
@@ -194,6 +230,19 @@ namespace nap
 			return outString;
 		}
 
+		int getLine(const std::string& buffer, size_t offset) {
+			int line = 1;
+			size_t line_offset = 0;
+			while (true)
+			{
+				line_offset = buffer.find('\n', line_offset);
+				if (line_offset == std::string::npos || line_offset > offset)
+					break;
+				++line;
+				line_offset += 1;
+			}
+			return line;
+		}
 
 	}
 

@@ -1,21 +1,25 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
+
+#include "propertypath.h"
+#include "widgetdelegate.h"
 
 #include <QStandardItemModel>
 #include <QMenu>
 #include <QLabel>
 
 #include <rtti/object.h>
-
-#include "propertypath.h"
 #include <napqt/filtertreeview.h>
-#include "widgetdelegate.h"
 
 namespace napkin
 {
 	/**
 	 * The MIME type of a nap propertypath
 	 */
-	static const char* sNapkinMimeData = "application/napkin-path";
+	static constexpr char* sNapkinMimeData = (char*) "application/napkin-path";
 
 	class ArrayPropertyItem;
 
@@ -32,10 +36,15 @@ namespace napkin
 		InspectorModel();
 
 		/**
-		 * Set the
-		 * @param object
+		 * Set the path to edit
+		 * @param path The object or property to edit
 		 */
-		void setObject(nap::rtti::Object* object);
+		void setPath(const PropertyPath& path);
+
+		/**
+		 * Retrieve the path that is currently being edited
+		 */
+		 const PropertyPath& path() const;
 
 		/**
 		 * @return The object currently displayed/edited by this model
@@ -63,9 +72,14 @@ namespace napkin
 		QStringList mimeTypes() const override;
 
 		/**
-		 * Rebuild the model
+		 * Clear the model of its items. Unlike clear(), it leaves the headers etc.
 		 */
-		void rebuild();
+		void clearItems();
+
+		/**
+	 	 * Run through the object's properties and create items for them
+		 */
+		void populateItems();
 
 		/**
 		 * Overriden to support drag & drop
@@ -89,12 +103,8 @@ namespace napkin
 		 * @return True when the property should not be displayed, false otherwise
 		 */
 		bool isPropertyIgnored(const PropertyPath& prop) const;
-		/**
-		 * Run through the object's properties and create items for them
-		 */
-		void populateItems();
 
-		nap::rtti::Object* mObject = nullptr; // The object currently used by this model
+		PropertyPath mPath; // the path currently being edited by the property editor
 	};
 
 	/**
@@ -110,12 +120,17 @@ namespace napkin
 		InspectorPanel();
 
 		/**
-		 * Show this object in the inspector.
+		 * Show this path in the inspector.
 		 * @param object The object shown in the inspector.
 		 */
-		void setObject(nap::rtti::Object* object);
+		void setPath(const PropertyPath& path);
 
 	private:
+		/**
+		 * Clear out the properties from this panel
+		 */
+		void clear();
+
 		/**
 		 * Called when the context menu for an item should be shown
 		 * @param menu The menu that actions should be added to (initially empty)
@@ -133,18 +148,35 @@ namespace napkin
 		void onPropertySelectionChanged(const PropertyPath& prop);
 
 		/**
-		 * Rebuild view and model
+		 * Called when an object has been removed
 		 */
-		void rebuild();
+	 	void onObjectRemoved(nap::rtti::Object* obj);
+
+		/**
+		 * Rebuilds view and model and applies path as selection
+		 * This is a temp work-around to ensure selection remains valid
+		 * @param selection the property path that should be selected after rebuilding the model
+		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
+		 */
+		void rebuild(const PropertyPath& selection);
+		
+		/**
+		 * Called just before the current document is closed
+		 * @param filename The name of the document
+		 */
+		void onFileClosing(const QString& filename);
 
 	private:
-		InspectorModel mModel;					   // The model for the view
-		nap::qt::FilterTreeView mTreeView;	       // A tree view
-		QVBoxLayout mLayout;					   // The main layout
-		PropertyValueItemDelegate mWidgetDelegate; // Display a different editor based on the property type
+		InspectorModel mModel;						// The model for the view
+		nap::qt::FilterTreeView mTreeView;			// A tree view
+		QVBoxLayout mLayout;						// The main layout
+		PropertyValueItemDelegate mWidgetDelegate;	// Display a different editor based on the property type
 
-		QHBoxLayout mHeaderLayout;				   // Layout for top part (includes title and subtitle)
-		QLabel mTitle;							   // Title label
-		QLabel mSubTitle;                          // Subtitle label
+		QHBoxLayout mHeaderLayout;					// Layout for top part (includes title and subtitle)
+		QHBoxLayout mSubHeaderLayout;				// Just below the header
+		QLabel mTitle;								// Title label
+		QLabel mSubTitle;							// Subtitle label
+		QLabel mPathLabel;							// label before path
+		QLineEdit mPathField;						// Display path to object
 	};
 };

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <ip/UdpSocket.h>
@@ -20,7 +24,7 @@ namespace nap
 
 		/**
 		 * Constructor
-		 * @param network location to listen to for messages
+		 * @param localEndpoint network location to listen for messages
 		 * @param allowReuse enables or disables multiple listeners for a single port on the same network interface
 		 */
 		OSCReceivingSocket(const IpEndpointName& localEndpoint, bool allowReuse);

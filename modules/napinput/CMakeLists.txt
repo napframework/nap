@@ -11,6 +11,8 @@ module_json_to_cmake()
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+# Remove lib prefix on Unix libraries
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
@@ -23,3 +25,9 @@ copy_module_json_to_bin()
 
 # Package into platform release
 package_module()
+
+if (WIN32)
+    # Install for fbxconverter
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+        CONFIGURATIONS Release)
+endif()

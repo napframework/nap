@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Nap Includes
@@ -70,7 +74,7 @@ namespace nap
 
 		/**
 		 * Adds an input event to the queue, to be processed later.
-		 * @param inputEvent, the event to add, ownership is transfered here
+		 * @param inEvent the event to add, ownership is transfered here
 		 */
 		void addEvent(InputEventPtr inEvent);
 

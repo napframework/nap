@@ -1,12 +1,19 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
-// Local Includes
-#include "utility/dllexport.h"
-
 // External Includes
+#include <utility/dllexport.h>
 #include <unordered_set>
 #include <rtti/object.h>
-#include <pybind11/cast.h>
+#include <cassert>
+#include <mutex>
+
+#ifdef NAP_ENABLE_PYTHON
+	#include <pybind11/cast.h>
+#endif
 
 namespace nap
 {
@@ -59,12 +66,19 @@ namespace nap
 				return mPtr;
 			}
 
+		private:
 			/**
 			 * @param ptr new pointer to set.
 			 */
 			void set(rtti::Object* ptr)
 			{
+				if (mPtr != nullptr)
+					mPtr->decrementObjectPtrRefCount();
+
 				mPtr = ptr;
+
+				if (mPtr != nullptr)
+					mPtr->incrementObjectPtrRefCount();
 			}
 		private:
 			template<class T> friend class ObjectPtr;
@@ -150,13 +164,21 @@ namespace nap
 			}
 
 			ObjectPtrSet mObjectPointers;		///< Set of all pointers in the manager
+			
 		};
 
 		/**
 		 * Acts like a regular pointer. Accessing the pointer does not have different performance characteristics than accessing a regular
 		 * pointer. Moving/copying an ObjectPtr has a small overhead, as it removes/adds itself from the ObjectPtrManager in such cases.
-		 * The purpose of ObjectPtr is that the internal pointer can be changed by the system, so it is not allowed to store pointers or 
-		 * references to the internal pointer, as it may get replaced (and destructed) by the system.
+		 *
+		 * The purpose of ObjectPtr is that the internal pointer can be changed by the system.
+		 * Therefore it is not allowed to store the internal pointer or a reference to the internal pointer, 
+		 * as it may get replaced (and destructed) by the system. 
+		 * This occurs when hot reloading changes into the running application.
+		 *
+		 * When creating resources at runtime that require a link to another rtti::Object, it is 
+		 * perfectly safe (and valid) to create the referenced object and wrap it in an ObjectPtr<T>,
+		 * before assigning it. In that case you do have to manually manage the lifetime of the created objects.
 		 */
 		template<typename T>
 		class ObjectPtr : public ObjectPtrBase
@@ -169,6 +191,9 @@ namespace nap
             // Dtor
             virtual ~ObjectPtr() override
             {
+				if (mPtr != nullptr)
+					mPtr->decrementObjectPtrRefCount();
+
                 ObjectPtrManager::get().remove(*this);
             }
             
@@ -177,34 +202,35 @@ namespace nap
 				ObjectPtrBase(ptr)
 			{
 				if (mPtr != nullptr)
+				{
 					ObjectPtrManager::get().add(*this);
+					mPtr->incrementObjectPtrRefCount();
+				}
 			}
 
 			// Copy ctor
 			ObjectPtr(const ObjectPtr<T>& other)
 			{
-				Assign(other);
+				assign(other);
 			}
 
 			// Move ctor
 			ObjectPtr(ObjectPtr<T>&& other)
 			{
-				Assign(other);
-				other.mPtr = nullptr;
+				move(other);
 			}
 
 			// Assignment operator
 			ObjectPtr<T>& operator=(const ObjectPtr<T>& other)
 			{
-				Assign(other);
+				assign(other);
 				return *this;
 			}
 
 			// Move assignment operator
 			ObjectPtr<T>& operator=(ObjectPtr<T>&& other)
 			{
-				Assign(other);
-				other.mPtr = nullptr;
+				move(other);
 				return *this;
 			}
 
@@ -214,22 +240,21 @@ namespace nap
 			template<typename OTHER>
 			ObjectPtr(const ObjectPtr<OTHER>& other)
 			{
-				Assign(other);
+				assign(other);
 			}
 
 			// Regular move ctor taking different type
 			template<typename OTHER>
 			ObjectPtr(ObjectPtr<OTHER>&& other)
 			{
-				Assign(other);
-				other.mPtr = nullptr;
+				move(other);
 			}
 
 			// Assignment operator taking different type
 			template<typename OTHER>
 			ObjectPtr<T>& operator=(const ObjectPtr<OTHER>& other)
 			{
-				Assign(other);
+				assign(other);
 				return *this;
 			}
 
@@ -237,8 +262,7 @@ namespace nap
 			template<typename OTHER>
 			ObjectPtr<T>& operator=(ObjectPtr<OTHER>&& other)
 			{
-				Assign(other);
-				other.mPtr = nullptr;
+				move(other);
 				return *this;
 			}
 
@@ -333,18 +357,39 @@ namespace nap
 			}
 
 		private:
-		
+			/**
+			 * Moves the specified pointer 
+			 */
+			template<typename OTHER>
+			void move(ObjectPtr<OTHER>& other)
+			{
+				assign(other);
+				if (other.mPtr != nullptr)
+				{
+					other.mPtr->decrementObjectPtrRefCount();
+					other.mPtr = nullptr;
+				}
+			}
+
 			/**
 			 * Removes/adds itself from the manager and assigns mPtr.
 			 */
 			template<typename OTHER>
-			void Assign(const ObjectPtr<OTHER>& other)
+			void assign(const ObjectPtr<OTHER>& other)
 			{
 				if (mPtr == nullptr && other.mPtr != nullptr)
 					ObjectPtrManager::get().add(*this);
 
 				if (other.mPtr != mPtr)
+				{
+					if (mPtr != nullptr)
+						mPtr->decrementObjectPtrRefCount();
+
 					mPtr = static_cast<T*>(other.get());
+
+					if (mPtr != nullptr)
+						mPtr->incrementObjectPtrRefCount();
+				}
 
 				if (mPtr == nullptr)
 					ObjectPtrManager::get().remove(*this);
@@ -412,6 +457,7 @@ namespace rttr
 *		   as a unique_ptr (as described above, through the class template type), causing it to be stored as a unique_ptr anyway.
 *		   Instead we pass nullptr to circumvent this behaviour.
 */
+#ifdef NAP_ENABLE_PYTHON
 namespace pybind11
 {
 	namespace detail
@@ -437,3 +483,4 @@ namespace pybind11
 		};
 	}
 }
+#endif // NAP_ENABLE_PYTHON

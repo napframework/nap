@@ -1,14 +1,21 @@
-#include "actions.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include <QMessageBox>
-#include <QtWidgets/QDialogButtonBox>
-#include <QtWidgets/QHBoxLayout>
+#include "actions.h"
+#include "standarditemsobject.h"
 #include "commands.h"
 #include "naputils.h"
+#include "napkinutils.h"
+
+#include <QMessageBox>
+#include <QHBoxLayout>
 
 using namespace napkin;
 
 Action::Action() : QAction() { connect(this, &QAction::triggered, this, &Action::perform); }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NewFileAction::NewFileAction()
 {
@@ -18,7 +25,8 @@ NewFileAction::NewFileAction()
 
 void NewFileAction::perform()
 {
-	if (AppContext::get().getDocument()->isDirty()) {
+	if (AppContext::get().hasDocument() && AppContext::get().getDocument()->isDirty()) 
+	{
 		auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
 											"Save before creating new document",
 											"The current document has unsaved changes.\n"
@@ -37,23 +45,39 @@ void NewFileAction::perform()
 	AppContext::get().newDocument();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-OpenFileAction::OpenFileAction()
+OpenProjectAction::OpenProjectAction()
 {
-	setText("Open...");
+	setText("Open Project...");
 	setShortcut(QKeySequence::Open);
 }
 
-void OpenFileAction::perform()
+void OpenProjectAction::perform()
 {
-	auto lastFilename = AppContext::get().getLastOpenedFilename();
-	QString filename = QFileDialog::getOpenFileName(QApplication::topLevelWidgets()[0], "Open NAP Data File",
-													lastFilename, JSON_FILE_FILTER);
+	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
+    auto topLevelWidgets = QApplication::topLevelWidgets();
+
+	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Project", "", JSON_FILE_FILTER);
 	if (filename.isNull())
 		return;
 
-	AppContext::get().loadDocument(filename);
+	AppContext::get().loadProject(filename);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ReloadFileAction::ReloadFileAction()
+{
+	setText("Reload");
+}
+
+void ReloadFileAction::perform()
+{
+	AppContext::get().reloadDocument();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SaveFileAction::SaveFileAction()
 {
@@ -63,13 +87,24 @@ SaveFileAction::SaveFileAction()
 
 void SaveFileAction::perform()
 {
-	if (AppContext::get().getDocument()->getCurrentFilename().isNull())
+	// Get current document, nullptr when there is no document and document can't be created
+	// This is the case when no project is loaded or core failed to initialize
+	napkin::Document* doc = AppContext::get().getDocument();
+	if (doc == nullptr)
+	{
+		nap::Logger::warn("Unable to save file");
+		return;
+	}
+
+	if (doc->getCurrentFilename().isNull())
 	{
 		SaveFileAsAction().trigger();
 		return;
 	}
 	AppContext::get().saveDocument();
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SaveFileAsAction::SaveFileAsAction()
 {
@@ -80,9 +115,16 @@ SaveFileAsAction::SaveFileAsAction()
 void SaveFileAsAction::perform()
 {
 	auto& ctx = AppContext::get();
-	auto prevFilename = ctx.getDocument()->getCurrentFilename();
+	napkin::Document* doc  = ctx.getDocument();
+	if (doc == nullptr)
+	{
+		nap::Logger::warn("Unable to save file");
+		return;
+	}
+
+	auto prevFilename = doc->getCurrentFilename();
 	if (prevFilename.isNull())
-		prevFilename = ctx.getLastOpenedFilename();
+		prevFilename = "untitled.json";
 
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
 													prevFilename, JSON_FILE_FILTER);
@@ -90,20 +132,97 @@ void SaveFileAsAction::perform()
 	if (filename.isNull())
 		return;
 
+	if (!filename.endsWith("." + JSON_FILE_EXT))
+		filename = filename + "." + JSON_FILE_EXT;
+
 	ctx.saveDocumentAs(filename);
 }
 
-AddObjectAction::AddObjectAction(const rttr::type& type) : Action(), mType(type)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CreateResourceAction::CreateResourceAction()
 {
-    setText(QString(type.get_name().data()));
+	setText("Create Resource...");
 }
 
-void AddObjectAction::perform()
+void CreateResourceAction::perform()
 {
-	AppContext::get().executeCommand(new AddObjectCommand(mType));
+	auto parentWidget = AppContext::get().getMainWindow();
+
+	auto type = napkin::showTypeSelector(parentWidget, [](auto t)
+	{
+		if (t.is_derived_from(RTTI_OF(nap::Component)))
+			return false;
+		return t.is_derived_from(RTTI_OF(nap::Resource));
+	});
+
+	if (type.is_valid() && !type.is_derived_from(RTTI_OF(nap::Component)))
+		AppContext::get().executeCommand(new AddObjectCommand(type));
 }
 
-DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : Action(), mObject(object)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CreateEntityAction::CreateEntityAction()
+{
+	setText("Create Entity");
+}
+
+void CreateEntityAction::perform()
+{
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddChildEntityAction::AddChildEntityAction(nap::Entity& entity) : entity(&entity)
+{
+	setText("Add Child Entity...");
+}
+
+void AddChildEntityAction::perform()
+{
+	auto doc = AppContext::get().getDocument();
+
+	std::vector<nap::rtti::Object*> filteredEntities;
+	for (auto e : doc->getObjects<nap::Entity>())
+	{
+		// Omit self and entities that have self as a child
+		if (e == entity || doc->hasChild(*e, *entity, true))
+			continue;
+		filteredEntities.emplace_back(e);
+	}
+
+	auto parentWidget = AppContext::get().getMainWindow();
+	auto child = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(parentWidget, filteredEntities));
+	if (!child)
+		return;
+
+	AppContext::get().executeCommand(new AddChildEntityCommand(*entity, *child));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddComponentAction::AddComponentAction(nap::Entity& entity) : entity(&entity)
+{
+	setText("Add Component...");
+}
+
+void AddComponentAction::perform()
+{
+	auto parent = AppContext::get().getMainWindow();
+
+	auto comptype = napkin::showTypeSelector(parent, [](auto t)
+	{
+		return t.is_derived_from(RTTI_OF(nap::Component));
+	});
+
+	if (comptype.is_valid())
+		AppContext::get().executeCommand(new AddComponentCommand(*entity, comptype));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : mObject(object)
 {
     setText("Delete");
 }
@@ -123,9 +242,54 @@ void DeleteObjectAction::perform()
     AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) : entityItem(&entityItem)
+{
+	setText("Remove");
+}
+
+void RemoveChildEntityAction::perform()
+{
+	// TODO: Move into Command
+	auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
+
+	auto doc = AppContext::get().getDocument();
+	auto index = parentItem->childIndex(*entityItem);
+	assert(index >= 0);
+
+	// Grab all component paths for later instance property removal
+	QStringList componentPaths;
+	nap::qt::traverse(*parentItem->model(), [&componentPaths](QStandardItem* item)
+	{
+		auto compItem = dynamic_cast<ComponentItem*>(item);
+		if (compItem)
+			componentPaths << QString::fromStdString(compItem->componentPath());
+
+		return true;
+	}, entityItem->index());
+
+	doc->removeChildEntity(*parentItem->getEntity(), index);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RemovePathAction::RemovePathAction(const PropertyPath& path)
+	: mPath(path)
+{
+	setText("Remove");
+}
+
+void RemovePathAction::perform()
+{
+	AppContext::get().getDocument()->remove(mPath);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
 {
-    setText(themeName.isEmpty() ? napkin::TXT_THEME_NATIVE : themeName);
+    setText(themeName.isEmpty() ? napkin::TXT_THEME_DEFAULT : themeName);
     setCheckable(true);
 }
 
@@ -133,26 +297,4 @@ void SetThemeAction::perform()
 {
     AppContext::get().getThemeManager().setTheme(mTheme);
 }
-
-AddComponentAction::AddComponentAction(nap::Entity& entity, nap::rtti::TypeInfo type)
-	: Action(), mEntity(entity), mComponentType(type)
-{
-	setText(QString(type.get_name().data()));
-}
-
-void AddComponentAction::perform()
-{
-    AppContext::get().getDocument()->addComponent(mEntity, mComponentType);
-}
-
-AddEntityAction::AddEntityAction(nap::Entity* parent) : Action(), mParent(parent)
-{
-    setText("Add Entity");
-}
-
-void AddEntityAction::perform()
-{
-	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), mParent));
-}
-
 

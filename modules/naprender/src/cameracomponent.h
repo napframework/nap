@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -20,16 +24,14 @@ namespace nap
 		CameraComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		* @return camera projection matrix
-		* Use this matrix to transform a 3d scene in to a 2d projection
-		*/
+		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection.
+		 * @return default camera projection matrix
+		 */
 		virtual const glm::mat4& getProjectionMatrix() const = 0;
 
 		/**
-		 * Returns the view matrix of the camera
-		 * The view is determined by a number of factors including the camera's position
-		 * and possible look at objects
-		 * @return The populated view matrix
+		 * Returns the world space position and rotation of the camera in 3D space.
+		 * @return camera view matrix
 		 */
 		virtual const glm::mat4 getViewMatrix() const = 0;
 
@@ -43,7 +45,7 @@ namespace nap
 
 		/**
 		 * Maps a pixel coordinate to a world space coordinate using the camera project and view matrix
-		 * The z component is generally acquired by sampling the window depth buffer
+		 * The z component is generally acquired by sampling the window depth buffer.
 		 * When screenPos.z has a value of 0 the result is relative to this camera, ie: 
 		 * the return value is the location of this camera in the world.
 		 * @param screenPos window coordinates, where 0,0 is the lower left corner
@@ -61,9 +63,9 @@ namespace nap
 		glm::vec3 worldToScreen(const glm::vec3& worldPos, const math::Rect& viewport);
 
 		/**
-		 * Computes a ray directed outwards from the camera based on a screen space position
-		 * The ray is normalized
-		 * @param screenPos, horizontal and vertical screen coordinates, where 0,0 is the lower left corner
+		 * Computes a ray directed outwards from the camera based on a screen space position.
+		 * The ray is normalized.
+		 * @param screenPos horizontal and vertical screen coordinates: where 0, 0 is the lower left corner
 		 * @param viewport rectangle that defines the viewport
 		 * @return a normalized ray pointing outwards from the camera in to the scene
 		 */
@@ -73,6 +75,14 @@ namespace nap
 		 * @return RenderTarget size
 		 */
 		const glm::ivec2& getRenderTargetSize() const					{ return mRenderTargetSize; }
+
+		/**
+		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
+		 * This can be different from the default if the renderer uses a different coordinate system.
+		 * Use this matrix to transform a 3d scene in to a 2d projection.
+		 * @return the projection matrix used by the renderer
+		 */
+		virtual const glm::mat4& getRenderProjectionMatrix() const = 0;
 
 	private:
 		glm::ivec2	mRenderTargetSize;			// The size of the render target we're rendering to

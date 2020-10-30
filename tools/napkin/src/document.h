@@ -1,11 +1,18 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <deque>
 #include <entity.h>
 #include <nap/core.h>
 #include <propertypath.h>
-#include <QtCore/QString>
-#include <QtWidgets/QUndoCommand>
+
+#include <QString>
+#include <QUndoCommand>
+#include <QMap>
+
 #include <rtti/deserializeresult.h>
 
 namespace napkin
@@ -41,17 +48,33 @@ namespace napkin
 		bool isDirty() const { return !mUndoStack.isClean(); }
 
 		/**
-		 * @return All the objects (resources?) that are currently loaded.
-		 */
-		nap::rtti::OwnedObjectList& getObjects() { return mObjects; }
-
-		/**
-		 * @return All the objects (resources?) that are currently loaded.
+		 * @return A reference to all the objects (resources?) that are currently loaded.
 		 */
 		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
 
 		/**
-		 * @return All the objects (resources?) that are currently loaded.
+		 * Get all objects from this document, derived from the specified type.
+		 * @param type The type each object has to be derived from
+		 * @return All the objects in this document, derived from the provided type
+		 */
+		std::vector<nap::rtti::Object*> getObjects(const nap::rtti::TypeInfo& type);
+
+		/**
+		 * Get all objects from this document, derived from the specified type.
+		 * @tparam T The type each object has to be derived from
+		 * @return All the objects in this document, derived from the provided type
+		 */
+		template<typename T>
+		std::vector<T*> getObjects()
+		{
+			std::vector<T*> ret;
+			for (auto obj : getObjects(RTTI_OF(T)))
+				ret.emplace_back(static_cast<T*>(obj));
+			return ret;
+		}
+
+		/**
+		 * @return All the objects that are currently loaded.
 		 */
 		nap::rtti::ObjectList getObjectPointers() const;
 
@@ -82,6 +105,15 @@ namespace napkin
 		 * @return The provided Entity's parent or nullptr if the Entity has no parent.
 		 */
 		nap::Entity* getParent(const nap::Entity& entity) const;
+
+		/**
+		 * See if an entity is a child of another.
+		 * @param parentEntity The parent entity to check.
+		 * @param childEntity The child entity to check for
+		 * @param recursive If true, check grandchildren and so forth.
+		 * @return True if the given child entity was found under the parent entity
+		 */
+		bool hasChild(const nap::Entity& parentEntity, const nap::Entity& childEntity, bool recursive) const;
 
 		/**
 		 * Retrieve the Entity the provided Component belongs to.
@@ -144,7 +176,15 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject = true);
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr,
+									 bool selectNewObject = true, const std::string& name = std::string());
+
+		/**
+		 * Add an Entity to a parent Entity, remove from previous parent if necessary
+		 * @param entity The Entity to move under a new parent
+		 * @param parent The parent entity or nullptr when the entity should have no parent
+		 */
+		void reparentEntity(nap::Entity& entity, nap::Entity* parent);
 
 		/**
 		 * Add an object of the specified type
@@ -153,16 +193,17 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr)
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string(), bool selectNew = true)
 		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, true));
+			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, selectNew, name));
 		}
 
 		/**
 		 * Add and entity to the document
+		 * @param parent The parent of the newly created entity or nullptr
 		 * @return The newly created Entity
 		 */
-		nap::Entity& addEntity();
+		nap::Entity& addEntity(nap::Entity* parent = nullptr, const std::string& name = "");
 
 		/**
 		 * Obliterate the specified object and its dependents
@@ -176,11 +217,49 @@ namespace napkin
 		void removeObject(const std::string& name);
 
 		/**
+		 * Remove all overrides for the specified object
+		 */
+		void removeInstanceProperties(nap::rtti::Object& object);
+
+		/**
+		 * Remove all overrides for the specified object, but only in the specified scene
+		 */
+		void removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& object);
+
+		void removeInstanceProperties(PropertyPath path);
+
+		/**
+		 * Get all components recursively starting from the given object
+		 * If the given object is not a component or entity the list is empty
+		 */
+		QList<nap::Component*> getComponentsRecursive(nap::rtti::Object& object);
+
+		/**
+		 * Recursively iterate an Entity's children
+		 */
+		void recurseChildren(nap::Entity& entity, std::function<void(nap::Entity& child)>);
+
+		/**
 		 * Remove an entity from a scene, note that a Scene may contain the same entity multiple times.
 		 * @param scene The Scene to remove the entity from
 		 * @param entity The entity to remove from the scene
 		 */
+		void removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity);
+
+		/**
+		 * Remove all entity instances from a scene, note that a Scene may contain the same entity multiple times.
+		 * @param scene The Scene to remove the entity from
+		 * @param entity The entity to remove from the scene
+		 */
 		void removeEntityFromScene(nap::Scene& scene, nap::Entity& entity);
+
+		/**
+		 * Remove an Entity from a scene at the specified index
+		 * @param scene The Scene to remove the Entity from
+		 * @param index The index of the Entity to be removed
+		 */
+		void removeEntityFromScene(nap::Scene& scene, size_t index);
+
 
 		/**
 		 * Add an entity to a scene (at root level)
@@ -191,21 +270,41 @@ namespace napkin
 		size_t addEntityToScene(nap::Scene& scene, nap::Entity& entity);
 
 		/**
+		 * Add an entity to another Entity's children list, you can have multiple of the same children
+		 * @param parent The Entity to add the child Entity to
+		 * @param child The Entity to add to the other
+		 * @return the resultin index of the Entity
+		 */
+		size_t addChildEntity(nap::Entity& parent, nap::Entity& child);
+
+		/**
+		 * Remove a child entity from another Entity's children
+		 *
+		 * 		WARNING: This will NOT take care of removing and patching up instance properties
+		 *
+		 * @param parent The parent Entity to remove the child from
+		 * @param childIndex The index of the child Entity to be removed
+		 */
+		void removeChildEntity(nap::Entity& parent, size_t childIndex);
+
+		/**
+		 * Remove an object or property
+		 * @param path The path that determines what to remove
+		 */
+		void remove(const PropertyPath& path);
+
+		/**
+		 * Return a RootEntities in a scene that represent the specified entity.
+		 * For more explanation see RootEntity
+		 */
+		QList<nap::RootEntity*> getRootEntities(nap::Scene& scene, nap::rtti::Object& object);
+
+		/**
 		 * Retrieve all properties referring to the given object.
 		 * @param targetObject The object that is being referred to.
 		 * @return A list of properties pointing to the given object.
 		 */
-		QList<PropertyPath>
-		getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent);
-
-		/**
-		 * Add an element to an array
-		 * The propertyValueChanged signal will be emitted.
-		 * @param path The path to the array property to add the element to
-		 * @param index The index at which to add the new element, provide -1 to add to the end
-		 * @return The index of the newly created element
-		 */
-		size_t arrayAddValue(const PropertyPath& path, size_t index);
+		QList<PropertyPath> getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent, bool excludeInstanceProperties = true);
 
 		/**
 		 * Add an element to the end of an array
@@ -213,7 +312,7 @@ namespace napkin
 		 * @param path The path to the array property to add the element to
 		 * @return The index of the newly created element
 		 */
-		size_t arrayAddValue(const PropertyPath& path);
+		int arrayAddValue(const PropertyPath& path);
 
 		/**
 		 * Add an existing pointer to the array
@@ -298,6 +397,28 @@ namespace napkin
 		bool isPointedToByEmbeddedPointer(const nap::rtti::Object& obj);
 
 		/**
+		 * If this object is pointed to by an embedded pointer, return the object that declares that pointer.
+		 * Return nullptr when there is no such object.
+		 * @param obj The object being pointed to.
+		 * @return The given (embedded) object's owner.
+		 */
+		nap::rtti::Object* getEmbeddedObjectOwner(const nap::rtti::Object& obj);
+
+		/**
+		 * If this object retrieve the [property] path pointing to this object.
+		 * @param obj The object being pointed to
+		 * @return The property path pointing to the given object, or an invalid path
+		 */
+		PropertyPath getEmbeddedObjectOwnerPath(const nap::rtti::Object& obj);
+
+		/**
+		 * Retrieve objects embedded in the given object.
+		 * @param owner The object that declares embedded pointers
+		 * @return A list of objects, owned by the given object.
+		 */
+		std::vector<nap::rtti::Object*> getEmbeddedObjects(const nap::rtti::Object& owner);
+
+		/**
 		 * Get the absolute path of an object
 		 * @param obj The object to get the path to
 		 */
@@ -348,6 +469,10 @@ namespace napkin
 		 */
 		QUndoStack& getUndoStack() { return mUndoStack; }
 
+		void registerPath(PropertyPath& p);
+
+		void deregisterPath(PropertyPath& p);
+
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -390,6 +515,15 @@ namespace napkin
 
 		/**
 		 * Qt Signal
+		 * Invoked after an Entity has moved under a new parent
+		 * @param entity The Entity that moved under a new parent
+		 * @param oldParent The old parent of the Entity
+		 * @param newParent The new parent of the Entity
+		 */
+		void entityReparented(nap::Entity* entity, nap::Entity* oldParent, nap::Entity* newParent);
+
+		/**
+		 * Qt Signal
 		 * Invoked just after a property's value has changed
 		 * @param path The path to the property that has changed
 		 */
@@ -417,13 +551,18 @@ namespace napkin
 		 * @param suggestedName
 		 * @return
 		 */
-		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object);
+		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
 
+		/**
+		 * @return A basic UUID meant for local object disambiguation
+		 */
+		static std::string createSimpleUUID();
 
 		nap::Core& mCore;                        // nap's core
 		nap::rtti::OwnedObjectList mObjects;    // The objects in this document
 		QString mCurrentFilename;                // This document's filename
 		QUndoStack mUndoStack;                    // This document's undostack
+		std::vector<PropertyPath*> mPropertyPaths;
 
 	};
 

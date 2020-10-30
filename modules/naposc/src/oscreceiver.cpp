@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "oscreceiver.h"
 #include "oscpacketlistener.h"
@@ -10,7 +14,7 @@
 #include <nap/logger.h>
 #include <iostream>
 
-RTTI_BEGIN_CLASS(nap::OSCReceiver)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCReceiver)
 	RTTI_PROPERTY("Port",				&nap::OSCReceiver::mPort,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EnableDebugOutput",	&nap::OSCReceiver::mDebugOutput,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowPortReuse,	nap::rtti::EPropertyMetaData::Default)
@@ -26,11 +30,6 @@ namespace nap
 	{	}
 
 
-	OSCReceiver::~OSCReceiver()
-	{
-		stop();
-	}
-
 	/**
 	 * Creates the thread that will run the OSC message handler
 	 */
@@ -39,8 +38,18 @@ namespace nap
 		// Register the receiver
 		mService->registerReceiver(*this);
 
-		// Create the socket
-		mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowPortReuse);
+		// Create the socket, catch end point creation exception
+		// We allow the try catch here because of the 3rd party lib throwing an exception.
+		try
+		{
+			mSocket = std::make_unique<OSCReceivingSocket>(IpEndpointName(IpEndpointName::ANY_ADDRESS, mPort), mAllowPortReuse);
+		}
+		catch (const std::runtime_error& exception)
+		{
+			errorState.fail("Failed to create OSCReceiver: %s", exception.what());
+			mSocket = nullptr;
+			return false;
+		}		
 
 		// Create and set the listener
 		mListener = std::make_unique<OSCPacketListener>(*this);
@@ -56,14 +65,12 @@ namespace nap
 
 	void OSCReceiver::stop()
 	{
-		if (mSocket != nullptr)
-		{
-			mSocket->stop();
-			mEventThread.join();
-			mService->removeReceiver(*this);
-			mSocket = nullptr;
-			nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
-		}
+		assert(mSocket != nullptr);
+		mSocket->stop();
+		mEventThread.join();
+		mService->removeReceiver(*this);
+		mSocket = nullptr;
+		nap::Logger::info("Stopped listening for OSC messages on port: %d", mPort);
 	}
 
 

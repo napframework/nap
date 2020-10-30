@@ -1,7 +1,0 @@
-{
-    "dependencies": [
-        "mod_napmath",
-        "mod_napscene",
-        "mod_napaudio"
-    ]
-}

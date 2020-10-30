@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -8,7 +12,7 @@ namespace nap
 	/**
 	* Keeps track of time from the moment the timer is started.
 	* This is a template Timer that can work with various chrono clocks.
-	* Use the utility classes SystemTimer and HighResolutionTimer to work with specific clocks.
+	* Use the utility classes nap::SystemTimer and nap::HighResolutionTimer to work with specific clocks.
 	* The template type T should be a specific type of chrono clock, ie: HighResolutionClock etc.
 	* This timer is not threaded and doesn't work with callbacks.
 	*/

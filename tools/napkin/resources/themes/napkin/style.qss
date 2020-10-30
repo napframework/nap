@@ -1,7 +1,3 @@
-/*
-#11426
-
- */
 .color_dark { color: #111426; }
 .color_darkA { color: #171b33; }
 .color_spot { color: #C86969; }
@@ -12,22 +8,20 @@
 .color_blue3 { color: #8B8CA0; }
 .color_blue3a { color: #b0b2cb; }
 
+QMainWindow
+{
+    background-color: #3c3d4d;
+}
+
 QWidget
 {
     font-family: "Nunito Sans", sans-serif;
-    font-size: 13px;
-    color: #000;
-    /*background-color: #3c3d4d;*/
-
+    font-size: 14px;
     selection-background-color:#8B8CA0;
     selection-color: #111426;
-    /*selection-color: #eff0f1;*/
-    /*background-clip: border;*/
-    /*border-image: none;*/
-    /*border: 0px transparent black;*/
-    /*outline: 0;*/
-
+    border: none;
 }
+
 QMenuBar {
     color: #8B8CA0;
 }
@@ -38,8 +32,10 @@ QMenu {
 }
 
 QDialog, QLabel {
-    background-color: #2D2E42;
     color: #8B8CA0;
+    background-color: #3c3d4d;
+    margin-right: 0.2em
+
 }
 
 QAbstractScrollArea {
@@ -69,11 +65,31 @@ QGroupBox:title {
 QDockWidget {
     color: #b0b2cb;
     border: 1px solid #444;
-    font-size: 12px;
     font-family: "Montserrat";
-
+    titlebar-close-icon:url(:/icons/icon_close.png);
+    titlebar-normal-icon:url(:/icons/icon_restore.png);
     /*padding: 10px;*/
 }
+
+QDockWidget::close-button,QDockWidget::float-button{
+  subcontrol-position:top right;
+  subcontrol-origin:margin;
+  position:absolute;
+  top:3px;
+  bottom:0px;
+  width:16px;
+  height:16px;
+  border:none;
+}
+
+QDockWidget::close-button{
+  right:3px;
+}
+
+QDockWidget::float-button{
+  right:25px;
+}
+
 
 QDockWidget::title {
     text-align: left;
@@ -86,10 +102,10 @@ QDockWidget::title {
 QLineEdit {
     border: none;
     border-radius: 2px;
-    padding-left: 10px;
+    padding-left: 3px;
     padding-right: 10px;
+    background: #171b33;
     color: #8B8CA0;
-    background: #1a1b2b;
 }
 
 QLineEdit:focus {
@@ -126,25 +142,29 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 }
 
 QPushButton, QToolButton {
-    font-family: "Nunito Sans ExtraBold";
-    color: #2D2E42;
-    background: #5D5E73;
+    font-family: "Nunito Sans SemiBold";
+    color: #111426;
+    background: #8B8CA0;
     border-radius: 2px;
-    margin: 4px;
+    margin: 2px;
     border: 0;
     padding: 3px 10px 3px 10px;
 }
 
 QPushButton:hover {
-    background: #8B8CA0;
+    background: #5D5E73;
 }
 QPushButton:pressed {
     background: #111426;
     color: #8B8CA0
 }
 QPushButton:!enabled {
-    background-color: #3c3d4d;
-    color: #5D5E73;
+    background-color: #5D5E73;
+    color: #111426;
+}
+
+QTabBar {
+    qproperty-drawBase: 0;
 }
 
 QTabBar:tab {
@@ -165,6 +185,6 @@ QStatusBar {
 }
 
 QGraphicsView {
-    background: #555;
+    background: #5D5E73;
 }
 

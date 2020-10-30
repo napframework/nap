@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include <nap/core.h>
 #include <utility/errorstate.h>
 #include <nap/logger.h>
@@ -19,7 +23,6 @@ int main(int argc, char* argv[])
 	CommandLine commandLine;
 	if (!CommandLine::parse(argc, argv, commandLine))
 		return -1;
-
 	Logger::setLevel(Logger::debugLevel());
 
 	// Validate all files are fbx files and convert wildcard argument

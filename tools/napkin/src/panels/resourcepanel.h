@@ -1,9 +1,12 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
+#include "actions.h"
 #include <standarditemsobject.h>
 #include <napqt/filtertreeview.h>
-#include "actions.h"
-
 
 namespace nap
 {
@@ -16,8 +19,6 @@ namespace nap
 
 namespace napkin
 {
-
-
 	/**
 	 * Model containing full list of resources in the system. Hierarchy is represented where possible.
 	 * The data is retrieved through AppContext
@@ -28,9 +29,14 @@ namespace napkin
 		ResourceModel();
 
 		/**
-		 * Clear all the items from the model and rebuild
+		 * Populates the entire model
 		 */
-		void refresh();
+		void populate();
+
+		/**
+		 * Clears all items from the model
+		 */
+		void clear();
 
 		/**
 		 * Add an item (row) to represent an Object
@@ -68,14 +74,30 @@ namespace napkin
 		 */
 		void selectObjects(const QList<nap::rtti::Object*>& selection);
 
+		/**
+		 * @return The tree view held by this panel
+		 */
+		nap::qt::FilterTreeView& treeView() { return mTreeView; }
+
 	Q_SIGNALS:
-		void selectionChanged(QList<nap::rtti::Object*> obj);
+		void selectionChanged(QList<PropertyPath> obj);
 
 	private:
 		/**
-		 * Reconstruct the list
+		 * Reconstruct the list, present items are destroyed before being rebuild.
+		 * Internally the model is cleared and populated.
 		 */
 		void refresh();
+
+		/**
+		 * Clears the current model and enforces selection to be removed
+		 */
+		void clear();
+
+		/**
+		 * Populates the current model
+		 */
+		void populate();
 
 		/**
 		 * Called when an entity has been added
@@ -116,6 +138,12 @@ namespace napkin
 		void onFileOpened(const QString& filename);
 
 		/**
+		* Called just before the current document is closed
+		 * @param filename the name of the document
+		 */
+		void onFileClosing(const QString& filename);
+
+		/**
 		 * Called when the global selection was changed
 		 * @param selected The items that were selected
 		 * @param deselected The items that were deselected
@@ -134,6 +162,8 @@ namespace napkin
 		void menuHook(QMenu& menu);
 
 	private:
+		void emitSelectionChanged();
+
 		QVBoxLayout mLayout;	  // Layout
 		ResourceModel mModel;	 // Model
 		nap::qt::FilterTreeView mTreeView; // Treeview

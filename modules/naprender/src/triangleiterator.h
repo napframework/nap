@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <utility/dllexport.h>
@@ -12,8 +16,8 @@ namespace nap
 	class MeshShape;
 
 	/**
-	 * Contains the data associated with a triangle
-	 * The data is extracted from a VertexAttribute using the Triangle interface or can be constructed manually
+	 * Data associated with a single triangle.
+	 * The data is extracted from a VertexAttribute using the Triangle interface or can be constructed manually.
 	 */
 	template<class T>
 	class TriangleData
@@ -78,7 +82,7 @@ namespace nap
 
 
 	/**
-	 * Contains the indices of a triangle associated with a specific MeshShape inside a MeshInstance
+	 * Contains the indices of a triangle associated with a specific nap::MeshShape inside a nap::MeshInstance
 	 */
 	class ShapeTriangle
 	{
@@ -121,8 +125,9 @@ namespace nap
 		IndexArray::const_iterator end()					{ return mIndices.end(); }
 
 		/**
-		 * @param attribute The VertexAttribute to retrieve data from
-		 * @return the TriangleData from @attribute, corresponding to the indices in this triangle
+		 * Returns the triangle vertex data of a specific attribute, for example the triangle position, color or normal.
+		 * @param attribute The vertex attribute to retrieve vertex data for.
+		 * @return the vertex data data of the given attribute, corresponding to the indices in this triangle.
 		 */
 		template<class T>
 		TriangleData<T> getVertexData(const VertexAttribute<T>& attribute) const
@@ -131,6 +136,7 @@ namespace nap
 		}
 
 		/**
+		 * Sets the triangle vertex data of a specific attribute, for example the triangle position, color or normal.
 		 * @param attribute The VertexAttribute to set data to
 		 * @param firstValue The value to set to the first vertex of the triangle
 		 * @param secondValue The value to set to the second vertex of the triangle
@@ -171,8 +177,8 @@ namespace nap
 
 
 	/**
-	 * Contains the indices of a triangle associated with a MeshInstance
-	 * The indices are always bound to a specific shape
+	 * Contains the indices of a triangle associated with a MeshInstance.
+	 * The indices are always bound to a specific shape.
 	 */
 	class Triangle : public ShapeTriangle
 	{
@@ -215,16 +221,16 @@ namespace nap
 		virtual const ShapeTriangle next() = 0;
 
 	protected:
-		const unsigned int*	mCurrentIndex;	///< The current position in the index buffer of the shape that we're iterating through
+		const uint32*	mCurrentIndex;		///< The current position in the index buffer of the shape that we're iterating through
 		int mCurrentTriangle = 0;
 	
 	private:
-		const unsigned int*	mIndexEnd;		///< End of the index buffer of the shape that we're iterating through
+		const uint32*	mIndexEnd;			///< End of the index buffer of the shape that we're iterating through
 	};
 
 
 	/**
-	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLES
+	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type EDrawMode::TRIANGLES
 	 */
 	class NAPAPI ShapeTriangleListIterator final : public ShapeTriangleIterator
 	{
@@ -240,7 +246,7 @@ namespace nap
 
 
 	/**
-	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_FAN
+	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type EDrawMode::TRIANGLE_FAN
 	 */
 	class NAPAPI ShapeTriangleFanIterator final : public ShapeTriangleIterator
 	{
@@ -254,12 +260,12 @@ namespace nap
 		virtual const ShapeTriangle next() override;
 
 	private:
-		unsigned int mFanStartIndex;	///< First index of the fan (all triangles share this index)
+		uint32	mFanStartIndex;			///< First index of the fan (all triangles share this index)
 	};
 
 
 	/**
-	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type opengl::EDrawMode::TRIANGLE_STRIP
+	 * Implementation of ShapeTriangleIterator that can iterate through the triangles of a MeshShape of type EDrawMode::TRIANGLE_STRIP
 	 */
 	class NAPAPI ShapeTriangleStripIterator final : public ShapeTriangleIterator
 	{

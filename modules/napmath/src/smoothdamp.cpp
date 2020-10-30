@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "smoothdamp.h"
 
 RTTI_DEFINE_BASE(nap::math::BaseSmoothOperator)
@@ -30,23 +34,56 @@ namespace nap
 		void SmoothOperator<float>::init()
 		{
 			mVelocity = 0.0f;
+			mTarget = 0.0f;
 		}
 
 		template<>
 		void SmoothOperator<glm::vec2>::init()
 		{
 			mVelocity = { 0.0f, 0.0f };
+			mTarget = { 0.0f, 0.0f };
+
 		}
 
 		template<>
 		void SmoothOperator<glm::vec3>::init()
 		{
 			mVelocity = { 0.0f, 0.0f, 0.0f };
+			mTarget	= { 0.0f, 0.0f, 0.0f };
 		}
 
 		template<>
 		void SmoothOperator<glm::vec4>::init()
 		{
+			mVelocity = { 0.0f, 0.0f, 0.0f, 0.0f };
+			mTarget	= { 0.0f, 0.0f, 0.0f, 0.0f };
+		}
+
+		template<>
+		void SmoothOperator<float>::setValue(const float& value)
+		{
+			mValue = value;
+			mVelocity = 0.0f;
+		}
+
+		template<>
+		void SmoothOperator<glm::vec2>::setValue(const glm::vec2& value)
+		{
+			mValue = value;
+			mVelocity = { 0.0f, 0.0f };
+		}
+
+		template<>
+		void SmoothOperator<glm::vec3>::setValue(const glm::vec3& value)
+		{
+			mValue = value;
+			mVelocity = { 0.0f, 0.0f, 0.0f };
+		}
+
+		template<>
+		void SmoothOperator<glm::vec4>::setValue(const glm::vec4& value)
+		{
+			mValue = value;
 			mVelocity = { 0.0f, 0.0f, 0.0f, 0.0f };
 		}
 	}

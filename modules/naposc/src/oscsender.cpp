@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local includes
 #include "oscsender.h"
 
@@ -18,12 +22,6 @@ static const size_t initialPacketCapacity(1536);
 
 namespace nap
 {
-	OSCSender::~OSCSender()
-	{
-		stop();
-	}
-
-
 	bool OSCSender::start(utility::ErrorState& errorState)
 	{
 		// Construct host endpoint
@@ -114,7 +112,6 @@ namespace nap
 	{
 		assert(oscEvent.getAddress().size() != 0);
 		assert(oscEvent.getAddress()[0] == '/');
-		assert(oscEvent.getCount() > 0);
 		
 		// Add start of message
 		outPacket << osc::BeginMessage(oscEvent.getAddress().c_str());

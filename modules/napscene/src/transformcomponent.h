@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -27,7 +31,8 @@ namespace nap
 
 	/**
 	 * Resource part of the transform component.
-	 * Positions an object in a scene
+	 * Describes a local transform that is used to compute
+	 * the global transform of an entity.
 	 */
 	class NAPAPI TransformComponent : public Component
 	{
@@ -40,10 +45,10 @@ namespace nap
 
 
 	/**
-	 * Describes a local transform that is used to compute 
-	 * the global transform of an object. When the transform is created
+	 * Describes the local transform of an entity, used to compute 
+	 * the global transform of an entity at runtime. When the transform is created
 	 * the global and local transform is invalid. You can always query the
-	 * current local matrix, the global matrix is updated on compute.
+	 * current local matrix, the global matrix is updated on update().
 	 */
 	class NAPAPI TransformComponentInstance : public ComponentInstance
 	{
@@ -57,36 +62,40 @@ namespace nap
         using ComponentInstance::update;
 
 		/**
-		* Initialize this component from its resource
-		*
-		* @param resource The resource we're being instantiated from
-		* @param entityCreationParams Parameters required to create new entity instances during init
-		* @param errorState The error object
-		*/
+		 * Initializes this component.
+		 * @param errorState The error object
+		 */
 		virtual bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Constructs and returns a local transform
-		 * @return this transform local matrix
+		 * Constructs and returns the local transform.
+		 * @return this transform local transformation matrix
 		 */
 		const glm::mat4x4& getLocalTransform() const;
 
 		/**
-		 * Returns the global transform of this node
-		 * Note that the global transform can be out of sync as it's
-		 * recomputed on update. TODO: Resolve by walking up the tree
-		 * and down till we have the highest dirty node, from that 
+		 * Set the local transform based on the given matrix.
+		 * Note that the matrix is decomposed, result is stored in the individual elements:
+		 * Uniform scale is discarded, ie: the result will be 1.
+		 * @param matrix new local transformation matrix. 
+		 */
+		void setLocalTransform(const glm::mat4x4& matrix);
+
+		/**
+		 * Returns the global transform of this node.
+		 * Note that the global transform can be out of sync as it's recomputed on update.
 		 * point on resolve downwards
 		 */
 		const glm::mat4x4& getGlobalTransform() const;
 
 		/**
-		 * Sets the dirty flag
+		 * When set dirty, the transform component will re-compute 
+		 * the global and local transform matrices when requested.
 		 */
 		void setDirty();
 
 		/**
-		 * @return if the local transform is dirty
+		 * @return if the local transform is dirty.
 		 */
 		bool isDirty() const							{ return mWorldDirty; }
 
@@ -98,16 +107,50 @@ namespace nap
 		 */
 		void update(const glm::mat4& parentTransform);
 
+		/**
+		 * Sets the transformation part of this component.
+		 * @param translate new component translation.
+		 */
 		void setTranslate(const glm::vec3& translate);
+		
+		/**
+		 * @return component translation
+		 */
 		const glm::vec3& getTranslate() const			{ return mTranslate;  }
 
+		/**
+		 * Sets the rotation part of this component.
+		 * @param rotate new component rotation.
+		 */
 		void setRotate(const glm::quat& rotate);
+		
+		/**
+		 * @return component rotation
+		 */
 		const glm::quat& getRotate() const				{ return mRotate; }
 
+		/**
+		 * Sets the scale factor of the x, y and z axis of this component.
+		 * Note that the uniform scale is applied after axis dependent scale factor.
+		 * @param scale the new component scale.
+		 */
 		void setScale(const glm::vec3& scale);
+		
+		/**
+		 * @return component scale
+		 */
 		const glm::vec3& getScale() const				{ return mScale; }
 
+		/**
+		 * Sets the uniform scale factor, applied to all axis.
+		 * Note that the uniform scale is applied after the axis independent scale factor.
+		 * @param scale the new component scale.
+		 */
 		void setUniformScale(float scale);
+		
+		/**
+		 * @return uniform component scale.
+		 */
 		const float getUniformScale() const				{ return mUniformScale; }
 
 	private:

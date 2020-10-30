@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include "service.h"
@@ -21,7 +25,8 @@ namespace nap
 
 		/**
 		 * Creates a new item that is used to build the graph
-		 * @param service: the service to create the item for
+		 * @param service the service to create the item for
+		 * @param services all available services
 		 */
 		static const ServiceObjectGraphItem create(Service* service, std::vector<Service*>* services);
 

@@ -1,13 +1,22 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "scatterpointsmesh.h"
 #include "meshutils.h"
+#include "renderservice.h"
+#include "renderglobals.h"
 
 // External Includes
 #include <mathutils.h>
+#include <nap/core.h>
 
 // nap::scatterpointsmesh run time class definition 
-RTTI_BEGIN_CLASS(nap::ScatterPointsMesh)
-	RTTI_PROPERTY("ReferenceMesh", &nap::ScatterPointsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PointCount", &nap::ScatterPointsMesh::mNumberOfPoints, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ScatterPointsMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Usage",			&nap::ScatterPointsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ReferenceMesh",	&nap::ScatterPointsMesh::mReferenceMesh,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PointCount",		&nap::ScatterPointsMesh::mNumberOfPoints,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -15,6 +24,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
+	ScatterPointsMesh::ScatterPointsMesh(Core& core) : 
+		mRenderService(core.getService<RenderService>())
+	{ }
+
 	bool ScatterPointsMesh::init(utility::ErrorState& errorState)
 	{
 		// make sure we have at least 1 point to scatter
@@ -23,13 +37,7 @@ namespace nap
 			return false;
 
 		// Make sure the reference mesh contains triangles
-		bool contains_triangles = false;
-		for (int i = 0; i < mReferenceMesh->getMeshInstance().getNumShapes(); i++)
-		{
-			if (utility::isTriangleMesh(mReferenceMesh->getMeshInstance().getShape(i)))
-				contains_triangles = true;
-		}
-
+		bool contains_triangles = utility::isTriangleMesh(mReferenceMesh->getMeshInstance());
 		if (!errorState.check(contains_triangles, "reference mesh doesn't contain any triangles: %s", this->mID.c_str()))
 			return false;
 
@@ -55,8 +63,11 @@ namespace nap
 			return false;
 
 		// There is only 1 shape associated with the scatter mesh
-		mMeshInstance = std::make_unique<MeshInstance>();
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		mMeshInstance->createShape();
+		mMeshInstance->setUsage(mUsage);
+		mMeshInstance->setDrawMode(EDrawMode::Points);
 		return true;
 	}
 
@@ -65,22 +76,23 @@ namespace nap
 	{
 		assert(mMeshInstance != nullptr);
 		mMeshInstance->setNumVertices(mNumberOfPoints);
+		mMeshInstance->setDrawMode(EDrawMode::Points);
 
 		// Create position attribute
-		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getPositionName()));
+		mPositionAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position));
 
 		// Create normal attribute
-		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getNormalName()));
+		mNormalsAttr = &(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal));
 
 		// Sample all uv sets
 		mUvAttrs.clear();
 		int uv_idx = 0;
 		while (true)
 		{
-			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx));
+			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(uv_idx));
 			if (ref_uv_attr != nullptr)
 			{
-				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(VertexAttributeIDs::getUVName(uv_idx))));
+				mUvAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(uv_idx))));
 				uv_idx++;
 				continue;
 			}
@@ -92,10 +104,10 @@ namespace nap
 		int clr_idx = 0;
 		while (true)
 		{
-			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx));
+			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(vertexid::getColorName(clr_idx));
 			if (ref_clr_attr != nullptr)
 			{
-				mColorAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(clr_idx))));
+				mColorAttrs.emplace_back(&(mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(clr_idx))));
 				clr_idx++;
 				continue;
 			}
@@ -123,12 +135,9 @@ namespace nap
 		// Set number of vertices
 		mMeshInstance->setNumVertices(mNumberOfPoints);
 
-		// Draw as points
-		MeshShape& shape = mMeshInstance->getShape(0);
-		shape.setDrawMode(opengl::EDrawMode::POINTS);
-
 		// Automatically generate indices
-		utility::generateIndices(shape, mNumberOfPoints);
+		MeshShape& shape = mMeshInstance->getShape(0);
+		utility::generateIndices(shape, mNumberOfPoints, false);
 
 		return true;
 	}
@@ -140,10 +149,10 @@ namespace nap
 		assert(mMeshInstance->getNumVertices() == mNumberOfPoints);
 
 		// Get reference vertex positions
-		const VertexAttribute<glm::vec3>* ref_pos = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		const VertexAttribute<glm::vec3>* ref_pos = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position);
 		assert(ref_pos != nullptr);
 
-		const VertexAttribute<glm::vec3>* ref_nor = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getNormalName());
+		const VertexAttribute<glm::vec3>* ref_nor = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal);
 
 		// Get reference uvs
 		std::vector<const Vec3VertexAttribute*> ref_uvs;
@@ -156,7 +165,7 @@ namespace nap
 		// Query uv data
 		for (int i = 0; i < mUvAttrs.size(); i++)
 		{
-			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(VertexAttributeIDs::getUVName(i));
+			const Vec3VertexAttribute* ref_uv_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::getUVName(i));
 			if (!error.check(ref_uv_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mReferenceMesh->mID.c_str(), i))
 				return false;
 			ref_uvs.emplace_back(ref_uv_attr);
@@ -165,7 +174,7 @@ namespace nap
 		// Query color data
 		for (int i = 0; i < mColorAttrs.size(); i++)
 		{
-			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(VertexAttributeIDs::GetColorName(i));
+			const Vec4VertexAttribute* ref_clr_attr = mReferenceMesh->getMeshInstance().findAttribute<glm::vec4>(vertexid::getColorName(i));
 			if (!error.check(ref_clr_attr != nullptr, "unable to find uv attribute on reference mesh: %s with index: %d", mReferenceMesh->mID.c_str(), i))
 				return false;
 			ref_clrs.emplace_back(ref_clr_attr);
@@ -232,7 +241,7 @@ namespace nap
 	float ScatterPointsMesh::computeArea(TriangleAreaMap& areaMap)
 	{
 		MeshInstance& mesh = mReferenceMesh->getMeshInstance();
-		const VertexAttribute<glm::vec3>* ref_pos = mesh.findAttribute<glm::vec3>(VertexAttributeIDs::getPositionName());
+		const VertexAttribute<glm::vec3>* ref_pos = mesh.findAttribute<glm::vec3>(vertexid::position);
 		assert(ref_pos != nullptr);
 
 		// Clear list

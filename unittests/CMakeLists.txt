@@ -1,3 +1,8 @@
+# Exclude for Android
+if(ANDROID)
+    return()
+endif()
+
 project(unittests)
 
 enable_testing()
@@ -14,14 +19,14 @@ add_executable(${PROJECT_NAME}_autorun ${SOURCES})
 set(UNITTEST_LIBS
     napcore
     napkin_lib
-    nrender
+    mod_napaudio
     )
 
 target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
 target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
 
 # First copy some assets
-copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/data unit_tests_data)
+copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/unit_tests_data unit_tests_data)
 
 nap_qt_post(${PROJECT_NAME})
 

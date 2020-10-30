@@ -31,7 +31,7 @@ mark_as_advanced(YOCTO_LIBS_DEBUG)
 mark_as_advanced(YOCTO_LIBS_RELEASE)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(yoctopuce REQUIRED_VARS YOCTO_INCLUDE_DIRS YOCTO_LIBS_DEBUG YOCTO_LIBS_RELEASE YOCTO_LIBS_DIR)
+find_package_handle_standard_args(yoctopuce REQUIRED_VARS YOCTO_DIR)
 
 add_library(yoctopuce SHARED IMPORTED)
 set_target_properties(yoctopuce PROPERTIES

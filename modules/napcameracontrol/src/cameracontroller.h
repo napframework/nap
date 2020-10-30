@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <component.h>
@@ -14,7 +18,7 @@ namespace nap
 	/**
 	 * Mode that the CameraController is currently operating in. 
 	 */
-	enum class NAPAPI ECameraMode : uint8_t
+	enum class ECameraMode : uint8_t
 	{
 		None						= 0x00,
 
@@ -26,7 +30,6 @@ namespace nap
 		OrthographicRight 			= 0x20,		// Orthographic camera (right-view)
 		OrthographicFront			= 0x40,		// Orthographic camera (front-view)
 		OrthographicBack			= 0x80,		// Orthographic camera (back-view)
-
 		Perspective = FirstPerson | Orbit,
 		Orthographic = OrthographicTop | OrthographicBottom | OrthographicLeft | OrthographicRight | OrthographicFront | OrthographicBack
 	};
@@ -42,8 +45,10 @@ namespace nap
 
 
 	/**
-	 * CameraController drives the FirstPersonController, OrbitController and OrthoController. It takes care of switching
-	 * between the camera controllers and it holds pointer to an entity to look at, for use in the OrbitController and the OrthoController.
+	 * Resource part of the camera controller.
+	 * The camera controller allows for switching between various controllers, ie: 
+	 * the nap::FirstPersonController, nap::OrbitController, and nap::OrthoController.
+	 * It holds a pointer to an entity to look at when the orbit or ortho controller is selected.
 	 */
 	class NAPAPI CameraController : public Component
 	{
@@ -51,20 +56,25 @@ namespace nap
 		DECLARE_COMPONENT(CameraController, CameraControllerInstance)
 	public:
 		/**
-		* Get the types of components on which this component depends
-		*/
+		 * Returns the controllers this component depends upon.
+		 * @param components the various controllers this component depends upon.
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
-			components.push_back(RTTI_OF(OrbitController));
-			components.push_back(RTTI_OF(FirstPersonController));
+			components.emplace_back(RTTI_OF(OrbitController));
+			components.emplace_back(RTTI_OF(FirstPersonController));
+			components.emplace_back(RTTI_OF(OrthoController));
 		}
 
-		nap::EntityPtr	mLookAtTarget;		///< Object to look at, for orbit and ortho controller
+		nap::EntityPtr	mLookAtTarget;		///< Property: 'LookAtTarget' Object to look at, used by the orbit and ortho controller
 	};
 
 
 	/**
-	 * ComponentInstance of CameraController. Use this class to retrieve the active camera component.
+	 * Instance part of the camera controller.
+	 * The camera controller allows for switching between various controllers, ie:
+	 * the nap::FirstPersonController, nap::OrbitController, and nap::OrthoController.
+	 * It holds a pointer to an entity to look at when the orbit or ortho controller is selected.
 	 */
 	class NAPAPI CameraControllerInstance : public ComponentInstance
 	{
@@ -86,8 +96,6 @@ namespace nap
 	private:
 		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent);
 		void onKeyPress(const KeyPressEvent& keyReleaseEvent);
-
-	private:
 		void storeLastPerspTransform();
 		void switchMode(ECameraMode targetMode);
 

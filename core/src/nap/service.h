@@ -1,11 +1,15 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
 #include "numeric.h"
-#include "utility/dllexport.h"
-#include "utility/errorstate.h"
 
 // External Includes
+#include <utility/dllexport.h>
+#include <utility/errorstate.h>
 #include <rtti/object.h>
 #include <rtti/factory.h>
 #include <set>
@@ -29,13 +33,19 @@ namespace nap
 		virtual rtti::TypeInfo getServiceType() = 0;
 	};
 
+
 	/**
-	 A Service is a process within core that cooperates with certain components in the system, this is the base
-	 class for all services. Often services are used to load a driver, set up a connection or manage global module
-	 specific state. All services are automatically loaded and managed by Core. This ensures the right order of
-	 app initialization, runtime state and closing. When designing a module using a service make sure to export the
-	 service using the NAP_SERVICE_MODULE #define in a source file exactly once. This will ensure that core automatically loads,
-	 creates and initializes the service when loading the available system modules
+	 * A Service is a process within core that cooperates with certain components in the system, this is the base
+	 * class for all services. Often services are used to load a driver, set up a connection or manage global module
+	 * specific state. All services are automatically loaded and managed by Core. This ensures the right service order of
+	 * initialization, runtime state and closing. When designing a module using a service make sure to export the
+	 * service using the 'NAP_SERVICE_MODULE' #define in a source file exactly once, for example:
+	 *
+	 *~~~~~{.cpp}
+	 * NAP_SERVICE_MODULE("mod_naposc", "0.2.0", "nap::OSCService")
+	 *~~~~~
+	 *
+	 * This code snippet ensures that core automatically loads, creates and initializes the service when loading the modules.
 	 **/
 	class NAPAPI Service
 	{
@@ -57,6 +67,26 @@ namespace nap
 		 *	@return the type name of the service
 		 */
 		const std::string getTypeName() const;
+
+		/**
+		 * Copy is not allowed
+		 */
+		Service(Service&) = delete;
+
+		/**
+		 * Copy assignment is not allowed
+		 */
+		Service& operator=(const Service&) = delete;
+
+		/**
+		 * Move is not allowed
+		 */
+		Service(Service&&) = delete;
+
+		/**
+		 * Move assignment is not allowed
+		 */
+		Service& operator=(Service&&) = delete;
 
 	protected:
 		/**
@@ -112,15 +142,29 @@ namespace nap
 
 		/**
 		 * Invoked when exiting the main loop, after app shutdown is called
+		 * This is called before shutdown() and before the resources are destroyed.
+		 * Use this function if your service needs to reset its state before resources 
+		 * are destroyed
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void preShutdown()														{ }
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
 		 * Use this function to close service specific handles, drivers or devices
 		 * When service B depends on A, Service B is shutdown before A
 		 */
 		virtual void shutdown()															{ }
 
 		/**
-		 * Invoked after the resource manager successfully loaded a resource file
+		 * Invoked when the resource manager is about to load resources
 		 */
-		virtual void resourcesLoaded()													{ }
+		virtual void preResourcesLoaded()												{ }
+
+		/**
+		 * Invoked after the resource manager successfully loaded resources
+		 */
+		virtual void postResourcesLoaded()												{ }
 
 		/**
 		 * Retrieve the ServiceConfiguration for this service. Will be null if this service does not support configuration
@@ -129,12 +173,22 @@ namespace nap
 		template<typename SERVICE_CONFIG>
 		SERVICE_CONFIG* getConfiguration()
 		{
-			return rtti_cast<SERVICE_CONFIG>(mConfiguration.get());
+			return rtti_cast<SERVICE_CONFIG>(mConfiguration);
+		}
+
+		/**
+		* Retrieve the ServiceConfiguration for this service. Will be null if this service does not support configuration
+		* @return The ServiceConfiguration
+		*/
+		template<typename SERVICE_CONFIG>
+		const SERVICE_CONFIG* getConfiguration() const
+		{
+			return rtti_cast<SERVICE_CONFIG>(mConfiguration);
 		}
 
 	private:
 		// this variable will be set by the core when the service is added
 		Core*									mCore = nullptr;
-		std::unique_ptr<ServiceConfiguration>	mConfiguration;
+		ServiceConfiguration*					mConfiguration;
 	};
 }

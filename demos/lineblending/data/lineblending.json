@@ -9,7 +9,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Radius": 0.5,
             "Segments": 100
@@ -113,9 +114,11 @@
                     "MaterialInstance": {
                         "Material": "CanvasMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadOnly"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -228,7 +231,7 @@
                     "SelectionComponentTwo": "./SelectionComponentTwo",
                     "Target": "DisplayLine",
                     "BlendValue": 0.5,
-                    "BlendSpeed": 1.0
+                    "BlendSpeed": "line_blendspeed"
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -237,9 +240,11 @@
                     "MaterialInstance": {
                         "Material": "LineMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 5.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -258,9 +263,11 @@
                     "MaterialInstance": {
                         "Material": "NormalsMaterial",
                         "Uniforms": [],
+                        "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -276,20 +283,8 @@
                     "Type": "nap::LineColorComponent",
                     "mID": "nap::LineColorComponent",
                     "BlendComponent": "./LineBlender",
-                    "FirstColor": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    "SecondColor": {
-                        "Values": [
-                            0.7839999794960022,
-                            0.41100001335144045,
-                            0.41100001335144045
-                        ]
-                    },
+                    "FirstColor": "line_colorone",
+                    "SecondColor": "line_colortwo",
                     "Intensity": 1.0,
                     "Wrap": true,
                     "WrapPower": 1.0,
@@ -312,13 +307,13 @@
                     "Type": "nap::LineNoiseComponent",
                     "mID": "nap::LineNoiseComponent",
                     "Properties": {
-                        "Frequency": 2.25,
+                        "Frequency": "line_noisefreq",
                         "FrequencySmoothTime": 1.5,
-                        "Speed": 0.32499998807907107,
+                        "Speed": "line_noisespeed",
                         "SpeedSmoothTime": 0.10000000149011612,
-                        "Offset": 0.0,
+                        "Offset": "line_noiseoffset",
                         "OffsetSmoothTime": 0.10000000149011612,
-                        "Amplitude": 0.0,
+                        "Amplitude": "line_noiseamp",
                         "AmplitudeSmoothTime": 0.10000000149011612
                     },
                     "BlendComponent": "./LineBlender"
@@ -347,23 +342,17 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Radius": 0.5
         },
         {
             "Type": "nap::ImageFromFile",
             "mID": "CanvasImage",
-            "Parameters": {
-                "MinFilter": "LinearMipmapLinear",
-                "MaxFilter": "Linear",
-                "WrapVertical": "ClampToEdge",
-                "WrapHorizontal": "ClampToEdge",
-                "MaxLodLevel": 20
-            },
             "Usage": "Static",
             "ImagePath": "laser_canvas.png",
-            "Compressed": false
+            "GenerateLods": true
         },
         {
             "Type": "nap::Line",
@@ -374,7 +363,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "DynamicWrite"
             },
             "Start": {
                 "x": -0.5,
@@ -398,7 +388,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Start": {
                 "x": 0.5,
@@ -422,7 +413,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "File": "logo.svg",
             "Units": "px",
@@ -439,20 +431,36 @@
             "mID": "CanvasMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformTexture2D",
-                    "mID": "nap::UniformTexture2D",
-                    "Name": "mCanvas",
-                    "Texture": "CanvasImage"
-                },
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "nap::UniformVec3",
+                            "Name": "mColor",
+                            "Value": {
+                                "x": 0.32100000977516177,
+                                "y": 0.32899999618530276,
+                                "z": 0.41499999165534975
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [
                 {
-                    "Type": "nap::UniformVec3",
-                    "mID": "nap::UniformVec3",
-                    "Name": "mColor",
-                    "Value": {
-                        "x": 0.32100000977516177,
-                        "y": 0.32899999618530276,
-                        "z": 0.41499999165534975
-                    }
+                    "Type": "nap::Sampler2D",
+                    "mID": "canvas_sampler_2D",
+                    "Name": "mCanvas",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Texture": "CanvasImage"
                 }
             ],
             "Shader": "CanvasShader",
@@ -477,6 +485,7 @@
             "Type": "nap::Material",
             "mID": "LineMaterial",
             "Uniforms": [],
+            "Samplers": [],
             "Shader": "LineShader",
             "VertexAttributeBindings": [
                 {
@@ -504,17 +513,25 @@
             "mID": "NormalsMaterial",
             "Uniforms": [
                 {
-                    "Type": "nap::UniformVec4",
-                    "mID": "nap::UniformVec4",
-                    "Name": "mColor",
-                    "Value": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0,
-                        "w": 1.0
-                    }
+                    "Type": "nap::UniformStruct",
+                    "mID": "nap::UniformStruct_2",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "nap::UniformVec4",
+                            "Name": "mColor",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0,
+                                "w": 1.0
+                            }
+                        }
+                    ]
                 }
             ],
+            "Samplers": [],
             "Shader": "NormalsShader",
             "VertexAttributeBindings": [
                 {
@@ -534,8 +551,122 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [],
+            "Groups": [
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Line Settings",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "line_colortwo",
+                            "Name": "Color Two",
+                            "Value": {
+                                "Values": [
+                                    0.7839999794960022,
+                                    0.41100001335144045,
+                                    0.41100001335144045
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "line_colorone",
+                            "Name": "Color One",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_size",
+                            "Name": "Size",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "line_position",
+                            "Name": "Position",
+                            "Value": {
+                                "x": 0.5,
+                                "y": 0.5
+                            },
+                            "Clamp": true,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Blending",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_blendspeed",
+                            "Name": "Blend Speed",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Noise",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noiseamp",
+                            "Name": "Amplitude",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 0.20000000298023225
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noisespeed",
+                            "Name": "Speed",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noiseoffset",
+                            "Name": "Offset",
+                            "Value": 0.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "line_noisefreq",
+                            "Name": "Frequency",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        }
+                    ],
+                    "Groups": []
+                }
+            ]
+        },
+        {
             "Type": "nap::PlaneMesh",
             "mID": "CanvasMesh",
+            "Usage": "Static",
+            "CullMode": "None",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -556,7 +687,8 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Dimensions": {
                 "x": 1.0,
@@ -566,18 +698,22 @@
         {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
-            "Width": 1280,
-            "Height": 720,
             "Borderless": false,
             "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
             "Title": "Window 1",
-            "Sync": false,
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.066600002348423,
                 "y": 0.07840000092983246,
                 "z": 0.14900000393390656,
                 "w": 1.0
-            }
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -598,22 +734,22 @@
             ]
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "CanvasShader",
-            "mVertShader": "shaders/canvas.vert",
-            "mFragShader": "shaders/canvas.frag"
+            "VertShader": "shaders/canvas.vert",
+            "FragShader": "shaders/canvas.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "LineShader",
-            "mVertShader": "shaders/line.vert",
-            "mFragShader": "shaders/line.frag"
+            "VertShader": "shaders/line.vert",
+            "FragShader": "shaders/line.frag"
         },
         {
-            "Type": "nap::Shader",
+            "Type": "nap::ShaderFromFile",
             "mID": "NormalsShader",
-            "mVertShader": "shaders/normals.vert",
-            "mFragShader": "shaders/normals.frag"
+            "VertShader": "shaders/normals.vert",
+            "FragShader": "shaders/normals.frag"
         },
         {
             "Type": "nap::TriangleLine",
@@ -624,13 +760,15 @@
                     "y": 1.0,
                     "z": 1.0,
                     "w": 1.0
-                }
+                },
+                "Usage": "Static"
             },
             "Radius": 0.5
         },
         {
             "Type": "nap::VisualizeNormalsMesh",
             "mID": "NormalsMesh",
+            "Usage": "DynamicWrite",
             "ReferenceMesh": "DisplayLine",
             "Length": 0.05000000074505806
         }

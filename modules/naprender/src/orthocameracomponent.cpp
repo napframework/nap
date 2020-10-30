@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "orthocameracomponent.h"
 
@@ -32,6 +36,31 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	glm::mat4 OrthoCameraComponentInstance::createRenderProjectionMatrix(float left, float right, float bottom, float top, float zNear, float zFar)
+	{
+		glm::mat4x4 o_matrix(1);
+		o_matrix[0][0] = static_cast<float>(2) / (right - left);
+		o_matrix[1][1] = static_cast<float>(2) / (bottom - top);
+		o_matrix[3][0] = -(right + left) / (right - left);
+		o_matrix[3][1] = -(top + bottom) / (bottom - top);
+		o_matrix[2][2] = -static_cast<float>(1) / (zFar - zNear);
+		o_matrix[3][2] = -zNear / (zFar - zNear);
+		return o_matrix;
+	}
+
+
+	glm::mat4 OrthoCameraComponentInstance::createRenderProjectionMatrix(float left, float right, float bottom, float top)
+	{
+		glm::mat4x4 o_matrix(1);
+		o_matrix[0][0] = static_cast<float>(2) / (right - left);
+		o_matrix[1][1] = static_cast<float>(2) / (bottom - top);
+		o_matrix[2][2] = -static_cast<float>(1);
+		o_matrix[3][0] = -(right + left) / (right - left);
+		o_matrix[3][1] = -(top + bottom) / (bottom - top);
+		return o_matrix;
+	}
+
+
 	// Hook up attribute changes
 	OrthoCameraComponentInstance::OrthoCameraComponentInstance(EntityInstance& entity, Component& resource) :
 		CameraComponentInstance(entity, resource)
@@ -43,7 +72,7 @@ namespace nap
 	{
 		mProperties = getComponent<OrthoCameraComponent>()->mProperties;
 		mTransformComponent =	getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "Missing transform component"))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
 		return true;
@@ -77,9 +106,7 @@ namespace nap
 	}
 
 
-	// Computes projection matrix if dirty, otherwise returns the
-	// cached version
-	const glm::mat4& OrthoCameraComponentInstance::getProjectionMatrix() const
+	void OrthoCameraComponentInstance::updateProjectionMatrices() const
 	{
 		if (mDirty)
 		{
@@ -87,8 +114,9 @@ namespace nap
 			{
 				case EOrthoCameraMode::PixelSpace:
 				{
-					// In this mode we use the rendertarget size to set the left/right/top/bottom planes.
+					// In this mode we use the render target size to set the planes.
 					glm::ivec2 render_target_size = getRenderTargetSize();
+					mRenderProjectionMatrix = createRenderProjectionMatrix(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
@@ -99,20 +127,33 @@ namespace nap
 					float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
 					float top_plane = mProperties.mTopPlane * aspect_ratio;
 					float bottom_plane = mProperties.mBottomPlane * aspect_ratio;
-					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mRenderProjectionMatrix = createRenderProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					mProjectionMatrix = mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 				case EOrthoCameraMode::Custom:
 				{
+					mRenderProjectionMatrix = createRenderProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
 					break;
 				}
 			}
-
 			mDirty = false;
 		}
+	}
 
+
+	const glm::mat4& OrthoCameraComponentInstance::getProjectionMatrix() const
+	{
+		updateProjectionMatrices();
 		return mProjectionMatrix;
+	}
+
+
+	const glm::mat4& OrthoCameraComponentInstance::getRenderProjectionMatrix() const
+	{
+		updateProjectionMatrices();
+		return mRenderProjectionMatrix;
 	}
 
 
@@ -124,7 +165,7 @@ namespace nap
 
 	void OrthoCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-		components.push_back(RTTI_OF(TransformComponent));
+		components.emplace_back(RTTI_OF(TransformComponent));
 	}
 
 }

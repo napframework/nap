@@ -1,7 +1,6 @@
 QWidget
 {
     color: #000;
-    /*background-color: #888;*/
 
     selection-background-color:#D84;
     /*selection-color: #eff0f1;*/
@@ -10,6 +9,11 @@ QWidget
     /*border: 0px transparent black;*/
     /*outline: 0;*/
 
+}
+
+QMainWindow
+{
+    background-color: #888;
 }
 
 QAbstractScrollArea {
@@ -38,8 +42,28 @@ QGroupBox:title {
 QDockWidget {
     color: #CCC;
     border: 1px solid #444;
-
+    titlebar-close-icon:url(:/icons/icon_close.png);
+    titlebar-normal-icon:url(:/icons/icon_restore.png);
     /*padding: 10px;*/
+}
+
+QDockWidget::close-button,QDockWidget::float-button{
+  subcontrol-position:top right;
+  subcontrol-origin:margin;
+  position:absolute;
+  top:3px;
+  bottom:0px;
+  width:16px;
+  height:16px;
+  border:none;
+}
+
+QDockWidget::close-button{
+  right:3px;
+}
+
+QDockWidget::float-button{
+  right:25px;
 }
 
 QLineEdit {
@@ -97,6 +121,10 @@ QPushButton:pressed {
 }
 QPushButton:!enabled {
     color: #888;
+}
+
+QTabBar {
+    qproperty-drawBase: 0;
 }
 
 QTabBar:tab {

@@ -1,29 +1,25 @@
-#include "resourcefactory.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include <FreeImage.h>
+#include "resourcefactory.h"
+#include "napkin-resources.h"
 
 #include <nap/logger.h>
 #include <entity.h>
 #include <scene.h>
 
-#include "napkin-resources.h"
-
-extern "C" {
-	#include <libavformat/avformat.h>
-}
-
 using namespace nap;
 using namespace nap::rtti;
-
 
 
 napkin::ResourceFactory::ResourceFactory()
 {
 	mObjectIconMap = {
-			{RTTI_OF(Entity),     QRC_ICONS_ENTITY},
-			{RTTI_OF(Scene),      QRC_ICONS_SCENE},
-			{RTTI_OF(Component),  QRC_ICONS_COMPONENT},
-			{RTTI_OF(Object), QRC_ICONS_RTTIOBJECT},
+			{RTTI_OF(Entity),    QRC_ICONS_ENTITY},
+			{RTTI_OF(Scene),     QRC_ICONS_SCENE},
+			{RTTI_OF(Component), QRC_ICONS_COMPONENT},
+			{RTTI_OF(Object),    QRC_ICONS_RTTIOBJECT},
 	};
 
 	mFileTypes = {
@@ -86,35 +82,37 @@ const napkin::FileType& napkin::ResourceFactory::getFiletype(const nap::rtti::Pr
 
 const QStringList napkin::ResourceFactory::getImageExtensions()
 {
-	if (mImageExtensions.isEmpty())
-	{
-		for (int i = 0, len = FreeImage_GetFIFCount(); i < len; i++)
-		{
-			const char *exts = FreeImage_GetFIFExtensionList(static_cast<FREE_IMAGE_FORMAT>(i));
-			for (auto ext : QString::fromUtf8(exts).split(","))
-				mImageExtensions << ext;
-		}
-	}
-	return mImageExtensions;
+	return {};
+//	if (mImageExtensions.isEmpty())
+//	{
+//		for (int i = 0, len = FreeImage_GetFIFCount(); i < len; i++)
+//		{
+//			const char *exts = FreeImage_GetFIFExtensionList(static_cast<FREE_IMAGE_FORMAT>(i));
+//			for (auto ext : QString::fromUtf8(exts).split(","))
+//				mImageExtensions << ext;
+//		}
+//	}
+//	return mImageExtensions;
 }
 
 const QStringList napkin::ResourceFactory::getVideoExtensions()
 {
-	if (mVideoExtensions.isEmpty()) {
-		av_register_all();
-
-		AVInputFormat *fmt = av_iformat_next(nullptr); // first format
-		while (fmt != nullptr)
-		{
-			auto exts = QString::fromUtf8(fmt->extensions);
-
-			if (!exts.isEmpty())
-				mVideoExtensions << exts.split(",");
-
-			fmt = av_iformat_next(fmt); // next format
-		}
-	}
-	return mVideoExtensions;
+	return {};
+//	if (mVideoExtensions.isEmpty()) {
+//		av_register_all();
+//
+//		AVInputFormat *fmt = av_iformat_next(nullptr); // first format
+//		while (fmt != nullptr)
+//		{
+//			auto exts = QString::fromUtf8(fmt->extensions);
+//
+//			if (!exts.isEmpty())
+//				mVideoExtensions << exts.split(",");
+//
+//			fmt = av_iformat_next(fmt); // next format
+//		}
+//	}
+//	return mVideoExtensions;
 }
 
 

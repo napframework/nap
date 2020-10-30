@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -24,21 +28,23 @@ namespace nap
 	{
 	public:
 		rtti::ObjectPtr<Entity>							mEntity;				///< Root entity to spawn
-		std::vector<ComponentInstanceProperties>		mInstanceProperties;	//< The instance properties for this entity (and all of its children)
+		std::vector<ComponentInstanceProperties>		mInstanceProperties;	///< The instance properties for this entity (and all of its children)
 	};
 
 	/**
-	 * Container for entities. The Scene is responsible for instantiating all of the entities.
+	 * Container for entities. 
+	 * The Scene is responsible for instantiation and management of all contained entities.
 	 */
 	class NAPAPI Scene : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
 		using EntityByIDMap = std::unordered_map<std::string, std::unique_ptr<EntityInstance>>;
 		using EntityIterator = utility::UniquePtrMapWrapper<EntityByIDMap, EntityInstance*>;
 		using RootEntityList = std::vector<RootEntity>;
 		using InstanceByIDMap = std::unordered_map<std::string, rtti::Object*>;
+		using SortedComponentInstanceList = std::vector<ComponentInstance*>;
+		using SpawnedComponentInstanceMap = std::unordered_map<EntityInstance*, SortedComponentInstanceList>;
 
 		Scene(Core& core);
 		virtual ~Scene() override;
@@ -46,32 +52,51 @@ namespace nap
 		/**
 		 * Initialize the scene. Will spawn all entities contained in this scene.
 		 * As soon as this is called, EntityInstances will become available
-		 * and are accessible through #getRootEntity() and #getEntities()
+		 * and are accessible through getRootEntity() and getEntities()
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * Destroy the scene. Will call onDestroy for all ComponentInstances and EntityInstances in the scene.
+		 */
+		virtual void onDestroy() override;
+
+		/**
 		 * Update all entities contained in this scene
+		 * @param deltaTime time in seconds between calls.
 		 */
 		void update(double deltaTime);
 
 		/**
 		 * Spawns an entity hierarchy.
-		 * @param entity Root Entity to spawn.
-		 * @param errorState Contains error information if the returned object is nullptr.
-		 * @return On succes, the EntityInstance that was spawned. The Entity can be destroyed 
-		 *         by calling destroy with the value returned from this function.
+		 * The Entity (hierarchy) can be destroyed by calling destroy with the value returned from this function.
+		 * @param entity entity resource to spawn.
+		 * @param errorState contains error information if the returned object is nullptr.
+		 * @return The EntityInstance that was spawned on success, nullptr otherwise. 
 		 */		
 		SpawnedEntityInstance spawn(const Entity& entity, utility::ErrorState& errorState);
 
 		/**
-		 * Destroys a spawned Entity.
-		 * @param entity The Entity to destroy. This is the Entity as created using the spawn function.
+		 * Spawns an entity hierarchy.
+		 * The Entity (hierarchy) can be destroyed by calling destroy with the value returned from this function.
+		 * @param entity entity resource to spawn.
+		 * @param instanceProperties instance properties to apply to the entity's properties
+		 * @param errorState contains error information if the returned object is nullptr.
+		 * @return The EntityInstance that was spawned on success, nullptr otherwise. 
+		 */		
+		SpawnedEntityInstance spawn(const Entity& entity, const std::vector<ComponentInstanceProperties>& instanceProperties, utility::ErrorState& errorState);
+
+		/**
+		 * Destroys a spawned Entity hierarchy.
+		 * The entity must have been obtained by the spawn() function.
+		 * @param entity the Entity to destroy. 
 		 */		
 		void destroy(SpawnedEntityInstance& entity);
 
 		/**
-		 * Update the transform hierarchy of the entities contained in this scene. For any TransformComponent the world transform is updated.
+		 * Update the transform hierarchy of the entities contained in this scene. 
+		 * For any TransformComponent the world transform is updated.
+		 * @param deltaTime time in seconds in between calls.
 		 */
 		void updateTransforms(double deltaTime);
 
@@ -81,8 +106,19 @@ namespace nap
 		EntityIterator getEntities() { return EntityIterator(mEntityInstancesByID); }
 
 		/**
+		 * Locate an entity in this scene with the given unique id.
+		 * Note that the given id needs to match the id of an entity resource, not instance.
 		 *
-		 * @return EntityInstance with the specified identifier from this scene.
+		 * Example:
+		 *
+		 *~~~~~{.cpp}
+		 * 	// Fetch world and text
+		 *	auto world_entity = scene->findEntity("World");
+		 *	auto laser_entity = scene->findEntity("Laser");
+		 *~~~~~
+		 *
+		 * @param inID the unique id of the entity to find.
+		 * @return EntityInstance with the specified unique identifier from this scene.
 		 */
 		const rtti::ObjectPtr<EntityInstance> findEntity(const std::string& inID) const;
 
@@ -101,6 +137,11 @@ namespace nap
 		 */
 		RootEntityList getEntityResources()				{ return mEntities; }
 
+		/**
+		 * @return The RootEntity resources in the scene as a reference.
+		 */
+		RootEntityList& getEntityResourcesRef()			{ return mEntities; }
+
 	private:
 		EntityInstance* createEntityInstance(const Entity& entityResource, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState);
 
@@ -112,7 +153,7 @@ namespace nap
 		/**
 		 * Helper for spawning entities. Used by both spawn and init functions.
 		 */
-		bool spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::Object*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, utility::ErrorState& errorState);
+		bool spawnInternal(const RootEntityList& rootEntities, const std::vector<rtti::Object*>& allObjects, bool clearChildren, std::vector<EntityInstance*>& spawnedRootEntityInstances, SortedComponentInstanceList& sortedComponentInstances, utility::ErrorState& errorState);
 
 	public:
 		RootEntityList 						mEntities;						///< List of root entities owned by the Scene
@@ -125,7 +166,9 @@ namespace nap
 		std::unique_ptr<Entity>				mRootEntityResource;			///< Root entity resource, owned and created by this scene
 		EntityByIDMap						mEntityInstancesByID;			///< Holds all spawned entities
 		InstanceByIDMap						mInstancesByID;					///< Holds all spawned entities & components
-		ClonedComponentByEntityMap			mClonedComponentsByEntity;		///< All cloned components, stored by entity. This map owns the cloned resources.
+		ClonedComponentResourceList			mAllClonedComponents;			///< All cloned components for this entity
+		SortedComponentInstanceList			mLoadedComponentInstances;		///< Sorted list of all ComponentInstances that were created during init (i.e. resource file load)
+		SpawnedComponentInstanceMap			mSpawnedComponentInstanceMap;	///< Sorted list of all ComponentInstances that were spawned at runtime, grouped by the root EntityInstance they belong to.
 	};
 
 	using SceneCreator = rtti::ObjectCreator<Scene, Core>;
