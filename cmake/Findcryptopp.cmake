@@ -20,8 +20,13 @@ else()
     set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/linux/install/lib)
     set(CRYPTOPP_LIB_RELEASE ${CRYPTOPP_LIB_DIR}/libcryptopp.a)
     set(CRYPTOPP_LIB_DEBUG ${CRYPTOPP_LIB_RELEASE})
+    if(NOT EXISTS ${CRYPTOPP_LIB_RELEASE})
+        message(STATUS "Extracting Cryptopp...")
+        execute_process(COMMAND unxz ${CRYPTOPP_LIB_RELEASE}.xz
+                        WORKING_DIRECTORY ${CRYPTOPP_LIB_DIR}
+                       )
+    endif()
 endif()
-
 mark_as_advanced(CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DIR)
 mark_as_advanced(CRYPTOPP_LIB_DEBUG CRYPTOPP_DLL_DEBUG)
 mark_as_advanced(CRYPTOPP_LIB_RELEASE CRYPTOPP_DLL_RELEASE)
