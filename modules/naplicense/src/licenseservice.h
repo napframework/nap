@@ -65,12 +65,17 @@ namespace nap
 	 * On initialization the service looks for a '.key' and '.license' file in the directory 
 	 * provided by the nap::LicenseConfiguration, defaults to: {PROJECT_DIR}/license.
 	 *
-	 * Note that on initialization no license check is performed, you have to call 'validateLicense()',
-	 * on app initialization yourself, to verify the license. Based on the outcome 
-	 * it us up to you to implement the required application security measures.
+	 * Note that on initialization no check is performed, you have to call 'validateLicense()',
+	 * on app initialization, to verify the license. Based on the outcome it us up to you to
+	 * implement the required security measures.
+	 * 
+	 * This is by no means a fail-safe licensing system, nothing is. It does however provide you 
+	 * with a good layer of initial protection. If you want a more fail safe solution,
+	 * consider using a license server instead. NAP however will not be able to provide that 
+	 * considering many NAP application must run stand-alone without an internet connection.
 	 *
-	 * It is recommended to compile the public key into your application module, either as a string
-	 * or object derived from 'nap::PublicKey'.
+	 * It is recommended to compile the public key into your application as a string or into your
+	 * application module as a 'nap::PublicKey'.
 	 */
 	class NAPAPI LicenseService : public Service
 	{
@@ -90,7 +95,7 @@ namespace nap
 		 * - is can be verified using the provided public key
 		 * - it is not expired
 		 *
-		 * Note that a license, without an expiration date, is considered valid after it passes verification.
+		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
 		 *
 		 * @param publicKey public key, generated using the 'licensegenerator'
@@ -109,7 +114,7 @@ namespace nap
 		 * - is can be verified using the provided public key
 		 * - it is not expired
 		 *
-		 * Note that a license, without an expiration date, is considered valid after it passes verification.
+		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
 		 *
 		 * @param publicKey public key, generated using the 'licensegenerator'
