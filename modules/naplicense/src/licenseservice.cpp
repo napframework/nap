@@ -53,6 +53,12 @@ namespace nap
 
 	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
+		return validateLicense(publicKey.getKey(), outInformation, error);
+	}
+
+
+	bool LicenseService::validateLicense(const std::string& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
+	{
 		// Ensure the user provided a license
 		if (!error.check(hasLicense(), "No .%s file found in: %s", licenseExtension, mDirectory.c_str()))
 			return false;
@@ -64,7 +70,7 @@ namespace nap
 		assert(utility::fileExists(mSignature));
 
 		// Verify license using provided public application key
-		if (!error.check(RSAVerifyFile(publicKey.getKey(), mLicense, mSignature), "Invalid license"))
+		if (!error.check(RSAVerifyFile(publicKey, mLicense, mSignature), "Invalid license"))
 			return false;
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
@@ -83,7 +89,7 @@ namespace nap
 		for (const auto& part : output)
 		{
 			std::vector<std::string> argument = utility::splitString(part, ':');
-			if(argument.size() > 1)
+			if (argument.size() > 1)
 				arguments.emplace(std::make_pair(argument[0], argument[1]));
 		}
 

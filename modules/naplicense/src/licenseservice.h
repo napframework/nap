@@ -56,7 +56,21 @@ namespace nap
 
 
 	/**
-	 * Validates a license using a nap::PublicKey.
+	 * Validates a license using a public key.
+	 *
+	 * Call LicenseService::validateLicense() on initialization to check if the application has a valid license.
+	 * You can generate a public / private RSA key pair using the 'keygen' tool, use
+	 * the private key to generate a license using the 'licensegenerator' tool.
+	 *
+	 * On initialization the service looks for a '.key' and '.license' file in the directory 
+	 * provided by the nap::LicenseConfiguration, defaults to: {PROJECT_DIR}/license.
+	 *
+	 * Note that on initialization no license check is performed, you have to call 'validateLicense()',
+	 * on app initialization yourself, to verify the license. Based on the outcome 
+	 * it us up to you to implement the required application security measures.
+	 *
+	 * It is recommended to compile the public key into your application module, either as a string
+	 * or object derived from 'nap::PublicKey'.
 	 */
 	class NAPAPI LicenseService : public Service
 	{
@@ -66,6 +80,25 @@ namespace nap
 		 *	Default constructor
 		 */
 		LicenseService(ServiceConfiguration* configuration);
+
+		/**
+		 * Validates the user provided license using a public RSA key.
+		 * Call this somewhere in your application, preferably on init(), to ensure the application has a valid license.
+		 *
+		 * The license is valid when:
+		 * - a .license and .key file is found on service initialization (using the LicenseConfiguration)
+		 * - the license can be verified using the provided public key
+		 * - it is not expired
+		 *
+		 * Note that a license, without an expiration date, is considered valid after it passes verification.
+		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
+		 *
+		 * @param publicKey public key, generated using the 'licensegenerator'
+		 * @param outInformation validated user license information, empty if license is invalid
+		 * @param error explains why the license is not valid
+		 * @return if this app has a valid license
+		 */
+		bool validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error);
 
 		/**
 		 * Validates the user provided license using a public RSA key.
@@ -84,7 +117,7 @@ namespace nap
 		 * @param error explains why the license is not valid
 		 * @return if this app has a valid license
 		 */
-		bool validateLicense(const nap::PublicKey& key, LicenseInformation& outInformation, utility::ErrorState& error);
+		bool validateLicense(const std::string& publicKey, LicenseInformation& outInformation, utility::ErrorState& error);
 
 		/**
 		 * Returns if the user provided a license. Does not mean it is valid.
@@ -98,7 +131,7 @@ namespace nap
 		const std::string& getLicense() const		{ return mLicense; }
 
 		/**
-		 * Returns if the user provided a key (signature). Does not mean it is valid.
+		 * Returns if the user provided a license key (signature). Does not mean it is valid.
 		 * @return if a key (signature) is provided by the user
 		 */
 		bool hasKey() const							{ return !mSignature.empty(); }
