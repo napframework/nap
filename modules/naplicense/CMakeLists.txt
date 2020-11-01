@@ -41,12 +41,6 @@ endif()
 copy_module_json_to_bin()
 
 # Package into platform release
-if(APPLE)
-    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/yoctopuce/bin)
-    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})    
-elseif(UNIX)
-    set(LINUX_EXTRA_RPATH ../../../../thirdparty/yoctopuce/bin)
-endif()
 package_module()
 
 # Package cryptopp into platform release
@@ -54,25 +48,11 @@ if(WIN32)
     install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/include DESTINATION thirdparty/cryptopp)
     install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/lib DESTINATION thirdparty/cryptopp)
 elseif(APPLE)
-    SET(YOCTO_DYLIB ${THIRDPARTY_DIR}/yoctopuce/Binaries/osx/libyocto.dylib)
-    install(FILES ${YOCTO_DYLIB} DESTINATION thirdparty/yoctopuce/bin)
-
-    # Ensure our yoctopuce install name id is set properly, this is really for intall into packaging
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       PRE_BUILD
-                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libyocto.dylib ${YOCTO_DYLIB}
-                       COMMENT "Setting install name for yoctopuce")
-
-    foreach(build_type Release Debug)
-        install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                                              -add_rpath
-                                              @loader_path/../../../../thirdparty/yoctopuce/bin
-                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napyoctopuce/lib/${build_type}/mod_napyoctopuce.dylib
-                                      ERROR_QUIET
-                                      )")
-    endforeach()    
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/macos/install/include/cryptopp/ DESTINATION thirdparty/cryptopp/include)
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/macos/install/lib DESTINATION thirdparty/cryptopp)
 else()
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/linux/64bits/libyocto.so.1.0.1 DESTINATION thirdparty/yoctopuce/bin)
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/linux/install/include/cryptopp DESTINATION thirdparty/cryptopp)
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/linux/install/lib DESTINATION thirdparty/cryptopp)
 endif()
 
 # install crypto pp license
