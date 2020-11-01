@@ -71,7 +71,7 @@ namespace nap
 	 * 
 	 * This is by no means a fail-safe licensing system, nothing is. It does however provide you 
 	 * with a good layer of initial protection. If you want a more fail safe solution,
-	 * consider using a license server instead. NAP however will not be able to provide that 
+	 * consider using a license server instead. NAP however will not be able to provide that functionality,
 	 * considering many NAP application must run stand-alone without an internet connection.
 	 *
 	 * It is recommended to compile the public key into your application as a string or into your
