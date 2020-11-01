@@ -76,6 +76,11 @@ namespace nap
 			bool mAllowDeviceFailure = true;
 			
 			/**
+			 * If set to false the audio will start with only an output device.
+			 */
+			bool mDisableInput = false;
+			
+			/**
 			 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
 			 */
 			float mSampleRate = 44100;
@@ -253,8 +258,7 @@ namespace nap
 			/**
 			 * @return Wether the audio stream is succesfully initialized
 			 */
-			bool isOpened()
-			{ return mStream != nullptr; }
+			bool isOpened() { return mStream != nullptr; }
 			
 			/**
 			 * @return Wether the audio stream is currently running and not been paused.

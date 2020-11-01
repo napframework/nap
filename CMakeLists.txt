@@ -154,6 +154,7 @@ add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
 add_subdirectory(demos/sequencer)
+add_subdirectory(demos/paintobject)
 
 # Unit tests
 add_subdirectory(unittests)

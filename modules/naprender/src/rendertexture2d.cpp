@@ -17,6 +17,7 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
 	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Fill",		&nap::RenderTexture2D::mFill,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mFormat,		nap::rtti::EPropertyMetaData::Required)
@@ -39,8 +40,8 @@ namespace nap
 		settings.mColorSpace = mColorSpace;
 
 		// Figure out if the texture needs to be filled
-		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static ? 
-			Texture2D::EClearMode::DontClear :
+		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static && !mFill ? 
+			Texture2D::EClearMode::DontClear : 
 			Texture2D::EClearMode::FillWithZero;
 
 		// Initialize based on selected format

@@ -83,10 +83,8 @@ namespace nap
 			foundFilePath = testPath;
 			nap::Logger::debug("Found '%s'...", foundFilePath.c_str());
 			return true;
-		} else
-		{
-			return false;
 		}
+		return false;
 	}
 
 
