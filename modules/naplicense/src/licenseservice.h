@@ -87,7 +87,7 @@ namespace nap
 		 *
 		 * The license is valid when:
 		 * - a .license and .key file is found on service initialization (using the LicenseConfiguration)
-		 * - the license can be verified using the provided public key
+		 * - is can be verified using the provided public key
 		 * - it is not expired
 		 *
 		 * Note that a license, without an expiration date, is considered valid after it passes verification.
@@ -106,7 +106,7 @@ namespace nap
 		 *
 		 * The license is valid when:
 		 * - a .license and .key file is found on initialization (using the LicenseConfiguration)
-		 * - the license can be verified using the provided public key
+		 * - is can be verified using the provided public key
 		 * - it is not expired
 		 *
 		 * Note that a license, without an expiration date, is considered valid after it passes verification.

@@ -155,6 +155,7 @@ static bool validateDate(const std::string& date)
  * Optional arguments:
  * -m	client mail address
  * -d	license expiry date
+ * -t	additional message (tag)
  * 
  * If the date is not specified the license is not bound to an end date.
  * Output format of human readable license = '.license'
@@ -163,7 +164,7 @@ static bool validateDate(const std::string& date)
  *
  * Example:
  * ~~~~~
- * licensegenerator.exe -k c:/keys/key.private -f ben -l davis -a myapp -m ben@davis.com -d 30/12/2025 -o c:/license
+ * licensegenerator -k c:/keys/key.private -f ben -l davis -a myapp -m ben@davis.com -d -t educational 30/12/2025 -o c:/license
  * ~~~~~
  */
 int main(int argc, char* argv[])
