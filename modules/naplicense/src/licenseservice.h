@@ -161,8 +161,8 @@ namespace nap
 		std::string mSignature;			///< License signature file path
 		std::string mDirectory;			///< Directory that contains the licenses
 
-		bool RSAVerifyFile(const std::string& publicKey, const std::string& licenseFile, const std::string& signatureFile);
-		void setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue);
-		bool getExpirationDate(const std::string& date, SystemTimeStamp& outDate, utility::ErrorState& error);
+		static bool rsaVerifyFile(const std::string& publicKey, const std::string& licenseFile, const std::string& signatureFile);
+		static void setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue);
+		static bool getExpirationDate(const std::string& date, SystemTimeStamp& outDate);
 	};
 }

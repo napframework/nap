@@ -70,7 +70,7 @@ namespace nap
 		assert(utility::fileExists(mSignature));
 
 		// Verify license using provided public application key
-		if (!error.check(RSAVerifyFile(publicKey, mLicense, mSignature), "Invalid license"))
+		if (!error.check(rsaVerifyFile(publicKey, mLicense, mSignature), "Invalid license"))
 			return false;
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
@@ -119,11 +119,9 @@ namespace nap
 		if (it != arguments.end())
 		{
 			SystemTimeStamp expiration_date;
-			if (!getExpirationDate((*it).second, expiration_date, error))
-			{
-				error.fail("Unable to extract license expiration date");
+			if (!error.check(getExpirationDate((*it).second, expiration_date),
+				"Unable to extract license expiration date"))
 				return false;
-			}
 
 			// Check if it's expired
 			outInformation.mExpires = true;
@@ -131,7 +129,6 @@ namespace nap
 			if (!error.check(!outInformation.expired(), "License expired"))
 				return false;
 		}
-
 		return true;
 	}
 
@@ -173,7 +170,7 @@ namespace nap
 	}
 
 
-	bool LicenseService::RSAVerifyFile(const std::string& publicKey, const std::string& licenseFile, const std::string& signatureFile)
+	bool LicenseService::rsaVerifyFile(const std::string& publicKey, const std::string& licenseFile, const std::string& signatureFile)
 	{
 		try
 		{
@@ -212,7 +209,7 @@ namespace nap
 	}
 
 
-	bool LicenseService::getExpirationDate(const std::string& date, SystemTimeStamp& outDate, utility::ErrorState& error)
+	bool LicenseService::getExpirationDate(const std::string& date, SystemTimeStamp& outDate)
 	{
 		std::vector<std::string> parts = utility::splitString(date, '/');
 		NAP_ASSERT_MSG(parts.size() == 3, "invalid date format");
