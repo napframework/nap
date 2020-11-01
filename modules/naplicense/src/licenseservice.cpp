@@ -29,6 +29,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static
+	//////////////////////////////////////////////////////////////////////////
+
 	constexpr const char* licenceToken = "LICENSE@";
 	constexpr const char* licenseExtension = "license";
 	constexpr const char* keyExtension = "key";
@@ -45,6 +49,58 @@ namespace nap
 		return file_found;
 	}
 
+
+	static bool rsaVerifyFile(const std::string& publicKey, const std::string& licenseFile, const std::string& signatureFile)
+	{
+		try
+		{
+			// Load public key
+			CryptoPP::StringSource pub_file(publicKey.c_str(), true, new CryptoPP::HexDecoder);
+			CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier pub(pub_file);
+
+			// Load license signature file and ensure byte length matches
+			CryptoPP::FileSource signature_file(signatureFile.c_str(), true, new CryptoPP::HexDecoder);
+			if (signature_file.MaxRetrievable() != pub.SignatureLength())
+				return false;
+
+			// Copy into signature
+			CryptoPP::SecByteBlock signature(pub.SignatureLength());
+			signature_file.Get(signature, signature.size());
+
+			// Load license and verify
+			CryptoPP::SignatureVerificationFilter *verifier_filter = new CryptoPP::SignatureVerificationFilter(pub);
+			verifier_filter->Put(signature, pub.SignatureLength());
+
+			CryptoPP::FileSource license_file(licenseFile.c_str(), true, verifier_filter);
+			return verifier_filter->GetLastResult();
+		}
+		catch (const std::exception& e)
+		{
+			nap::Logger::error(e.what());
+			return false;
+		}
+	}
+
+
+	static void setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue)
+	{
+		auto it = args.find(key);
+		outValue = it != args.end() ? (*it).second : std::string("not provided");
+	}
+
+
+	static bool getExpirationDate(const std::string& date, SystemTimeStamp& outDate)
+	{
+		std::vector<std::string> parts = utility::splitString(date, '/');
+		NAP_ASSERT_MSG(parts.size() == 3, "invalid date format");
+		outDate = createTimestamp(std::stoi(parts[2]), std::stoi(parts[1]), std::stoi(parts[0]), 0, 0);
+		return true;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// LicenseService
+	//////////////////////////////////////////////////////////////////////////
 
 	LicenseService::LicenseService(ServiceConfiguration* configuration) :
 		Service(configuration)
@@ -170,53 +226,9 @@ namespace nap
 	}
 
 
-	bool LicenseService::rsaVerifyFile(const std::string& publicKey, const std::string& licenseFile, const std::string& signatureFile)
-	{
-		try
-		{
-			// Load public key
-			CryptoPP::StringSource pub_file(publicKey.c_str(), true, new CryptoPP::HexDecoder);
-			CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier pub(pub_file);
-
-			// Load license signature file and ensure byte length matches
-			CryptoPP::FileSource signature_file(signatureFile.c_str(), true, new CryptoPP::HexDecoder);
-			if (signature_file.MaxRetrievable() != pub.SignatureLength())
-				return false;
-
-			// Copy into signature
-			CryptoPP::SecByteBlock signature(pub.SignatureLength());
-			signature_file.Get(signature, signature.size());
-
-			// Load license and verify
-			CryptoPP::SignatureVerificationFilter *verifier_filter = new CryptoPP::SignatureVerificationFilter(pub);
-			verifier_filter->Put(signature, pub.SignatureLength());
-			
-			CryptoPP::FileSource license_file(licenseFile.c_str(), true, verifier_filter);
-			return verifier_filter->GetLastResult();
-		}
-		catch (const std::exception& e)
-		{
-			nap::Logger::error(e.what());
-			return false;
-		}
-	}
-
-
-	void LicenseService::setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue)
-	{
-		auto it = args.find(key);
-		outValue = it != args.end() ? (*it).second : std::string("not provided");
-	}
-
-
-	bool LicenseService::getExpirationDate(const std::string& date, SystemTimeStamp& outDate)
-	{
-		std::vector<std::string> parts = utility::splitString(date, '/');
-		NAP_ASSERT_MSG(parts.size() == 3, "invalid date format");
-		outDate = createTimestamp(std::stoi(parts[2]), std::stoi(parts[1]), std::stoi(parts[0]), 0, 0);
-		return true;
-	}
-
+	//////////////////////////////////////////////////////////////////////////
+	// LicenseInformation
+	//////////////////////////////////////////////////////////////////////////
 
 	bool LicenseInformation::expired()
 	{
