@@ -176,7 +176,8 @@ namespace nap
 
 	int LicenseApp::shutdown()
 	{
-		return 0;
+		// Return 1 when license is invalid, otherwise 0
+		return mLicenseValid ? 1 : 0;
 	}
 
 
