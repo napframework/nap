@@ -101,9 +101,10 @@ namespace nap
 			{
 				track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentEvent<T>>(new_segment.get()));
 
-				return_ptr = new_segment.get();
 				getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 			}
+
+		  	return_ptr = new_segment.get();
 		});
 
 		return return_ptr;

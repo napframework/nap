@@ -25,7 +25,7 @@ namespace nap
 			bool serialize(const rtti::Object* object);
 
 			template<typename T>
-			bool deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, rtti::ObjectPtr<T>& rootObject);
+			T* deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects);
 
 			template<typename T>
 			bool isClipboard()
@@ -56,7 +56,7 @@ namespace nap
 		class Empty : public Clipboard { RTTI_ENABLE() };
 
 		template<typename T>
-		bool Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, rtti::ObjectPtr<T>& rootObject)
+		T* Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects)
 		{
 			//
 			rtti::DeserializeResult result;
@@ -73,7 +73,7 @@ namespace nap
 				errorState))
 			{
 				nap::Logger::error("Error deserializing, error : %s " , errorState.toString().c_str());
-				return false;
+				return nullptr;
 			}
 
 			// Resolve links
@@ -81,28 +81,11 @@ namespace nap
 			{
 				nap::Logger::error("Error resolving links : %s " , errorState.toString().c_str());
 
-				return false;
+				return nullptr;
 			}
 
 			//
-			T* root_object = nullptr;
-
-			if(result.mReadObjects.size() > 0 )
-			{
-				auto* first_object = result.mReadObjects[0].get();
-				if( first_object->get_type() != RTTI_OF(T) )
-				{
-					nap::Logger::error("Root object not of correct type");
-					return false;
-				}else
-				{
-					root_object = static_cast<T*>(first_object);
-				}
-			}else
-			{
-				nap::Logger::error("No objects deserialized");
-				return false;
-			}
+			T* return_ptr = nullptr;
 
 			// Move ownership of read objects
 			createdObjects.clear();
@@ -111,7 +94,7 @@ namespace nap
 				//
 				if (read_object->get_type().is_derived_from<T>())
 				{
-					root_object = dynamic_cast<T*>(read_object.get());
+					return_ptr = dynamic_cast<T*>(read_object.get());
 				}
 
 				createdObjects.emplace_back(std::move(read_object));
@@ -121,21 +104,15 @@ namespace nap
 			for (auto& object_ptr : createdObjects)
 			{
 				if (!object_ptr->init(errorState))
-				{
-					nap::Logger::error("Error initializing object : %s " , errorState.toString().c_str());
-					return false;
-				}
+					return nullptr;
 			}
 
-			if( root_object == nullptr )
+			if( return_ptr == nullptr )
 			{
 				nap::Logger::error("return object is null");
-				return false;
 			}
 
-			rootObject = rtti::ObjectPtr<T>(root_object);
-
-			return true;
+			return return_ptr;
 		}
 	}
 }

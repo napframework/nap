@@ -125,7 +125,7 @@ namespace nap
 		/**
 		 * handles delete segment popup
 		 */
-		void handleEditSegmentPopup();
+		void handleDeleteSegmentPopup();
 
 		/**
 		 * handles insert curve point popup
@@ -194,24 +194,6 @@ namespace nap
 		 * @param trackTopLeft orientation
 		 */
 		virtual void showTrackContent(const SequenceTrack &track, const ImVec2& trackTopLeft) override;
-
-		/**
-		 * pastes current clipboard as a new segment at given time
-		 * @tparam T the segment type
-		 * @param trackId the track id of the track to insert into
-		 * @param time the time at which to create new segment
-		 */
-		template<typename T>
-		void pasteClipboardSegment(const std::string& trackId, double time);
-
-		/**
-		 * pastes content of clipboard segment into another segment
-		 * @tparam T the segment type
-		 * @param trackId the track id of the track to insert into
-		 * @param segmentID the segment id of the segment to replace
-		 */
-		template<typename T>
-		void pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentID);
 
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;

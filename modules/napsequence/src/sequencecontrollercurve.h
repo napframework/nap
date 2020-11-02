@@ -134,14 +134,9 @@ namespace nap
 		 * @param type track type
 		 */
 		virtual void insertTrack(rttr::type type) override;
-
-		/**
-		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
-		 * @param trackID the track id of the track that we want to update
-		 */
-		void updateCurveSegments(const std::string& trackID);
 	private:
 		/**
+		 * updateCurveSegments
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param track reference to sequence track
 		 */
@@ -193,9 +188,6 @@ namespace nap
 		 */
 		template <typename  T>
 		void changeCurvePoint(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
-
-		template <typename T>
-		void SequenceControllerCurve::changeLastCurvePoint(SequenceTrackSegment& segment, const int curveIndex, float time, float value);
 
 		/**
 		 * deletes point from curve

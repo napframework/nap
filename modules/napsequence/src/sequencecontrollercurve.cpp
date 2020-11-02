@@ -672,14 +672,6 @@ namespace nap
 			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurvePoint<glm::vec4> },
 		};
 
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const int, float, float)> change_last_curve_point_map
-			{
-				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeLastCurvePoint<float> },
-				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeLastCurvePoint<glm::vec2> },
-				{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeLastCurvePoint<glm::vec3> },
-				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeLastCurvePoint<glm::vec4> },
-			};
-
 		performEditAction([this, trackID, segmentID, pointIndex, curveIndex, time, value]()
 		{
 			// find segment
@@ -693,34 +685,6 @@ namespace nap
 			  if (it != change_curve_point_map.end())
 			  {
 				  (*this.*it->second)(*segment, pointIndex, curveIndex, time, value);
-
-				  // if point index = 0, check if we need to update end point of any previous segment
-				  if( pointIndex == 0 )
-				  {
-					  // find corresponding track
-					  auto* track = findTrack(trackID);
-
-					  // iterate trough segments
-					  for(size_t i = 0; i < track->mSegments.size(); i++)
-					  {
-						  // if this segment is found, and index is bigger then 0 obtain the previous segment
-						  if( track->mSegments[i].get() == segment && i > 0 )
-						  {
-							  // obtain previous segment
-							  auto* prev_segment = track->mSegments[i-1].get();
-
-							  // find corresponding function call and invoke changeLastCurvePoint on the previous segment
-							  auto it2 = change_last_curve_point_map.find(segment->get_type());
-							  assert(it2 != change_last_curve_point_map.end()); // type not found
-							  if (it2 != change_last_curve_point_map.end())
-							  {
-								  (*this.*it2->second)(*prev_segment, curveIndex, 1.0f, value);
-							  }
-
-							  break;
-						  }
-					  }
-				  }
 			  }
 			}
 		});
@@ -730,35 +694,14 @@ namespace nap
 	template <typename T>
 	void SequenceControllerCurve::changeCurvePoint(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value)
 	{
-		// obtain curve segment
+		//
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
-		// obtain curve point and set values
-		math::FCurvePoint<float, float>& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
-		curve_point.mPos.mTime = time;
-		curve_point.mPos.mValue = value;
-		curve_point.mPos.mValue = math::clamp<float>(curve_point.mPos.mValue, 0.0f, 1.0f);
-		curve_segment.mCurves[curveIndex]->invalidate();
-	}
-
-
-	template <typename T>
-	void SequenceControllerCurve::changeLastCurvePoint(SequenceTrackSegment& segment, const int curveIndex, float time, float value)
-	{
-
-		// obtain curve segment
-		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
-		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
-
 		//
-		int point_index = curve_segment.mCurves[curveIndex]->mPoints.size() - 1;
-
-		// obtain curve point and set values
-		math::FCurvePoint<float, float>& curve_point = curve_segment.mCurves[curveIndex]->mPoints[point_index];
+		math::FCurvePoint<float, float>& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
 		curve_point.mPos.mTime = time;
 		curve_point.mPos.mValue = value;
 		curve_point.mPos.mValue = math::clamp<float>(curve_point.mPos.mValue, 0.0f, 1.0f);
@@ -799,8 +742,9 @@ namespace nap
 	}
 
 
-	template <typename  T>
-	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value)
+	template<typename T>
+	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
+												 SequenceCurveEnums::TanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
@@ -881,25 +825,6 @@ namespace nap
 			addNewCurveTrack<glm::vec3>();
 		if (type == RTTI_OF(SequenceTrackCurveVec4))
 			addNewCurveTrack<glm::vec4>();
-	}
-
-
-	void SequenceControllerCurve::updateCurveSegments(const std::string& trackID)
-	{
-		auto* track = findTrack(trackID);
-		if(track!= nullptr)
-		{
-			rttr::type type = track->get_type();
-
-			if( type == RTTI_OF(SequenceTrackCurveFloat))
-				updateCurveSegments<float>(*track);
-			if (type == RTTI_OF(SequenceTrackCurveVec2))
-				updateCurveSegments<glm::vec2>(*track);
-			if (type == RTTI_OF(SequenceTrackCurveVec3))
-				updateCurveSegments<glm::vec3>(*track);
-			if (type == RTTI_OF(SequenceTrackCurveVec4))
-				updateCurveSegments<glm::vec4>(*track);
-		}
 	}
 
 
