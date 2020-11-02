@@ -11,7 +11,7 @@
 
 namespace nap
 {
-	enum TweenEasing
+	enum ETweenEasing : int
 	{
 		LINEAR 			= 0,
 		CUBIC_IN	  	= 1,

@@ -70,21 +70,26 @@ namespace nap
 		// remove any killed tweens
 		for(auto* tween : mTweensToRemove)
 		{
-			int index = -1;
-			for(int i = 0 ; i < mTweens.size(); i++)
+			itr = mTweens.begin();
+			while (itr!=mTweens.end())
 			{
-				if(mTweens[i].get() == tween)
+				if(itr->get() == tween)
 				{
-					index = i;
+					mTweens.erase(itr);
 					break;
+				}else
+				{
+					++itr;
 				}
 			}
-
-			if(index != -1)
-			{
-				mTweens.erase(mTweens.begin() + index);
-			}
 		}
+		mTweensToRemove.clear();
+	}
+
+
+	void TweenService::shutdown()
+	{
+		mTweens.clear();
 		mTweensToRemove.clear();
 	}
 

@@ -6,11 +6,11 @@
 
 namespace nap
 {
-	enum TweenMode
+	enum ETweenMode : int
 	{
-		NORMAL,
-		LOOP,
-		PING_PONG,
-		REVERSE
+		NORMAL 		= 0,
+		LOOP		= 1,
+		PING_PONG	= 2,
+		REVERSE		= 3
 	};
 }

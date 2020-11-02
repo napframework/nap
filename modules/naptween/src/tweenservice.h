@@ -18,10 +18,20 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * The TweenService is responsible for creating, updating and retaining all Tweens
+	 * Once you call createTween<T> on the TweenService. It will construct a new Tween and keep the unique_ptr to the Tween stored internally.
+	 * Then, the TweenService will make a handle to that tween and return a unique_ptr to the TweenHandle which needs to be managed outside the TweenService ( typically, by the class from where you call the createTween<T> method )
+	 * The function of the Handle is to provide the user access to the Tween without having to worry about memory managament. Once the unique_ptr of the handle is out of scope, the created handle will be deconstructed and notify the TweenService to mark the Tween for deletion
+	 * This is to prevent memory access violations that can occur when you dispose a Tween during a call to its Update, Killed or Complete signal
+	 */
 	class NAPAPI TweenService : public Service
 	{
+		friend class TweenHandleBase;
+
 		RTTI_ENABLE(Service)
 	public:
+
 		/**
 		 * Constructor
 		 */
@@ -38,15 +48,15 @@ namespace nap
 		 */
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(TweenService*));
 
-		template<typename T>
-		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, TweenEasing easeType = TweenEasing::LINEAR, TweenMode mode = TweenMode::NORMAL);
-
 		/**
-		 * removes a tween
-		 * @param pointer to tween
+		 * creates a Tween, service retains unique_ptr to tween and returns a TweenHandle that enables the user to have access to the Tweens functionality outside the TweenService
+		 * Once the handle is deconstructed, it will notify the service that the Tween can be deleted. The tween will then be deleted during the update loop but outside the scope of any Update, Complete or Killed signals
+		 * @tparam T the value type to tween
 		 */
-		void removeTween(const TweenBase* tween);
+		template<typename T>
+		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, ETweenEasing easeType = ETweenEasing::LINEAR, ETweenMode mode = ETweenMode::NORMAL);
 	protected:
+
 		/**
 		 * registers all objects that need a specific way of construction
 		 * @param factory the factory to register the object creators with
@@ -65,13 +75,27 @@ namespace nap
 		 * @param deltaTime deltaTime
 		 */
 		virtual void update(double deltaTime) override;
+
+		/**
+		 * called when service is shutdown, deletes all tweens
+		 */
+		virtual void shutdown() override;
 	private:
+		/**
+		 * removes a tween, called by tween handle
+		 * @param pointer to tween
+		 */
+		void removeTween(const TweenBase* tween);
+
+		// vector holding the tweens
 		std::vector<std::unique_ptr<TweenBase>> mTweens;
+
+		// vector holding tweens that need to be removed
 		std::vector<const TweenBase*> 			mTweensToRemove;
 	};
 
 	template<typename T>
-	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, TweenEasing easeType, TweenMode mode)
+	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, ETweenEasing easeType, ETweenMode mode)
 	{
 		// construct tween
 		std::unique_ptr<Tween<T>> tween = std::make_unique<Tween<T>>(startValue, endValue, duration);

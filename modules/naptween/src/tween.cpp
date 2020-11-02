@@ -6,11 +6,4 @@
 
 namespace nap
 {
-	TweenBase::TweenBase()
-	{
-	}
-
-	TweenBase::~TweenBase()
-	{
-	}
 }
