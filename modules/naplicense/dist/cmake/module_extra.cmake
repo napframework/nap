@@ -1,9 +1,9 @@
 include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 
-if(NOT TARGET cryptopp)
+if(WIN32 AND NOT TARGET cryptopp)
     find_package(cryptopp REQUIRED)
+    set(MODULE_NAME_EXTRA_LIBS cryptopp)
 endif()
-set(MODULE_NAME_EXTRA_LIBS cryptopp)
 
 if(WIN32)
     # Add post-build step to copy cryptopp to bin
