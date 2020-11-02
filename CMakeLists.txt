@@ -155,6 +155,7 @@ add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
 add_subdirectory(demos/sequencer)
 add_subdirectory(demos/paintobject)
+add_subdirectory(demos/license)
 
 # Unit tests
 add_subdirectory(unittests)
