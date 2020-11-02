@@ -1,40 +1,33 @@
+# only on windows, because of fynamic linkage, is cryptopp required
+if(NOT WIN32)
+  return()
+endif()
+
 find_path(
-        CRYPTOPP_DIR
-        NAMES include/dll.h
-        HINTS ${THIRDPARTY_DIR}/cryptopp
+  CRYPTOPP_DIR
+  NAMES lib/Debug/cryptopp.dll
+  HINTS ${THIRDPARTY_DIR}/cryptopp
 )
+
+
 set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/lib)
-set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_DIR}/include)
-if(WIN32)
-    set(CRYPTOPP_LIB_DEBUG ${CRYPTOPP_LIB_DIR}/Debug/cryptopp.lib)
-    set(CRYPTOPP_DLL_DEBUG ${CRYPTOPP_LIB_DIR}/Debug/cryptopp.dll)
-    set(CRYPTOPP_LIB_RELEASE ${CRYPTOPP_LIB_DIR}/Release/cryptopp.lib)
-    set(CRYPTOPP_DLL_RELEASE ${CRYPTOPP_LIB_DIR}/Release/cryptopp.dll)
-endif()
+set(CRYPTOPP_DLL_DEBUG ${CRYPTOPP_LIB_DIR}/Debug/cryptopp.dll)
+set(CRYPTOPP_DLL_RELEASE ${CRYPTOPP_LIB_DIR}/Release/cryptopp.dll)
 
-mark_as_advanced(CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DIR)
-mark_as_advanced(CRYPTOPP_LIB_DEBUG CRYPTOPP_DLL_DEBUG)
-mark_as_advanced(CRYPTOPP_LIB_RELEASE CRYPTOPP_DLL_RELEASE)
+add_library(cryptopp SHARED IMPORTED)
+set_target_properties(cryptopp PROPERTIES
+                        IMPORTED_CONFIGURATIONS "Debug;Release"
+                        IMPORTED_LOCATION_RELEASE ${CRYPTOPP_DLL_RELEASE}
+                        IMPORTED_LOCATION_DEBUG ${CRYPTOPP_DLL_DEBUG}
+                        )
 
-
-if(WIN32)
-    add_library(cryptopp SHARED IMPORTED)
-    set_target_properties(cryptopp PROPERTIES
-                          IMPORTED_CONFIGURATIONS "Debug;Release"
-                          IMPORTED_LOCATION_RELEASE ${CRYPTOPP_DLL_RELEASE}
-                          IMPORTED_LOCATION_DEBUG ${CRYPTOPP_DLL_DEBUG}
-                          )
-
-    set_target_properties(cryptopp PROPERTIES
-                          IMPORTED_IMPLIB_RELEASE ${CRYPTOPP_LIB_RELEASE}
-                          IMPORTED_IMPLIB_DEBUG ${CRYPTOPP_LIB_DEBUG}
-                          )
-endif()
+mark_as_advanced(CRYPTOPP_DLL_DEBUG)
+mark_as_advanced(CRYPTOPP_DLL_RELEASE)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(cryptopp REQUIRED_VARS CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DEBUG CRYPTOPP_LIB_RELEASE)
+find_package_handle_standard_args(cryptopp REQUIRED_VARS CRYPTOPP_DLL_DEBUG CRYPTOPP_DLL_RELEASE)
  
-# Copy the cryptopp dynamic linked lib into the build directory
+ # Copy the cryptopp dynamic linked lib into the build directory
 macro(copy_cryptopp_dll)
     add_custom_command(
             TARGET ${PROJECT_NAME}

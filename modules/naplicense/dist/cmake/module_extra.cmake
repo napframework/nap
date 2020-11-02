@@ -1,11 +1,9 @@
 include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 
+# install cryptopp dlls when using windows
 if(WIN32 AND NOT TARGET cryptopp)
     find_package(cryptopp REQUIRED)
-    set(MODULE_NAME_EXTRA_LIBS cryptopp)
-endif()
 
-if(WIN32)
     # Add post-build step to copy cryptopp to bin
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD

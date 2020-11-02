@@ -45,8 +45,8 @@ package_module()
 
 # Package cryptopp into platform release
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/include DESTINATION thirdparty/cryptopp)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/lib DESTINATION thirdparty/cryptopp)
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/lib DESTINATION thirdparty/cryptopp 
+    	FILES_MATCHING PATTERN "*.dll")
 endif()
 
 # install crypto pp license
