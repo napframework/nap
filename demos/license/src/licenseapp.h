@@ -40,7 +40,7 @@ namespace nap
 	 * The plain text and signed license is stored in the 'license' directory.
 	 * On startup the nap::LicenseService looks for a license in a specific directory, which 
 	 * defaults to: "{PROJECT_DIR}/license". On initialization the application checks 
-	 * if it has a valid license. If not, a module dialog is opened that notifies the user 
+	 * if it has a valid license. If not, a modal dialog is opened that notifies the user 
 	 * there is no valid license. From there the user can only quit the application. 
 	 *
 	 * It is up to the developer to implement specific security measures based on license validity.
