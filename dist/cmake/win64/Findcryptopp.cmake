@@ -1,8 +1,4 @@
-# only on windows, because of fynamic linkage, is cryptopp required
-if(NOT WIN32)
-  return()
-endif()
-
+# Only on Windows, because of dynamic linkage, is cryptopp required
 find_path(
   CRYPTOPP_DIR
   NAMES lib/Debug/cryptopp.dll

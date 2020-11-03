@@ -1,6 +1,6 @@
 include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 
-# install cryptopp dlls when using windows
+# install cryptopp DLL when using Windows
 if(WIN32 AND NOT TARGET cryptopp)
     find_package(cryptopp REQUIRED)
 
@@ -14,7 +14,6 @@ if(WIN32 AND NOT TARGET cryptopp)
                        )
 
     # Install cryptopp library for licensegenerator
-    # install(FILES ${THIRDPARTY_DIR}/cryptopp/lib/release/cryptopp.dll DESTINATION licensegenerator)
     install(FILES $<TARGET_FILE:cryptopp> DESTINATION licensegenerator)
 endif()
 
