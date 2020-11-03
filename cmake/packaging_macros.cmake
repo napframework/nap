@@ -15,12 +15,15 @@ macro(package_nap)
     endif()
 
     if(NOT ANDROID)
-        # install(DIRECTORY DESTINATION cmake)
-
-        # Package shared cmake files
+        # Package shared CMake files
         install(DIRECTORY ${NAP_ROOT}/dist/cmake/native/
                 DESTINATION cmake
                 )
+        if(WIN32) 
+            install(DIRECTORY ${NAP_ROOT}/dist/cmake/win64/
+                    DESTINATION cmake
+                    )
+        endif()
         file(GLOB CROSSP_FILES ${NAP_ROOT}/dist/cmake/*.*)
         list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/cross_context_macros.cmake)
         install(FILES ${CROSSP_FILES}

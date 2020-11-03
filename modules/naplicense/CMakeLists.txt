@@ -45,14 +45,8 @@ package_module()
 
 # Package cryptopp into platform release
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/include DESTINATION thirdparty/cryptopp)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/lib DESTINATION thirdparty/cryptopp)
-elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/macos/install/include/cryptopp/ DESTINATION thirdparty/cryptopp/include)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/macos/install/lib DESTINATION thirdparty/cryptopp)
-else()
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/linux/install/include/cryptopp DESTINATION thirdparty/cryptopp)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/linux/install/lib DESTINATION thirdparty/cryptopp)
+    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/lib DESTINATION thirdparty/cryptopp 
+    	FILES_MATCHING PATTERN "*.dll")
 endif()
 
 # install crypto pp license

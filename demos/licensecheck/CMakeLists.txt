@@ -5,7 +5,7 @@ if(ANDROID)
     return()
 endif()
 
-project(license)
+project(licensecheck)
 
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
