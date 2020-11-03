@@ -1,3 +1,6 @@
+if(DEFINED GLM_INCLUDE_DIRS)
+    set(GLM_FIND_QUIETLY 1)
+endif()
 find_path(GLM_INCLUDE_DIRS
           NAMES glm/glm.hpp
           NO_CMAKE_FIND_ROOT_PATH

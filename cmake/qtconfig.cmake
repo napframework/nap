@@ -1,6 +1,4 @@
-
 macro(nap_qt_pre)
-
     # Search for hints about our Qt library location
     if(DEFINED ENV{QT_DIR})
         set(QTDIR $ENV{QT_DIR})
@@ -45,12 +43,10 @@ macro(nap_qt_pre)
     else()
         message(FATAL_ERROR
                 "Qt5 could not be found, please set the QT_DIR environment variable, eg.:"
-                "\n Win64 - \"C:/dev/Qt/5.9.1/msvc2015_64\""
+                "\n Win64 - \"C:/dev/Qt/5.11.3/msvc2015_64\""
                 "\n macOS - \"/Users/username/dev/Qt/Qt5.11.3/5.11.3/clang_64\""
                 "\n Linux - \"/home/username/dev/Qt/Qt5.11.3/5.11.3/gcc_64\"")
     endif()
-
-
 
     find_package(Qt5Core REQUIRED)
     find_package(Qt5Widgets REQUIRED)
@@ -62,9 +58,7 @@ macro(nap_qt_pre)
     add_definitions(-DQT_NO_KEYWORDS)
 
     set(QT_LIBS Qt5::Widgets Qt5::Core Qt5::Gui Qt5::OpenGL)
-
 endmacro()
-
 
 macro(nap_qt_post PROJECTNAME)
     qt5_use_modules(${PROJECT_NAME} Core Widgets Gui OpenGL)
