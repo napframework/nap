@@ -104,7 +104,7 @@ def main(targets, clean_build, linux_build_type):
                 call(build_dir, ['make', t, '-j%s' % cpu_count()])
             elif platform == 'darwin':
                 # macOS
-                call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', t, '-configuration', 'Debug'])
+                call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', t, '-configuration', 'Debug', '-arch', 'x86_64'])
             else:
                 # Windows
                 cmake = get_cmake_path()
@@ -115,7 +115,7 @@ def main(targets, clean_build, linux_build_type):
             call(build_dir, ['make', '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', 'Debug'])
+            call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', 'Debug', '-arch', 'x86_64'])
         else:
             # Windows
             cmake = get_cmake_path()

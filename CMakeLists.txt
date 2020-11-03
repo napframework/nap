@@ -115,6 +115,8 @@ add_subdirectory(qt)
 # tools targets
 add_subdirectory(tools/fbxconverter)
 add_subdirectory(tools/napkin)
+add_subdirectory(tools/keygen)
+add_subdirectory(tools/licensegenerator)
 
 # START_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 # executable targets
@@ -153,6 +155,7 @@ add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
 add_subdirectory(demos/sequencer)
 add_subdirectory(demos/paintobject)
+add_subdirectory(demos/licensecheck)
 
 # Unit tests
 add_subdirectory(unittests)
@@ -194,6 +197,7 @@ add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
 add_subdirectory(modules/napsequence)
 add_subdirectory(modules/napsequencegui)
+add_subdirectory(modules/naplicense)
 
 # Packaging
 include(cmake/packaging_macros.cmake)

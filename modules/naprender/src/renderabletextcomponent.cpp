@@ -62,18 +62,18 @@ namespace nap
 		if (!mMaterialInstance.init(*mRenderService, mMaterialInstanceResource, errorState))
 			return false;
 
-		// Ensure we can find the text color uniform
+		// Ensure we can find the text ubo
 		UniformStructInstance* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::font::uboStruct);
 		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to set color, unable to find uniform struct with name: %s in material: %s",
 			resource->mID.c_str(), uniform::font::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 
 		// Ensure the color color uniform is available and set it
-		UniformVec3Instance* color_uniform = ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::font::textColor);
-		if (!errorState.check(color_uniform != nullptr, "%s: Unable to find uniform vec3 with name: %s in material: %s",
+		mColorUniform = ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::font::textColor);
+		if (!errorState.check(mColorUniform != nullptr, "%s: Unable to find uniform vec3 with name: %s in material: %s",
 			resource->mID.c_str(), uniform::font::textColor, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
-		color_uniform->setValue(resource->mColor.toVec3());
+		mColorUniform->setValue(resource->mColor.toVec3());
 
 		// Ensure the uniform to set the glyph is available on the source material
 		mGlyphUniform = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(uniform::font::glyphSampler);
@@ -184,6 +184,12 @@ namespace nap
 	{
 		setLineIndex(lineIndex);
 		return setText(text, error);
+	}
+
+
+	void RenderableTextComponentInstance::setColor(const glm::vec3& color)
+	{
+		mColorUniform->setValue(color);
 	}
 
 

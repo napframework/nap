@@ -51,7 +51,7 @@ class SingleProjectBuilder:
         script_to_nap_root = os.path.join(os.pardir, os.pardir)
 
         # Check for Source context
-        source_dist_dir = os.path.join(script_path, script_to_nap_root, 'dist')
+        source_dist_dir = os.path.join(script_path, script_to_nap_root, 'dist', 'cmake', 'native')
         if os.path.exists(source_dist_dir):
             self.__nap_root = os.path.abspath(os.path.join(script_path, script_to_nap_root))    
             self.__source_context = True
@@ -123,7 +123,7 @@ class SingleProjectBuilder:
             self.call(build_dir, ['make', project_name, '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', project_name, '-configuration', build_type])
+            self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', project_name, '-configuration', build_type, '-arch', 'x86_64'])
         else:
             # Windows
             cmake = self.get_cmake_path()
@@ -171,7 +171,7 @@ class SingleProjectBuilder:
             self.call(build_dir, ['make', project_name, '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % project_name, '-configuration', build_type])
+            self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % project_name, '-configuration', build_type, '-arch', 'x86_64'])
         else:
             # Windows
             cmake = self.get_cmake_path()
