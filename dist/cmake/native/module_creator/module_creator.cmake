@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.4)
+cmake_minimum_required(VERSION 3.18.4)
 
 # Verify we have a module name
 if (NOT DEFINED MODULE_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
