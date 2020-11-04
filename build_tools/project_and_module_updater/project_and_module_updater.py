@@ -28,13 +28,14 @@ from nap_shared import get_cmake_path, get_nap_root
 
 LOG = logging.getLogger(os.path.basename(os.path.dirname(__file__)))
 
+CURRENT_CMAKE_VERSION = '3.18.4'
+
 def _convert_module_ref(module_name):
     return {
         'Type': 'nap::ModuleInfo',
         'mID': module_name,
         'ModuleName': module_name,
     }
-
 
 def _convert_service_config(directory):
     filename = os.path.join(directory, 'config.json')
@@ -49,7 +50,6 @@ def _convert_service_config(directory):
 
     os.remove(filename)
 
-
 def _load_json(directory, filename):
     if not os.path.exists(directory):
         raise IOError('Directory not found: %s' % directory)
@@ -63,7 +63,6 @@ def _load_json(directory, filename):
         data = json.load(fp, object_pairs_hook=OrderedDict)
 
     return filepath, data
-
 
 def _find_data_file(root_dir):
     proj_name = os.path.basename(root_dir)
@@ -85,6 +84,9 @@ def _find_data_file(root_dir):
         return None
     else:
         return os.path.relpath(found_path, root_dir)
+
+def _get_current_cmake_version_setter():
+    return('cmake_minimum_required(VERSION {})'.format(CURRENT_CMAKE_VERSION))
 
 def convert_module(directory):
     convert_module_info(directory)
@@ -114,7 +116,10 @@ def update_source_release_module_cmake(directory, project_module, contents):
     needs_update = False
 
     # Check Unix library 'lib' prefix stripping for v0.4
+    cmake_version_setter = _get_current_cmake_version_setter()
     if not 'PROPERTIES PREFIX ""' in contents:
+        needs_update = True
+    if not cmake_version_setter in contents:
         needs_update = True
     if not needs_update:
         print("Module at %s doesn't need CMake update" % directory)
@@ -122,30 +127,39 @@ def update_source_release_module_cmake(directory, project_module, contents):
 
     print("Upgrading module CMake at %s" % directory)
 
-    # Removing lib prefix on library for Unix. Find a line below which to place it. 
-    # A little simplistic.
-    index = contents.find('set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)')
-    if index == -1:
-        index = contents.find('add_library(')
+    if not 'PROPERTIES PREFIX ""' in contents:
+        # Removing lib prefix on library for Unix. Find a line below which to place it. 
+        # A little simplistic.
+        index = contents.find('set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)')
+        if index == -1:
+            index = contents.find('add_library(')
 
-    if index != -1:
-        # Find the end of the call on that line
-        close_call_index = contents.find(")", index)
-        if close_call_index == -1:
-            print("Failed to update module removing lib prefix, %s" % directory)
-            return
-        insert_index = contents.find("\n", close_call_index)
-        # Found line appears to be last line in file, with no following newline, append to end
-        if insert_index == -1:
+        if index != -1:
+            # Find the end of the call on that line
+            close_call_index = contents.find(")", index)
+            if close_call_index == -1:
+                print("Failed to update module removing lib prefix, %s" % directory)
+                return
+            insert_index = contents.find("\n", close_call_index)
+            # Found line appears to be last line in file, with no following newline, append to end
+            if insert_index == -1:
+                insert_index = len(contents)
+        else:
+            # Couldn't find any suitable location (somehow?), append to end of file
             insert_index = len(contents)
-    else:
-        # Couldn't find any suitable location (somehow?), append to end of file
-        insert_index = len(contents)
 
-    new_contents = """
+        new_contents = """
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")"""
-    contents = contents[:insert_index] + new_contents + contents[insert_index:]
+        contents = contents[:insert_index] + new_contents + contents[insert_index:]
+
+    if not cmake_version_setter in contents:
+        index = contents.find('cmake_minimum_required')
+        if index == -1:
+            contents = '{}\n{}'.format(cmake_version_setter, contents)
+        else:
+            closing_index = contents.find(')', index)
+            contents = '{}{}{}'.format(contents[:index], cmake_version_setter, contents[closing_index+1:])
 
     file_path = os.path.join(directory, 'CMakeLists.txt')
     with open(file_path, 'w') as f:
@@ -156,6 +170,8 @@ def update_framework_release_module_cmake(directory, project_module, contents):
     needs_update = False
     # Check for project definition relocation for v0.4
     if not 'dist_shared_crossplatform.cmake' in contents:
+        needs_update = True
+    if not _get_current_cmake_version_setter() in contents:
         needs_update = True
     if not needs_update:
         print("Module at %s doesn't need CMake update" % directory)
@@ -200,7 +216,6 @@ def convert_module_info(directory):
     with open(filepath, 'w') as fp:
         json.dump(new_mod_info_json, fp, indent=4)
 
-
 def convert_project_info(directory):
     """Find a projectinfo file in the specified directory, convert to new format and write to same file.
     This will also attempt to merge and convert any existing service configurations into the same file
@@ -235,7 +250,6 @@ def convert_project_info(directory):
     with open(filepath, 'w') as fp:
         json.dump(new_proj_info_json, fp, indent=4)
 
-
 def convert_project(project_dir):
     convert_project_info(project_dir)
 
@@ -261,6 +275,8 @@ def update_project_cmake(directory):
     needs_update = False
     # Check for project definition relocation for v0.4
     if not 'dist_shared_crossplatform.cmake' in contents:
+        needs_update = True
+    if not _get_cmake_version_setter() in contents:
         needs_update = True
     if not needs_update:
         print("Project at %s doesn't need CMake update" % directory)
