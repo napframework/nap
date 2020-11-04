@@ -1,7 +1,7 @@
 {
-    "Type": "nap::ModuleInfo", 
-    "mID": "ModuleInfo", 
-    "RequiredModules": [], 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/cryptopp/msvc/lib/Release",
         "{ROOT}/../thirdparty/cryptopp/msvc/lib/Debug",

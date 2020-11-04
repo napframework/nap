@@ -1,15 +1,15 @@
 {
-    "Type": "nap::ProjectInfo", 
-    "mID": "ProjectInfo", 
-    "Title": "VideoModulation", 
-    "Version": "1.0.0", 
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "VideoModulation",
+    "Version": "1.0.0",
     "RequiredModules": [
-        "mod_videomodulation", 
-        "mod_napapp", 
-        "mod_napimgui", 
+        "mod_videomodulation",
+        "mod_napapp",
+        "mod_napimgui",
         "mod_napcameracontrol"
-    ], 
-    "Data": "data/videomodulation.json", 
-    "ServiceConfig": "", 
+    ],
+    "Data": "data/videomodulation.json",
+    "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json"
 }
