@@ -1,7 +1,7 @@
 {
     "Type": "nap::ProjectInfo", 
-    "mID": "LicenseDemo", 
-    "Title": "LicenseDemo", 
+    "mID": "LicenseCheck", 
+    "Title": "licensecheck", 
     "Version": "1.0.0", 
     "RequiredModules": [
         "mod_napapp", 
