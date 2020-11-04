@@ -276,7 +276,7 @@ def update_project_cmake(directory):
     # Check for project definition relocation for v0.4
     if not 'dist_shared_crossplatform.cmake' in contents:
         needs_update = True
-    if not _get_cmake_version_setter() in contents:
+    if not _get_current_cmake_version_setter() in contents:
         needs_update = True
     if not needs_update:
         print("Project at %s doesn't need CMake update" % directory)
@@ -312,17 +312,22 @@ def convert_all(root_directory):
         if not os.path.exists(parent_dir):
             continue
         for d in os.listdir(parent_dir):
-            directory = os.path.join(parent_dir, d)
-            convert_project(directory)
+            if not d.startswith('.'):
+                directory = os.path.join(parent_dir, d)
+                convert_project(directory)
 
     module_dirs = [
-        'modules'
+        'modules',
+        'user_modules',
     ]
     for p in module_dirs:
         parent_dir = os.path.join(root_directory, p)
+        if not os.path.exists(parent_dir):
+            continue
         for d in os.listdir(parent_dir):
-            directory = os.path.join(parent_dir, d)
-            convert_module(directory)
+            if not d.startswith('.'):
+                directory = os.path.join(parent_dir, d)
+                convert_module(directory)
 
 def convert_project_wrapper(args):
     directory = os.path.abspath(args.PROJECT_PATH)
