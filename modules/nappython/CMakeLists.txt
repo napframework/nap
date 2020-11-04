@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.18.4)
 # Only include if Python enabled
 if(NOT NAP_ENABLE_PYTHON)
     return()

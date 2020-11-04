@@ -1,10 +1,10 @@
 {
-    "Type": "nap::ModuleInfo", 
-    "mID": "ModuleInfo", 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napinput", 
+        "mod_napinput",
         "mod_napapp"
-    ], 
+    ],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/SDL2/msvc/lib/x64",
         "{ROOT}/thirdparty/SDL2/lib"

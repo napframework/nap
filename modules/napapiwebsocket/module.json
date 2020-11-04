@@ -1,9 +1,9 @@
 {
-    "Type": "nap::ModuleInfo", 
-    "mID": "ModuleInfo", 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napwebsocket", 
+        "mod_napwebsocket",
         "mod_napapi"
-    ], 
+    ],
     "WindowsDllSearchPaths": []
 }
