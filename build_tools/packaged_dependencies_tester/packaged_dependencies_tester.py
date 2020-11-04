@@ -723,7 +723,7 @@ def build_cwd_project(project_name, build_type=PROJECT_BUILD_TYPE):
     # Build build command
     if sys.platform.startswith('darwin'):
         os.chdir(MACOS_BUILD_DIR)
-        cmd = 'xcodebuild -configuration %s -jobs %s -arch x86_64' % (build_type, cpu_count())
+        cmd = 'xcodebuild -configuration %s -jobs %s' % (build_type, cpu_count())
     elif sys.platform.startswith('linux'):
         os.chdir(LINUX_BUILD_DIR)
         cmd = 'make all . -j%s' % cpu_count()
