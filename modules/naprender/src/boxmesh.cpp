@@ -18,6 +18,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
 	RTTI_PROPERTY("CullMode",	&nap::BoxMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::BoxMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::BoxMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",		&nap::BoxMesh::mColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,7 +187,7 @@ namespace nap
 		position_attribute.setData(vertex_data);
 		normal_attribute.setData(boxNormals);
 		uv_attribute.setData(boxUVs);
-		color_attribute.setData({boxVertCount, { 1.0f, 1.0f, 1.0f, 1.0f }});
+		color_attribute.setData({boxVertCount, mColor.toVec4()});
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();

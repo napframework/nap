@@ -4,8 +4,12 @@
 
 #pragma once
 
+// Local Includes
 #include "mesh.h"
+
+// External Includes
 #include <utility/dllexport.h>
+#include <color.h>
 
 namespace nap
 {
@@ -44,6 +48,7 @@ namespace nap
 		float			mSectors = 50.0f;						///< Property: 'Sectors' number of sectors
 		EMeshDataUsage	mUsage = EMeshDataUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
+		RGBAColorFloat	mColor = { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' the vertex color of the sphere
 
 	private:
 		RenderService* mRenderService;
