@@ -256,12 +256,12 @@ namespace nap
 			bool stop(utility::ErrorState& errorState);
 			
 			/**
-			 * @return Wether the audio stream is succesfully initialized
+			 * @return Whether the audio stream is succesfully initialized
 			 */
 			bool isOpened() { return mStream != nullptr; }
 			
 			/**
-			 * @return Wether the audio stream is currently running and not been paused.
+			 * @return Whether the audio stream is currently running and not been paused.
 			 */
 			bool isActive();
 			

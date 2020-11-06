@@ -91,10 +91,13 @@ namespace nap
 			Pa_CloseStream(mStream);
 			mStream = nullptr;
 			
-			auto error = Pa_Terminate();
-			if (error != paNoError)
-				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-			Logger::info("Portaudio terminated");
+			if (isOpened())
+			{
+				auto error = Pa_Terminate();
+				if (error != paNoError)
+					Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+				Logger::info("Portaudio terminated");
+			}
 			
 			// Uninitialize mpg123 library
 			mpg123_exit();
