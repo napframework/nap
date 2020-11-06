@@ -67,6 +67,7 @@ LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/',
 # - This is somewhat a proof of concept and is by nature fairly brittle. Let's see how it goes.
 LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'i965_dri',
+    'iris_dri',
     r'ld-[0-9]+\.[0-9]+',
     'libasound',
     'libasound_module_pcm_jack',
@@ -137,6 +138,10 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     r'libutil-[0-9]+\.[0-9]+',
     'libvorbis',
     'libvorbisenc',
+    'libvulkan_intel',
+    'libvulkan_radeon',
+    'libVkLayer_MESA_device_select',
+    'libwayland-client',
     'libwrap',
     'libX11',
     'libX11-xcb',
@@ -147,13 +152,16 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxcb-glx',
     'libxcb-present',
     'libxcb-sync',
+    'libxcb-randr',
     'libXdamage',
     'libXdmcp',
     'libXext',
     'libXfixes',
     'libxshmfence',
     'libXxf86vm',
-    'libz'
+    'libz',
+    'libz3',
+    'libzstd',
 ]
 
 # Testing on Debian is an efficiency necessity in the COVID19 moment
