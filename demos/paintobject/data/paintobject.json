@@ -581,7 +581,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSizeParam",
                     "Name": "Brush Size",
-                    "Value": 0.010999999940395356,
+                    "Value": 0.0175,
                     "Minimum": 0.0,
                     "Maximum": 0.10000000149011612
                 },
@@ -589,7 +589,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSoftnessParam",
                     "Name": "Brush Softness",
-                    "Value": 1.0,
+                    "Value": 5.5,
                     "Minimum": 0.0,
                     "Maximum": 25.0
                 },
