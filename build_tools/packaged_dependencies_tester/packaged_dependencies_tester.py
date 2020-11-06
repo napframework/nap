@@ -2020,9 +2020,9 @@ def patch_audio_service_configuration(project_dir, output_dir, project_name, nap
         'Type': 'nap::audio::AudioServiceConfiguration',
         'mID': 'AudioServiceConfiguration',
         'SampleRate' : 44100,
-        'InputChannelCount' : 0,
         'OutputChannelCount' : 2,
-        'AllowChannelCountFailure': 'True'
+        'AllowChannelCountFailure': 'True',
+        'DisableInput': 'True'
     }
     config['Objects'].append(new_obj)
 
