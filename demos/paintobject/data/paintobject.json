@@ -16,7 +16,6 @@
                         "DepthMode": "NotSet"
                     },
                     "SampleShading": true,
-                    "Samples": "Four",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -129,7 +128,6 @@
                         "DepthMode": "NotSet"
                     },
                     "SampleShading": true,
-                    "Samples": "Four",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -171,7 +169,6 @@
                         "DepthMode": "NotSet"
                     },
                     "SampleShading": true,
-                    "Samples": "Four",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -567,7 +564,8 @@
                         "Values": [
                             0,
                             4,
-                            45
+                            45,
+                            0
                         ]
                     }
                 },
@@ -583,7 +581,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSizeParam",
                     "Name": "Brush Size",
-                    "Value": 0.011,
+                    "Value": 0.010999999940395356,
                     "Minimum": 0.0,
                     "Maximum": 0.10000000149011612
                 },
@@ -709,7 +707,15 @@
             "CullMode": "None",
             "Radius": 1.0,
             "Rings": 25.0,
-            "Sectors": 25.0
+            "Sectors": 25.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }
