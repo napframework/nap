@@ -338,7 +338,13 @@ def is_debian():
         Success
     """
 
-    return sys.platform.startswith('linux') and check_output('lsb_release -is', shell=True).strip() == 'Debian'
+    if sys.platform.startswith('linux'):
+        out = check_output('lsb_release -is', shell=True).strip()
+        if type(out) is bytes:
+            out = out.decode('utf-8')
+        return out == 'Debian'
+
+    return False
 
 def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
