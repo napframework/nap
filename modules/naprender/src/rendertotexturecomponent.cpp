@@ -70,7 +70,6 @@ namespace nap
 		mTarget.mColorTexture = resource->mOutputTexture;
 		mTarget.mSampleShading = true;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;
-		mTarget.mRequestedSamples = ERasterizationSamples::One;
 
 		// Initialize target
 		if (!mTarget.init(errorState))
