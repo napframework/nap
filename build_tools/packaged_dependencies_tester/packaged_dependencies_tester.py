@@ -67,6 +67,7 @@ LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/',
 # - This is somewhat a proof of concept and is by nature fairly brittle. Let's see how it goes.
 LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'i965_dri',
+    'iris_dri',
     r'ld-[0-9]+\.[0-9]+',
     'libasound',
     'libasound_module_pcm_jack',
@@ -137,6 +138,10 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     r'libutil-[0-9]+\.[0-9]+',
     'libvorbis',
     'libvorbisenc',
+    'libvulkan_intel',
+    'libvulkan_radeon',
+    'libVkLayer_MESA_device_select',
+    'libwayland-client',
     'libwrap',
     'libX11',
     'libX11-xcb',
@@ -147,13 +152,16 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxcb-glx',
     'libxcb-present',
     'libxcb-sync',
+    'libxcb-randr',
     'libXdamage',
     'libXdmcp',
     'libXext',
     'libXfixes',
     'libxshmfence',
     'libXxf86vm',
-    'libz'
+    'libz',
+    'libz3',
+    'libzstd',
 ]
 
 # Testing on Debian is an efficiency necessity in the COVID19 moment
@@ -338,7 +346,13 @@ def is_debian():
         Success
     """
 
-    return sys.platform.startswith('linux') and check_output('lsb_release -is', shell=True).strip() == 'Debian'
+    if sys.platform.startswith('linux'):
+        out = check_output('lsb_release -is', shell=True).strip()
+        if type(out) is bytes:
+            out = out.decode('utf-8')
+        return out == 'Debian'
+
+    return False
 
 def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
@@ -2020,9 +2034,9 @@ def patch_audio_service_configuration(project_dir, output_dir, project_name, nap
         'Type': 'nap::audio::AudioServiceConfiguration',
         'mID': 'AudioServiceConfiguration',
         'SampleRate' : 44100,
-        'InputChannelCount' : 0,
         'OutputChannelCount' : 2,
-        'AllowChannelCountFailure': 'True'
+        'AllowChannelCountFailure': 'True',
+        'DisableInput': 'True'
     }
     config['Objects'].append(new_obj)
 
@@ -2058,6 +2072,8 @@ def get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_d
     dirs = os.listdir(test_projects_dir)
     modules = []
     for project_name in dirs:
+        if project_name.startswith('.'):
+            continue
         project_dir = os.path.join(test_projects_dir, project_name)
         modules.extend(get_full_project_module_requirements(nap_framework_full_path, project_name, project_dir))
     unique_used_modules = list(set(modules))
