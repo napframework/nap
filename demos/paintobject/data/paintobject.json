@@ -15,7 +15,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "SampleShading": true,
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -127,7 +127,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "SampleShading": true,
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -168,7 +168,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "SampleShading": true,
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -581,7 +581,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSizeParam",
                     "Name": "Brush Size",
-                    "Value": 0.0175,
+                    "Value": 0.017500000074505807,
                     "Minimum": 0.0,
                     "Maximum": 0.10000000149011612
                 },

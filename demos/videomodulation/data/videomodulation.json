@@ -336,7 +336,7 @@
                         "BlendMode": "Opaque",
                         "DepthMode": "NoReadWrite"
                     },
-                    "SampleShading": true,
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             255,
@@ -350,7 +350,7 @@
                     "mID": "nap::RenderVideoComponent",
                     "OutputTexture": "VideoColorTexture",
                     "VideoPlayer": "VideoPlayer",
-                    "SampleShading": true,
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             255,
