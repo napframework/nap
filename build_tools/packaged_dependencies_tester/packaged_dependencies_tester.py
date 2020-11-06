@@ -2058,6 +2058,8 @@ def get_modules_used_in_all_projects(nap_framework_full_path, testing_projects_d
     dirs = os.listdir(test_projects_dir)
     modules = []
     for project_name in dirs:
+        if project_name.startswith('.'):
+            continue
         project_dir = os.path.join(test_projects_dir, project_name)
         modules.extend(get_full_project_module_requirements(nap_framework_full_path, project_name, project_dir))
     unique_used_modules = list(set(modules))
