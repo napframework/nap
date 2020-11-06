@@ -19,7 +19,6 @@ RTTI_BEGIN_CLASS(nap::RenderVideoComponent)
 	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SampleShading",	&nap::RenderVideoComponent::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -77,7 +76,7 @@ namespace nap
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
 		mTarget.mColorTexture  = resource->mOutputTexture;
 		mTarget.mSampleShading = resource->mSampleShading;
-		mTarget.mRequestedSamples = resource->mRequestedSamples;
+		mTarget.mRequestedSamples = ERasterizationSamples::One;
 		if (!mTarget.init(errorState))
 			return false;
 

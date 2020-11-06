@@ -336,6 +336,7 @@
                         "BlendMode": "Opaque",
                         "DepthMode": "NoReadWrite"
                     },
+                    "SampleShading": true,
                     "ClearColor": {
                         "Values": [
                             255,
@@ -347,8 +348,9 @@
                 {
                     "Type": "nap::RenderVideoComponent",
                     "mID": "nap::RenderVideoComponent",
-                    "VideoPlayer": "VideoPlayer",
                     "OutputTexture": "VideoColorTexture",
+                    "VideoPlayer": "VideoPlayer",
+                    "SampleShading": true,
                     "ClearColor": {
                         "Values": [
                             255,
@@ -501,6 +503,14 @@
                 "x": 0.0,
                 "y": 0.0
             },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "Rows": 1,
             "Columns": 1
         },
@@ -508,6 +518,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "OutputTexture",
             "Usage": "Static",
+            "Fill": false,
             "Width": 1920,
             "Height": 1080,
             "Format": "RGBA8",
@@ -517,6 +528,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "VideoColorTexture",
             "Usage": "Static",
+            "Fill": false,
             "Width": 1920,
             "Height": 1080,
             "Format": "RGBA8",

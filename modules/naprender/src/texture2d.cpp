@@ -342,7 +342,7 @@ namespace nap
 		}
 
 		// Create GPU image usage information
-		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		if (mUsage == ETextureUsage::DynamicRead || mMipLevels > 1)
 			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
