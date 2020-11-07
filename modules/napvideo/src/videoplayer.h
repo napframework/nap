@@ -12,7 +12,7 @@
 #include <nap/device.h>
 #include <nap/resourceptr.h>
 #include <nap/numeric.h>
-#include <rendertexture2d.h>
+#include <texture2d.h>
 
 namespace nap
 {
@@ -204,7 +204,7 @@ namespace nap
 		 * The size of the Y texture is width * height.
 		 * @return The video Y texture.
 		 */
-		RenderTexture2D& getYTexture();
+		Texture2D& getYTexture();
 
 		/**
 		 * Returns the decoded video U texture.
@@ -212,7 +212,7 @@ namespace nap
 		 * The size of the U texture is HALF the width * height.
 		 * @return The video Y texture.
 		 */
-		RenderTexture2D& getUTexture();
+		Texture2D& getUTexture();
 
 		/**
 		 * Returns the decoded video V texture.
@@ -220,7 +220,7 @@ namespace nap
 		 * The size of the V texture is HALF the width * height.
 		 * @return The video V texture.
 		 */
-		RenderTexture2D& getVTexture();
+		Texture2D& getVTexture();
 
 		std::vector<nap::ResourcePtr<VideoFile>> mVideoFiles;	///< Property: 'Files' All video file links
 		nap::uint mVideoIndex = 0;								///< Property: 'Index' Selected video index
@@ -247,9 +247,9 @@ namespace nap
 		nap::Video* mCurrentVideo = nullptr;					///< Current selected video context
 		bool mTexturesCreated = false;							///< If the textures have been created
 		std::vector<std::unique_ptr<nap::Video>> mVideos;		///< All the actual videos
-		std::unique_ptr<RenderTexture2D> mYTexture;				///< Video YTexture
-		std::unique_ptr<RenderTexture2D> mUTexture;				///< Video UTexture
-		std::unique_ptr<RenderTexture2D> mVTexture;				///< Video VTexture	
+		std::unique_ptr<Texture2D> mYTexture;					///< Video YTexture
+		std::unique_ptr<Texture2D> mUTexture;					///< Video UTexture
+		std::unique_ptr<Texture2D> mVTexture;					///< Video VTexture	
 		VideoService&	mService;								///< Video service that this object is registered with
 	};
 
