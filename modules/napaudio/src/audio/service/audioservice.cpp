@@ -78,30 +78,6 @@ namespace nap
 		AudioService::AudioService(ServiceConfiguration* configuration) :
 				Service(configuration), mNodeManager(mDeletionQueue)
 		{
-			// Initialize mpg123 library
-			mpg123_init();
-			
-			checkLockfreeTypes();
-		}
-		
-		
-		AudioService::~AudioService()
-		{
-			Pa_StopStream(mStream);
-			Pa_CloseStream(mStream);
-			mStream = nullptr;
-			
-			if (isOpened())
-			{
-				auto error = Pa_Terminate();
-				if (error != paNoError)
-					Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-				Logger::info("Portaudio terminated");
-			}
-			
-			// Uninitialize mpg123 library
-			mpg123_exit();
-			
 		}
 		
 		
@@ -113,14 +89,13 @@ namespace nap
 		}
 		
 		
-		NodeManager& AudioService::getNodeManager()
-		{
-			return mNodeManager;
-		}
-		
-		
 		bool AudioService::init(nap::utility::ErrorState& errorState)
 		{
+			// Initialize mpg123 library
+			mpg123_init();
+
+			checkLockfreeTypes();
+
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
 			int inputDeviceIndex = -1;
 			int outputDeviceIndex = -1;
@@ -226,8 +201,30 @@ namespace nap
 			
 			return true;
 		}
-		
-		
+
+
+		void AudioService::shutdown()
+		{
+			Pa_StopStream(mStream);
+			Pa_CloseStream(mStream);
+			mStream = nullptr;
+
+			auto error = Pa_Terminate();
+			if (error != paNoError)
+				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
+			Logger::info("Portaudio terminated");
+
+			// Uninitialize mpg123 library
+			mpg123_exit();
+		}
+
+
+		NodeManager& AudioService::getNodeManager()
+		{
+			return mNodeManager;
+		}
+
+
 		bool AudioService::openStream(int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount,
 		                              int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize,
 		                              utility::ErrorState& errorState)

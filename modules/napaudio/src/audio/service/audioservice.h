@@ -109,7 +109,7 @@ namespace nap
 		public:
 			AudioService(ServiceConfiguration* configuration);
 			
-			~AudioService();
+			~AudioService() = default;
 			
 			/**
 			 * Register specific object creators
@@ -117,15 +117,20 @@ namespace nap
 			void registerObjectCreators(rtti::Factory& factory) override;
 			
 			/**
-			 * @return the audio node manager owned by the audio service. The @NodeManager contains a node system that performs all the DSP.
-			 */
-			NodeManager& getNodeManager();
-			
-			/**
 			 * Initializes portaudio.
 			 */
 			bool init(nap::utility::ErrorState& errorState) override;
-			
+
+			/**
+			 * Called on shutdown of the service. Closes portaudio stream and shuts down portaudio.
+			 */
+			 void shutdown() override;
+
+			/**
+			 * @return the audio node manager owned by the audio service. The @NodeManager contains a node system that performs all the DSP.
+			 */
+			NodeManager& getNodeManager();
+
 			/**
 			 * @return: returns wether we will allow input and output channel numbers that exceed the current device's maximum channel counts. If so zero signals will be returned for non-existing input channel numbers. If not initialization will fail.
 			 */
