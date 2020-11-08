@@ -308,7 +308,8 @@ namespace nap
 			int mInputDeviceIndex = -1; // The actual input device being used, if any.
 			int mOutputDeviceIndex = -1; // The actual output device being used, if any.
 			int mBufferSize = 1024; // The actual buffersize that the audio device runs on
-			bool mInitialized = false; // If port audio is initialized
+			bool mPortAudioInitialized = false; // If port audio is initialized
+			bool m123Initialized = false;	// If mpg123 is initialized
 
 			// DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
 			// Clearing is performed on the audio callback to make sure the node can not be destructed while it is being processed.

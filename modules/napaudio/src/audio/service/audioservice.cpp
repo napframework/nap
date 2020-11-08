@@ -93,6 +93,7 @@ namespace nap
 		{
 			// Initialize mpg123 library
 			mpg123_init();
+			m123Initialized = true;
 			checkLockfreeTypes();
 
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
@@ -106,7 +107,7 @@ namespace nap
 			if (!errorState.check(error == paNoError, "Portaudio error: %s", Pa_GetErrorText(error)))
 				return false;
 
-			mInitialized = true;
+			mPortAudioInitialized = true;
 			Logger::info("Portaudio initialized");
 			printDevices();
 			
@@ -201,7 +202,8 @@ namespace nap
 
 		void AudioService::shutdown()
 		{
-			if (mInitialized)
+			// First close port-audio, only do so when initialized
+			if (mPortAudioInitialized)
 			{
 				// Close stream
 				Pa_StopStream(mStream);
@@ -214,8 +216,9 @@ namespace nap
 					Logger::warn("Portaudio error: %s", Pa_GetErrorText(error));
 			}
 
-			// Uninitialize mpg123 library
-			mpg123_exit();
+			// Close mpg123 library
+			if(m123Initialized)
+				mpg123_exit();
 		}
 
 
