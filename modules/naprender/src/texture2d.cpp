@@ -270,7 +270,7 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
 		mFormat = getTextureFormat(*mRenderService, descriptor);
@@ -301,7 +301,9 @@ namespace nap
 		// Ensure there are enough read callbacks based on max number of frames in flight
 		mImageSizeInBytes = descriptor.getSizeInBytes();
 		if (mUsage == ETextureUsage::DynamicRead)
+		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
+		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
 		// the GPU texture. The updating of the GPU textures is done on the command buffer. The updating of the staging buffers can be done
@@ -326,11 +328,14 @@ namespace nap
 		{
 			BufferData& staging_buffer = mStagingBuffers[index];
 
-			// Get usage flags based on selected texture usage
-			VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : 
+			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
+			VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ? 
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT : 
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-			VmaMemoryUsage memory_usage = mUsage == ETextureUsage::DynamicRead ? VMA_MEMORY_USAGE_GPU_TO_CPU : 
+			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
+			VmaMemoryUsage memory_usage = mUsage == ETextureUsage::DynamicRead ? 
+				VMA_MEMORY_USAGE_GPU_TO_CPU : 
 				VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 			// Create staging buffer
@@ -341,19 +346,47 @@ namespace nap
 			}
 		}
 
-		// Create GPU image usage information
-		VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		if (mUsage == ETextureUsage::DynamicRead || mMipLevels > 1)
-			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		// Set image usage flags
+		VkImageUsageFlags usage = requiredFlags;
+		switch (mUsage)
+		{
+			case ETextureUsage::DynamicRead:
+			{
+				// written, can be sampled, read
+				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+				break;
+			}
+			case ETextureUsage::DynamicWrite:
+			{
+				// written, can be sampled, if mip-map enabled, also read
+				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
+				break;
+			}
+			case ETextureUsage::Static:
+			{
+				// written, can be sampled, if mip-map enabled, also read
+				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
+				break;
+			}
+			default:
+			{
+				assert(false);
+				break;
+			}
+		}
 
-		// We create images and image views for the amount of frames in flight
+		// Create GPU image
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, 
 			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
 				return false;
 
+		// Create GPU image view
 		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
 				return false;
 
+		// Initialize buffer indexing
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 
@@ -368,10 +401,11 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, utility::ErrorState& errorState)
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, errorState))
+		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, requiredFlags, errorState))
 			return false;
+
 		update(initialData, descriptor);
 		return true;
 	}
