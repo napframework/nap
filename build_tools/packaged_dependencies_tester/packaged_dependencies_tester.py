@@ -113,6 +113,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     r'libnss_compat-[0-9]+\.[0-9]+',
     r'libnss_files-[0-9]+\.[0-9]+',
     r'libnss_nis-[0-9]+\.[0-9]+',
+    'libnss_nis',
     'nouveau_dri',
     'libnvidia-compiler',
     'libnvidia-glcore',
@@ -326,6 +327,17 @@ def get_packaged_project_output_path(project_name, pre_files, post_files):
     print("Error: get_packaged_project_output_path() sees no difference")
     return None
 
+def is_linux():
+    """Is this Linux?
+
+    Returns
+    -------
+    bool
+        Success
+    """
+
+    return sys.platform.startswith('linux')
+
 def is_windows():
     """Is this Windows?
 
@@ -346,13 +358,37 @@ def is_debian():
         Success
     """
 
-    if sys.platform.startswith('linux'):
+    if is_linux():
         out = check_output('lsb_release -is', shell=True).strip()
         if type(out) is bytes:
             out = out.decode('utf-8')
         return out == 'Debian'
 
     return False
+
+def is_linux_root():
+    """Are we running as a root account on Linux?
+
+    Returns
+    -------
+    bool
+        Success
+    """
+    if not is_linux():
+        return False
+
+    return os.geteuid() == 0
+
+def launch_pulseaudio():
+    """Launch pulseaudio. Used for when running as root on Linux (which is necessary to test 
+       websocket functionality)."""
+    cmd = 'pulseaudio -D --disallow-exit=1--exit-idle-time=-1> /dev/null 2>&1'
+    Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+
+def kill_pulseaudio():
+    """Kill pulseaudio. Used for when running as root on Linux (which is necessary to test 
+       websocket functionality)."""
+    call_capturing_output('pulseaudio -k')
 
 def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
@@ -415,7 +451,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         waited_time += 0.5
         p.poll()
 
-    if sys.platform.startswith('linux'):
+    if is_linux():
         if p.returncode is None:
             unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path, testing_napkin)
         else:
@@ -614,7 +650,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path, testing_napkin):
     accepted = False    
 
     # Check if it's within the system libs paths
-    if sys.platform.startswith('linux'):
+    if is_linux():
         for system_path in LINUX_ACCEPTED_SYSTEM_LIB_PATHS:
             if file_path.startswith(system_path):
                 in_system_path = True
@@ -697,7 +733,7 @@ def regenerate_cwd_project(build_type=PROJECT_BUILD_TYPE):
     print("- Regenerating...")
 
     # Build command
-    if sys.platform.startswith('linux'):
+    if is_linux():
         cmd = './regenerate %s' % build_type
     else:
         cmd = '%s -ns -np' % os.path.join('.', 'regenerate')
@@ -738,7 +774,7 @@ def build_cwd_project(project_name, build_type=PROJECT_BUILD_TYPE):
     if sys.platform.startswith('darwin'):
         os.chdir(MACOS_BUILD_DIR)
         cmd = 'xcodebuild -configuration %s -jobs %s' % (build_type, cpu_count())
-    elif sys.platform.startswith('linux'):
+    elif is_linux():
         os.chdir(LINUX_BUILD_DIR)
         cmd = 'make all . -j%s' % cpu_count()
     else:
@@ -786,7 +822,7 @@ def package_cwd_project_with_napkin(project_name, root_output_dir, timestamp):
 
     # Build command
     cmd = '%s -nz -ns' % os.path.join('.', 'package')
-    if not sys.platform.startswith('linux'):
+    if not is_linux():
         cmd = '%s -np' % cmd
 
     # Run
@@ -1071,7 +1107,7 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
     
     # Build command
     cmd = '%s -nn -nz -ns' % os.path.join('.', 'package')
-    if not sys.platform.startswith('linux'):
+    if not is_linux():
         cmd = '%s -np' % cmd
 
     # Run
@@ -2269,6 +2305,10 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     if not misc_results['otherBuildType']:
         print("Error: Didn't build %s build type demo" % other_build_type)
 
+    # If running as root on Linux (which is necessary to test websocket functionality) launch pulseaudio for root
+    if is_linux_root():
+        launch_pulseaudio()
+
     # Run all demos from normal build output
     phase += 1
     print("============ Phase #%s - Running demos from build output directory ============" % phase)
@@ -2361,6 +2401,10 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     phase += 1
     print("============ Phase #%s - Clean up ============" % phase)
     cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_results, root_output_dir, timestamp, warnings)
+
+    # If running as root on Linux (which is necessary to test websocket functionality) kill pulseaudio for root
+    if is_linux_root():
+        kill_pulseaudio()
 
     # Revert NAP framework rename
     if rename_framework:
