@@ -22,6 +22,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SphereMesh)
 	RTTI_PROPERTY("Radius",		&nap::SphereMesh::mRadius,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rings",		&nap::SphereMesh::mRings,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sectors",	&nap::SphereMesh::mSectors,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",		&nap::SphereMesh::mColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -42,7 +43,6 @@ namespace nap
 		std::vector<glm::vec3> vertices(vertex_count);
 		std::vector<glm::vec3> normals(vertex_count);
 		std::vector<glm::vec3> texcoords(vertex_count);
-		std::vector<glm::vec4> colors(vertex_count);
 		std::vector<uint32> indices(vertex_count);
 
 		float const R = 1. / (float)(mRings - 1);
@@ -52,7 +52,6 @@ namespace nap
 		std::vector<glm::vec3>::iterator v = vertices.begin();
 		std::vector<glm::vec3> ::iterator n = normals.begin();
 		std::vector<glm::vec3>::iterator t = texcoords.begin();
-		std::vector<glm::vec4>::iterator c = colors.begin();
 
 		for (r = 0; r < mRings; r++)
 		{
@@ -70,9 +69,6 @@ namespace nap
 
 				// Set normal coordinates
 				*n++ = { x, y, z };
-
-				// Set color coordinates
-				*c++ = { 1.0f, 1.0f, 1.0f, 1.0f };
 			}
 		}
 
@@ -111,7 +107,7 @@ namespace nap
 		position_attribute.setData(vertices.data(), vertex_count);
 		normal_attribute.setData(normals.data(), vertex_count);
 		uv_attribute.setData(texcoords.data(), vertex_count);
-		color_attribute.setData(colors.data(), vertex_count);
+		color_attribute.setData({vertex_count, mColor.toVec4()});
 		
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setIndices(indices.data(), index_count);

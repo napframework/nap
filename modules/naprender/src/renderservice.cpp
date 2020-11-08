@@ -844,7 +844,7 @@ namespace nap
 
 		VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {};
 		dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamic_state_create_info.dynamicStateCount = 2;
+		dynamic_state_create_info.dynamicStateCount = 3;
 		dynamic_state_create_info.pDynamicStates = dynamic_states;
 
 		VkPipelineViewportStateCreateInfo viewport_state = {};
@@ -1182,7 +1182,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero,  errorState);
+		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero, 0, errorState);
 	}
 
 

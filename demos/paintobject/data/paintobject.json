@@ -15,8 +15,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "SampleShading": true,
-                    "Samples": "Four",
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -128,8 +127,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "SampleShading": true,
-                    "Samples": "Four",
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -170,8 +168,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "SampleShading": true,
-                    "Samples": "Four",
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -567,7 +564,8 @@
                         "Values": [
                             0,
                             4,
-                            45
+                            45,
+                            0
                         ]
                     }
                 },
@@ -583,7 +581,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSizeParam",
                     "Name": "Brush Size",
-                    "Value": 0.011,
+                    "Value": 0.017500000074505807,
                     "Minimum": 0.0,
                     "Maximum": 0.10000000149011612
                 },
@@ -591,7 +589,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BrushSoftnessParam",
                     "Name": "Brush Softness",
-                    "Value": 1.0,
+                    "Value": 5.5,
                     "Minimum": 0.0,
                     "Maximum": 25.0
                 },
@@ -709,7 +707,15 @@
             "CullMode": "None",
             "Radius": 1.0,
             "Rings": 25.0,
-            "Sectors": 25.0
+            "Sectors": 25.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }
