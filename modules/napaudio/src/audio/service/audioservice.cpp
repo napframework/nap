@@ -93,7 +93,7 @@ namespace nap
 		{
 			// Initialize mpg123 library
 			mpg123_init();
-			m123Initialized = true;
+			mMpg123Initialized = true;
 			checkLockfreeTypes();
 
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
@@ -217,7 +217,7 @@ namespace nap
 			}
 
 			// Close mpg123 library
-			if(m123Initialized)
+			if(mMpg123Initialized)
 				mpg123_exit();
 		}
 
