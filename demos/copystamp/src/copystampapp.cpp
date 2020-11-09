@@ -77,7 +77,7 @@ namespace nap
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Notify user that painting in debug mode is slow
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if (!mOpened)
 			ImGui::OpenPopup("Running Debug Build");
 		handlePopup();
