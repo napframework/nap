@@ -4,10 +4,13 @@
 
 #pragma once
 
-#include "utility/dllexport.h"
-#include "glm/glm.hpp"
+// Local Includes
 #include "materialcommon.h"
-#include "vulkan/vulkan_core.h"
+
+// External Includes
+#include <utility/dllexport.h>
+#include <glm/glm.hpp>
+#include <vulkan/vulkan_core.h>
 
 namespace nap
 {
