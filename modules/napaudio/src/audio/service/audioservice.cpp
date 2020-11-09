@@ -78,27 +78,6 @@ namespace nap
 		AudioService::AudioService(ServiceConfiguration* configuration) :
 				Service(configuration), mNodeManager(mDeletionQueue)
 		{
-			// Initialize mpg123 library
-			mpg123_init();
-			
-			checkLockfreeTypes();
-		}
-		
-		
-		AudioService::~AudioService()
-		{
-			Pa_StopStream(mStream);
-			Pa_CloseStream(mStream);
-			mStream = nullptr;
-			
-			auto error = Pa_Terminate();
-			if (error != paNoError)
-				Logger::warn("Portaudio error: " + std::string(Pa_GetErrorText(error)));
-			Logger::info("Portaudio terminated");
-			
-			// Uninitialize mpg123 library
-			mpg123_exit();
-			
 		}
 		
 		
@@ -110,14 +89,13 @@ namespace nap
 		}
 		
 		
-		NodeManager& AudioService::getNodeManager()
-		{
-			return mNodeManager;
-		}
-		
-		
 		bool AudioService::init(nap::utility::ErrorState& errorState)
 		{
+			// Initialize mpg123 library
+			mpg123_init();
+			mMpg123Initialized = true;
+			checkLockfreeTypes();
+
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
 			int inputDeviceIndex = -1;
 			int outputDeviceIndex = -1;
@@ -126,13 +104,10 @@ namespace nap
 			
 			// Initialize the portaudio library
 			PaError error = Pa_Initialize();
-			if (error != paNoError)
-			{
-				std::string message = "Portaudio error: " + std::string(Pa_GetErrorText(error));
-				errorState.fail(message);
+			if (!errorState.check(error == paNoError, "Portaudio error: %s", Pa_GetErrorText(error)))
 				return false;
-			}
-			
+
+			mPortAudioInitialized = true;
 			Logger::info("Portaudio initialized");
 			printDevices();
 			
@@ -223,8 +198,36 @@ namespace nap
 			
 			return true;
 		}
-		
-		
+
+
+		void AudioService::shutdown()
+		{
+			// First close port-audio, only do so when initialized
+			if (mPortAudioInitialized)
+			{
+				// Close stream
+				Pa_StopStream(mStream);
+				Pa_CloseStream(mStream);
+				mStream = nullptr;
+
+				// Terminate Portaudio
+				auto error = Pa_Terminate();
+				if (error != paNoError) 
+					Logger::warn("Portaudio error: %s", Pa_GetErrorText(error));
+			}
+
+			// Close mpg123 library
+			if(mMpg123Initialized)
+				mpg123_exit();
+		}
+
+
+		NodeManager& AudioService::getNodeManager()
+		{
+			return mNodeManager;
+		}
+
+
 		bool AudioService::openStream(int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount,
 		                              int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize,
 		                              utility::ErrorState& errorState)
