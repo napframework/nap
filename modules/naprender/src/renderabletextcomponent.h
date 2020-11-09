@@ -73,6 +73,12 @@ namespace nap
 		bool setText(const std::string& text, utility::ErrorState& error);
 
 		/**
+		 * Updates text color
+		 * @param color new text color
+		 */
+		void setColor(const glm::vec3& color);
+
+		/**
 		 * Set the text to draw at the given line index. 
 		 * Only set or change text on app update, not render.
 		 * @param lineIndex the line index
@@ -197,6 +203,7 @@ namespace nap
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
+		UniformVec3Instance* mColorUniform = nullptr;					///< Found text color uniform
 		UniformMat4Instance* mModelUniform = nullptr;					///< Found model matrix uniform input
 		UniformMat4Instance* mViewUniform = nullptr;					///< Found view matrix uniform input
 		UniformMat4Instance* mProjectionUniform = nullptr;				///< Found projection uniform input

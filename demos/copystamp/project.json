@@ -1,15 +1,15 @@
 {
-    "Type": "nap::ProjectInfo", 
-    "mID": "ProjectInfo", 
-    "Title": "CopyStamp", 
-    "Version": "0.3.0", 
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "CopyStamp",
+    "Version": "0.3.0",
     "RequiredModules": [
-        "mod_copystamp", 
-        "mod_napapp", 
-        "mod_napcameracontrol", 
+        "mod_copystamp",
+        "mod_napapp",
+        "mod_napcameracontrol",
         "mod_napimgui"
-    ], 
-    "Data": "data/copystamp.json", 
-    "ServiceConfig": "", 
+    ],
+    "Data": "data/copystamp.json",
+    "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json"
 }

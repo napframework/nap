@@ -1,9 +1,9 @@
 {
-    "Type": "nap::ModuleInfo", 
-    "mID": "ModuleInfo", 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napmath", 
+        "mod_napmath",
         "mod_napscene"
-    ], 
+    ],
     "WindowsDllSearchPaths": []
 }

@@ -1,14 +1,13 @@
 {
-    "Type": "nap::ModuleInfo", 
-    "mID": "ModuleInfo", 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napscene", 
-        "mod_napfont", 
-        "mod_napinput", 
+        "mod_napscene",
+        "mod_napfont",
+        "mod_napinput",
         "mod_napcolor"
-    ], 
-    "WindowsDllSearchPaths": 
-    [
+    ],
+    "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/assimp/msvc64/install/bin",
         "{ROOT}/thirdparty/assimp/bin",
         "{ROOT}/../thirdparty/FreeImage/msvc/Dist/x64",

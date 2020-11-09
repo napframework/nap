@@ -117,12 +117,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
                            '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
-        call_except_on_failure(build_dir_name, [cmake, '--build', '.', '--target', project_name_lower, '--config', PACKAGED_BUILD_TYPE])
-
-        # Copy project data
-        project_data_path = os.path.join(project_path, 'data')
-        bin_data_path = os.path.join(bin_dir, 'data')
-        shutil.copytree(project_data_path, bin_data_path)
+        call_except_on_failure(build_dir_name, [cmake, '--build', '.', '--target', 'install', '--config', PACKAGED_BUILD_TYPE])
 
         # Create archive
         if zip_package:

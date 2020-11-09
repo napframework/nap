@@ -1,14 +1,14 @@
 {
-    "Type": "nap::ProjectInfo", 
-    "mID": "ProjectInfo", 
-    "Title": "OscMidi", 
-    "Version": "1.0.0", 
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "OscMidi",
+    "Version": "1.0.0",
     "RequiredModules": [
-        "mod_napapp", 
-        "mod_oscmidi", 
+        "mod_napapp",
+        "mod_oscmidi",
         "mod_napimgui"
-    ], 
-    "Data": "data/oscmidi.json", 
-    "ServiceConfig": "", 
+    ],
+    "Data": "data/oscmidi.json",
+    "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json"
 }

@@ -73,28 +73,8 @@ namespace nap
 		int seconds = (int)time % 60;
 		int milliseconds = (int)(time * 100.0f) % 100;
 
-		std::stringstream string_stream;
-
-		string_stream << std::setw(2) << std::setfill('0') << seconds;
-		std::string secondsString = string_stream.str();
-
-		string_stream = std::stringstream();
-		string_stream << std::setw(2) << std::setfill('0') << minutes;
-		std::string minutesString = string_stream.str();
-
-		string_stream = std::stringstream();
-		string_stream << std::setw(2) << std::setfill('0') << milliseconds;
-		std::string millisecondsStrings = string_stream.str();
-
-		std::string hoursString = "";
-		if (hours > 0)
-		{
-			string_stream = std::stringstream();
-			string_stream << std::setw(2) << std::setfill('0') << hours;
-			hoursString = string_stream.str() + ":";
-		}
-
-		return hoursString + minutesString + ":" + secondsString + ":" + millisecondsStrings;
+		return hours == 0 ? utility::stringFormat("%.02d:%.02d:%.02d", minutes, seconds, milliseconds) :
+			utility::stringFormat("%.02d:%.02d:%.02d:%.02d", hours, minutes, seconds, milliseconds);
 	}
 
 

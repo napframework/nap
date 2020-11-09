@@ -114,7 +114,7 @@ namespace nap
 		 * Sets the internal values based on the contained type
 		 * @param values: the values that will be copied over
 		 */
-		void setData(std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
+		void setData(const std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
 
 		/**
 		 * Sets the entire vertex attribute buffer.

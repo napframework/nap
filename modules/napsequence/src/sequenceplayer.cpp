@@ -199,7 +199,7 @@ namespace nap
 		}
 
 		// check if we have deserialized a sequence
-		if (errorState.check(mSequence == nullptr, "sequence is null"))
+		if (!errorState.check(mSequence != nullptr, "sequence is null"))
 		{
 			return false;
 		}

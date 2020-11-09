@@ -65,7 +65,7 @@ namespace nap
 	NAPAPI std::string timeFormat(const SystemTimeStamp& time, const std::string& format = "%Y-%m-%d %H:%M:%S.%ms");
 
 	/**
-	 * Create a timestamp from the given data
+	 * Converts local calendar time to system time
 	 * @param year the year as number (eg. 1970)
 	 * @param month the month as 1-based number (3 == march)
 	 * @param day the day of the month ranging from 1 to 31
@@ -73,9 +73,10 @@ namespace nap
 	 * @param minute the minute of the hour from 0 to 59
 	 * @param second the second of the minute from 0 to 60
 	 * @param millisecond additional milliseconds
+	 * @param daylightSaving attempts to determine if Daylight Saving Time was in effect.
 	 * @return the complete timestamp
 	 */
-	NAPAPI SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second=0, int millisecond=0);
+	NAPAPI SystemTimeStamp createTimestamp(int year, int month, int day, int hour, int minute, int second=0, int millisecond=0, bool daylightSaving = true);
 
 
 	//////////////////////////////////////////////////////////////////////////

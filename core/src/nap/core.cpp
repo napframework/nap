@@ -522,7 +522,8 @@ namespace nap
 
 		// Extract all user defined service configurations
 		rtti::DeserializeResult deserialize_result;
-		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, err))
+		utility::ErrorState deserialize_error;
+		if (loadServiceConfiguration(mProjectInfo->mServiceConfigFilename, deserialize_result, deserialize_error))
 		{
 			for (std::unique_ptr<rtti::Object>& object : deserialize_result.mReadObjects)
 			{
@@ -531,8 +532,8 @@ namespace nap
 				std::unique_ptr<ServiceConfiguration> config = rtti_cast<ServiceConfiguration>(object);
 
 				if (!err.check(config != nullptr,
-					"Config.json should only contain ServiceConfigurations, found object of type: %s instead",
-							   object_type.get_name().to_string().c_str()))
+					"%s should only contain ServiceConfigurations, found object of type: %s instead",
+						mProjectInfo->mServiceConfigFilename.c_str(), object_type.get_name().to_string().c_str()))
 					return false;
 
 				// Get type before moving and store pointer for
@@ -547,8 +548,8 @@ namespace nap
 		}
 		else
 		{
-			err.fail("Failed to load config.json");
-			return false;
+			// File doesn't exist or can't be deserialized
+			nap::Logger::warn(deserialize_error.toString().c_str());
 		}
 		return true;
 	}

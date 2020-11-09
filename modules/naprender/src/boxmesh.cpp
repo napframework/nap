@@ -9,6 +9,7 @@
 
 // External Includes
 #include <nap/core.h>
+#include <nap/numeric.h>
 
 // nap::boxmesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
@@ -17,6 +18,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
 	RTTI_PROPERTY("CullMode",	&nap::BoxMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::BoxMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::BoxMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",		&nap::BoxMesh::mColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -24,13 +26,100 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	constexpr int planeVertCount = 4;					//< Number of vertices per plane
-	constexpr int boxVertCount = planeVertCount * 6;	//< Total number of box vertices
-	constexpr int triCount = 6 * 2;						//< Total number of box triangles
+	const static std::vector<glm::vec3> unitBox =
+	{
+		{ 0.5f,-0.5f,0.5f },
+		{ -0.5f,-0.5f,0.5f },
+		{ 0.5f,0.5f,0.5f },
+		{ -0.5f,0.5f,0.5f },
+		{ -0.5f,-0.5f,-0.5f },
+		{ 0.5f,-0.5f,-0.5f },
+		{ -0.5f,0.5f,-0.5f },
+		{ 0.5f,0.5f,-0.5f },
+		{ -0.5f,0.5f,-0.5f },
+		{ 0.5f,0.5f,-0.5f },
+		{ -0.5f,0.5f,0.5f },
+		{ 0.5f,0.5f,0.5f },
+		{ 0.5f,-0.5f,-0.5f },
+		{ -0.5f,-0.5f,-0.5f },
+		{ 0.5f,-0.5f,0.5f },
+		{ -0.5f,-0.5f,0.5f },
+		{ 0.5f,-0.5f,-0.5f },
+		{ 0.5f,-0.5f,0.5f },
+		{ 0.5f,0.5f,-0.5f },
+		{ 0.5f,0.5f,0.5f },
+		{ -0.5f,-0.5f,0.5f },
+		{ -0.5f,-0.5f,-0.5f },
+		{ -0.5f,0.5f,0.5f },
+		{ -0.5f,0.5f,-0.5f }
+	};
+
+
+	const static std::vector<glm::vec3> boxNormals =
+	{
+		{ 0.0f,0.0f,1.0f },
+		{ 0.0f,0.0f,1.0f },
+		{ 0.0f,0.0f,1.0f },
+		{ 0.0f,0.0f,1.0f },
+		{ 0.0f,0.0f,-1.0f },
+		{ 0.0f,0.0f,-1.0f },
+		{ 0.0f,0.0f,-1.0f },
+		{ 0.0f,0.0f,-1.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 0.0f,-1.0f,0.0f },
+		{ 0.0f,-1.0f,0.0f },
+		{ 0.0f,-1.0f,0.0f },
+		{ 0.0f,-1.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ -1.0f,0.0f,0.0f },
+		{ -1.0f,0.0f,0.0f },
+		{ -1.0f,0.0f,0.0f },
+		{ -1.0f,0.0f,0.0f }
+	};
+
+
+	const std::vector<glm::vec3> boxUVs =
+	{
+		{ 1.0f,0.0f,0.0f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 1.0f,1.0f,0.0f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f },
+		{ 1.0f,0.0f,0.0f },
+		{ 0.0f,0.0f,0.0f },
+		{ 1.0f,1.0f,0.0f },
+		{ 0.0f,1.0f,0.0f }
+	};
+
+	constexpr nap::uint planeVertCount = 4;					//< Number of vertices per plane
+	constexpr nap::uint boxVertCount = planeVertCount * 6;	//< Total number of box vertices
+	constexpr nap::uint triCount = 6 * 2;					//< Total number of box triangles
 
 	BoxMesh::BoxMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{ }
+
 
 	bool BoxMesh::init(utility::ErrorState& errorState)
 	{
@@ -40,7 +129,6 @@ namespace nap
 		// Initialize mesh
 		if (!mMeshInstance->init(errorState))
 			return false;
-
 		return true;
 	}
 
@@ -59,101 +147,23 @@ namespace nap
 
 	void BoxMesh::constructBox(const math::Box& box, nap::MeshInstance& mesh)
 	{
-		std::vector<glm::vec3> vertices(boxVertCount,	{ 0.0f, 0.0f, 0.0f });			//< All box vertices
-		std::vector<glm::vec3> normals(boxVertCount,	{ 0.0f, 0.0f, 0.0f });			//< Normals per plane
-		std::vector<glm::vec3> uvs(boxVertCount,		{ 0.0f, 0.0f, 0.0f });			//< Every plane has the same uvs
-		std::vector<glm::vec4> colors(boxVertCount,		{ 1.0f, 1.0f, 1.0f, 1.0f });	//< Default color is white
-
-		const glm::vec3& min = box.getMin();
-		const glm::vec3& max = box.getMax();
-
-		// Fill side A (front)
-		vertices[0]  = { min.x, min.y, max.z };	//< Front Lower left
-		vertices[1]  = { max.x, min.y, max.z };	//< Front Lower right
-		vertices[2]  = { min.x, max.y, max.z };	//< Front Top left
-		vertices[3]  = { max.x, max.y, max.z };	//< Front Top right
-
-		// Fill normals side A
-		for (int v = 0; v < planeVertCount; v++)
-			normals[v] = { 0.0f, 0.0f, 1.0f };
-
-		// Fill side B (right)
-		vertices[4]  = { max.x, min.y, max.z };	//< Right Lower Left
-		vertices[5]  = { max.x, min.y, min.z };	//< Right Lower Right
-		vertices[6]  = { max.x, max.y, max.z };	//< Right Top left
-		vertices[7]  = { max.x, max.y, min.z };	//< Right Top right
-
-		// Fill normals side B
-		for (int v = 1 * planeVertCount; v < planeVertCount * 2; v++)
-			normals[v] = { 1.0f, 0.0f, 0.0f };
-
-		// Fill side C (back)
-		vertices[8]  = { max.x, min.y, min.z };	//< Back Lower left
-		vertices[9]  = { min.x, min.y, min.z };	//< Back lower right
-		vertices[10] = { max.x, max.y, min.z }; //< Back Top left
-		vertices[11] = { min.x, max.y, min.z };	//< Back Top right
-
-		// Fill normals side C
-		for (int v = 2 * planeVertCount; v < planeVertCount * 3; v++)
-			normals[v] = { 0.0f, 0.0f, -1.0f };
-
-		// Fill side D (left)
-		vertices[12] = { min.x, min.y, min.z }; //< Left Lower left
-		vertices[13] = { min.x, min.y, max.z };	//< Left Lower right
-		vertices[14] = { min.x, max.y, min.z }; //< Left Top left
-		vertices[15] = { min.x, max.y, max.z }; //< Left Top right
-
-		// Fill normals side D
-		for (int v = 3 * planeVertCount; v < planeVertCount * 4; v++)
-			normals[v] = { -1.0f, 0.0f, 0.0f };
-
-		// Fill side E (bottom)
-		vertices[16] = { min.x, min.y, max.z };	//< Bottom Lower left
-		vertices[17] = { max.x, min.y, max.z };	//< Bottom Lower right
-		vertices[18] = { min.x, min.y, min.z };	//< Bottom Top left
-		vertices[19] = { max.x, min.y, min.z };	//< Bottom Top right
-
-		// Fill normals side E
-		for (int v = 4 * planeVertCount; v < planeVertCount * 5; v++)
-			normals[v] = { 0.0f, -1.0f, 0.0f };
-
-		// Fill side F (top)
-		vertices[20] = { min.x, max.y, max.z }; //< Top Lower left
-		vertices[21] = { max.x, max.y, max.z };	//< Top Lower right
-		vertices[22] = { min.x, max.y, min.z };	//< Top Top left
-		vertices[23] = { max.x, max.y, min.z };	//< Top Top right
-
-		// Fill normals side F
-		for (int v = 5 * planeVertCount; v < planeVertCount * 6; v++)
-			normals[v] = { 0.0f, 1.0f, 0.0f };
-
-		// Calculate UVs
-		for (int i = 0; i < boxVertCount ; i += planeVertCount)
-		{
-			uvs[i + 0] = { 0.0f, 0.0f, 0.0f };
-			uvs[i + 1] = { 1.0f, 0.0f, 0.0f };
-			uvs[i + 2] = { 0.0f, 1.0f, 0.0f };
-			uvs[i + 3] = { 1.0f, 1.0f, 0.0f };
-		}
-
 		// Generate the indices
 		std::vector<uint32> indices(triCount * 3, 0);
 		uint32* index_ptr = indices.data();
-
 		for (int side = 0; side < 6; side++)
 		{
 			// Current lowest vertex index
 			int vi = side * planeVertCount;
 			
 			// Compute triangle a
-			*(index_ptr++) = vi + 0;
-			*(index_ptr++) = vi + 1;
 			*(index_ptr++) = vi + 3;
+			*(index_ptr++) = vi + 1;
+			*(index_ptr++) = vi + 0;
 
 			// Compute triangle b
-			*(index_ptr++) = vi + 0;
-			*(index_ptr++) = vi + 3;
 			*(index_ptr++) = vi + 2;
+			*(index_ptr++) = vi + 3;
+			*(index_ptr++) = vi + 0;
 		}
 
 		// Create attributes
@@ -163,16 +173,21 @@ namespace nap
 		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		// Set numer of vertices this mesh contains
-		mesh.setNumVertices(boxVertCount);
+		mesh.setNumVertices((int)boxVertCount);
 		mesh.setDrawMode(EDrawMode::Triangles);
 		mesh.setCullMode(mCullMode);
 		mesh.setUsage(mUsage);
 
+		// Create vertex data based on scale factor
+		std::vector<glm::vec3> vertex_data(boxVertCount);
+		for (nap::uint i = 0; i < boxVertCount; i++)
+			vertex_data[i] = unitBox[i] * mSize;
+
 		// Set data
-		position_attribute.setData(vertices.data(), boxVertCount);
-		normal_attribute.setData(normals.data(), boxVertCount);
-		uv_attribute.setData(uvs.data(), boxVertCount);
-		color_attribute.setData(colors.data(), boxVertCount);
+		position_attribute.setData(vertex_data);
+		normal_attribute.setData(boxNormals);
+		uv_attribute.setData(boxUVs);
+		color_attribute.setData({boxVertCount, mColor.toVec4()});
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();
