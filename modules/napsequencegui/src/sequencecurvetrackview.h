@@ -33,7 +33,8 @@ namespace nap
 		 * Handles any actions
 		 */
 		virtual void handleActions() override;
-	private:
+
+	protected:
 		/**
 		 * draws the contents of a segment
 		 * @tparam T the type of this segment
@@ -47,7 +48,7 @@ namespace nap
 		 * @param drawStartValue should we draw the start value ? only used in first segment of track
 		 */
 		template<typename T>
-		void drawSegmentContent(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
+		void NAPAPI drawSegmentContent(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
 	
 		/**
 		 * draws a segments value
@@ -61,7 +62,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
+		void NAPAPI drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
 	
 		/**
 		 * draws segment handler
@@ -72,7 +73,7 @@ namespace nap
 		 * @param segmentWidth width of segment
 		 * @param drawList pointer to window drawlist
 		 */
-		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
+		virtual void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 	
 		/**
 		 * draws control points of curve segment
@@ -84,7 +85,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void drawControlPoints(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
+		void NAPAPI drawControlPoints(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 
 		/**
 		 * draws curves of segment
@@ -98,7 +99,7 @@ namespace nap
 		 * @param drawList pointer to drawlist of this track window
 		 */
 		template<typename T>
-		void drawCurves(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float previousSegmentX, const float segmentWidth, const float segmentX, ImDrawList* drawList);
+		void NAPAPI drawCurves(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float previousSegmentX, const float segmentWidth, const float segmentX, ImDrawList* drawList);
 
 		/**
 		 * draws handlers of curve point
@@ -115,44 +116,44 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceCurveEnums::TanPointTypes type, ImDrawList* drawList);
+		void NAPAPI drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceCurveEnums::TanPointTypes type, ImDrawList* drawList);
 	
 		/**
 		 * handles insert segment popup
 		 */
-		void handleInsertSegmentPopup();
+		virtual void handleInsertSegmentPopup();
 
 		/**
 		 * handles delete segment popup
 		 */
-		void handleDeleteSegmentPopup();
+		virtual void handleDeleteSegmentPopup();
 
 		/**
 		 * handles insert curve point popup
 		 */
-		void handleInsertCurvePointPopup();
+		virtual void handleInsertCurvePointPopup();
 
 		/**
 		 * handles curvepoint action popup
 		 */
 		template<typename T>
-		void handleCurvePointActionPopup();
+		void NAPAPI handleCurvePointActionPopup();
 
 		/**
 		 * handles segment value actions
 		 */
 		template<typename T>
-		void handleSegmentValueActionPopup();
+		void NAPAPI handleSegmentValueActionPopup();
 
 		/**
 		 * handles curve type popup
 		 */
-		void handleCurveTypePopup();
+		virtual void handleCurveTypePopup();
 
 		/**
 		 * handles tanpoint action popup
 		 */
-		void handleTanPointActionPopup();
+		virtual void handleTanPointActionPopup();
 
 		/**
 		 * Draws min/max range of inspector
@@ -160,7 +161,7 @@ namespace nap
 		 * @param track reference to track
 		 */
 		template<typename T>
-		void drawInspectorRange(const SequenceTrack& track);
+		void NAPAPI drawInspectorRange(const SequenceTrack& track);
 
 		/**
 		 * @tparam T type of value
@@ -171,7 +172,7 @@ namespace nap
 		 * @param curveIndex curve index
 		 */
 		template<typename T>
-		void showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, double time, int curveIndex);
+		void NAPAPI showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, double time, int curveIndex);
 	
 		/**
 		 * input float that takes type T as input
@@ -180,7 +181,7 @@ namespace nap
 		 * @return true if dragged
 		 */
 		template<typename T>
-		bool inputFloat(T &, int precision);
+		bool NAPAPI inputFloat(T &, int precision);
 
 		/**
 		 * show inspector content
