@@ -19,7 +19,6 @@ namespace nap
 		{
 			RTTI_ENABLE()
 		public:
-			Clipboard() = default;
 			virtual ~Clipboard() = default;
 
 			bool serialize(const rtti::Object* object);
@@ -30,7 +29,7 @@ namespace nap
 			template<typename T>
 			bool isClipboard()
 			{
-				return this->get_type() == RTTI_OF(T);
+				return get_type() == RTTI_OF(T);
 			}
 
 			template<typename T>

@@ -5,7 +5,7 @@
 // local includes
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
-
+#include "sequenceeditorguiclipboard.h"
 
 // External Includes
 #include <entity.h>
@@ -24,6 +24,7 @@ RTTI_END_CLASS
 
 using namespace nap::SequenceGUIActions;
 using namespace nap::SequenceCurveEnums;
+using namespace nap::SequenceGUIClipboards;
 
 namespace nap
 {
@@ -77,6 +78,7 @@ namespace nap
 		: mEditor(editor), mID(id), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
 		mState.mAction = createAction<None>();
+		mState.mClipboard = createClipboard<Empty>();
 
 		for (auto& factory : SequenceTrackView::getFactoryMap())
 		{
@@ -290,7 +292,7 @@ namespace nap
 			drawTimelinePlayerPosition(sequence, sequence_player);
 
 			// move the cursor below the tracks
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mVerticalResolution + 10.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
@@ -582,6 +584,8 @@ namespace nap
 		const Sequence& sequence,
 		SequencePlayer& player)
 	{
+		const float line_thickness = 2.0f;
+
 		ImVec2 pos =
 		{
 			mState.mWindowPos.x + mState.mTimelineControllerPos.x - mState.mScroll.x
@@ -599,12 +603,12 @@ namespace nap
 											mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y - 25.0f)};
 
 			ImGui::SetNextWindowPos(line_begin);
-			if( ImGui::BeginChild("PlayerPosition", { line_end.x - line_begin.x, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
+			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
 				drawlist->AddLine( 	line_begin,
 									line_end,
-									guicolors::red, 2.0f);
+									guicolors::red, line_thickness);
 				ImGui::EndChild();
 			}
 		}
