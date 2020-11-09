@@ -14,7 +14,7 @@ namespace nap
 	/**
 	 * SequenceCurveTrackView shows and handles contents for curve tracks
 	 */
-	class SequenceCurveTrackView : public SequenceTrackView
+	class NAPAPI SequenceCurveTrackView : public SequenceTrackView
 	{
 	public:
 		/**

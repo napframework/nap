@@ -15,7 +15,7 @@ namespace nap
 	/**
 	 * SequenceEventTrackView is a view for event tracks
 	 */
-	class SequenceEventTrackView : public SequenceTrackView
+	class NAPAPI SequenceEventTrackView : public SequenceTrackView
 	{
 	public:
 		/**
