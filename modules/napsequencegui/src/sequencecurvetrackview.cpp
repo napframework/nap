@@ -1005,7 +1005,6 @@ namespace nap
 					// handle paste
 					if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 					{
-						action->mTrackType == RTTI_OF(SequenceTrackCurveFloat)
 						if( ImGui::Button("Paste") )
 						{
 							auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
