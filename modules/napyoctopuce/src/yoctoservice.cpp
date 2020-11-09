@@ -17,22 +17,11 @@ namespace nap
 {
 	YoctoService::YoctoService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
-
-	YoctoService::~YoctoService()
-	{
-		yFreeAPI();
-	}
-
-
-	bool YoctoService::init(utility::ErrorState& error)
-	{
-		return true;
-	}
+	{ }
 
 
 	void YoctoService::shutdown()
 	{
+		yFreeAPI();
 	}
 }
