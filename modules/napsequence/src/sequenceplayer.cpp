@@ -37,27 +37,27 @@ namespace nap
 	bool SequencePlayer::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
+			return false;
+
+		// Try to load default show
+		utility::ErrorState load_error;
+		bool loaded = load(mSequenceFileName, load_error);
+
+		// Cancel if can't be loaded and we're not allowed to create an empty sequence on failure
+		if (!loaded && !mCreateEmptySequenceOnLoadFail)
 		{
+			errorState.fail(load_error.toString());
 			return false;
 		}
 
-		if (!mCreateEmptySequenceOnLoadFail)
-		{
-			if (errorState.check(load(mSequenceFileName, errorState), "Error loading default sequence"))
-			{
-				return false;
-			}
-		}
-		else if (!load(mSequenceFileName, errorState))
+		// Otherwise create an empty show if loading fails
+		if (!loaded)
 		{
 			nap::Logger::info(*this, errorState.toString());
-			nap::Logger::info(*this, "Error loading default show, creating default sequence");
-
+			nap::Logger::info(*this, "Unable to load default show, creating default sequence");
 			mSequence = sequenceutils::createEmptySequence(mReadObjects, mReadObjectIDs);
-
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
-
 		return true;
 	}
 
