@@ -244,6 +244,7 @@ namespace nap
 						  new_segment->mStartTime = time;
 						  new_segment->mDuration = segment->mStartTime + segment->mDuration - time;
 						  new_segment->mCurves.resize(curve_count);
+						  new_segment->mCurveTypes.resize(curve_count);
 						  for (int i = 0; i < curve_count; i++)
 						  {
 							  std::unique_ptr<math::FCurve<float, float>> segment_curve = std::make_unique<math::FCurve<float, float>>();
@@ -251,6 +252,9 @@ namespace nap
 
 							  // assign curve
 							  new_segment->mCurves[i] = nap::ResourcePtr<math::FCurve<float, float>>(segment_curve.get());
+
+							  // assign curve types
+							  new_segment->mCurveTypes[i] = math::ECurveInterp::Bezier;
 
 							  // move ownership
 							  getPlayerOwnedObjects().emplace_back(std::move(segment_curve));
@@ -311,11 +315,13 @@ namespace nap
 						  new_segment->mStartTime = segment->mStartTime + segment->mDuration;
 						  new_segment->mDuration = time - new_segment->mStartTime;
 						  new_segment->mCurves.resize(curve_count);
+						  new_segment->mCurveTypes.resize(curve_count);
 						  for (int v = 0; v < curve_count; v++)
 						  {
 							  std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
 							  new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 							  new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
+							  new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
 							  getPlayerOwnedObjects().emplace_back(std::move(new_curve));
 						  }
 
@@ -350,11 +356,13 @@ namespace nap
 
 					  // make new curve of segment
 					  new_segment->mCurves.resize(curve_count);
+					  new_segment->mCurveTypes.resize(curve_count);
 					  for (int v = 0; v < curve_count; v++)
 					  {
 						  std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
 						  new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 						  new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
+						  new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
 						  getPlayerOwnedObjects().emplace_back(std::move(new_curve));
 					  }
 
@@ -386,9 +394,9 @@ namespace nap
 	}
 
 
-	void SequenceControllerCurve::changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type)
+	void SequenceControllerCurve::changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex)
 	{
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, math::ECurveInterp type)>change_curve_type_map
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, math::ECurveInterp type, int curveIndex)>change_curve_type_map
 		{
 			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurveType<float> },
 			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurveType<glm::vec2> },
@@ -396,7 +404,7 @@ namespace nap
 			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurveType<glm::vec4> },
 		};
 
-		performEditAction([this, trackID, segmentID, type]()
+		performEditAction([this, trackID, segmentID, type, curveIndex]()
 		{
 			auto* segment = findSegment(trackID, segmentID);
 			assert(segment != nullptr); // segment not found
@@ -407,7 +415,7 @@ namespace nap
 				assert(it != change_curve_type_map.end()); // type not found
 				if (it != change_curve_type_map.end())
 				{
-					(*this.*it->second)(*segment, type);
+					(*this.*it->second)(*segment, type, curveIndex);
 				}
 			}
 		});
@@ -415,20 +423,19 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceControllerCurve::changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type)
+	void SequenceControllerCurve::changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex)
 	{
 		auto* segment_curve = dynamic_cast<SequenceTrackSegmentCurve<T>*>(&segment);
 		assert(segment_curve != nullptr); // type mismatch
 
 		if (segment_curve != nullptr)
 		{
-			segment_curve->mCurveType = type;
-			for (int i = 0; i < segment_curve->mCurves.size(); i++)
+			assert(segment_curve->mCurveTypes.size() > curveIndex); // curveIndex invalid
+
+			segment_curve->mCurveTypes[curveIndex] = type;
+			for (int j = 0; j < segment_curve->mCurves[curveIndex]->mPoints.size(); j++)
 			{
-				for (int j = 0; j < segment_curve->mCurves[i]->mPoints.size(); j++)
-				{
-					segment_curve->mCurves[i]->mPoints[j].mInterp = type;
-				}
+				segment_curve->mCurves[curveIndex]->mPoints[j].mInterp = type;
 			}
 		}
 	}
@@ -593,7 +600,7 @@ namespace nap
 				p.mInTan.mValue = 0.0f;
 				p.mOutTan.mValue = 0.0f;
 				p.mTangentsAligned = true;
-				p.mInterp = curve_segment.mCurveType;
+				p.mInterp = curve_segment.mCurveTypes[curveIndex];
 
 				// insert point
 				curve_segment.mCurves[curveIndex]->mPoints.insert(curve_segment.mCurves[curveIndex]->mPoints.begin() + i + 1, p);
@@ -942,8 +949,8 @@ namespace nap
 	template NAPAPI void SequenceControllerCurve::changeMinMaxCurveTrack<glm::vec3>(const std::string& trackID, glm::vec3 minimum, glm::vec3 maximum);
 	template NAPAPI void SequenceControllerCurve::changeMinMaxCurveTrack<glm::vec4>(const std::string& trackID, glm::vec4 minimum, glm::vec4 maximum);
 
-	template NAPAPI void SequenceControllerCurve::changeCurveType<float>(SequenceTrackSegment& segment, math::ECurveInterp type);
-	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec2>(SequenceTrackSegment& segment, math::ECurveInterp type);
-	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec3>(SequenceTrackSegment& segment, math::ECurveInterp type);
-	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec4>(SequenceTrackSegment& segment, math::ECurveInterp type);
+	template NAPAPI void SequenceControllerCurve::changeCurveType<float>(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
+	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec2>(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
+	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec3>(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
+	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec4>(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
 }

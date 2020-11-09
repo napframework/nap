@@ -111,8 +111,9 @@ namespace nap
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
 		 * @param type the new curve type
+		 * @param curveIndex the index of the curve
 		 */
-		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type);
+		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
 
 		/**
 		 * overloaded insert segment function
@@ -169,12 +170,12 @@ namespace nap
 		/**
 		 * changes curvetype ( linear or bezier )
 		 * @paramt type of curve track
-		 * @param trackID the trackID
-		 * @param segmentID the segmentID
+		 * @param segment reference to curve segment
 		 * @param curveType the new curve type
+		 * @param curve index
 		 */
 		template<typename T>
-		void changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type);
+		void changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
 
 		/**
 		 * changes a curvepoint value and time / position

@@ -335,23 +335,27 @@ namespace nap
 				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
 					trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
-				drawTanHandler<T>(
-					track,
-					segment, string_stream,
-					segmentWidth, curve_point, circle_point,
-					0,
-					v,
-					SequenceCurveEnums::TanPointTypes::IN,
-					drawList);
+				// only draw tan handlers when we have a bezier
+				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
+				{
+					drawTanHandler<T>(
+						track,
+						segment, string_stream,
+						segmentWidth, curve_point, circle_point,
+						0,
+						v,
+						SequenceCurveEnums::TanPointTypes::IN,
+						drawList);
 
-				drawTanHandler<T>(
-					track,
-					segment, string_stream,
-					segmentWidth, curve_point, circle_point,
-					0,
-					v,
-					SequenceCurveEnums::TanPointTypes::OUT,
-					drawList);
+					drawTanHandler<T>(
+						track,
+						segment, string_stream,
+						segmentWidth, curve_point, circle_point,
+						0,
+						v,
+						SequenceCurveEnums::TanPointTypes::OUT,
+						drawList);
+				}
 			}
 		}
 
@@ -488,24 +492,27 @@ namespace nap
 					4.0f,
 					hovered ? guicolors::white : guicolors::lightGrey);
 
-				// draw the handlers
-				drawTanHandler<T>(
-					track,
-					segment, string_stream,
-					segmentWidth, curve_point, circle_point,
-					i,
-					v,
-					SequenceCurveEnums::TanPointTypes::IN,
-					drawList);
+				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
+				{
+					// draw the handlers
+					drawTanHandler<T>(
+						track,
+						segment, string_stream,
+						segmentWidth, curve_point, circle_point,
+						i,
+						v,
+						SequenceCurveEnums::TanPointTypes::IN,
+						drawList);
 
-				drawTanHandler<T>(
-					track,
-					segment, string_stream,
-					segmentWidth, curve_point, circle_point,
-					i,
-					v,
-					SequenceCurveEnums::TanPointTypes::OUT,
-					drawList);
+					drawTanHandler<T>(
+						track,
+						segment, string_stream,
+						segmentWidth, curve_point, circle_point,
+						i,
+						v,
+						SequenceCurveEnums::TanPointTypes::OUT,
+						drawList);
+				}
 			}
 		}
 
@@ -524,21 +531,24 @@ namespace nap
 			{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
 				trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
-			drawTanHandler<T>(
-				track,
-				segment, string_stream,
-				segmentWidth, curve_point, circle_point, control_point_index,
-				v,
-				SequenceCurveEnums::TanPointTypes::IN,
-				drawList);
+			if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
+			{
+				drawTanHandler<T>(
+					track,
+					segment, string_stream,
+					segmentWidth, curve_point, circle_point, control_point_index,
+					v,
+					SequenceCurveEnums::TanPointTypes::IN,
+					drawList);
 
-			drawTanHandler<T>(
-				track,
-				segment, string_stream,
-				segmentWidth, curve_point, circle_point, control_point_index,
-				v,
-				SequenceCurveEnums::TanPointTypes::OUT,
-				drawList);
+				drawTanHandler<T>(
+					track,
+					segment, string_stream,
+					segmentWidth, curve_point, circle_point, control_point_index,
+					v,
+					SequenceCurveEnums::TanPointTypes::OUT,
+					drawList);
+			}
 		}
 
 		//
@@ -1085,7 +1095,7 @@ namespace nap
 				if (ImGui::Button("Linear"))
 				{
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-					curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear);
+					curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear, action->mCurveIndex);
 
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
@@ -1096,7 +1106,7 @@ namespace nap
 				if (ImGui::Button("Bezier"))
 				{
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-					curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier);
+					curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier, action->mCurveIndex);
 
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
