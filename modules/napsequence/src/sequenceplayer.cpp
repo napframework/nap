@@ -53,7 +53,7 @@ namespace nap
 		// Otherwise create an empty show if loading fails
 		if (!loaded)
 		{
-			nap::Logger::info(*this, errorState.toString());
+			nap::Logger::info(*this, load_error.toString());
 			nap::Logger::info(*this, "Unable to load default show, creating default sequence");
 			mSequence = sequenceutils::createEmptySequence(mReadObjects, mReadObjectIDs);
 			nap::Logger::info(*this, "Done creating default sequence");
@@ -148,17 +148,17 @@ namespace nap
 
 	bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
 	{
-		//
 		auto lock = std::unique_lock<std::mutex>(mMutex);
-
-		//
 		rtti::DeserializeResult result;
 
 		const std::string dir = "sequences";
 		utility::makeDirs(utility::getAbsolutePath(dir));
 		std::string show_path = dir + '/' + name;
 
-		//
+		// Ensure file exists
+		if(!errorState.check(!name.empty() && utility::fileExists(show_path),"Show does not exist"))
+			return false;
+
 		std::string timeline_name = utility::getFileNameWithoutExtension(name);
 
 		// 
