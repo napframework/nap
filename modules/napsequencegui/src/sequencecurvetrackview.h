@@ -203,7 +203,7 @@ namespace nap
 		 * @param time the time at which to create new segment
 		 */
 		template<typename T>
-		void pasteClipboardSegment(const std::string& trackId, double time);
+		void NAPAPI pasteClipboardSegment(const std::string& trackId, double time);
 
 		/**
 		 * pastes content of clipboard segment into another segment
@@ -212,7 +212,7 @@ namespace nap
 		 * @param segmentID the segment id of the segment to replace
 		 */
 		template<typename T>
-		void pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentID);
+		void NAPAPI pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentID);
 
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
@@ -524,8 +524,139 @@ namespace nap
 	}
 
 	template<>
-	bool SequenceCurveTrackView::handleCurvePointActionPopup<float>();
+	bool NAPAPI SequenceCurveTrackView::handleCurvePointActionPopup<float>();
 
 	template<>
-	bool SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
+	bool NAPAPI SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
+
+	template<typename T>
+	void SequenceCurveTrackView::pasteClipboardSegment(const std::string& trackId, double time)
+	{
+		// get clipboard action
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+		// create vector & object ptr to be filled by de-serialization
+		std::vector<std::unique_ptr<rtti::Object>> read_objects;
+		rtti::ObjectPtr<T> curve_segment;
+
+		// continue upon succesfull de-serialization
+		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
+		{
+			// obtain controller
+			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+			// insert new segment
+			const auto* new_segment = curve_controller.insertSegment(trackId, time);
+
+			// change duration
+			curve_controller.segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
+
+			// copy curve points
+			for(int c = 0; c < curve_segment->mCurves.size(); c++)
+			{
+				for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
+				{
+					curve_controller.insertCurvePoint(trackId, new_segment->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
+				}
+			}
+
+			// change all curvepoints to match the copied clipboard curve segment
+			// note that the first point is always determined by the previous segment
+			for(int c = 0; c < curve_segment->mCurves.size(); c++)
+			{
+				for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
+				{
+					curve_controller.changeCurvePoint(trackId, new_segment->mID, i, c,
+													  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
+													  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
+
+					curve_controller.changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
+													curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
+													curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
+				}
+			}
+
+			// make the controller re-align start & end points of segments
+			curve_controller.updateCurveSegments(trackId);
+		}else
+		{
+			nap::Logger::error("Error trying to paste clipboard");
+		}
+	}
+
+
+	template<typename T>
+	void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentId)
+	{
+		// get clipboard action
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+		// create vector & object ptr to be filled by de-serialization
+		std::vector<std::unique_ptr<rtti::Object>> read_objects;
+		rtti::ObjectPtr<T> curve_segment;
+
+		// continue upon successful de-serialization
+		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
+		{
+			// obtain controller
+			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+			// insert new segment
+			const auto* target_segment = curve_controller.getSegment(trackId, segmentId);
+
+			// upcast target segment to type of T
+			const T* target_segment_upcast = dynamic_cast<const T*>(target_segment);
+			assert(target_segment_upcast != nullptr); // error in upcast
+
+			// proceed upon successful cast
+			if( target_segment_upcast != nullptr )
+			{
+				// delete all points except the first and last one
+				for(size_t c = 0; c < target_segment_upcast->mCurves.size(); c++)
+				{
+					for(size_t p = 1; p < target_segment_upcast->mCurves[c]->mPoints.size() - 1; p++)
+					{
+						curve_controller.deleteCurvePoint(trackId, segmentId, p, c);
+					}
+				}
+
+				// change duration
+				curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
+
+				// copy curve points
+				for(int c = 0; c < curve_segment->mCurves.size(); c++)
+				{
+					for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
+					{
+						curve_controller.insertCurvePoint(trackId, target_segment_upcast->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
+					}
+				}
+
+				// change all curvepoints to match the copied clipboard curve segment
+				// note that the first point is always determined by the previous segment
+				for(int c = 0; c < curve_segment->mCurves.size(); c++)
+				{
+					for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
+					{
+						curve_controller.changeCurvePoint(trackId, target_segment_upcast->mID, i, c,
+														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
+														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
+
+						curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, SequenceCurveEnums::IN,
+														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
+														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
+					}
+				}
+
+				// make the controller re-align start & end points of segments
+				curve_controller.updateCurveSegments(trackId);
+			}else
+			{
+				nap::Logger::error("Error casting target segment");
+			}
+		}else
+		{
+			nap::Logger::error("Error trying to paste clipboard");
+		}
+	}
 }

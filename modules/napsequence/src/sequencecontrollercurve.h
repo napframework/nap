@@ -30,15 +30,7 @@ namespace nap
 		 * @param duration the new duration
 		 * @return new duration of segment
 	 	 */
-		double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
-
-		/**
-		 * changes start time of segment
-		 * @param trackID the trackID of track containing segment
-		 * @param segmentID the segmentID
-		 * @param time the new start time
-		 */
-		void segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
+		virtual double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
 
 		/**
 		 * adds a new curve track of type T ( float, vec2, vec3, vec4 )
@@ -54,7 +46,7 @@ namespace nap
 		 * @param curveIndex the curve index of the value
 		 * @param valueType the segment value type ( first or last value )
 		 */
-		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
+		virtual void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
 
 		/**
 		 * insert point in curve of segment
@@ -63,7 +55,7 @@ namespace nap
 		 * @param pos the position at which to insert the curvepoint in curve ( range 0-1 )
 		 * @param curveIndex the index of the curve
 		 */
-		void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
+		virtual void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
 
 		/**
 		 * deletes point from curve
@@ -72,7 +64,7 @@ namespace nap
 		 * @param index the point index
 		 * @param curveIndex the curveIndex
 		 */
-		void deleteCurvePoint(const std::string& trackID, const std::string& segmentID, const int index, int curveIndex);
+		virtual void deleteCurvePoint(const std::string& trackID, const std::string& segmentID, const int index, int curveIndex);
 
 		/**
 		 * changes a curvepoint value and time / position
@@ -83,7 +75,7 @@ namespace nap
 		 * @param time new time
 		 * @param value new value
 		 */
-		void changeCurvePoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, float time, float value);
+		virtual void changeCurvePoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, float time, float value);
 
 		/**
 		 * changes tangent of curve point. Tangents are always aligned
@@ -95,7 +87,7 @@ namespace nap
 		 * @param time offset for new time
 		 * @param value offset for new value
 		 */
-		void changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+		virtual void changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes minimum and maximum value of track
@@ -156,7 +148,7 @@ namespace nap
 		 * @param track reference to sequence track
 		 */
 		template<typename T>
-		void updateCurveSegments(SequenceTrack& track);
+		void NAPAPI updateCurveSegments(SequenceTrack& track);
 
 		/**
 		 * insertCurveSegment

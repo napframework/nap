@@ -85,6 +85,24 @@ namespace nap
 		return nullptr;
 	}
 
+
+	const SequenceTrack* SequenceController::getTrack(const std::string& trackID) const
+	{
+		//
+		const Sequence& sequence = mPlayer.getSequenceConst();
+
+		for (const auto& track : sequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				return track.get();
+			}
+		}
+
+		return nullptr;
+	}
+
+
 	const SequenceTrackSegment* SequenceController::getSegment(const std::string& trackID, const std::string& segmentID) const
 	{
 		//

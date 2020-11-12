@@ -74,6 +74,13 @@ namespace nap
 		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) = 0;
 
 		/**
+		 *
+		 * @param trackID
+		 * @return
+		 */
+		const SequenceTrack* getTrack(const std::string& trackID) const;
+
+		/**
 		 * returns const segment pointer to specific segment, nullptr when not found
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID

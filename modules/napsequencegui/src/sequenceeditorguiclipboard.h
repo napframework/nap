@@ -15,9 +15,9 @@ namespace nap
 {
 	namespace SequenceGUIClipboards
 	{
-		class Clipboard
+		class NAPAPI Clipboard
 		{
-		RTTI_ENABLE()
+			RTTI_ENABLE()
 		public:
 			Clipboard() = default;
 			virtual ~Clipboard() = default;
@@ -53,7 +53,7 @@ namespace nap
 			return std::make_unique<T>(args...);
 		}
 
-		class Empty : public Clipboard { RTTI_ENABLE() };
+		class NAPAPI Empty : public Clipboard { RTTI_ENABLE() };
 
 		template<typename T>
 		bool Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, rtti::ObjectPtr<T>& rootObject)

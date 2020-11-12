@@ -464,15 +464,26 @@ namespace nap
 									v);
 
 
-								SequenceControllerCurve& curve_controller = getEditor().getController<SequenceControllerCurve>();
+								// get editor
+								auto& editor = getEditor();
 
-								curve_controller.changeCurvePoint(
-									action->mTrackID,
-									action->mSegmentID,
-									action->mControlPointIndex,
-									action->mCurveIndex,
-									curve_point.mPos.mTime + time_adjust,
-									curve_point.mPos.mValue + value_adjust);
+								// get controller for this track type
+								auto* controller = editor.getControllerWithTrackType(track.get_type());
+
+								// assume its a curve controller
+								auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(controller);
+								assert(curve_controller!= nullptr); // cast failed
+
+								if( curve_controller != nullptr )
+								{
+									curve_controller->changeCurvePoint(
+										action->mTrackID,
+										action->mSegmentID,
+										action->mControlPointIndex,
+										action->mCurveIndex,
+										curve_point.mPos.mTime + time_adjust,
+										curve_point.mPos.mValue + value_adjust);
+								}
 
 								mCurveCache.clear();
 
@@ -781,9 +792,21 @@ namespace nap
 				{
 					float amount = mState.mMouseDelta.x / mState.mStepSize;
 
+					// get editor
 					auto& editor = getEditor();
-					SequenceControllerCurve& curve_controller = editor.getController<SequenceControllerCurve>();
-					curve_controller.segmentDurationChange(track.mID, segment.mID, segment.mDuration + amount);
+
+					// get controller for this track type
+					auto* controller = editor.getControllerWithTrackType(track.get_type());
+
+					// assume its a curve controller
+					auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(controller);
+					assert(curve_controller!= nullptr); // cast failed
+
+					// change duration
+					if(curve_controller!= nullptr)
+					{
+						curve_controller->segmentDurationChange(track.mID, segment.mID, segment.mDuration + amount);
+					}
 
 					mCurveCache.clear();
 				}
@@ -940,15 +963,29 @@ namespace nap
 								new_value= curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mOutTan.mValue + delta_value;
 							}
 
-							auto& curveController = getEditor().getController<SequenceControllerCurve>();
-							curveController.changeTanPoint(
-								track.mID,
-								segment.mID,
-								controlPointIndex,
-								curveIndex,
-								type,
-								new_time,
-								new_value);
+							// get editor
+							auto& editor = getEditor();
+
+							// get controller for this track type
+							auto* controller = editor.getControllerWithTrackType(track.get_type());
+
+							// assume its a curve controller
+							auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(controller);
+							assert(curve_controller!= nullptr); // cast failed
+
+							// change duration
+							if(curve_controller!= nullptr)
+							{
+								curve_controller->changeTanPoint(
+									track.mID,
+									segment.mID,
+									controlPointIndex,
+									curveIndex,
+									type,
+									new_time,
+									new_value);
+							}
+
 							mState.mDirty = true;
 						}
 					}
@@ -1581,83 +1618,93 @@ namespace nap
 		// handle delete segment popup
 		if (mState.mAction->isAction<EditingCurveSegment>())
 		{
-			if (ImGui::BeginPopup("Delete Segment"))
+			auto* action = mState.mAction->getDerived<EditingCurveSegment>();
+			auto& controller = getEditor().getController<SequenceControllerCurve>();
+			auto* track = controller.getTrack(action->mTrackID);
+
+			if (track->get_type() == RTTI_OF(SequenceTrackCurve<float>) ||
+				track->get_type() == RTTI_OF(SequenceTrackCurve<glm::vec2>) ||
+				track->get_type() == RTTI_OF(SequenceTrackCurve<glm::vec3>) ||
+				track->get_type() == RTTI_OF(SequenceTrackCurve<glm::vec4>) )
 			{
-				handled = true;
-
-				auto& controller = getEditor().getController<SequenceControllerCurve>();
-				auto* action = mState.mAction->getDerived<EditingCurveSegment>();
-
-				if( ImGui::Button("Copy") )
+				if(ImGui::BeginPopup("Delete Segment"))
 				{
-					const auto* curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-					mState.mClipboard = createClipboard<CurveSegmentClipboard>(action->mSegmentType);
-					if( !mState.mClipboard->serialize(curve_segment) )
+					handled = true;
+
+					auto& controller = getEditor().getController<SequenceControllerCurve>();
+					auto* action = mState.mAction->getDerived<EditingCurveSegment>();
+
+					if( ImGui::Button("Copy") )
 					{
-						nap::Logger::error("Error serializing curve segment");
-						mState.mClipboard = createClipboard<Empty>();
+						const auto* curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+						mState.mClipboard = createClipboard<CurveSegmentClipboard>(action->mSegmentType);
+						if( !mState.mClipboard->serialize(curve_segment) )
+						{
+							nap::Logger::error("Error serializing curve segment");
+							mState.mClipboard = createClipboard<Empty>();
+						}
+						ImGui::CloseCurrentPopup();
+						mState.mAction = createAction<None>();
 					}
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
-				}
 
-				if (ImGui::Button("Delete"))
-				{
-					controller.deleteSegment(
-						action->mTrackID,
-						action->mSegmentID);
-					mCurveCache.clear();
-
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
-				}
-
-				int time_milseconds = (int) ( ( action->mStartTime + action->mDuration ) * 100.0 ) % 100;
-				int time_seconds = (int) ( action->mStartTime + action->mDuration ) % 60;
-				int time_minutes = (int) ( action->mStartTime + action->mDuration ) / 60;
-
-				bool edit_time = false;
-
-				ImGui::Separator();
-
-				ImGui::PushItemWidth(100.0f);
-
-				int time_array[3] =
+					if (ImGui::Button("Delete"))
 					{
-						time_minutes,
-						time_seconds,
-						time_milseconds
-					};
+						controller.deleteSegment(
+							action->mTrackID,
+							action->mSegmentID);
+						mCurveCache.clear();
 
-				edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
-				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+						ImGui::CloseCurrentPopup();
+						mState.mAction = createAction<None>();
+					}
 
-				if( edit_time )
-				{
-					double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
-					double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, new_time - action->mStartTime);
-					action->mDuration = new_duration;
-					mState.mDirty = true;
+					int time_milseconds = (int) ( ( action->mStartTime + action->mDuration ) * 100.0 ) % 100;
+					int time_seconds = (int) ( action->mStartTime + action->mDuration ) % 60;
+					int time_minutes = (int) ( action->mStartTime + action->mDuration ) / 60;
+
+					bool edit_time = false;
+
+					ImGui::Separator();
+
+					ImGui::PushItemWidth(100.0f);
+
+					int time_array[3] =
+						{
+							time_minutes,
+							time_seconds,
+							time_milseconds
+						};
+
+					edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+					time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+					time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+					time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+					if( edit_time )
+					{
+						double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
+						double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, new_time - action->mStartTime);
+						action->mDuration = new_duration;
+						mState.mDirty = true;
+					}
+
+					ImGui::PopItemWidth();
+
+					ImGui::Separator();
+
+					if (ImGui::Button("Done"))
+					{
+						ImGui::CloseCurrentPopup();
+						mState.mAction = createAction<None>();
+					}
+
+					ImGui::EndPopup();
 				}
-
-				ImGui::PopItemWidth();
-
-				ImGui::Separator();
-
-				if (ImGui::Button("Done"))
+				else
 				{
-					ImGui::CloseCurrentPopup();
+					// click outside popup so cancel action
 					mState.mAction = createAction<None>();
 				}
-
-				ImGui::EndPopup();
-			}
-			else
-			{
-				// click outside popup so cancel action
-				mState.mAction = createAction<None>();
 			}
 		}
 
@@ -2062,137 +2109,5 @@ namespace nap
 	{
 		ImGui::PushItemWidth(225.0f);
 		return ImGui::InputFloat4("", &v[0], precision);
-	}
-
-
-	template<typename T>
-	void SequenceCurveTrackView::pasteClipboardSegment(const std::string& trackId, double time)
-	{
-		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-
-		// create vector & object ptr to be filled by de-serialization
-		std::vector<std::unique_ptr<rtti::Object>> read_objects;
-		rtti::ObjectPtr<T> curve_segment;
-
-		// continue upon succesfull de-serialization
-		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
-		{
-			// obtain controller
-			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-
-			// insert new segment
-			const auto* new_segment = curve_controller.insertSegment(trackId, time);
-
-			// change duration
-			curve_controller.segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
-
-			// copy curve points
-			for(int c = 0; c < curve_segment->mCurves.size(); c++)
-			{
-				for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
-				{
-					curve_controller.insertCurvePoint(trackId, new_segment->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
-				}
-			}
-
-			// change all curvepoints to match the copied clipboard curve segment
-			// note that the first point is always determined by the previous segment
-			for(int c = 0; c < curve_segment->mCurves.size(); c++)
-			{
-				for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
-				{
-					curve_controller.changeCurvePoint(trackId, new_segment->mID, i, c,
-													  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
-													  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
-
-					curve_controller.changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
-													curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
-													curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
-				}
-			}
-
-			// make the controller re-align start & end points of segments
-			curve_controller.updateCurveSegments(trackId);
-		}else
-		{
-			nap::Logger::error("Error trying to paste clipboard");
-		}
-	}
-
-
-	template<typename T>
-	void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentId)
-	{
-		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-
-		// create vector & object ptr to be filled by de-serialization
-		std::vector<std::unique_ptr<rtti::Object>> read_objects;
-		rtti::ObjectPtr<T> curve_segment;
-
-		// continue upon successful de-serialization
-		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
-		{
-			// obtain controller
-			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-
-			// insert new segment
-			const auto* target_segment = curve_controller.getSegment(trackId, segmentId);
-
-			// upcast target segment to type of T
-			const T* target_segment_upcast = dynamic_cast<const T*>(target_segment);
-			assert(target_segment_upcast != nullptr); // error in upcast
-
-			// proceed upon successful cast
-			if( target_segment_upcast != nullptr )
-			{
-				// delete all points except the first and last one
-				for(size_t c = 0; c < target_segment_upcast->mCurves.size(); c++)
-				{
-					for(size_t p = 1; p < target_segment_upcast->mCurves[c]->mPoints.size() - 1; p++)
-					{
-						curve_controller.deleteCurvePoint(trackId, segmentId, p, c);
-					}
-				}
-
-				// change duration
-				curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
-
-				// copy curve points
-				for(int c = 0; c < curve_segment->mCurves.size(); c++)
-				{
-					for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
-					{
-						curve_controller.insertCurvePoint(trackId, target_segment_upcast->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
-					}
-				}
-
-				// change all curvepoints to match the copied clipboard curve segment
-				// note that the first point is always determined by the previous segment
-				for(int c = 0; c < curve_segment->mCurves.size(); c++)
-				{
-					for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
-					{
-						curve_controller.changeCurvePoint(trackId, target_segment_upcast->mID, i, c,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
-
-						curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, SequenceCurveEnums::IN,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
-					}
-				}
-
-				// make the controller re-align start & end points of segments
-				curve_controller.updateCurveSegments(trackId);
-			}else
-			{
-				nap::Logger::error("Error casting target segment");
-			}
-		}else
-		{
-			nap::Logger::error("Error trying to paste clipboard");
-		}
 	}
 }
