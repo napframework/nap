@@ -564,14 +564,6 @@ namespace napkin
 		QUndoStack mUndoStack;                    // This document's undostack
 		std::vector<PropertyPath*> mPropertyPaths;
 
-		/**
-		 * Set object name, but skip checks and optimizations. Does not emit signal.
-		 *
-		 * @param object The object of which the name must change
-		 * @param name The new name, can be the same as the old one, will be overwritten anyway.
-		 * @return The resulting name given to the object (in case the name was changed for disambiguation).
-		 */
-		const std::string& forceSetObjectName(nap::rtti::Object& object, const std::string& name);
 	};
 
 }
