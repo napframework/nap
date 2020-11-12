@@ -15,9 +15,10 @@
 
 // nap::Renderable2DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
-	RTTI_PROPERTY("Location",		&nap::Renderable2DTextComponent::mLocation,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Orientation",	&nap::Renderable2DTextComponent::mOrientation,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",		&nap::Renderable2DTextComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Location",			&nap::Renderable2DTextComponent::mLocation,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Orientation",		&nap::Renderable2DTextComponent::mOrientation,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",			&nap::Renderable2DTextComponent::mDepthMode,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("IgnoreTransform",	&nap::Renderable2DTextComponent::mIgnoreTransform,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable2DTextComponentInstance run time class definition 
@@ -41,11 +42,12 @@ namespace nap
 		getMaterialInstance().setDepthMode(resource->mDepthMode);
 		setOrientation(resource->mOrientation);
 		setLocation(resource->mLocation);
+		mIgnoreTransform = resource->mIgnoreTransform;
 
 		// Fetch render service
 		mService = getEntityInstance()->getCore()->getService<RenderService>();
 		assert(mService != nullptr);
-		
+
 		return true;
 	}
 
@@ -93,7 +95,7 @@ namespace nap
 
 		// Extract component transform (x - y coordinates)
 		glm::vec3 text_xform(0.0f, 0.0f, 0.0f);
-		if (hasTransform())
+		if (hasTransform() && !mIgnoreTransform)
 		{
 			text_xform = math::extractPosition(getTransform()->getGlobalTransform());
 			rvalue.x += (int)(text_xform.x);
