@@ -14,28 +14,28 @@
 
 namespace nap
 {
-	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController> 
-	{ 
-		return std::make_unique<SequenceControllerCurve>(player, editor); 
+	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
+	{
+	  return std::make_unique<SequenceControllerCurve>(player, editor);
 	});
 
 
 	static bool sRegisterControllerTypes[4]
-	{
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)),
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)),
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve))
-	};
+		{
+			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
+			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)),
+			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)),
+			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve))
+		};
 
 
 	std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> SequenceControllerCurve::sUpdateSegmentFunctionMap
-	{
-		{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::updateCurveSegments<float> },
-		{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::updateCurveSegments<glm::vec2> },
-		{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3> },
-		{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> }
-	};
+		{
+			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::updateCurveSegments<float> },
+			{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::updateCurveSegments<glm::vec2> },
+			{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3> },
+			{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> }
+		};
 
 
 	double SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration)
@@ -50,49 +50,49 @@ namespace nap
 
 			if (track != nullptr)
 			{
-			  ResourcePtr<SequenceTrackSegment> previous_segment = nullptr;
-			  for (auto track_segment : track->mSegments)
-			  {
-				  if (track_segment->mID == segmentID)
-				  {
-					  // check if new duration is valid
-					  bool valid = true;
-					  double new_duration = duration;
+				ResourcePtr<SequenceTrackSegment> previous_segment = nullptr;
+				for (auto track_segment : track->mSegments)
+				{
+					if (track_segment->mID == segmentID)
+					{
+						// check if new duration is valid
+						bool valid = true;
+						double new_duration = duration;
 
-					  if (new_duration > 0.0)
-					  {
-						  if (previous_segment != nullptr)
-						  {
-							  if (track_segment->mStartTime + new_duration < previous_segment->mStartTime + previous_segment->mDuration)
-							  {
-								  valid = false;
-							  }
-						  }
-					  }
-					  else
-					  {
-						  valid = false;
-					  }
+						if (new_duration > 0.0)
+						{
+							if (previous_segment != nullptr)
+							{
+								if (track_segment->mStartTime + new_duration < previous_segment->mStartTime + previous_segment->mDuration)
+								{
+									valid = false;
+								}
+							}
+						}
+						else
+						{
+							valid = false;
+						}
 
-					  if (valid)
-					  {
-						  track_segment->mDuration = duration;
+						if (valid)
+						{
+							track_segment->mDuration = duration;
 
-						  auto it = sUpdateSegmentFunctionMap.find(track->get_type());
-						  if (it != sUpdateSegmentFunctionMap.end())
-						  {
-							  (*this.*it->second)(*track);
-						  }
+							auto it = sUpdateSegmentFunctionMap.find(track->get_type());
+							if (it != sUpdateSegmentFunctionMap.end())
+							{
+								(*this.*it->second)(*track);
+							}
 
-						  updateTracks();
-					  }
+							updateTracks();
+						}
 
-					  return_duration = track_segment->mDuration;
-					  break;
-				  }
+						return_duration = track_segment->mDuration;
+						break;
+					}
 
-				  previous_segment = track_segment;
-			  }
+					previous_segment = track_segment;
+				}
 			}
 		});
 
@@ -103,12 +103,12 @@ namespace nap
 	const SequenceTrackSegment* SequenceControllerCurve::insertSegment(const std::string& trackID, double time)
 	{
 		static std::unordered_map<rttr::type, const SequenceTrackSegment*(SequenceControllerCurve::*)(const std::string&, double)> insertSegmentMap
-		{
-			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<float> },
-			{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::insertCurveSegment<glm::vec2> },
-			{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::insertCurveSegment<glm::vec3> },
-			{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::insertCurveSegment<glm::vec4> }
-		};
+			{
+				{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<float> },
+				{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::insertCurveSegment<glm::vec2> },
+				{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::insertCurveSegment<glm::vec3> },
+				{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::insertCurveSegment<glm::vec4> }
+			};
 
 		auto* track = findTrack(trackID);
 		assert(track != nullptr); // track not found
@@ -137,44 +137,44 @@ namespace nap
 
 			for (auto& track : sequence.mTracks)
 			{
-			  if (track->mID == trackID)
-			  {
-				  int segment_index = 0;
-				  for (auto& segment : track->mSegments)
-				  {
-					  if (segment->mID == segmentID)
-					  {
-						  // store the duration of the segment that we are deleting
-						  double duration = segment->mDuration;
+				if (track->mID == trackID)
+				{
+					int segment_index = 0;
+					for (auto& segment : track->mSegments)
+					{
+						if (segment->mID == segmentID)
+						{
+							// store the duration of the segment that we are deleting
+							double duration = segment->mDuration;
 
-						  // erase it from the list
-						  track->mSegments.erase(track->mSegments.begin() + segment_index);
+							// erase it from the list
+							track->mSegments.erase(track->mSegments.begin() + segment_index);
 
-						  // get the segment that is now at the previous deleted segments position
-						  if (track->mSegments.begin() + segment_index != track->mSegments.end())
-						  {
-							  // add the duration
-							  track->mSegments[segment_index]->mDuration += duration;
-						  }
+							// get the segment that is now at the previous deleted segments position
+							if (track->mSegments.begin() + segment_index != track->mSegments.end())
+							{
+								// add the duration
+								track->mSegments[segment_index]->mDuration += duration;
+							}
 
-						  deleteObjectFromSequencePlayer(segmentID);
+							deleteObjectFromSequencePlayer(segmentID);
 
-						  // update segments
-						  auto it = sUpdateSegmentFunctionMap.find(track->get_type());
-						  if (it != sUpdateSegmentFunctionMap.end())
-						  {
-							  (*this.*it->second)(*track);
-						  }
+							// update segments
+							auto it = sUpdateSegmentFunctionMap.find(track->get_type());
+							if (it != sUpdateSegmentFunctionMap.end())
+							{
+								(*this.*it->second)(*track);
+							}
 
-						  break;
-					  }
+							break;
+						}
 
-					  updateTracks();
-					  segment_index++;
-				  }
+						updateTracks();
+						segment_index++;
+					}
 
-				  break;
-			  }
+					break;
+				}
 			}
 		});
 	}
@@ -201,12 +201,12 @@ namespace nap
 	const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment(const std::string& trackID, double time)
 	{
 		static std::unordered_map<rttr::type, int> s_curve_count_map
-		{
-			{ RTTI_OF(float), 1 },
-			{ RTTI_OF(glm::vec2), 2 },
-			{ RTTI_OF(glm::vec3), 3 },
-			{ RTTI_OF(glm::vec4), 4 }
-		};
+			{
+				{ RTTI_OF(float), 1 },
+				{ RTTI_OF(glm::vec2), 2 },
+				{ RTTI_OF(glm::vec3), 3 },
+				{ RTTI_OF(glm::vec4), 4 }
+			};
 
 		SequenceTrackSegment* return_ptr;
 
@@ -226,167 +226,166 @@ namespace nap
 			// find the right track
 			for (auto& track : sequence.mTracks)
 			{
-			  if (track->mID == trackID)
-			  {
-				  // track found
+				if (track->mID == trackID)
+				{
+					// track found
 
-				  // find the segment the new segment in inserted after
-				  int segment_count = 1;
-				  for (auto& segment : track->mSegments)
-				  {
-					  if (segment->mStartTime < time &&
-						  segment->mStartTime + segment->mDuration > time)
-					  {
-						  // segment found
+					// find the segment the new segment in inserted after
+					int segment_count = 1;
+					for (auto& segment : track->mSegments)
+					{
+						if (segment->mStartTime < time &&
+							segment->mStartTime + segment->mDuration > time)
+						{
+							// segment found
 
-						  // create new segment & set parameters
-						  std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
-						  new_segment->mStartTime = time;
-						  new_segment->mDuration = segment->mStartTime + segment->mDuration - time;
-						  new_segment->mCurves.resize(curve_count);
-						  new_segment->mCurveTypes.resize(curve_count);
-						  for (int i = 0; i < curve_count; i++)
-						  {
-							  std::unique_ptr<math::FCurve<float, float>> segment_curve = std::make_unique<math::FCurve<float, float>>();
-							  segment_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							// create new segment & set parameters
+							std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
+							new_segment->mStartTime = time;
+							new_segment->mDuration = segment->mStartTime + segment->mDuration - time;
+							new_segment->mCurves.resize(curve_count);
+							new_segment->mCurveTypes.resize(curve_count);
+							for (int i = 0; i < curve_count; i++)
+							{
+								std::unique_ptr<math::FCurve<float, float>> segment_curve = std::make_unique<math::FCurve<float, float>>();
+								segment_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
-							  // assign curve
-							  new_segment->mCurves[i] = nap::ResourcePtr<math::FCurve<float, float>>(segment_curve.get());
+								// assign curve
+								new_segment->mCurves[i] = nap::ResourcePtr<math::FCurve<float, float>>(segment_curve.get());
 
-							  // assign curve types
-							  new_segment->mCurveTypes[i] = math::ECurveInterp::Bezier;
+								new_segment->mCurveTypes[i] = math::ECurveInterp::Bezier;
 
-							  // move ownership
-							  getPlayerOwnedObjects().emplace_back(std::move(segment_curve));
-						  }
+								// move ownership
+								getPlayerOwnedObjects().emplace_back(std::move(segment_curve));
+							}
 
-						  //
-						  SequenceTrackSegmentCurve<T>& segment_curve_2 = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
+							//
+							SequenceTrackSegmentCurve<T>& segment_curve_2 = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
 
-						  // set the value by evaluation curve
-						  new_segment->setStartValue(segment_curve_2.getValue(
-							  (segment->mStartTime + segment->mDuration - time) / segment->mDuration)
-						  );
+							// set the value by evaluation curve
+							new_segment->setStartValue(segment_curve_2.getValue(
+								(segment->mStartTime + segment->mDuration - time) / segment->mDuration)
+							);
 
-						  // check if there is a next segment
-						  if (segment_count < track->mSegments.size())
-						  {
-							  // if there is a next segment, the new segments end value is the start value of the next segment ...
-							  SequenceTrackSegmentCurve<T>& next_segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track->mSegments[segment_count].get());
+							// check if there is a next segment
+							if (segment_count < track->mSegments.size())
+							{
+								// if there is a next segment, the new segments end value is the start value of the next segment ...
+								SequenceTrackSegmentCurve<T>& next_segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track->mSegments[segment_count].get());
 
-							  new_segment->setEndValue(next_segment_curve.getEndValue());
-						  }
-						  else
-						  {
-							  // ... otherwise it just gets this segments end value
-							  new_segment->setEndValue(segment_curve_2.getEndValue());
-						  }
+								new_segment->setEndValue(next_segment_curve.getEndValue());
+							}
+							else
+							{
+								// ... otherwise it just gets this segments end value
+								new_segment->setEndValue(segment_curve_2.getEndValue());
+							}
 
-						  // the segment's end value gets the start value the newly inserted segment
-						  segment_curve_2.setEndValue(new_segment->getStartValue());
+							// the segment's end value gets the start value the newly inserted segment
+							segment_curve_2.setEndValue(new_segment->getStartValue());
 
-						  // change duration of segment before inserted segment
-						  segment->mDuration = new_segment->mStartTime - segment->mStartTime;
+							// change duration of segment before inserted segment
+							segment->mDuration = new_segment->mStartTime - segment->mStartTime;
 
-						  // generate unique id
-						  new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							// generate unique id
+							new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
-						  // wrap it in a resource ptr and insert it into the track
-						  ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
-						  track->mSegments.insert(track->mSegments.begin() + segment_count, new_segment_resource_ptr);
+							// wrap it in a resource ptr and insert it into the track
+							ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
+							track->mSegments.insert(track->mSegments.begin() + segment_count, new_segment_resource_ptr);
 
-						  return_ptr = new_segment.get();
+							return_ptr = new_segment.get();
 
-						  // move ownership to sequence player
-						  getPlayerOwnedObjects().emplace_back(std::move(new_segment));
+							// move ownership to sequence player
+							getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
-						  //
-						  updateCurveSegments<T>(*(track.get()));
+							//
+							updateCurveSegments<T>(*(track.get()));
 
-						  break;
-					  }
-					  else if (segment_count == track->mSegments.size())
-					  {
-						  // insert segment at the end of the list
+							break;
+						}
+						else if (segment_count == track->mSegments.size())
+						{
+							// insert segment at the end of the list
 
-						  // create new segment & set parameters
-						  std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment =
-							  std::make_unique<SequenceTrackSegmentCurve<T>>();
-						  new_segment->mStartTime = segment->mStartTime + segment->mDuration;
-						  new_segment->mDuration = time - new_segment->mStartTime;
-						  new_segment->mCurves.resize(curve_count);
-						  new_segment->mCurveTypes.resize(curve_count);
-						  for (int v = 0; v < curve_count; v++)
-						  {
-							  std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
-							  new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
-							  new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
-							  new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
-							  getPlayerOwnedObjects().emplace_back(std::move(new_curve));
-						  }
+							// create new segment & set parameters
+							std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment =
+								std::make_unique<SequenceTrackSegmentCurve<T>>();
+							new_segment->mStartTime = segment->mStartTime + segment->mDuration;
+							new_segment->mDuration = time - new_segment->mStartTime;
+							new_segment->mCurves.resize(curve_count);
+							new_segment->mCurveTypes.resize(curve_count);
+							for (int v = 0; v < curve_count; v++)
+							{
+								std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
+								new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+								new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
+								new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
+								getPlayerOwnedObjects().emplace_back(std::move(new_curve));
+							}
 
-						  // generate unique id
-						  new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							// generate unique id
+							new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
-						  // wrap it in a resource ptr and insert it into the track
-						  ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
-						  track->mSegments.emplace_back(new_segment_resource_ptr);
+							// wrap it in a resource ptr and insert it into the track
+							ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
+							track->mSegments.emplace_back(new_segment_resource_ptr);
 
-						  return_ptr = new_segment.get();
+							return_ptr = new_segment.get();
 
-						  // move ownership to sequence player
-						  getPlayerOwnedObjects().emplace_back(std::move(new_segment));
+							// move ownership to sequence player
+							getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
-						  //
-						  updateCurveSegments<T>(*(track.get()));
+							//
+							updateCurveSegments<T>(*(track.get()));
 
-						  break;
-					  }
+							break;
+						}
 
-					  segment_count++;
-				  }
+						segment_count++;
+					}
 
-				  //
-				  if (track->mSegments.size() == 0)
-				  {
-					  // create new segment & set parameters
-					  std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
-					  new_segment->mStartTime = 0.0;
-					  new_segment->mDuration = time - new_segment->mStartTime;
+					//
+					if (track->mSegments.size() == 0)
+					{
+						// create new segment & set parameters
+						std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
+						new_segment->mStartTime = 0.0;
+						new_segment->mDuration = time - new_segment->mStartTime;
 
-					  // make new curve of segment
-					  new_segment->mCurves.resize(curve_count);
-					  new_segment->mCurveTypes.resize(curve_count);
-					  for (int v = 0; v < curve_count; v++)
-					  {
-						  std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
-						  new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
-						  new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
-						  new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
-						  getPlayerOwnedObjects().emplace_back(std::move(new_curve));
-					  }
+						// make new curve of segment
+						new_segment->mCurves.resize(curve_count);
+						new_segment->mCurveTypes.resize(curve_count);
+						for (int v = 0; v < curve_count; v++)
+						{
+							std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
+							new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
+							new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
+							getPlayerOwnedObjects().emplace_back(std::move(new_curve));
+						}
 
-					  // generate unique id
-					  new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+						// generate unique id
+						new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
-					  // wrap it in a resource ptr and insert it into the track
-					  ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
-					  track->mSegments.emplace_back(new_segment_resource_ptr);
+						// wrap it in a resource ptr and insert it into the track
+						ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
+						track->mSegments.emplace_back(new_segment_resource_ptr);
 
-					  //
-					  return_ptr = new_segment.get();
+						//
+						return_ptr = new_segment.get();
 
-					  // move ownership to sequence player
-					  getPlayerOwnedObjects().emplace_back(std::move(new_segment));
+						// move ownership to sequence player
+						getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
-					  //
-					  updateCurveSegments<T>(*(track.get()));
+						//
+						updateCurveSegments<T>(*(track.get()));
 
 
-					  break;
-				  }
-				  break;
-			  }
+						break;
+					}
+					break;
+				}
 			}
 		});
 
@@ -445,12 +444,12 @@ namespace nap
 														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&, SequenceTrackSegment& segment, float, int, SequenceCurveEnums::SegmentValueTypes)> change_segment_value_map
-		{
-			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurveSegmentValue<float> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec2> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec3> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec4> }
-		};
+			{
+				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurveSegmentValue<float> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec2> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec3> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec4> }
+			};
 
 		//
 		performEditAction([this, trackID, segmentID, newValue, curveIndex, valueType]()
@@ -491,14 +490,14 @@ namespace nap
 			curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue = newValue;
 			curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue = math::clamp<float>(curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue, 0.0f, 1.0f);
 		}
-		break;
+			break;
 		case SequenceCurveEnums::END:
 		{
 			int lastPoint = curve_segment.mCurves[curveIndex]->mPoints.size() - 1;
 			curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue = newValue;
 			curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue = math::clamp<float>(curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue, 0.0f, 1.0f);
 		}
-		break;
+			break;
 		}
 
 		//
@@ -547,12 +546,12 @@ namespace nap
 	void SequenceControllerCurve::insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex)
 	{
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, float, int)> insertCurvePointMap
-		{
-			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::insertCurvePoint<float> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::insertCurvePoint<glm::vec2> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::insertCurvePoint<glm::vec3> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::insertCurvePoint<glm::vec4> }
-		};
+			{
+				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::insertCurvePoint<float> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::insertCurvePoint<glm::vec2> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::insertCurvePoint<glm::vec3> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::insertCurvePoint<glm::vec4> }
+			};
 
 		//
 		performEditAction([this, trackID, segmentID, pos, curveIndex]()
@@ -618,12 +617,12 @@ namespace nap
 		int curveIndex)
 	{
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const int, int)> deleteCurvePointMap
-		{
-			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::deleteCurvePoint<float> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::deleteCurvePoint<glm::vec2> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::deleteCurvePoint<glm::vec3> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::deleteCurvePoint<glm::vec4> },
-		};
+			{
+				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::deleteCurvePoint<float> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::deleteCurvePoint<glm::vec2> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::deleteCurvePoint<glm::vec3> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::deleteCurvePoint<glm::vec4> },
+			};
 
 		performEditAction([this, trackID, segmentID, index, curveIndex]()
 		{
@@ -672,12 +671,20 @@ namespace nap
 		float value)
 	{
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const int, const int, float, float)> change_curve_point_map
-		{
-			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurvePoint<float> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurvePoint<glm::vec2> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeCurvePoint<glm::vec3> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurvePoint<glm::vec4> },
-		};
+			{
+				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurvePoint<float> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurvePoint<glm::vec2> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeCurvePoint<glm::vec3> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeCurvePoint<glm::vec4> },
+			};
+
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const int, float, float)> change_last_curve_point_map
+			{
+				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeLastCurvePoint<float> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeLastCurvePoint<glm::vec2> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeLastCurvePoint<glm::vec3> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeLastCurvePoint<glm::vec4> },
+			};
 
 		performEditAction([this, trackID, segmentID, pointIndex, curveIndex, time, value]()
 		{
@@ -687,12 +694,40 @@ namespace nap
 
 			if (segment != nullptr)
 			{
-			  auto it = change_curve_point_map.find(segment->get_type());
-			  assert(it != change_curve_point_map.end()); // type not found
-			  if (it != change_curve_point_map.end())
-			  {
-				  (*this.*it->second)(*segment, pointIndex, curveIndex, time, value);
-			  }
+				auto it = change_curve_point_map.find(segment->get_type());
+				assert(it != change_curve_point_map.end()); // type not found
+				if (it != change_curve_point_map.end())
+				{
+					(*this.*it->second)(*segment, pointIndex, curveIndex, time, value);
+
+					// if point index = 0, check if we need to update end point of any previous segment
+					if( pointIndex == 0 )
+					{
+						// find corresponding track
+						auto* track = findTrack(trackID);
+
+						// iterate trough segments
+						for(size_t i = 0; i < track->mSegments.size(); i++)
+						{
+							// if this segment is found, and index is bigger then 0 obtain the previous segment
+							if( track->mSegments[i].get() == segment && i > 0 )
+							{
+								// obtain previous segment
+								auto* prev_segment = track->mSegments[i-1].get();
+
+								// find corresponding function call and invoke changeLastCurvePoint on the previous segment
+								auto it2 = change_last_curve_point_map.find(segment->get_type());
+								assert(it2 != change_last_curve_point_map.end()); // type not found
+								if (it2 != change_last_curve_point_map.end())
+								{
+									(*this.*it2->second)(*prev_segment, curveIndex, 1.0f, value);
+								}
+
+								break;
+							}
+						}
+					}
+				}
 			}
 		});
 	}
@@ -701,14 +736,35 @@ namespace nap
 	template <typename T>
 	void SequenceControllerCurve::changeCurvePoint(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value)
 	{
-		//
+		// obtain curve segment
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
-		//
+		// obtain curve point and set values
 		math::FCurvePoint<float, float>& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
+		curve_point.mPos.mTime = time;
+		curve_point.mPos.mValue = value;
+		curve_point.mPos.mValue = math::clamp<float>(curve_point.mPos.mValue, 0.0f, 1.0f);
+		curve_segment.mCurves[curveIndex]->invalidate();
+	}
+
+
+	template <typename T>
+	void SequenceControllerCurve::changeLastCurvePoint(SequenceTrackSegment& segment, const int curveIndex, float time, float value)
+	{
+
+		// obtain curve segment
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
+		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
+
+		//
+		int point_index = curve_segment.mCurves[curveIndex]->mPoints.size() - 1;
+
+		// obtain curve point and set values
+		math::FCurvePoint<float, float>& curve_point = curve_segment.mCurves[curveIndex]->mPoints[point_index];
 		curve_point.mPos.mTime = time;
 		curve_point.mPos.mValue = value;
 		curve_point.mPos.mValue = math::clamp<float>(curve_point.mPos.mValue, 0.0f, 1.0f);
@@ -721,13 +777,13 @@ namespace nap
 	{
 		//
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int,
-												  SequenceCurveEnums::TanPointTypes, float, float)> change_curve_point_map
-		{
-			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeTanPoint<float> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeTanPoint<glm::vec2> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeTanPoint<glm::vec3> },
-			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeTanPoint<glm::vec4> },
-		};
+																			   SequenceCurveEnums::TanPointTypes, float, float)> change_curve_point_map
+			{
+				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeTanPoint<float> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeTanPoint<glm::vec2> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceControllerCurve::changeTanPoint<glm::vec3> },
+				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeTanPoint<glm::vec4> },
+			};
 
 		performEditAction([this, trackID, segmentID, pointIndex, curveIndex, tanType, time, value]()
 		{
@@ -749,9 +805,8 @@ namespace nap
 	}
 
 
-	template<typename T>
-	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
-												 SequenceCurveEnums::TanPointTypes tanType, float time, float value)
+	template <typename  T>
+	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
@@ -776,7 +831,7 @@ namespace nap
 				}
 			}
 		}
-		break;
+			break;
 		case SequenceCurveEnums::TanPointTypes::OUT:
 		{
 			if (time > curve_point.mInTan.mTime)
@@ -792,7 +847,7 @@ namespace nap
 			}
 
 		}
-		break;
+			break;
 		}
 
 		// is this the last control point ?
@@ -832,6 +887,25 @@ namespace nap
 			addNewCurveTrack<glm::vec3>();
 		if (type == RTTI_OF(SequenceTrackCurveVec4))
 			addNewCurveTrack<glm::vec4>();
+	}
+
+
+	void SequenceControllerCurve::updateCurveSegments(const std::string& trackID)
+	{
+		auto* track = findTrack(trackID);
+		if(track!= nullptr)
+		{
+			rttr::type type = track->get_type();
+
+			if( type == RTTI_OF(SequenceTrackCurveFloat))
+				updateCurveSegments<float>(*track);
+			if (type == RTTI_OF(SequenceTrackCurveVec2))
+				updateCurveSegments<glm::vec2>(*track);
+			if (type == RTTI_OF(SequenceTrackCurveVec3))
+				updateCurveSegments<glm::vec3>(*track);
+			if (type == RTTI_OF(SequenceTrackCurveVec4))
+				updateCurveSegments<glm::vec4>(*track);
+		}
 	}
 
 
@@ -922,13 +996,13 @@ namespace nap
 	template NAPAPI void SequenceControllerCurve::changeCurvePoint<glm::vec4>(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
 
 	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<float>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
-															SequenceCurveEnums::SegmentValueTypes valueType);
+																				 SequenceCurveEnums::SegmentValueTypes valueType);
 	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec2>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
-																SequenceCurveEnums::SegmentValueTypes valueType);
+																					 SequenceCurveEnums::SegmentValueTypes valueType);
 	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec3>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
-																SequenceCurveEnums::SegmentValueTypes valueType);
+																					 SequenceCurveEnums::SegmentValueTypes valueType);
 	template NAPAPI void SequenceControllerCurve::changeCurveSegmentValue<glm::vec4>(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
-																SequenceCurveEnums::SegmentValueTypes valueType);
+																					 SequenceCurveEnums::SegmentValueTypes valueType);
 
 	template NAPAPI void SequenceControllerCurve::changeTanPoint<float>(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex,
 																		SequenceCurveEnums::TanPointTypes tanType, float time, float value);

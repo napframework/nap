@@ -57,7 +57,7 @@ namespace nap
 			}
 		}
 
-        mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
+		mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
 	}
 
 
@@ -154,18 +154,18 @@ namespace nap
 			{
 				if (track->mID == deleteTrackID)
 				{
-				  if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
-				  {
-					  mPlayer.mAdapters.erase(track->mID);
-				  }
+					if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
+					{
+						mPlayer.mAdapters.erase(track->mID);
+					}
 
-				  sequence.mTracks.erase(sequence.mTracks.begin() + index);
+					sequence.mTracks.erase(sequence.mTracks.begin() + index);
 
-				  deleteObjectFromSequencePlayer(deleteTrackID);
+					deleteObjectFromSequencePlayer(deleteTrackID);
 
-				  break;
+					break;
 				}
-			  index++;
+				index++;
 			}
 		});
 	}

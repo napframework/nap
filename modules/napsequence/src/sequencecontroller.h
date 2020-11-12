@@ -33,11 +33,11 @@ namespace nap
 		 * @param editor reference to editor
 		 */
 		SequenceController(SequencePlayer& player, SequenceEditor& editor) : mPlayer(player), mEditor(editor) {};
-        
+
 		/**
 		 * Deconstructor
 		 */
-        virtual ~SequenceController(){};
+		virtual ~SequenceController(){};
 
 		/**
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
@@ -87,12 +87,12 @@ namespace nap
 		 */
 		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& getControllerFactory();
 
-		 /**
-		  * registers the factory method for a type of controller
-		  * @param type the type of controller
-		  * @param factoryFunc the factory method
-		  * @return true on successfull registration
-		  */
+		/**
+		 * registers the factory method for a type of controller
+		 * @param type the type of controller
+		 * @param factoryFunc the factory method
+		 * @return true on successfull registration
+		 */
 		static bool registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc factoryFunc);
 	protected:
 		/**

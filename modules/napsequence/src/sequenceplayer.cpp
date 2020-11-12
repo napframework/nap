@@ -55,7 +55,7 @@ namespace nap
 		{
 			nap::Logger::info(*this, load_error.toString());
 			nap::Logger::info(*this, "Unable to load default show, creating default sequence");
-			mSequence = sequenceutils::createEmptySequence(mReadObjects, mReadObjectIDs);
+			mSequence = sequenceutils::createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
 		return true;

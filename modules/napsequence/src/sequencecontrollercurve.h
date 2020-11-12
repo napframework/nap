@@ -39,7 +39,7 @@ namespace nap
 		 * @param time the new start time
 		 */
 		void segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
-	
+
 		/**
 		 * adds a new curve track of type T ( float, vec2, vec3, vec4 )
 		 */
@@ -55,7 +55,7 @@ namespace nap
 		 * @param valueType the segment value type ( first or last value )
 		 */
 		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
-	
+
 		/**
 		 * insert point in curve of segment
 		 * @param trackID the track id
@@ -111,9 +111,9 @@ namespace nap
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
 		 * @param type the new curve type
-		 * @param curveIndex the index of the curve
 		 */
-		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
+		template<typename T>
+		void changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
 
 		/**
 		 * overloaded insert segment function
@@ -136,14 +136,27 @@ namespace nap
 		 */
 		virtual void insertTrack(rttr::type type) override;
 
+		/**
+		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
+		 * @param trackID the track id of the track that we want to update
+		 */
+		void updateCurveSegments(const std::string& trackID);
+
+		/**
+		 * changes curvetype ( linear or bezier )
+		 * @param trackID the trackID
+		 * @param segmentID the segmentID
+		 * @param type the new curve type
+		 * @param curveIndex the index of the curve
+		 */
+		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
 	protected:
 		/**
-		 * updateCurveSegments
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param track reference to sequence track
 		 */
 		template<typename T>
-		void NAPAPI updateCurveSegments(SequenceTrack& track);
+		void updateCurveSegments(SequenceTrack& track);
 
 		/**
 		 * insertCurveSegment
@@ -152,7 +165,7 @@ namespace nap
 		 * @param time the time at when to insert segment
 		 */
 		template <typename T>
-		const NAPAPI SequenceTrackSegment* insertCurveSegment(const std::string& trackID, double time);
+		const SequenceTrackSegment* insertCurveSegment(const std::string& trackID, double time);
 
 		/**
 		 * changes tangent of curve point. Tangents are always aligned
@@ -166,17 +179,7 @@ namespace nap
 		 * @param value offset for new value
 		 */
 		template <typename  T>
-		void NAPAPI changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
-
-		/**
-		 * changes curvetype ( linear or bezier )
-		 * @paramt type of curve track
-		 * @param segment reference to curve segment
-		 * @param curveType the new curve type
-		 * @param curve index
-		 */
-		template<typename T>
-		void NAPAPI changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
+		void changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes a curvepoint value and time / position
@@ -189,7 +192,10 @@ namespace nap
 		 * @param value offset for new value
 		 */
 		template <typename  T>
-		void NAPAPI changeCurvePoint(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
+		void changeCurvePoint(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
+
+		template <typename T>
+		void SequenceControllerCurve::changeLastCurvePoint(SequenceTrackSegment& segment, const int curveIndex, float time, float value);
 
 		/**
 		 * deletes point from curve
@@ -200,7 +206,7 @@ namespace nap
 		 * @param curveIndex the curveIndex
 		 */
 		template<typename T>
-		void NAPAPI deleteCurvePoint(SequenceTrackSegment& segment, const int index, int curveIndex);
+		void deleteCurvePoint(SequenceTrackSegment& segment, const int index, int curveIndex);
 
 		/**
 		 * insert point in curve of segment
@@ -211,7 +217,7 @@ namespace nap
 		 * @param curveIndex the index of the curve
 		 */
 		template<typename T>
-		void NAPAPI insertCurvePoint(SequenceTrackSegment& segment, float pos, int curveIndex);
+		void insertCurvePoint(SequenceTrackSegment& segment, float pos, int curveIndex);
 
 		/**
 		 * changes start or end value of segment of type T
@@ -222,7 +228,7 @@ namespace nap
 		 * @param valueType the segment value type ( first or last value )
 		 */
 		template<typename T>
-		void NAPAPI changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+		void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
 									 SequenceCurveEnums::SegmentValueTypes valueType);
 
 		// map for updating segments

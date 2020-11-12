@@ -17,19 +17,20 @@ namespace nap
 	{
 		class Clipboard
 		{
-			RTTI_ENABLE()
+		RTTI_ENABLE()
 		public:
+			Clipboard() = default;
 			virtual ~Clipboard() = default;
 
 			bool serialize(const rtti::Object* object);
 
 			template<typename T>
-			T* deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects);
+			bool deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, rtti::ObjectPtr<T>& rootObject);
 
 			template<typename T>
 			bool isClipboard()
 			{
-				return get_type() == RTTI_OF(T);
+				return this->get_type() == RTTI_OF(T);
 			}
 
 			template<typename T>
@@ -55,7 +56,7 @@ namespace nap
 		class Empty : public Clipboard { RTTI_ENABLE() };
 
 		template<typename T>
-		T* Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects)
+		bool Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, rtti::ObjectPtr<T>& rootObject)
 		{
 			//
 			rtti::DeserializeResult result;
@@ -72,7 +73,7 @@ namespace nap
 				errorState))
 			{
 				nap::Logger::error("Error deserializing, error : %s " , errorState.toString().c_str());
-				return nullptr;
+				return false;
 			}
 
 			// Resolve links
@@ -80,11 +81,28 @@ namespace nap
 			{
 				nap::Logger::error("Error resolving links : %s " , errorState.toString().c_str());
 
-				return nullptr;
+				return false;
 			}
 
 			//
-			T* return_ptr = nullptr;
+			T* root_object = nullptr;
+
+			if(result.mReadObjects.size() > 0 )
+			{
+				auto* first_object = result.mReadObjects[0].get();
+				if( first_object->get_type() != RTTI_OF(T) )
+				{
+					nap::Logger::error("Root object not of correct type");
+					return false;
+				}else
+				{
+					root_object = static_cast<T*>(first_object);
+				}
+			}else
+			{
+				nap::Logger::error("No objects deserialized");
+				return false;
+			}
 
 			// Move ownership of read objects
 			createdObjects.clear();
@@ -93,7 +111,7 @@ namespace nap
 				//
 				if (read_object->get_type().is_derived_from<T>())
 				{
-					return_ptr = dynamic_cast<T*>(read_object.get());
+					root_object = dynamic_cast<T*>(read_object.get());
 				}
 
 				createdObjects.emplace_back(std::move(read_object));
@@ -103,15 +121,21 @@ namespace nap
 			for (auto& object_ptr : createdObjects)
 			{
 				if (!object_ptr->init(errorState))
-					return nullptr;
+				{
+					nap::Logger::error("Error initializing object : %s " , errorState.toString().c_str());
+					return false;
+				}
 			}
 
-			if( return_ptr == nullptr )
+			if( root_object == nullptr )
 			{
 				nap::Logger::error("return object is null");
+				return false;
 			}
 
-			return return_ptr;
+			rootObject = rtti::ObjectPtr<T>(root_object);
+
+			return true;
 		}
 	}
 }

@@ -41,7 +41,7 @@ namespace nap
 			{ RTTI_OF(SequenceTrackSegmentEventVec3), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<glm::vec3>(trackID, time); }}
 		};
 
-	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> SequenceEventTrackView::sHandlePopupsMap
+	std::unordered_map<rttr::type, bool(SequenceEventTrackView::*)()> SequenceEventTrackView::sHandlePopupsMap
 		{
 			{ RTTI_OF(SequenceTrackSegmentEventString), &SequenceEventTrackView::handleEditEventSegmentPopup<std::string> },
 			{ RTTI_OF(SequenceTrackSegmentEventFloat), &SequenceEventTrackView::handleEditEventSegmentPopup<float> },
@@ -273,11 +273,13 @@ namespace nap
 	}
 
 
-	void SequenceEventTrackView::handlePopups()
+	bool SequenceEventTrackView::handlePopups()
 	{
-		handleInsertEventSegmentPopup();
+		if( handleInsertEventSegmentPopup() )
+			return true;
 
-		handleDeleteSegmentPopup();
+		if( handleDeleteSegmentPopup() )
+			return true;
 
 		for(auto& type : sEventTypes)
 		{
@@ -285,14 +287,22 @@ namespace nap
 			assert(it != sHandlePopupsMap.end()); // type not found
 			if( it != sHandlePopupsMap.end())
 			{
-				(*this.*it->second)();
+				if( (*this.*it->second)() )
+				{
+					return true;
+				}
 			}
 		}
+
+		return false;
 	}
 
 
-	void SequenceEventTrackView::handleInsertEventSegmentPopup()
+	bool SequenceEventTrackView::handleInsertEventSegmentPopup()
 	{
+		// popup handled
+		bool handled = false;
+
 		if (mState.mAction->isAction<OpenInsertEventSegmentPopup>())
 		{
 			// invoke insert sequence popup
@@ -307,6 +317,8 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Insert Event"))
 			{
+				handled = true;
+
 				auto* action = mState.mAction->getDerived<InsertingEventSegment>();
 
 				for(auto& type : sEventTypes)
@@ -339,6 +351,8 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
+
+		return handled;
 	}
 
 
@@ -452,8 +466,11 @@ namespace nap
 	}
 
 
-	void SequenceEventTrackView::handleDeleteSegmentPopup()
+	bool SequenceEventTrackView::handleDeleteSegmentPopup()
 	{
+		//
+		bool handled = false;
+
 		if (mState.mAction->isAction<OpenEditSegmentValuePopup>())
 		{
 			// invoke insert sequence popup
@@ -468,6 +485,8 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Edit Segment"))
 			{
+				handled = true;
+
 				auto* action = mState.mAction->getDerived<EditingSegment>();
 				if (ImGui::Button("Delete"))
 				{
@@ -519,5 +538,7 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
+
+		return handled;
 	}
 }

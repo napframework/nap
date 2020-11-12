@@ -28,7 +28,7 @@ namespace nap
 		/**
 		 * handles popups
 		 */
-		virtual void handlePopups() override;
+		virtual bool handlePopups() override;
 	protected:
 		/**
 		 * shows inspector content
@@ -46,13 +46,13 @@ namespace nap
 		/**
 		 * handles insert event segment popup
 		 */
-		void handleInsertEventSegmentPopup();
+		bool handleInsertEventSegmentPopup();
 
 		/**
 		 * handles event segment popup
 		 */
 		template<typename T>
-		void handleEditEventSegmentPopup();
+		bool handleEditEventSegmentPopup();
 
 		/**
 		 * draws event track
@@ -79,7 +79,7 @@ namespace nap
 		/**
 		 * handles delete segment popup
 		 */
-		void handleDeleteSegmentPopup();
+		bool handleDeleteSegmentPopup();
 
 		/**
 		 * creates an event edit action of specified type
@@ -92,7 +92,7 @@ namespace nap
 		void createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID);
 
 		// static map of popup function pointers
-		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> sHandlePopupsMap;
+		static std::unordered_map<rttr::type, bool(SequenceEventTrackView::*)()> sHandlePopupsMap;
 
 		// static map of edit action function pointers
 		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const SequenceTrackSegmentEventBase*, const std::string&, const std::string&)> sEditActionMap;
@@ -160,8 +160,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	void SequenceEventTrackView::handleEditEventSegmentPopup()
+	bool SequenceEventTrackView::handleEditEventSegmentPopup()
 	{
+		bool handled = false;
+
 		if (mState.mAction->isAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>())
 		{
 			// invoke insert sequence popup
@@ -176,6 +178,8 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Edit Event"))
 			{
+				handled = true;
+
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingEventSegment<T>>();
 
 				ImGui::SetWindowPos(action->mWindowPos);
@@ -288,6 +292,8 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
+
+		return handled;
 	}
 
 

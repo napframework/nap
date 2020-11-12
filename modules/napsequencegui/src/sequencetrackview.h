@@ -55,7 +55,7 @@ namespace nap
 		 * handles popups
 		 * popups must be handled after all tracks are drawn
 		 */
-		virtual void handlePopups() = 0;
+		virtual bool handlePopups() = 0;
 
 		/**
 		 * handles any actions that are created upon show
