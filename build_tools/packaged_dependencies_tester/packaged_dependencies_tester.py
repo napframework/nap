@@ -117,6 +117,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'nouveau_dri',
     'libnvidia-compiler',
     'libnvidia-glcore',
+    'libnvidia-glvkspirv',
     'libnvidia-opencl',
     'libnvidia-tls',
     'libogg',
