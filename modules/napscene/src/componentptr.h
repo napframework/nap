@@ -255,7 +255,7 @@ namespace nap
 	 *
 	 *		class SomeComponentInstance : public ComponentInstance
 	 *		{
-	 *			std::vector<ComponentInstancePtr<OtherComponent>> mOtherComponentList = initComponentInstancePtr(this, &SomeComponent::mOtherComponent);
+	 *			std::vector<ComponentInstancePtr<OtherComponent>> mOtherComponentList = initComponentInstancePtr(this, &SomeComponent::mOtherComponentList);
 	 *		};
 	 *
 	 * Here, each element in SomeComponentInstance::mOtherComponentList will point to each instance that corresponds to each element in

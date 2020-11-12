@@ -37,27 +37,27 @@ namespace nap
 	bool SequencePlayer::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
+			return false;
+
+		// Try to load default show
+		utility::ErrorState load_error;
+		bool loaded = load(mSequenceFileName, load_error);
+
+		// Cancel if can't be loaded and we're not allowed to create an empty sequence on failure
+		if (!loaded && !mCreateEmptySequenceOnLoadFail)
 		{
+			errorState.fail(load_error.toString());
 			return false;
 		}
 
-		if (!mCreateEmptySequenceOnLoadFail)
+		// Otherwise create an empty show if loading fails
+		if (!loaded)
 		{
-			if (errorState.check(load(mSequenceFileName, errorState), "Error loading default sequence"))
-			{
-				return false;
-			}
-		}
-		else if (!load(mSequenceFileName, errorState))
-		{
-			nap::Logger::info(*this, errorState.toString());
-			nap::Logger::info(*this, "Error loading default show, creating default sequence");
-
-			mSequence = sequenceutils::createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
-
+			nap::Logger::info(*this, load_error.toString());
+			nap::Logger::info(*this, "Unable to load default show, creating default sequence");
+			mSequence = sequenceutils::createEmptySequence(mReadObjects, mReadObjectIDs);
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
-
 		return true;
 	}
 
@@ -148,17 +148,17 @@ namespace nap
 
 	bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
 	{
-		//
 		auto lock = std::unique_lock<std::mutex>(mMutex);
-
-		//
 		rtti::DeserializeResult result;
 
 		const std::string dir = "sequences";
 		utility::makeDirs(utility::getAbsolutePath(dir));
 		std::string show_path = dir + '/' + name;
 
-		//
+		// Ensure file exists
+		if(!errorState.check(!name.empty() && utility::fileExists(show_path),"Show does not exist"))
+			return false;
+
 		std::string timeline_name = utility::getFileNameWithoutExtension(name);
 
 		// 
@@ -371,7 +371,7 @@ namespace nap
 
 		if (track == nullptr)
 		{
-			nap::Logger::error(*this,"No track found with id %s", trackID.c_str());
+			nap::Logger::error("No track found with id %s", trackID.c_str());
 			return false;
 		}
 
@@ -393,7 +393,7 @@ namespace nap
 
 		if (output == nullptr)
 		{
-			nap::Logger::error(*this,"No output found with id %s", inputID.c_str());
+			nap::Logger::error("No output found with id %s", inputID.c_str());
 			return false;
 		}
 
@@ -401,7 +401,7 @@ namespace nap
 
 		if (adapter == nullptr)
 		{
-			nap::Logger::error(*this,"Unable to create adapter with track id %s and output id %s", trackID.c_str(), inputID.c_str());
+			nap::Logger::error("Unable to create adapter with track id %s and output id %s", trackID.c_str(), inputID.c_str());
 			return false;
 		}
 

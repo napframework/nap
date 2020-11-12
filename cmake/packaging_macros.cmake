@@ -120,14 +120,14 @@ macro(package_nap)
         endif ()
     endif() # ANDROID
 
-    # install NAP source code license
+    # Install NAP source code license
     install(FILES ${NAP_ROOT}/LICENSE.txt DESTINATION .)
 
-    # install NAP readme
+    # Install NAP readme
     install(FILES ${NAP_ROOT}/dist/license/README.txt DESTINATION .)
 
-    # install NAP packaged app license 
-    install(FILES ${NAP_ROOT}/dist/license/NAP.txt DESTINATION dist/)
+    # Install NAP Packaged App license 
+    install(FILES ${NAP_ROOT}/dist/license/NAP.txt DESTINATION cmake/project_creator)
 endmacro()
 
 # Package installed Python for distribution with NAP release (for use with mod_nappython, Napkin and interpreter for Python scripts)

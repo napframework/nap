@@ -181,7 +181,7 @@ namespace nap
 		// Create vertex data based on scale factor
 		std::vector<glm::vec3> vertex_data(boxVertCount);
 		for (nap::uint i = 0; i < boxVertCount; i++)
-			vertex_data[i] = unitBox[i] * mSize;
+			vertex_data[i] = (unitBox[i] * mSize) + mPosition;
 
 		// Set data
 		position_attribute.setData(vertex_data);

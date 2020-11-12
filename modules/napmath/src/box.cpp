@@ -77,5 +77,16 @@ namespace nap
 			return in_x && in_y && in_z;
 		}
 
+
+		glm::vec3 Box::getDimensions() const
+		{
+			return { getWidth(), getHeight(), getDepth() };
+		}
+
+
+		glm::vec3 Box::getCenter() const
+		{
+			return ((mMaxCoordinates - mMinCoordinates) / 2.0f) + mMinCoordinates;
+		}
 	}
 }
