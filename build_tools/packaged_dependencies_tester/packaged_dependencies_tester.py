@@ -69,25 +69,57 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'i965_dri',
     'iris_dri',
     r'ld-[0-9]+\.[0-9]+',
+    'libFLAC',
+    'libGL',
+    'libGLX',
+    'libGLX_mesa',
+    'libGLX_nvidia',
+    'libGLdispatch',
+    'libLLVM-[0-9]+',
+    'libOpenCL',
+    'libVkLayer_MESA_device_select',
+    'libX11',
+    'libX11-xcb',
+    'libXau',
+    'libXcursor',
+    'libXdamage',
+    'libXdmcp',
+    'libXext',
+    'libXfixes',
+    'libXi',
+    'libXrender',
+    'libXxf86vm',
+    'libaom',
     'libasound',
+    'libasound_module_pcm_a52',
     'libasound_module_pcm_jack',
     'libasound_module_pcm_oss',
     'libasound_module_pcm_pulse',
     'libasound_module_pcm_upmix',
     'libasound_module_pcm_usb_stream',
     'libasound_module_pcm_vdownmix',
+    'libasound_module_rate_lavrate',
     'libasound_module_rate_samplerate',
     'libasound_module_rate_speexrate',
     'libasyncns',
+    'libavcodec',
+    'libavresample',
+    'libavutil',
+    'libblkid',
     'libbrotlicommon',
     'libbrotlidec',
     'libbsd',
     r'libc-[0-9]+\.[0-9]+',
+    'libcairo',
+    'libcairo-gobject',
+    'libcodec2',
     'libcom_err',
     'libcuda',
+    'libdatrie',
+    'libdav1d',
+    r'libdb-[0-9]+\.[0-9]+',
     'libdbus-1',
     r'libdl-[0-9]+\.[0-9]+',
-    r'libdb-[0-9]+\.[0-9]+',
     'libdrm',
     'libdrm_amdgpu',
     'libdrm_intel',
@@ -97,173 +129,123 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     r'libelf-[0-9]+\.[0-9]+',
     'libexpat',
     'libffi',
-    'libFLAC',
+    'libfontconfig',
+    'libfreetype',
+    'libfribidi',
     'libgcc_s',
     'libgcrypt',
-    'libGL',
+    r'libgdk_pixbuf-[0-9]+\.[0-9]+',
+    r'libgio-[0-9]+\.[0-9]+',
     'libglapi',
-    'libGLX',
-    'libGLX_mesa',
-    'libGLX_nvidia',
-    'libGLdispatch',
+    'libglib-2.0',
+    r'libglib-[0-9]+\.[0-9]+',
+    r'libgmodule-[0-9]+\.[0-9]+',
+    r'libgobject-[0-9]+\.[0-9]+',
+    'libgomp',
     'libgpg-error',
+    'libgraphite2',
+    'libgsm',
     'libgssapi_krb5',
+    r'libgthread-[0-9]+\.[0-9]+',
+    'libharfbuzz',
+    'libicudata',
+    'libicuuc',
     'libjack',
-    'libkeyutils',
     'libk5crypto',
+    'libkeyutils',
     'libkrb5',
     'libkrb5support',
-    r'libLLVM-[0-9]+',
     'liblz4',
     'liblzma',
     r'libm-[0-9]+\.[0-9]+',
+    'libmfx',
+    'libmount',
+    'libmp3lame',
     r'libmvec-[0-9]+\.[0-9]+',
+    'libnsl',
     r'libnsl-[0-9]+\.[0-9]+',
     r'libnss_compat-[0-9]+\.[0-9]+',
     r'libnss_files-[0-9]+\.[0-9]+',
-    r'libnss_nis-[0-9]+\.[0-9]+',
-    'libnsl',
     'libnss_nis',
-    'nouveau_dri',
+    r'libnss_nis-[0-9]+\.[0-9]+',
+    'libnuma',
     'libnvidia-compiler',
     'libnvidia-glcore',
     'libnvidia-glvkspirv',
     'libnvidia-opencl',
     'libnvidia-tls',
     'libogg',
-    'libOpenCL',
-    'libpciaccess',
-    r'libpthread-[0-9]+\.[0-9]+',
-    'libpulse',
-    r'libpulsecommon-[0-9]+\.[0-9]+',
-    r'libpython[0-9]+\.[0-9]+m',
-    r'libresolv-[0-9]+\.[0-9]+',
-    r'librt-[0-9]+\.[0-9]+',
-    'libsamplerate',
-    'libsndfile',
-    'libsensors',
-    r'libstdc\+\+',
-    'libsystemd',
-    'libtinfo',
-    'libtirpc',
-    'libudev',
-    r'libusb-[0-9]+\.[0-9]+',
-    r'libutil-[0-9]+\.[0-9]+',
-    'libvorbis',
-    'libvorbisenc',
-    'libvulkan_intel',
-    'libvulkan_radeon',
-    'libVkLayer_MESA_device_select',
-    'libwayland-client',
-    'libwrap',
-    'libX11',
-    'libX11-xcb',
-    'libXau',
-    'libxcb',
-    'libxcb-dri2',
-    'libxcb-dri3',
-    'libxcb-glx',
-    'libxcb-present',
-    'libxcb-sync',
-    'libxcb-randr',
-    'libXdamage',
-    'libXdmcp',
-    'libXext',
-    'libXfixes',
-    'libxshmfence',
-    'libXxf86vm',
-    'libz',
-    'libz3',
-    'libzstd',
-]
-
-# Testing on Debian is an efficiency necessity in the COVID19 moment
-LINUX_EXTRA_DEBIAN = [
-    'libaom',
-    'libasound_module_pcm_a52',
-    'libasound_module_rate_lavrate',
-    'libavcodec',
-    'libavresample',
-    'libavutil',
-    'libblkid',
-    'libcairo',
-    'libcairo-gobject',
-    'libcodec2',
-    'libdatrie',
-    'libdav1d',
-    'libfontconfig',
-    'libfribidi',
-    r'libgdk_pixbuf-[0-9]+\.[0-9]+',
-    r'libgio-[0-9]+\.[0-9]+',
-    'libglib-2.0',
-    r'libgmodule-[0-9]+\.[0-9]+',
-    r'libgobject-[0-9]+\.[0-9]+',
-    'libgomp',
-    'libgraphite2',
-    'libgsm',
-    'libharfbuzz',
-    'libicudata',
-    'libicuuc',
-    'libmount',
-    'libmfx',
-    'libmp3lame',
-    'libnuma',
     'libopenjp2',
     'libopus',
     r'libpango-[0-9]+\.[0-9]+',
     r'libpangocairo-[0-9]+\.[0-9]+',
     r'libpangoft2-[0-9]+\.[0-9]+',
+    'libpciaccess',
     'libpcre',
     'libpcre2-8',
     'libpixman-1',
     'libpng16',
+    r'libpthread-[0-9]+\.[0-9]+',
+    'libpulse',
+    r'libpulsecommon-[0-9]+\.[0-9]+',
+    r'libpython[0-9]+\.[0-9]+m',
+    r'libresolv-[0-9]+\.[0-9]+',
     'librsvg-2',
+    r'librt-[0-9]+\.[0-9]+',
+    'libsamplerate',
     'libselinux',
+    'libsensors',
     'libshine',
     'libsnappy',
+    'libsndfile',
     'libsoxr',
     'libspeex',
+    r'libstdc\+\+',
     'libswresample',
+    'libsystemd',
     'libthai',
     'libtheoradec',
     'libtheoraenc',
+    'libtinfo',
+    'libtirpc',
     'libtwolame',
-    'libuuid',
-    'libva-drm',
-    'libva-x11',
-    'libva',
-    'libvdpau',
-    'libvpx',
-    'libwavpack',
-    'libwebp',
-    'libwebpmux',
-    'libx264',
-    'libx265',
-    'libxcb-render',
-    'libxcb-shm',
-    'libxml2',
-    'libXrender',
-    'libxvidcore',
-    'libzstd',
-    'libzvbi'
-]
-
-# Extra Linux system libs we accept being used, for Napkin only
-LINUX_NAPKIN_ACCEPTED_SYSTEM_LIBS = [
-    'libfontconfig',
-    'libfreetype',
-    r'libglib-[0-9]+\.[0-9]+',
-    r'libgthread-[0-9]+\.[0-9]+',
-    'libpcre',
-    'libpng16',
     'libudev',
     r'libusb-[0-9]+\.[0-9]+',
+    r'libutil-[0-9]+\.[0-9]+',
     'libuuid',
-    'libX11-xcb',
-    'libXcursor',
-    'libXfixes',
-    'libXi',
-    'libXrender'
+    'libva',
+    'libva-drm',
+    'libva-x11',
+    'libvdpau',
+    'libvorbis',
+    'libvorbisenc',
+    'libvpx',
+    'libvulkan_intel',
+    'libvulkan_radeon',
+    'libwavpack',
+    'libwayland-client',
+    'libwebp',
+    'libwebpmux',
+    'libwrap',
+    'libx264',
+    'libx265',
+    'libxcb',
+    'libxcb-dri2',
+    'libxcb-dri3',
+    'libxcb-glx',
+    'libxcb-present',
+    'libxcb-randr',
+    'libxcb-render',
+    'libxcb-shm',
+    'libxcb-sync',
+    'libxml2',
+    'libxshmfence',
+    'libxvidcore',
+    'libz',
+    'libz3',
+    'libzstd',
+    'libzvbi',
+    'nouveau_dri'
 ]
 
 # List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
@@ -359,23 +341,6 @@ def is_windows():
 
     return sys.platform.startswith('win')
 
-def is_debian():
-    """Is this Debian Linux
-
-    Returns
-    -------
-    bool
-        Success
-    """
-
-    if is_linux():
-        out = check_output('lsb_release -is', shell=True).strip()
-        if type(out) is bytes:
-            out = out.decode('utf-8')
-        return out == 'Debian'
-
-    return False
-
 def is_linux_root():
     """Are we running as a root account on Linux?
 
@@ -463,7 +428,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
 
     if is_linux():
         if p.returncode is None:
-            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path, testing_napkin)
+            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
         else:
             unexpected_libraries = []
 
@@ -489,7 +454,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
                 stderr = stderr.decode('utf8')    
                 
             if sys.platform == 'darwin':
-                unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
+                unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
             elif sys.platform == 'win32':
                 unexpected_libraries = []            
             return (False, stdout, stderr, unexpected_libraries, p.returncode)
@@ -518,13 +483,13 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         stderr = stderr.decode('utf8')    
 
     if sys.platform == 'darwin':
-        unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path, testing_napkin)
+        unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
     elif sys.platform == 'win32':
         unexpected_libraries = []
 
     return (success, stdout, stderr, unexpected_libraries, p.returncode)
 
-def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path, testing_napkin):
+def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path):
     """Check whether the specified NAP process is using unexpected libraries on Linux
 
     Parameters
@@ -535,8 +500,6 @@ def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path, testi
         Absolute path to directory which we're happy to see any shared libraries source from. 
         Typically NAP framework for build programs running from framework, or the packaged app for 
         single apps.
-    testing_napkin : bool
-        Whether testing Napkin
 
     Returns
     -------
@@ -561,12 +524,12 @@ def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path, testi
         if chunks[3] == 'mem' and chunks[4] == 'REG':
             path = ' '.join(chunks[8:])
             if linux_file_is_shared_lib(path):
-                if not shared_lib_accepted(path, accepted_shared_libs_path, testing_napkin):
+                if not shared_lib_accepted(path, accepted_shared_libs_path):
                     unexpected_libs.append(path)
 
     return unexpected_libs
 
-def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path, testing_napkin):
+def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path):
     """Check whether the a NAP process has used unexpected libraries on macOS
 
     Parameters
@@ -577,8 +540,6 @@ def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path, te
         Absolute path to directory which we're happy to see any shared libraries source from. 
         Typically NAP framework for build programs running from framework, or the packaged app for 
         single apps.
-    testing_napkin : bool
-        Whether testing Napkin
 
     Returns
     -------
@@ -597,7 +558,7 @@ def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path, te
             libs_abs_path = os.path.abspath(lib)
 
             # Check if library is accepted
-            if not shared_lib_accepted(libs_abs_path, accepted_shared_libs_path, testing_napkin):
+            if not shared_lib_accepted(libs_abs_path, accepted_shared_libs_path):
                 unexpected_libs.append(libs_abs_path) 
 
     return unexpected_libs
@@ -629,7 +590,7 @@ def linux_file_is_shared_lib(file_path):
     chunks = stdout.split(':')[1].split(',')
     return chunks[0].strip().startswith('ELF ')
 
-def shared_lib_accepted(file_path, accepted_shared_libs_path, testing_napkin):
+def shared_lib_accepted(file_path, accepted_shared_libs_path):
     """Check whether a shared library is expected for the executed NAP process
 
     Parameters
@@ -640,8 +601,6 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path, testing_napkin):
         Absolute path to directory which we're happy to see any shared libraries source from. 
         Typically NAP framework for build programs running from framework, or the packaged app for 
         single apps.
-    testing_napkin : bool
-        Whether testing Napkin
 
     Returns
     -------
@@ -674,7 +633,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path, testing_napkin):
                 short_lib_name = filename_parts[0]
 
                 # Verify against system library list
-                accepted = linux_system_library_accepted(short_lib_name, testing_napkin)
+                accepted = linux_system_library_accepted(short_lib_name)
                 break
     else:
         for system_path in MACOS_ACCEPTED_SYSTEM_LIB_PATHS:
@@ -695,7 +654,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path, testing_napkin):
         print("Error: library found outside of system path: %s" % file_path)
         return False
 
-def linux_system_library_accepted(short_lib_name, testing_napkin):
+def linux_system_library_accepted(short_lib_name):
     """Check whether a single shared system library is expected for the executed NAP process on 
        Linux
 
@@ -703,8 +662,6 @@ def linux_system_library_accepted(short_lib_name, testing_napkin):
     ----------
     short_lib_name : str
         The library name (with .so and everything after stripped)
-    testing_napkin : bool
-        Whether testing Napkin
 
     Returns
     -------
@@ -714,10 +671,6 @@ def linux_system_library_accepted(short_lib_name, testing_napkin):
 
     # Build list of accepted library names
     all_accepted_libs = LINUX_BASE_ACCEPTED_SYSTEM_LIBS
-    if is_debian():
-        all_accepted_libs.extend(LINUX_EXTRA_DEBIAN)
-    if testing_napkin:
-        all_accepted_libs.extend(LINUX_NAPKIN_ACCEPTED_SYSTEM_LIBS)
     
     # Verify the library name against the list
     for check_lib in all_accepted_libs:
