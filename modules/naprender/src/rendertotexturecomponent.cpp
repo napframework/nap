@@ -62,6 +62,9 @@ namespace nap
 
 	bool RenderToTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Get resource
 		RenderToTextureComponent* resource = getComponent<RenderToTextureComponent>();
 

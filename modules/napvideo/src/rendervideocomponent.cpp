@@ -57,6 +57,9 @@ namespace nap
 
 	bool RenderVideoComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Get resource
 		RenderVideoComponent* resource = getComponent<RenderVideoComponent>();
 

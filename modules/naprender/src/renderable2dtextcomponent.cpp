@@ -33,6 +33,9 @@ namespace nap
 {
 	bool Renderable2DTextComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableTextComponentInstance::init(errorState))
+			return false;
+
 		// Init base class (setting up the plane glyph plane etc.)
 		if (!setup(errorState))
 			return false;

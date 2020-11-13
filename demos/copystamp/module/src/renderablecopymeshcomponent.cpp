@@ -56,6 +56,9 @@ namespace nap
 	 */
 	bool RenderableCopyMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Get resource
 		RenderableCopyMeshComponent* resource = getComponent<RenderableCopyMeshComponent>();
 
