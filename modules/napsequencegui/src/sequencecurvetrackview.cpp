@@ -1870,6 +1870,34 @@ namespace nap
 		ImDrawList* drawList,
 		bool drawStartValue)
 	{
+		bool draw_selection_background = false;
+		if( mState.mAction->isAction<HoveringSegmentValue>())
+		{
+			auto* action = mState.mAction->getDerived<HoveringSegmentValue>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<EditingCurveSegment>() )
+		{
+			auto* action = mState.mAction->getDerived<EditingCurveSegment>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<HoveringSegment>() )
+		{
+			auto* action = mState.mAction->getDerived<HoveringSegment>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<DraggingSegment>() )
+		{
+			auto* action = mState.mAction->getDerived<DraggingSegment>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}else if( mState.mAction->isAction<DraggingSegmentValue>() )
+		{
+			auto* action = mState.mAction->getDerived<DraggingSegmentValue>();
+			draw_selection_background = action->mSegmentID == segment.mID;
+		}
+
+		if( draw_selection_background )
+		{
+			drawList->AddRectFilled( { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,0.25f)));
+		}
+
 		// curve
 		drawCurves<T>(
 			track,
