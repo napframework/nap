@@ -86,25 +86,25 @@ namespace nap
 		SequenceTrackSegment* return_ptr = nullptr;
 
 		performEditAction([this, trackID, time, &return_ptr]() mutable
-						  {
-							// create new segment & set parameters
-							std::unique_ptr<SequenceTrackSegmentEvent<T>> new_segment = std::make_unique<SequenceTrackSegmentEvent<T>>();
-							new_segment->mStartTime = time;
-							new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
-							new_segment->mDuration = 0.0;
+		{
+			// create new segment & set parameters
+			std::unique_ptr<SequenceTrackSegmentEvent<T>> new_segment = std::make_unique<SequenceTrackSegmentEvent<T>>();
+			new_segment->mStartTime = time;
+			new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+			new_segment->mDuration = 0.0;
 
-							//
-							SequenceTrack* track = findTrack(trackID);
-							assert(track != nullptr); // track not found
+			//
+			SequenceTrack* track = findTrack(trackID);
+			assert(track != nullptr); // track not found
 
-							if (track != nullptr)
-							{
-								track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentEvent<T>>(new_segment.get()));
+			if (track != nullptr)
+			{
+				track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentEvent<T>>(new_segment.get()));
 
-								return_ptr = new_segment.get();
-								getPlayerOwnedObjects().emplace_back(std::move(new_segment));
-							}
-						  });
+				return_ptr = new_segment.get();
+				getPlayerOwnedObjects().emplace_back(std::move(new_segment));
+			}
+		});
 
 		return return_ptr;
 	}
@@ -114,26 +114,26 @@ namespace nap
 	void SequenceControllerEvent::editEventSegment(const std::string& trackID, const std::string& segmentID, const T& value)
 	{
 		performEditAction([this, trackID, segmentID, value]()
-						  {
-							SequenceTrack* track = findTrack(trackID);
-							assert(track != nullptr); // track not found
+		{
+			SequenceTrack* track = findTrack(trackID);
+			assert(track != nullptr); // track not found
 
-							if (track != nullptr)
-							{
-								SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-								assert(segment != nullptr); // segment not found
+			if (track != nullptr)
+			{
+				SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+				assert(segment != nullptr); // segment not found
 
-								if (segment != nullptr)
-								{
-									SequenceTrackSegmentEvent<T>* event_segment = dynamic_cast<SequenceTrackSegmentEvent<T>*>(segment);
-									assert(event_segment != nullptr); // type mismatch
+				if (segment != nullptr)
+				{
+					SequenceTrackSegmentEvent<T>* event_segment = dynamic_cast<SequenceTrackSegmentEvent<T>*>(segment);
+					assert(event_segment != nullptr); // type mismatch
 
-									if (event_segment != nullptr)
-									{
-										event_segment->mValue = value;
-									}
-								}
-							}
-						  });
+					if (event_segment != nullptr)
+					{
+						event_segment->mValue = value;
+					}
+				}
+			}
+		});
 	}
 }
