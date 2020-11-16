@@ -13,12 +13,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	class SequenceEventTrackView;
 
-	using SequenceEventTrackViewHandlePopupFunc 		= bool(SequenceEventTrackView::*)();
-	using SequenceEventTrackViewEditActionFunc 			= void(SequenceEventTrackView::*)(const SequenceTrackSegmentEventBase*, const std::string&, const std::string&);
-	using SequenceEventTrackViewHandlePopupContentFunc 	= void(*)(SequenceGUIActions::Action&);
-	using SequenceEventTrackViewDrawEventFunc			= void(*)(const SequenceTrackSegment& segment, ImDrawList*, const ImVec2&, const float);
-	using SequenceEventTrackViewInsertSegmentFunc		= void(*)(SequenceControllerEvent&, std::string&, double);
-
 	class NAPAPI SequenceEventTrackSegmentViewBase
 	{
 		RTTI_ENABLE()
