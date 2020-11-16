@@ -299,7 +299,7 @@ namespace nap
 
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditEventSegmentPopup<T>>();
 			ImGui::SetNextWindowPos(action->mWindowPos);
-			
+
 			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingEventSegment<T>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue, action->mStartTime);
 		}
 

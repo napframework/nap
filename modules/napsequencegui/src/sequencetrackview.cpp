@@ -78,7 +78,7 @@ namespace nap
 	}
 
 
-	void SequenceTrackView::showInspector(const SequenceTrack& track, bool& deleteTrack)
+	void SequenceTrackView::showInspector(const SequenceTrack& track, bool& deleteTrack, bool& moveUp, bool& moveDown)
 	{
 		// begin inspector
 		std::ostringstream inspector_id_stream;
@@ -142,6 +142,21 @@ namespace nap
 				deleteTrack = true;
 			}
 
+			// show up & down buttons
+			ImGui::Spacing();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+
+			if(ImGui::SmallButton("Up"))
+			{
+				moveUp = true;
+			}
+			ImGui::SameLine();
+			if(ImGui::SmallButton("Down"))
+			{
+				moveDown = true;
+			}
+
 			// pop scale
 			ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
 		}
@@ -154,8 +169,10 @@ namespace nap
 	void SequenceTrackView::show(const SequenceTrack& track)
 	{
 		bool delete_track = false;
+		bool move_track_up = false;
+		bool move_track_down = false;
 
-		showInspector(track, delete_track);
+		showInspector(track, delete_track, move_track_up, move_track_down);
 
 		showTrack(track);
 
@@ -166,6 +183,28 @@ namespace nap
 			if(controller!= nullptr)
 			{
 				controller->deleteTrack(track.mID);
+				mState.mDirty = true;
+			}
+		}
+
+		if(move_track_up)
+		{
+			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
+			assert(controller!= nullptr); // controller not found
+			if(controller!= nullptr)
+			{
+				controller->moveTrackUp(track.mID);
+				mState.mDirty = true;
+			}
+		}
+
+		if(move_track_down)
+		{
+			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
+			assert(controller!= nullptr); // controller not found
+			if(controller!= nullptr)
+			{
+				controller->moveTrackDown(track.mID);
 				mState.mDirty = true;
 			}
 		}

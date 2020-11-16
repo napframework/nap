@@ -189,6 +189,60 @@ namespace nap
 	}
 
 
+	void SequenceController::moveTrackUp(const std::string& trackID)
+	{
+		performEditAction([this, trackID]()
+		{
+			//
+			Sequence& sequence = mPlayer.getSequence();
+
+			int index = 0;
+			for (const auto& track : sequence.mTracks)
+			{
+				if (track->mID == trackID)
+				{
+					if( index > 0 )
+					{
+						auto track = sequence.mTracks[index];
+						sequence.mTracks.erase(sequence.mTracks.begin() + index);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index - 1 ), track);
+					}
+
+					break;
+				}
+				index++;
+			}
+		});
+	}
+
+
+	void SequenceController::moveTrackDown(const std::string& trackID)
+	{
+		performEditAction([this, trackID]()
+		{
+			//
+			Sequence& sequence = mPlayer.getSequence();
+
+			int index = 0;
+			for (const auto& track : sequence.mTracks)
+			{
+				if (track->mID == trackID)
+				{
+					if( index < sequence.mTracks.size() - 1 )
+					{
+						auto track = sequence.mTracks[index];
+						sequence.mTracks.erase(sequence.mTracks.begin() + index);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index + 1 ), track);
+					}
+
+					break;
+				}
+				index++;
+			}
+		});
+	}
+
+
 	void SequenceController::deleteObjectFromSequencePlayer(const std::string& id)
 	{
 		if (mPlayer.mReadObjectIDs.find(id) != mPlayer.mReadObjectIDs.end())

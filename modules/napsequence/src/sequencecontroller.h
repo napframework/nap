@@ -53,6 +53,18 @@ namespace nap
 		void deleteTrack(const std::string& deleteTrackID);
 
 		/**
+		 * moves track up in the array of tracks
+		 * @param trackID the id of the track that needs to be moved
+		 */
+		void moveTrackUp(const std::string& trackID);
+
+		/**
+		 * moves track up in the array of tracks
+		 * @param trackID the id of the track that needs to be moved
+		 */
+		void moveTrackDown(const std::string& trackID);
+
+		/**
 		 * inserts track that corresponds to type of controller, must be overloaded
 		 * @param type the type of track
 		 */
