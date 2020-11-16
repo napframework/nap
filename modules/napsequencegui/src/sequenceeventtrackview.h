@@ -19,11 +19,48 @@ namespace nap
 	using SequenceEventTrackViewDrawEventFunc			= void(*)(const SequenceTrackSegment& segment, ImDrawList*, const ImVec2&, const float);
 	using SequenceEventTrackViewInsertSegmentFunc		= void(*)(SequenceControllerEvent&, std::string&, double);
 
+	class NAPAPI SequenceEventTrackSegmentViewBase
+	{
+		RTTI_ENABLE()
+	public:
+		SequenceEventTrackSegmentViewBase(){ }
+		virtual ~SequenceEventTrackSegmentViewBase() = default;
+
+		virtual void handleEditPopupContent(SequenceGUIActions::Action& action) = 0;
+
+		virtual void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x) = 0;
+
+		virtual void insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time) = 0;
+
+		virtual std::unique_ptr<SequenceGUIActions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
+	protected:
+	};
+
+	template<typename T>
+	class NAPAPI SequenceEventTrackSegmentView : public SequenceEventTrackSegmentViewBase
+	{
+		RTTI_ENABLE(SequenceEventTrackSegmentViewBase)
+	public:
+		SequenceEventTrackSegmentView() : SequenceEventTrackSegmentViewBase(){}
+
+		void handleEditPopupContent(SequenceGUIActions::Action& action) override;
+
+		void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x) override;
+
+		void insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time) override;
+
+		std::unique_ptr<SequenceGUIActions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) override;
+	protected:
+	};
+
+
 	/**
 	 * SequenceEventTrackView is a view for event tracks
 	 */
 	class NAPAPI SequenceEventTrackView : public SequenceTrackView
 	{
+		friend class SequenceEventTrackSegmentViewBase;
+
 	public:
 		/**
 		 * Constructor
@@ -38,23 +75,7 @@ namespace nap
 		virtual bool handlePopups() override;
 
 		template<typename T>
-		static void registerEventType(SequenceEventTrackViewHandlePopupFunc,
-									  SequenceEventTrackViewEditActionFunc,
-									  SequenceEventTrackViewHandlePopupContentFunc,
-									  SequenceEventTrackViewDrawEventFunc,
-									  SequenceEventTrackViewInsertSegmentFunc);
-
-		template <typename T>
-		static SequenceEventTrackViewHandlePopupFunc getHandlePopupFuncPtr()
-		{
-			return &SequenceEventTrackView::handleEditEventSegmentPopup<T>;
-		}
-
-		template <typename T>
-		static SequenceEventTrackViewEditActionFunc getCreateEditActionFuncPtr()
-		{
-			return &SequenceEventTrackView::createEditAction<T>;
-		}
+		static bool registerSegmentView();
 	protected:
 		/**
 		 * shows inspector content
@@ -79,17 +100,6 @@ namespace nap
 		 */
 		template<typename T>
 		bool NAPAPI handleEditEventSegmentPopup();
-
-		/**
-		 * draws event track
-		 * @param track reference to track
-		 * @param cursorPos imgui cursorposition
-		 * @param marginBetweenTracks y margin between tracks
-		 * @param sequencePlayer reference to sequence player
-		 * @param deleteTrack set to true when delete track button is pressed
-		 * @param deleteTrackID the id of track that needs to be deleted
-		 */
-		void drawEventTrack(const SequenceTrack &track, ImVec2 &cursorPos, const float marginBetweenTracks, const SequencePlayer &sequencePlayer, bool &deleteTrack, std::string &deleteTrackID);
 
 		/**
 		 * draws segment handler
@@ -117,19 +127,14 @@ namespace nap
 		template<typename T>
 		void createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID);
 
-	protected:
-		static std::unordered_map<rttr::type, SequenceEventTrackViewHandlePopupContentFunc>& getHandlePopupContentMap();
+		template<typename T>
+		static bool registerPopupHandler();
+	private:
+		static std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& getSegmentViews();
 
-		static std::unordered_map<rttr::type, SequenceEventTrackViewHandlePopupFunc>& getHandlePopupMap();
+		static std::unordered_map<rttr::type, bool (SequenceEventTrackView::*)()>& getEditEventHandlers();
 
-		// static map of edit action function pointers
-		static std::unordered_map<rttr::type, SequenceEventTrackViewEditActionFunc>& getEditActionMap();
-
-		static std::unordered_map<rttr::type, SequenceEventTrackViewDrawEventFunc>& getDrawEventsMap();
-
-		static std::unordered_map<rttr::type, SequenceEventTrackViewInsertSegmentFunc>& SequenceEventTrackView::getInsertSegmentMap();
-
-		static std::vector<rttr::type>& getEventTypesMap();
+		static std::vector<rttr::type>& getEventTypesVector();
 	};
 
 	namespace SequenceGUIActions
@@ -138,10 +143,10 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenInsertEventSegmentPopup(std::string trackID, double time)
+			OpenInsertEventSegmentPopup(const std::string& trackID, double time)
 				: mTrackID(trackID), mTime(time) {}
 
-			std::string mTrackID;
+			const std::string& mTrackID;
 			double mTime;
 		};
 
@@ -149,7 +154,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			InsertingEventSegment(std::string trackID, double time)
+			InsertingEventSegment(const std::string& trackID, double time)
 				: mTrackID(trackID), mTime(time) {}
 
 			std::string mTrackID;
@@ -162,7 +167,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenEditEventSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
+			OpenEditEventSegmentPopup(const std::string& trackID, const std::string& segmentID, ImVec2 windowPos, T value, double startTime)
 				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
 			std::string mTrackID;
@@ -177,7 +182,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			EditingEventSegment(std::string trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
+			EditingEventSegment(const std::string& trackID, const std::string& segmentID, ImVec2 windowPos, T value, double startTime)
 				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
 			std::string mTrackID;
@@ -210,7 +215,7 @@ namespace nap
 		// handle insert segment popup
 		if (mState.mAction->isAction<SequenceGUIActions::EditingEventSegment<T>>())
 		{
-			if (ImGui::BeginPopup("Edit Event"))
+			if (ImGui::BeginPopup("Edit Event", ImGuiWindowFlags_NoMove))
 			{
 				handled = true;
 
@@ -218,12 +223,13 @@ namespace nap
 
 				ImGui::SetWindowPos(action->mWindowPos);
 
-				auto& handle_popups_map = getHandlePopupContentMap();
-				auto it = handle_popups_map.find(RTTI_OF(T));
-				assert(it!= handle_popups_map.end()); // type not found
-				if( it != handle_popups_map.end())
+				//
+				auto& segment_views = getSegmentViews();
+				auto it = segment_views.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
+				assert(it!= segment_views.end()); // type not found
+				if( it != segment_views.end())
 				{
-					it->second(*action);
+					it->second->handleEditPopupContent(*action);
 				}
 
 				// time
@@ -289,24 +295,53 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceEventTrackView::createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
+	bool SequenceEventTrackView::registerSegmentView()
 	{
-		const SequenceTrackSegmentEvent<T> *event = static_cast<const SequenceTrackSegmentEvent<T>*>(segment);
-		mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
+		// register type of view
+		auto& types = getEventTypesVector();
+		assert(std::find(types.begin(), types.begin() + types.size(), RTTI_OF(SequenceTrackSegmentEvent<T>)) == types.end()); // type already added
+		types.emplace_back(RTTI_OF(SequenceTrackSegmentEvent<T>));
+
+		// register view
+		auto& segment_views = getSegmentViews();
+
+		auto segment_it = segment_views.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
+		assert(segment_it==segment_views.end()); // type already registered
+		if(segment_it==segment_views.end())
+		{
+			segment_views.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), std::make_unique<SequenceEventTrackSegmentView<T>>());
+		}
+
+		// register popup handler
+		auto& handle_edit_events = getEditEventHandlers();
+
+		auto event_it = handle_edit_events.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
+		assert(event_it== handle_edit_events.end()); // type already registered
+		if(event_it== handle_edit_events.end())
+		{
+			handle_edit_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
+		}
+
+		return true;
 	}
 
+
 	template<typename T>
-	void SequenceEventTrackView::registerEventType(SequenceEventTrackViewHandlePopupFunc handlePopupFunc,
-												   SequenceEventTrackViewEditActionFunc editActionFunc,
-												   SequenceEventTrackViewHandlePopupContentFunc handlePopupContentFunc,
-												   SequenceEventTrackViewDrawEventFunc drawEventFunc,
-												   SequenceEventTrackViewInsertSegmentFunc insertSegmentFunc)
+	bool SequenceEventTrackView::registerPopupHandler()
 	{
-		getEventTypesMap().emplace_back(RTTI_OF(SequenceTrackSegmentEvent<T>));
-		getHandlePopupMap().insert({RTTI_OF(SequenceTrackSegmentEvent<T>), handlePopupFunc});
-		getEditActionMap().insert({RTTI_OF(SequenceTrackSegmentEvent<T>), editActionFunc});
-		getHandlePopupContentMap().insert({RTTI_OF(T), handlePopupContentFunc});
-		getDrawEventsMap().insert({RTTI_OF(SequenceTrackSegmentEvent<T>), drawEventFunc});
-		getInsertSegmentMap().insert({RTTI_OF(SequenceTrackSegmentEvent<T>), insertSegmentFunc});
+		auto& segment_views = getSegmentViews();
+
+		auto it = segment_views.find(RTTI_OF(T));
+		assert(it==segment_views.end()); // type already registered
+		if(it==segment_views.end())
+		{
+			segment_views.emplace(RTTI_OF(T), std::make_unique<SequenceEventTrackSegmentView<T>>());
+			return true;
+		}
+
+		return false;
 	}
+
+
+	//static std::unordered_map<rttr::type, bool(SequenceEventTrackView::*)()> handlePopupsMap
 }
