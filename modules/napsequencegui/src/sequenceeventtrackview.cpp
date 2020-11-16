@@ -512,21 +512,6 @@ namespace nap
 	}
 
 
-	template<>
-	void SequenceEventTrackSegmentView<std::string>::insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time)
-	{
-		controller.insertEventSegment<SequenceTrackSegmentEvent<std::string>>(trackID, time);
-	}
-
-
-	template<>
-	std::unique_ptr<Action> SequenceEventTrackSegmentView<std::string>::createEditAction( const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
-	{
-		const auto *event = static_cast<const SequenceTrackSegmentEvent<std::string>*>(segment);
-		return SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<std::string>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
-	}
-
-
 	static bool register_segment_view_string = SequenceEventTrackView::registerSegmentView<std::string>();
 
 
@@ -557,21 +542,6 @@ namespace nap
 			{ topLeft.x + x + 5, topLeft.y + 5 },
 			guicolors::red,
 			string_stream.str().c_str());
-	}
-
-
-	template<>
-	void SequenceEventTrackSegmentView<float>::insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time)
-	{
-		controller.insertEventSegment<SequenceTrackSegmentEvent<float>>(trackID, time);
-	}
-
-
-	template<>
-	std::unique_ptr<Action> SequenceEventTrackSegmentView<float>::createEditAction( const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
-	{
-		const auto *event = static_cast<const SequenceTrackSegmentEvent<float>*>(segment);
-		return SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<float>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
 	}
 
 
@@ -608,21 +578,6 @@ namespace nap
 	}
 
 
-	template<>
-	void SequenceEventTrackSegmentView<int>::insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time)
-	{
-		controller.insertEventSegment<SequenceTrackSegmentEvent<int>>(trackID, time);
-	}
-
-
-	template<>
-	std::unique_ptr<Action> SequenceEventTrackSegmentView<int>::createEditAction( const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
-	{
-		const auto *event = static_cast<const SequenceTrackSegmentEvent<int>*>(segment);
-		return SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<int>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
-	}
-
-
 	static bool register_segment_view_int = SequenceEventTrackView::registerSegmentView<int>();
 
 
@@ -650,21 +605,6 @@ namespace nap
 		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ")";
 
 		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,string_stream.str().c_str());
-	}
-
-
-	template<>
-	void SequenceEventTrackSegmentView<glm::vec2>::insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time)
-	{
-		controller.insertEventSegment<SequenceTrackSegmentEvent<glm::vec2>>(trackID, time);
-	}
-
-
-	template<>
-	std::unique_ptr<Action> SequenceEventTrackSegmentView<glm::vec2>::createEditAction( const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
-	{
-		const auto *event = static_cast<const SequenceTrackSegmentEvent<glm::vec2>*>(segment);
-		return SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<glm::vec2>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
 	}
 
 
@@ -696,21 +636,6 @@ namespace nap
 
 		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,
 						  string_stream.str().c_str());
-	}
-
-
-	template<>
-	void SequenceEventTrackSegmentView<glm::vec3>::insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time)
-	{
-		controller.insertEventSegment<SequenceTrackSegmentEvent<glm::vec3>>(trackID, time);
-	}
-
-
-	template<>
-	std::unique_ptr<Action> SequenceEventTrackSegmentView<glm::vec3>::createEditAction( const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
-	{
-		const auto *event = static_cast<const SequenceTrackSegmentEvent<glm::vec3>*>(segment);
-		return SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<glm::vec3>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
 	}
 
 
