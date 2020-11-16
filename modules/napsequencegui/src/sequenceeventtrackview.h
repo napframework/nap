@@ -298,19 +298,19 @@ namespace nap
 			ImGui::OpenPopup("Edit Event");
 
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditEventSegmentPopup<T>>();
+			ImGui::SetNextWindowPos(action->mWindowPos);
+			
 			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingEventSegment<T>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue, action->mStartTime);
 		}
 
 		// handle insert segment popup
 		if (mState.mAction->isAction<SequenceGUIActions::EditingEventSegment<T>>())
 		{
-			if (ImGui::BeginPopup("Edit Event", ImGuiWindowFlags_NoMove))
+			auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingEventSegment<T>>();
+
+			if (ImGui::BeginPopup("Edit Event"))
 			{
 				handled = true;
-
-				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingEventSegment<T>>();
-
-				ImGui::SetWindowPos(action->mWindowPos);
 
 				//
 				auto& segment_views = getSegmentViews();
@@ -369,6 +369,8 @@ namespace nap
 					ImGui::CloseCurrentPopup();
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 				}
+
+				action->mWindowPos = ImGui::GetWindowPos();
 
 				ImGui::EndPopup();
 			}
