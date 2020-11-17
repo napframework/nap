@@ -64,6 +64,7 @@ namespace nap
 
 	bool SequencePlayer::start(utility::ErrorState& errorState)
 	{
+
 		// launch player thread
 		mUpdateThreadRunning = true;
 		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
@@ -107,6 +108,9 @@ namespace nap
 			mIsPlaying = false;
 			mIsPaused  = false;
 		}
+
+		lock.unlock();
+		sPlayStateChanged(*this, isPlaying);
 	}
 
 
@@ -114,6 +118,9 @@ namespace nap
 	{
 		auto lock = std::unique_lock<std::mutex>(mMutex);
 		mIsPaused = isPaused;
+
+		lock.unlock();
+		sPauseStateChanged(*this, isPaused);
 	}
 
 
@@ -247,16 +254,23 @@ namespace nap
 
 	void SequencePlayer::setPlayerTime(double time)
 	{
-		auto lock = std::unique_lock<std::mutex>(mMutex);
-		mTime = time;
-		mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
+		auto lock 	= std::unique_lock<std::mutex>(mMutex);
+		mTime 		= time;
+		mTime 		= math::clamp<double>(mTime, 0.0, mSequence->mDuration);
+		time 		= mTime;
+
+		lock.unlock();
+		sPlayerTimeChanged(*this, time);
 	}
 
 
 	void SequencePlayer::setPlaybackSpeed(float speed)
 	{
-		auto lock = std::unique_lock<std::mutex>(mMutex);
-		mSpeed = speed;
+		auto lock 	= std::unique_lock<std::mutex>(mMutex);
+		mSpeed 		= speed;
+
+		lock.unlock();
+		sPlaybackSpeedChanged(*this, speed);
 	}
 
 
@@ -310,7 +324,6 @@ namespace nap
 			std::chrono::nanoseconds elapsed = now - mBefore;
 			float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
 			mBefore = now;
-
 			{
 				// lock
 				auto lock = std::unique_lock<std::mutex>(mMutex);
@@ -318,6 +331,11 @@ namespace nap
 				//
 				if (mIsPlaying)
 				{
+					// unlock lock at pre-tick, so data model of sequence and data of player can be modified by listeners to this signal
+					lock.unlock();
+					sPreTick.trigger(*this);
+					lock.lock();
+
 					if (!mIsPaused)
 					{
 						mTime += deltaTime * mSpeed;
@@ -343,9 +361,14 @@ namespace nap
 					{
 						adapter.second->tick(mTime);
 					}
+
+					// unlock lock at post-tick, so data model of sequence and data of player can be modified by listeners to this signal
+					lock.unlock();
+					sPostTick.trigger(*this);
+					lock.lock();
 				}
 			}
-			
+
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
 	}
