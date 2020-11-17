@@ -148,44 +148,44 @@ namespace nap
 	public:
 		// signals
 		/***
-		 * PlaybackSpeedChanged signal is dispatched when setPlaybackSpeed(float) method is called on SequencePlayer
+		 * playbackSpeedChanged signal is dispatched when setPlaybackSpeed(float) method is called on SequencePlayer
 		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
 		 * Note: Signal is dispatched from whichever thread is calling the setPlaybackSpeed(float) method on SequencePlayer
 		 */
-		Signal<SequencePlayer&, float> sPlaybackSpeedChanged;
+		Signal<SequencePlayer&, float> playbackSpeedChanged;
 
 		/***
-		 * PlayerTimeChanged signal is dispatched when setPlayerTime(double) method is called on SequencePlayer
+		 * playerTimeChanged signal is dispatched when setPlayerTime(double) method is called on SequencePlayer
 		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
 		 * Note: Signal is dispatched from whichever thread is calling the setPlayerTime(double) method on SequencePlayer
 		 */
-		Signal<SequencePlayer&, double> sPlayerTimeChanged;
+		Signal<SequencePlayer&, double> playerTimeChanged;
 
 		/***
-		 * PlayStateChanged signal is dispatched when setIsPlaying(bool) method is called on SequencePlayer
+		 * playStateChanged signal is dispatched when setIsPlaying(bool) method is called on SequencePlayer
 		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
 		 * Note: Signal is dispatched from whichever thread is calling the setIsPlaying(bool) method on SequencePlayer
 		 * Note: Play state doesn't mean Paused or not. The SequencePlayer can be Paused but still be Playing, in which case time doesn't get updated but adapter will still be called
 		 */
-		Signal<SequencePlayer&, bool> sPlayStateChanged;
+		Signal<SequencePlayer&, bool> playStateChanged;
 
 		/***
-		 * PauseStateChanged signal is dispatched when setIsPaused(bool) method is called on SequencePlayer
+		 * pauseStateChanged signal is dispatched when setIsPaused(bool) method is called on SequencePlayer
 		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
 		 * Note: Signal is dispatched from whichever thread is calling the setIsPaused(bool) method on SequencePlayer
 		 * Note: Play state doesn't mean Paused or not. The SequencePlayer can be Paused but still be Playing, in which case time doesn't get updated but adapter will still be called
 		 */
-		Signal<SequencePlayer&, bool> sPauseStateChanged;
+		Signal<SequencePlayer&, bool> pauseStateChanged;
 
 		/***
-		 *	PreTick Signal is triggered on player thread, before updating the adapters
+		 *	preTick Signal is triggered on player thread, before updating the adapters
 		 */
-		Signal<SequencePlayer&> sPreTick;
+		Signal<SequencePlayer&> preTick;
 
 		/**
-		 * PostTick Signal is triggered on player thread, after updating the adapters
+		 * postTick Signal is triggered on player thread, after updating the adapters
 		 */
-		Signal<SequencePlayer&> sPostTick;
+		Signal<SequencePlayer&> postTick;
 	private:
 
 		/**

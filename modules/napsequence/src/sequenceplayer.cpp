@@ -110,7 +110,7 @@ namespace nap
 		}
 
 		lock.unlock();
-		sPlayStateChanged(*this, isPlaying);
+		playStateChanged(*this, isPlaying);
 	}
 
 
@@ -120,7 +120,7 @@ namespace nap
 		mIsPaused = isPaused;
 
 		lock.unlock();
-		sPauseStateChanged(*this, isPaused);
+		pauseStateChanged(*this, isPaused);
 	}
 
 
@@ -260,7 +260,7 @@ namespace nap
 		time 		= mTime;
 
 		lock.unlock();
-		sPlayerTimeChanged(*this, time);
+		playerTimeChanged(*this, time);
 	}
 
 
@@ -270,7 +270,7 @@ namespace nap
 		mSpeed 		= speed;
 
 		lock.unlock();
-		sPlaybackSpeedChanged(*this, speed);
+		playbackSpeedChanged(*this, speed);
 	}
 
 
@@ -333,7 +333,7 @@ namespace nap
 				{
 					// unlock lock at pre-tick, so data model of sequence and data of player can be modified by listeners to this signal
 					lock.unlock();
-					sPreTick.trigger(*this);
+					preTick.trigger(*this);
 					lock.lock();
 
 					if (!mIsPaused)
@@ -364,7 +364,7 @@ namespace nap
 
 					// unlock lock at post-tick, so data model of sequence and data of player can be modified by listeners to this signal
 					lock.unlock();
-					sPostTick.trigger(*this);
+					postTick.trigger(*this);
 					lock.lock();
 				}
 			}
