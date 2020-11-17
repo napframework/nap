@@ -367,7 +367,74 @@ namespace nap
 	}
 
 
-	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
+	static bool createRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
+	{
+		VkAttachmentDescription color_attachment = {};
+		color_attachment.format = swapChainImageFormat;
+		color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentDescription depth_attachment = {};
+		depth_attachment.format = depthFormat;
+		depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentReference color_attachment_ref = {};
+		color_attachment_ref.attachment = 0;
+		color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentReference depth_attachment_ref = {};
+		depth_attachment_ref.attachment = 1;
+		depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkSubpassDescription subpass = {};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &color_attachment_ref;
+		subpass.pDepthStencilAttachment = &depth_attachment_ref;
+
+		std::array<VkSubpassDependency, 2> dependencies;
+		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[0].dstSubpass = 0;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
+		VkRenderPassCreateInfo renderPassInfo = {};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		renderPassInfo.pAttachments = attachments.data();
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpass;
+		renderPassInfo.dependencyCount = dependencies.size();
+		renderPassInfo.pDependencies = dependencies.data();
+
+		return errorState.check(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
+	}
+
+
+	static bool createMultiSampleRenderPass(VkDevice device, VkFormat swapChainImageFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 	{
 		VkAttachmentDescription color_attachment = {};
 		color_attachment.format = swapChainImageFormat;
@@ -452,23 +519,29 @@ namespace nap
 	}
 
 
-	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, utility::ErrorState& errorState)
+	static bool createFramebuffers(VkDevice device, std::vector<VkFramebuffer>& framebuffers, VkImageView colorImageView, VkImageView depthImageView, std::vector<VkImageView>& swapChainImageViews, VkRenderPass renderPass, VkExtent2D extent, VkSampleCountFlagBits samples, utility::ErrorState& errorState)
 	{
 		// Create a frame buffer for every view in the swapchain.
 		framebuffers.resize(swapChainImageViews.size());
 		for (size_t i = 0; i < swapChainImageViews.size(); i++)
 		{
-			std::array<VkImageView, 3> attachments =
+			std::array<VkImageView, 3> attachments = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
+			if (samples == VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT)
 			{
-				colorImageView,
-				depthImageView,
-				swapChainImageViews[i],
-			};
+				attachments[0] = swapChainImageViews[i];
+				attachments[1] = depthImageView;
+			}
+			else
+			{
+				attachments[0] = colorImageView;
+				attachments[1] = depthImageView;
+				attachments[2] = swapChainImageViews[i];
+			}
 
 			VkFramebufferCreateInfo framebufferInfo = {};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = renderPass;
-			framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+			framebufferInfo.attachmentCount = samples == VK_SAMPLE_COUNT_1_BIT ? 2 : 3;
 			framebufferInfo.pAttachments = attachments.data();
 			framebufferInfo.width = extent.width;
 			framebufferInfo.height = extent.height;
@@ -953,19 +1026,33 @@ namespace nap
 		if (!getSwapChainImageHandles(mDevice, mSwapchain, chain_images, errorState))
 			return false;
 
-		if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
-			return false;
-
+		// Create image view for every image in swapchain
 		if (!createSwapchainImageViews(mDevice, mSwapChainImageViews, chain_images, mSwapchainFormat, errorState))
 			return false;
 
-		if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
-			return false;
+		// Create render pass and resources used by render pass
+		// With only 1 multi-sample, don't create a render pass with a resolve step
+		if (mRasterizationSamples == VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT)
+		{
+			if (!createRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRenderPass, errorState))
+				return false;
 
-		if (!createColorResource(*mRenderService, swap_chain_extent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
-			return false;
+			if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
+				return false;
+		}
+		else
+		{
+			if (!createMultiSampleRenderPass(mDevice, mSwapchainFormat, mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
+				return false;
 
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swap_chain_extent, errorState))
+			if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
+				return false;
+
+			if (!createColorResource(*mRenderService, swap_chain_extent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
+				return false;
+		}
+
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swap_chain_extent, mRasterizationSamples, errorState))
 			return false;
 
 		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
