@@ -100,7 +100,7 @@ With few exceptions, place code in the `nap` namespace. Every namespace should h
 ```
 Foo f; // My ctor and dtor get called once each.
 for (int i = 0; i < 100; ++i)
-	f.DoSomething(i);
+	f.doSomething(i);
 ```
 - Prefer initialization using braces: vector<int> v = { 1, 2 };
 
