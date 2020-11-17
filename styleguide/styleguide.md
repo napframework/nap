@@ -100,7 +100,7 @@ With few exceptions, place code in the `nap` namespace. Every namespace should h
 ```
 Foo f; // My ctor and dtor get called once each.
 for (int i = 0; i < 100; ++i)
-	f.DoSomething(i);
+	f.doSomething(i);
 ```
 - Prefer initialization using braces: vector<int> v = { 1, 2 };
 
@@ -516,7 +516,7 @@ Coding style and formatting are pretty arbitrary, but a project is much easier t
 ```
 ReturnType ClassName::FunctionName(Type par_name1, Type par_name2)
 {
-	DoSomething();
+	doSomething();
 	...
 }
 ```
@@ -525,7 +525,7 @@ ReturnType ClassName::FunctionName(Type par_name1, Type par_name2)
 ReturnType LongClassName::ReallyReallyReallyLongFunctionName(
 	Type par_name1, Type par_name2, Type par_name3)
 {
-	DoSomething(); // 2 space indent
+	doSomething(); // 2 space indent
 	...
 }
 ```
@@ -556,11 +556,11 @@ digits.erase(std::remove_if(digits.begin(), digits.end(), [&blacklist](int i)
 - Split multiple arguments when complex or confusing, create variables that capture that argument in a descriptive name
 ```
 // Example One
-bool result = DoSomething(argument1, argument2, argument3);
+bool result = doSomething(argument1, argument2, argument3);
 
 // Example Two
 int my_heuristic = scores[x] * y + bases[x];
-bool result = DoSomething(my_heuristic, x, y, z);
+bool result = doSomething(my_heuristic, x, y, z);
 ```
 
 ### Conditionals
