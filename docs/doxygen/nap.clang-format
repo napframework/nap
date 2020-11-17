@@ -901,59 +901,59 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = ..\..\napkin \
-                         ..\..\modules\napawesomium \
-                         ..\..\modules\napfsm \
-                         ..\..\modules\napgui \
-                         ..\..\modules\napjsonserializer \
-                         ..\..\modules\napof \
-                         ..\..\modules\napsandbox \
-                         ..\..\modules\napscriptserver \
-                         ..\..\modules\network \
-                         ..\..\modules\sfml \
-                         ..\..\unittests \
-                         ..\..\apps \
-                         ..\..\test \
-                         ..\..\unittests \
-                         ..\..\modules\napimgui\src\imgui \
-                         ..\..\core\src\nap\blockingconcurrentqueue.h \
-                         ..\..\core\src\nap\concurrentqueue.h \
-                         ..\..\napkin \
-                         ..\..\codeblocks \
-                         ..\..\tools \
-                         ..\..\lib \
-                         ..\..\make \
-                         ..\..\vstemplates \
+EXCLUDE                = ../../napkin \
+                         ../../modules\napawesomium \
+                         ../../modules\napfsm \
+                         ../../modules\napgui \
+                         ../../modules\napjsonserializer \
+                         ../../modules\napof \
+                         ../../modules\napsandbox \
+                         ../../modules\napscriptserver \
+                         ../../modules\network \
+                         ../../modules\sfml \
+                         ../../unittests \
+                         ../../apps \
+                         ../../test \
+                         ../../unittests \
+                         ../../modules\napimgui\src\imgui \
+                         ../../core\src\nap\blockingconcurrentqueue.h \
+                         ../../core\src\nap\concurrentqueue.h \
+                         ../../napkin \
+                         ../../codeblocks \
+                         ../../tools \
+                         ../../lib \
+                         ../../make \
+                         ../../vstemplates \
                          ../../core/src/nap/linux/FileWatcher \
                          ../../modules/napmath/src/psblendmodes.cpp \
                          ../../modules/napmath/src/psblendmodes.h \
                          ../../readme.md \
-                         ..\..\demos \
-                         ..\..\ide_templates\visual_studio_templates \
-                         ..\..\ide_templates\xcode_templates \
-                         "..\..\ide_templates\xcode_templates\Nap component.xctemplate" \
-                         "..\..\ide_templates\xcode_templates\Nap class.xctemplate" \
-                         ..\..\qt \
-                         ..\..\tools\napkin \
-                         ..\..\msvc64 \
-                         ..\..\core\src\nap\android \
+                         ../../demos \
+                         ../../ide_templates\visual_studio_templates \
+                         ../../ide_templates\xcode_templates \
+                         "../../ide_templates\xcode_templates\Nap component.xctemplate" \
+                         "../../ide_templates\xcode_templates\Nap class.xctemplate" \
+                         ../../qt \
+                         ../../tools\napkin \
+                         ../../msvc64 \
+                         ../../core\src\nap\android \
                          ../../dist \
-                         ..\..\packaging \
-                         ..\..\packaging_bin \
-                         ..\..\packaging_build \
-                         ..\..\packaging_lib \
-                         ..\..\msvc64 \
-                         ..\..\NAP-0.3.0-Win64 \
-                         ..\..\NAP-0.3.2-Win64 \
-                         ..\..\packaging_build \
-                         ..\..\packaging_lib \
-                         ..\..\packaging_staging \
+                         ../../packaging \
+                         ../../packaging_bin \
+                         ../../packaging_build \
+                         ../../packaging_lib \
+                         ../../msvc64 \
+                         ../../NAP-0.3.0-Win64 \
+                         ../../NAP-0.3.2-Win64 \
+                         ../../packaging_build \
+                         ../../packaging_lib \
+                         ../../packaging_staging \
                          ../../modules/naprender/src/vk_mem_alloc.cpp \
                          ../../modules/naprender/src/vk_mem_alloc.h \
                          ../../license.md \
                          ../for_source_readme-what_is_where.md \
-                         ..\..\packaging_staging \
-                         ..\..\styleguide
+                         ../../packaging_staging \
+                         ../../styleguide
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
