@@ -213,6 +213,12 @@ namespace nap
 
 		mSequenceFileName = name;
 
+		// if the sequencer is playing, we need to re-create adapters because assigned outputs probably have changed
+		if( mIsPlaying )
+		{
+			createAdapters();
+		}
+
 		return true;
 	}
 
