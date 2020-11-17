@@ -3,7 +3,7 @@ NAP Framework
 
 # Description
 
-[NAP framework](https://www.napframework.com) is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
+[NAP framework](https://www.napframework.com) is an [open source](https://github.com/napframework), data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
 
 Use any protocol (OSC, MIDI, Art-Net, Websockets etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many speakers, many lights, many screens, many sensors.
 	
@@ -33,6 +33,6 @@ NAP also has built in support for many common protocols and standards, including
 
 Projects are growing in scope. Therefore the need for stable and performant software is increasing. Software needs to run for years without having to string together multiple applications or environments. To meet expectations NAP offers you a set of handles to tackle the most demanding creative problems.
 
-## Want to know more?
+## Links
 
-Take a look at our high level [documentation](@ref system) or [download](https://www.napframework.com) the latest version of NAP right now!	
+Pre-compiled NAP packages and source-code available on [Github](https://github.com/napframework) and [napframework.com](https://www.napframework.com/)
