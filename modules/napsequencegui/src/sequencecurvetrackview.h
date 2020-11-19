@@ -6,6 +6,7 @@
 
 #include "sequencetrackview.h"
 #include "sequencetracksegmentcurve.h"
+#include "sequencecontrollercurve.h"
 
 namespace nap
 {
@@ -533,7 +534,7 @@ namespace nap
 	void SequenceCurveTrackView::pasteClipboardSegment(const std::string& trackId, double time)
 	{
 		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
 
 		// create vector & object ptr to be filled by de-serialization
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;
@@ -589,7 +590,7 @@ namespace nap
 	void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentId)
 	{
 		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
 
 		// create vector & object ptr to be filled by de-serialization
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;

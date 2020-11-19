@@ -10,6 +10,8 @@
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
+#include <rtti/objectptr.h>
+#include <nap/logger.h>
 
 namespace nap
 {
