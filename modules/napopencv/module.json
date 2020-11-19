@@ -7,6 +7,6 @@
     ],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/opencv/msvc/x64/vc14/bin",
-        "{ROOT}/thirdparty/opencv/bin"
+        "{ROOT}/thirdparty/opencv/x64/vc14/bin"
     ]
 }

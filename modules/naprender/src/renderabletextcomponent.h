@@ -58,6 +58,13 @@ namespace nap
 		RenderableTextComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
+		 * Initialize this component
+		 * @param errorState contains information if operation fails
+		 * @return if operation succeeded
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
 		 * @return the font used to display text.
 		 */
 		const FontInstance& getFont() const;

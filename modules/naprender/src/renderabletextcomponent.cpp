@@ -41,6 +41,14 @@ namespace nap
 	{ }
 
 
+	bool RenderableTextComponentInstance::init(utility::ErrorState& errorState)
+	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+		return true;
+	}
+
+
 	bool RenderableTextComponentInstance::setup(utility::ErrorState& errorState)
 	{
 		// Get resource and extract font and transform

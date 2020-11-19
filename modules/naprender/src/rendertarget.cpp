@@ -30,39 +30,39 @@ namespace nap
 		// Create a render pass without multi-sampling. 
 		static bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
-			VkAttachmentDescription colorAttachment = {};
-			colorAttachment.format = colorFormat;
-			colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-			colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			VkAttachmentDescription color_attachment = {};
+			color_attachment.format = colorFormat;
+			color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			color_attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-			VkAttachmentDescription depthAttachment = {};
-			depthAttachment.format = depthFormat;
-			depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-			depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			VkAttachmentDescription depth_attachment = {};
+			depth_attachment.format = depthFormat;
+			depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-			VkAttachmentReference colorAttachmentRef = {};
-			colorAttachmentRef.attachment = 0;
-			colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			VkAttachmentReference color_attachment_ref = {};
+			color_attachment_ref.attachment = 0;
+			color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-			VkAttachmentReference depthAttachmentRef = {};
-			depthAttachmentRef.attachment = 1;
-			depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			VkAttachmentReference depth_attachment_ref = {};
+			depth_attachment_ref.attachment = 1;
+			depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 			VkSubpassDescription subpass = {};
 			subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 			subpass.colorAttachmentCount = 1;
-			subpass.pColorAttachments = &colorAttachmentRef;
-			subpass.pDepthStencilAttachment = &depthAttachmentRef;
+			subpass.pColorAttachments = &color_attachment_ref;
+			subpass.pDepthStencilAttachment = &depth_attachment_ref;
 
 			std::array<VkSubpassDependency, 2> dependencies;
 			dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -81,7 +81,7 @@ namespace nap
 			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 			dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-			std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+			std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
 			VkRenderPassCreateInfo renderPassInfo = {};
 			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 			renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());

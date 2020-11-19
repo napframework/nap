@@ -17,7 +17,7 @@ Getting Started {#getting_started}
 Overview {#getting_started_overview}
 =======================
 
-In this tutorial we're going to make a new application that plays an audio file from disk. You can start / stop playback using a button that is rendered to screen. 
+In this tutorial we're going to make a new application that plays an audio file from disk. You can start / stop playback using a button that is rendered to screen. This tutorial assumes you are working from a pre-compiled NAP package, not the NAP source-code.
 
 Create a New Project {#create_blank_app}
 =======================
