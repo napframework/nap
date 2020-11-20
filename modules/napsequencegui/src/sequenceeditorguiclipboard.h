@@ -17,24 +17,60 @@ namespace nap
 {
 	namespace SequenceGUIClipboards
 	{
+		/**
+		 * Clipboard is a class that can contain a serialized  object related to the Sequencer
+		 * The state of the gui can contain a clipboard, that can be de-serialized at a certain point
+		 * Typically, the clipboard contains a certain curve segment or event segment, and that segment can be pasted
+		 * at a certain location in a certain Track
+		 */
 		class NAPAPI Clipboard
 		{
 			RTTI_ENABLE()
 		public:
+			/**
+			 * Default Constructor
+			 */
 			Clipboard() = default;
+
+			/**
+			 * Default decontructor
+			 */
 			virtual ~Clipboard() = default;
 
-			bool serialize(const rtti::Object* object);
+			/**
+			 * Serialize an object
+			 * @param object pointer object to serialize
+			 * @param errorState holds information about any errors
+			 */
+			void serialize(const rtti::Object* object, utility::ErrorState& errorState);
 
+			/**
+			 * Deserialize clipboard content to object of type T
+			 * @tparam T the object type to deserialze
+			 * @param createdObjects vector containing created objects
+			 * @param errorState holds information about any errors
+			 * @return pointer to root object, can be null and must be of type T
+			 */
 			template<typename T>
-			bool deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, rtti::ObjectPtr<T>& rootObject);
+			T* deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState);
 
+			/**
+			 * returns true when clipboard is clipboard of derived type T
+			 * @tparam T the derived type
+			 * @return true when T is of derived type
+			 */
 			template<typename T>
 			bool isClipboard()
 			{
 				return this->get_type() == RTTI_OF(T);
 			}
 
+			/**
+			 * returns raw pointer to derived class T of this clipboard
+			 * performs static cast, exception on fail, always use isClipboard<T> to check for type
+			 * @tparam T the derived type
+			 * @return pointer to T
+			 */
 			template<typename T>
 			T* getDerived()
 			{
@@ -43,68 +79,59 @@ namespace nap
 			}
 
 		protected:
+			// the serialized object
 			std::string mSerializedObject;
 		};
 
+		// shortcut
 		using SequenceClipboardPtr = std::unique_ptr<Clipboard>;
 
-		// use this method to create an action
+		// use this method to create a clipboard
 		template<typename T, typename... Args>
 		static SequenceClipboardPtr createClipboard(Args&&... args)
 		{
 			return std::make_unique<T>(args...);
 		}
 
+		/**
+		 * Empty clipboard
+		 */
 		class NAPAPI Empty : public Clipboard { RTTI_ENABLE() };
 
 		template<typename T>
-		bool Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, rtti::ObjectPtr<T>& rootObject)
+		T* Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState)
 		{
 			//
 			rtti::DeserializeResult result;
-			utility::ErrorState errorState;
 
 			//
 			rtti::Factory factory;
-			if (!rtti::deserializeJSON(
+			if (!errorState.check(rtti::deserializeJSON(
 				mSerializedObject,
 				rtti::EPropertyValidationMode::DisallowMissingProperties,
 				rtti::EPointerPropertyMode::NoRawPointers,
 				factory,
 				result,
-				errorState))
-			{
-				nap::Logger::error("Error deserializing, error : %s " , errorState.toString().c_str());
-				return false;
-			}
+				errorState), "Error deserializing, error : %s " , errorState.toString().c_str()))
+				return nullptr;
+
 
 			// Resolve links
-			if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
-			{
-				nap::Logger::error("Error resolving links : %s " , errorState.toString().c_str());
-
-				return false;
-			}
+			if (!errorState.check( rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState),
+								  "Error resolving links : %s " , errorState.toString().c_str()))
+				return nullptr;
 
 			//
 			T* root_object = nullptr;
 
-			if(result.mReadObjects.size() > 0 )
-			{
-				auto* first_object = result.mReadObjects[0].get();
-				if( first_object->get_type() != RTTI_OF(T) )
-				{
-					nap::Logger::error("Root object not of correct type");
-					return false;
-				}else
-				{
-					root_object = static_cast<T*>(first_object);
-				}
-			}else
-			{
-				nap::Logger::error("No objects deserialized");
-				return false;
-			}
+			if(!errorState.check(result.mReadObjects.size() > 0, "No objects deserialized"))
+				 return nullptr;
+
+			auto* first_object = result.mReadObjects[0].get();
+			if( !errorState.check(first_object->get_type() == RTTI_OF(T), "Root object not of correct type"))
+				return nullptr;
+
+			 root_object = static_cast<T*>(first_object);
 
 			// Move ownership of read objects
 			createdObjects.clear();
@@ -122,22 +149,15 @@ namespace nap
 			// init objects
 			for (auto& object_ptr : createdObjects)
 			{
-				if (!object_ptr->init(errorState))
-				{
-					nap::Logger::error("Error initializing object : %s " , errorState.toString().c_str());
-					return false;
-				}
+				if (!errorState.check(object_ptr->init(errorState), "Error initializing object : %s " , errorState.toString().c_str()))
+					return nullptr;
+
 			}
 
-			if( root_object == nullptr )
-			{
-				nap::Logger::error("return object is null");
-				return false;
-			}
+			if( !errorState.check(root_object != nullptr, "return object is null"))
+				return nullptr;
 
-			rootObject = rtti::ObjectPtr<T>(root_object);
-
-			return true;
+			return root_object;
 		}
 	}
 }

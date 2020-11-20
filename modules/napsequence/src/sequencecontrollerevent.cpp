@@ -22,25 +22,25 @@ namespace nap
 	{
 		double return_time = time;
 		performEditAction([this, trackID, segmentID, time, &return_time]()
-						  {
-							auto* segment = findSegment(trackID, segmentID);
-							assert(segment != nullptr); // segment not found
+		{
+			auto* segment = findSegment(trackID, segmentID);
+			assert(segment != nullptr); // segment not found
 
-							if (segment != nullptr)
-							{
-								assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase))); // type mismatch
+			if (segment != nullptr)
+			{
+				assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase))); // type mismatch
 
-								if (segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)))
-								{
-									auto& segment_event = static_cast<SequenceTrackSegmentEventBase&>(*segment);
-									segment_event.mStartTime = time;
-									return_time = segment_event.mStartTime;
-								}
+				if (segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)))
+				{
+					auto& segment_event = static_cast<SequenceTrackSegmentEventBase&>(*segment);
+					segment_event.mStartTime = time;
+					return_time = segment_event.mStartTime;
+				}
 
-							}
+			}
 
-							updateTracks();
-						  });
+			updateTracks();
+		});
 
 		return return_time;
 	}
@@ -56,48 +56,48 @@ namespace nap
 	void SequenceControllerEvent::deleteSegment(const std::string& trackID, const std::string& segmentID)
 	{
 		performEditAction([this, trackID, segmentID]()
-						  {
-							//
-							auto* track = findTrack(trackID);
-							assert(track != nullptr); // track not found
+		{
+			//
+			auto* track = findTrack(trackID);
+			assert(track != nullptr); // track not found
 
-							if (track != nullptr)
-							{
-								int segment_index = 0;
-								for (auto& segment : track->mSegments)
-								{
-									if (segment->mID == segmentID)
-									{
-										// erase it from the list
-										track->mSegments.erase(track->mSegments.begin() + segment_index);
+			if (track != nullptr)
+			{
+				int segment_index = 0;
+				for (auto& segment : track->mSegments)
+				{
+					if (segment->mID == segmentID)
+					{
+						// erase it from the list
+						track->mSegments.erase(track->mSegments.begin() + segment_index);
 
-										deleteObjectFromSequencePlayer(segmentID);
+						deleteObjectFromSequencePlayer(segmentID);
 
-										break;
-									}
+						break;
+					}
 
-									updateTracks();
-									segment_index++;
-								}
-							}
-						  });
+					updateTracks();
+					segment_index++;
+				}
+			}
+		});
 	}
 
 
 	void SequenceControllerEvent::addNewEventTrack()
 	{
 		performEditAction([this]()
-						  {
-							// create sequence track
-							std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
-							sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+		{
+			// create sequence track
+			std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
+			sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
-							//
-							getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));
+			//
+			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));
 
-							// move ownership of unique ptrs
-							getPlayerOwnedObjects().emplace_back(std::move(sequence_track));
-						  });
+			// move ownership of unique ptrs
+			getPlayerOwnedObjects().emplace_back(std::move(sequence_track));
+		});
 	}
 
 

@@ -49,7 +49,7 @@ namespace nap
 		 * @param drawStartValue should we draw the start value ? only used in first segment of track
 		 */
 		template<typename T>
-		void NAPAPI drawSegmentContent(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
+		void drawSegmentContent(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
 	
 		/**
 		 * draws a segments value
@@ -63,7 +63,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void NAPAPI drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
+		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, const SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
 	
 		/**
 		 * draws segment handler
@@ -86,7 +86,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void NAPAPI drawControlPoints(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
+		void drawControlPoints(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 
 		/**
 		 * draws curves of segment
@@ -100,7 +100,7 @@ namespace nap
 		 * @param drawList pointer to drawlist of this track window
 		 */
 		template<typename T>
-		void NAPAPI drawCurves(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float previousSegmentX, const float segmentWidth, const float segmentX, ImDrawList* drawList);
+		void drawCurves(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float previousSegmentX, const float segmentWidth, const float segmentX, ImDrawList* drawList);
 
 		/**
 		 * draws handlers of curve point
@@ -117,7 +117,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void NAPAPI drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceCurveEnums::TanPointTypes type, ImDrawList* drawList);
+		void drawTanHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, std::ostringstream &stringStream, const float segmentWidth, const math::FCurvePoint<float, float> &curvePoint, const ImVec2 &circlePoint, const int controlPointIndex, const int curveIndex, const SequenceCurveEnums::TanPointTypes type, ImDrawList* drawList);
 	
 		/**
 		 * handles insert segment popup
@@ -138,13 +138,13 @@ namespace nap
 		 * handles curvepoint action popup
 		 */
 		template<typename T>
-		bool NAPAPI handleCurvePointActionPopup();
+		bool handleCurvePointActionPopup();
 
 		/**
 		 * handles segment value actions
 		 */
 		template<typename T>
-		bool NAPAPI handleSegmentValueActionPopup();
+		bool handleSegmentValueActionPopup();
 
 		/**
 		 * handles curve type popup
@@ -162,7 +162,7 @@ namespace nap
 		 * @param track reference to track
 		 */
 		template<typename T>
-		void NAPAPI drawInspectorRange(const SequenceTrack& track);
+		void drawInspectorRange(const SequenceTrack& track);
 
 		/**
 		 * @tparam T type of value
@@ -173,7 +173,7 @@ namespace nap
 		 * @param curveIndex curve index
 		 */
 		template<typename T>
-		void NAPAPI showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, double time, int curveIndex);
+		void showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, double time, int curveIndex);
 	
 		/**
 		 * input float that takes type T as input
@@ -182,7 +182,7 @@ namespace nap
 		 * @return true if dragged
 		 */
 		template<typename T>
-		bool NAPAPI inputFloat(T &, int precision);
+		bool inputFloat(T &, int precision);
 
 		/**
 		 * show inspector content
@@ -204,7 +204,7 @@ namespace nap
 		 * @param time the time at which to create new segment
 		 */
 		template<typename T>
-		void NAPAPI pasteClipboardSegment(const std::string& trackId, double time);
+		void pasteClipboardSegment(const std::string& trackId, double time);
 
 		/**
 		 * pastes content of clipboard segment into another segment
@@ -213,7 +213,7 @@ namespace nap
 		 * @param segmentID the segment id of the segment to replace
 		 */
 		template<typename T>
-		void NAPAPI pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentID);
+		void pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentID);
 
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
@@ -524,140 +524,13 @@ namespace nap
 		};
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	// Forward declarations
+	//////////////////////////////////////////////////////////////////////////
+
 	template<>
 	bool NAPAPI SequenceCurveTrackView::handleCurvePointActionPopup<float>();
 
 	template<>
 	bool NAPAPI SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
-
-	template<typename T>
-	void SequenceCurveTrackView::pasteClipboardSegment(const std::string& trackId, double time)
-	{
-		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
-
-		// create vector & object ptr to be filled by de-serialization
-		std::vector<std::unique_ptr<rtti::Object>> read_objects;
-		rtti::ObjectPtr<T> curve_segment;
-
-		// continue upon succesfull de-serialization
-		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
-		{
-			// obtain controller
-			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-
-			// insert new segment
-			const auto* new_segment = curve_controller.insertSegment(trackId, time);
-
-			// change duration
-			curve_controller.segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
-
-			// copy curve points
-			for(int c = 0; c < curve_segment->mCurves.size(); c++)
-			{
-				for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
-				{
-					curve_controller.insertCurvePoint(trackId, new_segment->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
-				}
-			}
-
-			// change all curvepoints to match the copied clipboard curve segment
-			// note that the first point is always determined by the previous segment
-			for(int c = 0; c < curve_segment->mCurves.size(); c++)
-			{
-				for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
-				{
-					curve_controller.changeCurvePoint(trackId, new_segment->mID, i, c,
-													  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
-													  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
-
-					curve_controller.changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
-													curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
-													curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
-				}
-			}
-
-			// make the controller re-align start & end points of segments
-			curve_controller.updateCurveSegments(trackId);
-		}else
-		{
-			nap::Logger::error("Error trying to paste clipboard");
-		}
-	}
-
-
-	template<typename T>
-	void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentId)
-	{
-		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
-
-		// create vector & object ptr to be filled by de-serialization
-		std::vector<std::unique_ptr<rtti::Object>> read_objects;
-		rtti::ObjectPtr<T> curve_segment;
-
-		// continue upon successful de-serialization
-		if( curve_segment_clipboard->deserialize<T>(read_objects, curve_segment) )
-		{
-			// obtain controller
-			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-
-			// insert new segment
-			const auto* target_segment = curve_controller.getSegment(trackId, segmentId);
-
-			// upcast target segment to type of T
-			const T* target_segment_upcast = dynamic_cast<const T*>(target_segment);
-			assert(target_segment_upcast != nullptr); // error in upcast
-
-			// proceed upon successful cast
-			if( target_segment_upcast != nullptr )
-			{
-				// delete all points except the first and last one
-				for(size_t c = 0; c < target_segment_upcast->mCurves.size(); c++)
-				{
-					for(size_t p = 1; p < target_segment_upcast->mCurves[c]->mPoints.size() - 1; p++)
-					{
-						curve_controller.deleteCurvePoint(trackId, segmentId, p, c);
-					}
-				}
-
-				// change duration
-				curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
-
-				// copy curve points
-				for(int c = 0; c < curve_segment->mCurves.size(); c++)
-				{
-					for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
-					{
-						curve_controller.insertCurvePoint(trackId, target_segment_upcast->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
-					}
-				}
-
-				// change all curvepoints to match the copied clipboard curve segment
-				// note that the first point is always determined by the previous segment
-				for(int c = 0; c < curve_segment->mCurves.size(); c++)
-				{
-					for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
-					{
-						curve_controller.changeCurvePoint(trackId, target_segment_upcast->mID, i, c,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
-
-						curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, SequenceCurveEnums::IN,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
-					}
-				}
-
-				// make the controller re-align start & end points of segments
-				curve_controller.updateCurveSegments(trackId);
-			}else
-			{
-				nap::Logger::error("Error casting target segment");
-			}
-		}else
-		{
-			nap::Logger::error("Error trying to paste clipboard");
-		}
-	}
 }

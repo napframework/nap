@@ -505,44 +505,6 @@ namespace nap
 	}
 
 
-	template<typename T>
-	void SequenceControllerCurve::updateCurveSegments(SequenceTrack& track)
-	{
-		// update start time and duration of all segments
-		ResourcePtr<SequenceTrackSegmentCurve<T>> prev_segment = nullptr;
-		for (auto track_segment : track.mSegments)
-		{
-			if (prev_segment == nullptr)
-			{
-				track_segment->mStartTime = 0.0;
-			}
-			else
-			{
-				track_segment->mStartTime = prev_segment->mStartTime + prev_segment->mDuration;
-				prev_segment->mDuration = track_segment->mStartTime - prev_segment->mStartTime;
-			}
-			prev_segment = static_cast<ResourcePtr<SequenceTrackSegmentCurve<T>>>(track_segment);
-		}
-
-		//
-		prev_segment = nullptr;
-		for (auto track_segment : track.mSegments)
-		{
-			auto& segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track_segment.get());
-
-			if (prev_segment == nullptr)
-			{
-			}
-			else
-			{
-				// if we have a previous segment, the curve gets the value of the start value of the current segment
-				segment_curve.setStartValue(prev_segment->getEndValue());
-			}
-			prev_segment = &segment_curve;
-		}
-	}
-
-
 	void SequenceControllerCurve::insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex)
 	{
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, float, int)> insertCurvePointMap
@@ -909,6 +871,44 @@ namespace nap
 	}
 
 
+	template<typename T>
+	void SequenceControllerCurve::updateCurveSegments(SequenceTrack& track)
+	{
+		// update start time and duration of all segments
+		ResourcePtr<SequenceTrackSegmentCurve<T>> prev_segment = nullptr;
+		for (auto track_segment : track.mSegments)
+		{
+			if (prev_segment == nullptr)
+			{
+				track_segment->mStartTime = 0.0;
+			}
+			else
+			{
+				track_segment->mStartTime = prev_segment->mStartTime + prev_segment->mDuration;
+				prev_segment->mDuration = track_segment->mStartTime - prev_segment->mStartTime;
+			}
+			prev_segment = static_cast<ResourcePtr<SequenceTrackSegmentCurve<T>>>(track_segment);
+		}
+
+		//
+		prev_segment = nullptr;
+		for (auto track_segment : track.mSegments)
+		{
+			auto& segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track_segment.get());
+
+			if (prev_segment == nullptr)
+			{
+			}
+			else
+			{
+				// if we have a previous segment, the curve gets the value of the start value of the current segment
+				segment_curve.setStartValue(prev_segment->getEndValue());
+			}
+			prev_segment = &segment_curve;
+		}
+	}
+
+
 	template<>
 	void SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum)
 	{
@@ -1027,4 +1027,9 @@ namespace nap
 	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec2>(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
 	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec3>(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
 	template NAPAPI void SequenceControllerCurve::changeCurveType<glm::vec4>(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
+
+	template NAPAPI void SequenceControllerCurve::updateCurveSegments<float>(SequenceTrack& track);
+	template NAPAPI void SequenceControllerCurve::updateCurveSegments<glm::vec2>(SequenceTrack& track);
+	template NAPAPI void SequenceControllerCurve::updateCurveSegments<glm::vec3>(SequenceTrack& track);
+	template NAPAPI void SequenceControllerCurve::updateCurveSegments<glm::vec4>(SequenceTrack& track);
 }

@@ -260,22 +260,21 @@ namespace nap
 
 	void SequencePlayer::setPlayerTime(double time)
 	{
-		auto lock 	= std::unique_lock<std::mutex>(mMutex);
-		mTime 		= time;
-		mTime 		= math::clamp<double>(mTime, 0.0, mSequence->mDuration);
-		time 		= mTime;
-
-		lock.unlock();
-		playerTimeChanged(*this, time);
+		{
+			auto lock = std::unique_lock<std::mutex>(mMutex);
+			mTime = math::clamp<double>(time, 0.0, mSequence->mDuration);
+		}
+		playerTimeChanged(*this, mTime);
 	}
 
 
 	void SequencePlayer::setPlaybackSpeed(float speed)
 	{
-		auto lock 	= std::unique_lock<std::mutex>(mMutex);
-		mSpeed 		= speed;
+		{
+			auto lock = std::unique_lock<std::mutex>(mMutex);
+			mSpeed	  = speed;
+		}
 
-		lock.unlock();
 		playbackSpeedChanged(*this, speed);
 	}
 

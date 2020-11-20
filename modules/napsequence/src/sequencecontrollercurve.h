@@ -132,7 +132,7 @@ namespace nap
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param trackID the track id of the track that we want to update
 		 */
-		void updateCurveSegments(const std::string& trackID);
+		virtual void updateCurveSegments(const std::string& trackID);
 
 		/**
 		 * changes curvetype ( linear or bezier )
@@ -141,14 +141,14 @@ namespace nap
 		 * @param type the new curve type
 		 * @param curveIndex the index of the curve
 		 */
-		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
+		virtual void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
 	protected:
 		/**
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param track reference to sequence track
 		 */
 		template<typename T>
-		void NAPAPI updateCurveSegments(SequenceTrack& track);
+		void updateCurveSegments(SequenceTrack& track);
 
 		/**
 		 * insertCurveSegment

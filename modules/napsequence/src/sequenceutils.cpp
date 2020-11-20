@@ -30,7 +30,7 @@ namespace nap
 			auto found_it = map.find(type);
 			assert(found_it == map.end()); // method already registered
 
-			map.insert(std::pair<rttr::type, SequenceDefaultTrackFactoryFunc>(type, method));
+			map.emplace(std::pair<rttr::type, SequenceDefaultTrackFactoryFunc>(type, method));
 
 			return true;
 		}
