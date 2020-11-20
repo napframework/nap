@@ -533,4 +533,49 @@ namespace nap
 
 	template<>
 	bool NAPAPI SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<float>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<float>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<glm::vec2>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec2>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<glm::vec3>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec3>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<glm::vec4>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec4>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<float>(float &v, int precision);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2 &v, int precision);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3 &v, int precision);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision);
+
 }

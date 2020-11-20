@@ -226,4 +226,11 @@ namespace nap
 		// map for updating segments
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> sUpdateSegmentFunctionMap;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Forward declarations
+	//////////////////////////////////////////////////////////////////////////
+
+	template<>
+	void NAPAPI SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum);
 }
