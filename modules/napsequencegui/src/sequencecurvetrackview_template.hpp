@@ -1142,26 +1142,6 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceCurveTrackView::showValue(
-		const SequenceTrack& track,
-		const SequenceTrackSegmentCurve<T>& segment,
-		float x,
-		double time,
-		int curveIndex)
-	{
-		assert(false); // this templated method should always have a specialization
-	}
-
-
-	template<typename T>
-	bool SequenceCurveTrackView::inputFloat(T &v, int precision)
-	{
-		assert(true); // this templated method should always have a specialization
-		return false;
-	}
-
-
-	template<typename T>
 	void SequenceCurveTrackView::pasteClipboardSegment(const std::string& trackId, double time)
 	{
 		// get clipboard action
