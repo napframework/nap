@@ -169,10 +169,13 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libnss_nis',
     r'libnss_nis-[0-9]+\.[0-9]+',
     'libnuma',
+    'libnvidia-cbl',
     'libnvidia-compiler',
+    'libnvidia-fatbinaryloader',
     'libnvidia-glcore',
     'libnvidia-glvkspirv',
     'libnvidia-opencl',
+    'libnvidia-rtcore',
     'libnvidia-tls',
     'libogg',
     'libopenjp2',
@@ -1620,7 +1623,7 @@ def cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_r
             print("  Warning: %s" % warning)       
             warnings.append(warning)
 
-def determine_run_success(demo_results, template_results, napkin_results, misc_results):
+def determine_run_success(demo_results, template_results, napkin_results, misc_results, fail_on_unexpected_libs):
     """Was the whole suite successful?
 
     Parameters
@@ -1631,8 +1634,10 @@ def determine_run_success(demo_results, template_results, napkin_results, misc_r
         Results for template project
     napkin_results : dict
         Results for Napkin
-    misc_results: dict
+    misc_results : dict
         Misc. smaller results
+    fail_on_unexpected_libs : bool
+        Whether to fail the test run if unexpected libraries are encountered
 
     Returns
     -------
@@ -1650,11 +1655,15 @@ def determine_run_success(demo_results, template_results, napkin_results, misc_r
             return False
         if not 'runFromBuildOutput' in this_demo:
             return False
-        elif not this_demo['runFromBuildOutput']['success'] or len(this_demo['runFromBuildOutput']['unexpectedLibraries']) > 0:
+        elif not this_demo['runFromBuildOutput']['success']:
+            return False
+        elif fail_on_unexpected_libs and len(this_demo['runFromBuildOutput']['unexpectedLibraries']) > 0:
             return False
         if not 'runFromPackagedOutput' in this_demo:
             return False
-        elif not this_demo['runFromPackagedOutput']['success'] or len(this_demo['runFromPackagedOutput']['unexpectedLibraries']) > 0:
+        elif not this_demo['runFromPackagedOutput']['success']:
+            return False
+        elif fail_on_unexpected_libs and len(this_demo['runFromPackagedOutput']['unexpectedLibraries']) > 0:
             return False
         if not 'openWithNapkinBuildOutput' in this_demo or not this_demo['openWithNapkinBuildOutput']['success']:
             return False
@@ -1672,11 +1681,15 @@ def determine_run_success(demo_results, template_results, napkin_results, misc_r
         return False
     if not 'runFromBuildOutput' in template_results:
         return False
-    elif not template_results['runFromBuildOutput']['success'] or len(template_results['runFromBuildOutput']['unexpectedLibraries']) > 0:
+    elif not template_results['runFromBuildOutput']['success']:
+        return False
+    elif fail_on_unexpected_libs and len(template_results['runFromBuildOutput']['unexpectedLibraries']) > 0:
         return False
     if not 'runFromPackagedOutput' in template_results:
         return False
-    elif not template_results['runFromPackagedOutput']['success'] or len(template_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
+    elif not template_results['runFromPackagedOutput']['success']:
+        return False
+    elif fail_on_unexpected_libs and len(template_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
         return False
     if not 'openWithNapkinBuildOutput' in template_results or not template_results['openWithNapkinBuildOutput']['success']:
          return False
@@ -1691,7 +1704,9 @@ def determine_run_success(demo_results, template_results, napkin_results, misc_r
         return False
     if not 'runFromBuildOutput' in other_build_type_results:
         return False
-    elif not other_build_type_results['runFromBuildOutput']['success'] or len(other_build_type_results['runFromBuildOutput']['unexpectedLibraries']) > 0:
+    elif not other_build_type_results['runFromBuildOutput']['success']:
+        return False
+    elif fail_on_unexpected_libs and len(other_build_type_results['runFromBuildOutput']['unexpectedLibraries']) > 0:
         return False
 
     # Check demo packaged without napkin
@@ -1700,17 +1715,23 @@ def determine_run_success(demo_results, template_results, napkin_results, misc_r
         return False
     if not 'runFromPackagedOutput' in results:
         return False
-    elif not results['runFromPackagedOutput']['success'] or len(results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
+    elif not results['runFromPackagedOutput']['success']:
+        return False
+    elif fail_on_unexpected_libs and len(results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
         return False
 
     # Check Napkin results for failure
     if not 'runFromFrameworkRelease' in napkin_results:
         return False
-    elif not napkin_results['runFromFrameworkRelease']['success'] or len(napkin_results['runFromFrameworkRelease']['unexpectedLibraries']) > 0:
+    elif not napkin_results['runFromFrameworkRelease']['success']:
+        return False
+    elif fail_on_unexpected_libs and len(napkin_results['runFromFrameworkRelease']['unexpectedLibraries']) > 0:
         return False
     if not 'runFromPackagedOutput' in napkin_results:
         return False
-    elif not napkin_results['runFromPackagedOutput']['success'] or len(napkin_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
+    elif not napkin_results['runFromPackagedOutput']['success']: 
+        return False
+    elif fail_on_unexpected_libs and len(napkin_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
         return False
 
     return True
@@ -2165,7 +2186,14 @@ def create_fake_projects_for_modules_without_demos(nap_framework_full_path, test
 
     os.chdir(prev_wd)
 
-def perform_test_run(nap_framework_path, testing_projects_dir, create_json_report, force_log_reporting, rename_framework, rename_qt, create_fake_projects):
+def perform_test_run(nap_framework_path, 
+                     testing_projects_dir, 
+                     create_json_report, 
+                     force_log_reporting, 
+                     rename_framework, 
+                     rename_qt, 
+                     create_fake_projects,
+                     fail_on_unexpected_libs):
     """Main entry point to the testing
 
     Parameters
@@ -2184,6 +2212,8 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
         Whether to attempt to rename any Qt library pointed to via environment variable QT_DIR when testing packaged projects
     create_fake_projects : bool
         Whether to create fake projects for modules that aren't represented in any demos
+    fail_on_unexpected_libs : bool
+        Whether to fail the test run if unexpected libraries are encountered
 
     Returns
     -------
@@ -2384,7 +2414,7 @@ def perform_test_run(nap_framework_path, testing_projects_dir, create_json_repor
     formatted_duration = '{:0>2}m{:0>2}s'.format(int(minutes), int(seconds))
 
     # Determine run success
-    run_success = determine_run_success(demo_results, template_results, napkin_results, misc_results)
+    run_success = determine_run_success(demo_results, template_results, napkin_results, misc_results, fail_on_unexpected_libs)
     
     # Report
     if create_json_report:
@@ -2437,6 +2467,8 @@ if __name__ == '__main__':
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
     parser.add_argument('-nf', '--no-fake-projects', action='store_true',
                         help="Don't create fake projects for modules that aren't represented in any demos")
+    parser.add_argument('--fail-on-unexpected-libs', action='store_true',
+                        help="Fail the test run if unexpected libraries are encountered")
     if not is_windows():
         parser.add_argument('-nrf', '--no-rename-framework', action='store_true',
                             help="Don't rename the NAP framework while testing packaged projects")
@@ -2460,5 +2492,6 @@ if __name__ == '__main__':
                                args.force_log_reporting,
                                not args.no_rename_framework,
                                not args.no_rename_qt,
-                               not args.no_fake_projects)
+                               not args.no_fake_projects,
+                               args.fail_on_unexpected_libs)
     sys.exit(not success)
