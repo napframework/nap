@@ -48,7 +48,7 @@ namespace nap
 		/**
 		 * Call this method to draw the GUI
 		 */
-		void show();
+		virtual void show();
 	public:
 		// properties
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
@@ -79,13 +79,14 @@ namespace nap
 		/**
 		 * shows the editor interface
 		 */
-		void show();
+		virtual void show();
 
 		/**
 		 * static method for registering a view type that draws the appropriate track type
 		 */
 		static bool registerTrackViewType(rttr::type trackType, rttr::type viewType);
-	private:
+
+	protected:
 		/**
 		 * Draws the tracks of the sequence
 		 * @param sequencePlayer reference to sequenceplayer
