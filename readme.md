@@ -108,7 +108,7 @@ Allows you to step into the NAP Framework source code and make changes if requir
 * To see how you set up an app in source, look at the example in the `apps` folder.
 * Add your project to the main `CMakeLists.txt` file
 
- Running `./generate_solution.sh` or `./generate_solution.bat` will re-create the Xcode or Visual Studio solution and include your project.
+ Running `./generate_solution.sh` or `generate_solution.bat` will re-create the Xcode project, make files or Visual Studio solution and include your project.
 
 ---
 
