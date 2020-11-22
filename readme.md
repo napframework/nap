@@ -23,7 +23,7 @@ Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D gra
 	
 NAP's design is intended to be as open as possible: there is little fixed functionality, but there are a lot of useful blocks that can be tied together by a user to create the experience you desire. As a user, you can build new blocks yourself and throw them in the mix to fulfill your creative vision. To push creativity, NAP is built to provide extremely fast iteration times.
 
-Central to NAP are a couple of key philosophies:
+Central to NAP are some key philosophies:
 
 - NAP is completely data driven
 - NAP is heavily influenced by modern game engine design, with one exception:
@@ -163,4 +163,4 @@ NAP Framework is open source software, licensed under the [Mozilla Public Licens
 
 This means that you must make your changes to the NAP source code available under MPL. You can combine NAP source code with proprietary code, as long as you keep the NAP source code in separate files. Version 2.0 is, by default, compatible with LGPL and GPL version 2 or greater. You can also distribute binaries under a proprietary license, as long as you make the NAP source code available under MPL. 
 
-In short: You are allowed to use and modify the NAP source code, for both commercial and non commercial purposes. However: if you make changes to the NAP source code, you have to make those changes available for others to use. We encourage people to share their ideas with the community. Keeping kwnowledge to yourself is not what NAP Framework is about.
+In short: You are allowed to use and modify the NAP source code, for both commercial and non commercial purposes. However: if you make changes to the NAP source code, you have to make those changes available for others to use. We encourage people to share their ideas with the community. Keeping knowledge to yourself is not what NAP Framework is about.
