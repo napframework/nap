@@ -19,7 +19,7 @@
 
 [NAP framework](https://www.napframework.com) is an open source, data-driven platform that merges game technology with the flexibility of a creative coding environment. NAP allows you to create fast, modular and (above all) stable applications. 
 
-Use any protocol (OSC, MIDI, Art-Net, Websockets etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many speakers, many lights, many screens, many sensors.
+Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many speakers, many lights, many screens, many sensors.
 	
 NAPs design is intended to be as open as possible: there is little fixed functionality, but there are a lot of useful blocks that can be tied together by a user to create the experience you desire. As a user, you can build new blocks yourself and throw them in the mix to fulfill your creative vision. To push creativity, NAP is built to provide extremely fast iteration times.
 
@@ -37,9 +37,9 @@ Central to NAP are a couple of key philosophies:
 
 ## Features
 
-NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, an audio engine for music playback, recording and analysis, a data sequencer, an editor to author application content, a system for creating and loading presets, a video player powered by FFMPEG and a Python programming interface.
+NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, an audio engine for music playback, recording and analysis, a data sequencer, an editor to author application content, a system for creating and loading presets, a video player powered by FFmpeg  and a Python programming interface.
 
-NAP also has built in support for many common protocols and standards, including: Websockets, Midi, OSC, Artnet, Serial, Ethercat, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
+NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
 
 <p align="center">
   <img src="https://www.napframework.com/png/Vulkan_170px_Dec16.png">
@@ -69,8 +69,8 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 To generate a solution and compile the source code you need to have installed: 
 
 - [Qt 5](http://download.qt.io/official_releases/qt/)
-	- The precompiled package uses QT 5.11.3, although other versions are known to work.
-	- Use the QT Online Installer and select the **Archive** package category to access older versions
+	- The precompiled package uses Qt 5.11.3, although other versions are known to work.
+	- Use the Qt Online Installer and select the **Archive** package category to access older versions
 
 NAP depends on various other third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
 
@@ -78,7 +78,7 @@ NAP depends on various other third party libraries. A set of compatible librarie
 	- nap
 	- thirdparty
 
-NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`. Only the editor (Napkin) depends on QT, NAP applications do not have a dependency on QT.
+NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`. Only the editor (Napkin) depends on Qt, NAP applications do not have a dependency on Qt.
 
 ## Create the Solution
 
@@ -88,7 +88,7 @@ Run:
 
 On success, run:
 
-`generate_solution.sh` to generate an `XCode project` (OSX)<br>
+`generate_solution.sh` to generate an `XCode project` (macOS)<br>
 `generate_solution.bat` to generate a `Visual Studio Solution` (Win64)<br>
 `generate_solution.sh` to generate `make files` (Linux)<br>
 
@@ -126,7 +126,7 @@ After packaging a new zip or folder is created, with the naming convention `NAP-
 
 ## Package for Desktop OS
 
-To package NAP run: `package.bat` (Windows) or `package.sh` (MacOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
+To package NAP run: `package.bat` (Windows) or `package.sh` (macOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
 ```
 QT_DIR=/home/myusername/Qt/5.11.3/gcc_64 ./package.sh
 ```
@@ -139,7 +139,7 @@ This will compile a package including all demos but without your own projects (d
 Some other useful flags:
 * `-nt`: remove the timestamp
 * `-nz`: do not create a zip file from the release
-* `-ds`: include debug symbols. On windows .pdb files are also packaged.
+* `-ds`: include debug symbols. On Windows .pdb files are also packaged.
 
 More options for packaging can be queried by adding the flag `--help` when running the script.
 
@@ -151,7 +151,7 @@ Do not use the github `issues` page to ask questions. We already have a perfectl
 
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://community.napframework.com/) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
-Clang targeting OSX 10.9    MacOS		
+Clang targeting macOS 10.9  macOS
 MSVC, VS2015x64             Windows10
 GCC <= 9.3.0 x86-64         Linux		
 ```
