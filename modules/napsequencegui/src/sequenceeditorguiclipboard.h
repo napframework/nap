@@ -90,7 +90,7 @@ namespace nap
 		template<typename T, typename... Args>
 		static SequenceClipboardPtr createClipboard(Args&&... args)
 		{
-			return std::make_unique<T>(args...);
+			return std::make_unique<T>(std::forward<Args>(args)...);
 		}
 
 		/**
@@ -98,32 +98,27 @@ namespace nap
 		 */
 		class NAPAPI Empty : public Clipboard { RTTI_ENABLE() };
 
+
+		//////////////////////////////////////////////////////////////////////////
+		// Template definitions
+		//////////////////////////////////////////////////////////////////////////
+
 		template<typename T>
 		T* Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState)
 		{
-			//
+			// De-serialize
 			rtti::DeserializeResult result;
-
-			//
 			rtti::Factory factory;
-			if (!errorState.check(rtti::deserializeJSON(
-				mSerializedObject,
-				rtti::EPropertyValidationMode::DisallowMissingProperties,
-				rtti::EPointerPropertyMode::NoRawPointers,
-				factory,
-				result,
-				errorState), "Error deserializing, error : %s " , errorState.toString().c_str()))
+			if (!rtti::deserializeJSON(mSerializedObject, rtti::EPropertyValidationMode::DisallowMissingProperties,
+				rtti::EPointerPropertyMode::NoRawPointers, factory, result, errorState))
 				return nullptr;
-
 
 			// Resolve links
-			if (!errorState.check( rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState),
-								  "Error resolving links : %s " , errorState.toString().c_str()))
+			if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
 				return nullptr;
 
-			//
+			// Make sure we deserialized something
 			T* root_object = nullptr;
-
 			if(!errorState.check(result.mReadObjects.size() > 0, "No objects deserialized"))
 				 return nullptr;
 
@@ -131,18 +126,13 @@ namespace nap
 			if( !errorState.check(first_object->get_type() == RTTI_OF(T), "Root object not of correct type"))
 				return nullptr;
 
-			 root_object = static_cast<T*>(first_object);
-
 			// Move ownership of read objects
+			root_object = static_cast<T*>(first_object);
 			createdObjects.clear();
 			for (auto& read_object : result.mReadObjects)
 			{
-				//
 				if (read_object->get_type().is_derived_from<T>())
-				{
 					root_object = dynamic_cast<T*>(read_object.get());
-				}
-
 				createdObjects.emplace_back(std::move(read_object));
 			}
 
@@ -151,7 +141,6 @@ namespace nap
 			{
 				if (!errorState.check(object_ptr->init(errorState), "Error initializing object : %s " , errorState.toString().c_str()))
 					return nullptr;
-
 			}
 
 			if( !errorState.check(root_object != nullptr, "return object is null"))
