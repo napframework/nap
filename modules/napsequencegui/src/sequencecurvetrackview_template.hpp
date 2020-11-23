@@ -160,8 +160,7 @@ namespace nap
 		const float segmentX,
 		ImDrawList* drawList)
 	{
-		const SequenceTrackSegmentCurve<T>& segment
-			= static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
+		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		const float points_per_pixel = 0.5f;
 
@@ -179,7 +178,7 @@ namespace nap
 					std::vector<ImVec2> curve;
 					if(point_num>0)
 					{
-						float start_x = math::max<float>(trackTopLeft.x, 0);
+						auto start_x = math::max<float>(trackTopLeft.x, 0);
 						float end_x = start_x + mState.mWindowSize.x + mState.mWindowPos.x;
 
 						// start drawing at window pos
@@ -237,14 +236,14 @@ namespace nap
 					const float maxDist = 0.1f;
 					if (abs(y_in_curve - y_in_segment) < maxDist)
 					{
-						mState.mAction = createAction<SequenceGUIActions::HoveringCurve>(
+						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringCurve>(
 							track.mID,
 							segment.mID,
 							i);
 
 						if (ImGui::IsMouseClicked(1))
 						{
-							mState.mAction = createAction<SequenceGUIActions::OpenInsertCurvePointPopup>(
+							mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenInsertCurvePointPopup>(
 								track.mID,
 								segment.mID,
 								i, x_in_segment);
@@ -255,7 +254,7 @@ namespace nap
 
 				if (selected_curve == -1)
 				{
-					mState.mAction = createAction<SequenceGUIActions::None>();
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 				}
 				else
 				{
@@ -273,7 +272,7 @@ namespace nap
 
 					if (action->mSegmentID == segment.mID)
 					{
-						mState.mAction = createAction<SequenceGUIActions::None>();
+						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 					}
 				}
 			}
@@ -387,7 +386,7 @@ namespace nap
 	template<typename T>
 	void SequenceCurveTrackView::drawInspectorRange(const SequenceTrack& track)
 	{
-		const SequenceTrackCurve<T>& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
+		const auto& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
 
 		T min = curve_track.mMinimum;
 		T max = curve_track.mMaximum;
@@ -435,7 +434,7 @@ namespace nap
 		const SequenceCurveEnums::SegmentValueTypes segmentType,
 		ImDrawList* drawList)
 	{
-		const SequenceTrackSegmentCurve<T>& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
+		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		for (int v = 0; v < segment.mCurves.size(); v++)
 		{
@@ -462,7 +461,7 @@ namespace nap
 						{segment_value_pos.x + 12, segment_value_pos.y + 12 }))  // bottom right
 				{
 					hovered = true;
-					mState.mAction = createAction<SequenceGUIActions::HoveringSegmentValue>(
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringSegmentValue>(
 						track.mID,
 						segment.mID,
 						segmentType,
@@ -470,7 +469,7 @@ namespace nap
 
 					if (ImGui::IsMouseDown(0))
 					{
-						mState.mAction = createAction<SequenceGUIActions::DraggingSegmentValue>(
+						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::DraggingSegmentValue>(
 							track.mID,
 							segment.mID,
 							segmentType,
@@ -478,10 +477,10 @@ namespace nap
 					}
 					else if (ImGui::IsMouseDown(1))
 					{
-						const SequenceTrackSegmentCurve<T>& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
-						const SequenceTrackCurve<T>& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
+						const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
+						const auto& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
 
-						mState.mAction = createAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>(
+						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>(
 							track.mID,
 							segment.mID,
 							segmentType,
@@ -548,20 +547,20 @@ namespace nap
 								static std::unordered_map<rttr::type, float(*)(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)> get_value_map
 									{
 										{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float{
-										  return static_cast<const SequenceTrackSegmentCurve<float>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
+										  return dynamic_cast<const SequenceTrackSegmentCurve<float>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
 										}},
 										{ RTTI_OF(glm::vec2), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-										  return static_cast<const SequenceTrackSegmentCurve<glm::vec2>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+										  return dynamic_cast<const SequenceTrackSegmentCurve<glm::vec2>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 										} },
 										{ RTTI_OF(glm::vec3), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-										  return static_cast<const SequenceTrackSegmentCurve<glm::vec3>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+										  return dynamic_cast<const SequenceTrackSegmentCurve<glm::vec3>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 										}},
 										{ RTTI_OF(glm::vec4), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-										  return static_cast<const SequenceTrackSegmentCurve<glm::vec4>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+										  return dynamic_cast<const SequenceTrackSegmentCurve<glm::vec4>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 										}}
 									};
 
-								SequenceControllerCurve& curve_controller = getEditor().getController<SequenceControllerCurve>();
+								auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 								float value = get_value_map[RTTI_OF(T)](segment, v, segmentType);
 
 								curve_controller.changeCurveSegmentValue(
@@ -595,8 +594,7 @@ namespace nap
 		ImDrawList* drawList)
 	{
 
-		const SequenceTrackSegmentCurve<T>& segment
-			= static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
+		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		// draw first control point(s) handlers IF this is the first segment of the track
 		if (track.mSegments[0]->mID == segment.mID)
@@ -670,7 +668,7 @@ namespace nap
 				if (hovered)
 				{
 					// if we are hovering this point, store ID
-					mState.mAction = createAction<SequenceGUIActions::HoveringControlPoint>(
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringControlPoint>(
 						track.mID,
 						segment.mID,
 						i,
@@ -686,7 +684,7 @@ namespace nap
 					// is the mouse held down, then we are dragging
 					if (ImGui::IsMouseDown(0))
 					{
-						mState.mAction = createAction<SequenceGUIActions::DraggingControlPoint>(
+						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::DraggingControlPoint>(
 							track.mID,
 							segment.mID,
 							i,
@@ -695,7 +693,7 @@ namespace nap
 						// if we clicked right mouse button, open curve action popup
 					else if (ImGui::IsMouseClicked(1))
 					{
-						mState.mAction = createAction<SequenceGUIActions::OpenCurvePointActionPopup<T>>(
+						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenCurvePointActionPopup<T>>(
 							track.mID,
 							segment.mID,
 							i,
@@ -767,7 +765,7 @@ namespace nap
 
 								if (ImGui::IsMouseReleased(0))
 								{
-									mState.mAction = createAction<SequenceGUIActions::None>();
+									mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 								}
 							}
 						}
@@ -880,7 +878,7 @@ namespace nap
 				if ((mState.mAction->isAction<SequenceGUIActions::None>() || mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
 					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
 				{
-					mState.mAction = createAction<SequenceGUIActions::HoveringTanPoint>(tan_stream.str());
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(tan_stream.str());
 					tan_point_hovered = true;
 				}
 				else if (mState.mAction->isAction<SequenceGUIActions::HoveringTanPoint>())
@@ -900,7 +898,7 @@ namespace nap
 							// start dragging if mouse down
 							if (ImGui::IsMouseDown(0))
 							{
-								mState.mAction = createAction<SequenceGUIActions::DraggingTanPoint>(
+								mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::DraggingTanPoint>(
 									track.mID,
 									segment.mID,
 									controlPointIndex,
@@ -908,7 +906,7 @@ namespace nap
 									type);
 							}else if(ImGui::IsMouseDown(1)) // open edit popup
 							{
-								mState.mAction = createAction<SequenceGUIActions::OpenEditTanPointPopup>(
+								mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditTanPointPopup>(
 									track.mID,
 									segment.mID,
 									controlPointIndex,
@@ -921,7 +919,7 @@ namespace nap
 						else
 						{
 							// otherwise, release!
-							mState.mAction = createAction<SequenceGUIActions::None>();
+							mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 						}
 					}
 				}
@@ -938,7 +936,7 @@ namespace nap
 					{
 						if (ImGui::IsMouseReleased(0))
 						{
-							mState.mAction = createAction<SequenceGUIActions::None>();
+							mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 						}
 						else
 						{

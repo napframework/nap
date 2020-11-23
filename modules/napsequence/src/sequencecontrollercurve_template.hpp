@@ -487,11 +487,11 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			SequenceTrackCurve<T>* track_curve = static_cast<SequenceTrackCurve<T>*>(track);
+			auto* track_curve = static_cast<SequenceTrackCurve<T>*>(track);
 
 			for(auto& segment : track_curve->mSegments)
 			{
-				SequenceTrackSegmentCurve<T>& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
+				auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
 				int curve_count = 0;
 				for(auto& curve : curve_segment.mCurves)
 				{
