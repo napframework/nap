@@ -88,9 +88,9 @@ Run:
 
 On success, run:
 
-`generate_solution.sh` to generate an `XCode project` (macOS)<br>
-`generate_solution.bat` to generate a `Visual Studio Solution` (Win64)<br>
-`generate_solution.sh` to generate `make files` (Linux)<br>
+`generate_solution.sh` to generate an `XCode project` (macOS x86-64)<br>
+`generate_solution.bat` to generate a `Visual Studio Solution` (Windows 10 x86-64)<br>
+`generate_solution.sh` to generate `make files` (Linux, Ubuntu LTS x86-64)<br>
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
 
