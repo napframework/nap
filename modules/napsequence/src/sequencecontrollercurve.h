@@ -4,8 +4,13 @@
 
 #pragma once
 
+// Local Includes
 #include "sequencecontroller.h"
 #include "sequencecurveenums.h"
+#include "sequencetrackcurve.h"
+
+// External Includes
+#include <mathutils.h>
 
 namespace nap
 {
@@ -234,3 +239,5 @@ namespace nap
 	template<>
 	void NAPAPI SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum);
 }
+
+#include "sequencecontrollercurve_template.hpp"

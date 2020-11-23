@@ -4,14 +4,9 @@
 
 // Local Includes
 #include "sequencecontrollercurve.h"
-#include "sequencecontrollercurve_template.hpp"
 #include "sequenceeditor.h"
-#include "sequencetrackcurve.h"
 #include "sequencetracksegmentcurve.h"
 #include "sequenceutils.h"
-
-// Nap Includes
-#include <mathutils.h>
 
 namespace nap
 {

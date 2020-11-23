@@ -2,17 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#pragma once
-
-// local includes
-#include "sequencecontrollercurve.h"
-#include "sequencetracksegmentcurve.h"
-#include "sequencetrackcurve.h"
-#include "sequenceutils.h"
-
-// nap includes
-#include <mathutils.h>
-
 namespace nap
 {
 	template<typename T>
