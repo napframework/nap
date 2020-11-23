@@ -6,7 +6,6 @@
 #include "sequencecontrollercurve.h"
 #include "sequenceeditor.h"
 #include "sequencetracksegmentcurve.h"
-#include "sequenceutils.h"
 
 namespace nap
 {

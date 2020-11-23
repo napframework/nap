@@ -8,6 +8,7 @@
 #include "sequencecontroller.h"
 #include "sequencecurveenums.h"
 #include "sequencetrackcurve.h"
+#include "sequenceutils.h"
 
 // External Includes
 #include <mathutils.h>
