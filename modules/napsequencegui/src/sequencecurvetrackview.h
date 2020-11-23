@@ -7,6 +7,7 @@
 #include "sequencetrackview.h"
 #include "sequencetracksegmentcurve.h"
 #include "sequencecontrollercurve.h"
+#include "napcolors.h"
 
 namespace nap
 {

@@ -4,11 +4,8 @@
 
 // local includes
 #include "sequencecurvetrackview.h"
-#include "napcolors.h"
-#include "sequencecontrollercurve.h"
 #include "sequenceeditorgui.h"
 #include "sequenceplayercurveoutput.h"
-#include "sequencetrackcurve.h"
 
 // nap includes
 #include <nap/logger.h>
