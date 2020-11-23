@@ -6,7 +6,6 @@
 #include "sequencecurvetrackview.h"
 #include "napcolors.h"
 #include "sequencecontrollercurve.h"
-#include "sequencecurvetrackview_template.hpp"
 #include "sequenceeditorgui.h"
 #include "sequenceplayercurveoutput.h"
 #include "sequencetrackcurve.h"

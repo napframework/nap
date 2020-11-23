@@ -577,5 +577,7 @@ namespace nap
 
 	template<>
 	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision);
-
 }
+
+// Include all template definitions
+#include "sequencecurvetrackview_template.hpp"
