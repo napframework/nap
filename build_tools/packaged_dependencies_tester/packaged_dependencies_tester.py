@@ -268,6 +268,10 @@ MACOS_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/',
 # Quicker iteration when debugging this script
 SCRIPT_DEBUG_ONE_PROJECT_ONLY = False
 
+# Whether to treat unexpected libs as an error
+# TODO Temporary global until upcoming small restructure
+TREAT_UNEXPECTED_LIBS_AS_ERROR = True
+
 def call_capturing_output(cmd, shell=True):
     """Run specified command, capturing output
 
@@ -651,7 +655,8 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
         if accepted:
             return True
         else:
-            print("Error: unexpected system library encountered: %s" % file_path)
+            level = "Error" if TREAT_UNEXPECTED_LIBS_AS_ERROR else "Warning"
+            print("%s: unexpected system library encountered: %s" % (level, file_path))
             return False
     else:
         print("Error: library found outside of system path: %s" % file_path)
@@ -2233,6 +2238,9 @@ def perform_test_run(nap_framework_path,
     duration_start_time = time.time()
     warnings = []
     phase = 0
+    # TODO Temporary global until upcoming small restructure
+    global TREAT_UNEXPECTED_LIBS_AS_ERROR
+    TREAT_UNEXPECTED_LIBS_AS_ERROR = fail_on_unexpected_libs
 
     # Check to see if our framework path looks valid
     if not os.path.exists(os.path.join(nap_framework_full_path, 'cmake', 'build_info.json')):
