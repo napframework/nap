@@ -1028,6 +1028,13 @@ namespace nap
 		return Pipeline();
 	}
 
+
+	RenderService::Pipeline RenderService::getOrCreatePipeline(const IRenderTarget& renderTarget, const RenderableMesh& mesh, utility::ErrorState& errorState)
+	{
+		return getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), errorState);
+	}
+	
+
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
 		const Material& material = materialInstance.getMaterial();
