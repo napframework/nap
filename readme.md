@@ -73,7 +73,7 @@ Currently, whether working with the packaged framework release or against the fr
 
 NAP's official framework releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release.
 
-There are also naturally other benefits to be had from working against the framework source, plus you can also compile your own framework release. Continue reading below to get started with the NAP source.
+There are naturally other benefits to be had from working against the framework source, plus you can also compile your own framework release. Continue reading below to get started with the NAP source.
 
 # Compilation
 
