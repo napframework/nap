@@ -47,7 +47,7 @@ NAP also has built in support for many common protocols and standards, including
 
 ## Documentation
 
-NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the precompiled NAP Package only. Follow the instructions in this document to build and create a NAP application from source. All other parts of the documentation apply to both the NAP package and source context.
+NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the precompiled NAP package only. Follow the instructions in this document to build and create a NAP application instead against the framework source. All other parts of the documentation apply to both the NAP package and source context.
 
 ## Gallery
 
@@ -61,6 +61,18 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 [EGO](https://www.studiodrift.com/work#/ego/) by Studio Drift
 ![4DSound System](https://www.napframework.com/jpg/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
+
+# Where to Start
+
+Currently, whether working with the official releases or against the framework source, we support the following operating systems:
+
+- macOS Catalina (10.9)
+- Ubuntu Linux LTS (20.04)
+- Windows 10 with Visual Studio 2015
+
+NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through the official releases.
+
+There are also naturally other benefits to be had from working against the framework source. Continue reading below to get started with the NAP source.
 
 # Compilation
 
@@ -153,7 +165,7 @@ New modules are not considered unless useful, vital or important enough to have 
 ```
 Clang targeting macOS 10.9  macOS
 MSVC, VS2015x64             Windows10
-GCC <= 9.3.0 x86-64         Linux		
+GCC <= 9.3.0 x86-64         Ubuntu LTS Linux		
 ```
 
 
