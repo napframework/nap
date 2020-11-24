@@ -6,6 +6,7 @@
 	*	[Features](#features)
 	*	[Documentation](#documentation)
 	*	[Gallery](#gallery)
+*	[Where to Start](#where-to-start)
 *	[Compilation](#compilation)
 	*	[Dependencies](#dependencies)
 	*	[Create the Solution](#create-the-solution)
