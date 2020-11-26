@@ -617,8 +617,9 @@ namespace nap
 				drawlist->AddLine( 	line_begin,
 									line_end,
 									guicolors::red, line_thickness);
-				ImGui::EndChild();
+
 			}
+			ImGui::EndChild();
 		}
 	}
 
