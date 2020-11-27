@@ -241,4 +241,4 @@ namespace nap
 	void NAPAPI SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum);
 }
 
-#include "sequencecontrollercurve_template.hpp"
+#include "sequencecontrollercurve_template.h"

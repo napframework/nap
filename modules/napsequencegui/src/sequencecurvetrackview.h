@@ -581,4 +581,4 @@ namespace nap
 }
 
 // Include all template definitions
-#include "sequencecurvetrackview_template.hpp"
+#include "sequencecurvetrackview_template.h"
