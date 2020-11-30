@@ -57,7 +57,7 @@ namespace nap
 			}
 		}
 
-        mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
+		mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
 	}
 
 
@@ -84,6 +84,24 @@ namespace nap
 
 		return nullptr;
 	}
+
+
+	const SequenceTrack* SequenceController::getTrack(const std::string& trackID) const
+	{
+		//
+		const Sequence& sequence = mPlayer.getSequenceConst();
+
+		for (const auto& track : sequence.mTracks)
+		{
+			if (track->mID == trackID)
+			{
+				return track.get();
+			}
+		}
+
+		return nullptr;
+	}
+
 
 	const SequenceTrackSegment* SequenceController::getSegment(const std::string& trackID, const std::string& segmentID) const
 	{
@@ -154,18 +172,72 @@ namespace nap
 			{
 				if (track->mID == deleteTrackID)
 				{
-				  if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
-				  {
-					  mPlayer.mAdapters.erase(track->mID);
-				  }
+					if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
+					{
+						mPlayer.mAdapters.erase(track->mID);
+					}
 
-				  sequence.mTracks.erase(sequence.mTracks.begin() + index);
+					sequence.mTracks.erase(sequence.mTracks.begin() + index);
 
-				  deleteObjectFromSequencePlayer(deleteTrackID);
+					deleteObjectFromSequencePlayer(deleteTrackID);
 
-				  break;
+					break;
 				}
-			  index++;
+				index++;
+			}
+		});
+	}
+
+
+	void SequenceController::moveTrackUp(const std::string& trackID)
+	{
+		performEditAction([this, trackID]()
+		{
+			//
+			Sequence& sequence = mPlayer.getSequence();
+
+			int index = 0;
+			for (const auto& track : sequence.mTracks)
+			{
+				if (track->mID == trackID)
+				{
+					if( index > 0 )
+					{
+						auto track = sequence.mTracks[index];
+						sequence.mTracks.erase(sequence.mTracks.begin() + index);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index - 1 ), track);
+					}
+
+					break;
+				}
+				index++;
+			}
+		});
+	}
+
+
+	void SequenceController::moveTrackDown(const std::string& trackID)
+	{
+		performEditAction([this, trackID]()
+		{
+			//
+			Sequence& sequence = mPlayer.getSequence();
+
+			int index = 0;
+			for (const auto& track : sequence.mTracks)
+			{
+				if (track->mID == trackID)
+				{
+					if( index < sequence.mTracks.size() - 1 )
+					{
+						auto track = sequence.mTracks[index];
+						sequence.mTracks.erase(sequence.mTracks.begin() + index);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index + 1 ), track);
+					}
+
+					break;
+				}
+				index++;
 			}
 		});
 	}

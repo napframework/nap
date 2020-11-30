@@ -17,13 +17,13 @@ namespace nap
 	 * There are four supported types ( float, vec2, vec3, vec4 ) that can contain 1, 2 , 3 or 4 curves 
 	 */
 	template<typename T>
-	class SequenceTrackSegmentCurve : public SequenceTrackSegment
+	class NAPAPI SequenceTrackSegmentCurve : public SequenceTrackSegment
 	{
 		RTTI_ENABLE(SequenceTrackSegment)
 	public:
 		// properties
-		std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;	///< Property: 'Curves' vector holding curves
-		math::ECurveInterp mCurveType;									///< Property: 'Curve Type' curve type of this segment ( linear, bezier )
+		std::vector<ResourcePtr<math::FCurve<float, float>>> 	mCurves;		///< Property: 'Curves' vector holding curves
+		std::vector<math::ECurveInterp> 						mCurveTypes;	///< Property: 'Curve Types' curve types of this segment ( linear, bezier )
 
 		/**
 		 * init evaluates the data hold in curves and checks if its valid for this type
@@ -91,6 +91,10 @@ namespace nap
 
 		if (!errorState.check(mCurves.size() == this->getCurveCount(), 
 			"size of curves must be %i", this->getCurveCount()))
+			return false;
+
+		if (!errorState.check(mCurveTypes.size() == this->getCurveCount(),
+		  	"size of curvetypes must be %i", this->getCurveCount()))
 			return false;
 
 		for (int i = 0; i < mCurves.size(); i++)
@@ -188,6 +192,6 @@ namespace nap
 #define DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(Type)																			\
 		RTTI_BEGIN_CLASS(Type)																						\
 			RTTI_PROPERTY("Curves",	&Type::mCurves, nap::rtti::EPropertyMetaData::Default)						\
-			RTTI_PROPERTY("Curve Type", &Type::mCurveType, nap::rtti::EPropertyMetaData::Default) \
+			RTTI_PROPERTY("Curve Types", &Type::mCurveTypes, nap::rtti::EPropertyMetaData::Default) \
 		RTTI_END_CLASS
 }

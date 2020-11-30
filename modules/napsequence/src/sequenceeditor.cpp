@@ -122,6 +122,12 @@ namespace nap
 
 			sequence.mDuration = math::max<double>(longest_track, newDuration);
 		});
+
+		// reset player position if its bigger then duration
+		if( mSequencePlayer->getPlayerTime() > newDuration )
+		{
+			mSequencePlayer->setPlayerTime(newDuration);
+		}
 	}
 
 
