@@ -15,6 +15,7 @@
 namespace nap
 {
 	using namespace SequenceGUIActions;
+	using namespace SequenceGUIClipboards;
 
 	std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& SequenceEventTrackView::getSegmentViews()
 	{
@@ -26,6 +27,12 @@ namespace nap
 	{
 		static std::unordered_map<rttr::type, bool(SequenceEventTrackView::*)()> popup_handlers;
 		return popup_handlers;
+	}
+
+	std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, double)>& SequenceEventTrackView::getPasteEventMap()
+	{
+		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const std::string&, double)> paste_handlers;
+		return paste_handlers;
 	}
 
 	static bool track_view_registration = SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView));
@@ -272,6 +279,27 @@ namespace nap
 					}
 				}
 
+				// handle paste if event segment is in clipboard
+				if( mState.mClipboard->isClipboard<EventSegmentClipboard>())
+				{
+					if( ImGui::Button("Paste") )
+					{
+						// call appropriate paste method
+						auto* event_segment_clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
+						auto& paste_event_map = getPasteEventMap();
+						auto it = paste_event_map.find(event_segment_clipboard->mSegmentType);
+						assert(it!=paste_event_map.end()); // type not found
+						if( it != paste_event_map.end() )
+						{
+							(*this.*it->second)(action->mTrackID, action->mTime);
+						}
+
+						// exit popup
+						ImGui::CloseCurrentPopup();
+						mState.mAction = createAction<None>();
+					}
+				}
+
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
@@ -423,6 +451,23 @@ namespace nap
 				handled = true;
 
 				auto* action = mState.mAction->getDerived<EditingSegment>();
+
+				if(ImGui::Button("Copy"))
+				{
+					// create clipboard
+					mState.mClipboard = createClipboard<EventSegmentClipboard>(action->mSegmentType);
+
+					// serialize segment
+					utility::ErrorState errorState;
+					auto& controller = getEditor().getController<SequenceControllerEvent>();
+					const auto* event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+					mState.mClipboard->serialize(event_segment, errorState);
+
+					// exit popup
+					ImGui::CloseCurrentPopup();
+					mState.mAction = createAction<None>();
+				}
+
 				if (ImGui::Button("Delete"))
 				{
 					auto& controller = getEditor().getController<SequenceControllerEvent>();

@@ -87,8 +87,8 @@ namespace nap
 		using SequenceClipboardPtr = std::unique_ptr<Clipboard>;
 
 		// use this method to create a clipboard
-		template<typename T, typename... Args>
-		static SequenceClipboardPtr createClipboard(Args&&... args)
+		template<typename T, typename ... Args>
+		static SequenceClipboardPtr createClipboard(Args&& ... args)
 		{
 			return std::make_unique<T>(std::forward<Args>(args)...);
 		}
