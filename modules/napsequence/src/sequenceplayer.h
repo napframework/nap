@@ -15,6 +15,7 @@
 #include <nap/signalslot.h>
 #include <future>
 #include <mutex>
+#include <nap/timer.h>
 
 namespace nap
 {
@@ -257,9 +258,8 @@ namespace nap
 		// current time
 		double mTime = 0.0;
 
-		// used to calculate delta time in onUpdate
-		std::chrono::high_resolution_clock mTimer;
-		std::chrono::time_point<std::chrono::high_resolution_clock> mBefore;
+		// Used to update sequence time
+		HighResTimeStamp mBefore;
 
 		// list of instantiated adapters
 		std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
