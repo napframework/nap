@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.18.4)
 # Exclude for Android
 project(mod_napcolor)
 

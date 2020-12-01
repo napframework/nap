@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.4)
+cmake_minimum_required(VERSION 3.18.4)
 project(qt_checker)
 
 # Add possible Qt installation paths to the HINTS section

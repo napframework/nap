@@ -1,9 +1,9 @@
 {
-    "Type": "nap::ModuleInfo", 
-    "mID": "ModuleInfo", 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
     "RequiredModules": [
         "mod_napmath"
-    ], 
+    ],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/freetype/msvc/Release",
         "{ROOT}/../thirdparty/freetype/msvc/Debug",

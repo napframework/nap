@@ -33,7 +33,7 @@ namespace nap
 		 * @param segmentID the segmentID
 		 * @param value the new message
 		 */
-		 template<typename T>
+		template<typename T>
 		void editEventSegment(const std::string& trackID, const std::string& segmentID, const T& value);
 
 		/**
@@ -42,22 +42,22 @@ namespace nap
 		 * @param segmentID the segmentID
 		 * @param time the new time
 		 */
-		 double segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
+		double segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
 
 		/**
 		 * overloaded insert segment message
 		 * @param trackID the track id
 		 * @param time the time
 		 */
-		virtual void insertSegment(const std::string& trackID, double time) override;
+		virtual const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
 
 		/**
-		* insert event segment of type T
+		* insert event segment of type SEGMENT_TYPE
 		* @param trackID the track id
 		* @param time the time
 		*/
-		template<typename T>
-		void insertEventSegment(const std::string& trackID, double time);
+		template<typename SEGMENT_TYPE>
+		const SequenceTrackSegment* insertEventSegment(const std::string& trackID, double time);
 
 		/**
 		 * overloaded delete segment method
@@ -80,16 +80,18 @@ namespace nap
 	};
 
 
-	template<typename T>
-	void SequenceControllerEvent::insertEventSegment(const std::string& trackID, double time)
+	template<typename SEGMENT_TYPE>
+	const SequenceTrackSegment* SequenceControllerEvent::insertEventSegment(const std::string& trackID, double time)
 	{
-		performEditAction([this, trackID, time]()
+		SequenceTrackSegment* return_ptr = nullptr;
+
+		performEditAction([this, trackID, time, &return_ptr]() mutable
 		{
 			// create new segment & set parameters
-			std::unique_ptr<SequenceTrackSegmentEvent<T>> newSegment = std::make_unique<SequenceTrackSegmentEvent<T>>();
-			newSegment->mStartTime = time;
-			newSegment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
-			newSegment->mDuration = 0.0;
+			std::unique_ptr<SEGMENT_TYPE> new_segment = std::make_unique<SEGMENT_TYPE>();
+			new_segment->mStartTime = time;
+			new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+			new_segment->mDuration = 0.0;
 
 			//
 			SequenceTrack* track = findTrack(trackID);
@@ -97,11 +99,14 @@ namespace nap
 
 			if (track != nullptr)
 			{
-				track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentEvent<T>>(newSegment.get()));
+				track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
 
-				getPlayerOwnedObjects().emplace_back(std::move(newSegment));
+				return_ptr = new_segment.get();
+				getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 			}
 		});
+
+		return return_ptr;
 	}
 
 

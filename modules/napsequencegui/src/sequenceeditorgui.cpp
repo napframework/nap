@@ -5,7 +5,7 @@
 // local includes
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
-
+#include "sequenceeditorguiclipboard.h"
 
 // External Includes
 #include <entity.h>
@@ -24,6 +24,7 @@ RTTI_END_CLASS
 
 using namespace nap::SequenceGUIActions;
 using namespace nap::SequenceCurveEnums;
+using namespace nap::SequenceGUIClipboards;
 
 namespace nap
 {
@@ -77,6 +78,7 @@ namespace nap
 		: mEditor(editor), mID(id), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
 		mState.mAction = createAction<None>();
+		mState.mClipboard = createClipboard<Empty>();
 
 		for (auto& factory : SequenceTrackView::getFactoryMap())
 		{
@@ -210,7 +212,6 @@ namespace nap
 					sequence_player.setIsPaused(true);
 				}
 			}
-			
 
 			ImGui::SameLine();
 			if (ImGui::Button("Rewind"))
@@ -251,6 +252,14 @@ namespace nap
 			ImGui::Separator();
 			ImGui::Spacing();
 
+			// allow mouse zoom-in with mouse wheel and ctrl
+			if( ImGui::GetIO().KeyCtrl )
+			{
+				mState.mHorizontalResolution += ImGui::GetIO().MouseWheel * 5.0f;
+				mState.mHorizontalResolution = math::max<float>(mState.mHorizontalResolution, 2.5f);
+				mState.mDirty = true;
+			}
+
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
 			ImGui::PushItemWidth(200.0f);
@@ -283,16 +292,24 @@ namespace nap
 			drawTimelinePlayerPosition(sequence, sequence_player);
 
 			// move the cursor below the tracks
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mVerticalResolution + 10.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
 
-			// handle popups & actions
+			// handle popups
 			for (auto& it : mViews)
 			{
-				it.second->handlePopups();
+				if( it.second->handlePopups() )
+				{
+					break;
+				}
+			}
+
+			// handle actions
+			for (auto& it : mViews)
+			{
 				it.second->handleActions();
 			}
 
@@ -411,7 +428,6 @@ namespace nap
 			const float timestamp_interval = 100.0f;
 			int steps = mState.mTimelineWidth / timestamp_interval;
 			int step_start = math::max<float>(mState.mScroll.x - start_pos.x, start_pos.x) / mState.mTimelineWidth;
-			double step_size = player.getDuration() / mState.mTimelineWidth;
 			for (int i = step_start; i < steps; i++)
 			{
 				ImVec2 timestamp_pos;
@@ -424,7 +440,7 @@ namespace nap
 					if (timestamp_pos.y >= parent_window_pos.y &&
 						timestamp_pos.y < parent_window_size.y + parent_window_pos.y)
 					{
-						double time_in_player = step_size * i;
+						double time_in_player = (i * timestamp_interval) / mState.mStepSize;
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
 						draw_list->AddText(timestamp_pos, guicolors::white, formatted_time_string.c_str());
 
@@ -576,6 +592,8 @@ namespace nap
 		const Sequence& sequence,
 		SequencePlayer& player)
 	{
+		const float line_thickness = 2.0f;
+
 		ImVec2 pos =
 		{
 			mState.mWindowPos.x + mState.mTimelineControllerPos.x - mState.mScroll.x
@@ -584,10 +602,25 @@ namespace nap
 				mState.mWindowPos.y + mState.mTimelineControllerPos.y + 15.0f - mState.mScroll.y
 		};
 
-		auto* overlay_drawlist = ImGui::GetOverlayDrawList();
-		overlay_drawlist->AddLine({ pos.x, pos.y },
-								  { pos.x, pos.y + sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f },
-								  guicolors::red, 2.0f);
+		// if player position in inside the sequencer window, draw it
+		if( pos.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f && pos.x > mState.mWindowPos.x )
+		{
+			ImVec2 line_begin 	= { pos.x, math::max<float>( mState.mWindowPos.y + 25, pos.y ) }; // clip line to top of window
+			ImVec2 line_end 	= { pos.x, 	pos.y + math::min<float>( // clip the line to bottom of window
+											sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f ,
+											mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y - 25.0f)};
+
+			ImGui::SetNextWindowPos(line_begin);
+			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
+			{
+				auto* drawlist = ImGui::GetWindowDrawList();
+				drawlist->AddLine( 	line_begin,
+									line_end,
+									guicolors::red, line_thickness);
+
+			}
+			ImGui::EndChild();
+		}
 	}
 
 

@@ -35,7 +35,7 @@ namespace nap
 	 * the application.
 	 *
 	 * IMPORTANT: winpcap is required on windows. Download it here: https://www.winpcap.org/
-	 * NAP builds against the winpcap library but does not ship with the dll or driver.
+	 * The SOEM module builds against the winpcap library but does not ship with the dll or driver.
 	 * Installing winpcap should be enough. Administator priviliges are not required.
 	 */
 	class NAPAPI EtherCATMaster : public Device

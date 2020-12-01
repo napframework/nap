@@ -22,7 +22,6 @@
 RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
 	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -63,13 +62,16 @@ namespace nap
 
 	bool RenderToTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Get resource
 		RenderToTextureComponent* resource = getComponent<RenderToTextureComponent>();
 
 		// Create the render target, link in the output texture
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
 		mTarget.mColorTexture = resource->mOutputTexture;
-		mTarget.mSampleShading = resource->mSampleShading;
+		mTarget.mSampleShading = true;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;
 
 		// Initialize target

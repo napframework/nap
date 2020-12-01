@@ -16,11 +16,10 @@
 
 // nap::rendervideototexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderVideoComponent)
-	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SampleShading",	&nap::RenderVideoComponent::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::rendervideototexturecomponentInstance run time class definition 
@@ -58,6 +57,9 @@ namespace nap
 
 	bool RenderVideoComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Get resource
 		RenderVideoComponent* resource = getComponent<RenderVideoComponent>();
 
@@ -76,7 +78,7 @@ namespace nap
 		// Setup render target and initialize
 		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
 		mTarget.mColorTexture  = resource->mOutputTexture;
-		mTarget.mSampleShading = resource->mSampleShading;
+		mTarget.mSampleShading = true;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;
 		if (!mTarget.init(errorState))
 			return false;

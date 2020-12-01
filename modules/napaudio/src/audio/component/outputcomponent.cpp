@@ -36,36 +36,37 @@ namespace nap
 			mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
 			auto& nodeManager = mAudioService->getNodeManager();
 			
-			auto channelCount = resource->mChannelRouting.size();
-			if (channelCount > nodeManager.getOutputChannelCount() && !mAudioService->getAllowChannelCountFailure()) {
-				errorState.fail("%s: Trying to rout to output channel that is out of bounds.", resource->mID.c_str());
-				return false;
+			mChannelRouting = resource->mChannelRouting;
+			if (mChannelRouting.empty())
+			{
+				for (auto channel = 0; channel < mInput->getChannelCount(); ++channel)
+					mChannelRouting.emplace_back(channel);
 			}
 			
-			for (auto channel = 0; channel < channelCount; ++channel)
-				if (resource->mChannelRouting[channel] >= mInput->getChannelCount())
+			for (auto channel = 0; channel < mChannelRouting.size(); ++channel)
+				if (mChannelRouting[channel] >= mInput->getChannelCount())
 				{
 					errorState.fail("%s: Trying to rout input channel that is out of bounds.", resource->mID.c_str());
 					return false;
 				}
 			
-			for (auto channel = 0; channel < channelCount; ++channel)
+			for (auto channel = 0; channel < mChannelRouting.size(); ++channel)
 			{
-				if (resource->mChannelRouting[channel] < 0)
+				if (mChannelRouting[channel] < 0)
 					continue;
 				
 				if (channel >= nodeManager.getOutputChannelCount())
 				{
 					// If the channel is out of bounds we create a PullNode instead of an OutputNode in order to process the connected DSP branch.
 					auto pullNode = nodeManager.makeSafe<PullNode>(nodeManager);
-					pullNode->audioInput.connect(*mInput->getOutputForChannel(resource->mChannelRouting[channel]));
+					pullNode->audioInput.connect(*mInput->getOutputForChannel(mChannelRouting[channel]));
 					mOutputs.emplace_back(std::move(pullNode));
 					continue;
 				}
 				else {
 					auto outputNode = nodeManager.makeSafe<OutputNode>(nodeManager);
 					outputNode->setOutputChannel(channel);
-					outputNode->audioInput.connect(*mInput->getOutputForChannel(resource->mChannelRouting[channel]));
+					outputNode->audioInput.connect(*mInput->getOutputForChannel(mChannelRouting[channel]));
 					mOutputs.emplace_back(std::move(outputNode));
 				}
 			}
@@ -80,13 +81,13 @@ namespace nap
 			
 			AudioComponentBaseInstance* inputPtr = &input;
 			mAudioService->enqueueTask([&, inputPtr, resource]() {
-				auto channelCount = resource->mChannelRouting.size();
+				auto channelCount = mChannelRouting.size();
 				for (auto channel = 0; channel < channelCount; ++channel)
 				{
 					auto outputNode = mOutputs[channel].getRaw();
 					
 					//
-					int inputChannel = resource->mChannelRouting[channel] % inputPtr->getChannelCount();
+					int inputChannel = mChannelRouting[channel] % inputPtr->getChannelCount();
 					
 					// in case of a normal output node
 					if (outputNode->get_type().is_derived_from(RTTI_OF(OutputNode)))

@@ -9,6 +9,7 @@
 #include "renderutils.h"
 
 RTTI_BEGIN_ENUM(nap::ERasterizationSamples)
+	RTTI_ENUM_VALUE(nap::ERasterizationSamples::One,		"One"),
 	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Two,		"Two"),
 	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Four,		"Four"),
 	RTTI_ENUM_VALUE(nap::ERasterizationSamples::Eight,		"Eight"),

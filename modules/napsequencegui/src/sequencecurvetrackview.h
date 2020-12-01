@@ -6,6 +6,8 @@
 
 #include "sequencetrackview.h"
 #include "sequencetracksegmentcurve.h"
+#include "sequencecontrollercurve.h"
+#include "napcolors.h"
 
 namespace nap
 {
@@ -14,7 +16,7 @@ namespace nap
 	/**
 	 * SequenceCurveTrackView shows and handles contents for curve tracks
 	 */
-	class SequenceCurveTrackView : public SequenceTrackView
+	class NAPAPI SequenceCurveTrackView : public SequenceTrackView
 	{
 	public:
 		/**
@@ -27,13 +29,14 @@ namespace nap
 		/**
 		 * Handles popups
 		 */
-		virtual void handlePopups() override;
+		virtual bool handlePopups() override;
 
 		/**
 		 * Handles any actions
 		 */
 		virtual void handleActions() override;
-	private:
+
+	protected:
 		/**
 		 * draws the contents of a segment
 		 * @tparam T the type of this segment
@@ -72,7 +75,7 @@ namespace nap
 		 * @param segmentWidth width of segment
 		 * @param drawList pointer to window drawlist
 		 */
-		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
+		virtual void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
 	
 		/**
 		 * draws control points of curve segment
@@ -120,34 +123,39 @@ namespace nap
 		/**
 		 * handles insert segment popup
 		 */
-		void handleInsertSegmentPopup();
+		virtual bool handleInsertSegmentPopup();
 
 		/**
 		 * handles delete segment popup
 		 */
-		void handleDeleteSegmentPopup();
+		virtual bool handleDeleteSegmentPopup();
 
 		/**
 		 * handles insert curve point popup
 		 */
-		void handleInsertCurvePointPopup();
+		virtual bool handleInsertCurvePointPopup();
 
 		/**
 		 * handles curvepoint action popup
 		 */
 		template<typename T>
-		void handleCurvePointActionPopup();
+		bool handleCurvePointActionPopup();
 
 		/**
 		 * handles segment value actions
 		 */
 		template<typename T>
-		void handleSegmentValueActionPopup();
+		bool handleSegmentValueActionPopup();
 
 		/**
 		 * handles curve type popup
 		 */
-		void handleCurveTypePopup();
+		virtual bool handleCurveTypePopup();
+
+		/**
+		 * handles tanpoint action popup
+		 */
+		virtual bool handleTanPointActionPopup();
 
 		/**
 		 * Draws min/max range of inspector
@@ -190,8 +198,29 @@ namespace nap
 		 */
 		virtual void showTrackContent(const SequenceTrack &track, const ImVec2& trackTopLeft) override;
 
+		/**
+		 * pastes current clipboard as a new segment at given time
+		 * @tparam T the segment type
+		 * @param trackId the track id of the track to insert into
+		 * @param time the time at which to create new segment
+		 */
+		template<typename T>
+		void pasteClipboardSegment(const std::string& trackId, double time);
+
+		/**
+		 * pastes content of clipboard segment into another segment
+		 * @tparam T the segment type
+		 * @param trackId the track id of the track to insert into
+		 * @param segmentID the segment id of the segment to replace
+		 */
+		template<typename T>
+		void pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentID);
+
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
+
+		//
+		std::vector<std::function<bool()>> mPopupHandlers;
 
 		// short curt to member function drawSegmentContent
 		using DrawSegmentMemFunPtr = void(SequenceCurveTrackView::*)(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
@@ -199,6 +228,10 @@ namespace nap
 		// static map of member function pointers
 		static std::unordered_map<rttr::type, DrawSegmentMemFunPtr> sDrawCurveSegmentsMap;
 	};
+
+	//////////////////////////////////////////////////////////////////////////
+	// Sequence Curve Track Actions
+	//////////////////////////////////////////////////////////////////////////
 
 	namespace SequenceGUIActions
 	{
@@ -359,15 +392,46 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			DraggingTanPoint(std::string trackId, std::string segmentID, int controlPointIndex, int curveIndex,
-							 SequenceCurveEnums::TanPointTypes type)
-				: mTrackID(trackId), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
+			DraggingTanPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes type)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
 
 			std::string mTrackID;
 			std::string mSegmentID;
 			int mControlPointIndex;
             int mCurveIndex;
 			SequenceCurveEnums::TanPointTypes mType;
+		};
+
+		class OpenEditTanPointPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes type, float value, float time)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time) {}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+			SequenceCurveEnums::TanPointTypes mType;
+			float mValue;
+			float mTime;
+		};
+
+		class EditingTanPointPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			EditingTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes type, float value, float time)
+				: mTrackID(trackID), mSegmentID(segmentID), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time){}
+
+			std::string mTrackID;
+			std::string mSegmentID;
+			int mControlPointIndex;
+			int mCurveIndex;
+			SequenceCurveEnums::TanPointTypes mType;
+			float mValue;
+			float mTime;
 		};
 
 		class OpenEditCurveSegmentPopup : public Action
@@ -453,9 +517,77 @@ namespace nap
 		};
 	}
 
-	template<>
-	void SequenceCurveTrackView::handleCurvePointActionPopup<float>();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Curve Clipboards
+	//////////////////////////////////////////////////////////////////////////
+
+	namespace SequenceGUIClipboards
+	{
+		class CurveSegmentClipboard :
+			public Clipboard
+		{
+			RTTI_ENABLE(Clipboard)
+		public:
+			CurveSegmentClipboard(rttr::type segmentType) : mSegmentType(segmentType){}
+			rttr::type mSegmentType;
+		};
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Forward declarations
+	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	void SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
+	bool NAPAPI SequenceCurveTrackView::handleCurvePointActionPopup<float>();
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<float>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<float>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<glm::vec2>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec2>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<glm::vec3>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec3>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	void NAPAPI SequenceCurveTrackView::showValue<glm::vec4>(
+		const SequenceTrack& track,
+		const SequenceTrackSegmentCurve<glm::vec4>& segment,
+		float x,
+		double time,
+		int curveIndex);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<float>(float &v, int precision);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2 &v, int precision);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3 &v, int precision);
+
+	template<>
+	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision);
 }
+
+// Include all template definitions
+#include "sequencecurvetrackview_template.h"

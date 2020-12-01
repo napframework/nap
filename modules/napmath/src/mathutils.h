@@ -129,7 +129,7 @@ namespace nap
 		T max();
 		
 		/**
-		 * @return the lowest possible value of type T
+		 * @return the lowest finite value of type T
 		 */
 		template<typename T>
 		T min();
@@ -338,7 +338,7 @@ namespace nap
 		template<typename T>
 		T min()
 		{
-			return std::numeric_limits<T>::min();
+			return std::numeric_limits<T>::lowest();
 		}
 
 		template<typename T>

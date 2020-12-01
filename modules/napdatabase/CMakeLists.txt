@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.18.4)
 # Bring in SQLite from thirdparty
 find_package(sqlite REQUIRED)
 

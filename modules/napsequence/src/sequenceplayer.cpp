@@ -37,33 +37,34 @@ namespace nap
 	bool SequencePlayer::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
+			return false;
+
+		// Try to load default show
+		utility::ErrorState load_error;
+		bool loaded = load(mSequenceFileName, load_error);
+
+		// Cancel if can't be loaded and we're not allowed to create an empty sequence on failure
+		if (!loaded && !mCreateEmptySequenceOnLoadFail)
 		{
+			errorState.fail(load_error.toString());
 			return false;
 		}
 
-		if (!mCreateEmptySequenceOnLoadFail)
+		// Otherwise create an empty show if loading fails
+		if (!loaded)
 		{
-			if (errorState.check(load(mSequenceFileName, errorState), "Error loading default sequence"))
-			{
-				return false;
-			}
-		}
-		else if (!load(mSequenceFileName, errorState))
-		{
-			nap::Logger::info(*this, errorState.toString());
-			nap::Logger::info(*this, "Error loading default show, creating default sequence");
-
-			mSequence = sequenceutils::createEmptySequence(mReadObjects, mReadObjectIDs);
-
+			nap::Logger::info(*this, load_error.toString());
+			nap::Logger::info(*this, "Unable to load default show, creating default sequence");
+			mSequence = sequenceutils::createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
-
 		return true;
 	}
 
 
 	bool SequencePlayer::start(utility::ErrorState& errorState)
 	{
+
 		// launch player thread
 		mUpdateThreadRunning = true;
 		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
@@ -89,7 +90,6 @@ namespace nap
 	void SequencePlayer::setIsPlaying(bool isPlaying)
 	{
 		auto lock = std::unique_lock<std::mutex>(mMutex);
-
 		bool was_playing = mIsPlaying;
 
 		if (isPlaying)
@@ -107,20 +107,24 @@ namespace nap
 			mIsPlaying = false;
 			mIsPaused  = false;
 		}
+		lock.unlock();
+		playStateChanged(*this, isPlaying);
 	}
 
 
 	void SequencePlayer::setIsPaused(bool isPaused)
 	{
-		auto lock = std::unique_lock<std::mutex>(mMutex);
-		mIsPaused = isPaused;
+		{
+			std::lock_guard<std::mutex> lock(mMutex);
+			mIsPaused = isPaused;
+		}
+		pauseStateChanged(*this, isPaused);
 	}
 
 
 	bool SequencePlayer::save(const std::string& name, utility::ErrorState& errorState)
 	{
-		//
-		auto lock = std::unique_lock<std::mutex>(mMutex);
+		std::lock_guard<std::mutex> lock(mMutex);
 
 		// Ensure the presets directory exists
 		const std::string dir = "sequences";
@@ -148,17 +152,17 @@ namespace nap
 
 	bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
 	{
-		//
-		auto lock = std::unique_lock<std::mutex>(mMutex);
-
-		//
+		std::lock_guard<std::mutex> lock(mMutex);
 		rtti::DeserializeResult result;
 
 		const std::string dir = "sequences";
 		utility::makeDirs(utility::getAbsolutePath(dir));
 		std::string show_path = dir + '/' + name;
 
-		//
+		// Ensure file exists
+		if(!errorState.check(!name.empty() && utility::fileExists(show_path),"Show does not exist"))
+			return false;
+
 		std::string timeline_name = utility::getFileNameWithoutExtension(name);
 
 		// 
@@ -199,12 +203,18 @@ namespace nap
 		}
 
 		// check if we have deserialized a sequence
-		if (errorState.check(mSequence == nullptr, "sequence is null"))
+		if (!errorState.check(mSequence != nullptr, "sequence is null"))
 		{
 			return false;
 		}
 
 		mSequenceFileName = name;
+
+		// if the sequencer is playing, we need to re-create adapters because assigned outputs probably have changed
+		if( mIsPlaying )
+		{
+			createAdapters();
+		}
 
 		return true;
 	}
@@ -247,16 +257,21 @@ namespace nap
 
 	void SequencePlayer::setPlayerTime(double time)
 	{
-		auto lock = std::unique_lock<std::mutex>(mMutex);
-		mTime = time;
-		mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
+		{
+			std::lock_guard<std::mutex> lock(mMutex);
+			mTime = math::clamp<double>(time, 0.0, mSequence->mDuration);
+		}
+		playerTimeChanged(*this, mTime);
 	}
 
 
 	void SequencePlayer::setPlaybackSpeed(float speed)
 	{
-		auto lock = std::unique_lock<std::mutex>(mMutex);
-		mSpeed = speed;
+		{
+			std::lock_guard<std::mutex> lock(mMutex);
+			mSpeed	  = speed;
+		}
+		playbackSpeedChanged(*this, speed);
 	}
 
 
@@ -280,7 +295,7 @@ namespace nap
 
 	void SequencePlayer::setIsLooping(bool isLooping)
 	{
-		auto lock = std::unique_lock<std::mutex>(mMutex);
+		std::lock_guard<std::mutex> lock(mMutex);
 		mIsLooping = isLooping;
 	}
 
@@ -310,18 +325,18 @@ namespace nap
 			std::chrono::nanoseconds elapsed = now - mBefore;
 			float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
 			mBefore = now;
-
+			
+			if (mIsPlaying)
 			{
-				// lock
-				auto lock = std::unique_lock<std::mutex>(mMutex);
+				// notify lister, so data model of sequence and data of player can be modified by listeners to this signal
+				preTick.trigger(*this);	
 
-				//
-				if (mIsPlaying)
+				// Update time and adapters thread safe
 				{
+					std::lock_guard<std::mutex> lock(mMutex);
 					if (!mIsPaused)
 					{
 						mTime += deltaTime * mSpeed;
-
 						if (mIsLooping)
 						{
 							if (mTime < 0.0)
@@ -339,13 +354,14 @@ namespace nap
 						}
 					}
 
+					// Update adapters
 					for (auto& adapter : mAdapters)
-					{
 						adapter.second->tick(mTime);
-					}
 				}
+
+				// Notify listeners
+				postTick.trigger(*this);
 			}
-			
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
 	}
@@ -413,7 +429,7 @@ namespace nap
 
 	void SequencePlayer::performEditAction(std::function<void()> action)
 	{
-		auto lock = std::unique_lock<std::mutex>(mMutex);
+		std::lock_guard<std::mutex> lock(mMutex);
 		action();
 	}
 }

@@ -18,4 +18,12 @@ namespace ImGui
 		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
 		ImGui::Image(gui_service->getTextureHandle(texture), size, uv0, uv1, tint_col, border_col);
 	}
+
+
+	ImTextureID IMGUI_API GetTextureHandle(nap::Texture2D& texture)
+	{
+		nap::Core& core = texture.getRenderService().getCore();
+		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
+		return gui_service->getTextureHandle(texture);
+	}
 }

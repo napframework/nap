@@ -9,9 +9,9 @@
 
 namespace nap
 {
-	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerEvent), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController> 
+	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerEvent), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
 	{
-		return std::make_unique<SequenceControllerEvent>(player, editor);
+	  return std::make_unique<SequenceControllerEvent>(player, editor);
 	});
 
 
@@ -46,9 +46,10 @@ namespace nap
 	}
 
 
-	void SequenceControllerEvent::insertSegment(const std::string& trackID, double time)
+	const SequenceTrackSegment* SequenceControllerEvent::insertSegment(const std::string& trackID, double time)
 	{
 		nap::Logger::warn("insertSegment not used, use insertEventSegment instead");
+		return nullptr;
 	}
 
 

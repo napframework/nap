@@ -9,6 +9,8 @@
 
 // External includes
 #include <rect.h>
+#include <color.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -59,12 +61,13 @@ namespace nap
 		const math::Rect& getRect()											{ return mRect; }
 
 		// property: the size of the plane
-		glm::vec2		mSize = { 1.0, 1.0 };								///< Property: 'Size' the size of the plane in units
-		glm::vec2		mPosition =	{ 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
-		int				mRows = 1;											///< Property: 'Rows' number of rows
-		int				mColumns = 1;										///< Property: 'Columns' number of columns
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;					///< Property: 'Usage' If the plane is uploaded once or frequently updated.
-		ECullMode		mCullMode = ECullMode::None;						///< Property: 'CullMode' Plane cull mode, defaults to no culling
+		glm::vec2		mSize		= { 1.0, 1.0 };							///< Property: 'Size' the size of the plane in units
+		glm::vec2		mPosition	= { 0.0,0.0 };							///< Property: 'Position' where the plane is positioned in object space
+		RGBAColorFloat	mColor		= { 1.0f, 1.0f, 1.0f, 1.0f };			///< Property: 'Color' color of the plane
+		uint			mRows		= 1;									///< Property: 'Rows' number of rows
+		uint			mColumns	= 1;									///< Property: 'Columns' number of columns
+		EMeshDataUsage	mUsage		= EMeshDataUsage::Static;				///< Property: 'Usage' If the plane is uploaded once or frequently updated.
+		ECullMode		mCullMode	= ECullMode::None;						///< Property: 'CullMode' Plane cull mode, defaults to no culling
 
 	private:
 		RenderService* mRenderService;

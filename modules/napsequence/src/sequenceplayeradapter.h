@@ -25,7 +25,7 @@ namespace nap
 	 * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
 	 * Typically, a SequencePlayerAdapter is responsible for doing something with a track while the player is playing
 	 */
-	class SequencePlayerAdapter
+	class NAPAPI SequencePlayerAdapter
 	{
 	public:
 		/**

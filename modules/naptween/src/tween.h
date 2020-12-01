@@ -317,6 +317,7 @@ namespace nap
 
 					if( mTime > mDuration )
 					{
+						mComplete = true;
 					  	mTime = mDuration;
 
 						mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));

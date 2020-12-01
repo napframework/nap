@@ -33,11 +33,11 @@ namespace nap
 		 * @param editor reference to editor
 		 */
 		SequenceController(SequencePlayer& player, SequenceEditor& editor) : mPlayer(player), mEditor(editor) {};
-        
+
 		/**
 		 * Deconstructor
 		 */
-        virtual ~SequenceController(){};
+		virtual ~SequenceController(){};
 
 		/**
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
@@ -53,6 +53,18 @@ namespace nap
 		void deleteTrack(const std::string& deleteTrackID);
 
 		/**
+		 * moves track up in the array of tracks
+		 * @param trackID the id of the track that needs to be moved
+		 */
+		void moveTrackUp(const std::string& trackID);
+
+		/**
+		 * moves track up in the array of tracks
+		 * @param trackID the id of the track that needs to be moved
+		 */
+		void moveTrackDown(const std::string& trackID);
+
+		/**
 		 * inserts track that corresponds to type of controller, must be overloaded
 		 * @param type the type of track
 		 */
@@ -62,8 +74,9 @@ namespace nap
 		 * inserts segment in track, must be overloaded
 		 * @param trackID the trackID in which to insert new segment
 		 * @param time the time at which to insert the segment
+		 * @return const pointer to newly created segment
 		 */
-		virtual void insertSegment(const std::string& trackID, double time) = 0;
+		virtual const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) = 0;
 
 		/**
 		 * deleted segment from track, must be overloaded
@@ -71,6 +84,13 @@ namespace nap
 		 * @param segmentID the segment
 		 */
 		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) = 0;
+
+		/**
+		 *
+		 * @param trackID
+		 * @return
+		 */
+		const SequenceTrack* getTrack(const std::string& trackID) const;
 
 		/**
 		 * returns const segment pointer to specific segment, nullptr when not found
@@ -86,12 +106,12 @@ namespace nap
 		 */
 		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& getControllerFactory();
 
-		 /**
-		  * registers the factory method for a type of controller
-		  * @param type the type of controller
-		  * @param factoryFunc the factory method
-		  * @return true on successfull registration
-		  */
+		/**
+		 * registers the factory method for a type of controller
+		 * @param type the type of controller
+		 * @param factoryFunc the factory method
+		 * @return true on successfull registration
+		 */
 		static bool registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc factoryFunc);
 	protected:
 		/**

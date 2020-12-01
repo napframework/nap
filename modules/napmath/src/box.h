@@ -66,7 +66,7 @@ namespace nap
 			float getHeight() const;
 
 			/**
-			 * @return the absolute depth of the box
+			 * @return the absolute depth (length) of the box
 			 */
 			float getDepth() const;
 
@@ -84,6 +84,16 @@ namespace nap
 			 *	@return the max box coordinates
 			 */
 			const glm::vec3& getMax() const									{ return mMaxCoordinates; }
+
+			/**
+			 * @return the absolute bounding box dimension (width, height, depth)
+			 */
+			glm::vec3 getDimensions() const;
+
+			/**
+			 * @return center coordinates of the box
+			 */
+			glm::vec3 getCenter() const;
 
 			glm::vec3 mMinCoordinates = { -0.5f, -0.5f, -0.5f };			///< Box min coordinates
 			glm::vec3 mMaxCoordinates = { 0.5f, 0.5f, 0.5f };				///< Box max coordinates

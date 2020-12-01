@@ -24,19 +24,10 @@ namespace nap
 		 */
 		YoctoService(ServiceConfiguration* configuration);
 
-		/**
-		 *	Explicitly frees the yoctopuce API
-		 */
-		virtual ~YoctoService() override;
-
 	protected:
-		/**
-		 * Initialize yoctopuce related functionality
-		 */
-		virtual bool init(utility::ErrorState& error) override;
 
 		/**
-		 *	Shuts down all yoctopuce related functionality
+		 * Explicitly free Yoctopuce library
 		 */
 		virtual void shutdown() override;
 	};

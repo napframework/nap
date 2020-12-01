@@ -48,7 +48,7 @@ endif()
 
 # promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(artnetlib REQUIRED_VARS ARTNET_DIR)
+find_package_handle_standard_args(artnet REQUIRED_VARS ARTNET_DIR)
 
 # Copy the artnet dynamic linked lib into the build directory
 macro(copy_artnet_dll)

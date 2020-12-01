@@ -56,17 +56,23 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects\m
 
 ```
 {
-    "title": "MyFirstProject",
-    "version": "0.1",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "MyFirstProject",
+    "Version": "0.1.0",
+    "RequiredModules": [
         "mod_napapp",
-        "mod_napaudio",
-        "mod_napimgui"
-    ]
+        "mod_napcameracontrol",
+        "mod_napparametergui",
+        "mod_myfirstproject"
+    ],
+    "Data": "data/objects.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
 }
 ```
 
-To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `\modules` and `\user_modules`.
+To update this list simply add and remove entries to the `RequiredModules` list in the JSON.  The module names should match the module directory names in `\modules` and `\user_modules`.
 
 Once you've updated your `project.json` run regenerate.bat within the project folder to update the Visual Studio solution.
 
@@ -136,17 +142,23 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
 
 ```
 {
-    "title": "MyFirstProject",
-    "version": "0.1",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "MyFirstProject",
+    "Version": "0.1.0",
+    "RequiredModules": [
         "mod_napapp",
-        "mod_napaudio",
-        "mod_napimgui"
-    ]
+        "mod_napcameracontrol",
+        "mod_napparametergui",
+        "mod_myfirstproject"
+    ],
+    "Data": "data/objects.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
 }
 ```
 
-To update this list simply add and remove entries to the `modules` list in the JSON.  The module names should match the module directory names in `/modules` and `/user_modules`.
+To update this list simply add and remove entries to the `RequiredModules` list in the JSON.  The module names should match the module directory names in `/modules` and `/user_modules`.
 
 Once you've updated your `project.json` run regenerate within the project folder to update the Xcode project.
 
@@ -216,13 +228,19 @@ Below is a sample `project.json` from our MyFirstProject (located at `projects/m
 
 ```
 {
-    "title": "MyFirstProject",
-    "version": "0.1",
-    "modules": [
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "MyFirstProject",
+    "Version": "0.1.0",
+    "RequiredModules": [
         "mod_napapp",
-        "mod_napaudio",
-        "mod_napimgui"
-    ]
+        "mod_napcameracontrol",
+        "mod_napparametergui",
+        "mod_myfirstproject"
+    ],
+    "Data": "data/objects.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
 }
 ```
 

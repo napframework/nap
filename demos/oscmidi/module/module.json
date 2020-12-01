@@ -1,11 +1,11 @@
 {
-    "Type": "nap::ModuleInfo", 
-    "mID": "ModuleInfo", 
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napmidi", 
-        "mod_naposc", 
-        "mod_napscene", 
+        "mod_napmidi",
+        "mod_naposc",
+        "mod_napscene",
         "mod_napmath"
-    ], 
+    ],
     "WindowsDllSearchPaths": []
 }

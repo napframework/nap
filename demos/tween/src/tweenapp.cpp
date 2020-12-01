@@ -148,32 +148,31 @@ namespace nap
 		uniform_instance = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 		UniformFloatInstance* animator_uniform = uniform_instance->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
 
-		// Set it to the current animation value of the sphere.
-		//nap::AnimatorComponentInstance& animator_comp = mSphereEntity->getComponent<nap::AnimatorComponentInstance>();
-		//animator_uniform->setValue(animator_comp.getCurveValue());
-
-		// draw the GUI
+		// draw the GUI for editing tween properties
 		if( ImGui::Begin("Tween") )
 		{
+			// input for tween duration
 			if( ImGui::InputFloat("Duration", &mTweenDuration) )
 			{
 				mTweenDuration = math::max<float>(0.0f, mTweenDuration);
 			}
 
+			// change tween target
 			if( ImGui::SliderFloat3("Target", &mTarget.x, 0.0f, 1.0f))
 			{
 			}
 
+			// change tween ease type
 			if( ImGui::Combo("Ease", &mCurrentTweenType, ease_types, IM_ARRAYSIZE(ease_types)))
 			{
-
 			}
 
+			// change tween mode
 			if( ImGui::Combo("Mode", &mCurrentTweenMode, tween_modes, IM_ARRAYSIZE(tween_modes)))
 			{
-
 			}
 
+			// press button to create tween
 			if( ImGui::Button("Do Tween") )
 			{
 				createTween();
@@ -185,17 +184,33 @@ namespace nap
 
 	void TweenApp::createTween()
 	{
+		// obtain sphere transform
 		auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
+
+		// extract world position
 		glm::vec3 sphere_position = math::extractPosition(sphere_transform.getGlobalTransform());
-		mActiveTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, mTarget, mTweenDuration, (TweenEasing)mCurrentTweenType, (TweenMode)mCurrentTweenMode);
+
+		// create tween, app keeps handle in scope
+		mActiveTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, mTarget, mTweenDuration, (ETweenEasing)mCurrentTweenType, (ETweenMode)mCurrentTweenMode);
+
+		// reference to tween
 		Tween<glm::vec3>& tween = mActiveTweenHandle->getTween();
+
+		// connect to update signal
 		tween.UpdateSignal.connect([this](const glm::vec3& value){
-		  auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
-		  sphere_transform.setTranslate(value);
+		  	auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
+			sphere_transform.setTranslate(value);
 		});
+
+		// connect to complete signal
 		tween.CompleteSignal.connect([this](const glm::vec3& value){
+			auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
+		  	sphere_transform.setTranslate(value);
+
 			nap::Logger::info("tween complete");
 		});
+
+		// connect to killed signal
 		tween.KilledSignal.connect([this](){
 			nap::Logger::info("tween killed");
 		});

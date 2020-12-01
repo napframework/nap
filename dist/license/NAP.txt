@@ -8,7 +8,7 @@ This program makes use of NAP Framework Source Code.
 NAP Framework is open source software, licensed under the: Mozilla Public 
 License, version 2.0. You can obtain the NAP source code, for free, at:
 
-https://github.com/naivisoftware/nap
+https://github.com/napframework/nap
 
 You are required to include this notice when you distribute this application.
 Failure to do so violates the MPL2.0 agreement.
@@ -47,5 +47,5 @@ LINKS
 -----
 
 NAP Documentation: https://www.napframework.com/doxygen
-NAP Source Code and Releases: https://github.com/naivisoftware/nap
+NAP Source Code and Releases: https://github.com/napframework
 NAP Website: https://www.napframework.com

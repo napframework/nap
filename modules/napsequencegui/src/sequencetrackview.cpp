@@ -73,32 +73,12 @@ namespace nap
 		int seconds = (int)time % 60;
 		int milliseconds = (int)(time * 100.0f) % 100;
 
-		std::stringstream string_stream;
-
-		string_stream << std::setw(2) << std::setfill('0') << seconds;
-		std::string secondsString = string_stream.str();
-
-		string_stream = std::stringstream();
-		string_stream << std::setw(2) << std::setfill('0') << minutes;
-		std::string minutesString = string_stream.str();
-
-		string_stream = std::stringstream();
-		string_stream << std::setw(2) << std::setfill('0') << milliseconds;
-		std::string millisecondsStrings = string_stream.str();
-
-		std::string hoursString = "";
-		if (hours > 0)
-		{
-			string_stream = std::stringstream();
-			string_stream << std::setw(2) << std::setfill('0') << hours;
-			hoursString = string_stream.str() + ":";
-		}
-
-		return hoursString + minutesString + ":" + secondsString + ":" + millisecondsStrings;
+		return hours == 0 ? utility::stringFormat("%.02d:%.02d:%.02d", minutes, seconds, milliseconds) :
+			utility::stringFormat("%.02d:%.02d:%.02d:%.02d", hours, minutes, seconds, milliseconds);
 	}
 
 
-	void SequenceTrackView::showInspector(const SequenceTrack& track, bool& deleteTrack)
+	void SequenceTrackView::showInspector(const SequenceTrack& track, bool& deleteTrack, bool& moveUp, bool& moveDown)
 	{
 		// begin inspector
 		std::ostringstream inspector_id_stream;
@@ -162,6 +142,21 @@ namespace nap
 				deleteTrack = true;
 			}
 
+			// show up & down buttons
+			ImGui::Spacing();
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+
+			if(ImGui::SmallButton("Up"))
+			{
+				moveUp = true;
+			}
+			ImGui::SameLine();
+			if(ImGui::SmallButton("Down"))
+			{
+				moveDown = true;
+			}
+
 			// pop scale
 			ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
 		}
@@ -174,8 +169,10 @@ namespace nap
 	void SequenceTrackView::show(const SequenceTrack& track)
 	{
 		bool delete_track = false;
+		bool move_track_up = false;
+		bool move_track_down = false;
 
-		showInspector(track, delete_track);
+		showInspector(track, delete_track, move_track_up, move_track_down);
 
 		showTrack(track);
 
@@ -186,6 +183,28 @@ namespace nap
 			if(controller!= nullptr)
 			{
 				controller->deleteTrack(track.mID);
+				mState.mDirty = true;
+			}
+		}
+
+		if(move_track_up)
+		{
+			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
+			assert(controller!= nullptr); // controller not found
+			if(controller!= nullptr)
+			{
+				controller->moveTrackUp(track.mID);
+				mState.mDirty = true;
+			}
+		}
+
+		if(move_track_down)
+		{
+			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
+			assert(controller!= nullptr); // controller not found
+			if(controller!= nullptr)
+			{
+				controller->moveTrackDown(track.mID);
 				mState.mDirty = true;
 			}
 		}

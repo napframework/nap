@@ -54,6 +54,9 @@ namespace nap
 	 */
 	bool RenderableClassifyComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Get resource
 		RenderableClassifyComponent* resource = getComponent<RenderableClassifyComponent>();
 

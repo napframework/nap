@@ -51,7 +51,7 @@ class SingleProjectBuilder:
         script_to_nap_root = os.path.join(os.pardir, os.pardir)
 
         # Check for Source context
-        source_dist_dir = os.path.join(script_path, script_to_nap_root, 'dist')
+        source_dist_dir = os.path.join(script_path, script_to_nap_root, 'dist', 'cmake', 'native')
         if os.path.exists(source_dist_dir):
             self.__nap_root = os.path.abspath(os.path.join(script_path, script_to_nap_root))    
             self.__source_context = True

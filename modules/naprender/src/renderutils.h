@@ -58,6 +58,7 @@ namespace nap
 	 */
 	enum class ERasterizationSamples : int
 	{
+		One		= 0x00000001,
 		Two		= 0x00000002,
 		Four	= 0x00000004,
 		Eight	= 0x00000008,
