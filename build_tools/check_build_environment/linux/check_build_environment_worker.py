@@ -5,7 +5,7 @@ import subprocess
 import shutil
 import sys
 
-REQUIRED_UBUNTU_VERSION = '18.04'
+REQUIRED_UBUNTU_VERSION = '20.04'
 REQUIRED_QT_VERSION = '5.11.3'
 
 def call(cmd):
@@ -181,7 +181,7 @@ def check_build_environment(against_source):
     distribution_ok = check_distribution()
     if not distribution_ok:
         print("\nThis version of NAP supports Ubuntu Linux (%s). Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
-        print("Hint for the adventurous: On Ubuntu we depend on build-essential, libglu1-mesa-dev and patchelf")
+        print("Hint for the adventurous: On Ubuntu we depend on build-essential, patchelf and when working against Source libglu1-mesa-dev (for Qt)")
         print("\nNot continuing checks.")
         sys.exit(1)
 
@@ -199,11 +199,13 @@ def check_build_environment(against_source):
     patchelf_installed = apt_package_installed('patchelf')
     log_test_success('for patchelf package', patchelf_installed)
 
-    # Check package libglu1-mesa-dev installed
-    glut_intalled = apt_package_installed('libglu1-mesa-dev')
-    log_test_success('for libglu1-mesa-dev package', glut_intalled)
-
     if against_source:
+
+        # Check package libglu1-mesa-dev installed, currently brings in 
+        # dependencies needed by Qt when working against source
+        glut_installed = apt_package_installed('libglu1-mesa-dev')
+        log_test_success('for libglu1-mesa-dev package (needed by Qt for Napkin)', glut_installed)
+
         # Check for thirdparty repo
         thirdparty_ok = check_for_thirdparty()
 
@@ -226,7 +228,7 @@ def check_build_environment(against_source):
     
     # If we're running for source users check source requirements are met
     extra_source_requirements_ok = True
-    if against_source and (not thirdparty_ok or not qt_env_var_ok or not qt_version_ok):
+    if against_source and (not thirdparty_ok or not qt_env_var_ok or not qt_version_ok or not glut_installed):
         extra_source_requirements_ok = False 
 
     # If everything looks good log and exit
@@ -258,7 +260,7 @@ def check_build_environment(against_source):
         packages_to_install.append('build-essential')
     if not patchelf_installed:
         packages_to_install.append('patchelf')
-    if not glut_intalled:
+    if against_source and not glut_installed:
         packages_to_install.append('libglu1-mesa-dev')
         
     if len(packages_to_install) > 0:

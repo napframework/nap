@@ -57,7 +57,7 @@ LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/',
                                    '/usr/lib/mesa-diverted/x86_64-linux-gnu/']
 
 # List of libraries we accept being sourced from the system paths defined above. Notes:
-# - These currently support Ubuntu 18.04/18.10 and are likely to require minor tweaks for new versions
+# - These currently support Ubuntu 20.04/20.10 and are likely to require minor tweaks for new versions
 # - If/when we support more distros and architectures we should either break these lists out by 
 #   architecture and distro+version or restrict dependencies testing to one distro
 # - Developed and tested against Nvidia open source and proprietary drivers plus Intel i965, other
