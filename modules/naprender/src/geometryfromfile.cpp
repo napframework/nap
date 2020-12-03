@@ -82,7 +82,7 @@ namespace nap
 	bool GeometryFromFile::init(utility::ErrorState& errorState)
 	{
 		// Load our mesh
-		nap::Logger::info("Loading geometry from file: %s", mPath.c_str());
+		nap::Logger::info("Loading geometry: %s", mPath.c_str());
 
 		// Create mesh instance
 		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>(*mRenderService);
