@@ -36,7 +36,7 @@ namespace nap
 			// Properties
 			nap::ComponentPtr<AudioComponentBase> mInput; ///<  property: 'Input' The component whose audio output to rout to the interface
 			
-			std::vector<int> mChannelRouting = { 0 }; ///< property: 'Routing' The size of this vector indicates the number of channels this component outputs.
+			std::vector<int> mChannelRouting; ///< property: 'Routing' The size of this vector indicates the number of channels this component outputs.
 			///< Each element in the array represents one output channel on the audio interface.
 			///< The value of the element indicates the channel from the input that will be routed to the corresponding output.
 			///< A value of -1 means no output will be sent to the corresponding channel.
@@ -69,6 +69,7 @@ namespace nap
 			                                                        &OutputComponent::mInput}; // Pointer to the component whose input will be sent to the output.
 			
 			AudioService* mAudioService = nullptr; // Pointer to the audio service the audio output will be sent to.
+			std::vector<int> mChannelRouting;
 		};
 		
 	}

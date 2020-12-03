@@ -9,15 +9,16 @@ Getting Started {#getting_started}
     * [Entity](@ref audio_entity)
     * [Component](@ref audio_components)
     * [Scene](@ref content_scene)
-* [Application](@ref app_logic)
+* [Add Logic](@ref app_logic)
     * [Init](@ref app_init)
     * [Update](@ref app_update)
     * [Render](@ref app_render)
+* [Package for Distribution](@ref app_package)
 
 Overview {#getting_started_overview}
 =======================
 
-In this tutorial we're going to make a new application that plays an audio file from disk. You can start / stop playback using a button that is rendered to screen. 
+In this tutorial we're going to make a new application that plays an audio file from disk. You can start / stop playback using a button that is rendered to screen. This tutorial assumes you are working from a pre-compiled NAP package, not the NAP source-code.
 
 Create a New Project {#create_blank_app}
 =======================
@@ -246,3 +247,20 @@ When we compile and run the app you should see a button. Click on it to start / 
 ## Rendering {#app_render}
 
 `render` is called after `update`. You use this call to render geometry and UI elements to a window or render target. You have to tell the renderer what you want to render and where to render it to. The button (recorded on `update`) is rendered when `mGuiService->draw()` is called. To learn more about rendering with NAP take a look at our [render documentation](@ref rendering). 
+
+Package for Distribution {#app_package}
+==========================
+
+To create a distributable package of your application, including: 
+
+- the executable
+- dependencies (modules / third-party)
+- napkin (editor)
+- assets (json)
+
+run: 
+
+`./package` on macOS and Linux, `package.bat` on Windows. Note that on macOS you (might) have to [disable gatekeeper](https://disable-gatekeeper.github.io/) to run the application: NAP application are not signed by default.
+
+
+

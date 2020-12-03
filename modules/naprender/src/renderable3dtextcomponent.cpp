@@ -34,6 +34,9 @@ namespace nap
 
 	bool Renderable3DTextComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableTextComponentInstance::init(errorState))
+			return false;
+
 		// Setup base class
 		if (!setup(errorState))
 			return false;

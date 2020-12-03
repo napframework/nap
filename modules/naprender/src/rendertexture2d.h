@@ -14,10 +14,10 @@ namespace nap
 	class Core;
 
 	/**
-	 * Empty 2D GPU texture that can be declared as a resource. 
-	 * Often used to store the result of a render pass, for example by a nap::RenderTarget.
-	 * When usage is 'Static' (the default) the texture on the GPU is in an undefined state until being rendered to.
-	 * This is fine when using it as a target for a render pass, you can't upload data into it or download data from it. 
+	 * Empty 2D GPU texture that can be declared as a resource in JSON or created at runtime.
+	 * You can use this texture to store the result of a render pass by a nap::RenderTarget.
+	 * When usage is 'Static' and 'Fill' is turned off the texture on the GPU is in an undefined state until being rendered to.
+	 * This is ok when using the texture as a render target, before the texture is read somewhere else.
 	 * All other usage modes initialize the texture to black.
 	 */
 	class NAPAPI RenderTexture2D : public Texture2D
@@ -50,5 +50,6 @@ namespace nap
 		int					mHeight		= 0;								///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mFormat		= EFormat::RGBA8;					///< Property: 'Format' texture format
+		bool				mFill		= false;							///< Property: 'Fill' if the texture is initialized to black when usage is static
 	};
 }

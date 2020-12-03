@@ -25,7 +25,8 @@ namespace nap
 	 * It is also possible to render the text using RenderService::renderObjects(), this is similar to how meshes are rendered.
 	 * In that case the x/y location of the camera influences the final location of the text.
 	 *
-	 * When the parent entity has a transform component attached to it the x/y Translate values are used as text offset in pixel space.
+	 * When the parent entity has a transform component attached to it and 'IgnoreTransform' is set to false, 
+	 * the x/y Translate values are used as offset in pixel space.
 	 * 2D text cannot be scaled or rotated, this ensures that every Glyph is rendered in it's native resolution.
 	 * When rendering this component through the render interface of the render service it is advised to use an orthographic camera.
 	 *
@@ -70,6 +71,7 @@ namespace nap
 		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;	///< Property: 'Orientation' Text draw orientation
 		glm::ivec2 mLocation = { 0,0 };												///< Property: 'Location' text location in pixel coordinates
 		EDepthMode mDepthMode = EDepthMode::NoReadWrite;							///< Property: 'DepthMode' how text is handled by z-buffer.
+		bool mIgnoreTransform = true;												///< Property: 'IgnoreTransform' if the transform is ignored when present
 	};
 
 
@@ -81,7 +83,8 @@ namespace nap
 	 * It is also possible to render the text using RenderService::renderObjects(), this is similar to how meshes are rendered.
 	 * In that case the x/y location of the camera influences the final location of the text.
 
-	 * When the parent entity has a transform component attached to it the x/y Translate values are used as text offset in pixel space.
+	 * When the parent entity has a transform component attached to it and 'IgnoreTransform' is set to false, 
+	 * the x/y Translate values are used as offset in pixel space.
 	 * 2D text cannot be scaled or rotated, this ensures that every Glyph is rendered in it's native resolution.
 	 * When rendering this component through the render interface of the render service it is advised to use an orthographic camera.
 	 *
@@ -217,5 +220,6 @@ namespace nap
 
 		glm::ivec2		mLocation = { 0,0 };		///< Text location in pixel coordinates
 		RenderService*	mService = nullptr;			///< Render service
+		bool			mIgnoreTransform = true;	///< If transform should be ignored when present
 	};
 }

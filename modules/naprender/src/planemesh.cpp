@@ -11,6 +11,7 @@
 // External Includes
 #include <glm/glm.hpp>
 #include <nap/core.h>
+#include <nap/numeric.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -18,10 +19,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
 	RTTI_PROPERTY("CullMode",	&nap::PlaneMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",	&nap::PlaneMesh::mPosition, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",		&nap::PlaneMesh::mColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rows",		&nap::PlaneMesh::mRows,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Columns",	&nap::PlaneMesh::mColumns,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
-
  
 namespace nap
 {
@@ -74,21 +75,20 @@ namespace nap
 		float inc_col_uv = 1.0f / static_cast<float>(mColumns);
 
 		// Create buffers for all attributes
-		int row_vert_count = mRows + 1;
-		int col_vert_count = mColumns + 1;
-		int vert_count = row_vert_count * col_vert_count;
+		uint row_vert_count = mRows + 1;
+		uint col_vert_count = mColumns + 1;
+		uint vert_count = row_vert_count * col_vert_count;
 
 		std::vector<glm::vec3> vertices(vert_count, { 0.0f,0.0f,0.0f });
 		std::vector<glm::vec3> normals(vert_count, { 0.0f,0.0f,1.0f });
 		std::vector<glm::vec3> uvs(vert_count, { 0.0f,0.0f,0.0f });
-		std::vector<glm::vec4> colors(vert_count, { 1.0f, 1.0f, 1.0f, 1.0f });
 
-		int idx = 0;
+		uint idx = 0;
 		float min_x = planeRect.getMin().x;
 		float min_y = planeRect.getMin().y;
 
 		// Fill vertex uv and position vertex buffers 
-		for (int row = 0; row < row_vert_count; row++)
+		for (uint row = 0; row < row_vert_count; row++)
 		{
 			// Calculate y values
 			float ve_y = min_y + (row * inc_row_v);
@@ -110,13 +110,13 @@ namespace nap
 		}
 
 		// Create indices, every cell in the grid contains 2 triangles
-		int triangle_count = mRows * mColumns * 2;
+		uint triangle_count = mRows * mColumns * 2;
 		std::vector<uint32> indices(triangle_count * 3, 0);
 		uint32* index_ptr = indices.data();
 
-		for (int row = 0; row < mRows; row++)
+		for (uint row = 0; row < mRows; row++)
 		{
-			for (int col = 0; col < mColumns; col++)
+			for (uint col = 0; col < mColumns; col++)
 			{
 				// Compute triangle a
 				*(index_ptr++) = (row * col_vert_count) + col;							//< Bottom Left
@@ -145,10 +145,9 @@ namespace nap
 		position_attribute.setData(vertices.data(), vert_count);
 		normal_attribute.setData(normals.data(), vert_count);
 		uv_attribute.setData(uvs.data(), vert_count);
-		color_attribute.setData(colors.data(), vert_count);
+		color_attribute.setData({vert_count, mColor.toVec4()});
 
 		MeshShape& shape = mesh.createShape();
 		shape.setIndices(indices.data(), indices.size());
 	}
-
 };

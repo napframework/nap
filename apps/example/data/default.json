@@ -10,7 +10,7 @@
             "Title": "Example Window",
             "Width": 1280,
             "Height": 720,
-            "Mode": "Mailbox",
+            "Mode": "Immediate",
             "ClearColor": {
                 "x": 0.0,
                 "y": 0.0,

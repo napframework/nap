@@ -404,6 +404,25 @@ namespace nap
 		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
 		/**
+		 * Returns a Vulkan pipeline for the given render target and Renderable-mesh combination.
+		 * Internally pipelines are cached, a new pipeline is created when a new combination is encountered.
+		 * Because of this initial frames are slower to render, until all combinations are cached and returned from the pool.
+		 * Pipeline creation is considered to be a heavy operation, take this into account when designing your application.
+		 *
+		 * Use this function inside nap::RenderableComponentInstance::onDraw() to find the right pipeline before rendering.
+		 * ~~~~~{.cpp}
+		 *		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(target, render_mesh, error_state);
+		 *		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+		 * ~~~~~
+		 *
+		 * @param renderTarget target that is rendered too.
+		 * @param renderableMesh the mesh / material combination that is rendered
+		 * @param errorState contains the error if the pipeline can't be created
+		 * @return new or cached pipeline.
+		 */
+		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const RenderableMesh& renderableMesh, utility::ErrorState& errorState);
+
+		/**
 		 * Queues a function that destroys Vulkan resources when appropriate.
 		 * Certain Vulkan resources, including buffers, image buffers etc. might still be in use when
 		 * the NAP resource is destroyed. It is therefore necessary to queue their destruction, instead

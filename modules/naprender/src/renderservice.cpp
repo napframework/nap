@@ -844,7 +844,7 @@ namespace nap
 
 		VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {};
 		dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamic_state_create_info.dynamicStateCount = 2;
+		dynamic_state_create_info.dynamicStateCount = 3;
 		dynamic_state_create_info.pDynamicStates = dynamic_states;
 
 		VkPipelineViewportStateCreateInfo viewport_state = {};
@@ -1028,6 +1028,13 @@ namespace nap
 		return Pipeline();
 	}
 
+
+	RenderService::Pipeline RenderService::getOrCreatePipeline(const IRenderTarget& renderTarget, const RenderableMesh& mesh, utility::ErrorState& errorState)
+	{
+		return getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), errorState);
+	}
+	
+
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
 		const Material& material = materialInstance.getMaterial();
@@ -1182,7 +1189,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero,  errorState);
+		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero, 0, errorState);
 	}
 
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.4)
+cmake_minimum_required(VERSION 3.18.4)
 project(NAP)
 
 #if(WIN32)
@@ -115,6 +115,8 @@ add_subdirectory(qt)
 # tools targets
 add_subdirectory(tools/fbxconverter)
 add_subdirectory(tools/napkin)
+add_subdirectory(tools/keygen)
+add_subdirectory(tools/licensegenerator)
 
 # START_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 # executable targets
@@ -152,6 +154,8 @@ add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
 add_subdirectory(demos/facedetection/module)
 add_subdirectory(demos/sequencer)
+add_subdirectory(demos/paintobject)
+add_subdirectory(demos/licensecheck)
 add_subdirectory(demos/tween)
 
 # Unit tests
@@ -194,6 +198,7 @@ add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
 add_subdirectory(modules/napsequence)
 add_subdirectory(modules/napsequencegui)
+add_subdirectory(modules/naplicense)
 add_subdirectory(modules/naptween)
 
 # Packaging

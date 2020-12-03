@@ -45,6 +45,9 @@ namespace nap
 
 	bool RenderableMeshComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Initialize material based on resource
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
 		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))

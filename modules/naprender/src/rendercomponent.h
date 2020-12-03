@@ -25,6 +25,9 @@ namespace nap
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(RenderableComponent, RenderableComponentInstance)
+
+	public:
+		bool mVisible = true;	///< Property: 'Visible' if this object is rendered to target by the render service 
 	};
 
 
@@ -41,6 +44,11 @@ namespace nap
 		RenderableComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)
 		{}
+
+		/**
+		 * Make sure to this in derived classes
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Called by the render service, calls onDraw() if visible.

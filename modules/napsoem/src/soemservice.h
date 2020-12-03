@@ -11,6 +11,9 @@ namespace nap
 {
 	/**
 	 * Manages the soem (simple open ethercat master) library.
+	 * IMPORTANT: winpcap is required on windows. Download it here: https://www.winpcap.org/
+	 * The SOEM module builds against the winpcap library but does not ship with the dll or driver.
+	 * Installing winpcap should be enough. Administator priviliges are not required.
 	 */
 	class NAPAPI SOEMService : public Service
 	{

@@ -17,6 +17,7 @@
 #include "randomnames.h"
 #include "filterpopup.h"
 #include "autosettings.h"
+#include "colorpicker.h"
 
 using namespace nap::qt;
 
@@ -26,7 +27,7 @@ using namespace nap::qt;
 class DemoPanel : public QWidget
 {
 public:
-	DemoPanel(QWidget* parent = nullptr) : QWidget(parent)
+	explicit DemoPanel(QWidget* parent = nullptr) : QWidget(parent)
 	{
 		setLayout(&mLayout);
 
@@ -110,6 +111,7 @@ public:
 		addDock("Demo", &mDemoPanel);
 		addDock("CurvesPanel", &mCurvePanel);
 		addDock("CurveView", &mCurveView);
+		addDock("ColorPicker", &mColorPicker);
 
 		createExampleCurves();
 	}
@@ -143,6 +145,7 @@ public:
 private:
 	CurveEditor mCurveView;
 	CurveWidget mCurvePanel;
+	ColorPicker mColorPicker;
 	DemoPanel mDemoPanel;
 };
 
@@ -158,5 +161,5 @@ int main(int argc, char* argv[])
 	MainWindow win;
 	win.show();
 
-	app.exec();
+	QApplication::exec();
 }

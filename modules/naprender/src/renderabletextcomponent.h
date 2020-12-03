@@ -58,6 +58,13 @@ namespace nap
 		RenderableTextComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
+		 * Initialize this component
+		 * @param errorState contains information if operation fails
+		 * @return if operation succeeded
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
 		 * @return the font used to display text.
 		 */
 		const FontInstance& getFont() const;
@@ -71,6 +78,12 @@ namespace nap
 		 * @return if all characters in the text are supported and can be drawn.
 		 */
 		bool setText(const std::string& text, utility::ErrorState& error);
+
+		/**
+		 * Updates text color
+		 * @param color new text color
+		 */
+		void setColor(const glm::vec3& color);
 
 		/**
 		 * Set the text to draw at the given line index. 
@@ -197,6 +210,7 @@ namespace nap
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
+		UniformVec3Instance* mColorUniform = nullptr;					///< Found text color uniform
 		UniformMat4Instance* mModelUniform = nullptr;					///< Found model matrix uniform input
 		UniformMat4Instance* mViewUniform = nullptr;					///< Found view matrix uniform input
 		UniformMat4Instance* mProjectionUniform = nullptr;				///< Found projection uniform input

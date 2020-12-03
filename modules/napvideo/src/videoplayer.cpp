@@ -81,34 +81,36 @@ namespace nap
 		// or when the dimensions have 
 		if (!mTexturesCreated || vid_x != mYTexture->getWidth() || vid_y != mYTexture->getHeight())
 		{
-			mYTexture = std::make_unique<RenderTexture2D>(mService.getCore());
-			mYTexture->mWidth = vid_x;
-			mYTexture->mHeight = vid_y;
-			mYTexture->mFormat = RenderTexture2D::EFormat::R8;
+			// Create texture description
+			SurfaceDescriptor tex_description;
+			tex_description.mWidth = vid_x;
+			tex_description.mHeight = vid_y;
+			tex_description.mColorSpace = EColorSpace::Linear;
+			tex_description.mDataType = ESurfaceDataType::BYTE;
+			tex_description.mChannels = ESurfaceChannels::R;
+
+			// Create Y Texture
+			mYTexture = std::make_unique<Texture2D>(mService.getCore());
 			mYTexture->mUsage = ETextureUsage::DynamicWrite;
-			mYTexture->mColorSpace = EColorSpace::Linear;
-			if (!mYTexture->init(error))
+			if (!mYTexture->init(tex_description, false, Texture2D::EClearMode::FillWithZero, 0, error))
 				return false;
 
+			// Update dimensions for U and V texture
 			float uv_x = vid_x * 0.5f;
 			float uv_y = vid_y * 0.5f;
+			tex_description.mWidth  = uv_x;
+			tex_description.mHeight = uv_y;
 
-			mUTexture = std::make_unique<RenderTexture2D>(mService.getCore());
-			mUTexture->mWidth = uv_x;
-			mUTexture->mHeight = uv_y;
-			mUTexture->mFormat = RenderTexture2D::EFormat::R8;
+			// Create U
+			mUTexture = std::make_unique<Texture2D>(mService.getCore());
 			mUTexture->mUsage = ETextureUsage::DynamicWrite;
-			mUTexture->mColorSpace = EColorSpace::Linear;
-			if (!mUTexture->init(error))
+			if (!mUTexture->init(tex_description, false, Texture2D::EClearMode::FillWithZero, 0, error))
 				return false;
 
-			mVTexture = std::make_unique<RenderTexture2D>(mService.getCore());
-			mVTexture->mWidth = uv_x;
-			mVTexture->mHeight = uv_y;
-			mVTexture->mFormat = RenderTexture2D::EFormat::R8;
+			// Create V Texture
+			mVTexture = std::make_unique<Texture2D>(mService.getCore());
 			mVTexture->mUsage = ETextureUsage::DynamicWrite;
-			mVTexture->mColorSpace = EColorSpace::Linear;
-			if (!mVTexture->init(error))
+			if (!mVTexture->init(tex_description, false, Texture2D::EClearMode::FillWithZero, 0, error))
 				return false;
 
 			mTexturesCreated = true;
@@ -205,21 +207,21 @@ namespace nap
 	}
 
 
-	nap::RenderTexture2D& VideoPlayer::getYTexture()
+	nap::Texture2D& VideoPlayer::getYTexture()
 	{
 		NAP_ASSERT_MSG(mYTexture != nullptr, "Missing video Y texture");
 		return *mYTexture;
 	}
 
 
-	nap::RenderTexture2D& VideoPlayer::getUTexture()
+	nap::Texture2D& VideoPlayer::getUTexture()
 	{
 		NAP_ASSERT_MSG(mUTexture != nullptr, "Missing video U texture");
 		return *mUTexture;
 	}
 
 	
-	nap::RenderTexture2D& VideoPlayer::getVTexture()
+	nap::Texture2D& VideoPlayer::getVTexture()
 	{
 		NAP_ASSERT_MSG(mVTexture != nullptr, "Missing video V texture");
 		return *mVTexture;

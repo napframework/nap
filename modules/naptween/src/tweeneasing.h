@@ -11,6 +11,9 @@
 
 namespace nap
 {
+	/**
+	 * Every possible tween ease type
+	 */
 	enum ETweenEasing : int
 	{
 		LINEAR 			= 0,
@@ -46,13 +49,31 @@ namespace nap
 		SINE_OUT 		= 30
 	};
 
+	/**
+	 * Base class for evaluation
+	 */
 	template<typename T>
 	class TweenEaseBase
 	{
 	public:
+		/**
+		 * Constructor
+		 */
 		TweenEaseBase() = default;
+
+		/**
+		 * Deconstructor
+		 */
 		virtual ~TweenEaseBase() = default;
 
+		/**
+		 * Evaluates using an easing method between start and end value
+		 * Override this method to implement your own evaluation method
+		 * @param start the start value
+		 * @param end the end value
+		 * @param progress progress between start & end ( float between 0 and 1 )
+		 * @return the value computed by easing method
+		 */
 		virtual T evaluate(T& start, T& end, float progress) = 0;
 	};
 
@@ -60,9 +81,6 @@ namespace nap
 	class TweenEaseLinear : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseLinear() = default;
-		virtual ~TweenEaseLinear() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -70,9 +88,6 @@ namespace nap
 	class TweenEaseInCubic : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInCubic() = default;
-		virtual ~TweenEaseInCubic() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -80,9 +95,6 @@ namespace nap
 	class TweenEaseInOutCubic : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutCubic() = default;
-		virtual ~TweenEaseInOutCubic() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -90,9 +102,6 @@ namespace nap
 	class TweenEaseOutCubic : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutCubic() = default;
-		virtual ~TweenEaseOutCubic() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -100,9 +109,6 @@ namespace nap
 	class TweenEaseInBack : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInBack() = default;
-		virtual ~TweenEaseInBack() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -110,9 +116,6 @@ namespace nap
 	class TweenEaseInOutBack : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutBack() = default;
-		virtual ~TweenEaseInOutBack() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -120,9 +123,6 @@ namespace nap
 	class TweenEaseOutBack : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutBack() = default;
-		virtual ~TweenEaseOutBack() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -130,9 +130,6 @@ namespace nap
 	class TweenEaseInBounce : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInBounce() = default;
-		virtual ~TweenEaseInBounce() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -140,9 +137,6 @@ namespace nap
 	class TweenEaseInOutBounce : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutBounce() = default;
-		virtual ~TweenEaseInOutBounce() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -150,9 +144,6 @@ namespace nap
 	class TweenEaseOutBounce : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutBounce() = default;
-		virtual ~TweenEaseOutBounce() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -160,9 +151,6 @@ namespace nap
 	class TweenEaseInCirc : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInCirc() = default;
-		virtual ~TweenEaseInCirc() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -170,9 +158,6 @@ namespace nap
 	class TweenEaseInOutCirc : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutCirc() = default;
-		virtual ~TweenEaseInOutCirc() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -180,9 +165,6 @@ namespace nap
 	class TweenEaseOutCirc : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutCirc() = default;
-		virtual ~TweenEaseOutCirc() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -190,9 +172,6 @@ namespace nap
 	class TweenEaseInElastic : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInElastic() = default;
-		virtual ~TweenEaseInElastic() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -200,9 +179,6 @@ namespace nap
 	class TweenEaseInOutElastic : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutElastic() = default;
-		virtual ~TweenEaseInOutElastic() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -210,9 +186,6 @@ namespace nap
 	class TweenEaseOutElastic : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutElastic() = default;
-		virtual ~TweenEaseOutElastic() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -220,9 +193,6 @@ namespace nap
 	class TweenEaseInExpo : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInExpo() = default;
-		virtual ~TweenEaseInExpo() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -230,9 +200,6 @@ namespace nap
 	class TweenEaseInOutExpo : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutExpo() = default;
-		virtual ~TweenEaseInOutExpo() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -240,9 +207,6 @@ namespace nap
 	class TweenEaseOutExpo : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutExpo() = default;
-		virtual ~TweenEaseOutExpo() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -250,9 +214,6 @@ namespace nap
 	class TweenEaseInQuad : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInQuad() = default;
-		virtual ~TweenEaseInQuad() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -260,9 +221,6 @@ namespace nap
 	class TweenEaseInOutQuad : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutQuad() = default;
-		virtual ~TweenEaseInOutQuad() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -270,9 +228,6 @@ namespace nap
 	class TweenEaseOutQuad : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutQuad() = default;
-		virtual ~TweenEaseOutQuad() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -280,9 +235,6 @@ namespace nap
 	class TweenEaseInQuart : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInQuart() = default;
-		virtual ~TweenEaseInQuart() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -290,9 +242,6 @@ namespace nap
 	class TweenEaseInOutQuart : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutQuart() = default;
-		virtual ~TweenEaseInOutQuart() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -300,9 +249,6 @@ namespace nap
 	class TweenEaseOutQuart : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutQuart() = default;
-		virtual ~TweenEaseOutQuart() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -310,9 +256,6 @@ namespace nap
 	class TweenEaseInQuint : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInQuint() = default;
-		virtual ~TweenEaseInQuint() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -320,9 +263,6 @@ namespace nap
 	class TweenEaseInOutQuint : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutQuint() = default;
-		virtual ~TweenEaseInOutQuint() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -330,9 +270,6 @@ namespace nap
 	class TweenEaseOutQuint : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutQuint() = default;
-		virtual ~TweenEaseOutQuint() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -340,9 +277,6 @@ namespace nap
 	class TweenEaseInSine : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInSine() = default;
-		virtual ~TweenEaseInSine() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -350,9 +284,6 @@ namespace nap
 	class TweenEaseInOutSine : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseInOutSine() = default;
-		virtual ~TweenEaseInOutSine() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
@@ -360,15 +291,13 @@ namespace nap
 	class TweenEaseOutSine : public TweenEaseBase<T>
 	{
 	public:
-		TweenEaseOutSine() = default;
-		virtual ~TweenEaseOutSine() = default;
-
 		T evaluate(T& start, T& end, float progress) override;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
 	// template definitions
 	//////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
 	T TweenEaseLinear<T>::evaluate(T& start, T& end, float progress)
 	{

@@ -35,7 +35,7 @@ LINKS
 -----
 
 NAP Documentation: https://www.napframework.com/doxygen
-NAP Source Code and Releases: https://github.com/naivisoftware/nap
+NAP Source Code and Releases: https://github.com/napframework/nap
 NAP Website: https://www.napframework.com
 
 LICENSE

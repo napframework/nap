@@ -64,9 +64,18 @@ namespace nap
 			mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
 			mNodeManager = &mAudioService->getNodeManager();
 			
-			for (auto channel = 0; channel < mResource->mChannelRouting.size(); ++channel)
+			// If channel routing is left empty, fill it with the channels in the buffer in ascending order.
+			if (mResource->mChannelRouting.empty())
+				for (auto channel = 0; channel < mResource->mBuffer->getChannelCount(); ++channel)
+					mChannelRouting.emplace_back(channel);
+			else
+				mChannelRouting = mResource->mChannelRouting;
+			
+			mChannelGains.resize(mChannelRouting.size(), 1.f);
+			
+			for (auto channel = 0; channel < mChannelRouting.size(); ++channel)
 			{
-				if (mResource->mChannelRouting[channel] >= mResource->mBuffer->getChannelCount())
+				if (mChannelRouting[channel] >= mResource->mBuffer->getChannelCount())
 				{
 					errorState.fail("%s: Routed channel is out of buffer's channel bounds", mResource->mID.c_str());
 					return false;
@@ -128,7 +137,18 @@ namespace nap
 				return;
 			mGain = gain;
 			if (mPlaying)
-				applyGain(5);
+				applyGain(5.f);
+		}
+		
+		
+		void PlaybackComponentInstance::setChannelGain(int channel, ControllerValue gain)
+		{
+			// Make sure the channel index is in bounds.
+			assert(channel < mGainControls.size());
+			
+			mChannelGains[channel] = gain;
+			if (mPlaying)
+				applyGain(5.f);
 		}
 		
 		
@@ -138,7 +158,7 @@ namespace nap
 				return;
 			mStereoPanning = panning;
 			if (mPlaying)
-				applyGain(5);
+				applyGain(5.f);
 		}
 		
 		
@@ -169,17 +189,10 @@ namespace nap
 		void PlaybackComponentInstance::applyGain(TimeValue rampTime)
 		{
 			if (mResource->isStereo())
-			{
-				ControllerValue left = 0;
-				ControllerValue right = 0;
-				equalPowerPan(mStereoPanning, left, right);
-				mGainControls[0]->ramp(left * mGain, rampTime);
-				mGainControls[1]->ramp(right * mGain, rampTime);
-			}
-			else {
-				for (auto& gainControl : mGainControls)
-					gainControl->ramp(mGain, rampTime);
-			}
+				equalPowerPan(mStereoPanning, mChannelGains[0], mChannelGains[1]);
+			
+			for (auto i = 0; i < mGainControls.size(); ++i)
+				mGainControls[i]->ramp(mGain * mChannelGains[i], rampTime);
 		}
 		
 		
@@ -194,7 +207,7 @@ namespace nap
 			for (auto channel = 0; channel < mBufferPlayers.size(); ++channel)
 			{
 				if (mBufferPlayers[channel] != nullptr)
-					mBufferPlayers[channel]->play(mResource->mChannelRouting[channel],
+					mBufferPlayers[channel]->play(mChannelRouting[channel],
 					                              startPosition * mNodeManager->getSamplesPerMillisecond(),
 					                              actualSpeed);
 			}

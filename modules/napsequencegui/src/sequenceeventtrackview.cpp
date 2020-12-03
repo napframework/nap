@@ -15,49 +15,39 @@
 namespace nap
 {
 	using namespace SequenceGUIActions;
+	using namespace SequenceGUIClipboards;
 
-	static bool trackViewRegistration = SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView));
+	std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& SequenceEventTrackView::getSegmentViews()
+	{
+		static std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>> segment_views;
+		return segment_views;
+	}
 
-	static bool registerCurveTrackView = SequenceTrackView::registerFactory(RTTI_OF(SequenceEventTrackView), [](SequenceEditorGUIView& view, SequenceEditorGUIState& state)->std::unique_ptr<SequenceTrackView>
+	std::unordered_map<rttr::type, bool (SequenceEventTrackView::*)()>& SequenceEventTrackView::getEditEventHandlers()
+	{
+		static std::unordered_map<rttr::type, bool(SequenceEventTrackView::*)()> popup_handlers;
+		return popup_handlers;
+	}
+
+	std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, double)>& SequenceEventTrackView::getPasteEventMap()
+	{
+		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const std::string&, double)> paste_handlers;
+		return paste_handlers;
+	}
+
+	static bool track_view_registration = SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView));
+
+	static bool register_track_view_factory = SequenceTrackView::registerFactory(RTTI_OF(SequenceEventTrackView), [](SequenceEditorGUIView& view, SequenceEditorGUIState& state)->std::unique_ptr<SequenceTrackView>
 	{
 		return std::make_unique<SequenceEventTrackView>(view, state);
 	});
 
-	static std::vector<rttr::type> sEventTypes
-		{
-			RTTI_OF(SequenceTrackSegmentEventString),
-			RTTI_OF(SequenceTrackSegmentEventFloat),
-			RTTI_OF(SequenceTrackSegmentEventInt),
-			RTTI_OF(SequenceTrackSegmentEventVec2),
-			RTTI_OF(SequenceTrackSegmentEventVec3)
-		};
+	std::vector<rttr::type>& SequenceEventTrackView::getEventTypesVector()
+	{
+		static std::vector<rttr::type> eventTypes;
+		return eventTypes;
+	}
 
-	static std::unordered_map<rttr::type, void(*)(SequenceControllerEvent&, std::string&, double)> sInsertSegmentMap
-		{
-			{ RTTI_OF(SequenceTrackSegmentEventString), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<std::string>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventFloat), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<float>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventInt), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<int>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventVec2), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<glm::vec2>(trackID, time); }},
-			{ RTTI_OF(SequenceTrackSegmentEventVec3), [](SequenceControllerEvent& controller, std::string& trackID, double time){ controller.insertEventSegment<glm::vec3>(trackID, time); }}
-		};
-
-	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> SequenceEventTrackView::sHandlePopupsMap
-		{
-			{ RTTI_OF(SequenceTrackSegmentEventString), &SequenceEventTrackView::handleEditEventSegmentPopup<std::string> },
-			{ RTTI_OF(SequenceTrackSegmentEventFloat), &SequenceEventTrackView::handleEditEventSegmentPopup<float> },
-			{ RTTI_OF(SequenceTrackSegmentEventInt), &SequenceEventTrackView::handleEditEventSegmentPopup<int> },
-			{ RTTI_OF(SequenceTrackSegmentEventVec2), &SequenceEventTrackView::handleEditEventSegmentPopup<glm::vec2>},
-			{ RTTI_OF(SequenceTrackSegmentEventVec3), &SequenceEventTrackView::handleEditEventSegmentPopup<glm::vec3> }
-		};
-
-	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const SequenceTrackSegmentEventBase*, const std::string&, const std::string&)> SequenceEventTrackView::sEditActionMap
-		{
-			{ RTTI_OF(SequenceTrackSegmentEventString), &SequenceEventTrackView::createEditAction<std::string> },
-			{ RTTI_OF(SequenceTrackSegmentEventFloat), &SequenceEventTrackView::createEditAction<float> },
-			{ RTTI_OF(SequenceTrackSegmentEventInt), &SequenceEventTrackView::createEditAction<int> },
-			{ RTTI_OF(SequenceTrackSegmentEventVec2), &SequenceEventTrackView::createEditAction<glm::vec2>},
-			{ RTTI_OF(SequenceTrackSegmentEventVec3), &SequenceEventTrackView::createEditAction<glm::vec3> }
-		};
 
 	SequenceEventTrackView::SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
 		: SequenceTrackView(view, state)
@@ -202,66 +192,16 @@ namespace nap
 				0.0f, draw_list);
 
 			// static map of draw functions for different event types
-			static std::unordered_map<rttr::type, void(*)(const SequenceTrackSegment& segment, ImDrawList*, const ImVec2&, const float)>
-				s_draw_map{
-					{ RTTI_OF(SequenceTrackSegmentEventFloat), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventFloat&>(segment);
 
-					  std::ostringstream string_stream;
-					  string_stream << segment_event.mValue;
-
-					  drawList->AddText(
-						  { topLeft.x + x + 5, topLeft.y + 5 },
-						  guicolors::red,
-										string_stream.str().c_str());
-					} },
-					{ RTTI_OF(SequenceTrackSegmentEventInt), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventInt&>(segment);
-
-					  std::ostringstream string_stream;
-					  string_stream << segment_event.mValue;
-
-					  drawList->AddText(
-						  { topLeft.x + x + 5, topLeft.y + 5 },
-						  guicolors::red,
-										string_stream.str().c_str());
-					} },
-					{ RTTI_OF(SequenceTrackSegmentEventString), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-
-					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventString&>(segment);
-
-					  std::ostringstream string_stream;
-					  string_stream << "\"" << segment_event.mValue << "\"" ;
-
-					  drawList->AddText(
-						  { topLeft.x + x + 5, topLeft.y + 5 },
-						  guicolors::red, string_stream.str().c_str());
-					} },
-					{ RTTI_OF(SequenceTrackSegmentEventVec2), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
-
-					  std::ostringstream string_stream;
-					  string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ")";
-
-					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,string_stream.str().c_str());
-					} },
-					{ RTTI_OF(SequenceTrackSegmentEventVec3), [](const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x){
-					  const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
-
-					  std::ostringstream string_stream;
-					  string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ")";
-
-					  drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,
-										string_stream.str().c_str());
-					} }
-				};
 
 			//
-			auto it = s_draw_map.find(segment.get()->get_type());
-			assert(it != s_draw_map.end()); // type not found
-			if( it != s_draw_map.end())
+			auto type = segment.get()->get_type();
+			auto& segment_views = getSegmentViews();
+			auto it = segment_views.find(type);
+			assert(it != segment_views.end()); // type not found
+			if( it != segment_views.end())
 			{
-				it->second(*segment.get(), draw_list, trackTopLeft, segment_x);
+				it->second->drawEvent(*segment.get(), draw_list, trackTopLeft, segment_x);
 			}
 
 			//
@@ -273,26 +213,37 @@ namespace nap
 	}
 
 
-	void SequenceEventTrackView::handlePopups()
+	bool SequenceEventTrackView::handlePopups()
 	{
-		handleInsertEventSegmentPopup();
+		if( handleInsertEventSegmentPopup() )
+			return true;
 
-		handleDeleteSegmentPopup();
+		if( handleDeleteSegmentPopup() )
+			return true;
 
-		for(auto& type : sEventTypes)
+		for(auto& type : getEventTypesVector())
 		{
-			auto it = sHandlePopupsMap.find(type);
-			assert(it != sHandlePopupsMap.end()); // type not found
-			if( it != sHandlePopupsMap.end())
+			auto& edit_popup_map = getEditEventHandlers();
+			auto it = edit_popup_map.find(type);
+			assert(it != edit_popup_map.end()); // type not found
+			if( it != edit_popup_map.end())
 			{
-				(*this.*it->second)();
+				if( (*this.*it->second)() )
+				{
+					return true;
+				}
 			}
 		}
+
+		return false;
 	}
 
 
-	void SequenceEventTrackView::handleInsertEventSegmentPopup()
+	bool SequenceEventTrackView::handleInsertEventSegmentPopup()
 	{
+		// popup handled
+		bool handled = false;
+
 		if (mState.mAction->isAction<OpenInsertEventSegmentPopup>())
 		{
 			// invoke insert sequence popup
@@ -307,21 +258,45 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Insert Event"))
 			{
+				handled = true;
+
 				auto* action = mState.mAction->getDerived<InsertingEventSegment>();
 
-				for(auto& type : sEventTypes)
+				for(auto& type : getEventTypesVector())
 				{
 					std::string buttonString = "Insert " + type.get_name().to_string();
 					if( ImGui::Button(buttonString.c_str()))
 					{
-						auto it = sInsertSegmentMap.find(type);
-						assert(it!=sInsertSegmentMap.end()); // type not found
-						if( it != sInsertSegmentMap.end() )
+						auto& views = getSegmentViews();
+						auto it = views.find(type);
+						assert(it!=views.end()); // type not found
+						if( it != views.end() )
 						{
-							it->second(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
+							it->second->insertSegment(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
 							ImGui::CloseCurrentPopup();
 							mState.mAction = createAction<None>();
 						}
+					}
+				}
+
+				// handle paste if event segment is in clipboard
+				if( mState.mClipboard->isClipboard<EventSegmentClipboard>())
+				{
+					if( ImGui::Button("Paste") )
+					{
+						// call appropriate paste method
+						auto* event_segment_clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
+						auto& paste_event_map = getPasteEventMap();
+						auto it = paste_event_map.find(event_segment_clipboard->mSegmentType);
+						assert(it!=paste_event_map.end()); // type not found
+						if( it != paste_event_map.end() )
+						{
+							(*this.*it->second)(action->mTrackID, action->mTime);
+						}
+
+						// exit popup
+						ImGui::CloseCurrentPopup();
+						mState.mAction = createAction<None>();
 					}
 				}
 
@@ -339,6 +314,8 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
+
+		return handled;
 	}
 
 
@@ -452,8 +429,11 @@ namespace nap
 	}
 
 
-	void SequenceEventTrackView::handleDeleteSegmentPopup()
+	bool SequenceEventTrackView::handleDeleteSegmentPopup()
 	{
+		//
+		bool handled = false;
+
 		if (mState.mAction->isAction<OpenEditSegmentValuePopup>())
 		{
 			// invoke insert sequence popup
@@ -468,7 +448,26 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Edit Segment"))
 			{
+				handled = true;
+
 				auto* action = mState.mAction->getDerived<EditingSegment>();
+
+				if(ImGui::Button("Copy"))
+				{
+					// create clipboard
+					mState.mClipboard = createClipboard<EventSegmentClipboard>(action->mSegmentType);
+
+					// serialize segment
+					utility::ErrorState errorState;
+					auto& controller = getEditor().getController<SequenceControllerEvent>();
+					const auto* event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+					mState.mClipboard->serialize(event_segment, errorState);
+
+					// exit popup
+					ImGui::CloseCurrentPopup();
+					mState.mAction = createAction<None>();
+				}
+
 				if (ImGui::Button("Delete"))
 				{
 					auto& controller = getEditor().getController<SequenceControllerEvent>();
@@ -492,11 +491,12 @@ namespace nap
 							{
 								rttr::type type = eventSegment->get_type();
 
-								auto it = sEditActionMap.find(type);
-								assert(it!=sEditActionMap.end()); // type not found
-								if(it!=sEditActionMap.end())
+								auto& views = getSegmentViews();
+								auto it = views.find(type);
+								assert(it!=views.end()); // type not found
+								if(it!=views.end())
 								{
-									(*this.*it->second)(eventSegment, action->mTrackID, action->mSegmentID);
+									mState.mAction = it->second->createEditAction(eventSegment, action->mTrackID, action->mSegmentID);
 								}
 							}
 
@@ -519,5 +519,170 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
+
+		return handled;
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// std::string event segment view specialization
+	//////////////////////////////////////////////////////////////////////////
+
+	template<>
+	void SequenceEventTrackSegmentView<std::string>::handleEditPopupContent(SequenceGUIActions::Action& action)
+	{
+		auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<std::string>>();
+		std::string& message = static_cast<std::string&>(edit_action->mValue);
+
+		char buffer[256];
+		strcpy(buffer, message.c_str());
+
+		if (ImGui::InputText("message", buffer, 256))
+		{
+			message = std::string(buffer);
+		}
+	}
+
+
+	template<>
+	void SequenceEventTrackSegmentView<std::string>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	{
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventString&>(segment);
+
+		std::ostringstream string_stream;
+		string_stream << "\"" << segment_event.mValue << "\"" ;
+
+		drawList->AddText(
+			{ topLeft.x + x + 5, topLeft.y + 5 },
+			guicolors::red, string_stream.str().c_str());
+	}
+
+
+	static bool register_segment_view_string = SequenceEventTrackView::registerSegmentView<std::string>();
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// float event segment view specialization
+	//////////////////////////////////////////////////////////////////////////
+
+
+	template<>
+	void SequenceEventTrackSegmentView<float>::handleEditPopupContent(SequenceGUIActions::Action& action)
+	{
+		auto* editAction = action.getDerived<SequenceGUIActions::EditingEventSegment<float>>();
+		float& value = static_cast<float&>(editAction->mValue);
+
+		ImGui::InputFloat("Value", &value);
+	}
+
+
+	template<>
+	void SequenceEventTrackSegmentView<float>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	{
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventFloat&>(segment);
+
+		std::ostringstream string_stream;
+		string_stream << segment_event.mValue;
+
+		drawList->AddText(
+			{ topLeft.x + x + 5, topLeft.y + 5 },
+			guicolors::red,
+			string_stream.str().c_str());
+	}
+
+
+	static bool register_segment_view_float = SequenceEventTrackView::registerSegmentView<float>();
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// int event segment view specialization
+	//////////////////////////////////////////////////////////////////////////
+
+
+	template<>
+	void SequenceEventTrackSegmentView<int>::handleEditPopupContent(SequenceGUIActions::Action& action)
+	{
+		auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<int>>();
+		int& value = static_cast<int&>(edit_action->mValue);
+
+		ImGui::InputInt("Value", &value);
+	}
+
+
+	template<>
+	void SequenceEventTrackSegmentView<int>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	{
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventInt&>(segment);
+
+		std::ostringstream string_stream;
+		string_stream << segment_event.mValue;
+
+		drawList->AddText(
+			{ topLeft.x + x + 5, topLeft.y + 5 },
+			guicolors::red,
+			string_stream.str().c_str());
+	}
+
+
+	static bool register_segment_view_int = SequenceEventTrackView::registerSegmentView<int>();
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// glm::vec2 event segment view specialization
+	//////////////////////////////////////////////////////////////////////////
+
+
+	template<>
+	void SequenceEventTrackSegmentView<glm::vec2>::handleEditPopupContent(SequenceGUIActions::Action& action)
+	{
+		auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec2>>();
+		glm::vec2& value = static_cast<glm::vec2&>(edit_action->mValue);
+
+		ImGui::InputFloat2("Value", &value.x);
+	}
+
+
+	template<>
+	void SequenceEventTrackSegmentView<glm::vec2>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	{
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
+
+		std::ostringstream string_stream;
+		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ")";
+
+		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,string_stream.str().c_str());
+	}
+
+
+	static bool register_segment_view_vec2 = SequenceEventTrackView::registerSegmentView<glm::vec2>();
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// glm::vec3 event segment view specialization
+	//////////////////////////////////////////////////////////////////////////
+
+
+	template<>
+	void SequenceEventTrackSegmentView<glm::vec3>::handleEditPopupContent(SequenceGUIActions::Action& action)
+	{
+		auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec3>>();
+		glm::vec3& value = static_cast<glm::vec3&>(edit_action->mValue);
+
+		ImGui::InputFloat3("Value", &value.x);
+	}
+
+
+	template<>
+	void SequenceEventTrackSegmentView<glm::vec3>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	{
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
+
+		std::ostringstream string_stream;
+		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ")";
+
+		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,
+						  string_stream.str().c_str());
+	}
+
+
+	static bool register_segment_view_vec3 = SequenceEventTrackView::registerSegmentView<glm::vec3>();
 }

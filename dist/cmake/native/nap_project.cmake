@@ -133,6 +133,9 @@ export_fbx(${CMAKE_SOURCE_DIR}/data/)
 deploy_single_path_mapping(${CMAKE_SOURCE_DIR})
 
 # Package into packaged project on *nix
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
+install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+install(FILES ${NAP_ROOT}/cmake/project_creator/NAP.txt DESTINATION .)
 if(NOT WIN32)
     # Set RPATH to search in ./lib
     if(APPLE)
@@ -145,13 +148,6 @@ if(NOT WIN32)
         set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
     endif()
     install(TARGETS ${PROJECT_NAME} DESTINATION .)
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)    
-    install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
-    install(FILES ${NAP_ROOT}/dist/NAP.txt DESTINATION .)
-else()
-    if(NAP_PACKAGED_APP_BUILD)
-        copy_files_to_bin(${CMAKE_SOURCE_DIR}/project.json)
-    endif()
 endif()
 
 # Package napkin if we're doing a build from against released NAP or we're packaging a project with napkin
@@ -160,7 +156,6 @@ if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
 endif()
 
 # Package redistributable help on Windows
-if(WIN32 AND PROJECT_PACKAGE_BIN_DIR)
-    copy_files_to_bin(${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt)
-    copy_files_to_bin(${NAP_ROOT}/dist/NAP.txt)
+if(WIN32)
+    INSTALL(FILES ${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
 endif()

@@ -41,7 +41,7 @@ namespace nap
 			
 			// Properties
 			ResourcePtr<AudioBufferResource> mBuffer = nullptr; ///< property: 'Buffer' The buffer containing the audio to be played back
-			std::vector<int> mChannelRouting = { 0 };           ///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played.
+			std::vector<int> mChannelRouting = { };           ///< property: 'ChannelRouting' The size of this array indicates the number of channels to be played back. Each element indicates a channel number of the buffer to be played. If left empty it will be filled with the channels in the buffer in ascending order.
 			bool mAutoPlay = true;                              ///< property: 'AutoPlay' If set to true, the component will start playing on initialization.
 			TimeValue mStartPosition = 0;                       ///< property: 'StartPosition' Start position of playback in milliseconds.
 			TimeValue mDuration = 0;                            ///< property: 'Duration' Duration of playback in milliseconds.
@@ -89,9 +89,15 @@ namespace nap
 			void stop();
 			
 			/**
-			 * Sets the gain of playback.
+			 * Sets the overall gain of playback.
 			 */
 			void setGain(ControllerValue gain);
+			
+			/**
+			 * Sets the gain for a single channel relative to the overall gain.
+			 * Use this for manual panning with for example non-stereo channel setups.
+			 */
+			 void setChannelGain(int channel, ControllerValue gain);
 			
 			/**
 			 * Sets the panning for stereo playback: 0 means far left, 0.5 means center and 1.0 means far right. Only applies when there are 2 channels of playback.
@@ -147,6 +153,11 @@ namespace nap
 			 * @return the pitch as a fraction of the original pitch of the audio material in the buffer.
 			 */
 			ControllerValue getPitch() const { return mPitch; }
+			
+			/**
+			 * @return the amount of time the sequencer has been playing since the last call to play().
+			 */
+			TimeValue getCurrentPlayingTime() const { return mCurrentPlayingTime; }
 		
 		private:
 			void applyGain(TimeValue rampTime);
@@ -156,12 +167,14 @@ namespace nap
 			std::vector<SafeOwner<ControlNode>> mGainControls; // Nodes to control the gain for each channel.
 			
 			ControllerValue mGain = 0;
+			std::vector<ControllerValue> mChannelGains;
 			ControllerValue mStereoPanning = 0.5;
 			TimeValue mFadeInTime = 0;
 			TimeValue mFadeOutTime = 0;
 			ControllerValue mPitch = 1.0;
 			TimeValue mDuration = 0;
 			TimeValue mCurrentPlayingTime = 0;
+			std::vector<int> mChannelRouting;
 			
 			bool mPlaying = false;  // Indicates wether the component is currently playing
 			

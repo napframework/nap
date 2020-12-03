@@ -12,6 +12,7 @@
 // external includes
 #include <rtti/factory.h>
 #include <nap/device.h>
+#include <nap/signalslot.h>
 #include <future>
 #include <mutex>
 
@@ -144,6 +145,47 @@ namespace nap
 		bool 					mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
 		float					mFrequency = 1000.0f; ///< Property: 'Frequency' frequency of player thread
 		std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
+	public:
+		// signals
+		/***
+		 * playbackSpeedChanged signal is dispatched when setPlaybackSpeed(float) method is called on SequencePlayer
+		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
+		 * Note: Signal is dispatched from whichever thread is calling the setPlaybackSpeed(float) method on SequencePlayer
+		 */
+		Signal<SequencePlayer&, float> playbackSpeedChanged;
+
+		/***
+		 * playerTimeChanged signal is dispatched when setPlayerTime(double) method is called on SequencePlayer
+		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
+		 * Note: Signal is dispatched from whichever thread is calling the setPlayerTime(double) method on SequencePlayer
+		 */
+		Signal<SequencePlayer&, double> playerTimeChanged;
+
+		/***
+		 * playStateChanged signal is dispatched when setIsPlaying(bool) method is called on SequencePlayer
+		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
+		 * Note: Signal is dispatched from whichever thread is calling the setIsPlaying(bool) method on SequencePlayer
+		 * Note: Play state doesn't mean Paused or not. The SequencePlayer can be Paused but still be Playing, in which case time doesn't get updated but adapter will still be called
+		 */
+		Signal<SequencePlayer&, bool> playStateChanged;
+
+		/***
+		 * pauseStateChanged signal is dispatched when setIsPaused(bool) method is called on SequencePlayer
+		 * This is useful when you want to sync or invoke other methods with the SequencePlayer
+		 * Note: Signal is dispatched from whichever thread is calling the setIsPaused(bool) method on SequencePlayer
+		 * Note: Play state doesn't mean Paused or not. The SequencePlayer can be Paused but still be Playing, in which case time doesn't get updated but adapter will still be called
+		 */
+		Signal<SequencePlayer&, bool> pauseStateChanged;
+
+		/***
+		 *	preTick Signal is triggered on player thread, before updating the adapters
+		 */
+		Signal<SequencePlayer&> preTick;
+
+		/**
+		 * postTick Signal is triggered on player thread, after updating the adapters
+		 */
+		Signal<SequencePlayer&> postTick;
 	private:
 
 		/**

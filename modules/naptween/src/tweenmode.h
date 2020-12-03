@@ -6,6 +6,9 @@
 
 namespace nap
 {
+	/**
+	 * All tween mode available
+	 */
 	enum ETweenMode : int
 	{
 		NORMAL 		= 0,

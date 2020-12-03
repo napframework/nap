@@ -139,6 +139,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -245,6 +246,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "Samples": "One",
                     "ClearColor": {
                         "Values": [
                             0,
@@ -629,6 +631,14 @@
                 "x": 0.0,
                 "y": 0.0
             },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "Rows": 1,
             "Columns": 1
         },
@@ -636,6 +646,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "CameraCaptureTexture",
             "Usage": "DynamicWrite",
+            "Fill": false,
             "Width": 640,
             "Height": 480,
             "Format": "RGBA8",
@@ -645,6 +656,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "CameraOutputTexture",
             "Usage": "Static",
+            "Fill": false,
             "Width": 640,
             "Height": 480,
             "Format": "RGBA8",
@@ -654,6 +666,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "VideoCaptureTexture",
             "Usage": "DynamicWrite",
+            "Fill": false,
             "Width": 640,
             "Height": 360,
             "Format": "RGBA8",
@@ -663,6 +676,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "VideoOutputTexture",
             "Usage": "Static",
+            "Fill": false,
             "Width": 640,
             "Height": 360,
             "Format": "RGBA8",
@@ -906,7 +920,15 @@
             "CullMode": "Back",
             "Radius": 1.0,
             "Rings": 50.0,
-            "Sectors": 50.0
+            "Sectors": 50.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }

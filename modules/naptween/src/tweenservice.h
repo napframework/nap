@@ -94,6 +94,10 @@ namespace nap
 		std::vector<const TweenBase*> 			mTweensToRemove;
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+	// template definition
+	//////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
 	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, ETweenEasing easeType, ETweenMode mode)
 	{

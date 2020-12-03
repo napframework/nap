@@ -29,7 +29,7 @@ namespace nap
 	 * Responsible for drawing a track of a specific type
 	 * Needs to be extended for each track type. F.E. SequenceCurveTrackView is responsible for drawing curve tracks
 	 */
-	class SequenceTrackView
+	class NAPAPI SequenceTrackView
 	{
 	public:
 		/**
@@ -49,13 +49,13 @@ namespace nap
 		 * given track derived class is expected to be of track type that is used by this view
 		 * @param track reference to sequence track
 		 */
-		void show(const SequenceTrack& track);
+		virtual void show(const SequenceTrack& track);
 
 		/**
 		 * handles popups
 		 * popups must be handled after all tracks are drawn
 		 */
-		virtual void handlePopups() = 0;
+		virtual bool handlePopups() = 0;
 
 		/**
 		 * handles any actions that are created upon show
@@ -117,14 +117,16 @@ namespace nap
 		 * shows inspector block
 		 * @param track reference to track
 		 * @param deleteTrack reference to bool to indicate whether delete is pressed
+		 * @param moveUp reference to bool indicating to move the track upwards
+		 * @param moveDown reference to bool indicating to move the track downwards
 		 */
-		void showInspector(const SequenceTrack& track, bool& deleteTrack);
+		virtual void showInspector(const SequenceTrack& track, bool& deleteTrack, bool& moveUp, bool& moveDown);
 
 		/**
 		 * shows track contents
 		 * @param track reference to track
 		 */
-		void showTrack(const SequenceTrack& track);
+		virtual void showTrack(const SequenceTrack& track);
 
 		/**
 		 * this methods needs to be overloaded, contents for the inspector of a specific track type can be drawn in this function
