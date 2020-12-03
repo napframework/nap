@@ -61,6 +61,10 @@ namespace nap
 		int shutdown() override;
 
 	private:
+		void doTrace(const PointerEvent& event);
+
+		void createTween(const glm::vec3& pos);
+
 		// Nap Services
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
@@ -74,11 +78,14 @@ namespace nap
 		ObjectPtr<EntityInstance> mSphereEntity = nullptr;				//< Pointer to the bouncing ball entity
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;				//< Pointer to the plane entity
 
-		glm::vec3 mTarget = { 0.0f, 1.0f, 0.0f };
 		float mTweenDuration = 1.0f;
-		int mCurrentTweenType = 2;
-		int mCurrentTweenMode = 2;
-		std::unique_ptr<TweenHandle<glm::vec3>> mActiveTweenHandle;
-		void createTween();
+		int mCurrentTweenType = 3;
+		int mCurrentTweenMode = 0;
+
+		std::unique_ptr<TweenHandle<glm::vec3>> mMovementTweenHandle;
+		std::unique_ptr<TweenHandle<float>> 	mAnimationTweenHandle;
+
+		float mAnimationIntensity = 0.0f;
+		glm::vec2 mAnimationPos = { 0.0f, 0.0f };
 	};
 }

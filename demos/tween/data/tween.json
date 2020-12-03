@@ -5,33 +5,16 @@
             "mID": "Camera",
             "Components": [
                 {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "PerpectiveCamera",
-                    "Properties": {
-                        "FieldOfView": 45.0,
-                        "NearClippingPlane": 0.5,
-                        "FarClippingPlane": 100.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
                     "Type": "nap::TransformComponent",
                     "mID": "nap::TransformComponent",
                     "Properties": {
                         "Translate": {
-                            "x": 1.0,
+                            "x": 0.0,
                             "y": 2.0,
-                            "z": 2.0
+                            "z": 0.0
                         },
                         "Rotate": {
-                            "x": 0.0,
+                            "x": -90.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -52,15 +35,20 @@
                     "mID": "nap::PointerInputComponent"
                 },
                 {
-                    "Type": "nap::OrbitController",
-                    "mID": "nap::OrbitController",
-                    "MovementSpeed": 0.010999999940395356,
-                    "RotateSpeed": 0.0032999999821186067,
-                    "PerspCameraComponent": "PerpectiveCamera",
-                    "LookAtPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "nap::PerspCameraComponent_6a5cd3c5",
+                    "Properties": {
+                        "FieldOfView": 50.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
                     }
                 }
             ],
@@ -85,9 +73,9 @@
                             "z": 0.0
                         },
                         "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
+                            "x": 10.0,
+                            "y": 10.0,
+                            "z": 10.0
                         },
                         "UniformScale": 1.0
                     }
@@ -103,6 +91,7 @@
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "InheritFromBlendMode"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -132,6 +121,7 @@
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -279,7 +269,8 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",

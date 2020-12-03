@@ -21,6 +21,7 @@
 #include <tweenservice.h>
 #include <tweenhandle.h>
 #include <tween.h>
+#include <renderglobals.h>
 
 // Register this application with RTTI, this is required by the AppRunner to
 // validate that this object is indeed an application
@@ -101,9 +102,8 @@ namespace nap
 		mSphereEntity = scene->findEntity("Sphere");
 		mPlaneEntity = scene->findEntity("Plane");
 
-		mGuiService->selectWindow(mRenderWindow);
 
-		createTween();
+		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
 	}
@@ -125,14 +125,6 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Setup some gui elements to be drawn later
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::End();
-
 		// Find the camera location uniform in the material of the sphere
 		nap::RenderableMeshComponentInstance& sphere_mesh = mSphereEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		nap::UniformStructInstance* uniform_instance =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
@@ -146,22 +138,23 @@ namespace nap
 		// Find the animation uniform in the material of the plane.
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		uniform_instance = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		UniformFloatInstance* animator_uniform = uniform_instance->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
 
-		// Set it to the current animation value of the sphere.
-		//nap::AnimatorComponentInstance& animator_comp = mSphereEntity->getComponent<nap::AnimatorComponentInstance>();
-		//animator_uniform->setValue(animator_comp.getCurveValue());
+		UniformFloatInstance* animator_intensity_uniform = uniform_instance->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
+		animator_intensity_uniform->setValue(mAnimationIntensity);
+
+		UniformVec2Instance* animator_pos_uniform = uniform_instance->getOrCreateUniform<nap::UniformVec2Instance>("animationPos");
+		animator_pos_uniform->setValue(mAnimationPos);
 
 		// draw the GUI
 		if( ImGui::Begin("Tween") )
 		{
+			ImGui::Text(getCurrentDateTime().toString().c_str());
+			RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
 			if( ImGui::InputFloat("Duration", &mTweenDuration) )
 			{
 				mTweenDuration = math::max<float>(0.0f, mTweenDuration);
-			}
-
-			if( ImGui::SliderFloat3("Target", &mTarget.x, 0.0f, 1.0f))
-			{
 			}
 
 			if( ImGui::Combo("Ease", &mCurrentTweenType, ease_types, IM_ARRAYSIZE(ease_types)))
@@ -173,31 +166,29 @@ namespace nap
 			{
 
 			}
-
-			if( ImGui::Button("Do Tween") )
-			{
-				createTween();
-			}
 		}
 		ImGui::End();
 	}
 
 
-	void TweenApp::createTween()
+	void TweenApp::createTween(const glm::vec3& pos)
 	{
-		auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
-		glm::vec3 sphere_position = math::extractPosition(sphere_transform.getGlobalTransform());
-		mActiveTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, mTarget, mTweenDuration, (TweenEasing)mCurrentTweenType, (TweenMode)mCurrentTweenMode);
-		Tween<glm::vec3>& tween = mActiveTweenHandle->getTween();
-		tween.UpdateSignal.connect([this](const glm::vec3& value){
+		//
+		auto& sphere_transform 				= mSphereEntity->getComponent<TransformComponentInstance>();
+		glm::vec3 sphere_position 			= math::extractPosition(sphere_transform.getGlobalTransform());
+		mMovementTweenHandle	  			= mTweenService->createTween<glm::vec3>(sphere_position, pos, mTweenDuration, (ETweenEasing)mCurrentTweenType, (ETweenMode)mCurrentTweenMode);
+		Tween<glm::vec3>& movement_tween 	= mMovementTweenHandle->getTween();
+
+		movement_tween.UpdateSignal.connect([this](const glm::vec3& value) mutable{
 		  auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
 		  sphere_transform.setTranslate(value);
 		});
-		tween.CompleteSignal.connect([this](const glm::vec3& value){
-			nap::Logger::info("tween complete");
-		});
-		tween.KilledSignal.connect([this](){
-			nap::Logger::info("tween killed");
+
+		//
+		mAnimationIntensity 	= 0.0f;
+		mAnimationTweenHandle	= mTweenService->createTween<float>(0.0f, 1.0f, 0.5f, ETweenEasing::CIRC_OUT);
+		mAnimationTweenHandle->getTween().UpdateSignal.connect([this](const float& value){
+			mAnimationIntensity = value;
 		});
 	}
 
@@ -270,7 +261,73 @@ namespace nap
 			}
 		}
 
+		if(inputEvent->get_type().is_derived_from<PointerPressEvent>())
+		{
+			PointerPressEvent* pointer_event = static_cast<nap::PointerPressEvent*>(inputEvent.get());
+			doTrace(*pointer_event);
+		}
+
 		mInputService->addEvent(std::move(inputEvent));
+	}
+
+
+	void TweenApp::doTrace(const PointerEvent& event)
+	{
+		// Get the camera and camera transform
+		PerspCameraComponentInstance& camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+		TransformComponentInstance& camera_xform = mCameraEntity->getComponent<TransformComponentInstance>();
+
+		// Get screen (window) location from mouse event
+		glm::ivec2 screen_loc = { event.mX, event.mY };
+
+		// Get object to world transformation matrix
+		TransformComponentInstance& world_xform = mPlaneEntity->getComponent<TransformComponentInstance>();
+
+		// Get Mesh Instance
+		MeshInstance& mesh = mPlaneEntity->getComponent<RenderableMeshComponentInstance>().getMeshInstance();
+
+		// Get the attributes we need, the vertices (position data) is used to perform a world space triangle intersection
+		// The uv attribute is to compute the uv coordinates when a triangle is hit
+		VertexAttribute<glm::vec3>& vertices = mesh.getOrCreateAttribute<glm::vec3>(vertexid::position);
+		VertexAttribute<glm::vec3>& uvs = mesh.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+
+		// Get ray from screen in to scene (world space)
+		// The result is a normal pointing away from the camera in to the scene
+		// The window is used to provide the viewport
+		glm::vec3 screen_to_world_ray = camera.rayFromScreen(screen_loc, mRenderWindow->getRect());
+
+		// World space camera position
+		glm::vec3 cam_pos = math::extractPosition(camera_xform.getGlobalTransform());
+
+		// Used by intersection call
+		TriangleData<glm::vec3> tri_vertices;
+
+		// Create the triangle iterator
+		TriangleIterator triangle_it(mesh);
+
+		// Perform intersection test, walk over every triangle in the mesh.
+		// In this case only 2, nice and fast. When there is a hit use the returned barycentric coordinates
+		// to get the interpolated (triangulated) uv attribute value at point of intersection
+		while (!triangle_it.isDone())
+		{
+			// Use the indices to get the vertex positions
+			Triangle triangle = triangle_it.next();
+
+			tri_vertices[0] = (math::objectToWorld(vertices[triangle[0]], world_xform.getGlobalTransform()));
+			tri_vertices[1] = (math::objectToWorld(vertices[triangle[1]], world_xform.getGlobalTransform()));
+			tri_vertices[2] = (math::objectToWorld(vertices[triangle[2]], world_xform.getGlobalTransform()));
+
+			glm::vec3 bary_coord;
+			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, bary_coord))
+			{
+				TriangleData<glm::vec3> uv_triangle_data = triangle.getVertexData(uvs);
+				mAnimationPos = utility::interpolateVertexAttr<glm::vec3>(uv_triangle_data, bary_coord);
+
+				glm::vec3 world_pos = (tri_vertices[0] * (1.0f - bary_coord.x - bary_coord.y)) + (tri_vertices[1] * bary_coord.x) + (tri_vertices[2] * bary_coord.y);
+				createTween(world_pos);
+				break;
+			}
+		}
 	}
 
 
