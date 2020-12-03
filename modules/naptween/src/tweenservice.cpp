@@ -68,13 +68,21 @@ namespace nap
 		}
 
 		// remove any killed tweens
-		for(auto* tween : mTweensToRemove)
+		std::vector<TweenBase*> tweens_to_remove;
+		mTweensToRemove.swap(tweens_to_remove);
+		for(auto* tween : tweens_to_remove)
 		{
 			itr = mTweens.begin();
 			while (itr!=mTweens.end())
 			{
 				if(itr->get() == tween)
 				{
+					if( !tween->mComplete )
+					{
+						tween->mKilled = true;
+						tween->KilledSignal();
+					}
+
 					mTweens.erase(itr);
 					break;
 				}else
@@ -83,18 +91,17 @@ namespace nap
 				}
 			}
 		}
-		mTweensToRemove.clear();
 	}
 
 
 	void TweenService::shutdown()
 	{
-		mTweens.clear();
 		mTweensToRemove.clear();
+		mTweens.clear();
 	}
 
 
-	void TweenService::removeTween(const TweenBase* tween)
+	void TweenService::removeTween(TweenBase* tween)
 	{
 		mTweensToRemove.emplace_back(tween);
 	}

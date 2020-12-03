@@ -102,7 +102,6 @@ namespace nap
 		mSphereEntity = scene->findEntity("Sphere");
 		mPlaneEntity = scene->findEntity("Plane");
 
-
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
@@ -148,23 +147,45 @@ namespace nap
 		// draw the GUI
 		if( ImGui::Begin("Tween") )
 		{
+			// draw some instructions and meta data
 			ImGui::Text(getCurrentDateTime().toString().c_str());
 			RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 			ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+			ImGui::Text("Click on the screen to create a tween and move the sphere to that location");
 
+			// change duration of the tween
 			if( ImGui::InputFloat("Duration", &mTweenDuration) )
 			{
 				mTweenDuration = math::max<float>(0.0f, mTweenDuration);
+
+				if( mMovementTweenHandle != nullptr )
+				{
+					mMovementTweenHandle->getTween().setDuration(mTweenDuration);
+				}
 			}
 
-			if( ImGui::Combo("Ease", &mCurrentTweenType, ease_types, IM_ARRAYSIZE(ease_types)))
+			// change tween ease type combo box
+			int ease_type = (int) mCurrentTweenType;
+			if( ImGui::Combo("Ease", &ease_type, ease_types, IM_ARRAYSIZE(ease_types)))
 			{
+				mCurrentTweenType = (ETweenEasing) ease_type;
 
+				if( mMovementTweenHandle != nullptr )
+				{
+					mMovementTweenHandle->getTween().setEase(mCurrentTweenType);
+				}
 			}
 
-			if( ImGui::Combo("Mode", &mCurrentTweenMode, tween_modes, IM_ARRAYSIZE(tween_modes)))
+			// change tween mode combo box
+			int tween_mode = (int) mCurrentTweenMode;
+			if( ImGui::Combo("Mode", &tween_mode, tween_modes, IM_ARRAYSIZE(tween_modes)))
 			{
+				mCurrentTweenMode = (ETweenMode) tween_mode;
 
+				if( mMovementTweenHandle != nullptr )
+				{
+					mMovementTweenHandle->getTween().setMode(mCurrentTweenMode);
+				}
 			}
 		}
 		ImGui::End();
@@ -173,18 +194,25 @@ namespace nap
 
 	void TweenApp::createTween(const glm::vec3& pos)
 	{
-		//
+		// get the sphere transformation
 		auto& sphere_transform 				= mSphereEntity->getComponent<TransformComponentInstance>();
+
+		// get the current sphere position in world coordinates
 		glm::vec3 sphere_position 			= math::extractPosition(sphere_transform.getGlobalTransform());
+
+		// create a tween and store the handle
 		mMovementTweenHandle	  			= mTweenService->createTween<glm::vec3>(sphere_position, pos, mTweenDuration, (ETweenEasing)mCurrentTweenType, (ETweenMode)mCurrentTweenMode);
+
+		// get reference to tween from tween handle
 		Tween<glm::vec3>& movement_tween 	= mMovementTweenHandle->getTween();
 
-		movement_tween.UpdateSignal.connect([this](const glm::vec3& value) mutable{
+		// connect to update signal
+		movement_tween.UpdateSignal.connect([this](const glm::vec3& value) {
 		  auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
 		  sphere_transform.setTranslate(value);
 		});
 
-		//
+		// animate the animation intensity uniform of the plane
 		mAnimationIntensity 	= 0.0f;
 		mAnimationTweenHandle	= mTweenService->createTween<float>(0.0f, 1.0f, 0.5f, ETweenEasing::CIRC_OUT);
 		mAnimationTweenHandle->getTween().UpdateSignal.connect([this](const float& value){
@@ -317,14 +345,19 @@ namespace nap
 			tri_vertices[1] = (math::objectToWorld(vertices[triangle[1]], world_xform.getGlobalTransform()));
 			tri_vertices[2] = (math::objectToWorld(vertices[triangle[2]], world_xform.getGlobalTransform()));
 
+			// find bary centric coordinates
 			glm::vec3 bary_coord;
 			if (utility::intersect(cam_pos, screen_to_world_ray, tri_vertices, bary_coord))
 			{
 				TriangleData<glm::vec3> uv_triangle_data = triangle.getVertexData(uvs);
 				mAnimationPos = utility::interpolateVertexAttr<glm::vec3>(uv_triangle_data, bary_coord);
 
+				// use bary centric coordinates to find world position
 				glm::vec3 world_pos = (tri_vertices[0] * (1.0f - bary_coord.x - bary_coord.y)) + (tri_vertices[1] * bary_coord.x) + (tri_vertices[2] * bary_coord.y);
+
+				// create a new tween to world position
 				createTween(world_pos);
+
 				break;
 			}
 		}

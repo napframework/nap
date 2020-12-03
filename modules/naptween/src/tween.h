@@ -25,8 +25,8 @@ namespace nap
 	 */
 	class NAPAPI TweenBase
 	{
-		// because the killed signal is dispatched from the TweenHandle upon destruction we want the handle to access the TweenBase private members in this case
-		friend class TweenHandleBase;
+		// tween service can access properties of the tween
+		friend class TweenService;
 	public:
 		/**
 		 * Constructor
@@ -47,7 +47,7 @@ namespace nap
 		// signals
 
 		/**
-		 * Killed signal will be dispatched when the handle of the Tween is deconstructed
+		 * Killed signal will be dispatched when the tween is removed by the service but isn't completed yet
 		 */
 		Signal<> KilledSignal;
 	protected:
@@ -98,6 +98,13 @@ namespace nap
 		void setMode(ETweenMode mode);
 
 		/**
+		 * set the duration for this tween
+		 * also changes mTime of this tween, to ensure smooth tweening
+		 * asserts when duration < 0.0f
+		 */
+		void setDuration(float duration);
+
+		/**
 		 * restart the tween
 		 */
 		void restart();
@@ -105,22 +112,22 @@ namespace nap
 		/**
 		 * @return current tween mode
 		 */
-		const ETweenMode getMode() const { return mMode; }
+		ETweenMode getMode() const { return mMode; }
 
 		/**
 		 * @return current ease type
 		 */
-		const ETweenEasing getEase() const{ return mEasing; }
+		ETweenEasing getEase() const{ return mEasing; }
 
 		/**
 		 * @return current time in time
 		 */
-		const float getTime() const { return mTime; }
+		float getTime() const { return mTime; }
 
 		/**
 		 * @return duration of tween
 		 */
-		const float getDuration() const { return mDuration; }
+		float getDuration() const { return mDuration; }
 
 		/**
 		 * @return current tweened value
@@ -218,6 +225,16 @@ namespace nap
 			return;
 
 		mUpdateFunc(deltaTime);
+	}
+
+	template<typename T>
+	void Tween<T>::setDuration(float duration)
+	{
+		assert(duration > 0.0f);
+
+		float current_progress = mTime / mDuration;
+		mDuration = duration;
+		mTime = mDuration * current_progress;
 	}
 
 	template<typename T>

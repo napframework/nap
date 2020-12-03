@@ -20,10 +20,17 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+
+	// forward declares
 	class TweenService;
 
 	using namespace rtti;
 
+	/**
+	 * TweenApp demonstrates the use of the mod_naptween module
+	 * It moves the sphere along a plane using tweens, the user can change properties of the tween and select a new target for the sphere by clicking on the plane
+	 */
 	class TweenApp : public App
 	{
 	RTTI_ENABLE(App)
@@ -61,8 +68,16 @@ namespace nap
 		int shutdown() override;
 
 	private:
+		/**
+		 * Used to find world coordinates of pointer press on plane and call createTween
+		 * @param event the mouse pointer event
+		 */
 		void doTrace(const PointerEvent& event);
 
+		/**
+		 * creates tween
+		 * @param pos world position of target of tween
+		 */
 		void createTween(const glm::vec3& pos);
 
 		// Nap Services
@@ -78,14 +93,13 @@ namespace nap
 		ObjectPtr<EntityInstance> mSphereEntity = nullptr;				//< Pointer to the bouncing ball entity
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;				//< Pointer to the plane entity
 
-		float mTweenDuration = 1.0f;
-		int mCurrentTweenType = 3;
-		int mCurrentTweenMode = 0;
-
-		std::unique_ptr<TweenHandle<glm::vec3>> mMovementTweenHandle;
-		std::unique_ptr<TweenHandle<float>> 	mAnimationTweenHandle;
-
-		float mAnimationIntensity = 0.0f;
-		glm::vec2 mAnimationPos = { 0.0f, 0.0f };
+		// Tween properties
+		float mTweenDuration = 1.0f;									//< Tween duration
+		ETweenEasing mCurrentTweenType = ETweenEasing::CUBIC_OUT;		//< Tween ease type
+		ETweenMode mCurrentTweenMode = ETweenMode::NORMAL;				//< Tween mode
+		std::unique_ptr<TweenHandle<glm::vec3>> mMovementTweenHandle; 	//< Handle of tween of sphere movement
+		std::unique_ptr<TweenHandle<float>> 	mAnimationTweenHandle; 	//< Handle of animation tween of plane shader
+		float mAnimationIntensity = 0.0f;								//< Handle of animation intensity, used in plane shader
+		glm::vec2 mAnimationPos = { 0.0f, 0.0f };				//< Animation position in UV space, used in plane shader
 	};
 }

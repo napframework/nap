@@ -15,12 +15,6 @@ namespace nap
 
 	TweenHandleBase::~TweenHandleBase()
 	{
-		mTweenBase->mKilled = true;
-		if(!mTweenBase->mComplete)
-		{
-			mTweenBase->KilledSignal.trigger();
-		}
-
 		mService.removeTween(mTweenBase);
 	}
 }

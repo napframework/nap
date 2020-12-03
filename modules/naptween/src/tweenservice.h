@@ -79,19 +79,19 @@ namespace nap
 		/**
 		 * called when service is shutdown, deletes all tweens
 		 */
-		virtual void shutdown() override;
+		void shutdown() override;
 	private:
 		/**
 		 * removes a tween, called by tween handle
 		 * @param pointer to tween
 		 */
-		void removeTween(const TweenBase* tween);
+		void removeTween(TweenBase* tween);
 
 		// vector holding the tweens
 		std::vector<std::unique_ptr<TweenBase>> mTweens;
 
 		// vector holding tweens that need to be removed
-		std::vector<const TweenBase*> 			mTweensToRemove;
+		std::vector<TweenBase*> 				mTweensToRemove;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
