@@ -33,14 +33,10 @@
 		return lvl;																												\
 	}																															\
 																																\
-	static void NAME(const std::string& msg)																					\
+	template<typename T>																										\
+	static void NAME(T&& msg)																									\
 	{																															\
-		instance().log(LogMessage(NAME##Level(), msg));																			\
-	}																															\
-																																\
-	static void NAME(std::string&& msg)																							\
-	{																															\
-		instance().log(LogMessage(NAME##Level(), std::move(msg)));																\
+		instance().log(LogMessage(NAME##Level(), std::forward<T>(msg)));														\
 	}																															\
 																																\
 	static void	NAME(const rtti::Object& obj, const std::string& msg)															\
