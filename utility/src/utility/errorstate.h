@@ -29,14 +29,14 @@ namespace nap
 			 * ~~~~~
 			 *
 			 * @param successCondition The condition to check (i.e. true/false)
-			 * @param errorString The error message that belongs to the 'fail' state
+			 * @param errorMessage The error message that belongs to the 'fail' state
 			 * @return Whether the condition evaluated to true (i.e. success) or not
 			 */
-			bool check(bool successCondition, const char* errorString)
+			template<typename T>
+			bool check(bool successCondition, T&& errorMessage)
 			{
 				if (!successCondition)
-					mErrorList.emplace_back(errorString);
-
+					mErrorList.emplace_back(std::forward<T>(errorMessage));
 				return successCondition;
 			}
 
@@ -48,16 +48,14 @@ namespace nap
 			 *		return false;
 			 * ~~~~~
 			 * @param successCondition The condition to check (i.e. true/false)
-			 * @param errorString The error message that belongs to the 'fail' state
+			 * @param format The error message that that is formatted
+			 * @param args the formatting arguments
 			 * @return Whether the condition evaluated to true (i.e. success) or not
 			 */
 			template <typename... Args>
 			bool check(bool successCondition, const char* format, Args&&... args)
 			{
-				if (!successCondition)
-					mErrorList.emplace_back(stringFormat(format, std::forward<Args>(args)...));
-
-				return successCondition;
+				return check(successCondition, stringFormat(format, std::forward<Args>(args)...));
 			}
 
 			/**
@@ -69,21 +67,29 @@ namespace nap
 			 * return false;
 			 * ~~~~~
 			 * 
-			 * @param errorString The error message, can be a string literal, std::string etc.
+			 * @param errorMessage The error message, can be a string literal, std::string etc.
 			 */
 			template<typename T>
-			void fail(T&& errorString)
+			void fail(T&& errorMessage)
 			{
-				mErrorList.emplace_back(std::forward<T>(errorString));
+				mErrorList.emplace_back(std::forward<T>(errorMessage));
 			}
 
 			/**
-			 * Same as non-templated fail(), but here to allow for easy formatting of error messages
+			 * Same as non-templated fail(), but allows for easy formatting of error messages
+			 *
+			 * ~~~~~{.cpp}
+			 * error.fail("unable to read file: %s", file.c_str());
+			 * return false;
+			 * ~~~~~
+			 *
+			 * @param format the error message that is formatted
+			 * @param args the format arguments
 			 */
 			template <typename... Args>
 			void fail(const char* format, Args&&... args)
 			{
-				mErrorList.emplace_back(stringFormat(format, std::forward<Args>(args)...));
+				fail(stringFormat(format, std::forward<Args>(args)...));
 			}
 
 			/**
