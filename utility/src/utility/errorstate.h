@@ -52,7 +52,17 @@ namespace nap
 			 */
 			void fail(const std::string& errorString)
 			{
-				mErrorList.push_back(errorString);
+				mErrorList.emplace_back(errorString);
+			}
+
+			/**
+			 * Added a failure message to the stack. Useful in situations where you already know that you've failed, in which case the check() function is redundant.
+			 * Called when the error message is a temporary value and can be moved immediately.
+			 * @param errorString The error message that belongs to the 'fail' state
+			 */
+			void fail(std::string&& errorString)
+			{
+				mErrorList.emplace_back(std::move(errorString));
 			}
 
 			/**
