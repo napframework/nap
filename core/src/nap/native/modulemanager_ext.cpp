@@ -104,7 +104,7 @@ namespace nap
 		{
 			auto resolved = utility::getAbsolutePath(moduleFile);
 			err.fail("Failed to load module '%s' (resolved as %s): %s",
-				moduleFile.c_str(), resolved.c_str(), loadModuleError);
+                moduleFile.c_str(), resolved.c_str(), loadModuleError.c_str());
 			return false;
 		}
 
@@ -118,12 +118,12 @@ namespace nap
 		}
 
 		// Verify module version
-		if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
+		if (descriptor->mAPIVersion != nap::moduleAPIVersion)
 		{
 			err.fail("Module %s version mismatch (found %d, expected %d)",
 				moduleFile.c_str(), 
 				descriptor->mAPIVersion,
-				ModuleDescriptor::ModuleAPIVersion);
+				nap::moduleAPIVersion);
 			unloadModule(module_handle);
 			return false;
 		}
