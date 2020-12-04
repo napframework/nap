@@ -103,8 +103,8 @@ namespace nap
 		if (!module_handle)
 		{
 			auto resolved = utility::getAbsolutePath(moduleFile);
-			err.fail(utility::stringFormat("Failed to load module '%s' (resolved as %s): %s",
-				moduleFile.c_str(), resolved.c_str(), loadModuleError.c_str()));
+			err.fail("Failed to load module '%s' (resolved as %s): %s",
+				moduleFile.c_str(), resolved.c_str(), loadModuleError);
 			return false;
 		}
 
@@ -120,9 +120,10 @@ namespace nap
 		// Verify module version
 		if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
 		{
-			err.fail(utility::stringFormat("Module %s version mismatch (found %d, expected %d)",
-										   moduleFile.c_str(), descriptor->mAPIVersion,
-										   ModuleDescriptor::ModuleAPIVersion));
+			err.fail("Module %s version mismatch (found %d, expected %d)",
+				moduleFile.c_str(), 
+				descriptor->mAPIVersion,
+				ModuleDescriptor::ModuleAPIVersion);
 			unloadModule(module_handle);
 			return false;
 		}
@@ -134,8 +135,7 @@ namespace nap
 			rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
 			if (!stype.is_derived_from(RTTI_OF(Service)))
 			{
-				err.fail(utility::stringFormat("Module %s service descriptor %s is not a service",
-											   moduleFile.c_str(), descriptor->mService));
+				err.fail("Module %s service descriptor %s is not a service", moduleFile.c_str(), descriptor->mService);
 				unloadModule(module_handle);
 				return false;
 			}

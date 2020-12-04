@@ -277,7 +277,7 @@ namespace nap
 			                              mBufferSize, paNoFlag, &audioCallback, this);
 			if (error != paNoError)
 			{
-				errorState.fail("Error opening audio stream: " + std::string(Pa_GetErrorText(error)));
+				errorState.fail("Error opening audio stream: %s", Pa_GetErrorText(error));
 				mInputDeviceIndex = -1;
 				mOutputDeviceIndex = -1;
 				mStream = nullptr;
@@ -298,7 +298,7 @@ namespace nap
 			auto paError = Pa_CloseStream(mStream);
 			if (paError != paNoError)
 			{
-				errorState.fail("Failed to close audio stream: " + std::string(Pa_GetErrorText(paError)));
+				errorState.fail("Failed to close audio stream: %s", Pa_GetErrorText(paError));
 				return false;
 			}
 			mStream = nullptr;
@@ -314,7 +314,7 @@ namespace nap
 			auto paError = Pa_StopStream(mStream);
 			if (paError != paNoError)
 			{
-				errorState.fail("Failed to pause audio stream: " + std::string(Pa_GetErrorText(paError)));
+				errorState.fail("Failed to pause audio stream: %s", Pa_GetErrorText(paError));
 				return false;
 			}
 			
@@ -329,7 +329,7 @@ namespace nap
 			auto paError = Pa_StartStream(mStream);
 			if (paError != paNoError)
 			{
-				errorState.fail("Failed to start audio stream: " + std::string(Pa_GetErrorText(paError)));
+				errorState.fail("Failed to start audio stream: %s", Pa_GetErrorText(paError));
 				return false;
 			}
 			

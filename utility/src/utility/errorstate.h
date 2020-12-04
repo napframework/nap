@@ -20,7 +20,13 @@ namespace nap
 		{
 		public:
 			/**
-			 * Check whether the specified condition evaluates to true and adds an error message to the state if not
+			 * Check whether the specified condition evaluates to true and adds an error message to the state if not.
+			 * Often checks are performed on initialization to ensure the resource is valid, for example:
+			 *
+			 * ~~~~~{.cpp}
+			 *	if (!errorState.check(scene != nullptr, "Unable to load scene"))
+			 *		return false;
+			 * ~~~~~
 			 *
 			 * @param successCondition The condition to check (i.e. true/false)
 			 * @param errorString The error message that belongs to the 'fail' state
@@ -35,7 +41,15 @@ namespace nap
 			}
 
 			/**
-			 * Same as non-templated check(), but here to allow for easy formatting of error messages
+			 * Same as non-templated check(), but allows for easy formatting of error messages.
+			 *
+			 * ~~~~~{.cpp}
+			 *	if (!errorState.check(file != nullptr, "Unable to load file: %s", file.c_str()))
+			 *		return false;
+			 * ~~~~~
+			 * @param successCondition The condition to check (i.e. true/false)
+			 * @param errorString The error message that belongs to the 'fail' state
+			 * @return Whether the condition evaluated to true (i.e. success) or not
 			 */
 			template <typename... Args>
 			bool check(bool successCondition, const char* format, Args&&... args)
@@ -47,36 +61,33 @@ namespace nap
 			}
 
 			/**
-			 * Added a failure message to the stack. Useful in situations where you already know that you've failed, in which case the check() function is redundant.
-			 * @param errorString The error message that belongs to the 'fail' state
+			 * Add a failure message to the stack. 
+			 * Useful in situations where you already know that you've failed, in which case the check() function is redundant.
+			 *
+			 * ~~~~~{.cpp}
+			 * error.fail("missing data");
+			 * return false;
+			 * ~~~~~
+			 * 
+			 * @param errorString The error message, can be a string literal, std::string etc.
 			 */
-			void fail(const std::string& errorString)
+			template<typename T>
+			void fail(T&& errorString)
 			{
-				mErrorList.emplace_back(errorString);
-			}
-
-			/**
-			 * Added a failure message to the stack. Useful in situations where you already know that you've failed, in which case the check() function is redundant.
-			 * Called when the error message is a temporary value and can be moved immediately.
-			 * @param errorString The error message that belongs to the 'fail' state
-			 */
-			void fail(std::string&& errorString)
-			{
-				mErrorList.emplace_back(std::move(errorString));
+				mErrorList.emplace_back(std::forward<T>(errorString));
 			}
 
 			/**
 			 * Same as non-templated fail(), but here to allow for easy formatting of error messages
 			 */
 			template <typename... Args>
-			void fail(const std::string& format, Args&&... args)
+			void fail(const char* format, Args&&... args)
 			{
 				mErrorList.emplace_back(stringFormat(format, std::forward<Args>(args)...));
 			}
 
 			/**
 			 * Format the error state of this object into a human-readable message
-			 *
 			 * @return The full error message
 			 */
 			const std::string toString() const;

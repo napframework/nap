@@ -66,7 +66,7 @@ namespace nap
 		}
 		catch (std::exception& e)
 		{
-			error.fail(utility::stringFormat("invalid binary bit-stream: %s", e.what()));
+			error.fail("invalid binary bit-stream: %s", e.what());
 			return nullptr;
 		}
 

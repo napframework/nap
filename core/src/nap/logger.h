@@ -45,19 +45,20 @@
 																																\
 	static void	NAME(const rtti::Object& obj, const std::string& msg)															\
 	{																															\
-		instance().log(LogMessage(NAME##Level(), obj.mID + ": " + msg));														\
+		instance().log(LogMessage(NAME##Level(), utility::stringFormat("%s: %s", obj.mID.c_str(), msg.c_str())));				\
 	}																															\
 																																\
 	template <typename... Args>																									\
-	static void NAME(const std::string& msg, Args&&... args)																	\
+	static void NAME(const char* msg, Args&&... args)																			\
 	{																															\
 		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, std::forward<Args>(args)...)));						\
 	}																															\
 																																\
 	template <typename... Args>																									\
-	static void NAME(rtti::Object& obj, const std::string& msg, Args&&... args)													\
+	static void NAME(rtti::Object& obj, const char* msg, Args&&... args)														\
 	{																															\
-		instance().log(LogMessage(NAME##Level(), utility::stringFormat(obj.mID + ": " + msg, std::forward<Args>(args)...)));	\
+		std::string msg_str = utility::stringFormat("%s: %s", obj.mID.c_str(), msg);											\
+		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg_str.c_str(), std::forward<Args>(args)...)));			\
 	}
 
 
