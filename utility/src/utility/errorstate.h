@@ -29,7 +29,7 @@ namespace nap
 			bool check(bool successCondition, const char* errorString)
 			{
 				if (!successCondition)
-					mErrorList.push_back(errorString);
+					mErrorList.emplace_back(errorString);
 
 				return successCondition;
 			}
@@ -41,14 +41,13 @@ namespace nap
 			bool check(bool successCondition, const char* format, Args&&... args)
 			{
 				if (!successCondition)
-					mErrorList.push_back(stringFormat(format, std::forward<Args>(args)...));
+					mErrorList.emplace_back(stringFormat(format, std::forward<Args>(args)...));
 
 				return successCondition;
 			}
 
 			/**
 			 * Added a failure message to the stack. Useful in situations where you already know that you've failed, in which case the check() function is redundant.
-			 *
 			 * @param errorString The error message that belongs to the 'fail' state
 			 */
 			void fail(const std::string& errorString)
@@ -62,7 +61,7 @@ namespace nap
 			template <typename... Args>
 			void fail(const std::string& format, Args&&... args)
 			{
-				fail(stringFormat(format, std::forward<Args>(args)...));
+				mErrorList.emplace_back(stringFormat(format, std::forward<Args>(args)...));
 			}
 
 			/**

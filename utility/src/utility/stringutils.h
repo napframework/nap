@@ -155,7 +155,7 @@ namespace nap
 		 * @return the formatted string
 		 */
 		template <typename... Args>
-		static std::string stringFormat(const std::string& format, Args... args);
+		static std::string stringFormat(const std::string& format, Args&&... args);
 
 		/**
 		 * Replace all occurrences of the provided keys with their associated values in the given subject string.
@@ -243,11 +243,11 @@ namespace nap
 
 
 		template <typename... Args>
-		std::string stringFormat(const std::string& format, Args... args)
+		std::string stringFormat(const std::string& format, Args&&... args)
 		{
-			size_t size = (size_t)(snprintf(nullptr, 0, format.c_str(), args...) + 1); // Extra space for '\0'
+			size_t size = (size_t)(snprintf(nullptr, 0, format.c_str(), std::forward<Args>(args)...) + 1); // Extra space for '\0'
 			std::unique_ptr<char[]> buf(new char[size]);
-			snprintf(buf.get(), size, format.c_str(), args...);
+			snprintf(buf.get(), size, format.c_str(), std::forward<Args>(args)...);
 			return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 		}
 
