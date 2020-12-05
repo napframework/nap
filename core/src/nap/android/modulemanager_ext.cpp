@@ -50,9 +50,9 @@ namespace nap
 			}
 
 			// Check that the module version matches, skip otherwise.
-			if (descriptor->mAPIVersion != ModuleDescriptor::ModuleAPIVersion)
+			if (descriptor->mAPIVersion != nap::moduleAPIVersion)
 			{
-				Logger::warn("Module %s was built against a different version of NAP (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, ModuleDescriptor::ModuleAPIVersion);
+				Logger::warn("Module %s was built against a different version of NAP (found %d, expected %d); skipping.", module_path.c_str(), descriptor->mAPIVersion, nap::moduleAPIVersion);
 				unloadModule(module_handle);
 				continue;
 			}

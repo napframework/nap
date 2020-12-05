@@ -112,7 +112,7 @@ namespace nap
 		// Get projection matrix (required)
 		mProjectMatrixUniform = ensureUniform(uniform::projectionMatrix, *mMVPStruct, errorState);
 		if (mProjectMatrixUniform == nullptr) 
-			false;
+			return false;
 
 		// Get view matrix (optional)
 		utility::ErrorState view_error;
