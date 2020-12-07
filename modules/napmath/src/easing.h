@@ -272,7 +272,7 @@ T nap::math::Elastic::easeIn(T t, T b, T c, T d)
 	T a = c;
 	T s = p / 4;
 	T postFix = a * pow(2, 10 * (t -= 1)); // this is a fix, again, with post-increment operators
-	return -(postFix * sin((t * d - s) * (2 * pi()) / p)) + b;
+	return -(postFix * sin((t * d - s) * (2 * math::pi()) / p)) + b;
 }
 
 template <typename T>
@@ -285,7 +285,7 @@ T nap::math::Elastic::easeOut(T t, T b, T c, T d)
 	T p = d * .3f;
 	T a = c;
 	T s = p / 4;
-	return (a * pow(2, -10 * t) * sin((t * d - s) * (2 * pi()) / p) + c + b);
+	return (a * pow(2, -10 * t) * sin((t * d - s) * (2 * math::pi()) / p) + c + b);
 }
 
 template <typename T>
@@ -301,10 +301,10 @@ T nap::math::Elastic::easeInOut(T t, T b, T c, T d)
 
 	if (t < 1) {
 		T postFix = a * pow(2, 10 * (t -= 1)); // postIncrement is evil
-		return -.5f * (postFix * sin((t * d - s) * (2 * pi()) / p)) + b;
+		return -.5f * (postFix * sin((t * d - s) * (2 * math::pi()) / p)) + b;
 	}
 	T postFix = a * pow(2, -10 * (t -= 1)); // postIncrement is evil
-	return postFix * sin((t * d - s) * (2 * pi()) / p) * .5f + c + b;
+	return postFix * sin((t * d - s) * (2 * math::pi()) / p) * .5f + c + b;
 }
 
 template <typename T>
@@ -425,17 +425,17 @@ T nap::math::Quint::easeInOut(T t, T b, T c, T d)
 template <typename T>
 T nap::math::Sine::easeIn(T t, T b, T c, T d)
 {
-	return -c * cos(t / d * (pi() / 2)) + c + b;
+	return -c * cos(t / d * (math::pi() / 2)) + c + b;
 }
 
 template <typename T>
 T nap::math::Sine::easeOut(T t, T b, T c, T d)
 {
-	return c * sin(t / d * (pi() / 2)) + b;
+	return c * sin(t / d * (math::pi() / 2)) + b;
 }
 
 template <typename T>
 T nap::math::Sine::easeInOut(T t, T b, T c, T d)
 {
-	return -c / 2 * (cos(pi() * t / d) - 1) + b;
+	return -c / 2 * (cos(math::pi() * t / d) - 1) + b;
 }
