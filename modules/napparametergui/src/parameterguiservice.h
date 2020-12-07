@@ -77,6 +77,12 @@ namespace nap
 		 */
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
+		/**
+ 		 *	This service depends on the parameter service
+ 		 *	@param dependencies the dependencies of this service
+ 		 */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
 	private:
 		using ParameterEditorMap = std::unordered_map<rtti::TypeInfo, CreateParameterEditor>;
 		ParameterEditorMap mParameterEditors;

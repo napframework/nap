@@ -14,6 +14,7 @@
 #include <parametercolor.h>
 #include <parameterquat.h>
 #include <imgui/imgui.h>
+#include <parameterservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterGUIService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -259,5 +260,11 @@ namespace nap
 	{
 		registerDefaultParameterEditors();
 		return true;
+	}
+
+
+	void ParameterGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(ParameterService));
 	}
 }
