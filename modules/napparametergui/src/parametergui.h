@@ -61,7 +61,7 @@ namespace nap
 		 * @param type The type to register an editor creation function for
 		 * @param createParameterEditorFunc The editor creation function
 		 */
-		void registerParameterEditor(const rtti::TypeInfo& type, const CreateParameterEditor& createParameterEditorFunc);
+		static bool registerParameterEditor(const rtti::TypeInfo& type, const CreateParameterEditor& createParameterEditorFunc);
 
 	private:
 		/**
@@ -107,10 +107,7 @@ namespace nap
 		void registerDefaultParameterEditors();
 
 	private:
-		using ParameterEditorMap = std::unordered_map<rtti::TypeInfo, CreateParameterEditor>;
-
 		ParameterService&							mParameterService;					///< The parameter service
-		ParameterEditorMap							mParameterEditors;					///< The editor function to use per parameter type
 		ParameterGroup*								mParameterGroup;					///< All available ParameterGroups
 		ParameterService::PresetFileList			mPresets;							///< The presets for the currently selected ParameterGroup
 		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterGroup. Used to restore the state if the user cancels creation of a new preset.
