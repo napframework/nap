@@ -21,14 +21,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static void gatherParameterGroups(ParameterGroup& group, ParameterService::ParameterGroupList& parameterGroups, int depth = 0)
-	{
-		parameterGroups.push_back({ &group, depth });
-		for (auto& dest_child : group.mChildren)
-			gatherParameterGroups(*dest_child, parameterGroups, depth + 1);
-	}
-
-
 	ParameterService::ParameterService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{ }
