@@ -12,7 +12,7 @@
 namespace nap
 {
 	/**
-	 * Represents a group of parameters that can be blended over time by a nap::ParameterBlendComponent
+	 * Represents a group of parameters that can be blended over time by a nap::ParameterBlendComponent.
 	 * All given parameters need to be part of the root group, either as a direct sibling or 
 	 * contained within a group that is part of the root group.
 	 */
@@ -30,7 +30,7 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<ResourcePtr<Parameter>> mParameters;						///< Property: 'Parameters' list of all parameters that are blended
-		nap::ResourcePtr<ParameterGroup> mRootGroup = nullptr;					///< Property: 'RootGroup' the group all the 'Parameters' belong to
+		std::vector<ResourcePtr<Parameter>> mParameters;						///< Property: 'Parameters' list of parameters that are blended
+		nap::ResourcePtr<ParameterGroup> mRootGroup = nullptr;					///< Property: 'RootGroup' the group all blend 'Parameters' belong to, either direct or in a child group.
 	};
 }

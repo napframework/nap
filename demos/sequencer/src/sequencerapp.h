@@ -89,9 +89,8 @@ namespace nap
 		ObjectPtr<RenderWindow> mTimelineWindow = nullptr;				///< Pointer to the timeline render window
 		ObjectPtr<Scene>		mScene = nullptr;						///< Pointer to the main scene
 		
-		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;			///< Displays the parameters
+		ObjectPtr<ParameterGUI> mParameterGUI = nullptr;				///< Displays the parameters
 		ObjectPtr<SequenceEditorGUI> mSequenceEditorGUI = nullptr;		///< Displays the sequence editor gui
-		ObjectPtr<ParameterGroup> mParameterGroup = nullptr;			///< Link to parameters
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	///< GUI text highlight color
 	};
 }

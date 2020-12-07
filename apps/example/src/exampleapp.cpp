@@ -19,9 +19,6 @@ namespace nap
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
 
-		// Fetch the scene
-		mScene = mResourceManager->findObject<Scene>("Scene");
-
 		// Convert our path and load resources from file
         auto abspath = utility::getAbsolutePath(mFilename);
         nap::Logger::info("Loading: %s", abspath.c_str());

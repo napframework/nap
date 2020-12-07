@@ -26,9 +26,6 @@ namespace nap
 
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
-		
-		// Fetch the scene
-		mScene = mResourceManager->findObject<Scene>("Scene");
 
 		// Convert our path and load resources from file
         auto abspath = utility::getAbsolutePath(mFilename);
@@ -36,7 +33,12 @@ namespace nap
         if (!mResourceManager->loadFile(mFilename, error))
             return false;
 
-		// Get the timeline window
+		// Fetch parameter GUI
+		mParameterGUI = mResourceManager->findObject<ParameterGUI>("ParameterGUI");
+		if (!error.check(mParameterGUI != nullptr, "unable to find parameter GUI"))
+			return false;
+
+		// Get the time-line window
 		mTimelineWindow = mResourceManager->findObject<nap::RenderWindow>("TimelineWindow");
 		if (!error.check(mTimelineWindow != nullptr, "unable to find TimelineWindow"))
 			return false;
@@ -51,12 +53,9 @@ namespace nap
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
 
+		// Get the sequence editor gui
 		mSequenceEditorGUI = mResourceManager->findObject<SequenceEditorGUI>("SequenceEditorGUI");
 		if (!error.check(mSequenceEditorGUI != nullptr, "unable to find SequenceEditorGUI with name: %s", "SequenceEditorGUI"))
-			return false;
-
-		mParameterGroup = mResourceManager->findObject<ParameterGroup>("ParameterGroup");
-		if (!error.check(mParameterGroup != nullptr, "unable to find ParameterGroup with name: %s", "ParameterGroup"))
 			return false;
 
 		const ObjectPtr<SequencePlayerEventOutput> eventOutput = mResourceManager->findObject<SequencePlayerEventOutput>("SequencePlayerEventOutput");
@@ -119,9 +118,6 @@ namespace nap
 			 }
 		});
 
-		// Create the parameter GUI, automatically shows a group of parameters in a window
-		mParameterGUI = std::make_unique<ParameterGUI>(*mParameterService);
-
 		// All done!
         return true;
     }
@@ -142,7 +138,7 @@ namespace nap
 		
 		// Show all parameters
 		ImGui::Begin("Parameters");
-		mParameterGUI->show(mParameterGroup.get(), false);
+		mParameterGUI->show(false);
 
 		// Display some extra info
 		ImGui::Text(getCurrentDateTime().toString().c_str());
