@@ -35,12 +35,6 @@ namespace nap
 		ParameterService(ServiceConfiguration* configuration);
 
 		/**
-		 * Get all parameter groups
-		 * @return The list of all parameter groups
-		 */
-		ParameterGroupList getParameterGroups();
-
-		/**
 		 * Get a list of all available preset files for the specified group
 		 *
 		 * @return The list of presets
