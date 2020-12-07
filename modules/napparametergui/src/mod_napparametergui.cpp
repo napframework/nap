@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_MODULE("mod_napparametergui", "0.1.0")
+NAP_SERVICE_MODULE("mod_napparametergui", "0.2.0", "nap::ParameterGUIService")
