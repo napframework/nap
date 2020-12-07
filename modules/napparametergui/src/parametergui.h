@@ -26,8 +26,9 @@ namespace nap
 		ParameterGUI(nap::Core& core);
 
 		/**
-		 * Main function to render the group of parameters, including nested groups. Should be called each frame.
-		 * When 'newWindow' is set to true (default) a new window will be created.
+		 * Main function to render the group of parameters, including nested groups. 
+		 * Should be called each frame on update().
+		 * When 'newWindow' is set to true a new window will be created.
 		 * When 'newWindow' is disabled the parameters will be added to the currently active GUI window.
 		 * @param newWindow if the parameters should be added to a new window.
 		 */

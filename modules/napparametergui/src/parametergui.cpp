@@ -338,7 +338,6 @@ namespace nap
 			}
 
 			ImGui::SameLine();
-
 			if (ImGui::Button("Cancel"))
 			{
 				restorePresetState();
