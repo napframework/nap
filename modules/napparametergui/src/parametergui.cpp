@@ -13,6 +13,13 @@
 #include <parameterenum.h>
 #include <parametercolor.h>
 #include <parameterquat.h>
+#include <nap/core.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterGUI)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Serializable",	&nap::ParameterGUI::mSerializable,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Group",			&nap::ParameterGUI::mParameterGroup,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
 
 namespace nap
 {
@@ -226,6 +233,7 @@ namespace nap
 	using ParameterEditorMap = std::unordered_map<rtti::TypeInfo, ParameterGUI::CreateParameterEditor>;
 	static ParameterEditorMap& getParameterEditors()
 	{
+		// Default editors, constructed when requested
 		static ParameterEditorMap editors =
 		{
 			std::make_pair(RTTI_OF(ParameterFloat),				&sParameterFloat),
@@ -259,23 +267,39 @@ namespace nap
 		// Add callback
 		ParameterEditorMap& map = getParameterEditors();
 		for (const rtti::TypeInfo& type : types)
-			map[type] = createParameterEditorFunc;
+			map.emplace(std::make_pair(type, createParameterEditorFunc));
 
 		return true;
 	}
 
 
+	static void showParameters(ParameterGroup& parameterGroup)
+	{
+		for (auto& parameter : parameterGroup.mParameters)
+		{
+			const rtti::TypeInfo& type = parameter->get_type();
+			ParameterEditorMap::iterator pos = getParameterEditors().find(type);
+			assert(pos != getParameterEditors().end());
+			ImGui::PushID(&parameter);
+			pos->second(*parameter);
+			ImGui::PopID();
+		}
+
+		for (auto& child : parameterGroup.mChildren)
+		{
+			if (ImGui::CollapsingHeader(child->mID.c_str()))
+			{
+				showParameters(*child);
+			}
+		}
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 
-	ParameterGUI::ParameterGUI(ParameterService& parameterService, ParameterGroup& group) :
-		mParameterService(parameterService), mParameterGroup(&group)
+	ParameterGUI::ParameterGUI(nap::Core& core) : 
+		mParameterService(*core.getService<ParameterService>())
 	{ }
-
-
-	void ParameterGUI::registerDefaultParameterEditors()
-	{
-
-	}
 
 
 	void ParameterGUI::handleLoadPresetPopup()
@@ -367,9 +391,7 @@ namespace nap
 			}, &mPresets, mPresets.size()))
 			{
 				if (mSelectedPresetIndex == mPresets.size() - 1)
-				{
 					ImGui::OpenPopup("New");
-				}
 			}
 
 			std::string newFilename;
@@ -411,22 +433,17 @@ namespace nap
 				{
 					ImGui::Text(errorState.toString().c_str());
 					if (ImGui::Button("OK"))
-					{
 						ImGui::CloseCurrentPopup();
-					}
-
 					ImGui::EndPopup();
 				}
 			}
 
 			ImGui::SameLine();
-
 			if (ImGui::Button("Cancel"))
 			{
 				restorePresetState();
 				ImGui::CloseCurrentPopup();
 			}
-
 			ImGui::EndPopup();
 		}
 	}
@@ -446,21 +463,17 @@ namespace nap
 	}
 
 
-	void ParameterGUI::showPresets(const ParameterGroup* parameterGroup)
+	void ParameterGUI::showPresets()
 	{
 		ImGui::Text("Current preset: ");
 		ImGui::SameLine();
 
-		bool hasPreset = mSelectedPresetIndex >= 0 && mSelectedPresetIndex < mPresets.size();
-
-		if (hasPreset)
-			ImGui::Text(mPresets[mSelectedPresetIndex].data());
-		else
-			ImGui::Text("<No preset>");
+		bool has_preset = mSelectedPresetIndex >= 0 && mSelectedPresetIndex < mPresets.size();
+		ImGui::Text(has_preset ? mPresets[mSelectedPresetIndex].data() : "<No preset>");
 
 		if (ImGui::Button("Save"))
 		{
-			if (hasPreset)
+			if (has_preset)
 			{
 				utility::ErrorState errorState;
 				if (!mParameterService.savePreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
@@ -470,10 +483,7 @@ namespace nap
 				{
 					ImGui::Text(errorState.toString().c_str());
 					if (ImGui::Button("OK"))
-					{
 						ImGui::CloseCurrentPopup();
-					}
-
 					ImGui::EndPopup();
 				}
 
@@ -487,7 +497,6 @@ namespace nap
 		}
 
 		ImGui::SameLine();
-
 		if (ImGui::Button("Save As"))
 		{
 			ImGui::OpenPopup("Save As");
@@ -496,7 +505,6 @@ namespace nap
 		}
 
 		ImGui::SameLine();
-
 		if (ImGui::Button("Load"))
 		{
 			ImGui::OpenPopup("Load");
@@ -508,37 +516,29 @@ namespace nap
 	}
 
 
-	void ParameterGUI::showParameters(ParameterGroup& parameterGroup)
-	{
-		if (ImGui::CollapsingHeader(parameterGroup.mID.c_str()))
-		{
-			for (auto& parameter : parameterGroup.mParameters)
-			{
-				const rtti::TypeInfo& type = parameter->get_type();
-				ParameterEditorMap::iterator pos = getParameterEditors().find(type);
-				assert(pos != getParameterEditors().end());
-				ImGui::PushID(&parameter);
-				pos->second(*parameter);
-				ImGui::PopID();
-			}
-
-			for (auto& child : parameterGroup.mChildren)
-				showParameters(*child);
-		}
-	}
-
-
 	void ParameterGUI::show(bool newWindow)
 	{
 		if (newWindow)
 		{
-			ImGui::Begin("Parameters");
-		}
-		showPresets(mParameterGroup);
-		showParameters(*mParameterGroup);
-		if (newWindow)
-		{
+			ImGui::Begin(utility::stringFormat("%s Group", mParameterGroup->mID.c_str()).c_str());
+			if (mSerializable)
+				showPresets();
+			showParameters(*mParameterGroup);
 			ImGui::End();
 		}
+		else
+		{
+			if (mSerializable)
+				showPresets();
+			showParameters(*mParameterGroup);
+		}
+	}
+
+
+	bool ParameterGUI::init(utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mParameterGroup != nullptr, "No parameter group to display"))
+			return false;
+		return true;
 	}
 }
