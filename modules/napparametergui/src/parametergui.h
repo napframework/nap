@@ -40,7 +40,7 @@ namespace nap
 		 */
 		using CreateParameterEditor = std::function<void(Parameter&)>;
 
-		ParameterGUI(ParameterService& parameterService);
+		ParameterGUI(ParameterService& parameterService, ParameterGroup& group);
 
 		/**
 		 * Main function to render a group of parameter, including nested groups. Should be called each frame.
@@ -49,7 +49,7 @@ namespace nap
 		 * @param parameterGroup the group of parameters to show. 
 		 * @param newWindow if the parameters should be added to a new window.
 		 */
-		void show(const ParameterGroup* parameterGroup, bool newWindow = true);
+		void show(bool newWindow = true);
 
 		/**
 		 * Register an editor creation function for the given type. The editor creation function is invoked whenever a parameter of the given type 
@@ -73,9 +73,8 @@ namespace nap
 		 * Render the parameter UI for a specific group
 		 *
 		 * @param parameterGroup The group to draw the parameters fro
-		 * @param isRoot Whether this is the root parameter group or not
 		 */
-		void showParameters(ParameterGroup& parameterGroup, bool isRoot);
+		void showParameters(ParameterGroup& parameterGroup);
 
 		/**
 		 * Show and handle the UI to load presets
@@ -107,20 +106,14 @@ namespace nap
 		 */
 		void registerDefaultParameterEditors();
 
-		/**
-		 * Helper function to test whether the user has selected a group or not
-		 */ 
-		bool hasSelectedGroup() const { return mSelectedGroupIndex >= 0 && mSelectedGroupIndex < mParameterGroups.size(); }
-
 	private:
 		using ParameterEditorMap = std::unordered_map<rtti::TypeInfo, CreateParameterEditor>;
 
 		ParameterService&							mParameterService;					///< The parameter service
 		ParameterEditorMap							mParameterEditors;					///< The editor function to use per parameter type
-		ParameterService::ParameterGroupList		mParameterGroups;					///< All available ParameterGroups
+		ParameterGroup*								mParameterGroup;					///< All available ParameterGroups
 		ParameterService::PresetFileList			mPresets;							///< The presets for the currently selected ParameterGroup
 		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterGroup. Used to restore the state if the user cancels creation of a new preset.
-		int											mSelectedGroupIndex = -1;			///< The currently selected ParameterGroup's index
 		int											mSelectedPresetIndex = -1;			///< The currently selected preset's index
 		int											mPrevSelectedPresetIndex = -1;		///< The previously selected preset's index. Used to restore the state if the user cancels creation of a new preset.
 	};

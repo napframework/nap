@@ -28,20 +28,11 @@ namespace nap
 			gatherParameterGroups(*dest_child, parameterGroups, depth + 1);
 	}
 
+
 	ParameterService::ParameterService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
 
-	ParameterService::ParameterGroupList ParameterService::getParameterGroups()
-	{
-		ParameterGroupList groups;
-
-		if (mRootGroup != nullptr)
-			gatherParameterGroups(*mRootGroup, groups);
-
-		return groups;
-	}
 
 	ParameterService::PresetFileList ParameterService::getPresets(const ParameterGroup& group) const
 	{
@@ -158,25 +149,6 @@ namespace nap
 
 	void ParameterService::postResourcesLoaded()
 	{
-		// Whenever the main json is (re)loaded, update the root parameter group
-		// We search for the root parameter group by finding the group that has no parent
-		using ParentMap = std::unordered_map<const ParameterGroup*, const ParameterGroup*>;
-		ParentMap parent_map;
-		std::vector<rtti::ObjectPtr<ParameterGroup>> parameter_groups = getCore().getResourceManager()->getObjects<ParameterGroup>();
-		for (auto& parameter_group : parameter_groups)
-			for (auto& child_group : parameter_group->mChildren)
-				parent_map[child_group.get()] = parameter_group.get();
-
-		mRootGroup = nullptr;
-		for (auto& parameter_group : parameter_groups)
-		{
-			if (parent_map.find(parameter_group.get()) == parent_map.end())
-			{
-				mRootGroup = parameter_group.get();
-				break;
-			}
-		}
-
 		fileLoaded();
 	}
 
