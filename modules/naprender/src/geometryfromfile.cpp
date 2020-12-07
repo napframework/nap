@@ -93,7 +93,7 @@ namespace nap
 		mesh_instance->setDrawMode(EDrawMode::Triangles);
 
 		// Create importer
-		std::unique_ptr<Assimp::Importer> importer = std::make_unique<Assimp::Importer>();
+		Assimp::Importer importer;
 
 		// Setup flags
 		nap::uint flags = aiProcess_Triangulate |
@@ -104,8 +104,8 @@ namespace nap
 
 
 		// Load file using flags
-		importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, (int)mSmoothingAngle);
-		const aiScene* ai_scene = importer->ReadFile(mPath, flags);
+		importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, (int)mSmoothingAngle);
+		const aiScene* ai_scene = importer.ReadFile(mPath, flags);
 
 		// Ensure the file was read
 		if (!errorState.check(ai_scene != nullptr, "Unable to load %s", mPath.c_str()))
