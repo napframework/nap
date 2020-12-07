@@ -21,22 +21,11 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
-		/**
-		 * This struct holds additional info on top of a group, most importantly the depth of the group within the full tree
-		 */
-		struct ParameterGroupInfo
-		{
-			ResourcePtr<ParameterGroup> mGroup;		///< The group we're storing info for
-			int							mDepth;		///< The depth of this group within the full group tree
-		};
-
 		using PresetFileList = std::vector<std::string>;
-		using ParameterGroupList = std::vector<ParameterGroupInfo>;
 		ParameterService(ServiceConfiguration* configuration);
 
 		/**
-		 * Get a list of all available preset files for the specified group
-		 *
+		 * Get a list of all available preset files for the specified group.
 		 * @return The list of presets
 		 */
 		PresetFileList getPresets(const ParameterGroup& group) const;
