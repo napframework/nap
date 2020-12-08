@@ -150,6 +150,24 @@ namespace nap
 		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 		/**
+		 * @param message the message to send
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @param message the message
+		 */
+		bool broadcast(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
+
+		/**
+		 * Broadcasts a message to all connected clients using the given payload and opcode.
+		 * @param payload the message buffer
+		 * @param length size of the buffer in bytes
+		 * @param code message type
+		 * @param error contains the error if sending fails
+		 * @return if message was send successfully
+		 */
+		bool broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
+
+		/**
 		 * @return a client connection host-name, empty string if the connection is not managed by this end-point.
 		 */
 		std::string getHostName(const WebSocketConnection& connection);
