@@ -216,25 +216,36 @@ namespace nap
 	{
 		setEase(ETweenEasing::LINEAR);
 		setMode(ETweenMode::NORMAL);
+
+		// when this tween is killed, update function doesn't do anything anymore
+		KilledSignal.connect([this]{
+			mUpdateFunc = [this](double deltaTime){};
+		});
 	}
 
 	template<typename T>
 	void Tween<T>::update(double deltaTime)
 	{
-		if(mKilled)
-			return;
-
 		mUpdateFunc(deltaTime);
 	}
 
 	template<typename T>
 	void Tween<T>::setDuration(float duration)
 	{
-		assert(duration > 0.0f);
+		assert(duration >= 0.0f); // invalid duration
 
-		float current_progress = mTime / mDuration;
-		mDuration = duration;
-		mTime = mDuration * current_progress;
+		// when duration is bigger then 0, scale time accordingly to ensure smooth transition
+		if( duration > 0.0f )
+		{
+			float current_progress = mTime / mDuration;
+			mDuration = duration;
+			mTime = mDuration * current_progress;
+		}else
+		{
+			// when duration is 0, it doesn't matter since we will hit complete in next update
+			mDuration = duration;
+			mTime = 0.0f;
+		}
 	}
 
 	template<typename T>
@@ -245,7 +256,7 @@ namespace nap
 		switch (mode)
 		{
 		default:
-			nap::Logger::warn("Unknown tween mode, choosing default mode");
+			nap::Logger::warn("Unknown tween mode, choosing NORMAL mode");
 		case NORMAL:
 		{
 			mUpdateFunc = [this](double deltaTime)

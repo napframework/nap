@@ -11,8 +11,8 @@
 #include <guiappeventhandler.h>
 
 /**
- * Curveball Demo.
- * Refer to curveballapp.h for a more detailed description of the application.
+ * Tween Demo.
+ * Refer to tweenapp.h for a more detailed description of the application.
  */
 int main(int argc, char *argv[])
 {
