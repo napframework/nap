@@ -41,7 +41,7 @@ namespace nap
 		}
 
 		// Initialize all slaves, lib initialization is allowed to fail
-		// It simply means no slaves are available
+		// Simply means no slaves are available on the network
 		if (ec_config_init(false) <= 0)
 		{
 			nap::Logger::warn("%s: no slaves found", mID.c_str());
@@ -94,9 +94,10 @@ namespace nap
 		// request Operational state for all slaves, give it 10 seconds
 		EtherCATMaster::ESlaveState state = requestState(ESlaveState::Operational, 10000);
 		updateState();
-		mOperational = true;
 
-		// Ensure all slaves are in operational state
+		// If not all slaves reached operational state display errors and 
+		// bail if operational state of all slaves is required on startup
+		mOperational = true;
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
 			std::string fail_msg = utility::stringFormat("%s: not all slaves reached operational state!", mID.c_str());
@@ -115,7 +116,7 @@ namespace nap
 				errorState.fail(fail_state);
 			}
 
-			if (!mForceOperational)
+			if (mForceOperational)
 			{
 				stop();
 				return false;
@@ -140,29 +141,23 @@ namespace nap
 
 	void EtherCATMaster::stop()
 	{
-		// If the device never started return
-		if (!started())
-			return;
-
-		// Stop error reporting task
-		if (mErrorTask.valid())
+		// When operational, tasks are running and at least 1 slave is found.
+		// This means we can stop the tasks and request the slave to go to init state.
+		if (mOperational)
 		{
+			// Stop error reporting task
+			assert(mErrorTask.valid());
 			mStopErrorTask = true;
 			mErrorTask.wait();
-		}
 
-		// Safety guard here, task is only created when 
-		// at least 1 slave is found.
-		if (mProcessTask.valid())
-		{
+			// Stop processing task
+			assert(mProcessTask.valid());
 			mStopProcessing = true;
 			mProcessTask.wait();
-		}
 
-		// Call stop and request init state for all slaves
-		onStop();
-		if (getSlaveCount() > 0)
-		{
+			// Call stop and request init state for all slaves
+			onStop();
+
 			// Make all slaves go to initialization stage
 			if (requestState(ESlaveState::Init) != ESlaveState::Init)
 			{
@@ -171,7 +166,8 @@ namespace nap
 		}
 
 		// Close socket
-		ec_close();
+		if(mOperational || mStarted)
+			ec_close();	
 
 		// Reset work-counter and other variables
 		mActualWCK		= 0;
