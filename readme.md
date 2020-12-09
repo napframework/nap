@@ -48,7 +48,7 @@ NAP also has built in support for many common protocols and standards, including
 
 ## Documentation
 
-NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the precompiled NAP package only. Follow the instructions in this document to build and create a NAP application instead against the framework source. All other parts of the documentation apply to both the NAP package and source context.
+NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
 
 ## Gallery
 
@@ -71,9 +71,9 @@ Currently, whether working with the packaged framework release or against the fr
 - Ubuntu Linux LTS (20.04)
 - Windows 10 with Visual Studio 2015
 
-NAP's official framework releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release.
+NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release. Make sure to read the online [documentation](https://www.napframework.com/doxygen/), including installation instructions, when working against a NAP binary package.
 
-There are naturally other benefits to be had from working against the framework source, plus you can also compile your own framework release. Continue reading below to get started with the NAP source.
+There are naturally other benefits to be had from working against the framework source, plus you can also compile your own framework release. Continue reading below to get compile and get started with the NAP source code.
 
 # Compilation
 
