@@ -41,7 +41,7 @@ namespace nap
 		}
 
 		// Initialize all slaves, lib initialization is allowed to fail
-		// It simply means no slaves are available
+		// Simply means no slaves are available on the network
 		if (ec_config_init(false) <= 0)
 		{
 			nap::Logger::warn("%s: no slaves found", mID.c_str());
@@ -94,9 +94,10 @@ namespace nap
 		// request Operational state for all slaves, give it 10 seconds
 		EtherCATMaster::ESlaveState state = requestState(ESlaveState::Operational, 10000);
 		updateState();
-		mOperational = true;
 
-		// Ensure all slaves are in operational state
+		// If not all slaves reached operational state display errors and 
+		// bail if operational state of all slaves is required on startup
+		mOperational = true;
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
 			std::string fail_msg = utility::stringFormat("%s: not all slaves reached operational state!", mID.c_str());
@@ -115,7 +116,7 @@ namespace nap
 				errorState.fail(fail_state);
 			}
 
-			if (!mForceOperational)
+			if (mForceOperational)
 			{
 				stop();
 				return false;
@@ -140,10 +141,7 @@ namespace nap
 
 	void EtherCATMaster::stop()
 	{
-		// If the device never started return
-		if (!started())
-			return;
-
+		// Safety guard here, task is only created when at least 1 slave is found
 		// Stop error reporting task
 		if (mErrorTask.valid())
 		{
@@ -151,8 +149,8 @@ namespace nap
 			mErrorTask.wait();
 		}
 
-		// Safety guard here, task is only created when 
-		// at least 1 slave is found.
+		// Safety guard here, task is only created when at least 1 slave is found.
+		// Stop processing task
 		if (mProcessTask.valid())
 		{
 			mStopProcessing = true;
@@ -171,7 +169,7 @@ namespace nap
 		}
 
 		// Close socket
-		ec_close();
+		ec_close();	
 
 		// Reset work-counter and other variables
 		mActualWCK		= 0;
