@@ -150,6 +150,7 @@ namespace nap
 		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 		/**
+		 * Sends a message to a all connected clients.
 		 * @param message the message to send
 		 * @param code message type
 		 * @param error contains the error if sending fails
