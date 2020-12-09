@@ -141,26 +141,23 @@ namespace nap
 
 	void EtherCATMaster::stop()
 	{
-		// Safety guard here, task is only created when at least 1 slave is found
-		// Stop error reporting task
-		if (mErrorTask.valid())
+		// When operational, tasks are running and at least 1 slave is found.
+		// This means we can stop the tasks and request the slave to go to init state.
+		if (mOperational)
 		{
+			// Stop error reporting task
+			assert(mErrorTask.valid());
 			mStopErrorTask = true;
 			mErrorTask.wait();
-		}
 
-		// Safety guard here, task is only created when at least 1 slave is found.
-		// Stop processing task
-		if (mProcessTask.valid())
-		{
+			// Stop processing task
+			assert(mProcessTask.valid());
 			mStopProcessing = true;
 			mProcessTask.wait();
-		}
 
-		// Call stop and request init state for all slaves
-		onStop();
-		if (getSlaveCount() > 0)
-		{
+			// Call stop and request init state for all slaves
+			onStop();
+
 			// Make all slaves go to initialization stage
 			if (requestState(ESlaveState::Init) != ESlaveState::Init)
 			{
@@ -169,7 +166,8 @@ namespace nap
 		}
 
 		// Close socket
-		ec_close();	
+		if(mOperational || mStarted)
+			ec_close();	
 
 		// Reset work-counter and other variables
 		mActualWCK		= 0;
