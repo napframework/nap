@@ -781,7 +781,7 @@ namespace nap
 						utility::ErrorState errorState;
 						const auto* curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
 						mState.mClipboard = createClipboard<CurveSegmentClipboard>(action->mSegmentType);
-						mState.mClipboard->serialize(curve_segment, errorState);
+						mState.mClipboard->addObject(curve_segment, errorState);
 
 						if( errorState.hasErrors())
 						{

@@ -311,8 +311,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
-			EventSegmentClipboard(rttr::type segmentType) : mSegmentType(segmentType){}
-			rttr::type mSegmentType;
+			EventSegmentClipboard(rttr::type& type) : Clipboard(type){};
 		};
 	}
 
@@ -429,16 +428,21 @@ namespace nap
 
 		// continue upon succesfull de-serialization
 		utility::ErrorState errorState;
-		auto* deserialized_event_segment = paste_clipboard->deserialize<T>(read_objects, errorState);
+		std::vector<T*> deserialized_event_segments = paste_clipboard->deserialize<T>(read_objects, errorState);
+
+		assert(deserialized_event_segments.size() > 0 ); // no event segments de serialized
 
 		// no errors ? continue
-		if(!errorState.hasErrors())
+		if(!errorState.hasErrors() && deserialized_event_segments.size() > 0)
 		{
 			// obtain controller
 			auto& controller = getEditor().getController<SequenceControllerEvent>();
 
 			// insert new segment
 			const auto* new_segment = static_cast<const T*>(controller.insertEventSegment<T>(trackID, time));
+
+			//
+			T* deserialized_event_segment = deserialized_event_segments[0];
 
 			// copy values from deserialized event segment
 			controller.editEventSegment(trackID, new_segment->mID, deserialized_event_segment->mValue);

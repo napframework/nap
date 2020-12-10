@@ -287,7 +287,7 @@ namespace nap
 						// call appropriate paste method
 						auto* event_segment_clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 						auto& paste_event_map = getPasteEventMap();
-						auto it = paste_event_map.find(event_segment_clipboard->mSegmentType);
+						auto it = paste_event_map.find(event_segment_clipboard->getSegmentType());
 						assert(it!=paste_event_map.end()); // type not found
 						if( it != paste_event_map.end() )
 						{
@@ -461,7 +461,7 @@ namespace nap
 					utility::ErrorState errorState;
 					auto& controller = getEditor().getController<SequenceControllerEvent>();
 					const auto* event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-					mState.mClipboard->serialize(event_segment, errorState);
+					mState.mClipboard->addObject(event_segment, errorState);
 
 					// exit popup
 					ImGui::CloseCurrentPopup();

@@ -26,11 +26,9 @@ namespace nap
 		class NAPAPI Clipboard
 		{
 			RTTI_ENABLE()
+
 		public:
-			/**
-			 * Default Constructor
-			 */
-			Clipboard() = default;
+			Clipboard(rttr::type type);
 
 			/**
 			 * Default decontructor
@@ -42,7 +40,7 @@ namespace nap
 			 * @param object pointer object to serialize
 			 * @param errorState holds information about any errors
 			 */
-			void serialize(const rtti::Object* object, utility::ErrorState& errorState);
+			void addObject(const rtti::Object* object, utility::ErrorState& errorState);
 
 			/**
 			 * Deserialize clipboard content to object of type T
@@ -52,7 +50,7 @@ namespace nap
 			 * @return pointer to root object, can be null and must be of type T
 			 */
 			template<typename T>
-			T* deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState);
+			std::vector<T*> deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState);
 
 			/**
 			 * returns true when clipboard is clipboard of derived type T
@@ -78,9 +76,12 @@ namespace nap
 				return static_cast<T*>(this);
 			}
 
+			rttr::type getSegmentType() const { return mSegmentType; }
+
 		protected:
-			// the serialized object
-			std::string mSerializedObject;
+			// the serialized objects
+			std::vector<std::string> 	mSerializedObjects;
+			rttr::type 					mSegmentType;
 		};
 
 		// shortcut
@@ -96,7 +97,12 @@ namespace nap
 		/**
 		 * Empty clipboard
 		 */
-		class NAPAPI Empty : public Clipboard { RTTI_ENABLE() };
+		class NAPAPI Empty : public Clipboard
+		{
+			RTTI_ENABLE()
+			public:
+				Empty() : Clipboard(rttr::type::empty()) {}
+		};
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -104,49 +110,56 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		T* Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState)
+		std::vector<T*> Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState)
 		{
-			// De-serialize
-			rtti::DeserializeResult result;
-			rtti::Factory factory;
-			if (!rtti::deserializeJSON(mSerializedObject, rtti::EPropertyValidationMode::DisallowMissingProperties,
-				rtti::EPointerPropertyMode::NoRawPointers, factory, result, errorState))
-				return nullptr;
+			std::vector<T*> deserialized_objects;
 
-			// Resolve links
-			if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
-				return nullptr;
-
-			// Make sure we deserialized something
-			T* root_object = nullptr;
-			if(!errorState.check(result.mReadObjects.size() > 0, "No objects deserialized"))
-				 return nullptr;
-
-			auto* first_object = result.mReadObjects[0].get();
-			if( !errorState.check(first_object->get_type() == RTTI_OF(T), "Root object not of correct type"))
-				return nullptr;
-
-			// Move ownership of read objects
-			root_object = static_cast<T*>(first_object);
-			createdObjects.clear();
-			for (auto& read_object : result.mReadObjects)
+			for(auto& serialized_object : mSerializedObjects )
 			{
-				if (read_object->get_type().is_derived_from<T>())
-					root_object = dynamic_cast<T*>(read_object.get());
-				createdObjects.emplace_back(std::move(read_object));
+				// De-serialize
+				rtti::DeserializeResult result;
+				rtti::Factory factory;
+				if (!rtti::deserializeJSON(serialized_object, rtti::EPropertyValidationMode::DisallowMissingProperties,
+										   rtti::EPointerPropertyMode::NoRawPointers, factory, result, errorState))
+					return std::vector<T*>();
+
+				// Resolve links
+				if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
+					return std::vector<T*>();
+
+				// Make sure we deserialized something
+				T* root_object = nullptr;
+				if(!errorState.check(result.mReadObjects.size() > 0, "No objects deserialized"))
+					return std::vector<T*>();
+
+				auto* first_object = result.mReadObjects[0].get();
+				if( !errorState.check(first_object->get_type() == RTTI_OF(T), "Root object not of correct type"))
+					return std::vector<T*>();
+
+				// Move ownership of read objects
+				root_object = static_cast<T*>(first_object);
+				createdObjects.clear();
+				for (auto& read_object : result.mReadObjects)
+				{
+					if (read_object->get_type().is_derived_from<T>())
+						root_object = dynamic_cast<T*>(read_object.get());
+					createdObjects.emplace_back(std::move(read_object));
+				}
+
+				// init objects
+				for (auto& object_ptr : createdObjects)
+				{
+					if (!errorState.check(object_ptr->init(errorState), "Error initializing object : %s " , errorState.toString().c_str()))
+						return std::vector<T*>();
+				}
+
+				if( !errorState.check(root_object != nullptr, "return object is null"))
+					return std::vector<T*>();
+
+				deserialized_objects.emplace_back(root_object);
 			}
 
-			// init objects
-			for (auto& object_ptr : createdObjects)
-			{
-				if (!errorState.check(object_ptr->init(errorState), "Error initializing object : %s " , errorState.toString().c_str()))
-					return nullptr;
-			}
-
-			if( !errorState.check(root_object != nullptr, "return object is null"))
-				return nullptr;
-
-			return root_object;
+			return deserialized_objects;
 		}
 	}
 }
