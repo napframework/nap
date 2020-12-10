@@ -67,6 +67,7 @@ namespace nap
 
 		// launch player thread
 		mUpdateThreadRunning = true;
+		mBefore = HighResolutionClock::now();
 		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
 
 		return true;
@@ -321,11 +322,10 @@ namespace nap
 		while (mUpdateThreadRunning)
 		{
 			// advance time
-			std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
-			std::chrono::nanoseconds elapsed = now - mBefore;
-			float deltaTime = std::chrono::duration<float, std::milli>(elapsed).count() / 1000.0f;
+			HighResTimeStamp now = HighResolutionClock::now();
+			double delta_time = std::chrono::duration<double>(now - mBefore).count();
 			mBefore = now;
-			
+
 			if (mIsPlaying)
 			{
 				// notify lister, so data model of sequence and data of player can be modified by listeners to this signal
@@ -336,7 +336,7 @@ namespace nap
 					std::lock_guard<std::mutex> lock(mMutex);
 					if (!mIsPaused)
 					{
-						mTime += deltaTime * mSpeed;
+						mTime += delta_time * (double)mSpeed;
 						if (mIsLooping)
 						{
 							if (mTime < 0.0)

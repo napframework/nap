@@ -1,6 +1,12 @@
 {
     "Objects": [
         {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": false,
+            "Group": "ParameterGroup"
+        },
+        {
             "Type": "nap::ParameterGroup",
             "mID": "ParameterGroup",
             "Parameters": [

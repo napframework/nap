@@ -135,8 +135,7 @@ namespace nap
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 
 		// GUI
-		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;	//< Able to draw parameters to screen
-		ObjectPtr<ParameterGroup> mParameterGroup = nullptr;		//< Contains all parameters
+		ObjectPtr<ParameterGUI> mParameterGUI = nullptr;	//< Able to draw parameters to screen
 
 		// Draw state variables
 		bool mMouseOnObject				= false;

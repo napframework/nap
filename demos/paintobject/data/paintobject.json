@@ -7,6 +7,7 @@
                 {
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "BrushRenderToTextureComponent",
+                    "Visible": true,
                     "OutputTexture": "BrushRenderTexture",
                     "MaterialInstance": {
                         "Material": "BrushMaterial",
@@ -105,6 +106,7 @@
                 {
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "PaintTextureA",
+                    "Visible": true,
                     "OutputTexture": "PaintRenderTextureB",
                     "MaterialInstance": {
                         "Material": "PaintMaterial",
@@ -146,6 +148,7 @@
                 {
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "PaintTextureB",
+                    "Visible": true,
                     "OutputTexture": "PaintRenderTextureA",
                     "MaterialInstance": {
                         "Material": "PaintMaterial",
@@ -255,6 +258,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "PigRenderer",
+                    "Visible": true,
                     "Mesh": "PigMesh",
                     "MaterialInstance": {
                         "Material": "ObjectMaterial",
@@ -314,6 +318,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "WorldRenderer",
+                    "Visible": true,
                     "Mesh": "SphereMesh",
                     "MaterialInstance": {
                         "Material": "ObjectMaterial",
@@ -351,6 +356,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "BearRenderer",
+                    "Visible": true,
                     "Mesh": "BearMesh",
                     "MaterialInstance": {
                         "Material": "ObjectMaterial",
@@ -551,6 +557,12 @@
             "Value": 0.75,
             "Minimum": 0.0,
             "Maximum": 1.0
+        },
+        {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "Parameters"
         },
         {
             "Type": "nap::ParameterGroup",

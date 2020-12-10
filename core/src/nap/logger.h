@@ -26,33 +26,35 @@
  * Logger::info("Hello %s number %.2f", "engine", 9);
  */
 
-#define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)																	\
-	static LogLevel& NAME##Level()																			\
-	{																										\
-		static LogLevel lvl(#NAME, LEVEL);																	\
-		return lvl;																							\
-	}																										\
-																											\
-	static void NAME(const std::string& msg)																\
-	{																										\
-		instance().log(LogMessage(NAME##Level(), msg));														\
-	}																										\
-																											\
-	static void	NAME(const rtti::Object& obj, const std::string& msg)										\
-	{																										\
-		instance().log(LogMessage(NAME##Level(), obj.mID + ": " + msg));									\
-	}																										\
-																											\
-	template <typename... Args>																				\
-	static void NAME(const std::string& msg, Args... args)													\
-	{																										\
-		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, args...)));						\
-	}																										\
-																											\
-	template <typename... Args>																				\
-	static void NAME(rtti::Object& obj, const std::string& msg, Args... args)								\
-	{																										\
-		instance().log(LogMessage(NAME##Level(), utility::stringFormat(obj.mID + ": " + msg, args...)));	\
+#define NAP_DECLARE_LOG_LEVEL(LEVEL, NAME)																						\
+	static LogLevel& NAME##Level()																								\
+	{																															\
+		static LogLevel lvl(#NAME, LEVEL);																						\
+		return lvl;																												\
+	}																															\
+																																\
+	template<typename T>																										\
+	static void NAME(T&& msg)																									\
+	{																															\
+		instance().log(LogMessage(NAME##Level(), std::forward<T>(msg)));														\
+	}																															\
+																																\
+	static void	NAME(const rtti::Object& obj, const std::string& msg)															\
+	{																															\
+		instance().log(LogMessage(NAME##Level(), utility::stringFormat("%s: %s", obj.mID.c_str(), msg.c_str())));				\
+	}																															\
+																																\
+	template <typename... Args>																									\
+	static void NAME(const char* msg, Args&&... args)																			\
+	{																															\
+		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg, std::forward<Args>(args)...)));						\
+	}																															\
+																																\
+	template <typename... Args>																									\
+	static void NAME(rtti::Object& obj, const char* msg, Args&&... args)														\
+	{																															\
+		std::string msg_str = utility::stringFormat("%s: %s", obj.mID.c_str(), msg);											\
+		instance().log(LogMessage(NAME##Level(), utility::stringFormat(msg_str.c_str(), std::forward<Args>(args)...)));			\
 	}
 
 
@@ -99,7 +101,15 @@ namespace nap
 	class NAPAPI LogMessage
 	{
 	public:
+		/**
+		 * Log message constructor
+		 */
 		LogMessage(const LogLevel& lvl, const std::string& msg);
+
+		/**
+		 * Log message constructor, invoked when using temporary message (rvalue)
+		 */
+		LogMessage(const LogLevel& lvl , std::string&& msg);
 
 		/**
 		 * @return the log level of this message

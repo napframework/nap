@@ -58,8 +58,7 @@ namespace nap
 		mLaserEntity = scene->findEntity("LaserEntity");
 
 		// Create parameter gui
-		mParameterGUI = std::make_unique<ParameterGUI>(*mParameterService);
-		mParameters = mResourceManager->findObject<ParameterGroup>("Parameters");
+		mParameterGUI = mResourceManager->findObject<ParameterGUI>("ParameterGUI");
 		mLineSizeParam = mResourceManager->findObject<ParameterFloat>("line_size");
 		mLinePositionParam = mResourceManager->findObject<ParameterVec2>("line_position");
 
@@ -82,7 +81,7 @@ namespace nap
 		ImGui::Begin("Controls");
 
 		// Show all parameters
-		mParameterGUI->show(mParameters.get(), false);
+		mParameterGUI->show(false);
 
 		// Display some extra info
 		ImGui::Text(getCurrentDateTime().toString().c_str());

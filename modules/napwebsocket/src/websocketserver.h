@@ -86,14 +86,13 @@ namespace nap
 		virtual void onDestroy() override;
 
 		/**
-		 * Sends a message with the given opcode to a client.
+		 * Sends a message to a client.
 		 * @param connection the client connection
 		 * @param message the message to send
-		 * @param code message type
 		 * @param error contains the error if sending fails
-		 * @return if message was sent successfully
+		 * @return if message was sent successfully.
 		 */
-		bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
+		bool send(const WebSocketConnection& connection, const WebSocketMessage& message, nap::utility::ErrorState& error);
 
 		/**
 		 * Sends a message using the given payload and opcode to a client.
@@ -107,13 +106,30 @@ namespace nap
 		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 		/**
-		 * Sends a message to a client.
+		 * Sends a message with the given opcode to a client.
 		 * @param connection the client connection
 		 * @param message the message to send
+		 * @param code message type
 		 * @param error contains the error if sending fails
-		 * @return if message was sent successfully.
+		 * @return if message was sent successfully
 		 */
-		bool send(const WebSocketConnection& connection, const WebSocketMessage& message, nap::utility::ErrorState& error);
+		bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
+
+		/**
+		 * Broadcasts a message to all connected clients
+		 * @param message the message to send
+		 * @param error contains the error if sending fails
+		 * @return if message was broadcast successfully
+		 */
+		bool broadcast(const WebSocketMessage& message, nap::utility::ErrorState& error);
+
+		/**
+		 * Broadcasts a message to all connected clients
+		 * @param message the message to send
+		 * @param error contains the error if sending fails
+		 * @return if message was broadcast successfully
+		 */
+		bool broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
 
 	private:
 		/**

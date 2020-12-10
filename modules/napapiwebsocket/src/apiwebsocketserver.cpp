@@ -56,10 +56,18 @@ namespace nap
 		if (!msg.toJSON(json, error))
 			return false;
 
-		// Send msg
-		if (!mEndPoint->send(connection, json, EWebSocketOPCode::Text, error))
+		return mEndPoint->send(connection, json, EWebSocketOPCode::Text, error);
+	}
+
+
+	bool APIWebSocketServer::broadcast(nap::APIEventPtr apiEvent, nap::utility::ErrorState& error)
+	{
+		APIMessage msg(*apiEvent);
+		std::string json;
+		if (!msg.toJSON(json, error))
 			return false;
-		return true;
+
+		return mEndPoint->broadcast(json, EWebSocketOPCode::Text, error);
 	}
 
 

@@ -64,12 +64,11 @@ void napkin::AppRunnerPanel::onStartApp()
 	}
 
 	QStringList args;
-	args << AppContext::get().getDocument()->getCurrentFilename();
+	if (AppContext::get().getDocument() != nullptr)
+		args << AppContext::get().getDocument()->getCurrentFilename();
 
-	nap::Logger::info("Running: \"%s %s\"", executable.toStdString().c_str(), args.join(" ").toStdString().c_str());
-
+	nap::Logger::info("Running: '%s %s'", executable.toStdString().c_str(), args.join(" ").toStdString().c_str());
 	mStartButton.setEnabled(false);
-
 	mProcess.start(executable, args);
 }
 

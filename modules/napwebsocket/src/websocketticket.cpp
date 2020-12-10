@@ -23,10 +23,10 @@ namespace nap
 {
 	bool WebSocketTicket::init(utility::ErrorState& errorState)
 	{
-		if (errorState.check(mUsername.empty(), "%s: no username specified"))
+		if (errorState.check(mUsername.empty(), "%s: no username specified", mID.c_str()))
 			return false;
 
-		if (errorState.check(mPassword.empty(), "%s: no password specified"))
+		if (errorState.check(mPassword.empty(), "%s: no password specified", mID.c_str()))
 			return false;
 
 		return true;
@@ -66,7 +66,7 @@ namespace nap
 		}
 		catch (std::exception& e)
 		{
-			error.fail(utility::stringFormat("invalid binary bit-stream: %s", e.what()));
+			error.fail("invalid binary bit-stream: %s", e.what());
 			return nullptr;
 		}
 

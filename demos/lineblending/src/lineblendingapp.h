@@ -106,10 +106,9 @@ namespace nap
 		ResourcePtr<EntityInstance> mCameraEntity = nullptr;			//< Pointer to the entity that holds the camera
 		ResourcePtr<EntityInstance> mLineEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ResourcePtr<EntityInstance> mLaserEntity = nullptr;				//< Pointer to the entity that represents the laser canvas
-		ResourcePtr<ParameterGroup> mParameters = nullptr;				//< Pointer to the root parameter group
 		ResourcePtr<ParameterFloat> mLineSizeParam = nullptr;			//< Parameter that controls line size
 		ResourcePtr<ParameterVec2> mLinePositionParam = nullptr;		//< Parameter that controls the line position
+		ResourcePtr<ParameterGUI> mParameterGUI = nullptr;				//< Draws the parameters to screen
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-		std::unique_ptr<ParameterGUI> mParameterGUI = nullptr;			//< Renders the parameters
 	};
 }
