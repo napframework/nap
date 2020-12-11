@@ -7,16 +7,28 @@ namespace nap
 {
 	using namespace SequenceGUIClipboards;
 
-	Clipboard::Clipboard(rttr::type type)
-		: mSegmentType(type)
+	Clipboard::Clipboard(const rttr::type& trackType)
+		: mTrackType(trackType)
 	{
+
 	}
 
 	void Clipboard::addObject(const rtti::Object* object, utility::ErrorState& errorState)
 	{
-		if(errorState.check(object->get_type() == mSegmentType, "Object is not of correct type"))
-			return;
+		// first remove the object if it already exists in the clipboard
+		if(containsObject(object->mID))
+		{
+			removeObject(object->mID);
+		}
 
+		/*
+		 * TODO : FIX CONST CAST
+		 * I'm forced to do a const cast because the serializeObjects call does not accept a list of const object pointers
+		 * This should however be possible in my view, since serialization only requires reading from the object and never writing
+		 * So either we copy the object, making in non-const OR we make the serializeObjects call work with const object pointers
+		 */
+
+		// serialize the object
 		rtti::JSONWriter writer;
 		if (!rtti::serializeObjects(rtti::ObjectList{ const_cast<rtti::Object*>(object) }, writer, errorState))
 		{
@@ -24,7 +36,35 @@ namespace nap
 		}else
 		{
 			std::string serializedObject = writer.GetJSON();
-			mSerializedObjects.emplace_back(serializedObject);
+			mSerializedObjects.insert(std::pair<std::string, std::string>(object->mID, serializedObject));
 		}
+	}
+
+
+	bool Clipboard::containsObject(const std::string& objectID) const
+	{
+		return mSerializedObjects.find(objectID) != mSerializedObjects.end();
+	}
+
+
+	void Clipboard::removeObject(const std::string& objectID)
+	{
+		auto it = mSerializedObjects.find(objectID);
+		if(it!=mSerializedObjects.end())
+		{
+			mSerializedObjects.erase(it);
+		}
+	}
+
+
+	std::vector<std::string> Clipboard::getObjectIDs() const
+	{
+		std::vector<std::string> ids;
+		for(auto pair : mSerializedObjects)
+		{
+			ids.emplace_back(pair.first);
+		}
+
+		return ids;
 	}
 }

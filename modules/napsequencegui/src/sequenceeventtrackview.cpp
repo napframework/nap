@@ -29,9 +29,9 @@ namespace nap
 		return popup_handlers;
 	}
 
-	std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, double)>& SequenceEventTrackView::getPasteEventMap()
+	std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double)>& SequenceEventTrackView::getPasteEventMap()
 	{
-		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const std::string&, double)> paste_handlers;
+		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double)> paste_handlers;
 		return paste_handlers;
 	}
 
@@ -285,14 +285,7 @@ namespace nap
 					if( ImGui::Button("Paste") )
 					{
 						// call appropriate paste method
-						auto* event_segment_clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
-						auto& paste_event_map = getPasteEventMap();
-						auto it = paste_event_map.find(event_segment_clipboard->getSegmentType());
-						assert(it!=paste_event_map.end()); // type not found
-						if( it != paste_event_map.end() )
-						{
-							(*this.*it->second)(action->mTrackID, action->mTime);
-						}
+						pasteEventsFromClipboard(action->mTrackID, action->mTime);
 
 						// exit popup
 						ImGui::CloseCurrentPopup();
@@ -347,7 +340,7 @@ namespace nap
 				isAlreadyDragging = mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID;
 			}
 
-			// draw handler of segment duration
+			// draw handler of segment
 			drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
@@ -388,6 +381,7 @@ namespace nap
 					auto& editor = getEditor();
 					SequenceControllerEvent& eventController = editor.getController<SequenceControllerEvent>();
 					eventController.segmentEventStartTimeChange(track.mID, segment.mID, segment.mStartTime + amount);
+					updateSegmentInClipboard(track.mID, segment.mID);
 				}
 			}
 
@@ -396,14 +390,56 @@ namespace nap
 			{
 				mState.mAction = createAction<OpenEditSegmentValuePopup>(track.mID, segment.mID, segment.get_type());
 			}
+
+			// handled shift click for add/remove to clipboard
+			if( ImGui::IsMouseClicked(0) )
+			{
+				if( ImGui::GetIO().KeyShift )
+				{
+					// if no event segment clipboard, create it
+					if (!mState.mClipboard->isClipboard<EventSegmentClipboard>())
+						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent));
+
+					// get derived clipboard
+					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
+
+					// if the clipboard contains this segment, remove it
+					if (clipboard->containsObject(segment.mID))
+					{
+						clipboard->removeObject(segment.mID);
+					}else
+					{
+						// if not, serialize it into clipboard
+						utility::ErrorState errorState;
+						clipboard->addObject(&segment, errorState);
+
+						// log any errors
+						if(errorState.hasErrors())
+						{
+							Logger::error(errorState.toString());
+						}
+					}
+				}
+			}
 		}
 		else 
 		{
+			ImU32 line_color = guicolors::white;
+
+			// if segment is in clipboard, line is red
+			if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
+			{
+				if( mState.mClipboard->containsObject(segment.mID) )
+				{
+					line_color = guicolors::red;
+				}
+			}
+
 			// draw handler of segment duration
 			drawList->AddLine(
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				guicolors::white, // color
+				line_color, // color
 				1.0f); // thickness
 
 			if (mState.mAction->isAction<HoveringSegment>())
@@ -452,26 +488,97 @@ namespace nap
 
 				auto* action = mState.mAction->getDerived<EditingSegment>();
 
-				if(ImGui::Button("Copy"))
+				bool display_copy = !mState.mClipboard->isClipboard<EventSegmentClipboard>();
+
+				if( display_copy )
 				{
-					// create clipboard
-					mState.mClipboard = createClipboard<EventSegmentClipboard>(action->mSegmentType);
+					if(ImGui::Button("Copy"))
+					{
+						// create clipboard
+						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent));
 
-					// serialize segment
-					utility::ErrorState errorState;
-					auto& controller = getEditor().getController<SequenceControllerEvent>();
-					const auto* event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-					mState.mClipboard->addObject(event_segment, errorState);
+						// serialize segment
+						utility::ErrorState errorState;
+						auto& controller = getEditor().getController<SequenceControllerEvent>();
+						const auto* event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+						mState.mClipboard->addObject(event_segment, errorState);
 
-					// exit popup
-					ImGui::CloseCurrentPopup();
-					mState.mAction = createAction<None>();
+						// exit popup
+						ImGui::CloseCurrentPopup();
+						mState.mAction = createAction<None>();
+						ImGui::EndPopup();
+
+						return handled;
+					}
+				}else
+				{
+					// obtain derived clipboard
+					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
+
+					// is event contained by clipboard ? if so, add remove button
+					bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID);
+
+					if( display_remove_from_clipboard )
+					{
+						if( ImGui::Button("Remove from clipboard") )
+						{
+							clipboard->removeObject(action->mSegmentID);
+
+							// if clipboard is empty, remove current clipboard
+							if( clipboard->getObjectCount() == 0 )
+							{
+								mState.mClipboard = createClipboard<Empty>();
+							}
+
+							// exit popup
+							ImGui::CloseCurrentPopup();
+							mState.mAction = createAction<None>();
+							ImGui::EndPopup();
+
+							return handled;
+						}
+					}else
+					{
+						// clipboard is of correct type, but does not contain this segment, present the user with an add button
+						if( ImGui::Button("Add to clipboard") )
+						{
+							// obtain controller
+							auto& controller = getEditor().getController<SequenceControllerEvent>();
+
+							// fetch segment
+							const auto* segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+
+							// serialize object into clipboard
+							utility::ErrorState errorState;
+							clipboard->addObject(segment, errorState);
+
+							// log any errors
+							if(errorState.hasErrors())
+							{
+								nap::Logger::error(errorState.toString());
+							}
+
+							// exit popup
+							ImGui::CloseCurrentPopup();
+							mState.mAction = createAction<None>();
+							ImGui::EndPopup();
+
+							return handled;
+						}
+					}
 				}
 
 				if (ImGui::Button("Delete"))
 				{
 					auto& controller = getEditor().getController<SequenceControllerEvent>();
 					controller.deleteSegment(action->mTrackID, action->mSegmentID);
+
+					// remove segment from clipboard
+					if(mState.mClipboard->containsObject(action->mSegmentID))
+					{
+						mState.mClipboard->removeObject(action->mSegmentID);
+					}
+
 					mState.mDirty = true;
 
 					ImGui::CloseCurrentPopup();
@@ -484,7 +591,8 @@ namespace nap
 						if (ImGui::Button("Edit"))
 						{
 							auto& eventController = getEditor().getController<SequenceControllerEvent>();
-							const SequenceTrackSegmentEventBase *eventSegment = dynamic_cast<const SequenceTrackSegmentEventBase*>(eventController.getSegment(action->mTrackID, action->mSegmentID));
+							const auto *eventSegment = dynamic_cast<const SequenceTrackSegmentEventBase*>(eventController.getSegment(action->mTrackID, action->mSegmentID));
+
 							assert(eventSegment != nullptr);
 
 							if( eventSegment != nullptr)
@@ -521,6 +629,73 @@ namespace nap
 		}
 
 		return handled;
+	}
+
+
+	void SequenceEventTrackView::pasteEventsFromClipboard(const std::string& trackID, double time)
+	{
+		auto* paste_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::EventSegmentClipboard>();
+
+		// create vector & object ptr to be filled by de-serialization
+		std::vector<std::unique_ptr<rtti::Object>> read_objects;
+		SequenceTrackSegmentEventBase* event_segment = nullptr;
+
+		// continue upon succesfull de-serialization
+		utility::ErrorState errorState;
+		std::vector<SequenceTrackSegmentEventBase*> deserialized_event_segments = paste_clipboard->deserialize<SequenceTrackSegmentEventBase>(read_objects, errorState);
+
+		assert(deserialized_event_segments.size() > 0 ); // no event segments de serialized
+
+		// no errors ? continue
+		if(!errorState.hasErrors() && deserialized_event_segments.size() > 0)
+		{
+			// sort event segments by start time
+			std::sort(deserialized_event_segments.begin(), deserialized_event_segments.end(), [](SequenceTrackSegmentEventBase* a, SequenceTrackSegmentEventBase* b)
+			{
+			  return a->mStartTime < b->mStartTime;
+			});
+
+			// adjust start times by duration and start from 0.0
+			double first_segment_time = 0.0;
+			if( deserialized_event_segments.size() > 0 )
+			{
+				first_segment_time = deserialized_event_segments[0]->mStartTime;
+				deserialized_event_segments[0]->mStartTime = 0.0;
+			}
+			for(int i = 1 ; i < deserialized_event_segments.size(); i++)
+			{
+				deserialized_event_segments[i]->mStartTime = deserialized_event_segments[i]->mStartTime - first_segment_time;
+			}
+
+			// obtain controller
+			auto& controller = getEditor().getController<SequenceControllerEvent>();
+
+			for(auto* event : deserialized_event_segments)
+			{
+				auto& paste_event_map = getPasteEventMap();
+				auto it = paste_event_map.find(event->get_type());
+				assert(it!=paste_event_map.end()); // type not found
+				if( it != paste_event_map.end() )
+				{
+					(*this.*it->second)(trackID, *event, time);
+				}
+			}
+		}
+	}
+
+
+	void SequenceEventTrackView::updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID)
+	{
+		if( mState.mClipboard->containsObject(segmentID) )
+		{
+			mState.mClipboard->removeObject(segmentID);
+
+			auto& controller = getEditor().getController<SequenceControllerEvent>();
+			const auto* segment = controller.getSegment(trackID, segmentID);
+
+			utility::ErrorState errorState;
+			mState.mClipboard->addObject(segment, errorState);
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////

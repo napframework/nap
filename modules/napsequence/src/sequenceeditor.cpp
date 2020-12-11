@@ -79,6 +79,26 @@ namespace nap
 	}
 
 
+	SequenceController* SequenceEditor::getControllerWithTrackID(const std::string& trackID)
+	{
+		const auto& sequence = mSequencePlayer->getSequence();
+
+		for(const auto& track : sequence.mTracks)
+		{
+			auto track_type = track.get()->get_type();
+
+			auto it = getControllerTrackTypeMap().find(track_type);
+
+			if (mControllers.find(it->second) != mControllers.end())
+			{
+				return mControllers[it->second].get();
+			}
+		}
+
+		return nullptr;
+	}
+
+
 	void SequenceEditor::save(const std::string& file)
 	{
 		utility::ErrorState error_state;

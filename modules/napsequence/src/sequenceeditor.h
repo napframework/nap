@@ -61,9 +61,17 @@ namespace nap
 		/**
 		 * Returns pointer to base class of controller type, returns nullptr when controller type is not found
 		 * @param type rttr::type information of controller type to be returned
-		 * @return nullptr to controller base class, null ptr when not found
+		 * @return ptr to controller base class, null ptr when not found
 		 */
 		SequenceController* getControllerWithTrackType(rttr::type type);
+
+		/**
+		 * Returns pointer to base class of controller type that is used for specified track type of track id
+		 * Return null when track is not found, or controller is not found
+		 * @param trackID the track id of the track to find controller for
+		 * @return ptr to controller base class, null ptr when not found
+		 */
+		SequenceController* getControllerWithTrackID(const std::string& trackID);
 
 		/**
 		 * Gets reference the controller for a type, performs static cast

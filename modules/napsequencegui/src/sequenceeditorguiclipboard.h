@@ -28,7 +28,11 @@ namespace nap
 			RTTI_ENABLE()
 
 		public:
-			Clipboard(rttr::type type);
+			/**
+			 * Constructor
+			 * @param trackType expects tracktype
+			 */
+			Clipboard(const rttr::type& trackType);
 
 			/**
 			 * Default decontructor
@@ -76,12 +80,41 @@ namespace nap
 				return static_cast<T*>(this);
 			}
 
-			rttr::type getSegmentType() const { return mSegmentType; }
+			/**
+			 * returns object ids of serialized objects
+			 * @return vector of object ids
+			 */
+			std::vector<std::string> getObjectIDs() const;
+
+			/**
+			 * returns true when clipboard holds serialized object of specified id
+			 * @param objectID the object id of serialized object
+			 * @return true if clipboard contains serialized object
+			 */
+			bool containsObject(const std::string& objectID) const;
+
+			/**
+			 * removes specified object from clipboard when it is contained, no assert when not present
+			 * @param objectID the object id of the object to remove
+			 */
+			void removeObject(const std::string& objectID);
+
+			/**
+			 * returns amount of stored serialized objects
+			 * @return amount of stored serialized objects
+			 */
+			int getObjectCount() const { return mSerializedObjects.size(); }
+
+			/**
+			 * returns rtti track type info that was passed to clipboard upon construction
+			 * @return rtti track type info
+			 */
+			rttr::type getTrackType() const { return mTrackType; }
 
 		protected:
 			// the serialized objects
-			std::vector<std::string> 	mSerializedObjects;
-			rttr::type 					mSegmentType;
+			std::map<std::string, std::string> 	mSerializedObjects;
+			rttr::type 							mTrackType;
 		};
 
 		// shortcut
@@ -99,7 +132,7 @@ namespace nap
 		 */
 		class NAPAPI Empty : public Clipboard
 		{
-			RTTI_ENABLE()
+				RTTI_ENABLE()
 			public:
 				Empty() : Clipboard(rttr::type::empty()) {}
 		};
@@ -114,8 +147,12 @@ namespace nap
 		{
 			std::vector<T*> deserialized_objects;
 
-			for(auto& serialized_object : mSerializedObjects )
+			createdObjects.clear();
+			for(auto& pair : mSerializedObjects )
 			{
+				// get the serialized object from the map
+				std::string serialized_object = pair.second;
+
 				// De-serialize
 				rtti::DeserializeResult result;
 				rtti::Factory factory;
@@ -133,12 +170,11 @@ namespace nap
 					return std::vector<T*>();
 
 				auto* first_object = result.mReadObjects[0].get();
-				if( !errorState.check(first_object->get_type() == RTTI_OF(T), "Root object not of correct type"))
+				if( !errorState.check(first_object->get_type() == RTTI_OF(T) || first_object->get_type().is_derived_from<T>(), "Root object not of correct type"))
 					return std::vector<T*>();
 
 				// Move ownership of read objects
 				root_object = static_cast<T*>(first_object);
-				createdObjects.clear();
 				for (auto& read_object : result.mReadObjects)
 				{
 					if (read_object->get_type().is_derived_from<T>())
