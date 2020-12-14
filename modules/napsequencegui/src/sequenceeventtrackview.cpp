@@ -396,20 +396,24 @@ namespace nap
 			{
 				if( ImGui::GetIO().KeyShift )
 				{
-					// if no event segment clipboard, create it
-					if (!mState.mClipboard->isClipboard<EventSegmentClipboard>())
-						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent));
+					// if no event segment clipboard, create it or if previous clipboard is from a different sequence, create new clipboard
+					if (!mState.mClipboard->isClipboard<EventSegmentClipboard>() )
+						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+					else if( mState.mClipboard->getDerived<EventSegmentClipboard>()->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename() )
+						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
 
 					// get derived clipboard
 					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
-					// if the clipboard contains this segment, remove it
+					// if the clipboard contains this segment or is a different sequence, remove it
 					if (clipboard->containsObject(segment.mID))
 					{
 						clipboard->removeObject(segment.mID);
 					}else
 					{
 						// if not, serialize it into clipboard
+
+
 						utility::ErrorState errorState;
 						clipboard->addObject(&segment, errorState);
 
@@ -490,12 +494,19 @@ namespace nap
 
 				bool display_copy = !mState.mClipboard->isClipboard<EventSegmentClipboard>();
 
+				// if clipboard is from different sequence, create new clipboard, so display copy
+				if( !display_copy )
+				{
+					if( mState.mClipboard->getDerived<EventSegmentClipboard>()->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename() )
+						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+				}
+
 				if( display_copy )
 				{
 					if(ImGui::Button("Copy"))
 					{
 						// create clipboard
-						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent));
+						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
 
 						// serialize segment
 						utility::ErrorState errorState;
@@ -686,16 +697,22 @@ namespace nap
 
 	void SequenceEventTrackView::updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID)
 	{
-		if( mState.mClipboard->containsObject(segmentID) )
+		if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
 		{
-			mState.mClipboard->removeObject(segmentID);
+			auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
-			auto& controller = getEditor().getController<SequenceControllerEvent>();
-			const auto* segment = controller.getSegment(trackID, segmentID);
+			if( mState.mClipboard->containsObject(segmentID) && getEditor().mSequencePlayer->getSequenceFilename() == clipboard->getSequenceName() )
+			{
+				mState.mClipboard->removeObject(segmentID);
 
-			utility::ErrorState errorState;
-			mState.mClipboard->addObject(segment, errorState);
+				auto& controller = getEditor().getController<SequenceControllerEvent>();
+				const auto* segment = controller.getSegment(trackID, segmentID);
+
+				utility::ErrorState errorState;
+				mState.mClipboard->addObject(segment, errorState);
+			}
 		}
+
 	}
 
 	//////////////////////////////////////////////////////////////////////////

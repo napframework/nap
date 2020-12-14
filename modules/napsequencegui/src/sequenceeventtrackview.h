@@ -310,7 +310,11 @@ namespace nap
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
-			EventSegmentClipboard(const rttr::type& type) : Clipboard(type){};
+			EventSegmentClipboard(const rttr::type& type, const std::string& sequenceName) : Clipboard(type), mSequenceName(sequenceName){};
+
+			const std::string& getSequenceName() const { return mSequenceName; }
+		private:
+			std::string mSequenceName;
 		};
 	}
 

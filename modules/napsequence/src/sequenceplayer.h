@@ -140,6 +140,8 @@ namespace nap
 		 * @return get const reference to sequence
 		 */
 		const Sequence& getSequenceConst() const;
+
+		const std::string& getSequenceFilename() const;
 	public:
 		// properties
 		std::string 			mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file

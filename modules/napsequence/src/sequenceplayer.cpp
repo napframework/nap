@@ -432,4 +432,10 @@ namespace nap
 		std::lock_guard<std::mutex> lock(mMutex);
 		action();
 	}
+
+
+	const std::string& SequencePlayer::getSequenceFilename() const
+	{
+		return mSequenceFileName;
+	}
 }

@@ -357,15 +357,23 @@ namespace nap
 			{
 				if( ImGui::GetIO().KeyShift )
 				{
-					// create new curve segment clipboard if necessary
+					// create new curve segment clipboard if necessary or when clipboard is from different sequence
 					if( !mState.mClipboard->isClipboard<CurveSegmentClipboard>())
-						mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID);
+						mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename() );
+
 
 					// is this a different track then previous clipboard ? then create a new clipboard, discarding the old clipboard
 					auto* clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 					if( clipboard->getTrackID() != track.mID )
 					{
-						mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID);
+						mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
+						clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+					}
+
+					// is clipboard from another sequence, create new clipboard
+					if( clipboard->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename() )
+					{
+						mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
 						clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 					}
 
@@ -825,6 +833,12 @@ namespace nap
 						{
 							display_copy = true;
 						}
+
+						// check if clipboard is from different sequence
+						if( clipboard->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename() )
+						{
+							display_copy = true;
+						}
 					}
 
 					if( display_copy )
@@ -832,7 +846,7 @@ namespace nap
 						if( ImGui::Button("Copy") )
 						{
 							// create new clipboard
-							mState.mClipboard = createClipboard<CurveSegmentClipboard>(track->get_type(), track->mID);
+							mState.mClipboard = createClipboard<CurveSegmentClipboard>(track->get_type(), track->mID, getEditor().mSequencePlayer->getSequenceFilename());
 
 							// get curve segment
 							const auto* curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
@@ -1307,25 +1321,31 @@ namespace nap
 
 	void SequenceCurveTrackView::updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID)
 	{
-		if( mState.mClipboard->containsObject(segmentID) )
+		if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 		{
-			mState.mClipboard->removeObject(segmentID);
+			auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 
-			auto& controller = getEditor().getController<SequenceControllerCurve>();
-			const auto* segment = controller.getSegment(trackID, segmentID);
+			if( mState.mClipboard->containsObject(segmentID) && curve_segment_clipboard->getSequenceName() == getEditor().mSequencePlayer->getSequenceFilename() )
+			{
+				mState.mClipboard->removeObject(segmentID);
 
-			utility::ErrorState errorState;
-			mState.mClipboard->addObject(segment, errorState);
+				auto& controller = getEditor().getController<SequenceControllerCurve>();
+				const auto* segment = controller.getSegment(trackID, segmentID);
+
+				utility::ErrorState errorState;
+				mState.mClipboard->addObject(segment, errorState);
+			}
 		}
+
 	}
 
 
 	void SequenceCurveTrackView::updateSegmentsInClipboard(const std::string& trackID)
 	{
-		if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
+		if( mState.mClipboard->isClipboard<CurveSegmentClipboard>() )
 		{
 			auto* clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-			if(clipboard->getTrackID() == trackID)
+			if(clipboard->getTrackID() == trackID )
 			{
 				auto segment_ids = clipboard->getObjectIDs();
 				for(auto segment_id : segment_ids)

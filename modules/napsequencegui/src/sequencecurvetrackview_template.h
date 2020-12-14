@@ -1075,6 +1075,8 @@ namespace nap
 
 				// change duration
 				curve_controller->segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
+
+				// update any segments that could be changed
 				updateSegmentsInClipboard(trackId);
 
 				// copy curve points

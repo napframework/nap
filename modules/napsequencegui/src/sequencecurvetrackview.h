@@ -533,12 +533,14 @@ namespace nap
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
-			CurveSegmentClipboard(const rttr::type& segmentType, const std::string& trackID) : Clipboard(segmentType), mTrackID(trackID){}
+			CurveSegmentClipboard(const rttr::type& segmentType, const std::string& trackID, const std::string& sequenceName) : Clipboard(segmentType), mTrackID(trackID), mSequenceName(sequenceName){}
 
 			const std::string& getTrackID() const{ return mTrackID; }
 
+			const std::string& getSequenceName() const{ return mSequenceName; }
 		private:
 			std::string mTrackID;
+			std::string mSequenceName;
 		};
 	}
 
