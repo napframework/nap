@@ -95,6 +95,13 @@ namespace nap
 		void drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence);
 
 		/**
+		 * Draws inspectors of the sequence tracks
+		 * @param sequencePlayer reference to sequenceplayer
+		 * @param sequence reference to sequence
+		 */
+		void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence &sequence);
+
+		/**
 		 * draws player controller bar
 		 * @param player reference to player
 		 */

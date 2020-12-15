@@ -108,9 +108,6 @@ namespace nap
 		// calc width of content in timeline window
 		mState.mTimelineWidth = mState.mStepSize * sequence.mDuration;
 
-		// set content width of next window
-		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution, 0.0f));
-
 		// set window flags
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
 		if( mDrawFullWindow )
@@ -277,21 +274,75 @@ namespace nap
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position
 			mState.mTimelineControllerPos = ImGui::GetCursorPos();
 
-			drawPlayerController(sequence_player);
+			// timeline window properties
+			ImVec2 timeline_window_pos = {
+				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x + mState.mInspectorWidth - mState.mScroll.x,
+				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y
+			};
+			ImVec2 timeline_window_size = {
+				mState.mTimelineWidth + 50.0f,
+				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + 35.0f
+			};
 
-			// move a little bit more up to align tracks nicely with timelinecontroller
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState.mVerticalResolution - 10);
+			// inspector window properties
+			ImVec2 inspector_window_pos = {
+				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x,
+				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + 35.0f
+			};
+			ImVec2 inspector_window_size = {
+				mState.mInspectorWidth,
+				timeline_window_size.y
+			};
 
-			// draw tracks
-			drawTracks(sequence_player, sequence);
+			// setup up position for next window, which contains all tracks
+			ImGui::SetNextWindowPos(timeline_window_pos);
 
-			// draw end of sequence line
-			drawEndOfSequence(sequence, sequence_player);
+			int start_clip_y 	= 25; // title bar overlaps clipping area
+			int end_clip_y 		= ImGui::GetWindowHeight() - 10; // bottom scrollbar overlaps clipping area
+			int end_clip_x		= ImGui::GetWindowWidth() - 10; // right scrollbar overlaps clipping area
 
 			//
-			drawTimelinePlayerPosition(sequence, sequence_player);
+			if( ImGui::BeginChild(std::string(mID + "_timeline_window").c_str(),
+								  timeline_window_size,
+								  false,
+								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground ) )
+
+			{
+				ImGui::PushClipRect(
+					{inspector_window_pos.x + inspector_window_size.x,
+					 			timeline_window_pos.y > start_clip_y ? timeline_window_pos.y : start_clip_y},
+					{timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
+								timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y}, false);
+
+				drawPlayerController(sequence_player);
+
+				// draw tracks
+				drawTracks(sequence_player, sequence);
+
+				drawTimelinePlayerPosition(sequence, sequence_player);
+
+				ImGui::PopClipRect();
+			}
+			ImGui::EndChild();
+
+			// reset cursor
+			ImGui::SetCursorPos(mState.mTimelineControllerPos);
+
+			// setup up position for next window, which contains all inspectors
+			// inspectors will be draw on top of tracks
+			ImGui::SetNextWindowPos(inspector_window_pos);
+
+			if( ImGui::BeginChild(std::string(mID + "_timeline_inspectors").c_str(),
+								  inspector_window_size,
+								  false,
+								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground ) )
+			{
+				drawInspectors(sequence_player, sequence);
+			}
+			ImGui::EndChild();
 
 			// move the cursor below the tracks
+			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + mState.mScroll.x );
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
@@ -340,15 +391,17 @@ namespace nap
 
 	void SequenceEditorGUIView::drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence)
 	{
-		// get current cursor pos, we will use this to position the track windows
-		mState.mCursorPos = ImGui::GetCursorPos();
-
 		// define consts
 		mState.mTrackHeight = mState.mVerticalResolution;
+
+		auto cursor_pos = ImGui::GetCursorPos();
 
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * i });
+			mState.mCursorPos = ImGui::GetCursorPos();
+
 			auto track_type = sequence.mTracks[i].get()->get_type();
 			auto view_map = getTrackViewTypeViewMap();
 			auto it = view_map.find(track_type);
@@ -359,7 +412,34 @@ namespace nap
 				assert(it2 != mViews.end()); // no view class created for this view type
 				if (it2 != mViews.end())
 				{
-					it2->second->show(*sequence.mTracks[i].get());
+					it2->second->showTrack(*sequence.mTracks[i].get());
+				}
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::drawInspectors(const SequencePlayer& sequencePlayer, const Sequence &sequence)
+	{
+		auto cursor_pos = ImGui::GetCursorPos();
+
+		// draw tracks
+		for(int i = 0; i < sequence.mTracks.size(); i++)
+		{
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * i });
+			mState.mCursorPos = ImGui::GetCursorPos();
+
+			auto track_type = sequence.mTracks[i].get()->get_type();
+			auto view_map = getTrackViewTypeViewMap();
+			auto it = view_map.find(track_type);
+			assert(it != view_map.end()); // no view type for track
+			if (it != view_map.end())
+			{
+				auto it2 = mViews.find(it->second);
+				assert(it2 != mViews.end()); // no view class created for this view type
+				if (it2 != mViews.end())
+				{
+					it2->second->showInspector(*sequence.mTracks[i].get());
 				}
 			}
 		}
@@ -374,12 +454,11 @@ namespace nap
 		string_stream << mID << "sequencecontroller";
 		std::string id_string = string_stream.str();
 
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mInspectorWidth + 5.0f);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.0f);
 		ImGui::PushID(id_string.c_str());
 
 		// used for culling ( is stuff inside the parent window ??? )
-		ImVec2 parent_window_pos = ImGui::GetWindowPos();
-		ImVec2 parent_window_size = ImGui::GetWindowSize();
+		ImVec2 parent_window_size 	= mState.mWindowSize;
 
 		// draw timeline controller
 		if (ImGui::BeginChild(id_string.c_str(), // id
@@ -387,12 +466,12 @@ namespace nap
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
-			ImVec2 cursor_pos	 = ImGui::GetCursorPos();
-			ImVec2 window_top_left = ImGui::GetWindowPos();
-			ImVec2 start_pos	   =
+			ImVec2 cursor_pos	 	= ImGui::GetCursorPos();
+			ImVec2 window_top_left 	= ImGui::GetWindowPos();
+			ImVec2 start_pos	   	=
 			{
-				   window_top_left.x + cursor_pos.x,
-				   window_top_left.y + cursor_pos.y + 15,
+				window_top_left.x + cursor_pos.x,
+				window_top_left.y + cursor_pos.y + 15,
 			};
 
 			cursor_pos.y += 5;
@@ -434,11 +513,11 @@ namespace nap
 				timestamp_pos.x = i * timestamp_interval + start_pos.x;
 				timestamp_pos.y = start_pos.y - 18;
 
-				if (timestamp_pos.x < parent_window_size.x + parent_window_pos.x &&
-					timestamp_pos.x >= parent_window_pos.x)
+				if (timestamp_pos.x < parent_window_size.x &&
+					timestamp_pos.x >= 0)
 				{
-					if (timestamp_pos.y >= parent_window_pos.y &&
-						timestamp_pos.y < parent_window_size.y + parent_window_pos.y)
+					if (timestamp_pos.y >= 0 &&
+						timestamp_pos.y < parent_window_size.y)
 					{
 						double time_in_player = (i * timestamp_interval) / mState.mStepSize;
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
@@ -452,7 +531,7 @@ namespace nap
 				}
 				else
 				{
-					if (timestamp_pos.x > parent_window_size.x + parent_window_pos.x)
+					if (timestamp_pos.x > parent_window_size.x)
 						break; // right side of window, break out of loop
 				}
 			}
