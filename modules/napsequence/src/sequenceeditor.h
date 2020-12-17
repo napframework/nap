@@ -92,6 +92,14 @@ namespace nap
 		 * @return true on succesfull registration
 		 */
 		static bool registerControllerForTrackType(rttr::type viewType, rttr::type controllerType);
+
+		void insertMarker(double time, const std::string& message);
+
+		void changeMarkerTime(const std::string& markerID, double time);
+
+		void deleteMarker(const std::string& markerID);
+
+		void changeMarkerMessage(const std::string& markerID, const std::string& markerMessage);
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player

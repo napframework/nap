@@ -281,13 +281,13 @@ namespace nap
 			};
 			ImVec2 timeline_window_size = {
 				mState.mTimelineWidth + 50.0f,
-				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + 35.0f
+				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + 70.0f
 			};
 
 			// inspector window properties
 			ImVec2 inspector_window_pos = {
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x,
-				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + 35.0f
+				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + 68.0f
 			};
 			ImVec2 inspector_window_size = {
 				mState.mInspectorWidth,
@@ -314,12 +314,20 @@ namespace nap
 					{timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
 								timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y}, false);
 
+				// draw markers
+				drawMarkers(sequence_player, sequence);
+
+				// draw player controller
 				drawPlayerController(sequence_player);
 
 				// draw tracks
 				drawTracks(sequence_player, sequence);
 
+				// draw time line position line
 				drawTimelinePlayerPosition(sequence, sequence_player);
+
+				// draw marker lines
+				drawMarkerLines(sequence, sequence_player);
 
 				ImGui::PopClipRect();
 			}
@@ -363,6 +371,12 @@ namespace nap
 			{
 				it.second->handleActions();
 			}
+
+			//
+			handleEditMarkerPopup();
+
+			//
+			handleInsertMarkerPopup();
 
 			//
 			handleInsertTrackPopup();
@@ -443,6 +457,119 @@ namespace nap
 				}
 			}
 		}
+	}
+
+
+	void SequenceEditorGUIView::drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence )
+	{
+		const float sequence_controller_height = 30.0f;
+
+		std::ostringstream string_stream;
+		string_stream << mID << "markers";
+		std::string id_string = string_stream.str();
+
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.0f);
+		ImGui::PushID(id_string.c_str());
+
+		// used for culling ( is stuff inside the parent window ??? )
+		ImVec2 parent_window_pos = ImGui::GetWindowPos();
+		ImVec2 parent_window_size = ImGui::GetWindowSize();
+
+		// draw timeline controller
+		if (ImGui::BeginChild(id_string.c_str(), // id
+							  { mState.mTimelineWidth , sequence_controller_height}, // size
+							  false, // no border
+							  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_ChildWindow )) // window flags
+		{
+			ImVec2 cursor_pos	   = ImGui::GetCursorPos();
+			ImVec2 window_top_left = ImGui::GetWindowPos();
+			ImVec2 start_pos	   = {
+				window_top_left.x + cursor_pos.x,
+				window_top_left.y + cursor_pos.y,
+			};
+
+			cursor_pos.y += 5;
+
+			// get window drawlist
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, guicolors::black);
+			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, guicolors::white);
+
+			for(const auto& marker : sequence.mMarkers)
+			{
+				double marker_pos = marker->mTime;
+
+				// draw handler of player position
+				const ImVec2 player_time_top_rect_left = {
+					(start_pos.x + (float)(marker_pos / sequencePlayer.getDuration()) * mState.mTimelineWidth) - 10, start_pos.y + 5};
+				const ImVec2 player_time_rect_bottom_right = {
+					(start_pos.x + (float)(marker_pos / sequencePlayer.getDuration()) * mState.mTimelineWidth) + 10,
+					start_pos.y + 25,
+				};
+				const ImVec2 player_time_rect_center = {
+					( player_time_top_rect_left.x + player_time_rect_bottom_right.x ) * 0.5f,
+					( player_time_top_rect_left.y + player_time_rect_bottom_right.y ) * 0.5f
+				};
+
+				bool hovered = false;
+				if( ImGui::IsMouseHoveringRect(player_time_top_rect_left, player_time_rect_bottom_right) )
+					hovered = true;
+
+				draw_list->AddText({ player_time_rect_bottom_right.x + 2, player_time_rect_center.y - 10 }, guicolors::white, marker->mMessage.c_str());
+
+				if( mState.mAction->isAction<None>() && hovered )
+				{
+					// start dragging
+					if( ImGui::IsMouseDown(0) )
+					{
+						mState.mAction = createAction<DragSequenceMarker>(marker->mID);
+					}else if( ImGui::IsMouseDown(1) )
+					{
+						mState.mAction = createAction<OpenEditSequenceMarkerPopup>(marker->mID, marker->mMessage, marker->mTime);
+					}
+				}
+
+				if( mState.mAction->isAction<DragSequenceMarker>() )
+				{
+					auto* action = mState.mAction->getDerived<DragSequenceMarker>();
+					if(action->mID == marker->mID)
+					{
+						if( ImGui::IsMouseDown(0) )
+						{
+							double time = ((ImGui::GetMousePos().x - window_top_left.x) / mState.mTimelineWidth) * sequencePlayer.getDuration();
+							mEditor.changeMarkerTime(marker->mID, time);
+
+							hovered = true;
+						}else
+						{
+							mState.mAction = createAction<None>();
+						}
+					}
+				}
+
+				if( hovered )
+					draw_list->AddCircleFilled(player_time_rect_center, 10, guicolors::white);
+				else
+					draw_list->AddCircle(player_time_rect_center, 10, guicolors::white, 12, 2.0f);
+			}
+
+			if( mState.mAction->isAction<None>())
+			{
+				if( ImGui::IsMouseHoveringRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }))
+				{
+					if( ImGui::IsMouseDown(1) )
+					{
+						double time = ((ImGui::GetMousePos().x - window_top_left.x) / mState.mTimelineWidth) * sequencePlayer.getDuration();
+						mState.mAction = createAction<OpenInsertSequenceMarkerPopup>(time);
+					}
+				}
+			}
+		}
+
+		ImGui::EndChild();
+
+		ImGui::PopID();
 	}
 
 
@@ -678,7 +805,7 @@ namespace nap
 			mState.mWindowPos.x + mState.mTimelineControllerPos.x - mState.mScroll.x
 				+ mState.mInspectorWidth + 5
 				+ mState.mTimelineWidth * (float)(player.getPlayerTime() / player.getDuration()) - 1,
-				mState.mWindowPos.y + mState.mTimelineControllerPos.y + 15.0f - mState.mScroll.y
+				mState.mWindowPos.y + mState.mTimelineControllerPos.y + 50.0f - mState.mScroll.y
 		};
 
 		// if player position in inside the sequencer window, draw it
@@ -702,6 +829,42 @@ namespace nap
 		}
 	}
 
+
+	void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player)
+	{
+		const float line_thickness = 2.0f;
+		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(guicolors::white);
+		const ImU32 color = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 0.5f});
+
+		for(const auto& marker : sequence.mMarkers)
+		{
+			ImVec2 pos =
+				{
+					mState.mWindowPos.x + mState.mTimelineControllerPos.x - mState.mScroll.x
+					+ mState.mInspectorWidth + 5
+					+ mState.mTimelineWidth * (float)(marker->mTime / player.getDuration()) - 1,
+					mState.mWindowPos.y + mState.mTimelineControllerPos.y + 25.0f - mState.mScroll.y
+				};
+
+			// if player position in inside the sequencer window, draw it
+			if( pos.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f && pos.x > mState.mWindowPos.x )
+			{
+				ImVec2 line_begin 	= { pos.x, math::max<float>( mState.mWindowPos.y + 25, pos.y ) }; // clip line to top of window
+				ImVec2 line_end 	= { pos.x, 	pos.y + math::min<float>( // clip the line to bottom of window
+					sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 35.0f ,
+					mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y)};
+
+				ImGui::SetNextWindowPos(line_begin);
+				if( ImGui::BeginChild(("marker" + marker->mID).c_str(), { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
+				{
+					auto* drawlist = ImGui::GetWindowDrawList();
+					drawlist->AddLine( line_begin, line_end, color, line_thickness);
+
+				}
+				ImGui::EndChild();
+			}
+		}
+	}
 
 
 	void SequenceEditorGUIView::drawEndOfSequence(const Sequence& sequence, SequencePlayer& player)
@@ -992,6 +1155,134 @@ namespace nap
 							ImGui::CloseCurrentPopup();
 						}
 					}
+				}
+
+				if (ImGui::Button("Cancel"))
+				{
+					mState.mAction = createAction<None>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// clicked outside so exit popup
+				mState.mAction = createAction<None>();
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleEditMarkerPopup()
+	{
+		if (mState.mAction->isAction<OpenEditSequenceMarkerPopup>())
+		{
+			auto* action = mState.mAction->getDerived<OpenEditSequenceMarkerPopup>();
+
+			mState.mAction = createAction<EditingSequenceMarkerPopup>(action->mID, action->mMessage, action->mTime);
+			ImGui::OpenPopup("Edit Sequence Marker");
+		}
+
+		if (mState.mAction->isAction<EditingSequenceMarkerPopup>())
+		{
+			if (ImGui::BeginPopup("Edit Sequence Marker"))
+			{
+				auto* action = mState.mAction->getDerived<EditingSequenceMarkerPopup>();
+
+				double time = action->mTime;
+
+				int time_milseconds = (int)(time * 100.0) % 100;
+				int time_seconds = (int)(time) % 60;
+				int time_minutes = (int)(time) / 60;
+
+				bool edit_time = false;
+
+				ImGui::Separator();
+
+				ImGui::PushItemWidth(100.0f);
+
+				int time_array[3] =
+					{
+						time_minutes,
+						time_seconds,
+						time_milseconds
+					};
+
+				edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+				if (edit_time)
+				{
+					double new_time = (((double)time_array[2]) / 100.0) + (double)time_array[1] + ((double)time_array[0] * 60.0);
+					action->mTime = new_time;
+					mEditor.changeMarkerTime(action->mID, new_time);
+				}
+
+				char buffer[256];
+				strcpy(buffer, action->mMessage.c_str());
+				if (ImGui::InputText("Message", buffer, 256))
+				{
+					action->mMessage = std::string(buffer);
+					mEditor.changeMarkerMessage(action->mID, action->mMessage);
+				}
+
+				if(ImGui::Button("Delete") )
+				{
+					mEditor.deleteMarker(action->mID);
+
+					mState.mAction = createAction<None>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::Button("Done"))
+				{
+					mState.mAction = createAction<None>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+			else
+			{
+				// clicked outside so exit popup
+				mState.mAction = createAction<None>();
+			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleInsertMarkerPopup()
+	{
+		if (mState.mAction->isAction<OpenInsertSequenceMarkerPopup>())
+		{
+			auto* action = mState.mAction->getDerived<OpenInsertSequenceMarkerPopup>();
+
+			mState.mAction = createAction<InsertingSequenceMarkerPopup>(action->mTime, "hello world!");
+			ImGui::OpenPopup("Insert Sequence Marker");
+		}
+
+		if (mState.mAction->isAction<InsertingSequenceMarkerPopup>())
+		{
+			if (ImGui::BeginPopup("Insert Sequence Marker"))
+			{
+				auto* action = mState.mAction->getDerived<InsertingSequenceMarkerPopup>();
+
+				char buffer[256];
+				strcpy(buffer, action->mMessage.c_str());
+				if (ImGui::InputText("Message", buffer, 256))
+				{
+					action->mMessage = std::string(buffer);
+				}
+
+				if (ImGui::Button("Insert Marker"))
+				{
+					mEditor.insertMarker(action->mTime, action->mMessage);
+
+					mState.mAction = createAction<None>();
+					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button("Cancel"))

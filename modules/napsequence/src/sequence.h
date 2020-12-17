@@ -7,6 +7,7 @@
 // internal includes
 #include "sequencetracksegment.h"
 #include "sequencetrack.h"
+#include "sequencemarker.h"
 
 // external includes
 #include <nap/resource.h>
@@ -23,7 +24,8 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		std::vector<ResourcePtr<SequenceTrack>>	mTracks; ///< Property: 'Sequence Track' Vector holding resourceptrs to the SequenceTracks
+		std::vector<ResourcePtr<SequenceTrack>>		mTracks; ///< Property: 'Sequence Tracks' Vector holding resourceptrs to the SequenceTracks
+		std::vector<ResourcePtr<SequenceMarker>> 	mMarkers; ///< Property: 'Sequence Markers' Vector holding resourceptrs to the SequenceMarkers
 		double mDuration = 0; ///< Property: 'Duration' the duration of the sequence
 	};
 }

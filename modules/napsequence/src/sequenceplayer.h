@@ -141,6 +141,9 @@ namespace nap
 		 */
 		const Sequence& getSequenceConst() const;
 
+		/**
+		 * @return returns current sequence filename
+		 */
 		const std::string& getSequenceFilename() const;
 	public:
 		// properties

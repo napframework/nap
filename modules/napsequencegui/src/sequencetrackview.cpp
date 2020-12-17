@@ -252,6 +252,7 @@ namespace nap
 			int steps = mState.mTimelineWidth / timestamp_interval;
 
 			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
+			bool first_line_drawn = false;
 			for (;i < steps; i++)
 			{
 				if(i==0) // ignore first timestamp since it will hide window left border
@@ -260,9 +261,10 @@ namespace nap
 				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
 				if (ImGui::IsRectVisible(pos, { pos.x + 1, pos.y + mState.mTrackHeight } ))
 				{
+					first_line_drawn = true;
 					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, guicolors::darkerGrey);
 				}
-				else
+				else if(first_line_drawn) // right side of window, so bail
 				{
 					break;
 				}
