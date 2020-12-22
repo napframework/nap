@@ -229,6 +229,8 @@ namespace nap
 		{
 			createAdapter(track->mAssignedOutputID, track->mID);
 		}
+
+		adaptersCreated.trigger(*this, mAdapters);
 	}
 
 
@@ -409,7 +411,9 @@ namespace nap
 
 		if (output == nullptr)
 		{
-			nap::Logger::error("No output found with id %s", inputID.c_str());
+			// No output found
+			// We don't print an error here, because it could be that this track is assigned to a custom output when the
+			// adaptersCreated signal is dispatched
 			return false;
 		}
 
