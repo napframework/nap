@@ -23,10 +23,10 @@ namespace nap
 {
 	bool WebSocketTicket::init(utility::ErrorState& errorState)
 	{
-		if (errorState.check(mUsername.empty(), "%s: no username specified", mID.c_str()))
+		if (!errorState.check(!mUsername.empty(), "%s: no username specified", mID.c_str()))
 			return false;
 
-		if (errorState.check(mPassword.empty(), "%s: no password specified", mID.c_str()))
+		if (!errorState.check(!mPassword.empty(), "%s: no password specified", mID.c_str()))
 			return false;
 
 		return true;
