@@ -739,6 +739,9 @@ namespace nap
 				if (ImGui::InputFloat("time", &action->mTime))
 				{
 					change = true;
+
+					// time cannot be 0
+					action->mTime = math::max<float>(0.1f, action->mTime);
 				}
 
 				if (ImGui::InputFloat("value", &action->mValue))
