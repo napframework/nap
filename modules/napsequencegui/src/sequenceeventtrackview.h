@@ -474,7 +474,7 @@ namespace nap
 		const auto* new_segment = static_cast<const T*>(controller.insertEventSegment<T>(trackID, baseEvent.mStartTime + time));
 
 		// upcast de-serialized event
-		const auto* event_upcast = rtti_cast<const T*>(&baseEvent);
+		const auto* event_upcast = rtti_cast<const T>(&baseEvent);
 
 		// cannot be null
 		assert(event_upcast != nullptr);
