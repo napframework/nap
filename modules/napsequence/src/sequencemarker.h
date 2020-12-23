@@ -22,6 +22,6 @@ namespace nap
 		virtual ~SequenceMarker() = default;
 
 		std::string mMessage; ///< Property: 'Message' message in marker
-		double 		mTime;  ///< Property: 'Time' time of marker in sequence
+		double 		mTime;  ///< Property: 'Time' time in seconds of marker in sequence
 	};
 }

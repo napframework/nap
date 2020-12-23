@@ -105,9 +105,9 @@ namespace nap
 
 		// draw inspector window
 		if (ImGui::BeginChild(inspector_id.c_str(), // id
-							  { mState.mInspectorWidth , mState.mTrackHeight + 5 }, // size
-							  false, // no border
-							  ImGuiWindowFlags_NoMove)) // window flags
+		{ mState.mInspectorWidth , mState.mTrackHeight + 5 }, // size
+	  false, // no border
+	   ImGuiWindowFlags_NoMove)) // window flags
 		{
 			// obtain drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -118,11 +118,11 @@ namespace nap
 
 			// draw background & box
 			draw_list->AddRectFilled(window_pos,
-									 {window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
+							  {window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
 									 guicolors::black);
 
 			draw_list->AddRect(window_pos,
-							   {window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
+					    {window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
 							   guicolors::white);
 
 			//

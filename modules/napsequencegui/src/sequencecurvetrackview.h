@@ -216,8 +216,17 @@ namespace nap
 		template<typename T>
 		void pasteClipboardSegmentInto(const std::string& trackID, const std::string& segmentID);
 
+		/**
+		 * updates segment in clipboard with contents of segment in track
+		 * @param trackID the track id of the segment in clipboard
+		 * @param segmentID the segment id of the segment in clipboard
+		 */
 		void updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID);
 
+		/**
+		 * iterates of all segments in clipboard of specified track and updates them with the ones in the specified track
+		 * @param trackID the track id containing segments in clipboard
+		 */
 		void updateSegmentsInClipboard(const std::string& trackID);
 
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
@@ -528,15 +537,32 @@ namespace nap
 
 	namespace SequenceGUIClipboards
 	{
+		/**
+		 * CurveSegmentClipboard contains serialized curve segments
+		 */
 		class CurveSegmentClipboard :
 			public Clipboard
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
+			/**
+			 * Constructor
+			 * @param segmentType the segment type that needs to be serialized
+			 * @param trackID the track id of track that contains the segment
+			 * @param sequenceName the name of the current loaded sequence
+			 */
 			CurveSegmentClipboard(const rttr::type& segmentType, const std::string& trackID, const std::string& sequenceName) : Clipboard(segmentType), mTrackID(trackID), mSequenceName(sequenceName){}
 
+			/**
+			 * returns track id
+			 * @return the track id that contains the segment
+			 */
 			const std::string& getTrackID() const{ return mTrackID; }
 
+			/**
+			 * returns sequence name that contains the segment
+			 * @return the sequence name that contains the segment
+			 */
 			const std::string& getSequenceName() const{ return mSequenceName; }
 		private:
 			std::string mTrackID;

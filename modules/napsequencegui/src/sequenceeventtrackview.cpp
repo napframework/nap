@@ -681,7 +681,7 @@ namespace nap
 			// obtain controller
 			auto& controller = getEditor().getController<SequenceControllerEvent>();
 
-			for(auto* event : deserialized_event_segments)
+			for(const auto* event : deserialized_event_segments)
 			{
 				auto& paste_event_map = getPasteEventMap();
 				auto it = paste_event_map.find(event->get_type());
