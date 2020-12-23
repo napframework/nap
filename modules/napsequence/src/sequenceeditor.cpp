@@ -69,7 +69,6 @@ namespace nap
 		if (map.find(type) != map.end())
 		{
 			auto it = getControllerTrackTypeMap().find(type);
-
 			if (mControllers.find(it->second) != mControllers.end())
 			{
 				return mControllers[it->second].get();
@@ -83,19 +82,15 @@ namespace nap
 	SequenceController* SequenceEditor::getControllerWithTrackID(const std::string& trackID)
 	{
 		const auto& sequence = mSequencePlayer->getSequence();
-
 		for(const auto& track : sequence.mTracks)
 		{
 			auto track_type = track.get()->get_type();
-
 			auto it = getControllerTrackTypeMap().find(track_type);
-
 			if (mControllers.find(it->second) != mControllers.end())
 			{
 				return mControllers[it->second].get();
 			}
 		}
-
 		return nullptr;
 	}
 
@@ -195,7 +190,6 @@ namespace nap
 			{
 			  return markerID == a->mID;
 			});
-
 			assert(it_1 != mSequencePlayer->mSequence->mMarkers.end());
 
 			if(it_1 != mSequencePlayer->mSequence->mMarkers.end())
@@ -207,7 +201,6 @@ namespace nap
 			{
 			  	return markerID == a->mID;
 			});
-
 			assert(it_2 != mSequencePlayer->mReadObjects.end());
 
 			if(it_2 != mSequencePlayer->mReadObjects.end())
