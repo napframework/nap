@@ -230,7 +230,12 @@ namespace nap
 			createAdapter(track->mAssignedOutputID, track->mID);
 		}
 
-		adaptersCreated.trigger(*this, mAdapters);
+		std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function = [this](const std::string& outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
+		{
+			mAdapters.emplace(outputID, std::move(adapter));
+		};
+
+		adaptersCreated.trigger(add_adapter_function);
 	}
 
 
