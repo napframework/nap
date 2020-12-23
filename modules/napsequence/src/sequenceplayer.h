@@ -192,8 +192,16 @@ namespace nap
 		 * postTick Signal is triggered on player thread, after updating the adapters
 		 */
 		Signal<SequencePlayer&> postTick;
+	protected:
+		/**
+		 * adptersCreated Signal is triggered from main thread, after creating adapters
+		 * This is useful for creating your own custom outputs & adapters for custom  tracks if necessary
+		 * You should do so only when writing your own player extended on SequencePlayer
+		 * It passes a reference to a lambda function that you can call to add an adapter to mAdapters member of
+		 * SequencePlayer
+		 */
+		Signal<std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)>&> adaptersCreated;
 	private:
-
 		/**
 		 * returns reference to sequence
 		 */
