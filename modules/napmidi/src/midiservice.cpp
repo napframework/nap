@@ -23,7 +23,8 @@ namespace nap
 
     bool MidiService::init(nap::utility::ErrorState& errorState)
     {
-        try {
+        try 
+		{
             mMidiIn = std::make_unique<RtMidiIn>();
             mMidiOut = std::make_unique<RtMidiOut>();
             printPorts();
@@ -90,11 +91,11 @@ namespace nap
     {
         Logger::info("Available midi input ports:");
         for (auto i = 0; i < getInputPortCount(); ++i)
-            nap::Logger::info("%s", getInputPortName(i).c_str());
+            nap::Logger::info("%d: %s", i, getInputPortName(i).c_str());
 
         Logger::info("Available midi output ports:");
         for (auto i = 0; i < getOutputPortCount(); ++i)
-            nap::Logger::info("%s", getOutputPortName(i).c_str());
+            nap::Logger::info("%d: %s", i, getOutputPortName(i).c_str());
     }
     
     
