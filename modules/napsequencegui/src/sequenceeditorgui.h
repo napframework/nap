@@ -95,6 +95,27 @@ namespace nap
 		void drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence);
 
 		/**
+		 * Draws inspectors of the sequence tracks
+		 * @param sequencePlayer reference to sequenceplayer
+		 * @param sequence reference to sequence
+		 */
+		void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence &sequence);
+
+		/**
+		 * Draws markers
+		 * @param sequencePlayer reference to sequenceplayer
+		 * @param sequence reference to sequence
+		 */
+		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence );
+
+		/**
+		 * Draw lines of markers
+		 * @param sequencePlayer reference to sequenceplayer
+		 * @param sequence reference to sequence
+		 */
+		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player);
+
+		/**
 		 * draws player controller bar
 		 * @param player reference to player
 		 */
@@ -133,6 +154,16 @@ namespace nap
 		 * handle editing of sequence duration
 		 */
 		void handleSequenceDurationPopup();
+
+		/*
+		 * handle editing of markers
+		 */
+		void handleEditMarkerPopup();
+
+		/*
+		 * handle insertion of new markers
+		 */
+		void handleInsertMarkerPopup();
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;

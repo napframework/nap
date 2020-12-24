@@ -43,13 +43,7 @@ namespace nap
 		 * Destructor
 		 */
         virtual ~SequenceTrackView(){};
-        
-		/**
-		 * draws track 
-		 * given track derived class is expected to be of track type that is used by this view
-		 * @param track reference to sequence track
-		 */
-		virtual void show(const SequenceTrack& track);
+
 
 		/**
 		 * handles popups
@@ -63,6 +57,21 @@ namespace nap
 		 * needs to do something in the next frame update
 		 */
 		virtual void handleActions() {}
+
+		/**
+		 * shows inspector block
+		 * @param track reference to track
+		 * @param deleteTrack reference to bool to indicate whether delete is pressed
+		 * @param moveUp reference to bool indicating to move the track upwards
+		 * @param moveDown reference to bool indicating to move the track downwards
+		 */
+		virtual void showInspector(const SequenceTrack& track);
+
+		/**
+		 * shows track contents
+		 * @param track reference to track
+		 */
+		virtual void showTrack(const SequenceTrack& track);
 
 		/////////////////////////////////////////////////////////////////////////////
 		// static factory methods
@@ -113,21 +122,6 @@ namespace nap
 		 */
 		static std::string formatTimeString(double time);
 	protected:
-		/**
-		 * shows inspector block
-		 * @param track reference to track
-		 * @param deleteTrack reference to bool to indicate whether delete is pressed
-		 * @param moveUp reference to bool indicating to move the track upwards
-		 * @param moveDown reference to bool indicating to move the track downwards
-		 */
-		virtual void showInspector(const SequenceTrack& track, bool& deleteTrack, bool& moveUp, bool& moveDown);
-
-		/**
-		 * shows track contents
-		 * @param track reference to track
-		 */
-		virtual void showTrack(const SequenceTrack& track);
-
 		/**
 		 * this methods needs to be overloaded, contents for the inspector of a specific track type can be drawn in this function
 		 * @param track reference to track

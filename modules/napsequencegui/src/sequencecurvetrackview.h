@@ -128,7 +128,7 @@ namespace nap
 		/**
 		 * handles delete segment popup
 		 */
-		virtual bool handleDeleteSegmentPopup();
+		virtual bool handleEditSegmentPopup();
 
 		/**
 		 * handles insert curve point popup
@@ -199,13 +199,13 @@ namespace nap
 		virtual void showTrackContent(const SequenceTrack &track, const ImVec2& trackTopLeft) override;
 
 		/**
-		 * pastes current clipboard as a new segment at given time
+		 * pastes current clipboard as new segments at given time
 		 * @tparam T the segment type
 		 * @param trackId the track id of the track to insert into
 		 * @param time the time at which to create new segment
 		 */
 		template<typename T>
-		void pasteClipboardSegment(const std::string& trackId, double time);
+		void pasteClipboardSegments(const std::string& trackId, double time);
 
 		/**
 		 * pastes content of clipboard segment into another segment
@@ -214,7 +214,20 @@ namespace nap
 		 * @param segmentID the segment id of the segment to replace
 		 */
 		template<typename T>
-		void pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentID);
+		void pasteClipboardSegmentInto(const std::string& trackID, const std::string& segmentID);
+
+		/**
+		 * updates segment in clipboard with contents of segment in track
+		 * @param trackID the track id of the segment in clipboard
+		 * @param segmentID the segment id of the segment in clipboard
+		 */
+		void updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID);
+
+		/**
+		 * iterates of all segments in clipboard of specified track and updates them with the ones in the specified track
+		 * @param trackID the track id containing segments in clipboard
+		 */
+		void updateSegmentsInClipboard(const std::string& trackID);
 
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
@@ -524,13 +537,36 @@ namespace nap
 
 	namespace SequenceGUIClipboards
 	{
+		/**
+		 * CurveSegmentClipboard contains serialized curve segments
+		 */
 		class CurveSegmentClipboard :
 			public Clipboard
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
-			CurveSegmentClipboard(rttr::type segmentType) : mSegmentType(segmentType){}
-			rttr::type mSegmentType;
+			/**
+			 * Constructor
+			 * @param segmentType the segment type that needs to be serialized
+			 * @param trackID the track id of track that contains the segment
+			 * @param sequenceName the name of the current loaded sequence
+			 */
+			CurveSegmentClipboard(const rttr::type& segmentType, const std::string& trackID, const std::string& sequenceName) : Clipboard(segmentType), mTrackID(trackID), mSequenceName(sequenceName){}
+
+			/**
+			 * returns track id
+			 * @return the track id that contains the segment
+			 */
+			const std::string& getTrackID() const{ return mTrackID; }
+
+			/**
+			 * returns sequence name that contains the segment
+			 * @return the sequence name that contains the segment
+			 */
+			const std::string& getSequenceName() const{ return mSequenceName; }
+		private:
+			std::string mTrackID;
+			std::string mSequenceName;
 		};
 	}
 

@@ -189,8 +189,10 @@ namespace nap
 		 * @param trackID the track id of where to paste the new event
 		 * @param time the time where to insert copied event segment
 		 */
+		void pasteEventsFromClipboard(const std::string& trackID, double time);
+
 		template<typename T>
-		void pasteEventFromClipboard(const std::string& trackID, double time);
+		void pasteEvent(const std::string& trackID, const SequenceTrackSegmentEventBase& baseEvent, double time);
 
 		/**
 		 * draws segment handler
@@ -209,22 +211,19 @@ namespace nap
 		bool handleDeleteSegmentPopup();
 
 		/**
-		 * creates an event edit action of specified type
-		 * @tparam T type of event action
-		 * @param segment base class of event segment
-		 * @param trackID track id
-		 * @param segmentID segment id
-		 */
-		template<typename T>
-		void createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID);
-
-		/**
 		 * this method is called to register a new popup handler for a new event type
 		 * @tparam T type of event
 		 * @return true when called
 		 */
 		template<typename T>
 		static bool registerPopupHandler();
+
+		/**
+		 * update the segment in the clipboard
+		 * @param trackID the track id of the track containing the segment
+		 * @param segmentID the segment id
+		 */
+		void updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID);
 	private:
 		// map of segment view types
 		static std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& getSegmentViews();
@@ -233,7 +232,7 @@ namespace nap
 		static std::unordered_map<rttr::type, bool (SequenceEventTrackView::*)()>& getEditEventHandlers();
 
 		// map of segment paste handlers
-		static std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, double)>& getPasteEventMap();
+		static std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double)>& getPasteEventMap();
 
 		// list of event types
 		static std::vector<rttr::type>& getEventTypesVector();
@@ -311,8 +310,11 @@ namespace nap
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
-			EventSegmentClipboard(rttr::type segmentType) : mSegmentType(segmentType){}
-			rttr::type mSegmentType;
+			EventSegmentClipboard(const rttr::type& type, const std::string& sequenceName) : Clipboard(type), mSequenceName(sequenceName){};
+
+			const std::string& getSequenceName() const { return mSequenceName; }
+		private:
+			std::string mSequenceName;
 		};
 	}
 
@@ -386,6 +388,7 @@ namespace nap
 					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
 					double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
 					double time = event_controller.segmentEventStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
+					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					action->mStartTime = time;
 					mState.mDirty = true;
 				}
@@ -394,6 +397,7 @@ namespace nap
 				{
 					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
 					event_controller.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
+					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 				}
 
@@ -415,34 +419,6 @@ namespace nap
 		}
 
 		return handled;
-	}
-
-
-	template<typename T>
-	void SequenceEventTrackView::pasteEventFromClipboard(const std::string& trackID, double time)
-	{
-		auto* paste_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::EventSegmentClipboard>();
-
-		// create vector & object ptr to be filled by de-serialization
-		std::vector<std::unique_ptr<rtti::Object>> read_objects;
-		T* event_segment = nullptr;
-
-		// continue upon succesfull de-serialization
-		utility::ErrorState errorState;
-		auto* deserialized_event_segment = paste_clipboard->deserialize<T>(read_objects, errorState);
-
-		// no errors ? continue
-		if(!errorState.hasErrors())
-		{
-			// obtain controller
-			auto& controller = getEditor().getController<SequenceControllerEvent>();
-
-			// insert new segment
-			const auto* new_segment = static_cast<const T*>(controller.insertEventSegment<T>(trackID, time));
-
-			// copy values from deserialized event segment
-			controller.editEventSegment(trackID, new_segment->mID, deserialized_event_segment->mValue);
-		}
 	}
 
 
@@ -481,10 +457,30 @@ namespace nap
 		assert(paste_it == handler_paste_events.end()); // type already registered
 		if(paste_it == handler_paste_events.end())
 		{
-			handler_paste_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), &SequenceEventTrackView::pasteEventFromClipboard<SequenceTrackSegmentEvent<T>> );
+			handler_paste_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), &SequenceEventTrackView::pasteEvent<SequenceTrackSegmentEvent<T>> );
 		}
 
 		return true;
+	}
+
+
+	template<typename T>
+	void SequenceEventTrackView::pasteEvent(const std::string& trackID, const SequenceTrackSegmentEventBase& baseEvent, double time)
+	{
+		// obtain controller
+		auto& controller = getEditor().getController<SequenceControllerEvent>();
+
+		// insert new segment
+		const auto* new_segment = static_cast<const T*>(controller.insertEventSegment<T>(trackID, baseEvent.mStartTime + time));
+
+		// upcast de-serialized event
+		const auto* event_upcast = rtti_cast<const T>(&baseEvent);
+
+		// cannot be null
+		assert(event_upcast != nullptr);
+
+		// copy values from deserialized event segment
+		controller.editEventSegment(trackID, new_segment->mID, event_upcast->mValue);
 	}
 
 

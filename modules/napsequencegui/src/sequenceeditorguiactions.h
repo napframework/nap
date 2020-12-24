@@ -259,5 +259,55 @@ namespace nap
 			RTTI_ENABLE(Action)
 		public:
 		};
+
+		class OpenEditSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditSequenceMarkerPopup(const std::string& id, const std::string& message, double time) : mID(id), mMessage(message), mTime(time){}
+
+			std::string mID;
+			std::string mMessage;
+			double mTime;
+		};
+
+		class EditingSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			EditingSequenceMarkerPopup(const std::string& id, const std::string& message, double time) : mID(id), mMessage(message), mTime(time){}
+
+			std::string mID;
+			std::string mMessage;
+			double mTime;
+		};
+
+		class OpenInsertSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenInsertSequenceMarkerPopup(double time) : mTime(time){}
+
+			double mTime;
+		};
+
+		class InsertingSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			InsertingSequenceMarkerPopup(double time, const std::string& message) : mTime(time), mMessage(message){}
+
+			double mTime;
+			std::string mMessage;
+		};
+
+		class DragSequenceMarker : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			DragSequenceMarker(const std::string& id) : mID(id){}
+
+			std::string mID;
+		};
 	}
 }

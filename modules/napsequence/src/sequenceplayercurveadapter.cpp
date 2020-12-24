@@ -8,7 +8,7 @@
 
 namespace nap
 {
-	static bool sRegisterCurveFloatAdapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveFloat), [](SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisterCurveFloatAdapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveFloat), [](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
 	{
 		assert(track.get_type() == RTTI_OF(SequenceTrackCurveFloat)); // type mismatch
 		assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
@@ -40,7 +40,7 @@ namespace nap
 	});
 
 
-	static bool sRegisterCurveVec2Adapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveVec2), [](SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisterCurveVec2Adapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveVec2), [](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
 	{
 		assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec2)); // type mismatch
 		assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
@@ -57,7 +57,7 @@ namespace nap
 	});
 
 
-	static bool sRegisterCurveVec3Adapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveVec3), [](SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisterCurveVec3Adapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveVec3), [](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
 	{
 		assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec3)); // type mismatch
 		assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
@@ -74,7 +74,7 @@ namespace nap
 	});
 
 
-	static bool sRegisterCurveVec4Adapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveVec4), [](SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisterCurveVec4Adapter = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackCurveVec4), [](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
 	{
 		nap::Logger::info("adapter not yet implemented!");
 		return nullptr;

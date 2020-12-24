@@ -11,7 +11,7 @@
 
 namespace nap
 {
-	static bool sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
+	static bool sRegisteredInFactory = SequencePlayerAdapter::registerFactory(RTTI_OF(SequenceTrackEvent), [](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
 	{
 		assert(output.get_type() == RTTI_OF(SequencePlayerEventOutput)); // type mismatch
 
@@ -22,14 +22,14 @@ namespace nap
 	});
 
 
-	SequencePlayerEventAdapter::SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player)
+	SequencePlayerEventAdapter::SequencePlayerEventAdapter(const SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player)
 		: mTrack(track), mOutput(output)
 	{
 		double time = player.getPlayerTime();
 
 		// mark all events before 'time' as already dispatched
 		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-		auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+		const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
 		for (const auto& event_segment : event_track.mSegments)
 		{
 			assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
@@ -60,7 +60,7 @@ namespace nap
 
 				// mark all events after 'time' as already dispatched
 				assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-				auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+				const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
 				for (const auto& event_segment : event_track.mSegments)
 				{
 					assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
@@ -86,7 +86,7 @@ namespace nap
 
 				// mark all events before 'time' as already dispatched
 				assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-				auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+				const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
 				for (const auto& event_segment : event_track.mSegments)
 				{
 					assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
@@ -103,7 +103,7 @@ namespace nap
 		}
 
 		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-		auto& event_track = static_cast<SequenceTrackEvent&>(mTrack);
+		const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
 		for (const auto& event_segment : event_track.mSegments)
 		{
 			assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
