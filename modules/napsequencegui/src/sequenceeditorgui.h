@@ -181,5 +181,7 @@ namespace nap
 		bool mDrawFullWindow = false;
 
 		RenderWindow* mRenderWindow = nullptr;
+
+		std::unordered_map<rttr::type, std::function<void()>> mPopups;
 	};
 }

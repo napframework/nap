@@ -84,6 +84,21 @@ namespace nap
 		{
 			mViews.emplace(factory.first, factory.second(*this, mState));
 		}
+
+		//
+		mPopups =
+		{
+			{ RTTI_OF(OpenEditSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
+			{ RTTI_OF(EditingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
+			{ RTTI_OF(OpenInsertSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
+			{ RTTI_OF(InsertingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
+			{ RTTI_OF(OpenInsertTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
+			{ RTTI_OF(InsertingTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
+			{ RTTI_OF(OpenSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
+			{ RTTI_OF(EditSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
+			{ RTTI_OF(LoadPopup), std::bind(&SequenceEditorGUIView::handleLoadPopup, this) },
+			{ RTTI_OF(SaveAsPopup), std::bind(&SequenceEditorGUIView::handleSaveAsPopup, this) }
+		};
 	}
 
 
@@ -366,29 +381,18 @@ namespace nap
 				}
 			}
 
-			// handle actions
+			// handle actions in views
 			for (auto& it : mViews)
 			{
 				it.second->handleActions();
 			}
 
-			//
-			handleEditMarkerPopup();
-
-			//
-			handleInsertMarkerPopup();
-
-			//
-			handleInsertTrackPopup();
-
-			//
-			handleLoadPopup();
-
-			//
-			handleSaveAsPopup();
-
-			//
-			handleSequenceDurationPopup();
+			// handle actions for popups
+			auto it = mPopups.find(mState.mAction.get()->get_type());
+			if(it!=mPopups.end())
+			{
+				it->second();
+			}
 		}
 
 		ImGui::End();
