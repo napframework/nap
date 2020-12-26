@@ -286,4 +286,15 @@ namespace nap
 
 	
 	SequenceEditor& SequenceTrackView::getEditor() { return mView.mEditor; }
+
+
+	void SequenceTrackView::registerActionHandler(rttr::type type, std::function<void()> handler)
+	{
+		auto it = mActionHandlers.find(type);
+		assert(it==mActionHandlers.end()); // handler for type already registered
+		if(it==mActionHandlers.end())
+		{
+			mActionHandlers.insert({type, handler});
+		}
+	}
 }

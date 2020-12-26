@@ -27,11 +27,6 @@ namespace nap
 		SequenceCurveTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
 		/**
-		 * Handles popups
-		 */
-		virtual bool handlePopups() override;
-
-		/**
 		 * Handles any actions
 		 */
 		virtual void handleActions() override;

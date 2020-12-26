@@ -213,13 +213,13 @@ namespace nap
 	}
 
 
-	bool SequenceEventTrackView::handlePopups()
+	void SequenceEventTrackView::handleActions()
 	{
 		if( handleInsertEventSegmentPopup() )
-			return true;
+			return;
 
 		if( handleDeleteSegmentPopup() )
-			return true;
+			return;
 
 		for(auto& type : getEventTypesVector())
 		{
@@ -230,12 +230,10 @@ namespace nap
 			{
 				if( (*this.*it->second)() )
 				{
-					return true;
+					return;
 				}
 			}
 		}
-
-		return false;
 	}
 
 

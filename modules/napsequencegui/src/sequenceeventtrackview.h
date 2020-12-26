@@ -146,9 +146,9 @@ namespace nap
 		SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
 		/**
-		 * handles popups
+		 * handles action
 		 */
-		virtual bool handlePopups() override;
+		virtual void handleActions() override;
 
 		/**
 		 * call this static method to register you a custom view for a custom event type

@@ -372,15 +372,6 @@ namespace nap
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
 
-			// handle popups
-			for (auto& it : mViews)
-			{
-				if( it.second->handlePopups() )
-				{
-					break;
-				}
-			}
-
 			// handle actions in views
 			for (auto& it : mViews)
 			{

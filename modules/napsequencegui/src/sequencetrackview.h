@@ -44,13 +44,6 @@ namespace nap
 		 */
         virtual ~SequenceTrackView(){};
 
-
-		/**
-		 * handles popups
-		 * popups must be handled after all tracks are drawn
-		 */
-		virtual bool handlePopups() = 0;
-
 		/**
 		 * handles any actions that are created upon show
 		 * this might be useful when certain actions in tracks are overlapping and/ or when we create an action that 
@@ -135,6 +128,13 @@ namespace nap
 		 */
 		virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) = 0;
 
+		/**
+		 * registers an action handler for a certain action
+		 * @param type action type info
+		 * @param handler handler function
+		 */
+		void registerActionHandler(rttr::type type, std::function<void()> handler);
+
 		// reference to gui view
 		SequenceEditorGUIView& mView;
 
@@ -146,5 +146,8 @@ namespace nap
 
 		// reference to gui state
 		SequenceEditorGUIState& mState;
+
+		// map of action handlers
+		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
 	};
 }

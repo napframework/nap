@@ -24,22 +24,32 @@ namespace nap
 	SequenceCurveTrackView::SequenceCurveTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
 		: SequenceTrackView(view, state)
 	{
-		mPopupHandlers =
-		{
-			[this](){ return this->handleInsertSegmentPopup(); },
-			[this](){ return this->handleCurveTypePopup(); },
-			[this](){ return this->handleInsertCurvePointPopup(); },
-			[this](){ return this->handleEditSegmentPopup(); },
-			[this](){ return this->handleCurvePointActionPopup<float>(); },
-			[this](){ return this->handleCurvePointActionPopup<glm::vec2>(); },
-			[this](){ return this->handleCurvePointActionPopup<glm::vec3>(); },
-			[this](){ return this->handleCurvePointActionPopup<glm::vec4>(); },
-			[this](){ return this->handleSegmentValueActionPopup<float>(); },
-			[this](){ return this->handleSegmentValueActionPopup<glm::vec2>(); },
-			[this](){ return this->handleSegmentValueActionPopup<glm::vec3>(); },
-			[this](){ return this->handleSegmentValueActionPopup<glm::vec4>(); },
-			[this](){ return this->handleTanPointActionPopup(); }
-		};
+		registerActionHandler(RTTI_OF(OpenInsertSegmentPopup) , std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
+		registerActionHandler(RTTI_OF(InsertingSegment) , std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
+		registerActionHandler(RTTI_OF(OpenInsertCurvePointPopup) , std::bind(&SequenceCurveTrackView::handleInsertCurvePointPopup, this));
+		registerActionHandler(RTTI_OF(InsertingCurvePoint) , std::bind(&SequenceCurveTrackView::handleInsertCurvePointPopup, this));
+		registerActionHandler(RTTI_OF(OpenCurveTypePopup) , std::bind(&SequenceCurveTrackView::handleCurveTypePopup, this));
+		registerActionHandler(RTTI_OF(CurveTypePopup) , std::bind(&SequenceCurveTrackView::handleCurveTypePopup, this));
+		registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<float>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<float>, this));
+		registerActionHandler(RTTI_OF(CurvePointActionPopup<float>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<float>, this));
+		registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<glm::vec2>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec2>, this));
+		registerActionHandler(RTTI_OF(CurvePointActionPopup<glm::vec2>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec2>, this));
+		registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<glm::vec3>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec3>, this));
+		registerActionHandler(RTTI_OF(CurvePointActionPopup<glm::vec3>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec3>, this));
+		registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<glm::vec4>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec4>, this));
+		registerActionHandler(RTTI_OF(CurvePointActionPopup<glm::vec4>) , std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec4>, this));
+		registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<float>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<float>, this));
+		registerActionHandler(RTTI_OF(EditingSegmentCurveValue<float>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<float>, this));
+		registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<glm::vec2>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec2>, this));
+		registerActionHandler(RTTI_OF(EditingSegmentCurveValue<glm::vec2>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec2>, this));
+		registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<glm::vec3>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec3>, this));
+		registerActionHandler(RTTI_OF(EditingSegmentCurveValue<glm::vec3>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec3>, this));
+		registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<glm::vec4>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec4>, this));
+		registerActionHandler(RTTI_OF(EditingSegmentCurveValue<glm::vec4>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec4>, this));
+		registerActionHandler(RTTI_OF(OpenEditTanPointPopup), std::bind(&SequenceCurveTrackView::handleTanPointActionPopup, this));
+		registerActionHandler(RTTI_OF(EditingTanPointPopup), std::bind(&SequenceCurveTrackView::handleTanPointActionPopup, this));
+		registerActionHandler(RTTI_OF(OpenEditCurveSegmentPopup), std::bind(&SequenceCurveTrackView::handleEditSegmentPopup, this));
+		registerActionHandler(RTTI_OF(EditingCurveSegment), std::bind(&SequenceCurveTrackView::handleEditSegmentPopup, this));
 	}
 
 
@@ -93,23 +103,21 @@ namespace nap
 
 	void SequenceCurveTrackView::handleActions()
 	{
+		/*
+		 * if we started dragging a segment this frame, change start dragging segment action to dragging segment
+		 */
 		if (mState.mAction->isAction<StartDraggingSegment>())
 		{
 			auto* action = mState.mAction->getDerived<StartDraggingSegment>();
 			mState.mAction = createAction<DraggingSegment>(action->mTrackID, action->mSegmentID);
 		}
-	}
 
-
-	bool SequenceCurveTrackView::handlePopups()
-	{
-		for(auto& popup_handler : mPopupHandlers)
+		// handle any action if necessary
+		auto it = mActionHandlers.find(mState.mAction.get()->get_type());
+		if(it != mActionHandlers.end())
 		{
-			if( popup_handler() )
-				return true;
+			it->second();
 		}
-
-		return false;
 	}
 
 
