@@ -898,7 +898,7 @@ namespace nap
 				if ((mState.mAction->isAction<SequenceGUIActions::None>() || mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
 					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
 				{
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(tan_stream.str());
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(track.mID, tan_stream.str());
 					tan_point_hovered = true;
 				}
 				else if (mState.mAction->isAction<SequenceGUIActions::HoveringTanPoint>())

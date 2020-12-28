@@ -282,6 +282,44 @@ namespace nap
 		ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y } );
 	}
 
+
+	void SequenceTrackView::handleActions()
+	{
+		// check if there is a track action
+		if(mState.mAction.get()->get_type().is_derived_from<TrackAction>())
+		{
+			// get derived track action
+			const auto* track_action = rtti_cast<const TrackAction>(mState.mAction.get());
+
+			// find the track this track action belongs to
+			const auto& sequence = getEditor().mSequencePlayer->getSequenceConst();
+			for(const auto& track : sequence.mTracks)
+			{
+				const auto* track_ptr = track.get();
+				if(track_ptr->mID == track_action->mTrackID)
+				{
+					// does the track type match for this view?
+					rttr::type view_type_for_track = SequenceEditorGUIView::getViewForTrackType(track_ptr->get_type());
+					rttr::type current_view_type = get_type();
+
+					if(view_type_for_track == current_view_type)
+					{
+						// handle any action if necessary
+						auto it = mActionHandlers.find(mState.mAction.get()->get_type());
+						if(it != mActionHandlers.end())
+						{
+							it->second();
+						}
+					}
+
+					//
+					break;
+				}
+			}
+		}
+	}
+
+
 	const SequencePlayer& SequenceTrackView::getPlayer() { return *mView.mEditor.mSequencePlayer.get(); }
 
 	

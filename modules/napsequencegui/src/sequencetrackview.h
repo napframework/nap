@@ -31,6 +31,7 @@ namespace nap
 	 */
 	class NAPAPI SequenceTrackView
 	{
+		RTTI_ENABLE()
 	public:
 		/**
 		 * Constructor
@@ -49,7 +50,7 @@ namespace nap
 		 * this might be useful when certain actions in tracks are overlapping and/ or when we create an action that 
 		 * needs to do something in the next frame update
 		 */
-		virtual void handleActions() {}
+		virtual void handleActions();
 
 		/**
 		 * shows inspector block

@@ -136,7 +136,7 @@ namespace nap
 	class NAPAPI SequenceEventTrackView : public SequenceTrackView
 	{
 		friend class SequenceEventTrackSegmentViewBase;
-
+		RTTI_ENABLE(SequenceTrackView)
 	public:
 		/**
 		 * Constructor
@@ -144,11 +144,6 @@ namespace nap
 		 * @param state reference to editor state
 		 */
 		SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
-
-		/**
-		 * handles action
-		 */
-		virtual void handleActions() override;
 
 		/**
 		 * call this static method to register you a custom view for a custom event type
@@ -208,7 +203,7 @@ namespace nap
 		/**
 		 * handles delete segment popup
 		 */
-		bool handleDeleteSegmentPopup();
+		bool handleEditSegmentValuePopup();
 
 		/**
 		 * this method is called to register a new popup handler for a new event type
@@ -245,38 +240,35 @@ namespace nap
 
 	namespace SequenceGUIActions
 	{
-		class OpenInsertEventSegmentPopup : public Action
+		class OpenInsertEventSegmentPopup : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			OpenInsertEventSegmentPopup(const std::string& trackID, double time)
-				: mTrackID(trackID), mTime(time) {}
+				: TrackAction(trackID), mTime(time) {}
 
-			const std::string& mTrackID;
 			double mTime;
 		};
 
-		class InsertingEventSegment : public Action
+		class InsertingEventSegment : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			InsertingEventSegment(const std::string& trackID, double time)
-				: mTrackID(trackID), mTime(time) {}
+				: TrackAction(trackID), mTime(time) {}
 
-			std::string mTrackID;
 			double mTime;
 			std::string mMessage = "hello world";
 		};
 
 		template<typename T>
-		class OpenEditEventSegmentPopup : public Action
+		class OpenEditEventSegmentPopup : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			OpenEditEventSegmentPopup(const std::string& trackID, const std::string& segmentID, ImVec2 windowPos, T value, double startTime)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
+				: TrackAction(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 			ImVec2 mWindowPos;
 			T mValue;
@@ -284,14 +276,13 @@ namespace nap
 		};
 
 		template<typename T>
-		class EditingEventSegment : public Action
+		class EditingEventSegment : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			EditingEventSegment(const std::string& trackID, const std::string& segmentID, ImVec2 windowPos, T value, double startTime)
-				: mTrackID(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
+				: TrackAction(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
-			std::string mTrackID;
 			std::string mSegmentID;
             ImVec2 mWindowPos;
 			T mValue;			
@@ -443,11 +434,18 @@ namespace nap
 		// register popup handler
 		auto& handle_edit_events = getEditEventHandlers();
 
-		auto event_it = handle_edit_events.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
+		auto event_it = handle_edit_events.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
 		assert(event_it== handle_edit_events.end()); // type already registered
 		if(event_it== handle_edit_events.end())
 		{
-			handle_edit_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
+			handle_edit_events.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
+		}
+
+		event_it = handle_edit_events.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
+		assert(event_it== handle_edit_events.end()); // type already registered
+		if(event_it== handle_edit_events.end())
+		{
+			handle_edit_events.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
 		}
 
 		// register paste handler

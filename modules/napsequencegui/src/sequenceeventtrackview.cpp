@@ -52,6 +52,21 @@ namespace nap
 	SequenceEventTrackView::SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
 		: SequenceTrackView(view, state)
 	{
+		registerActionHandler(RTTI_OF(OpenInsertEventSegmentPopup), std::bind(&SequenceEventTrackView::handleInsertEventSegmentPopup, this));
+		registerActionHandler(RTTI_OF(InsertingEventSegment), std::bind(&SequenceEventTrackView::handleInsertEventSegmentPopup, this));
+		registerActionHandler(RTTI_OF(OpenEditSegmentValuePopup), std::bind(&SequenceEventTrackView::handleEditSegmentValuePopup, this));
+		registerActionHandler(RTTI_OF(EditingSegment), std::bind(&SequenceEventTrackView::handleEditSegmentValuePopup, this));
+
+		/**
+		 * register all popups for all registered views for possible event actions
+		 * these views and actions are registered at static initialization, since we know all possible actions and
+		 * their corresponding views at that time ( see SequenceEventTrackView::registerSegmentView<T> )
+		 */
+		auto& edit_popup_map = getEditEventHandlers();
+		for(auto& pair : edit_popup_map)
+		{
+			registerActionHandler(pair.first, std::bind(pair.second, this));
+		}
 	}
 
 
@@ -209,30 +224,6 @@ namespace nap
 
 			//
 			segment_count++;
-		}
-	}
-
-
-	void SequenceEventTrackView::handleActions()
-	{
-		if( handleInsertEventSegmentPopup() )
-			return;
-
-		if( handleDeleteSegmentPopup() )
-			return;
-
-		for(auto& type : getEventTypesVector())
-		{
-			auto& edit_popup_map = getEditEventHandlers();
-			auto it = edit_popup_map.find(type);
-			assert(it != edit_popup_map.end()); // type not found
-			if( it != edit_popup_map.end())
-			{
-				if( (*this.*it->second)() )
-				{
-					return;
-				}
-			}
 		}
 	}
 
@@ -467,7 +458,7 @@ namespace nap
 	}
 
 
-	bool SequenceEventTrackView::handleDeleteSegmentPopup()
+	bool SequenceEventTrackView::handleEditSegmentValuePopup()
 	{
 		//
 		bool handled = false;

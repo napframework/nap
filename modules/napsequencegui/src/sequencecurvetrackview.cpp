@@ -104,7 +104,7 @@ namespace nap
 	void SequenceCurveTrackView::handleActions()
 	{
 		/*
-		 * if we started dragging a segment this frame, change start dragging segment action to dragging segment
+		 * if we started dragging a segment this frame, change start dragging segment action to dragging segment action
 		 */
 		if (mState.mAction->isAction<StartDraggingSegment>())
 		{
@@ -112,12 +112,7 @@ namespace nap
 			mState.mAction = createAction<DraggingSegment>(action->mTrackID, action->mSegmentID);
 		}
 
-		// handle any action if necessary
-		auto it = mActionHandlers.find(mState.mAction.get()->get_type());
-		if(it != mActionHandlers.end())
-		{
-			it->second();
-		}
+		SequenceTrackView::handleActions();
 	}
 
 

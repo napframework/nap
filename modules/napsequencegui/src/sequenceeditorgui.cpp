@@ -6,6 +6,7 @@
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
 #include "sequenceeditorguiclipboard.h"
+#include "sequenceeditorgui.h"
 
 // External Includes
 #include <entity.h>
@@ -47,6 +48,15 @@ namespace nap
 		}
 
 		return false;
+	}
+
+
+	rttr::type SequenceEditorGUIView::getViewForTrackType(rttr::type type)
+	{
+		auto& map = getTrackViewTypeViewMap();
+		auto it = map.find(type);
+		assert(it != map.end()); // entry not found
+		return it->second;
 	}
 
 
@@ -372,7 +382,7 @@ namespace nap
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
 
-			// handle actions in views
+			// handle actions in views for tracks
 			for (auto& it : mViews)
 			{
 				it.second->handleActions();

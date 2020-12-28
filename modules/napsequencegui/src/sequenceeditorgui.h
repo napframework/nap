@@ -86,6 +86,12 @@ namespace nap
 		 */
 		static bool registerTrackViewType(rttr::type trackType, rttr::type viewType);
 
+		/**
+		 * returns view that corresponds to a certain track type, asserts when not found
+		 * @param type the track type
+		 * @return the view type
+		 */
+		static rttr::type getViewForTrackType(rttr::type type);
 	protected:
 		/**
 		 * Draws the tracks of the sequence
