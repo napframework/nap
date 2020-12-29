@@ -473,10 +473,8 @@ namespace nap
 	}
 
 
-	bool SequenceCurveTrackView::handleInsertSegmentPopup()
+	void SequenceCurveTrackView::handleInsertSegmentPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<OpenInsertSegmentPopup>())
 		{
 			auto* action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
@@ -507,8 +505,6 @@ namespace nap
 			{
 				if (ImGui::BeginPopup("Insert Segment"))
 				{
-					handled = true;
-
 					if (ImGui::Button("Insert"))
 					{
 						auto* action = mState.mAction->getDerived<InsertingSegment>();
@@ -561,15 +557,11 @@ namespace nap
 				}
 			}
 		}
-
-		return handled;
 	}
 
 
-	bool SequenceCurveTrackView::handleCurveTypePopup()
+	void SequenceCurveTrackView::handleCurveTypePopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<OpenCurveTypePopup>())
 		{
 			// invoke insert sequence popup
@@ -591,8 +583,6 @@ namespace nap
 
 			if (ImGui::BeginPopup("Change Curve Type"))
 			{
-				handled = true;
-
 				ImGui::SetWindowPos(action->mWindowPos);
 
 				if (ImGui::Button("Linear"))
@@ -632,15 +622,11 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
-
-		return handled;
 	}
 
 
-	bool SequenceCurveTrackView::handleInsertCurvePointPopup()
+	void SequenceCurveTrackView::handleInsertCurvePointPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<OpenInsertCurvePointPopup>())
 		{
 			// invoke insert sequence popup
@@ -659,8 +645,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Insert Curve Point"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<InsertingCurvePoint>();
 				if (ImGui::Button("Insert Point"))
 				{
@@ -705,15 +689,11 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
-
-		return handled;
 	}
 
 
-	bool SequenceCurveTrackView::handleTanPointActionPopup()
+	void SequenceCurveTrackView::handleTanPointActionPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenEditTanPointPopup>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditTanPointPopup>();
@@ -733,8 +713,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Tan Point Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingTanPointPopup>();
 				int curveIndex = action->mCurveIndex;
 
@@ -782,15 +760,11 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
-
-		return handled;
 	}
 
 
-	bool SequenceCurveTrackView::handleEditSegmentPopup()
+	void SequenceCurveTrackView::handleEditSegmentPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<OpenEditCurveSegmentPopup>())
 		{
 			// invoke insert sequence popup
@@ -822,8 +796,6 @@ namespace nap
 			{
 				if(ImGui::BeginPopup("Edit Segment"))
 				{
-					handled = true;
-
 					auto& controller = getEditor().getController<SequenceControllerCurve>();
 					auto* action = mState.mAction->getDerived<EditingCurveSegment>();
 
@@ -1031,8 +1003,6 @@ namespace nap
 				}
 			}
 		}
-
-		return handled;
 	}
 
 
@@ -1180,10 +1150,8 @@ namespace nap
 
 
 	template<>
-	bool SequenceCurveTrackView::handleCurvePointActionPopup<float>()
+	void SequenceCurveTrackView::handleCurvePointActionPopup<float>()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenCurvePointActionPopup<float>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenCurvePointActionPopup<float>>();
@@ -1204,8 +1172,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::CurvePointActionPopup<float>>();
 
 				if (ImGui::Button("Delete"))
@@ -1254,17 +1220,13 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
 
 	template<>
-	bool SequenceCurveTrackView::handleSegmentValueActionPopup<float>()
+	void SequenceCurveTrackView::handleSegmentValueActionPopup<float>()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<float>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditSegmentCurveValuePopup<float>>();
@@ -1284,8 +1246,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Segment Value Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingSegmentCurveValue<float>>();
 				int curveIndex = action->mCurveIndex;
 
@@ -1320,8 +1280,6 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 

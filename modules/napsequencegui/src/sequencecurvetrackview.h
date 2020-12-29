@@ -119,39 +119,39 @@ namespace nap
 		/**
 		 * handles insert segment popup
 		 */
-		virtual bool handleInsertSegmentPopup();
+		virtual void handleInsertSegmentPopup();
 
 		/**
 		 * handles delete segment popup
 		 */
-		virtual bool handleEditSegmentPopup();
+		virtual void handleEditSegmentPopup();
 
 		/**
 		 * handles insert curve point popup
 		 */
-		virtual bool handleInsertCurvePointPopup();
+		virtual void handleInsertCurvePointPopup();
 
 		/**
 		 * handles curvepoint action popup
 		 */
 		template<typename T>
-		bool handleCurvePointActionPopup();
+		void handleCurvePointActionPopup();
 
 		/**
 		 * handles segment value actions
 		 */
 		template<typename T>
-		bool handleSegmentValueActionPopup();
+		void handleSegmentValueActionPopup();
 
 		/**
 		 * handles curve type popup
 		 */
-		virtual bool handleCurveTypePopup();
+		virtual void handleCurveTypePopup();
 
 		/**
 		 * handles tanpoint action popup
 		 */
-		virtual bool handleTanPointActionPopup();
+		virtual void handleTanPointActionPopup();
 
 		/**
 		 * Draws min/max range of inspector
@@ -227,9 +227,6 @@ namespace nap
 
 		// curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
 		std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
-
-		//
-		std::vector<std::function<bool()>> mPopupHandlers;
 
 		// short curt to member function drawSegmentContent
 		using DrawSegmentMemFunPtr = void(SequenceCurveTrackView::*)(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
@@ -379,7 +376,7 @@ namespace nap
 
 		class CurveTypePopup : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			CurveTypePopup(std::string trackID, std::string segmentID, int index, float pos, ImVec2 windowPos) :
 				TrackAction(trackID), mSegmentID(segmentID), mCurveIndex(index), mPos(pos), mWindowPos(windowPos) {}
@@ -557,10 +554,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	bool NAPAPI SequenceCurveTrackView::handleCurvePointActionPopup<float>();
+	void NAPAPI SequenceCurveTrackView::handleCurvePointActionPopup<float>();
 
 	template<>
-	bool NAPAPI SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
+	void NAPAPI SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
 
 	template<>
 	void NAPAPI SequenceCurveTrackView::showValue<float>(

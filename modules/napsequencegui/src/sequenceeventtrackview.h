@@ -152,7 +152,7 @@ namespace nap
 		 * @return true when called
 		 */
 		template<typename T>
-		static bool registerSegmentView();
+		static bool registerEventView();
 	protected:
 		/**
 		 * shows inspector content
@@ -170,13 +170,13 @@ namespace nap
 		/**
 		 * handles insert event segment popup
 		 */
-		bool handleInsertEventSegmentPopup();
+		void handleInsertEventSegmentPopup();
 
 		/**
 		 * handles event segment popup
 		 */
 		template<typename T>
-		bool handleEditEventSegmentPopup();
+		void handleEditEventSegmentPopup();
 
 		/**
 		 * handles pasting of clipboard content to event segment
@@ -203,15 +203,7 @@ namespace nap
 		/**
 		 * handles delete segment popup
 		 */
-		bool handleEditSegmentValuePopup();
-
-		/**
-		 * this method is called to register a new popup handler for a new event type
-		 * @tparam T type of event
-		 * @return true when called
-		 */
-		template<typename T>
-		static bool registerPopupHandler();
+		void handleEditSegmentValuePopup();
 
 		/**
 		 * update the segment in the clipboard
@@ -224,7 +216,7 @@ namespace nap
 		static std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& getSegmentViews();
 
 		// map of segment edit event handlers
-		static std::unordered_map<rttr::type, bool (SequenceEventTrackView::*)()>& getEditEventHandlers();
+		static std::unordered_map<rttr::type, void (SequenceEventTrackView::*)()>& getEditEventHandlers();
 
 		// map of segment paste handlers
 		static std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double)>& getPasteEventMap();
@@ -314,10 +306,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool SequenceEventTrackView::handleEditEventSegmentPopup()
+	void SequenceEventTrackView::handleEditEventSegmentPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>())
 		{
 			// invoke insert sequence popup
@@ -336,8 +326,6 @@ namespace nap
 
 			if (ImGui::BeginPopup("Edit Event"))
 			{
-				handled = true;
-
 				//
 				auto& segment_views = getSegmentViews();
 				auto it = segment_views.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
@@ -390,6 +378,7 @@ namespace nap
 					event_controller.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+                    ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button("Cancel"))
@@ -408,13 +397,11 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
 	template<typename T>
-	bool SequenceEventTrackView::registerSegmentView()
+	bool SequenceEventTrackView::registerEventView()
 	{
 		// register type of view
 		auto& types = getEventTypesVector();
@@ -479,23 +466,6 @@ namespace nap
 
 		// copy values from deserialized event segment
 		controller.editEventSegment(trackID, new_segment->mID, event_upcast->mValue);
-	}
-
-
-	template<typename T>
-	bool SequenceEventTrackView::registerPopupHandler()
-	{
-		auto& segment_views = getSegmentViews();
-
-		auto it = segment_views.find(RTTI_OF(T));
-		assert(it==segment_views.end()); // type already registered
-		if(it==segment_views.end())
-		{
-			segment_views.emplace(RTTI_OF(T), std::make_unique<SequenceEventTrackSegmentView<T>>());
-			return true;
-		}
-
-		return false;
 	}
 
 
