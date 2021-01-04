@@ -208,9 +208,6 @@ namespace nap
 				0.0f, draw_list);
 
 			// static map of draw functions for different event types
-
-
-			//
 			auto type = segment.get()->get_type();
 			auto& segment_views = getSegmentViews();
 			auto it = segment_views.find(type);

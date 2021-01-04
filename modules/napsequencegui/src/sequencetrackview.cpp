@@ -312,7 +312,6 @@ namespace nap
 						}
 					}
 
-					//
 					break;
 				}
 			}

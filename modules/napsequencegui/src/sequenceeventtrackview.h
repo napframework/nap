@@ -186,6 +186,13 @@ namespace nap
 		 */
 		void pasteEventsFromClipboard(const std::string& trackID, double time);
 
+		/**
+		 * Paste events of type T. Base event is base class of event of type T
+		 * @tparam T type of event
+		 * @param trackID track on which to paste event
+		 * @param baseEvent reference to base class of event to paste
+		 * @param time time in seconds
+		 */
 		template<typename T>
 		void pasteEvent(const std::string& trackID, const SequenceTrackSegmentEventBase& baseEvent, double time);
 
@@ -326,7 +333,7 @@ namespace nap
 
 			if (ImGui::BeginPopup("Edit Event"))
 			{
-				//
+				// draw the registered popup content for this event
 				auto& segment_views = getSegmentViews();
 				auto it = segment_views.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
 				assert(it!= segment_views.end()); // type not found
@@ -418,7 +425,7 @@ namespace nap
 			segment_views.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), std::make_unique<SequenceEventTrackSegmentView<T>>());
 		}
 
-		// register popup handler
+		// register popup action handler
 		auto& handle_edit_events = getEditEventHandlers();
 
 		auto event_it = handle_edit_events.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));

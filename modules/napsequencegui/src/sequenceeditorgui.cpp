@@ -95,7 +95,7 @@ namespace nap
 			mViews.emplace(factory.first, factory.second(*this, mState));
 		}
 
-		//
+		// register different popups for different actions
 		mPopups =
 		{
 			{ RTTI_OF(OpenEditSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
