@@ -163,6 +163,16 @@ namespace nap
 		 */
 		void watchDirectory();
 
+		/**
+		 * Signal that is emitted when a file is about to be loaded
+		 */
+		nap::Signal<> mPreResourcesLoadedSignal;
+
+		/**
+		 * Signal that is emitted after a file has been successfully loaded
+		 */
+		nap::Signal<> mPostResourcesLoadedSignal;
+
 	private:
 		using InstanceByIDMap	= std::unordered_map<std::string, rtti::Object*>;					// Map from object ID to object (non-owned)
 		using ObjectByIDMap		= std::unordered_map<std::string, std::unique_ptr<rtti::Object>>;	// Map from object ID to object (owned)
@@ -187,15 +197,12 @@ namespace nap
 		bool loadFileAndDeserialize(const std::string& filename, rtti::DeserializeResult& readResult, utility::ErrorState& errorState);
 
 		void determineObjectsToInit(const RTTIObjectGraph& objectGraph, const ObjectByIDMap& objectsToUpdate, const std::string& externalChangedFile, std::vector<std::string>& objectsToInit);
-
 		void buildObjectGraph(const ObjectByIDMap& objectsToUpdate, RTTIObjectGraph& objectGraph);
 		EFileModified isFileModified(const std::string& modifiedFile);
-
 		void stopAndDestroyAllObjects();
 		void destroyObjects(const std::unordered_set<std::string>& objectIDsToDelete, const RTTIObjectGraph& object_graph);
 
 	private:
-
 		/**
 		 * Helper class that patches object pointers back to the objects as present in the resource manager.
 		 * When clear is called, no rollback is performed.
@@ -234,16 +241,6 @@ namespace nap
 		ModifiedTimeMap						mFileModTimes;					// Cache for file modification times to avoid responding to too many file events
 		std::unique_ptr<CoreFactory>		mFactory = nullptr;				// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
-
-		/**
-		 *	Signal that is emitted when a file is about to be loaded
-		 */
-		nap::Signal<> mPreResourcesLoadedSignal;
-
-		/**
-		 *	Signal that is emitted after a file has been successfully loaded
-		 */
-		nap::Signal<> mPostResourcesLoadedSignal;
 	};
 
 	template<class T>
