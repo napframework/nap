@@ -58,7 +58,16 @@ namespace nap
 			{
 				return channels[index];
 			}
-			
+
+			/**
+			 * Used to access the samples in the buffer
+			 * example: myBuffer[channelNumber][sampleIndex]
+			 */
+			const SampleBuffer& operator[](std::size_t index) const
+			{
+				return channels[index];
+			}
+
 			/**
 			 * @return: number of channels in the buffer
 			 */
@@ -121,7 +130,7 @@ namespace nap
 		/**
 		 * Time value in samples
 		 */
-		using DiscreteTimeValue = long;
+		using DiscreteTimeValue = std::int64_t;
 		
 		
 		/**
