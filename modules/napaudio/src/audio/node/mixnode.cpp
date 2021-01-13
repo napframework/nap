@@ -13,21 +13,27 @@ namespace nap
 {
 	namespace audio
 	{
+
+		MixNode::MixNode(NodeManager& manager, int reservedInputCount) : Node(manager), inputs(this, reservedInputCount)
+		{
+			mInputBuffers.reserve(reservedInputCount);
+		}
+
 		
 		void MixNode::process()
 		{
 			auto& outputBuffer = getOutputBuffer(audioOutput);
-			auto& inputBuffers = inputs.pull();
+			inputs.pull(mInputBuffers);
 			
 			for (auto i = 0; i < outputBuffer.size(); ++i)
 				outputBuffer[i] = 0;
 			
-			for (auto& inputBuffer : inputBuffers)
+			for (auto& inputBuffer : mInputBuffers)
 				if (inputBuffer)
 					for (auto i = 0; i < outputBuffer.size(); ++i)
 						outputBuffer[i] += (*inputBuffer)[i];
 		}
-		
+
 	}
 }
 
