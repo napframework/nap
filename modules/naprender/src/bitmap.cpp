@@ -249,6 +249,75 @@ namespace nap
 	}
 
 
+	bool Bitmap::writeToDisk(const std::string filename, utility::ErrorState& errorState)
+	{
+		// Check if image is allocated
+		if (!errorState.check(!empty(), "Bitmap is not allocated"))
+			return false;
+
+		// Get format
+		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(filename.c_str());
+		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format"))
+			return false;
+
+		int bpp = mSurfaceDescriptor.getBytesPerPixel() * 8;
+		int pitch = ((((bpp * getWidth()) + 31) / 32) * 4);
+
+		// FreeImage_ConvertFromRawBits should be able to set R and G bytes accordingly
+		// but it does not seem to work for me.
+		FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBits(
+			mData.data(), getWidth(), getHeight(), pitch, bpp,
+			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
+		);
+
+		// Check if source and target channels match
+		bool isLittleEndian = FI_RGBA_RED == 2;
+		ESurfaceChannels targetChannels = isLittleEndian ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
+
+		// Convert RGBA to BGRA or vice versa manually by looking up the internal bitmap
+		if (mSurfaceDescriptor.getChannels() != targetChannels) {
+			const uint8_t* source_line = mData.data();
+			uint8_t* target_line = FreeImage_GetBits(fi_bitmap);
+
+			// Get the amount of bytes every pixel occupies
+			int source_stride = pitch / getWidth();
+			int target_stride = source_stride;
+
+			for (int y = 0; y < getHeight(); ++y)
+			{
+				const uint8_t* source_loc = source_line;
+				uint8_t* target_loc = target_line;
+				for (int x = 0; x < getWidth(); ++x)
+				{
+					*target_loc = *(source_loc+2); // B
+					*(target_loc+2) = *source_loc; // R
+
+					target_loc += target_stride;
+					source_loc += source_stride;
+				}
+				source_line += pitch;
+				target_line += pitch;
+			}
+		}
+		else {
+			memcpy(FreeImage_GetBits(fi_bitmap), mData.data(), getSizeInBytes());
+		}
+
+		// Screenshot output path
+		const std::string screenshotDir = utility::joinPath({ utility::getExecutableDir(), "screenshots" }, utility::pathSep());
+		if (!utility::dirExists(screenshotDir)) {
+			utility::makeDirs(screenshotDir);
+		}
+		std::string outputPath = utility::joinPath({ screenshotDir, filename }, utility::pathSep());
+
+		// Save and free
+		if (!errorState.check(FreeImage_Save(fi_img_format, fi_bitmap, outputPath.c_str()), "Image could not be saved"))
+			return false;
+
+		FreeImage_Unload(fi_bitmap);
+	}
+
+
 	size_t Bitmap::getSizeInBytes() const
 	{
 		return mSurfaceDescriptor.getSizeInBytes();
