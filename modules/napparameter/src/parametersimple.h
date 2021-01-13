@@ -88,4 +88,5 @@ namespace nap
 #define DEFINE_SIMPLE_PARAMETER(Type)																			\
 	RTTI_BEGIN_CLASS(Type)																						\
 		RTTI_PROPERTY("Value",		&Type::mValue,		nap::rtti::EPropertyMetaData::Default)					\
+		RTTI_FUNCTION("setValue",	static_cast<void (Type::*)(const decltype(Type::mValue)&)>(&Type::setValue))\
 	RTTI_END_CLASS
