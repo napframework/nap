@@ -4,40 +4,50 @@
 # TURBOACTIVATE_INCLUDE_DIRS - The TURBOACTIVATE include directories
 # TURBOACTIVATE_LIBRARIES - The libraries needed to use TURBOACTIVATE
 
-include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
-target_architecture(ARCH)
+find_path(TURBOACTIVATE_DIR osx/include/TurboActivate.h
+HINTS
+${THIRDPARTY_DIR}/turboactivate
+${CMAKE_CURRENT_LIST_DIR}/../../thirdparty/turboactivate
+)
 
-set(TURBOACTIVATE_DIR ${THIRDPARTY_DIR}/turboactivate)
-set(TURBOACTIVATE_LIB_DIR ${TURBOACTIVATE_DIR}/lib)
+if(WIN32)
+    set(TURBOACTIVATE_LIB_DIR ${TURBOACTIVATE_DIR}/msvc/lib)
+    set(TURBOACTIVATE_LIB_DIR_DEBUG ${TURBOACTIVATE_DIR}/msvc/lib)
+    set(TURBOACTIVATE_INCLUDE_DIRS ${TURBOACTIVATE_DIR}/msvc/include)
+    set(TURBOACTIVATE_LIBRARIES ${TURBOACTIVATE_LIB_DIR}/turboactivate.dll)
+    set(TURBOACTIVATE_LIBRARIES_DEBUG ${TURBOACTIVATE_LIB_DIR_DEBUG}/turboactivate.dll)
+    set(TURBOACTIVATE_IMPLIB_RELEASE ${TURBOACTIVATE_LIB_DIR}/turboactivate.lib)
+    set(TURBOACTIVATE_IMPLIB_DEBUG ${TURBOACTIVATE_LIB_DIR_DEBUG}/turboactivate.lib)
+elseif(APPLE)
+    set(TURBOACTIVATE_LIB_DIR ${TURBOACTIVATE_DIR}/osx/lib)
+    set(TURBOACTIVATE_INCLUDE_DIRS ${TURBOACTIVATE_DIR}/osx/include)
+    set(TURBOACTIVATE_LIBRARIES ${TURBOACTIVATE_LIB_DIR}/libTurboActivate.dylib)
+    set(TURBOACTIVATE_LIBRARIES_DEBUG ${TURBOACTIVATE_LIB_DIR}/libTurboActivate.dylib)
+    set(TURBOACTIVATE_IMPLIB_RELEASE ${TURBOACTIVATE_LIB_DIR}/libTurboActivate.dylib) # have to add this here for the script to succeed..
+else()
+    # set(TURBOACTIVATE_LIB_DIR ${TURBOACTIVATE_DIR}/linux/lib)
+    # set(TURBOACTIVATE_INCLUDE_DIRS ${TURBOACTIVATE_DIR}/linux/include)
+    # set(TURBOACTIVATE_LIBRARIES ${TURBOACTIVATE_LIB_DIR}/libturboactivate.so)
+    # set(TURBOACTIVATE_LIBRARIES_DEBUG ${TURBOACTIVATE_LIB_DIR}/libturboactivate.so)
+    # set(TURBOACTIVATE_IMPLIB_RELEASE ${TURBOACTIVATE_LIB_DIR}/libturboactivate.so) # have to add this here for the script to succeed..
+endif()
 
-if (WIN32)
-    set(TURBOACTIVATE_LIBRARIES ${TURBOACTIVATE_LIB_DIR}/TurboActivate.lib)
-    set(TURBOACTIVATE_LIBS_RELEASE_DLL ${TURBOACTIVATE_DIR}/bin/TurboActivate.dll)
-elseif (APPLE)
-    set(TURBOACTIVATE_LIBS_RELEASE_DLL ${TURBOACTIVATE_LIB_DIR}/libTurboActivate.dylib)
-    set(TURBOACTIVATE_LIBRARIES ${TURBOACTIVATE_LIBS_RELEASE_DLL})
-else ()
-    set(TURBOACTIVATE_LIBS_RELEASE_DLL ${TURBOACTIVATE_LIB_DIR}/libTurboActivate.so)
-    set(TURBOACTIVATE_LIBRARIES ${TURBOACTIVATE_LIBS_RELEASE_DLL})
-endif ()
-
-
-set(TURBOACTIVATE_INCLUDE_DIRS ${TURBOACTIVATE_DIR}/include)
 
 include(FindPackageHandleStandardArgs)
-# handle the QUIETLY and REQUIRED arguments and set TURBOACTIVATE_FOUND to TRUE
-# if all listed variables are TRUE
-find_package_handle_standard_args(turboactivate REQUIRED_VARS TURBOACTIVATE_LIBRARIES TURBOACTIVATE_INCLUDE_DIRS TURBOACTIVATE_DIR)
+find_package_handle_standard_args(turboactivate DEFAULT_MSG TURBOACTIVATE_LIBRARIES TURBOACTIVATE_IMPLIB_RELEASE TURBOACTIVATE_INCLUDE_DIRS)
 
 add_library(turboactivate SHARED IMPORTED)
 set_target_properties(turboactivate PROPERTIES
-                      IMPORTED_CONFIGURATIONS "Debug;Release"
-                      IMPORTED_LOCATION_RELEASE ${TURBOACTIVATE_LIBS_RELEASE_DLL}
-                      IMPORTED_LOCATION_DEBUG ${TURBOACTIVATE_LIBS_RELEASE_DLL}
+                      IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
+                      IMPORTED_LOCATION_RELEASE ${TURBOACTIVATE_LIBRARIES}
+                      IMPORTED_LOCATION_DEBUG ${TURBOACTIVATE_LIBRARIES_DEBUG}
+                      IMPORTED_LOCATION_MINSIZEREL ${TURBOACTIVATE_LIBRARIES}
+                      IMPORTED_LOCATION_RELWITHDEBINFO ${TURBOACTIVATE_LIBRARIES}
                       )
 
-if(WIN32)
-    set_target_properties(turboactivate PROPERTIES
-                          IMPORTED_IMPLIB ${TURBOACTIVATE_LIBRARIES}
-                          )
+if (WIN32)
+	set_target_properties(turboactivate PROPERTIES
+    IMPORTED_IMPLIB_RELEASE ${TURBOACTIVATE_IMPLIB_RELEASE}
+    IMPORTED_IMPLIB_DEBUG ${TURBOACTIVATE_IMPLIB_DEBUG}
+  )
 endif()
