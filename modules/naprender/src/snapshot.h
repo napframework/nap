@@ -10,6 +10,7 @@
 // External Includes
 #include <nap/resource.h>
 #include <nap/core.h>
+#include <nap/signalslot.h>
 
 #include <renderservice.h>
 #include <bitmap.h>
@@ -32,13 +33,13 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		bool beginSnapshot();
-		void endSnapshot();
+		bool takeSnapshot(CameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
 
-		RenderTarget& getSnapshotRenderTarget();
+		RenderTexture2D& getColorTexture();
 
-		int	mWidth = 0;		///< Property: 'Width' width of the texture in texels
-		int	mHeight = 0;	///< Property: 'Height' of the texture in texels
+		int	mWidth = 0;				///< Property: 'Width' width of the texture in texels
+		int	mHeight = 0;			///< Property: 'Height' of the texture in texels
+		glm::vec4 mClearColor = glm::vec4(0.f, 0.f, 0.f, 1.f);
 
 	protected:
 		RenderService* mRenderService = nullptr;
@@ -47,9 +48,14 @@ namespace nap
 		rtti::ObjectPtr<RenderTarget> mRenderTarget;
 		Bitmap mBitmap;
 
-		using SaveScreenshotCallback = std::function<void()>;
-		SaveScreenshotCallback mSaveSnapshotCallback;
-
 		bool mBusy = false;
+
+		/**
+		* Called by the slot when the bitmap is updated from a RenderTarget
+		*/
+		void onDownloadReady(const BitmapDownloadedEvent& event);
+
+		// Slot that is called when the rendertarget's texture is read back from the gpu
+		NSLOT(mDownloadReady, const BitmapDownloadedEvent&, onDownloadReady);
 	};
 }

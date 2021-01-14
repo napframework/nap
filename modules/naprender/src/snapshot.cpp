@@ -39,7 +39,7 @@ namespace nap
 		}
 
 		mRenderTarget = resourceManager->createObject<RenderTarget>();
-		mRenderTarget->mClearColor = glm::vec4(0.f, 0.f, 0.f, 1.f);
+		mRenderTarget->mClearColor = mClearColor;
 		mRenderTarget->mRequestedSamples = ERasterizationSamples::Four;
 		mRenderTarget->mSampleShading = true;
 		mRenderTarget->mColorTexture = renderTex;
@@ -49,41 +49,43 @@ namespace nap
 			return false;
 		}
 
-		// Write screenshot to disk. This must be queued to happen when the texture download has completed.
-		mSaveSnapshotCallback = [this](void) {
-			utility::ErrorState error;
-			if (mBitmap.empty()) {
-				std::cout << "Saving image to disk failed: Bitmap not initialized";
-			}
-			else if (!mBitmap.writeToDisk(utility::stringFormat("%s.png", timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str()), error)) {
-				std::cout << "Saving image to disk failed: " << error.toString();
-			}
-			mBusy = false;
-		};
+		mBitmap.bitmapDownloaded.connect(mDownloadReady);
 		return true;
 	}
 
-	bool Snapshot::beginSnapshot()
+	bool Snapshot::takeSnapshot(CameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps)
 	{
 		if (mRenderService->beginHeadlessRecording()) {
 			mRenderTarget->beginRendering();
+
+			mRenderService->renderObjects(*mRenderTarget, camera, comps);
+
+			mRenderTarget->endRendering();
+			mRenderService->endHeadlessRecording();
+
+			// Save to bitmap
+			mRenderTarget->getColorTexture().asyncGetData(mBitmap);
+
+			mBusy = true;
 			return true;
 		}
 		return false;
 	}
 
-	void Snapshot::endSnapshot()
+	void Snapshot::onDownloadReady(const BitmapDownloadedEvent& event)
 	{
-		mRenderTarget->endRendering();
-		mRenderService->endHeadlessRecording();
-
-		// Save to bitmap
-		mRenderTarget->getColorTexture().asyncGetData(mBitmap, mSaveSnapshotCallback);
-		mBusy = true;
+		utility::ErrorState error;
+		if (mBitmap.empty()) {
+			std::cout << "Saving image to disk failed: Bitmap not initialized";
+		}
+		else if (!mBitmap.writeToDisk(utility::stringFormat("%s.png", timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str()), error)) {
+			std::cout << "Saving image to disk failed: " << error.toString();
+		}
+		mBusy = false;
 	}
 
-	RenderTarget& Snapshot::getSnapshotRenderTarget()
+	RenderTexture2D& Snapshot::getColorTexture()
 	{
-		return *mRenderTarget;
+		return mRenderTarget->getColorTexture();
 	}
 }

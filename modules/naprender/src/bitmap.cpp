@@ -264,17 +264,24 @@ namespace nap
 		int pitch = ((((bpp * getWidth()) + 31) / 32) * 4);
 
 		// FreeImage_ConvertFromRawBits should be able to set R and G bytes accordingly
-		// but it does not seem to work for me.
-		FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBits(
-			mData.data(), getWidth(), getHeight(), pitch, bpp,
-			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
+		// but it does not seem to work for me, therefore a copy
+		FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
+			true, mData.data(), FREE_IMAGE_TYPE::FIT_BITMAP,
+			getWidth(), getHeight(), pitch, bpp, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK
 		);
+
+		// Should be able to wrap bits instead like this, does not work either (?)
+		//FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
+		//	false, mData.data(), FREE_IMAGE_TYPE::FIT_BITMAP,
+		//	getWidth(), getHeight(), pitch, bpp, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK
+		//);
 
 		// Check if source and target channels match
 		bool isLittleEndian = FI_RGBA_RED == 2;
 		ESurfaceChannels targetChannels = isLittleEndian ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
 
 		// Convert RGBA to BGRA or vice versa manually by looking up the internal bitmap
+		// This routine is used as a substitute for FreeImage_ConvertFromRawBitsEx conversion for now, but slow
 		if (mSurfaceDescriptor.getChannels() != targetChannels) {
 			const uint8_t* source_line = mData.data();
 			uint8_t* target_line = FreeImage_GetBits(fi_bitmap);
@@ -298,9 +305,6 @@ namespace nap
 				source_line += pitch;
 				target_line += pitch;
 			}
-		}
-		else {
-			memcpy(FreeImage_GetBits(fi_bitmap), mData.data(), getSizeInBytes());
 		}
 
 		// Screenshot output path

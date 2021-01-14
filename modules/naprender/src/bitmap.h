@@ -10,12 +10,16 @@
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
+#include <nap/event.h>
+#include <nap/signalslot.h>
 #include "surfacedescriptor.h"
 
 namespace nap
 {
 	class Texture2D;
 	struct SurfaceDescriptor;
+
+	class BitmapDownloadedEvent;
 
 	/**
 	 * 2D image resource that is initially empty, there is no GPU data associated with this object.
@@ -278,6 +282,11 @@ namespace nap
 		 */
 		SurfaceDescriptor		mSurfaceDescriptor;
 
+		/**
+		* Triggered by Texture2D when this bitmap is updated
+		*/
+		Signal<const BitmapDownloadedEvent&> bitmapDownloaded;
+
 	private:
 		/**
 		 * In order to avoid doing lookups from enum to pixel size, channel count in inner loops, we cache this data internally.
@@ -407,6 +416,21 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		std::string mPath;							///< Property 'Path': the path to the image on disk
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Events
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Bitmap downloaded event
+	 */
+	class NAPAPI BitmapDownloadedEvent : public Event
+	{
+		RTTI_ENABLE(BitmapDownloadedEvent)
+	public:
+		BitmapDownloadedEvent() {}
 	};
 
 

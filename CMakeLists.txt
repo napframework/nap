@@ -125,6 +125,11 @@ add_subdirectory(test/render)
 # app targets, add your own app targets here!
 add_subdirectory(apps/example)
 add_subdirectory(apps/example/module)
+add_subdirectory(apps/spritevolume)
+add_subdirectory(apps/spritevolume/module)
+add_subdirectory(apps/testscreenshot)
+add_subdirectory(apps/kalvertoren)
+add_subdirectory(apps/kalvertoren/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets

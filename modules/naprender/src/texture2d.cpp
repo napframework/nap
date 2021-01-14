@@ -504,10 +504,10 @@ namespace nap
 	void Texture2D::download(VkCommandBuffer commandBuffer)
 	{
 		assert(mCurrentStagingBufferIndex != -1);
-
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
-		mDownloadStagingBufferIndices[mRenderService->getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
 
+		// Store the staging buffer index associated with the download in the current frame for lookup later
+		mDownloadStagingBufferIndices[mRenderService->getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
@@ -560,18 +560,18 @@ namespace nap
 	}
 
 
-	void Texture2D::asyncGetData(Bitmap& bitmap, const TextureReadCompleteCallback& downloadCompletedCallback)
+	void Texture2D::asyncGetData(Bitmap& bitmap)
 	{
  		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
 
- 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap, &downloadCompletedCallback](const void* data, size_t sizeInBytes)
+ 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
 		{
 			// Check if initialization is necessary
 			if (bitmap.empty() || bitmap.mSurfaceDescriptor != mDescriptor) {
 				bitmap.initFromDescriptor(mDescriptor);
 			}
  			memcpy(bitmap.getData(), data, sizeInBytes);
-			if (downloadCompletedCallback) downloadCompletedCallback();
+			bitmap.bitmapDownloaded.trigger(BitmapDownloadedEvent());
  		};
 		mRenderService->requestTextureDownload(*this);
 	}

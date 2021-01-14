@@ -43,6 +43,7 @@ namespace nap
 	class NAPAPI Texture2D : public Resource
 	{
 		friend class RenderService;
+
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D(Core& core);
@@ -147,7 +148,7 @@ namespace nap
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
 		 */
-		void asyncGetData(Bitmap& bitmap, const std::function<void()>& downloadCompletedCallback = {});
+		void asyncGetData(Bitmap& bitmap);
 
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
