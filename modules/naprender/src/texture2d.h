@@ -184,6 +184,7 @@ namespace nap
 		SurfaceDescriptor					mDescriptor;						///< Texture description
 		VkFormat							mFormat = VK_FORMAT_UNDEFINED;		///< Vulkan texture format
 		std::vector<TextureReadCallback>	mReadCallbacks;						///< Number of callbacks based on number of frames in flight
+		std::vector<int>					mDownloadStagingBufferIndices;		///< Staging buffer indices associated with a frameindex
 		uint32								mMipLevels = 1;						///< Total number of generated mip-maps
 	};
 }

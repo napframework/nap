@@ -303,6 +303,7 @@ namespace nap
 		if (mUsage == ETextureUsage::DynamicRead)
 		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
+			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
@@ -503,7 +504,10 @@ namespace nap
 	void Texture2D::download(VkCommandBuffer commandBuffer)
 	{
 		assert(mCurrentStagingBufferIndex != -1);
+
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+		mDownloadStagingBufferIndices[mRenderService->getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
+
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
@@ -559,6 +563,7 @@ namespace nap
 	void Texture2D::asyncGetData(Bitmap& bitmap, const TextureReadCompleteCallback& downloadCompletedCallback)
 	{
  		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
+
  		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap, &downloadCompletedCallback](const void* data, size_t sizeInBytes)
 		{
 			// Check if initialization is necessary
@@ -568,7 +573,7 @@ namespace nap
  			memcpy(bitmap.getData(), data, sizeInBytes);
 			if (downloadCompletedCallback) downloadCompletedCallback();
  		};
- 		mRenderService->requestTextureDownload(*this);	
+		mRenderService->requestTextureDownload(*this);
 	}
 
 
@@ -578,7 +583,9 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
-		BufferData& buffer = mStagingBuffers[frameIndex];
+		int downloadedStagingBufferIndex = mDownloadStagingBufferIndices[frameIndex];
+		BufferData& buffer = mStagingBuffers[downloadedStagingBufferIndex];
+
 		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);

@@ -52,7 +52,10 @@ namespace nap
 		// Write screenshot to disk. This must be queued to happen when the texture download has completed.
 		mSaveSnapshotCallback = [this](void) {
 			utility::ErrorState error;
-			if (!mBitmap.writeToDisk(utility::stringFormat("%s.png", timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str()), error)) {
+			if (mBitmap.empty()) {
+				std::cout << "Saving image to disk failed: Bitmap not initialized";
+			}
+			else if (!mBitmap.writeToDisk(utility::stringFormat("%s.png", timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str()), error)) {
 				std::cout << "Saving image to disk failed: " << error.toString();
 			}
 			mBusy = false;
