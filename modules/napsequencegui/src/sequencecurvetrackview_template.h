@@ -5,10 +5,8 @@
 namespace nap
 {
 	template<typename T>
-	bool SequenceCurveTrackView::handleCurvePointActionPopup()
+	void SequenceCurveTrackView::handleCurvePointActionPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenCurvePointActionPopup<T>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenCurvePointActionPopup<T>>();
@@ -28,8 +26,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::CurvePointActionPopup<T>>();
 				int curveIndex = action->mCurveIndex;
 
@@ -80,16 +76,12 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
 	template<typename T>
-	bool SequenceCurveTrackView::handleSegmentValueActionPopup()
+	void SequenceCurveTrackView::handleSegmentValueActionPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>();
@@ -109,8 +101,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Segment Value Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingSegmentCurveValue<T>>();
 				int curveIndex = action->mCurveIndex;
 
@@ -145,8 +135,6 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
@@ -898,7 +886,7 @@ namespace nap
 				if ((mState.mAction->isAction<SequenceGUIActions::None>() || mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
 					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
 				{
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(tan_stream.str());
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(track.mID, tan_stream.str());
 					tan_point_hovered = true;
 				}
 				else if (mState.mAction->isAction<SequenceGUIActions::HoveringTanPoint>())
