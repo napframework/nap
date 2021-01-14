@@ -327,11 +327,8 @@ namespace nap
 
 	void SequenceTrackView::registerActionHandler(rttr::type type, std::function<void()> handler)
 	{
-		auto it = mActionHandlers.find(type);
-		assert(it==mActionHandlers.end()); // handler for type already registered
-		if(it==mActionHandlers.end())
-		{
-			mActionHandlers.insert({type, handler});
-		}
+		// Assert is triggered when element with same key already exists
+		auto it = mActionHandlers.emplace(std::make_pair(type, handler));
+		assert(it.second);
 	}
 }
