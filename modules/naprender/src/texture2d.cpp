@@ -556,13 +556,17 @@ namespace nap
 	}
 
 
-	void Texture2D::asyncGetData(Bitmap& bitmap)
+	void Texture2D::asyncGetData(Bitmap& bitmap, const TextureReadCompleteCallback& downloadCompletedCallback)
 	{
  		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
- 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
+ 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap, &downloadCompletedCallback](const void* data, size_t sizeInBytes)
 		{
- 			bitmap.initFromDescriptor(mDescriptor);
+			// Check if initialization is necessary
+			if (bitmap.empty() || bitmap.mSurfaceDescriptor != mDescriptor) {
+				bitmap.initFromDescriptor(mDescriptor);
+			}
  			memcpy(bitmap.getData(), data, sizeInBytes);
+			if (downloadCompletedCallback) downloadCompletedCallback();
  		};
  		mRenderService->requestTextureDownload(*this);	
 	}

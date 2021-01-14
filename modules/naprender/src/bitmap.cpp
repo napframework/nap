@@ -315,6 +315,7 @@ namespace nap
 			return false;
 
 		FreeImage_Unload(fi_bitmap);
+		return true;
 	}
 
 

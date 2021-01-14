@@ -1623,7 +1623,7 @@ namespace nap
 		// fence has been signaled, we can be assured that all resources for the entire frame, including resources used 
 		// by other VkQueueSubmits, are free to use.
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
-
+		
 		// We call updateTextureDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
 		// status which could still not be signaled at that point, causing the notify not to be called. If we then wait for
 		// the fence anyway, we missed the opportunity to notify textures that downloads were ready. Because we reset the fence
@@ -1787,7 +1787,7 @@ namespace nap
 	void RenderService::requestTextureDownload(Texture2D& texture)
 	{
 		// We push a texture download specifically for this frame. When the fence for that frame is signaled,
-		// we now the download has been processed by the GPU, and we can send the texture a notification that
+		// we know the download has been processed by the GPU, and we can send the texture a notification that
 		// transfer has completed.
 		mFramesInFlight[mCurrentFrameIndex].mTextureDownloads.push_back(&texture);
 	}

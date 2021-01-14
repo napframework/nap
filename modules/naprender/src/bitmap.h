@@ -60,6 +60,7 @@ namespace nap
 
 		/**
 		* Writes this bitmap to a screenshots folder on disk with a specified image extension
+		* Todo: Needs logic for handling single-component bitmaps
 		* @param filename the filename and image extension of the output file e.g. "MyOutputFile.png"
 		* @param errorState contains the error if the image could not be loaded
 		*/

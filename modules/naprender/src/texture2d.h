@@ -147,7 +147,7 @@ namespace nap
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
 		 */
-		void asyncGetData(Bitmap& bitmap);
+		void asyncGetData(Bitmap& bitmap, const std::function<void()>& downloadCompletedCallback = {});
 
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
@@ -175,6 +175,7 @@ namespace nap
 
 	private:
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
+		using TextureReadCompleteCallback = std::function<void()>;
 
 		ImageData							mImageData;							///< 2D Texture vulkan image buffers
 		std::vector<BufferData>				mStagingBuffers;					///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
