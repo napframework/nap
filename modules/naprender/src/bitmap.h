@@ -61,7 +61,7 @@ namespace nap
 		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
-		* Writes this bitmap to a screenshots folder on disk with a specified image extension
+		* Writes this bitmap to a snapshots folder on disk with a specified image extension
 		* Todo: Needs logic for handling single-component bitmaps
 		* @param filename the filename and image extension of the output file e.g. "MyOutputFile.png"
 		* @param errorState contains the error if the image could not be loaded
@@ -283,7 +283,7 @@ namespace nap
 		/**
 		* Triggered by Texture2D when this bitmap is updated
 		*/
-		Signal<> mBitmapDownloaded;
+		Signal<> mBitmapUpdated;
 
 	private:
 		/**

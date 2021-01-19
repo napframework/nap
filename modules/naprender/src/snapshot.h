@@ -44,15 +44,19 @@ namespace nap
 		*/
 		bool takeSnapshot(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
 
-		// For testing purposes only. Will remove later
-		RenderTexture2D& getColorTexture();
 
-		int	mWidth = 0;					///< Property: 'Width' width of the snapshot in texels
-		int	mHeight = 0;				///< Property: 'Height' height of the snapshot in texels
-		int mDesiredCellWidth = 0;		///< Property: 'DesiredCellWidth' desired width of a cell
-		int mDesiredCellHeight = 0;		///< Property: 'DesiredCellHeight' desired height of a cell
+		uint32_t mWidth = 0;													///< Property: 'Width' width of the snapshot in texels
+		uint32_t mHeight = 0;													///< Property: 'Height' height of the snapshot in texels
+		uint32_t mNumRows = 0;													///< Property: 'DesiredCellWidth' desired width of a cell
+		uint32_t mNumColumns = 0;												///< Property: 'DesiredCellHeight' desired height of a cell
 
-		glm::vec4 mClearColor = glm::vec4(0.f, 0.f, 0.f, 1.f);
+		glm::vec4 mClearColor = glm::vec4(0.f, 0.f, 0.f, 1.f);					///< Property: 'ClearColor' color selection used for clearing the render target
+		RenderTexture2D::EFormat mFormat = RenderTexture2D::EFormat::RGBA8;		///< Property: 'Format' texture format
+		ERasterizationSamples mRequestedSamples = ERasterizationSamples::One;	///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
+		bool mSampleShading = false;											///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+
+		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to
+		std::string mOutputExtension = "";										///< Property: 'OutputExtension' Extension of the snapshot image file e.g. "png", "jpg" or "tiff"
 
 	protected:
 		RenderService* mRenderService = nullptr;
@@ -60,11 +64,8 @@ namespace nap
 	private:
 		std::vector<rtti::ObjectPtr<RenderTarget>> mRenderTargets;
 		std::vector<rtti::ObjectPtr<Bitmap>> mBitmaps;
-		std::vector<math::Rect> mViewportRects;
 
-		int mNumRows = 0;
-		int mNumColumns = 0;
-		int mNumCells = 0;
+		uint32_t mNumCells = 0;
 
 		//std::unique_ptr<BitmapWriteThread> mBitmapWriteThread;
 	};

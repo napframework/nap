@@ -212,7 +212,6 @@ namespace nap
 		max = glm::tan(max_angle) * aspectRatio * nearPlane;
 	}
 
-
 	// Hook up attribute changes
 	PerspCameraComponentInstance::PerspCameraComponentInstance(EntityInstance& entity, Component& resource) :
 		CameraComponentInstance(entity, resource)
@@ -281,14 +280,6 @@ namespace nap
 	}
 
 
-	void PerspCameraComponentInstance::setProjectionMatrixCell(const math::Rect& normalizedRect)
-	{
-		mCellRect = normalizedRect;
-		mUseCells = true;
-		setDirty();
-	}
-
-
 	void PerspCameraComponentInstance::updateProjectionMatrices() const
 	{
 		if (mDirty)
@@ -296,21 +287,12 @@ namespace nap
 			const float fov = glm::radians(mProperties.mFieldOfView);
 			const float near_plane = mProperties.mNearClippingPlane;
 			const float far_plane = mProperties.mFarClippingPlane;
-			const float aspect_ratio = (!mUseCells) ?
-				((float)(getRenderTargetSize().x * mProperties.mGridDimensions.x)) / ((float)(getRenderTargetSize().y * mProperties.mGridDimensions.y)) :
-				getRenderTargetSize().x/(float)getRenderTargetSize().y;
+			const float aspect_ratio = ((float)(getRenderTargetSize().x * mProperties.mGridDimensions.x)) / ((float)(getRenderTargetSize().y * mProperties.mGridDimensions.y));
 
 			float left, right, top, bottom;
 
-			if (mUseCells) {
-				calculateCameraPlanes(fov, aspect_ratio, near_plane, mCellRect.getMin().x, mCellRect.getMax().x, left, right);
-				calculateCameraPlanes(fov, 1.0f, near_plane, mCellRect.getMin().y, mCellRect.getMax().y, bottom, top);
-				mUseCells = false;
-			}
-			else {
-				calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
-				calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
-			}
+			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
+			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
 
 			mRenderProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
 			mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);

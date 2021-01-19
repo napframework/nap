@@ -248,14 +248,18 @@ namespace nap
 	}
 
 
-	bool Bitmap::writeToDisk(const std::string filename, utility::ErrorState& errorState)
+	bool Bitmap::writeToDisk(const std::string path, utility::ErrorState& errorState)
 	{
 		// Check if image is allocated
 		if (!errorState.check(!empty(), "Bitmap is not allocated"))
 			return false;
 
+		// Check if directory exists
+		if (!errorState.check(utility::dirExists(utility::getFileDir(path)), "Directory does not exist: %s", path.c_str()))
+			return false;
+
 		// Get format
-		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(filename.c_str());
+		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(path.c_str());
 		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format"))
 			return false;
 
@@ -298,15 +302,8 @@ namespace nap
 			}
 		}
 
-		// Screenshot output path
-		const std::string screenshot_dir = utility::joinPath({ utility::getExecutableDir(), "screenshots" }, utility::pathSep());
-		if (!utility::dirExists(screenshot_dir)) {
-			utility::makeDirs(screenshot_dir);
-		}
-		std::string outputPath = utility::joinPath({ screenshot_dir, filename }, utility::pathSep());
-
 		// Save and free
-		if (!errorState.check(FreeImage_Save(fi_img_format, fi_bitmap, outputPath.c_str()), "Image could not be saved"))
+		if (!errorState.check(FreeImage_Save(fi_img_format, fi_bitmap, path.c_str()), "Image could not be saved"))
 			return false;
 
 		FreeImage_Unload(fi_bitmap);

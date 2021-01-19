@@ -571,7 +571,7 @@ namespace nap
 				bitmap.initFromDescriptor(mDescriptor);
 			}
  			memcpy(bitmap.getData(), data, sizeInBytes);
-			bitmap.mBitmapDownloaded();
+			bitmap.mBitmapUpdated();
  		};
 		mRenderService->requestTextureDownload(*this);
 	}
