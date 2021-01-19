@@ -37,7 +37,7 @@ namespace nap
 			R32				///< 32 bit float, 1 component
 		};
 
-		RenderTexture2D(Core& renderService);
+		RenderTexture2D(Core& core);
 
 		/**
 		 * Creates the texture on the GPU.

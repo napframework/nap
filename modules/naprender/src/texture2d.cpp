@@ -571,7 +571,7 @@ namespace nap
 				bitmap.initFromDescriptor(mDescriptor);
 			}
  			memcpy(bitmap.getData(), data, sizeInBytes);
-			bitmap.bitmapDownloaded.trigger(BitmapDownloadedEvent());
+			bitmap.mBitmapDownloaded();
  		};
 		mRenderService->requestTextureDownload(*this);
 	}
@@ -583,8 +583,8 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
-		int downloadedStagingBufferIndex = mDownloadStagingBufferIndices[frameIndex];
-		BufferData& buffer = mStagingBuffers[downloadedStagingBufferIndex];
+		int downloaded_staging_buffer_index = mDownloadStagingBufferIndices[frameIndex];
+		BufferData& buffer = mStagingBuffers[downloaded_staging_buffer_index];
 
 		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);

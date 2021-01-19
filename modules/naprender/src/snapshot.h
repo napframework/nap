@@ -14,6 +14,9 @@
 
 #include <renderservice.h>
 #include <bitmap.h>
+#include <rect.h>
+#include <perspcameracomponent.h>
+//#include <utility/threading.h>
 
 namespace nap
 {
@@ -33,29 +36,42 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		bool takeSnapshot(CameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
+		/**
+		* Take a high-res snapshot of the scene and save to the configured location on disk
+		* Todo: Support ortho cams later
+		* @param camera Camera to take snapshot with
+		* @param comps Components to render
+		*/
+		bool takeSnapshot(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
 
+		// For testing purposes only. Will remove later
 		RenderTexture2D& getColorTexture();
 
-		int	mWidth = 0;				///< Property: 'Width' width of the texture in texels
-		int	mHeight = 0;			///< Property: 'Height' of the texture in texels
+		int	mWidth = 0;					///< Property: 'Width' width of the snapshot in texels
+		int	mHeight = 0;				///< Property: 'Height' height of the snapshot in texels
+		int mDesiredCellWidth = 0;		///< Property: 'DesiredCellWidth' desired width of a cell
+		int mDesiredCellHeight = 0;		///< Property: 'DesiredCellHeight' desired height of a cell
+
 		glm::vec4 mClearColor = glm::vec4(0.f, 0.f, 0.f, 1.f);
 
 	protected:
 		RenderService* mRenderService = nullptr;
 
 	private:
-		rtti::ObjectPtr<RenderTarget> mRenderTarget;
-		Bitmap mBitmap;
+		std::vector<rtti::ObjectPtr<RenderTarget>> mRenderTargets;
+		std::vector<rtti::ObjectPtr<Bitmap>> mBitmaps;
+		std::vector<math::Rect> mViewportRects;
 
-		bool mBusy = false;
+		int mNumRows = 0;
+		int mNumColumns = 0;
+		int mNumCells = 0;
 
-		/**
-		* Called by the slot when the bitmap is updated from a RenderTarget
-		*/
-		void onDownloadReady(const BitmapDownloadedEvent& event);
-
-		// Slot that is called when the rendertarget's texture is read back from the gpu
-		NSLOT(mDownloadReady, const BitmapDownloadedEvent&, onDownloadReady);
+		//std::unique_ptr<BitmapWriteThread> mBitmapWriteThread;
 	};
+
+ 	//class BitmapWriteThread : public WorkerThread
+ 	//{
+ 	//public:
+ 	//	BitmapWriteThread(bool blocking = false, std::uint32_t maxQueueItems = 1) : WorkerThread(blocking, maxQueueItems) {}
+ 	//};
 }

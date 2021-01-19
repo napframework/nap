@@ -12,7 +12,6 @@
 
 // External includes
 #include <FreeImage.h>
-
 #undef BYTE
 
 // nap::bitmap run time class definition 
@@ -263,32 +262,22 @@ namespace nap
 		int bpp = mSurfaceDescriptor.getBytesPerPixel() * 8;
 		int pitch = ((((bpp * getWidth()) + 31) / 32) * 4);
 
-		// FreeImage_ConvertFromRawBits should be able to set R and G bytes accordingly
-		// but it does not seem to work for me, therefore a copy
-		FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
-			true, mData.data(), FREE_IMAGE_TYPE::FIT_BITMAP,
-			getWidth(), getHeight(), pitch, bpp, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK
-		);
-
-		// Should be able to wrap bits instead like this, does not work either (?)
-		//FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
-		//	false, mData.data(), FREE_IMAGE_TYPE::FIT_BITMAP,
-		//	getWidth(), getHeight(), pitch, bpp, FI_RGBA_BLUE_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_RED_MASK
-		//);
+		// Allocate and copy
+		FIBITMAP* fi_bitmap = FreeImage_Allocate(getWidth(), getHeight(), bpp);
+		memcpy(FreeImage_GetBits(fi_bitmap), mData.data(), getSizeInBytes());
 
 		// Check if source and target channels match
-		bool isLittleEndian = FI_RGBA_RED == 2;
-		ESurfaceChannels targetChannels = isLittleEndian ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
+		bool is_little_endian = FI_RGBA_RED == 2;
+		ESurfaceChannels target_channels = is_little_endian ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
 
 		// Convert RGBA to BGRA or vice versa manually by looking up the internal bitmap
 		// This routine is used as a substitute for FreeImage_ConvertFromRawBitsEx conversion for now, but slow
-		if (mSurfaceDescriptor.getChannels() != targetChannels) {
+		if (mSurfaceDescriptor.getChannels() != target_channels) {
 			const uint8_t* source_line = mData.data();
 			uint8_t* target_line = FreeImage_GetBits(fi_bitmap);
 
 			// Get the amount of bytes every pixel occupies
-			int source_stride = pitch / getWidth();
-			int target_stride = source_stride;
+			int stride = pitch / getWidth();
 
 			for (int y = 0; y < getHeight(); ++y)
 			{
@@ -296,11 +285,13 @@ namespace nap
 				uint8_t* target_loc = target_line;
 				for (int x = 0; x < getWidth(); ++x)
 				{
-					*target_loc = *(source_loc+2); // B
-					*(target_loc+2) = *source_loc; // R
+					*target_loc = *(source_loc+2);		// B
+					*(target_loc+2) = *source_loc;		// R
+					//*(target_loc+1) = *(source_loc+1);	// G
+					//*(target_loc+3) = *(source_loc+3);	// A
 
-					target_loc += target_stride;
-					source_loc += source_stride;
+					target_loc += stride;
+					source_loc += stride;
 				}
 				source_line += pitch;
 				target_line += pitch;
@@ -308,11 +299,11 @@ namespace nap
 		}
 
 		// Screenshot output path
-		const std::string screenshotDir = utility::joinPath({ utility::getExecutableDir(), "screenshots" }, utility::pathSep());
-		if (!utility::dirExists(screenshotDir)) {
-			utility::makeDirs(screenshotDir);
+		const std::string screenshot_dir = utility::joinPath({ utility::getExecutableDir(), "screenshots" }, utility::pathSep());
+		if (!utility::dirExists(screenshot_dir)) {
+			utility::makeDirs(screenshot_dir);
 		}
-		std::string outputPath = utility::joinPath({ screenshotDir, filename }, utility::pathSep());
+		std::string outputPath = utility::joinPath({ screenshot_dir, filename }, utility::pathSep());
 
 		// Save and free
 		if (!errorState.check(FreeImage_Save(fi_img_format, fi_bitmap, outputPath.c_str()), "Image could not be saved"))

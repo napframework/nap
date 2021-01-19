@@ -19,8 +19,6 @@ namespace nap
 	class Texture2D;
 	struct SurfaceDescriptor;
 
-	class BitmapDownloadedEvent;
-
 	/**
 	 * 2D image resource that is initially empty, there is no GPU data associated with this object.
 	 * When initialized this object holds a set of 2D mapped pixels where every pixel value can have multiple channels.
@@ -285,7 +283,7 @@ namespace nap
 		/**
 		* Triggered by Texture2D when this bitmap is updated
 		*/
-		Signal<const BitmapDownloadedEvent&> bitmapDownloaded;
+		Signal<> mBitmapDownloaded;
 
 	private:
 		/**
@@ -416,21 +414,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		std::string mPath;							///< Property 'Path': the path to the image on disk
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Events
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Bitmap downloaded event
-	 */
-	class NAPAPI BitmapDownloadedEvent : public Event
-	{
-		RTTI_ENABLE(BitmapDownloadedEvent)
-	public:
-		BitmapDownloadedEvent() {}
 	};
 
 

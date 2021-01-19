@@ -97,6 +97,11 @@ namespace nap
 		void setGridLocation(int row, int column);
 
 		/**
+		* Sets custom cell dimensions in the near plane.
+		*/
+		void setProjectionMatrixCell(const math::Rect& normalizedRect);
+
+		/**
 		 * Sets the fov parameter
 		 * @param fov the new field of view
 		 */
@@ -127,6 +132,9 @@ namespace nap
 		 * Updates all projection matrices when dirty
 		 */
 		void updateProjectionMatrices() const;
+
+		math::Rect mCellRect;										// The custom cell/window to reshape the camera frustrum (test)
+		mutable bool mUseCells = false;								// If the next camera projection matrix update uses a custom cell transform (test)
 
 	protected:
 		mutable glm::mat4x4				mProjectionMatrix;			// The composed projection matrix
