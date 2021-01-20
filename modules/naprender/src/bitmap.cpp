@@ -200,6 +200,10 @@ namespace nap
 		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
 		if (fi_bitmap_color_type == FIC_RGB)
 		{
+			if (!FreeImage_PreMultiplyWithAlpha(fi_bitmap)) {
+				errorState.fail("Can't premultiply with alpha");
+				return false;
+			}
 			FIBITMAP* converted_bitmap = FreeImage_ConvertTo32Bits(fi_bitmap);
 			FreeImage_Unload(fi_bitmap);
 			fi_bitmap = converted_bitmap;
@@ -248,6 +252,19 @@ namespace nap
 	}
 
 
+	FREE_IMAGE_TYPE getFIT(ESurfaceDataType dataType, ESurfaceChannels channels)
+	{
+		switch (dataType) {
+		case ESurfaceDataType::BYTE:
+			return FREE_IMAGE_TYPE::FIT_BITMAP;
+		case ESurfaceDataType::USHORT:
+			return (channels != ESurfaceChannels::R) ? FREE_IMAGE_TYPE::FIT_RGBA16 : FREE_IMAGE_TYPE::FIT_UINT16;
+		case ESurfaceDataType::FLOAT:
+			return (channels != ESurfaceChannels::R) ? FREE_IMAGE_TYPE::FIT_RGBAF : FREE_IMAGE_TYPE::FIT_FLOAT;
+		}
+	}
+
+
 	bool Bitmap::writeToDisk(const std::string path, utility::ErrorState& errorState)
 	{
 		// Check if image is allocated
@@ -263,49 +280,29 @@ namespace nap
 		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format"))
 			return false;
 
+		FREE_IMAGE_TYPE fi_img_type = getFIT(mSurfaceDescriptor.getDataType(), mSurfaceDescriptor.getChannels());
 		int bpp = mSurfaceDescriptor.getBytesPerPixel() * 8;
-		int pitch = ((((bpp * getWidth()) + 31) / 32) * 4);
+		int pitch = mSurfaceDescriptor.getPitch();
 
-		// Allocate and copy
-		FIBITMAP* fi_bitmap = FreeImage_Allocate(getWidth(), getHeight(), bpp);
-		memcpy(FreeImage_GetBits(fi_bitmap), mData.data(), getSizeInBytes());
+		// Wrap bitmap data with FIBITMAP header
+		// Please note that color masks are only supported for 16-bit RGBA images and ignored for any other color depth
+		FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
+			false, mData.data(), fi_img_type, getWidth(), getHeight(), pitch, bpp,
+			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
+		);
 
-		// Check if source and target channels match
-		bool is_little_endian = FI_RGBA_RED == 2;
-		ESurfaceChannels target_channels = is_little_endian ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
-
-		// Convert RGBA to BGRA or vice versa manually by looking up the internal bitmap
-		// This routine is used as a substitute for FreeImage_ConvertFromRawBitsEx conversion for now, but slow
-		if (mSurfaceDescriptor.getChannels() != target_channels) {
-			const uint8_t* source_line = mData.data();
-			uint8_t* target_line = FreeImage_GetBits(fi_bitmap);
-
-			// Get the amount of bytes every pixel occupies
-			int stride = pitch / getWidth();
-
-			for (int y = 0; y < getHeight(); ++y)
-			{
-				const uint8_t* source_loc = source_line;
-				uint8_t* target_loc = target_line;
-				for (int x = 0; x < getWidth(); ++x)
-				{
-					*target_loc = *(source_loc+2);		// B
-					*(target_loc+2) = *source_loc;		// R
-					//*(target_loc+1) = *(source_loc+1);	// G
-					//*(target_loc+3) = *(source_loc+3);	// A
-
-					target_loc += stride;
-					source_loc += stride;
-				}
-				source_line += pitch;
-				target_line += pitch;
-			}
+		// Convert to 24-bit for jpegs
+		if (fi_img_format == FREE_IMAGE_FORMAT::FIF_JPEG) {
+			FIBITMAP* fi_bitmap_converted = FreeImage_ConvertTo24Bits(fi_bitmap);
+			FreeImage_Unload(fi_bitmap);
+			fi_bitmap = fi_bitmap_converted;
 		}
 
 		// Save and free
 		if (!errorState.check(FreeImage_Save(fi_img_format, fi_bitmap, path.c_str()), "Image could not be saved"))
 			return false;
 
+		// Unload header
 		FreeImage_Unload(fi_bitmap);
 		return true;
 	}

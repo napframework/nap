@@ -3,8 +3,16 @@
 * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "snapshot.h"
+#include <nap/logger.h>
+#include <FreeImage.h>
 
-// nap::Snapshot run time class definition 
+RTTI_BEGIN_ENUM(nap::Snapshot::EOutputExtension)
+	RTTI_ENUM_VALUE(nap::Snapshot::EOutputExtension::PNG, "PNG"),
+	RTTI_ENUM_VALUE(nap::Snapshot::EOutputExtension::JPG, "JPG"),
+	RTTI_ENUM_VALUE(nap::Snapshot::EOutputExtension::TIFF, "TIFF"),
+	RTTI_ENUM_VALUE(nap::Snapshot::EOutputExtension::BMP, "BMP")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width", &nap::Snapshot::mWidth, nap::rtti::EPropertyMetaData::Required)
@@ -29,6 +37,17 @@ namespace nap
 
 	Snapshot::~Snapshot() {}
 
+	const char* extensionToString(Snapshot::EOutputExtension ext)
+	{
+		switch (ext) {
+		case Snapshot::EOutputExtension::PNG: return "png";
+		case Snapshot::EOutputExtension::JPG: return "jpg";
+		case Snapshot::EOutputExtension::TIFF: return "tiff";
+		case Snapshot::EOutputExtension::BMP: return "bmp";
+		default: return "png";
+		}
+	}
+
 	bool Snapshot::init(utility::ErrorState& errorState)
 	{
 		assert(mNumRows > 0 && mNumColumns > 0);
@@ -47,7 +66,6 @@ namespace nap
 
 		// Calculate number of cells required
 		mNumCells = mNumRows * mNumColumns;
-
 		mRenderTargets.resize(mNumCells);
 		mBitmaps.resize(mNumCells);
 
@@ -65,7 +83,7 @@ namespace nap
 				render_texture->mWidth = cell_width;
 				render_texture->mHeight = cell_height;
 				render_texture->mColorSpace = EColorSpace::Linear;
-				render_texture->mFormat = mFormat; // BGRA8 -- not implemented for RTs, give control to user
+				render_texture->mFormat = mFormat;
 				render_texture->mUsage = ETextureUsage::DynamicRead;
 				render_texture->mFill = false;
 
@@ -88,34 +106,27 @@ namespace nap
 				// Create bitmaps
 				mBitmaps[cell_index] = resourceManager->createObject<Bitmap>();
 
-				// Connect Bitmap write task to BitmapBownloaded signal
-				mBitmaps[cell_index]->mBitmapUpdated.connect([this, i = cell_index]() {
-					utility::ErrorState errorState;
+				// Connect Bitmap write task to BitmapUpdated signal
+				mBitmaps[cell_index]->mBitmapUpdated.connect([this, i = cell_index]() 
+				{
 					if (mBitmaps[i]->empty()) {
-						errorState.fail("Saving image to disk failed: bitmap not initialized");
+						Logger::error("Saving image to disk failed: bitmap not initialized");
 						return;
 					}
-					std::string path = utility::stringFormat("%s/%s_%d.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str(), i + 1, mOutputExtension.c_str());
+
+					std::string path = utility::stringFormat(
+						"%s/%s_%d.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str(), i+1, extensionToString(mOutputExtension)
+					);
+					utility::ErrorState errorState;
 					if (!mBitmaps[i]->writeToDisk(path, errorState)) {
-						std::cout << "Saving image to disk failed: " << errorState.toString();
+						Logger::error("Saving image to disk failed: %s", errorState.toString().c_str());
+						return;
 					}
-					//else {
-					//	mBitmapWriteThread->enqueue([this](void) {
-					//		utility::ErrorState error;
-					//		if (!mBitmap.writeToDisk(utility::stringFormat("%s.png", timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str()), error)) {
-					//			std::cout << "Saving image to disk failed: " << error.toString();
-					//		}
-					//	});
-					//}
 				});
 				pixels_width_processed += cell_width;
 			}
 			pixels_height_processed += cell_height;
 		}
-
-		//mBitmapWriteThread = std::make_unique<BitmapWriteThread>();
-		//mBitmapWriteThread->start();
-
 		return true;
 	}
 

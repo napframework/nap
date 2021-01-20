@@ -30,6 +30,7 @@ namespace nap
 		enum class EFormat
 		{
 			RGBA8,			///< 08 bit unsigned, 4 components
+			BGRA8,			///< 08 bit unsigned, 4 components
 			R8,				///< 08 bit unsigned, 1 component
 			RGBA16,			///< 16 bit unsigned, 4 components
 			R16,			///< 16 bit unsigned, 1 component

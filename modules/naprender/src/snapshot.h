@@ -16,17 +16,33 @@
 #include <bitmap.h>
 #include <rect.h>
 #include <perspcameracomponent.h>
-//#include <utility/threading.h>
 
 namespace nap
 {
 	/**
-	 * Snapshot
+	 * The Snapshot module renders objects at any given resolution and format (as long as it is supported by the hardware)
+	 * and saves the result to a specified location on disk.
+	 *
+	 * Please take into account the endianness of your system. This means e.g. rendering to a BGRA format on Windows and 
+	 * Linux (big-endian), and RGBA on OSX. One exception to this rule is when rendering using 16-bit RGBA color channels: 
+	 * in this case FreeImage automatically carries over the correct channel ordering information with platform-specific macros.
 	 */
 	class NAPAPI Snapshot : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
+
+		/**
+		* All supported output extensions for snapshots
+		*/
+		enum class EOutputExtension
+		{
+			PNG,					///< Portable Network Graphics (*.PNG)
+			JPG,					///< Independent JPEG Group (*.JPG, *.JIF, *.JPEG, *.JPE)
+			TIFF,					///< Tagged Image File Format (*.TIF, *.TIFF)
+			BMP						///< Windows or OS/2 Bitmap File (*.BMP)
+		};
+
 		Snapshot(Core& core);
 		virtual ~Snapshot();
 
@@ -38,7 +54,6 @@ namespace nap
 
 		/**
 		* Take a high-res snapshot of the scene and save to the configured location on disk
-		* Todo: Support ortho cams later
 		* @param camera Camera to take snapshot with
 		* @param comps Components to render
 		*/
@@ -55,8 +70,8 @@ namespace nap
 		ERasterizationSamples mRequestedSamples = ERasterizationSamples::One;	///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		bool mSampleShading = false;											///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 
-		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to
-		std::string mOutputExtension = "";										///< Property: 'OutputExtension' Extension of the snapshot image file e.g. "png", "jpg" or "tiff"
+		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to.
+		EOutputExtension mOutputExtension = EOutputExtension::PNG;				///< Property: 'OutputExtension' Extension of the snapshot image file.
 
 	protected:
 		RenderService* mRenderService = nullptr;
@@ -66,13 +81,5 @@ namespace nap
 		std::vector<rtti::ObjectPtr<Bitmap>> mBitmaps;
 
 		uint32_t mNumCells = 0;
-
-		//std::unique_ptr<BitmapWriteThread> mBitmapWriteThread;
 	};
-
- 	//class BitmapWriteThread : public WorkerThread
- 	//{
- 	//public:
- 	//	BitmapWriteThread(bool blocking = false, std::uint32_t maxQueueItems = 1) : WorkerThread(blocking, maxQueueItems) {}
- 	//};
 }
