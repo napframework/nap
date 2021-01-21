@@ -79,7 +79,7 @@ namespace nap
 		RenderService* mRenderService = nullptr;
 
 	private:
-		bool stitchAndSaveBitmaps(utility::ErrorState& errorState);
+		bool stitchAndSaveBitmaps();
 
 		nap::Signal<> onBitmapsUpdated;
 

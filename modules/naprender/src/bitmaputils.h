@@ -30,6 +30,6 @@ namespace nap
 		* @param errorState error state
 		* @return true if successful
 		*/
-		bool NAPAPI writeToDisk(FIBITMAP* fiBitmap, const std::string& path, utility::ErrorState& errorState);
+		bool NAPAPI writeToDisk(FIBITMAP* fiBitmap, FREE_IMAGE_TYPE fiType, const std::string& path, utility::ErrorState& errorState);
 	}
 }

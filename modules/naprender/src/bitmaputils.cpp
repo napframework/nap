@@ -24,14 +24,15 @@ namespace nap
 			}
 		}
 
-		bool writeToDisk(FIBITMAP* fiBitmap, const std::string& path, utility::ErrorState& errorState)
+		bool writeToDisk(FIBITMAP* fiBitmap, FREE_IMAGE_TYPE fiType, const std::string& path, utility::ErrorState& errorState)
 		{
 			// Check if directory exists
 			if (!errorState.check(utility::dirExists(utility::getFileDir(path)), "Directory does not exist: %s", path.c_str()))
 				return false;
 
 			// Get format
-			FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFormat(utility::getFileExtension(path).c_str());
+			std::string ext = utility::getFileExtension(path).c_str();
+			FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFormat(ext.c_str());
 			if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format"))
 				return false;
 
@@ -48,6 +49,10 @@ namespace nap
 				FreeImage_Unload(fi_bitmap_converted);
 			}
 			else {
+				if (!errorState.check(FreeImage_FIFSupportsWriting(fi_img_format) || FreeImage_FIFSupportsExportType(fi_img_format, fiType),
+					utility::stringFormat("Cannot write bitmap data type to .%s", ext.c_str()))) {
+					return false;
+				}
 				if (!errorState.check(FreeImage_Save(fi_img_format, fiBitmap, path.c_str()), "Image could not be saved"))
 					return false;
 			}

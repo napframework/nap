@@ -266,7 +266,7 @@ namespace nap
 		);
 
 		// Write
-		if (!utility::writeToDisk(fi_bitmap, path, errorState)) {
+		if (!utility::writeToDisk(fi_bitmap, fi_img_type, path, errorState)) {
 			errorState.fail("Failed to write bitmap to disk");
 		}
 
