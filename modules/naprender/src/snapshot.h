@@ -16,6 +16,7 @@
 #include <bitmap.h>
 #include <rect.h>
 #include <perspcameracomponent.h>
+#include <utility/threading.h>
 
 namespace nap
 {
@@ -62,13 +63,14 @@ namespace nap
 
 		uint32_t mWidth = 0;													///< Property: 'Width' width of the snapshot in texels
 		uint32_t mHeight = 0;													///< Property: 'Height' height of the snapshot in texels
-		uint32_t mNumRows = 0;													///< Property: 'DesiredCellWidth' desired width of a cell
-		uint32_t mNumColumns = 0;												///< Property: 'DesiredCellHeight' desired height of a cell
+		uint32_t mNumRows = 0;													///< Property: 'NumRows' desired width of a cell
+		uint32_t mNumColumns = 0;												///< Property: 'NumColumns' desired height of a cell
 
 		glm::vec4 mClearColor = glm::vec4(0.f, 0.f, 0.f, 1.f);					///< Property: 'ClearColor' color selection used for clearing the render target
 		RenderTexture2D::EFormat mFormat = RenderTexture2D::EFormat::RGBA8;		///< Property: 'Format' texture format
 		ERasterizationSamples mRequestedSamples = ERasterizationSamples::One;	///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		bool mSampleShading = false;											///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		bool mStitch = true;													///< Property: 'Stitch' Enable stitching
 
 		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to.
 		EOutputExtension mOutputExtension = EOutputExtension::PNG;				///< Property: 'OutputExtension' Extension of the snapshot image file.
@@ -77,8 +79,13 @@ namespace nap
 		RenderService* mRenderService = nullptr;
 
 	private:
+		bool stitchAndSaveBitmaps(utility::ErrorState& errorState);
+
+		nap::Signal<> onBitmapsUpdated;
+
 		std::vector<rtti::ObjectPtr<RenderTarget>> mRenderTargets;
 		std::vector<rtti::ObjectPtr<Bitmap>> mBitmaps;
+		std::vector<bool> mBitmapUpdateFlags;
 
 		uint32_t mNumCells = 0;
 	};

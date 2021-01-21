@@ -62,11 +62,10 @@ namespace nap
 
 		/**
 		* Writes this bitmap to a snapshots folder on disk with a specified image extension
-		* Todo: Needs logic for handling single-component bitmaps
-		* @param filename the filename and image extension of the output file e.g. "MyOutputFile.png"
+		* @param path the path including filename and image extension of the output file e.g. "targetFolder/MyOutputFile.png"
 		* @param errorState contains the error if the image could not be loaded
 		*/
-		bool writeToDisk(const std::string filename, utility::ErrorState& errorState);
+		bool writeToDisk(const std::string& filename, utility::ErrorState& errorState);
 
 		/**
 		 * @return the type of color associated with this bitmap

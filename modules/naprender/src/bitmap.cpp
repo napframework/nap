@@ -9,8 +9,8 @@
 #include <rtti/typeinfo.h>
 #include <texture2d.h>
 #include "copyimagedata.h"
+#include "bitmaputils.h"
 
-// External includes
 #include <FreeImage.h>
 #undef BYTE
 
@@ -200,10 +200,6 @@ namespace nap
 		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
 		if (fi_bitmap_color_type == FIC_RGB)
 		{
-			if (!FreeImage_PreMultiplyWithAlpha(fi_bitmap)) {
-				errorState.fail("Can't premultiply with alpha");
-				return false;
-			}
 			FIBITMAP* converted_bitmap = FreeImage_ConvertTo32Bits(fi_bitmap);
 			FreeImage_Unload(fi_bitmap);
 			fi_bitmap = converted_bitmap;
@@ -252,38 +248,16 @@ namespace nap
 	}
 
 
-	FREE_IMAGE_TYPE getFIT(ESurfaceDataType dataType, ESurfaceChannels channels)
-	{
-		switch (dataType) {
-		case ESurfaceDataType::BYTE:
-			return FREE_IMAGE_TYPE::FIT_BITMAP;
-		case ESurfaceDataType::USHORT:
-			return (channels != ESurfaceChannels::R) ? FREE_IMAGE_TYPE::FIT_RGBA16 : FREE_IMAGE_TYPE::FIT_UINT16;
-		case ESurfaceDataType::FLOAT:
-			return (channels != ESurfaceChannels::R) ? FREE_IMAGE_TYPE::FIT_RGBAF : FREE_IMAGE_TYPE::FIT_FLOAT;
-		}
-	}
-
-
-	bool Bitmap::writeToDisk(const std::string path, utility::ErrorState& errorState)
+	bool Bitmap::writeToDisk(const std::string& path, utility::ErrorState& errorState)
 	{
 		// Check if image is allocated
 		if (!errorState.check(!empty(), "Bitmap is not allocated"))
 			return false;
 
-		// Check if directory exists
-		if (!errorState.check(utility::dirExists(utility::getFileDir(path)), "Directory does not exist: %s", path.c_str()))
-			return false;
-
-		// Get format
-		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(path.c_str());
-		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format"))
-			return false;
-
-		FREE_IMAGE_TYPE fi_img_type = getFIT(mSurfaceDescriptor.getDataType(), mSurfaceDescriptor.getChannels());
+		FREE_IMAGE_TYPE fi_img_type = utility::getFIType(mSurfaceDescriptor.getDataType(), mSurfaceDescriptor.getChannels());
 		int bpp = mSurfaceDescriptor.getBytesPerPixel() * 8;
 		int pitch = mSurfaceDescriptor.getPitch();
-
+		
 		// Wrap bitmap data with FIBITMAP header
 		// Please note that color masks are only supported for 16-bit RGBA images and ignored for any other color depth
 		FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
@@ -291,16 +265,10 @@ namespace nap
 			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
 		);
 
-		// Convert to 24-bit for jpegs
-		if (fi_img_format == FREE_IMAGE_FORMAT::FIF_JPEG) {
-			FIBITMAP* fi_bitmap_converted = FreeImage_ConvertTo24Bits(fi_bitmap);
-			FreeImage_Unload(fi_bitmap);
-			fi_bitmap = fi_bitmap_converted;
+		// Write
+		if (!utility::writeToDisk(fi_bitmap, path, errorState)) {
+			errorState.fail("Failed to write bitmap to disk");
 		}
-
-		// Save and free
-		if (!errorState.check(FreeImage_Save(fi_img_format, fi_bitmap, path.c_str()), "Image could not be saved"))
-			return false;
 
 		// Unload header
 		FreeImage_Unload(fi_bitmap);
