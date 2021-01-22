@@ -9,6 +9,7 @@
 
 // nap includes
 #include <utility/dllexport.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -121,7 +122,7 @@ namespace nap
 		/**
 		 * Time value in samples
 		 */
-		using DiscreteTimeValue = long;
+		using DiscreteTimeValue = nap::uint64;
 		
 		
 		/**
