@@ -87,7 +87,7 @@ def package(zip_release,
     git_revision = None
     try:
         (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
-        git_revision = rev.strip()
+        git_revision = git_revision.strip()
     except Exception as e:
         print("Warning: unable to get git revision")
 
