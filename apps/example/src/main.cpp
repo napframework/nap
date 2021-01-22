@@ -18,9 +18,6 @@ int main(int argc, char *argv[])
 	// and event handler that is used to forward information into the app.
     nap::AppRunner<nap::CoreApp, nap::GUIAppEventHandler> app_runner(core);
 
-    // Decide which data file to load on initialization
-	app_runner.getApp().setFilename(argc >= 2 ? argv[1] : "default.json");
-
     // Start running
     nap::utility::ErrorState error;
     if (!app_runner.start(error))

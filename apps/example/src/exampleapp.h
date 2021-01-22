@@ -34,12 +34,6 @@ namespace nap
         CoreApp(nap::Core& core) : App(core) {}
 
         /**
-         * Provide the app with the json file that will be loaded, must be called before initialization.
-		 * @param fileName the json file to load on initialization
-         */
-        void setFilename(const std::string& fileName)								{ mFilename = fileName; }
-
-        /**
          * Initialize all the services and app specific data structures
 		 * @param error contains the error code when initialization fails
 		 * @return if initialization succeeded
@@ -77,7 +71,6 @@ namespace nap
 
     private:
         ResourceManager*			mResourceManager = nullptr;		///< Manages all the loaded data
-        std::string					mFilename = "";					///< The JSON file that is loaded on initialization
 		RenderService*				mRenderService = nullptr;		///< Render Service that handles render calls
 		SceneService*				mSceneService = nullptr;		///< Manages all the objects in the scene
 		InputService*				mInputService = nullptr;		///< Input service for processing input
