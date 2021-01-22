@@ -121,7 +121,7 @@ namespace nap
 		/**
 		 * Time value in samples
 		 */
-		using DiscreteTimeValue = long;
+		using DiscreteTimeValue = std::uint64_t;
 		
 		
 		/**
