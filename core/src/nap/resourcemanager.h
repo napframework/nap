@@ -63,19 +63,14 @@ namespace nap
 		~ResourceManager();
 
 		/**
-		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
-		 * @param filename JSON resource file to load.
+		 * Helper that calls loadFile() without additional modified objects. See loadFile() comments for a full description.
+		 * The file should be located in the 'data' folder (current working directory) of your application.
+		 *
+ 		 * @param filename name of JSON resource file to load, for example: "default.json"
 		 * @param errorState contains the error when the load operation fails.
 		 * @return if the file loaded successfully.
 		 */
 		bool loadFile(const std::string& filename, utility::ErrorState& errorState);
-
-		/**
-		 * Helper that calls loadFile without additional modified objects. See loadFile() comments for a full description.
-		 * @param filename JSON resource file to load.
-		 * @return if the file loaded successfully.
-		 */
-        bool loadFile(const std::string& filename);
 
 		/*
 		* Loads a json file containing objects. When the objects are loaded, a comparison is performed against the objects that are already loaded. Only
@@ -93,6 +88,8 @@ namespace nap
 		*
 		* Before objects are destructed, onDestroy is called. onDestroy is called in the reverse initialization order. This way, it is still safe to use any 
 		* pointers to perform cleanup of internal data. 
+		*
+		* The file should be located in the 'data' folder (current working directory) of your application.
 		*
 		* @param filename json file containing all objects.
 		* @param externalChangedFile externally changed file that caused load of this file (like texture, shader etc)

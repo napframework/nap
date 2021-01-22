@@ -21,10 +21,8 @@ namespace nap
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
 
-		// Convert our path and load resources from file
-        auto abspath = utility::getAbsolutePath(mFilename);
-        nap::Logger::info("Loading: %s", abspath.c_str());
-        if (!mResourceManager->loadFile(mFilename, error))
+		// Load the resource file
+        if (!mResourceManager->loadFile("default.json", error))
             return false;
 
 		// Get the render window
