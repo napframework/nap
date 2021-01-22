@@ -31,6 +31,7 @@ namespace nap
 	 */
 	class NAPAPI SequenceTrackView
 	{
+		RTTI_ENABLE()
 	public:
 		/**
 		 * Constructor
@@ -43,26 +44,28 @@ namespace nap
 		 * Destructor
 		 */
         virtual ~SequenceTrackView(){};
-        
-		/**
-		 * draws track 
-		 * given track derived class is expected to be of track type that is used by this view
-		 * @param track reference to sequence track
-		 */
-		virtual void show(const SequenceTrack& track);
-
-		/**
-		 * handles popups
-		 * popups must be handled after all tracks are drawn
-		 */
-		virtual bool handlePopups() = 0;
 
 		/**
 		 * handles any actions that are created upon show
 		 * this might be useful when certain actions in tracks are overlapping and/ or when we create an action that 
 		 * needs to do something in the next frame update
 		 */
-		virtual void handleActions() {}
+		virtual void handleActions();
+
+		/**
+		 * shows inspector block
+		 * @param track reference to track
+		 * @param deleteTrack reference to bool to indicate whether delete is pressed
+		 * @param moveUp reference to bool indicating to move the track upwards
+		 * @param moveDown reference to bool indicating to move the track downwards
+		 */
+		virtual void showInspector(const SequenceTrack& track);
+
+		/**
+		 * shows track contents
+		 * @param track reference to track
+		 */
+		virtual void showTrack(const SequenceTrack& track);
 
 		/////////////////////////////////////////////////////////////////////////////
 		// static factory methods
@@ -114,21 +117,6 @@ namespace nap
 		static std::string formatTimeString(double time);
 	protected:
 		/**
-		 * shows inspector block
-		 * @param track reference to track
-		 * @param deleteTrack reference to bool to indicate whether delete is pressed
-		 * @param moveUp reference to bool indicating to move the track upwards
-		 * @param moveDown reference to bool indicating to move the track downwards
-		 */
-		virtual void showInspector(const SequenceTrack& track, bool& deleteTrack, bool& moveUp, bool& moveDown);
-
-		/**
-		 * shows track contents
-		 * @param track reference to track
-		 */
-		virtual void showTrack(const SequenceTrack& track);
-
-		/**
 		 * this methods needs to be overloaded, contents for the inspector of a specific track type can be drawn in this function
 		 * @param track reference to track
 		 */
@@ -141,6 +129,13 @@ namespace nap
 		 */
 		virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) = 0;
 
+		/**
+		 * registers an action handler for a certain action
+		 * @param type action type info
+		 * @param handler handler function
+		 */
+		void registerActionHandler(rttr::type type, std::function<void()> handler);
+
 		// reference to gui view
 		SequenceEditorGUIView& mView;
 
@@ -152,5 +147,8 @@ namespace nap
 
 		// reference to gui state
 		SequenceEditorGUIState& mState;
+
+		// map of action handlers
+		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
 	};
 }

@@ -1,291 +1,299 @@
-  <!DOCTYPE html>
-  <meta charset="utf-8" />
-  <title>NAP WebSocket Client Demo</title>
-  <script language="javascript" type="text/javascript">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>NAP WebSocket Client Demo</title>
 
-  // Websocket url, change to server web-socket address!
-  let uri = "localhost:80";
-  
-  /*
-   * JSON formatted api message.
-   * Acts as a template for a request to the server to change text.
-   * This var is parsed as JSON and the 'Value' of the APIString is changed
-   * before the message is send to the server.
-   */
-  let nap_msg = `
-  {
-     "Objects": 
-      [
-          {
-              "Type": "nap::APIMessage",
-              "mID": "01",
-              "Name": "ChangeText",
-              "Arguments": 
-              [
-                  {
-                      "Type": "nap::APIString",
-                      "Name": "text",
-                      "mID": "text_id",
-                      "Value": "I'm so excited!"
-                  }
-              ]
-          }
-      ]
-  }`
+	<link href="https://fonts.googleapis.com/css?family=Montserrat:400" rel="stylesheet">
 
-  // Some global document vars.
-  let ticket;
-  let api_msg;
-  let textbox;
-  let request_p;
-  let response_p;
-  let connected = false;
-  let box_char_count = 0;
-  let status_header;
-  
-  // Identification information
-  const username = "napuser"
-  const password = "letmein!"
+	<script language="javascript" type="text/javascript">
+		// Websocket url, change to server web-socket address!
+		let uri = "localhost:80"
 
-  /*
-   * Executed when document loads
-   */
-  function init()
-  {
-    textbox = document.getElementById("textbox");
-    request_p = document.getElementById("request_p");
-    response_p = document.getElementById("response_p");
-    input = document.getElementById("input_field");
-    status_header = document.getElementById("status_header");
-    api_msg = JSON.parse(nap_msg);
-    box_char_count = 0;
-    connected = false;
+		/*
+		 * JSON formatted api message.
+		 * Acts as a template for a request to the server to change text.
+		 * This var is parsed as JSON and the 'Value' of the APIString is changed
+		 * before the message is send to the server.
+		 */
+		let nap_msg = `
+		{
+		   "Objects":
+			[
+				{
+					"Type": "nap::APIMessage",
+					"mID": "01",
+					"Name": "ChangeText",
+					"Arguments":
+					[
+						{
+							"Type": "nap::APIString",
+							"Name": "text",
+							"mID": "text_id",
+							"Value": "I'm so excited!"
+						}
+					]
+				}
+			]
+		}`
 
-    // Request login, on success start websocket
-    requestLogin();
-  }
+		// Some global document vars.
+		let ticket
+		let api_msg
+		let textbox
+		let request_p
+		let response_p
+		let connected = false
+		let box_char_count = 0
+		let status_header
 
-  /*
-   * Sends an http request to get a ticket from the web-socket server
-   * The ticket is used to on login to validate the connection
-   */
-  function requestLogin()
-  {
-    const req = new XMLHttpRequest();
-    const url = 'http://' + uri;
-    req.open("POST", url, true);
-    req.onreadystatechange =  function() 
-    { 
-      if (this.readyState === XMLHttpRequest.DONE && this.status === 200) 
-      {
-        writeToBox("received login ticket");    
-        startWebSocket(this.responseText);
-      }
-    }
-    writeToBox("requesting login ticket: " + url);
-    req.send(JSON.stringify({ "user": username, "pass": password }));
-  }
+		// Identification information
+		const username = "napuser"
+		const password = "letmein!"
 
-  
-  /**
-   * Called after receiving a ticket from the web-socket server
-   * The ticket is used to validate the connection when the web-socket
-   * connection is opened. 
-   */
-  function startWebSocket(ticket)
-  {
-    status_header.innerHTML = "connecting";
-    status_header.style.color = "#5D5E73";
+		/*
+		 * Executed when document loads
+		 */
+		function init()
+		{
+			textbox = document.getElementById("textbox")
+			request_p = document.getElementById("request_p")
+			response_p = document.getElementById("response_p")
+			input = document.getElementById("input_field")
+			status_header = document.getElementById("status_header")
+			api_msg = JSON.parse(nap_msg)
+			box_char_count = 0
+			connected = false
 
-    const ws_uri = "ws://"+uri;
-    websocket = new WebSocket(ws_uri, ticket);
-    writeToBox("connecting to: " + ws_uri);
-    
-    // Callbacks
-    websocket.onopen = function(evt) { onOpen(evt) };
-    websocket.onclose = function(evt) { onClose(evt) };
-    websocket.onmessage = function(evt) { onMessage(evt) };
-    websocket.onerror = function(evt) { onError(evt) };
-  }
+			// Request login, on success start websocket
+			requestLogin()
+		}
 
-  // Called when the connection opened successfully
-  function onOpen(evt)
-  {
-    writeToBox("connected");
-    updateStatus(true);
-  }
+		/*
+		 * Sends an http request to get a ticket from the web-socket server
+		 * The ticket is used to on login to validate the connection
+		 */
+		function requestLogin()
+		{
+			const req = new XMLHttpRequest()
+			const url = 'http://' + uri
+			req.open("POST", url, true)
+			req.onreadystatechange =  function()
+			{
+				if (this.readyState === XMLHttpRequest.DONE && this.status === 200)
+				{
+					writeToBox("received login ticket")
+					startWebSocket(this.responseText)
+				}
+			}
+			writeToBox("requesting login ticket: " + url)
+			req.send(JSON.stringify({ "user": username, "pass": password }))
+		}
 
-  // Called when the connection is closed
-  function onClose(evt)
-  {
-    writeToBox("disconnected");
-    updateStatus(false);
-  }
 
-  // Called when a new message is received
-  function onMessage(evt)
-  {
-    updateResponse(evt.data);
-  }
+		/**
+		 * Called after receiving a ticket from the web-socket server
+		 * The ticket is used to validate the connection when the web-socket
+		 * connection is opened.
+		 */
+		function startWebSocket(ticket)
+		{
+			status_header.innerHTML = "connecting"
+			status_header.style.color = "#5D5E73"
 
-  // Called when connection failed to establish
-  function onError(evt)
-  {
-    writeToBox("connection failed");
-    updateStatus(false);
-  }
- 
-  /*
-   * Called when text input field changes.
-   * Constructs a nap api request to change the text.
-   * And sends it to the server.
-   */
-  function doSend()
-  {
-    // Set the text to change in the json api messae object
-    let text = input.value;
-    api_msg.Objects[0].Arguments[0].Value = text;
+			const ws_uri = "ws://" + uri
+			websocket = new WebSocket(ws_uri, ticket)
+			writeToBox("connecting to: " + ws_uri)
 
-    // Generate a random id
-    api_msg.Objects[0].mID = Math.floor(Math.random() * 100); 
+			// Callbacks
+			websocket.onopen = function(evt) { onOpen(evt) }
+			websocket.onclose = function(evt) { onClose(evt) }
+			websocket.onmessage = function(evt) { onMessage(evt) }
+			websocket.onerror = function(evt) { onError(evt) }
+		}
 
-    // Convert to nice looking string
-    let api_msg_string = JSON.stringify(api_msg, undefined, 4);
-    updateRequest(api_msg_string);
+		// Called when the connection opened successfully
+		function onOpen(evt)
+		{
+			writeToBox("connected")
+			updateStatus(true)
+		}
 
-    // Return if we're not connected
-    if(!connected)
-    {
-      writeToBox("unable to send request, not connected");
-      return;
-    }
-    
-    // Send api message as string to nap
-    writeToBox("sent: " + text);
-    websocket.send(api_msg_string);
-  }
+		// Called when the connection is closed
+		function onClose(evt)
+		{
+			writeToBox("disconnected")
+			updateStatus(false)
+		}
 
-  // Called when a websocket connection event occurs
-  function updateStatus(established)
-  {
-    connected = established;
-    if(connected)
-    {
-      status_header.innerHTML = "connected";
-      status_header.style.color = "#C86969";
-      return;
-    }
-    status_header.innerHTML = "disconnected";
-    status_header.style.color = "#5D5E73";
-  }
+		// Called when a new message is received
+		function onMessage(evt)
+		{
+			updateResponse(evt.data)
+		}
 
-  function writeToBox(message)
-  {
-    // Clear box if char count exceeds number
-    if(box_char_count > 2000)
-    {
-      textbox.value = "";
-      box_char_count = 0;
-    }
-    
-    textbox.value += (message + "\n");
-    textbox.scrollTop = textbox.scrollHeight;
-    box_char_count += message.length;
-  }
+		// Called when connection failed to establish
+		function onError(evt)
+		{
+			writeToBox("connection failed")
+			updateStatus(false)
+		}
 
-  function updateRequest(message)
-  {
-    request_p.innerHTML = message;
-  }
+		/*
+		 * Called when text input field changes.
+		 * Constructs a nap api request to change the text.
+		 * And sends it to the server.
+		 */
+		function doSend()
+		{
+			// Set the text to change in the json api messae object
+			let text = input.value
+			api_msg.Objects[0].Arguments[0].Value = text
 
-  function updateResponse(message)
-  {
-    response_p.innerHTML = message;
-  }
+			// Generate a random id
+			api_msg.Objects[0].mID = Math.floor(Math.random() * 100)
 
-  // Call init on load
-  window.addEventListener("load", init, false);
-  </script>
+			// Convert to nice looking string
+			let api_msg_string = JSON.stringify(api_msg, undefined, 4)
+			updateRequest(api_msg_string)
 
-  <html>
-    <head>
-      <link href="https://fonts.googleapis.com/css?family=Montserrat:400" rel="stylesheet">
-      <style>
-        ::selection {
-          color: #8B8CA0;
-          background: #8B8CA0;
-          }
+			// Return if we're not connected
+			if(!connected)
+			{
+				writeToBox("unable to send request, not connected")
+				return
+			}
 
-        body {
-          background-color: #2D2E42;
-          max-width: 40em;
+			// Send api message as string to nap
+			writeToBox("sent: " + text)
+			websocket.send(api_msg_string)
+		}
 
-        }
-        
-        h1, h2, h3, h4, h5, label, p{
-          color: #8B8CA0;
-          font-family: 'Montserrat', sans-serif;
-          font-weight: 400;
-        }
+		// Called when a websocket connection event occurs
+		function updateStatus(established)
+		{
+			connected = established
+			if(connected)
+			{
+				status_header.innerHTML = "connected"
+				status_header.style.color = "#C86969"
+				return
+			}
 
-        textarea {
-          background-color: #111426;
-          color: #8B8CA0;
-          border: 0.125em solid #8B8CA0;
-          width: 100%;
-          display:inline-block;
-        }
-        
-        input {
-          background-color: #111426;
-          border: 0.125em solid #8B8CA0;
-          color: #8B8CA0;
-        }
-        
-        input:focus {
-          outline:none;
-        }
+			status_header.innerHTML = "disconnected"
+			status_header.style.color = "#5D5E73"
+		}
 
-        textarea:focus {
-          outline:none;
-        }
+		function writeToBox(message)
+		{
+			// Clear box if char count exceeds number
+			if(box_char_count > 2000)
+			{
+				textbox.value = ""
+				box_char_count = 0
+			}
 
-        .header img {
-          float: left;          
-          height: 5em;
-          width: 5em; 
-        }
+			textbox.value += (message + "\n")
+			textbox.scrollTop = textbox.scrollHeight
+			box_char_count += message.length
+		}
 
-        .header h1 {
-          position: relative;
-          top: 0.5em;
-          left: 0.5em;
-        }
+		function updateRequest(message)
+		{
+			request_p.innerHTML = message
+		}
 
-        .header h3 {
-            left: 1.0em;
-            position: relative;
-        }
+		function updateResponse(message)
+		{
+			response_p.innerHTML = message
+		}
 
-      <title></title>
-      </style>
-    </head>
+		// Call init on load
+		window.addEventListener("load", init, false)
+	</script>
 
-    <body>
-        <div class="header">
-          <img src="logo.png", id="nap_logo">
-          <h1>WebSocket Client Demo</h2>
-          <h3 id="status_header"></h3  >
-        </div>
-        <label for="name">Send:</label>
-        <input type="text" id="input_field" name="name" size="30" oninput="doSend()">
-        <h5>Refresh page to reconnect</h5>
-        <div id="output">
-          <textarea name="message" id="textbox" rows="20"></textarea>
-        </div>
-      <h3>Server Request:</h2>
-      <pre id="request_p" style="color: #8B8CA0;"></pre>
-      <h3>Server Response:</h2>
-      <pre id="response_p" style="color: #8B8CA0;"></pre>
-    </body>
-  </html>
+	<style>
+		::selection {
+			color: #8B8CA0;
+			background: #8B8CA0;
+		}
+
+		body {
+			background-color: #2D2E42;
+			color: #8B8CA0;
+		}
+
+		h1, label, p{
+			font-family: 'Montserrat', sans-serif;
+			font-weight: 400;
+		}
+
+		textarea {
+			background-color: #111426;
+			border: 1px solid #8B8CA0;
+			color: #8B8CA0;
+			max-width: 640px;
+			width: 100%;
+		}
+
+		input {
+			background-color: #111426;
+			border: 1px solid #8B8CA0;
+			color: #8B8CA0;
+			max-width: 640px;
+		}
+
+		input:focus,
+		textarea:focus {
+			outline: none;
+		}
+
+		.header img {
+			float: left;
+			height: 80px;
+			width: 80px;
+			margin-right: 16px;
+			margin-bottom: 16px;
+		}
+
+		.header h1 {
+			margin-bottom: 0;
+		}
+
+		.input {
+			clear: both;
+		}
+
+		#status_header {
+			margin-top: 0;
+		}
+
+		pre {
+			background-color: #1a1e31;
+			max-width: 640px;
+		}
+	</style>
+</head>
+<body>
+	<div class="header">
+		<img src="logo.png" />
+		<h1>WebSocket Client Demo</h2>
+		<p id="status_header"></p>
+	</div>
+
+	<div class="input">
+		<label for="name">Send</label>
+		<input type="text" id="input_field" name="name" size="30" oninput="doSend()" />
+	</div>
+
+	<p>Refresh page to reconnect</p>
+	<textarea name="message" id="textbox" rows="20"></textarea>
+
+	<p>Server Request</p>
+	<pre id="request_p"></pre>
+
+	<p>Server Response</p>
+	<pre id="response_p"></pre>
+</body>
+</html>

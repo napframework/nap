@@ -5,6 +5,8 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
+#include <rendergnomoncomponent.h>
+#include <perspcameracomponent.h>
 
 namespace nap 
 {    
@@ -35,6 +37,10 @@ namespace nap
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
 
+		// Get the camera and origin Gnomon entity
+		mCameraEntity = mScene->findEntity("CameraEntity");
+		mGnomonEntity = mScene->findEntity("GnomonEntity");
+
 		// All done!
         return true;
     }
@@ -54,7 +60,19 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			// Render GUI elements
+			// Get Perspective camera to render with
+			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+
+			// Add Gnomon
+			std::vector<nap::RenderableComponentInstance*> components_to_render
+			{
+				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>()
+			};
+
+			// Render Gnomon
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render);
+
+			// Draw GUI elements
 			mGuiService->draw();
 
 			// Stop render pass

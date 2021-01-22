@@ -30,7 +30,7 @@ namespace nap
 		 * @param output reference to event receiver
 		 * @param player reference to the sequence player
 		 */
-		SequencePlayerEventAdapter(SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player);
+		SequencePlayerEventAdapter(const SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player);
 
 		/**
 		 * Destructor
@@ -44,7 +44,7 @@ namespace nap
 		virtual void tick(double time);
 	private:
 		// reference to track linked to adapter
-		SequenceTrack& 			mTrack;
+		const SequenceTrack& mTrack;
 
 		// reference to receiver linked to adapter
 		SequencePlayerEventOutput& 	mOutput;
