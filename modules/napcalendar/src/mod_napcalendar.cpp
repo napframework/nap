@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_MODULE("mod_napschedule", "0.1.0")
+NAP_MODULE("mod_napcalendar", "0.1.0")

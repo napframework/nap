@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18.4)
-project(mod_napschedule)
+project(mod_napcalendar)
 
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
