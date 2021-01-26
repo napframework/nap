@@ -11,13 +11,15 @@ RTTI_BEGIN_ENUM(nap::Calendar::EUsage)
 RTTI_END_ENUM
 
 // nap::calendar run time class definition 
-RTTI_BEGIN_CLASS(nap::Calendar)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Calendar)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage",	&nap::Calendar::mUsage,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Items",	&nap::Calendar::mItems,		nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 // calendar instance run time class definition
-RTTI_BEGIN_CLASS(nap::CalendarInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarInstance)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -26,15 +28,20 @@ RTTI_END_CLASS
 namespace nap
 {
 
+	Calendar::Calendar(nap::Core& core) : mCore(core)
+	{  }
+
+
 	Calendar::~Calendar()
 	{
 		mInstance.reset(nullptr);
 	}
 
+
 	bool Calendar::init(utility::ErrorState& errorState)
 	{
 		// Create and initialize instance
-		mInstance = std::make_unique<CalendarInstance>();
+		mInstance = std::make_unique<CalendarInstance>(mCore);
 		if (!mInstance->init(*this, errorState))
 			return false;
 
@@ -46,11 +53,15 @@ namespace nap
 	// Instance
 	//////////////////////////////////////////////////////////////////////////
 
-	nap::CalendarInstance::CalendarInstance() { }
+	nap::CalendarInstance::CalendarInstance(nap::Core& core) : mCore(core) 
+	{ }
 
 
 	bool CalendarInstance::init(const Calendar& resource, utility::ErrorState& error)
 	{
+		// Base name of calendar on id
+		mName = resource.mID;
+
 		switch (resource.mUsage)
 		{
 			case Calendar::EUsage::Static:
@@ -77,5 +88,14 @@ namespace nap
 		}
 
 		return true;
+	}
+
+
+	std::string CalendarInstance::getPath() const
+	{
+		return utility::stringFormat("%s/%s/%s.json",
+			mCore.getProjectInfo()->getDataDirectory().c_str(),
+			calendarDirectory,
+			getName().c_str());
 	}
 }

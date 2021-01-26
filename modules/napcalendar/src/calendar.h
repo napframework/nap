@@ -6,24 +6,32 @@
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
+#include <nap/core.h>
 
 namespace nap
 {
 	class CalendarInstance;
+	constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
 
 	/**
-	 * Simple calendar, manages a set of calendar items.
+	 * Simple read-only calendar, manages a set of calendar items.
 	 */
 	class NAPAPI Calendar : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
+
+		// How this calendar is used
 		enum struct EUsage : int
 		{
 			Static,					///< Calendar can't be updated after initialization, only contains 'Items'.
 			Dynamic					///< Calendar can be loaded, updated and saved after initialization.
 		};
 
+		// Constructor
+		Calendar(nap::Core& core);
+
+		// Destructor
 		virtual ~Calendar();
 
 		/**
@@ -47,6 +55,7 @@ namespace nap
 
 	private:
 		std::unique_ptr<CalendarInstance> mInstance = nullptr;	///< Calendar runtime instance
+		nap::Core& mCore;										///< NAP core
 	};
 
 
@@ -57,7 +66,7 @@ namespace nap
 	using CalendarItemList = std::vector<std::unique_ptr<CalendarItem>>;
 
 	/**
-	 * Actual runtime version of a simple calendar, created by the resource on initialization.
+	 * Actual runtime version of a simple calendar, created by the calendar resource on initialization.
 	 * Allows for inspection, creation, loading and saving of calendar items.
 	 * TODO: Use SQLite database for faster item inspection and retrieval.
 	 */
@@ -67,7 +76,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		CalendarInstance();
+		CalendarInstance(nap::Core& core);
 
 		// Calendar can't be copied
 		CalendarInstance(const CalendarInstance& rhs) = delete;
@@ -76,6 +85,16 @@ namespace nap
 		// Calendar can't be moved
 		CalendarInstance(const CalendarInstance&& rhs) = delete;
 		CalendarInstance& operator=(const CalendarInstance&& rhs) = delete;
+
+		/**
+		 * @return name of calendar
+		 */
+		const std::string& getName() const				{ return mName; }
+
+		/**
+		 * @return absolute path on disk to calendar
+		 */
+		std::string getPath() const;
 
 	protected:
 		/**
@@ -88,5 +107,7 @@ namespace nap
 
 	private:
 		CalendarItemList mItems;		///< All the items
+		std::string mName = "";			///< Calendar name
+		nap::Core& mCore;				///< NAP core
 	};
 }
