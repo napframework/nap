@@ -1,5 +1,11 @@
 #include "calendaritem.h"
 
+RTTI_BEGIN_CLASS(nap::CalendarItem::Time)
+	RTTI_CONSTRUCTOR(int, int)
+	RTTI_PROPERTY("Hour",	&nap::CalendarItem::Time::mHour,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Minute", &nap::CalendarItem::Time::mMinute,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 // nap::calendaritem run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem)
 	RTTI_PROPERTY("Time",			&nap::CalendarItem::mTime,			nap::rtti::EPropertyMetaData::Required)
@@ -61,15 +67,19 @@ static bool dateExists(int m, int d, int y)
 namespace nap
 {
 
+	CalendarItem::Time::Time(int hour, int minute) : mHour(hour), mMinute(minute)
+	{ }
+
+
 	bool CalendarItem::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(
-			mTime.x >= 0 && mTime.x < 24 && 
-			mTime.y >= 0 && mTime.y < 60, 
+			mTime.mHour >= 0 && mTime.mHour < 24 && 
+			mTime.mMinute >= 0 && mTime.mMinute < 60, 
 			"%s, invalid time", mID.c_str()))
 			return false;
 
-		if (!errorState.check(mDuration.x >= 0 && mDuration.y >= 0,
+		if (!errorState.check(mDuration.mHour >= 0 && mDuration.mMinute >= 0,
 			"%s, negative duration", mID.c_str()))
 			return false;
 

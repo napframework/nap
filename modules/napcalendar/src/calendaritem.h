@@ -14,13 +14,27 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:	
+
+		/**
+		 * Simple serializable calendar time structure
+		 */
+		class Time final
+		{
+			RTTI_ENABLE()
+		public:
+			Time() = default;
+			Time(int hour, int minute);
+			int mHour	= 0;						///< Property: 'Hour' 0-23
+			int mMinute	= 0;						///< Property: 'Minute' 0-59
+		};
+
 		/**
 		 * @return if the time is valid
 		 */
 		bool init(utility::ErrorState& errorState) override;
 
-		glm::ivec2	mTime = { 0, 0 };				///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
-		glm::ivec2	mDuration = { 0, 0 };			///< Property: 'Duration' length of event: hours (0-23) & minutes (0-59)
+		Time		mTime = { 0, 0 };				///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
+		Time		mDuration = { 0, 0 };			///< Property: 'Duration' length of event: hours (0-23) & minutes (0-59)
 		std::string mTitle = "";					///< Property: 'Title' item title
 		std::string	mDescription = "";				///< Property: 'Description' item description
 	};
