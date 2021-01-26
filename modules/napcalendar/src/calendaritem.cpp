@@ -1,10 +1,10 @@
 #include "calendaritem.h"
 
-RTTI_BEGIN_CLASS(nap::CalendarItem::Time)
+RTTI_BEGIN_STRUCT(nap::CalendarItem::Time)
 	RTTI_CONSTRUCTOR(int, int)
 	RTTI_PROPERTY("Hour",	&nap::CalendarItem::Time::mHour,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Minute", &nap::CalendarItem::Time::mMinute,	nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
 // nap::calendaritem run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem)

@@ -16,7 +16,8 @@ namespace nap
 	public:	
 
 		/**
-		 * Simple serializable calendar time structure
+		 * Simple serializable calendar time structure. 
+		 * Can be copied and moved.
 		 */
 		class Time final
 		{
