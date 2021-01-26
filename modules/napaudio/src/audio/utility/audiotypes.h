@@ -130,7 +130,7 @@ namespace nap
 		/**
 		 * Time value in samples
 		 */
-		using DiscreteTimeValue = std::int64_t;
+		using DiscreteTimeValue = std::uint64_t;
 		
 		
 		/**
