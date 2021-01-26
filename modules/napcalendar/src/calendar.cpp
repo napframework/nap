@@ -17,7 +17,7 @@ RTTI_BEGIN_CLASS(nap::Calendar)
 RTTI_END_CLASS
 
 // calendar instance run time class definition
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarInstance)
+RTTI_BEGIN_CLASS(nap::CalendarInstance)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,6 +40,13 @@ namespace nap
 
 		return true;
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Instance
+	//////////////////////////////////////////////////////////////////////////
+
+	nap::CalendarInstance::CalendarInstance() { }
 
 
 	bool CalendarInstance::init(const Calendar& resource, utility::ErrorState& error)
@@ -68,9 +75,6 @@ namespace nap
 				return false;
 			}
 		}
-
-		// copy usage
-		mUsage = resource.mUsage;
 
 		return true;
 	}

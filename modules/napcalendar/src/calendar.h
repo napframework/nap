@@ -27,13 +27,23 @@ namespace nap
 		virtual ~Calendar();
 
 		/**
-		 * Creates the calendar instance
+		 * Creates and initializes the calendar instance
 		 * @return if initialization succeeded
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return the calendar instance, only available after initialization
+		 */
+		CalendarInstance& getInstance()							{ assert(mInstance != nullptr);  return *mInstance; }
+
+		/**
+		 * @return the calendar instance, only available after initialization
+		 */
+		const CalendarInstance& getInstance() const				{ assert(mInstance != nullptr);  return *mInstance; }
+
 		std::vector<nap::ResourcePtr<CalendarItem>> mItems;		///< Property: 'Items' all static calendar items
-		Calendar::EUsage mUsage = Calendar::EUsage::Static;		///< Property: 'Usage' how the calendar is used 
+		Calendar::EUsage mUsage = EUsage::Static;				///< Property: 'Usage' how the calendar is used 
 
 	private:
 		std::unique_ptr<CalendarInstance> mInstance = nullptr;	///< Calendar runtime instance
@@ -44,10 +54,12 @@ namespace nap
 	// Calendar runtime instance
 	//////////////////////////////////////////////////////////////////////////
 
+	using CalendarItemList = std::vector<std::unique_ptr<CalendarItem>>;
+
 	/**
 	 * Actual runtime version of a simple calendar, created by the resource on initialization.
 	 * Allows for inspection, creation, loading and saving of calendar items.
-	 * TODO: Use database for faster inspection and retrieval.
+	 * TODO: Use SQLite database for faster item inspection and retrieval.
 	 */
 	class CalendarInstance final
 	{
@@ -55,7 +67,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Default constructor
-		CalendarInstance() = default;
+		CalendarInstance();
 
 		// Calendar can't be copied
 		CalendarInstance(const CalendarInstance& rhs) = delete;
@@ -67,7 +79,7 @@ namespace nap
 
 	protected:
 		/**
-		 * Initialize the instance based on resource
+		 * Initialize instance against resource
 		 * @param calendar the resource to initialize against
 		 * @param error contains the error if initialization fails
 		 * @return if initialization succeeded
@@ -75,7 +87,6 @@ namespace nap
 		bool init(const Calendar& resource, utility::ErrorState& error);
 
 	private:
-		std::vector<std::unique_ptr<CalendarItem>> mItems;		///< All the items
-		Calendar::EUsage mUsage = Calendar::EUsage::Static;		///< How the calendar is used
+		CalendarItemList mItems;		///< All the items
 	};
 }
