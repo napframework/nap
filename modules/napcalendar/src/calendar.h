@@ -82,10 +82,6 @@ namespace nap
 		CalendarInstance(const CalendarInstance& rhs) = delete;
 		CalendarInstance& operator=(const CalendarInstance& rhs) = delete;
 
-		// Calendar can't be moved
-		CalendarInstance(const CalendarInstance&& rhs) = delete;
-		CalendarInstance& operator=(const CalendarInstance&& rhs) = delete;
-
 		/**
 		 * @return name of calendar
 		 */
