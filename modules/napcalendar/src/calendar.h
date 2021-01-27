@@ -14,7 +14,7 @@ namespace nap
 	constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
 
 	/**
-	 * Simple read-only calendar, manages a set of calendar items.
+	 * Simple calendar resource, manages a set of calendar items.
 	 */
 	class NAPAPI Calendar : public Resource
 	{
@@ -50,8 +50,8 @@ namespace nap
 		 */
 		const CalendarInstance& getInstance() const				{ assert(mInstance != nullptr);  return *mInstance; }
 
+		bool mAllowFailure = true;								///< Property: 'AllowFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
 		std::vector<nap::ResourcePtr<CalendarItem>> mItems;		///< Property: 'Items' all static calendar items
-		Calendar::EUsage mUsage = EUsage::Static;				///< Property: 'Usage' how the calendar is used 
 
 	private:
 		std::unique_ptr<CalendarInstance> mInstance = nullptr;	///< Calendar runtime instance
@@ -63,7 +63,8 @@ namespace nap
 	// Calendar runtime instance
 	//////////////////////////////////////////////////////////////////////////
 
-	using CalendarItemList = std::vector<std::unique_ptr<CalendarItem>>;
+	using CalendarItemList = std::vector<nap::ResourcePtr<CalendarItem>>;
+	using OwnedCalendarItemList = std::vector<std::unique_ptr<CalendarItem>>;
 
 	/**
 	 * Actual runtime version of a simple calendar, created by the calendar resource on initialization.
@@ -85,12 +86,22 @@ namespace nap
 		/**
 		 * @return name of calendar
 		 */
-		const std::string& getName() const				{ return mName; }
+		const std::string& getName() const				{ assert(!mName.empty()); return mName; }
 
 		/**
 		 * @return absolute path on disk to calendar
 		 */
-		std::string getPath() const;
+		std::string getPath() const						{ assert(!mPath.empty()); return mPath; }
+
+		/**
+		 * Initialize the calendar using the given name and items.
+		 * If a calendar with the given name is present on disk, it is loaded instead.
+		 * @param name name of the calendar to create
+		 * @param allowFailure if default items are created when loading from disk fails (file might be corrupt for example).
+		 * @param defaultItems default set of items to create calendar with
+		 * @param error contains the error if initialization fails
+		 */
+		bool init(const std::string& name, bool allowFailure, CalendarItemList defaultItems, utility::ErrorState& error);
 
 	protected:
 		/**
@@ -102,8 +113,12 @@ namespace nap
 		bool init(const Calendar& resource, utility::ErrorState& error);
 
 	private:
-		CalendarItemList mItems;		///< All the items
-		std::string mName = "";			///< Calendar name
+		bool loadCalendar(utility::ErrorState& error);
+		bool saveCalendar(utility::ErrorState& error);
+
+		OwnedCalendarItemList mItems;		///< List of unique calendar items
+		std::string mName;				///< Calendar name
+		std::string mPath;				///< Path to calendar file on disk
 		nap::Core& mCore;				///< NAP core
 	};
 }

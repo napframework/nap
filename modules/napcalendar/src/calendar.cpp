@@ -3,18 +3,18 @@
 
 // External includes
 #include <rtti/rttiutilities.h>
-
-// calendar usage type
-RTTI_BEGIN_ENUM(nap::Calendar::EUsage)
-	RTTI_ENUM_VALUE(nap::Calendar::EUsage::Dynamic, "Dynamic"),
-	RTTI_ENUM_VALUE(nap::Calendar::EUsage::Static,	"Static")
-RTTI_END_ENUM
+#include <utility/fileutils.h>
+#include <rtti/jsonwriter.h>
+#include <rtti/jsonreader.h>
+#include <rtti/defaultlinkresolver.h>
+#include <fstream>
+#include <nap/logger.h>
 
 // nap::calendar run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Calendar)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",	&nap::Calendar::mUsage,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Items",	&nap::Calendar::mItems,		nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("AllowFailure",	&nap::Calendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Items",			&nap::Calendar::mItems,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 // calendar instance run time class definition
@@ -60,42 +60,110 @@ namespace nap
 	bool CalendarInstance::init(const Calendar& resource, utility::ErrorState& error)
 	{
 		// Base name of calendar on id
-		mName = resource.mID;
+		return init(resource.mID, resource.mAllowFailure, resource.mItems, error);
+	}
 
-		switch (resource.mUsage)
-		{
-			case Calendar::EUsage::Static:
-			{
-				rtti::Factory factory;
-				mItems.reserve(resource.mItems.size());
-				for (const auto& item : resource.mItems)
-				{
-					mItems.emplace_back(rtti::cloneObject(*item, factory));
-				}
-				break;
-			}
-			case Calendar::EUsage::Dynamic:
-			{
-				// Load from file
-				break;
-			}
-			default:
-			{
-				assert(false);
-				error.fail("unknown calendar usage case");
+
+	bool CalendarInstance::init(const std::string& name, bool allowFailure, CalendarItemList items, utility::ErrorState& error)
+	{
+		// Calendar name
+		if (!error.check(!name.empty(), "No calendar name specified"))
+			return false;
+		mName = name;
+
+		// Get calendar path
+		std::string path = utility::stringFormat("%s/%s/%s.json", mCore.getProjectInfo()->getDataDirectory().c_str(),
+			calendarDirectory, getName().c_str());
+		mPath = utility::toComparableFilename(path);
+
+		// Load calendar if file exists
+		if (utility::fileExists(mPath))
+		{ 
+			// All good
+			if (loadCalendar(error))
+				return true;
+
+			if (!allowFailure)
 				return false;
-			}
+
+			// Loads defaults if failure is allowed
+			nap::Logger::warn("Unable to load calendar: %s, %s", mPath.c_str(), error.toString().c_str());
+			nap::Logger::warn("Loading calendar defaults");
 		}
 
+		// Otherwise load default
+		mItems.clear();
+		mItems.reserve(items.size());
+		for (const auto& item : items)
+		{
+			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
+		}
 		return true;
 	}
 
 
-	std::string CalendarInstance::getPath() const
+	bool nap::CalendarInstance::loadCalendar(utility::ErrorState& error)
 	{
-		return utility::stringFormat("%s/%s/%s.json",
-			mCore.getProjectInfo()->getDataDirectory().c_str(),
-			calendarDirectory,
-			getName().c_str());
+		nap::Logger::info("loading calendar: %s", getPath().c_str());
+		rtti::DeserializeResult result;
+		rtti::Factory& factory = mCore.getResourceManager()->getFactory();
+
+		// Read file
+		if (!deserializeJSONFile(
+			getPath(), rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::OnlyRawPointers,
+			factory, result, error))
+			return false;
+
+		// Resolve links
+		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, error))
+			return false;
+
+		// Move objects
+		mItems.clear();
+		mItems.reserve(result.mReadObjects.size());
+		for (auto& item : result.mReadObjects)
+		{
+			std::unique_ptr<CalendarItem> calendar_item = rtti_cast<CalendarItem>(item);
+			if (calendar_item == nullptr)
+			{
+				assert(false);
+				continue;
+			}
+			mItems.emplace_back(std::move(calendar_item));
+		}
+		return true;
+	}
+
+
+	bool nap::CalendarInstance::saveCalendar(utility::ErrorState& error)
+	{
+		nap::rtti::ObjectList resources;
+		resources.reserve(mItems.size());
+		for (auto& item : mItems)
+			resources.emplace_back(item.get());
+
+		// Serialize current set of parameters to json
+		rtti::JSONWriter writer;
+		if (!rtti::serializeObjects(resources, writer, error))
+			return false;
+		
+		// Make sure we can write to the directory
+		std::string storage_dir = utility::getFileDir(getPath());
+		if (!utility::dirExists(storage_dir))
+		{
+			if (!error.check(utility::makeDirs(storage_dir), "unable to create directory : %s", calendarDirectory))
+				return false;
+		}
+
+		// Open output file
+		std::ofstream output(getPath(), std::ios::binary | std::ios::out);
+		if (!error.check(output.is_open() && output.good(), "Failed to open %s for writing", getPath().c_str()))
+			return false;
+
+		// Write to disk
+		std::string json = writer.GetJSON();
+		output.write(json.data(), json.size());
+		return true;
 	}
 }

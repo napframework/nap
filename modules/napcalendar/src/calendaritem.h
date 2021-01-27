@@ -79,7 +79,7 @@ namespace nap
 	class NAPAPI DailyCalendarItem : public CalendarItem
 	{
 		RTTI_ENABLE(CalendarItem)
-	public:
+	public: 
 		/**
 		 * @return if the time is valid
 		 */
