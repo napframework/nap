@@ -89,7 +89,7 @@ namespace nap
 		const std::string& getName() const				{ assert(!mName.empty()); return mName; }
 
 		/**
-		 * @return absolute path on disk to calendar
+		 * @return absolute path to calendar file on disk
 		 */
 		std::string getPath() const						{ assert(!mPath.empty()); return mPath; }
 

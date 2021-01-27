@@ -6,7 +6,6 @@ RTTI_BEGIN_STRUCT(nap::CalendarItem::Time)
 	RTTI_PROPERTY("Minute", &nap::CalendarItem::Time::mMinute,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_STRUCT
 
-// nap::calendaritem run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem)
 	RTTI_PROPERTY("Time",			&nap::CalendarItem::mTime,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Duration",		&nap::CalendarItem::mDuration,		nap::rtti::EPropertyMetaData::Required)
@@ -29,9 +28,8 @@ RTTI_BEGIN_CLASS(nap::UniqueCalendarItem)
 	RTTI_PROPERTY("Date", &nap::UniqueCalendarItem::mDate, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-
-
 //////////////////////////////////////////////////////////////////////////
+
 
 /**
  * Returns if the given date exists
@@ -100,6 +98,12 @@ namespace nap
 	}
 
 
+	bool MonthlyCalendarItem::active()
+	{
+		return false;
+	}
+
+
 	bool WeeklyCalendarItem::init(utility::ErrorState& errorState)
 	{
 		if (!CalendarItem::init(errorState))
@@ -113,9 +117,21 @@ namespace nap
 	}
 
 
+	bool WeeklyCalendarItem::active()
+	{
+		return false;
+	}
+
+
 	bool DailyCalendarItem::init(utility::ErrorState& errorState)
 	{
 		return CalendarItem::init(errorState);
+	}
+
+
+	bool DailyCalendarItem::active()
+	{
+		return false;
 	}
 
 
@@ -132,4 +148,11 @@ namespace nap
 
 		return true;
 	}
+
+
+	bool UniqueCalendarItem::active()
+	{
+		return false;
+	}
+
 }
