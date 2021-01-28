@@ -23,10 +23,14 @@ namespace nap
 		{
 			RTTI_ENABLE()
 		public:
-			Time() = default;
 			Time(int hour, int minute);
 			int mHour	= 0;						///< Property: 'Hour' (0-23)
 			int mMinute	= 0;						///< Property: 'Minute' (0-59)
+
+			/**
+			 * @return time in minutes
+			 */
+			nap::Minutes toMinutes() const;
 		};
 
 		/**
@@ -37,12 +41,13 @@ namespace nap
 		bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Returns if the current item is active based on the specified 
-		 * 'Time', 'Duration' and other properties.
+		 * Returns if the current item is active based  on the specified 
+		 * 'Time', 'Duration' and other properties of this item.
 		 * Must be implemented in derived classes.
+		 * @param timeStamp time to validate, for example the current system time
 		 * @return if the current item is active.
 		 */
-		virtual bool active() = 0;
+		virtual bool active(SystemTimeStamp timeStamp) = 0;
 
 		Time		mTime = { 0, 0 };				///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
 		Time		mDuration = { 0, 0 };			///< Property: 'Duration' length of event: hours (0-23) & minutes (0-59)
@@ -64,9 +69,10 @@ namespace nap
 		bool init(utility::ErrorState& errorState) override;
 		
 		/**
+		 * @param timeStamp time to validate
 		 * @return if the monthly calender item currently occurs.
 		 */
-		virtual bool active() override;
+		virtual bool active(SystemTimeStamp timeStamp) override;
 		int mDay = 1;						///< Property: 'Day' day of the month (1-31)
 	};
 
@@ -86,9 +92,10 @@ namespace nap
 		bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * @param timeStamp time to validate
 		 * @return if the weekly calender item currently occurs.
 		 */
-		virtual bool active() override;
+		virtual bool active(SystemTimeStamp timeStamp) override;
 
 		EDay mDay = EDay::Monday;	///< Property: 'Day' day of the week
 	};
@@ -109,9 +116,10 @@ namespace nap
 		bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * @param timeStamp time to validate
 		 * @return if the daily calender item currently occurs.
 		 */
-		virtual bool active() override;
+		virtual bool active(SystemTimeStamp timeStamp) override;
 	};
 
 
@@ -130,9 +138,10 @@ namespace nap
 		bool init(utility::ErrorState& errorState) override;
 		
 		/**
+		 * @param timeStamp time to validate
 		 * @return if the unique calender item currently occurs.
 		 */
-		virtual bool active() override;
+		virtual bool active(SystemTimeStamp timeStamp) override;
 
 		nap::Date mDate;	///< Property: 'Date' calendar date
 	};

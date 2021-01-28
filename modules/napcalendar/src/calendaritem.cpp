@@ -1,6 +1,6 @@
 #include "calendaritem.h"
 
-RTTI_BEGIN_STRUCT(nap::CalendarItem::Time)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem::Time)
 	RTTI_CONSTRUCTOR(int, int)
 	RTTI_PROPERTY("Hour",	&nap::CalendarItem::Time::mHour,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Minute", &nap::CalendarItem::Time::mMinute,	nap::rtti::EPropertyMetaData::Required)
@@ -69,6 +69,12 @@ namespace nap
 	{ }
 
 
+	nap::Minutes nap::CalendarItem::Time::toMinutes() const
+	{
+		return nap::Minutes((mHour * 60) + mMinute);
+	}
+
+
 	bool CalendarItem::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(
@@ -85,25 +91,6 @@ namespace nap
 	}
 
 
-	bool MonthlyCalendarItem::init(utility::ErrorState& errorState)
-	{
-		if (!CalendarItem::init(errorState))
-			return false;
-
-		// Check if day is at least within bounds
-		if (!errorState.check(mDay >= 1 && mDay <= 31, "%s: invalid day", mID.c_str()))
-			return false;
-
-		return true;
-	}
-
-
-	bool MonthlyCalendarItem::active()
-	{
-		return false;
-	}
-
-
 	bool WeeklyCalendarItem::init(utility::ErrorState& errorState)
 	{
 		if (!CalendarItem::init(errorState))
@@ -117,8 +104,30 @@ namespace nap
 	}
 
 
-	bool WeeklyCalendarItem::active()
+	bool WeeklyCalendarItem::active(SystemTimeStamp timeStamp)
 	{
+		// Compute start / end in minutes
+		Minutes sample_mins(static_cast<int>(mDay) * 24 * 60);
+		Minutes sta_time = sample_mins + mTime.toMinutes();
+		Minutes end_time = sta_time + mDuration.toMinutes();
+
+		// Get current minutes in week
+		DateTime cur_dt(timeStamp);
+		Minutes cur_day_mins(static_cast<int>(cur_dt.getDay()) * 24 * 60);
+		Minutes cur_hou_mins((cur_dt.getHour() * 60) + cur_dt.getMinute());
+		Minutes cur_mins(cur_day_mins + cur_hou_mins);
+
+		// See if it's in bounds
+		if (cur_mins >= sta_time && cur_mins < end_time)
+			return true;
+
+		// Wrap to start if end_time exceeds total minutes in week
+		constexpr Minutes minutesWeek(7 * 24 * 60);
+		if (end_time > minutesWeek)
+		{
+			Minutes wrapped(end_time.count() % minutesWeek.count());
+			return cur_mins < wrapped;
+		}
 		return false;
 	}
 
@@ -129,8 +138,27 @@ namespace nap
 	}
 
 
-	bool DailyCalendarItem::active()
+	bool DailyCalendarItem::active(SystemTimeStamp timeStamp)
 	{
+		// Get minute bounds for day
+		Minutes sta_time(mTime.toMinutes());
+		Minutes end_time = sta_time + mDuration.toMinutes();
+
+		// Get current minute in day
+		DateTime cur_dt(timeStamp);
+		Minutes cur_mins((cur_dt.getHour() * 60) + cur_dt.getMinute());
+
+		// See if it's in bounds
+		if (cur_mins >= sta_time && cur_mins < end_time)
+			return true;
+
+		// Wrap to start if end_time exceeds total minutes in day
+		constexpr Minutes minutesDay(Hours(24));
+		if (end_time > minutesDay)
+		{
+			Minutes wrapped(end_time.count() % minutesDay.count());
+			return cur_mins < wrapped;
+		}
 		return false;
 	}
 
@@ -150,9 +178,61 @@ namespace nap
 	}
 
 
-	bool UniqueCalendarItem::active()
+	bool UniqueCalendarItem::active(SystemTimeStamp timeStamp)
 	{
-		return false;
+		SystemTimeStamp sta_time = mDate.toSystemTime() + mTime.toMinutes();
+		SystemTimeStamp end_time = sta_time + mDuration.toMinutes();
+		return (timeStamp >= sta_time && timeStamp < end_time);
 	}
 
+
+	bool MonthlyCalendarItem::init(utility::ErrorState& errorState)
+	{
+		if (!CalendarItem::init(errorState))
+			return false;
+
+		// Check if day is at least within bounds
+		if (!errorState.check(mDay >= 1 && mDay <= 31, "%s: invalid day", mID.c_str()))
+			return false;
+
+		return true;
+	}
+
+
+	bool MonthlyCalendarItem::active(SystemTimeStamp timeStamp)
+	{
+		DateTime cur_dt(timeStamp);
+		int cur_year = cur_dt.getYear();
+		int cur_mont = static_cast<int>(cur_dt.getMonth());
+
+		// Get current sample date and time
+		SystemTimeStamp sample_date = createTimestamp(cur_year, cur_mont, mDay, 0, 0);
+
+		// First check if it falls in the current month window	
+		SystemTimeStamp sta_time = sample_date + mTime.toMinutes();
+		SystemTimeStamp end_time = sta_time + mDuration.toMinutes();
+		if (timeStamp >= sta_time && timeStamp < end_time)
+			return true;
+
+		// Because it's cyclic we have to check if
+		// the current time falls within previous month window
+		int prev_mont = cur_mont - 1;
+		int prev_year = cur_year;
+		if (prev_year == 0)
+		{
+			prev_mont = 12;
+			prev_year -= 1;
+		}
+
+		// Previous month sample date
+		sample_date = createTimestamp(prev_year, prev_mont, mDay, 0, 0);
+
+		// Check if it falls in the previous month window
+		sta_time = sample_date + mTime.toMinutes();
+		end_time = sta_time + mDuration.toMinutes();
+		if (timeStamp >= sta_time && timeStamp < end_time)
+			return true;
+
+		return false;
+	}
 }

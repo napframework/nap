@@ -11,6 +11,7 @@
 namespace nap
 {
 	class CalendarInstance;
+	using CalendarItemList = std::vector<nap::ResourcePtr<CalendarItem>>;
 	constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
 
 	/**
@@ -51,7 +52,7 @@ namespace nap
 		const CalendarInstance& getInstance() const				{ assert(mInstance != nullptr);  return *mInstance; }
 
 		bool mAllowFailure = true;								///< Property: 'AllowFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
-		std::vector<nap::ResourcePtr<CalendarItem>> mItems;		///< Property: 'Items' all static calendar items
+		CalendarItemList mItems;								///< Property: 'Items' all static calendar items
 
 	private:
 		std::unique_ptr<CalendarInstance> mInstance = nullptr;	///< Calendar runtime instance
@@ -63,7 +64,6 @@ namespace nap
 	// Calendar runtime instance
 	//////////////////////////////////////////////////////////////////////////
 
-	using CalendarItemList = std::vector<nap::ResourcePtr<CalendarItem>>;
 	using OwnedCalendarItemList = std::vector<std::unique_ptr<CalendarItem>>;
 
 	/**
@@ -84,16 +84,6 @@ namespace nap
 		CalendarInstance& operator=(const CalendarInstance& rhs) = delete;
 
 		/**
-		 * @return name of calendar
-		 */
-		const std::string& getName() const				{ assert(!mName.empty()); return mName; }
-
-		/**
-		 * @return absolute path to calendar file on disk
-		 */
-		std::string getPath() const						{ assert(!mPath.empty()); return mPath; }
-
-		/**
 		 * Initialize the calendar using the given name and items.
 		 * If a calendar with the given name is present on disk, it is loaded instead.
 		 * @param name name of the calendar to create
@@ -102,6 +92,21 @@ namespace nap
 		 * @param error contains the error if initialization fails
 		 */
 		bool init(const std::string& name, bool allowFailure, CalendarItemList defaultItems, utility::ErrorState& error);
+
+		/**
+		 * @return name of calendar
+		 */
+		const std::string& getName() const							{ assert(!mName.empty()); return mName; }
+
+		/**
+		 * @return absolute path to calendar file on disk
+		 */
+		std::string getPath() const									{ assert(!mPath.empty()); return mPath; }
+
+		/**
+		 * @return all calendar items
+		 */
+		const OwnedCalendarItemList&  getItems() const				{ return mItems; }
 
 	protected:
 		/**

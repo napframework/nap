@@ -80,8 +80,8 @@ namespace nap
 		if (utility::fileExists(mPath))
 		{ 
 			// All good
-			if (loadCalendar(error))
-				return true;
+			// if (loadCalendar(error))
+			//	return true;
 
 			if (!allowFailure)
 				return false;
@@ -98,6 +98,15 @@ namespace nap
 		{
 			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
 		}
+
+
+		for (const auto& item : mItems)
+		{
+			nap::Logger::info("%s: item: %s",
+				item->active(getCurrentTime()) ? "True" : "False",
+				item->mTitle.c_str());
+		}
+
 		return true;
 	}
 
