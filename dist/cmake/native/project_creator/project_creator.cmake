@@ -58,7 +58,7 @@ endif()
 # Make a shaders directory
 file(MAKE_DIRECTORY ${PROJECT_DIR}/data/shaders)
 
-# Setup property list file on OSX
+# Setup property list file on macOS
 if(APPLE)
     configure_file(${TEMPLATE_ROOT}/macos/Info.plist ${PROJECT_DIR}/macos/Info.plist @ONLY)
 endif()

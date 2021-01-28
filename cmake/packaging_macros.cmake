@@ -98,6 +98,12 @@ macro(package_nap)
         if(WIN32)
             install(FILES "${NAP_ROOT}/dist/win64/redist_help/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/platform)
         endif()
+
+        # Package Gatekeeper unquarantine scripts for macOS
+        if(APPLE)
+            install(PROGRAMS ${NAP_ROOT}/dist/macos/gatekeeper_unquarantine/unquarantine_framework.command DESTINATION tools)
+            install(PROGRAMS "${NAP_ROOT}/dist/macos/gatekeeper_unquarantine/Unquarantine Project.command" DESTINATION cmake/project_creator/template)
+        endif()
     else() # ANDROID
         # Package shared CMake files
         install(DIRECTORY ${NAP_ROOT}/dist/cmake/android/
