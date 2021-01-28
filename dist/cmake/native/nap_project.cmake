@@ -163,4 +163,5 @@ endif()
 # Provide Gatekeeper unquarantine script on macOS
 if(APPLE)
     install(PROGRAMS "${NAP_ROOT}/cmake/project_creator/template/Unquarantine Project.command" DESTINATION .)
+    install(FILES "${NAP_ROOT}/cmake/project_creator/template/Help launching on macOS.txt" DESTINATION .)
 endif()
