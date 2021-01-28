@@ -132,6 +132,10 @@ macro(package_nap)
 
     # Install NAP readme
     install(FILES ${NAP_ROOT}/dist/license/README.txt DESTINATION .)
+    if(APPLE)
+        install(CODE "execute_process(COMMAND sh -c \"cat ${NAP_ROOT}/dist/macos/gatekeeper_unquarantine/framework_readme_extra.txt >> ${CMAKE_INSTALL_PREFIX}/README.txt\"
+                                      ERROR_QUIET)")
+    endif()
 
     # Install NAP Packaged App license 
     install(FILES ${NAP_ROOT}/dist/license/NAP.txt DESTINATION cmake/project_creator)
