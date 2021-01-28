@@ -197,6 +197,8 @@ Alternatively a project module can included when the project is created by speci
 
 Packaging a project provides an archive containing the project, its data, all required libraries and optionally Napkin.  In the NAP beta release projects are packaged to ZIP archives which when extracted provide for direct access to the project data and JSON, allowing for easy editing once deployed.  Options for creating installers for projects may be explored for a future NAP release.  At this time all packaged projects use release build configuration.
 
+Note that a script `Unquarantine Project.command` is provided with the packaged project.  On systems with <a href="https://en.wikipedia.org/wiki/Gatekeeper_(macOS)" target="_blank">macOS' Gatekeeper</a> enabled (which is turned on by default) this script should be run on the deployment device before launching the project. The script is executed by pressing ctrl-click on `Unquarantine Project.command` in Finder and selecting Open. Any presented permissions dialogs should be approved. In a future release support for application bundles and codesigning will be assessed.
+
 Packaging a project with default settings:
 1. Navigate to your project (normally within `projects`) with Finder
 2. Run package
