@@ -205,27 +205,34 @@ namespace nap
 		DateTime cur_dt(timeStamp);
 		int cur_year = cur_dt.getYear();
 		int cur_mont = static_cast<int>(cur_dt.getMonth());
-		SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mTime.mHour, mTime.mMinute);
-
-		// If timestamp is ahead of start (lookup) time, we can sample directly
-		if (timeStamp >= lookup_time)
+		
+		// If the day exists in this month, we can try to sample ahead.
+		if (dateExists(cur_mont, mDay, cur_dt.getYear()))
 		{
-			SystemTimeStamp end_time = lookup_time + mDuration.toMinutes();
-			return timeStamp < end_time;
+			// If current time is ahead of lookup, see if it's in range
+			SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mTime.mHour, mTime.mMinute);
+			if (timeStamp >= lookup_time)
+			{
+				SystemTimeStamp end_time = lookup_time + mDuration.toMinutes();
+				return timeStamp < end_time;
+			}
 		}
 
-		// Otherwise we need to check 
-		// the current time falls within previous month window
-		int prev_mont = cur_mont - 1;
-		int prev_year = cur_year;
-		if (prev_year == 0)
+		// Otherwise we need to check if the current time falls within the window of the previous months range.
+		// For example: an event triggered at the end of a month can be active in the beginning of a new month.
+		cur_mont -= 1;
+		if (cur_mont == 0)
 		{
-			prev_mont = 12;
-			prev_year -= 1;
+			cur_mont = 12;
+			cur_year -= 1;
 		}
+
+		// Make sure the day exists in the last month, if not the event could not have been triggered
+		if (!dateExists(cur_mont, mDay, cur_dt.getYear()))
+			return false;
 
 		// Previous month sample date
-		lookup_time = createTimestamp(prev_year, prev_mont, mDay, mTime.mHour, mTime.mMinute);
+		SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mTime.mHour, mTime.mMinute);
 
 		// Check if it falls in the previous month window
 		SystemTimeStamp end_time = lookup_time + mDuration.toMinutes();
