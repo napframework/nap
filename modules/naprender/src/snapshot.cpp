@@ -6,6 +6,7 @@
 #include "bitmaputils.h"
 
 #include <nap/logger.h>
+#include <renderablemeshcomponent.h>
 
 #include <FreeImage.h>
 #undef BYTE
@@ -73,15 +74,22 @@ namespace nap
 
 		// Calculate number of cells required
 		mNumCells = mNumRows * mNumColumns;
+
 		mRenderTargets.resize(mNumCells);
 		mBitmaps.resize(mNumCells);
 		mBitmapUpdateFlags.resize(mNumCells, false);
+
+		// Check if we need to render to BGRA for image formats on little endian machines
+		// We can ignore this check when rendering 16bit color
+		bool is_little_endian = FI_RGBA_RED == 2;
+		bool is_8bit_4ch = (mFormat == RenderTexture2D::EFormat::RGBA8 || mFormat == RenderTexture2D::EFormat::BGRA8);
+		mFormat = (is_little_endian && is_8bit_4ch) ? RenderTexture2D::EFormat::BGRA8 : RenderTexture2D::EFormat::RGBA8;
 
 		uint32_t pixels_width_processed = 0;
 		uint32_t pixels_height_processed = 0;
 
 		for (int i=0; i<mNumCells; i++) {
-			// Create render texture
+			// Create render textures
 			rtti::ObjectPtr<RenderTexture2D> render_texture = resourceManager->createObject<RenderTexture2D>();
 			render_texture->mWidth = cell_width;
 			render_texture->mHeight = cell_height;
@@ -140,6 +148,7 @@ namespace nap
 					// Reset current bitmap updated flag
 					mBitmapUpdateFlags[i] = false;
 				}
+				return true;
 			});
 		}
 
@@ -165,6 +174,7 @@ namespace nap
 			}
 			camera.setGridLocation(0, 0);
 			camera.setGridDimensions(1, 1);
+
 			mRenderService->endHeadlessRecording();
 
 			// Save to bitmap
@@ -236,6 +246,7 @@ namespace nap
 		}
 		FreeImage_Unload(fi_bitmap_full);
 
+		onSnapshotTaken();
 		return true;
 	}
 }

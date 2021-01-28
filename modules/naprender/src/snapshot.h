@@ -21,12 +21,8 @@
 namespace nap
 {
 	/**
-	 * The Snapshot module renders objects at any given resolution and format (as long as it is supported by the hardware)
-	 * and saves the result to a specified location on disk.
-	 *
-	 * Please take into account the endianness of your system. This means e.g. rendering to a BGRA format on Windows and 
-	 * Linux (big-endian), and RGBA on OSX. One exception to this rule is when rendering using 16-bit RGBA color channels: 
-	 * in this case FreeImage automatically carries over the correct channel ordering information with platform-specific macros.
+	 * The Snapshot module renders objects at any given resolution and format and saves the result to a specified location on disk 
+	 * (as long as its configuration is supported by the hardware and sufficient video memory is available).
 	 */
 	class NAPAPI Snapshot : public Resource
 	{
@@ -66,7 +62,7 @@ namespace nap
 		uint32_t mNumRows = 0;													///< Property: 'NumRows' desired width of a cell
 		uint32_t mNumColumns = 0;												///< Property: 'NumColumns' desired height of a cell
 
-		glm::vec4 mClearColor = glm::vec4(0.f, 0.f, 0.f, 1.f);					///< Property: 'ClearColor' color selection used for clearing the render target
+		glm::vec4 mClearColor{ 0.f, 0.f, 0.f, 1.f };							///< Property: 'ClearColor' color selection used for clearing the render target
 		RenderTexture2D::EFormat mFormat = RenderTexture2D::EFormat::RGBA8;		///< Property: 'Format' texture format
 		ERasterizationSamples mRequestedSamples = ERasterizationSamples::One;	///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		bool mSampleShading = false;											///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
@@ -74,6 +70,8 @@ namespace nap
 
 		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to.
 		EOutputExtension mOutputExtension = EOutputExtension::PNG;				///< Property: 'OutputExtension' Extension of the snapshot image file.
+
+		nap::Signal<> onSnapshotTaken;
 
 	protected:
 		RenderService* mRenderService = nullptr;
