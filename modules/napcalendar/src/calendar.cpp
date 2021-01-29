@@ -100,8 +100,6 @@ namespace nap
 		{
 			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
 		}
-
-		this->save(error);
 		return true;
 	}
 

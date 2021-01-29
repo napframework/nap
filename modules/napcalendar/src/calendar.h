@@ -55,8 +55,8 @@ namespace nap
 	 * set of 'Items' defined by this resource. If a calendar with the same ID 
 	 * exists on disk (saved previously) it is loaded instead.
 	 *
-	 * Note that this calendar is meant to be used with a 'limited' set of events, 
-	 * especially when queries every frame, as it does not make use of a database.
+	 * Note that this calendar is meant to be used with a 'limited' (1000x) set of events, 
+	 * especially when queried every frame, as it doesn't make use of a database.
 	 */
 	class NAPAPI Calendar : public ICalendar
 	{
