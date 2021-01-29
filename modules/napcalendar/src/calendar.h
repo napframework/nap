@@ -94,6 +94,7 @@ namespace nap
 	 * Actual runtime version of a simple calendar, created by the calendar resource on initialization.
 	 * Allows for inspection, creation, loading and saving of calendar items.
 	 * TODO: Use SQLite database for faster item inspection and retrieval.
+	 * TODO: Make thread safe.
 	 */
 	class CalendarInstance final
 	{
@@ -137,11 +138,39 @@ namespace nap
 		 * Creates, initializes and adds a new item of the given type T to the calendar.
 		 * Item must be of type: nap::CalendarItem and is given a unique id.
 		 * The item is managed by the calendar but can be changed through the pointer.
-		 * @param args the arguments to construct the item with
-		 * @return the new calendar item, nullptr if the item can't be created
+		 * This call is therefore not thread safe.
+		 * Note that it is your responsibility to ensure that items, when edited, remain valid. 
+		 *
+		 * ~~~~~{.cpp}
+		 *	auto* new_item = mCalendar->getInstance().addItem<UniqueCalendarItem>
+		 *	(
+		 *		CalendarItem::Point({ 12, 0 }, { 1, 0 }),
+		 *		"Birthday Celebrations",
+		 *		Date(2021, EMonth::January, 29)
+		 *	);
+		 * ~~~~~
+		 *
+		 * @param args arguments to construct the item with.
+		 * @return the new calendar item, nullptr if the item can't be created or initialized
 		 */
 		template<typename T, typename... Args>
 		T* addItem(Args&&... args);
+
+		/**
+		 * Remove an item based on id (not thread safe). 
+		 * Note that handles are invalid after this call.
+		 * @param id the unique id of the item to remove
+		 * @return if the item was removed
+		 */
+		bool removeItem(const std::string& id);
+		
+		/**
+		 * Remove an item based on the given handle (not thread safe).
+		 * Note that given handle is set to null when removed.
+		 * @param id the unique id of the item to remove
+		 * @return if the item was removed
+		 */
+		bool removeItem(CalendarItem* item);
 
 		/**
 		 * Writes calendar to disk.

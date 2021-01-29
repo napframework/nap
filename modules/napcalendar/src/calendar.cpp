@@ -106,6 +106,40 @@ namespace nap
 	}
 
 
+	bool CalendarInstance::removeItem(const std::string& id)
+	{
+		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
+		{
+			return it->mID == id;
+		});
+
+		if (found_it != mItems.end())
+		{
+			mItems.erase(found_it);
+			return true;
+		}
+		return false;
+	}
+
+
+	bool CalendarInstance::removeItem(CalendarItem* item)
+	{
+		assert(item != nullptr);
+		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
+		{
+			return it.get() == item;
+		});
+
+		if (found_it != mItems.end())
+		{
+			mItems.erase(found_it);
+			item = nullptr;
+			return true;
+		}
+		return false;
+	}
+
+
 	bool nap::CalendarInstance::load(utility::ErrorState& error)
 	{
 		nap::Logger::info("loading calendar: %s", getPath().c_str());

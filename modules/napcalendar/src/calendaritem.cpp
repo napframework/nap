@@ -70,6 +70,78 @@ namespace nap
 	}
 
 
+	void CalendarItem::setTitle(const std::string& title)
+	{
+		mTitle = title;
+	}
+
+
+	const std::string& CalendarItem::getTitle() const
+	{
+		return mTitle;
+	}
+
+
+	void CalendarItem::setDescription(const std::string& description)
+	{
+		mDescription = description;
+	}
+
+
+	const std::string& CalendarItem::getDescription() const
+	{
+		return mDescription;
+	}
+
+
+	bool CalendarItem::setPoint(const Point& point)
+	{
+		if (point.valid())
+		{
+			mPoint = point;
+			return true;
+		}
+		return false;
+	}
+
+
+	const CalendarItem::Point& CalendarItem::getPoint() const
+	{
+		return mPoint;
+	}
+
+
+	bool CalendarItem::setTime(const Time& time)
+	{
+		Time backup = mPoint.mTime;
+		mPoint.mTime = time;
+		if (!mPoint.valid())
+		{
+			mPoint.mTime = backup;
+			return false;
+		}
+		return true;
+	}
+
+
+	const nap::CalendarItem::Time& CalendarItem::getTime() const
+	{
+		return mPoint.mTime;
+	}
+
+
+	void CalendarItem::setDuration(const Time& duration)
+	{
+		mPoint.mDuration = duration;
+	}
+
+
+	const ::nap::CalendarItem::Time& CalendarItem::getDuration() const
+	{
+		return mPoint.mDuration;
+	}
+
+
 	bool WeeklyCalendarItem::init(utility::ErrorState& errorState)
 	{
 		if (!CalendarItem::init(errorState))
@@ -80,6 +152,23 @@ namespace nap
 			return false;
 
 		return CalendarItem::init(errorState);
+	}
+
+
+	bool WeeklyCalendarItem::setDay(EDay day)
+	{
+		if (day != EDay::Unknown)
+		{
+			mDay = day;
+			return true;
+		}
+		return false;
+	}
+
+
+	nap::EDay WeeklyCalendarItem::getDay() const
+	{
+		return mDay;
 	}
 
 
@@ -162,6 +251,20 @@ namespace nap
 	}
 
 
+	bool UniqueCalendarItem::setDate(const nap::Date& date)
+	{
+		if (!date.valid()) { return false; }
+		mDate = date;
+		return true;
+	}
+
+
+	nap::Date UniqueCalendarItem::getDate() const
+	{
+		return mDate;
+	}
+
+
 	bool UniqueCalendarItem::active(SystemTimeStamp timeStamp)
 	{
 		SystemTimeStamp sta_time = mDate.toSystemTime() + mPoint.mTime.toMinutes();
@@ -180,6 +283,17 @@ namespace nap
 			return false;
 
 		return true;
+	}
+
+
+	bool MonthlyCalendarItem::setDay(int day)
+	{
+		if (day >= 1 && day <= 31)
+		{
+			mDay = day;
+			return true;
+		}
+		return false;
 	}
 
 
