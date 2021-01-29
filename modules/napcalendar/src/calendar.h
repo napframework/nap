@@ -7,6 +7,7 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <nap/core.h>
+#include <nap/logger.h>
 
 namespace nap
 {
