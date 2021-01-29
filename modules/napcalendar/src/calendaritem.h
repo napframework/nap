@@ -42,6 +42,13 @@ namespace nap
 			bool valid() const;  				///< Returns if time is valid
 		};
 
+		// Default Constructor
+		CalendarItem() = default;
+
+		// Item constructor
+		CalendarItem(const Point& point, const std::string& title) : 
+			mPoint(point), mTitle(title) { }
+
 		/**
 		 * Initializes the calendar item, always call this in derived classes.
 		 * Ensures the given time is valid.
@@ -71,6 +78,14 @@ namespace nap
 	{
 		RTTI_ENABLE(CalendarItem)
 	public:
+
+		// Default constructor
+		MonthlyCalendarItem() = default;
+
+		// Argument constructor
+		MonthlyCalendarItem(int day, const CalendarItem::Point& point, const std::string& title) :
+			CalendarItem(point, title), mDay(day) {}
+
 		/**
 		 * @return if the day and time are valid
 		 */
@@ -92,6 +107,14 @@ namespace nap
 	{
 		RTTI_ENABLE(CalendarItem)
 	public:
+
+		// Default constructor
+		WeeklyCalendarItem() = default;
+
+		// Argument constructor
+		WeeklyCalendarItem(EDay day, const CalendarItem::Point& point, const std::string& title) :
+			CalendarItem(point, title), mDay(day) {}
+
 		/**
 		 * Initializes the weekly calendar item. 
 		 * Checks if the day and time are valid.
@@ -138,6 +161,14 @@ namespace nap
 	{
 		RTTI_ENABLE(CalendarItem)
 	public:
+
+		// Default constructor
+		UniqueCalendarItem();
+
+		// Argument constructor
+		UniqueCalendarItem(const Date& date, const CalendarItem::Point& point, const std::string& title) :
+			CalendarItem(point, title), mDate(date) {}
+
 		/**
 		 * Initializes the unique calendar item.
 		 * Checks if the date and time are valid.

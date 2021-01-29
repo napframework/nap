@@ -134,15 +134,25 @@ namespace nap
 		const OwnedCalendarItemList&  getItems() const				{ return mItems; }
 
 		/**
+		 * Creates, initializes and adds a new item of the given type T to the calendar.
+		 * Item must be of type: nap::CalendarItem and is given a unique id.
+		 * The item is managed by the calendar but can be changed through the pointer.
+		 * @param args the arguments to construct the item with
+		 * @return the new calendar item, nullptr if the item can't be created
+		 */
+		template<typename T, typename... Args>
+		T* addItem(Args&&... args);
+
+		/**
 		 * Writes calendar to disk.
 		 * @param error contains the error if writing fails
 		 */
 		bool save(utility::ErrorState& error);
 
 		OwnedCalendarItemList mItems;		///< List of unique calendar items
-		std::string mName;				///< Calendar name
-		std::string mPath;				///< Path to calendar file on disk
-		nap::Core& mCore;				///< NAP core
+		std::string mName;					///< Calendar name
+		std::string mPath;					///< Path to calendar file on disk
+		nap::Core& mCore;					///< NAP core
 
 	private:
 		/**
@@ -151,4 +161,30 @@ namespace nap
 		 */
 		bool load(utility::ErrorState& error);
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T, typename... Args>
+	T* nap::CalendarInstance::addItem(Args&&... args)
+	{
+		// Construct using given (forwarded) arguments
+		assert(RTTI_OF(T).is_derived_from(RTTI_OF(nap::CalendarItem)));
+		std::unique_ptr<T> item = std::make_unique<T>(std::forward<Args>(args)...);
+
+		// Initialize, on failure return and don't add as valid item
+		item->mID = math::generateUUID();
+		utility::ErrorState error;
+		if (!item->init(error))
+		{
+			nap::Logger::error(error.toString());
+			return nullptr;
+		}
+
+		T* item_ptr = item.get();
+		mItems.emplace_back(std::move(item));
+		return item_ptr;
+	}
 }

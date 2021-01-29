@@ -296,6 +296,11 @@ namespace nap
 		 */
 		Date() = default;
 
+		/** 
+		 * Constructs a date based on year, month and day
+		 */
+		Date(int year, EMonth month, int day);
+
 		/**
 		 * Constructor based on given system time. Extracts the date from the time stamp.
 		 * @param systemTime the time stamp to extract the date from. 

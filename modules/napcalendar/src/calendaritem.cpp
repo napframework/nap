@@ -1,13 +1,13 @@
 #include "calendaritem.h"
 
 RTTI_BEGIN_STRUCT(nap::CalendarItem::Time)
-	RTTI_CONSTRUCTOR(int, int)
+	RTTI_VALUE_CONSTRUCTOR(int, int)
 	RTTI_PROPERTY("Hour",	&nap::CalendarItem::Time::mHour,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Minute", &nap::CalendarItem::Time::mMinute,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::CalendarItem::Point)
-	RTTI_CONSTRUCTOR(nap::CalendarItem::Time, nap::CalendarItem::Time)
+	RTTI_VALUE_CONSTRUCTOR(nap::CalendarItem::Time, nap::CalendarItem::Time)
 	RTTI_PROPERTY("Time",		&nap::CalendarItem::Point::mTime,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Duration",	&nap::CalendarItem::Point::mDuration,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_STRUCT
@@ -19,11 +19,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MonthlyCalendarItem)
-	RTTI_PROPERTY("Day",			&nap::MonthlyCalendarItem::mDay,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Day",			&nap::MonthlyCalendarItem::mDay,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::WeeklyCalendarItem)
-	RTTI_PROPERTY("Day",			&nap::WeeklyCalendarItem::mDay,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Day",			&nap::WeeklyCalendarItem::mDay,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::DailyCalendarItem)
@@ -139,6 +139,12 @@ namespace nap
 			return cur_mins < wrapped;
 		}
 		return false;
+	}
+
+
+	UniqueCalendarItem::UniqueCalendarItem()
+	{
+		mDate.mMonth = EMonth::January;
 	}
 
 

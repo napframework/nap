@@ -40,7 +40,7 @@ namespace nap
 		const CalendarInstance& getInstance() const override			{ assert(mInstance != nullptr);  return *mInstance; }
 
 		/**
-		 * @return if (for any day of the week) an item is currently active.
+		 * @return if, for any day of the week, an item is currently active.
 		 */
 		bool isOperational();
 

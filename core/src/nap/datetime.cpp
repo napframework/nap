@@ -256,6 +256,11 @@ namespace nap
 	}
 
 
+	Date::Date(int year, EMonth month, int day) :
+		mYear(year), mMonth(month), mDay(day)
+	{ }
+
+
 	void Date::fromSystemTime(const SystemTimeStamp& systemTime)
 	{
 		DateTime date_time(systemTime);
