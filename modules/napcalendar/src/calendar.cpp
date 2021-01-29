@@ -10,11 +10,14 @@
 #include <fstream>
 #include <nap/logger.h>
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ICalendar)
+RTTI_END_CLASS
+
 // nap::calendar run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Calendar)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("AllowFailure",	&nap::Calendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Items",			&nap::Calendar::mItems,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("AllowFailure",	&nap::Calendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // calendar instance run time class definition
@@ -28,8 +31,10 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	Calendar::Calendar(nap::Core& core) : mCore(core)
-	{  }
+	ICalendar::ICalendar(nap::Core& core) : mCore(core) {  }
+
+
+	Calendar::Calendar(nap::Core& core) : ICalendar(core) { }
 
 
 	Calendar::~Calendar()
@@ -42,7 +47,7 @@ namespace nap
 	{
 		// Create and initialize instance
 		mInstance = std::make_unique<CalendarInstance>(mCore);
-		if (!mInstance->init(*this, errorState))
+		if (!mInstance->init(mID.c_str(), mAllowFailure, mItems, errorState))
 			return false;
 
 		return true;
@@ -55,13 +60,6 @@ namespace nap
 
 	nap::CalendarInstance::CalendarInstance(nap::Core& core) : mCore(core) 
 	{ }
-
-
-	bool CalendarInstance::init(const Calendar& resource, utility::ErrorState& error)
-	{
-		// Base name of calendar on id
-		return init(resource.mID, resource.mAllowFailure, resource.mItems, error);
-	}
 
 
 	bool CalendarInstance::init(const std::string& name, bool allowFailure, CalendarItemList items, utility::ErrorState& error)
@@ -92,6 +90,7 @@ namespace nap
 		mItems.reserve(items.size());
 		for (const auto& item : items)
 		{
+			nap::Logger::info("%s: %s", item->active(getCurrentTime()) ? "True" : "False", item->mTitle.c_str());
 			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
 		}
 		return true;

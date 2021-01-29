@@ -45,14 +45,15 @@ namespace nap
 
 	bool CalendarItem::init(utility::ErrorState& errorState)
 	{
+		// Valid time in day
 		if (!errorState.check(
 			mTime.mHour >= 0 && mTime.mHour < 24 && 
 			mTime.mMinute >= 0 && mTime.mMinute < 60, 
-			"%s, invalid time", mID.c_str()))
+			"%s: invalid time", mID.c_str()))
 			return false;
 
-		if (!errorState.check(mDuration.mHour >= 0 && mDuration.mMinute >= 0,
-			"%s, negative duration", mID.c_str()))
+		// Ensure there's a title
+		if (!errorState.check(!mTitle.empty(), "%s: no title", mID.c_str()))
 			return false;
 
 		return true;

@@ -15,20 +15,43 @@ namespace nap
 	constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
 
 	/**
-	 * Simple calendar resource, manages a set of calendar items.
+	 * Base class of all Calendars.
+	 * Acts as an interface to the underlying calendar instance.
+	 * Every derived class must create and return a calendar instance, but
+	 * can provide it's own read-only interface in JSON.
 	 */
-	class NAPAPI Calendar : public Resource
+	class NAPAPI ICalendar : public Resource
 	{
 		RTTI_ENABLE(Resource)
+
 	public:
+		// Constructor
+		ICalendar(nap::Core& core);
 
-		// How this calendar is used
-		enum struct EUsage : int
-		{
-			Static,					///< Calendar can't be updated after initialization, only contains 'Items'.
-			Dynamic					///< Calendar can be loaded, updated and saved after initialization.
-		};
+		/**
+		 * @return the calendar instance, only available after initialization
+		 */
+		virtual CalendarInstance& getInstance() = 0;
 
+		/**
+		 * @return the calendar instance, only available after initialization
+		 */
+		virtual const CalendarInstance& getInstance() const = 0;
+
+	protected:
+		nap::Core& mCore;					///< NAP core
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Simple calendar resource, manages a set of calendar items.
+	 */
+	class NAPAPI Calendar : public ICalendar
+	{
+		RTTI_ENABLE(ICalendar)
+	public:
 		// Constructor
 		Calendar(nap::Core& core);
 
@@ -44,19 +67,18 @@ namespace nap
 		/**
 		 * @return the calendar instance, only available after initialization
 		 */
-		CalendarInstance& getInstance()							{ assert(mInstance != nullptr);  return *mInstance; }
+		CalendarInstance& getInstance() override				{ assert(mInstance != nullptr);  return *mInstance; }
 
 		/**
 		 * @return the calendar instance, only available after initialization
 		 */
-		const CalendarInstance& getInstance() const				{ assert(mInstance != nullptr);  return *mInstance; }
+		const CalendarInstance& getInstance() const override	{ assert(mInstance != nullptr);  return *mInstance; }
 
+		CalendarItemList mItems;								///< Property: 'Items' default set of calendar items
 		bool mAllowFailure = true;								///< Property: 'AllowFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
-		CalendarItemList mItems;								///< Property: 'Items' all static calendar items
 
 	private:
 		std::unique_ptr<CalendarInstance> mInstance = nullptr;	///< Calendar runtime instance
-		nap::Core& mCore;										///< NAP core
 	};
 
 
@@ -107,15 +129,6 @@ namespace nap
 		 * @return all calendar items
 		 */
 		const OwnedCalendarItemList&  getItems() const				{ return mItems; }
-
-	protected:
-		/**
-		 * Initialize instance against resource
-		 * @param calendar the resource to initialize against
-		 * @param error contains the error if initialization fails
-		 * @return if initialization succeeded
-		 */
-		bool init(const Calendar& resource, utility::ErrorState& error);
 
 	private:
 		bool loadCalendar(utility::ErrorState& error);

@@ -4,6 +4,7 @@
 #include <nap/resource.h>
 #include <glm/glm.hpp>
 #include <nap/datetime.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -24,8 +25,8 @@ namespace nap
 			RTTI_ENABLE()
 		public:
 			Time(int hour, int minute);
-			int mHour	= 0;						///< Property: 'Hour' (0-23)
-			int mMinute	= 0;						///< Property: 'Minute' (0-59)
+			uint mHour	= 0;					///< Property: 'Hour' (0-23)
+			uint mMinute	= 0;				///< Property: 'Minute' (0-59)
 
 			/**
 			 * @return time in minutes
