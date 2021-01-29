@@ -44,6 +44,8 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Calendar
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Simple calendar resource, manages a set of calendar items.
@@ -108,6 +110,7 @@ namespace nap
 		/**
 		 * Initialize the calendar using the given name and items.
 		 * If a calendar with the given name is present on disk, it is loaded instead.
+		 * Call saveCalendar() to write the calendar to disk.
 		 * @param name name of the calendar to create
 		 * @param allowFailure if default items are created when loading from disk fails (file might be corrupt for example).
 		 * @param defaultItems default set of items to create calendar with
@@ -130,13 +133,22 @@ namespace nap
 		 */
 		const OwnedCalendarItemList&  getItems() const				{ return mItems; }
 
-	private:
-		bool loadCalendar(utility::ErrorState& error);
-		bool saveCalendar(utility::ErrorState& error);
+		/**
+		 * Writes calendar to disk.
+		 * @param error contains the error if writing fails
+		 */
+		bool save(utility::ErrorState& error);
 
 		OwnedCalendarItemList mItems;		///< List of unique calendar items
 		std::string mName;				///< Calendar name
 		std::string mPath;				///< Path to calendar file on disk
 		nap::Core& mCore;				///< NAP core
+
+	private:
+		/**
+		 * Loads calendar from disk, automatically called on initialization
+		 * @param error contains the error if loading fails.
+		 */
+		bool load(utility::ErrorState& error);
 	};
 }

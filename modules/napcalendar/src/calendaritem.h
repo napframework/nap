@@ -17,21 +17,29 @@ namespace nap
 	public:	
 
 		/**
-		 * Simple serializable calendar time structure.
+		 * Serializable calendar time structure.
 		 * Can be copied and moved.
 		 */
-		class Time final
+		struct Time
 		{
-			RTTI_ENABLE()
-		public:
+			Time() = default;
 			Time(int hour, int minute);
 			uint mHour	= 0;					///< Property: 'Hour' (0-23)
 			uint mMinute	= 0;				///< Property: 'Minute' (0-59)
+			nap::Minutes toMinutes() const;		///< Convert into minutes
+		};
 
-			/**
-			 * @return time in minutes
-			 */
-			nap::Minutes toMinutes() const;
+		/**
+		 * Serializable calendar point in time structure.
+		 * Represents point in time together with duration
+		 */
+		struct Point
+		{
+			Point() = default;
+			Point(Time time, Time duration);
+			Time mTime;							///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
+			Time mDuration;						///< Property: 'Duration' length of event: hours (0-23) & minutes (0-59). Duration of 0 = never
+			bool valid() const;  				///< Returns if time is valid
 		};
 
 		/**
@@ -50,9 +58,8 @@ namespace nap
 		 */
 		virtual bool active(SystemTimeStamp timeStamp) = 0;
 
-		Time		mTime = { 0, 0 };				///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
-		Time		mDuration = { 0, 0 };			///< Property: 'Duration' length of event: hours (0-23) & minutes (0-59)
 		std::string mTitle = "";					///< Property: 'Title' item title
+		Point		mPoint;							///< Property; 'Point' point in time together with duration
 		std::string	mDescription = "";				///< Property: 'Description' item description
 	};
 

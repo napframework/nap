@@ -1,15 +1,20 @@
 #include "calendaritem.h"
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem::Time)
+RTTI_BEGIN_STRUCT(nap::CalendarItem::Time)
 	RTTI_CONSTRUCTOR(int, int)
 	RTTI_PROPERTY("Hour",	&nap::CalendarItem::Time::mHour,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Minute", &nap::CalendarItem::Time::mMinute,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_STRUCT
 
+RTTI_BEGIN_STRUCT(nap::CalendarItem::Point)
+	RTTI_CONSTRUCTOR(nap::CalendarItem::Time, nap::CalendarItem::Time)
+	RTTI_PROPERTY("Time",		&nap::CalendarItem::Point::mTime,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Duration",	&nap::CalendarItem::Point::mDuration,	nap::rtti::EPropertyMetaData::Required)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem)
-	RTTI_PROPERTY("Time",			&nap::CalendarItem::mTime,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Duration",		&nap::CalendarItem::mDuration,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Title",			&nap::CalendarItem::mTitle,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Point",			&nap::CalendarItem::mPoint,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Description",	&nap::CalendarItem::mDescription,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -37,25 +42,30 @@ namespace nap
 	{ }
 
 
+	nap::CalendarItem::Point::Point(Time time, Time duration) :
+		mTime(std::move(time)), 
+		mDuration(std::move(mDuration))
+	{ }
+
+
 	nap::Minutes nap::CalendarItem::Time::toMinutes() const
 	{
 		return nap::Minutes((mHour * 60) + mMinute);
 	}
 
 
+	bool nap::CalendarItem::Point::valid() const
+	{
+		return mTime.mHour >= 0 && mTime.mHour < 24 &&
+			mTime.mMinute >= 0 && mTime.mMinute < 60;
+	}
+
+
 	bool CalendarItem::init(utility::ErrorState& errorState)
 	{
 		// Valid time in day
-		if (!errorState.check(
-			mTime.mHour >= 0 && mTime.mHour < 24 && 
-			mTime.mMinute >= 0 && mTime.mMinute < 60, 
-			"%s: invalid time", mID.c_str()))
+		if (!errorState.check(mPoint.valid(), "%s: invalid time", mID.c_str()))
 			return false;
-
-		// Ensure there's a title
-		if (!errorState.check(!mTitle.empty(), "%s: no title", mID.c_str()))
-			return false;
-
 		return true;
 	}
 
@@ -77,8 +87,8 @@ namespace nap
 	{
 		// Compute start / end in minutes
 		Minutes sample_mins(static_cast<int>(mDay) * 24 * 60);
-		Minutes sta_time = sample_mins + mTime.toMinutes();
-		Minutes end_time = sta_time + mDuration.toMinutes();
+		Minutes sta_time = sample_mins + mPoint.mTime.toMinutes();
+		Minutes end_time = sta_time + mPoint.mDuration.toMinutes();
 
 		// Get current minutes in week
 		DateTime cur_dt(timeStamp);
@@ -110,8 +120,8 @@ namespace nap
 	bool DailyCalendarItem::active(SystemTimeStamp timeStamp)
 	{
 		// Get minute bounds for day
-		Minutes sta_time(mTime.toMinutes());
-		Minutes end_time = sta_time + mDuration.toMinutes();
+		Minutes sta_time(mPoint.mTime.toMinutes());
+		Minutes end_time = sta_time + mPoint.mDuration.toMinutes();
 
 		// Get current minute in day
 		DateTime cur_dt(timeStamp);
@@ -148,8 +158,8 @@ namespace nap
 
 	bool UniqueCalendarItem::active(SystemTimeStamp timeStamp)
 	{
-		SystemTimeStamp sta_time = mDate.toSystemTime() + mTime.toMinutes();
-		SystemTimeStamp end_time = sta_time + mDuration.toMinutes();
+		SystemTimeStamp sta_time = mDate.toSystemTime() + mPoint.mTime.toMinutes();
+		SystemTimeStamp end_time = sta_time + mPoint.mDuration.toMinutes();
 		return (timeStamp >= sta_time && timeStamp < end_time);
 	}
 
@@ -178,10 +188,10 @@ namespace nap
 		if (Date::exists(cur_dt.getYear(), cur_dt.getMonth(), mDay))
 		{
 			// If current time is ahead of lookup, see if it's in range
-			SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mTime.mHour, mTime.mMinute);
+			SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mPoint.mTime.mHour, mPoint.mTime.mMinute);
 			if (timeStamp >= lookup_time)
 			{
-				SystemTimeStamp end_time = lookup_time + mDuration.toMinutes();
+				SystemTimeStamp end_time = lookup_time + mPoint.mDuration.toMinutes();
 				return timeStamp < end_time;
 			}
 		}
@@ -200,10 +210,10 @@ namespace nap
 			return false;
 
 		// Previous month sample date
-		SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mTime.mHour, mTime.mMinute);
+		SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mPoint.mTime.mHour, mPoint.mTime.mMinute);
 
 		// Check if it falls in the previous month window
-		SystemTimeStamp end_time = lookup_time + mDuration.toMinutes();
+		SystemTimeStamp end_time = lookup_time + mPoint.mDuration.toMinutes();
 		if (timeStamp >= lookup_time && timeStamp < end_time)
 			return true;
 

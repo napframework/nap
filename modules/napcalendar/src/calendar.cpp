@@ -30,10 +30,17 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// ICalendar
+	//////////////////////////////////////////////////////////////////////////
 
 	ICalendar::ICalendar(nap::Core& core) : mCore(core) {  }
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Calendar
+	//////////////////////////////////////////////////////////////////////////
+	
 	Calendar::Calendar(nap::Core& core) : ICalendar(core) { }
 
 
@@ -90,14 +97,15 @@ namespace nap
 		mItems.reserve(items.size());
 		for (const auto& item : items)
 		{
-			nap::Logger::info("%s: %s", item->active(getCurrentTime()) ? "True" : "False", item->mTitle.c_str());
 			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
 		}
+
+		this->save(error);
 		return true;
 	}
 
 
-	bool nap::CalendarInstance::loadCalendar(utility::ErrorState& error)
+	bool nap::CalendarInstance::load(utility::ErrorState& error)
 	{
 		nap::Logger::info("loading calendar: %s", getPath().c_str());
 		rtti::DeserializeResult result;
@@ -131,7 +139,7 @@ namespace nap
 	}
 
 
-	bool nap::CalendarInstance::saveCalendar(utility::ErrorState& error)
+	bool nap::CalendarInstance::save(utility::ErrorState& error)
 	{
 		nap::rtti::ObjectList resources;
 		resources.reserve(mItems.size());
