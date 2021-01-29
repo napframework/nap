@@ -172,7 +172,7 @@ namespace nap
 	}
 
 
-	bool WeeklyCalendarItem::active(SystemTimeStamp timeStamp)
+	bool WeeklyCalendarItem::active(SystemTimeStamp timeStamp) const
 	{
 		// Compute start / end in minutes
 		Minutes sample_mins(static_cast<int>(mDay) * 24 * 60);
@@ -206,7 +206,7 @@ namespace nap
 	}
 
 
-	bool DailyCalendarItem::active(SystemTimeStamp timeStamp)
+	bool DailyCalendarItem::active(SystemTimeStamp timeStamp) const
 	{
 		// Get minute bounds for day
 		Minutes sta_time(mPoint.mTime.toMinutes());
@@ -265,7 +265,7 @@ namespace nap
 	}
 
 
-	bool UniqueCalendarItem::active(SystemTimeStamp timeStamp)
+	bool UniqueCalendarItem::active(SystemTimeStamp timeStamp) const
 	{
 		SystemTimeStamp sta_time = mDate.toSystemTime() + mPoint.mTime.toMinutes();
 		SystemTimeStamp end_time = sta_time + mPoint.mDuration.toMinutes();
@@ -297,7 +297,7 @@ namespace nap
 	}
 
 
-	bool MonthlyCalendarItem::active(SystemTimeStamp timeStamp)
+	bool MonthlyCalendarItem::active(SystemTimeStamp timeStamp) const
 	{
 		// Get sample (lookup) date
 		DateTime cur_dt(timeStamp);

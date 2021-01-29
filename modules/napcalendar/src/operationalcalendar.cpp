@@ -3,14 +3,14 @@
 // nap::operationalcalendar run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OperationalCalendar)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("AllowFailure",	&nap::OperationalCalendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Monday",			&nap::OperationalCalendar::mMonday,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Tuesday",		&nap::OperationalCalendar::mTuesday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Wednesday",		&nap::OperationalCalendar::mWednesday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Thursday",		&nap::OperationalCalendar::mThursday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Friday",			&nap::OperationalCalendar::mFriday,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Saturday",		&nap::OperationalCalendar::mSaturday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Sunday",			&nap::OperationalCalendar::mSunday,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AllowLoadFailure",	&nap::OperationalCalendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Monday",				&nap::OperationalCalendar::mMonday,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Tuesday",			&nap::OperationalCalendar::mTuesday,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Wednesday",			&nap::OperationalCalendar::mWednesday,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Thursday",			&nap::OperationalCalendar::mThursday,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Friday",				&nap::OperationalCalendar::mFriday,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Saturday",			&nap::OperationalCalendar::mSaturday,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Sunday",				&nap::OperationalCalendar::mSunday,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -53,9 +53,10 @@ namespace nap
 	bool OperationalCalendar::isOperational()
 	{
 		assert(mInstance != nullptr);
+		SystemTimeStamp current_time = getCurrentTime();
 		for (auto& item : mInstance->getItems())
 		{
-			if (item->active(getCurrentTime()))
+			if (item->active(current_time))
 				return true;
 		}
 		return false;

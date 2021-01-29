@@ -140,6 +140,18 @@ namespace nap
 	}
 
 
+	void CalendarInstance::getActiveItems(SystemTimeStamp time, std::vector<CalendarItem*>& outItems)
+	{
+		for (auto& item : mItems)
+		{
+			if (item->active(time))
+			{
+				mItems.emplace_back(item.get());
+			}
+		}
+	}
+
+
 	bool nap::CalendarInstance::load(utility::ErrorState& error)
 	{
 		nap::Logger::info("loading calendar: %s", getPath().c_str());

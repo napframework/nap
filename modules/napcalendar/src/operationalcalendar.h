@@ -44,7 +44,7 @@ namespace nap
 		 */
 		bool isOperational();
 
-		bool mAllowFailure = true;			///< Property: 'AllowFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
+		bool mAllowFailure = true;			///< Property: 'AllowLoadFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
 		CalendarItem::Point mMonday;		///< Property: 'Monday' Monday operational hours
 		CalendarItem::Point mTuesday;		///< Property: 'Tuesday' Tuesday operational hours
 		CalendarItem::Point mWednesday;		///< Property: 'Wednesday' Wednesday operational hours

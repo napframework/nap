@@ -15,7 +15,7 @@ namespace nap
 	constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
 
 	/**
-	 * Base class of all Calendars.
+	 * Base class of all Calendar types.
 	 * Acts as an interface to the underlying calendar instance.
 	 * Every derived class must create and return a calendar instance, but
 	 * can provide it's own read-only interface in JSON.
@@ -48,7 +48,15 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Simple calendar resource, manages a set of calendar items.
+	 * Simple serializable calendar resource that manages a set of calendar items.
+	 * Call getInstance() to inspect, create, load and save the calendar.
+	 * 
+	 * The instance is created on initialization and is constructed using the
+	 * set of 'Items' defined by this resource. If a calendar with the same ID 
+	 * exists on disk (saved previously) it is loaded instead.
+	 *
+	 * Note that this calendar is meant to be used with a 'limited' set of events, 
+	 * especially when queries every frame, as it does not make use of a database.
 	 */
 	class NAPAPI Calendar : public ICalendar
 	{
@@ -77,7 +85,7 @@ namespace nap
 		const CalendarInstance& getInstance() const override	{ assert(mInstance != nullptr);  return *mInstance; }
 
 		CalendarItemList mItems;								///< Property: 'Items' default set of calendar items
-		bool mAllowFailure = true;								///< Property: 'AllowFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
+		bool mAllowFailure = true;								///< Property: 'AllowLoadFailure' If initialization continues when loading a calendar from disk fails. In that case resource defaults are used.
 
 	private:
 		std::unique_ptr<CalendarInstance> mInstance = nullptr;	///< Calendar runtime instance
@@ -91,10 +99,9 @@ namespace nap
 	using OwnedCalendarItemList = std::vector<std::unique_ptr<CalendarItem>>;
 
 	/**
-	 * Actual runtime version of a simple calendar, created by the calendar resource on initialization.
-	 * Allows for inspection, creation, loading and saving of calendar items.
+	 * Actual runtime version of a simple calendar, created by a nap::ICalendar resource on initialization.
+	 * Allows for inspection, creation, loading and saving of calendar items. This class is: NOT THREAD SAFE.
 	 * TODO: Use SQLite database for faster item inspection and retrieval.
-	 * TODO: Make thread safe.
 	 */
 	class CalendarInstance final
 	{
@@ -135,11 +142,45 @@ namespace nap
 		const OwnedCalendarItemList&  getItems() const				{ return mItems; }
 
 		/**
+		 * Collects all calendar items of type T. List is not cleared.
+		 *
+		 * ~~~~~{.cpp}
+		 *	std::vector<WeeklyCalendarItem*> items;
+		 *	mCalendar->getInstance().getItems(items);
+		 * ~~~~~
+		 *
+		 * @param outItems all calendar items of type T
+		 */
+		template<typename T>
+		void getItems(std::vector<T*>& outItems) const;
+
+		/**
+		 * Collects all items that are active based on the given lookup-time.
+		 * List is not cleared.
+		 *
+		 * ~~~~~{.cpp}
+		 *	std::vector<WeeklyCalendarItem*> items;
+		 *	mCalendar->getInstance().getActiveItems(items);
+		 * ~~~~~
+		 *
+		 * @param time lookup-time
+		 * @param outItems list of active items
+		 */
+		void getActiveItems(SystemTimeStamp time, std::vector<CalendarItem*>& outItems);
+
+		/**
+		 * Collects all items of type T that are active based on the given lookup-time.
+		 * List is not cleared.
+		 * @param time lookup-time
+		 * @param outItems list of active items
+		 */
+		template<typename T>
+		void getActiveItems(SystemTimeStamp time, std::vector<T*>& outItems) const;
+
+		/**
 		 * Creates, initializes and adds a new item of the given type T to the calendar.
 		 * Item must be of type: nap::CalendarItem and is given a unique id.
-		 * The item is managed by the calendar but can be changed through the pointer.
-		 * This call is therefore not thread safe.
-		 * Note that it is your responsibility to ensure that items, when edited, remain valid. 
+		 * The item is managed by the calendar.
 		 *
 		 * ~~~~~{.cpp}
 		 *	auto* new_item = mCalendar->getInstance().addItem<UniqueCalendarItem>
@@ -150,14 +191,14 @@ namespace nap
 		 *	);
 		 * ~~~~~
 		 *
-		 * @param args arguments to construct the item with.
+		 * @param args specific calendar item construction arguments
 		 * @return the new calendar item, nullptr if the item can't be created or initialized
 		 */
 		template<typename T, typename... Args>
 		T* addItem(Args&&... args);
 
 		/**
-		 * Remove an item based on id (not thread safe). 
+		 * Remove an item based on id.
 		 * Note that handles are invalid after this call.
 		 * @param id the unique id of the item to remove
 		 * @return if the item was removed
@@ -173,22 +214,21 @@ namespace nap
 		bool removeItem(CalendarItem* item);
 
 		/**
-		 * Writes calendar to disk.
+		 * Writes the calendar to disk.
 		 * @param error contains the error if writing fails
 		 */
 		bool save(utility::ErrorState& error);
+
+		/**
+		 * Loads the calendar from disk, automatically called on initialization
+		 * @param error contains the error if loading fails.
+		 */
+		bool load(utility::ErrorState& error);
 
 		OwnedCalendarItemList mItems;		///< List of unique calendar items
 		std::string mName;					///< Calendar name
 		std::string mPath;					///< Path to calendar file on disk
 		nap::Core& mCore;					///< NAP core
-
-	private:
-		/**
-		 * Loads calendar from disk, automatically called on initialization
-		 * @param error contains the error if loading fails.
-		 */
-		bool load(utility::ErrorState& error);
 	};
 
 
@@ -215,5 +255,35 @@ namespace nap
 		T* item_ptr = item.get();
 		mItems.emplace_back(std::move(item));
 		return item_ptr;
+	}
+
+
+	template<typename T>
+	void nap::CalendarInstance::getItems(std::vector<T*>& outItems) const
+	{
+		outItems.clear();
+		for (const auto& item : mItems)
+		{
+			T* c_item = rtti_cast<T>(item.get());
+			if (c_item != nullptr)
+			{
+				outItems.emplace_back(c_item);
+			}
+		}
+	}
+
+
+	template<typename T>
+	void nap::CalendarInstance::getActiveItems(SystemTimeStamp time, std::vector<T*>& outItems) const
+	{
+		outItems.clear();
+		for (const auto& item : mItems)
+		{
+			T* c_item = rtti_cast<T>(item.get());
+			if (c_item != nullptr && c_item->active(time))
+			{
+				outItems.emplace_back(c_item);
+			}
+		}
 	}
 }

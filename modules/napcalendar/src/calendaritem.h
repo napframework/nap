@@ -66,7 +66,7 @@ namespace nap
 		 * @param timeStamp time to validate, for example the current system time
 		 * @return if the current item is active.
 		 */
-		virtual bool active(SystemTimeStamp timeStamp) = 0;
+		virtual bool active(SystemTimeStamp timeStamp) const = 0;
 
 		/**
 		 * Updates item title
@@ -168,7 +168,7 @@ namespace nap
 		 * @param timeStamp time to validate
 		 * @return if the monthly calender item currently occurs.
 		 */
-		virtual bool active(SystemTimeStamp timeStamp) override;
+		virtual bool active(SystemTimeStamp timeStamp) const override;
 		
 		int mDay = 1;	///< Property: 'Day' day of the month (1-31)
 	};
@@ -212,7 +212,7 @@ namespace nap
 		 * @param timeStamp time to validate
 		 * @return if the weekly calender item currently occurs.
 		 */
-		virtual bool active(SystemTimeStamp timeStamp) override;
+		virtual bool active(SystemTimeStamp timeStamp) const override;
 
 		EDay mDay = EDay::Monday;	///< Property: 'Day' day of the week
 	};
@@ -236,7 +236,7 @@ namespace nap
 		 * @param timeStamp time to validate
 		 * @return if the daily calender item currently occurs.
 		 */
-		virtual bool active(SystemTimeStamp timeStamp) override;
+		virtual bool active(SystemTimeStamp timeStamp) const override;
 	};
 
 
@@ -278,7 +278,7 @@ namespace nap
 		 * @param timeStamp time to validate
 		 * @return if the unique calender item is active.
 		 */
-		virtual bool active(SystemTimeStamp timeStamp) override;
+		virtual bool active(SystemTimeStamp timeStamp) const override;
 
 		nap::Date mDate;	///< Property: 'Date' calendar date
 	};
