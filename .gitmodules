@@ -1,6 +1,6 @@
 [submodule "4dsound_modules"]
 	path = 4dsound_modules
-	url = https://github.com/4dsound/4dsound_modules
+	url = https://www.github.com/4dsound/4dsound_modules
 [submodule "apps/4dsound"]
 	path = apps/4dsound
 	url = https://github.com/4dsound/4dsound
