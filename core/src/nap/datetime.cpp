@@ -265,10 +265,38 @@ namespace nap
 	}
 
 
+	bool nap::Date::exists(int y, EMonth m, int d)
+	{
+		if (!(1 <= (int)m && (int)m <= 12))
+			return false;
+		if (!(1 <= d && d <= 31))
+			return false;
+		if ((d == 31) && ((int)m == 2 || (int)m == 4 || (int)m == 6 || (int)m == 9 || (int)m == 11))
+			return false;
+		if ((d == 30) && ((int)m == 2))
+			return false;
+		if (((int)m == 2) && (d == 29) && (y % 4 != 0))
+			return false;
+		if (((int)m == 2) && (d == 29) && (y % 400 == 0))
+			return true;
+		if (((int)m == 2) && (d == 29) && (y % 100 == 0))
+			return false;
+		if (((int)m == 2) && (d == 29) && (y % 4 == 0))
+			return true;
+
+		return true;
+	}
+
+
+	bool nap::Date::valid() const
+	{
+		return Date::exists(mYear, mMonth, mDay);
+	}
+
+
 	SystemTimeStamp Date::toSystemTime() const
 	{
-		assert(mMonth != EMonth::Unknown);
-		assert(mDay > 0 && mDay <= 31);
+		assert(this->valid());
 		return createTimestamp(mYear, static_cast<int>(mMonth), mDay, 0, 0);
 	}
 

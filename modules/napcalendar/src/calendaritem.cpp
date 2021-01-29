@@ -30,38 +30,6 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
-
-/**
- * Returns if the given date exists
- * @param m month
- * @param d day
- * @param y year
- */
-static bool dateExists(int m, int d, int y)
-{
-	//Gregorian dates started in 1582
-	if (!(1582 <= y))
-		return false;
-	if (!(1 <= m && m <= 12))
-		return false;
-	if (!(1 <= d && d <= 31))
-		return false;
-	if ((d == 31) && (m == 2 || m == 4 || m == 6 || m == 9 || m == 11))
-		return false;
-	if ((d == 30) && (m == 2))
-		return false;
-	if ((m == 2) && (d == 29) && (y % 4 != 0))
-		return false;
-	if ((m == 2) && (d == 29) && (y % 400 == 0))
-		return true;
-	if ((m == 2) && (d == 29) && (y % 100 == 0))
-		return false;
-	if ((m == 2) && (d == 29) && (y % 4 == 0))
-		return true;
-
-	return true;
-}
-
 namespace nap
 {
 
@@ -170,8 +138,7 @@ namespace nap
 			return false;
 
 		// Ensure date exists
-		if(!errorState.check(dateExists(static_cast<int>(mDate.mMonth), mDate.mDay, mDate.mYear), 
-			"%s: invalid date", mID.c_str()))
+		if(!errorState.check(mDate.valid(), "%s: invalid date", mID.c_str()))
 			return false;
 
 		return true;
@@ -207,7 +174,7 @@ namespace nap
 		int cur_mont = static_cast<int>(cur_dt.getMonth());
 		
 		// If the day exists in this month, we can try to sample ahead.
-		if (dateExists(cur_mont, mDay, cur_dt.getYear()))
+		if (Date::exists(cur_dt.getYear(), cur_dt.getMonth(), mDay))
 		{
 			// If current time is ahead of lookup, see if it's in range
 			SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mTime.mHour, mTime.mMinute);
@@ -228,7 +195,7 @@ namespace nap
 		}
 
 		// Make sure the day exists in the last month, if not the event could not have been triggered
-		if (!dateExists(cur_mont, mDay, cur_dt.getYear()))
+		if (!Date::exists(cur_dt.getYear(), static_cast<EMonth>(cur_mont), mDay))
 			return false;
 
 		// Previous month sample date

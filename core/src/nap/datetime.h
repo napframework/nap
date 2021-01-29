@@ -313,6 +313,21 @@ namespace nap
 		 */
 		SystemTimeStamp toSystemTime() const;
 
+		/**
+		 * Helper function to check if a specific date exists.
+		 * Gregorian dates started in 1582
+		 * @param year the year
+		 * @param month the month
+		 * @param day the day in the month
+		 */
+		static bool exists(int year, EMonth month, int day);
+
+		/**
+		 * Helper function to check if the date exists.
+		 * @return 
+		 */
+		bool valid() const;
+
 		EMonth	mMonth	= EMonth::Unknown;			///< Property: 'Month' the month of the year
 		int		mDay	= 1;						///< Property: 'Day' the day of the year
 		int		mYear	= 1970;						///< Property: 'Year' the year
