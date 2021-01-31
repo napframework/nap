@@ -109,9 +109,11 @@ namespace nap
 	 * Actual runtime version of a simple calendar, created by a nap::ICalendar resource on initialization.
 	 * Allows for inspection, creation, loading and saving of calendar items.
 	 * This model is: NOT THREAD SAFE. Don't edit, remove or add items on a different thread!
-	 * TODO: Use SQLite database for faster item inspection and retrieval.
+	 *
+	 * TODO: Potentially use SQLite database for item inspection and retrieval.
+	 * TODO: At the moment (based on actual use cases) not required.
 	 */
-	class CalendarInstance final
+	class NAPAPI CalendarInstance final
 	{
 		friend class Calendar;
 		RTTI_ENABLE()
@@ -220,7 +222,7 @@ namespace nap
 		 * @return calendar item of type T if found, nullptr otherwise
 		 */
 		template<typename T>
-		T* findByID(const std::string& id)						{ return rtti_cast<T>(id); }
+		T* findByID(const std::string& id)						{ return rtti_cast<T>(this->findByID(id)); }
 		
 		/**
 		 * Find a calendar item by title, case sensitive.
@@ -240,19 +242,13 @@ namespace nap
 		 * @return calendar item of type T if found, nullptr otherwise
 		 */
 		template<typename T>
-		CalendarItem* findByTitle(const std::string& title)		{ return rtti_cast<T>(title); }
+		T* findByTitle(const std::string& title)		{ return rtti_cast<T>(this->findByTitle(title)); }
 
 		/**
 		 * Writes the calendar to disk.
 		 * @param error contains the error if writing fails
 		 */
 		bool save(utility::ErrorState& error);
-
-		/**
-		 * Loads the calendar from disk, automatically called on initialization
-		 * @param error contains the error if loading fails.
-		 */
-		bool load(utility::ErrorState& error);
 
 		Signal<const CalendarItem&> itemRemoved;	///< Called when an item is about to be removed
 		Signal<const CalendarItem&> itemAdded;		///< Called when an item is added
@@ -261,6 +257,13 @@ namespace nap
 		std::string mName;					///< Calendar name
 		std::string mPath;					///< Path to calendar file on disk
 		nap::Core& mCore;					///< NAP core
+
+	private:
+		/**
+		 * Loads the calendar from disk, automatically called on initialization
+		 * @param error contains the error if loading fails.
+		 */
+		bool load(utility::ErrorState& error);
 	};
 
 

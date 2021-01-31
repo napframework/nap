@@ -16,6 +16,7 @@ namespace nap
 	 * Special, but common, type of calendar.
 	 * Allows you to define and inspect, for every day of the week, when something is in operation.
 	 * If you want more control use the regular nap::Calendar instead.
+	 * The title of every created item is the 'nap::EDay' of the week, the ID is unique.
 	 */
 	class NAPAPI OperationalCalendar : public ICalendar
 	{

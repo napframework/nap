@@ -65,6 +65,11 @@ namespace nap
 	}
 
 
+	CalendarItem::CalendarItem(const Point& point, const std::string& title) :
+		mPoint(point), mTitle(title)
+	{ }
+
+
 	bool CalendarItem::init(utility::ErrorState& errorState)
 	{
 		// Valid time in day
@@ -146,6 +151,11 @@ namespace nap
 	}
 
 
+	WeeklyCalendarItem::WeeklyCalendarItem(const CalendarItem::Point& point, const std::string& title, EDay day) :
+		CalendarItem(point, title), mDay(day)
+	{ }
+
+
 	bool WeeklyCalendarItem::init(utility::ErrorState& errorState)
 	{
 		if (!CalendarItem::init(errorState))
@@ -204,6 +214,11 @@ namespace nap
 	}
 
 
+	DailyCalendarItem::DailyCalendarItem(const CalendarItem::Point& point, const std::string& title) :
+		CalendarItem(point, title)
+	{ }
+
+
 	bool DailyCalendarItem::init(utility::ErrorState& errorState)
 	{
 		return CalendarItem::init(errorState);
@@ -233,6 +248,11 @@ namespace nap
 		}
 		return false;
 	}
+
+
+	UniqueCalendarItem::UniqueCalendarItem(const CalendarItem::Point& point, const std::string& title, const Date& date) :
+		CalendarItem(point, title), mDate(date)
+	{ }
 
 
 	bool UniqueCalendarItem::init(utility::ErrorState& errorState)
@@ -269,6 +289,11 @@ namespace nap
 		SystemTimeStamp end_time = sta_time + mPoint.mDuration.toMinutes();
 		return (timeStamp >= sta_time && timeStamp < end_time);
 	}
+
+
+	MonthlyCalendarItem::MonthlyCalendarItem(const CalendarItem::Point& point, const std::string& title, int day) :
+		CalendarItem(point, title), mDay(day)
+	{ }
 
 
 	bool MonthlyCalendarItem::init(utility::ErrorState& errorState)

@@ -127,6 +127,7 @@ namespace nap
 	void CalendarInstance::addItem(std::unique_ptr<CalendarItem> item)
 	{
 		mItems.emplace_back(std::move(item));
+		itemAdded.trigger(*mItems.back());
 	}
 
 

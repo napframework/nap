@@ -53,8 +53,7 @@ namespace nap
 		CalendarItem() = default;
 
 		// Item constructor
-		CalendarItem(const Point& point, const std::string& title) : 
-			mPoint(point), mTitle(title) { }
+		CalendarItem(const Point& point, const std::string& title);
 
 		/**
 		 * Initializes the calendar item, always call this in derived classes.
@@ -137,6 +136,53 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Unique
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Unique calendar item
+	 */
+	class NAPAPI UniqueCalendarItem : public CalendarItem
+	{
+		RTTI_ENABLE(CalendarItem)
+	public:
+
+		// Default constructor
+		UniqueCalendarItem() = default;
+
+		// Argument constructor
+		UniqueCalendarItem(const CalendarItem::Point& point, const std::string& title, const Date& date);
+
+		/**
+		 * Initializes the unique calendar item.
+		 * Checks if the date and time are valid.
+		 * @return if the date and time are valid
+		 */
+		bool init(utility::ErrorState& errorState) override;
+		
+		/**
+		 * Updates the calendar date, ensures the new date is valid
+		 * @param date the new date
+		 * @return if the date is updated
+		 */
+		bool setDate(const nap::Date& date);
+
+		/**
+		* @return the calendar date
+		*/
+		const nap::Date& getDate() const;
+
+		/**
+		 * @param timeStamp time to validate
+		 * @return if the unique calender item is active.
+		 */
+		virtual bool active(SystemTimeStamp timeStamp) const override;
+
+		nap::Date mDate;	///< Property: 'Date' calendar date
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Monthly
 	//////////////////////////////////////////////////////////////////////////
 
@@ -152,8 +198,7 @@ namespace nap
 		MonthlyCalendarItem() = default;
 
 		// Argument constructor
-		MonthlyCalendarItem(const CalendarItem::Point& point, const std::string& title, int day) :
-			CalendarItem(point, title), mDay(day) {}
+		MonthlyCalendarItem(const CalendarItem::Point& point, const std::string& title, int day);
 
 		/**
 		 * @return if the day and time are valid
@@ -198,8 +243,7 @@ namespace nap
 		WeeklyCalendarItem() = default;
 
 		// Argument constructor
-		WeeklyCalendarItem(const CalendarItem::Point& point, const std::string& title, EDay day) :
-			CalendarItem(point, title), mDay(day) {}
+		WeeklyCalendarItem(const CalendarItem::Point& point, const std::string& title, EDay day);
 
 		/**
 		 * Initializes the weekly calendar item. 
@@ -241,10 +285,11 @@ namespace nap
 	{
 		RTTI_ENABLE(CalendarItem)
 	public: 
+		// Default constructor
 		DailyCalendarItem() = default;
 
-		DailyCalendarItem(const CalendarItem::Point& point, const std::string& title) :
-			CalendarItem(point, title)	{ }
+		// Argument constructor
+		DailyCalendarItem(const CalendarItem::Point& point, const std::string& title);
 
 		/**
 		 * Initializes the daily calendar item.
@@ -258,53 +303,5 @@ namespace nap
 		 * @return if the daily calender item currently occurs.
 		 */
 		virtual bool active(SystemTimeStamp timeStamp) const override;
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Unique
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Unique calendar item
-	 */
-	class NAPAPI UniqueCalendarItem : public CalendarItem
-	{
-		RTTI_ENABLE(CalendarItem)
-	public:
-
-		// Default constructor
-		UniqueCalendarItem() = default;
-
-		// Argument constructor
-		UniqueCalendarItem(const CalendarItem::Point& point, const std::string& title, const Date& date) :
-			CalendarItem(point, title), mDate(date) { }
-
-		/**
-		 * Initializes the unique calendar item.
-		 * Checks if the date and time are valid.
-		 * @return if the date and time are valid
-		 */
-		bool init(utility::ErrorState& errorState) override;
-		
-		/**
-		 * Updates the calendar date, ensures the new date is valid
-		 * @param date the new date
-		 * @return if the date is updated
-		 */
-		bool setDate(const nap::Date& date);
-
-		/**
-		* @return the calendar date
-		*/
-		const nap::Date& getDate() const;
-
-		/**
-		 * @param timeStamp time to validate
-		 * @return if the unique calender item is active.
-		 */
-		virtual bool active(SystemTimeStamp timeStamp) const override;
-
-		nap::Date mDate;	///< Property: 'Date' calendar date
 	};
 }
