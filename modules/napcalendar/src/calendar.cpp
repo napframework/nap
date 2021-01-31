@@ -9,7 +9,6 @@
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
 #include <nap/logger.h>
-#include <mathutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ICalendar)
 RTTI_END_CLASS

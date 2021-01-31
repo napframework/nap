@@ -9,6 +9,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <nap/signalslot.h>
+#include <mathutils.h>
 
 namespace nap
 {
