@@ -113,6 +113,7 @@ namespace nap
 
 		if (found_it != mItems.end())
 		{
+			itemRemoved.trigger(**found_it);
 			mItems.erase(found_it);
 			return true;
 		}
@@ -120,33 +121,9 @@ namespace nap
 	}
 
 
-	bool CalendarInstance::removeItem(CalendarItem* item)
+	void CalendarInstance::addItem(std::unique_ptr<CalendarItem> item)
 	{
-		assert(item != nullptr);
-		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
-		{
-			return it.get() == item;
-		});
-
-		if (found_it != mItems.end())
-		{
-			mItems.erase(found_it);
-			item = nullptr;
-			return true;
-		}
-		return false;
-	}
-
-
-	void CalendarInstance::getActiveItems(SystemTimeStamp time, std::vector<CalendarItem*>& outItems)
-	{
-		for (auto& item : mItems)
-		{
-			if (item->active(time))
-			{
-				mItems.emplace_back(item.get());
-			}
-		}
+		mItems.emplace_back(std::move(item));
 	}
 
 

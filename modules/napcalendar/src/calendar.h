@@ -8,6 +8,7 @@
 #include <nap/resourceptr.h>
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -101,7 +102,8 @@ namespace nap
 
 	/**
 	 * Actual runtime version of a simple calendar, created by a nap::ICalendar resource on initialization.
-	 * Allows for inspection, creation, loading and saving of calendar items. This class is: NOT THREAD SAFE.
+	 * Allows for inspection, creation, loading and saving of calendar items.
+	 * This model is: NOT THREAD SAFE. Don't edit, remove or add items on a different thread!
 	 * TODO: Use SQLite database for faster item inspection and retrieval.
 	 */
 	class CalendarInstance final
@@ -143,7 +145,8 @@ namespace nap
 		const OwnedCalendarItemList&  getItems() const				{ return mItems; }
 
 		/**
-		 * Collects all calendar items of type T. List is not cleared.
+		 * Returns all calendar items of type T.
+		 * List is not cleared.
 		 *
 		 * ~~~~~{.cpp}
 		 *	std::vector<WeeklyCalendarItem*> items;
@@ -156,27 +159,15 @@ namespace nap
 		void getItems(std::vector<T*>& outItems) const;
 
 		/**
-		 * Collects all items that are active based on the given lookup-time.
-		 * List is not cleared.
-		 *
-		 * ~~~~~{.cpp}
-		 *	std::vector<WeeklyCalendarItem*> items;
-		 *	mCalendar->getInstance().getActiveItems(items);
-		 * ~~~~~
-		 *
-		 * @param time lookup-time
-		 * @param outItems list of active items
+		 * Adds an item to this calendar. 
+		 * This call does not initialize the item for you.
+		 * The new item must be initialized and valid.
+		 * Ownership is transferred.
+		 * @param item the item to add
+		 * @param error contains the error if initialization fails
+		 * @return if the item is added
 		 */
-		void getActiveItems(SystemTimeStamp time, std::vector<CalendarItem*>& outItems);
-
-		/**
-		 * Collects all items of type T that are active based on the given lookup-time.
-		 * List is not cleared.
-		 * @param time lookup-time
-		 * @param outItems list of active items
-		 */
-		template<typename T>
-		void getActiveItems(SystemTimeStamp time, std::vector<T*>& outItems) const;
+		void addItem(std::unique_ptr<CalendarItem> item);
 
 		/**
 		 * Creates, initializes and adds a new item of the given type T to the calendar.
@@ -205,14 +196,6 @@ namespace nap
 		 * @return if the item was removed
 		 */
 		bool removeItem(const std::string& id);
-		
-		/**
-		 * Remove an item based on the given handle (not thread safe).
-		 * Note that given handle is set to null when removed.
-		 * @param id the unique id of the item to remove
-		 * @return if the item was removed
-		 */
-		bool removeItem(CalendarItem* item);
 
 		/**
 		 * Writes the calendar to disk.
@@ -225,6 +208,9 @@ namespace nap
 		 * @param error contains the error if loading fails.
 		 */
 		bool load(utility::ErrorState& error);
+
+		Signal<const CalendarItem&> itemRemoved;	///< Called when an item is about to be removed
+		Signal<const CalendarItem&> itemAdded;		///< Called when an item is added
 
 		OwnedCalendarItemList mItems;		///< List of unique calendar items
 		std::string mName;					///< Calendar name
@@ -267,21 +253,6 @@ namespace nap
 		{
 			T* c_item = rtti_cast<T>(item.get());
 			if (c_item != nullptr)
-			{
-				outItems.emplace_back(c_item);
-			}
-		}
-	}
-
-
-	template<typename T>
-	void nap::CalendarInstance::getActiveItems(SystemTimeStamp time, std::vector<T*>& outItems) const
-	{
-		outItems.clear();
-		for (const auto& item : mItems)
-		{
-			T* c_item = rtti_cast<T>(item.get());
-			if (c_item != nullptr && c_item->active(time))
 			{
 				outItems.emplace_back(c_item);
 			}
