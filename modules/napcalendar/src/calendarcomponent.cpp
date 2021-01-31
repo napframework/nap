@@ -2,6 +2,7 @@
 
 // External Includes
 #include <entity.h>
+#include <rtti/rttiutilities.h>
 
 // nap::calendarcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::CalendarComponent)
@@ -23,7 +24,7 @@ namespace nap
 	{
 		// Get instance
 		CalendarComponent* resource = getComponent<CalendarComponent>();
-		if (!errorState.check(resource->mCalendar == nullptr, "%s: No calendar", mID.c_str()))
+		if (!errorState.check(resource->mCalendar != nullptr, "%s: No calendar", mID.c_str()))
 			return false;
 		mInstance = &resource->mCalendar->getInstance();
 		
@@ -35,6 +36,7 @@ namespace nap
 		// Setting time to interval ensures that calendar is checked first cycle
 		mTime = mInterval;
 
+		mInstance->itemRemoved.connect(mItemRemoved);
 		return true;
 	}
 
@@ -43,11 +45,26 @@ namespace nap
 	{
 		// Skip if check isn't required
 		mTime += deltaTime;
-		if (mTime < mInterval)
-			return;
+		if (mTime < mInterval) { return; }
 
+		// First handle previously deleted items.
+		// These are no longer part of the data model (calendar) but could be in the active list. 
+		// This ensures that listeners that received a (potential) 'eventStarted' trigger
+		// get notified that that the item is no longer available and therefore ended.
 		assert(mInstance != nullptr);
 		SystemTimeStamp current_time = getCurrentTime();
+		for (const auto& item : mDeletedItems)
+		{
+			auto it = mActive.find(item->mID);
+			if (it != mActive.end())
+			{
+				eventEnded.trigger({ *item });
+				mActive.erase(it);
+			}
+		}
+		mDeletedItems.clear();
+
+		// Now update all available calendar items
 		for (const auto& item : mInstance->getItems())
 		{
 			// Based on active state of item and presence in list, take action.
@@ -75,13 +92,17 @@ namespace nap
 	}
 
 
+	bool CalendarComponentInstance::active(const std::string& itemID) const
+	{
+		return mActive.find(itemID) != mActive.end();
+	}
+
+
 	void CalendarComponentInstance::onItemRemoved(const CalendarItem& item)
 	{
-		auto it = mActive.find(item.mID);
-		if (it != mActive.end())
-		{
-			eventEnded.trigger({ item });
-			mActive.erase(it);
-		}
+		// Clone item, because we only notify listeners on update, 
+		// to ensure app safety / validity.
+		rtti::Factory& factory = getEntityInstance()->getCore()->getResourceManager()->getFactory();
+		mDeletedItems.emplace_back(rtti::cloneObject(item, factory));
 	}
 }

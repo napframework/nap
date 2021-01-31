@@ -29,11 +29,10 @@ namespace nap
 
 	/**
 	 * Notifies listeners when a calendar event starts and ends.
-	 * Listen to the eventStarted and eventEnded signals to get notified of changes.
+	 * Listen to the 'eventStarted' and 'eventEnded' signals to get notified of changes.
 	 * This component also ensures that the eventEnded signal is called 
 	 * when an item is removed or changed, if that item was previously in session.
-	 * 
-	 * Checks are performed at a specific interval, 
+	 * The state change checks are performed at a regular interval, 
 	 * controlled by the CalendarComponent::Frequency property.
 	 */
 	class NAPAPI CalendarComponentInstance : public ComponentInstance
@@ -57,14 +56,36 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		nap::Signal<const CalendarEvent&>	eventStarted;	///< Triggered when a calendar event starts
-		nap::Signal<const CalendarEvent&>	eventEnded;		///< Triggered when a calendar event ends
+		/**
+		 * @return the calendar this component monitors
+		 */
+		const nap::CalendarInstance& getCalendar() const	{ assert(mInstance != nullptr);  return *mInstance; }
+
+		/**
+		 * @return the calendar this component monitors
+		 */
+		nap::CalendarInstance& getCalendar()				{ assert(mInstance != nullptr);  return *mInstance; }
+
+		/**
+		 * Checks if a specific calendar item is currently active according to this component.
+		 * Note that this check is often faster than: CalendarEvent::active(), because
+		 * the active state is cached by this component, making it faster to query, especially when
+		 * iterating and 'asking' a large number of calendar items.
+		 * 
+		 * @param itemID the unique id of the calendar item
+		 * @return if an item is currently active, according to this component.
+		 */
+		bool active(const std::string& itemID) const;
+
+		nap::Signal<const CalendarEvent&>	eventStarted;	///< Triggered when a calendar event starts, always on the main thread on update()
+		nap::Signal<const CalendarEvent&>	eventEnded;		///< Triggered when a calendar event ends, always on the main thread on update()
 
 	private:
 		nap::CalendarInstance* mInstance = nullptr;
 		float mInterval = 1.0f;
 		double mTime = 0.0;
 		std::unordered_set<std::string> mActive;			///< List of currently active calendar items by id
+		OwnedCalendarItemList mDeletedItems;				///< List of deleted calendar items
 
 		/**
 		 * Called when an item is removed from the calendar.
@@ -72,6 +93,6 @@ namespace nap
 		 * @param item the item to remove
 		 */
 		void onItemRemoved(const CalendarItem& item);
-		nap::Slot<const CalendarItem&> itemRemoved =		{ this, &CalendarComponentInstance::onItemRemoved };
+		nap::Slot<const CalendarItem&> mItemRemoved =		{ this, &CalendarComponentInstance::onItemRemoved };
 	};
 }
