@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -176,7 +180,7 @@ namespace nap
 		 * The item is managed by the calendar.
 		 *
 		 * ~~~~~{.cpp}
-		 *	auto* new_item = mCalendar->getInstance().addItem<UniqueCalendarItem>
+		 *	UniqueCalendarItem* new_item = calendar.addItem<UniqueCalendarItem>
 		 *	(
 		 *		CalendarItem::Point({ 12, 0 }, { 1, 0 }),
 		 *		"Birthday Celebrations",
@@ -197,6 +201,46 @@ namespace nap
 		 * @return if the item was removed
 		 */
 		bool removeItem(const std::string& id);
+
+		/**
+		 * Find a calendar item by ID
+		 * @param calendar item unique ID
+		 * @return calendar item if found, nullptr otherwise
+		 */
+		CalendarItem* findByID(const std::string& id);
+
+		/**
+		 * Find a calendar item of type T by ID
+		 *
+		 * ~~~~~{.cpp}
+		 *	UniqueCalendarItem* item = calendar.findItem<UniqueCalendarItem>("9032091")
+		 * ~~~~~
+		 *
+		 * @param calendar item unique ID
+		 * @return calendar item of type T if found, nullptr otherwise
+		 */
+		template<typename T>
+		T* findByID(const std::string& id)						{ return rtti_cast<T>(id); }
+		
+		/**
+		 * Find a calendar item by title, case sensitive.
+		 * @param calendar item title
+		 * @return calendar item if found, nullptr otherwise
+		 */
+		CalendarItem* findByTitle(const std::string& title);
+
+		/**
+		 * Find a calendar item of type T by title, case sensitive.
+		 *
+		 * ~~~~~{.cpp}
+		 *	UniqueCalendarItem* item = calendar.findItem<UniqueCalendarItem>("birthday")
+		 * ~~~~~
+		 *
+		 * @param calendar item title
+		 * @return calendar item of type T if found, nullptr otherwise
+		 */
+		template<typename T>
+		CalendarItem* findByTitle(const std::string& title)		{ return rtti_cast<T>(title); }
 
 		/**
 		 * Writes the calendar to disk.
@@ -244,7 +288,6 @@ namespace nap
 		mItems.emplace_back(std::move(item));
 		return item_ptr;
 	}
-
 
 	template<typename T>
 	void nap::CalendarInstance::getItems(std::vector<T*>& outItems) const

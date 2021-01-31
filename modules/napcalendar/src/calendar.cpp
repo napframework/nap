@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local includes
 #include "calendar.h"
 
@@ -123,6 +127,26 @@ namespace nap
 	void CalendarInstance::addItem(std::unique_ptr<CalendarItem> item)
 	{
 		mItems.emplace_back(std::move(item));
+	}
+
+
+	nap::CalendarItem* CalendarInstance::findByID(const std::string& id)
+	{
+		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
+		{
+			return it->mID == id;
+		});
+		return found_it != mItems.end() ? (*found_it).get() : nullptr;
+	}
+
+
+	nap::CalendarItem* CalendarInstance::findByTitle(const std::string& title)
+	{
+		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
+		{
+			return it->mTitle == title;
+		});
+		return found_it != mItems.end() ? (*found_it).get() : nullptr;
 	}
 
 

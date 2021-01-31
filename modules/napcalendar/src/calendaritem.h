@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -122,7 +126,7 @@ namespace nap
 		void setDuration(const Time& duration);
 
 		/**
-		 * @return item duration
+		 * @return item duration (hours, minutes)
 		 */
 		const Time& getDuration() const;
 
@@ -131,6 +135,10 @@ namespace nap
 		std::string	mDescription = "";		///< Property: 'Description' item description
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Monthly
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Monthly recurring calendar item
@@ -173,6 +181,10 @@ namespace nap
 		int mDay = 1;	///< Property: 'Day' day of the month (1-31)
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Weekly
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Weekly recurring calendar item
@@ -218,6 +230,10 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Daily
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Daily recurring calendar item
 	 */
@@ -225,6 +241,11 @@ namespace nap
 	{
 		RTTI_ENABLE(CalendarItem)
 	public: 
+		DailyCalendarItem() = default;
+
+		DailyCalendarItem(const CalendarItem::Point& point, const std::string& title) :
+			CalendarItem(point, title)	{ }
+
 		/**
 		 * Initializes the daily calendar item.
 		 * Checks if the time is valid.
@@ -240,6 +261,10 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Unique
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Unique calendar item
 	 */
@@ -249,11 +274,11 @@ namespace nap
 	public:
 
 		// Default constructor
-		UniqueCalendarItem();
+		UniqueCalendarItem() = default;
 
 		// Argument constructor
 		UniqueCalendarItem(const CalendarItem::Point& point, const std::string& title, const Date& date) :
-			CalendarItem(point, title), mDate(date) {}
+			CalendarItem(point, title), mDate(date) { }
 
 		/**
 		 * Initializes the unique calendar item.
@@ -272,7 +297,7 @@ namespace nap
 		/**
 		* @return the calendar date
 		*/
-		nap::Date getDate() const;
+		const nap::Date& getDate() const;
 
 		/**
 		 * @param timeStamp time to validate

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "calendarcomponent.h"
 
 // External Includes
@@ -33,19 +37,20 @@ namespace nap
 			return false;
 		mInterval = 1.0f / resource->mFrequency;
 
-		// Setting time to interval ensures that calendar is checked first cycle
-		mTime = mInterval;
-
+		// Listen to state changes
 		mInstance->itemRemoved.connect(mItemRemoved);
+		mInstance->itemAdded.connect(mItemAdded);
+
 		return true;
 	}
 
 
 	void CalendarComponentInstance::update(double deltaTime)
 	{
-		// Skip if check isn't required
+		// Skip if not dirty and not ready
 		mTime += deltaTime;
-		if (mTime < mInterval) { return; }
+		if (!mDirty && mTime < mInterval)
+			return;
 
 		// First handle previously deleted items.
 		// These are no longer part of the data model (calendar) but could be in the active list. 
@@ -88,7 +93,8 @@ namespace nap
 				}
 			}
 		}
-		mTime = 0.0;
+		mTime  = 0.0;
+		mDirty = false;
 	}
 
 
@@ -104,5 +110,6 @@ namespace nap
 		// to ensure app safety / validity.
 		rtti::Factory& factory = getEntityInstance()->getCore()->getResourceManager()->getFactory();
 		mDeletedItems.emplace_back(rtti::cloneObject(item, factory));
+		mDirty = true;
 	}
 }
