@@ -14,7 +14,9 @@ namespace nap
 {
 	/**
 	 * Base class of all calendar items.
-	 * Every item has a time and duration. The title and description are optional.
+	 * Every item has a start time and duration. The title and description are optional.
+	 * Calendar item resolution is minutes (by default).
+	 *
 	 * Derived classes must override active(). That method defines if the item
 	 * currently 'occurs' based on the given timestamp.
 	 */
@@ -140,7 +142,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Unique calendar item
+	 * Unique calendar item. For example: a meeting or call.
 	 */
 	class NAPAPI UniqueCalendarItem : public CalendarItem
 	{
@@ -187,7 +189,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Yearly occurring calendar item
+	 * Yearly occurring calendar item. For example: Christmas, New Year etc.
 	 */
 	class NAPAPI YearlyCalendarItem : public CalendarItem
 	{
@@ -230,7 +232,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Monthly recurring calendar item
+	 * Monthly recurring calendar item.
 	 */
 	class NAPAPI MonthlyCalendarItem : public CalendarItem
 	{
@@ -275,7 +277,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Weekly recurring calendar item
+	 * Weekly recurring calendar item. For example: Store opening hours.
 	 */
 	class NAPAPI WeeklyCalendarItem : public CalendarItem
 	{
@@ -322,7 +324,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Daily recurring calendar item
+	 * Daily recurring calendar item. For example: watering the plants or an alarm clock.
 	 */
 	class NAPAPI DailyCalendarItem : public CalendarItem
 	{
