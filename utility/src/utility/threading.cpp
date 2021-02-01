@@ -11,7 +11,7 @@
 namespace nap
 {
     
-    TaskQueue::TaskQueue(unsigned int maxQueueItems) : mQueue(maxQueueItems)
+    TaskQueue::TaskQueue(int maxQueueItems) : mQueue(maxQueueItems)
     {
         mDequeuedTasks.resize(maxQueueItems);
     }
@@ -40,7 +40,7 @@ namespace nap
     }
     
     
-    WorkerThread::WorkerThread(bool blocking, unsigned int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
+    WorkerThread::WorkerThread(bool blocking, int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
     {
         mRunning = false;
     }
@@ -91,7 +91,7 @@ namespace nap
     }
     
     
-    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems, bool realTimePriority)
+    ThreadPool::ThreadPool(int numberOfThreads, int maxQueueItems, bool realTimePriority)
         : mTaskQueue(maxQueueItems), mRealTimePriority(realTimePriority)
     {
         mStop = false;

@@ -29,7 +29,7 @@ namespace nap
         /**
          * Constructor takes maximum number of items that can be in the queue at a time.
          */
-        TaskQueue(unsigned int maxQueueItems = 20);
+        TaskQueue(int maxQueueItems = 20);
         /**
          * Add a task to the end of the queue.
          */
@@ -64,7 +64,7 @@ namespace nap
          *   false: the threads runs through the loop as fast as possible and emits @execute every iteration
          * @maxQueueItems: the maximum number of items in the task queue
          */
-        WorkerThread(bool blocking = true, unsigned int maxQueueItems = 20);
+        WorkerThread(bool blocking = true, int maxQueueItems = 20);
 		virtual ~WorkerThread();
         
         /**
@@ -106,7 +106,7 @@ namespace nap
     class NAPAPI ThreadPool final
 	{
     public:
-        ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20, bool realTimePriority = false);
+        ThreadPool(int numberOfThreads = 1, int maxQueueItems = 20, bool realTimePriority = false);
         ~ThreadPool();
         
         /**
