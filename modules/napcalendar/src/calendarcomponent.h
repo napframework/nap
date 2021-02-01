@@ -71,12 +71,12 @@ namespace nap
 		/**
 		 * @return the calendar this component monitors
 		 */
-		const nap::CalendarInstance& getCalendar() const	{ assert(mInstance != nullptr);  return *mInstance; }
+		const nap::ICalendar& getCalendar() const			{ assert(mCalendar != nullptr);  return *mCalendar; }
 
 		/**
 		 * @return the calendar this component monitors
 		 */
-		nap::CalendarInstance& getCalendar()				{ assert(mInstance != nullptr);  return *mInstance; }
+		nap::ICalendar& getCalendar()						{ assert(mCalendar != nullptr);  return *mCalendar; }
 
 		/**
 		 * Checks if a specific calendar item is currently active according to this component.
@@ -101,7 +101,7 @@ namespace nap
 		nap::Signal<const CalendarEvent&>	eventEnded;		///< Triggered when a calendar event ends, always on the main thread on update()
 
 	private:
-		nap::CalendarInstance* mInstance = nullptr;
+		nap::ICalendar* mCalendar = nullptr;
 		float mInterval = 1.0f;
 		double mTime = 0.0;
 		std::unordered_set<std::string> mActive;			///< List of currently active calendar items by id

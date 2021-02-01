@@ -30,7 +30,7 @@ namespace nap
 		CalendarComponent* resource = getComponent<CalendarComponent>();
 		if (!errorState.check(resource->mCalendar != nullptr, "%s: No calendar", mID.c_str()))
 			return false;
-		mInstance = &resource->mCalendar->getInstance();
+		mCalendar = resource->mCalendar.get();
 		
 		// Get interval
 		if (!errorState.check(resource->mFrequency > 0.0f, "%s: invalid update frequency, must be higher than 0", mID.c_str()))
@@ -38,8 +38,8 @@ namespace nap
 		mInterval = 1.0f / resource->mFrequency;
 
 		// Listen to state changes
-		mInstance->itemRemoved.connect(mItemRemoved);
-		mInstance->itemAdded.connect(mItemAdded);
+		mCalendar->getInstance().itemRemoved.connect(mItemRemoved);
+		mCalendar->getInstance().itemAdded.connect(mItemAdded);
 
 		return true;
 	}
@@ -56,7 +56,7 @@ namespace nap
 		// These are no longer part of the data model (calendar) but could be in the active list. 
 		// This ensures that listeners that received a (potential) 'eventStarted' trigger
 		// get notified that that the item is no longer available and therefore ended.
-		assert(mInstance != nullptr);
+		assert(mCalendar != nullptr);
 		SystemTimeStamp current_time = getCurrentTime();
 		for (const auto& item : mDeletedItems)
 		{
@@ -70,7 +70,8 @@ namespace nap
 		mDeletedItems.clear();
 
 		// Now update all available calendar items
-		for (const auto& item : mInstance->getItems())
+		const OwnedCalendarItemList& calendar_items = mCalendar->getInstance().getItems();
+		for (const auto& item : calendar_items)
 		{
 			// Based on active state of item and presence in list, take action.
 			// If item is not active but present -> event finished
@@ -80,7 +81,6 @@ namespace nap
 				auto it = mActive.find(item->mID);
 				if (it != mActive.end())
 				{
-					nap::Logger::info("Event finished: %s", item->getTitle().c_str());
 					eventEnded.trigger({ *item });
 					mActive.erase(it);
 				}
@@ -90,7 +90,6 @@ namespace nap
 				auto it = mActive.emplace(item->mID);
 				if (it.second)
 				{
-					nap::Logger::info("Event started: %s", item->getTitle().c_str());
 					eventStarted.trigger({ *item });
 				}
 			}
