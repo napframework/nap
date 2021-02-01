@@ -22,6 +22,15 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CalendarItem)
 	RTTI_PROPERTY("Description",	&nap::CalendarItem::mDescription,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::UniqueCalendarItem)
+	RTTI_PROPERTY("Date", &nap::UniqueCalendarItem::mDate, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::YearlyCalendarItem)
+	RTTI_PROPERTY("Day", &nap::YearlyCalendarItem::mDay, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Month", &nap::YearlyCalendarItem::mMonth, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::MonthlyCalendarItem)
 	RTTI_PROPERTY("Day",			&nap::MonthlyCalendarItem::mDay,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -31,10 +40,6 @@ RTTI_BEGIN_CLASS(nap::WeeklyCalendarItem)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::DailyCalendarItem)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniqueCalendarItem)
-	RTTI_PROPERTY("Date", &nap::UniqueCalendarItem::mDate, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -349,7 +354,7 @@ namespace nap
 		}
 
 		// Make sure the day exists in the last month, if not the event could not have been triggered
-		if (!Date::exists(cur_dt.getYear(), static_cast<EMonth>(cur_mont), mDay))
+		if (!Date::exists(cur_year, static_cast<EMonth>(cur_mont), mDay))
 			return false;
 
 		// Previous month sample date
@@ -362,4 +367,67 @@ namespace nap
 
 		return false;
 	}
+
+
+	YearlyCalendarItem::YearlyCalendarItem(const CalendarItem::Point& point, const std::string& title, EMonth month, int day) :
+		CalendarItem(point, title), mMonth(month), mDay(day) { }
+
+
+	bool YearlyCalendarItem::init(utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mDay >= 1 && mDay <= 31, "%s: Invalid day", mID.c_str()))
+			return false;
+
+		if (!errorState.check(mMonth != EMonth::Unknown, "%s: Invalid month", mID.c_str()))
+			return false;
+
+		return true;
+	}
+
+
+	bool YearlyCalendarItem::setDate(EMonth month, int day)
+	{
+		if (day < 1 || day > 31 || month == EMonth::Unknown)
+			return false;
+		mDay = day; mMonth = month;
+		return false;
+	}
+
+
+	bool YearlyCalendarItem::active(SystemTimeStamp timeStamp) const
+	{
+		// Get sample (lookup) date
+		DateTime cur_dt(timeStamp);
+		int cur_year = cur_dt.getYear();
+
+		// If the date exists in this year, we can try to sample ahead.
+		if (Date::exists(cur_dt.getYear(), mMonth, mDay))
+		{
+			// If current time is ahead of lookup, see if it's in range
+			SystemTimeStamp lookup_time = createTimestamp(cur_year, static_cast<int>(mMonth), mDay, mPoint.mTime.mHour, mPoint.mTime.mMinute);
+			if (timeStamp >= lookup_time)
+			{
+				SystemTimeStamp end_time = lookup_time + mPoint.mDuration.toMinutes();
+				return timeStamp < end_time;
+			}
+		}
+
+		// Otherwise we need to check if the current time falls within the window of the previous year range.
+		// For example: an event triggered at the end of a year can be active in the beginning of a new year.
+		// First make sure the date exists last year, if not the event could not have been triggered
+		cur_year -= 1;
+		if (!Date::exists(cur_year, static_cast<EMonth>(mMonth), mDay))
+			return false;
+
+		// Previous year sample date
+		SystemTimeStamp lookup_time = createTimestamp(cur_year, static_cast<int>(mMonth), mDay, mPoint.mTime.mHour, mPoint.mTime.mMinute);
+
+		// Check if it falls in the previous year window
+		SystemTimeStamp end_time = lookup_time + mPoint.mDuration.toMinutes();
+		if (timeStamp >= lookup_time && timeStamp < end_time)
+			return true;
+
+		return false;
+	}
+
 }

@@ -183,6 +183,49 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Yearly
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Yearly occurring calendar item
+	 */
+	class NAPAPI YearlyCalendarItem : public CalendarItem
+	{
+		RTTI_ENABLE(CalendarItem)
+	public:
+
+		// Default constructor
+		YearlyCalendarItem() = default;
+
+		// Argument constructor
+		YearlyCalendarItem(const CalendarItem::Point& point, const std::string& title, EMonth month, int day);
+
+		/**
+		* Initializes the yearly calendar item.
+		* Checks if the is valid.
+		* @return if the date is valid
+		*/
+		bool init(utility::ErrorState& errorState) override;
+
+		/**
+		* Updates the calendar date, checks if the new date is valid.
+		* @param date the new date
+		* @return if the date is updated
+		*/
+		bool setDate(EMonth month, int day);
+
+		/**
+	 	 * @param timeStamp time to validate
+		 * @return if the unique calender item is active.
+		 */
+		virtual bool active(SystemTimeStamp timeStamp) const override;
+
+		int		mDay = 1;						///< Property: 'Day' the day of the year (1-31)
+		EMonth	mMonth = EMonth::Unknown;		///< Property: 'Month' the year
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Monthly
 	//////////////////////////////////////////////////////////////////////////
 

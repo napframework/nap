@@ -73,23 +73,25 @@ namespace nap
 		for (const auto& item : mInstance->getItems())
 		{
 			// Based on active state of item and presence in list, take action.
-			// If item is active but not present -> event started
 			// If item is not active but present -> event finished
-			if (item->active(current_time))
-			{
-				auto it = mActive.emplace(item->mID);
-				if (it.second)
-				{
-					eventStarted.trigger({ *item });
-				}
-			}
-			else
+			// If item is active but not present -> event started
+			if (!item->active(current_time))
 			{
 				auto it = mActive.find(item->mID);
 				if (it != mActive.end())
 				{
+					nap::Logger::info("Event finished: %s", item->getTitle().c_str());
 					eventEnded.trigger({ *item });
 					mActive.erase(it);
+				}
+			}
+			else
+			{
+				auto it = mActive.emplace(item->mID);
+				if (it.second)
+				{
+					nap::Logger::info("Event started: %s", item->getTitle().c_str());
+					eventStarted.trigger({ *item });
 				}
 			}
 		}
