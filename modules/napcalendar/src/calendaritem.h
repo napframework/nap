@@ -6,7 +6,6 @@
 
 // External Includes
 #include <nap/resource.h>
-#include <glm/glm.hpp>
 #include <nap/datetime.h>
 #include <nap/numeric.h>
 
