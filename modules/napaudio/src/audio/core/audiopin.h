@@ -153,7 +153,11 @@ namespace nap
 			
 			/**
 			 * This method can be used by the node to pull a buffer of samples for every connected output pin.
-			 * @param result the vector will be resized and filled with a SampleBuffer* for each connected pin. The vector can contain nullptr items if somewhere down the line of connection silence is returned. It is advised to allocate the result vector in the constructor of the Node class that contains the MultiInpuPin, and to preallocate memory using vector<>::reserve(), in order to avoid allocations on the audio thread.
+			 * A result verctor has to be passed as an argument.
+			 * The vector will be resized and filled with a SampleBuffer* for each connected pin.
+			 * The contents of the vector can be nullptr when somewhere down the conected graph an output returns nullptr.
+			 * It is advised to allocate the result vector in the constructor of the Node class that contains the MultiInpuPin, and to preallocate memory using vector<>::reserve(), in order to avoid allocations on the audio thread.
+			 * @param result vector that will be filled with pointers to a buffer for each connection.
 			 */
 			void pull(std::vector<SampleBuffer*>& result);
 			
