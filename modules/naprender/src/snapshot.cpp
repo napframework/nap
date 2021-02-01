@@ -64,8 +64,8 @@ namespace nap
 		nap::ResourceManager* resourceManager = mRenderService->getCore().getResourceManager();
 
 		uint32_t max_image_dimension = mRenderService->getPhysicalDeviceProperties().limits.maxImageDimension2D;
-		uint32_t cell_width = static_cast<uint32_t>(mWidth / mNumRows);
-		uint32_t cell_height = static_cast<uint32_t>(mHeight / mNumColumns);
+		uint32_t cell_width = mWidth / mNumRows;
+		uint32_t cell_height = mHeight / mNumColumns;
 
 		// Check if the cell dimensions are supported
 		if (cell_width > max_image_dimension || cell_height > max_image_dimension) {
@@ -106,7 +106,7 @@ namespace nap
 			mRenderTargets[i] = resourceManager->createObject<RenderTarget>();
 			mRenderTargets[i]->mClearColor = mClearColor;
 			mRenderTargets[i]->mRequestedSamples = mRequestedSamples;
-			mRenderTargets[i]->mSampleShading = false;
+			mRenderTargets[i]->mSampleShading = mSampleShading;
 			mRenderTargets[i]->mColorTexture = render_texture;
 
 			if (!mRenderTargets[i]->init(errorState)) {
@@ -157,6 +157,13 @@ namespace nap
 			onBitmapsUpdated.connect(std::bind(&Snapshot::stitchAndSaveBitmaps, this));
 		}
 		return true;
+	}
+
+	void Snapshot::setClearColor(const glm::vec4& color)
+	{ 
+		for (int i = 0; i < mNumCells; i++) {
+			mRenderTargets[i]->setClearColor(color);
+		}
 	}
 
 	bool Snapshot::takeSnapshot(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps)

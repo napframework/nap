@@ -50,6 +50,12 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		* Updates the render target clear color.
+		* @param color the new clear color to use.
+		*/
+		void setClearColor(const glm::vec4& color);
+
+		/**
 		* Take a high-res snapshot of the scene and save to the configured location on disk
 		* @param camera Camera to take snapshot with
 		* @param comps Components to render

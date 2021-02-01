@@ -145,6 +145,12 @@ namespace nap
 		void setClipRect(const math::Rect& rect)				{ mClipRect = rect; }
 
 		/**
+		* Sets line width
+		* @param lineWidth New line width
+		*/
+		void setLineWidth(float lineWidth) { mLineWidth = lineWidth; }
+
+		/**
 		 * @return the clipping rectangle in pixel coordinates
 		 */
 		const math::Rect& getClipRect() const					{ return mClipRect; }
