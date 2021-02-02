@@ -6,7 +6,8 @@
 
 // Local Includes
 #include "blockingconcurrentqueue.h"
-#include "utility/dllexport.h"
+
+#include <utility/dllexport.h>
 
 // External Includes
 #include <functional>
@@ -58,13 +59,18 @@ namespace nap
     class NAPAPI WorkerThread
 	{
     public:
-        /**
+		/**
+		 * Explicit default constructor
+		 */
+		WorkerThread();
+
+		/**
          * @blocking: 
          *   true: the threads blocks and waits for enqueued tasks to perform
          *   false: the threads runs through the loop as fast as possible and emits @execute every iteration
          * @maxQueueItems: the maximum number of items in the task queue
          */
-        WorkerThread(bool blocking = true, int maxQueueItems = 20);
+        WorkerThread(bool blocking, int maxQueueItems = 20);
 		virtual ~WorkerThread();
         
         /**

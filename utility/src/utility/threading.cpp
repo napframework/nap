@@ -38,6 +38,12 @@ namespace nap
             count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
         }
     }
+
+
+	WorkerThread::WorkerThread() : mBlocking(true), mTaskQueue(20)
+	{
+		mRunning = false;
+	}
     
     
     WorkerThread::WorkerThread(bool blocking, int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
