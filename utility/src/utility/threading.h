@@ -7,8 +7,6 @@
 // Local Includes
 #include "blockingconcurrentqueue.h"
 
-#include <utility/dllexport.h>
-
 // External Includes
 #include <functional>
 #include <thread>
@@ -20,7 +18,7 @@ namespace nap
      * Thread safe queue for tasks that are encapsulated in function objects.
      * It is possible to enqueue tasks at the end of the queue and to execute the tasks in the queue.
      */
-    class NAPAPI TaskQueue final
+    class TaskQueue final
 	{
     public:
         // a task in the queue is a function object
@@ -56,7 +54,7 @@ namespace nap
     /**
      * A single thread that runs its own task queue
      */
-    class NAPAPI WorkerThread
+    class WorkerThread
 	{
     public:
 		/**
@@ -109,7 +107,7 @@ namespace nap
     /**
      * A pool of threads that can be used to perform multiple tasks at the same time
      */
-    class NAPAPI ThreadPool final
+    class ThreadPool final
 	{
     public:
         ThreadPool(int numberOfThreads = 1, int maxQueueItems = 20, bool realTimePriority = false);
