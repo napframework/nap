@@ -72,7 +72,6 @@ namespace nap
 		RenderTexture2D::EFormat mFormat = RenderTexture2D::EFormat::RGBA8;		///< Property: 'Format' texture format
 		ERasterizationSamples mRequestedSamples = ERasterizationSamples::One;	///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		bool mSampleShading = false;											///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		bool mStitch = true;													///< Property: 'Stitch' Enable stitching
 
 		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to.
 		EOutputExtension mOutputExtension = EOutputExtension::PNG;				///< Property: 'OutputExtension' Extension of the snapshot image file.

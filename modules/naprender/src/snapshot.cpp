@@ -32,7 +32,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_PROPERTY("SampleShading", &nap::Snapshot::mSampleShading, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RequestedSamples", &nap::Snapshot::mRequestedSamples, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor", &nap::Snapshot::mClearColor, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Stitch", &nap::Snapshot::mStitch, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,7 +128,7 @@ namespace nap
 				// Keep a record of updated bitmaps
 				mBitmapUpdateFlags[i] = true;
 
-				if (mStitch) {
+				if (mNumCells > 1) {
 					// Check if all bitmaps are flagged as updated
 					if (std::find(std::begin(mBitmapUpdateFlags), std::end(mBitmapUpdateFlags), false) == std::end(mBitmapUpdateFlags)) {
 						onBitmapsUpdated();
@@ -138,7 +137,7 @@ namespace nap
 				}
 				else {
 					std::string path = utility::stringFormat(
-						"%s/%s_%d.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str(), i + 1, extensionToString(mOutputExtension)
+						"%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str(), extensionToString(mOutputExtension)
 					);
 					utility::ErrorState errorState;
 					if (!mBitmaps[i]->writeToDisk(path, errorState)) {
@@ -153,7 +152,7 @@ namespace nap
 		}
 
 		// Stitch when multiple rendertargets are used
-		if (mStitch && mNumCells > 1) {
+		if (mNumCells > 1) {
 			onBitmapsUpdated.connect(std::bind(&Snapshot::stitchAndSaveBitmaps, this));
 		}
 		return true;
