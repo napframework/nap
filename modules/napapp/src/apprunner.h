@@ -174,7 +174,10 @@ namespace nap
 
 		// Initialize application
 		if(!error.check(app.init(error), "unable to initialize application"))
+		{
+			mCore.shutdownServices();
 			return false;
+		}
 
 		// Start event handler
 		app_event_handler.start();

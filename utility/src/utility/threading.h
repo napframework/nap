@@ -6,7 +6,6 @@
 
 // Local Includes
 #include "blockingconcurrentqueue.h"
-#include "dllexport.h"
 
 // External Includes
 #include <functional>
@@ -29,7 +28,7 @@ namespace nap
         /**
          * Constructor takes maximum number of items that can be in the queue at a time.
          */
-        TaskQueue(std::uint32_t maxQueueItems = 20);
+        TaskQueue(int maxQueueItems = 20);
         /**
          * Add a task to the end of the queue.
          */
@@ -55,19 +54,25 @@ namespace nap
     /**
      * A single thread that runs its own task queue
      */
-    class WorkerThread 
+    class WorkerThread
 	{
     public:
-        /**
-         * @param blocking true: the threads blocks and waits for enqueued tasks to perform, false: the threads runs through the loop as fast as possible.
-         * @param maxQueueItems the maximum number of items in the task queue
+		/**
+		 * Explicit default constructor
+		 */
+		WorkerThread();
+
+		/**
+         * @blocking: 
+         *   true: the threads blocks and waits for enqueued tasks to perform
+         *   false: the threads runs through the loop as fast as possible and emits @execute every iteration
+         * @maxQueueItems: the maximum number of items in the task queue
          */
-        WorkerThread(bool blocking = true, std::uint32_t maxQueueItems = 20);
+        WorkerThread(bool blocking, int maxQueueItems = 20);
 		virtual ~WorkerThread();
         
         /**
-         * enqueues a task to be performed on this thread.
-		 * @param task the task to enqueue.
+         * enqueues a task to be performed on this thread
          */
         void enqueue(TaskQueue::Task task) { mTaskQueue.enqueue(task); }
         
@@ -82,12 +87,12 @@ namespace nap
         void stop();
         
         /**
-         * @return if the thread is running and not shutting down.
+         * Returns wether the thread is running and not shutting down.
          */
         bool isRunning() { return mRunning; }
         
         /**
-         * Overwrite this method to specify behavior to be executed each loop after processing the task queue.
+         * Overwrite this method to specify behaviour to be executed each loop after processing the task queue.
          */
         virtual void loop() { }
         
@@ -105,13 +110,16 @@ namespace nap
     class ThreadPool final
 	{
     public:
-        ThreadPool(std::uint32_t numberOfThreads = 1, std::uint32_t maxQueueItems = 20);
+        ThreadPool(int numberOfThreads = 1, int maxQueueItems = 20, bool realTimePriority = false);
         ~ThreadPool();
         
         /**
          * Enqueues a task to be performed on the next idle thread.
          */
-        void execute(TaskQueue::Task task) { mTaskQueue.enqueue(task); }
+        void execute(TaskQueue::Task task) {
+            assert(task != nullptr);
+            mTaskQueue.enqueue(task);
+        }
         
         /**
          * Sets stopping to true and joins and exits all threads in the pool.
@@ -139,5 +147,6 @@ namespace nap
         std::vector<std::thread> mThreads;
         std::atomic<bool> mStop;
         TaskQueue mTaskQueue;
+        bool mRealTimePriority = false;
     };
 }
