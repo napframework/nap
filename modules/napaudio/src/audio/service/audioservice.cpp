@@ -14,9 +14,6 @@
 #include <audio/resource/audiobufferresource.h>
 #include <audio/resource/audiofileresource.h>
 
-//#include <audio/core/graph.h>
-//#include <audio/core/voice.h>
-
 // Third party includes
 #include <mpg123.h>
 
@@ -161,13 +158,10 @@ namespace nap
 					Logger::info("Audio output device not found: %s", configuration->mOutputDevice.c_str());
 			}
 			
-			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
-			                        errorState))
+			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, errorState))
 				return false;
 			
-			if (!(openStream(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
-			                 configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize,
-			                 errorState) && start(errorState)))
+			if (!(openStream(mHostApiIndex, inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize, errorState) && start(errorState)))
 			{
 				if (!configuration->mAllowDeviceFailure)
 				{
@@ -228,9 +222,7 @@ namespace nap
 		}
 
 
-		bool AudioService::openStream(int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount,
-		                              int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize,
-		                              utility::ErrorState& errorState)
+		bool AudioService::openStream(int hostApi, int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState)
 		{
 			// The stream can only be opened when it's closed
 			assert(mStream == nullptr);
@@ -243,7 +235,8 @@ namespace nap
 				mNodeManager.setSampleRate(sampleRate);
 			if (internalBufferSize != mNodeManager.getInternalBufferSize())
 				mNodeManager.setInternalBufferSize(internalBufferSize);
-			
+
+			mHostApiIndex = hostApi;
 			mInputDeviceIndex = inputDeviceIndex;
 			mOutputDeviceIndex = outputDeviceIndex;
 			mBufferSize = bufferSize;
@@ -273,8 +266,7 @@ namespace nap
 				outputParamsPtr = &outputParameters;
 			}
 			
-			PaError error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, mNodeManager.getSampleRate(),
-			                              mBufferSize, paNoFlag, &audioCallback, this);
+			PaError error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, mNodeManager.getSampleRate(), mBufferSize, paNoFlag, &audioCallback, this);
 			if (error != paNoError)
 			{
 				errorState.fail("Error opening audio stream: %s", Pa_GetErrorText(error));
@@ -401,8 +393,7 @@ namespace nap
 				{
 					auto index = Pa_HostApiDeviceIndexToDeviceIndex(hostApi, device);
 					const PaDeviceInfo& info = *Pa_GetDeviceInfo(index);
-					nap::Logger::info("%i: %s %i inputs %i outputs", device, info.name, info.maxInputChannels,
-					                  info.maxOutputChannels);
+					nap::Logger::info("%i: %s %i inputs %i outputs", device, info.name, info.maxInputChannels, info.maxOutputChannels);
 				}
 			}
 		}
@@ -451,8 +442,7 @@ namespace nap
 		}
 		
 		
-		bool AudioService::checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, int& inputChannelCount,
-		                                      int& outputChannelCount, utility::ErrorState& errorState)
+		bool AudioService::checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, int& inputChannelCount, int& outputChannelCount, utility::ErrorState& errorState)
 		{
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
 			
@@ -484,9 +474,7 @@ namespace nap
 					// There are less channels than requested
 					if (configuration->mAllowChannelCountFailure)
 					{
-						Logger::warn(
-								"AudioService: Requested number of %i input channels not available, initializing with only %i",
-								configuration->mInputChannelCount, inputDeviceInfo->maxInputChannels);
+						Logger::warn( "AudioService: Requested number of %i input channels not available, initializing with only %i", configuration->mInputChannelCount, inputDeviceInfo->maxInputChannels);
 						inputChannelCount = inputDeviceInfo->maxInputChannels;
 					}
 					else {
@@ -525,9 +513,7 @@ namespace nap
 					// There are less channels than requested
 					if (configuration->mAllowChannelCountFailure)
 					{
-						Logger::warn(
-								"AudioService: Requested number of %i output channels not available, initializing with only %i",
-								configuration->mOutputChannelCount, outputDeviceInfo->maxOutputChannels);
+						Logger::warn( "AudioService: Requested number of %i output channels not available, initializing with only %i", configuration->mOutputChannelCount, outputDeviceInfo->maxOutputChannels);
 						outputChannelCount = outputDeviceInfo->maxOutputChannels;
 					}
 					else {

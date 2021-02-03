@@ -84,18 +84,6 @@ namespace nap
 			~DeletionQueue();
 			
 			/**
-			 * This method is used by @SafeOwner to register itself with the queue on construction.
-			 * This is needed so all existing SafeOwners can be enqueued for deletion when the queue itself is being destructed.
-			 */
-			void registerSafeOwner(SafeOwnerBase* ptr);
-			
-			/**
-			 * This method is used by @SafeOwner to unregister itself with the queue on destruction.
-			 * This is needed so all existing SafeOwners can be enqueued for deletion when the queue itself is being destructed.
-			 */
-			void unregisterSafeOwner(SafeOwnerBase* ptr);
-			
-			/**
 			 * This method is used by @SafeOwner to dispose it's data when it goes out of scope.
 			 * The disposed data will be kept by the DeletionQueue and will be destructed and freed on the next call of clear().
 			 */
@@ -105,11 +93,6 @@ namespace nap
 			}
 			
 			/**
-			 * Enqueue all safe owners in the system for destruction.
-			 */
-			void enqueueAll();
-			
-			/**
 			 * Clears the DeletionQueue by destructing the objects it contains.
 			 * It also clears all the SafePtrs that point to objects in the queue.
 			 */
@@ -117,7 +100,6 @@ namespace nap
 		
 		private:
 			moodycamel::ConcurrentQueue<std::unique_ptr<SafeOwnerBase::Data>> mQueue; // Lockfree queue that holds SafeOwner::Data objects to be deleted because the enclosing SafeOwner went out of scope.
-			std::set<SafeOwnerBase*> mSafeOwnerList; // List of all safe owners that exist that are referencing this deletion queue.
 		};
 		
 		
@@ -169,7 +151,6 @@ namespace nap
 			{
 				mDeletionQueue = &deletionQueue;
 				mData = std::make_unique<Data>(ptr);
-				mDeletionQueue->registerSafeOwner(this);
 			}
 			
 			/**
@@ -311,7 +292,6 @@ namespace nap
 					assert(mDeletionQueue != nullptr);
 					mData->mEnqueuedForDeletion = true;
 					mDeletionQueue->enqueue(std::move(mData));
-					mDeletionQueue->unregisterSafeOwner(this);
 					mDeletionQueue = nullptr;
 					mData = nullptr;
 				}
