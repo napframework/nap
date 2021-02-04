@@ -333,9 +333,9 @@ namespace nap
 		 */
 		bool valid() const;
 
-		EMonth	mMonth	= EMonth::Unknown;			///< Property: 'Month' the month of the year
-		int		mDay	= 1;						///< Property: 'Day' the day of the year (1-31)
-		int		mYear	= 1970;						///< Property: 'Year' the year
+		EMonth mMonth = EMonth::Unknown;			///< Property: 'Month' the month of the year
+		int mDay = 1;								///< Property: 'Day' the day of the month (1-31)
+		int mYear = 1970;							///< Property: 'Year' the year
 	};
 
 

@@ -210,7 +210,8 @@ namespace nap
 
 		/**
 		* Updates the calendar date, checks if the new date is valid.
-		* @param date the new date
+		* @param month new month
+		* @param day new day in month
 		* @return if the date is updated
 		*/
 		bool setDate(EMonth month, int day);
@@ -221,8 +222,8 @@ namespace nap
 		 */
 		virtual bool active(SystemTimeStamp timeStamp) const override;
 
-		int		mDay = 1;						///< Property: 'Day' the day of the year (1-31)
-		EMonth	mMonth = EMonth::Unknown;		///< Property: 'Month' the year
+		int mDay = 1;						///< Property: 'Day' the day of the month (1-31)
+		EMonth mMonth = EMonth::Unknown;	///< Property: 'Month' month of the year
 	};
 
 
