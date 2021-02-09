@@ -64,6 +64,18 @@ namespace nap
 	}
 
 
+	bool WebSocketServer::broadcast(const WebSocketMessage& message, nap::utility::ErrorState& error)
+	{
+		return mEndPoint->broadcast(message.getPayload(), message.getCode(), error);
+	}
+
+
+	bool WebSocketServer::broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	{
+		return mEndPoint->broadcast(payload, length, code, error);
+	}
+
+
 	void WebSocketServer::onConnectionOpened(const WebSocketConnection& connection)
 	{
 		addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));

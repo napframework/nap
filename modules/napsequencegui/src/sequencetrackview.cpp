@@ -6,10 +6,13 @@
 #include "sequencetrackview.h"
 #include "sequenceeditorgui.h"
 #include "napcolors.h"
+#include "sequenceeditorguiactions.h"
 
 // External Includes
 #include <imgui/imgui.h>
 #include <iomanip>
+
+using namespace nap::SequenceGUIActions;
 
 namespace nap
 {
@@ -78,8 +81,12 @@ namespace nap
 	}
 
 
-	void SequenceTrackView::showInspector(const SequenceTrack& track, bool& deleteTrack, bool& moveUp, bool& moveDown)
+	void SequenceTrackView::showInspector(const SequenceTrack& track)
 	{
+		bool delete_track = false;
+		bool move_track_up = false;
+		bool move_track_down = false;
+
 		// begin inspector
 		std::ostringstream inspector_id_stream;
 		inspector_id_stream << track.mID << "inspector";
@@ -89,7 +96,7 @@ namespace nap
 		ImVec2 cursor_pos =
 			{
 				ImGui::GetCursorPosX() ,
-				mState.mTrackHeight + 10.0f + ImGui::GetCursorPosY()
+				ImGui::GetCursorPosY()
 			};
 
 		// manually set the cursor position before drawing inspector
@@ -97,10 +104,10 @@ namespace nap
 		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		// draw inspector window
-		if (ImGui::BeginChild(inspector_id.c_str(), // id
-			{ mState.mInspectorWidth , mState.mTrackHeight + 5 }, // size
-			false, // no border
-			ImGuiWindowFlags_NoMove)) // window flags
+		if (ImGui::BeginChild(	inspector_id.c_str(), // id
+								{ mState.mInspectorWidth , mState.mTrackHeight + 5 }, // size
+	  							false, // no border
+	   							ImGuiWindowFlags_NoMove)) // window flags
 		{
 			// obtain drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -110,13 +117,13 @@ namespace nap
 			const ImVec2 window_size = ImGui::GetWindowSize();
 
 			// draw background & box
-			draw_list->AddRectFilled(window_pos,
-				{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
-				guicolors::black);
+			draw_list->AddRectFilled(	window_pos,
+							  			{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
+									 	guicolors::black);
 
-			draw_list->AddRect(window_pos,
-				{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
-				guicolors::white);
+			draw_list->AddRect(	window_pos,
+					    		{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
+							   	guicolors::white);
 
 			//
 			ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
@@ -139,7 +146,7 @@ namespace nap
 			// when we delete a track, we don't immediately call the controller because we are iterating track atm
 			if (ImGui::SmallButton("Delete"))
 			{
-				deleteTrack = true;
+				delete_track = true;
 			}
 
 			// show up & down buttons
@@ -149,12 +156,12 @@ namespace nap
 
 			if(ImGui::SmallButton("Up"))
 			{
-				moveUp = true;
+				move_track_up = true;
 			}
 			ImGui::SameLine();
 			if(ImGui::SmallButton("Down"))
 			{
-				moveDown = true;
+				move_track_down = true;
 			}
 
 			// pop scale
@@ -163,18 +170,6 @@ namespace nap
 		ImGui::EndChild();
 
 		ImGui::SetCursorPos(cursor_pos);
-	}
-
-
-	void SequenceTrackView::show(const SequenceTrack& track)
-	{
-		bool delete_track = false;
-		bool move_track_up = false;
-		bool move_track_down = false;
-
-		showInspector(track, delete_track, move_track_up, move_track_down);
-
-		showTrack(track);
 
 		if (delete_track)
 		{
@@ -215,13 +210,13 @@ namespace nap
 	{
 		ImVec2 cursor_pos = ImGui::GetCursorPos();
 
-		const ImVec2 window_cursor_pos = {cursor_pos.x + mState.mInspectorWidth + 5, cursor_pos.y };
+		const ImVec2 window_cursor_pos = {cursor_pos.x + 5, cursor_pos.y };
 		ImGui::SetCursorPos(window_cursor_pos);
 
 		// begin track
 		if (ImGui::BeginChild(
 			track.mID.c_str(), // id
-			{ mState.mTimelineWidth + 5 , mState.mTrackHeight + 5 }, // size
+			{ mState.mTimelineWidth + 5 , mState.mTrackHeight + 10 }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -257,6 +252,7 @@ namespace nap
 			int steps = mState.mTimelineWidth / timestamp_interval;
 
 			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
+			bool first_line_drawn = false;
 			for (;i < steps; i++)
 			{
 				if(i==0) // ignore first timestamp since it will hide window left border
@@ -265,9 +261,10 @@ namespace nap
 				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
 				if (ImGui::IsRectVisible(pos, { pos.x + 1, pos.y + mState.mTrackHeight } ))
 				{
+					first_line_drawn = true;
 					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, guicolors::darkerGrey);
 				}
-				else
+				else if(first_line_drawn) // right side of window, so bail
 				{
 					break;
 				}
@@ -285,8 +282,53 @@ namespace nap
 		ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y } );
 	}
 
+
+	void SequenceTrackView::handleActions()
+	{
+		// check if there is a track action
+		if(mState.mAction.get()->get_type().is_derived_from<TrackAction>())
+		{
+			// get derived track action
+			const auto* track_action = rtti_cast<const TrackAction>(mState.mAction.get());
+
+			// find the track this track action belongs to
+			const auto& sequence = getEditor().mSequencePlayer->getSequenceConst();
+			for(const auto& track : sequence.mTracks)
+			{
+				const auto* track_ptr = track.get();
+				if(track_ptr->mID == track_action->mTrackID)
+				{
+					// does the track type match for this view?
+					rttr::type view_type_for_track = SequenceEditorGUIView::getViewForTrackType(track_ptr->get_type());
+					rttr::type current_view_type = get_type();
+
+					if(view_type_for_track == current_view_type)
+					{
+						// handle any action if necessary
+						auto it = mActionHandlers.find(mState.mAction.get()->get_type());
+						if(it != mActionHandlers.end())
+						{
+							it->second();
+						}
+					}
+
+					break;
+				}
+			}
+		}
+	}
+
+
 	const SequencePlayer& SequenceTrackView::getPlayer() { return *mView.mEditor.mSequencePlayer.get(); }
 
 	
 	SequenceEditor& SequenceTrackView::getEditor() { return mView.mEditor; }
+
+
+	void SequenceTrackView::registerActionHandler(rttr::type type, std::function<void()> handler)
+	{
+		// Assert is triggered when element with same key already exists
+		auto it = mActionHandlers.emplace(std::make_pair(type, handler));
+		assert(it.second);
+	}
 }

@@ -176,7 +176,6 @@ namespace nap
 		if(!error.check(app.init(error), "unable to initialize application"))
 		{
 			mCore.shutdownServices();
-			error.fail("Failed to initialize application");
 			return false;
 		}
 

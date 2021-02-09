@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "threading.h"
 
 #ifdef _WIN32
@@ -7,7 +11,7 @@
 namespace nap
 {
     
-    TaskQueue::TaskQueue(unsigned int maxQueueItems) : mQueue(maxQueueItems)
+    TaskQueue::TaskQueue(int maxQueueItems) : mQueue(maxQueueItems)
     {
         mDequeuedTasks.resize(maxQueueItems);
     }
@@ -34,9 +38,15 @@ namespace nap
             count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
         }
     }
+
+
+	WorkerThread::WorkerThread() : mBlocking(true), mTaskQueue(20)
+	{
+		mRunning = false;
+	}
     
     
-    WorkerThread::WorkerThread(bool blocking, unsigned int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
+    WorkerThread::WorkerThread(bool blocking, int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
     {
         mRunning = false;
     }
@@ -87,7 +97,7 @@ namespace nap
     }
     
     
-    ThreadPool::ThreadPool(unsigned int numberOfThreads, unsigned int maxQueueItems, bool realTimePriority)
+    ThreadPool::ThreadPool(int numberOfThreads, int maxQueueItems, bool realTimePriority)
         : mTaskQueue(maxQueueItems), mRealTimePriority(realTimePriority)
     {
         mStop = false;

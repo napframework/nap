@@ -5,6 +5,8 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
+#include <rendergnomoncomponent.h>
+#include <perspcameracomponent.h>
 
 namespace nap 
 {    
@@ -19,10 +21,8 @@ namespace nap
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
 
-		// Convert our path and load resources from file
-        auto abspath = utility::getAbsolutePath(mFilename);
-        nap::Logger::info("Loading: %s", abspath.c_str());
-        if (!mResourceManager->loadFile(mFilename, error))
+		// Load the resource file
+        if (!mResourceManager->loadFile("default.json", error))
             return false;
 
 		// Get the render window
@@ -34,6 +34,10 @@ namespace nap
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
+
+		// Get the camera and origin Gnomon entity
+		mCameraEntity = mScene->findEntity("CameraEntity");
+		mGnomonEntity = mScene->findEntity("GnomonEntity");
 
 		// All done!
         return true;
@@ -54,7 +58,19 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			// Render GUI elements
+			// Get Perspective camera to render with
+			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+
+			// Add Gnomon
+			std::vector<nap::RenderableComponentInstance*> components_to_render
+			{
+				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>()
+			};
+
+			// Render Gnomon
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render);
+
+			// Draw GUI elements
 			mGuiService->draw();
 
 			// Stop render pass

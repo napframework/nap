@@ -9,6 +9,7 @@
 
 // nap includes
 #include <utility/dllexport.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
@@ -58,16 +59,7 @@ namespace nap
 			{
 				return channels[index];
 			}
-
-			/**
-			 * Used to access the samples in the buffer
-			 * example: myBuffer[channelNumber][sampleIndex]
-			 */
-			const SampleBuffer& operator[](std::size_t index) const
-			{
-				return channels[index];
-			}
-
+			
 			/**
 			 * @return: number of channels in the buffer
 			 */
@@ -130,7 +122,7 @@ namespace nap
 		/**
 		 * Time value in samples
 		 */
-		using DiscreteTimeValue = std::uint64_t;
+		using DiscreteTimeValue = nap::uint64;
 		
 		
 		/**
