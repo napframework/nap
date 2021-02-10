@@ -111,6 +111,32 @@ namespace nap
 	}
 
 
+	bool WebSocketServerEndPoint::broadcast(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	{
+		bool success(true);
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		for (auto& connection : mConnections)
+		{
+			if (!send(connection, message, code, error))
+				success = false;
+		}
+		return success;
+	}
+
+
+	bool WebSocketServerEndPoint::broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+	{
+		bool success(true);
+		std::lock_guard<std::mutex> lock(mConnectionMutex);
+		for (auto& connection : mConnections)
+		{
+			if (!send(connection, payload, length, code, error))
+				success = false;
+		}
+		return success;
+	}
+
+
 	std::string WebSocketServerEndPoint::getHostName(const WebSocketConnection& connection)
 	{
 		std::error_code stdec;

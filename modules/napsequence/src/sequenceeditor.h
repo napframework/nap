@@ -61,9 +61,17 @@ namespace nap
 		/**
 		 * Returns pointer to base class of controller type, returns nullptr when controller type is not found
 		 * @param type rttr::type information of controller type to be returned
-		 * @return nullptr to controller base class, null ptr when not found
+		 * @return ptr to controller base class, null ptr when not found
 		 */
 		SequenceController* getControllerWithTrackType(rttr::type type);
+
+		/**
+		 * Returns pointer to base class of controller type that is used for specified track type of track id
+		 * Return null when track is not found, or controller is not found
+		 * @param trackID the track id of the track to find controller for
+		 * @return ptr to controller base class, null ptr when not found
+		 */
+		SequenceController* getControllerWithTrackID(const std::string& trackID);
 
 		/**
 		 * Gets reference the controller for a type, performs static cast
@@ -84,6 +92,33 @@ namespace nap
 		 * @return true on succesfull registration
 		 */
 		static bool registerControllerForTrackType(rttr::type viewType, rttr::type controllerType);
+
+		/**
+		 * inserts marker at given time in seconds
+		 * @param time the time at where to insert the new marker in seconds
+		 * @param message const reference to the message that the new marker should contain
+		 */
+		void insertMarker(double time, const std::string& message);
+
+		/**
+		 * changes marker time, assert when markerID not found
+		 * @param markerID the id of the marker
+		 * @param time the new time in seconds for the marker
+		 */
+		void changeMarkerTime(const std::string& markerID, double time);
+
+		/**
+		 * deletes marker with specified id, assert when markerID not found
+		 * @param markerID the id of the marker to delete
+		 */
+		void deleteMarker(const std::string& markerID);
+
+		/**
+		 * changes marker message of specified marker id, asserts when marker not found
+		 * @param markerID the id of the marker to edit
+		 * @param markerMessage const reference to string value of marker message
+		 */
+		void changeMarkerMessage(const std::string& markerID, const std::string& markerMessage);
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player

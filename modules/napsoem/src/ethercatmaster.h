@@ -78,16 +78,17 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * When true the operational stage for all slaves is reached. Processing and error handling
-		 * tasks are performed in the background. When running the device also started.
+		 * When true there is at least 1 slave and the operational stage for all slaves is reached (
+		 * if 'ForceOperational' is set to true). 
+		 * Processing and error handling tasks are performed in the background. 
 		 * @return if the master reached the operational stage for all slaves and is therefore running.
 		 */
 		bool isRunning() const;
 
 		/**
-		 * Returns if the device started successfully. If no slaves are found on the network the device
-		 * still started but is not running. No processing tasks are performed in the background
-		 * but the ethernet port opened successfully.
+		 * Returns if the device started successfully. 
+		 * If no slaves are found on the network the device starts but does not run. 
+		 * The ethernet port is open always open when started().
 		 * @return if the master started. This does not mean the master is operational.
 		 */
 		bool started() const;
