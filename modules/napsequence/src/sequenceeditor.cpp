@@ -7,6 +7,7 @@
 #include "sequencetrack.h"
 #include "sequencetracksegment.h"
 #include "sequenceutils.h"
+#include "sequencemarker.h"
 
 // external includes
 #include <nap/logger.h>
@@ -68,13 +69,28 @@ namespace nap
 		if (map.find(type) != map.end())
 		{
 			auto it = getControllerTrackTypeMap().find(type);
-
 			if (mControllers.find(it->second) != mControllers.end())
 			{
 				return mControllers[it->second].get();
 			}
 		}
 		
+		return nullptr;
+	}
+
+
+	SequenceController* SequenceEditor::getControllerWithTrackID(const std::string& trackID)
+	{
+		const auto& sequence = mSequencePlayer->getSequence();
+		for(const auto& track : sequence.mTracks)
+		{
+			auto track_type = track.get()->get_type();
+			auto it = getControllerTrackTypeMap().find(track_type);
+			if (mControllers.find(it->second) != mControllers.end())
+			{
+				return mControllers[it->second].get();
+			}
+		}
 		return nullptr;
 	}
 
@@ -128,6 +144,89 @@ namespace nap
 		{
 			mSequencePlayer->setPlayerTime(newDuration);
 		}
+	}
+
+
+	void SequenceEditor::insertMarker(double time, const std::string& message)
+	{
+		performEditAction([this, time, message]()
+	  	{
+		    auto new_marker = std::make_unique<SequenceMarker>();
+			new_marker->mID = sequenceutils::generateUniqueID(mSequencePlayer->mReadObjectIDs);
+			new_marker->mTime = time;
+			new_marker->mMessage = message;
+
+			mSequencePlayer->mSequence->mMarkers.emplace_back(ResourcePtr<SequenceMarker>(new_marker.get()));
+			mSequencePlayer->mReadObjects.emplace_back(std::move(new_marker));
+		});
+	}
+
+
+	void SequenceEditor::changeMarkerTime(const std::string& markerID, double time)
+	{
+		performEditAction([this, markerID, time]()
+		{
+			auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
+			{
+		   		return markerID == a->mID;
+		   	});
+
+			assert(it != mSequencePlayer->mSequence->mMarkers.end());
+
+			if(it != mSequencePlayer->mSequence->mMarkers.end())
+			{
+				it->get()->mTime = time;
+			}
+	  	});
+
+	}
+
+
+	void SequenceEditor::deleteMarker(const std::string& markerID)
+	{
+		performEditAction([this, markerID]()
+		{
+			auto it_1 = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
+			{
+			  return markerID == a->mID;
+			});
+			assert(it_1 != mSequencePlayer->mSequence->mMarkers.end());
+
+			if(it_1 != mSequencePlayer->mSequence->mMarkers.end())
+			{
+				mSequencePlayer->mSequence->mMarkers.erase(it_1);
+			}
+
+			auto it_2 = std::find_if(mSequencePlayer->mReadObjects.begin(), mSequencePlayer->mReadObjects.end(), [markerID](std::unique_ptr<rtti::Object>& a)->bool
+			{
+			  	return markerID == a->mID;
+			});
+			assert(it_2 != mSequencePlayer->mReadObjects.end());
+
+			if(it_2 != mSequencePlayer->mReadObjects.end())
+			{
+				mSequencePlayer->mReadObjects.erase(it_2);
+			}
+		});
+	}
+
+
+	void SequenceEditor::changeMarkerMessage(const std::string& markerID, const std::string& markerMessage)
+	{
+		performEditAction([this, markerID, markerMessage]()
+		{
+			auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
+			{
+			  return markerID == a->mID;
+			});
+
+			assert(it != mSequencePlayer->mSequence->mMarkers.end());
+
+			if(it != mSequencePlayer->mSequence->mMarkers.end())
+			{
+				it->get()->mMessage = markerMessage;
+			}
+		});
 	}
 
 

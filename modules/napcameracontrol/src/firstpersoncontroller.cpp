@@ -66,12 +66,9 @@ namespace nap
 
 	void FirstPersonControllerInstance::enable(const glm::vec3& translate, const glm::quat& rotate)
 	{
-		if (!mEnabled)
-		{
-			mTransformComponent->setTranslate(translate);
-			mTransformComponent->setRotate(rotate);
-			mEnabled = true;
-		}
+		mTransformComponent->setTranslate(translate);
+		mTransformComponent->setRotate(rotate);
+		mEnabled = true;
 	}
 
 

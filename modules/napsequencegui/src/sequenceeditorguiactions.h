@@ -54,7 +54,7 @@ namespace nap
 		template<typename T, typename... Args>
 		static SequenceActionPtr createAction(Args&&... args)
 		{
-			return std::make_unique<T>(args...);
+			return std::make_unique<T>(std::forward<Args>(args)...);
 		}
 
 		/**
@@ -64,11 +64,26 @@ namespace nap
 		class None : public Action { RTTI_ENABLE() };
 
 		/**
-		 * Action for dragging segments
+		 * TrackAction is the base class for any action that happens on a track
+		 * Every track action has a track id, which identifies the track that the action applies to
 		 */
-		class DraggingSegment : public Action
+		class TrackAction : public Action
 		{
 			RTTI_ENABLE(Action)
+		public:
+			TrackAction(std::string trackID) : mTrackID(trackID)
+			{
+			}
+
+			std::string mTrackID;
+		};
+
+		/**
+		 * Action for dragging segments
+		 */
+		class DraggingSegment : public TrackAction
+		{
+			RTTI_ENABLE(TrackAction)
 		public:
 			/**
 			 * Constructor
@@ -76,18 +91,17 @@ namespace nap
 			 * @param segmentID segmentID of segment being dragged
 			 */
 			DraggingSegment(std::string trackId, std::string segmentID)
-				: mTrackID(trackId), mSegmentID(segmentID) {}
+				: TrackAction(trackId), mSegmentID(segmentID) {}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 		};
 
 		/**
 		* Action for start dragging segments
 		*/
-		class StartDraggingSegment : public Action
+		class StartDraggingSegment : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			/**
 			* Constructor
@@ -95,9 +109,8 @@ namespace nap
 			* @param segmentID id of segment being dragged
 			*/
 			StartDraggingSegment(std::string trackId, std::string segmentID)
-				: mTrackID(trackId), mSegmentID(segmentID) {}
+				: TrackAction(trackId), mSegmentID(segmentID) {}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 		};
 
@@ -105,94 +118,87 @@ namespace nap
 		 * Action for inserting segment
 		 */
 		class InsertingSegment :
-			public Action
+			public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			InsertingSegment(std::string id, double time, rttr::type type)
-				: mTrackID(id), mTime(time), mTrackType(type) {}
+				: TrackAction(id), mTime(time), mTrackType(type) {}
 
-			std::string mTrackID;
 			double mTime;
 			rttr::type mTrackType;
 		};
 
 
 		class OpenInsertSegmentPopup :
-			public Action
+			public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			OpenInsertSegmentPopup(std::string id, double time, rttr::type type)
-				: mTrackID(id), mTime(time), mTrackType(type) {}
+				: TrackAction(id), mTime(time), mTrackType(type) {}
 
-			std::string mTrackID;
 			double mTime;
 			rttr::type mTrackType;
 		};
 
-		class EditingSegment : public Action {
-			RTTI_ENABLE(Action)
+		class EditingSegment : public TrackAction {
+			RTTI_ENABLE(TrackAction)
 		public:
 			EditingSegment(std::string trackID, std::string segmentID, rttr::type segmentType)
-				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+				: TrackAction(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
 			{
 
 			}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 			rttr::type mSegmentType;
 		};
 
-		class OpenEditSegmentValuePopup : public Action
+		class OpenEditSegmentValuePopup : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			OpenEditSegmentValuePopup(std::string trackID, std::string segmentID, rttr::type segmentType)
-				: mTrackID(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+				: TrackAction(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
 			{
 
 			}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 			rttr::type mSegmentType;
 		};
 
-		class HoveringSegment : public Action
+		class HoveringSegment : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			HoveringSegment(std::string trackId, std::string segmentID)
-				: mTrackID(trackId), mSegmentID(segmentID) {}
+				: TrackAction(trackId), mSegmentID(segmentID) {}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 		};
 
-		class HoveringSegmentValue : public Action
+		class HoveringSegmentValue : public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
-				: mTrackID(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
+				: TrackAction(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 			SequenceCurveEnums::SegmentValueTypes mType;
 			int mCurveIndex;
 		};
 
 		class DraggingSegmentValue :
-			public Action
+			public TrackAction
 		{
-			RTTI_ENABLE(Action)
+			RTTI_ENABLE(TrackAction)
 		public:
 			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
-				: mTrackID(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
+				: TrackAction(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
 
-			std::string mTrackID;
 			std::string mSegmentID;
 			SequenceCurveEnums::SegmentValueTypes mType;
 			int mCurveIndex;
@@ -258,6 +264,56 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
+		};
+
+		class OpenEditSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenEditSequenceMarkerPopup(const std::string& id, const std::string& message, double time) : mID(id), mMessage(message), mTime(time){}
+
+			std::string mID;
+			std::string mMessage;
+			double mTime;
+		};
+
+		class EditingSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			EditingSequenceMarkerPopup(const std::string& id, const std::string& message, double time) : mID(id), mMessage(message), mTime(time){}
+
+			std::string mID;
+			std::string mMessage;
+			double mTime;
+		};
+
+		class OpenInsertSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			OpenInsertSequenceMarkerPopup(double time) : mTime(time){}
+
+			double mTime;
+		};
+
+		class InsertingSequenceMarkerPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			InsertingSequenceMarkerPopup(double time, const std::string& message) : mTime(time), mMessage(message){}
+
+			double mTime;
+			std::string mMessage;
+		};
+
+		class DragSequenceMarker : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+			DragSequenceMarker(const std::string& id) : mID(id){}
+
+			std::string mID;
 		};
 	}
 }

@@ -37,7 +37,7 @@
         {
             "Type": "nap::OSCReceiver",
             "mID": "OSCReceiver",
-            "Port": 7000,
+            "Port": 8000,
             "EnableDebugOutput": false,
             "AllowPortReuse": false
         },

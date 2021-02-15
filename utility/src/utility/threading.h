@@ -1,8 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
 #include "blockingconcurrentqueue.h"
-#include "utility/dllexport.h"
 
 // External Includes
 #include <functional>
@@ -15,7 +18,7 @@ namespace nap
      * Thread safe queue for tasks that are encapsulated in function objects.
      * It is possible to enqueue tasks at the end of the queue and to execute the tasks in the queue.
      */
-    class NAPAPI TaskQueue final
+    class TaskQueue final
 	{
     public:
         // a task in the queue is a function object
@@ -25,7 +28,7 @@ namespace nap
         /**
          * Constructor takes maximum number of items that can be in the queue at a time.
          */
-        TaskQueue(unsigned int maxQueueItems = 20);
+        TaskQueue(int maxQueueItems = 20);
         /**
          * Add a task to the end of the queue.
          */
@@ -51,16 +54,21 @@ namespace nap
     /**
      * A single thread that runs its own task queue
      */
-    class NAPAPI WorkerThread
+    class WorkerThread
 	{
     public:
-        /**
+		/**
+		 * Explicit default constructor
+		 */
+		WorkerThread();
+
+		/**
          * @blocking: 
          *   true: the threads blocks and waits for enqueued tasks to perform
          *   false: the threads runs through the loop as fast as possible and emits @execute every iteration
          * @maxQueueItems: the maximum number of items in the task queue
          */
-        WorkerThread(bool blocking = true, unsigned int maxQueueItems = 20);
+        WorkerThread(bool blocking, int maxQueueItems = 20);
 		virtual ~WorkerThread();
         
         /**
@@ -99,10 +107,10 @@ namespace nap
     /**
      * A pool of threads that can be used to perform multiple tasks at the same time
      */
-    class NAPAPI ThreadPool final
+    class ThreadPool final
 	{
     public:
-        ThreadPool(unsigned int numberOfThreads = 1, unsigned int maxQueueItems = 20, bool realTimePriority = false);
+        ThreadPool(int numberOfThreads = 1, int maxQueueItems = 20, bool realTimePriority = false);
         ~ThreadPool();
         
         /**

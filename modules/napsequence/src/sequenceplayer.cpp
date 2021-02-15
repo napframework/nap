@@ -229,6 +229,13 @@ namespace nap
 		{
 			createAdapter(track->mAssignedOutputID, track->mID);
 		}
+
+		std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function = [this](const std::string& outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
+		{
+			mAdapters.emplace(outputID, std::move(adapter));
+		};
+
+		adaptersCreated.trigger(add_adapter_function);
 	}
 
 
@@ -409,7 +416,9 @@ namespace nap
 
 		if (output == nullptr)
 		{
-			nap::Logger::error("No output found with id %s", inputID.c_str());
+			// No output found
+			// We don't print an error here, because it could be that this track is assigned to a custom output when the
+			// adaptersCreated signal is dispatched
 			return false;
 		}
 
@@ -431,5 +440,11 @@ namespace nap
 	{
 		std::lock_guard<std::mutex> lock(mMutex);
 		action();
+	}
+
+
+	const std::string& SequencePlayer::getSequenceFilename() const
+	{
+		return mSequenceFileName;
 	}
 }

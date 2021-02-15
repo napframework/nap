@@ -136,6 +136,15 @@ namespace nap
 		 */
 		bool send(nap::APIEventPtr apiEvent, const WebSocketConnection& connection, utility::ErrorState& error);
 
+		/**
+		 * Broadcasts a message in the form of an api event to all connected clients
+		 * @param message the message to send
+		 * @param error contains the error if sending fails
+		 * @return if message was broadcast successfully
+		 */
+		 bool broadcast(nap::APIEventPtr apiEvent, nap::utility::ErrorState& error);
+
+
 		bool mVerbose = true;											///< Property: 'Verbose' log server message to api-event conversion failures.
 		EWebSocketForwardMode mMode = EWebSocketForwardMode::APIEvent;	///< Property: 'Mode' web-socket event translation and forward mode
 
