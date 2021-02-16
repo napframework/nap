@@ -49,32 +49,49 @@ namespace nap
 			return true;
 		}
 
-		// Call init
+		// Slaves in init state
+		nap::Logger::info("%d slaves found and configured", ec_slavecount);
+
+		// Configure DC options for every DC capable slave found in the list
+		ec_configdc();
+
+		// Notify listener
 		onStart();
 
 		// All slaves should be in pre-op mode now
-		checkState(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000);
+		if(stateCheck(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::PreOperational);
+			nap::Logger::warn("Not all slaves reached pre-operational state");
+
+		// Notify listeners, first update individual slave states
+		readState();
 		for (int i = 1; i <= ec_slavecount; i++)
 		{
-			onPreOperational(&(ec_slave[i]), i);
+			if(ec_slave[i].state == static_cast<uint16>(ESlaveState::PreOperational))
+				onPreOperational(&(ec_slave[i]), i);
 		}
 
-		// Configure io (SDO input / output) map
+		// Map all PDOs from slaves to IOmap with Outputs/Inputs
 		ec_config_map(&mIOmap);
-		ec_configdc();
 		nap::Logger::info("%s: all slaves mapped", this->mID.c_str());
 
 		// All slaves should be in safe-op mode now
-		checkState(0, ESlaveState::SafeOperational, EC_TIMEOUTSTATE / 1000);
+		if (stateCheck(0, ESlaveState::SafeOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::SafeOperational)
+			nap::Logger::warn("Not all slaves reached safe-operational state");
 
-		// Send some data to make slaves happy
-		ec_send_processdata();
-		ec_receive_processdata(mProcessTimeout);
+		// Calculate slave work counter, used to check in the error loop if slaves got lost
+		mExpectedWKC = (ec_group[0].outputsWKC * 2) + ec_group[0].inputsWKC;
+		nap::Logger::info("%s: calculated work-counter: %d", mID.c_str(), mExpectedWKC);
 
-		// Notify listeners
+		// Print useful infor and notify listeners
+		readState();
 		for (int i = 1; i <= ec_slavecount; i++)
 		{
-			onSafeOperational(&(ec_slave[i]), i);
+			nap::Logger::info("Slave:%d Name:%s Output size:%3dbits Input size:%3dbits State:%2d delay:%d.%d",
+				i, ec_slave[i].name, ec_slave[i].Obits, ec_slave[i].Ibits,
+				ec_slave[i].state, (int)ec_slave[i].pdelay, ec_slave[i].hasdc);
+
+			if (ec_slave[i].state == static_cast<uint16>(ESlaveState::SafeOperational))
+				onSafeOperational(&(ec_slave[i]), i);
 		}
 
 		// Bind our thread and start sending / receiving slave data
@@ -87,34 +104,19 @@ namespace nap
 		mStopErrorTask = false;
 		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
 
-		// Calculate slave work counter, used to check in the error loop if slaves got lost
-		mExpectedWKC = (ec_group[0].outputsWKC * 2) + ec_group[0].inputsWKC;
-		nap::Logger::info("%s: calculated work-counter: %d", mID.c_str(), mExpectedWKC);
-
 		// request Operational state for all slaves, give it 10 seconds
-		EtherCATMaster::ESlaveState state = requestState(ESlaveState::Operational, 10000);
-		updateState();
+		nap::Logger::info("Request operational state for all slaves");
+		ESlaveState state = requestState(ESlaveState::Operational, 10000);
 
 		// If not all slaves reached operational state display errors and 
 		// bail if operational state of all slaves is required on startup
 		mOperational = true;
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
-			std::string fail_msg = utility::stringFormat("%s: not all slaves reached operational state!", mID.c_str());
-			nap::Logger::warn(fail_msg);
-			errorState.fail(fail_msg);
-			for (int i = 1; i <= ec_slavecount; i++)
-			{
-				if (ec_slave[i].state == static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
-					continue;
-
-				// Get error code
-				std::string fail_state = utility::stringFormat("Slave %d State=0x%2.2x StatusCode=0x%4.4x : %s\n",
-					i, ec_slave[i].state, ec_slave[i].ALstatuscode, ec_ALstatuscode2string(ec_slave[i].ALstatuscode));
-
-				nap::Logger::warn(fail_state);
-				errorState.fail(fail_state);
-			}
+			// Get error message and bail if required
+			errorState.fail(utility::stringFormat("%s: not all slaves reached operational state!", mID.c_str()));
+			getStatusMessage(ESlaveState::Operational, errorState);
+			nap::Logger::warn(errorState.toString());
 
 			if (mForceOperational)
 			{
@@ -127,7 +129,8 @@ namespace nap
 			nap::Logger::info("%s: all slaves reached operational state", mID.c_str());
 		}
 
-		// All slaves successfully reached operational state
+		// Notify listeners
+		readState();
 		for (int i = 1; i <= ec_slavecount; i++)
 		{
 			if (ec_slave[i].state == static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
@@ -207,7 +210,7 @@ namespace nap
 	}
 
 
-	nap::EtherCATMaster::ESlaveState EtherCATMaster::updateState()
+	nap::EtherCATMaster::ESlaveState EtherCATMaster::readState()
 	{
 		return static_cast<ESlaveState>(ec_readstate());
 	}
@@ -243,9 +246,9 @@ namespace nap
 	}
 
 
-	void EtherCATMaster::sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p)
+	int EtherCATMaster::sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p)
 	{
-		ec_SDOread(slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
+		return ec_SDOread(slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
 	}
 
 	void EtherCATMaster::process()
@@ -316,8 +319,8 @@ namespace nap
 					ec_slave[slave].state = static_cast<uint16>(EtherCATMaster::ESlaveState::Operational);
 					writeState(slave);
 					
-					// Call onoperational if state changed
-					if (checkState(slave, ESlaveState::Operational) == ESlaveState::Operational)
+					// Call on operational if state changed
+					if (stateCheck(slave, ESlaveState::Operational) == ESlaveState::Operational)
 					{
 						onOperational(&(ec_slave[slave]), slave);
 						nap::Logger::info("%s: slave %d OPERATIONAL", mID.c_str(), slave);
@@ -343,7 +346,7 @@ namespace nap
 				{
 					// Check if the slave is operational
 					// If slave appears to be missing (none) tag it.
-					checkState(slave, ESlaveState::Operational, EC_TIMEOUTSTATE / 1000);
+					stateCheck(slave, ESlaveState::Operational, EC_TIMEOUTSTATE / 1000);
 					if (ec_slave[slave].state == static_cast<uint16>(ESlaveState::None))
 					{
 						ec_slave[slave].islost = true;
@@ -376,12 +379,27 @@ namespace nap
 	}
 
 
+	void EtherCATMaster::getStatusMessage(ESlaveState requiredState, utility::ErrorState& outLog)
+	{
+		readState();
+		for (int i = 1; i <= ec_slavecount; i++)
+		{
+			if (ec_slave[i].state == static_cast<uint16>(requiredState))
+				continue;
+
+			std::string fail_state = utility::stringFormat("Slave %d State=0x%2.2x StatusCode=0x%4.4x : %s",
+				i, ec_slave[i].state, ec_slave[i].ALstatuscode, ec_ALstatuscode2string(ec_slave[i].ALstatuscode));
+			outLog.fail(fail_state);
+		}
+	}
+
+
 	EtherCATMaster::ESlaveState EtherCATMaster::requestState(ESlaveState state, int timeout)
 	{
 		// Force state for all slaves
 		ec_slave[0].state = static_cast<uint16>(state);
 		writeState(0);
-		checkState(0, state, timeout);
+		stateCheck(0, state, timeout);
 		return static_cast<EtherCATMaster::ESlaveState>(ec_slave[0].state);
 	}
 
@@ -392,7 +410,7 @@ namespace nap
 	}
 
 
-	EtherCATMaster::ESlaveState EtherCATMaster::checkState(int index, ESlaveState state, int timeout)
+	EtherCATMaster::ESlaveState EtherCATMaster::stateCheck(int index, ESlaveState state, int timeout)
 	{
 		return static_cast<EtherCATMaster::ESlaveState>(
 			ec_statecheck(index, static_cast<uint16>(state), timeout * 1000));

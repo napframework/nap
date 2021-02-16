@@ -117,7 +117,7 @@ namespace nap
 		 * Updates the state of all slaves.
 		 * @return lowest state of all read slave states.
 		 */
-		ESlaveState updateState();
+		ESlaveState readState();
 
 		bool mForceOperational = false;		///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
 		std::string mAdapter;				///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
@@ -249,8 +249,9 @@ namespace nap
 		 * @param ca false = single subindex, true = Complete Access, all subindexes written.
 		 * @param psize size in bytes of parameter buffer, returns bytes read from SDO.
 		 * @param p pointer to parameter buffer
+		 * @return work counter
 		 */
-		void sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p);
+		int sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p);
 
 		//////////////////////////////////////////////////////////////////////////
 		// Slave State
@@ -274,13 +275,13 @@ namespace nap
 		void writeState(int index);
 
 		/**
-		 * Check the actual slave state, this is a blocking call.
+		 * Check actual slave state. This is a blocking function.
 		 * @param index slave index into SOEM ec_slave array, 0 = all slaves.
-		 * @param state the state to check
+		 * @param state the requested state
 		 * @param timeout timeout in ms
 		 * @return requested state, or found state after timeout.
 		 */
-		ESlaveState checkState(int index, ESlaveState state, int timeout = 2000);
+		ESlaveState stateCheck(int index, ESlaveState state, int timeout = 2000);
 
 	private:
 		char mIOmap[4096];
@@ -308,5 +309,15 @@ namespace nap
 		 * @param slaveGroup group of slaves to process error for
 		 */
 		void processErrors(int slaveGroup);
+
+		/**
+		 * Creates an error message if a slave is not in the required state.
+		 * All slaves that are not in the required state are added.
+		 * This call reads the state before checking for errors.
+		 * @param requiredState required state for the slave to be in.
+		 * @param outError contains the error message if slave is not in that state
+		 * @return if there are any error messages
+		 */
+		void getStatusMessage(ESlaveState requiredState, utility::ErrorState& outError);
 	};
 }
