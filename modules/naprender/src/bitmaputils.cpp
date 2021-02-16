@@ -33,7 +33,7 @@ namespace nap
 			// Get format
 			std::string ext = utility::getFileExtension(path).c_str();
 			FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFormat(ext.c_str());
-			if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format"))
+			if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format: %s", ext.c_str()))
 				return false;
 
 			// Convert to 24-bit for jpegs

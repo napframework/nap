@@ -65,8 +65,6 @@ namespace nap
 
 		uint32_t mWidth = 0;													///< Property: 'Width' width of the snapshot in texels
 		uint32_t mHeight = 0;													///< Property: 'Height' height of the snapshot in texels
-		uint32_t mNumRows = 0;													///< Property: 'NumRows' desired width of a cell
-		uint32_t mNumColumns = 0;												///< Property: 'NumColumns' desired height of a cell
 
 		glm::vec4 mClearColor{ 0.f, 0.f, 0.f, 1.f };							///< Property: 'ClearColor' color selection used for clearing the render target
 		RenderTexture2D::EFormat mFormat = RenderTexture2D::EFormat::RGBA8;		///< Property: 'Format' texture format
@@ -90,6 +88,8 @@ namespace nap
 		std::vector<rtti::ObjectPtr<Bitmap>> mBitmaps;
 		std::vector<bool> mBitmapUpdateFlags;
 
+		uint32_t mNumRows = 0;
+		uint32_t mNumColumns = 0;
 		uint32_t mNumCells = 0;
 	};
 }

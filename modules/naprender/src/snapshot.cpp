@@ -24,8 +24,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width", &nap::Snapshot::mWidth, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height", &nap::Snapshot::mHeight, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("NumRows", &nap::Snapshot::mNumRows, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NumColumns", &nap::Snapshot::mNumColumns, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("OutputDir", &nap::Snapshot::mOutputDir, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OutputExtension", &nap::Snapshot::mOutputExtension, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Format", &nap::Snapshot::mFormat, nap::rtti::EPropertyMetaData::Default)
@@ -58,21 +56,21 @@ namespace nap
 	bool Snapshot::init(utility::ErrorState& errorState)
 	{
 		assert(mNumRows > 0 && mNumColumns > 0);
-		assert(mWidth > mNumRows && mHeight > mNumColumns);
+		assert(mWidth > 0 && mHeight > 0);
 
 		nap::ResourceManager* resourceManager = mRenderService->getCore().getResourceManager();
 
 		uint32_t max_image_dimension = mRenderService->getPhysicalDeviceProperties().limits.maxImageDimension2D;
+		mNumRows = mWidth / max_image_dimension + 1;
+		mNumColumns = mHeight / max_image_dimension + 1;
+		mNumCells = mNumRows * mNumColumns;
+
 		uint32_t cell_width = mWidth / mNumRows;
 		uint32_t cell_height = mHeight / mNumColumns;
 
-		// Check if the cell dimensions are supported
-		if (cell_width > max_image_dimension || cell_height > max_image_dimension) {
-			errorState.fail(utility::stringFormat("Image cell dimension of %dx%d not supported", cell_width, cell_height));
-		}
-
-		// Calculate number of cells required
-		mNumCells = mNumRows * mNumColumns;
+		// Inform user in case we have to subdivide the texture
+		if (cell_width > 1 || cell_height > 1)
+			Logger::info("Snapshot: Dividing target image into %dx%d cells", cell_width, cell_height);
 
 		mRenderTargets.resize(mNumCells);
 		mBitmaps.resize(mNumCells);
@@ -83,9 +81,6 @@ namespace nap
 		bool is_little_endian = FI_RGBA_RED == 2;
 		bool is_8bit_4ch = (mFormat == RenderTexture2D::EFormat::RGBA8 || mFormat == RenderTexture2D::EFormat::BGRA8);
 		mFormat = (is_little_endian && is_8bit_4ch) ? RenderTexture2D::EFormat::BGRA8 : RenderTexture2D::EFormat::RGBA8;
-
-		uint32_t pixels_width_processed = 0;
-		uint32_t pixels_height_processed = 0;
 
 		for (int i=0; i<mNumCells; i++) {
 			// Create render textures
@@ -137,7 +132,7 @@ namespace nap
 				}
 				else {
 					std::string path = utility::stringFormat(
-						"%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str(), extensionToString(mOutputExtension)
+						"%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str(), extensionToString(mOutputExtension)
 					);
 					utility::ErrorState errorState;
 					if (!mBitmaps[i]->writeToDisk(path, errorState)) {
@@ -239,7 +234,7 @@ namespace nap
 			fi_bitmap_handles[i] = fi_bitmap;
 		}
 		// Save
-		std::string path = utility::stringFormat("%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S").c_str(), extensionToString(mOutputExtension));
+		std::string path = utility::stringFormat("%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str(), extensionToString(mOutputExtension));
 		utility::ErrorState errorState;
 		if (!utility::writeToDisk(fi_bitmap_full, fi_img_type, path, errorState)) {
 			nap::Logger::error("error: %s", errorState.toString().c_str());
