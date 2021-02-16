@@ -253,21 +253,7 @@ namespace nap
 		// Keep running until stop is called
 		while (!mStopProcessing)
 		{
-			if (!mOperational)
-			{
-				osal_usleep(mProcessCycleTime);
-				continue;
-			}
-
-			// Process
 			onProcess();
-
-			// Transmit process-data to slaves and store actual work counter
-			ec_send_processdata();
-			mActualWCK = ec_receive_processdata(mProcessTimeout);
-		
-			// Sleep xUS
-			osal_usleep(mProcessCycleTime);
 		}
 	}
 

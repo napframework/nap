@@ -26,8 +26,9 @@ namespace nap
 	 * Override the various virtual functions to read / write to the slave SDO.
 	 * Override the onProcess function to broadcast high priority control and status
 	 * information using the slave PDO. onProcess() is called from a separate thread and
-	 * runs on a frequency controlled by the 'CycleTime' property. Error
-	 * reporting and slave recovery is also handled on a separate thread.
+	 * should run on a frequency controlled by the 'CycleTime' property.
+	 * It is your responsibility to time the process data transfers.
+	 * Error reporting and slave recovery is also handled on a separate thread.
 	 *
 	 * IMPORTANT: On Linux and OSX you must run the application that uses the 
 	 * Ethercat master as administrator, ie: with sudo privileges. Failure
