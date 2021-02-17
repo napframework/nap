@@ -28,7 +28,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 # preprocessors
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY NAP_SHARED_LIBRARY_IMGUI)
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link libs
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
