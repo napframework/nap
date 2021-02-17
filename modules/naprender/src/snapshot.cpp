@@ -24,7 +24,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width", &nap::Snapshot::mWidth, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height", &nap::Snapshot::mHeight, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputDir", &nap::Snapshot::mOutputDir, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OutputDir", &nap::Snapshot::mOutputDir, nap::rtti::EPropertyMetaData::FileLink)
 	RTTI_PROPERTY("OutputExtension", &nap::Snapshot::mOutputExtension, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Format", &nap::Snapshot::mFormat, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleShading", &nap::Snapshot::mSampleShading, nap::rtti::EPropertyMetaData::Default)
@@ -69,7 +69,7 @@ namespace nap
 		uint32_t cell_height = mHeight / mNumColumns;
 
 		// Inform user in case we have to subdivide the texture
-		if (cell_width > 1 || cell_height > 1)
+		if (mNumCells > 1)
 			Logger::info("Snapshot: Dividing target image into %dx%d cells", cell_width, cell_height);
 
 		mRenderTargets.resize(mNumCells);
