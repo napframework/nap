@@ -94,9 +94,12 @@ namespace nap
 				onSafeOperational(&(ec_slave[i]), i);
 		}
 
+		// Enable run mode, we're operational when all slaves reach operational state
+		mOperational = false;
+
 		// Bind our thread and start sending / receiving slave data
 		// We do that here to ensure a fast transition from safe to operational.
-		mStopProcessing = false;
+		mRunning = true;
 		mProcessTask = std::async(std::launch::async, std::bind(&EtherCATMaster::process, this));
 
 		// Bind our error thread, run until stopped
@@ -110,7 +113,6 @@ namespace nap
 
 		// If not all slaves reached operational state display errors and 
 		// bail if operational state of all slaves is required on startup
-		mOperational = true;
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
 			// Get error message and bail if required
@@ -118,6 +120,7 @@ namespace nap
 			getStatusMessage(ESlaveState::Operational, errorState);
 			nap::Logger::warn(errorState.toString());
 
+			// Stop if operational state for all slaves is enforced
 			if (mForceOperational)
 			{
 				stop();
@@ -127,6 +130,7 @@ namespace nap
 		else
 		{
 			nap::Logger::info("%s: all slaves reached operational state", mID.c_str());
+			mOperational = true;
 		}
 
 		// Notify listeners
@@ -146,7 +150,7 @@ namespace nap
 	{
 		// When operational, tasks are running and at least 1 slave is found.
 		// This means we can stop the tasks and request the slave to go to init state.
-		if (mOperational)
+		if (mRunning)
 		{
 			// Stop error reporting task
 			assert(mErrorTask.valid());
@@ -155,7 +159,7 @@ namespace nap
 
 			// Stop processing task
 			assert(mProcessTask.valid());
-			mStopProcessing = true;
+			this->onStopProcessing();
 			mProcessTask.wait();
 
 			// Call stop and request init state for all slaves
@@ -169,12 +173,13 @@ namespace nap
 		}
 
 		// Close socket
-		if(mOperational || mStarted)
+		if(mStarted || mRunning)
 			ec_close();	
 
 		// Reset work-counter and other variables
 		mActualWCK		= 0;
 		mExpectedWKC	= 0;
+		mRunning		= false;
 		mOperational	= false;
 		mStarted		= false;
 	}
@@ -182,7 +187,7 @@ namespace nap
 
 	bool EtherCATMaster::isRunning() const
 	{
-		return mOperational;
+		return mRunning;
 	}
 
 
@@ -251,19 +256,15 @@ namespace nap
 		return ec_SDOread(slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
 	}
 
+
 	void EtherCATMaster::process()
 	{
-		// Keep running until stop is called
-		while (!mStopProcessing)
-		{
-			onProcess();
-		}
+		onProcess();
 	}
 
 
 	void EtherCATMaster::checkForErrors()
 	{
-		int currentgroup = 0;
 		while (!mStopErrorTask)
 		{
 			// Operational stage not yet reached
@@ -274,8 +275,7 @@ namespace nap
 			}
 
 			// Work-count matches and we don't have to check slave states
-			if (mActualWCK == mExpectedWKC && 
-				!ec_group[currentgroup].docheckstate)
+			if (mActualWCK == mExpectedWKC && !ec_group[0].docheckstate)
 			{
 				osal_usleep(mErrorCycleTime);
 				continue;
@@ -414,5 +414,36 @@ namespace nap
 	{
 		return static_cast<EtherCATMaster::ESlaveState>(
 			ec_statecheck(index, static_cast<uint16>(state), timeout * 1000));
+	}
+
+
+	int EtherCATMaster::receiveProcessData(int timeout)
+	{
+		mActualWCK = ec_receive_processdata(timeout);
+		return mActualWCK;
+	}
+
+
+	void EtherCATMaster::sendProcessData()
+	{
+		ec_send_processdata();
+	}
+
+
+	bool EtherCATMaster::hasDistributedClock(int slave)
+	{
+		return ec_slave[slave].hasdc;
+	}
+
+
+	bool EtherCATMaster::hasDistributedClock()
+	{
+		return ec_slave[0].hasdc;
+	}
+
+
+	int64 EtherCATMaster::getDistributedClock()
+	{
+		return ec_DCtime;
 	}
 }

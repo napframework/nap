@@ -28,7 +28,7 @@ namespace nap
 	 * information using the slave PDO. onProcess() is called from a separate thread and
 	 * should run on a frequency controlled by the 'CycleTime' property.
 	 * It is your responsibility to time the process data transfers.
-	 * Error reporting and slave recovery is also handled on a separate thread.
+	 * Error reporting and slave recovery is also handled by this master on a separate thread.
 	 *
 	 * IMPORTANT: On Linux and OSX you must run the application that uses the 
 	 * Ethercat master as administrator, ie: with sudo privileges. Failure
@@ -62,8 +62,8 @@ namespace nap
 		virtual ~EtherCATMaster() override;
 
 		/**
-		 * Starts the master. Expects all slaves on the network to reach operational state.
-		 * If one of the slaves fails to reach operational state the master is not started.
+		 * Starts the master. Expects all slaves on the network to reach operational state (when 'ForceOperational' is set to 'true').
+		 * If no slaves are found the device does start but is not running: no background tasks are performed.
 		 * Override the various operational stages to add your own SDO / PDO functionality during startup.
 		 * @param errorState contains the error if the device can't be started
 		 * @return if the device started
@@ -79,16 +79,15 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * When true there is at least 1 slave and the operational stage for all slaves is reached (
-		 * if 'ForceOperational' is set to true). 
-		 * Processing and error handling tasks are performed in the background. 
-		 * @return if the master reached the operational stage for all slaves and is therefore running.
+		 * When true ethercat data processing and error handling tasks are performed in the background.
+		 * @return if ethercat data processing and error handling tasks are performed in the background
 		 */
 		bool isRunning() const;
 
 		/**
 		 * Returns if the device started successfully. 
-		 * If no slaves are found on the network the device starts but does not run. 
+		 * If no slaves are found on the network the master' started' but is not running. 
+		 * If slaves are found on the network the master is 'running' if the start procedure succeeds.
 		 * The ethernet port is open always open when started().
 		 * @return if the master started. This does not mean the master is operational.
 		 */
@@ -96,7 +95,7 @@ namespace nap
 		
 		/**
 		 * Returns if a given slave is on-line (not lost). Index 0 refers to the first slave
-		 * A slave that is on-line is not necessarily operations. Use getSlaveState() to get the actual status of a slave.
+		 * A slave that is on-line is not necessarily operational. Use getSlaveState() to get the actual status of a slave.
 		 * @param index slave index, 0 = first slave. Does not perform an out of bounds check
 		 * @return if a slave is on-line
 		 */
@@ -127,67 +126,37 @@ namespace nap
 		int mProcessTimeout		= 2000;		///< Property: 'ProcessTimeout' time (in us) the master is given to process all slave input / output.
 
 	protected:
-		/**
-		 * Returns a pointer to a ec_slavet (SOEM) struct.
-		 * Note that index 0 refers to all slaves and index 1 to the first slave on the network.
-		 * @return the slave at the given index. Does not perform any out of bounds check.
-		 */
-		void* getSlave(int index);
-
-		//////////////////////////////////////////////////////////////////////////
-		// Start / Stop
-		//////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * Called after slave enumeration and initialization.
-		 * All slaves are in  PRE-Operational state and can be addressed.
-		 */
-		virtual void onStart()	{ }
-
-		/**
-		 * Called after stopping the processing and error handling threads but
-		 * before setting all slaves to init mode. Perform additional close up steps here.
-		 */
-		virtual void onStop()	{ }
-
-		/**
-		 * Returns the state associated with a specific slave.
-		 * Index 1 refers to the first actual slave on the network.
-		 * @param index slave index, 0 = master, 1 = first slave.
-		 * @return state of a slave at the given index, no out of bounds check is performed.
-		 */
-		ESlaveState getState(int index) const;
-
-		/**
-		 * Returns if a slave is lost or not.
-		 * Index 1 refers to the first actual slave on the network.
-		 * @param index slave index, 0 = master, 1 = first slave.
-		 * @return if a slave is lost (not visible on the network anymore)
-		 */
-		bool isLost(int index) const;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Slave State Changes
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
-		 * Called from the processing thread at a fixed interval defined by the cycle time property.
+		 * Called after slave enumeration and initialization.
+		 * All slaves are in  PRE-Operational state and can be addressed.
+		 */
+		virtual void onStart() { }
+
+		/**
+		 * Called after stopping the processing and error handling threads but
+		 * before setting all slaves to init mode. Perform additional close up steps here.
+		 */
+		virtual void onStop() { }
+
+		/**
+		 * Called from the processing thread, override in derived class.
 		 * Allows for real-time interaction with an ether-cat slave on the network by
 		 * reading and writing to the slave's inputs or outputs.
+		 * It is your responsibility to handle all timing and master - slave synchronization.
 		 * At this stage no SDO operations should take place, only operations that
 		 * involve the access and modification of the PDO map.
-		 * example:
-		 *
-		 *	ec_slavet* slave = reinterpret_cast<ec_slavet*>(getSlave(1));
-		 *
-		 * 	MAC_400_OUTPUTS* mac_outputs = (MAC_400_OUTPUTS*)slave->outputs;
-		 *	mac_outputs->mOperatingMode = 2;
-		 *	mac_outputs->mRequestedPosition = -1000000;
-		 *	mac_outputs->mVelocity = 2700;
-		 *	mac_outputs->mAcceleration = 360;
-		 *	mac_outputs->mTorque = 341;
 		 */
 		virtual void onProcess() = 0;
+
+		/**
+		 * Called by the main thread when the processing task should be stopped.
+		 */
+		virtual void onStopProcessing() = 0;
 
 		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
@@ -197,7 +166,7 @@ namespace nap
 		 * Override this call to register a slave setup function, for example:
 		 * void MyMaster::onPreOperational(void* slave, int index)
 		 * {
-		 *		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfig = &MAC400_SETUP;
+		 *		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfigx = &MAC400_SETUP;
 		 * }
 		 * 
 		 * You typically use the setup function to create your own custom PDO mapping.
@@ -258,6 +227,29 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
+		 * Returns a pointer to a ec_slavet (SOEM) struct.
+		 * Note that index 0 refers to all slaves and index 1 to the first slave on the network.
+		 * @return the slave at the given index. Does not perform any out of bounds check.
+		 */
+		void* getSlave(int index);
+
+		/**
+		 * Returns the state associated with a specific slave.
+		 * Index 1 refers to the first actual slave on the network.
+		 * @param index slave index, 0 = master, 1 = first slave.
+		 * @return state of a slave at the given index, no out of bounds check is performed.
+		 */
+		ESlaveState getState(int index) const;
+
+		/**
+		 * Returns if a slave is lost or not.
+		 * Index 1 refers to the first actual slave on the network.
+		 * @param index slave index, 0 = master, 1 = first slave.
+		 * @return if a slave is lost (not visible on the network anymore)
+		 */
+		bool isLost(int index) const;
+
+		/**
 		 * Blocking call to change the state of all slaves.
 		 * Calls writeState and checkState internally.
 		 * Waits 2 seconds (default timeout value) to ensure state actually changed.
@@ -283,15 +275,58 @@ namespace nap
 		 */
 		ESlaveState stateCheck(int index, ESlaveState state, int timeout = 2000);
 
+		//////////////////////////////////////////////////////////////////////////
+		// Process Data
+		//////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * Send process data to all slaves.
+		 */
+		void sendProcessData();
+
+		/** 
+		 * Receive process data from slaves. Should be called from onProcess.
+		 * Received datagrams are recombined with the process data with help from the stack.
+		 * If a datagram contains input process data it copies it to the process data structure.
+		 * @param timeout Timeout in us.
+		 * @return Work counter.
+		 */
+		int receiveProcessData(int timeout);
+
+		//////////////////////////////////////////////////////////////////////////
+		// Distributed Clock
+		//////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * Returns if a specific slave has a distributed clock. 
+		 * When index 0 is queried, the return value indicates if at least 1 slave has a distributed clock.
+		 * If 1 slave has a distributed clock the master can synchronize to it.
+		 * @param slave the slave to check, 0 = all slaves.
+		 * @return if the slave has distributed clock capability
+		 */
+		bool hasDistributedClock(int slave);
+
+		/**
+		 * Returns if at least 1 slave has a distributed clock.
+		 * If that's the case the system can synchronize to it.
+		 * @return if at least 1 slave has a distributed clock
+		 */
+		bool hasDistributedClock();
+
+		/**
+		 * @return distributed clock
+		 */
+		int64 getDistributedClock();	
+
 	private:
 		char mIOmap[4096];
 		int  mExpectedWKC = 0;
 		std::future<void>	mProcessTask;						///< The background server thread
 		std::future<void>	mErrorTask;							///< The background error checking thread
-		std::atomic<bool>	mStopProcessing = { false };		///< If the task should be stopped
 		std::atomic<bool>	mStopErrorTask = { false };			///< If the error task should be stopped
 		std::atomic<int>	mActualWCK = { 0 };					///< Actual work counter
 		std::atomic<bool>	mOperational = { false };			///< If the master is operational
+		std::atomic<bool>	mRunning = { false };				///< If the processing thread is running
 		bool				mStarted = false;					///< If the master started, this does not mean it's operational
 
 		/**
