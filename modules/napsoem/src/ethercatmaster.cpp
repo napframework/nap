@@ -327,7 +327,7 @@ namespace nap
 					}
 					else
 					{
-						nap::Logger::info("%s: slave %d unable to reach OPERATIONAL state");
+						nap::Logger::info("%s: slave %d unable to reach OPERATIONAL state", mID.c_str(), slave);
 					}
 				}
 				
