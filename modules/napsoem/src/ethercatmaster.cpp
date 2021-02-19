@@ -199,7 +199,7 @@ namespace nap
 
 	bool EtherCATMaster::isOnline(int index) const
 	{
-		return !isLost(index + 1);
+		return !isLost(index);
 	}
 
 
@@ -211,7 +211,7 @@ namespace nap
 
 	nap::EtherCATMaster::ESlaveState EtherCATMaster::getSlaveState(int index) const
 	{
-		return getState(index + 1);
+		return getState(index);
 	}
 
 
@@ -268,14 +268,7 @@ namespace nap
 		while (!mStopErrorTask)
 		{
 			// Operational stage not yet reached
-			if (!mOperational)
-			{
-				osal_usleep(mErrorCycleTime);
-				continue;
-			}
-
-			// Work-count matches and we don't have to check slave states
-			if (mActualWCK == mExpectedWKC && !ec_group[0].docheckstate)
+			if (!mOperational || (mActualWCK == mExpectedWKC && !ec_group[0].docheckstate))
 			{
 				osal_usleep(mErrorCycleTime);
 				continue;
@@ -445,5 +438,12 @@ namespace nap
 	int64 EtherCATMaster::getDistributedClock()
 	{
 		return ec_DCtime;
+	}
+
+
+	std::string EtherCATMaster::getSlaveName(int index)
+	{
+		assert(index <= ec_slavecount);
+		return ec_slave[index].name;
 	}
 }

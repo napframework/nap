@@ -94,9 +94,10 @@ namespace nap
 		bool started() const;
 		
 		/**
-		 * Returns if a given slave is on-line (not lost). Index 0 refers to the first slave
+		 * Returns if a given slave is on-line (not lost).
+		 * Index 1 refers to the first actual slave on the network, index 0 = all slaves.
 		 * A slave that is on-line is not necessarily operational. Use getSlaveState() to get the actual status of a slave.
-		 * @param index slave index, 0 = first slave. Does not perform an out of bounds check
+		 * @param index slave index, 1 = first slave. 0 = all slaves. Does not perform an out of bounds check
 		 * @return if a slave is on-line
 		 */
 		bool isOnline(int index) const;
@@ -107,13 +108,22 @@ namespace nap
 		int getSlaveCount() const;
 
 		/**
-		 * @param index the index of the slave, 0 = first slave
+		 * Returns the state of a slave on the network.
+		 * Call readState() to update the state.
+		 * Index 0 refers to the common state, index 1 is the first slave on the network.
+		 * @param index the index of the slave. 1 = first slave on the network.
 		 * @return the states of a slave on the network.
 		 */
 		ESlaveState getSlaveState(int index) const;
 
 		/**
-		 * Updates the state of all slaves.
+		 * @param index the index of the slave. 1 = first slave on the network.
+		 * @return name of a slave.
+		 */
+		 std::string getSlaveName(int index);
+
+		/**
+		 * Reads the state of all slaves on the network and stores the result.
 		 * @return lowest state of all read slave states.
 		 */
 		ESlaveState readState();
