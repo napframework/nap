@@ -284,7 +284,7 @@ namespace nap
 			// Make all slaves go to initialization stage
 			if (requestState(ESlaveState::Init) != ESlaveState::Init)
 			{
-				nap::Logger::warn("%s: not all slaves reached init state", mID.c_str());
+			 	nap::Logger::warn("%s: not all slaves reached init state", mID.c_str());
 			}
 		}
 
