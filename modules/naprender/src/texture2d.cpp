@@ -330,13 +330,8 @@ namespace nap
 			BufferData& staging_buffer = mStagingBuffers[index];
 
 			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-			//VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ? 
-			//	VK_BUFFER_USAGE_TRANSFER_DST_BIT : 
-			//	VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-			// Quick fix
-			VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ?
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
+			VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ? 
+				VK_BUFFER_USAGE_TRANSFER_DST_BIT : 
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU

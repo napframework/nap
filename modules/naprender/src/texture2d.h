@@ -43,7 +43,6 @@ namespace nap
 	class NAPAPI Texture2D : public Resource
 	{
 		friend class RenderService;
-
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D(Core& core);
@@ -183,7 +182,7 @@ namespace nap
 
 	private:
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
-		using TextureReadCompleteCallback = std::function<void()>;
+
 
 		ImageData							mImageData;							///< 2D Texture vulkan image buffers
 		std::vector<BufferData>				mStagingBuffers;					///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
