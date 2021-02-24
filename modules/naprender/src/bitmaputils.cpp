@@ -10,6 +10,22 @@ namespace nap
 {
 	namespace utility
 	{
+		FREE_IMAGE_TYPE getFIType(int bpp, int channels)
+		{
+			if (channels == 4) {
+				return	(bpp == 32) ? FREE_IMAGE_TYPE::FIT_BITMAP :
+						(bpp == 64) ? FREE_IMAGE_TYPE::FIT_RGBA16 :
+						(bpp == 128) ? FREE_IMAGE_TYPE::FIT_RGBAF : FREE_IMAGE_TYPE::FIT_UNKNOWN;
+			}
+			if (channels == 1) {
+				return	(bpp == 8) ? FREE_IMAGE_TYPE::FIT_BITMAP :
+						(bpp == 16) ? FREE_IMAGE_TYPE::FIT_UINT16 :
+						(bpp == 32) ? FREE_IMAGE_TYPE::FIT_FLOAT : FREE_IMAGE_TYPE::FIT_UNKNOWN;
+			}
+			return FREE_IMAGE_TYPE::FIT_UNKNOWN;
+		}
+
+
 		FREE_IMAGE_TYPE getFIType(ESurfaceDataType dataType, ESurfaceChannels channels)
 		{
 			switch (dataType) {
@@ -24,6 +40,27 @@ namespace nap
 			}
 		}
 
+
+		bool getFIBitmapInfo(int bpp, int channels, uint32_t width, uint32_t height, FIBitmapInfo& outInfo)
+		{
+			// Do not support pixel formats under 8 bits
+			if (bpp < 8) return false;
+
+			int bytes_per_pixel = bpp / 8;
+			outInfo.bpp = bpp;
+			outInfo.pitch = width*bytes_per_pixel;
+			outInfo.bytes = outInfo.pitch*height;
+			outInfo.type = getFIType(bpp, channels);
+			return true;
+		}
+
+		/**
+		 * Write a bitmap to a specified location on disk
+		 * @param fiBitmap a FreeImage bitmap handle
+		 * @param fiType the FreeImage bitmap type
+		 * @param path destination location on disk. Should include an extension (e.g. 'myBitmap.png')
+		 * @errorState the error state
+		 */
 		bool writeToDisk(FIBITMAP* fiBitmap, FREE_IMAGE_TYPE fiType, const std::string& path, utility::ErrorState& errorState)
 		{
 			// Check if directory exists

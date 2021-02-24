@@ -570,9 +570,15 @@ namespace nap
 			if (bitmap.empty() || bitmap.mSurfaceDescriptor != mDescriptor) {
 				bitmap.initFromDescriptor(mDescriptor);
 			}
- 			memcpy(bitmap.getData(), data, sizeInBytes);
-			bitmap.mBitmapUpdated();
+			bitmap.update(data, sizeInBytes);
  		};
+		mRenderService->requestTextureDownload(*this);
+	}
+
+	void Texture2D::asyncGetData(std::function<void(const void*, size_t)> copyFunction)
+	{
+		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
+		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = copyFunction;
 		mRenderService->requestTextureDownload(*this);
 	}
 

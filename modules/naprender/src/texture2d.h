@@ -150,6 +150,13 @@ namespace nap
 		 */
 		void asyncGetData(Bitmap& bitmap);
 
+		/**
+		* Starts a transfer of texture data from GPU to CPU. Use this overload to pass your own copy function.
+		* This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
+		* @param copyFunction the copy function to call when the texture data is available for download.
+		*/
+		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
+
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
 	private:

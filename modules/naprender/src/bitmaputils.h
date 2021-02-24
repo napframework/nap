@@ -16,11 +16,40 @@ namespace nap
 	namespace utility
 	{
 		/**
+		* Simple structure that holds some bitmap meta data
+		*/
+		struct FIBitmapInfo
+		{
+			FREE_IMAGE_TYPE type = FREE_IMAGE_TYPE::FIT_UNKNOWN;	// free image type
+			uint32_t bytes = 0;										// bitmap data size
+			int bpp = 0;											// bits per pixel
+			int pitch = 0;											// bitmap width in bytes
+		};
+
+		/**
+		* Supports 1 channel and 4 channels
+		* @param bpp bits per pixel
+		* @param channels the number of color channels
+		* @return the FreeImage type associated with the given bit depth and number of channels
+		*/
+		FREE_IMAGE_TYPE NAPAPI getFIType(int bpp, int channels);
+
+		/**
 		* @param dataType surface data type
 		* @param channels surface channels
 		* @return the FreeImage type associated with this surface description
 		*/
 		FREE_IMAGE_TYPE NAPAPI getFIType(ESurfaceDataType dataType, ESurfaceChannels channels);
+
+		/**
+		* Get bitmap info give some paramters
+		* @param bpp
+		* @param channels
+		* @param width
+		* @param height
+		* @param outInfo
+		*/
+		bool NAPAPI getFIBitmapInfo(int bpp, int channels, uint32_t width, uint32_t height, FIBitmapInfo& outInfo);
 
 		/**
 		* Writes a FreeImage bitmap to disk

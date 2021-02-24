@@ -6,17 +6,16 @@
 
 // Local Includes
 #include "surfacedescriptor.h"
+#include "renderservice.h"
+#include "bitmap.h"
+#include "bitmaputils.h"
+#include "perspcameracomponent.h"
 
 // External Includes
 #include <nap/resource.h>
 #include <nap/core.h>
 #include <nap/signalslot.h>
-
-#include <renderservice.h>
-#include <bitmap.h>
-#include <rect.h>
-#include <perspcameracomponent.h>
-#include <utility/threading.h>
+#include <future>
 
 namespace nap
 {
@@ -27,6 +26,7 @@ namespace nap
 	class NAPAPI Snapshot : public Resource
 	{
 		RTTI_ENABLE(Resource)
+		friend class SnapshotRenderTarget;
 	public:
 
 		/**
@@ -41,7 +41,7 @@ namespace nap
 		};
 
 		Snapshot(Core& core);
-		virtual ~Snapshot();
+		~Snapshot() override;
 
 		/**
 		* Initialize this object after de-serialization
@@ -74,22 +74,53 @@ namespace nap
 		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to.
 		EOutputExtension mOutputExtension = EOutputExtension::PNG;				///< Property: 'OutputExtension' Extension of the snapshot image file.
 
-		nap::Signal<> onSnapshotTaken;
+		uint32_t mNumRows = 1;													///< Property: 'NumRows' number backbuffer rows
+		uint32_t mNumColumns = 1;												///< Property: 'NumColumns' number of backbuffer columns
+		bool mAutoGrid = true;													///< Property: 'AutoGrid' Automatically determine backbuffer subdivision
+
+		// Triggered when a snapshot is being processed
+		nap::Signal<> onSnapshot;
+
+		// Triggered when a snapshot has finished processing
+		nap::Signal<std::string> onSnapshotSaved;
 
 	protected:
 		RenderService* mRenderService = nullptr;
 
 	private:
-		bool stitchAndSaveBitmaps();
+		uint32_t mNumCells = 0;
+		glm::u32vec2 mCellSize = { 0, 0 };
 
-		nap::Signal<> onBitmapsUpdated;
+		std::vector<std::unique_ptr<RenderTexture2D>> mColorTextures;
+		std::unique_ptr<SnapshotRenderTarget> mRenderTarget;
 
-		std::vector<rtti::ObjectPtr<RenderTarget>> mRenderTargets;
-		std::vector<rtti::ObjectPtr<Bitmap>> mBitmaps;
+		std::unique_ptr<utility::FIBitmapInfo> mFIBitmapInfo;
 		std::vector<bool> mBitmapUpdateFlags;
 
-		uint32_t mNumRows = 0;
-		uint32_t mNumColumns = 0;
-		uint32_t mNumCells = 0;
+		// Triggered when all cells are updated
+		nap::Signal<> onCellsUpdated;
+
+		/**
+		* Writes the destination bitmap to disk
+		* @return true if successful
+		*/
+		bool writeToDisk();
+
+		/**
+		* The bitmap write task
+		* @param path the bitmap output path
+		*/
+		bool writeFunction(std::string path);
+		nap::Slot<> writeBitmapSlot = { [this]() -> void { writeToDisk(); } };
+
+		// Destination bitmap
+		FIBITMAP* mDstBitmap = nullptr;
+		bool mDstBitmapAllocated = false;
+
+		// Enable async bitmap write
+		bool mAsyncWrite = true;
+		std::mutex mBitmapMutex;
+
+		std::future<void> mWriteTask;
 	};
 }

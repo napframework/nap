@@ -3,14 +3,13 @@
 * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "snapshot.h"
-#include "bitmaputils.h"
+#include "snapshotrendertarget.h"
+#include "renderablemeshcomponent.h"
 
 #include <nap/logger.h>
-#include <renderablemeshcomponent.h>
-
 #include <FreeImage.h>
-#undef BYTE
 
+#undef BYTE
 #define STITCH_COMBINE 256
 
 RTTI_BEGIN_ENUM(nap::Snapshot::EOutputExtension)
@@ -30,6 +29,9 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_PROPERTY("SampleShading", &nap::Snapshot::mSampleShading, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RequestedSamples", &nap::Snapshot::mRequestedSamples, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor", &nap::Snapshot::mClearColor, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NumRows", &nap::Snapshot::mNumRows, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NumColumns", &nap::Snapshot::mNumColumns, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AutoGrid", &nap::Snapshot::mAutoGrid, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,12 +39,11 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	Snapshot::Snapshot(Core& core) :
-		mRenderService(core.getService<RenderService>()) {}
+	//////////////////////////////////////////////////////////////////////////
+	// Static functions
+	//////////////////////////////////////////////////////////////////////////
 
-	Snapshot::~Snapshot() {}
-
-	const char* extensionToString(Snapshot::EOutputExtension ext)
+	static const char* extensionToString(Snapshot::EOutputExtension ext)
 	{
 		switch (ext) {
 		case Snapshot::EOutputExtension::PNG: return "png";
@@ -53,28 +54,35 @@ namespace nap
 		}
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+	// Snapshot
+	//////////////////////////////////////////////////////////////////////////
+
+	Snapshot::Snapshot(Core& core) :
+		mRenderService(core.getService<RenderService>()) {}
+
+	Snapshot::~Snapshot() 
+	{
+		if (mDstBitmapAllocated)
+			FreeImage_Unload(mDstBitmap);
+	}
+
 	bool Snapshot::init(utility::ErrorState& errorState)
 	{
-		assert(mNumRows > 0 && mNumColumns > 0);
 		assert(mWidth > 0 && mHeight > 0);
 
-		nap::ResourceManager* resourceManager = mRenderService->getCore().getResourceManager();
-
 		uint32_t max_image_dimension = mRenderService->getPhysicalDeviceProperties().limits.maxImageDimension2D;
-		mNumRows = mWidth / max_image_dimension + 1;
-		mNumColumns = mHeight / max_image_dimension + 1;
+		if (mAutoGrid) {
+			// Subdivide in mutiple cells if the requested snapshot size is greater than the maximum texture size
+			mNumRows = mWidth / max_image_dimension + 1;
+			mNumColumns = mHeight / max_image_dimension + 1;
+		}
+		else {
+			assert(mNumRows > 0 && mNumColumns > 0);
+			assert(mNumRows < mWidth / 2 && mNumColumns < mHeight / 2);
+		}
 		mNumCells = mNumRows * mNumColumns;
-
-		uint32_t cell_width = mWidth / mNumRows;
-		uint32_t cell_height = mHeight / mNumColumns;
-
-		// Inform user in case we have to subdivide the texture
-		if (mNumCells > 1)
-			Logger::info("Snapshot: Dividing target image into %dx%d cells", cell_width, cell_height);
-
-		mRenderTargets.resize(mNumCells);
-		mBitmaps.resize(mNumCells);
-		mBitmapUpdateFlags.resize(mNumCells, false);
+		mCellSize = { mWidth / mNumRows, mHeight / mNumColumns };
 
 		// Check if we need to render to BGRA for image formats on little endian machines
 		// We can ignore this check when rendering 16bit color
@@ -82,172 +90,182 @@ namespace nap
 		bool is_8bit_4ch = (mFormat == RenderTexture2D::EFormat::RGBA8 || mFormat == RenderTexture2D::EFormat::BGRA8);
 		mFormat = (is_little_endian && is_8bit_4ch) ? RenderTexture2D::EFormat::BGRA8 : RenderTexture2D::EFormat::RGBA8;
 
-		for (int i=0; i<mNumCells; i++) {
-			// Create render textures
-			rtti::ObjectPtr<RenderTexture2D> render_texture = resourceManager->createObject<RenderTexture2D>();
-			render_texture->mWidth = cell_width;
-			render_texture->mHeight = cell_height;
-			render_texture->mColorSpace = EColorSpace::Linear;
-			render_texture->mFormat = mFormat;
-			render_texture->mUsage = ETextureUsage::DynamicRead;
-			render_texture->mFill = false;
+		// Inform user in case we have to subdivide the texture
+		if (mNumCells > 1)
+			Logger::info("Snapshot: Dividing target image into %d %dx%d cells", mNumRows*mNumColumns, mCellSize.x, mCellSize.y);
 
-			if (!render_texture->init(errorState)) {
-				errorState.fail(utility::stringFormat("Failed to initialize snapshot cell texture [%d]", i));
+		// Create textures
+		mColorTextures.resize(mNumCells);
+		for (auto& cell : mColorTextures) 
+		{
+			cell = std::make_unique<RenderTexture2D>(mRenderService->getCore());
+			cell->mWidth = mCellSize.x;
+			cell->mHeight = mCellSize.y;
+			cell->mFill = false;
+			cell->mUsage = ETextureUsage::DynamicRead;
+			cell->mFormat = mFormat;
+
+			if (!cell->init(errorState)) {
+				errorState.fail("Failed to initialize snapshot cell textures");
 				return false;
 			}
+		}
+		// Inform user if allocation of snapshot buffers was successful
+		if (mNumCells > 1)
+			Logger::info("Snapshot: Color image allocation successful");
 
-			mRenderTargets[i] = resourceManager->createObject<RenderTarget>();
-			mRenderTargets[i]->mClearColor = mClearColor;
-			mRenderTargets[i]->mRequestedSamples = mRequestedSamples;
-			mRenderTargets[i]->mSampleShading = mSampleShading;
-			mRenderTargets[i]->mColorTexture = render_texture;
+		// Get texture storage info
+		int bytes_per_pixel = mColorTextures[0]->getDescriptor().getBytesPerPixel();
+		uint32_t cell_bytes = mCellSize.x*mCellSize.y*bytes_per_pixel;
 
-			if (!mRenderTargets[i]->init(errorState)) {
-				errorState.fail(utility::stringFormat("Failed to initialize snapshot cell render target [%d]", i));
-				return false;
-			}
+		int bpp = bytes_per_pixel * 8;
+		int num_channels = mColorTextures[0]->getDescriptor().getNumChannels();
+		//VkFormat vk_format = mColorTextures[0]->getFormat();
+		//RenderTexture2D::EFormat format = mColorTextures[0]->mFormat;
 
-			// Create bitmaps
-			mBitmaps[i] = resourceManager->createObject<Bitmap>();
+		// Bitmap info
+		utility::FIBitmapInfo bitmap_info{};
+		if (!utility::getFIBitmapInfo(bpp, num_channels, mWidth, mHeight, bitmap_info)) {
+			errorState.fail("Could not generate valid bitmap info");
+			return false;
+		}
+		mFIBitmapInfo = std::make_unique<utility::FIBitmapInfo>(bitmap_info);
 
-			// Execute whenever a bitmap is updated
-			mBitmaps[i]->mBitmapUpdated.connect([this, i]() {
+		// Keep a record of updated bitmaps
+		mBitmapUpdateFlags.resize(mNumCells, false);
 
-				// Check bitmap was actually allocated 
-				if (mBitmaps[i]->empty()) {
-					Logger::error("Bitmap was not initialized");
-					return false;
-				}
-
-				// Keep a record of updated bitmaps
-				mBitmapUpdateFlags[i] = true;
-
-				if (mNumCells > 1) {
-					// Check if all bitmaps are flagged as updated
-					if (std::find(std::begin(mBitmapUpdateFlags), std::end(mBitmapUpdateFlags), false) == std::end(mBitmapUpdateFlags)) {
-						onBitmapsUpdated();
-						mBitmapUpdateFlags.assign(mNumCells, false);
-					}
-				}
-				else {
-					std::string path = utility::stringFormat(
-						"%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str(), extensionToString(mOutputExtension)
-					);
-					utility::ErrorState errorState;
-					if (!mBitmaps[i]->writeToDisk(path, errorState)) {
-						Logger::error("Saving image to disk failed: %s", errorState.toString().c_str());
-						return false;
-					}
-					// Reset current bitmap updated flag
-					mBitmapUpdateFlags[i] = false;
-				}
-				return true;
-			});
+		// Create render target
+		mRenderTarget = std::make_unique<SnapshotRenderTarget>(mRenderService);
+		mRenderTarget->mSnapshot = this;
+		mRenderTarget->mClearColor = mClearColor;
+		mRenderTarget->mRequestedSamples = mRequestedSamples;
+		mRenderTarget->mSampleShading = mSampleShading;
+		mRenderTarget->mSize = mCellSize;
+		
+		if (!mRenderTarget->init(errorState)) {
+			errorState.fail("%s: Failed to initialize snapshot rendertarget", mID.c_str());
+			return false;
 		}
 
-		// Stitch when multiple rendertargets are used
-		if (mNumCells > 1) {
-			onBitmapsUpdated.connect(std::bind(&Snapshot::stitchAndSaveBitmaps, this));
-		}
+		// Write the destination bitmap when onBitmapsUpdated is triggered
+		onCellsUpdated.connect(writeBitmapSlot);
+
 		return true;
 	}
 
 	void Snapshot::setClearColor(const glm::vec4& color)
 	{ 
-		for (int i = 0; i < mNumCells; i++) {
-			mRenderTargets[i]->setClearColor(color);
-		}
+		mRenderTarget->setClearColor(color);
 	}
 
 	bool Snapshot::takeSnapshot(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps)
 	{
-		if (mRenderService->beginHeadlessRecording()) {
-			camera.setGridDimensions(mNumRows, mNumColumns);
-			for (int i = 0; i < mNumCells; i++) {
-				int x = i % mNumColumns;
-				int y = i / mNumRows;
+		if (mWriteTask.valid()) {
+			if (mWriteTask.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+				Logger::info("Snapshot: Could not take snapshot as another is currently being written to disk");
+				return false;
+			}
+		}
 
+		// Skip start/stop headless recording calls if commands are being recorded already
+		bool skip_recording = mRenderService->getCurrentCommandBuffer() != VK_NULL_HANDLE;
+
+		if (skip_recording || mRenderService->beginHeadlessRecording()) {
+			camera.setGridDimensions(mNumRows, mNumColumns);
+
+			for (int i = 0; i < mNumCells; i++) {
+				uint32_t x = i % mNumColumns;
+				uint32_t y = i / mNumRows;
 				camera.setGridLocation(y, x);
-				mRenderTargets[i]->beginRendering();
-				mRenderService->renderObjects(*mRenderTargets[i], camera, comps);
-				mRenderTargets[i]->endRendering();
+
+				mRenderTarget->setCellIndex(i);
+				mRenderTarget->beginRendering();
+
+				mRenderService->renderObjects(*mRenderTarget, camera, comps);
+				mRenderTarget->endRendering();
 			}
 			camera.setGridLocation(0, 0);
 			camera.setGridDimensions(1, 1);
 
-			mRenderService->endHeadlessRecording();
+			if (!skip_recording)
+				mRenderService->endHeadlessRecording();
 
-			// Save to bitmap
+			// Init destination bitmap (note that color masks are only supported for 16-bit RGBA images and ignored for any other color depth)
+			mDstBitmap = FreeImage_AllocateT(mFIBitmapInfo->type, mWidth, mHeight, mFIBitmapInfo->bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
+			mDstBitmapAllocated = true;
+
+			// Wonder if this works
 			for (int i = 0; i < mNumCells; i++) {
-				mRenderTargets[i]->getColorTexture().asyncGetData(*mBitmaps[i]);
+				mColorTextures[i]->asyncGetData([this, i](const void* data, size_t bytes)
+				{
+					// Wrap staging buffer data in a bitmap header
+					int cell_pitch = mCellSize.x*(mFIBitmapInfo->bpp / 8);
+					FIBITMAP* fi_bitmap_src = FreeImage_ConvertFromRawBitsEx(
+						false, (uint8_t*)data, mFIBitmapInfo->type, mCellSize.x, mCellSize.y, cell_pitch, mFIBitmapInfo->bpp,
+						FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
+					);
+
+					// Unflatten index
+					uint32_t x = i % mNumColumns;
+					uint32_t y = i / mNumRows;
+
+					// Calculate area to copy
+					glm::i32vec2 min = glm::i32vec2(x*mCellSize.x, y*mCellSize.y);
+					glm::i32vec2 max = min + static_cast<glm::i32vec2>(mCellSize);
+
+					// Create view into destination bitmap
+					FIBITMAP* fi_bitmap_dst = FreeImage_CreateView(mDstBitmap, min.x, min.y, max.x, max.y);
+
+					// Copy bitmap header src into dest
+					FreeImage_Paste(fi_bitmap_dst, fi_bitmap_src, 0, 0, STITCH_COMBINE);
+					FreeImage_Unload(fi_bitmap_dst);
+
+					// Keep a record of updated bitmaps
+					mBitmapUpdateFlags[i] = true;
+
+					if (mNumCells == 1 || std::find(std::begin(mBitmapUpdateFlags), std::end(mBitmapUpdateFlags), false) == std::end(mBitmapUpdateFlags)) {
+						onCellsUpdated();
+						mBitmapUpdateFlags.assign(mNumCells, false);
+					}
+				});
 			}
+
+			onSnapshot();
 			return true;
 		}
 		return false;
 	}
 
-	bool Snapshot::stitchAndSaveBitmaps()
+	bool Snapshot::writeToDisk()
 	{
-		// Store handles to unload when we are done
-		std::vector<FIBITMAP*> fi_bitmap_handles;
-		fi_bitmap_handles.resize(mNumCells);
+		std::string output_path = utility::stringFormat("%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str(), extensionToString(mOutputExtension));
 
-		// Get format
-		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(extensionToString(mOutputExtension));
-		if (fi_img_format == FIF_UNKNOWN) {
-			nap::Logger::error("error: Unable to determine image format");
+		if (mAsyncWrite) {
+			mWriteTask = std::async(std::launch::async, [this, output_path]() {
+				writeFunction(output_path);
+			});
+			return true;
+		}
+		return writeFunction(output_path);
+	}
+
+	bool Snapshot::writeFunction(std::string path)
+	{
+		utility::ErrorState error_state;
+
+		if (!utility::writeToDisk(mDstBitmap, mFIBitmapInfo->type, path, error_state)) {
+			nap::Logger::error("error: %s", error_state.toString().c_str());
 			return false;
 		}
 
-		// Get properties
-		FREE_IMAGE_TYPE fi_img_type = utility::getFIType(mBitmaps[0]->mSurfaceDescriptor.getDataType(), mBitmaps[0]->mSurfaceDescriptor.getChannels());
-		int bpp = mBitmaps[0]->mSurfaceDescriptor.getBytesPerPixel() * 8;
-		int pitch = mBitmaps[0]->mSurfaceDescriptor.getPitch();
-
-		// Allocate full bitmap to copy into
-		FIBITMAP* fi_bitmap_full = FreeImage_AllocateT(fi_img_type, mWidth, mHeight, bpp);
-		for (int i = 0; i < mNumCells; i++) {
-
-			// Check if subimage format matches the others
-			if (FreeImage_GetBPP(fi_bitmap_full) != bpp || mBitmaps[i]->mSurfaceDescriptor.getPitch() != pitch) {
-				nap::Logger::error("error: Image format mismatch");
-				return false;
-			}
-
-			// Wrap bitmap data with FIBITMAP header
-			// Please note that color masks are only supported for 16-bit RGBA images and ignored for any other color depth
-			FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
-				false, (uint8_t*)mBitmaps[i]->getData(), fi_img_type, mBitmaps[i]->getWidth(), mBitmaps[i]->getHeight(), pitch, bpp,
-				FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
-			);
-
-			// Unflatten index
-			int x = i % mNumColumns;
-			int y = i / mNumRows;
-
-			// Copy into full bitmap
-			if (!FreeImage_Paste(fi_bitmap_full, fi_bitmap, x*mBitmaps[i]->getWidth(), y*mBitmaps[i]->getHeight(), STITCH_COMBINE)) {
-				nap::Logger::error(utility::stringFormat("error: Failed to stitch subimage [%d, %d]", x, y));
-				return false;
-			}
-			fi_bitmap_handles[i] = fi_bitmap;
-		}
-		// Save
-		std::string path = utility::stringFormat("%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str(), extensionToString(mOutputExtension));
-		utility::ErrorState errorState;
-		if (!utility::writeToDisk(fi_bitmap_full, fi_img_type, path, errorState)) {
-			nap::Logger::error("error: %s", errorState.toString().c_str());
-			return false;
+		if (mDstBitmapAllocated) {
+			FreeImage_Unload(mDstBitmap);
+			mDstBitmapAllocated = false;
 		}
 
-		// Unload
-		for (int i = 0; i < mNumCells; i++) {
-			FreeImage_Unload(fi_bitmap_handles[i]);
+		if (!error_state.hasErrors()) {
+			onSnapshotSaved(path);
 		}
-		FreeImage_Unload(fi_bitmap_full);
-
-		onSnapshotTaken();
 		return true;
 	}
 }
