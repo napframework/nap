@@ -344,14 +344,14 @@ namespace nap
 	private:
 		char mIOmap[4096];
 		int  mExpectedWKC = 0;
-		std::future<void>	mProcessTask;							///< The background server thread
-		std::future<void>	mErrorTask;								///< The background error checking thread
+		std::future<void>	mProcessTask;						///< The background server thread
+		std::future<void>	mErrorTask;							///< The background error checking thread
 		std::atomic<bool>	mStopErrorTask = { false };			///< If the error task should be stopped
 		std::atomic<int>	mActualWCK = { 0 };					///< Actual work counter
 		std::atomic<bool>	mOperational = { false };			///< If the master is operational
 		std::atomic<bool>	mRunning = { false };				///< If the processing thread is running
-		bool				mStarted = false;						///< If the master started, this does not mean it's operational
-		void*				mContext = nullptr;						///< Ethercat (SOEM) context of type ecx_contextt
+		bool				mStarted = false;					///< If the master started, this does not mean it's operational
+		void*				mContext = nullptr;					///< Ethercat (SOEM) context of type ecx_contextt
 
 		/**
 		 * Real-time IO operations, executed on a different thread.

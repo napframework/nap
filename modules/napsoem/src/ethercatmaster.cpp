@@ -46,6 +46,13 @@ namespace nap
 			boolean    			AppEcatError = FALSE;		///< SII FMMU structure
 			int64         		ec_DCtime;					///< Distributed clock time
 			ecx_portt    		ecx_port_fsoe;				///< pointer structure to buffers, vars and mutexes for port instantiation
+
+			ContextData()
+			{
+				// Initialize redundancy port to null 
+				// Prevents error when closing socket
+				ecx_port_fsoe.redport = nullptr;
+			}
 		};
 
 		/**
@@ -53,13 +60,7 @@ namespace nap
 		 */
 		struct Context
 		{
-			~Context()
-			{
-				delete mContext;
-				mContext = nullptr;
-			}
-
-			// Create context on construction
+			// Create SOEM context on construction
 			Context()
 			{
 				// Create context
@@ -77,8 +78,6 @@ namespace nap
 						&mData.ec_elist,
 						&mData.ec_idxstack,
 						&mData.AppEcatError,
-						0,
-						0,
 						&mData.ec_DCtime,
 						&mData.ec_SMcommtype,
 						&mData.ec_PDOassign,
@@ -90,6 +89,14 @@ namespace nap
 						0
 					};
 			}
+
+			// Delete SOEM context
+			~Context()
+			{
+				delete mContext;
+				mContext = nullptr;
+			}
+
 			ecx_contextt* 			mContext = nullptr;		///< Soem (ethercat master) context
 			nap::soem::ContextData 	mData;					///< Data associated with context
 
@@ -110,7 +117,7 @@ namespace nap
 	}
 
 
-	static ecx_contextt* asContext(void* ctx)
+	static ecx_contextt* toContext(void* ctx)
     {
 		return reinterpret_cast<soem::Context*>(ctx)->mContext;
 	}
@@ -140,7 +147,7 @@ namespace nap
 		assert(!mStarted);
 
 		// Try to initialize adapter
-		ecx_contextt* context = asContext(mContext);
+		ecx_contextt* context = toContext(mContext);
 		if (!ecx_init(context, mAdapter.c_str()))
 		{
 			errorState.fail("%s: no socket connection: %s", mID.c_str(), mAdapter.c_str());
@@ -157,7 +164,7 @@ namespace nap
 		}
 
 		// Slaves in init state
-		nap::Logger::info("%d slaves found and configured", *(asContext(mContext)->slavecount));
+		nap::Logger::info("%d slaves found and configured", *(toContext(mContext)->slavecount));
 
 		// Configure DC options for every DC capable slave found in the list
 		ecx_configdc(context);
@@ -289,8 +296,11 @@ namespace nap
 		}
 
 		// Close socket
-		if(mStarted || mRunning)
-			ecx_close(asContext(mContext));
+		if (mStarted || mRunning)
+		{	
+			ecx_contextt* context = toContext(mContext);
+			ecx_close(context);
+		}
 
 		// Reset work-counter and other variables
 		mActualWCK		= 0;
@@ -321,7 +331,7 @@ namespace nap
 
 	int EtherCATMaster::getSlaveCount() const
 	{
-		return *asContext(mContext)->slavecount;
+		return *toContext(mContext)->slavecount;
 	}
 
 
@@ -333,13 +343,13 @@ namespace nap
 
 	nap::EtherCATMaster::ESlaveState EtherCATMaster::readState()
 	{
-		return static_cast<ESlaveState>(ecx_readstate(asContext(mContext)));
+		return static_cast<ESlaveState>(ecx_readstate(toContext(mContext)));
 	}
 
 
 	nap::EtherCATMaster::ESlaveState EtherCATMaster::getState(int index) const
 	{
-		ecx_contextt* context = asContext(mContext);
+		ecx_contextt* context = toContext(mContext);
 		assert(index <= *context->slavecount);
 		uint16 cstate = context->slavelist[index].state;
 		return cstate > static_cast<uint16>(EtherCATMaster::ESlaveState::Operational) ?
@@ -351,26 +361,26 @@ namespace nap
 	bool EtherCATMaster::isLost(int index) const
 	{
 		assert(index <= getSlaveCount());
-		return asContext(mContext)->slavelist[index].islost > 0;
+		return toContext(mContext)->slavelist[index].islost > 0;
 	}
 
 
 	void* EtherCATMaster::getSlave(int index)
 	{
 		assert(index <= getSlaveCount());
-		return &(asContext(mContext)->slavelist[index]);
+		return &(toContext(mContext)->slavelist[index]);
 	}
 
 
 	void EtherCATMaster::sdoWrite(uint16 slave, uint16 index, uint8 subindex, bool ca, int psize, void *p)
 	{
-		ecx_SDOwrite(asContext(mContext), slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
+		ecx_SDOwrite(toContext(mContext), slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
 	}
 
 
 	int EtherCATMaster::sdoRead(uint16 slave, uint16 index, uint8 subindex, bool ca, int* psize, void* p)
 	{
-		return ecx_SDOread(asContext(mContext), slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
+		return ecx_SDOread(toContext(mContext), slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
 	}
 
 
@@ -385,7 +395,7 @@ namespace nap
 		while (!mStopErrorTask)
 		{
 			// Operational stage not yet reached and no issues (group 0)
-			ec_groupt& cg = asContext(mContext)->grouplist[0];
+			ec_groupt& cg = toContext(mContext)->grouplist[0];
 			if (!mOperational || (mActualWCK == mExpectedWKC && !(cg.docheckstate)))
 			{
 				osal_usleep(mErrorCycleTime);
@@ -401,7 +411,7 @@ namespace nap
 
 	void EtherCATMaster::processErrors()
 	{
-		ecx_contextt* ctx = asContext(mContext);
+		ecx_contextt* ctx = toContext(mContext);
 		ec_groupt& cg = ctx->grouplist[0];
 		cg.docheckstate = false;
 		ecx_readstate(ctx);
@@ -496,7 +506,7 @@ namespace nap
 	void EtherCATMaster::getStatusMessage(ESlaveState requiredState, utility::ErrorState& outLog)
 	{
 		readState();
-		ecx_contextt* ctx = asContext(mContext);
+		ecx_contextt* ctx = toContext(mContext);
 		for (int i = 1; i <= *ctx->slavecount; i++)
 		{
 			ec_slavet& cs = ctx->slavelist[i];
@@ -513,7 +523,7 @@ namespace nap
 	EtherCATMaster::ESlaveState EtherCATMaster::requestState(ESlaveState state, int timeout)
 	{
 		// Force state for all slaves
-		ec_slavet& ms = asContext(mContext)->slavelist[0];
+		ec_slavet& ms = toContext(mContext)->slavelist[0];
 		ms.state = static_cast<uint16>(state);
 		writeState(0);
 		stateCheck(0, state, timeout);
@@ -523,57 +533,57 @@ namespace nap
 
 	void EtherCATMaster::writeState(int index)
 	{
-		ecx_writestate(asContext(mContext), index);
+		ecx_writestate(toContext(mContext), index);
 	}
 
 
 	EtherCATMaster::ESlaveState EtherCATMaster::stateCheck(int index, ESlaveState state, int timeout)
 	{
 		return static_cast<EtherCATMaster::ESlaveState>(
-			ecx_statecheck(asContext(mContext), index, static_cast<uint16>(state), timeout * 1000));
+			ecx_statecheck(toContext(mContext), index, static_cast<uint16>(state), timeout * 1000));
 	}
 
 
 	int EtherCATMaster::receiveProcessData(int timeout)
 	{
-		mActualWCK = ecx_receive_processdata(asContext(mContext), timeout);
+		mActualWCK = ecx_receive_processdata(toContext(mContext), timeout);
 		return mActualWCK == mExpectedWKC;
 	}
 
 
 	void EtherCATMaster::sendProcessData()
 	{
-		ecx_send_processdata(asContext(mContext));
+		ecx_send_processdata(toContext(mContext));
 	}
 
 
 	bool EtherCATMaster::hasDistributedClock(int slave)
 	{
-		return asContext(mContext)->slavelist[slave].hasdc;
+		return toContext(mContext)->slavelist[slave].hasdc;
 	}
 
 
 	bool EtherCATMaster::hasDistributedClock()
 	{
-		return asContext(mContext)->slavelist[0].hasdc;
+		return toContext(mContext)->slavelist[0].hasdc;
 	}
 
 
 	int64 EtherCATMaster::getDistributedClock()
 	{
-		return *asContext(mContext)->DCtime;
+		return *toContext(mContext)->DCtime;
 	}
 
 
 	std::string EtherCATMaster::getSlaveName(int index)
 	{
 		assert(index <= getSlaveCount());
-		return asContext(mContext)->slavelist[index].name;
+		return toContext(mContext)->slavelist[index].name;
 	}
 
 
 	void* EtherCATMaster::getContext()
 	{
-		return asContext(mContext);
+		return toContext(mContext);
 	}
 }
