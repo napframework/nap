@@ -302,7 +302,7 @@ namespace nap
 		 * Received datagrams are recombined with the process data with help from the stack.
 		 * If a datagram contains input process data it copies it to the process data structure.
 		 * @param timeout Timeout in us.
-		 * @return Work counter.
+		 * @return if frame is received.
 		 */
 		int receiveProcessData(int timeout);
 

@@ -537,7 +537,7 @@ namespace nap
 	int EtherCATMaster::receiveProcessData(int timeout)
 	{
 		mActualWCK = ecx_receive_processdata(asContext(mContext), timeout);
-		return mActualWCK;
+		return mActualWCK == mExpectedWKC;
 	}
 
 
