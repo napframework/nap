@@ -13,9 +13,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
 	RTTI_PROPERTY("ForceOperational",	&nap::EtherCATMaster::mForceOperational,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapter",			&nap::EtherCATMaster::mAdapter,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ProcessCycleTime",	&nap::EtherCATMaster::mProcessCycleTime,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ErrorCycleTime",	&nap::EtherCATMaster::mErrorCycleTime,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ProcessTimeout",	&nap::EtherCATMaster::mProcessTimeout,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ErrorCycleTime",		&nap::EtherCATMaster::mErrorCycleTime,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RecoveryTimeout",	&nap::EtherCATMaster::mRecoveryTimeout,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -26,7 +24,7 @@ namespace nap
 	namespace soem
 	{
 		/**
-		 * All data associated with a single SOEM context
+		 * Data associated with a single SOEM context
 		 */
 		struct ContextData
 		{
@@ -49,19 +47,18 @@ namespace nap
 
 			ContextData()
 			{
-				// Initialize redundancy port to null 
-				// Prevents error when closing socket
+				// Initialize redundancy port to null, prevents error when closing socket
 				ecx_port_fsoe.redport = nullptr;
 			}
 		};
 
 		/**
-		 * Ethercat master context.
+		 * Wrapped SOEM context.
 		 */
 		struct Context
 		{
 			// Create SOEM context on construction
-			Context()
+			Context(EtherCATMaster& master)
 			{
 				// Create context
 				mContext = new ecx_contextt
@@ -86,7 +83,8 @@ namespace nap
 						&mData.ec_FMMU,
 						NULL,
 						NULL,
-						0
+						0,
+						&master
 					};
 			}
 
@@ -99,20 +97,6 @@ namespace nap
 
 			ecx_contextt* 			mContext = nullptr;		///< Soem (ethercat master) context
 			nap::soem::ContextData 	mData;					///< Data associated with context
-
-			/**
-			 * @return group at index, does not perform an out of bounds check
-			 * @param index slave index, 0 = all, 1 = first on network
-			 * @return reference to group
-			 */
-			ec_groupt& getGroup(int index)					{ return mData.ec_groups[index]; }
-
-			/**
- 			 * @return slave at index, does not perform an out of bounds check
- 			 * @param index slave index, 0 = all, 1 = first on network
- 			 * @return reference to group
- 			 */
-			ec_slavet& getSlave(int index)					{ return mData.ec_slave[index]; }
 		};
 	}
 
@@ -125,9 +109,8 @@ namespace nap
 
 	EtherCATMaster::~EtherCATMaster()
 	{
-		// Destroy context associated with master
-		soem::Context* ctx = reinterpret_cast<soem::Context*>(mContext);
-		delete ctx;
+		// Destroy SOEM context
+		delete reinterpret_cast<soem::Context*>(mContext);
 		mContext = nullptr;
 	}
 
@@ -135,7 +118,7 @@ namespace nap
     EtherCATMaster::EtherCATMaster()
     {
 		// Create context
-		mContext = new soem::Context();
+		mContext = new soem::Context(*this);
     }
 
 
@@ -572,6 +555,24 @@ namespace nap
 	int64 EtherCATMaster::getDistributedClock()
 	{
 		return *toContext(mContext)->DCtime;
+	}
+
+
+	int64 EtherCATMaster::syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation)
+	{
+		assert(hasDistributedClock());
+		int64 integral = 0;
+		int64 delta;
+		int64 dctime = getDistributedClock();		// Current distributed clock time ns
+		int32 dcoffset_ns = dcOffset  * 1000;		// Master offset ns
+		int32 cyletime_ns = cycleTime * 1000;		// Frame cycle time ns
+
+		delta = (dctime - dcoffset_ns) % cyletime_ns;
+		if (delta > (cyletime_ns / 2)) { delta = delta - cyletime_ns; }
+		if (delta > 0) { integral++; }
+		if (delta < 0) { integral--; }
+		outCompensation = -(delta / 100) - (integral / 20);
+		return delta;
 	}
 
 

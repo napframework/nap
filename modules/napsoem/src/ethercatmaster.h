@@ -133,10 +133,8 @@ namespace nap
 
 		bool mForceOperational = false;		///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
 		std::string mAdapter;				///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
-		int mProcessCycleTime	= 1000;		///< Property: 'ProcessCycleTime' process cycle time in us. 1000us = 1ms
 		int mErrorCycleTime		= 40000;	///< Property: 'ErrorCycleTime' error checking cycle time in us. 1000us = 1ms
 		int mRecoveryTimeout	= 500;		///< Property: 'RecoveryTimeout' given time (in us) for a slave to recover. 1000us = 1ms
-		int mProcessTimeout		= 2000;		///< Property: 'ProcessTimeout' time (in us) the master is given to process all slave input / output.
 
 	protected:
 
@@ -327,7 +325,17 @@ namespace nap
 		bool hasDistributedClock();
 
 		/**
-		 * @return distributed clock
+		 * PI calculation to get master time synced to DC time.
+		 * Only call this when hasDistributedClock() returns true.
+		 * @param cycleTime frame cycle time in us
+		 * @param dcOffset DC offset in us, where 50 = 50us later than DC sync
+		 * @param outCompensation the computed clock offset in ns
+		 * @return delta time between ticks in ns
+		 */
+		int64 syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation);
+
+		/**
+		 * @return distributed clock time in ns
 		 */
 		int64 getDistributedClock();
 
