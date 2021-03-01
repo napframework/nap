@@ -41,7 +41,7 @@ namespace nap
 		settings.mColorSpace = mColorSpace;
 
 		// Figure out if the texture needs to be filled
-		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static && !mFill ? 
+		Texture2D::EClearMode clear_mode = (mUsage == ETextureUsage::Static || mUsage == ETextureUsage::DynamicRead) && !mFill ? 
 			Texture2D::EClearMode::DontClear : 
 			Texture2D::EClearMode::FillWithZero;
 
