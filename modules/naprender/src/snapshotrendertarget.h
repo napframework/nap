@@ -21,7 +21,7 @@ namespace nap
 	/**
 	* Special version of RenderTarget made to work exclusively in conjunction with Snapshot.
 	* Renders to multiple VkFramebuffers in a sequence to reduce the memory consumption of an otherwise large Texture2D.
-	* This makes a huge difference when MSAA samples > 1 is configured as no additional image resources are allocated
+	* This makes a huge difference when MSAA samples > 1 is configured as fewer additional image resources may be allocated
 	* when multiple samples are used.
 	*/
 	class NAPAPI SnapshotRenderTarget : public IRenderTarget

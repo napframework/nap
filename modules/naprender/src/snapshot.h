@@ -15,18 +15,19 @@
 #include <nap/resource.h>
 #include <nap/core.h>
 #include <nap/signalslot.h>
-#include <future>
 
 namespace nap
 {
+	class SnapshotRenderTarget;
+
 	/**
 	 * The Snapshot module renders objects at any given resolution and format and saves the result to a specified location on disk 
 	 * (as long as its configuration is supported by the hardware and sufficient video memory is available).
 	 */
 	class NAPAPI Snapshot : public Resource
 	{
-		RTTI_ENABLE(Resource)
 		friend class SnapshotRenderTarget;
+		RTTI_ENABLE(Resource)
 	public:
 
 		/**
