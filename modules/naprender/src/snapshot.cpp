@@ -138,10 +138,6 @@ namespace nap
 			return false;
 		}
 
-		// Inform user if allocation of snapshot buffers was successful
-		if (mNumCells > 1)
-			Logger::info("Snapshot: Snapshot resource allocation successful");
-
 		// Write the destination bitmap when onBitmapsUpdated is triggered
 		onCellsUpdated.connect(writeBitmapSlot);
 

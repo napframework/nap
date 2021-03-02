@@ -277,14 +277,6 @@ namespace nap
 	}
 
 
-	bool Bitmap::update(const void* data, size_t sizeInBytes)
-	{
-		memcpy(mData.data(), data, sizeInBytes);
-		mBitmapUpdated();
-		return true;
-	}
-
-
 	size_t Bitmap::getSizeInBytes() const
 	{
 		return mSurfaceDescriptor.getSizeInBytes();

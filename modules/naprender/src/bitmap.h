@@ -61,11 +61,6 @@ namespace nap
 		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
-		 *
-		 */
-		bool update(const void* data, size_t sizeInBytes);
-
-		/**
 		* Writes this bitmap to a snapshots folder on disk with a specified image extension
 		* @param path the path including filename and image extension of the output file e.g. "targetFolder/MyOutputFile.png"
 		* @param errorState contains the error if the image could not be loaded
