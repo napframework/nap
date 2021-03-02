@@ -45,11 +45,16 @@ namespace nap
 		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
 		// This ensures the buffers are destroyed when certain they are not in use.
 		mRenderService->removeBufferRequests(*this);
-		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers](RenderService& renderService)
+		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers, staging_buffer = mStagingBuffer](RenderService& renderService)
 		{
 			// Destroy render buffers
 			for (const BufferData& buffer : buffers)
 				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+
+			// Also destroy the staging buffer if we reach this point before the initial upload has occurred.
+			// This could happen e.g. if app initialization fails.
+			if (staging_buffer.mBuffer != VK_NULL_HANDLE)
+				destroyBuffer(renderService.getVulkanAllocator(), staging_buffer);
 		});
 	}
 
