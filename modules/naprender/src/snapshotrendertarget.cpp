@@ -199,15 +199,14 @@ namespace nap
 	// RenderTarget
 	//////////////////////////////////////////////////////////////////////////
 
-	SnapshotRenderTarget::SnapshotRenderTarget(RenderService* renderService) :
-		mRenderService(renderService)
+	SnapshotRenderTarget::SnapshotRenderTarget(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{}
-
 
 	SnapshotRenderTarget::~SnapshotRenderTarget()
 	{
-		for (int i = 0; i <  mSnapshot->mColorTextures.size(); i++)
-			vkDestroyFramebuffer(mRenderService->getDevice(), mFramebuffers[i], nullptr);
+		for (auto& frame_buffer : mFramebuffers)
+			vkDestroyFramebuffer(mRenderService->getDevice(), frame_buffer, nullptr);
 	
 		if (mRenderPass != nullptr)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
@@ -216,14 +215,20 @@ namespace nap
 		destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
 	}
 
-	bool SnapshotRenderTarget::init(utility::ErrorState& errorState)
+	bool SnapshotRenderTarget::init(Snapshot* snapshot, utility::ErrorState& errorState)
 	{
+		assert(snapshot != nullptr);
+		mSnapshot = snapshot;
+
+		mSize = mSnapshot->mCellSize;
+		mClearColor = mSnapshot->mClearColor;
+
 		// Warn if requested number of samples is not matched by hardware
-		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, errorState))
+		if (!mRenderService->getRasterizationSamples(mSnapshot->mRequestedSamples, mRasterizationSamples, errorState))
 			nap::Logger::warn(errorState.toString().c_str());
 
 		// Check if sample rate shading is enabled
-		if (mSampleShading && !(mRenderService->sampleShadingSupported()))
+		if (mSnapshot->mSampleShading && !(mRenderService->sampleShadingSupported()))
 		{
 			nap::Logger::warn("Sample shading requested but not supported");
 			mSampleShading = false;
@@ -301,9 +306,10 @@ namespace nap
 	void SnapshotRenderTarget::beginRendering()
 	{
 		glm::ivec2 size = getBufferSize();
+		const glm::vec4& clear_color = mSnapshot->mClearColor;
 
 		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
+		clearValues[0].color = { clear_color.r, clear_color.g, clear_color.b, clear_color.a };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		// Setup render pass
@@ -369,7 +375,7 @@ namespace nap
 
 	bool SnapshotRenderTarget::getSampleShadingEnabled() const
 	{
-		return mSampleShading;
+		return mSnapshot->mSampleShading;
 	}
 
 } // nap

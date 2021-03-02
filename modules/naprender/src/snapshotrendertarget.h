@@ -19,30 +19,10 @@ namespace nap
 	class Core;
 
 	/**
-	* A resource that is used to render one or multiple objects to a nap::RenderTexture2D instead of a nap::RenderWindow.
-	* This objects requires a link to a nap::RenderTexture2D to store the result of the render pass.
-	* Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
-	* Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.
-	* Always call RenderService::endHeadlessRecording after having recorded all off-screen render operations.
-	*
-	* ~~~~~{.cpp}
-	*		mRenderService->beginFrame();
-	*		if (mRenderService->beginHeadlessRecording())
-	*		{
-	*			...
-	*			mTargetOne->beginRendering();
-	*			mRenderService->renderObjects(*mTargetOne, ortho_cam, objects_one);
-	*			mTargetOne->endRendering();
-	*			...
-	*			mTargetTwo->beginRendering();
-	*			mRenderService->renderObjects(*mTargetTwo, ortho_cam, objects_two);
-	*			mTargetTwo->endRendering();
-	*			...
-	*			mRenderService->endHeadlessRecording();
-	*		}
-	*		mRenderService->endFrame();
-	* ~~~~~
-	*
+	* Special version of RenderTarget made to work exclusively in conjunction with Snapshot.
+	* Renders to multiple VkFramebuffers in a sequence to reduce the memory consumption of an otherwise large Texture2D.
+	* This makes a huge difference when MSAA samples > 1 is configured as no additional image resources are allocated
+	* when multiple samples are used.
 	*/
 	class NAPAPI SnapshotRenderTarget : public IRenderTarget
 	{
@@ -51,7 +31,7 @@ namespace nap
 		 * Every render target requires a reference to core.
 		 * @param core link to a nap core instance
 		 */
-		SnapshotRenderTarget(RenderService* renderService);
+		SnapshotRenderTarget(Core& core);
 		
 		/**
 		 * Destroys allocated render resources
@@ -60,47 +40,20 @@ namespace nap
 
 		/**
 		 * Initializes the render target, including all the required resources.
+		 * @param snapshot pointer to a snapshot object
 		 * @param errorState contains the error if initialization failed.
 		 * @return if initialization succeeded.
 		 */
-		bool init(utility::ErrorState& errorState);
+		bool init(Snapshot* snapshot, utility::ErrorState& errorState);
 
 		/**
 		 * Starts the render pass.
 		 * Only start the render pass after a successful call to RenderService::beginHeadlessRecording().
-		 *
-		 * ~~~~~{.cpp}
-		 *		mRenderService->beginFrame();
-		 *		if (mRenderService->beginHeadlessRecording())
-		 *		{
-		 *			...
-		 *			mTarget->beginRendering();
-		 *			mRenderService->renderObjects(*mTarget, ortho_cam, objects_one);
-		 *			mTarget->endRendering();
-		 *			...
-		 *			mRenderService->endHeadlessRecording();
-		 *		}
-		 *		mRenderService->endFrame();
-		 * ~~~~~
 		 */
 		virtual void beginRendering() override;
 
 		/**
 		 * Ends the render pass. Always call this after beginRendering().
-		 *
-		 * ~~~~~{.cpp}
-		 *		mRenderService->beginFrame();
-		 *		if (mRenderService->beginHeadlessRecording())
-		 *		{
-		 *			...
-		 *			mTarget->beginRendering();
-		 *			mTarget->renderObjects(*mTarget, ortho_cam, objects_one);
-		 *			mTarget->endRendering();
-		 *			...
-		 *			mRenderService->endHeadlessRecording();
-		 *		}
-		 *		mRenderService->endFrame();
-		 * ~~~~~
 		*/
 		virtual void endRendering() override;
 
@@ -151,26 +104,24 @@ namespace nap
 		virtual bool getSampleShadingEnabled() const override;
 		
 		/**
-		 * Test
+		 * @param cellIndex change the index of the cell to setup for rendering
 		 */
 		void setCellIndex(uint32_t cellIndex)									{ mCellIndex = cellIndex; }
 
-	public:
-
-		bool						mSampleShading = true;
-		glm::vec4					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-		ERasterizationSamples		mRequestedSamples = ERasterizationSamples::One;
-		glm::u32vec2				mSize = { 0, 0 };
-		nap::ResourcePtr<Snapshot>	mSnapshot = nullptr;
 
 	private:
 		RenderService*				mRenderService = nullptr;
+		Snapshot*					mSnapshot = nullptr;
 
 		std::vector<VkFramebuffer>	mFramebuffers;
+		glm::u32vec2				mSize = { 0, 0 };
 
-		VkRenderPass				mRenderPass = nullptr;
+		bool						mSampleShading = true;
+		glm::vec4					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+
 		VkSampleCountFlagBits		mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkFormat					mFormat = VK_FORMAT_R8G8B8A8_UNORM;
+		VkRenderPass				mRenderPass = nullptr;
 		ImageData					mDepthImage;
 		ImageData					mColorImage;
 

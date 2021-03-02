@@ -23,15 +23,14 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width", &nap::Snapshot::mWidth, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height", &nap::Snapshot::mHeight, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaxCellWidth", &nap::Snapshot::mMaxCellWidth, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaxCellHeight", &nap::Snapshot::mMaxCellHeight, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OutputDir", &nap::Snapshot::mOutputDir, nap::rtti::EPropertyMetaData::FileLink)
 	RTTI_PROPERTY("OutputExtension", &nap::Snapshot::mOutputExtension, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Format", &nap::Snapshot::mFormat, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleShading", &nap::Snapshot::mSampleShading, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RequestedSamples", &nap::Snapshot::mRequestedSamples, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor", &nap::Snapshot::mClearColor, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NumRows", &nap::Snapshot::mNumRows, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NumColumns", &nap::Snapshot::mNumColumns, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AutoGrid", &nap::Snapshot::mAutoGrid, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,7 +60,7 @@ namespace nap
 	Snapshot::Snapshot(Core& core) :
 		mRenderService(core.getService<RenderService>()) {}
 
-	Snapshot::~Snapshot() 
+	Snapshot::~Snapshot()
 	{
 		if (mDstBitmapAllocated)
 			FreeImage_Unload(mDstBitmap);
@@ -70,19 +69,26 @@ namespace nap
 	bool Snapshot::init(utility::ErrorState& errorState)
 	{
 		assert(mWidth > 0 && mHeight > 0);
+		assert(mMaxCellWidth > 0 && mMaxCellHeight > 0);
 
+		// Make sure not to create textures that exceed the hardware image dimension limit
 		uint32_t max_image_dimension = mRenderService->getPhysicalDeviceProperties().limits.maxImageDimension2D;
-		if (mAutoGrid) {
-			// Subdivide in mutiple cells if the requested snapshot size is greater than the maximum texture size
-			mNumRows = mWidth / max_image_dimension + 1;
-			mNumColumns = mHeight / max_image_dimension + 1;
-		}
-		else {
-			assert(mNumRows > 0 && mNumColumns > 0);
-			assert(mNumRows < mWidth / 2 && mNumColumns < mHeight / 2);
-		}
+		mMaxCellWidth = std::min(mMaxCellWidth, max_image_dimension);
+		mMaxCellHeight = std::min(mMaxCellHeight, max_image_dimension);
+
+		// Subdivide into cells if the max cellwidth|cellheight are smaller than the snapshot size
+		mNumRows = ceil(mWidth / static_cast<double>(mMaxCellWidth));
+		mNumColumns = ceil(mHeight / static_cast<double>(mMaxCellHeight));
+
+		assert(mNumRows > 0 && mNumColumns > 0);
+		assert(mNumRows < mWidth / 2 && mNumColumns < mHeight / 2);
+
 		mNumCells = mNumRows * mNumColumns;
 		mCellSize = { mWidth / mNumRows, mHeight / mNumColumns };
+
+		// Inform user in case we have to subdivide the texture
+		if (mNumCells > 1)
+			Logger::info("Snapshot: Dividing target image into %d %dx%d cells", mNumRows*mNumColumns, mCellSize.x, mCellSize.y);
 
 		// Check if we need to render to BGRA for image formats on little endian machines
 		// We can ignore this check when rendering 16bit color
@@ -90,13 +96,9 @@ namespace nap
 		bool is_8bit_4ch = (mFormat == RenderTexture2D::EFormat::RGBA8 || mFormat == RenderTexture2D::EFormat::BGRA8);
 		mFormat = (is_little_endian && is_8bit_4ch) ? RenderTexture2D::EFormat::BGRA8 : RenderTexture2D::EFormat::RGBA8;
 
-		// Inform user in case we have to subdivide the texture
-		if (mNumCells > 1)
-			Logger::info("Snapshot: Dividing target image into %d %dx%d cells", mNumRows*mNumColumns, mCellSize.x, mCellSize.y);
-
 		// Create textures
 		mColorTextures.resize(mNumCells);
-		for (auto& cell : mColorTextures) 
+		for (auto& cell : mColorTextures)
 		{
 			cell = std::make_unique<RenderTexture2D>(mRenderService->getCore());
 			cell->mWidth = mCellSize.x;
@@ -110,9 +112,6 @@ namespace nap
 				return false;
 			}
 		}
-		// Inform user if allocation of snapshot buffers was successful
-		if (mNumCells > 1)
-			Logger::info("Snapshot: Color image allocation successful");
 
 		// Get texture storage info
 		int bytes_per_pixel = mColorTextures[0]->getDescriptor().getBytesPerPixel();
@@ -120,8 +119,6 @@ namespace nap
 
 		int bpp = bytes_per_pixel * 8;
 		int num_channels = mColorTextures[0]->getDescriptor().getNumChannels();
-		//VkFormat vk_format = mColorTextures[0]->getFormat();
-		//RenderTexture2D::EFormat format = mColorTextures[0]->mFormat;
 
 		// Bitmap info
 		utility::FIBitmapInfo bitmap_info{};
@@ -135,17 +132,15 @@ namespace nap
 		mBitmapUpdateFlags.resize(mNumCells, false);
 
 		// Create render target
-		mRenderTarget = std::make_unique<SnapshotRenderTarget>(mRenderService);
-		mRenderTarget->mSnapshot = this;
-		mRenderTarget->mClearColor = mClearColor;
-		mRenderTarget->mRequestedSamples = mRequestedSamples;
-		mRenderTarget->mSampleShading = mSampleShading;
-		mRenderTarget->mSize = mCellSize;
-		
-		if (!mRenderTarget->init(errorState)) {
+		mRenderTarget = std::make_unique<SnapshotRenderTarget>(mRenderService->getCore());
+		if (!mRenderTarget->init(this, errorState)) {
 			errorState.fail("%s: Failed to initialize snapshot rendertarget", mID.c_str());
 			return false;
 		}
+
+		// Inform user if allocation of snapshot buffers was successful
+		if (mNumCells > 1)
+			Logger::info("Snapshot: Snapshot resource allocation successful");
 
 		// Write the destination bitmap when onBitmapsUpdated is triggered
 		onCellsUpdated.connect(writeBitmapSlot);
@@ -154,19 +149,12 @@ namespace nap
 	}
 
 	void Snapshot::setClearColor(const glm::vec4& color)
-	{ 
+	{
 		mRenderTarget->setClearColor(color);
 	}
 
 	bool Snapshot::takeSnapshot(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps)
 	{
-		if (mWriteTask.valid()) {
-			if (mWriteTask.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
-				Logger::info("Snapshot: Could not take snapshot as another is currently being written to disk");
-				return false;
-			}
-		}
-
 		// Skip start/stop headless recording calls if commands are being recorded already
 		bool skip_recording = mRenderService->getCurrentCommandBuffer() != VK_NULL_HANDLE;
 
@@ -194,7 +182,7 @@ namespace nap
 			mDstBitmap = FreeImage_AllocateT(mFIBitmapInfo->type, mWidth, mHeight, mFIBitmapInfo->bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
 			mDstBitmapAllocated = true;
 
-			// Wonder if this works
+			// Insert callbacks for copying image data per cell from staging buffer directly into the destination bitmap
 			for (int i = 0; i < mNumCells; i++) {
 				mColorTextures[i]->asyncGetData([this, i](const void* data, size_t bytes)
 				{
@@ -218,6 +206,9 @@ namespace nap
 
 					// Copy bitmap header src into dest
 					FreeImage_Paste(fi_bitmap_dst, fi_bitmap_src, 0, 0, STITCH_COMBINE);
+
+					// Unload headers
+					FreeImage_Unload(fi_bitmap_src);
 					FreeImage_Unload(fi_bitmap_dst);
 
 					// Keep a record of updated bitmaps
@@ -240,20 +231,8 @@ namespace nap
 	{
 		std::string output_path = utility::stringFormat("%s/%s.%s", mOutputDir.c_str(), timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str(), extensionToString(mOutputExtension));
 
-		if (mAsyncWrite) {
-			mWriteTask = std::async(std::launch::async, [this, output_path]() {
-				writeFunction(output_path);
-			});
-			return true;
-		}
-		return writeFunction(output_path);
-	}
-
-	bool Snapshot::writeFunction(std::string path)
-	{
 		utility::ErrorState error_state;
-
-		if (!utility::writeToDisk(mDstBitmap, mFIBitmapInfo->type, path, error_state)) {
+		if (!utility::writeToDisk(mDstBitmap, mFIBitmapInfo->type, output_path, error_state)) {
 			nap::Logger::error("error: %s", error_state.toString().c_str());
 			return false;
 		}
@@ -264,8 +243,13 @@ namespace nap
 		}
 
 		if (!error_state.hasErrors()) {
-			onSnapshotSaved(path);
+			onSnapshotSaved(output_path);
 		}
 		return true;
+	}
+
+	std::string Snapshot::getExtension() 
+	{ 
+		return extensionToString(mOutputExtension); 
 	}
 }
