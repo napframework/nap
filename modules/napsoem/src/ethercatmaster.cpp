@@ -21,6 +21,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// SOEM Context Wrapper
+	//////////////////////////////////////////////////////////////////////////
+
 	namespace soem
 	{
 		/**
@@ -28,6 +32,12 @@ namespace nap
 		 */
 		struct ContextData
 		{
+			ContextData()
+			{
+				// Initialize redundancy port to null, prevents error when closing socket
+				ecx_port_fsoe.redport = nullptr;
+			}
+
 			char IOmap[4096];
 			ec_slavet   		ec_slave[EC_MAXSLAVE]; 		///< number of slaves found on the network
 			int         		ec_slavecount;				///< Slave group structure
@@ -44,12 +54,6 @@ namespace nap
 			boolean    			AppEcatError = FALSE;		///< SII FMMU structure
 			int64         		ec_DCtime;					///< Distributed clock time
 			ecx_portt    		ecx_port_fsoe;				///< pointer structure to buffers, vars and mutexes for port instantiation
-
-			ContextData()
-			{
-				// Initialize redundancy port to null, prevents error when closing socket
-				ecx_port_fsoe.redport = nullptr;
-			}
 		};
 
 		/**
@@ -100,11 +104,15 @@ namespace nap
 		};
 	}
 
-
 	static ecx_contextt* toContext(void* ctx)
     {
 		return reinterpret_cast<soem::Context*>(ctx)->mContext;
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// EtherCATMaster
+	//////////////////////////////////////////////////////////////////////////
 
 
 	EtherCATMaster::~EtherCATMaster()
@@ -560,14 +568,13 @@ namespace nap
 
 	int64 EtherCATMaster::syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation)
 	{
-		assert(hasDistributedClock());
 		int64 integral = 0;
 		int64 delta;
-		int64 dctime = getDistributedClock();		// Current distributed clock time ns
 		int32 dcoffset_ns = dcOffset  * 1000;		// Master offset ns
 		int32 cyletime_ns = cycleTime * 1000;		// Frame cycle time ns
 
-		delta = (dctime - dcoffset_ns) % cyletime_ns;
+		assert(hasDistributedClock());
+		delta = (getDistributedClock() - dcoffset_ns) % cyletime_ns;
 		if (delta > (cyletime_ns / 2)) { delta = delta - cyletime_ns; }
 		if (delta > 0) { integral++; }
 		if (delta < 0) { integral--; }
