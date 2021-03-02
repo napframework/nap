@@ -18,6 +18,7 @@
 
 namespace nap
 {
+	// Forward Declares
 	class SnapshotRenderTarget;
 
 	/**
