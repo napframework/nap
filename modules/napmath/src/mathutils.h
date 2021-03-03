@@ -185,7 +185,19 @@ namespace nap
 		 * @param maxSpeed allows you to clamp the maximum speed
 		 * @return the blended current value
 		 */
-		float NAPAPI smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = 1000.0f);
+		float NAPAPI smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = math::max<float>());
+
+		/**
+		 * Interpolates a double value over time to a target using a dampening model.
+		 * @param currentValue the current blend value, often the return value
+		 * @param targetValue the value to blend to
+		 * @param currentVelocity the current velocity used to blend to target
+		 * @param deltaTime time in seconds between cooks
+		 * @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
+		 * @param maxSpeed allows you to clamp the maximum speed
+		 * @return the blended current value
+		 */
+		double NAPAPI smoothDamp(double currentValue, double targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = math::max<float>());
 
 		/**
 		* Smoothly interpolates a value of type T over time to a target using a dampening model.
@@ -399,6 +411,9 @@ namespace nap
 
 		template<>
 		NAPAPI void smooth(float& currentValue, const float& targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
+		template<>
+		NAPAPI void smooth(double& currentValue, const double& targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
 
 		template<>
 		NAPAPI void smooth(glm::vec2& currentValue, const glm::vec2& targetValue, glm::vec2& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);

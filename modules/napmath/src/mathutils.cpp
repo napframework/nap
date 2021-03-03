@@ -147,8 +147,38 @@ namespace nap
 		}
 
 
+		double smoothDamp(double currentValue, double targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed /*= math::max<float>()*/)
+		{
+			smoothTime = math::max<float>(math::epsilon<float>(), smoothTime);
+			double num = 2.0f / (double)smoothTime;
+			double num2 = num * (double)deltaTime;
+			double num3 = 1.0f / (1.0f + num2 + 0.48f * num2 * num2 + 0.235f * num2 * num2 * num2);
+			double num4 = currentValue - targetValue;
+			double num5 = targetValue;
+			double num6 = (double)maxSpeed * (double)smoothTime;
+			num4 = math::clamp<double>(num4, -num6, num6);
+			double target = currentValue - num4;
+			double num7 = (currentVelocity + num * num4) * (double)deltaTime;
+			currentVelocity = (currentVelocity - num * num7) * num3;
+			double num8 = target + (num4 + num7) * num3;
+			if (num5 - currentValue > 0.0f == num8 > num5)
+			{
+				num8 = num5;
+				currentVelocity = (num8 - num5) / (double)deltaTime;
+			}
+			return num8;
+		}
+
+
 		template<>
 		void smooth(float& currentValue, const float& targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
+		{
+			currentValue = smoothDamp(currentValue, targetValue, currentVelocity, deltaTime, smoothTime, maxSpeed);
+		}
+
+
+		template<>
+		void smooth(double& currentValue, const double& targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
 		{
 			currentValue = smoothDamp(currentValue, targetValue, currentVelocity, deltaTime, smoothTime, maxSpeed);
 		}
