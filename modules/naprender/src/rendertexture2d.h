@@ -7,6 +7,7 @@
 // External Includes
 #include "texture2d.h"
 #include "irendertarget.h"
+#include <color.h>
 
 namespace nap
 {
@@ -50,6 +51,7 @@ namespace nap
 		int					mHeight		= 0;								///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mFormat		= EFormat::RGBA8;					///< Property: 'Format' texture format
+		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
 		bool				mFill		= false;							///< Property: 'Fill' if the texture is initialized to black when usage is static
 	};
 }
