@@ -46,7 +46,7 @@ namespace nap
 			virtual ~BaseSmoothOperator() = default;
 
 			float mSmoothTime = 1.0f;						// approximately the time it will take to reach the target. A smaller value will reach the target faster.
-			float mMaxSpeed = 10000.0f;						// allows you to clamp the maximum blend speed 
+			float mMaxSpeed = math::max<float>();			// allows you to clamp the maximum blend speed 
 		};
 
 

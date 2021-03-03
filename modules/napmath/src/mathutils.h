@@ -120,19 +120,19 @@ namespace nap
 		 * @return epsilon of type T.
 		 */
 		template<typename T>
-		T epsilon();
+		T constexpr epsilon();
 
 		/**
 		 * @return the maximum possible value of type T
 		 */
 		template<typename T>
-		T max();
+		T constexpr max();
 		
 		/**
 		 * @return the lowest finite value of type T
 		 */
 		template<typename T>
-		T min();
+		T constexpr min();
 
 		/**
 		 * @param value requested sign value
@@ -324,19 +324,19 @@ namespace nap
 		}
 
 		template<typename T>
-		T epsilon()
+		T constexpr epsilon()
 		{
 			return std::numeric_limits<T>::epsilon();
 		}
 
 		template<typename T>
-		T max()
+		T constexpr max()
 		{
 			return std::numeric_limits<T>::max();
 		}
 
 		template<typename T>
-		T min()
+		T constexpr min()
 		{
 			return std::numeric_limits<T>::lowest();
 		}

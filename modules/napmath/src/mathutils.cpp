@@ -126,7 +126,7 @@ namespace nap
 
 		float smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
 		{
-			smoothTime = math::max<float>(0.0001f, smoothTime);
+			smoothTime = math::max<float>(math::epsilon<float>(), smoothTime);
 			float num = 2.0f / smoothTime;
 			float num2 = num * deltaTime;
 			float num3 = 1.0f / (1.0f + num2 + 0.48f * num2 * num2 + 0.235f * num2 * num2 * num2);
