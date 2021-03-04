@@ -144,9 +144,13 @@ namespace nap
 
 		/**
 		 * Called after slave enumeration and initialization.
-		 * All slaves are in  PRE-Operational state and can be addressed.
+		 * All slaves should be in PRE-Operational state and can be addressed.
+		 * Override in derived classes to provide additional startup behavior.
+		 * Startup is halted if this function returns false.
+		 * @param error contains the error if startup fails.
+		 * @return if startup succeeded.
 		 */
-		virtual void onStart() { }
+		virtual bool onStart(utility::ErrorState& error) { return true; }
 
 		/**
 		 * Called after stopping the processing and error handling threads but
@@ -173,14 +177,9 @@ namespace nap
 		 * Called when a slave reaches the pre-operational stage on the network.
 		 * Note that this function can be called from multiple threads.
 		 * SDO communication is possible. No PDO communication.
-		 * 
-		 * Override this call to register a slave setup function, for example:
-		 * void MyMaster::onPreOperational(void* slave, int index)
-		 * {
-		 *		reinterpret_cast<ec_slavet*>(slave)->PO2SOconfigx = &MAC400_SETUP;
-		 * }
-		 * 
+		 * Override this call to register a slave setup function.
 		 * You typically use the setup function to create your own custom PDO mapping.
+		 *
 		 * @param slave ec_slavet* pointer to the slave on the network.
 		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
 		 */

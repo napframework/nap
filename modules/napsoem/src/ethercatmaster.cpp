@@ -160,15 +160,19 @@ namespace nap
 		// Configure DC options for every DC capable slave found in the list
 		ecx_configdc(context);
 
-		// Notify listener
-		onStart();
-
 		// All slaves should be in pre-op mode now
-		if(stateCheck(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::PreOperational);
-			nap::Logger::warn("Not all slaves reached pre-operational state");
+		if (stateCheck(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::PreOperational);
+		nap::Logger::warn("Not all slaves reached pre-operational state");
+
+		// Allow derived class to startup
+		readState();
+		if (!onStart(errorState))
+		{
+			stop();
+			return false;
+		}
 
 		// Notify listeners, first update individual slave states
-		readState();
 		for (int i = 1; i <= getSlaveCount(); i++)
 		{
 			ec_slavet& cs = context->slavelist[i];
