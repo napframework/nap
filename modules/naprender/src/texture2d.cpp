@@ -392,7 +392,7 @@ namespace nap
 		mDescriptor = descriptor;
 
 		// Fill the texture with nothing (black)
-		if (clearMode == Texture2D::EClearMode::FillWithZero)
+		if (clearMode == Texture2D::EClearMode::Clear)
 		{
 			mRenderService->requestTextureClear(*this);
 		}
@@ -457,7 +457,7 @@ namespace nap
 			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
-		// Get image ready for copy, applied to all mipmap layers
+		// Get image ready for clear, applied to all mipmap layers
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage,
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask, dstMask,
@@ -467,25 +467,18 @@ namespace nap
 		VkImageSubresourceRange image_subresource_range = {};
 		image_subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		image_subresource_range.baseMipLevel = 0;
-		image_subresource_range.levelCount = 1;
+		image_subresource_range.levelCount = mMipLevels;
 		image_subresource_range.baseArrayLayer = 0;
 		image_subresource_range.layerCount = 1;
 
 		vkCmdClearColorImage(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
 
-		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
-		if (mMipLevels > 1)
-		{
-			createMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
-		}
-		else
-		{
-			transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+		// Transition image layout
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				0, 1);
-		}
 
 		// We store the last image layout, which is used as input for a subsequent upload
 		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

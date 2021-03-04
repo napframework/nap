@@ -53,9 +53,8 @@ namespace nap
 		 */
 		enum class EClearMode : uint8
 		{
-			DontClear		= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
-			// TODO: Should be renamed to Clear
-			FillWithZero	= 1				///< Texture is created and initialized to black on the GPU.
+			DontClear	= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
+			Clear		= 1				///< Texture is created and cleared on the GPU.
 		};
 
 		/**

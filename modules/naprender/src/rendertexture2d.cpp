@@ -41,7 +41,7 @@ namespace nap
 		settings.mColorSpace = mColorSpace;
 
 		// Figure out if the texture needs to be filled
-		EClearMode clear_mode = mFill ? EClearMode::FillWithZero : EClearMode::DontClear;
+		EClearMode clear_mode = mFill ? EClearMode::Clear : EClearMode::DontClear;
 		glm::vec4 clear_color = mClearColor.toVec4();
 
 		// Initialize based on selected format
