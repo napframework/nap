@@ -166,7 +166,7 @@ namespace nap
 
 		// Allow derived class to startup
 		readState();
-		if (!onStart(errorState))
+		if (!onStarted(errorState))
 		{
 			stop();
 			return false;
@@ -280,9 +280,6 @@ namespace nap
 			this->onStopProcessing();
 			mProcessTask.wait();
 
-			// Call stop and request init state for all slaves
-			onStop();
-
 			// Make all slaves go to initialization stage
 			if (requestState(ESlaveState::Init) != ESlaveState::Init)
 			{
@@ -293,6 +290,7 @@ namespace nap
 		// Close socket
 		if (mStarted || mRunning)
 		{	
+			onStopped();
 			ecx_contextt* context = toContext(mContext);
 			ecx_close(context);
 		}

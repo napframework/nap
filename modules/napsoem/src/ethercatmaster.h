@@ -150,13 +150,13 @@ namespace nap
 		 * @param error contains the error if startup fails.
 		 * @return if startup succeeded.
 		 */
-		virtual bool onStart(utility::ErrorState& error) { return true; }
+		virtual bool onStarted(utility::ErrorState& error) { return true; }
 
 		/**
-		 * Called after stopping the processing and error handling threads but
-		 * before setting all slaves to init mode. Perform additional close up steps here.
+		 * Called after stopping the processing and error handling threads 
+		 * and setting all slaves to init mode. 
 		 */
-		virtual void onStop() { }
+		virtual void onStopped() { }
 
 		/**
 		 * Called from the processing thread, override in derived class.
