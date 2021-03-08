@@ -53,8 +53,7 @@ namespace nap
 
 			// Also destroy the staging buffer if we reach this point before the initial upload has occurred.
 			// This could happen e.g. if app initialization fails.
-			if (staging_buffer.mBuffer != VK_NULL_HANDLE)
-				destroyBuffer(renderService.getVulkanAllocator(), staging_buffer);
+			destroyBuffer(renderService.getVulkanAllocator(), staging_buffer);
 		});
 	}
 
