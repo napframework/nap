@@ -166,7 +166,9 @@ namespace nap
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
 	private:
-		// Test
+		/**
+		* Clears the texture to the specified clear colors
+		*/
 		void clear(VkCommandBuffer commandBuffer);
 
 		/**
