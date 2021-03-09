@@ -347,27 +347,21 @@ namespace nap
 			}
 		}
 
-		// Set image usage flags
+		// Set image usage flags: can be written and sampled
 		VkImageUsageFlags usage = requiredFlags;
+		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		switch (mUsage)
 		{
 			case ETextureUsage::DynamicRead:
 			{
-				// written, can be sampled, read
-				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+				// can be read
+				usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 				break;
 			}
 			case ETextureUsage::DynamicWrite:
-			{
-				// written, can be sampled, if mip-map enabled, also read
-				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
-				break;
-			}
 			case ETextureUsage::Static:
 			{
-				// written, can be sampled, if mip-map enabled, also read
-				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+				// can be read if mipmaps are enabled
 				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
 				break;
 			}
