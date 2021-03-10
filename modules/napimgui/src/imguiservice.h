@@ -219,7 +219,7 @@ namespace nap
 		 * Simple struct that combines an ImGUI context with additional state information
 		 * Takes ownership of the context, destroys it on destruction
 		 */
-		struct GUIContext
+		struct NAPAPI GUIContext
 		{
 			GUIContext(ImGuiContext* context) : mContext(context) { };
 			~GUIContext();
