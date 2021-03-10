@@ -329,9 +329,10 @@ namespace nap
 		 * @param cycleTime frame cycle time in us
 		 * @param dcOffset DC offset in us, where 50 = 50us later than DC sync
 		 * @param outCompensation the computed clock offset in ns
+		 * @param outIntegral additional clock compensation value in ns, should be zeroed first time
 		 * @return delta time between ticks in ns
 		 */
-		int64 syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation);
+		int64 syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation, int64& outIntegral);
 
 		/**
 		 * @return distributed clock time in ns
@@ -353,10 +354,10 @@ namespace nap
 		int  mExpectedWKC = 0;
 		std::future<void>	mProcessTask;						///< The background server thread
 		std::future<void>	mErrorTask;							///< The background error checking thread
-		std::atomic<bool>	mStopErrorTask = { false };			///< If the error task should be stopped
-		std::atomic<int>	mActualWCK = { 0 };					///< Actual work counter
-		std::atomic<bool>	mOperational = { false };			///< If the master is operational
-		std::atomic<bool>	mRunning = { false };				///< If the processing thread is running
+		std::atomic<bool>	mStopErrorTask = { false };		///< If the error task should be stopped
+		std::atomic<int>	mActualWCK = { 0 };				///< Actual work counter
+		std::atomic<bool>	mOperational = { false };		///< If the master is operational
+		std::atomic<bool>	mRunning = { false };			///< If the processing thread is running
 		bool				mStarted = false;					///< If the master started, this does not mean it's operational
 		void*				mContext = nullptr;					///< Ethercat (SOEM) context of type ecx_contextt
 

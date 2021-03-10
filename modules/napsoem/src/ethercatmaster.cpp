@@ -568,9 +568,8 @@ namespace nap
 	}
 
 
-	int64 EtherCATMaster::syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation)
+	int64 EtherCATMaster::syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation, int64& ioIntegral)
 	{
-		int64 integral = 0;
 		int64 delta;
 		int32 dcoffset_ns = dcOffset  * 1000;		// Master offset ns
 		int32 cyletime_ns = cycleTime * 1000;		// Frame cycle time ns
@@ -578,9 +577,9 @@ namespace nap
 		assert(hasDistributedClock());
 		delta = (getDistributedClock() - dcoffset_ns) % cyletime_ns;
 		if (delta > (cyletime_ns / 2)) { delta = delta - cyletime_ns; }
-		if (delta > 0) { integral++; }
-		if (delta < 0) { integral--; }
-		outCompensation = -(delta / 100) - (integral / 20);
+		if (delta > 0) { ioIntegral++; }
+		if (delta < 0) { ioIntegral--; }
+		outCompensation = -(delta / 100) - (ioIntegral / 20);
 		return delta;
 	}
 
