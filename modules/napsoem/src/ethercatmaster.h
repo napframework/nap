@@ -24,11 +24,9 @@ namespace nap
 	 * Pick one of the ports to discover slaves on the network.
 	 *
 	 * Override the various virtual functions to read / write to the slave SDO.
-	 * Override the onProcess function to broadcast high priority control and status
-	 * information using the slave PDO. onProcess() is called from a separate thread and
-	 * should run on a frequency controlled by the 'CycleTime' property.
-	 * It is your responsibility to time the process data transfers.
-	 * Error reporting and slave recovery is also handled by this master on a separate thread.
+	 * Override the 'onProcess' function to exchange runtime SDO input and output data. 
+	 * onProcess() is called from a separate thread. It is your responsibility to time the data transfers.
+	 * Error reporting and slave recovery is handled by this master on a separate thread.
 	 *
 	 * IMPORTANT: On Linux and OSX you must run the application that uses the 
 	 * Ethercat master as administrator, ie: with sudo privileges. Failure
@@ -44,7 +42,7 @@ namespace nap
 		RTTI_ENABLE(Device)
 	public:
 		/**
-		 * All available ethercat slave states
+		 * All available Ethercat slave states
 		 */
 		enum class ESlaveState : uint16
 		{
@@ -82,8 +80,8 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * When true ethercat data processing and error handling tasks are performed in the background.
-		 * @return if ethercat data processing and error handling tasks are performed in the background
+		 * When true Ethercat data processing and error handling tasks are performed in the background.
+		 * @return if Ethercat data processing and error handling tasks are performed in the background
 		 */
 		bool isRunning() const;
 
@@ -352,12 +350,13 @@ namespace nap
 	private:
 		char mIOmap[4096];
 		int  mExpectedWKC = 0;
+		
 		std::future<void>	mProcessTask;						///< The background server thread
 		std::future<void>	mErrorTask;							///< The background error checking thread
-		std::atomic<bool>	mStopErrorTask = { false };		///< If the error task should be stopped
-		std::atomic<int>	mActualWCK = { 0 };				///< Actual work counter
-		std::atomic<bool>	mOperational = { false };		///< If the master is operational
-		std::atomic<bool>	mRunning = { false };			///< If the processing thread is running
+		std::atomic<int>	mActualWCK = { 0 };					///< Actual work counter
+		bool				mOperational = false;				///< If the master is operational
+		bool				mStopErrorTask = false;				///< If the error task should be stopped
+		bool				mRunning = false;					///< If the processing thread is running
 		bool				mStarted = false;					///< If the master started, this does not mean it's operational
 		void*				mContext = nullptr;					///< Ethercat (SOEM) context of type ecx_contextt
 

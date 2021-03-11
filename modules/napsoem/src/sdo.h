@@ -12,7 +12,6 @@ namespace nap
 	/**
 	 * Base class of all SDO (Service Data Object) objects.
 	 * Groups together useful SDO information such as the SDO index, subindex and description.
-	 * Used to read / write data to a specific register using a nap::EthercatMaster.
 	 * This requires the slave to have a mailbox and to support the "CANopen over EtherCAT" (CoE) protocol.
 	 * Derive from this class to create your own SDO read & write objects.
 	 */
@@ -97,7 +96,6 @@ namespace nap
 	/**
 	 * Single SDO (Service Data Object) value.
 	 * Groups together useful SDO information such as the SDO index, subindex, description and value to get or set.
-	 * Used to read / write a value to a single sub-index of a register using a nap::EthercatMaster.
 	 * This requires the slave to have a mailbox and to support the "CANopen over EtherCAT" (CoE) protocol.
 	 */
 	template<typename T>
