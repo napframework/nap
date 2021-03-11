@@ -151,8 +151,7 @@ namespace nap
 		virtual bool onStarted(utility::ErrorState& error) { return true; }
 
 		/**
-		 * Called after stopping the processing and error handling threads 
-		 * and setting all slaves to init mode. 
+		 * Called after stopping the processing and error handling threads. 
 		 */
 		virtual void onStopped() { }
 
@@ -338,7 +337,7 @@ namespace nap
 		int64 getDistributedClock();
 
 		//////////////////////////////////////////////////////////////////////////
-		// Context
+		// SOEM Context
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
