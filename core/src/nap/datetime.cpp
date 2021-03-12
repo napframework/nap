@@ -240,7 +240,9 @@ namespace nap
 
 	std::string DateTime::toString() const
 	{
-		return std::string(asctime(&mTimeStruct));
+		std::string rv = asctime(&mTimeStruct);
+		rv.pop_back();
+		return rv;
 	}
 
 

@@ -6,10 +6,9 @@
 #include "inputevent.h"
 #include "inputcomponent.h"
 #include "transformcomponent.h"
-#include <entity.h>
 
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <entity.h>
+#include <mathutils.h>
 
 RTTI_BEGIN_CLASS(nap::CameraController)
 	RTTI_PROPERTY("LookAtTarget",	&nap::CameraController::mLookAtTarget,	nap::rtti::EPropertyMetaData::Required)
@@ -121,22 +120,22 @@ namespace nap
 			{
 				case ECameraMode::OrthographicTop:
 					camera_translate_axis = glm::vec3(0.0f, -1.0f, 0.0f);
-					rotation = glm::angleAxis((float)-M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+					rotation = glm::angleAxis((float)-math::PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
 					break;
 
 				case ECameraMode::OrthographicBottom:
 					camera_translate_axis = glm::vec3(0.0f, 1.0f, 0.0f);
-					rotation = glm::angleAxis((float)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+					rotation = glm::angleAxis((float)math::PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
 					break;
 
 				case ECameraMode::OrthographicLeft:
 					camera_translate_axis = glm::vec3(1.0f, 0.0f, 0.0f);
-					rotation = glm::angleAxis((float)-M_PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
+					rotation = glm::angleAxis((float)-math::PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
 					break;
 
 				case ECameraMode::OrthographicRight:
 					camera_translate_axis = glm::vec3(-1.0f, 0.0f, 0.0f);
-					rotation = glm::angleAxis((float)M_PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
+					rotation = glm::angleAxis((float)math::PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
 					break;
 
 				case ECameraMode::OrthographicFront:
@@ -146,7 +145,7 @@ namespace nap
 
 				case ECameraMode::OrthographicBack:
 					camera_translate_axis = glm::vec3(0.0f, 0.0f, 1.0f);
-					rotation = glm::angleAxis((float)M_PI, glm::vec3(0.0f, 1.0f, 0.0f));
+					rotation = glm::angleAxis((float)math::PI, glm::vec3(0.0f, 1.0f, 0.0f));
 					break;
 			}
 
