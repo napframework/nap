@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_MODULE("mod_napudp", "0.2.0")
+NAP_MODULE("mod_napudp", "0.1.0")

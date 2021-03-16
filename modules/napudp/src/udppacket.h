@@ -19,16 +19,21 @@ namespace nap
 	{
 	public:
 		/**
+		 * UdpPacket constructor
+		 */
+		UdpPacket(){}
+
+		/**
 		 * UdpPacket constructor copies the contents of supplied buffer
 		 * @param buffer the buffer to be copied
 		 */
-		UdpPacket(std::vector<char> buffer) : mBuffer(std::move(buffer)){}
+		UdpPacket(std::vector<nap::int8> buffer) : mBuffer(std::move(buffer)){}
 
 		/**
 		 * returns const reference to vector holding data
 		 * @return the data
 		 */
-		const std::vector<char>& data() const { return mBuffer; }
+		const std::vector<nap::int8>& data() const { return mBuffer; }
 
 		/**
 		 * returns size of data buffer
@@ -36,6 +41,6 @@ namespace nap
 		 */
 		size_t size() const{ return mBuffer.size(); }
 	private:
-		std::vector<char> mBuffer; ///< Vector containing packet data
+		std::vector<nap::int8> mBuffer; ///< Vector containing packet data
 	};
 }

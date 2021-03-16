@@ -18,8 +18,8 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UdpClient)
-		RTTI_PROPERTY("Endpoint", &nap::UdpClient::mRemoteIp, nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("Port", &nap::UdpClient::mPort, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Endpoint", &nap::UdpClient::mRemoteIp, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port", &nap::UdpClient::mPort, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -42,7 +42,9 @@ namespace nap
 				return false;
 			}
 			else
+			{
 				nap::Logger::warn(*this, asio_error_code.message());
+			}
 		}else
 		{
 			mRemoteEndpoint = udp::endpoint(address::from_string(mRemoteIp), mPort);
@@ -57,16 +59,18 @@ namespace nap
 
 	void UdpClient::stop()
 	{
-		mRun = false;
-		mSocket.close();
-		mSendThread.join();
+		if( mRun )
+		{
+			mRun = false;
+			mSocket.close();
+			mSendThread.join();
+		}
 	}
 
 
 	void UdpClient::send(const UdpPacket& packet)
 	{
-		std::lock_guard<std::mutex> scoped_lock(mMutex);
-		mQueue.emplace_back(packet);
+		mQueue.enqueue(packet);
 	}
 
 
@@ -74,18 +78,12 @@ namespace nap
 	{
 		while(mRun)
 		{
-			// consume any queued packets
-			std::vector<UdpPacket> packets_to_send;
-			{
-				std::lock_guard<std::mutex> scoped_lock(mMutex);
-				packets_to_send.swap(mQueue);
-			}
-
 			// let the socket send the packets
-			for(const auto& packet : packets_to_send)
+			UdpPacket packet_to_send;
+			while(mQueue.try_dequeue(packet_to_send))
 			{
 				asio::error_code err;
-				mSocket.send_to(asio::buffer(&packet.data()[0], packet.size()), mRemoteEndpoint, 0, err);
+				mSocket.send_to(asio::buffer(&packet_to_send.data()[0], packet_to_send.size()), mRemoteEndpoint, 0, err);
 
 				if(err)
 				{

@@ -9,6 +9,10 @@
 #include <thread>
 #include <mutex>
 
+// NAP includes
+#include <nap/numeric.h>
+#include <concurrentqueue.h>
+
 // ASIO includes
 #include <asio/ts/buffer.hpp>
 #include <asio/ts/internet.hpp>
@@ -81,18 +85,17 @@ namespace nap
 		void handleReceive(const asio::error_code& error, size_t bytesTransferred);
 
 		// ASIO
-		asio::io_service mIOService;
-		asio::ip::udp::socket mSocket{mIOService};
-		std::vector<char> mBuffer;
-		asio::ip::udp::endpoint mRemoteEndpoint;
+		asio::io_service 			mIOService;
+		asio::ip::udp::socket 		mSocket{mIOService};
+		std::vector<nap::int8>		mBuffer;
+		asio::ip::udp::endpoint 	mRemoteEndpoint;
 
 		// Threading
-		std::thread mReceiverThread;
-		std::atomic_bool mRun;
-		std::mutex mMutex;
-		std::vector<std::function<void()>> mTaskQueue;
+		std::thread 										mReceiverThread;
+		std::atomic_bool 									mRun;
+		moodycamel::ConcurrentQueue<std::function<void()>> 	mTaskQueue;
 
 		// Listeners
-		std::vector<UdpServerListener*> mListeners;
+		std::vector<UdpServerListener*> 	mListeners;
 	};
 }

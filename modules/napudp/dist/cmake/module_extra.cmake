@@ -1,4 +1,4 @@
-# Install rtmidi license into packaged project
+# Install asio license into packaged project
 install(FILES ${THIRDPARTY_DIR}/asio/LICENSE_1_0.txt DESTINATION licenses/asio)
 
 if(NOT TARGET asio)

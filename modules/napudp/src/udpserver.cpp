@@ -19,10 +19,10 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UdpServer)
-RTTI_PROPERTY("Endpoint", &nap::UdpServer::mIPRemoteEndpoint, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("Port", &nap::UdpServer::mPort, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("BufferSize", &nap::UdpServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("ThrowOnFailure", &nap::UdpServer::mThrowOnInitError, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Endpoint", &nap::UdpServer::mIPRemoteEndpoint, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port", &nap::UdpServer::mPort, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BufferSize", &nap::UdpServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ThrowOnFailure", &nap::UdpServer::mThrowOnInitError, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -68,9 +68,12 @@ namespace nap
 
 	void UdpServer::stop()
 	{
-		mRun = false;
-		mSocket.close();
-		mReceiverThread.join();
+		if(mRun)
+		{
+			mRun = false;
+			mSocket.close();
+			mReceiverThread.join();
+		}
 	}
 
 	void UdpServer::receiveThread()
@@ -82,18 +85,11 @@ namespace nap
 
 		while(mRun)
 		{
-			// first, excecute any tasks scheduled
-			// consume all tasks queued
-			std::vector<std::function<void()>> task_queue;
-			{
-				std::lock_guard<std::mutex> scoped_lock(mMutex);
-				task_queue.swap(mTaskQueue);
-			}
-
 			// excecute all tasks
-			for(auto& task : task_queue)
+			std::function<void()> queued_task;
+			while(mTaskQueue.try_dequeue(queued_task))
 			{
-				task();
+				queued_task();
 			}
 
 			// run handlers ready to run
@@ -114,7 +110,7 @@ namespace nap
 		}
 
 		// construct udp packet, clears current buffer
-		std::vector<char> buffer;
+		std::vector<nap::int8> buffer;
 		buffer.resize(mBufferSize);
 		buffer.swap(mBuffer);
 
@@ -128,7 +124,7 @@ namespace nap
 		// rebind handler to socket if the server is still running
 		if (mRun)
 		{
-			mSocket.async_receive_from(asio::buffer(mBuffer),
+			mSocket.async_receive_from(asio::buffer(mBuffer, bytesTransferred),
 									   mRemoteEndpoint,
 									   std::bind(&UdpServer::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
 		}
@@ -172,7 +168,6 @@ namespace nap
 
 	void UdpServer::enqueueTask(std::function<void()> task)
 	{
-		std::lock_guard<std::mutex> scoped_lock(mMutex);
-		mTaskQueue.emplace_back(task);
+		mTaskQueue.enqueue(task);
 	}
 }

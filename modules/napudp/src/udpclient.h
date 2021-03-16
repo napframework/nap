@@ -6,7 +6,7 @@
 
 // External includes
 #include <nap/device.h>
-#include <thread>
+#include <queue>
 #include <mutex>
 
 // ASIO includes
@@ -17,6 +17,7 @@
 
 // NAP includes
 #include <utility/threading.h>
+#include <concurrentqueue.h>
 
 // Local includes
 #include "udppacket.h"
@@ -54,20 +55,19 @@ namespace nap
 		bool mThrowOnInitError 	= true;			///< Property: 'ThrowOnFailure' when client fails to bind socket, return false on start
 	private:
 		/**
-		 * the threaded send function
+		 * The threaded send function
 		 */
 		void sendThread();
 
 		// ASIO
-		asio::io_service mIOService;
-		asio::ip::udp::socket mSocket{mIOService};
-		std::vector<char> mBuffer;
-		asio::ip::udp::endpoint mRemoteEndpoint;
+		asio::io_service 			mIOService;
+		asio::ip::udp::socket 		mSocket{mIOService};
+		std::vector<nap::int8>		mBuffer;
+		asio::ip::udp::endpoint 	mRemoteEndpoint;
 
 		// Threading
-		std::thread mSendThread;
-		std::atomic_bool mRun;
-		std::vector<UdpPacket> mQueue;
-		std::mutex mMutex;
+		std::thread 							mSendThread;
+		std::atomic_bool 						mRun;
+		moodycamel::ConcurrentQueue<UdpPacket> 	mQueue;
 	};
 }
