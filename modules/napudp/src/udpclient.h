@@ -29,7 +29,7 @@ namespace nap
 	/**
 	 * The UdpClient class can be used send UdpPackets to an endpoint
 	 */
-	class UdpClient : public Device
+	class NAPAPI UdpClient : public Device
 	{
 		RTTI_ENABLE(Device)
 	public:

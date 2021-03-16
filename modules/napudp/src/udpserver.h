@@ -32,7 +32,7 @@ namespace nap
 	 * The UdpServer fires up its own thread and all UdpPackets pushed to listeners will happen on that thread
 	 * Whenever a listeners is registered or removed it will happen thread-safe
 	 */
-	class UdpServer : public Device
+	class NAPAPI UdpServer : public Device
 	{
 		RTTI_ENABLE(Device)
 	public:
