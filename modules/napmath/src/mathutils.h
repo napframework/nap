@@ -15,10 +15,19 @@ namespace nap
 {
 	namespace math
 	{
-		/**
-		 * @return value of pi as defined in math.h
-		 */
-		double NAPAPI pi();
+		static constexpr double E			= 2.71828182845904523536;   // e
+		static constexpr double LOG2E		= 1.44269504088896340736;   // log2(e)
+		static constexpr double LOG10E		= 0.434294481903251827651;  // log10(e)
+		static constexpr double LN2			= 0.693147180559945309417;  // ln(2)
+		static constexpr double LN10		= 2.30258509299404568402;   // ln(10)
+		static constexpr double PI			= 3.14159265358979323846;   // pi
+		static constexpr double PI_2		= 1.57079632679489661923;   // pi/2
+		static constexpr double PI_4		= 0.785398163397448309616;  // pi/4
+		static constexpr double M1_PI		= 0.318309886183790671538;  // 1/pi
+		static constexpr double M2_PI		= 0.636619772367581343076;  // 2/pi
+		static constexpr double M2_SQRTPI	= 1.12837916709551257390;   // 2/sqrt(pi)
+		static constexpr double SQRT2		= 1.41421356237309504880;   // sqrt(2)
+		static constexpr double SQRT1_2		= 0.707106781186547524401;  // 1/sqrt(2)
 
 		/**
 		 * Maps a value from min/max to outMin/outMax.
@@ -120,19 +129,19 @@ namespace nap
 		 * @return epsilon of type T.
 		 */
 		template<typename T>
-		T epsilon();
+		T constexpr epsilon();
 
 		/**
 		 * @return the maximum possible value of type T
 		 */
 		template<typename T>
-		T max();
+		T constexpr max();
 		
 		/**
 		 * @return the lowest finite value of type T
 		 */
 		template<typename T>
-		T min();
+		T constexpr min();
 
 		/**
 		 * @param value requested sign value
@@ -176,7 +185,19 @@ namespace nap
 		 * @param maxSpeed allows you to clamp the maximum speed
 		 * @return the blended current value
 		 */
-		float NAPAPI smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = 1000.0f);
+		float NAPAPI smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = math::max<float>());
+
+		/**
+		 * Interpolates a double value over time to a target using a dampening model.
+		 * @param currentValue the current blend value, often the return value
+		 * @param targetValue the value to blend to
+		 * @param currentVelocity the current velocity used to blend to target
+		 * @param deltaTime time in seconds between cooks
+		 * @param smoothTime approximately the time it will take to reach the target. A smaller value will reach the target faster.
+		 * @param maxSpeed allows you to clamp the maximum speed
+		 * @return the blended current value
+		 */
+		double NAPAPI smoothDamp(double currentValue, double targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed = math::max<float>());
 
 		/**
 		* Smoothly interpolates a value of type T over time to a target using a dampening model.
@@ -324,19 +345,19 @@ namespace nap
 		}
 
 		template<typename T>
-		T epsilon()
+		T constexpr epsilon()
 		{
 			return std::numeric_limits<T>::epsilon();
 		}
 
 		template<typename T>
-		T max()
+		T constexpr max()
 		{
 			return std::numeric_limits<T>::max();
 		}
 
 		template<typename T>
-		T min()
+		T constexpr min()
 		{
 			return std::numeric_limits<T>::lowest();
 		}
@@ -390,6 +411,9 @@ namespace nap
 
 		template<>
 		NAPAPI void smooth(float& currentValue, const float& targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
+		template<>
+		NAPAPI void smooth(double& currentValue, const double& targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
 
 		template<>
 		NAPAPI void smooth(glm::vec2& currentValue, const glm::vec2& targetValue, glm::vec2& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
