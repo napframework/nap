@@ -378,13 +378,13 @@ namespace nap
 					}
 
 					// see if the clipboard already contains this segment, if so, remove it, if not, add it
-					if( mState.mClipboard->containsObject(segment.mID) )
+					if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 					{
 						mState.mClipboard->removeObject(segment.mID);
 					}else
 					{
 						utility::ErrorState errorState;
-						mState.mClipboard->addObject(&segment, errorState);
+						mState.mClipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
 
 						// log any errors
 						if(errorState.hasErrors())
@@ -853,7 +853,7 @@ namespace nap
 
 							// add object to clipboard
 							utility::ErrorState errorState;
-							mState.mClipboard->addObject(curve_segment, errorState);
+							mState.mClipboard->addObject(curve_segment, getPlayer().getSequenceFilename(), errorState);
 
 							// log any errors
 							if(errorState.hasErrors())
@@ -879,7 +879,7 @@ namespace nap
 						const auto* curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
 
 						// does the clipboard already contain this segment ?
-						if( clipboard->containsObject(curve_segment->mID) )
+						if( clipboard->containsObject(curve_segment->mID, getPlayer().getSequenceFilename()) )
 						{
 							if( ImGui::Button("Remove from clipboard") )
 							{
@@ -902,7 +902,7 @@ namespace nap
 							{
 								// add object to clipboard
 								utility::ErrorState errorState;
-								clipboard->addObject(curve_segment, errorState);
+								clipboard->addObject(curve_segment, getPlayer().getSequenceFilename(), errorState);
 
 								// log any errors
 								if(errorState.hasErrors())
@@ -962,7 +962,7 @@ namespace nap
 						mCurveCache.clear();
 
 						// remove delete object from clipboard
-						if( mState.mClipboard->containsObject(action->mSegmentID))
+						if( mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
 						{
 							mState.mClipboard->removeObject(action->mSegmentID);
 						}
@@ -1325,7 +1325,7 @@ namespace nap
 		{
 			auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 
-			if( mState.mClipboard->containsObject(segmentID) && curve_segment_clipboard->getSequenceName() == getEditor().mSequencePlayer->getSequenceFilename() )
+			if( mState.mClipboard->containsObject(segmentID, getPlayer().getSequenceFilename()))
 			{
 				mState.mClipboard->removeObject(segmentID);
 
@@ -1333,7 +1333,7 @@ namespace nap
 				const auto* segment = controller.getSegment(trackID, segmentID);
 
 				utility::ErrorState errorState;
-				mState.mClipboard->addObject(segment, errorState);
+				mState.mClipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
 			}
 		}
 

@@ -406,7 +406,7 @@ namespace nap
 					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
 					// if the clipboard contains this segment or is a different sequence, remove it
-					if (clipboard->containsObject(segment.mID))
+					if (clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
 					{
 						clipboard->removeObject(segment.mID);
 					}else
@@ -415,7 +415,7 @@ namespace nap
 
 
 						utility::ErrorState errorState;
-						clipboard->addObject(&segment, errorState);
+						clipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
 
 						// log any errors
 						if(errorState.hasErrors())
@@ -433,7 +433,7 @@ namespace nap
 			// if segment is in clipboard, line is red
 			if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
 			{
-				if( mState.mClipboard->containsObject(segment.mID) )
+				if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
 					line_color = guicolors::red;
 				}
@@ -512,7 +512,7 @@ namespace nap
 						utility::ErrorState errorState;
 						auto& controller = getEditor().getController<SequenceControllerEvent>();
 						const auto* event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-						mState.mClipboard->addObject(event_segment, errorState);
+						mState.mClipboard->addObject(event_segment, getPlayer().getSequenceFilename(), errorState);
 
 						// exit popup
 						ImGui::CloseCurrentPopup();
@@ -527,7 +527,7 @@ namespace nap
 					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
 					// is event contained by clipboard ? if so, add remove button
-					bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID);
+					bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename());
 
 					if( display_remove_from_clipboard )
 					{
@@ -561,7 +561,7 @@ namespace nap
 
 							// serialize object into clipboard
 							utility::ErrorState errorState;
-							clipboard->addObject(segment, errorState);
+							clipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
 
 							// log any errors
 							if(errorState.hasErrors())
@@ -585,7 +585,7 @@ namespace nap
 					controller.deleteSegment(action->mTrackID, action->mSegmentID);
 
 					// remove segment from clipboard
-					if(mState.mClipboard->containsObject(action->mSegmentID))
+					if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
 					{
 						mState.mClipboard->removeObject(action->mSegmentID);
 					}
@@ -701,7 +701,7 @@ namespace nap
 		{
 			auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
-			if( mState.mClipboard->containsObject(segmentID) && getEditor().mSequencePlayer->getSequenceFilename() == clipboard->getSequenceName() )
+			if( mState.mClipboard->containsObject(segmentID, getPlayer().getSequenceFilename()) )
 			{
 				mState.mClipboard->removeObject(segmentID);
 
@@ -709,7 +709,7 @@ namespace nap
 				const auto* segment = controller.getSegment(trackID, segmentID);
 
 				utility::ErrorState errorState;
-				mState.mClipboard->addObject(segment, errorState);
+				mState.mClipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
 			}
 		}
 
