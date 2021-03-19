@@ -84,11 +84,14 @@ namespace nap
 		const auto& sequence = mSequencePlayer->getSequence();
 		for(const auto& track : sequence.mTracks)
 		{
-			auto track_type = track.get()->get_type();
-			auto it = getControllerTrackTypeMap().find(track_type);
-			if (mControllers.find(it->second) != mControllers.end())
+			if(trackID == track->mID)
 			{
-				return mControllers[it->second].get();
+				auto track_type = track.get()->get_type();
+				auto it = getControllerTrackTypeMap().find(track_type);
+				if (mControllers.find(it->second) != mControllers.end())
+				{
+					return mControllers[it->second].get();
+				}
 			}
 		}
 		return nullptr;

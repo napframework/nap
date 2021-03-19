@@ -20,6 +20,7 @@ namespace nap
 		{
 			mSerializedObjects.clear();
 		}
+		mSequenceName = sequenceName;
 
 		// first remove the object if it already exists in the clipboard
 		if(containsObject(object->mID, sequenceName))

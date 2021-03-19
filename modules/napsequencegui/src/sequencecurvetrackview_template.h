@@ -328,7 +328,7 @@ namespace nap
 			if( mState.mClipboard->isClipboard<SequenceGUIClipboards::CurveSegmentClipboard>())
 			{
 				auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
-				if( curve_segment_clipboard->containsObject(segment.mID) )
+				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
 					ImVec4 red = ImGui::ColorConvertU32ToFloat4(guicolors::red);
 					red.w = 0.25f;
