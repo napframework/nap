@@ -4,10 +4,14 @@
 
 #include "threading.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 namespace nap
 {
     
-    TaskQueue::TaskQueue(std::uint32_t maxQueueItems) : mQueue(maxQueueItems)
+    TaskQueue::TaskQueue(int maxQueueItems) : mQueue(maxQueueItems)
     {
         mDequeuedTasks.resize(maxQueueItems);
     }
@@ -16,10 +20,9 @@ namespace nap
     
     void TaskQueue::processBlocking()
     {
-        auto it = mDequeuedTasks.begin();
-        auto count = mQueue.wait_dequeue_bulk(it, mDequeuedTasks.size());
-        for (auto i = 0; i < count; ++i)
-            (*it++)();
+        TaskQueue::Task dequeuedTask;
+        mQueue.wait_dequeue(dequeuedTask);
+        dequeuedTask();
     }
     
     
@@ -27,12 +30,23 @@ namespace nap
     {
         auto it = mDequeuedTasks.begin();
         auto count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
-        for (auto i = 0; i < count; ++i)
-            (*it++)();
+        while (count > 0)
+        {
+            for (auto i = 0; i < count; ++i)
+                (*it++)();
+            it = mDequeuedTasks.begin();
+            count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
+        }
     }
+
+
+	WorkerThread::WorkerThread() : mBlocking(true), mTaskQueue(20)
+	{
+		mRunning = false;
+	}
     
     
-    WorkerThread::WorkerThread(bool blocking, std::uint32_t maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
+    WorkerThread::WorkerThread(bool blocking, int maxQueueItems) : mBlocking(blocking), mTaskQueue(maxQueueItems)
     {
         mRunning = false;
     }
@@ -83,11 +97,11 @@ namespace nap
     }
     
     
-    ThreadPool::ThreadPool(std::uint32_t numberOfThreads, std::uint32_t maxQueueItems)
-        : mTaskQueue(maxQueueItems)
+    ThreadPool::ThreadPool(int numberOfThreads, int maxQueueItems, bool realTimePriority)
+        : mTaskQueue(maxQueueItems), mRealTimePriority(realTimePriority)
     {
         mStop = false;
-        for (std::uint32_t i = 0; i < numberOfThreads; ++i)
+        for (unsigned int i = 0; i < numberOfThreads; ++i)
             addThread();
     }
     
@@ -103,7 +117,7 @@ namespace nap
         mStop = true;
         
         // enqueue empty function for each thread to make it stop blocking
-        for (std::uint32_t i = 0; i < mThreads.size(); ++i)
+        for (unsigned int i = 0; i < mThreads.size(); ++i)
             mTaskQueue.enqueue([](){});
         
         for (auto& thread : mThreads)
@@ -129,6 +143,24 @@ namespace nap
             while (!mStop)
                 mTaskQueue.processBlocking();
         });
+        auto& thread = mThreads.back();
+        
+        if (mRealTimePriority)
+        {
+#ifdef _WIN32
+            auto result = SetThreadPriority(thread.native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
+            // If this assertion fails the thread failed to acquire realtime priority
+            assert(result != 0);
+#else
+            sched_param schedParams;
+            auto priority = sched_get_priority_max(SCHED_FIFO);
+            
+            schedParams.sched_priority = priority;
+            auto result = pthread_setschedparam(thread.native_handle(), SCHED_FIFO, &schedParams);
+            // If this assertion fails the thread failed to acquire realtime priority
+            assert(result == 0);
+#endif
+        }
     }
     
     

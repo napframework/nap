@@ -41,8 +41,8 @@ namespace nap
 			nap::Logger::error("Error serializing object %s , error : ", object->mID.c_str(), errorState.toString().c_str());
 		}else
 		{
-			std::string serializedObject = writer.GetJSON();
-			mSerializedObjects.insert(std::pair<std::string, std::string>(object->mID, serializedObject));
+			std::string serialized_object = writer.GetJSON();
+			mSerializedObjects.insert(std::pair<std::string, std::string>(object->mID, serialized_object));
 		}
 	}
 

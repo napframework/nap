@@ -34,6 +34,8 @@ namespace nap
 	 *
 	 * The model view and projection matrices are automatically set when the vertex shader exposes a struct with the 'uniform::mvpStruct' name.
 	 * If exposed by the shader it is required that the model, view and projection matrix names match those as declared in 'renderglobals.h'.
+	 *
+	 * A Transform component is required to position the mesh.
 	 */
 	class NAPAPI RenderableMeshComponent : public RenderableComponent
 	{
@@ -82,6 +84,8 @@ namespace nap
 	 *		mat4 modelMatrix;			///< Optional
 	 *	} mvp;							///< Optional
 	 * ~~~~~
+	 *
+	 * A Transform component is required to position the mesh.
 	 */
 	class NAPAPI RenderableMeshComponentInstance : public RenderableComponentInstance
 	{

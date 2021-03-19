@@ -84,8 +84,13 @@ def package(zip_release,
 
     # Add timestamp and git revision for build info
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
-    (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
-    git_revision = git_revision.strip()
+    git_revision = None
+    try:
+        (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
+        git_revision = git_revision.strip()
+    except Exception as e:
+        print("Warning: unable to get git revision")
+
     (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label, cross_compile_target)
 
     # Ensure we won't overwrite any existing package

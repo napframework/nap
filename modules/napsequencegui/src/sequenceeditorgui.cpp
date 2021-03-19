@@ -7,6 +7,7 @@
 #include "../../../apps/shylight/module/src/shylightsequenceeditorgui.h"
 #include "napcolors.h"
 #include "sequenceeditorguiclipboard.h"
+#include "sequenceeditorgui.h"
 
 // External Includes
 #include <entity.h>
@@ -51,6 +52,15 @@ namespace nap
 	}
 
 
+	rttr::type SequenceEditorGUIView::getViewForTrackType(rttr::type type)
+	{
+		auto& map = getTrackViewTypeViewMap();
+		auto it = map.find(type);
+		assert(it != map.end()); // entry not found
+		return it->second;
+	}
+
+
 	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -85,6 +95,21 @@ namespace nap
 		{
 			mViews.emplace(factory.first, factory.second(*this, mState));
 		}
+
+		// register different popups for different actions
+		mPopups =
+		{
+			{ RTTI_OF(OpenEditSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
+			{ RTTI_OF(EditingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
+			{ RTTI_OF(OpenInsertSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
+			{ RTTI_OF(InsertingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
+			{ RTTI_OF(OpenInsertTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
+			{ RTTI_OF(InsertingTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
+			{ RTTI_OF(OpenSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
+			{ RTTI_OF(EditSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
+			{ RTTI_OF(LoadPopup), std::bind(&SequenceEditorGUIView::handleLoadPopup, this) },
+			{ RTTI_OF(SaveAsPopup), std::bind(&SequenceEditorGUIView::handleSaveAsPopup, this) }
+		};
 	}
 
 
@@ -358,38 +383,18 @@ namespace nap
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
 
-			// handle popups
-			for (auto& it : mViews)
-			{
-				if( it.second->handlePopups() )
-				{
-					break;
-				}
-			}
-
-			// handle actions
+			// handle actions in views for tracks
 			for (auto& it : mViews)
 			{
 				it.second->handleActions();
 			}
 
-			//
-			handleEditMarkerPopup();
-
-			//
-			handleInsertMarkerPopup();
-
-			//
-			handleInsertTrackPopup();
-
-			//
-			handleLoadPopup();
-
-			//
-			handleSaveAsPopup();
-
-			//
-			handleSequenceDurationPopup();
+			// handle actions for popups
+			auto it = mPopups.find(mState.mAction.get()->get_type());
+			if(it!=mPopups.end())
+			{
+				it->second();
+			}
 		}
 
 		ImGui::End();

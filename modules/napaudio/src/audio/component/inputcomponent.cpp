@@ -15,7 +15,7 @@
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::AudioInputComponent)
 	RTTI_PROPERTY("Channels", &nap::audio::AudioInputComponent::mChannels, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Gain", &nap::audio::AudioInputComponent::mChannels, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Gain", &nap::audio::AudioInputComponent::mGain, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioInputComponentInstance)

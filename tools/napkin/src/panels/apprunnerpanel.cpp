@@ -87,8 +87,16 @@ void napkin::AppRunnerPanel::onReadOut()
 void napkin::AppRunnerPanel::onReadErr()
 {
 	QString err = mProcess.readAllStandardError().trimmed();
-	for (auto line : err.split("\n"))
-		nap::Logger::fatal(QString("[NAP] %1").arg(line).toStdString());
+	if (err.contains(QString::fromStdString(nap::Logger::fatalLevel().name())))
+	{
+		for (auto line : err.split("\n"))
+			nap::Logger::fatal(QString("[NAP] %1").arg(line).toStdString());
+	}
+	else
+	{
+		for (auto line : err.split("\n"))
+			nap::Logger::error(QString("[NAP] %1").arg(line).toStdString());
+	}
 }
 
 void napkin::AppRunnerPanel::onAppStarted()

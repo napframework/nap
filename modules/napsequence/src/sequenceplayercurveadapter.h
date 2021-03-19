@@ -45,11 +45,11 @@ namespace nap
 		 * @param track reference to sequence track that holds curve information
 		 * @param output reference to curve output
 		 */
-		SequencePlayerCurveAdapter(SequenceTrack& track, SequencePlayerCurveOutput& output)
+		SequencePlayerCurveAdapter(const SequenceTrack& track, SequencePlayerCurveOutput& output)
 			:	mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output)
 		{
 			assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
-			mTrack = static_cast<SequenceTrackCurve<CURVE_TYPE>*>(&track);
+			mTrack = static_cast<const SequenceTrackCurve<CURVE_TYPE>*>(&track);
 
 			if (mOutput.mUseMainThread)
 			{
@@ -126,7 +126,7 @@ namespace nap
 		}
 
 		PARAMETER_TYPE&									mParameter;
-		SequenceTrackCurve<CURVE_TYPE>*					mTrack;
+		const SequenceTrackCurve<CURVE_TYPE>*			mTrack;
 		bool											mUseMainThread;
 		SequencePlayerCurveOutput&						mOutput;
 		std::mutex										mMutex;

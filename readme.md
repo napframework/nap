@@ -2,6 +2,9 @@
   <img width=256 height=256 src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
+# Beta Branch
+Not all changes are verified & tested.
+
 *	[Description](#description)
 	*	[Features](#features)
 	*	[Documentation](#documentation)
@@ -75,6 +78,15 @@ NAP's official releases are provided as binary packages at [www.napframework.com
 When working against a binary package, follow the official [installation](https://www.napframework.com/doxygen/) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
 
 # Compilation
+
+Windows 10<br/>
+[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+
+Ubuntu 20.04<br/>
+[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+
+MacOS 10.9<br/>
+[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
 
