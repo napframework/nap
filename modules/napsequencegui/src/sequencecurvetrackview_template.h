@@ -41,6 +41,7 @@ namespace nap
 					mCurveCache.clear();
 
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mDirty = true;
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -883,7 +884,9 @@ namespace nap
 			if (mState.mIsWindowFocused)
 			{
 				// check if hovered
-				if ((mState.mAction->isAction<SequenceGUIActions::None>() || mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
+				if ((mState.mAction->template isAction<SequenceGUIActions::None>() ||
+				     mState.mAction->template isAction<SequenceGUIActions::HoveringCurve>() ||
+					 mState.mAction->template isAction<SequenceGUIActions::HoveringSegment>())
 					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
 				{
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(track.mID, tan_stream.str());

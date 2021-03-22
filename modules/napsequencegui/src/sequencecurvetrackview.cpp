@@ -285,18 +285,19 @@ namespace nap
 			float segment_x	   = (segment->mStartTime + segment->mDuration) * mState.mStepSize;
 			float segment_width = segment->mDuration * mState.mStepSize;
 
+			// draw segment handlers
+			drawSegmentHandler(
+				track,
+				*segment.get(),
+				trackTopLeft, segment_x, segment_width, draw_list);
+
+			// draw segment content
 			auto it = sDrawCurveSegmentsMap.find(segment.get()->get_type());
 			if (it != sDrawCurveSegmentsMap.end())
 			{
 				(*this.*it->second)(track, *segment.get(), trackTopLeft, previous_segment_x, segment_width, segment_x,
 									draw_list, (segment_count == 0));
 			}
-
-			// draw segment handlers
-			drawSegmentHandler(
-				track,
-				*segment.get(),
-				trackTopLeft, segment_x, segment_width, draw_list);
 
 			//
 			previous_segment_x = segment_x;
@@ -978,10 +979,15 @@ namespace nap
 					{
 						double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
 						double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, new_time - action->mStartTime);
+
+						// make the controller re-align start & end points of segments
+						controller.updateCurveSegments(action->mTrackID);
+
 						updateSegmentsInClipboard(action->mTrackID);
 
 						action->mDuration = new_duration;
 						mState.mDirty = true;
+						mCurveCache.clear();
 					}
 
 					ImGui::PopItemWidth();
