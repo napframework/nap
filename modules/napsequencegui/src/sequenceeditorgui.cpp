@@ -108,7 +108,9 @@ namespace nap
 			{ RTTI_OF(OpenSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
 			{ RTTI_OF(EditSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
 			{ RTTI_OF(LoadPopup), std::bind(&SequenceEditorGUIView::handleLoadPopup, this) },
-			{ RTTI_OF(SaveAsPopup), std::bind(&SequenceEditorGUIView::handleSaveAsPopup, this) }
+			{ RTTI_OF(SaveAsPopup), std::bind(&SequenceEditorGUIView::handleSaveAsPopup, this) },
+			{ RTTI_OF(None), std::bind(&SequenceEditorGUIView::handleNone, this) },
+			{ RTTI_OF(NonePressed), std::bind(&SequenceEditorGUIView::handleNonePressed, this) }
 		};
 	}
 
@@ -588,6 +590,7 @@ namespace nap
 		std::string id_string = string_stream.str();
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.0f);
+
 		ImGui::PushID(id_string.c_str());
 
 		// used for culling ( is stuff inside the parent window ??? )
@@ -1304,6 +1307,24 @@ namespace nap
 				// clicked outside so exit popup
 				mState.mAction = createAction<None>();
 			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleNone()
+	{
+		if( ImGui::IsMouseDown(0))
+		{
+			mState.mAction = createAction<NonePressed>();
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleNonePressed()
+	{
+		if( !ImGui::IsMouseDown(0))
+		{
+			mState.mAction = createAction<None>();
 		}
 	}
 

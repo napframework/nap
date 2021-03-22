@@ -170,6 +170,16 @@ namespace nap
 		 * handle insertion of new markers
 		 */
 		void handleInsertMarkerPopup();
+
+		/**
+		 * handle no action, when mouse is pressed, ignore any following actions in sequencer window
+		 */
+		void handleNone();
+
+		/**
+		 * when mouse is released, switch back to None action
+		 */
+		 void handleNonePressed();
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;
