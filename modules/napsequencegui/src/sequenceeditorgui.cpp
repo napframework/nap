@@ -302,6 +302,11 @@ namespace nap
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position
 			mState.mTimelineControllerPos = ImGui::GetCursorPos();
 
+			float top_size 			= 68.0f; // size of player & marker area combined
+			float start_clip_y 		= 25.0f; // title bar overlaps clipping area
+			float end_clip_y 		= ImGui::GetWindowHeight() - 10; // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowWidth() - 10; // right scrollbar overlaps clipping area
+
 			// timeline window properties
 			ImVec2 timeline_window_pos = {
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x + mState.mInspectorWidth - mState.mScroll.x,
@@ -309,25 +314,21 @@ namespace nap
 			};
 			ImVec2 timeline_window_size = {
 				mState.mTimelineWidth + 50.0f,
-				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + 70.0f
+				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + top_size
 			};
 
 			// inspector window properties
 			ImVec2 inspector_window_pos = {
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x,
-				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + 68.0f
+				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + top_size
 			};
 			ImVec2 inspector_window_size = {
 				mState.mInspectorWidth,
-				timeline_window_size.y
+				timeline_window_size.y - top_size
 			};
 
 			// setup up position for next window, which contains all tracks
 			ImGui::SetNextWindowPos(timeline_window_pos);
-
-			int start_clip_y 	= 25; // title bar overlaps clipping area
-			int end_clip_y 		= ImGui::GetWindowHeight() - 10; // bottom scrollbar overlaps clipping area
-			int end_clip_x		= ImGui::GetWindowWidth() - 10; // right scrollbar overlaps clipping area
 
 			//
 			if( ImGui::BeginChild(std::string(mID + "_timeline_window").c_str(),
@@ -337,10 +338,10 @@ namespace nap
 
 			{
 				ImGui::PushClipRect(
-					{inspector_window_pos.x + inspector_window_size.x,
-					 			timeline_window_pos.y > start_clip_y ? timeline_window_pos.y : start_clip_y},
-					{timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
-								timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y}, false);
+					{ 	inspector_window_pos.x + inspector_window_size.x,
+						timeline_window_pos.y > start_clip_y ? timeline_window_pos.y : start_clip_y},
+					{	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
+						timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y}, false );
 
 				// draw markers
 				drawMarkers(sequence_player, sequence);
@@ -378,7 +379,7 @@ namespace nap
 			ImGui::EndChild();
 
 			// move the cursor below the tracks
-			ImGui::SetCursorPosX( ImGui::GetCursorPosX() + mState.mScroll.x );
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
 			if (ImGui::Button("Insert New Track"))
 			{
@@ -636,8 +637,7 @@ namespace nap
 				start_pos.y + sequence_controller_height,
 			};
 
-			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right,
-				guicolors::red);
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, guicolors::red);
 
 			// draw timestamp text every 100 pixels
 			const float timestamp_interval = 100.0f;
@@ -822,17 +822,14 @@ namespace nap
 		{
 			ImVec2 line_begin 	= { pos.x, math::max<float>( mState.mWindowPos.y + 25, pos.y ) }; // clip line to top of window
 			ImVec2 line_end 	= { pos.x, 	pos.y + math::min<float>( // clip the line to bottom of window
-											sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f ,
-											mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y - 25.0f)};
+												sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 10.0f ,
+												mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y) };
 
 			ImGui::SetNextWindowPos(line_begin);
 			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
-				drawlist->AddLine( 	line_begin,
-									line_end,
-									guicolors::red, line_thickness);
-
+				drawlist->AddLine( 	line_begin, line_end, guicolors::red, line_thickness);
 			}
 			ImGui::EndChild();
 		}
@@ -848,20 +845,23 @@ namespace nap
 		for(const auto& marker : sequence.mMarkers)
 		{
 			ImVec2 pos =
-				{
-					mState.mWindowPos.x + mState.mTimelineControllerPos.x - mState.mScroll.x
-					+ mState.mInspectorWidth + 5
-					+ mState.mTimelineWidth * (float)(marker->mTime / player.getDuration()) - 1,
-					mState.mWindowPos.y + mState.mTimelineControllerPos.y + 25.0f - mState.mScroll.y
-				};
+			{
+				mState.mWindowPos.x + mState.mTimelineControllerPos.x - mState.mScroll.x
+				+ mState.mInspectorWidth + 5
+				+ mState.mTimelineWidth * (float)(marker->mTime / player.getDuration()) - 1,
+				mState.mWindowPos.y + mState.mTimelineControllerPos.y + 25.0f - mState.mScroll.y
+			};
 
 			// if player position in inside the sequencer window, draw it
 			if( pos.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f && pos.x > mState.mWindowPos.x )
 			{
 				ImVec2 line_begin 	= { pos.x, math::max<float>( mState.mWindowPos.y + 25, pos.y ) }; // clip line to top of window
-				ImVec2 line_end 	= { pos.x, 	pos.y + math::min<float>( // clip the line to bottom of window
-					sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 35.0f ,
-					mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y)};
+				ImVec2 line_end 	=
+				{
+					pos.x, 	pos.y + math::min<float>( // clip the line to bottom of window
+						sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f ) + 35.0f ,
+						mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y )
+				};
 
 				ImGui::SetNextWindowPos(line_begin);
 				if( ImGui::BeginChild(("marker" + marker->mID).c_str(), { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
