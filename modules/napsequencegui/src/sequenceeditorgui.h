@@ -180,6 +180,11 @@ namespace nap
 		 * when mouse is released, switch back to None action
 		 */
 		 void handleNonePressed();
+
+		 /**
+		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
+		  */
+		 void handleHorizontalZoom();
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;

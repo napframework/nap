@@ -146,6 +146,7 @@ namespace nap
 			ImGui::SetNextWindowPos({0,0});
 			ImGui::SetNextWindowSize({ static_cast<float>(mRenderWindow->getSize().x), static_cast<float>(mRenderWindow->getSize().y) });
 		}
+
 		// begin window
 		if (ImGui::Begin(
 			mID.c_str(), // id
@@ -269,7 +270,7 @@ namespace nap
 
 			if (mState.mFollow)
 			{
-				float scroll_x = (sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
+				float scroll_x = (float) (sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
 				ImGui::SetScrollX(scroll_x);
 			}
 
@@ -282,17 +283,22 @@ namespace nap
 			{
 				mState.mHorizontalResolution += ImGui::GetIO().MouseWheel * 5.0f;
 				mState.mHorizontalResolution = math::max<float>(mState.mHorizontalResolution, 2.5f);
-				mState.mDirty = true;
+				handleHorizontalZoom();
 			}
 
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
 			ImGui::PushItemWidth(200.0f);
-			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 2.5, 1000, "%0.1f"))
-				mState.mDirty = true;
+			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 2.5f, 1000, "%0.1f"))
+			{
+				handleHorizontalZoom();
+			}
+
 			ImGui::SameLine();
+
 			if (ImGui::DragFloat("V-Zoom", &mState.mVerticalResolution, 0.5f, 150, 1000, "%0.1f"))
 				mState.mDirty = true;
+
 			ImGui::PopItemWidth();
 
 			ImGui::Spacing();
@@ -1326,6 +1332,37 @@ namespace nap
 		{
 			mState.mAction = createAction<None>();
 		}
+	}
+
+
+	void SequenceEditorGUIView::handleHorizontalZoom()
+	{
+		// get sequence player
+		const auto& sequence_player = *mEditor.mSequencePlayer.get();
+
+		// get percentage of scroll of total time line width
+		float  scroll_perc = mState.mScroll.x / mState.mTimelineWidth;
+
+		// total timeline width represents total sequence duration, so get the leftmost time stamp
+		double time_start = scroll_perc * sequence_player.getDuration();
+
+		// get the rightmost timestamp visible
+		double time_end	= ( scroll_perc + ((mState.mWindowSize.x - mState.mInspectorWidth) / mState.mTimelineWidth)) * sequence_player.getDuration();
+
+		// this is the time that is in the middle
+		float  time_focus = (float) ( time_start + time_end ) * 0.5f;
+
+		// calc new timeline width
+		mState.mTimelineWidth = mState.mHorizontalResolution * sequence_player.getDuration();
+
+		// calc the new scroll keeping time_focus in the middle
+		mState.mScroll.x = (float) (time_focus / sequence_player.getDuration()) * mState.mTimelineWidth - ((mState.mWindowSize.x - mState.mInspectorWidth) * 0.5f );
+
+		// finally set the new scroll value
+		ImGui::SetScrollX(mState.mScroll.x);
+
+		// mark dirty so curves can be redrawn
+		mState.mDirty = true;
 	}
 
 
