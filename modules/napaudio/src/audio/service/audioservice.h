@@ -126,6 +126,11 @@ namespace nap
 			bool init(nap::utility::ErrorState& errorState) override;
 
 			/**
+			 * Called before shutdown of the running application. Stops the portaudio stream for safety.
+			 */
+			void preShutdown() override;
+
+			/**
 			 * Called on shutdown of the service. Closes portaudio stream and shuts down portaudio.
 			 */
 			 void shutdown() override;
