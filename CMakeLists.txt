@@ -199,6 +199,7 @@ add_subdirectory(modules/napsequence)
 add_subdirectory(modules/napsequencegui)
 add_subdirectory(modules/naplicense)
 add_subdirectory(modules/napudp)
+add_subdirectory(modules/napcalendar)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
