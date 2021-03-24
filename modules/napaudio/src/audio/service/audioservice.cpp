@@ -194,13 +194,20 @@ namespace nap
 		}
 
 
+		void AudioService::preShutdown()
+		{
+			// Stop the running stream to avoid problems destroying active audio objects
+			if (mPortAudioInitialized)
+				Pa_StopStream(mStream);
+		}
+
+
 		void AudioService::shutdown()
 		{
 			// First close port-audio, only do so when initialized
 			if (mPortAudioInitialized)
 			{
 				// Close stream
-				Pa_StopStream(mStream);
 				Pa_CloseStream(mStream);
 				mStream = nullptr;
 
