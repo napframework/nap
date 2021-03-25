@@ -4,7 +4,6 @@
 
 // local includes
 #include "sequenceeditorgui.h"
-#include "../../../apps/shylight/module/src/shylightsequenceeditorgui.h"
 #include "napcolors.h"
 #include "sequenceeditorguiclipboard.h"
 #include "sequenceeditorgui.h"
