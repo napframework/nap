@@ -80,5 +80,8 @@ namespace nap
 
 		// scroll follows player position
 		bool mFollow = false;
+
+		// current sequence name
+		std::string mSequenceName;
 	};
 }
