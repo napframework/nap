@@ -472,4 +472,10 @@ namespace nap
 			track_curve->mMaximum = maximum;
 		});
 	}
+
+
+	std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& SequenceControllerCurve::getUpdateSegmentFunctionMap()
+	{
+		return sUpdateSegmentFunctionMap;
+	}
 }
