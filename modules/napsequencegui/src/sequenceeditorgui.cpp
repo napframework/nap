@@ -117,7 +117,7 @@ namespace nap
 	void SequenceEditorGUIView::show()
 	{
 		bool reset_dirty_flag = mState.mDirty;
-		mState.mInspectorWidth = 300.0f;		
+		mState.mInspectorWidth = 300.0f;
 		mState.mMousePos = ImGui::GetMousePos();
 
 		mState.mMouseDelta = ImGui::GetIO().MouseDelta;
@@ -134,6 +134,9 @@ namespace nap
 
 		// calc width of content in timeline window
 		mState.mTimelineWidth = mState.mStepSize * sequence.mDuration;
+
+		// set content width of next window
+		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution, 0.0f));
 
 		// set window flags
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
@@ -181,7 +184,9 @@ namespace nap
 			}
 			mState.mScroll = scroll;
 
+			// move controls according to scroll, so they will alway be visible
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetScrollY());
 
 			//
 			if (ImGui::Button("Save"))
@@ -269,7 +274,7 @@ namespace nap
 
 			if (mState.mFollow)
 			{
-				float scroll_x = (float) (sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
+				float scroll_x = (sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
 				ImGui::SetScrollX(scroll_x);
 			}
 
@@ -288,46 +293,52 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
 			ImGui::PushItemWidth(200.0f);
-			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 2.5f, 1000, "%0.1f"))
+			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 2.5, 1000, "%0.1f"))
 			{
 				handleHorizontalZoom();
 			}
 
 			ImGui::SameLine();
-
 			if (ImGui::DragFloat("V-Zoom", &mState.mVerticalResolution, 0.5f, 150, 1000, "%0.1f"))
 				mState.mDirty = true;
-
+			
 			ImGui::PopItemWidth();
 
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
 
+			//
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetScrollY());
+
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position
 			mState.mTimelineControllerPos = ImGui::GetCursorPos();
 
-			float top_size 			= 68.0f; // size of player & marker area combined
-			float start_clip_y 		= 25.0f; // title bar overlaps clipping area
-			float end_clip_y 		= ImGui::GetWindowHeight() - 10; // bottom scrollbar overlaps clipping area
-			float end_clip_x		= ImGui::GetWindowWidth() - 10; // right scrollbar overlaps clipping area
+			float top_size			= 68.0f; // area of comments, playercontroller and error messages combined
+			float clip_start_y		= ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
+			float end_clip_y 		= ImGui::GetWindowHeight() - 10.0f; // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowWidth() - 10.0f; 	// right scrollbar overlaps clipping area
 
 			// timeline window properties
-			ImVec2 timeline_window_pos = {
+			ImVec2 timeline_window_pos =
+			{
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x + mState.mInspectorWidth - mState.mScroll.x,
 				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y
 			};
-			ImVec2 timeline_window_size = {
+			ImVec2 timeline_window_size =
+			{
 				mState.mTimelineWidth + 50.0f,
-				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + top_size
+				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + top_size + 10.0f
 			};
 
 			// inspector window properties
-			ImVec2 inspector_window_pos = {
+			ImVec2 inspector_window_pos =
+			{
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x,
 				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + top_size
 			};
-			ImVec2 inspector_window_size = {
+			ImVec2 inspector_window_size =
+			{
 				mState.mInspectorWidth,
 				timeline_window_size.y - top_size
 			};
@@ -339,14 +350,16 @@ namespace nap
 			if( ImGui::BeginChild(std::string(mID + "_timeline_window").c_str(),
 								  timeline_window_size,
 								  false,
-								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground ) )
+								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs ) )
 
 			{
-				ImGui::PushClipRect(
-					{ 	inspector_window_pos.x + inspector_window_size.x,
-						timeline_window_pos.y > start_clip_y ? timeline_window_pos.y : start_clip_y},
-					{	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
-						timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y}, false );
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mScroll.y);
+
+				ImVec2 clip_rect_min_top = {	inspector_window_pos.x + inspector_window_size.x, timeline_window_pos.y > clip_start_y - top_size ? timeline_window_pos.y : clip_start_y - top_size };
+				ImVec2 clip_rect_max_top = {	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
+												timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y };
+
+				ImGui::PushClipRect(clip_rect_min_top, clip_rect_max_top, false);
 
 				// draw markers
 				drawMarkers(sequence_player, sequence);
@@ -354,11 +367,34 @@ namespace nap
 				// draw player controller
 				drawPlayerController(sequence_player);
 
+				ImGui::PopClipRect();
+
+				//
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState.mScroll.y);
+
+				// calc clipping rectangle
+				ImVec2 clip_rect_min_tracks = {	inspector_window_pos.x + inspector_window_size.x,timeline_window_pos.y > clip_start_y ? timeline_window_pos.y : clip_start_y };
+				ImVec2 clip_rect_max_tracks = {	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
+												   timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y };
+
+
+				// push it
+				ImGui::PushClipRect(clip_rect_min_tracks, clip_rect_max_tracks, false);
+
 				// draw tracks
 				drawTracks(sequence_player, sequence);
 
+				// pop clip rect, we slightly adjust it in Y start when drawing markers and playerposition line
+				ImGui::PopClipRect();
+
+				ImGui::PushClipRect({clip_rect_min_tracks.x, clip_rect_min_tracks.y - 5}, clip_rect_max_tracks, false);
+
 				// draw time line position line
 				drawTimelinePlayerPosition(sequence, sequence_player);
+
+				ImGui::PopClipRect();
+
+				ImGui::PushClipRect({clip_rect_min_tracks.x, clip_rect_min_tracks.y - 50}, clip_rect_max_tracks, false);
 
 				// draw marker lines
 				drawMarkerLines(sequence, sequence_player);
@@ -377,21 +413,28 @@ namespace nap
 			if( ImGui::BeginChild(std::string(mID + "_timeline_inspectors").c_str(),
 								  inspector_window_size,
 								  false,
-								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground ) )
+								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs) )
 			{
+				ImGui::PushClipRect({inspector_window_pos.x,
+									 inspector_window_pos.y > clip_start_y ? inspector_window_pos.y : clip_start_y},
+									{inspector_window_pos.x + inspector_window_size.x < end_clip_x ? inspector_window_pos.x + inspector_window_size.x : end_clip_x,
+									 inspector_window_pos.y + inspector_window_size.y < end_clip_y ? inspector_window_pos.y + inspector_window_size.y : end_clip_y}, false);
+
 				drawInspectors(sequence_player, sequence);
+
+				ImGui::PopClipRect();
 			}
 			ImGui::EndChild();
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY());
 			if (ImGui::Button("Insert New Track"))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
 
-			// handle actions in views for tracks
+			// handle actions
 			for (auto& it : mViews)
 			{
 				it.second->handleActions();
@@ -405,9 +448,8 @@ namespace nap
 			}
 		}
 
-		ImGui::End();
-
 		// pop id
+		ImGui::End();
 		ImGui::PopID();
 
 		if(reset_dirty_flag)

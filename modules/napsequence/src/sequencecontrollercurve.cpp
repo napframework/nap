@@ -9,28 +9,33 @@
 
 namespace nap
 {
-	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
+	static bool register_controller_factory = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
 	{
 	  	return std::make_unique<SequenceControllerCurve>(player, editor);
 	});
 
 
-	static bool sRegisterControllerTypes[4]
-		{
-			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
-			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)),
-			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)),
-			SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve))
-		};
+	static bool register_controller_types[4]
+	{
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)),
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)),
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve))
+	};
 
 
-	std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> SequenceControllerCurve::sUpdateSegmentFunctionMap
-		{
-			{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::updateCurveSegments<float> },
-			{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::updateCurveSegments<glm::vec2> },
-			{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3> },
-			{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> }
-		};
+	std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& SequenceControllerCurve::getUpdateSegmentFunctionMap()
+	{
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> map
+			{
+				{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::updateCurveSegments<float> },
+				{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::updateCurveSegments<glm::vec2> },
+				{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3> },
+				{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> }
+			};
+
+		return map;
+	}
 
 
 	double SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration)
@@ -73,9 +78,9 @@ namespace nap
 						{
 							track_segment->mDuration = duration;
 
-							auto it = sUpdateSegmentFunctionMap.find(track->get_type());
-							assert(it!=sUpdateSegmentFunctionMap.end());
-							if (it != sUpdateSegmentFunctionMap.end())
+							auto it = getUpdateSegmentFunctionMap().find(track->get_type());
+							assert(it!=getUpdateSegmentFunctionMap().end());
+							if (it != getUpdateSegmentFunctionMap().end())
 							{
 								(*this.*it->second)(*track);
 							}
@@ -156,8 +161,9 @@ namespace nap
 							deleteObjectFromSequencePlayer(segmentID);
 
 							// update segments
-							auto it = sUpdateSegmentFunctionMap.find(track->get_type());
-							if (it != sUpdateSegmentFunctionMap.end())
+							auto it = getUpdateSegmentFunctionMap().find(track->get_type());
+							assert(it != getUpdateSegmentFunctionMap().end()); // entry not found
+							if (it != getUpdateSegmentFunctionMap().end())
 							{
 								(*this.*it->second)(*track);
 							}
@@ -449,11 +455,11 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			SequenceTrackCurveFloat* track_curve = static_cast<SequenceTrackCurveFloat*>(track);
+			auto* track_curve = rtti_cast<SequenceTrackCurveFloat>(track);
 
 			for(auto& segment : track_curve->mSegments)
 			{
-				SequenceTrackSegmentCurveFloat& curve_segment = static_cast<SequenceTrackSegmentCurveFloat&>(*segment.get());
+				auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurveFloat>(segment.get());
 				int curve_count = 0;
 				for(auto& curve : curve_segment.mCurves)
 				{
@@ -471,11 +477,5 @@ namespace nap
 			track_curve->mMinimum = minimum;
 			track_curve->mMaximum = maximum;
 		});
-	}
-
-
-	std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& SequenceControllerCurve::getUpdateSegmentFunctionMap()
-	{
-		return sUpdateSegmentFunctionMap;
 	}
 }

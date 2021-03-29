@@ -232,10 +232,8 @@ namespace nap
 		/**
 		 * Returns static map to member functions for updating each segment type
 		 */
-		std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& getUpdateSegmentFunctionMap();
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& getUpdateSegmentFunctionMap();
 	private:
-		// map for updating segments
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> sUpdateSegmentFunctionMap;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
