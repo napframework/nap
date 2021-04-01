@@ -17,6 +17,7 @@ namespace nap
 	class OSCReceiver;
 	class OSCInputComponentInstance;
 
+
 	/**
 	 * Main interface for processing OSC messages in NAP
 	 * All osc components and receivers are registered and de-registered with this service on initialization and destruction
@@ -37,6 +38,23 @@ namespace nap
 		// Default Destructor
 		virtual ~OSCService();
 
+		/**
+		* Processes all received osc events from all registered osc receivers
+		* The events are forwarded to all the the registered osc components
+		 */
+		void process();
+
+		/**
+		 * Set wether incoming OSC messages will be processed from the update loop
+		 * @param value true if incoming message are processed on update.
+		 */
+		void setProcessOnUpdate(bool value) { mProcessOnUpdate = value; }
+
+		/**
+		 * @return Wether incoming OSC messages are processed on update.
+		 */
+		bool getProcessOnUpdate() const { return mProcessOnUpdate; }
+
 	protected:
 		/**
 		 * Registers all objects that need a specific way of construction
@@ -50,9 +68,8 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		* Processes all received osc events from all registered osc receivers
-		* The events are forwarded to all the the registered osc components
 		* This function is called automatically by the application loop
+		* If processing on update is set to true the process method will be called.
 		* @param deltaTime time in between calls in seconds
 		*/
 		virtual void update(double deltaTime) override;
@@ -83,5 +100,8 @@ namespace nap
 
 		// All the osc components currently available to the system
 		std::vector<OSCInputComponentInstance*> mInputs;
+
+		// Indicates wether incoming OSC messages are processed from the update loop or not.
+		bool mProcessOnUpdate = true;
 	};
 }

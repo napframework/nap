@@ -42,6 +42,13 @@ namespace nap
 
 	void OSCService::update(double deltaTime)
 	{
+		if (mProcessOnUpdate)
+			process();
+	}
+
+
+	void OSCService::process()
+	{
 		std::queue<OSCEventPtr> events;
 
 		// Forward every event to every input component of interest
