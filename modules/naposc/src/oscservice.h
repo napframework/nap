@@ -11,6 +11,7 @@
 #include <nap/service.h>
 #include <entity.h>
 #include <nap/datetime.h>
+#include <nap/controlthread.h>
 
 namespace nap
 {
@@ -41,19 +42,16 @@ namespace nap
 		/**
 		* Processes all received osc events from all registered osc receivers
 		* The events are forwarded to all the the registered osc components
+		 * @param deltaTime time in seconds. Added for compatibility with control thread.
 		 */
-		void process();
+		void process(double deltaTime);
 
 		/**
-		 * Set wether incoming OSC messages will be processed from the update loop
-		 * @param value true if incoming message are processed on update.
+		 * Set the control thread where incoming OSC messages will be dispatched to.
+		 * If not set, incoming OSC messages will be handled on the main thread.
+		 * @param controlThread The control thread OSC messages will be dispatched to.
 		 */
-		void setProcessOnUpdate(bool value) { mProcessOnUpdate = value; }
-
-		/**
-		 * @return Wether incoming OSC messages are processed on update.
-		 */
-		bool getProcessOnUpdate() const { return mProcessOnUpdate; }
+		void setControlThread(ControlThread& controlThread);
 
 	protected:
 		/**
@@ -101,7 +99,9 @@ namespace nap
 		// All the osc components currently available to the system
 		std::vector<OSCInputComponentInstance*> mInputs;
 
-		// Indicates wether incoming OSC messages are processed from the update loop or not.
-		bool mProcessOnUpdate = true;
+		// Control thread that OSC messages will be dispatched to, when set
+		ControlThread* mControlThread = nullptr;
+
+		Slot<double> mProcessSlot = { this, &OSCService::process };
 	};
 }

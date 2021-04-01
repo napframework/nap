@@ -42,12 +42,12 @@ namespace nap
 
 	void OSCService::update(double deltaTime)
 	{
-		if (mProcessOnUpdate)
-			process();
+		if (mControlThread == nullptr)
+			process(deltaTime);
 	}
 
 
-	void OSCService::process()
+	void OSCService::process(double deltaTime)
 	{
 		std::queue<OSCEventPtr> events;
 
@@ -85,6 +85,13 @@ namespace nap
 	}
 
 
+	void OSCService::setControlThread(ControlThread& controlThread)
+	{
+		mControlThread = &controlThread;
+		mControlThread->connectPeriodicTask(mProcessSlot);
+	}
+
+
 	void OSCService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<OSCReceiverObjectCreator>(*this));
@@ -93,34 +100,58 @@ namespace nap
 
 	void OSCService::registerReceiver(OSCReceiver& receiver)
 	{
-		mReceivers.emplace_back(&receiver);
+		auto receiverPtr = &receiver;
+		if (mControlThread != nullptr)
+			mControlThread->enqueue([&, receiverPtr](){ mReceivers.emplace_back(receiverPtr); });
+		mReceivers.emplace_back(receiverPtr);
 	}
 
 
 	void OSCService::removeReceiver(OSCReceiver& receiver)
 	{
-		auto found_it = std::find_if(mReceivers.begin(), mReceivers.end(), [&](const auto& it)
-		{
-			return it == &receiver;
-		});
-		assert(found_it != mReceivers.end());
-		mReceivers.erase(found_it);
+		auto receiverPtr = &receiver;
+		auto removeReceiverFunction = [&, receiverPtr](){
+		  auto found_it = std::find_if(mReceivers.begin(), mReceivers.end(), [&](const auto& it)
+		  {
+			return it == receiverPtr;
+		  });
+		  assert(found_it != mReceivers.end());
+		  mReceivers.erase(found_it);
+		};
+
+		if (mControlThread != nullptr)
+			mControlThread->enqueue(removeReceiverFunction);
+		else
+			removeReceiverFunction();
 	}
 
 
 	void OSCService::registerInputComponent(OSCInputComponentInstance& input)
 	{
-		mInputs.emplace_back(&input);
+		auto inputPtr = &input;
+		if (mControlThread != nullptr)
+			mControlThread->enqueue([&, inputPtr](){ mInputs.emplace_back(inputPtr); });
+		mInputs.emplace_back(inputPtr);
+
+		mInputs.emplace_back(inputPtr);
 	}
 
 
 	void OSCService::removeInputComponent(OSCInputComponentInstance& input)
 	{
-		auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
-		{
-			return it == &input;
-		});
-		assert(found_it != mInputs.end());
-		mInputs.erase(found_it);
+		auto inputPtr = &input;
+		auto removeInputFunction = [&, inputPtr](){
+		  auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
+		  {
+			return it == inputPtr;
+		  });
+		  assert(found_it != mInputs.end());
+		  mInputs.erase(found_it);
+		};
+
+		if (mControlThread != nullptr)
+			mControlThread->enqueue(removeInputFunction);
+		else
+			removeInputFunction();
 	}
 }
