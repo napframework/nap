@@ -9,13 +9,13 @@
 
 namespace nap
 {
-	static bool register_controller_factory = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
+	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
 	{
 	  	return std::make_unique<SequenceControllerCurve>(player, editor);
 	});
 
 
-	static bool register_controller_types[4]
+	static bool sRegisterControllerTypes[4]
 	{
 		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
 		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)),
@@ -33,7 +33,6 @@ namespace nap
 				{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3> },
 				{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> }
 			};
-
 		return map;
 	}
 
@@ -79,7 +78,6 @@ namespace nap
 							track_segment->mDuration = duration;
 
 							auto it = getUpdateSegmentFunctionMap().find(track->get_type());
-							assert(it!=getUpdateSegmentFunctionMap().end());
 							if (it != getUpdateSegmentFunctionMap().end())
 							{
 								(*this.*it->second)(*track);
@@ -162,7 +160,6 @@ namespace nap
 
 							// update segments
 							auto it = getUpdateSegmentFunctionMap().find(track->get_type());
-							assert(it != getUpdateSegmentFunctionMap().end()); // entry not found
 							if (it != getUpdateSegmentFunctionMap().end())
 							{
 								(*this.*it->second)(*track);
@@ -455,11 +452,11 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			auto* track_curve = rtti_cast<SequenceTrackCurveFloat>(track);
+			SequenceTrackCurveFloat* track_curve = static_cast<SequenceTrackCurveFloat*>(track);
 
 			for(auto& segment : track_curve->mSegments)
 			{
-				auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurveFloat>(segment.get());
+				SequenceTrackSegmentCurveFloat& curve_segment = static_cast<SequenceTrackSegmentCurveFloat&>(*segment.get());
 				int curve_count = 0;
 				for(auto& curve : curve_segment.mCurves)
 				{

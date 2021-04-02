@@ -15,7 +15,7 @@
 #include <functional>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS(nap::SequenceEditor)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor)
 RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -25,6 +25,18 @@ using namespace nap::SequenceCurveEnums;
 
 namespace nap
 {
+	static bool register_object_creator = SequenceService::registerObjectCreator([](SequenceService* service)->std::unique_ptr<rtti::IObjectCreator>
+	{
+		return std::make_unique<SequencePlayerEditorOutputObjectCreator>(*service);
+	});
+
+
+	SequenceEditor::SequenceEditor(SequenceService& service) : mService(service)
+	{
+
+	}
+
+
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -32,15 +44,25 @@ namespace nap
 			return false;
 		}
 
+		// register editor to service
+		mService.registerEditor(*this);
+
 		// create controllers for all types of tracks
 		auto& factory = SequenceController::getControllerFactory();
-		for (auto it : factory)
+		for (const auto& it : factory)
 		{
 			mControllers.emplace(it.first, it.second(*mSequencePlayer.get(), *this));
 		}
 
 		return true;
 	}
+
+
+	void SequenceEditor::onDestroy()
+	{
+		mService.removeEditor(*this);
+	}
+
 
 	std::unordered_map<rttr::type, rttr::type>& getControllerTrackTypeMap()
 	{
@@ -60,6 +82,16 @@ namespace nap
 		}
 
 		return false;
+	}
+
+
+	void SequenceEditor::update(double deltaTime)
+	{
+		if (mPerformingEditAction.load())
+		{
+			mPerformingEditAction.store(false);
+			mSequencePlayer->performEditAction(mEditAction);
+		}
 	}
 
 
@@ -84,14 +116,11 @@ namespace nap
 		const auto& sequence = mSequencePlayer->getSequence();
 		for(const auto& track : sequence.mTracks)
 		{
-			if(trackID == track->mID)
+			auto track_type = track.get()->get_type();
+			auto it = getControllerTrackTypeMap().find(track_type);
+			if (mControllers.find(it->second) != mControllers.end())
 			{
-				auto track_type = track.get()->get_type();
-				auto it = getControllerTrackTypeMap().find(track_type);
-				if (mControllers.find(it->second) != mControllers.end())
-				{
-					return mControllers[it->second].get();
-				}
+				return mControllers[it->second].get();
 			}
 		}
 		return nullptr;
@@ -110,11 +139,13 @@ namespace nap
 
 	void SequenceEditor::load(const std::string& file)
 	{
-		utility::ErrorState error_state;
-		if(!mSequencePlayer->load(file, error_state) )
-		{
-			nap::Logger::error(error_state.toString());
-		}
+		queueEditAction([this, file](){
+			utility::ErrorState error_state;
+			if(!mSequencePlayer->load(file, error_state) )
+			{
+			  nap::Logger::error(error_state.toString());
+			}
+		});
 	}
 
 	
@@ -122,10 +153,9 @@ namespace nap
 	{
 		newDuration = math::max<double>(newDuration, 0.01);
 
-		performEditAction([this, newDuration]()
-		{
+		queueEditAction([this, newDuration]() {
 			auto& sequence = mSequencePlayer->getSequence();
-			
+
 			// sequence must be at least as long as longest track
 			double longest_track = 0.0;
 			for (auto& track : sequence.mTracks)
@@ -133,7 +163,7 @@ namespace nap
 				double longest_segment = 0.0;
 				for (auto& segment : track->mSegments)
 				{
-					double time = segment->mStartTime + segment->mDuration;
+					double time		= segment->mStartTime + segment->mDuration;
 					longest_segment = math::max<double>(longest_segment, time);
 				}
 				longest_track = math::max<double>(longest_segment, longest_track);
@@ -152,11 +182,10 @@ namespace nap
 
 	void SequenceEditor::insertMarker(double time, const std::string& message)
 	{
-		performEditAction([this, time, message]()
-	  	{
-		    auto new_marker = std::make_unique<SequenceMarker>();
-			new_marker->mID = sequenceutils::generateUniqueID(mSequencePlayer->mReadObjectIDs);
-			new_marker->mTime = time;
+		queueEditAction([this, time, message]() {
+			auto new_marker		 = std::make_unique<SequenceMarker>();
+			new_marker->mID		 = sequenceutils::generateUniqueID(mSequencePlayer->mReadObjectIDs);
+			new_marker->mTime	 = time;
 			new_marker->mMessage = message;
 
 			mSequencePlayer->mSequence->mMarkers.emplace_back(ResourcePtr<SequenceMarker>(new_marker.get()));
@@ -167,46 +196,41 @@ namespace nap
 
 	void SequenceEditor::changeMarkerTime(const std::string& markerID, double time)
 	{
-		performEditAction([this, markerID, time]()
-		{
-			auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
-			{
-		   		return markerID == a->mID;
-		   	});
+		queueEditAction([this, markerID, time]() {
+			auto it =
+				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
+							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
 
 			assert(it != mSequencePlayer->mSequence->mMarkers.end());
 
-			if(it != mSequencePlayer->mSequence->mMarkers.end())
+			if (it != mSequencePlayer->mSequence->mMarkers.end())
 			{
 				it->get()->mTime = time;
 			}
-	  	});
+		});
 
 	}
 
 
 	void SequenceEditor::deleteMarker(const std::string& markerID)
 	{
-		performEditAction([this, markerID]()
-		{
-			auto it_1 = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
-			{
-			  return markerID == a->mID;
-			});
+		queueEditAction([this, markerID]() {
+			auto it_1 =
+				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
+							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
 			assert(it_1 != mSequencePlayer->mSequence->mMarkers.end());
 
-			if(it_1 != mSequencePlayer->mSequence->mMarkers.end())
+			if (it_1 != mSequencePlayer->mSequence->mMarkers.end())
 			{
 				mSequencePlayer->mSequence->mMarkers.erase(it_1);
 			}
 
-			auto it_2 = std::find_if(mSequencePlayer->mReadObjects.begin(), mSequencePlayer->mReadObjects.end(), [markerID](std::unique_ptr<rtti::Object>& a)->bool
-			{
-			  	return markerID == a->mID;
-			});
+			auto it_2 =
+				std::find_if(mSequencePlayer->mReadObjects.begin(), mSequencePlayer->mReadObjects.end(),
+							 [markerID](std::unique_ptr<rtti::Object>& a) -> bool { return markerID == a->mID; });
 			assert(it_2 != mSequencePlayer->mReadObjects.end());
 
-			if(it_2 != mSequencePlayer->mReadObjects.end())
+			if (it_2 != mSequencePlayer->mReadObjects.end())
 			{
 				mSequencePlayer->mReadObjects.erase(it_2);
 			}
@@ -216,16 +240,14 @@ namespace nap
 
 	void SequenceEditor::changeMarkerMessage(const std::string& markerID, const std::string& markerMessage)
 	{
-		performEditAction([this, markerID, markerMessage]()
-		{
-			auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
-			{
-			  return markerID == a->mID;
-			});
+		queueEditAction([this, markerID, markerMessage]() {
+			auto it =
+				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
+							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
 
 			assert(it != mSequencePlayer->mSequence->mMarkers.end());
 
-			if(it != mSequencePlayer->mSequence->mMarkers.end())
+			if (it != mSequencePlayer->mSequence->mMarkers.end())
 			{
 				it->get()->mMessage = markerMessage;
 			}
@@ -233,14 +255,15 @@ namespace nap
 	}
 
 
-	void SequenceEditor::performEditAction(std::function<void()> action)
+	void SequenceEditor::queueEditAction(std::function<void()> action)
 	{
-		assert(!mPerformingEditAction); // already performing action, only possible when doing an edit action inside another action
-		if (!mPerformingEditAction)
+		if (!mPerformingEditAction.load())
 		{
-			mPerformingEditAction = true;
-			mSequencePlayer->performEditAction(action);
-			mPerformingEditAction = false;
+			mPerformingEditAction.store(true);
+			mEditAction = std::move(action);
+		}else
+		{
+			nap::Logger::warn(*this, "adding edit action while still waiting for previous action to be executed!");
 		}
 	}
 }

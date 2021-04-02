@@ -13,6 +13,7 @@
 #include "sequenceplayeradapter.h"
 #include "sequenceplayeroutput.h"
 #include "sequenceservice.h"
+#include "sequenceeditor.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
 RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -65,6 +66,11 @@ namespace nap
 		{
 			output->update(deltaTime);
 		}
+
+		for(auto& editor : mEditors)
+		{
+			editor->update(deltaTime);
+		}
 	}
 
 
@@ -93,6 +99,35 @@ namespace nap
 		if(found_it != mOutputs.end())
 		{
 			mOutputs.erase(found_it);
+		}
+	}
+
+
+	void SequenceService::registerEditor(SequenceEditor& input)
+	{
+		auto found_it = std::find_if(mEditors.begin(), mEditors.end(), [&](const auto& it)
+		{
+		  return it == &input;
+		});
+		assert(found_it == mEditors.end()); // duplicate entry
+
+		if(found_it == mEditors.end())
+		{
+			mEditors.emplace_back(&input);
+		}
+	}
+
+
+	void SequenceService::removeEditor(SequenceEditor& input)
+	{
+		auto found_it = std::find_if(mEditors.begin(), mEditors.end(), [&](const auto& it)
+		{
+		  return it == &input;
+		});
+
+		if(found_it != mEditors.end())
+		{
+			mEditors.erase(found_it);
 		}
 	}
 }

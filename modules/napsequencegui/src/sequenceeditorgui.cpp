@@ -301,7 +301,7 @@ namespace nap
 			ImGui::SameLine();
 			if (ImGui::DragFloat("V-Zoom", &mState.mVerticalResolution, 0.5f, 150, 1000, "%0.1f"))
 				mState.mDirty = true;
-			
+
 			ImGui::PopItemWidth();
 
 			ImGui::Spacing();

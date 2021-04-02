@@ -18,6 +18,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// forward declares
 	class SequenceEventReceiver;
+	class SequenceEditor;
 
 	/**
 	 * Main interface for processing sequence outputs
@@ -25,6 +26,7 @@ namespace nap
 	class NAPAPI SequenceService : public Service
 	{
 		friend class SequencePlayerOutput;
+		friend class SequenceEditor;
 
 		RTTI_ENABLE(Service)
 	public:
@@ -58,24 +60,39 @@ namespace nap
 		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
-		 * updates any outputs
+		 * updates any outputs and editors
 		 * @param deltaTime deltaTime
 		 */
 		virtual void update(double deltaTime) override;
 	private:
 		/**
 		 * registers an output
-		 * @param input reference to output
+		 * @param output reference to output
 		 */
 		void registerOutput(SequencePlayerOutput& output);
 
 		/**
 		 * removes an output
-		 * @param input reference to input
+		 * @param output reference to output
 		 */
 		void removeOutput(SequencePlayerOutput& output);
 
+		/**
+		 * registers an editor
+		 * @param input reference to editor
+		 */
+		void registerEditor(SequenceEditor& editor);
+
+		/**
+		 * removes an editor
+		 * @param input reference to editor
+		 */
+		void removeEditor(SequenceEditor& editor);
+
 		// vector holding raw pointers to outputs
 		std::vector<SequencePlayerOutput*> mOutputs;
+
+		// vector holding raw pointers to editors
+		std::vector<SequenceEditor*> mEditors;
 	};
 }

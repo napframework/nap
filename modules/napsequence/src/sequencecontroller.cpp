@@ -263,6 +263,6 @@ namespace nap
 
 	void SequenceController::performEditAction(std::function<void()> action)
 	{
-		mEditor.performEditAction(action);
+		mEditor.queueEditAction(action);
 	}
 }

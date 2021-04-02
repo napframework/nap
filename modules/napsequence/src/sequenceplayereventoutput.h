@@ -62,5 +62,5 @@ namespace nap
 		std::mutex mEventMutex;
 	};
 
-	using SequencePlayerEventInputObjectCreator = rtti::ObjectCreator<SequencePlayerEventOutput, SequenceService>;
+	using SequencePlayerEventOutputObjectCreator = rtti::ObjectCreator<SequencePlayerEventOutput, SequenceService>;
 }

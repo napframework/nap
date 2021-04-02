@@ -64,9 +64,8 @@ namespace nap
 
 	bool SequencePlayer::start(utility::ErrorState& errorState)
 	{
-
 		// launch player thread
-		mUpdateThreadRunning = true;
+		mUpdateThreadRunning.store(true);
 		mBefore = HighResolutionClock::now();
 		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
 
@@ -77,7 +76,7 @@ namespace nap
 	void SequencePlayer::stop()
 	{
 		// stop running thread
-		mUpdateThreadRunning = false;
+		mUpdateThreadRunning.store(false);
 		if (mUpdateTask.valid())
 		{
 			mUpdateTask.wait();
@@ -230,11 +229,14 @@ namespace nap
 			createAdapter(track->mAssignedOutputID, track->mID);
 		}
 
-		std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function = [this](const std::string& outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
+		// add adapter function to be dispatched by signal, in case a custom adapter is to be added
+		std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function =
+			[this](const std::string& outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
 		{
 			mAdapters.emplace(outputID, std::move(adapter));
 		};
 
+		// dispatch signal with add adapter function
 		adaptersCreated.trigger(add_adapter_function);
 	}
 
@@ -369,7 +371,6 @@ namespace nap
 				// Notify listeners
 				postTick.trigger(*this);
 			}
-
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
 	}
@@ -437,7 +438,7 @@ namespace nap
 	}
 
 
-	void SequencePlayer::performEditAction(std::function<void()> action)
+	void SequencePlayer::performEditAction(std::function<void()>& action)
 	{
 		std::lock_guard<std::mutex> lock(mMutex);
 		action();

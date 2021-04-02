@@ -455,7 +455,10 @@ namespace nap
 		{
 			auto& segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track_segment.get());
 
-			if (prev_segment != nullptr)
+			if (prev_segment == nullptr)
+			{
+			}
+			else
 			{
 				// if we have a previous segment, the curve gets the value of the start value of the current segment
 				segment_curve.setStartValue(prev_segment->getEndValue());

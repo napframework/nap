@@ -10,17 +10,20 @@
 #include "sequencecurveenums.h"
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
+#include "sequenceservice.h"
 
 // external includes
 #include <nap/resource.h>
 #include <parameter.h>
 #include <nap/logger.h>
+#include <atomic>
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 	// forward declares
 	class SequenceController;
+	class SequenceService;
 
 	/**
 	 * The SequenceEditor is responsible for editing the sequence (model) and makes sure the model stays valid during editing.
@@ -33,12 +36,16 @@ namespace nap
 
 		RTTI_ENABLE(Resource)
 	public:
+		explicit SequenceEditor(SequenceService& service);
+
 		/**
 		 * initializes editor
 		 * @param errorState contains any errors
 		 * @return returns true on successful initialization
 		*/
-		virtual bool init(utility::ErrorState& errorState);
+		bool init(utility::ErrorState& errorState) override;
+
+		void onDestroy() override;
 
 		/**
 		 * saves sequence of player to file
@@ -119,6 +126,13 @@ namespace nap
 		 * @param markerMessage const reference to string value of marker message
 		 */
 		void changeMarkerMessage(const std::string& markerID, const std::string& markerMessage);
+
+		/**
+		 * called from sequence service main thread, any edit actions are executed here
+		 * a stored edit action is executed during this call
+		 * @param deltaTime time since last update
+		 */
+		 void update(double deltaTime);
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
@@ -130,10 +144,19 @@ namespace nap
 		 * performs edit action when mutex of player is unlocked, makes sure edit action are carried out thread safe, is blocking
 		 * @param action the edit action
 		 */
-		void performEditAction(std::function<void()> action);
+		void queueEditAction(std::function<void()> action);
 
-		// make sure we don't perform two edit actions at the same time ( only possible when performing an edit action inside another edit action )
-		// edit actions are performed on player thread but block main thread
-		bool mPerformingEditAction = false;
+		// make sure we don't perform two edit actions at the same time and make sure they are executed on the main thread
+		// during the update call to the SequenceEditor
+		std::atomic_bool mPerformingEditAction = { false };
+
+		// the stored edit action
+		std::function<void()> mEditAction;
+
+		//
+		SequenceService& mService;
 	};
+
+	//
+	using SequencePlayerEditorOutputObjectCreator = rtti::ObjectCreator<SequenceEditor, SequenceService>;
 }
