@@ -175,7 +175,7 @@ namespace nap
 							long i = 0;
 							for (; i <= point_num; i++)
 							{
-								float p = (float)i / point_num;
+								float p = (float)i / (float)point_num;
 								float x = trackTopLeft.x + previousSegmentX + segmentWidth * p;
 								if (x > start_x)
 								{

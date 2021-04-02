@@ -23,7 +23,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// forward declares
 	class SequenceController;
-	class SequenceService;
 
 	/**
 	 * The SequenceEditor is responsible for editing the sequence (model) and makes sure the model stays valid during editing.
@@ -36,16 +35,12 @@ namespace nap
 
 		RTTI_ENABLE(Resource)
 	public:
-		explicit SequenceEditor(SequenceService& service);
-
 		/**
 		 * initializes editor
 		 * @param errorState contains any errors
 		 * @return returns true on successful initialization
 		*/
 		bool init(utility::ErrorState& errorState) override;
-
-		void onDestroy() override;
 
 		/**
 		 * saves sequence of player to file
@@ -70,7 +65,7 @@ namespace nap
 		 * @param type rttr::type information of controller type to be returned
 		 * @return ptr to controller base class, null ptr when not found
 		 */
-		SequenceController* getControllerWithTrackType(rttr::type type);
+		SequenceController* getControllerWithTrackType(const rttr::type& type);
 
 		/**
 		 * Returns pointer to base class of controller type that is used for specified track type of track id
@@ -98,7 +93,7 @@ namespace nap
 		 * @param controllerType the controller type
 		 * @return true on succesfull registration
 		 */
-		static bool registerControllerForTrackType(rttr::type viewType, rttr::type controllerType);
+		static bool registerControllerForTrackType(const rttr::type& viewType, const rttr::type& controllerType);
 
 		/**
 		 * inserts marker at given time in seconds
@@ -126,13 +121,6 @@ namespace nap
 		 * @param markerMessage const reference to string value of marker message
 		 */
 		void changeMarkerMessage(const std::string& markerID, const std::string& markerMessage);
-
-		/**
-		 * called from sequence service main thread, any edit actions are executed here
-		 * a stored edit action is executed during this call
-		 * @param deltaTime time since last update
-		 */
-		 void update(double deltaTime);
 	public:
 		// properties
 		ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
@@ -141,22 +129,13 @@ namespace nap
 		std::unordered_map<rttr::type, std::unique_ptr<SequenceController>> mControllers;
 
 		/**
-		 * performs edit action when mutex of player is unlocked, makes sure edit action are carried out thread safe, is blocking
+		 * performs edit action when mutex of player is unlocked
 		 * @param action the edit action
 		 */
-		void queueEditAction(std::function<void()> action);
+		void performEdit(std::function<void()> action);
 
 		// make sure we don't perform two edit actions at the same time and make sure they are executed on the main thread
 		// during the update call to the SequenceEditor
 		std::atomic_bool mPerformingEditAction = { false };
-
-		// the stored edit action
-		std::function<void()> mEditAction;
-
-		//
-		SequenceService& mService;
 	};
-
-	//
-	using SequencePlayerEditorOutputObjectCreator = rtti::ObjectCreator<SequenceEditor, SequenceService>;
 }

@@ -37,7 +37,7 @@ namespace nap
 		/**
 		 * Deconstructor
 		 */
-		virtual ~SequenceController(){};
+		virtual ~SequenceController()= default;
 
 		/**
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
@@ -112,7 +112,7 @@ namespace nap
 		 * @param factoryFunc the factory method
 		 * @return true on successfull registration
 		 */
-		static bool registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc factoryFunc);
+		static bool registerControllerFactory(const rttr::type& type, SequenceControllerFactoryFunc factoryFunc);
 	protected:
 		/**
 		 * @return returns reference to sequence of player

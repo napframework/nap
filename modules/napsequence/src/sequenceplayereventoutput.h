@@ -35,7 +35,7 @@ namespace nap
 		 * Constructor
 		 * @param service reference to SequenceService
 		 */
-		SequencePlayerEventOutput(SequenceService& service);
+		explicit SequencePlayerEventOutput(SequenceService& service);
 
 	public:
 		/**
@@ -47,7 +47,7 @@ namespace nap
 		 * called from sequence service main thread
 		 * @param deltaTime time since last update
 		 */
-		virtual void update(double deltaTime) override ;
+		void update(double deltaTime) override ;
 
 		/**
 		 * called from sequence player thread, adds event to queue.

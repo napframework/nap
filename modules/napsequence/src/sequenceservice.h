@@ -16,29 +16,24 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// forward declares
-	class SequenceEventReceiver;
-	class SequenceEditor;
-
 	/**
-	 * Main interface for processing sequence outputs
+	 * SequenceService is responsible for updating outputs
 	 */
 	class NAPAPI SequenceService : public Service
 	{
 		friend class SequencePlayerOutput;
-		friend class SequenceEditor;
 
 		RTTI_ENABLE(Service)
 	public:
 		/**
 		 * Constructor
 		 */
-		SequenceService(ServiceConfiguration* configuration);
+		explicit SequenceService(ServiceConfiguration* configuration);
 
 		/**
 		 * Deconstructor
 		 */
-		virtual ~SequenceService();
+		~SequenceService() override;
 
 		/**
 		 * registers object creator method that can be passed on to the rtti factory
@@ -50,20 +45,20 @@ namespace nap
 		 * registers all objects that need a specific way of construction
 		 * @param factory the factory to register the object creators with
 		 */
-		virtual void registerObjectCreators(rtti::Factory& factory) override;
+		void registerObjectCreators(rtti::Factory& factory) override;
 
 		/**
 		 * initializes service
 		 * @param errorState contains any errors
 		 * @return returns true on successful initialization
 		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
+		bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * updates any outputs and editors
 		 * @param deltaTime deltaTime
 		 */
-		virtual void update(double deltaTime) override;
+		void update(double deltaTime) override;
 	private:
 		/**
 		 * registers an output
@@ -77,22 +72,7 @@ namespace nap
 		 */
 		void removeOutput(SequencePlayerOutput& output);
 
-		/**
-		 * registers an editor
-		 * @param input reference to editor
-		 */
-		void registerEditor(SequenceEditor& editor);
-
-		/**
-		 * removes an editor
-		 * @param input reference to editor
-		 */
-		void removeEditor(SequenceEditor& editor);
-
 		// vector holding raw pointers to outputs
 		std::vector<SequencePlayerOutput*> mOutputs;
-
-		// vector holding raw pointers to editors
-		std::vector<SequenceEditor*> mEditors;
 	};
 }

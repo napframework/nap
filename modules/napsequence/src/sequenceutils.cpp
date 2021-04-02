@@ -24,7 +24,7 @@ namespace nap
 		}
 
 
-		bool registerDefaultTrackCreator(rttr::type type, SequenceDefaultTrackFactoryFunc method)
+		bool registerDefaultTrackCreator(const rttr::type& type, SequenceDefaultTrackFactoryFunc method)
 		{
 			auto& map = getDefaultFactoryMap();
 			auto found_it = map.find(type);
@@ -36,7 +36,7 @@ namespace nap
 		}
 
 
-		const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID)
+		std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID)
 		{
 			std::string unique_id = baseID;
 

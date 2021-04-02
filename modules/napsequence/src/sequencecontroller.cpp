@@ -8,6 +8,8 @@
 #include <nap/logger.h>
 #include <mathutils.h>
 
+#include <utility>
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -18,7 +20,8 @@ namespace nap
 		return factory;
 	}
 
-	bool SequenceController::registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc func)
+
+	bool SequenceController::registerControllerFactory(const rttr::type& type, SequenceControllerFactoryFunc func)
 	{
 		auto& factory = getControllerFactory();
 		auto it = factory.find(type);
@@ -59,8 +62,6 @@ namespace nap
 
 		mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
 	}
-
-
 
 
 	SequenceTrackSegment* SequenceController::findSegment(const std::string& trackID, const std::string& segmentID)
@@ -203,9 +204,9 @@ namespace nap
 				{
 					if( index > 0 )
 					{
-						auto track = sequence.mTracks[index];
+						auto track_to_move = sequence.mTracks[index];
 						sequence.mTracks.erase(sequence.mTracks.begin() + index);
-						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index - 1 ), track);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index - 1 ), track_to_move);
 					}
 
 					break;
@@ -230,9 +231,9 @@ namespace nap
 				{
 					if( index < sequence.mTracks.size() - 1 )
 					{
-						auto track = sequence.mTracks[index];
+						auto track_to_move = sequence.mTracks[index];
 						sequence.mTracks.erase(sequence.mTracks.begin() + index);
-						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index + 1 ), track);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index + 1 ), track_to_move);
 					}
 
 					break;
@@ -263,6 +264,6 @@ namespace nap
 
 	void SequenceController::performEditAction(std::function<void()> action)
 	{
-		mEditor.queueEditAction(action);
+		mEditor.performEdit(std::move(action));
 	}
 }

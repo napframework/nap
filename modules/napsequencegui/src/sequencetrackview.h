@@ -43,7 +43,7 @@ namespace nap
 		/**
 		 * Destructor
 		 */
-        virtual ~SequenceTrackView(){};
+        virtual ~SequenceTrackView()= default;;
 
 		/**
 		 * handles any actions that are created upon show
@@ -81,7 +81,7 @@ namespace nap
 		 * @param type the type
 		 * @param func the factory function
 		 */
-		static bool registerFactory(rttr::type type, SequenceTrackViewFactoryFunc func);
+		static bool registerFactory(const rttr::type& type, SequenceTrackViewFactoryFunc func);
 	public:
 		/////////////////////////////////////////////////////////////////////////////
 		// static utility methods
@@ -134,7 +134,7 @@ namespace nap
 		 * @param type action type info
 		 * @param handler handler function
 		 */
-		void registerActionHandler(rttr::type type, std::function<void()> handler);
+		void registerActionHandler(const rttr::type& type, const std::function<void()>& handler);
 
 		// reference to gui view
 		SequenceEditorGUIView& mView;

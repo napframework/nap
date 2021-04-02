@@ -15,7 +15,7 @@
 #include <functional>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor)
+RTTI_BEGIN_CLASS(nap::SequenceEditor)
 RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -25,27 +25,12 @@ using namespace nap::SequenceCurveEnums;
 
 namespace nap
 {
-	static bool register_object_creator = SequenceService::registerObjectCreator([](SequenceService* service)->std::unique_ptr<rtti::IObjectCreator>
-	{
-		return std::make_unique<SequencePlayerEditorOutputObjectCreator>(*service);
-	});
-
-
-	SequenceEditor::SequenceEditor(SequenceService& service) : mService(service)
-	{
-
-	}
-
-
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
 		{
 			return false;
 		}
-
-		// register editor to service
-		mService.registerEditor(*this);
 
 		// create controllers for all types of tracks
 		auto& factory = SequenceController::getControllerFactory();
@@ -58,12 +43,6 @@ namespace nap
 	}
 
 
-	void SequenceEditor::onDestroy()
-	{
-		mService.removeEditor(*this);
-	}
-
-
 	std::unordered_map<rttr::type, rttr::type>& getControllerTrackTypeMap()
 	{
 		static std::unordered_map<rttr::type, rttr::type> map;
@@ -71,7 +50,7 @@ namespace nap
 	}
 
 
-	bool SequenceEditor::registerControllerForTrackType(rttr::type trackType, rttr::type controllerType)
+	bool SequenceEditor::registerControllerForTrackType(const rttr::type& trackType, const rttr::type& controllerType)
 	{
 		auto& map = getControllerTrackTypeMap();
 		assert(map.find(controllerType) == map.end()); // duplicate entry
@@ -85,17 +64,7 @@ namespace nap
 	}
 
 
-	void SequenceEditor::update(double deltaTime)
-	{
-		if (mPerformingEditAction.load())
-		{
-			mPerformingEditAction.store(false);
-			mSequencePlayer->performEditAction(mEditAction);
-		}
-	}
-
-
-	SequenceController* SequenceEditor::getControllerWithTrackType(rttr::type type)
+	SequenceController* SequenceEditor::getControllerWithTrackType(const rttr::type& type)
 	{
 		auto& map = getControllerTrackTypeMap();
 		if (map.find(type) != map.end())
@@ -116,7 +85,8 @@ namespace nap
 		const auto& sequence = mSequencePlayer->getSequence();
 		for(const auto& track : sequence.mTracks)
 		{
-			auto track_type = track.get()->get_type();
+			auto track_ptr = track.get();
+			auto track_type = track_ptr->get_type();
 			auto it = getControllerTrackTypeMap().find(track_type);
 			if (mControllers.find(it->second) != mControllers.end())
 			{
@@ -139,11 +109,11 @@ namespace nap
 
 	void SequenceEditor::load(const std::string& file)
 	{
-		queueEditAction([this, file](){
+		performEdit([this, file]() {
 			utility::ErrorState error_state;
-			if(!mSequencePlayer->load(file, error_state) )
+			if (!mSequencePlayer->load(file, error_state))
 			{
-			  nap::Logger::error(error_state.toString());
+				nap::Logger::error(error_state.toString());
 			}
 		});
 	}
@@ -153,7 +123,7 @@ namespace nap
 	{
 		newDuration = math::max<double>(newDuration, 0.01);
 
-		queueEditAction([this, newDuration]() {
+		performEdit([this, newDuration]() {
 			auto& sequence = mSequencePlayer->getSequence();
 
 			// sequence must be at least as long as longest track
@@ -182,7 +152,7 @@ namespace nap
 
 	void SequenceEditor::insertMarker(double time, const std::string& message)
 	{
-		queueEditAction([this, time, message]() {
+		performEdit([this, time, message]() {
 			auto new_marker		 = std::make_unique<SequenceMarker>();
 			new_marker->mID		 = sequenceutils::generateUniqueID(mSequencePlayer->mReadObjectIDs);
 			new_marker->mTime	 = time;
@@ -196,7 +166,7 @@ namespace nap
 
 	void SequenceEditor::changeMarkerTime(const std::string& markerID, double time)
 	{
-		queueEditAction([this, markerID, time]() {
+		performEdit([this, markerID, time]() {
 			auto it =
 				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
 							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
@@ -214,7 +184,7 @@ namespace nap
 
 	void SequenceEditor::deleteMarker(const std::string& markerID)
 	{
-		queueEditAction([this, markerID]() {
+		performEdit([this, markerID]() {
 			auto it_1 =
 				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
 							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
@@ -240,7 +210,7 @@ namespace nap
 
 	void SequenceEditor::changeMarkerMessage(const std::string& markerID, const std::string& markerMessage)
 	{
-		queueEditAction([this, markerID, markerMessage]() {
+		performEdit([this, markerID, markerMessage]() {
 			auto it =
 				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
 							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
@@ -255,15 +225,13 @@ namespace nap
 	}
 
 
-	void SequenceEditor::queueEditAction(std::function<void()> action)
+	void SequenceEditor::performEdit(std::function<void()> action)
 	{
 		if (!mPerformingEditAction.load())
 		{
 			mPerformingEditAction.store(true);
-			mEditAction = std::move(action);
-		}else
-		{
-			nap::Logger::warn(*this, "adding edit action while still waiting for previous action to be executed!");
+			mSequencePlayer->performEditAction(action);
+			mPerformingEditAction.store(false);
 		}
 	}
 }

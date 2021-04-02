@@ -64,7 +64,7 @@ namespace nap
 		/**
 		 * Deconstructor
 		 */
-		virtual ~SequencePlayerCurveAdapter()
+		~SequencePlayerCurveAdapter()
 		{
 			mOutput.removeAdapter(this);
 		}
@@ -73,7 +73,7 @@ namespace nap
 		 * called from sequence player thread
 		 * @param time time in sequence player
 		 */
-		virtual void tick(double time) override
+		void tick(double time) override
 		{
 			for (const auto& segment : mTrack->mSegments)
 			{
@@ -81,13 +81,13 @@ namespace nap
 				{
 					// get the segment we need
 					assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
-					const SequenceTrackSegmentCurve<CURVE_TYPE>& source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
+					const auto& source = *rtti_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>>(segment.get());
 
 					// retrieve the source value
 					CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
 					
 					// cast it to a parameter value
-					PARAMETER_VALUE_TYPE value = static_cast<PARAMETER_VALUE_TYPE>(source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
+					auto value = static_cast<PARAMETER_VALUE_TYPE>(source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 
 					// call set or store function
 					(*this.*mSetFunction)(value);
@@ -100,7 +100,7 @@ namespace nap
 		/**
 		 * setValue gets called from main thread and sets the parameter value
 		 */
-		virtual void setValue() override
+		void setValue() override
 		{
 			std::unique_lock<std::mutex> l(mMutex);
 			mParameter.setValue(mStoredValue);
@@ -127,7 +127,7 @@ namespace nap
 
 		PARAMETER_TYPE&									mParameter;
 		const SequenceTrackCurve<CURVE_TYPE>*			mTrack;
-		bool											mUseMainThread;
+		bool											mUseMainThread{};
 		SequencePlayerCurveOutput&						mOutput;
 		std::mutex										mMutex;
 		PARAMETER_VALUE_TYPE							mStoredValue;

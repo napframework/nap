@@ -14,6 +14,7 @@
 #include <nap/logger.h>
 #include <utility/fileutils.h>
 #include <iomanip>
+#include <utility>
 
 RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
@@ -36,7 +37,7 @@ namespace nap
 	};
 
 
-	bool SequenceEditorGUIView::registerTrackViewType(rttr::type trackType, rttr::type viewType)
+	bool SequenceEditorGUIView::registerTrackViewType(const rttr::type& trackType, const rttr::type& viewType)
 	{
 		auto& map = getTrackViewTypeViewMap();
 		auto it = map.find(trackType);
@@ -51,7 +52,7 @@ namespace nap
 	}
 
 
-	rttr::type SequenceEditorGUIView::getViewForTrackType(rttr::type type)
+	rttr::type SequenceEditorGUIView::getViewForTrackType(const rttr::type& type)
 	{
 		auto& map = getTrackViewTypeViewMap();
 		auto it = map.find(type);
@@ -85,7 +86,7 @@ namespace nap
 
 
 	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
-		: mEditor(editor), mID(id), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
+		: mEditor(editor), mID(std::move(id)), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
 		mState.mAction = createAction<None>();
 		mState.mClipboard = createClipboard<Empty>();
@@ -98,18 +99,18 @@ namespace nap
 		// register different popups for different actions
 		mPopups =
 		{
-			{ RTTI_OF(OpenEditSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
-			{ RTTI_OF(EditingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
-			{ RTTI_OF(OpenInsertSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
-			{ RTTI_OF(InsertingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
-			{ RTTI_OF(OpenInsertTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
-			{ RTTI_OF(InsertingTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
-			{ RTTI_OF(OpenSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
-			{ RTTI_OF(EditSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
-			{ RTTI_OF(LoadPopup), std::bind(&SequenceEditorGUIView::handleLoadPopup, this) },
-			{ RTTI_OF(SaveAsPopup), std::bind(&SequenceEditorGUIView::handleSaveAsPopup, this) },
-			{ RTTI_OF(None), std::bind(&SequenceEditorGUIView::handleNone, this) },
-			{ RTTI_OF(NonePressed), std::bind(&SequenceEditorGUIView::handleNonePressed, this) }
+			{ RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); } },
+			{ RTTI_OF(EditingSequenceMarkerPopup), [this] { handleEditMarkerPopup(); } },
+			{ RTTI_OF(OpenInsertSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } },
+			{ RTTI_OF(InsertingSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } },
+			{ RTTI_OF(OpenInsertTrackPopup), [this] { handleInsertTrackPopup(); } },
+			{ RTTI_OF(InsertingTrackPopup), [this] { handleInsertTrackPopup(); } },
+			{ RTTI_OF(OpenSequenceDurationPopup), [this] { handleSequenceDurationPopup(); }},
+			{ RTTI_OF(EditSequenceDurationPopup), [this] { handleSequenceDurationPopup(); }},
+			{ RTTI_OF(LoadPopup), [this] { handleLoadPopup(); } },
+			{ RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); } },
+			{ RTTI_OF(None), [this] { handleNone(); } },
+			{ RTTI_OF(NonePressed), [this] { handleNonePressed(); } }
 		};
 	}
 
@@ -133,7 +134,7 @@ namespace nap
 		mState.mStepSize = mState.mHorizontalResolution;
 
 		// calc width of content in timeline window
-		mState.mTimelineWidth = mState.mStepSize * sequence.mDuration;
+		mState.mTimelineWidth = (float)(mState.mStepSize * sequence.mDuration);
 
 		// set content width of next window
 		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution, 0.0f));
@@ -274,7 +275,7 @@ namespace nap
 
 			if (mState.mFollow)
 			{
-				float scroll_x = (sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
+				float scroll_x = (float)(sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
 				ImGui::SetScrollX(scroll_x);
 			}
 
@@ -469,7 +470,7 @@ namespace nap
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * i });
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * (float)i });
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
@@ -496,7 +497,7 @@ namespace nap
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * i });
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * (float)i });
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
@@ -688,12 +689,12 @@ namespace nap
 
 			// draw timestamp text every 100 pixels
 			const float timestamp_interval = 100.0f;
-			int steps = mState.mTimelineWidth / timestamp_interval;
-			int step_start = math::max<float>(mState.mScroll.x - start_pos.x, start_pos.x) / mState.mTimelineWidth;
+			int steps =(int) ( mState.mTimelineWidth / timestamp_interval );
+			int step_start = (int) ( math::max<float>(mState.mScroll.x - start_pos.x, start_pos.x) / mState.mTimelineWidth );
 			for (int i = step_start; i < steps; i++)
 			{
 				ImVec2 timestamp_pos;
-				timestamp_pos.x = i * timestamp_interval + start_pos.x;
+				timestamp_pos.x = (float)i * timestamp_interval + start_pos.x;
 				timestamp_pos.y = start_pos.y - 18;
 
 				if (timestamp_pos.x < parent_window_size.x &&
@@ -702,7 +703,7 @@ namespace nap
 					if (timestamp_pos.y >= 0 &&
 						timestamp_pos.y < parent_window_size.y)
 					{
-						double time_in_player = (i * timestamp_interval) / mState.mStepSize;
+						double time_in_player = ((float)i * timestamp_interval) / mState.mStepSize;
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
 						draw_list->AddText(timestamp_pos, guicolors::white, formatted_time_string.c_str());
 
@@ -852,7 +853,7 @@ namespace nap
 
 	void SequenceEditorGUIView::drawTimelinePlayerPosition(
 		const Sequence& sequence,
-		SequencePlayer& player)
+		SequencePlayer& player) const
 	{
 		const float line_thickness = 2.0f;
 
@@ -883,7 +884,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player)
+	void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const
 	{
 		const float line_thickness = 2.0f;
 		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(guicolors::white);
@@ -1069,7 +1070,7 @@ namespace nap
 						shows.push_back(utility::getFileName(filename));
 					}
 				}
-				shows.push_back("<New...>");
+				shows.emplace_back("<New...>");
 
 				if (SequenceTrackView::Combo("Shows",
 					&save_as_action->mSelectedShowIndex,
@@ -1118,7 +1119,7 @@ namespace nap
 					
 					if (mEditor.mSequencePlayer->save(utility::getFileName(new_show_filename), error_state))
 					{
-						save_as_action->mSelectedShowIndex = shows.size() - 2;
+						save_as_action->mSelectedShowIndex = (int) shows.size() - 2;
 						mState.mDirty = true;
 					}
 					else
@@ -1394,7 +1395,7 @@ namespace nap
 		float  time_focus = (float) ( time_start + time_end ) * 0.5f;
 
 		// calc new timeline width
-		mState.mTimelineWidth = mState.mHorizontalResolution * sequence_player.getDuration();
+		mState.mTimelineWidth = mState.mHorizontalResolution * (float)sequence_player.getDuration();
 
 		// calc the new scroll keeping time_focus in the middle
 		mState.mScroll.x = (float) (time_focus / sequence_player.getDuration()) * mState.mTimelineWidth - ((mState.mWindowSize.x - mState.mInspectorWidth) * 0.5f );

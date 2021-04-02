@@ -22,7 +22,8 @@ namespace nap
 		return map;
 	}
 
-	bool SequenceTrackView::registerFactory(rttr::type type, SequenceTrackViewFactoryFunc func)
+
+	bool SequenceTrackView::registerFactory(const rttr::type& type, SequenceTrackViewFactoryFunc func)
 	{
 		auto& map = getFactoryMap();
 		auto it = map.find(type);
@@ -37,6 +38,7 @@ namespace nap
 		return false;
 	}
 
+
 	SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
 		mView(view), mState(state)
 	{
@@ -50,7 +52,7 @@ namespace nap
 		if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
 		*out_text = vector.at(idx).c_str();
 		return true;
-	};
+	}
 
 
 	bool SequenceTrackView::Combo(const char* label, int* currIndex, std::vector<std::string>& values)
@@ -71,7 +73,7 @@ namespace nap
 
 	std::string SequenceTrackView::formatTimeString(double time)
 	{
-		int hours = time / 3600.0f;
+		int hours = (int)(time / 3600.0f);
 		int minutes = (int)(time / 60.0f) % 60;
 		int seconds = (int)time % 60;
 		int milliseconds = (int)(time * 100.0f) % 100;
@@ -126,7 +128,7 @@ namespace nap
 							   	guicolors::white);
 
 			//
-			ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
+			inspector_cursor_pos = ImGui::GetCursorPos();
 			inspector_cursor_pos.x += 5;
 			inspector_cursor_pos.y += 5;
 			ImGui::SetCursorPos(inspector_cursor_pos);
@@ -227,7 +229,7 @@ namespace nap
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			// get current imgui cursor position
-			ImVec2 cursor_pos = ImGui::GetCursorPos();
+			cursor_pos = ImGui::GetCursorPos();
 
 			// get window position
 			ImVec2 window_top_left = ImGui::GetWindowPos();
@@ -249,16 +251,16 @@ namespace nap
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
-			int steps = mState.mTimelineWidth / timestamp_interval;
+			int steps = (int)(mState.mTimelineWidth / timestamp_interval);
 
-			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
+			int i = (int)(math::max<int>((int)(mState.mScroll.x - mState.mInspectorWidth) + 100, 0) / timestamp_interval);
 			bool first_line_drawn = false;
 			for (;i < steps; i++)
 			{
 				if(i==0) // ignore first timestamp since it will hide window left border
 					continue;
 
-				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
+				ImVec2 pos = { trackTopLeft.x + (float)i * timestamp_interval, trackTopLeft.y };
 				if (ImGui::IsRectVisible(pos, { pos.x + 1, pos.y + mState.mTrackHeight } ))
 				{
 					first_line_drawn = true;
@@ -325,7 +327,7 @@ namespace nap
 	SequenceEditor& SequenceTrackView::getEditor() { return mView.mEditor; }
 
 
-	void SequenceTrackView::registerActionHandler(rttr::type type, std::function<void()> handler)
+	void SequenceTrackView::registerActionHandler(const rttr::type& type, const std::function<void()>& handler)
 	{
 		// Assert is triggered when element with same key already exists
 		auto it = mActionHandlers.emplace(std::make_pair(type, handler));

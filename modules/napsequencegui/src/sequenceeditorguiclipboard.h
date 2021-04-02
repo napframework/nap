@@ -32,7 +32,7 @@ namespace nap
 			 * Constructor
 			 * @param trackType expects tracktype
 			 */
-			Clipboard(const rttr::type& trackType);
+			explicit Clipboard(const rttr::type& trackType);
 
 			/**
 			 * Default decontructor
@@ -167,7 +167,7 @@ namespace nap
 
 				// Make sure we deserialized something
 				T* root_object = nullptr;
-				if(!errorState.check(result.mReadObjects.size() > 0, "No objects deserialized"))
+				if(!errorState.check(!result.mReadObjects.empty(), "No objects deserialized"))
 					return std::vector<T*>();
 
 				auto* first_object = result.mReadObjects[0].get();

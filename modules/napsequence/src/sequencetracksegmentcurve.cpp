@@ -11,7 +11,7 @@ DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec4)
 
 
 template<>
-const float nap::SequenceTrackSegmentCurveFloat::getStartValue() const
+float nap::SequenceTrackSegmentCurveFloat::getStartValue() const
 {
 	assert(mCurves.size() == 1);
 	assert(mCurves[0]->mPoints.size() >= 2);
@@ -20,7 +20,7 @@ const float nap::SequenceTrackSegmentCurveFloat::getStartValue() const
 }
 
 template<>
-const float nap::SequenceTrackSegmentCurveFloat::getEndValue() const
+float nap::SequenceTrackSegmentCurveFloat::getEndValue() const
 {
 	assert(mCurves.size() == 1);
 	assert(mCurves[0]->mPoints.size() >= 2);
@@ -29,7 +29,7 @@ const float nap::SequenceTrackSegmentCurveFloat::getEndValue() const
 }
 
 template<>
-const float nap::SequenceTrackSegmentCurveFloat::getValue(float t) const
+float nap::SequenceTrackSegmentCurveFloat::getValue(float t) const
 {
 	assert(mCurves.size() == 1);
 
@@ -56,7 +56,7 @@ void nap::SequenceTrackSegmentCurveFloat::setEndValue(float t)
 }
 
 template<>
-const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getStartValue() const
+glm::vec2 nap::SequenceTrackSegmentCurveVec2::getStartValue() const
 {
 	assert(mCurves.size() == 2);
 	assert(mCurves[0]->mPoints.size() > 1);
@@ -69,7 +69,7 @@ const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getStartValue() const
 }
 
 template<>
-const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getEndValue() const
+glm::vec2 nap::SequenceTrackSegmentCurveVec2::getEndValue() const
 {
 	assert(mCurves.size() == 2);
 	assert(mCurves[0]->mPoints.size() >= 2);
@@ -82,7 +82,7 @@ const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getEndValue() const
 }
 
 template<>
-const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getValue(float t) const
+glm::vec2 nap::SequenceTrackSegmentCurveVec2::getValue(float t) const
 {
 	assert(mCurves.size() == 2);
 
@@ -116,7 +116,7 @@ void nap::SequenceTrackSegmentCurveVec2::setEndValue(glm::vec2 t)
 }
 
 template<>
-const glm::vec3 nap::SequenceTrackSegmentCurveVec3::getStartValue() const
+glm::vec3 nap::SequenceTrackSegmentCurveVec3::getStartValue() const
 {
 	assert(mCurves.size() == 3);
 	assert(mCurves[0]->mPoints.size() >= 2);
@@ -130,7 +130,7 @@ const glm::vec3 nap::SequenceTrackSegmentCurveVec3::getStartValue() const
 }
 
 template<>
-const glm::vec3 nap::SequenceTrackSegmentCurveVec3::getValue(float t) const
+glm::vec3 nap::SequenceTrackSegmentCurveVec3::getValue(float t) const
 {
 	assert(mCurves.size() == 3);
 
@@ -141,7 +141,7 @@ const glm::vec3 nap::SequenceTrackSegmentCurveVec3::getValue(float t) const
 }
 
 template<>
-const glm::vec3  nap::SequenceTrackSegmentCurveVec3::getEndValue() const
+glm::vec3  nap::SequenceTrackSegmentCurveVec3::getEndValue() const
 {
 	assert(mCurves.size() == 3);
 	assert(mCurves[0]->mPoints.size() >= 2);
@@ -179,7 +179,7 @@ void nap::SequenceTrackSegmentCurveVec3::setEndValue(glm::vec3 t)
 }
 
 template<>
-const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getStartValue() const
+glm::vec4 nap::SequenceTrackSegmentCurveVec4::getStartValue() const
 {
 	assert(mCurves.size() == 4);
 	assert(mCurves[0]->mPoints.size() >= 2);
@@ -194,7 +194,7 @@ const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getStartValue() const
 }
 
 template<>
-const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getEndValue() const
+glm::vec4 nap::SequenceTrackSegmentCurveVec4::getEndValue() const
 {
 	assert(mCurves.size() == 4);
 	assert(mCurves[0]->mPoints.size() >= 2);
@@ -209,7 +209,7 @@ const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getEndValue() const
 }
 
 template<>
-const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getValue(float t) const
+glm::vec4 nap::SequenceTrackSegmentCurveVec4::getValue(float t) const
 {
 	assert(mCurves.size() == 4);
 

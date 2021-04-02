@@ -14,10 +14,10 @@ namespace nap
 	}
 
 
-	bool SequencePlayerAdapter::registerFactory(rttr::type type, SequencePlayerAdapterFactoryFunc factory)
+	bool SequencePlayerAdapter::registerFactory(const rttr::type& type, SequencePlayerAdapterFactoryFunc factory)
 	{
 		auto& map = getFactoryMap();
-		if (map.size() > 0)
+		if (!map.empty())
 		{
 			auto it = map.find(type);
 			assert(it == map.end()); // duplicate entry
@@ -37,7 +37,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<SequencePlayerAdapter> SequencePlayerAdapter::invokeFactory(rttr::type type, const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)
+	std::unique_ptr<SequencePlayerAdapter> SequencePlayerAdapter::invokeFactory(const rttr::type& type, const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)
 	{
 		auto& map = getFactoryMap();
 

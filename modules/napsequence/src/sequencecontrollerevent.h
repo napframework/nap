@@ -49,7 +49,7 @@ namespace nap
 		 * @param trackID the track id
 		 * @param time the time
 		 */
-		virtual const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
+		const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
 
 		/**
 		* insert event segment of type SEGMENT_TYPE
@@ -64,7 +64,7 @@ namespace nap
 		 * @param trackID the track id
 		 * @param segmentID the segment id
 		 */
-		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
+		void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
 
 		/**
 		 *  add new event track method
@@ -75,7 +75,7 @@ namespace nap
 		 * overloaded insert track method
 		 * @param type the track type
 		 */
-		virtual void insertTrack(rttr::type type) override;
+		void insertTrack(rttr::type type) override;
 	private:
 	};
 
@@ -125,7 +125,7 @@ namespace nap
 
 				if (segment != nullptr)
 				{
-					SequenceTrackSegmentEvent<T>* event_segment = dynamic_cast<SequenceTrackSegmentEvent<T>*>(segment);
+					auto* event_segment = rtti_cast<SequenceTrackSegmentEvent<T>>(segment);
 					assert(event_segment != nullptr); // type mismatch
 
 					if (event_segment != nullptr)

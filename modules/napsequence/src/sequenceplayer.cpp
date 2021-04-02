@@ -29,9 +29,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayer::SequencePlayer()
-	{
-	}
+	SequencePlayer::SequencePlayer() = default;
 
 
 	bool SequencePlayer::init(utility::ErrorState& errorState)
@@ -67,7 +65,7 @@ namespace nap
 		// launch player thread
 		mUpdateThreadRunning.store(true);
 		mBefore = HighResolutionClock::now();
-		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
+		mUpdateTask = std::async(std::launch::async, [this] { onUpdate(); });
 
 		return true;
 	}
@@ -379,7 +377,7 @@ namespace nap
 	bool SequencePlayer::createAdapter(const std::string& inputID, const std::string& trackID)
 	{
 		// bail if empty output id
-		if (inputID == "")
+		if (inputID.empty())
 			return false;
 
 		// find track

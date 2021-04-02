@@ -129,13 +129,13 @@ namespace nap
 		/**
 		 * called before deconstruction. This stops the actual player thread. To stop the player but NOT the player thread call setIsPlaying( false )
 		 */
-		virtual void stop() override;
+		void stop() override;
 
 		/**
 		 * starts player thread, called after successfully initialization
 		 * This starts the actual player thread
 		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		bool start(utility::ErrorState& errorState) override;
 
 		/**
 		 * returns a const reference to the current sequence, not thread-safe. Only call this from the main thread

@@ -25,7 +25,7 @@ namespace nap
 		{
 			RTTI_ENABLE()
 		public:
-            virtual ~Action(){}
+            virtual ~Action()= default;
             
 			/**
 			 * @return true of action is of type
@@ -78,7 +78,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			TrackAction(std::string trackID) : mTrackID(trackID)
+			explicit TrackAction(std::string trackID) : mTrackID(trackID)
 			{
 			}
 
@@ -98,7 +98,7 @@ namespace nap
 			 * @param segmentID segmentID of segment being dragged
 			 */
 			DraggingSegment(std::string trackId, std::string segmentID)
-				: TrackAction(trackId), mSegmentID(segmentID) {}
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)) {}
 
 			std::string mSegmentID;
 		};
@@ -116,7 +116,7 @@ namespace nap
 			* @param segmentID id of segment being dragged
 			*/
 			StartDraggingSegment(std::string trackId, std::string segmentID)
-				: TrackAction(trackId), mSegmentID(segmentID) {}
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)) {}
 
 			std::string mSegmentID;
 		};
@@ -129,8 +129,8 @@ namespace nap
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
-			InsertingSegment(std::string id, double time, rttr::type type)
-				: TrackAction(id), mTime(time), mTrackType(type) {}
+			InsertingSegment(std::string id, double time, const rttr::type& type)
+				: TrackAction(std::move(id)), mTime(time), mTrackType(type) {}
 
 			double mTime;
 			rttr::type mTrackType;
@@ -142,8 +142,8 @@ namespace nap
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
-			OpenInsertSegmentPopup(std::string id, double time, rttr::type type)
-				: TrackAction(id), mTime(time), mTrackType(type) {}
+			OpenInsertSegmentPopup(std::string id, double time, const rttr::type& type)
+				: TrackAction(std::move(id)), mTime(time), mTrackType(type) {}
 
 			double mTime;
 			rttr::type mTrackType;
@@ -152,8 +152,8 @@ namespace nap
 		class EditingSegment : public TrackAction {
 			RTTI_ENABLE(TrackAction)
 		public:
-			EditingSegment(std::string trackID, std::string segmentID, rttr::type segmentType)
-				: TrackAction(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			EditingSegment(std::string trackID, std::string segmentID, const rttr::type& segmentType)
+				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType)
 			{
 
 			}
@@ -166,8 +166,8 @@ namespace nap
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
-			OpenEditSegmentValuePopup(std::string trackID, std::string segmentID, rttr::type segmentType)
-				: TrackAction(trackID), mSegmentID(segmentID), mSegmentType(segmentType)
+			OpenEditSegmentValuePopup(std::string trackID, std::string segmentID, const rttr::type& segmentType)
+				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType)
 			{
 
 			}
@@ -181,7 +181,7 @@ namespace nap
 			RTTI_ENABLE(TrackAction)
 		public:
 			HoveringSegment(std::string trackId, std::string segmentID)
-				: TrackAction(trackId), mSegmentID(segmentID) {}
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)) {}
 
 			std::string mSegmentID;
 		};
@@ -191,7 +191,7 @@ namespace nap
 			RTTI_ENABLE(TrackAction)
 		public:
 			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
-				: TrackAction(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex) {}
 
 			std::string mSegmentID;
 			SequenceCurveEnums::SegmentValueTypes mType;
@@ -204,7 +204,7 @@ namespace nap
 			RTTI_ENABLE(TrackAction)
 		public:
 			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
-				: TrackAction(trackId), mSegmentID(segmentID), mType(type), mCurveIndex(curveIndex) {}
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex) {}
 
 			std::string mSegmentID;
 			SequenceCurveEnums::SegmentValueTypes mType;
@@ -277,7 +277,8 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenEditSequenceMarkerPopup(const std::string& id, const std::string& message, double time) : mID(id), mMessage(message), mTime(time){}
+			OpenEditSequenceMarkerPopup(std::string id, std::string  message, double time)
+				: mID(std::move(id)), mMessage(std::move(message)), mTime(time){}
 
 			std::string mID;
 			std::string mMessage;
@@ -288,7 +289,8 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			EditingSequenceMarkerPopup(const std::string& id, const std::string& message, double time) : mID(id), mMessage(message), mTime(time){}
+			EditingSequenceMarkerPopup(std::string  id, std::string  message, double time)
+				: mID(std::move(id)), mMessage(std::move(message)), mTime(time){}
 
 			std::string mID;
 			std::string mMessage;
@@ -299,7 +301,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			OpenInsertSequenceMarkerPopup(double time) : mTime(time){}
+			explicit OpenInsertSequenceMarkerPopup(double time) : mTime(time){}
 
 			double mTime;
 		};
@@ -308,7 +310,8 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			InsertingSequenceMarkerPopup(double time, const std::string& message) : mTime(time), mMessage(message){}
+			InsertingSequenceMarkerPopup(double time, std::string message)
+				: mTime(time), mMessage(std::move(message)){}
 
 			double mTime;
 			std::string mMessage;
@@ -318,7 +321,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			DragSequenceMarker(const std::string& id) : mID(id){}
+			explicit DragSequenceMarker(std::string id) : mID(std::move(id)){}
 
 			std::string mID;
 		};

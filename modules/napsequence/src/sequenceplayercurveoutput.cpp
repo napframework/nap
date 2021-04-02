@@ -27,7 +27,7 @@ namespace nap
 			assert(RTTI_OF(SequencePlayerCurveOutput) == output->get_type()); // type mismatch
 
 			// cast the output to a curve output
-			const SequencePlayerCurveOutput* curve_output = static_cast<const SequencePlayerCurveOutput*>(output);
+			const auto* curve_output = rtti_cast<const SequencePlayerCurveOutput>(output);
 
 			// check the parameter
 			assert(curve_output->mParameter != nullptr); // parameter must be assigned

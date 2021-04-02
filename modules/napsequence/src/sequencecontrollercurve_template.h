@@ -84,7 +84,7 @@ namespace nap
 							}
 
 							//
-							SequenceTrackSegmentCurve<T>& segment_curve_2 = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
+							auto& segment_curve_2 = *rtti_cast<SequenceTrackSegmentCurve<T>>(segment.get());
 
 							// set the value by evaluation curve
 							new_segment->setStartValue(segment_curve_2.getValue(
@@ -95,7 +95,7 @@ namespace nap
 							if (segment_count < track->mSegments.size())
 							{
 								// if there is a next segment, the new segments end value is the start value of the next segment ...
-								SequenceTrackSegmentCurve<T>& next_segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track->mSegments[segment_count].get());
+								auto& next_segment_curve = *rtti_cast<SequenceTrackSegmentCurve<T>>(track->mSegments[segment_count].get());
 
 								new_segment->setEndValue(next_segment_curve.getEndValue());
 							}
@@ -170,7 +170,7 @@ namespace nap
 					}
 
 					//
-					if (track->mSegments.size() == 0)
+					if (track->mSegments.empty())
 					{
 						// create new segment & set parameters
 						std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
@@ -241,7 +241,7 @@ namespace nap
 														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		SequenceTrackSegmentCurve<T>& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
+		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
 
 		switch (valueType)
 		{
@@ -453,7 +453,7 @@ namespace nap
 		prev_segment = nullptr;
 		for (auto track_segment : track.mSegments)
 		{
-			auto& segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track_segment.get());
+			auto& segment_curve = *rtti_cast<SequenceTrackSegmentCurve<T>>(track_segment.get());
 
 			if (prev_segment == nullptr)
 			{

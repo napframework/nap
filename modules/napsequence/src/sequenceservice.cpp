@@ -41,8 +41,7 @@ namespace nap
 	}
 
 
-	SequenceService::~SequenceService()
-	{ }
+	SequenceService::~SequenceService() = default;
 
 
 	void SequenceService::registerObjectCreators(rtti::Factory& factory)
@@ -66,11 +65,6 @@ namespace nap
 		{
 			output->update(deltaTime);
 		}
-
-		for(auto& editor : mEditors)
-		{
-			editor->update(deltaTime);
-		}
 	}
 
 
@@ -78,7 +72,7 @@ namespace nap
 	{
 		auto found_it = std::find_if(mOutputs.begin(), mOutputs.end(), [&](const auto& it)
 		{
-		  return it == &input;
+			return it == &input;
 		});
 		assert(found_it == mOutputs.end()); // duplicate entry
 
@@ -93,41 +87,12 @@ namespace nap
 	{
 		auto found_it = std::find_if(mOutputs.begin(), mOutputs.end(), [&](const auto& it)
 		{
-		  return it == &input;
+			return it == &input;
 		});
 
 		if(found_it != mOutputs.end())
 		{
 			mOutputs.erase(found_it);
-		}
-	}
-
-
-	void SequenceService::registerEditor(SequenceEditor& input)
-	{
-		auto found_it = std::find_if(mEditors.begin(), mEditors.end(), [&](const auto& it)
-		{
-		  return it == &input;
-		});
-		assert(found_it == mEditors.end()); // duplicate entry
-
-		if(found_it == mEditors.end())
-		{
-			mEditors.emplace_back(&input);
-		}
-	}
-
-
-	void SequenceService::removeEditor(SequenceEditor& input)
-	{
-		auto found_it = std::find_if(mEditors.begin(), mEditors.end(), [&](const auto& it)
-		{
-		  return it == &input;
-		});
-
-		if(found_it != mEditors.end())
-		{
-			mEditors.erase(found_it);
 		}
 	}
 }

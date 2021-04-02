@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "sequencetrackview.h"
 #include "sequencecontrollerevent.h"
 #include "sequencetracksegment.h"
@@ -28,7 +30,7 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		SequenceEventTrackSegmentViewBase(){ }
+		SequenceEventTrackSegmentViewBase()= default;
 
 		/**
 		 * Deconstructor
@@ -50,7 +52,7 @@ namespace nap
 		 * @param topLeft top left position
 		 * @param x x position of segment on track
 		 */
-		virtual void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x) = 0;
+		virtual void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x) = 0;
 
 		/**
 		 * Extend this method to specify the way the controller needs to be called to add your custom event type
@@ -106,7 +108,7 @@ namespace nap
 		 * @param topLeft top left position
 		 * @param x x position of segment on track
 		 */
-		void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x) override;
+		void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x) override;
 
 		/**
 		 * Specialise this method to specify the way the controller needs to be called to add your custom event type
@@ -158,14 +160,14 @@ namespace nap
 		 * shows inspector content
 		 * @param track reference to track
 		 */
-		virtual void showInspectorContent(const SequenceTrack& track) override ;
+		void showInspectorContent(const SequenceTrack& track) override ;
 
 		/**
 		 * shows track contents
 		 * @param track reference to track
 		 * @param trackTopLeft orientation
 		 */
-		virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) override;
+		void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) override;
 
 		/**
 		 * handles insert event segment popup
@@ -205,7 +207,7 @@ namespace nap
 		 * @param segmentWidth width of segment
 		 * @param drawList pointer to window drawlist
 		 */
-		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, const float segmentX, const float segmentWidth, ImDrawList* drawList);
+		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
 
 		/**
 		 * handles delete segment popup
@@ -265,8 +267,8 @@ namespace nap
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
-			OpenEditEventSegmentPopup(const std::string& trackID, const std::string& segmentID, ImVec2 windowPos, T value, double startTime)
-				: TrackAction(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
+			OpenEditEventSegmentPopup(const std::string& trackID, std::string  segmentID, ImVec2 windowPos, T value, double startTime)
+				: TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
 			std::string mSegmentID;
 			ImVec2 mWindowPos;
@@ -279,8 +281,8 @@ namespace nap
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
-			EditingEventSegment(const std::string& trackID, const std::string& segmentID, ImVec2 windowPos, T value, double startTime)
-				: TrackAction(trackID), mSegmentID(segmentID), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
+			EditingEventSegment(const std::string& trackID, std::string  segmentID, ImVec2 windowPos, T value, double startTime)
+				: TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
 
 			std::string mSegmentID;
             ImVec2 mWindowPos;
@@ -300,7 +302,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
-			EventSegmentClipboard(const rttr::type& type, const std::string& sequenceName) : Clipboard(type), mSequenceName(sequenceName){};
+			EventSegmentClipboard(const rttr::type& type, std::string  sequenceName) : Clipboard(type), mSequenceName(std::move(sequenceName)){};
 
 			const std::string& getSequenceName() const { return mSequenceName; }
 		private:
@@ -347,7 +349,7 @@ namespace nap
 				int time_seconds = (int) ( action->mStartTime ) % 60;
 				int time_minutes = (int) ( action->mStartTime ) / 60;
 
-				bool edit_time = false;
+				bool edit_time;
 
 				ImGui::Separator();
 

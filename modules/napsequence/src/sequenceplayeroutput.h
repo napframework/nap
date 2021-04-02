@@ -29,21 +29,24 @@ namespace nap
 		 * Constructor
 		 * @param service reference to SequenceService
 		 */
-		SequencePlayerOutput(SequenceService& service);
-        
-        virtual ~SequencePlayerOutput(){};
+		explicit SequencePlayerOutput(SequenceService& service);
+
+		/**
+		 * Default deconstructor
+		 */
+        ~SequencePlayerOutput() override = default;
 
 		/**
 		 * upon initialisation input registers itself to the service
 		 * @param errorState contains any errors
 		 * @return true if succeed
 		 */
-		virtual bool init(utility::ErrorState& errorState) override ;
+		bool init(utility::ErrorState& errorState) override ;
 
 		/**
 		 * upon destruction, removes itself from service
 		 */
-		virtual void onDestroy() override ;
+		void onDestroy() override ;
 	protected:
 		/**
 		 * called from sequenceservice update loop main thread

@@ -26,11 +26,11 @@ namespace nap
 	{
 		RTTI_ENABLE(SequencePlayerOutput)
 	public:
-		SequencePlayerCurveOutput(SequenceService& service);
+		explicit SequencePlayerCurveOutput(SequenceService& service);
 
 		// properties
-		ResourcePtr<Parameter>	mParameter; 	///< Property: 'Parameter' parameter resource
-		bool					mUseMainThread; ///< Property: 'Use Main Thread' update in main thread or player thread
+		ResourcePtr<Parameter>	mParameter = nullptr; 	///< Property: 'Parameter' parameter resource
+		bool					mUseMainThread = true; 	///< Property: 'Use Main Thread' update in main thread or player thread
 
 		/**
 		 * registers a parameter setter to the output. Parameter setters are called from main thread
@@ -49,7 +49,7 @@ namespace nap
 		 * called from update loop sequence service main thread
 		 * @param deltaTime time since last update
 		 */
-		virtual void update(double deltaTime) override ;
+		void update(double deltaTime) override;
 
 		// vector holding registered parameter setters
 		std::vector<SequencePlayerCurveAdapterBase*> mAdapters;

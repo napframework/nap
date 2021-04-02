@@ -53,13 +53,13 @@ namespace nap
 	}
 
 
-	static bool registerCurveTrackView = SequenceTrackView::registerFactory(RTTI_OF(SequenceCurveTrackView), [](SequenceEditorGUIView& view, SequenceEditorGUIState& state)->std::unique_ptr<SequenceTrackView>
+	static bool register_curve_track_view = SequenceTrackView::registerFactory(RTTI_OF(SequenceCurveTrackView), [](SequenceEditorGUIView& view, SequenceEditorGUIState& state)->std::unique_ptr<SequenceTrackView>
 	{
 		return std::make_unique<SequenceCurveTrackView>(view, state);
 	});
 
 
-	static bool curveViewRegistrations[4]
+	static bool curve_view_registrations[4]
 	{
 		SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackCurve<float>), RTTI_OF(SequenceCurveTrackView)),
 		SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackCurve<glm::vec2>), RTTI_OF(SequenceCurveTrackView)),
@@ -85,7 +85,7 @@ namespace nap
 		};
 
 
-	static bool isParameterTypeAllowed(rttr::type curveType, rttr::type parameterType)
+	static bool isParameterTypeAllowed(const rttr::type& curveType, const rttr::type& parameterType)
 	{
 		auto it = sParameterTypesForCurveType.find(curveType);
 		if(it!=sParameterTypesForCurveType.end())
@@ -138,7 +138,7 @@ namespace nap
 		{
 			if (input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput))
 			{
-				auto& curve_output = static_cast<SequencePlayerCurveOutput&>(*input.get());
+				auto& curve_output = *rtti_cast<SequencePlayerCurveOutput>(input.get());
 
 				if(curve_output.mParameter != nullptr)
 				{
@@ -153,7 +153,7 @@ namespace nap
 							current_item = count;
 
 							assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput)); // type mismatch
-							assigned_parameter = static_cast<SequencePlayerCurveOutput*>(input.get())->mParameter.get();
+							assigned_parameter = rtti_cast<SequencePlayerCurveOutput>(input.get())->mParameter.get();
 						}
 
 						curve_outputs.emplace_back(input->mID);
@@ -167,7 +167,7 @@ namespace nap
 			"",
 			&current_item, curve_outputs))
 		{
-			SequenceControllerCurve& curve_controller = getEditor().getController<SequenceControllerCurve>();
+			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 
 			if (current_item != 0)
 				curve_controller.assignNewObjectID(track.mID, curve_outputs[current_item]);
@@ -282,20 +282,21 @@ namespace nap
 		int segment_count = 0;
 		for (const auto& segment : track.mSegments)
 		{
-			float segment_x	   = (segment->mStartTime + segment->mDuration) * mState.mStepSize;
-			float segment_width = segment->mDuration * mState.mStepSize;
+			const auto* segment_ptr = segment.get();
+			float segment_x	   = (float)(segment->mStartTime + segment->mDuration) * mState.mStepSize;
+			float segment_width = (float)segment->mDuration * mState.mStepSize;
 
 			// draw segment handlers
 			drawSegmentHandler(
 				track,
-				*segment.get(),
+				*segment_ptr,
 				trackTopLeft, segment_x, segment_width, draw_list);
 
 			// draw segment content
-			auto it = sDrawCurveSegmentsMap.find(segment.get()->get_type());
+			auto it = sDrawCurveSegmentsMap.find(segment_ptr->get_type());
 			if (it != sDrawCurveSegmentsMap.end())
 			{
-				(*this.*it->second)(track, *segment.get(), trackTopLeft, previous_segment_x, segment_width, segment_x,
+				(*this.*it->second)(track, *segment_ptr, trackTopLeft, previous_segment_x, segment_width, segment_x,
 									draw_list, (segment_count == 0));
 			}
 
@@ -433,7 +434,7 @@ namespace nap
 					// change duration
 					if(curve_controller!= nullptr)
 					{
-						curve_controller->segmentDurationChange(track.mID, segment.mID, segment.mDuration + amount);
+						curve_controller->segmentDurationChange(track.mID, segment.mID, (float)segment.mDuration + amount);
 						updateSegmentInClipboard(track.mID, segment.mID);
 					}
 
@@ -488,8 +489,6 @@ namespace nap
 				// invoke insert sequence popup
 				ImGui::OpenPopup("Insert Segment");
 
-				auto* action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
-
 				mState.mAction = createAction<InsertingSegment>(action->mTrackID, action->mTime, action->mTrackType);
 			}
 		}
@@ -508,8 +507,6 @@ namespace nap
 				{
 					if (ImGui::Button("Insert"))
 					{
-						auto* action = mState.mAction->getDerived<InsertingSegment>();
-
 						auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 						curve_controller.insertSegment(action->mTrackID, action->mTime);
 						updateSegmentsInClipboard(action->mTrackID);
@@ -797,9 +794,6 @@ namespace nap
 			{
 				if(ImGui::BeginPopup("Edit Segment"))
 				{
-					auto& controller = getEditor().getController<SequenceControllerCurve>();
-					auto* action = mState.mAction->getDerived<EditingCurveSegment>();
-
 					// see if we have a curve segment in the clipboard
 					bool display_copy = !mState.mClipboard->isClipboard<CurveSegmentClipboard>();
 					if( !display_copy )
@@ -978,7 +972,7 @@ namespace nap
 					if( edit_time )
 					{
 						double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
-						double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, new_time - action->mStartTime);
+						double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, (float)(new_time - action->mStartTime));
 
 						// make the controller re-align start & end points of segments
 						controller.updateCurveSegments(action->mTrackID);
@@ -1020,7 +1014,7 @@ namespace nap
 		double time,
 		int curveIndex)
 	{
-		const SequenceTrackCurve<float>& curve_track = static_cast<const SequenceTrackCurve<float>&>(track);
+		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<float>>(&track);
 
 		ImGui::BeginTooltip();
 
@@ -1042,7 +1036,7 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 2);
 
-		const SequenceTrackCurve<glm::vec2>& curve_track = static_cast<const SequenceTrackCurve<glm::vec2>&>(track);
+		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<glm::vec2>>(&track);
 
 		ImGui::BeginTooltip();
 
@@ -1072,7 +1066,7 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 3);
 
-		const SequenceTrackCurve<glm::vec3>& curve_track = static_cast<const SequenceTrackCurve<glm::vec3>&>(track);
+		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<glm::vec3>>(&track);
 
 		ImGui::BeginTooltip();
 
@@ -1102,7 +1096,7 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 4);
 
-		const SequenceTrackCurve<glm::vec4>& curve_track = static_cast<const SequenceTrackCurve<glm::vec4>&>(track);
+		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<glm::vec4>>(&track);
 
 		ImGui::BeginTooltip();
 
@@ -1318,7 +1312,7 @@ namespace nap
 			if(clipboard->getTrackID() == trackID )
 			{
 				auto segment_ids = clipboard->getObjectIDs();
-				for(auto segment_id : segment_ids)
+				for(const auto& segment_id : segment_ids)
 				{
 					updateSegmentInClipboard(trackID, segment_id);
 				}

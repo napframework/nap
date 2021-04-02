@@ -71,7 +71,7 @@ namespace nap
 	std::vector<std::string> Clipboard::getObjectIDs() const
 	{
 		std::vector<std::string> ids;
-		for(auto pair : mSerializedObjects)
+		for(const auto& pair : mSerializedObjects)
 		{
 			ids.emplace_back(pair.first);
 		}

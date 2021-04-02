@@ -38,12 +38,12 @@ namespace nap
 		 * @param errorState contains any errors
 		 * @return true on success
 		 */
-		virtual bool init(utility::ErrorState& errorState);
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * called before deconstruction
 		 */
-		virtual void onDestroy();
+		void onDestroy() override;
 
 		/**
 		 * Call this method to draw the GUI
@@ -84,14 +84,14 @@ namespace nap
 		/**
 		 * static method for registering a view type that draws the appropriate track type
 		 */
-		static bool registerTrackViewType(rttr::type trackType, rttr::type viewType);
+		static bool registerTrackViewType(const rttr::type& trackType, const rttr::type& viewType);
 
 		/**
 		 * returns view that corresponds to a certain track type, asserts when not found
 		 * @param type the track type
 		 * @return the view type
 		 */
-		static rttr::type getViewForTrackType(rttr::type type);
+		static rttr::type getViewForTrackType(const rttr::type& type);
 	protected:
 		/**
 		 * Draws the tracks of the sequence
@@ -119,7 +119,7 @@ namespace nap
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player);
+		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
 
 		/**
 		 * draws player controller bar
@@ -132,7 +132,7 @@ namespace nap
 		 * @param sequence reference to sequence
 		 * @param player reference to player
 		 */
-		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player);
+		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player) const;
 
 		/**
 		 * draws end of sequence

@@ -30,23 +30,23 @@ namespace nap
 		 * @param errorState contains information about eventual failure of evaluation
 		 * @return bool indicating successfull initialization
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Gets the value of the first point of the curve, translated into the type
 		 */
-		const T getStartValue() const;
+		T getStartValue() const;
 
 		/**
 		 * Gets the value of the last point of the curve, translated into the type
 		 */
-		const T getEndValue() const;
+		T getEndValue() const;
 
 		/**
 		 * Gets the value of the evaluated point of the curve, translated in to the type
 		 * @param pos must be a value between 0-1 ( 0 meaning start of curve, 1 meaning end ) pos is not clamped
 		 */
-		const T getValue(float pos) const;
+		T getValue(float pos) const;
 
 		/**
 		 * Sets the value of the first point in the curve(s).
@@ -114,13 +114,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<> 
-	NAPAPI const float nap::SequenceTrackSegmentCurveFloat::getStartValue() const;
+	NAPAPI float nap::SequenceTrackSegmentCurveFloat::getStartValue() const;
 
 	template<>
-	NAPAPI const float nap::SequenceTrackSegmentCurveFloat::getEndValue() const;
+	NAPAPI float nap::SequenceTrackSegmentCurveFloat::getEndValue() const;
 
 	template<>
-	NAPAPI const float nap::SequenceTrackSegmentCurveFloat::getValue(float t) const;
+	NAPAPI float nap::SequenceTrackSegmentCurveFloat::getValue(float t) const;
 
 	template<>
 	NAPAPI void nap::SequenceTrackSegmentCurveFloat::setStartValue(float t);
@@ -129,13 +129,13 @@ namespace nap
 	NAPAPI void nap::SequenceTrackSegmentCurveFloat::setEndValue(float t);
 
 	template<>
-	NAPAPI const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getStartValue() const;
+	NAPAPI glm::vec2 nap::SequenceTrackSegmentCurveVec2::getStartValue() const;
 
 	template<>
-	NAPAPI const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getEndValue() const;
+	NAPAPI glm::vec2 nap::SequenceTrackSegmentCurveVec2::getEndValue() const;
 
 	template<>
-	NAPAPI const glm::vec2 nap::SequenceTrackSegmentCurveVec2::getValue(float t) const;
+	NAPAPI glm::vec2 nap::SequenceTrackSegmentCurveVec2::getValue(float t) const;
 
 	template<>
 	NAPAPI void nap::SequenceTrackSegmentCurveVec2::setStartValue(glm::vec2 t);
@@ -144,13 +144,13 @@ namespace nap
 	NAPAPI void nap::SequenceTrackSegmentCurveVec2::setEndValue(glm::vec2 t);
 
 	template<>
-	NAPAPI const glm::vec3 nap::SequenceTrackSegmentCurveVec3::getStartValue() const;
+	NAPAPI glm::vec3 nap::SequenceTrackSegmentCurveVec3::getStartValue() const;
 
 	template<>
-	NAPAPI const glm::vec3 nap::SequenceTrackSegmentCurveVec3::getValue(float t) const;
+	NAPAPI glm::vec3 nap::SequenceTrackSegmentCurveVec3::getValue(float t) const;
 
 	template<>
-	NAPAPI const glm::vec3  nap::SequenceTrackSegmentCurveVec3::getEndValue() const;
+	NAPAPI glm::vec3  nap::SequenceTrackSegmentCurveVec3::getEndValue() const;
 
 	template<>
 	NAPAPI void nap::SequenceTrackSegmentCurveVec3::setStartValue(glm::vec3 t);
@@ -159,13 +159,13 @@ namespace nap
 	NAPAPI void nap::SequenceTrackSegmentCurveVec3::setEndValue(glm::vec3 t);
 
 	template<>
-	NAPAPI const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getStartValue() const;
+	NAPAPI glm::vec4 nap::SequenceTrackSegmentCurveVec4::getStartValue() const;
 
 	template<>
-	NAPAPI const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getEndValue() const;
+	NAPAPI glm::vec4 nap::SequenceTrackSegmentCurveVec4::getEndValue() const;
 
 	template<>
-	NAPAPI const glm::vec4 nap::SequenceTrackSegmentCurveVec4::getValue(float t) const;
+	NAPAPI glm::vec4 nap::SequenceTrackSegmentCurveVec4::getValue(float t) const;
 
 	template<>
 	NAPAPI void nap::SequenceTrackSegmentCurveVec4::setStartValue(glm::vec4 t);

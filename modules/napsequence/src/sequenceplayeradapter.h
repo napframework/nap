@@ -31,12 +31,12 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		SequencePlayerAdapter() {};
+		SequencePlayerAdapter() = default;;
 
 		/**
 		 * Deconstructor
 		 */
-		virtual ~SequencePlayerAdapter() {}
+		~SequencePlayerAdapter() = default;
 
 		/**
 		 * called from sequence player thread
@@ -50,7 +50,7 @@ namespace nap
 		 * @param factory the factory method
 		 * @return true if registration is successful
 		 */
-		static bool registerFactory(rttr::type type, SequencePlayerAdapterFactoryFunc factory);
+		static bool registerFactory(const rttr::type& type, SequencePlayerAdapterFactoryFunc factory);
 
 		/**
 		 * Invokes factory method and returns unique ptr to created adapter, nullptr when not successfull
@@ -60,7 +60,7 @@ namespace nap
 		 * @param player sequence player creating adapter
 		 * @return unique ptr to created adapter, nullptr upon failure
 		 */
-		static std::unique_ptr<SequencePlayerAdapter> invokeFactory(rttr::type type, const SequenceTrack& track,
+		static std::unique_ptr<SequencePlayerAdapter> invokeFactory(const rttr::type& type, const SequenceTrack& track,
 																	SequencePlayerOutput& input,
 																	const SequencePlayer& player);
 	private:

@@ -22,7 +22,7 @@ namespace nap
 		 * @param baseID base id
 		 * @return unique id
 		 */
-		NAPAPI const std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated");
+		NAPAPI std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated");
 
 
 		/**
@@ -42,6 +42,6 @@ namespace nap
 		 * @param method the factory method
 		 * @return true on successful creation
 		 */
-		NAPAPI bool registerDefaultTrackCreator(rttr::type type, SequenceDefaultTrackFactoryFunc method);
+		NAPAPI bool registerDefaultTrackCreator(const rttr::type& type, SequenceDefaultTrackFactoryFunc method);
 	}
 }
