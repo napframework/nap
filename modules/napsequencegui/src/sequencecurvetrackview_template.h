@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#pragma once
+
 namespace nap
 {
 	template<typename T>
@@ -181,10 +183,10 @@ namespace nap
 								{
 									float value = 1.0f - segment.mCurves[v]->evaluate(p);
 									ImVec2 point =
-										{
-											x,
-											trackTopLeft.y + value * mState.mTrackHeight
-										};
+									{
+										x,
+										trackTopLeft.y + value * mState.mTrackHeight
+									};
 									curve.emplace_back(point);
 								}
 
@@ -298,6 +300,9 @@ namespace nap
 		bool drawStartValue)
 	{
 		// TODO : do this without the elif statement
+		/**
+		 * Draw the selection background when the mouse is hovering the segment handlers
+		 */
 		bool draw_selection_background = false;
 		if( mState.mAction->isAction<SequenceGUIActions::HoveringSegmentValue>())
 		{
@@ -323,18 +328,28 @@ namespace nap
 
 		if( draw_selection_background )
 		{
-			drawList->AddRectFilled( { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,0.25f)));
+			drawList->AddRectFilled(
+				{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // top right
+				ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,0.25f))); // color
 		}else
 		{
+			// is this segment currently serialized in the clipboard
 			if( mState.mClipboard->isClipboard<SequenceGUIClipboards::CurveSegmentClipboard>())
 			{
+				// get derived clipboard
 				auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
+
+				// does it contain this segment ?
 				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
 					ImVec4 red = ImGui::ColorConvertU32ToFloat4(guicolors::red);
 					red.w = 0.25f;
 
-					drawList->AddRectFilled( { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  ImGui::ColorConvertFloat4ToU32(red));
+					drawList->AddRectFilled(
+						{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
+						{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  // top right
+						ImGui::ColorConvertFloat4ToU32(red)); // color
 				}
 			}
 		}
@@ -404,11 +419,7 @@ namespace nap
 		ImGui::SetCursorPosX(drag_float_x);
 		if (inputFloat<T>(min, 3))
 		{
-			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
-			updateSegmentsInClipboard(track.mID);
-
-			mState.mDirty = true;
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::ChangeMinMaxCurve<T>>(track.mID, min ,max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
@@ -418,11 +429,7 @@ namespace nap
 		ImGui::SetCursorPosX(drag_float_x);
 		if (inputFloat<T>(max, 3))
 		{
-			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
-			updateSegmentsInClipboard(track.mID);
-
-			mState.mDirty = true;
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::ChangeMinMaxCurve<T>>(track.mID, min ,max);
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
@@ -550,7 +557,6 @@ namespace nap
 							{
 								float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
-
 								static std::unordered_map<rttr::type, float(*)(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)> get_value_map
 									{
 										{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float{
@@ -626,7 +632,7 @@ namespace nap
 						segmentWidth, curve_point, circle_point,
 						0,
 						v,
-						SequenceCurveEnums::TanPointTypes::IN,
+						SequenceCurveEnums::ETanPointTypes::IN,
 						drawList);
 
 					drawTanHandler<T>(
@@ -635,7 +641,7 @@ namespace nap
 						segmentWidth, curve_point, circle_point,
 						0,
 						v,
-						SequenceCurveEnums::TanPointTypes::OUT,
+						SequenceCurveEnums::ETanPointTypes::OUT,
 						drawList);
 				}
 			}
@@ -795,7 +801,7 @@ namespace nap
 						segmentWidth, curve_point, circle_point,
 						i,
 						v,
-						SequenceCurveEnums::TanPointTypes::IN,
+						SequenceCurveEnums::ETanPointTypes::IN,
 						drawList);
 
 					drawTanHandler<T>(
@@ -804,7 +810,7 @@ namespace nap
 						segmentWidth, curve_point, circle_point,
 						i,
 						v,
-						SequenceCurveEnums::TanPointTypes::OUT,
+						SequenceCurveEnums::ETanPointTypes::OUT,
 						drawList);
 				}
 			}
@@ -832,7 +838,7 @@ namespace nap
 					segment, string_stream,
 					segmentWidth, curve_point, circle_point, control_point_index,
 					v,
-					SequenceCurveEnums::TanPointTypes::IN,
+					SequenceCurveEnums::ETanPointTypes::IN,
 					drawList);
 
 				drawTanHandler<T>(
@@ -840,7 +846,7 @@ namespace nap
 					segment, string_stream,
 					segmentWidth, curve_point, circle_point, control_point_index,
 					v,
-					SequenceCurveEnums::TanPointTypes::OUT,
+					SequenceCurveEnums::ETanPointTypes::OUT,
 					drawList);
 			}
 		}
@@ -860,17 +866,17 @@ namespace nap
 		const ImVec2 &circlePoint,
 		const int controlPointIndex,
 		const int curveIndex,
-		const SequenceCurveEnums::TanPointTypes type,
+		const SequenceCurveEnums::ETanPointTypes type,
 		ImDrawList* drawList)
 	{
 		// draw tan handlers
 		{
 			// create a string stream to create identifier of this object
 			std::ostringstream tan_stream;
-			tan_stream << stringStream.str() << ( (type == SequenceCurveEnums::TanPointTypes::IN) ? "inTan" : "outTan" );
+			tan_stream << stringStream.str() << ( (type == SequenceCurveEnums::ETanPointTypes::IN) ? "inTan" : "outTan" );
 
 			//
-			const math::FComplex<float, float>& tan_complex = (type == SequenceCurveEnums::TanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
+			const math::FComplex<float, float>& tan_complex = (type == SequenceCurveEnums::ETanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
 
 			// get the offset from the tan
 			ImVec2 offset =
@@ -945,58 +951,28 @@ namespace nap
 						action->mType == type &&
 						action->mCurveIndex == curveIndex)
 					{
-						if (ImGui::IsMouseReleased(0))
+						tan_point_hovered = true;
+
+						float delta_time = mState.mMouseDelta.x / mState.mStepSize;
+						float delta_value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+
+						const auto& curve_segment = *rtti_cast<const SequenceTrackSegmentCurve<T>>(&segment);
+
+						float new_time;
+						float new_value;
+						if( type == SequenceCurveEnums::ETanPointTypes::IN )
 						{
-							mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+							new_time = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mTime + delta_time;
+							new_value = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mValue + delta_value;
 						}
 						else
 						{
-							tan_point_hovered = true;
-
-							float delta_time = mState.mMouseDelta.x / mState.mStepSize;
-							float delta_value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
-
-							const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
-
-							float new_time;
-							float new_value;
-							if( type == SequenceCurveEnums::TanPointTypes::IN )
-							{
-								new_time = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mTime + delta_time;
-								new_value= curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mValue + delta_value;
-							}
-							else
-							{
-								new_time = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mOutTan.mTime + delta_time;
-								new_value= curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mOutTan.mValue + delta_value;
-							}
-
-							// get editor
-							auto& editor = getEditor();
-
-							// get controller for this track type
-							auto* controller = editor.getControllerWithTrackType(track.get_type());
-
-							// assume its a curve controller
-							auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(controller);
-							assert(curve_controller!= nullptr); // cast failed
-
-							// change duration
-							if(curve_controller!= nullptr)
-							{
-								curve_controller->changeTanPoint(
-									track.mID,
-									segment.mID,
-									controlPointIndex,
-									curveIndex,
-									type,
-									new_time,
-									new_value);
-								updateSegmentInClipboard(track.mID, segment.mID);
-							}
-
-							mState.mDirty = true;
+							new_time = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mOutTan.mTime + delta_time;
+							new_value = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mOutTan.mValue + delta_value;
 						}
+
+						action->mNewTime = new_time;
+						action->mNewValue = new_value;
 					}
 				}
 			}
@@ -1056,7 +1032,7 @@ namespace nap
 				assert(base_controller != nullptr);
 
 				// upcast
-				auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(base_controller);
+				auto* curve_controller = rtti_cast<SequenceControllerCurve>(base_controller);
 
 				// assert if upcast failed
 				assert(curve_controller != nullptr);
@@ -1137,7 +1113,7 @@ namespace nap
 			const auto* target_segment = curve_controller.getSegment(trackId, segmentId);
 
 			// upcast target segment to type of T
-			const T* target_segment_upcast = dynamic_cast<const T*>(target_segment);
+			const T* target_segment_upcast = rtti_cast<const T>(target_segment);
 			assert(target_segment_upcast != nullptr); // error in upcast
 
 			// proceed upon successful cast
@@ -1193,5 +1169,17 @@ namespace nap
 		{
 			nap::Logger::error(errorState.toString());
 		}
+	}
+
+
+	template<typename T>
+	void SequenceCurveTrackView::handleChangeMinMaxCurve()
+	{
+		auto* action = mState.mAction->template getDerived<SequenceGUIActions::ChangeMinMaxCurve<T>>();
+		auto& controller = getEditor().template getController<SequenceControllerCurve>();
+		controller.template changeMinMaxCurveTrack<T>(action->mTrackID, action->mNewMin, action->mNewMax);
+
+		mState.mDirty = true;
+		mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 	}
 }

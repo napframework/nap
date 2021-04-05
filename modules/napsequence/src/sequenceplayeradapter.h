@@ -31,18 +31,18 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		SequencePlayerAdapter() = default;;
-
-		/**
-		 * Deconstructor
-		 */
-		~SequencePlayerAdapter() = default;
+		SequencePlayerAdapter() = default;
 
 		/**
 		 * called from sequence player thread
 		 * @param time time in sequence player
 		 */
 		virtual void tick(double time) = 0;
+
+		/**
+		 * called when sequence player is stopped and adapter needs to be destroyed
+		 */
+		virtual void destroy() = 0;
 
 		/**
 		 * registers factory method for specific track type

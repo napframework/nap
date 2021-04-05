@@ -93,7 +93,7 @@ namespace nap
 		 * @param time offset for new time
 		 * @param value offset for new value
 		 */
-		virtual void changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+		virtual void changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes minimum and maximum value of track
@@ -177,7 +177,7 @@ namespace nap
 		 * @param value offset for new value
 		 */
 		template <typename  T>
-		void changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+		void changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes a curvepoint value and time / position

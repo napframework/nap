@@ -81,7 +81,7 @@ namespace nap
 		}
 
 		// clear adapters
-		mAdapters.clear();
+		destroyAdapters();
 	}
 
 
@@ -221,7 +221,7 @@ namespace nap
 	void SequencePlayer::createAdapters()
 	{
 		// create adapters
-		mAdapters.clear();
+		destroyAdapters();
 		for (auto& track : mSequence->mTracks)
 		{
 			createAdapter(track->mAssignedOutputID, track->mID);
@@ -241,6 +241,10 @@ namespace nap
 
 	void SequencePlayer::destroyAdapters()
 	{
+		for(auto& pair : mAdapters)
+		{
+			pair.second->destroy();
+		}
 		mAdapters.clear();
 	}
 

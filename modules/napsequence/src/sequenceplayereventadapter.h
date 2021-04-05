@@ -33,15 +33,12 @@ namespace nap
 		SequencePlayerEventAdapter(const SequenceTrack& track, SequencePlayerEventOutput& output, const SequencePlayer& player);
 
 		/**
-		 * Destructor
-		 */
-		~SequencePlayerEventAdapter() = default;
-
-		/**
 		 * called from sequence player thread
 		 * @param time time in sequence player
 		 */
 		void tick(double time) override;
+
+		void destroy() override {};
 	private:
 		// reference to track linked to adapter
 		const SequenceTrack& mTrack;

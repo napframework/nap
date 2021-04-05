@@ -10,6 +10,8 @@
 // External Includes
 #include <rtti/rtti.h>
 
+#include <utility>
+
 namespace nap
 {
 	/**
@@ -78,7 +80,7 @@ namespace nap
 		{
 			RTTI_ENABLE(Action)
 		public:
-			explicit TrackAction(std::string trackID) : mTrackID(trackID)
+			explicit TrackAction(std::string trackID) : mTrackID(std::move(trackID))
 			{
 			}
 
@@ -97,10 +99,11 @@ namespace nap
 			 * @param trackId trackID of segment being dragged
 			 * @param segmentID segmentID of segment being dragged
 			 */
-			DraggingSegment(std::string trackId, std::string segmentID)
-				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)) {}
+			DraggingSegment(std::string trackId, std::string segmentID, double newDuration)
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mNewDuration(newDuration) {}
 
 			std::string mSegmentID;
+			double mNewDuration;
 		};
 
 		/**
@@ -115,10 +118,11 @@ namespace nap
 			* @param trackId id of track being dragged
 			* @param segmentID id of segment being dragged
 			*/
-			StartDraggingSegment(std::string trackId, std::string segmentID)
-				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)) {}
+			StartDraggingSegment(std::string trackId, std::string segmentID, double startDuration)
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mStartDuration(startDuration) {}
 
 			std::string mSegmentID;
+			double mStartDuration;
 		};
 
 		/**

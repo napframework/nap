@@ -380,11 +380,11 @@ namespace nap
 
 
 	void SequenceControllerCurve::changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex,
-												 SequenceCurveEnums::TanPointTypes tanType, float time, float value)
+												 SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
 	{
 		//
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int,
-																			   SequenceCurveEnums::TanPointTypes, float, float)> change_curve_point_map
+																			   SequenceCurveEnums::ETanPointTypes, float, float)> change_curve_point_map
 			{
 				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeTanPoint<float> },
 				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeTanPoint<glm::vec2> },

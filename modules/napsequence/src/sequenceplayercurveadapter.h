@@ -64,7 +64,7 @@ namespace nap
 		/**
 		 * Deconstructor
 		 */
-		~SequencePlayerCurveAdapter()
+		void destroy() override
 		{
 			mOutput.removeAdapter(this);
 		}

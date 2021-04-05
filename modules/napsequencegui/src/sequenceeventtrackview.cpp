@@ -347,7 +347,7 @@ namespace nap
 				{
 					if (ImGui::IsMouseDown(0))
 					{
-						mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID);
+						mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID, segment.mDuration);
 					}
 				}
 			}

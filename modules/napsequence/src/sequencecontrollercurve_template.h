@@ -359,7 +359,7 @@ namespace nap
 
 
 	template <typename  T>
-	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value)
+	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
@@ -370,7 +370,7 @@ namespace nap
 		auto& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
 		switch (tanType)
 		{
-		case SequenceCurveEnums::TanPointTypes::IN:
+		case SequenceCurveEnums::ETanPointTypes::IN:
 		{
 			if (time < curve_point.mOutTan.mTime)
 			{
@@ -385,7 +385,7 @@ namespace nap
 			}
 		}
 			break;
-		case SequenceCurveEnums::TanPointTypes::OUT:
+		case SequenceCurveEnums::ETanPointTypes::OUT:
 		{
 			if (time > curve_point.mInTan.mTime)
 			{

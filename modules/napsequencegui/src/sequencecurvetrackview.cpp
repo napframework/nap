@@ -50,6 +50,13 @@ namespace nap
 		registerActionHandler(RTTI_OF(EditingTanPointPopup), std::bind(&SequenceCurveTrackView::handleTanPointActionPopup, this));
 		registerActionHandler(RTTI_OF(OpenEditCurveSegmentPopup), std::bind(&SequenceCurveTrackView::handleEditSegmentPopup, this));
 		registerActionHandler(RTTI_OF(EditingCurveSegment), std::bind(&SequenceCurveTrackView::handleEditSegmentPopup, this));
+		registerActionHandler(RTTI_OF(ChangeMinMaxCurve<float>), std::bind(&SequenceCurveTrackView::handleChangeMinMaxCurve<float>, this));
+		registerActionHandler(RTTI_OF(ChangeMinMaxCurve<glm::vec2>), std::bind(&SequenceCurveTrackView::handleChangeMinMaxCurve<glm::vec2>, this));
+		registerActionHandler(RTTI_OF(ChangeMinMaxCurve<glm::vec3>), std::bind(&SequenceCurveTrackView::handleChangeMinMaxCurve<glm::vec3>, this));
+		registerActionHandler(RTTI_OF(ChangeMinMaxCurve<glm::vec4>), std::bind(&SequenceCurveTrackView::handleChangeMinMaxCurve<glm::vec4>, this));
+		registerActionHandler(RTTI_OF(DraggingTanPoint), std::bind(&SequenceCurveTrackView::handleDragTanPoint, this));
+		registerActionHandler(RTTI_OF(DraggingSegment), std::bind(&SequenceCurveTrackView::handleDragSegmentHandler, this));
+		registerActionHandler(RTTI_OF(AssignNewObjectIDToTrack), std::bind(&SequenceCurveTrackView::handleAssignNewObjectIDToTrack, this));
 	}
 
 
@@ -109,7 +116,7 @@ namespace nap
 		if (mState.mAction->isAction<StartDraggingSegment>())
 		{
 			auto* action = mState.mAction->getDerived<StartDraggingSegment>();
-			mState.mAction = createAction<DraggingSegment>(action->mTrackID, action->mSegmentID);
+			mState.mAction = createAction<DraggingSegment>(action->mTrackID, action->mSegmentID, action->mStartDuration);
 		}
 
 		SequenceTrackView::handleActions();
@@ -167,12 +174,10 @@ namespace nap
 			"",
 			&current_item, curve_outputs))
 		{
-			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-
 			if (current_item != 0)
-				curve_controller.assignNewObjectID(track.mID, curve_outputs[current_item]);
+				mState.mAction = SequenceGUIActions::createAction<AssignNewObjectIDToTrack>(track.mID, curve_outputs[current_item]);
 			else
-				curve_controller.assignNewObjectID(track.mID, "");
+				mState.mAction = SequenceGUIActions::createAction<AssignNewObjectIDToTrack>(track.mID, "");
 		}
 
 		//
@@ -343,7 +348,7 @@ namespace nap
 			// left mouse is start dragging
 			if (ImGui::IsMouseDown(0))
 			{
-				mState.mAction = createAction<StartDraggingSegment>(track.mID, segment.mID);
+				mState.mAction = createAction<StartDraggingSegment>(track.mID, segment.mID, segment.mDuration);
 			}
 			// right mouse is edit popup
 			else if (ImGui::IsMouseDown(1))
@@ -365,7 +370,6 @@ namespace nap
 					// create new curve segment clipboard if necessary or when clipboard is from different sequence
 					if( !mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 						mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename() );
-
 
 					// is this a different track then previous clipboard ? then create a new clipboard, discarding the old clipboard
 					auto* clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
@@ -407,44 +411,14 @@ namespace nap
 			{
 				// draw handler of segment duration
 				drawList->AddLine(
-				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					guicolors::white, // color
-					3.0f); // thickness
+					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+						guicolors::white, // color
+						3.0f); // thickness
 
 				ImGui::BeginTooltip();
 				ImGui::Text(formatTimeString(segment.mStartTime+segment.mDuration).c_str());
 				ImGui::EndTooltip();
-
-				// do we have the mouse still held down ? drag the segment
-				if (ImGui::IsMouseDown(0))
-				{
-					float amount = mState.mMouseDelta.x / mState.mStepSize;
-
-					// get editor
-					auto& editor = getEditor();
-
-					// get controller for this track type
-					auto* controller = editor.getControllerWithTrackType(track.get_type());
-
-					// assume its a curve controller
-					auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(controller);
-					assert(curve_controller!= nullptr); // cast failed
-
-					// change duration
-					if(curve_controller!= nullptr)
-					{
-						curve_controller->segmentDurationChange(track.mID, segment.mID, (float)segment.mDuration + amount);
-						updateSegmentInClipboard(track.mID, segment.mID);
-					}
-
-					mCurveCache.clear();
-				}
-				// otherwise... release!
-				else if (ImGui::IsMouseReleased(0))
-				{
-					mState.mAction = createAction<None>();
-				}
 			}
 			else
 			{
@@ -1319,4 +1293,85 @@ namespace nap
 			}
 		}
 	}
+
+
+	void SequenceCurveTrackView::handleDragTanPoint()
+	{
+		//
+		auto* action = mState.mAction->getDerived<SequenceGUIActions::DraggingTanPoint>();
+
+		// get editor
+		auto& editor = getEditor();
+
+		// get controller for this track id
+		auto& curve_controller = editor.getController<SequenceControllerCurve>();
+
+		curve_controller.changeTanPoint(
+			action->mTrackID,
+			action->mSegmentID,
+			action->mControlPointIndex,
+			action->mCurveIndex,
+			action->mType,
+			action->mNewTime,
+			action->mNewValue);
+		updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+		//
+		mState.mDirty = true;
+
+		// discard action if mouse is released
+		if (ImGui::IsMouseReleased(0))
+		{
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+		}
+	}
+
+
+	void SequenceCurveTrackView::handleDragSegmentHandler()
+	{
+		auto* action = mState.mAction->getDerived<DraggingSegment>();
+		assert(action!=nullptr);
+
+		// do we have the mouse still held down ? drag the segment
+		if (ImGui::IsMouseDown(0))
+		{
+			float amount = mState.mMouseDelta.x / mState.mStepSize;
+
+			// get editor
+			auto& editor = getEditor();
+
+			// get controller for this track type
+			auto& controller = editor.getController<SequenceControllerCurve>();
+
+			// change duration
+			action->mNewDuration += amount;
+			controller.segmentDurationChange(action->mTrackID, action->mSegmentID, action->mNewDuration);
+			updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+			mCurveCache.clear();
+		}
+			// otherwise... release!
+		else if (ImGui::IsMouseReleased(0))
+		{
+			mState.mAction = createAction<None>();
+		}
+	}
+
+
+	void SequenceCurveTrackView::handleAssignNewObjectIDToTrack()
+	{
+		// get action
+		auto* action = mState.mAction->getDerived<AssignNewObjectIDToTrack>();
+		assert(action!=nullptr);
+
+		// get curve controller
+		auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+		// call function to controller
+		curve_controller.assignNewObjectID(action->mTrackID, action->mObjectID);
+
+		// action is done
+		mState.mAction = SequenceGUIActions::createAction<None>();
+	}
 }
+
