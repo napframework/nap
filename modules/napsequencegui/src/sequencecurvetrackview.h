@@ -185,6 +185,16 @@ namespace nap
 		virtual void handleTanPointActionPopup();
 
 		/**
+		 * handles dragging of segment values
+		 */
+		void handleDraggingSegmentValue();
+
+		/**
+		 * handles dragging of control points
+		 */
+		void handleDraggingControlPoints();
+
+		/**
 		 * Draws min/max range of inspector
 		 * @tparam T type
 		 * @param track reference to track
@@ -361,8 +371,7 @@ namespace nap
 	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision);
 }
 
-// Include all gui actions
-#include "sequencecurvetrackview_guiactions.h"
-
 // Include all template definitions
 #include "sequencecurvetrackview_template.h"
+
+

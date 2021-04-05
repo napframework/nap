@@ -190,31 +190,6 @@ namespace nap
 			std::string mSegmentID;
 		};
 
-		class HoveringSegmentValue : public TrackAction
-		{
-			RTTI_ENABLE(TrackAction)
-		public:
-			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
-				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex) {}
-
-			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
-			int mCurveIndex;
-		};
-
-		class DraggingSegmentValue :
-			public TrackAction
-		{
-			RTTI_ENABLE(TrackAction)
-		public:
-			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
-				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex) {}
-
-			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
-			int mCurveIndex;
-		};
-
 		class HoveringPlayerTime : public Action { RTTI_ENABLE(Action) };
 
 		class DraggingPlayerTime : public Action

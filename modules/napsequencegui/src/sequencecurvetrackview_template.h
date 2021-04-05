@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "sequencecurvetrackview_guiactions.h"
+
 namespace nap
 {
 	template<typename T>
@@ -198,9 +200,9 @@ namespace nap
 						}
 					}
 
-					curves.emplace_back(curve);
+					curves.emplace_back(std::move(curve));
 				}
-				mCurveCache.emplace(segment.mID, curves);
+				mCurveCache.emplace(segment.mID, std::move(curves));
 			}
 		}
 
@@ -448,7 +450,23 @@ namespace nap
 		const SequenceCurveEnums::SegmentValueTypes segmentType,
 		ImDrawList* drawList)
 	{
-		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
+		static std::unordered_map<rttr::type, std::function<float(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)>> get_value_map
+		{
+			{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float{
+			  return rtti_cast<const SequenceTrackSegmentCurve<float>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
+			}},
+			{ RTTI_OF(glm::vec2), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
+			  return rtti_cast<const SequenceTrackSegmentCurve<glm::vec2>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			} },
+			{ RTTI_OF(glm::vec3), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
+			  return rtti_cast<const SequenceTrackSegmentCurve<glm::vec3>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			}},
+			{ RTTI_OF(glm::vec4), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
+			  return rtti_cast<const SequenceTrackSegmentCurve<glm::vec4>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			}}
+		};
+
+		const auto& segment = *rtti_cast<const SequenceTrackSegmentCurve<T>>(&segmentBase);
 
 		for (int v = 0; v < segment.mCurves.size(); v++)
 		{
@@ -487,12 +505,13 @@ namespace nap
 							track.mID,
 							segment.mID,
 							segmentType,
-							v);
+							v,
+							get_value_map[RTTI_OF(T)](segment, v, segmentType));
 					}
 					else if (ImGui::IsMouseDown(1))
 					{
-						const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
-						const auto& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
+						const auto& curve_segment = *rtti_cast<const SequenceTrackSegmentCurve<T>>(&segment);
+						const auto& curve_track = *rtti_cast<const SequenceTrackCurve<T>>(&track);
 
 						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>(
 							track.mID,
@@ -549,42 +568,10 @@ namespace nap
 								segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 								v);
 
-							if (ImGui::IsMouseReleased(0))
-							{
-								mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
-							}
-							else
-							{
-								float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+							float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
+							float value = get_value_map[RTTI_OF(T)](segment, v, segmentType) + drag_amount;
 
-								static std::unordered_map<rttr::type, float(*)(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)> get_value_map
-									{
-										{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float{
-										  return dynamic_cast<const SequenceTrackSegmentCurve<float>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
-										}},
-										{ RTTI_OF(glm::vec2), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-										  return dynamic_cast<const SequenceTrackSegmentCurve<glm::vec2>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
-										} },
-										{ RTTI_OF(glm::vec3), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-										  return dynamic_cast<const SequenceTrackSegmentCurve<glm::vec3>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
-										}},
-										{ RTTI_OF(glm::vec4), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-										  return dynamic_cast<const SequenceTrackSegmentCurve<glm::vec4>&>(segment).getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
-										}}
-									};
-
-								auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-								float value = get_value_map[RTTI_OF(T)](segment, v, segmentType);
-
-								curve_controller.changeCurveSegmentValue(
-									track.mID,
-									segment.mID,
-									value + drag_amount,
-									v,
-									segmentType);
-								updateSegmentInClipboard(track.mID, segment.mID);
-								mCurveCache.clear();
-							}
+							action->mNewValue = value;
 						}
 					}
 				}
@@ -702,7 +689,9 @@ namespace nap
 							track.mID,
 							segment.mID,
 							i,
-							v);
+							v,
+							curve_point.mPos.mTime,
+							curve_point.mPos.mValue);
 					}
 						// if we clicked right mouse button, open curve action popup
 					else if (ImGui::IsMouseClicked(1))
@@ -753,35 +742,8 @@ namespace nap
 									curve_point.mPos.mTime * segment.mDuration + segment.mStartTime,
 									v);
 
-
-								// get editor
-								auto& editor = getEditor();
-
-								// get controller for this track type
-								auto* controller = editor.getControllerWithTrackType(track.get_type());
-
-								// assume its a curve controller
-								auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(controller);
-								assert(curve_controller!= nullptr); // cast failed
-
-								if( curve_controller != nullptr )
-								{
-									curve_controller->changeCurvePoint(
-										action->mTrackID,
-										action->mSegmentID,
-										action->mControlPointIndex,
-										action->mCurveIndex,
-										curve_point.mPos.mTime + time_adjust,
-										curve_point.mPos.mValue + value_adjust);
-									updateSegmentsInClipboard(track.mID);
-								}
-
-								mCurveCache.clear();
-
-								if (ImGui::IsMouseReleased(0))
-								{
-									mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
-								}
+								action->mNewValue += value_adjust;
+								action->mNewTime += time_adjust;
 							}
 						}
 					}

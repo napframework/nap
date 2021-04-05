@@ -57,6 +57,8 @@ namespace nap
 		registerActionHandler(RTTI_OF(DraggingTanPoint), std::bind(&SequenceCurveTrackView::handleDragTanPoint, this));
 		registerActionHandler(RTTI_OF(DraggingSegment), std::bind(&SequenceCurveTrackView::handleDragSegmentHandler, this));
 		registerActionHandler(RTTI_OF(AssignNewObjectIDToTrack), std::bind(&SequenceCurveTrackView::handleAssignNewObjectIDToTrack, this));
+		registerActionHandler(RTTI_OF(DraggingSegmentValue), std::bind(&SequenceCurveTrackView::handleDraggingSegmentValue, this));
+		registerActionHandler(RTTI_OF(DraggingControlPoint), std::bind(&SequenceCurveTrackView::handleDraggingControlPoints, this));
 	}
 
 
@@ -1372,6 +1374,66 @@ namespace nap
 
 		// action is done
 		mState.mAction = SequenceGUIActions::createAction<None>();
+	}
+
+
+	void SequenceCurveTrackView::handleDraggingSegmentValue()
+	{
+		// get action
+		auto* action = mState.mAction->getDerived<DraggingSegmentValue>();
+		assert(action!=nullptr);
+
+		// get curve controller
+		auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+		// tell the controller to change the curve segment value
+		curve_controller.changeCurveSegmentValue(
+			action->mTrackID,
+			action->mSegmentID,
+			action->mNewValue,
+			action->mCurveIndex,
+			action->mType);
+
+		// update this segment if its in the clipboard
+		updateSegmentInClipboard(action->mTrackID,action->mSegmentID);
+
+		// set dirty to clear curve cache
+		mState.mDirty = true;
+
+		//
+		if( ImGui::IsMouseReleased(0) )
+		{
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+		}
+	}
+
+
+	void SequenceCurveTrackView::handleDraggingControlPoints()
+	{
+		// get the action
+		auto* action = mState.mAction->getDerived<SequenceGUIActions::DraggingControlPoint>();
+
+		// get editor
+		auto& editor = getEditor();
+
+		// get curve controller
+		auto& curve_controller = editor.getController<SequenceControllerCurve>();
+
+		curve_controller.changeCurvePoint(
+			action->mTrackID,
+			action->mSegmentID,
+			action->mControlPointIndex,
+			action->mCurveIndex,
+			action->mNewTime,
+			action->mNewValue);
+		updateSegmentsInClipboard(action->mTrackID);
+
+		mState.mDirty = true;
+
+		if (ImGui::IsMouseReleased(0))
+		{
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+		}
 	}
 }
 

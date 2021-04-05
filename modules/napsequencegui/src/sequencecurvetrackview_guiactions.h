@@ -24,12 +24,15 @@ namespace nap
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
-			DraggingControlPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex)
-				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex){}
+			DraggingControlPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, float newTime, float newValue)
+				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex),
+				  mCurveIndex(curveIndex), mNewTime(newTime), mNewValue(newValue){}
 
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
+			float mNewTime;
+			float mNewValue;
 		};
 
 		class HoveringTanPoint : public TrackAction
@@ -274,6 +277,32 @@ namespace nap
 				: TrackAction(trackID), mObjectID(std::move(objectID)){}
 
 			std::string mObjectID;
+		};
+
+		class HoveringSegmentValue : public TrackAction
+		{
+			RTTI_ENABLE(TrackAction)
+		public:
+			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex) {}
+
+			std::string mSegmentID;
+			SequenceCurveEnums::SegmentValueTypes mType;
+			int mCurveIndex;
+		};
+
+		class DraggingSegmentValue :
+			public TrackAction
+		{
+			RTTI_ENABLE(TrackAction)
+		public:
+			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex, float newValue)
+				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex), mNewValue(newValue) {}
+
+			std::string mSegmentID;
+			SequenceCurveEnums::SegmentValueTypes mType;
+			int mCurveIndex;
+			float mNewValue;
 		};
 	}
 }
