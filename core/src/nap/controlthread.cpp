@@ -11,7 +11,8 @@ namespace nap
 
 	ControlThread::~ControlThread()
 	{
-		stop();
+		if (mRunning)
+			stop();
 	}
 
 
