@@ -77,12 +77,17 @@ namespace nap
 	};
 
 
-	std::unordered_map<rttr::type, SequenceCurveTrackView::DrawSegmentMemFunPtr> SequenceCurveTrackView::sDrawCurveSegmentsMap
+	std::unordered_map<rttr::type, SequenceCurveTrackView::DrawSegmentMemFunPtr>& SequenceCurveTrackView::getDrawCurveSegmentsMap()
 	{
-		{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceCurveTrackView::drawSegmentContent<float> },
-		{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceCurveTrackView::drawSegmentContent<glm::vec2> },
-		{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceCurveTrackView::drawSegmentContent<glm::vec3> },
-		{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceCurveTrackView::drawSegmentContent<glm::vec4> }
+		static std::unordered_map<rttr::type, SequenceCurveTrackView::DrawSegmentMemFunPtr> map =
+		{
+			{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceCurveTrackView::drawSegmentContent<float> },
+			{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceCurveTrackView::drawSegmentContent<glm::vec2> },
+			{ RTTI_OF(SequenceTrackSegmentCurveVec3), &SequenceCurveTrackView::drawSegmentContent<glm::vec3> },
+			{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceCurveTrackView::drawSegmentContent<glm::vec4> }
+		};
+
+		return map;
 	};
 
 
@@ -300,8 +305,8 @@ namespace nap
 				trackTopLeft, segment_x, segment_width, draw_list);
 
 			// draw segment content
-			auto it = sDrawCurveSegmentsMap.find(segment_ptr->get_type());
-			if (it != sDrawCurveSegmentsMap.end())
+			auto it = getDrawCurveSegmentsMap().find(segment_ptr->get_type());
+			if (it != getDrawCurveSegmentsMap().end())
 			{
 				(*this.*it->second)(track, *segment_ptr, trackTopLeft, previous_segment_x, segment_width, segment_x,
 									draw_list, (segment_count == 0));
@@ -1305,10 +1310,15 @@ namespace nap
 		// get editor
 		auto& editor = getEditor();
 
-		// get controller for this track id
-		auto& curve_controller = editor.getController<SequenceControllerCurve>();
+		// get controller for this track type
+		auto* controller = editor.getControllerWithTrackID(action->mTrackID);
+		assert(controller!= nullptr);
 
-		curve_controller.changeTanPoint(
+		// assume we can upcast it to a curve controller
+		auto* curve_controller = rtti_cast<SequenceControllerCurve>(controller);
+		assert(curve_controller != nullptr);
+
+		curve_controller->changeTanPoint(
 			action->mTrackID,
 			action->mSegmentID,
 			action->mControlPointIndex,
@@ -1343,14 +1353,20 @@ namespace nap
 			auto& editor = getEditor();
 
 			// get controller for this track type
-			auto& controller = editor.getController<SequenceControllerCurve>();
+			auto* controller = editor.getControllerWithTrackID(action->mTrackID);
+			assert(controller!= nullptr);
+
+			// assume we can upcast it to a curve controller
+			auto* curve_controler = rtti_cast<SequenceControllerCurve>(controller);
+			assert(curve_controler!= nullptr);
 
 			// change duration
 			action->mNewDuration += amount;
-			controller.segmentDurationChange(action->mTrackID, action->mSegmentID, action->mNewDuration);
+			curve_controler->segmentDurationChange(action->mTrackID, action->mSegmentID, action->mNewDuration);
 			updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
-			mCurveCache.clear();
+			// mark state as dirty
+			mState.mDirty = true;
 		}
 			// otherwise... release!
 		else if (ImGui::IsMouseReleased(0))
@@ -1383,11 +1399,16 @@ namespace nap
 		auto* action = mState.mAction->getDerived<DraggingSegmentValue>();
 		assert(action!=nullptr);
 
-		// get curve controller
-		auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+		// get controller for this track type
+		auto* controller = getEditor().getControllerWithTrackID(action->mTrackID);
+		assert(controller!= nullptr);
+
+		// assume we can upcast it to a curve controller
+		auto* curve_controller = rtti_cast<SequenceControllerCurve>(controller);
+		assert(curve_controller != nullptr);
 
 		// tell the controller to change the curve segment value
-		curve_controller.changeCurveSegmentValue(
+		curve_controller->changeCurveSegmentValue(
 			action->mTrackID,
 			action->mSegmentID,
 			action->mNewValue,
@@ -1416,10 +1437,15 @@ namespace nap
 		// get editor
 		auto& editor = getEditor();
 
-		// get curve controller
-		auto& curve_controller = editor.getController<SequenceControllerCurve>();
+		// get controller for this track type
+		auto* controller = editor.getControllerWithTrackID(action->mTrackID);
+		assert(controller!= nullptr);
 
-		curve_controller.changeCurvePoint(
+		// assume we can upcast it to a curve controller
+		auto* curve_controler = rtti_cast<SequenceControllerCurve>(controller);
+		assert(curve_controler!= nullptr);
+
+		curve_controler->changeCurvePoint(
 			action->mTrackID,
 			action->mSegmentID,
 			action->mControlPointIndex,

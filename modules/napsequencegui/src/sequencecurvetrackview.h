@@ -273,7 +273,7 @@ namespace nap
 		using DrawSegmentMemFunPtr = void(SequenceCurveTrackView::*)(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
 
 		// static map of member function pointers
-		static std::unordered_map<rttr::type, DrawSegmentMemFunPtr> sDrawCurveSegmentsMap;
+		static std::unordered_map<rttr::type, DrawSegmentMemFunPtr>& getDrawCurveSegmentsMap();
 	};
 
 	//////////////////////////////////////////////////////////////////////////

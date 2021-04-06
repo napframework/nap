@@ -19,6 +19,7 @@ namespace nap
 	 */
 	class NAPAPI SequenceControllerEvent : public SequenceController
 	{
+		RTTI_ENABLE(SequenceController)
 	public:
 		/**
 		 * Constructor
