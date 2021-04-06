@@ -10,6 +10,7 @@
 #include "sequencecontrollerevent.h"
 #include "sequencetracksegment.h"
 #include "sequenceeditorguiclipboard.h"
+#include "sequenceeventtrackview_guiactions.h"
 
 namespace nap
 {
@@ -220,6 +221,16 @@ namespace nap
 		 * @param segmentID the segment id
 		 */
 		void updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID);
+
+		/**
+		 * handles assigning of new output id to track
+		 */
+		void handleAssignOutputIDToTrack();
+
+		/**
+		 * handles dragging of event segment
+		 */
+		void handleSegmentDrag();
 	private:
 		// map of segment view types
 		static std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& getSegmentViews();
@@ -234,62 +245,6 @@ namespace nap
 		static std::vector<rttr::type>& getEventTypesVector();
 	};
 
-
-	//////////////////////////////////////////////////////////////////////////
-	// Event Actions
-	//////////////////////////////////////////////////////////////////////////
-
-	namespace SequenceGUIActions
-	{
-		class OpenInsertEventSegmentPopup : public TrackAction
-		{
-			RTTI_ENABLE(TrackAction)
-		public:
-			OpenInsertEventSegmentPopup(const std::string& trackID, double time)
-				: TrackAction(trackID), mTime(time) {}
-
-			double mTime;
-		};
-
-		class InsertingEventSegment : public TrackAction
-		{
-			RTTI_ENABLE(TrackAction)
-		public:
-			InsertingEventSegment(const std::string& trackID, double time)
-				: TrackAction(trackID), mTime(time) {}
-
-			double mTime;
-			std::string mMessage = "hello world";
-		};
-
-		template<typename T>
-		class OpenEditEventSegmentPopup : public TrackAction
-		{
-			RTTI_ENABLE(TrackAction)
-		public:
-			OpenEditEventSegmentPopup(const std::string& trackID, std::string  segmentID, ImVec2 windowPos, T value, double startTime)
-				: TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
-
-			std::string mSegmentID;
-			ImVec2 mWindowPos;
-			T mValue;
-			double mStartTime;
-		};
-
-		template<typename T>
-		class EditingEventSegment : public TrackAction
-		{
-			RTTI_ENABLE(TrackAction)
-		public:
-			EditingEventSegment(const std::string& trackID, std::string  segmentID, ImVec2 windowPos, T value, double startTime)
-				: TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(value), mStartTime(startTime) {}
-
-			std::string mSegmentID;
-            ImVec2 mWindowPos;
-			T mValue;			
-			double mStartTime;
-		};
-	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Event Clipboards

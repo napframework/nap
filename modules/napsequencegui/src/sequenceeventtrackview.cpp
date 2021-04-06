@@ -55,8 +55,10 @@ namespace nap
 		// register applicable action handlers
 		registerActionHandler(RTTI_OF(OpenInsertEventSegmentPopup), [this] { handleInsertEventSegmentPopup(); });
 		registerActionHandler(RTTI_OF(InsertingEventSegment), [this] { handleInsertEventSegmentPopup(); });
-		registerActionHandler(RTTI_OF(OpenEditSegmentValuePopup), [this] { handleEditSegmentValuePopup(); });
-		registerActionHandler(RTTI_OF(EditingSegment), [this] { handleEditSegmentValuePopup(); });
+		registerActionHandler(RTTI_OF(OpenEditSegmentPopup), [this] { handleEditSegmentValuePopup(); });
+		registerActionHandler(RTTI_OF(EditingSegmentPopup), [this] { handleEditSegmentValuePopup(); });
+		registerActionHandler(RTTI_OF(AssignOutputIDToTrack), [this]{ handleAssignOutputIDToTrack(); });
+		registerActionHandler(RTTI_OF(DraggingSegment), [this]{ handleSegmentDrag(); });
 
 		/**
 		 * register all edit popups for all registered views for possible event actions
@@ -113,12 +115,10 @@ namespace nap
 			"",
 			&current_item, event_outputs))
 		{
-			auto& event_controller = getEditor().getController<SequenceControllerEvent>();
-
 			if (current_item != 0)
-				event_controller.assignNewObjectID(track.mID, event_outputs[current_item]);
+				mState.mAction = SequenceGUIActions::createAction<AssignOutputIDToTrack>(track.mID, event_outputs[current_item]);
 			else
-				event_controller.assignNewObjectID(track.mID, "");
+				mState.mAction = SequenceGUIActions::createAction<AssignOutputIDToTrack>(track.mID, "");
 
 		}
 		ImGui::PopItemWidth();
@@ -347,27 +347,15 @@ namespace nap
 				{
 					if (ImGui::IsMouseDown(0))
 					{
-						mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID, segment.mDuration);
+						mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID, segment.mStartTime);
 					}
-				}
-			}
-			else
-			{
-				if (ImGui::IsMouseDown(0))
-				{
-					float amount = mState.mMouseDelta.x / mState.mStepSize;
-
-					auto& editor = getEditor();
-					auto& eventController = editor.getController<SequenceControllerEvent>();
-					eventController.segmentEventStartTimeChange(track.mID, segment.mID, (float)segment.mStartTime + amount);
-					updateSegmentInClipboard(track.mID, segment.mID);
 				}
 			}
 
 			// right mouse in deletion popup
 			if (ImGui::IsMouseDown(1))
 			{
-				mState.mAction = createAction<OpenEditSegmentValuePopup>(track.mID, segment.mID, segment.get_type());
+				mState.mAction = createAction<OpenEditSegmentPopup>(track.mID, segment.mID, segment.get_type());
 			}
 
 			// handled shift click for add/remove to clipboard
@@ -450,21 +438,21 @@ namespace nap
 
 	void SequenceEventTrackView::handleEditSegmentValuePopup()
 	{
-		if (mState.mAction->isAction<OpenEditSegmentValuePopup>())
+		if (mState.mAction->isAction<OpenEditSegmentPopup>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Edit Segment");
 
-			auto* action = mState.mAction->getDerived<OpenEditSegmentValuePopup>();
-			mState.mAction = createAction<EditingSegment>(action->mTrackID, action->mSegmentID, action->mSegmentType);
+			auto* action = mState.mAction->getDerived<OpenEditSegmentPopup>();
+			mState.mAction = createAction<EditingSegmentPopup>(action->mTrackID, action->mSegmentID, action->mSegmentType);
 		}
 
 		// handle delete segment popup
-		if (mState.mAction->isAction<EditingSegment>())
+		if (mState.mAction->isAction<EditingSegmentPopup>())
 		{
 			if (ImGui::BeginPopup("Edit Segment"))
 			{
-				auto* action = mState.mAction->getDerived<EditingSegment>();
+				auto* action = mState.mAction->getDerived<EditingSegmentPopup>();
 
 				bool display_copy = !mState.mClipboard->isClipboard<EventSegmentClipboard>();
 
@@ -612,8 +600,6 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
-
-		return;
 	}
 
 
@@ -673,8 +659,6 @@ namespace nap
 	{
 		if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
 		{
-			auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
-
 			if( mState.mClipboard->containsObject(segmentID, getPlayer().getSequenceFilename()) )
 			{
 				mState.mClipboard->removeObject(segmentID);
@@ -686,7 +670,50 @@ namespace nap
 				mState.mClipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
 			}
 		}
+	}
 
+
+	void SequenceEventTrackView::handleAssignOutputIDToTrack()
+	{
+		// get action
+		auto* action = mState.mAction->getDerived<AssignOutputIDToTrack>();
+		assert(action!=nullptr);
+
+		// get curve controller
+		auto& curve_controller = getEditor().getController<SequenceControllerEvent>();
+
+		// call function to controller
+		curve_controller.assignNewObjectID(action->mTrackID, action->mObjectID);
+
+		// action is done
+		mState.mAction = SequenceGUIActions::createAction<None>();
+	}
+
+
+	void SequenceEventTrackView::handleSegmentDrag()
+	{
+		if (ImGui::IsMouseDown(0))
+		{
+			auto* action = mState.mAction->getDerived<SequenceGUIActions::DraggingSegment>();
+			assert(action!= nullptr);
+
+			// calc new time
+			float amount = mState.mMouseDelta.x / mState.mStepSize;
+			action->mNewDuration += amount;
+
+			// get editor & controller
+			auto& editor = getEditor();
+			auto& event_controller = editor.getController<SequenceControllerEvent>();
+
+			// change start time of segment
+			event_controller.segmentEventStartTimeChange(action->mTrackID, action->mSegmentID, action->mNewDuration);
+
+			// update segment in clipboard
+			updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+		}else
+		{
+			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////////////

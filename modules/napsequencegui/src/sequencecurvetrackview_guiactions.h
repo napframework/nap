@@ -268,17 +268,6 @@ namespace nap
 			T mNewMax;
 		};
 
-		class AssignNewObjectIDToTrack :
-			public TrackAction
-		{
-			RTTI_ENABLE(TrackAction)
-		public:
-			AssignNewObjectIDToTrack(const std::string& trackID, std::string objectID)
-				: TrackAction(trackID), mObjectID(std::move(objectID)){}
-
-			std::string mObjectID;
-		};
-
 		class HoveringSegmentValue : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)

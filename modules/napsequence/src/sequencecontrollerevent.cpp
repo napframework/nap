@@ -18,7 +18,7 @@ namespace nap
 	static bool register_controller_type = SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent));
 
 
-	double SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time)
+	double SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, double time)
 	{
 		double return_time = time;
 		performEditAction([this, trackID, segmentID, time, &return_time]()

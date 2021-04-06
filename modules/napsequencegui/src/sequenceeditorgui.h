@@ -161,12 +161,12 @@ namespace nap
 		 */
 		void handleSequenceDurationPopup();
 
-		/*
+		/**
 		 * handle editing of markers
 		 */
 		void handleEditMarkerPopup();
 
-		/*
+		/**
 		 * handle insertion of new markers
 		 */
 		void handleInsertMarkerPopup();
@@ -185,11 +185,18 @@ namespace nap
 		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
 		  */
 		 void handleHorizontalZoom();
+
+		 /**
+		  * registers handlers for actions
+		  * @param actionType the action type to register a handler function for
+		  * @param action the handler function
+		  */
+		 void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;
 
-		// holds current state information
+		// holds current gui state information
 		SequenceEditorGUIState mState;
 
 		// id
@@ -198,11 +205,13 @@ namespace nap
 		// map of all track views
 		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
 
-		//
+		// set to true if we draw full window
 		bool mDrawFullWindow = false;
 
+		// pointer to render window
 		RenderWindow* mRenderWindow = nullptr;
 
-		std::unordered_map<rttr::type, std::function<void()>> mPopups;
+		// map of action handlers
+		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
 	};
 }

@@ -25,7 +25,7 @@ namespace nap
 		: SequenceTrackView(view, state)
 	{
 		registerActionHandler(RTTI_OF(OpenInsertSegmentPopup) , std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
-		registerActionHandler(RTTI_OF(InsertingSegment) , std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
+		registerActionHandler(RTTI_OF(InsertingSegmentPopup) , std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
 		registerActionHandler(RTTI_OF(OpenInsertCurvePointPopup) , std::bind(&SequenceCurveTrackView::handleInsertCurvePointPopup, this));
 		registerActionHandler(RTTI_OF(InsertingCurvePoint) , std::bind(&SequenceCurveTrackView::handleInsertCurvePointPopup, this));
 		registerActionHandler(RTTI_OF(OpenCurveTypePopup) , std::bind(&SequenceCurveTrackView::handleCurveTypePopup, this));
@@ -56,7 +56,7 @@ namespace nap
 		registerActionHandler(RTTI_OF(ChangeMinMaxCurve<glm::vec4>), std::bind(&SequenceCurveTrackView::handleChangeMinMaxCurve<glm::vec4>, this));
 		registerActionHandler(RTTI_OF(DraggingTanPoint), std::bind(&SequenceCurveTrackView::handleDragTanPoint, this));
 		registerActionHandler(RTTI_OF(DraggingSegment), std::bind(&SequenceCurveTrackView::handleDragSegmentHandler, this));
-		registerActionHandler(RTTI_OF(AssignNewObjectIDToTrack), std::bind(&SequenceCurveTrackView::handleAssignNewObjectIDToTrack, this));
+		registerActionHandler(RTTI_OF(AssignOutputIDToTrack), std::bind(&SequenceCurveTrackView::handleAssignOutputIDToTrack, this));
 		registerActionHandler(RTTI_OF(DraggingSegmentValue), std::bind(&SequenceCurveTrackView::handleDraggingSegmentValue, this));
 		registerActionHandler(RTTI_OF(DraggingControlPoint), std::bind(&SequenceCurveTrackView::handleDraggingControlPoints, this));
 	}
@@ -177,9 +177,9 @@ namespace nap
 			&current_item, curve_outputs))
 		{
 			if (current_item != 0)
-				mState.mAction = SequenceGUIActions::createAction<AssignNewObjectIDToTrack>(track.mID, curve_outputs[current_item]);
+				mState.mAction = SequenceGUIActions::createAction<AssignOutputIDToTrack>(track.mID, curve_outputs[current_item]);
 			else
-				mState.mAction = SequenceGUIActions::createAction<AssignNewObjectIDToTrack>(track.mID, "");
+				mState.mAction = SequenceGUIActions::createAction<AssignOutputIDToTrack>(track.mID, "");
 		}
 
 		//
@@ -268,9 +268,9 @@ namespace nap
 			}
 
 			// draw line in track while in inserting segment popup
-			if (mState.mAction->isAction<InsertingSegment>())
+			if (mState.mAction->isAction<InsertingSegmentPopup>())
 			{
-				auto* action = mState.mAction->getDerived<InsertingSegment>();
+				auto* action = mState.mAction->getDerived<InsertingSegmentPopup>();
 
 				if (action->mTrackID == track.mID)
 				{
@@ -465,14 +465,14 @@ namespace nap
 				// invoke insert sequence popup
 				ImGui::OpenPopup("Insert Segment");
 
-				mState.mAction = createAction<InsertingSegment>(action->mTrackID, action->mTime, action->mTrackType);
+				mState.mAction = createAction<InsertingSegmentPopup>(action->mTrackID, action->mTime, action->mTrackType);
 			}
 		}
 
 		// handle insert segment popup
-		if (mState.mAction->isAction<InsertingSegment>())
+		if (mState.mAction->isAction<InsertingSegmentPopup>())
 		{
-			auto* action = mState.mAction->getDerived<InsertingSegment>();
+			auto* action = mState.mAction->getDerived<InsertingSegmentPopup>();
 
 			if (action->mTrackType == RTTI_OF(SequenceTrackCurveFloat) ||
 				action->mTrackType == RTTI_OF(SequenceTrackCurveVec2) ||
@@ -1360,10 +1360,10 @@ namespace nap
 	}
 
 
-	void SequenceCurveTrackView::handleAssignNewObjectIDToTrack()
+	void SequenceCurveTrackView::handleAssignOutputIDToTrack()
 	{
 		// get action
-		auto* action = mState.mAction->getDerived<AssignNewObjectIDToTrack>();
+		auto* action = mState.mAction->getDerived<AssignOutputIDToTrack>();
 		assert(action!=nullptr);
 
 		// get curve controller

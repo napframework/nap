@@ -88,30 +88,29 @@ namespace nap
 	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
 		: mEditor(editor), mID(std::move(id)), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
+		// start with empty clipboard and empty action
 		mState.mAction = createAction<None>();
 		mState.mClipboard = createClipboard<Empty>();
 
+		// invoke registered factory functions to create registered view types
 		for (auto& factory : SequenceTrackView::getFactoryMap())
 		{
 			mViews.emplace(factory.first, factory.second(*this, mState));
 		}
 
-		// register different popups for different actions
-		mPopups =
-		{
-			{ RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); } },
-			{ RTTI_OF(EditingSequenceMarkerPopup), [this] { handleEditMarkerPopup(); } },
-			{ RTTI_OF(OpenInsertSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } },
-			{ RTTI_OF(InsertingSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } },
-			{ RTTI_OF(OpenInsertTrackPopup), [this] { handleInsertTrackPopup(); } },
-			{ RTTI_OF(InsertingTrackPopup), [this] { handleInsertTrackPopup(); } },
-			{ RTTI_OF(OpenSequenceDurationPopup), [this] { handleSequenceDurationPopup(); }},
-			{ RTTI_OF(EditSequenceDurationPopup), [this] { handleSequenceDurationPopup(); }},
-			{ RTTI_OF(LoadPopup), [this] { handleLoadPopup(); } },
-			{ RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); } },
-			{ RTTI_OF(None), [this] { handleNone(); } },
-			{ RTTI_OF(NonePressed), [this] { handleNonePressed(); } }
-		};
+		// register handlers for actions
+		registerActionHandler(RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
+		registerActionHandler(RTTI_OF(EditingSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
+		registerActionHandler(RTTI_OF(InsertingSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } );
+		registerActionHandler(RTTI_OF(OpenInsertTrackPopup), [this] { handleInsertTrackPopup(); } );
+		registerActionHandler(RTTI_OF(InsertingTrackPopup), [this] { handleInsertTrackPopup(); } );
+		registerActionHandler(RTTI_OF(OpenSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
+		registerActionHandler(RTTI_OF(EditSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
+		registerActionHandler(RTTI_OF(LoadPopup), [this] { handleLoadPopup(); });
+		registerActionHandler(RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); } );
+		registerActionHandler(RTTI_OF(None), [this] { handleNone(); } );
+		registerActionHandler(RTTI_OF(NonePressed), [this] { handleNonePressed(); } );
+		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
 	}
 
 
@@ -442,8 +441,8 @@ namespace nap
 			}
 
 			// handle actions for popups
-			auto it = mPopups.find(mState.mAction.get()->get_type());
-			if(it!=mPopups.end())
+			auto it = mActionHandlers.find(mState.mAction.get()->get_type());
+			if(it!= mActionHandlers.end())
 			{
 				it->second();
 			}
@@ -1468,6 +1467,17 @@ namespace nap
 				// clicked outside so exit popup
 				mState.mAction = createAction<None>();
 			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::registerActionHandler(const rttr::type& actionType, const std::function<void()>& action)
+	{
+		auto it = mActionHandlers.find(actionType);
+		assert(it==mActionHandlers.end()); // key already present
+		if(it==mActionHandlers.end())
+		{
+			mActionHandlers.insert({actionType, action});
 		}
 	}
 }

@@ -167,7 +167,7 @@ namespace nap
 		/**
 		 * handles assigning new object id to track
 		 */
-		void handleAssignNewObjectIDToTrack();
+		void handleAssignOutputIDToTrack();
 
 		/**
 		 * handle dragging of segment handlers
