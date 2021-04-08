@@ -36,7 +36,7 @@ namespace nap
 		 * @param duration the new duration
 		 * @return new duration of segment
 	 	 */
-		virtual double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
+		double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
 
 		/**
 		 * adds a new curve track of type T ( float, vec2, vec3, vec4 )
@@ -52,7 +52,7 @@ namespace nap
 		 * @param curveIndex the curve index of the value
 		 * @param valueType the segment value type ( first or last value )
 		 */
-		virtual void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
+		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
 
 		/**
 		 * insert point in curve of segment
@@ -61,7 +61,7 @@ namespace nap
 		 * @param pos the position at which to insert the curvepoint in curve ( range 0-1 )
 		 * @param curveIndex the index of the curve
 		 */
-		virtual void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
+		void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
 
 		/**
 		 * deletes point from curve
@@ -70,7 +70,7 @@ namespace nap
 		 * @param index the point index
 		 * @param curveIndex the curveIndex
 		 */
-		virtual void deleteCurvePoint(const std::string& trackID, const std::string& segmentID, int index, int curveIndex);
+		void deleteCurvePoint(const std::string& trackID, const std::string& segmentID, int index, int curveIndex);
 
 		/**
 		 * changes a curvepoint value and time / position
@@ -81,7 +81,7 @@ namespace nap
 		 * @param time new time
 		 * @param value new value
 		 */
-		virtual void changeCurvePoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, float time, float value);
+		void changeCurvePoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, float time, float value);
 
 		/**
 		 * changes tangent of curve point. Tangents are always aligned
@@ -93,7 +93,7 @@ namespace nap
 		 * @param time offset for new time
 		 * @param value offset for new value
 		 */
-		virtual void changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
+		void changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes minimum and maximum value of track
@@ -138,7 +138,7 @@ namespace nap
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param trackID the track id of the track that we want to update
 		 */
-		virtual void updateCurveSegments(const std::string& trackID);
+		void updateCurveSegments(const std::string& trackID);
 
 		/**
 		 * changes curvetype ( linear or bezier )
@@ -147,7 +147,29 @@ namespace nap
 		 * @param type the new curve type
 		 * @param curveIndex the index of the curve
 		 */
-		virtual void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
+		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
+
+		/**
+		 * register a member function pointer to function responsible for update a segment for a certain track type
+		 * @param trackType rttr of track type
+		 * @param memFun pointer to member function
+		 * @return true on success
+		 */
+		static bool registerUpdateSegmentFunctionForTrackType(const rttr::type& trackType, void(SequenceControllerCurve::*memFun)(SequenceTrack&));
+
+		/**
+		 * register a member function pointer to function responsible for inserting a segment for a certain track type
+		 * @param trackType rttr of track type
+		 * @param memFun pointer to member function
+		 * @return true on success
+		 */
+		static bool registerInsertSegmentFunctionForTrackType(const rttr::type& trackType, const SequenceTrackSegment*(SequenceControllerCurve::*memFun)(const std::string&, double));
+
+		/**
+		 * this method is called during static initialization to register controllers & functions for curved track types
+		 * @return true on success
+		 */
+		static bool registerControllerForTrackTypes();
 	protected:
 		/**
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
@@ -231,6 +253,9 @@ namespace nap
 
 		// map for updating segments
 		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& getUpdateSegmentFunctionMap();
+
+		// map for inserting segments
+		static std::unordered_map<rttr::type, const SequenceTrackSegment*(SequenceControllerCurve::*)(const std::string&, double)>& getInsertSegmentFunctionMap();
 	};
 
 	//////////////////////////////////////////////////////////////////////////

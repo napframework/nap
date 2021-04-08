@@ -945,10 +945,7 @@ namespace nap
 		{ 1.0f, sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f) + 10.0f }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
-		{
-
-
-		}
+		{}
 		ImGui::EndChild();
 		ImGui::PopStyleColor();
 

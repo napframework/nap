@@ -18,7 +18,7 @@ namespace nap
 	/**
 	 * SequenceCurveTrackView shows and handles contents for curve tracks
 	 */
-	class NAPAPI SequenceCurveTrackView : public SequenceTrackView
+	class NAPAPI SequenceCurveTrackView final : public SequenceTrackView
 	{
 		RTTI_ENABLE(SequenceTrackView)
 	public:
@@ -73,7 +73,7 @@ namespace nap
 		 * @param segmentWidth width of segment
 		 * @param drawList pointer to window drawlist
 		 */
-		virtual void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
+		void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
 	
 		/**
 		 * draws control points of curve segment
@@ -129,17 +129,17 @@ namespace nap
 		/**
 		 * handles insert segment popup
 		 */
-		virtual void handleInsertSegmentPopup();
+		void handleInsertSegmentPopup();
 
 		/**
 		 * handles delete segment popup
 		 */
-		virtual void handleEditSegmentPopup();
+		void handleEditSegmentPopup();
 
 		/**
 		 * handles insert curve point popup
 		 */
-		virtual void handleInsertCurvePointPopup();
+		void handleInsertCurvePointPopup();
 
 		/**
 		 * handles curvepoint action popup
@@ -177,12 +177,12 @@ namespace nap
 		/**
 		 * handles curve type popup
 		 */
-		virtual void handleCurveTypePopup();
+		void handleCurveTypePopup();
 
 		/**
 		 * handles tanpoint action popup
 		 */
-		virtual void handleTanPointActionPopup();
+		void handleTanPointActionPopup();
 
 		/**
 		 * handles dragging of segment values
@@ -285,7 +285,7 @@ namespace nap
 		/**
 		 * CurveSegmentClipboard contains serialized curve segments
 		 */
-		class CurveSegmentClipboard :
+		class NAPAPI CurveSegmentClipboard final :
 			public Clipboard
 		{
 			RTTI_ENABLE(Clipboard)

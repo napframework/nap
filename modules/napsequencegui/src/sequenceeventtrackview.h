@@ -85,7 +85,7 @@ namespace nap
 	 * For examples. Take a look at the template specialisations in SequenceEventTrackView.cpp
 	 */
 	template<typename T>
-	class NAPAPI SequenceEventTrackSegmentView : public SequenceEventTrackSegmentViewBase
+	class NAPAPI SequenceEventTrackSegmentView final : public SequenceEventTrackSegmentViewBase
 	{
 		RTTI_ENABLE(SequenceEventTrackSegmentViewBase)
 	public:
@@ -136,7 +136,7 @@ namespace nap
 	/**
 	 * SequenceEventTrackView is a view for event tracks
 	 */
-	class NAPAPI SequenceEventTrackView : public SequenceTrackView
+	class NAPAPI SequenceEventTrackView final : public SequenceTrackView
 	{
 		friend class SequenceEventTrackSegmentViewBase;
 		RTTI_ENABLE(SequenceTrackView)
@@ -420,13 +420,12 @@ namespace nap
 		auto& controller = getEditor().getController<SequenceControllerEvent>();
 
 		// insert new segment
-		const auto* new_segment = static_cast<const T*>(controller.insertEventSegment<T>(trackID, baseEvent.mStartTime + time));
+		const auto* new_segment = rtti_cast<const T>(controller.insertEventSegment<T>(trackID, baseEvent.mStartTime + time));
+		assert(new_segment!= nullptr); // cast failed
 
 		// upcast de-serialized event
 		const auto* event_upcast = rtti_cast<const T>(&baseEvent);
-
-		// cannot be null
-		assert(event_upcast != nullptr);
+		assert(event_upcast!= nullptr); // cast failed
 
 		// copy values from deserialized event segment
 		controller.editEventSegment(trackID, new_segment->mID, event_upcast->mValue);

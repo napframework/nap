@@ -91,7 +91,7 @@ namespace nap
 	};
 
 
-	static std::unordered_map<rttr::type, std::vector<rttr::type>> sParameterTypesForCurveType
+	static std::unordered_map<rttr::type, std::vector<rttr::type>> parameter_types_for_curve_types
 		{
 			{ RTTI_OF(SequenceTrackCurveFloat), { { RTTI_OF(ParameterFloat), RTTI_OF(ParameterDouble), RTTI_OF(ParameterLong), RTTI_OF(ParameterInt) } } },
 			{ RTTI_OF(SequenceTrackCurveVec2), { { RTTI_OF(ParameterVec2) } } },
@@ -101,10 +101,10 @@ namespace nap
 
 	static bool isParameterTypeAllowed(const rttr::type& curveType, const rttr::type& parameterType)
 	{
-		auto it = sParameterTypesForCurveType.find(curveType);
-		if(it!=sParameterTypesForCurveType.end())
+		auto it = parameter_types_for_curve_types.find(curveType);
+		if(it!= parameter_types_for_curve_types.end())
 		{
-			for(auto& type : sParameterTypesForCurveType[curveType])
+			for(auto& type : parameter_types_for_curve_types[curveType])
 			{
 				if(parameterType == type)
 					return true;

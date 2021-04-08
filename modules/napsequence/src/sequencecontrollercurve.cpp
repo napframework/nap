@@ -9,32 +9,85 @@
 
 namespace nap
 {
-	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
+	bool registration = SequenceControllerCurve::registerControllerForTrackTypes();
+
+
+	bool SequenceControllerCurve::registerControllerForTrackTypes()
+	{
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve));
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve));
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve));
+		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve));
+
+		SequenceControllerCurve::registerUpdateSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::updateCurveSegments<float>);
+		SequenceControllerCurve::registerUpdateSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::updateCurveSegments<glm::vec2>);
+		SequenceControllerCurve::registerUpdateSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3>);
+		SequenceControllerCurve::registerUpdateSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4>);
+
+		SequenceControllerCurve::registerInsertSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<float>);
+		SequenceControllerCurve::registerInsertSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::insertCurveSegment<glm::vec2>);
+		SequenceControllerCurve::registerInsertSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::insertCurveSegment<glm::vec3>);
+		SequenceControllerCurve::registerInsertSegmentFunctionForTrackType(RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::insertCurveSegment<glm::vec4>);
+
+		return true;
+	}
+
+
+	bool SequenceControllerCurve::registerUpdateSegmentFunctionForTrackType(const rttr::type& trackType, void(SequenceControllerCurve::*memFun)(SequenceTrack&))
+	{
+		auto& map = getUpdateSegmentFunctionMap();
+
+		auto it = map.find(trackType);
+		assert(it==map.end()); // entry already found
+		if(it==map.end())
+		{
+			map.insert({trackType, memFun});
+		}else
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+
+	bool SequenceControllerCurve::registerInsertSegmentFunctionForTrackType(const rttr::type& trackType,
+																			const SequenceTrackSegment*(SequenceControllerCurve::*memFun)(const std::string&, double))
+	{
+		auto& map = getInsertSegmentFunctionMap();
+
+		auto it = map.find(trackType);
+		assert(it==map.end()); // entry already found
+		if(it==map.end())
+		{
+			map.insert({trackType, memFun});
+		}else
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+
+	static bool register_controller_factory = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerCurve), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
 	{
 	  	return std::make_unique<SequenceControllerCurve>(player, editor);
 	});
 
 
-	static bool sRegisterControllerTypes[4]
-	{
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)),
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)),
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)),
-		SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve))
-	};
-
-
 	std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& SequenceControllerCurve::getUpdateSegmentFunctionMap()
 	{
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> map
-			{
-				{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::updateCurveSegments<float> },
-				{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::updateCurveSegments<glm::vec2> },
-				{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::updateCurveSegments<glm::vec3> },
-				{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::updateCurveSegments<glm::vec4> }
-			};
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> map;
 		return map;
 	}
+
+
+	std::unordered_map<rttr::type, const SequenceTrackSegment*(SequenceControllerCurve::*)(const std::string&, double)>& SequenceControllerCurve::getInsertSegmentFunctionMap()
+	{
+		static std::unordered_map<rttr::type, const SequenceTrackSegment*(SequenceControllerCurve::*)(const std::string&, double)> map;
+		return map;
+	};
 
 
 	double SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration)
@@ -101,14 +154,7 @@ namespace nap
 
 	const SequenceTrackSegment* SequenceControllerCurve::insertSegment(const std::string& trackID, double time)
 	{
-		static std::unordered_map<rttr::type, const SequenceTrackSegment*(SequenceControllerCurve::*)(const std::string&, double)> insertSegmentMap
-			{
-				{ RTTI_OF(SequenceTrackCurveFloat), &SequenceControllerCurve::insertCurveSegment<float> },
-				{ RTTI_OF(SequenceTrackCurveVec2), &SequenceControllerCurve::insertCurveSegment<glm::vec2> },
-				{ RTTI_OF(SequenceTrackCurveVec3), &SequenceControllerCurve::insertCurveSegment<glm::vec3> },
-				{ RTTI_OF(SequenceTrackCurveVec4), &SequenceControllerCurve::insertCurveSegment<glm::vec4> }
-			};
-
+		auto& insertSegmentMap = getInsertSegmentFunctionMap();
 		auto* track = findTrack(trackID);
 		assert(track != nullptr); // track not found
 
@@ -430,16 +476,11 @@ namespace nap
 		auto* track = findTrack(trackID);
 		if(track!= nullptr)
 		{
-			rttr::type type = track->get_type();
-
-			if( type == RTTI_OF(SequenceTrackCurveFloat))
-				updateCurveSegments<float>(*track);
-			if (type == RTTI_OF(SequenceTrackCurveVec2))
-				updateCurveSegments<glm::vec2>(*track);
-			if (type == RTTI_OF(SequenceTrackCurveVec3))
-				updateCurveSegments<glm::vec3>(*track);
-			if (type == RTTI_OF(SequenceTrackCurveVec4))
-				updateCurveSegments<glm::vec4>(*track);
+			auto it = getUpdateSegmentFunctionMap().find(track->get_type());
+			if (it != getUpdateSegmentFunctionMap().end())
+			{
+				(*this.*it->second)(*track);
+			}
 		}
 	}
 
