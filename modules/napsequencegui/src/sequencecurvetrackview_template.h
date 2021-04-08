@@ -356,7 +356,7 @@ namespace nap
 			}
 		}
 
-		// curve
+		// draw curve(s)
 		drawCurves<T>(
 			track,
 			segment,
@@ -675,7 +675,7 @@ namespace nap
 						i,
 						v);
 
-					//
+					// show value of current control point as tooltip
 					showValue<T>(
 						track,
 						segment, curve_point.mPos.mTime,

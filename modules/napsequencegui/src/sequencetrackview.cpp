@@ -251,24 +251,24 @@ namespace nap
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
-			int steps = (int)(mState.mTimelineWidth / timestamp_interval);
+			int steps = mState.mTimelineWidth / timestamp_interval;
 
-			int i = (int)(math::max<int>((int)(mState.mScroll.x - mState.mInspectorWidth) + 100, 0) / timestamp_interval);
-			bool first_line_drawn = false;
+			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
 			for (;i < steps; i++)
 			{
 				if(i==0) // ignore first timestamp since it will hide window left border
 					continue;
 
-				ImVec2 pos = { trackTopLeft.x + (float)i * timestamp_interval, trackTopLeft.y };
-				if (ImGui::IsRectVisible(pos, { pos.x + 1, pos.y + mState.mTrackHeight } ))
+				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
+
+				if (pos.x > 0.0f )
 				{
-					first_line_drawn = true;
 					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, guicolors::darkerGrey);
-				}
-				else if(first_line_drawn) // right side of window, so bail
-				{
-					break;
+
+					if(pos.x > mState.mWindowPos.x + mState.mScroll.x + mState.mWindowSize.x)
+					{
+						break;
+					}
 				}
 			}
 

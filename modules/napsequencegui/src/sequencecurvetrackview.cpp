@@ -1390,6 +1390,9 @@ namespace nap
 
 		// action is done
 		mState.mAction = SequenceGUIActions::createAction<None>();
+
+		// redraw curves and caches
+		mState.mDirty = true;
 	}
 
 
