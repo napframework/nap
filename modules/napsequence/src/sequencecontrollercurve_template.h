@@ -220,7 +220,7 @@ namespace nap
 	template<typename T>
 	void SequenceControllerCurve::changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex)
 	{
-		auto* segment_curve = dynamic_cast<SequenceTrackSegmentCurve<T>*>(&segment);
+		auto* segment_curve = rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
 		assert(segment_curve != nullptr); // type mismatch
 
 		if (segment_curve != nullptr)
@@ -270,7 +270,7 @@ namespace nap
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
+		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 
 		// iterate trough points of curve
@@ -307,7 +307,7 @@ namespace nap
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 
 		//
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
+		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 
 		if (index < curve_segment.mCurves[curveIndex]->mPoints.size())
@@ -324,7 +324,7 @@ namespace nap
 	{
 		// obtain curve segment
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
+		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
@@ -343,7 +343,7 @@ namespace nap
 
 		// obtain curve segment
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
+		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 
 		//
@@ -359,46 +359,57 @@ namespace nap
 
 
 	template <typename  T>
-	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
+	bool SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
+		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
-		//
+		// if tangents are flipped, set this to true
+		bool flipped = false;
+
+		// get reference to curve point
 		auto& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
 		switch (tanType)
 		{
 		case SequenceCurveEnums::ETanPointTypes::IN:
 		{
-			if (time < curve_point.mOutTan.mTime)
+			// if we have aligned tangents, check if IN and OUT can be flipped
+			if( curve_point.mTangentsAligned && time > 0.0f )
 			{
-				curve_point.mInTan.mTime = time;
-				curve_point.mInTan.mValue = value;
+				time = -time;
+				value = -value;
+				flipped = true;
+			}
 
-				if (curve_point.mTangentsAligned)
-				{
-					curve_point.mOutTan.mTime = -curve_point.mInTan.mTime;
-					curve_point.mOutTan.mValue = -curve_point.mInTan.mValue;
-				}
+			curve_point.mInTan.mTime = time;
+			curve_point.mInTan.mValue = value;
+
+			if (curve_point.mTangentsAligned)
+			{
+				curve_point.mOutTan.mTime = -curve_point.mInTan.mTime;
+				curve_point.mOutTan.mValue = -curve_point.mInTan.mValue;
 			}
 		}
 			break;
 		case SequenceCurveEnums::ETanPointTypes::OUT:
 		{
-			if (time > curve_point.mInTan.mTime)
+			if( curve_point.mTangentsAligned && time < 0.0f )
 			{
-				curve_point.mOutTan.mTime = time;
-				curve_point.mOutTan.mValue = value;
-
-				if (curve_point.mTangentsAligned)
-				{
-					curve_point.mInTan.mTime = -curve_point.mOutTan.mTime;
-					curve_point.mInTan.mValue = -curve_point.mOutTan.mValue;
-				}
+				time = -time;
+				value = -value;
+				flipped = true;
 			}
 
+			curve_point.mOutTan.mTime = time;
+			curve_point.mOutTan.mValue = value;
+
+			if (curve_point.mTangentsAligned)
+			{
+				curve_point.mInTan.mTime = -curve_point.mOutTan.mTime;
+				curve_point.mInTan.mValue = -curve_point.mOutTan.mValue;
+			}
 		}
 			break;
 		}
@@ -421,12 +432,13 @@ namespace nap
 					next_segment_curve_point.mInTan.mValue = curve_point.mInTan.mValue;
 					next_segment_curve_point.mOutTan.mTime = curve_point.mOutTan.mTime;
 					next_segment_curve_point.mOutTan.mValue = curve_point.mOutTan.mValue;
-
 				}
 			}
 		}
 
 		curve_segment.mCurves[curveIndex]->invalidate();
+
+		return flipped;
 	}
 
 
@@ -476,11 +488,11 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			auto* track_curve = static_cast<SequenceTrackCurve<T>*>(track);
+			auto* track_curve = rtti_cast<SequenceTrackCurve<T>>(track);
 
 			for(auto& segment : track_curve->mSegments)
 			{
-				auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
+				auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(segment.get());
 				int curve_count = 0;
 				for(auto& curve : curve_segment.mCurves)
 				{

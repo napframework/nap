@@ -712,7 +712,8 @@ namespace nap
 				if(change)
 				{
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-					curve_controller.changeTanPoint(
+
+					bool tangents_flipped = curve_controller.changeTanPoint(
 						action->mTrackID,
 						action->mSegmentID,
 						action->mControlPointIndex,
@@ -721,6 +722,15 @@ namespace nap
 						action->mTime,
 						action->mValue);
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+					if( tangents_flipped && action->mType == SequenceCurveEnums::ETanPointTypes::IN )
+					{
+						action->mType = SequenceCurveEnums::ETanPointTypes::OUT;
+					}else if( tangents_flipped && action->mType == SequenceCurveEnums::ETanPointTypes::OUT )
+					{
+						action->mType = SequenceCurveEnums::ETanPointTypes::IN;
+					}
+
 					mState.mDirty = true;
 				}
 
@@ -1318,7 +1328,7 @@ namespace nap
 		auto* curve_controller = rtti_cast<SequenceControllerCurve>(controller);
 		assert(curve_controller != nullptr);
 
-		curve_controller->changeTanPoint(
+		bool tangents_flipped = curve_controller->changeTanPoint(
 			action->mTrackID,
 			action->mSegmentID,
 			action->mControlPointIndex,
@@ -1327,6 +1337,14 @@ namespace nap
 			action->mNewTime,
 			action->mNewValue);
 		updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+		if( tangents_flipped && action->mType == SequenceCurveEnums::ETanPointTypes::IN )
+		{
+			action->mType = SequenceCurveEnums::ETanPointTypes::OUT;
+		}else if( tangents_flipped && action->mType == SequenceCurveEnums::ETanPointTypes::OUT )
+		{
+			action->mType = SequenceCurveEnums::ETanPointTypes::IN;
+		}
 
 		//
 		mState.mDirty = true;

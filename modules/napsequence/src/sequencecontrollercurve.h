@@ -92,8 +92,9 @@ namespace nap
 		 * @param tanType in or out tangent
 		 * @param time offset for new time
 		 * @param value offset for new value
+		 * @return if true, tangents have been flipped
 		 */
-		void changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
+		bool changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes minimum and maximum value of track
@@ -197,9 +198,10 @@ namespace nap
 		 * @param tanType in or out tangent
 		 * @param time offset for new time
 		 * @param value offset for new value
+		 * @param bool if true, tangents have been flipped
 		 */
 		template <typename  T>
-		void changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
+		bool changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes a curvepoint value and time / position

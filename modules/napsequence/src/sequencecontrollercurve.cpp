@@ -425,11 +425,11 @@ namespace nap
 	}
 
 
-	void SequenceControllerCurve::changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex,
+	bool SequenceControllerCurve::changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex,
 												 SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
 	{
 		//
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int,
+		static std::unordered_map<rttr::type, bool(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int,
 																			   SequenceCurveEnums::ETanPointTypes, float, float)> change_curve_point_map
 			{
 				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeTanPoint<float> },
@@ -438,7 +438,8 @@ namespace nap
 				{ RTTI_OF(SequenceTrackSegmentCurveVec4), &SequenceControllerCurve::changeTanPoint<glm::vec4> },
 			};
 
-		performEditAction([this, trackID, segmentID, pointIndex, curveIndex, tanType, time, value]()
+		bool tangents_flipped = false;
+		performEditAction([this, trackID, segmentID, pointIndex, curveIndex, tanType, time, value, &tangents_flipped]()
 		{
 			// find segment
 			SequenceTrackSegment* segment = findSegment(trackID, segmentID);
@@ -451,10 +452,12 @@ namespace nap
 				if (it != change_curve_point_map.end())
 				{
 					// call appropriate function
-					(*this.*it->second)(*segment, trackID, pointIndex, curveIndex, tanType, time, value);
+					tangents_flipped = (*this.*it->second)(*segment, trackID, pointIndex, curveIndex, tanType, time, value);
 				}
 			}
 		});
+
+		return tangents_flipped;
 	}
 
 
@@ -493,11 +496,11 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			SequenceTrackCurveFloat* track_curve = static_cast<SequenceTrackCurveFloat*>(track);
+			auto* track_curve = rtti_cast<SequenceTrackCurveFloat>(track);
 
 			for(auto& segment : track_curve->mSegments)
 			{
-				SequenceTrackSegmentCurveFloat& curve_segment = static_cast<SequenceTrackSegmentCurveFloat&>(*segment.get());
+				auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurveFloat>(segment.get());
 				int curve_count = 0;
 				for(auto& curve : curve_segment.mCurves)
 				{
