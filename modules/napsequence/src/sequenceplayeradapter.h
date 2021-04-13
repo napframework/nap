@@ -19,7 +19,7 @@ namespace nap
 	class SequencePlayer;
 
 	// shortcut to factory function
-	using SequencePlayerAdapterFactoryFunc = std::unique_ptr<SequencePlayerAdapter>(*)(SequenceTrack&, SequencePlayerOutput&, const SequencePlayer&);
+	using SequencePlayerAdapterFactoryFunc = std::unique_ptr<SequencePlayerAdapter>(*)(const SequenceTrack&, SequencePlayerOutput&, const SequencePlayer&);
 
 	/**
 	 * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
@@ -60,7 +60,7 @@ namespace nap
 		 * @param player sequence player creating adapter
 		 * @return unique ptr to created adapter, nullptr upon failure
 		 */
-		static std::unique_ptr<SequencePlayerAdapter> invokeFactory(rttr::type type, SequenceTrack& track,
+		static std::unique_ptr<SequencePlayerAdapter> invokeFactory(rttr::type type, const SequenceTrack& track,
 																	SequencePlayerOutput& input,
 																	const SequencePlayer& player);
 	private:

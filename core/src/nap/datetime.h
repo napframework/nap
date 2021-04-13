@@ -18,6 +18,7 @@ namespace nap
 	// Typedefs
 	using SystemClock = std::chrono::system_clock;							///< System clock, able to convert time points in to days, seconds etc.
 	using HighResolutionClock = std::chrono::high_resolution_clock;			///< High resolution clock, works with the highest possible precision. Can't convert time points in to days, seconds etc.
+	using SteadyClock = std::chrono::steady_clock;							///< Monotonic clock. The time points of this clock cannot decrease as time moves forward and the time between ticks of this clock is constant. This clock is not related to wall clock time (for example, it can be time since last reboot), and is most suitable for measuring intervals.
 	using Milliseconds = std::chrono::milliseconds;							///< Milliseconds type definition
 	using MicroSeconds = std::chrono::microseconds;							///< Microseconds type definition
 	using NanoSeconds = std::chrono::nanoseconds;							///< Nanoseconds type definition
@@ -26,6 +27,7 @@ namespace nap
 	using Hours = std::chrono::hours;										///< Hours type definition
 	using SystemTimeStamp = std::chrono::time_point<SystemClock>;			///< Point in time associated with the SystemClock
 	using HighResTimeStamp = std::chrono::time_point<HighResolutionClock>;	///< Point in time associated with the HighResolutionClock
+	using SteadyTimeStamp = std::chrono::time_point<SteadyClock>;			///< Point in time associated with the SteadyClock
 
 	// Forward declares
 	class DateTime;
@@ -296,6 +298,11 @@ namespace nap
 		 */
 		Date() = default;
 
+		/** 
+		 * Constructs a date based on year, month and day
+		 */
+		Date(int year, EMonth month, int day);
+
 		/**
 		 * Constructor based on given system time. Extracts the date from the time stamp.
 		 * @param systemTime the time stamp to extract the date from. 
@@ -313,9 +320,24 @@ namespace nap
 		 */
 		SystemTimeStamp toSystemTime() const;
 
-		EMonth	mMonth	= EMonth::Unknown;			///< Property: 'Month' the month of the year
-		int		mDay	= 1;						///< Property: 'Day' the day of the year
-		int		mYear	= 1970;						///< Property: 'Year' the year
+		/**
+		 * Helper function to check if a specific date exists.
+		 * Gregorian dates started in 1582
+		 * @param year the year
+		 * @param month the month
+		 * @param day the day in the month
+		 */
+		static bool exists(int year, EMonth month, int day);
+
+		/**
+		 * Helper function to check if the date exists.
+		 * @return 
+		 */
+		bool valid() const;
+
+		EMonth mMonth = EMonth::Unknown;			///< Property: 'Month' the month of the year
+		int mDay = 1;								///< Property: 'Day' the day of the month (1-31)
+		int mYear = 1970;							///< Property: 'Year' the year
 	};
 
 

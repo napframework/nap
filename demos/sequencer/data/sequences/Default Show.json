@@ -2,165 +2,62 @@
     "Objects": [
         {
             "Type": "nap::Sequence",
-            "mID": "Generated",
+            "mID": "Generated_3",
             "Sequence Tracks": [
                 {
                     "Type": "nap::SequenceTrackEvent",
-                    "mID": "Generated_2",
+                    "mID": "Generated_47",
                     "Segments": [
                         {
-                            "Type": "nap::SequenceTrackSegmentEventInt",
-                            "mID": "Generated_4",
-                            "Start Time": 0.4999999552965164,
-                            "Duration": 0.0,
-                            "Value": 1
-                        },
-                        {
                             "Type": "nap::SequenceTrackSegmentEventString",
-                            "mID": "Generated_5",
-                            "Start Time": 3.259999999776483,
+                            "mID": "Generated_2",
+                            "Start Time": 3.669999122619629,
                             "Duration": 0.0,
-                            "Value": "hello world!"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentEventVec2",
-                            "mID": "Generated_8",
-                            "Start Time": 1.7200000267475844,
-                            "Duration": 0.0,
-                            "Value": {
-                                "x": 2.200000047683716,
-                                "y": 3.299999952316284
-                            }
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentEventFloat",
-                            "mID": "Generated_6",
-                            "Start Time": 1.0100000072270632,
-                            "Duration": 0.0,
-                            "Value": 23.549999237060548
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentEventVec3",
-                            "mID": "Generated_7",
-                            "Start Time": 2.469999944791198,
-                            "Duration": 0.0,
-                            "Value": {
-                                "x": 1.0,
-                                "y": 2.0,
-                                "z": 3.0
-                            }
+                            "Value": "Hello There!"
                         }
                     ],
                     "Output ID": "SequencePlayerEventOutput"
                 },
                 {
-                    "Type": "nap::SequenceTrackCurveVec2",
-                    "mID": "Generated_9",
+                    "Type": "nap::SequenceTrackCurveFloat",
+                    "mID": "Generated_48",
                     "Segments": [
                         {
-                            "Type": "nap::SequenceTrackSegmentCurveVec2",
-                            "mID": "Generated_12",
+                            "Type": "nap::SequenceTrackSegmentCurveFloat",
+                            "mID": "Generated_54",
                             "Start Time": 0.0,
-                            "Duration": 2.5600000098347666,
+                            "Duration": 10.000003814697266,
                             "Curves": [
-                                "Generated_10",
-                                "Generated_11"
+                                "Generated_53"
                             ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveVec2",
-                            "mID": "Generated_15",
-                            "Start Time": 2.5600000098347666,
-                            "Duration": 0.8800000473856926,
-                            "Curves": [
-                                "Generated_13",
-                                "Generated_14"
-                            ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveVec2",
-                            "mID": "Generated_31",
-                            "Start Time": 3.440000057220459,
-                            "Duration": 1.3699998334050179,
-                            "Curves": [
-                                "Generated_29",
-                                "Generated_30"
-                            ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveVec2",
-                            "mID": "Generated_37",
-                            "Start Time": 4.809999890625477,
-                            "Duration": 1.5600001104176045,
-                            "Curves": [
-                                "Generated_35",
-                                "Generated_36"
-                            ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveVec2",
-                            "mID": "Generated_28",
-                            "Start Time": 6.370000001043081,
-                            "Duration": 0.7199998889118433,
-                            "Curves": [
-                                "Generated_26",
-                                "Generated_27"
-                            ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveVec2",
-                            "mID": "Generated_34",
-                            "Start Time": 7.089999889954925,
-                            "Duration": 0.7200001813471317,
-                            "Curves": [
-                                "Generated_32",
-                                "Generated_33"
-                            ],
-                            "Curve Type": "Bezier"
+                            "Curve Types": [
+                                "Bezier"
+                            ]
                         }
                     ],
-                    "Output ID": "Vec2 Output",
-                    "Minimum": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "Maximum": {
-                        "x": 50.0,
-                        "y": 505050.0
-                    }
+                    "Output ID": "Float Output",
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
                 },
                 {
                     "Type": "nap::SequenceTrackCurveVec3",
-                    "mID": "Generated_16",
+                    "mID": "Generated_49",
                     "Segments": [
                         {
                             "Type": "nap::SequenceTrackSegmentCurveVec3",
-                            "mID": "Generated_25",
+                            "mID": "Generated_57",
                             "Start Time": 0.0,
-                            "Duration": 3.029999954625964,
+                            "Duration": 10.000015258789065,
                             "Curves": [
-                                "Generated_22",
-                                "Generated_23",
-                                "Generated_24"
+                                "Generated_52",
+                                "Generated_55",
+                                "Generated_56"
                             ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveVec3",
-                            "mID": "Generated_41",
-                            "Start Time": 3.029999954625964,
-                            "Duration": 1.730000101029873,
-                            "Curves": [
-                                "Generated_38",
-                                "Generated_39",
-                                "Generated_40"
-                            ],
-                            "Curve Type": "Bezier"
+                            "Curve Types": [
+                                "Bezier",
+                                "Bezier",
+                                "Bezier"
+                            ]
                         }
                     ],
                     "Output ID": "Vec3 Output",
@@ -170,128 +67,72 @@
                         "z": 0.0
                     },
                     "Maximum": {
-                        "x": 5.0,
-                        "y": 100.0,
-                        "z": 5.0
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::SequenceTrackCurveVec2",
+                    "mID": "Generated_50",
+                    "Segments": [
+                        {
+                            "Type": "nap::SequenceTrackSegmentCurveVec2",
+                            "mID": "Generated_60",
+                            "Start Time": 0.0,
+                            "Duration": 10.0,
+                            "Curves": [
+                                "Generated_58",
+                                "Generated_59"
+                            ],
+                            "Curve Types": [
+                                "Bezier",
+                                "Bezier"
+                            ]
+                        }
+                    ],
+                    "Output ID": "Vec2 Output",
+                    "Minimum": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Maximum": {
+                        "x": 1.0,
+                        "y": 1.0
                     }
                 },
                 {
                     "Type": "nap::SequenceTrackCurveFloat",
-                    "mID": "Generated_17",
+                    "mID": "Generated_51",
                     "Segments": [
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
-                            "mID": "Generated_19",
+                            "mID": "Generated_62",
                             "Start Time": 0.0,
-                            "Duration": 2.2699999809265138,
+                            "Duration": 10.000004768371582,
                             "Curves": [
-                                "Generated_18"
+                                "Generated_61"
                             ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveFloat",
-                            "mID": "Generated_21",
-                            "Start Time": 2.2699999809265138,
-                            "Duration": 1.839999981224537,
-                            "Curves": [
-                                "Generated_20"
-                            ],
-                            "Curve Type": "Bezier"
-                        }
-                    ],
-                    "Output ID": "Float Output",
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::SequenceTrackCurveFloat",
-                    "mID": "Generated_42",
-                    "Segments": [
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveFloat",
-                            "mID": "Generated_44",
-                            "Start Time": 0.0,
-                            "Duration": 4.890000026673079,
-                            "Curves": [
-                                "Generated_43"
-                            ],
-                            "Curve Type": "Bezier"
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentCurveFloat",
-                            "mID": "Generated_46",
-                            "Start Time": 4.890000026673079,
-                            "Duration": 4.88000014051795,
-                            "Curves": [
-                                "Generated_45"
-                            ],
-                            "Curve Type": "Bezier"
+                            "Curve Types": [
+                                "Bezier"
+                            ]
                         }
                     ],
                     "Output ID": "Int Output",
                     "Minimum": 0.0,
-                    "Maximum": 100.0
+                    "Maximum": 20.0
                 }
             ],
-            "Duration": 9.770000167191029
+            "Duration": 10.000015258789065
         },
         {
             "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_10",
+            "mID": "Generated_52",
             "Points": [
                 {
                     "Position": {
                         "Time": 0.0,
-                        "Value": 0.019999999552965165
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.1783924102783203,
-                        "Value": 0.5910747051239014
-                    },
-                    "InTangent": {
-                        "Time": -0.07513809949159622,
-                        "Value": 0.5133330821990967
-                    },
-                    "OutTangent": {
-                        "Time": 0.07513809949159622,
-                        "Value": -0.5133330821990967
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.4271618723869324,
-                        "Value": 0.4533383846282959
-                    },
-                    "InTangent": {
-                        "Time": -0.2229282706975937,
-                        "Value": 0.9266661405563355
-                    },
-                    "OutTangent": {
-                        "Time": 0.2229282706975937,
-                        "Value": -0.9266661405563355
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.6517144441604614,
-                        "Value": 0.7760682106018066
+                        "Value": 0.9999996423721314
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -307,7 +148,7 @@
                 {
                     "Position": {
                         "Time": 1.0,
-                        "Value": 0.8986663818359375
+                        "Value": 0.013333333656191826
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -324,7 +165,7 @@
         },
         {
             "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_11",
+            "mID": "Generated_53",
             "Points": [
                 {
                     "Position": {
@@ -332,28 +173,12 @@
                         "Value": 0.0
                     },
                     "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
+                        "Time": -0.2800000309944153,
+                        "Value": -1.0199995040893555
                     },
                     "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.4974641799926758,
-                        "Value": 0.6533344984054565
-                    },
-                    "InTangent": {
-                        "Time": -0.05323248729109764,
-                        "Value": 0.41333314776420596
-                    },
-                    "OutTangent": {
-                        "Time": 0.05323248729109764,
-                        "Value": -0.41333314776420596
+                        "Time": 0.2800000309944153,
+                        "Value": 1.0199995040893555
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
@@ -361,7 +186,7 @@
                 {
                     "Position": {
                         "Time": 1.0,
-                        "Value": 0.8266676664352417
+                        "Value": 1.0
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -378,20 +203,20 @@
         },
         {
             "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_13",
+            "mID": "Generated_55",
             "Points": [
                 {
                     "Position": {
                         "Time": 0.0,
-                        "Value": 0.8986663818359375
+                        "Value": 0.0021488030906766655
                     },
                     "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
+                        "Time": -0.08999975025653839,
+                        "Value": -0.6666663289070129
                     },
                     "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
+                        "Time": 0.08999975025653839,
+                        "Value": 0.6666663289070129
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
@@ -399,7 +224,7 @@
                 {
                     "Position": {
                         "Time": 1.0,
-                        "Value": 0.5957221388816834
+                        "Value": 1.0
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -416,20 +241,20 @@
         },
         {
             "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_14",
+            "mID": "Generated_56",
             "Points": [
                 {
                     "Position": {
                         "Time": 0.0,
-                        "Value": 0.8266676664352417
+                        "Value": 0.0
                     },
                     "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
+                        "Time": -0.6600004434585571,
+                        "Value": -0.2399999499320984
                     },
                     "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
+                        "Time": 0.6600004434585571,
+                        "Value": 0.2399999499320984
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
@@ -437,7 +262,7 @@
                 {
                     "Position": {
                         "Time": 1.0,
-                        "Value": 0.333334743976593
+                        "Value": 1.0
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -454,12 +279,12 @@
         },
         {
             "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_18",
+            "mID": "Generated_58",
             "Points": [
                 {
                     "Position": {
                         "Time": 0.0,
-                        "Value": 0.0
+                        "Value": 0.9999969601631165
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -475,7 +300,7 @@
                 {
                     "Position": {
                         "Time": 1.0,
-                        "Value": 0.5533334612846375
+                        "Value": 0.0
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -492,190 +317,12 @@
         },
         {
             "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_20",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.5533334612846375
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.29891306161880495,
-                        "Value": 0.7488338947296143
-                    },
-                    "InTangent": {
-                        "Time": -0.49000000953674319,
-                        "Value": 0.3599999248981476
-                    },
-                    "OutTangent": {
-                        "Time": 0.49000000953674319,
-                        "Value": -0.3599999248981476
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.46666663885116579
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_22",
+            "mID": "Generated_59",
             "Points": [
                 {
                     "Position": {
                         "Time": 0.0,
                         "Value": 0.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.25599586963653567,
-                        "Value": 0.6266666650772095
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.17866657674312592
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_23",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.3627206087112427,
-                        "Value": 0.4366666078567505
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.5099997520446777
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_24",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.7888894081115723,
-                        "Value": 0.19046033918857575
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
@@ -708,403 +355,7 @@
         },
         {
             "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_26",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.7599997520446777
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.019999999552965165
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_27",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.5066686272621155
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.0000019800020254479024
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_29",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.5957221388816834
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.3795621991157532,
-                        "Value": 0.0012940311571583152
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.9074348211288452
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_30",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.333334743976593
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.400001585483551
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_32",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.019999999552965165
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.019999999552965165
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_33",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.0000019800020254479024
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.0000019800020254479024
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_35",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.9074348211288452
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.7599997520446777
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_36",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.400001585483551
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.5066686272621155
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_38",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.17866657674312592
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.05200009420514107
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_39",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.5099997520446777
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.009999999776482582
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_40",
+            "mID": "Generated_61",
             "Points": [
                 {
                     "Position": {
@@ -1125,99 +376,7 @@
                 {
                     "Position": {
                         "Time": 1.0,
-                        "Value": 1.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
                         "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_43",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 0.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 0.5570231080055237,
-                        "Value": 0.4365757703781128
-                    },
-                    "InTangent": {
-                        "Time": -0.5799999833106995,
-                        "Value": 0.5400000810623169
-                    },
-                    "OutTangent": {
-                        "Time": 0.5799999833106995,
-                        "Value": -0.5400000810623169
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 1.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                }
-            ]
-        },
-        {
-            "Type": "nap::math::FloatFCurve",
-            "mID": "Generated_45",
-            "Points": [
-                {
-                    "Position": {
-                        "Time": 0.0,
-                        "Value": 1.0
-                    },
-                    "InTangent": {
-                        "Time": -0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "OutTangent": {
-                        "Time": 0.10000000149011612,
-                        "Value": 0.0
-                    },
-                    "InterpolationType": "Bezier",
-                    "AlignedTangents": true
-                },
-                {
-                    "Position": {
-                        "Time": 1.0,
-                        "Value": 0.009999999776482582
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,

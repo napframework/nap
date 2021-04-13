@@ -63,7 +63,7 @@ namespace nap
 		mLightIntensityParam	= mResourceManager->findObject<nap::ParameterFloat>("LightIntensityParam");
 		mEraserModeParam		= mResourceManager->findObject<nap::ParameterBool>("EraserModeParam");
 		mMeshSelectionParam		= mResourceManager->findObject<nap::ParameterInt>("MeshSelectionParam");
-		mParameterGroup			= mResourceManager->findObject<nap::ParameterGroup>("Parameters");
+		mParameterGUI			= mResourceManager->findObject<ParameterGUI>("ParameterGUI");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -82,10 +82,6 @@ namespace nap
 
 		// Begin with pigmesh as object to paint on
 		mSelectedMeshRendererID = "PigRenderer";
-
-		// Create parameter GUI, used to draw parameters
-		mParameterGUI = std::make_unique<ParameterGUI>(*mParameterService);
-
 		return true;
 	}
 
@@ -137,7 +133,7 @@ namespace nap
 
 		// Serializable parameters (presets)
 		if(ImGui::CollapsingHeader("Paint"))
-			mParameterGUI->show(mParameterGroup.get(), false);
+			mParameterGUI->show(false);
 
 		// Display render textures
 		if (ImGui::CollapsingHeader("Textures"))

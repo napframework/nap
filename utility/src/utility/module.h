@@ -8,14 +8,14 @@
 
 namespace nap
 {
+    static constexpr int moduleAPIVersion = 1;      ///< Current  module API version
+
 	/**
 	 * Struct used to describe a particular module to the system. Contains the API version that the module was built against, which is used for forwards/backwards compatibility.
 	 * New members can be added to this struct, as long as the API version is updated and they are added *after* the APIVersion member
 	 */
 	struct ModuleDescriptor
 	{
-		static const int	ModuleAPIVersion = 1; // Current version of the module API version
-
 		int					mAPIVersion;	// The version of the module API this module was built against. Must be the first member.
 		const char*			mID;			// The ID (name) of the module
 		const char*			mVersion;		// The version of the module
@@ -30,7 +30,7 @@ namespace nap
 		{																				\
 			NAPAPI nap::ModuleDescriptor descriptor =									\
 			{																			\
-				nap::ModuleDescriptor::ModuleAPIVersion,								\
+				nap::moduleAPIVersion,								                    \
 				moduleID,																\
 				moduleVersion,															\
 				nullptr																	\
@@ -45,7 +45,7 @@ namespace nap
 			{																				\
 				NAPAPI nap::ModuleDescriptor descriptor =									\
 				{																			\
-					nap::ModuleDescriptor::ModuleAPIVersion,								\
+					nap::moduleAPIVersion,								                    \
 					moduleID,																\
 					moduleVersion,															\
 					moduleService															\

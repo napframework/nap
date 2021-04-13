@@ -17,12 +17,17 @@ namespace nap
 		class NAPAPI MultiplyNode : public Node
 		{
 		public:
-			MultiplyNode(NodeManager& nodeManager) : Node(nodeManager) { }
+			/**
+			 * Constructor
+			 * @param manager the node manager this node will be processed by
+			 * @param reservedInputCount the number of input pointers that will be pre allocated to hold the result value.
+			 */
+			MultiplyNode(NodeManager& nodeManager, int reservedInputCount = 2);
 			
 			/**
 			 * All signals connected to this pin will be multiplied.
 			 */
-			MultiInputPin inputs = {this};
+			MultiInputPin inputs;
 			
 			/**
 			 * Outputs the signal containing a the multiplication result of all inputs.
@@ -34,6 +39,8 @@ namespace nap
 			 * Calculate the output, perform the multiplication
 			 */
 			void process() override;
+
+			std::vector<SampleBuffer*> mInputBuffers; // Internal preallocated input result buffer
 		};
 		
 	}

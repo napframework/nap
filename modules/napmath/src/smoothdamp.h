@@ -46,7 +46,7 @@ namespace nap
 			virtual ~BaseSmoothOperator() = default;
 
 			float mSmoothTime = 1.0f;						// approximately the time it will take to reach the target. A smaller value will reach the target faster.
-			float mMaxSpeed = 10000.0f;						// allows you to clamp the maximum blend speed 
+			float mMaxSpeed = math::max<float>();			// allows you to clamp the maximum blend speed 
 		};
 
 
@@ -164,10 +164,12 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 		// Type definitions for all supported smooth operators
 		//////////////////////////////////////////////////////////////////////////
-		using FloatSmoothOperator = SmoothOperator<float>;
-		using Vec2SmoothOperator  = SmoothOperator<glm::vec2>;
-		using Vec3SmoothOperator  = SmoothOperator<glm::vec3>;
-		using Vec4SmoothOperator  = SmoothOperator<glm::vec4>;
+
+		using FloatSmoothOperator  = SmoothOperator<float>;
+		using DoubleSmoothOperator = SmoothOperator<double>;
+		using Vec2SmoothOperator   = SmoothOperator<glm::vec2>;
+		using Vec3SmoothOperator   = SmoothOperator<glm::vec3>;
+		using Vec4SmoothOperator   = SmoothOperator<glm::vec4>;
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -175,6 +177,9 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 		template<>
 		NAPAPI void nap::math::SmoothOperator<float>::init();
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<double>::init();
 
 		template<>
 		NAPAPI void nap::math::SmoothOperator<glm::vec2>::init();
@@ -187,6 +192,9 @@ namespace nap
 
 		template<>
 		NAPAPI void nap::math::SmoothOperator<float>::setValue(const float& value);
+
+		template<>
+		NAPAPI void nap::math::SmoothOperator<double>::setValue(const double& value);
 
 		template<>
 		NAPAPI void nap::math::SmoothOperator<glm::vec2>::setValue(const glm::vec2& value);

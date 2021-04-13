@@ -21,28 +21,11 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
-		/**
-		 * This struct holds additional info on top of a group, most importantly the depth of the group within the full tree
-		 */
-		struct ParameterGroupInfo
-		{
-			ResourcePtr<ParameterGroup> mGroup;		///< The group we're storing info for
-			int							mDepth;		///< The depth of this group within the full group tree
-		};
-
 		using PresetFileList = std::vector<std::string>;
-		using ParameterGroupList = std::vector<ParameterGroupInfo>;
 		ParameterService(ServiceConfiguration* configuration);
 
 		/**
-		 * Get all parameter groups
-		 * @return The list of all parameter groups
-		 */
-		ParameterGroupList getParameterGroups();
-
-		/**
-		 * Get a list of all available preset files for the specified group
-		 *
+		 * Get a list of all available preset files for the specified group.
 		 * @return The list of presets
 		 */
 		PresetFileList getPresets(const ParameterGroup& group) const;
@@ -69,20 +52,6 @@ namespace nap
 		 * @return Whether the save of the preset failed or succeeded
 		 */
 		bool savePreset(ParameterGroup& group, const std::string& presetFile, utility::ErrorState& errorState);
-	
-		/**
-		 * Whether a RootGroup is available (i.e. whether any parameters have been defined for the current project)
-		 *
-		 * @return Whether a RootGroup is available
-		 */
-		bool hasRootGroup() const { return mRootGroup != nullptr; }
-
-		/**
-		 * Get the root group
-		 *
-		 * @return The root group
-		 */
-		ParameterGroup& getRootGroup() { assert(hasRootGroup()); return *mRootGroup; }
 
 		/**
 		 * Get the full path to the preset file
@@ -126,10 +95,6 @@ namespace nap
 		 * @param destinationParameters The parameter group that contains the destination parameters which should be overwritten with data from the preset
 		 */
 		void setParametersRecursive(const ParameterGroup& sourceParameters, ParameterGroup& destinationParameters);
-
-	private:	
-		ParameterGroupList mGroups;
-		ResourcePtr<ParameterGroup> mRootGroup;		///< The root parameter group containing the parameters for this project
 	};
 
 

@@ -29,7 +29,9 @@ namespace nap
 	};
 
 	/**
-	 * Converts (splits) an .fbx file into multiple .mesh parts. Currently only converts the meshes.
+	 * Converts (splits) an .fbx file into multiple .mesh parts. Only the geometry is extracted.
+	 * Vertex, Normal, Color, UV and Tangent information is extracted. Up to 8 Color and UV channels are supported. 
+	 * Tangents and bi-tangents are automatically computed when normals are present.
 	 * @param fbxPath The FBX file to convert
 	 * @param outputDirectory Absolute or relative directory that the converted files should be placed in
 	 * @param convertOptions Options for the convert

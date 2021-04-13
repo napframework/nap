@@ -2,6 +2,9 @@
   <img width=256 height=256 src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
+# Beta Branch
+Not all changes are verified & tested.
+
 *	[Description](#description)
 	*	[Features](#features)
 	*	[Documentation](#documentation)
@@ -48,7 +51,7 @@ NAP also has built in support for many common protocols and standards, including
 
 ## Documentation
 
-NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the precompiled NAP package only. Follow the instructions in this document to build and create a NAP application instead against the framework source. All other parts of the documentation apply to both the NAP package and source context.
+NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
 
 ## Gallery
 
@@ -71,11 +74,19 @@ Currently, whether working with the packaged framework release or against the fr
 - Ubuntu Linux LTS (20.04)
 - Windows 10 with Visual Studio 2015
 
-NAP's official framework releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release.
-
-There are naturally other benefits to be had from working against the framework source, plus you can also compile your own framework release. Continue reading below to get started with the NAP source.
+NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release. 
+When working against a binary package, follow the official [installation](https://www.napframework.com/doxygen/) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
 
 # Compilation
+
+Windows 10<br/>
+[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+
+Ubuntu 20.04<br/>
+[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+
+MacOS 10.9<br/>
+[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
 

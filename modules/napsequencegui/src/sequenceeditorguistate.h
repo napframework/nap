@@ -27,7 +27,7 @@ namespace nap
 		// clipboard
 		SequenceGUIClipboards::SequenceClipboardPtr mClipboard = nullptr;
 
-		// dirty means view has changed, and potentially content of tracks need to be redrawn and cached
+		// dirty means view has changed, and content of tracks need to be redrawn and cached
 		bool mDirty = false;
 
 		// window focused
@@ -80,5 +80,8 @@ namespace nap
 
 		// scroll follows player position
 		bool mFollow = false;
+
+		// current sequence name
+		std::string mSequenceName;
 	};
 }

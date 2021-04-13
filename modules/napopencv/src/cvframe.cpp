@@ -11,8 +11,10 @@ namespace nap
 {
 	CVFrame::CVFrame(CVFrame&& other)
 	{
+		// Steal data
 		mMatrices = std::move(other.mMatrices);
-		mSource = std::move(other.mSource);
+		mSource = other.mSource;
+		other.mSource = nullptr;
 	}
 
 
@@ -31,7 +33,8 @@ namespace nap
 	CVFrame& CVFrame::operator=(CVFrame&& other)
 	{
 		mMatrices = std::move(other.mMatrices);
-		mSource = std::move(other.mSource);
+		mSource = other.mSource;
+		other.mSource = nullptr;
 		return *this;
 	}
 

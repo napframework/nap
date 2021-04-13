@@ -14,6 +14,11 @@ namespace nap
 	{}
 
 
+	LogMessage::LogMessage(const LogLevel& lvl, std::string&& msg) : 
+		mLevel(&lvl), mMessage(std::move(msg)), mTimeStamp(getCurrentTime())
+	{}
+
+
 	std::string timestampLogMessageFormatter(const LogMessage& msg)
 	{
 		return timeFormat(msg.getTimestamp()) + " " + basicLogMessageFormatter(msg);
@@ -22,8 +27,7 @@ namespace nap
 
 	LogHandler::LogHandler()
 		: mLevel(&Logger::fineLevel()), mFormatter(&basicLogMessageFormatter)
-	{
-	}
+	{}
 
 
 	void LogHandler::setFormatter(LogMessageFormatter formatter)

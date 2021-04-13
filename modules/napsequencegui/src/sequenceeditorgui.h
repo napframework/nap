@@ -86,6 +86,12 @@ namespace nap
 		 */
 		static bool registerTrackViewType(rttr::type trackType, rttr::type viewType);
 
+		/**
+		 * returns view that corresponds to a certain track type, asserts when not found
+		 * @param type the track type
+		 * @return the view type
+		 */
+		static rttr::type getViewForTrackType(rttr::type type);
 	protected:
 		/**
 		 * Draws the tracks of the sequence
@@ -93,6 +99,27 @@ namespace nap
 		 * @param sequence reference to sequence
 		 */
 		void drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence);
+
+		/**
+		 * Draws inspectors of the sequence tracks
+		 * @param sequencePlayer reference to sequenceplayer
+		 * @param sequence reference to sequence
+		 */
+		void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence &sequence);
+
+		/**
+		 * Draws markers
+		 * @param sequencePlayer reference to sequenceplayer
+		 * @param sequence reference to sequence
+		 */
+		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence );
+
+		/**
+		 * Draw lines of markers
+		 * @param sequencePlayer reference to sequenceplayer
+		 * @param sequence reference to sequence
+		 */
+		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player);
 
 		/**
 		 * draws player controller bar
@@ -133,6 +160,31 @@ namespace nap
 		 * handle editing of sequence duration
 		 */
 		void handleSequenceDurationPopup();
+
+		/*
+		 * handle editing of markers
+		 */
+		void handleEditMarkerPopup();
+
+		/*
+		 * handle insertion of new markers
+		 */
+		void handleInsertMarkerPopup();
+
+		/**
+		 * handle no action, when mouse is pressed, ignore any following actions in sequencer window
+		 */
+		void handleNone();
+
+		/**
+		 * when mouse is released, switch back to None action
+		 */
+		 void handleNonePressed();
+
+		 /**
+		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
+		  */
+		 void handleHorizontalZoom();
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;
@@ -150,5 +202,7 @@ namespace nap
 		bool mDrawFullWindow = false;
 
 		RenderWindow* mRenderWindow = nullptr;
+
+		std::unordered_map<rttr::type, std::function<void()>> mPopups;
 	};
 }

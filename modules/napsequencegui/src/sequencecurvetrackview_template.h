@@ -5,10 +5,8 @@
 namespace nap
 {
 	template<typename T>
-	bool SequenceCurveTrackView::handleCurvePointActionPopup()
+	void SequenceCurveTrackView::handleCurvePointActionPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenCurvePointActionPopup<T>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenCurvePointActionPopup<T>>();
@@ -28,8 +26,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::CurvePointActionPopup<T>>();
 				int curveIndex = action->mCurveIndex;
 
@@ -41,9 +37,11 @@ namespace nap
 						action->mSegmentID,
 						action->mControlPointIndex,
 						action->mCurveIndex);
+					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					mCurveCache.clear();
 
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mDirty = true;
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -59,6 +57,8 @@ namespace nap
 						action->mCurveIndex,
 						action->mTime,
 						value);
+					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
 					mState.mDirty = true;
 				}
 
@@ -77,16 +77,12 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
 	template<typename T>
-	bool SequenceCurveTrackView::handleSegmentValueActionPopup()
+	void SequenceCurveTrackView::handleSegmentValueActionPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>();
@@ -106,8 +102,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Segment Value Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingSegmentCurveValue<T>>();
 				int curveIndex = action->mCurveIndex;
 
@@ -122,6 +116,8 @@ namespace nap
 						translated_value,
 						curveIndex,
 						action->mType);
+					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
 					mState.mDirty = true;
 				}
 
@@ -140,8 +136,6 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
@@ -303,6 +297,7 @@ namespace nap
 		ImDrawList* drawList,
 		bool drawStartValue)
 	{
+		// TODO : do this without the elif statement
 		bool draw_selection_background = false;
 		if( mState.mAction->isAction<SequenceGUIActions::HoveringSegmentValue>())
 		{
@@ -329,6 +324,19 @@ namespace nap
 		if( draw_selection_background )
 		{
 			drawList->AddRectFilled( { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,0.25f)));
+		}else
+		{
+			if( mState.mClipboard->isClipboard<SequenceGUIClipboards::CurveSegmentClipboard>())
+			{
+				auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
+				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
+				{
+					ImVec4 red = ImGui::ColorConvertU32ToFloat4(guicolors::red);
+					red.w = 0.25f;
+
+					drawList->AddRectFilled( { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  ImGui::ColorConvertFloat4ToU32(red));
+				}
+			}
 		}
 
 		// curve
@@ -398,6 +406,8 @@ namespace nap
 		{
 			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			updateSegmentsInClipboard(track.mID);
+
 			mState.mDirty = true;
 		}
 		ImGui::PopID();
@@ -410,6 +420,8 @@ namespace nap
 		{
 			auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 			curve_controller.changeMinMaxCurveTrack<T>(track.mID, min, max);
+			updateSegmentsInClipboard(track.mID);
+
 			mState.mDirty = true;
 		}
 		ImGui::PopID();
@@ -564,6 +576,7 @@ namespace nap
 									value + drag_amount,
 									v,
 									segmentType);
+								updateSegmentInClipboard(track.mID, segment.mID);
 								mCurveCache.clear();
 							}
 						}
@@ -754,6 +767,7 @@ namespace nap
 										action->mCurveIndex,
 										curve_point.mPos.mTime + time_adjust,
 										curve_point.mPos.mValue + value_adjust);
+									updateSegmentsInClipboard(track.mID);
 								}
 
 								mCurveCache.clear();
@@ -870,10 +884,12 @@ namespace nap
 			if (mState.mIsWindowFocused)
 			{
 				// check if hovered
-				if ((mState.mAction->isAction<SequenceGUIActions::None>() || mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
+				if ((mState.mAction->template isAction<SequenceGUIActions::None>() ||
+				     mState.mAction->template isAction<SequenceGUIActions::HoveringCurve>() ||
+					 mState.mAction->template isAction<SequenceGUIActions::HoveringSegment>())
 					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
 				{
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(tan_stream.str());
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(track.mID, tan_stream.str());
 					tan_point_hovered = true;
 				}
 				else if (mState.mAction->isAction<SequenceGUIActions::HoveringTanPoint>())
@@ -976,6 +992,7 @@ namespace nap
 									type,
 									new_time,
 									new_value);
+								updateSegmentInClipboard(track.mID, segment.mID);
 							}
 
 							mState.mDirty = true;
@@ -994,44 +1011,71 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceCurveTrackView::pasteClipboardSegment(const std::string& trackId, double time)
+	void SequenceCurveTrackView::pasteClipboardSegments(const std::string& trackId, double time)
 	{
 		// get clipboard action
 		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
 
 		// create vector & object ptr to be filled by de-serialization
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;
-		T* curve_segment = nullptr;
 
 		// continue upon succesfull de-serialization
 		utility::ErrorState errorState;
-		curve_segment = curve_segment_clipboard->deserialize<T>(read_objects, errorState);
+		std::vector<T*> curve_segments = curve_segment_clipboard->deserialize<T>(read_objects, errorState);
 
 		if(errorState.hasErrors())
 		{
 			nap::Logger::error(errorState.toString());
 		}else
 		{
-			assert(curve_segment!= nullptr); // curve segment cannot be null at this point
+			assert(curve_segments.size() > 0 ); // no curve segments deserialized
 
-			if( curve_segment != nullptr )
+			// sort curve segments by start time
+			std::sort(curve_segments.begin(), curve_segments.end(), [](T* a, T* b)
+			{
+				return a->mStartTime < b->mStartTime;
+		  	});
+
+			// adjust start times by duration and start from 0.0
+			if( curve_segments.size() > 0 )
+			{
+				curve_segments[0]->mStartTime = 0.0;
+			}
+			for(int i = 1 ; i < curve_segments.size(); i++)
+			{
+				curve_segments[i]->mStartTime = curve_segments[i-1]->mStartTime + curve_segments[i-1]->mDuration;
+			}
+
+			//
+			for(auto curve_segment : curve_segments)
 			{
 				// obtain controller
-				auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+				auto* base_controller = getEditor().getControllerWithTrackID(trackId);
+
+				// controller for track id not found
+				assert(base_controller != nullptr);
+
+				// upcast
+				auto* curve_controller = dynamic_cast<SequenceControllerCurve*>(base_controller);
+
+				// assert if upcast failed
+				assert(curve_controller != nullptr);
 
 				// insert new segment
-				const auto* new_segment = curve_controller.insertSegment(trackId, time);
+				const auto* new_segment = curve_controller->insertSegment(trackId, time + curve_segment->mStartTime);
 
 				// change duration
-				curve_controller.segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
+				curve_controller->segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
+
+				// update any segments that could be changed
+				updateSegmentsInClipboard(trackId);
 
 				// copy curve points
 				for (int c = 0; c < curve_segment->mCurves.size(); c++)
 				{
 					for (int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
 					{
-						curve_controller.insertCurvePoint(trackId, new_segment->mID,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
+						curve_controller->insertCurvePoint(trackId, new_segment->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
 					}
 				}
 
@@ -1041,18 +1085,21 @@ namespace nap
 				{
 					for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
 					{
-						curve_controller.changeCurvePoint(trackId, new_segment->mID, i, c,
+						curve_controller->changeCurvePoint(trackId, new_segment->mID, i, c,
 														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
 														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
 
-						curve_controller.changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
+						curve_controller->changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
 														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
 														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
 					}
 				}
 
 				// make the controller re-align start & end points of segments
-				curve_controller.updateCurveSegments(trackId);
+				curve_controller->updateCurveSegments(trackId);
+
+				// update any segments we have in the clipboard
+				updateSegmentsInClipboard(trackId);
 			}
 		}
 	}
@@ -1064,13 +1111,21 @@ namespace nap
 		// get clipboard action
 		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
 
+		// expect 1 object
+		assert(curve_segment_clipboard->getObjectCount() == 1);
+
 		// create vector & object ptr to be filled by de-serialization
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;
-		T* curve_segment = nullptr;
+		std::vector<T*> curve_segments;
 
 		// continue upon successful de-serialization
 		utility::ErrorState errorState;
-		curve_segment = curve_segment_clipboard->deserialize<T>(read_objects, errorState);
+		curve_segments = curve_segment_clipboard->deserialize<T>(read_objects, errorState);
+
+		// expect 1 deserialized object
+		assert(curve_segments.size() == 1);
+
+		T* curve_segment = curve_segments[0];
 		if( !errorState.hasErrors() )
 		{
 			assert(curve_segment != nullptr); // curve segment cannot be null here
@@ -1127,6 +1182,9 @@ namespace nap
 
 				// make the controller re-align start & end points of segments
 				curve_controller.updateCurveSegments(trackId);
+
+				// update any segments we have in the clipboard
+				updateSegmentsInClipboard(trackId);
 			}else
 			{
 				nap::Logger::error("Error casting target segment");

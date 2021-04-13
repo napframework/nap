@@ -110,6 +110,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
+                    "Visible": true,
                     "Mesh": "CanvasMesh",
                     "MaterialInstance": {
                         "Material": "CanvasMaterial",
@@ -236,6 +237,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "LineRenderableComponent",
+                    "Visible": true,
                     "Mesh": "DisplayLine",
                     "MaterialInstance": {
                         "Material": "LineMaterial",
@@ -259,6 +261,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "NormalsRenderableComponent",
+                    "Visible": true,
                     "Mesh": "NormalsMesh",
                     "MaterialInstance": {
                         "Material": "NormalsMaterial",
@@ -551,6 +554,12 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "Parameters"
+        },
+        {
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
             "Parameters": [],
@@ -674,6 +683,14 @@
             "Position": {
                 "x": 0.0,
                 "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
             },
             "Rows": 1,
             "Columns": 1
