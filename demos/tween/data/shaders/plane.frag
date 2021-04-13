@@ -13,7 +13,7 @@ out vec4 out_Color;
 
 // constants
 const vec3  colorOne  = vec3(0.545, 0.549, 0.627);
-const vec3  colorTwo  = vec3(0.176,0.180,0.258);
+const vec3  colorTwo  = vec3(0.066, 0.078, 0.149);
 const float maxOffset = 0.015;
 
 // Uniform inputs
@@ -28,20 +28,18 @@ float fit(float value, float min, float max, float outMin, float outMax)
 {
   float v = clamp(value, min, max);
   float m = max - min;
-  if(m==0.0)
-    m = 0.00000001;
+  m = m == 0.0 ? 0.00000001 : m;
   return (v - min) / (m) * (outMax - outMin) + outMin;
 }
 
 void main() 
 {
-	//
+	// Get distance to current animation position
 	vec2 center = ubo.animationPos;
 	float dist = length(passUVs.xy - center);
 
-	float blend = clamp( 1.0 - ( dist / ( maxOffset * ubo.animationValue ) ), 0, 1);
-	if( blend > 0 )
-		blend = 1;
+	// Compute blend value
+	float blend = fit(dist, maxOffset-0.0002, maxOffset, 1.0, 0.0);
 
 	// Find color mix value based on curve (animator) value
 	vec3 fcolor = mix(colorTwo, colorOne, blend);
