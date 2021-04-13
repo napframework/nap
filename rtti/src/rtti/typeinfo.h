@@ -137,6 +137,7 @@ namespace nap
 	namespace rtti
 	{
 		using TypeInfo = rttr::type;
+		using Enum = rttr::enumeration;
 		using Property = rttr::property;
 		using Variant = rttr::variant;
 		using Instance = rttr::instance;

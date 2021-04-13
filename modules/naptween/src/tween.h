@@ -89,7 +89,7 @@ namespace nap
 		 * set easing method used for tweening
 		 * @param easing the easing method
 		 */
-		void setEase(ETweenEasing easing);
+		void setEase(ETweenEaseType easing);
 
 		/**
 		 * sets the tween mode for this tween, see ETweenMode enum
@@ -117,7 +117,7 @@ namespace nap
 		/**
 		 * @return current ease type
 		 */
-		ETweenEasing getEase() const{ return mEasing; }
+		ETweenEaseType getEase() const{ return mEasing; }
 
 		/**
 		 * @return current time in time
@@ -188,7 +188,7 @@ namespace nap
 		ETweenMode 		mMode 			= ETweenMode::NORMAL;
 
 		// ease type
-		ETweenEasing 	mEasing 		= ETweenEasing::LINEAR;
+		ETweenEaseType 	mEasing 		= ETweenEaseType::LINEAR;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -214,7 +214,7 @@ namespace nap
 	Tween<T>::Tween(T start, T end, float duration)
 		: TweenBase(), mStart(start), mEnd(end), mCurrentValue(start), mDuration(duration)
 	{
-		setEase(ETweenEasing::LINEAR);
+		setEase(ETweenEaseType::LINEAR);
 		setMode(ETweenMode::NORMAL);
 
 		// when this tween is killed, update function doesn't do anything anymore
@@ -375,7 +375,7 @@ namespace nap
 
 
 	template<typename T>
-	void Tween<T>::setEase(ETweenEasing easing)
+	void Tween<T>::setEase(ETweenEaseType easing)
 	{
 		mEasing = easing;
 
@@ -383,98 +383,98 @@ namespace nap
 		{
 		default:
 			nap::Logger::warn("Unknown easing mode, choosing default linear easing");
-			mEasing = ETweenEasing::LINEAR;
-		case ETweenEasing::LINEAR:
+			mEasing = ETweenEaseType::LINEAR;
+		case ETweenEaseType::LINEAR:
 			mEase = std::make_unique<TweenEaseLinear<T>>();
 			break;
-		case ETweenEasing::CUBIC_INOUT:
+		case ETweenEaseType::CUBIC_INOUT:
 			mEase = std::make_unique<TweenEaseInOutCubic<T>>();
 			break;
-		case ETweenEasing::CUBIC_OUT:
+		case ETweenEaseType::CUBIC_OUT:
 			mEase = std::make_unique<TweenEaseOutCubic<T>>();
 			break;
-		case ETweenEasing::CUBIC_IN:
+		case ETweenEaseType::CUBIC_IN:
 			mEase = std::make_unique<TweenEaseInCubic<T>>();
 			break;
-		case ETweenEasing::BACK_OUT:
+		case ETweenEaseType::BACK_OUT:
 			mEase = std::make_unique<TweenEaseOutBack<T>>();
 			break;
-		case ETweenEasing::BACK_INOUT:
+		case ETweenEaseType::BACK_INOUT:
 			mEase = std::make_unique<TweenEaseInOutBack<T>>();
 			break;
-		case ETweenEasing::BACK_IN:
+		case ETweenEaseType::BACK_IN:
 			mEase = std::make_unique<TweenEaseInBack<T>>();
 			break;
-		case ETweenEasing::BOUNCE_OUT:
+		case ETweenEaseType::BOUNCE_OUT:
 			mEase = std::make_unique<TweenEaseOutBounce<T>>();
 			break;
-		case ETweenEasing::BOUNCE_INOUT:
+		case ETweenEaseType::BOUNCE_INOUT:
 			mEase = std::make_unique<TweenEaseInOutBounce<T>>();
 			break;
-		case ETweenEasing::BOUNCE_IN:
+		case ETweenEaseType::BOUNCE_IN:
 			mEase = std::make_unique<TweenEaseInBounce<T>>();
 			break;
-		case ETweenEasing::CIRC_OUT:
+		case ETweenEaseType::CIRC_OUT:
 			mEase = std::make_unique<TweenEaseOutCirc<T>>();
 			break;
-		case ETweenEasing::CIRC_INOUT:
+		case ETweenEaseType::CIRC_INOUT:
 			mEase = std::make_unique<TweenEaseInOutCirc<T>>();
 			break;
-		case ETweenEasing::CIRC_IN:
+		case ETweenEaseType::CIRC_IN:
 			mEase = std::make_unique<TweenEaseInCirc<T>>();
 			break;
-		case ETweenEasing::ELASTIC_OUT:
+		case ETweenEaseType::ELASTIC_OUT:
 			mEase = std::make_unique<TweenEaseOutElastic<T>>();
 			break;
-		case ETweenEasing::ELASTIC_INOUT:
+		case ETweenEaseType::ELASTIC_INOUT:
 			mEase = std::make_unique<TweenEaseInOutElastic<T>>();
 			break;
-		case ETweenEasing::ELASTIC_IN:
+		case ETweenEaseType::ELASTIC_IN:
 			mEase = std::make_unique<TweenEaseInElastic<T>>();
 			break;
-		case ETweenEasing::EXPO_OUT:
+		case ETweenEaseType::EXPO_OUT:
 			mEase = std::make_unique<TweenEaseOutExpo<T>>();
 			break;
-		case ETweenEasing::EXPO_INOUT:
+		case ETweenEaseType::EXPO_INOUT:
 			mEase = std::make_unique<TweenEaseInOutExpo<T>>();
 			break;
-		case ETweenEasing::EXPO_IN:
+		case ETweenEaseType::EXPO_IN:
 			mEase = std::make_unique<TweenEaseInExpo<T>>();
 			break;
-		case ETweenEasing::QUAD_OUT:
+		case ETweenEaseType::QUAD_OUT:
 			mEase = std::make_unique<TweenEaseOutQuad<T>>();
 			break;
-		case ETweenEasing::QUAD_INOUT:
+		case ETweenEaseType::QUAD_INOUT:
 			mEase = std::make_unique<TweenEaseInOutQuad<T>>();
 			break;
-		case ETweenEasing::QUAD_IN:
+		case ETweenEaseType::QUAD_IN:
 			mEase = std::make_unique<TweenEaseInQuad<T>>();
 			break;
-		case ETweenEasing::QUART_OUT:
+		case ETweenEaseType::QUART_OUT:
 			mEase = std::make_unique<TweenEaseOutQuart<T>>();
 			break;
-		case ETweenEasing::QUART_INOUT:
+		case ETweenEaseType::QUART_INOUT:
 			mEase = std::make_unique<TweenEaseInOutQuart<T>>();
 			break;
-		case ETweenEasing::QUART_IN:
+		case ETweenEaseType::QUART_IN:
 			mEase = std::make_unique<TweenEaseInQuart<T>>();
 			break;
-		case ETweenEasing::QUINT_OUT:
+		case ETweenEaseType::QUINT_OUT:
 			mEase = std::make_unique<TweenEaseOutQuint<T>>();
 			break;
-		case ETweenEasing::QUINT_INOUT:
+		case ETweenEaseType::QUINT_INOUT:
 			mEase = std::make_unique<TweenEaseInOutQuint<T>>();
 			break;
-		case ETweenEasing::QUINT_IN:
+		case ETweenEaseType::QUINT_IN:
 			mEase = std::make_unique<TweenEaseInQuint<T>>();
 			break;
-		case ETweenEasing::SINE_OUT:
+		case ETweenEaseType::SINE_OUT:
 			mEase = std::make_unique<TweenEaseOutSine<T>>();
 			break;
-		case ETweenEasing::SINE_INOUT:
+		case ETweenEaseType::SINE_INOUT:
 			mEase = std::make_unique<TweenEaseInOutSine<T>>();
 			break;
-		case ETweenEasing::SINE_IN:
+		case ETweenEaseType::SINE_IN:
 			mEase = std::make_unique<TweenEaseInSine<T>>();
 			break;
 		}

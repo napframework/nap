@@ -22,55 +22,13 @@
 #include <tweenhandle.h>
 #include <tween.h>
 #include <renderglobals.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to
 // validate that this object is indeed an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TweenApp)
 		RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
-
-const char* ease_types[] =
-{
-	"LINEAR",
-	"CUBIC_IN",
-	"CUBIC_INOUT",
-	"CUBIC_OUT",
-	"BACK_IN",
-	"BACK_INOUT",
-	"BACK_OUT",
-	"BOUNCE_IN",
-	"BOUNCE_INOUT",
-	"BOUNCE_OUT",
-	"CIRC_IN",
-	"CIRC_INOUT",
-	"CIRC_OUT",
-	"ELASTIC_IN",
-	"ELASTIC_INOUT",
-	"ELASTIC_OUT",
-	"EXPO_IN",
-	"EXPO_INOUT",
-	"EXPO_OUT",
-	"QUAD_IN",
-	"QUAD_INOUT",
-	"QUAD_OUT",
-	"QUART_IN",
-	"QUART_INOUT",
-	"QUART_OUT",
-	"QUINT_IN",
-	"QUINT_INOUT",
-	"QUINT_OUT",
-	"SINE_IN",
-	"SINE_INOUT",
-	"SINE_OUT"
-};
-
-const char* tween_modes[] =
-{
-	"NORMAL",
-	"LOOP",
-	"PING_PONG",
-	"REVERSE"
-};
 
 namespace nap
 {
@@ -164,24 +122,23 @@ namespace nap
 				}
 			}
 
-			// change tween ease type combo box
-			int ease_type = (int) mCurrentTweenType;
-			if( ImGui::Combo("Ease", &ease_type, ease_types, IM_ARRAYSIZE(ease_types)))
-			{
-				mCurrentTweenType = (ETweenEasing) ease_type;
 
-				if( mMovementTweenHandle != nullptr )
+			// change tween ease type combo box
+			int ease_type = (int)mCurrentTweenType;
+			if (ImGui::Combo("Ease", &ease_type, RTTI_OF(nap::ETweenEaseType)))
+			{
+				mCurrentTweenType = (ETweenEaseType)ease_type;
+				if (mMovementTweenHandle != nullptr)
 				{
 					mMovementTweenHandle->getTween().setEase(mCurrentTweenType);
 				}
 			}
 
 			// change tween mode combo box
-			int tween_mode = (int) mCurrentTweenMode;
-			if( ImGui::Combo("Mode", &tween_mode, tween_modes, IM_ARRAYSIZE(tween_modes)))
+			int tween_mode = (int)mCurrentTweenMode;
+			if( ImGui::Combo("Mode", &tween_mode, RTTI_OF(nap::ETweenMode)))
 			{
 				mCurrentTweenMode = (ETweenMode) tween_mode;
-
 				if( mMovementTweenHandle != nullptr )
 				{
 					mMovementTweenHandle->getTween().setMode(mCurrentTweenMode);
@@ -201,7 +158,7 @@ namespace nap
 		glm::vec3 sphere_position 			= math::extractPosition(sphere_transform.getGlobalTransform());
 
 		// create a tween and store the handle
-		mMovementTweenHandle	  			= mTweenService->createTween<glm::vec3>(sphere_position, pos, mTweenDuration, (ETweenEasing)mCurrentTweenType, (ETweenMode)mCurrentTweenMode);
+		mMovementTweenHandle	  			= mTweenService->createTween<glm::vec3>(sphere_position, pos, mTweenDuration, (ETweenEaseType)mCurrentTweenType, (ETweenMode)mCurrentTweenMode);
 
 		// get reference to tween from tween handle
 		Tween<glm::vec3>& movement_tween 	= mMovementTweenHandle->getTween();
@@ -214,7 +171,7 @@ namespace nap
 
 		// animate the animation intensity uniform of the plane
 		mAnimationIntensity 	= 0.0f;
-		mAnimationTweenHandle	= mTweenService->createTween<float>(0.0f, 1.0f, 0.5f, ETweenEasing::CIRC_OUT);
+		mAnimationTweenHandle	= mTweenService->createTween<float>(0.0f, 1.0f, 0.5f, ETweenEaseType::CIRC_OUT);
 		mAnimationTweenHandle->getTween().UpdateSignal.connect([this](const float& value){
 			mAnimationIntensity = value;
 		});

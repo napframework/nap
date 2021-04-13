@@ -7,7 +7,7 @@
 namespace nap
 {
 	/**
-	 * All tween mode available
+	 * All available tween modes (serializable)
 	 */
 	enum ETweenMode : int
 	{

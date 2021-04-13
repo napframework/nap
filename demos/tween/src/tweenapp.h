@@ -95,7 +95,7 @@ namespace nap
 
 		// Tween properties
 		float mTweenDuration = 1.0f;									//< Tween duration
-		ETweenEasing mCurrentTweenType = ETweenEasing::CUBIC_OUT;		//< Tween ease type
+		ETweenEaseType mCurrentTweenType = ETweenEaseType::CUBIC_OUT;		//< Tween ease type
 		ETweenMode mCurrentTweenMode = ETweenMode::NORMAL;				//< Tween mode
 		std::unique_ptr<TweenHandle<glm::vec3>> mMovementTweenHandle; 	//< Handle of tween of sphere movement
 		std::unique_ptr<TweenHandle<float>> 	mAnimationTweenHandle; 	//< Handle of animation tween of plane shader

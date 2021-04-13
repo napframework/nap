@@ -12,9 +12,9 @@
 namespace nap
 {
 	/**
-	 * Every possible tween ease type
+	 * Every possible tween ease type (serializable)
 	 */
-	enum ETweenEasing : int
+	enum ETweenEaseType : int
 	{
 		LINEAR 			= 0,
 		CUBIC_IN	  	= 1,

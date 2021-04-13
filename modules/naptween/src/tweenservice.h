@@ -54,7 +54,7 @@ namespace nap
 		 * @tparam T the value type to tween
 		 */
 		template<typename T>
-		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, ETweenEasing easeType = ETweenEasing::LINEAR, ETweenMode mode = ETweenMode::NORMAL);
+		std::unique_ptr<TweenHandle<T>> createTween(T startValue, T endValue, float duration, ETweenEaseType easeType = ETweenEaseType::LINEAR, ETweenMode mode = ETweenMode::NORMAL);
 	protected:
 
 		/**
@@ -99,7 +99,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, ETweenEasing easeType, ETweenMode mode)
+	std::unique_ptr<TweenHandle<T>> TweenService::createTween(T startValue, T endValue, float duration, ETweenEaseType easeType, ETweenMode mode)
 	{
 		// construct tween
 		std::unique_ptr<Tween<T>> tween = std::make_unique<Tween<T>>(startValue, endValue, duration);
