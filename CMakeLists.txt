@@ -216,6 +216,7 @@ add_subdirectory(4dsound_modules/spatialheadphones)
 add_subdirectory(4dsound_modules/napnativefiledialog)
 add_subdirectory(4dsound_modules/napturboactivate)
 add_subdirectory(4dsound_modules/napguilayout)
+add_subdirectory(4dsound_modules/napcontrol)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
