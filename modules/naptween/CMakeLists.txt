@@ -1,4 +1,4 @@
-# module name
+# Exclude for Android
 project(mod_naptween)
 
 # add all cpp files to SOURCES
@@ -9,6 +9,9 @@ source_group("sources" FILES ${SOURCES})
 
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
+
+# Find GLM
+find_package(glm REQUIRED)
 
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
