@@ -10,9 +10,6 @@ source_group("sources" FILES ${SOURCES})
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-# Find GLM
-find_package(glm REQUIRED)
-
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
@@ -21,8 +18,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS} src)
-
+target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
