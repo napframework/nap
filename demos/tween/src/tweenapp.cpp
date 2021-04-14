@@ -14,7 +14,6 @@
 #include <scene.h>
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
-#include <imgui/imgui.h>
 #include <mathutils.h>
 #include <meshutils.h>
 #include <uniforminstance.h>
@@ -96,9 +95,11 @@ namespace nap
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		uniform_instance = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 
+		/// Set intensity in shader
 		UniformFloatInstance* animator_intensity_uniform = uniform_instance->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
 		animator_intensity_uniform->setValue(mAnimationIntensity);
 
+		// Set animation position in shader
 		UniformVec2Instance* animator_pos_uniform = uniform_instance->getOrCreateUniform<nap::UniformVec2Instance>("animationPos");
 		animator_pos_uniform->setValue(mAnimationPos);
 
@@ -152,16 +153,16 @@ namespace nap
 	void TweenApp::createTween(const glm::vec3& pos)
 	{
 		// get the sphere transformation
-		auto& sphere_transform 				= mSphereEntity->getComponent<TransformComponentInstance>();
+		auto& sphere_transform = mSphereEntity->getComponent<TransformComponentInstance>();
 
 		// get the current sphere position in world coordinates
-		glm::vec3 sphere_position 			= math::extractPosition(sphere_transform.getGlobalTransform());
+		glm::vec3 sphere_position = math::extractPosition(sphere_transform.getGlobalTransform());
 
 		// create a tween and store the handle
-		mMovementTweenHandle	  			= mTweenService->createTween<glm::vec3>(sphere_position, pos, mTweenDuration, (ETweenEaseType)mCurrentTweenType, (ETweenMode)mCurrentTweenMode);
+		mMovementTweenHandle = mTweenService->createTween<glm::vec3>(sphere_position, pos, mTweenDuration, (ETweenEaseType)mCurrentTweenType, (ETweenMode)mCurrentTweenMode);
 
 		// get reference to tween from tween handle
-		Tween<glm::vec3>& movement_tween 	= mMovementTweenHandle->getTween();
+		Tween<glm::vec3>& movement_tween = mMovementTweenHandle->getTween();
 
 		// connect to update signal
 		movement_tween.UpdateSignal.connect([this](const glm::vec3& value) {
@@ -172,7 +173,8 @@ namespace nap
 		// animate the animation intensity uniform of the plane
 		mAnimationIntensity 	= 0.0f;
 		mAnimationTweenHandle	= mTweenService->createTween<float>(0.0f, 1.0f, 0.5f, ETweenEaseType::CIRC_OUT);
-		mAnimationTweenHandle->getTween().UpdateSignal.connect([this](const float& value){
+		mAnimationTweenHandle->getTween().UpdateSignal.connect([this](const float& value)
+		{
 			mAnimationIntensity = value;
 		});
 	}
@@ -320,10 +322,8 @@ namespace nap
 		}
 	}
 
-
 	int TweenApp::shutdown()
 	{
 		return 0;
 	}
-
 }
