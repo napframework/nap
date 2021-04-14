@@ -53,6 +53,12 @@ namespace nap
 		 */
 		void setControlThread(ControlThread& controlThread);
 
+		/**
+		 * Remove the service to be processed from a control thread.
+		 * Unregisters the processing task from the thread.
+		 */
+		void removeControlThread();
+
 	protected:
 		/**
 		 * Registers all objects that need a specific way of construction

@@ -92,6 +92,13 @@ namespace nap
 	}
 
 
+	void OSCService::removeControlThread()
+	{
+		mControlThread->disconnectPeriodicTask(mProcessSlot);
+		mControlThread = nullptr;
+	}
+
+
 	void OSCService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<OSCReceiverObjectCreator>(*this));
