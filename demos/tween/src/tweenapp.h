@@ -38,22 +38,22 @@ namespace nap
 		TweenApp(nap::Core& core) : App(core)	{ }
 
 		/**
-		 *	Initialize app specific data structures
+		 * Initialize app specific data structures
 		 */
 		bool init(utility::ErrorState& error) override;
 
 		/**
-		 *	Update is called before render, performs all the app logic
+		 * Update is called before render, performs all the app logic
 		 */
 		void update(double deltaTime) override;
 
 		/**
-		 *	Render is called after update, pushes all renderable objects to the GPU
+		 * Render is called after update, pushes all renderable objects to the GPU
 		 */
 		void render() override;
 
 		/**
-		 *	Forwards the received window event to the render service
+		 * Forwards the received window event to the render service
 		 */
 		void windowMessageReceived(WindowEventPtr windowEvent) override;
 
@@ -63,7 +63,7 @@ namespace nap
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 
 		/**
-		 *	Called when loop finishes
+		 * Called when loop finishes
 		 */
 		int shutdown() override;
 
