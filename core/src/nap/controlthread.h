@@ -22,10 +22,15 @@ namespace nap
 		~ControlThread();
 
 		/**
-		 * Set the control rate.
+		 * Set the desired control rate. This is the maximum speed at which the control loop is capped.
 		 * @param rate in Hz
 		 */
-		void setControlRate(float rate);
+		void setDesiredControlRate(float rate);
+
+		/**
+		 * @return The desired control rate. This is the maximum speed at which the control loop is capped.
+		 */
+		float getDesiredControlRate() const { return mDesiredControlRate; }
 
 		/**
 		 * Starts the thread, if it is not running already.
@@ -68,10 +73,30 @@ namespace nap
 		 */
 		static ControlThread& get();
 
+		/**
+		 * @return number of frames per second
+		 */
+		float getControlRate() const { return mControlRate; }
+
 	private:
 		void loop();
 
+		// Calculates the framerate over time
+		void calculateFramerate(double deltaTime);
+
+		// The control rate cap
+		float mDesiredControlRate = 0.0f;
+
+		// Current actual framerate
+		float mControlRate = 0.0f;
+
+		// Used to calculate framerate over time
+		std::array<double, 20> mTicks;
+		double mTicksum = 0;
+		uint32 mTickIdx = 0;
+		double mLastTimeStamp = 0;
 		MicroSeconds mWaitTime;
+
 		std::atomic<bool> mRunning = { false };
 		TaskQueue mTaskQueue;
 		std::unique_ptr<std::thread> mThread = nullptr;

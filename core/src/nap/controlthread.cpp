@@ -5,7 +5,7 @@ namespace nap
 
 	ControlThread::ControlThread(float rate)
 	{
-		setControlRate(rate);
+		setDesiredControlRate(rate);
 	}
 
 
@@ -16,8 +16,9 @@ namespace nap
 	}
 
 
-	void ControlThread::setControlRate(float rate)
+	void ControlThread::setDesiredControlRate(float rate)
 	{
+		mDesiredControlRate = rate;
 		mWaitTime = MicroSeconds(static_cast<long>(1000000.0 / static_cast<double>(rate)));
 	}
 
@@ -69,19 +70,32 @@ namespace nap
 
 		while (isRunning())
 		{
-			mTaskQueue.process();
+			// Get current time in milliseconds
+			double new_elapsed_time = timer.getElapsedTime();
+
+			// Calculate amount of milliseconds since last time stamp
+			double delta_time = new_elapsed_time - mLastTimeStamp;
+
+			// Store time stamp
+			mLastTimeStamp = new_elapsed_time;
+
+			// Update framerate
+			calculateFramerate(delta_time);
 
 			// Get time point for next frame
 			frame_time = timer.getMicros() + mWaitTime;
 
-			// update
-			mUpdateSignal(std::chrono::duration_cast<Milliseconds>(delay_time).count());
+			// Update
+			mUpdateSignal(delta_time);
+
+			// Process scheduled tasks
+			mTaskQueue.process();
 
 			// Only sleep when there is at least 1 millisecond that needs to be compensated for
 			// The actual outcome of the sleep call can vary greatly from system to system
 			// And is more accurate with lower framerate limitations
 			delay_time = frame_time - timer.getMicros();
-			if(std::chrono::duration_cast<Milliseconds>(delay_time).count() > 0)
+			if (std::chrono::duration_cast<Milliseconds>(delay_time).count() > 0)
 				std::this_thread::sleep_for(delay_time);
 		}
 	}
@@ -91,6 +105,17 @@ namespace nap
 	{
 		static ControlThread instance;
 		return instance;
+	}
+
+
+	void ControlThread::calculateFramerate(double deltaTime)
+	{
+		mTicksum -= mTicks[mTickIdx];			// subtract value falling off
+		mTicksum += deltaTime;					// add new value
+		mTicks[mTickIdx] = deltaTime;			// save new value so it can be subtracted later */
+		if (++mTickIdx == mTicks.size())		// inc buffer index
+			mTickIdx = 0;
+		mControlRate = static_cast<double>(mTicks.size()) / mTicksum;
 	}
 
 
