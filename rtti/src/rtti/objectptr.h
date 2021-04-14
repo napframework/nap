@@ -120,6 +120,7 @@ namespace nap
 			template<class OBJECTSBYIDMAP>
 			void patchPointers(OBJECTSBYIDMAP& newTargetObjects)
 			{
+				std::lock_guard<std::mutex> lock(mMutex);
 				for (ObjectPtrBase* ptr : mObjectPointers)
 				{
 					rtti::Object* target = ptr->get();
@@ -139,6 +140,7 @@ namespace nap
 			 */
 			void resetPointers(const rtti::Object& targetObject)
 			{
+				std::lock_guard<std::mutex> lock(mMutex);
 				for (ObjectPtrBase* ptr : mObjectPointers)
 					if (ptr->get() == &targetObject)
 						ptr->set(nullptr);
@@ -152,6 +154,7 @@ namespace nap
 			 */
 			void add(ObjectPtrBase& ptr)
 			{
+				std::lock_guard<std::mutex> lock(mMutex);
 				mObjectPointers.insert(&ptr);
 			}
 
@@ -160,11 +163,12 @@ namespace nap
  			 */
 			void remove(ObjectPtrBase& ptr)
 			{
+				std::lock_guard<std::mutex> lock(mMutex);
 				mObjectPointers.erase(&ptr);
 			}
 
 			ObjectPtrSet mObjectPointers;		///< Set of all pointers in the manager
-			
+			std::mutex mMutex;					///< Mutex to guard thread safety within the manager
 		};
 
 		/**
