@@ -41,17 +41,19 @@ namespace nap
 	{
 		if (waitUntilDone)
 		{
-			mNotified = false;
+			std::condition_variable condition;
+			std::mutex mutex;
+			bool notified = false;
 			auto taskPtr = &task;
 			enqueue([&, taskPtr](){
-			  std::unique_lock<std::mutex> lock(mMutex);
+			  std::unique_lock<std::mutex> lock(mutex);
 			  (*taskPtr)();
-			  mNotified = true;
-			  mCondition.notify_one();
+			  notified = true;
+			  condition.notify_one();
 			});
-			std::unique_lock<std::mutex> lock(mMutex);
-			mCondition.wait(lock, [&](){ return mNotified; });
-			mNotified = false;
+			std::unique_lock<std::mutex> lock(mutex);
+			condition.wait(lock, [&](){ return notified; });
+			notified = false;
 		}
 		else
 			mTaskQueue.enqueue(task);

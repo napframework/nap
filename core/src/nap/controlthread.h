@@ -76,25 +76,30 @@ namespace nap
 		TaskQueue mTaskQueue;
 		std::unique_ptr<std::thread> mThread = nullptr;
 		Signal<double> mUpdateSignal;
-		std::condition_variable mCondition;
-		std::mutex mMutex;
-		bool mNotified = false;
 	};
 
 
 	template <typename T>
 	void ControlThread::connectPeriodicTask(T& slot)
 	{
-		auto slotPtr = &slot;
-		enqueue([&, slotPtr](){ mUpdateSignal.connect(*slotPtr); });
+		if (!mRunning.load())
+			mUpdateSignal.connect(slot);
+		else {
+			auto slotPtr = &slot;
+			enqueue([&, slotPtr](){ mUpdateSignal.connect(*slotPtr); });
+		}
 	}
 
 
 	template <typename T>
 	void ControlThread::disconnectPeriodicTask(T& slot)
 	{
-		auto slotPtr = &slot;
-		enqueue([&, slotPtr](){ mUpdateSignal.disconnect(*slotPtr); }, true);
+		if (!mRunning.load())
+			mUpdateSignal.disconnect(slot);
+		else {
+			auto slotPtr = &slot;
+			enqueue([&, slotPtr](){ mUpdateSignal.disconnect(*slotPtr); }, true);
+		}
 	}
 
 
