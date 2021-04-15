@@ -64,6 +64,13 @@ namespace nap
 		class None : public Action { RTTI_ENABLE() };
 
 		/**
+		 * None pressed is an action that happens when mouse is pressed when no action is active inside
+		 * the sequencer window. This is to prevent un-intented actions to happen when mouse is pressed and then
+		 * dragged into the sequencer window
+		 */
+		class NonePressed : public Action{ RTTI_ENABLE() };
+
+		/**
 		 * TrackAction is the base class for any action that happens on a track
 		 * Every track action has a track id, which identifies the track that the action applies to
 		 */

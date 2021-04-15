@@ -369,6 +369,7 @@ namespace nap
 				// Notify listeners
 				postTick.trigger(*this);
 			}
+
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
 	}

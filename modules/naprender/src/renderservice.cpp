@@ -1201,11 +1201,13 @@ namespace nap
 		assert(mSceneService != nullptr);
 
 		// Initialize SDL video
-		if (!errorState.check(SDL::initVideo(), "Failed to init SDL"))
+		mSDLInitialized = SDL::initVideo();
+		if (!errorState.check(mSDLInitialized, "Failed to init SDL"))
 			return false;
 
 		// Initialize shader compiler
-		if (!errorState.check(ShInitialize() != 0, "Failed to initialize shader compiler"))
+		mShInitialized = ShInitialize() != 0;
+		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
 
 		// Store render settings, used for initialization and global window creation
@@ -1511,8 +1513,18 @@ namespace nap
 			mInstance = VK_NULL_HANDLE;
 		}
 
-		SDL::shutdownVideo();
-		ShFinalize();
+		if (mShInitialized)
+		{
+			ShFinalize();
+			mShInitialized = false;
+		}
+
+		if (mSDLInitialized)
+		{
+			SDL::shutdownVideo();
+			mSDLInitialized = false;
+		}
+
 		mInitialized = false;
 	}
 	

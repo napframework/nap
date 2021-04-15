@@ -44,7 +44,7 @@ namespace nap
 			 * @param object pointer object to serialize
 			 * @param errorState holds information about any errors
 			 */
-			void addObject(const rtti::Object* object, utility::ErrorState& errorState);
+			void addObject(const rtti::Object* object, const std::string& sequenceName, utility::ErrorState& errorState);
 
 			/**
 			 * Deserialize clipboard content to object of type T
@@ -91,7 +91,7 @@ namespace nap
 			 * @param objectID the object id of serialized object
 			 * @return true if clipboard contains serialized object
 			 */
-			bool containsObject(const std::string& objectID) const;
+			bool containsObject(const std::string& objectID, const std::string& sequenceName) const;
 
 			/**
 			 * removes specified object from clipboard when it is contained, no assert when not present
@@ -115,6 +115,7 @@ namespace nap
 			// the serialized objects
 			std::map<std::string, std::string> 	mSerializedObjects;
 			rttr::type 							mTrackType;
+			std::string 						mSequenceName;
 		};
 
 		// shortcut

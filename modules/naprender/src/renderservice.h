@@ -915,6 +915,8 @@ namespace nap
 		PipelineCache							mPipelineCache;
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;
+		bool									mSDLInitialized = false;
+		bool									mShInitialized = false;
 		UniqueMaterialCache						mMaterials;
 		bool									mHeadless = false;
 	};
