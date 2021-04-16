@@ -88,7 +88,6 @@ namespace nap
 		////////////////////////////////////////////////////////////////////////////
 
 		/**
-		 * Combo
 		 * Combobox that takes std::vector as input
 		 * @param label label of box
 		 * @param currIndex current index of combo box
@@ -98,7 +97,6 @@ namespace nap
 		static bool Combo(const char* label, int* currIndex, std::vector<std::string>& values);
 
 		/**
-		 * ListBox
 		 * ListBox that takes std::vector as input
 		 * @param label label of box
 		 * @param currIndex current index of combo box
@@ -107,9 +105,7 @@ namespace nap
 		 */
 		static bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
 
-
 		/**
-		 * formatTimeString
 		 * formats time ( seconds ) to human readable time
 		 * @param time time
 		 * @return string with readable time

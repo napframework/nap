@@ -53,7 +53,7 @@ namespace nap
 
 	nap::CalendarItem::Point::Point(Time time, Time duration) :
 		mTime(std::move(time)), 
-		mDuration(std::move(mDuration))
+		mDuration(std::move(duration))
 	{ }
 
 
