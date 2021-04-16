@@ -44,7 +44,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Calendar
 	//////////////////////////////////////////////////////////////////////////
-	
+
 	Calendar::Calendar(nap::Core& core) : ICalendar(core) { }
 
 
@@ -69,7 +69,7 @@ namespace nap
 	// Instance
 	//////////////////////////////////////////////////////////////////////////
 
-	nap::CalendarInstance::CalendarInstance(nap::Core& core) : mCore(core) 
+	nap::CalendarInstance::CalendarInstance(nap::Core& core) : mCore(core)
 	{ }
 
 
@@ -78,31 +78,44 @@ namespace nap
 		// Calendar name
 		if (!error.check(!name.empty(), "No calendar name specified"))
 			return false;
+		
 		mName = name;
 
 		// Get calendar path
 		std::string path = utility::stringFormat("%s/%s/%s.json", mCore.getProjectInfo()->getDataDirectory().c_str(),
-			calendarDirectory, getName().c_str());
+												 calendarDirectory, getName().c_str());
 		mPath = utility::toComparableFilename(path);
+
+		bool load_succes = false;
 
 		// Load calendar if file exists
 		if (utility::fileExists(mPath))
-		{ 
-			if (!allowFailure)
+		{
+			load_succes = load(error);
+		}
+
+		if(!load_succes)
+		{
+			// bail if we are not allowed to fail
+			if(!allowFailure)
+			{
+				error.fail("Failed to load calendar: %s", mPath.c_str());
 				return false;
+			}
 
 			// Loads defaults if failure is allowed
 			nap::Logger::warn("Unable to load calendar: %s, %s", mPath.c_str(), error.toString().c_str());
 			nap::Logger::warn("Loading calendar defaults");
+
+			// load default
+			mItems.clear();
+			mItems.reserve(items.size());
+			for (const auto& item : items)
+			{
+				mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
+			}
 		}
 
-		// Otherwise load default
-		mItems.clear();
-		mItems.reserve(items.size());
-		for (const auto& item : items)
-		{
-			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
-		}
 		return true;
 	}
 
@@ -111,7 +124,7 @@ namespace nap
 	{
 		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
 		{
-			return it->mID == id;
+		  return it->mID == id;
 		});
 
 		if (found_it != mItems.end())
@@ -135,7 +148,7 @@ namespace nap
 	{
 		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
 		{
-			return it->mID == id;
+		  return it->mID == id;
 		});
 		return found_it != mItems.end() ? (*found_it).get() : nullptr;
 	}
@@ -145,7 +158,7 @@ namespace nap
 	{
 		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
 		{
-			return it->mTitle == title;
+		  return it->mTitle == title;
 		});
 		return found_it != mItems.end() ? (*found_it).get() : nullptr;
 	}
@@ -196,7 +209,7 @@ namespace nap
 		rtti::JSONWriter writer;
 		if (!rtti::serializeObjects(resources, writer, error))
 			return false;
-		
+
 		// Make sure we can write to the directory
 		std::string storage_dir = utility::getFileDir(getPath());
 		if (!utility::dirExists(storage_dir))
