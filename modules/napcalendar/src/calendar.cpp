@@ -85,24 +85,36 @@ namespace nap
 			calendarDirectory, getName().c_str());
 		mPath = utility::toComparableFilename(path);
 
+		bool load_succes = false;
+
 		// Load calendar if file exists
 		if (utility::fileExists(mPath))
-		{ 
-			if (!allowFailure)
+		{
+			load_succes = load(error);
+		}
+
+		if(!load_succes)
+		{
+			// bail if we are not allowed to fail
+			if(!allowFailure)
+			{
+				error.fail("Failed to load calendar: %s", mPath.c_str());
 				return false;
+			}
 
 			// Loads defaults if failure is allowed
 			nap::Logger::warn("Unable to load calendar: %s, %s", mPath.c_str(), error.toString().c_str());
 			nap::Logger::warn("Loading calendar defaults");
+
+			// load default
+			mItems.clear();
+			mItems.reserve(items.size());
+			for (const auto& item : items)
+			{
+				mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
+			}
 		}
 
-		// Otherwise load default
-		mItems.clear();
-		mItems.reserve(items.size());
-		for (const auto& item : items)
-		{
-			mItems.emplace_back(rtti::cloneObject(*item, mCore.getResourceManager()->getFactory()));
-		}
 		return true;
 	}
 
