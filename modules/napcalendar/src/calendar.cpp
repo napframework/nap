@@ -44,7 +44,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Calendar
 	//////////////////////////////////////////////////////////////////////////
-	
+
 	Calendar::Calendar(nap::Core& core) : ICalendar(core) { }
 
 
@@ -69,7 +69,7 @@ namespace nap
 	// Instance
 	//////////////////////////////////////////////////////////////////////////
 
-	nap::CalendarInstance::CalendarInstance(nap::Core& core) : mCore(core) 
+	nap::CalendarInstance::CalendarInstance(nap::Core& core) : mCore(core)
 	{ }
 
 
@@ -87,7 +87,10 @@ namespace nap
 
 		// Load calendar if file exists
 		if (utility::fileExists(mPath))
-		{ 
+		{
+			if (load(error))
+				return true;
+
 			if (!allowFailure)
 				return false;
 
@@ -111,7 +114,7 @@ namespace nap
 	{
 		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
 		{
-			return it->mID == id;
+		  return it->mID == id;
 		});
 
 		if (found_it != mItems.end())
@@ -135,7 +138,7 @@ namespace nap
 	{
 		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
 		{
-			return it->mID == id;
+		  return it->mID == id;
 		});
 		return found_it != mItems.end() ? (*found_it).get() : nullptr;
 	}
@@ -145,7 +148,7 @@ namespace nap
 	{
 		auto found_it = std::find_if(mItems.begin(), mItems.end(), [&](const auto& it)
 		{
-			return it->mTitle == title;
+		  return it->mTitle == title;
 		});
 		return found_it != mItems.end() ? (*found_it).get() : nullptr;
 	}
@@ -196,7 +199,7 @@ namespace nap
 		rtti::JSONWriter writer;
 		if (!rtti::serializeObjects(resources, writer, error))
 			return false;
-		
+
 		// Make sure we can write to the directory
 		std::string storage_dir = utility::getFileDir(getPath());
 		if (!utility::dirExists(storage_dir))
