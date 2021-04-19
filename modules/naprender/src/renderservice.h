@@ -779,6 +779,12 @@ namespace nap
 		void removeTextureRequests(Texture2D& texture);
 
 		/**
+		* Request a texture clear
+		* @param texture the texture to clear.
+		*/
+		void requestTextureClear(Texture2D& texture);
+
+		/**
 		 * Request a pixel data transfer, from a staging buffer to image buffer.
 		 * @param texture the texture to upload.
 		 */
@@ -885,6 +891,7 @@ namespace nap
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
 		std::unique_ptr<Texture2D>				mEmptyTexture;
+		TextureSet								mTexturesToClear;
 		TextureSet								mTexturesToUpload;
 		BufferSet								mBuffersToUpload;
 
