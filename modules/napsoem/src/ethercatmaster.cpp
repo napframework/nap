@@ -161,8 +161,10 @@ namespace nap
 		ecx_configdc(context);
 
 		// All slaves should be in pre-op mode now
-		if (stateCheck(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::PreOperational);
-		nap::Logger::warn("Not all slaves reached pre-operational state");
+		if (stateCheck(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::PreOperational)
+		{
+			nap::Logger::warn("Not all slaves reached pre-operational state");
+		}
 
 		// Allow derived class to startup
 		readState();
@@ -188,7 +190,9 @@ namespace nap
 
 		// All slaves should be in safe-op mode now
 		if (stateCheck(0, ESlaveState::SafeOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::SafeOperational)
+		{
 			nap::Logger::warn("Not all slaves reached safe-operational state");
+		}
 
 		// Calculate slave work counter, used to check in the error loop if slaves got lost
 		ec_groupt& master_group = context->grouplist[0];
