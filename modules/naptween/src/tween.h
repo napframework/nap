@@ -60,11 +60,13 @@ namespace nap
 
 	/**
 	 * A Tween is responsible for interpolating between two values over the period of a certain time using an easing method ( see : https://github.com/jesusgollonet/ofpennereasing )
-	 * A Tween is updated by the TweenService, which holds all unique pointers to Tweens and thus retains ownership over all Tweens created
-	 * This is the reason the only way to create a working tween is by calling createTween on the TweenService
-	 * Because a Tween is always created and updated by the TweenService, it means all update calls will occur on the main thread
+	 * A Tween can be created by the user in which case the user is responsible for updating and managing the tween.
+	 * A Tween can also be created by the TweenService
+	 * When the Tween is created by the TweenService, the service retains the unique pointers to the Tween and gives back a tween handle to the user
+	 * When the Tween is created by the TweenService, the tween will receive update calls from the service, which is the main thread
+	 * this update call happens before the update call on components and application
 	 * You can tween any type that supports arithmetic operators
-	 * Please note that a tween can ONLY be accessible outside the TweenService by using the TweenHandle
+	 * Please note that when the tween is created by the TweenService, it can ONLY be accessible outside the TweenService by using the TweenHandle
 	 * @tparam T the type of value that you would like to tween
 	 */
 	template<typename T>
@@ -377,107 +379,46 @@ namespace nap
 	template<typename T>
 	void Tween<T>::setEase(ETweenEaseType easing)
 	{
+		static std::unordered_map<ETweenEaseType, std::function<std::unique_ptr<TweenEaseBase<T>>()>> ease_constructors
+		{
+			{ETweenEaseType::LINEAR, 		[](){ return std::make_unique<TweenEaseLinear<T>>(); 		}},
+			{ETweenEaseType::CUBIC_INOUT, 	[](){ return std::make_unique<TweenEaseOutCubic<T>>(); 		}},
+			{ETweenEaseType::CUBIC_OUT, 	[](){ return std::make_unique<TweenEaseOutCubic<T>>(); 		}},
+			{ETweenEaseType::CUBIC_IN, 		[](){ return std::make_unique<TweenEaseInCubic<T>>(); 		}},
+			{ETweenEaseType::BACK_OUT, 		[](){ return std::make_unique<TweenEaseOutBack<T>>(); 		}},
+			{ETweenEaseType::BACK_INOUT, 	[](){ return std::make_unique<TweenEaseInOutBack<T>>(); 	}},
+			{ETweenEaseType::BACK_IN, 		[](){ return std::make_unique<TweenEaseInBack<T>>(); 		}},
+			{ETweenEaseType::BOUNCE_OUT, 	[](){ return std::make_unique<TweenEaseOutBounce<T>>(); 	}},
+			{ETweenEaseType::BOUNCE_INOUT, 	[](){ return std::make_unique<TweenEaseInOutBounce<T>>(); 	}},
+			{ETweenEaseType::BOUNCE_IN, 	[](){ return std::make_unique<TweenEaseInBounce<T>>(); 		}},
+			{ETweenEaseType::CIRC_OUT,	 	[](){ return std::make_unique<TweenEaseOutCirc<T>>(); 		}},
+			{ETweenEaseType::CIRC_INOUT, 	[](){ return std::make_unique<TweenEaseInOutCirc<T>>(); 	}},
+			{ETweenEaseType::CIRC_IN, 		[](){ return std::make_unique<TweenEaseInCirc<T>>(); 		}},
+			{ETweenEaseType::ELASTIC_OUT, 	[](){ return std::make_unique<TweenEaseOutElastic<T>>(); 	}},
+			{ETweenEaseType::ELASTIC_INOUT, [](){ return std::make_unique<TweenEaseInOutElastic<T>>(); 	}},
+			{ETweenEaseType::ELASTIC_IN, 	[](){ return std::make_unique<TweenEaseInElastic<T>>(); 	}},
+			{ETweenEaseType::EXPO_OUT, 		[](){ return std::make_unique<TweenEaseOutExpo<T>>(); 		}},
+			{ETweenEaseType::EXPO_INOUT, 	[](){ return std::make_unique<TweenEaseInOutExpo<T>>(); 	}},
+			{ETweenEaseType::EXPO_IN, 		[](){ return std::make_unique<TweenEaseInExpo<T>>(); 		}},
+			{ETweenEaseType::QUAD_OUT, 		[](){ return std::make_unique<TweenEaseOutQuad<T>>(); 		}},
+			{ETweenEaseType::QUAD_INOUT, 	[](){ return std::make_unique<TweenEaseInOutQuad<T>>(); 	}},
+			{ETweenEaseType::QUAD_IN, 		[](){ return std::make_unique<TweenEaseInQuad<T>>(); 		}},
+			{ETweenEaseType::QUART_OUT, 	[](){ return std::make_unique<TweenEaseOutQuart<T>>(); 		}},
+			{ETweenEaseType::QUART_INOUT, 	[](){ return std::make_unique<TweenEaseInOutQuart<T>>(); 	}},
+			{ETweenEaseType::QUART_IN, 		[](){ return std::make_unique<TweenEaseInQuart<T>>(); 		}},
+			{ETweenEaseType::QUINT_OUT, 	[](){ return std::make_unique<TweenEaseOutQuint<T>>(); 		}},
+			{ETweenEaseType::QUINT_INOUT, 	[](){ return std::make_unique<TweenEaseInOutQuint<T>>(); 	}},
+			{ETweenEaseType::QUINT_IN, 		[](){ return std::make_unique<TweenEaseInQuint<T>>(); 		}},
+			{ETweenEaseType::SINE_OUT, 		[](){ return std::make_unique<TweenEaseInSine<T>>(); 		}},
+			{ETweenEaseType::SINE_INOUT, 	[](){ return std::make_unique<TweenEaseInOutSine<T>>(); 	}},
+			{ETweenEaseType::SINE_IN, 		[](){ return std::make_unique<TweenEaseInSine<T>>(); 		}}
+		};
+
 		mEasing = easing;
 
-		switch (easing)
-		{
-		default:
-			nap::Logger::warn("Unknown easing mode, choosing default linear easing");
-			mEasing = ETweenEaseType::LINEAR;
-		case ETweenEaseType::LINEAR:
-			mEase = std::make_unique<TweenEaseLinear<T>>();
-			break;
-		case ETweenEaseType::CUBIC_INOUT:
-			mEase = std::make_unique<TweenEaseInOutCubic<T>>();
-			break;
-		case ETweenEaseType::CUBIC_OUT:
-			mEase = std::make_unique<TweenEaseOutCubic<T>>();
-			break;
-		case ETweenEaseType::CUBIC_IN:
-			mEase = std::make_unique<TweenEaseInCubic<T>>();
-			break;
-		case ETweenEaseType::BACK_OUT:
-			mEase = std::make_unique<TweenEaseOutBack<T>>();
-			break;
-		case ETweenEaseType::BACK_INOUT:
-			mEase = std::make_unique<TweenEaseInOutBack<T>>();
-			break;
-		case ETweenEaseType::BACK_IN:
-			mEase = std::make_unique<TweenEaseInBack<T>>();
-			break;
-		case ETweenEaseType::BOUNCE_OUT:
-			mEase = std::make_unique<TweenEaseOutBounce<T>>();
-			break;
-		case ETweenEaseType::BOUNCE_INOUT:
-			mEase = std::make_unique<TweenEaseInOutBounce<T>>();
-			break;
-		case ETweenEaseType::BOUNCE_IN:
-			mEase = std::make_unique<TweenEaseInBounce<T>>();
-			break;
-		case ETweenEaseType::CIRC_OUT:
-			mEase = std::make_unique<TweenEaseOutCirc<T>>();
-			break;
-		case ETweenEaseType::CIRC_INOUT:
-			mEase = std::make_unique<TweenEaseInOutCirc<T>>();
-			break;
-		case ETweenEaseType::CIRC_IN:
-			mEase = std::make_unique<TweenEaseInCirc<T>>();
-			break;
-		case ETweenEaseType::ELASTIC_OUT:
-			mEase = std::make_unique<TweenEaseOutElastic<T>>();
-			break;
-		case ETweenEaseType::ELASTIC_INOUT:
-			mEase = std::make_unique<TweenEaseInOutElastic<T>>();
-			break;
-		case ETweenEaseType::ELASTIC_IN:
-			mEase = std::make_unique<TweenEaseInElastic<T>>();
-			break;
-		case ETweenEaseType::EXPO_OUT:
-			mEase = std::make_unique<TweenEaseOutExpo<T>>();
-			break;
-		case ETweenEaseType::EXPO_INOUT:
-			mEase = std::make_unique<TweenEaseInOutExpo<T>>();
-			break;
-		case ETweenEaseType::EXPO_IN:
-			mEase = std::make_unique<TweenEaseInExpo<T>>();
-			break;
-		case ETweenEaseType::QUAD_OUT:
-			mEase = std::make_unique<TweenEaseOutQuad<T>>();
-			break;
-		case ETweenEaseType::QUAD_INOUT:
-			mEase = std::make_unique<TweenEaseInOutQuad<T>>();
-			break;
-		case ETweenEaseType::QUAD_IN:
-			mEase = std::make_unique<TweenEaseInQuad<T>>();
-			break;
-		case ETweenEaseType::QUART_OUT:
-			mEase = std::make_unique<TweenEaseOutQuart<T>>();
-			break;
-		case ETweenEaseType::QUART_INOUT:
-			mEase = std::make_unique<TweenEaseInOutQuart<T>>();
-			break;
-		case ETweenEaseType::QUART_IN:
-			mEase = std::make_unique<TweenEaseInQuart<T>>();
-			break;
-		case ETweenEaseType::QUINT_OUT:
-			mEase = std::make_unique<TweenEaseOutQuint<T>>();
-			break;
-		case ETweenEaseType::QUINT_INOUT:
-			mEase = std::make_unique<TweenEaseInOutQuint<T>>();
-			break;
-		case ETweenEaseType::QUINT_IN:
-			mEase = std::make_unique<TweenEaseInQuint<T>>();
-			break;
-		case ETweenEaseType::SINE_OUT:
-			mEase = std::make_unique<TweenEaseOutSine<T>>();
-			break;
-		case ETweenEaseType::SINE_INOUT:
-			mEase = std::make_unique<TweenEaseInOutSine<T>>();
-			break;
-		case ETweenEaseType::SINE_IN:
-			mEase = std::make_unique<TweenEaseInSine<T>>();
-			break;
-		}
+		auto constructor_it = ease_constructors.find(easing);
+		assert(constructor_it != ease_constructors.end()); // entry not found
+		mEase = constructor_it->second();
 	}
 }
 

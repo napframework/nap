@@ -19,7 +19,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The TweenService is responsible for creating, updating and retaining all Tweens
+	 * The TweenService is responsible for creating, updating and retaining Tweens created by the TweenService
 	 * Once you call createTween<T> on the TweenService. It will construct a new Tween and keep the unique_ptr to the Tween stored internally.
 	 * Then, the TweenService will make a handle to that tween and return a unique_ptr to the TweenHandle which needs to be managed outside the TweenService ( typically, by the class from where you call the createTween<T> method )
 	 * The function of the Handle is to provide the user access to the Tween without having to worry about memory managament. Once the unique_ptr of the handle is out of scope, the created handle will be deconstructed and notify the TweenService to mark the Tween for deletion
