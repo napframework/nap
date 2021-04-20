@@ -14,12 +14,12 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
-	//
+	// forward declares
 	class SequencePlayerEventOutput;
 
 	/**
 	 * Adapter responsible for handling events from an event track and sync them with the main thread using a
-	 * sequence event receiver intermediate class.
+	 * SequencePlayerEventOutput intermediate class.
 	 */
 	class SequencePlayerEventAdapter : public SequencePlayerAdapter
 	{
@@ -38,12 +38,15 @@ namespace nap
 		 */
 		void tick(double time) override;
 
+		/**
+		 * called upon destruction of the adapter
+		 */
 		void destroy() override {};
 	private:
 		// reference to track linked to adapter
 		const SequenceTrack& mTrack;
 
-		// reference to receiver linked to adapter
+		// reference to output linked to adapter
 		SequencePlayerEventOutput& 	mOutput;
 
 		// list of dispatched events

@@ -191,17 +191,18 @@ namespace nap
 		ImGui::PopItemWidth();
 
 		// map of inspectors ranges for curve types
-		static std::unordered_map<rttr::type, void(SequenceCurveTrackView::*)(const SequenceTrack&)> s_inspectors{
-				{ RTTI_OF(SequenceTrackCurveFloat) , &SequenceCurveTrackView::drawInspectorRange<float> },
-				{ RTTI_OF(SequenceTrackCurveVec2) , &SequenceCurveTrackView::drawInspectorRange<glm::vec2> },
-				{ RTTI_OF(SequenceTrackCurveVec3) , &SequenceCurveTrackView::drawInspectorRange<glm::vec3> },
-				{ RTTI_OF(SequenceTrackCurveVec4) , &SequenceCurveTrackView::drawInspectorRange<glm::vec4> }
-			};
+		static std::unordered_map<rttr::type, void(SequenceCurveTrackView::*)(const SequenceTrack&)> inspectors
+		{
+			{ RTTI_OF(SequenceTrackCurveFloat) , &SequenceCurveTrackView::drawInspectorRange<float> },
+			{ RTTI_OF(SequenceTrackCurveVec2) , &SequenceCurveTrackView::drawInspectorRange<glm::vec2> },
+			{ RTTI_OF(SequenceTrackCurveVec3) , &SequenceCurveTrackView::drawInspectorRange<glm::vec3> },
+			{ RTTI_OF(SequenceTrackCurveVec4) , &SequenceCurveTrackView::drawInspectorRange<glm::vec4> }
+		};
 
 		// draw inspector
-		auto it = s_inspectors.find(track.get_type());
-		assert(it!= s_inspectors.end()); // type not found
-		if(it != s_inspectors.end())
+		auto it = inspectors.find(track.get_type());
+		assert(it!= inspectors.end()); // type not found
+		if(it != inspectors.end())
 		{
 			(*this.*it->second)(track);
 		}

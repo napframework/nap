@@ -36,18 +36,8 @@ namespace nap
 	bool SequenceControllerCurve::registerUpdateSegmentFunctionForTrackType(const rttr::type& trackType, void(SequenceControllerCurve::*memFun)(SequenceTrack&))
 	{
 		auto& map = getUpdateSegmentFunctionMap();
-
-		auto it = map.find(trackType);
-		assert(it==map.end()); // entry already found
-		if(it==map.end())
-		{
-			map.insert({trackType, memFun});
-		}else
-		{
-			return false;
-		}
-
-		return true;
+		assert(map.find(trackType)==map.end()); // entry already found
+		return map.emplace(trackType, memFun).second;
 	}
 
 
@@ -55,18 +45,8 @@ namespace nap
 																			const SequenceTrackSegment*(SequenceControllerCurve::*memFun)(const std::string&, double))
 	{
 		auto& map = getInsertSegmentFunctionMap();
-
-		auto it = map.find(trackType);
-		assert(it==map.end()); // entry already found
-		if(it==map.end())
-		{
-			map.insert({trackType, memFun});
-		}else
-		{
-			return false;
-		}
-
-		return true;
+		assert(map.find(trackType)==map.end()); // entry already found
+		return map.emplace(trackType, memFun).second;
 	}
 
 
