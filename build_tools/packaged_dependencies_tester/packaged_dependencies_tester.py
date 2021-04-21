@@ -904,7 +904,7 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
     if not success:
         results['runFromPackagedOutput']['exitCode'] = return_code
 
-def build_and_package(root_output_dir, timestamp, testing_projects_dir):
+def build_and_package(root_output_dir, timestamp, testing_projects_dir, projects_to_exclude):
     """Configure, build and package all demos
 
     Parameters
@@ -923,8 +923,10 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
     """
 
     demos_root_dir = os.getcwd()
-
     demo_results = {}
+    excluded_projects = projects_to_exclude.split()
+    for project in excluded_projects:
+        print("excluding project: {0}".format(project))
 
     # Iterate demos
     sorted_dirs = os.listdir('.')
@@ -938,6 +940,10 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
         # If we're iterating our projects directory and we've already got our template project in there
         # from a previous run, don't built it in here as we'll build it separately later
         if demo_name == TEMPLATE_APP_NAME.lower() and testing_projects_dir != DEFAULT_TESTING_PROJECTS_DIR:
+            continue
+
+        # If the project is excluded, skip
+        if demo_name.lower() in excluded_projects:
             continue
 
         print("----------------------------")
@@ -2198,6 +2204,7 @@ def perform_test_run(nap_framework_path,
                      rename_framework, 
                      rename_qt, 
                      create_fake_projects,
+                     excluded_projects,
                      fail_on_unexpected_libs):
     """Main entry point to the testing
 
@@ -2283,7 +2290,7 @@ def perform_test_run(nap_framework_path,
     # Configure, build and package all demos
     phase += 1
     print("============ Phase #%s - Building and packaging demos ============" % phase)
-    demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir)
+    demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir, excluded_projects)
 
     # Package a demo with Napkin
     phase += 1
@@ -2475,6 +2482,8 @@ if __name__ == '__main__':
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
     parser.add_argument('-nf', '--no-fake-projects', action='store_true',
                         help="Don't create fake projects for modules that aren't represented in any demos")
+    parser.add_argument('--exclude-projects', type=str, default='', action='store',
+                        help="space separated list of projects that are excluded from testing")
     parser.add_argument('--fail-on-unexpected-libs', action='store_true',
                         help="Fail the test run if unexpected libraries are encountered")
     if not is_windows():
@@ -2501,5 +2510,6 @@ if __name__ == '__main__':
                                not args.no_rename_framework,
                                not args.no_rename_qt,
                                not args.no_fake_projects,
+                               args.exclude_projects,
                                args.fail_on_unexpected_libs)
     sys.exit(not success)
