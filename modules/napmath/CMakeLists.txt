@@ -32,6 +32,10 @@ copy_module_json_to_bin()
 # Package into platform release
 package_module()
 
+# Package GLM
+install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION thirdparty/glm)
+install(DIRECTORY ${THIRDPARTY_DIR}/glm/glm/ DESTINATION thirdparty/glm)
+
 if (WIN32)
     # Install for fbxconverter
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
