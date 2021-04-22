@@ -1885,7 +1885,8 @@ def dump_json_report(starting_dir,
                      napkin_results,
                      misc_results,
                      always_include_logs,
-                     warnings):
+                     warnings,
+                     excluded_projects):
     """Create a JSON report for the test run, to REPORT_FILENAME
 
     Parameters
@@ -1912,6 +1913,7 @@ def dump_json_report(starting_dir,
         Whether to force inclusion logs for all processes into report, not just on failure
     warnings : list of str
         Any warnings generated throughout the testing
+    excluded: projects that are excluded str
     """
     
     report = {}
@@ -1923,6 +1925,7 @@ def dump_json_report(starting_dir,
     report['run']['startTime'] = timestamp
     report['run']['frameworkPath'] = nap_framework_full_path
     report['run']['warnings'] = warnings
+    report['run']['excluded'] = excluded_projects
 
     # Pull in build info
     with open(os.path.join(nap_framework_full_path, 'cmake', 'build_info.json'), 'r') as build_data:
@@ -2445,7 +2448,8 @@ def perform_test_run(nap_framework_path,
             napkin_results,
             misc_results,
             force_log_reporting,
-            warnings)
+            warnings,
+            excluded_projects)
 
     # Log summary
     print("============ Summary ============")        
@@ -2494,7 +2498,15 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # TODO Look into better options, or at least gracefully handle failure
+    # Ensure working directory is location of this file, ensures relative paths are resolved correctly
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    # Ensure package directory exists
+    if not os.path.exists(args.NAP_FRAMEWORK_PATH):
+        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))  
+        sys.exit(-1)
+
+    # Import python helpers
     sys.path.append(os.path.join(args.NAP_FRAMEWORK_PATH, 'tools', 'platform'))
     from nap_shared import get_full_project_module_requirements
 
