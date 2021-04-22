@@ -2236,11 +2236,6 @@ def perform_test_run(nap_framework_path,
         Success of entire run
     """
 
-    # Check to see if the specified path exists
-    if not os.path.exists(nap_framework_path):
-        print("Error: %s doesn't exist" % nap_framework_path)
-        return False
-
     starting_dir = os.getcwd()
     root_output_dir = os.path.abspath('.')
     nap_framework_full_path = os.path.abspath(nap_framework_path)
@@ -2504,7 +2499,7 @@ if __name__ == '__main__':
     # Ensure package directory exists
     if not os.path.exists(args.NAP_FRAMEWORK_PATH):
         print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))  
-        sys.exit(-1)
+        sys.exit(1)
 
     # Import python helpers
     sys.path.append(os.path.join(args.NAP_FRAMEWORK_PATH, 'tools', 'platform'))
