@@ -19,6 +19,9 @@
 #include <asio/io_service.hpp>
 #include <asio/system_error.hpp>
 
+// Local includes
+#include "udpdevice.h"
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -32,19 +35,13 @@ namespace nap
 	 * The UdpServer fires up its own thread and all UdpPackets pushed to listeners will happen on that thread
 	 * Whenever a listeners is registered or removed it will happen thread-safe
 	 */
-	class NAPAPI UdpServer : public Device
+	class NAPAPI UdpServer : public UdpDevice
 	{
-		RTTI_ENABLE(Device)
+		RTTI_ENABLE(UdpDevice)
 	public:
-		/**
-		 * Fires up the server thread and starts receiving udp
-		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * Stops server thread and stop receiving udp
-		 */
-		virtual void stop() override;
+		virtual void onDestroy() override;
 
 		/**
 		 * Registers a listener. This task will be queued to happen on server thread
@@ -71,19 +68,12 @@ namespace nap
 		std::string mIPRemoteEndpoint 	= "127.0.0.1";  ///< Property: 'Endpoint' the ip adress the server socket binds to
 		int mBufferSize 				= 1024;			///< Property: 'BufferSize' the size of the buffer the server writes to
 		bool mThrowOnInitError 			= true;			///< Property: 'ThrowOnFailure' when server fails to bind socket, return false on start
-	private:
+	protected:
 		/**
 		 * The threaded function
 		 */
-		void receiveThread();
-
-		/**
-		 * The callback called upon receiving udp
-		 * @param error the error_code on error
-		 * @param bytesTransferred the amount of bytes transferred
-		 */
-		void handleReceive(const asio::error_code& error, size_t bytesTransferred);
-
+		void process() override;
+	private:
 		// ASIO
 		asio::io_service 			mIOService;
 		asio::ip::udp::socket 		mSocket{mIOService};
@@ -91,7 +81,6 @@ namespace nap
 		asio::ip::udp::endpoint 	mRemoteEndpoint;
 
 		// Threading
-		std::thread 										mReceiverThread;
 		std::atomic_bool 									mRun;
 		moodycamel::ConcurrentQueue<std::function<void()>> 	mTaskQueue;
 

@@ -27,9 +27,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool UdpServer::start(utility::ErrorState& errorState)
+	bool UdpServer::init(utility::ErrorState& errorState)
 	{
-		mRun = true;
+		mRun.store(true);
 		mBuffer.resize(mBufferSize);
 
 		// try to open socket
@@ -39,11 +39,16 @@ namespace nap
 		if( asio_error_code )
 		{
 			errorState.fail(asio_error_code.message());
+			mRun.store(false);
 
 			if(mThrowOnInitError)
+			{
 				return false;
+			}
 			else
+			{
 				nap::Logger::warn(*this, asio_error_code.message());
+			}
 		}else
 		{
 			// try to bind socket
@@ -52,38 +57,30 @@ namespace nap
 			if( asio_error_code )
 			{
 				errorState.fail(asio_error_code.message());
+
+				mRun.store(false);
 				if(mThrowOnInitError)
 					return false;
 				else
 					nap::Logger::warn(*this, asio_error_code.message());
-			}else
-			{
-				// fire up thread
-				mReceiverThread = std::thread(std::bind(&UdpServer::receiveThread, this));
 			}
 		}
 
 		return true;
 	}
 
-	void UdpServer::stop()
+	void UdpServer::onDestroy()
 	{
-		if(mRun)
+		if(mRun.load())
 		{
-			mRun = false;
+			mRun.store(false);
 			mSocket.close();
-			mReceiverThread.join();
 		}
 	}
 
-	void UdpServer::receiveThread()
+	void UdpServer::process()
 	{
-		// bind callback to receive udp
-		mSocket.async_receive_from(asio::buffer(mBuffer),
-								   mRemoteEndpoint,
-								   std::bind(&UdpServer::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
-
-		while(mRun)
+		if(mRun.load())
 		{
 			// excecute all tasks
 			std::function<void()> queued_task;
@@ -92,41 +89,23 @@ namespace nap
 				queued_task();
 			}
 
-			// run handlers ready to run
-			mIOService.poll();
-		}
+			//
+			size_t bytes_received = mSocket.receive_from(asio::buffer(mBuffer), mRemoteEndpoint);
 
-		nap::Logger::info(*this, "Stopped");
-	}
+			if(bytes_received > 0)
+			{
+				// construct udp packet, clears current buffer
+				std::vector<nap::int8> buffer;
+				buffer.resize(mBufferSize);
+				buffer.swap(mBuffer);
 
-
-	void UdpServer::handleReceive(const asio::error_code& error, size_t bytesTransferred)
-	{
-		// log any errors
-		if (error)
-		{
-			nap::Logger::info(*this,"Receive failed: %s", error.message().c_str());
-			return;
-		}
-
-		// construct udp packet, clears current buffer
-		std::vector<nap::int8> buffer;
-		buffer.resize(mBufferSize);
-		buffer.swap(mBuffer);
-
-		// forward buffer to any listeners
-		UdpPacket packet(std::move(buffer));
-		for(auto* listener : mListeners)
-		{
-			listener->onUdpPacket(packet);
-		}
-
-		// rebind handler to socket if the server is still running
-		if (mRun)
-		{
-			mSocket.async_receive_from(asio::buffer(mBuffer, bytesTransferred),
-									   mRemoteEndpoint,
-									   std::bind(&UdpServer::handleReceive, this, std::placeholders::_1, std::placeholders::_2));
+				// forward buffer to any listeners
+				UdpPacket packet(std::move(buffer));
+				for(auto* listener : mListeners)
+				{
+					listener->onUdpPacket(packet);
+				}
+			}
 		}
 	}
 

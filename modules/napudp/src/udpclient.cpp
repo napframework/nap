@@ -26,7 +26,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool UdpClient::start(utility::ErrorState& errorState)
+	bool UdpClient::init(utility::ErrorState& errorState)
 	{
 		// try to open socket
 		asio::error_code asio_error_code;
@@ -49,21 +49,18 @@ namespace nap
 		{
 			mRemoteEndpoint = udp::endpoint(address::from_string(mRemoteIp), mPort);
 
-			// fire up thread
 			mRun.store(true);
-			mSendThread = std::thread([this] { sendThread(); });
 		}
 
 		return true;
 	}
 
 
-	void UdpClient::stop()
+	void UdpClient::onDestroy()
 	{
 		if( mRun.load() )
 		{
 			mRun.store(false);
-			mSendThread.join();
 
 			asio::error_code err;
 			mSocket.close(err);
@@ -73,21 +70,15 @@ namespace nap
 	}
 
 
-	void UdpClient::onDestroy()
-	{
-		stop();
-	}
-
-
 	void UdpClient::send(const UdpPacket& packet)
 	{
 		mQueue.enqueue(packet);
 	}
 
 
-	void UdpClient::sendThread()
+	void UdpClient::process()
 	{
-		while(mRun.load())
+		if(mRun.load())
 		{
 			// let the socket send the packets
 			UdpPacket packet_to_send;
@@ -118,6 +109,7 @@ namespace nap
 						// store error information
 						mHasError.store(true);
 						mError = error;
+						mRun.store(false);
 
 						// exit threaded function
 						return;

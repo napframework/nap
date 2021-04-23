@@ -21,6 +21,7 @@
 
 // Local includes
 #include "udppacket.h"
+#include "udpdevice.h"
 
 namespace nap
 {
@@ -29,23 +30,13 @@ namespace nap
 	/**
 	 * The UdpClient class can be used send UdpPackets to an endpoint
 	 */
-	class NAPAPI UdpClient : public Device
+	class NAPAPI UdpClient : public UdpDevice
 	{
-		RTTI_ENABLE(Device)
+		RTTI_ENABLE(UdpDevice)
 	public:
-		/**
-		 * on start, binds socket to endpoint and fires up a thread responsible for sending the UdpPackets to endpoint
-		 * @param errorState contains any error
-		 * @return true on successful initialization
-		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * stops thread and closes socket
-		 */
-		virtual void stop() override;
-
-		virtual void onDestroy() override;
+		void onDestroy() override;
 
 		/**
 		 * copies packet and queues the copied packet for sending
@@ -69,11 +60,12 @@ namespace nap
 		bool mThrowOnInitError 				= true;			///< Property: 'ThrowOnFailure' when client fails to bind socket, return false on start
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets before throwing an error
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' close socket and dispatch error when max queued packets exceeded
-	private:
+	protected:
 		/**
 		 * The threaded send function
 		 */
-		void sendThread();
+		void process() override;
+	private:
 
 		// ASIO
 		asio::io_service 			mIOService;
@@ -82,7 +74,6 @@ namespace nap
 		asio::ip::udp::endpoint 	mRemoteEndpoint;
 
 		// Threading
-		std::thread 							mSendThread;
 		std::atomic_bool 						mRun;
 		moodycamel::ConcurrentQueue<UdpPacket> 	mQueue;
 
