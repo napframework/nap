@@ -95,7 +95,7 @@ namespace nap
 			if(bytes_received > 0)
 			{
 				// construct udp packet, clears current buffer
-				std::vector<nap::int8> buffer;
+				std::vector<nap::uint8> buffer;
 				buffer.resize(mBufferSize);
 				buffer.swap(mBuffer);
 

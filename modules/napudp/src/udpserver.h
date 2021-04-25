@@ -77,7 +77,7 @@ namespace nap
 		// ASIO
 		asio::io_service 			mIOService;
 		asio::ip::udp::socket 		mSocket{mIOService};
-		std::vector<nap::int8>		mBuffer;
+		std::vector<nap::uint8>		mBuffer;
 		asio::ip::udp::endpoint 	mRemoteEndpoint;
 
 		// Threading
