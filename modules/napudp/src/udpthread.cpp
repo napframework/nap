@@ -6,6 +6,8 @@
 #include "udpadapter.h"
 #include "udpservice.h"
 
+#include <nap/logger.h>
+
 using asio::ip::address;
 using asio::ip::udp;
 
@@ -27,7 +29,10 @@ namespace nap
 
 	UDPThread::UDPThread(UDPService & service) : mService(service)
 	{
-		mManualProcessFunc = [](){};
+		mManualProcessFunc = [this]()
+		{
+			nap::Logger::warn(*this, "calling manual process function when thread update method is not manual!");
+		};
 	}
 
 

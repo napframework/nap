@@ -29,11 +29,11 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The UDPServer connects to an endpoint and receives any UDP packets copyQueuePacket to the endpoint
+	 * The UDPServer connects to an endpoint and receives any UDP packets send to the endpoint
 	 * The server will invoke the packetReceived signal when packets are received
 	 * The signal will be fired on the thread this UDPServer is registered to, see UDPThread
 	 */
-	class NAPAPI UDPServer : public UDPAdapter
+	class NAPAPI UDPServer final : public UDPAdapter
 	{
 		RTTI_ENABLE(UDPAdapter)
 	public:
@@ -48,12 +48,6 @@ namespace nap
 		 * called on destruction
 		 */
 		virtual void onDestroy() override;
-
-		/**
-		 * Enqueues a task and makes sure it is excecuted on server thread
-		 * @param task the task to be excecuted
-		 */
-		void enqueueTask(std::function<void()> task);
 	public:
 		// properties
 		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to

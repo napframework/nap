@@ -14,7 +14,7 @@ namespace nap
 	class UDPThread;
 
 	/**
-	 * The UDPService is responsible for processing any UDPThreads that have registered themselve to receive an
+	 * The UDPService is responsible for processing any UDPThreads that have registered themselves to receive an
 	 * update call by the service. The Update Method of the UDPThread is set to "Main Thread" in that case
 	 */
 	class NAPAPI UDPService : public Service

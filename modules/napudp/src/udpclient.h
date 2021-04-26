@@ -28,10 +28,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The UDPClient class can be used copyQueuePacket UdpPackets to an endpoint
-	 * You can queue any
+	 * The UDPClient class can be used send UdpPackets to an endpoint
 	 */
-	class NAPAPI UDPClient : public UDPAdapter
+	class NAPAPI UDPClient final : public UDPAdapter
 	{
 		RTTI_ENABLE(UDPAdapter)
 	public:

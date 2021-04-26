@@ -9,7 +9,6 @@
 #include <nap/resource.h>
 #include <nap/device.h>
 #include <thread>
-#include <mutex>
 
 // NAP includes
 #include <nap/numeric.h>

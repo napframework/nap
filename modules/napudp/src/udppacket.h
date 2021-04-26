@@ -12,7 +12,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * A UDPPacket can be copyQueuePacket by a UDPClient to an endpoint, or created by the UDPServer upon receiving data
+	 * A UDPPacket can be send by a UDPClient to an endpoint, or created by the UDPServer upon receiving data
 	 * A UDPPacket can be moved or copied
 	 */
 	struct NAPAPI UDPPacket
