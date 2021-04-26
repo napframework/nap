@@ -53,9 +53,23 @@ namespace nap
 		 */
 		enum class EClearMode : uint8
 		{
-			DontClear		= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
-			FillWithZero	= 1				///< Texture is created and initialized to black on the GPU.
+			DontClear	= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
+			Clear		= 1				///< Texture is created and cleared on the GPU.
 		};
+
+		/**
+		* Creates the texture on the GPU using the provided settings.
+		* The texture is initialized to 'clearColor' if 'clearMode' is set to 'FillWithZero'.
+		* The Vulkan image usage flags are derived from texture usage.
+		* @param descriptor texture description.
+		* @param generateMipMaps if mip maps are generated when data is uploaded.
+		* @param clearMode if the texture is immediately initialized to black after creation.
+		* @param clearColor the color to clear the texture with.
+		* @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
+		* @param errorState contains the error if the texture can't be initialized.
+		* @return if the texture initialized successfully.
+		*/
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 		
 		/**
 		 * Creates the texture on the GPU using the provided settings.
@@ -153,6 +167,11 @@ namespace nap
 
 	private:
 		/**
+		* Clears the texture to the specified clear colors
+		*/
+		void clear(VkCommandBuffer commandBuffer);
+
+		/**
 		 * Called by the render service when data can be uploaded.
 		 */
 		void upload(VkCommandBuffer commandBuffer);
@@ -184,5 +203,6 @@ namespace nap
 		VkFormat							mFormat = VK_FORMAT_UNDEFINED;		///< Vulkan texture format
 		std::vector<TextureReadCallback>	mReadCallbacks;						///< Number of callbacks based on number of frames in flight
 		uint32								mMipLevels = 1;						///< Total number of generated mip-maps
+		VkClearColorValue					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };	///< Property: 'ClearColor' color selection used for clearing the texture
 	};
 }
