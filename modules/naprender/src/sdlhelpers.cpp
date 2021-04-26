@@ -15,12 +15,14 @@ namespace nap
 	namespace SDL
 	{
 		// Initializes SDL's video subsystem
-		bool initVideo()
+		bool initVideo(utility::ErrorState& error)
 		{
 			// Initialize SDL's Video subsystem
 			if (SDL_Init(SDL_INIT_VIDEO) < 0)
+			{
+				error.fail(SDL_GetError());
 				return false;
-
+			}
 			return true;
 		}
 

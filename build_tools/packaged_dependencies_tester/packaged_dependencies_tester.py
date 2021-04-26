@@ -904,7 +904,7 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
     if not success:
         results['runFromPackagedOutput']['exitCode'] = return_code
 
-def build_and_package(root_output_dir, timestamp, testing_projects_dir):
+def build_and_package(root_output_dir, timestamp, testing_projects_dir, projects_to_exclude):
     """Configure, build and package all demos
 
     Parameters
@@ -923,8 +923,10 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
     """
 
     demos_root_dir = os.getcwd()
-
     demo_results = {}
+    excluded_projects = projects_to_exclude.split()
+    for project in excluded_projects:
+        print("excluding project: {0}".format(project))
 
     # Iterate demos
     sorted_dirs = os.listdir('.')
@@ -938,6 +940,10 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
         # If we're iterating our projects directory and we've already got our template project in there
         # from a previous run, don't built it in here as we'll build it separately later
         if demo_name == TEMPLATE_APP_NAME.lower() and testing_projects_dir != DEFAULT_TESTING_PROJECTS_DIR:
+            continue
+
+        # If the project is excluded, skip
+        if demo_name.lower() in excluded_projects:
             continue
 
         print("----------------------------")
@@ -1879,7 +1885,8 @@ def dump_json_report(starting_dir,
                      napkin_results,
                      misc_results,
                      always_include_logs,
-                     warnings):
+                     warnings,
+                     excluded_projects):
     """Create a JSON report for the test run, to REPORT_FILENAME
 
     Parameters
@@ -1906,6 +1913,7 @@ def dump_json_report(starting_dir,
         Whether to force inclusion logs for all processes into report, not just on failure
     warnings : list of str
         Any warnings generated throughout the testing
+    excluded: projects that are excluded str
     """
     
     report = {}
@@ -1917,6 +1925,7 @@ def dump_json_report(starting_dir,
     report['run']['startTime'] = timestamp
     report['run']['frameworkPath'] = nap_framework_full_path
     report['run']['warnings'] = warnings
+    report['run']['excluded'] = excluded_projects
 
     # Pull in build info
     with open(os.path.join(nap_framework_full_path, 'cmake', 'build_info.json'), 'r') as build_data:
@@ -2198,6 +2207,7 @@ def perform_test_run(nap_framework_path,
                      rename_framework, 
                      rename_qt, 
                      create_fake_projects,
+                     excluded_projects,
                      fail_on_unexpected_libs):
     """Main entry point to the testing
 
@@ -2225,11 +2235,6 @@ def perform_test_run(nap_framework_path,
     bool
         Success of entire run
     """
-
-    # Check to see if the specified path exists
-    if not os.path.exists(nap_framework_path):
-        print("Error: %s doesn't exist" % nap_framework_path)
-        return False
 
     starting_dir = os.getcwd()
     root_output_dir = os.path.abspath('.')
@@ -2283,7 +2288,7 @@ def perform_test_run(nap_framework_path,
     # Configure, build and package all demos
     phase += 1
     print("============ Phase #%s - Building and packaging demos ============" % phase)
-    demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir)
+    demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir, excluded_projects)
 
     # Package a demo with Napkin
     phase += 1
@@ -2438,7 +2443,8 @@ def perform_test_run(nap_framework_path,
             napkin_results,
             misc_results,
             force_log_reporting,
-            warnings)
+            warnings,
+            excluded_projects)
 
     # Log summary
     print("============ Summary ============")        
@@ -2475,6 +2481,8 @@ if __name__ == '__main__':
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
     parser.add_argument('-nf', '--no-fake-projects', action='store_true',
                         help="Don't create fake projects for modules that aren't represented in any demos")
+    parser.add_argument('--exclude-projects', type=str, default='', action='store',
+                        help="space separated list of projects that are excluded from testing")
     parser.add_argument('--fail-on-unexpected-libs', action='store_true',
                         help="Fail the test run if unexpected libraries are encountered")
     if not is_windows():
@@ -2485,7 +2493,15 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # TODO Look into better options, or at least gracefully handle failure
+    # Ensure working directory is location of this file, ensures relative paths are resolved correctly
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    # Ensure package directory exists
+    if not os.path.exists(args.NAP_FRAMEWORK_PATH):
+        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))  
+        sys.exit(1)
+
+    # Import python helpers
     sys.path.append(os.path.join(args.NAP_FRAMEWORK_PATH, 'tools', 'platform'))
     from nap_shared import get_full_project_module_requirements
 
@@ -2501,5 +2517,6 @@ if __name__ == '__main__':
                                not args.no_rename_framework,
                                not args.no_rename_qt,
                                not args.no_fake_projects,
+                               args.exclude_projects,
                                args.fail_on_unexpected_libs)
     sys.exit(not success)
