@@ -38,10 +38,10 @@ namespace nap
 		TweenHandleBase(TweenService& tweenService);
 
 		// the TweenService
-		TweenService& 	mService;
+		TweenService& mService;
 
 		// pointer to base class of tween
-		TweenBase*		mTweenBase;
+		TweenBase* mTweenBase;
 	};
 
 	/**

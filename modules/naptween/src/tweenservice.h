@@ -43,12 +43,6 @@ namespace nap
 		virtual ~TweenService();
 
 		/**
-		 * registers object creator method that can be passed on to the rtti factory
-		 * @param objectCreator unique pointer to method
-		 */
-		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(TweenService*));
-
-		/**
 		 * creates a Tween, service retains unique_ptr to tween and returns a TweenHandle that enables the user to have access to the Tweens functionality outside the TweenService
 		 * Once the handle is deconstructed, it will notify the service that the Tween can be deleted. The tween will then be deleted during the update loop but outside the scope of any Update, Complete or Killed signals
 		 * @tparam T the value type to tween

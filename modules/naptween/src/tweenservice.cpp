@@ -25,13 +25,6 @@ namespace nap
 	}
 
 
-	bool TweenService::registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(TweenService* service))
-	{
-		getObjectCreators().emplace_back(objectCreator);
-		return true;
-	}
-
-
 	TweenService::TweenService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{
