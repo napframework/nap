@@ -14,6 +14,7 @@
 // NAP includes
 #include <nap/numeric.h>
 #include <concurrentqueue.h>
+#include <rtti/factory.h>
 
 // ASIO includes
 #include <asio/ts/buffer.hpp>
@@ -24,22 +25,101 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// forward declares
-	class UdpDevice;
 
-	class NAPAPI UdpThread : public Device
+	/**
+	 * Enum describing the different update methods of a UDPThread
+	 * MAIN_THREAD 		= process UDPAdapters on main thread
+	 * SPAWN_OWN_THREAD = process UDPAdapters in newly spawned thread
+	 * MANUAL 			= only process UDPAdapters when the user explicitly calls manualProcess on the UDPThread
+	 */
+	enum EUDPThreadUpdateMethod : int
 	{
+		MAIN_THREAD 		= 0,
+		SPAWN_OWN_THREAD 	= 1,
+		MANUAL 				= 2
+	};
+
+	// forward declares
+	class UDPAdapter;
+	class UDPService;
+
+	/**
+	 * UDPThread is a device that calls the process() function on UDPAdapters
+	 * UDPAdapters are typically UDPServers or UDPClients
+	 * The UDPThread can can run on the main thread, in which case it registers itself to the UDPService,
+	 * in that case the UDPThread will call process() of the registered adapters inside the update() call of the UDPService
+	 * The UDPThread can spawn its own thread, in which case process() will be called within the while loop of a newly spawned thread
+	 * When the user chooses to use MANUAL, process() will be called only when the user explicitly calls the manualProcess()
+	 * function of the UDPThread
+	 */
+	class NAPAPI UDPThread : public Device
+	{
+		friend class UDPService;
+		friend class UDPAdapter;
+
 		RTTI_ENABLE(Device)
 	public:
+		/**
+		 * Constructor
+		 * @param service reference to UDP service
+		 */
+		UDPThread(UDPService& service);
+
+		/**
+		 * Starts the UDPThread, spawns new thread if necessary or registers to UDPService
+		 * @param errorState contains any errors
+		 * @return true on succes
+		 */
 		virtual bool start(utility::ErrorState& errorState) override;
 
+		/**
+		 * Stops the UDPThread, stops own thread or removes itself from service
+		 */
 		virtual void stop() override;
 	public:
-		std::vector<ResourcePtr<UdpDevice>> mDevices;
+		// properties
+		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adaptares
+
+		/**
+		 * manual process can be called when update method is set to manual. If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything
+		 */
+		void manualProcess();
 	private:
+		/**
+		 * the threaded function
+		 */
+		void thread();
+
+		/**
+		 * the process method, will call process on any registered adapter
+		 */
 		void process();
 
-		std::thread mThread;
-		std::atomic_bool mRun = { false };
+		/**
+		 * registers an adapter
+		 * @param adapter the UDPAdapter to process
+		 */
+		void registerAdapter(UDPAdapter* adapter);
+
+		/**
+		 * removes an adapter
+		 * @param adapter the UDPAdapter to remove
+		 */
+		void removeAdapter(UDPAdapter* adapter);
+
+		// threading
+		std::thread 										mThread;
+		std::atomic_bool 									mRun = { false };
+		std::function<void()> 								mManualProcessFunc;
+		moodycamel::ConcurrentQueue<std::function<void()>> 	mTaskQueue;
+
+		// service
+		UDPService& 				mService;
+
+		// adapters
+		std::vector<UDPAdapter*> 	mAdapters;
 	};
+
+	// Object creator used for constructing the UDP thread
+	using UDPThreadPoolObjectCreator = rtti::ObjectCreator<UDPThread, UDPService>;
 }

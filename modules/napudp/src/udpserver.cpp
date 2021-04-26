@@ -4,7 +4,7 @@
 
 #include "udpserver.h"
 #include "udppacket.h"
-#include "udpserverlistener.h"
+#include "udpthread.h"
 
 // External includes
 #include <asio/ts/buffer.hpp>
@@ -18,18 +18,21 @@
 using asio::ip::address;
 using asio::ip::udp;
 
-RTTI_BEGIN_CLASS(nap::UdpServer)
-	RTTI_PROPERTY("Endpoint", &nap::UdpServer::mIPRemoteEndpoint, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port", &nap::UdpServer::mPort, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BufferSize", &nap::UdpServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ThrowOnFailure", &nap::UdpServer::mThrowOnInitError, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::UDPServer)
+	RTTI_PROPERTY("Thread", &nap::UDPServer::mThread, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Endpoint", &nap::UDPServer::mIPRemoteEndpoint, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port", &nap::UDPServer::mPort, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BufferSize", &nap::UDPServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ThrowOnFailure", &nap::UDPServer::mThrowOnInitError, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool UdpServer::init(utility::ErrorState& errorState)
+	bool UDPServer::init(utility::ErrorState& errorState)
 	{
-		mRun.store(true);
+		if(!UDPAdapter::init(errorState))
+			return false;
+
 		mBuffer.resize(mBufferSize);
 
 		// try to open socket
@@ -39,7 +42,6 @@ namespace nap
 		if( asio_error_code )
 		{
 			errorState.fail(asio_error_code.message());
-			mRun.store(false);
 
 			if(mThrowOnInitError)
 			{
@@ -58,7 +60,6 @@ namespace nap
 			{
 				errorState.fail(asio_error_code.message());
 
-				mRun.store(false);
 				if(mThrowOnInitError)
 					return false;
 				else
@@ -69,84 +70,37 @@ namespace nap
 		return true;
 	}
 
-	void UdpServer::onDestroy()
+	void UDPServer::onDestroy()
 	{
-		if(mRun.load())
+		UDPAdapter::onDestroy();
+		mSocket.close();
+	}
+
+	void UDPServer::process()
+	{
+		asio::error_code asio_error;
+
+		//
+		if(mSocket.available(asio_error) > 0)
 		{
-			mRun.store(false);
-			mSocket.close();
+			mSocket.receive_from(asio::buffer(mBuffer),
+								 mRemoteEndpoint,
+								 0,
+								 asio_error);
+
+			// construct udp packet, clears current buffer
+			std::vector<nap::uint8> buffer;
+			buffer.resize(mBufferSize);
+			buffer.swap(mBuffer);
+
+			// forward buffer to any listeners
+			UDPPacket packet(std::move(buffer));
+			packetReceived.trigger(packet);
 		}
-	}
 
-	void UdpServer::process()
-	{
-		if(mRun.load())
+		if(asio_error)
 		{
-			// excecute all tasks
-			std::function<void()> queued_task;
-			while(mTaskQueue.try_dequeue(queued_task))
-			{
-				queued_task();
-			}
-
-			//
-			size_t bytes_received = mSocket.receive_from(asio::buffer(mBuffer), mRemoteEndpoint);
-
-			if(bytes_received > 0)
-			{
-				// construct udp packet, clears current buffer
-				std::vector<nap::uint8> buffer;
-				buffer.resize(mBufferSize);
-				buffer.swap(mBuffer);
-
-				// forward buffer to any listeners
-				UdpPacket packet(std::move(buffer));
-				for(auto* listener : mListeners)
-				{
-					listener->onUdpPacket(packet);
-				}
-			}
+			nap::Logger::warn(*this, asio_error.message());
 		}
-	}
-
-
-	void UdpServer::registerListener(UdpServerListener * listener)
-	{
-		enqueueTask([this, listener]()
-		{
-			auto it = std::find_if(mListeners.begin(), mListeners.end(), [listener](auto& a) { return a == listener; });
-
-			assert(it == mListeners.end()); // listener already registered
-
-			if (it == mListeners.end())
-			{
-				mListeners.emplace_back(listener);
-			}
-		});
-	}
-
-
-	void UdpServer::removeListener(UdpServerListener * listener)
-	{
-		enqueueTask([this, listener]()
-		{
-			auto it = std::find_if(mListeners.begin(), mListeners.end(), [listener](auto& a)
-			{
-				return a == listener;
-			});
-
-			assert(it != mListeners.end()); // listener not registered
-
-			if(it != mListeners.end())
-			{
-			  	mListeners.erase(it);
-			}
-		});
-	}
-
-
-	void UdpServer::enqueueTask(std::function<void()> task)
-	{
-		mTaskQueue.enqueue(task);
 	}
 }

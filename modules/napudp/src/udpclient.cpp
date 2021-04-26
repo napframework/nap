@@ -4,6 +4,7 @@
 
 #include "udpclient.h"
 #include "udppacket.h"
+#include "udpthread.h"
 
 // External includes
 #include <asio/ts/buffer.hpp>
@@ -17,17 +18,21 @@
 using asio::ip::address;
 using asio::ip::udp;
 
-RTTI_BEGIN_CLASS(nap::UdpClient)
-	RTTI_PROPERTY("Endpoint", &nap::UdpClient::mRemoteIp, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port", &nap::UdpClient::mPort, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxQueueSize", &nap::UdpClient::mMaxPacketQueueSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("StopOnMaxQueueSizeExceeded", &nap::UdpClient::mStopOnMaxQueueSizeExceeded, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::UDPClient)
+	RTTI_PROPERTY("Thread", &nap::UDPClient::mThread, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Endpoint", &nap::UDPClient::mRemoteIp, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port", &nap::UDPClient::mPort, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MaxQueueSize", &nap::UDPClient::mMaxPacketQueueSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("StopOnMaxQueueSizeExceeded", &nap::UDPClient::mStopOnMaxQueueSizeExceeded, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool UdpClient::init(utility::ErrorState& errorState)
+	bool UDPClient::init(utility::ErrorState& errorState)
 	{
+		if(!UDPAdapter::init(errorState))
+			return false;
+
 		// try to open socket
 		asio::error_code asio_error_code;
 		mSocket.open(udp::v4(), asio_error_code);
@@ -38,7 +43,6 @@ namespace nap
 
 			if(mThrowOnInitError)
 			{
-				mRun = false;
 				return false;
 			}
 			else
@@ -48,73 +52,69 @@ namespace nap
 		}else
 		{
 			mRemoteEndpoint = udp::endpoint(address::from_string(mRemoteIp), mPort);
-
-			mRun.store(true);
 		}
 
 		return true;
 	}
 
 
-	void UdpClient::onDestroy()
+	void UDPClient::onDestroy()
 	{
-		if( mRun.load() )
-		{
-			mRun.store(false);
+		UDPAdapter::onDestroy();
 
-			asio::error_code err;
-			mSocket.close(err);
-			if(err)
-				nap::Logger::warn(*this, "error closing socket : %s", err.message().c_str());
+		asio::error_code err;
+		mSocket.close(err);
+		if(err)
+			nap::Logger::warn(*this, "error closing socket : %s", err.message().c_str());
+	}
+
+
+	void UDPClient::copyQueuePacket(const UDPPacket& packet)
+	{
+		if(!mStopOnMaxQueueSizeExceeded)
+		{
+			mQueue.enqueue(packet);
+		}else
+		{
+			if(mQueue.size_approx() < mMaxPacketQueueSize)
+			{
+				mQueue.enqueue(packet);
+			}else{
+				nap::Logger::warn(*this, "max queue size exceeded, dropping packet");
+			}
 		}
 	}
 
 
-	void UdpClient::send(const UdpPacket& packet)
+	void UDPClient::moveQueuePacket(UDPPacket& packet)
 	{
-		mQueue.enqueue(packet);
+		if(!mStopOnMaxQueueSizeExceeded)
+		{
+			mQueue.enqueue(std::move(packet));
+		}else
+		{
+			if(mQueue.size_approx() < mMaxPacketQueueSize)
+			{
+				mQueue.enqueue(std::move(packet));
+			}else{
+				nap::Logger::warn(*this, "max queue size exceeded, dropping packet");
+			}
+		}
 	}
 
 
-	void UdpClient::process()
+	void UDPClient::process()
 	{
-		if(mRun.load())
+		// let the socket copyQueuePacket the packets
+		UDPPacket packet_to_send;
+		while(mQueue.try_dequeue(packet_to_send))
 		{
-			// let the socket send the packets
-			UdpPacket packet_to_send;
-			while(mQueue.try_dequeue(packet_to_send))
+			asio::error_code err;
+			mSocket.send_to(asio::buffer(&packet_to_send.data()[0], packet_to_send.size()), mRemoteEndpoint, 0, err);
+
+			if(err)
 			{
-				asio::error_code err;
-				mSocket.send_to(asio::buffer(&packet_to_send.data()[0], packet_to_send.size()), mRemoteEndpoint, 0, err);
-
-				if(err)
-				{
-					nap::Logger::warn(*this, "error sending packet : %s", err.message().c_str());
-				}
-
-				// do we need to stop if we have a maximum number of packets we can have in the queue?
-				if( mStopOnMaxQueueSizeExceeded )
-				{
-					// yes, check the packet queue
-					if( mQueue.size_approx() > mMaxPacketQueueSize )
-					{
-						// too large, close socket because of error
-						std::string error = "Max queue size exceeded, closing socket";
-						nap::Logger::error(*this, error);
-						mSocket.close(err);
-
-						if(err)
-							nap::Logger::warn(*this, "error closing socket : %s", err.message().c_str());
-
-						// store error information
-						mHasError.store(true);
-						mError = error;
-						mRun.store(false);
-
-						// exit threaded function
-						return;
-					}
-				}
+				nap::Logger::warn(*this, "error sending packet : %s", err.message().c_str());
 			}
 		}
 	}

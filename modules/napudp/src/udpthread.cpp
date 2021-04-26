@@ -3,44 +3,119 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "udpthread.h"
-#include "udpdevice.h"
+#include "udpadapter.h"
+#include "udpservice.h"
 
 using asio::ip::address;
 using asio::ip::udp;
 
-RTTI_BEGIN_CLASS(nap::UdpThread)
-	RTTI_PROPERTY("Devices", &nap::UdpThread::mDevices, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_ENUM(nap::EUDPThreadUpdateMethod)
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::MAIN_THREAD, 		"Main Thread"),
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::SPAWN_OWN_THREAD, 	"Spawn Own Thread"),
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::MANUAL, 			"Manual")
+RTTI_END_ENUM
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UDPThread)
+	RTTI_PROPERTY("Update Method", 	&nap::UDPThread::mUpdateMethod, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool UdpThread::start(utility::ErrorState& errorState)
+	//////////////////////////////////////////////////////////////////////////
+	// UDPThread
+	//////////////////////////////////////////////////////////////////////////
+
+	UDPThread::UDPThread(UDPService & service) : mService(service)
+	{
+		mManualProcessFunc = [](){};
+	}
+
+
+	bool UDPThread::start(utility::ErrorState& errorState)
 	{
 		mRun.store(true);
-		mThread = std::thread([this] { process(); });
+		if(mUpdateMethod == EUDPThreadUpdateMethod::SPAWN_OWN_THREAD)
+		{
+			mThread = std::thread([this] { thread(); });
+		}else if(mUpdateMethod == EUDPThreadUpdateMethod::MAIN_THREAD)
+		{
+			mService.registerUdpThread(this);
+		}else if(mUpdateMethod == EUDPThreadUpdateMethod::MANUAL)
+		{
+			mManualProcessFunc = [this](){ process(); };
+		}
 
 		return true;
 	}
 
 
-	void UdpThread::stop()
+	void UDPThread::stop()
 	{
 		if( mRun.load() )
 		{
 			mRun.store(false);
-			mThread.join();
+
+			if(mUpdateMethod == EUDPThreadUpdateMethod::SPAWN_OWN_THREAD)
+			{
+				mThread.join();
+			}else if(mUpdateMethod == EUDPThreadUpdateMethod::MAIN_THREAD)
+			{
+				mService.removeUdpThread(this);
+			}
 		}
 	}
 
 
-	void UdpThread::process()
+	void UDPThread::thread()
 	{
-		while(mRun.load())
+		while (mRun.load())
 		{
-			for(auto& device : mDevices)
-			{
-				device->process();
-			}
+			process();
 		}
+	}
+
+
+	void UDPThread::process()
+	{
+		std::function<void()> task;
+		while (mTaskQueue.try_dequeue(task))
+		{
+			task();
+		}
+
+		for(auto& adapter : mAdapters)
+		{
+			adapter->process();
+		}
+	}
+
+
+	void UDPThread::manualProcess()
+	{
+		mManualProcessFunc();
+	}
+
+
+
+	void UDPThread::removeAdapter(UDPAdapter * adapter)
+	{
+		mTaskQueue.enqueue([this, adapter]
+	    {
+			auto found_it = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)
+			{
+				return it == adapter;
+			});
+			assert(found_it != mAdapters.end());
+			mAdapters.erase(found_it);
+		});
+	}
+
+
+	void UDPThread::registerAdapter(UDPAdapter * adapter)
+	{
+		mTaskQueue.enqueue([this, adapter]()
+	    {
+			mAdapters.emplace_back(adapter);
+	    });
 	}
 }

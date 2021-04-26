@@ -12,22 +12,22 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * A UdpPacket can be send by a UdpClient to an endpoint, or created by the UdpServer upon receiving data
-	 * A UdpPacket can be moved or copied
+	 * A UDPPacket can be copyQueuePacket by a UDPClient to an endpoint, or created by the UDPServer upon receiving data
+	 * A UDPPacket can be moved or copied
 	 */
-	struct NAPAPI UdpPacket
+	struct NAPAPI UDPPacket
 	{
 	public:
 		/**
-		 * UdpPacket constructor
+		 * UDPPacket constructor
 		 */
-		UdpPacket(){}
+		UDPPacket(){}
 
 		/**
-		 * UdpPacket constructor copies the contents of supplied buffer
+		 * UDPPacket constructor copies the contents of supplied buffer
 		 * @param buffer the buffer to be copied
 		 */
-		UdpPacket(std::vector<nap::uint8> buffer) : mBuffer(std::move(buffer)){}
+		UDPPacket(std::vector<nap::uint8> buffer) : mBuffer(std::move(buffer)){}
 
 		/**
 		 * returns const reference to vector holding data

@@ -20,53 +20,56 @@
 #include <concurrentqueue.h>
 
 // Local includes
+#include "udpadapter.h"
 #include "udppacket.h"
-#include "udpdevice.h"
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The UdpClient class can be used send UdpPackets to an endpoint
+	 * The UDPClient class can be used copyQueuePacket UdpPackets to an endpoint
+	 * You can queue any
 	 */
-	class NAPAPI UdpClient : public UdpDevice
+	class NAPAPI UDPClient : public UDPAdapter
 	{
-		RTTI_ENABLE(UdpDevice)
+		RTTI_ENABLE(UDPAdapter)
 	public:
+		/**
+		 * initialization
+		 * @param error contains error information
+		 * @return true on succes
+		 */
 		bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * called on destruction
+		 */
 		void onDestroy() override;
 
 		/**
 		 * copies packet and queues the copied packet for sending
 		 */
-		void send(const UdpPacket& packet);
+		void copyQueuePacket(const UDPPacket& packet);
 
 		/**
-		 * returns whether socket is closed due to an error, thread safe call
-		 * @return true if socked is closed due to an error
+		 * moves packet and queues the moved packet for sending
+		 * @param packet to move
 		 */
-		bool getHasError() const{ return mHasError.load(); }
-
-		/**
-		 * returns const ref to error string, thread safe if called after getHasError() has returned true
-		 * @return const ref to error
-		 */
-		const std::string& getError() const{ return mError; }
+		void moveQueuePacket(UDPPacket& packet);
 	public:
+		// properties
 		int mPort 							= 13251; 		///< Property: 'Port' the port the client socket binds to
 		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip adress the client socket binds to
 		bool mThrowOnInitError 				= true;			///< Property: 'ThrowOnFailure' when client fails to bind socket, return false on start
-		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets before throwing an error
-		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' close socket and dispatch error when max queued packets exceeded
+		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
+		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
 	protected:
 		/**
-		 * The threaded send function
+		 * The process function
 		 */
 		void process() override;
 	private:
-
 		// ASIO
 		asio::io_service 			mIOService;
 		asio::ip::udp::socket 		mSocket{mIOService};
@@ -74,11 +77,6 @@ namespace nap
 		asio::ip::udp::endpoint 	mRemoteEndpoint;
 
 		// Threading
-		std::atomic_bool 						mRun;
-		moodycamel::ConcurrentQueue<UdpPacket> 	mQueue;
-
-		// Error handling
-		std::atomic_bool						mHasError 	= { false };
-		std::string 							mError 		= "";
+		moodycamel::ConcurrentQueue<UDPPacket> 	mQueue;
 	};
 }
