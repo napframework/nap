@@ -21,6 +21,7 @@ namespace nap
 		static constexpr double LN2			= 0.693147180559945309417;  // ln(2)
 		static constexpr double LN10		= 2.30258509299404568402;   // ln(10)
 		static constexpr double PI			= 3.14159265358979323846;   // pi
+		static constexpr double PIX2		= 6.28318530717958647692;	// pi*2
 		static constexpr double PI_2		= 1.57079632679489661923;   // pi/2
 		static constexpr double PI_4		= 0.785398163397448309616;  // pi/4
 		static constexpr double M1_PI		= 0.318309886183790671538;  // 1/pi
