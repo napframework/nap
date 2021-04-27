@@ -103,7 +103,7 @@
             "mID": "WebSocketServerEndPoint",
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
-            "Port": 80,
+            "Port": 2000,
             "IPAddress": "",
             "AccessMode": "Reserved",
             "ConnectionLimit": 20,

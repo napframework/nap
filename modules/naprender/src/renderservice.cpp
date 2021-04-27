@@ -1201,8 +1201,8 @@ namespace nap
 		assert(mSceneService != nullptr);
 
 		// Initialize SDL video
-		mSDLInitialized = SDL::initVideo();
-		if (!errorState.check(mSDLInitialized, "Failed to init SDL"))
+		mSDLInitialized = SDL::initVideo(errorState);
+		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
 			return false;
 
 		// Initialize shader compiler
