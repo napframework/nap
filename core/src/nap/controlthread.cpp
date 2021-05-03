@@ -18,8 +18,7 @@ namespace nap
 
 	void ControlThread::setDesiredControlRate(float rate)
 	{
-		mDesiredControlRate = rate;
-		mWaitTime = MicroSeconds(static_cast<long>(1000000.0 / static_cast<double>(rate)));
+		mNewDesiredControlRate = rate;
 	}
 
 
@@ -70,6 +69,13 @@ namespace nap
 
 		while (isRunning())
 		{
+			// Update desired control rate
+			if (mNewDesiredControlRate != mDesiredControlRate)
+			{
+				mDesiredControlRate = mNewDesiredControlRate;
+				mWaitTime = MicroSeconds(static_cast<long>(1000000.0 / static_cast<double>(mDesiredControlRate)));
+			}
+
 			// Get current time in milliseconds
 			double new_elapsed_time = timer.getElapsedTime();
 

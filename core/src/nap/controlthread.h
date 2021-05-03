@@ -86,9 +86,10 @@ namespace nap
 
 		// The control rate cap
 		float mDesiredControlRate = 0.0f;
+		std::atomic<float> mNewDesiredControlRate = { 0.0f };
 
 		// Current actual framerate
-		float mControlRate = 0.0f;
+		std::atomic<float> mControlRate = { 0.0f };
 
 		// Used to calculate framerate over time
 		std::array<double, 20> mTicks;
