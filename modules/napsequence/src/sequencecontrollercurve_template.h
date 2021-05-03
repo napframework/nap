@@ -72,6 +72,8 @@ namespace nap
 							for (int i = 0; i < curve_count; i++)
 							{
 								std::unique_ptr<math::FCurve<float, float>> segment_curve = std::make_unique<math::FCurve<float, float>>();
+								segment_curve->mPoints[1].mInTan.mTime = -0.4f;
+								segment_curve->mPoints[1].mOutTan.mTime = 0.4f;
 								segment_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
 
 								// assign curve
@@ -143,6 +145,8 @@ namespace nap
 							{
 								std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
 								new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+								new_curve->mPoints[1].mInTan.mTime = -0.4f;
+								new_curve->mPoints[1].mOutTan.mTime = 0.4f;
 								new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
 								new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
 								getPlayerOwnedObjects().emplace_back(std::move(new_curve));
@@ -184,6 +188,8 @@ namespace nap
 						{
 							std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
 							new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_curve->mPoints[1].mInTan.mTime = -0.4f;
+							new_curve->mPoints[1].mOutTan.mTime = 0.4f;
 							new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
 							new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
 							getPlayerOwnedObjects().emplace_back(std::move(new_curve));
