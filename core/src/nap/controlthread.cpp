@@ -91,11 +91,15 @@ namespace nap
 			// Get time point for next frame
 			frame_time = timer.getMicros() + mWaitTime;
 
-			// Update
-			mUpdateSignal(delta_time);
+			{
+				std::unique_lock<std::mutex> mLock(mMutex);
 
-			// Process scheduled tasks
-			mTaskQueue.process();
+				// Update
+				mUpdateSignal(delta_time);
+
+				// Process scheduled tasks
+				mTaskQueue.process();
+			}
 
 			// Only sleep when there is at least 1 millisecond that needs to be compensated for
 			// The actual outcome of the sleep call can vary greatly from system to system

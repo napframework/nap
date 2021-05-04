@@ -78,6 +78,13 @@ namespace nap
 		 */
 		float getControlRate() const { return mControlRate; }
 
+		/**
+		 * Use this mutex to acquire a lock on the processing done within the contol thead's loop.
+		 * If a lock is acquired using this mutex, you can be sure that there is no interference with any of the connected periodic tasks.
+		 * @return a mutex object that can be used to lock the control thread using a std::unique_lock object.
+		 */
+		std::mutex& getMutex() { return mMutex; }
+
 	private:
 		void loop();
 
@@ -102,6 +109,7 @@ namespace nap
 		TaskQueue mTaskQueue;
 		std::unique_ptr<std::thread> mThread = nullptr;
 		Signal<double> mUpdateSignal;
+		std::mutex mMutex;
 	};
 
 
