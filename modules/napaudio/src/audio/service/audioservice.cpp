@@ -14,9 +14,6 @@
 #include <audio/resource/audiobufferresource.h>
 #include <audio/resource/audiofileresource.h>
 
-//#include <audio/core/graph.h>
-//#include <audio/core/voice.h>
-
 // Third party includes
 #include <mpg123.h>
 
@@ -172,30 +169,36 @@ namespace nap
 				if (!configuration->mAllowDeviceFailure)
 				{
 					errorState.fail(
-							"Portaudio stream failed to start: %s, %s, %i inputs, %i outputs, samplerate %f, buffersize %i",
-							inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "",
-							outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "",
-							inputChannelCount, outputChannelCount, configuration->mSampleRate,
+							"Portaudio stream failed to start with: input: %s (%i channels), output: %s (%i channels), samplerate %i, buffersize %i",
+							inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "no input device", inputChannelCount,
+							outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "no output device", outputChannelCount, int(configuration->mSampleRate),
 							configuration->mBufferSize);
 					return false;
 				}
 				else {
 					Logger::info(
-							"Portaudio stream failed to start: %s, %s, %i inputs, %i outputs, samplerate %f, buffersize %i",
-							inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "",
-							outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "",
-							inputChannelCount, outputChannelCount, configuration->mSampleRate,
-							configuration->mBufferSize);
+						"Portaudio stream failed to start with: input: %s (%i channels), output: %s (%i channels), samplerate %i, buffersize %i",
+						inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "no input device", inputChannelCount,
+						outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "no output device", outputChannelCount, int(configuration->mSampleRate),
+						configuration->mBufferSize);
 				}
 				return true;
 			}
-			
-			Logger::info("Portaudio stream started: %s, %s, %i inputs, %i outputs, samplerate %f, buffersize %i",
-			             inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "",
-			             outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "",
-			             mNodeManager.getInputChannelCount(), mNodeManager.getOutputChannelCount(),
-			             mNodeManager.getSampleRate(), mBufferSize);
-			
+
+			// Log portaudio stream settings
+			Logger::info("Portaudio stream started:");
+			if (inputDeviceIndex >= 0)
+				Logger::info("Input device: %s (%i channels)", Pa_GetDeviceInfo(inputDeviceIndex)->name, mNodeManager.getInputChannelCount());
+			else
+				Logger::info("No input device");
+
+			if (outputDeviceIndex >= 0)
+				Logger::info("Output device: %s (%i channels)", Pa_GetDeviceInfo(outputDeviceIndex)->name, mNodeManager.getOutputChannelCount());
+			else
+				Logger::info("No output device");
+			Logger::info("Samplerate: %i", int(mNodeManager.getSampleRate()));
+			Logger::info("Buffersize: %i", mBufferSize);
+
 			return true;
 		}
 
@@ -459,11 +462,12 @@ namespace nap
 			const PaDeviceInfo* inputDeviceInfo = Pa_GetDeviceInfo(inputDeviceIndex);
 			const PaDeviceInfo* outputDeviceInfo = Pa_GetDeviceInfo(outputDeviceIndex);
 			
-			if (!inputDeviceInfo)
+			if (inputDeviceInfo == nullptr)
 			{
 				// There is no input device
-				if (configuration->mInputChannelCount > 0)
+				if (configuration->mDisableInput == false && configuration->mInputChannelCount > 0)
 				{
+					// Input channels were requested
 					if (configuration->mAllowChannelCountFailure)
 					{
 						Logger::warn("AudioService: input device not found, initializing without input channels.");
