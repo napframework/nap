@@ -202,12 +202,12 @@ namespace nap
 			// Log portaudio stream settings
 			Logger::info("Portaudio stream started:");
 			if (inputDeviceIndex >= 0)
-				Logger::info("Input device: %s (%i channels)", Pa_GetDeviceInfo(inputDeviceIndex)->name, mNodeManager.getInputChannelCount());
+				Logger::info("Input device: %s, %i channel(s)", Pa_GetDeviceInfo(inputDeviceIndex)->name, mNodeManager.getInputChannelCount());
 			else
 				Logger::info("No input device");
 
 			if (outputDeviceIndex >= 0)
-				Logger::info("Output device: %s (%i channels)", Pa_GetDeviceInfo(outputDeviceIndex)->name, mNodeManager.getOutputChannelCount());
+				Logger::info("Output device: %s, %i channel(s)", Pa_GetDeviceInfo(outputDeviceIndex)->name, mNodeManager.getOutputChannelCount());
 			else
 				Logger::info("No output device");
 			Logger::info("Samplerate: %i", int(mNodeManager.getSampleRate()));
@@ -418,7 +418,7 @@ namespace nap
 				{
 					auto index = Pa_HostApiDeviceIndexToDeviceIndex(hostApi, device);
 					const PaDeviceInfo& info = *Pa_GetDeviceInfo(index);
-					nap::Logger::info("%i: %s %i inputs %i outputs", device, info.name, info.maxInputChannels,
+					nap::Logger::info("%i: %s, %i input(s) %i output(s)", device, info.name, info.maxInputChannels,
 					                  info.maxOutputChannels);
 				}
 			}
