@@ -418,7 +418,7 @@ namespace nap
 				{
 					auto index = Pa_HostApiDeviceIndexToDeviceIndex(hostApi, device);
 					const PaDeviceInfo& info = *Pa_GetDeviceInfo(index);
-					nap::Logger::info("%i: %s, %i input(s) %i output(s)", device, info.name, info.maxInputChannels,
+					nap::Logger::info("%i: %s, %i input(s), %i output(s)", device, info.name, info.maxInputChannels,
 					                  info.maxOutputChannels);
 				}
 			}
