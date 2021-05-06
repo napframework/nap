@@ -35,6 +35,8 @@ RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DisableInput", &nap::audio::AudioServiceConfiguration::mDisableInput,
 		              nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DisableOutput", &nap::audio::AudioServiceConfiguration::mDisableOutput,
+					  nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::mBufferSize,
@@ -142,26 +144,38 @@ namespace nap
 						Logger::info("Audio input device not found: %s", configuration->mInputDevice.c_str());
 				}
 			}
-			
-			if (configuration->mOutputDevice.empty())
-				outputDeviceIndex = Pa_GetDefaultOutputDevice();
-			else
-				outputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mOutputDevice);
-			if (outputDeviceIndex < 0)
+
+			if (configuration->mDisableOutput)
 			{
-				if (!configuration->mAllowDeviceFailure)
-				{
-					errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
-					return false;
-				}
-				else
-					Logger::info("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+				outputDeviceIndex = -1;
 			}
-			
+			else {
+				if (configuration->mOutputDevice.empty())
+					outputDeviceIndex = Pa_GetDefaultOutputDevice();
+				else
+					outputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mOutputDevice);
+				if (outputDeviceIndex < 0)
+				{
+					if (!configuration->mAllowDeviceFailure)
+					{
+						errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+						return false;
+					}
+					else
+						Logger::info("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+				}
+			}
+
+			if (inputDeviceIndex < 0 && outputDeviceIndex < 0)
+			{
+				errorState.fail("Cannot start audio stream with neither input nor output.");
+				return false;
+			}
+
 			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
 			                        errorState))
 				return false;
-			
+
 			if (!(openStream(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
 			                 configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize,
 			                 errorState) && start(errorState)))
@@ -506,8 +520,8 @@ namespace nap
 			
 			if (!outputDeviceInfo)
 			{
-				// There is no input device
-				if (configuration->mOutputChannelCount > 0)
+				// There is no output device
+				if (configuration->mDisableOutput == false && configuration->mOutputChannelCount > 0)
 				{
 					if (configuration->mAllowChannelCountFailure)
 					{
@@ -543,7 +557,13 @@ namespace nap
 					// There are enough channels
 					outputChannelCount = configuration->mOutputChannelCount;
 			}
-			
+
+			if (inputChannelCount < 1 && outputChannelCount < 0)
+			{
+				errorState.fail("Cannot start audio stream with zero input and output channels.");
+				return false;
+			}
+
 			return true;
 		}
 		
