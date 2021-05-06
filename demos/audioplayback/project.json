@@ -9,6 +9,6 @@
         "mod_napimgui"
     ],
     "Data": "data/audioplayback.json",
-    "ServiceConfig": "",
+    "ServiceConfig": "config.json",
     "PathMapping": "cache/path_mapping.json"
 }
