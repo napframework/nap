@@ -93,16 +93,13 @@ To generate a solution and compile the source code you need to have installed:
 	- The precompiled package uses Qt 5.11.3, although other versions are known to work.
 	- Use the Qt Online Installer and select the **Archive** package category to access older versions
 
-NAP depends on a small set of third party libraries, which we precompiled for you. You can get them here: 
+NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our github page. Put the thirdparty directory next to the NAP source directory:
 
-- https://github.com/napframework/thirdparty. 
-
-Put the thirdparty library directory next to the NAP source directory:
 - /dev
 	- nap
 	- thirdparty
 
-NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`. Only the editor (Napkin) depends on Qt, NAP applications do not have a dependency on Qt.
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\mycomp\qt\5.11.3\msvc2015_64`. Note that only the editor (Napkin) depends on Qt, NAP applications do not have a dependency on Qt.
 
 ## Create the Solution
 
