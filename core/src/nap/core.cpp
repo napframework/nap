@@ -159,7 +159,10 @@ namespace nap
 		std::vector<Service*> objects;
 		for (const auto& service : mServices)
 		{
-			nap::Logger::info("initializing service: %s", service->getTypeName().c_str());
+			std::string sp = utility::stringFormat("initializing service: %s", service->getTypeName().c_str());
+			nap::Logger::info(sp);
+			std::cout << std::string(sp.size(), '-') << std::endl;
+
 			if (!service->init(errorState))
 				return false;
 		}
