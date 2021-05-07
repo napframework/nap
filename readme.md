@@ -93,8 +93,11 @@ To generate a solution and compile the source code you need to have installed:
 	- The precompiled package uses Qt 5.11.3, although other versions are known to work.
 	- Use the Qt Online Installer and select the **Archive** package category to access older versions
 
-NAP depends on various other third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
+NAP depends on a small set of third party libraries, which we precompiled for you. You can get them here: 
 
+- https://github.com/napframework/thirdparty. 
+
+Put the thirdparty library directory next to the NAP source directory:
 - /dev
 	- nap
 	- thirdparty
