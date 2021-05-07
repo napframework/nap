@@ -161,7 +161,7 @@ namespace nap
 		std::string si;
 		for (const auto& service : mServices)
 		{
-			si = utility::stringFormat("initializing service: %s", service->getTypeName().c_str());
+			si = utility::stringFormat("Initializing service: %s", service->getTypeName().c_str());
 			std::cout << std::string(si.size(), '-') << std::endl;
 			nap::Logger::info(si);
 
