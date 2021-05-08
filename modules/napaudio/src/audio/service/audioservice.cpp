@@ -176,7 +176,7 @@ namespace nap
 			                        errorState))
 				return false;
 
-			if (!(openStream(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
+			if (!(openStream(mHostApiIndex, inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
 			                 configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize,
 			                 errorState) && start(errorState)))
 			{
