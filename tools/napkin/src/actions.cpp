@@ -52,7 +52,7 @@ void NewFileAction::perform()
 
 OpenProjectAction::OpenProjectAction()
 {
-	setText("Open");
+	setText("Open...");
 }
 
 void OpenProjectAction::perform()
@@ -210,7 +210,7 @@ void SaveFileAsAction::perform()
 
 napkin::OpenFileAction::OpenFileAction()
 {
-	setText("Open");
+	setText("Open...");
 	setShortcut(QKeySequence::Open);
 }
 
