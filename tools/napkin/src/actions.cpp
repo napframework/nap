@@ -49,7 +49,7 @@ void NewFileAction::perform()
 
 OpenProjectAction::OpenProjectAction()
 {
-	setText("Open Project...");
+	setText("Open project...");
 	setShortcut(QKeySequence::Open);
 }
 
@@ -69,7 +69,7 @@ void OpenProjectAction::perform()
 
 ReloadFileAction::ReloadFileAction()
 {
-	setText("Reload");
+	setText("Reload file");
 }
 
 void ReloadFileAction::perform()
@@ -81,7 +81,7 @@ void ReloadFileAction::perform()
 
 SaveFileAction::SaveFileAction()
 {
-	setText("Save");
+	setText("Save file");
 	setShortcut(QKeySequence::Save);
 }
 
@@ -108,7 +108,7 @@ void SaveFileAction::perform()
 
 SaveFileAsAction::SaveFileAsAction()
 {
-	setText("Save as...");
+	setText("Save file as...");
 	setShortcut(QKeySequence::SaveAs);
 }
 
@@ -128,14 +128,18 @@ void SaveFileAsAction::perform()
 
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
 													prevFilename, JSON_FILE_FILTER);
-
 	if (filename.isNull())
 		return;
 
 	if (!filename.endsWith("." + JSON_FILE_EXT))
 		filename = filename + "." + JSON_FILE_EXT;
 
-	ctx.saveDocumentAs(filename);
+	if (!ctx.saveDocumentAs(filename))
+	{
+		nap::Logger::error("Unable to save file: %s", filename.toUtf8().constData());
+		return;
+	}
+	ctx.loadDocument(filename);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

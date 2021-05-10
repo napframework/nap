@@ -141,11 +141,13 @@ void MainWindow::updateWindowTitle()
 		return;
 	}
 
-	// Otherwise display current project
+	// Otherwise display current project & file
+	QFileInfo fi(getContext().getDocument()->getCurrentFilename());
 	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
-	setWindowTitle(QString("%1%2 %3 - %4").arg(QString::fromStdString(project_info->mTitle),
-											   changed, QString::fromStdString(project_info->mVersion),
-											   QApplication::applicationName()));
+	setWindowTitle(QString("%1%2 %3 | %4 - %5").arg(QString::fromStdString(project_info->mTitle),
+												changed, QString::fromStdString(project_info->mVersion),
+												fi.exists() ? fi.fileName() : "No File",
+												QApplication::applicationName()));
 }
 
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
