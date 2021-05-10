@@ -57,7 +57,7 @@ OpenProjectAction::OpenProjectAction()
 
 void OpenProjectAction::perform()
 {
-	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Project", "", JSON_FILE_FILTER);
+	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Project", "", JSON_PROJECT_FILTER);
 	if (filename.isNull())
 		return;
 
@@ -189,7 +189,7 @@ void SaveFileAsAction::perform()
 		cur_file_name += "/untitled.json";
 	}
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
-		cur_file_name, JSON_FILE_FILTER);
+		cur_file_name, JSON_DATA_FILTER);
 
 	if (filename.isNull())
 		return;
@@ -230,7 +230,7 @@ void napkin::OpenFileAction::perform()
 	}
 
 	// Get file to open
-	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Data File", dir, JSON_FILE_FILTER);
+	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Data File", dir, JSON_DATA_FILTER);
 	if (filename.isNull())
 		return;
 
