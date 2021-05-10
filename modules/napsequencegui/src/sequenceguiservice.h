@@ -12,6 +12,7 @@
 
 namespace nap
 {
+	// forward declares
 	class SequenceEventTrackSegmentViewBase;
 	class SequenceEventTrackView;
 	class SequenceEventTrackView;
@@ -21,10 +22,10 @@ namespace nap
 	class SequenceEditorGUIView;
 	class SequenceEditorGUIState;
 
+	// shortcuts
 	using SequenceTrackViewFactoryFunc 			= std::function<std::unique_ptr<SequenceTrackView>(SequenceGUIService&, SequenceEditorGUIView&, SequenceEditorGUIState&)>;
 	using SequenceEventTrackSegmentViewMap 		= std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase>>;
 	using SequenceTrackViewFactoryMap 			= std::unordered_map<rtti::TypeInfo, SequenceTrackViewFactoryFunc>;
-	using SequenceTrackViewMap 					= std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceTrackView>>;
 	using SequenceTrackTypeForViewTypeMap		= std::unordered_map<rtti::TypeInfo, rtti::TypeInfo>;
 	using SequenceEventTrackPasteEventMemFun 	= void (SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double);
 	using SequenceEventTrackEditEventMemFun 	= void (SequenceEventTrackView::*)();
@@ -52,7 +53,7 @@ namespace nap
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceGUIService*));
 
 		/**
-		 * call this static method to register you a custom view for a custom event type
+		 * call this method to register you a custom view for a custom event type
 		 * T is the value type of the event ( SequenceEvent<T> )
 		 * @tparam T value to of the event
 		 * @return true when called
@@ -68,7 +69,7 @@ namespace nap
 
 		const SequenceEventTrackSegmentViewMap& getEventSegmentViews() const;
 
-		const std::vector<rtti::TypeInfo>& getEventTypes() const;
+		const std::vector<rtti::TypeInfo>& getRegisteredEventTypes() const;
 
 		const SequenceTrackViewFactoryMap& getTrackViewFactory() const;
 

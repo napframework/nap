@@ -31,8 +31,8 @@ namespace nap
 
 		/**
 		 * register all edit popups for all registered views for possible event actions
-		 * these views and actions are registered at static initialization, since we know all possible actions and
-		 * their corresponding views at that time ( see SequenceEventTrackView::registerViewType<T> )
+		 * these views and actions are registered at initialization of sequence gui service, since we know all possible actions and
+		 * their corresponding views at that time
 		 */
 		auto& edit_popup_map = mService.getEditEventHandlerMap();
 		for(auto& pair : edit_popup_map)
@@ -210,7 +210,7 @@ namespace nap
 			{
 				auto* action = mState.mAction->getDerived<InsertingEventSegment>();
 
-				auto& event_map = mService.getEventTypes();
+				auto& event_map = mService.getRegisteredEventTypes();
 				for(auto& type : event_map)
 				{
 					std::string buttonString = "Insert " + type.get_name().to_string();

@@ -130,7 +130,7 @@ namespace nap
 	}
 
 
-	const std::vector<rtti::TypeInfo>& SequenceGUIService::getEventTypes() const
+	const std::vector<rtti::TypeInfo>& SequenceGUIService::getRegisteredEventTypes() const
 	{
 		return mEventTypes;
 	}
