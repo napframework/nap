@@ -117,6 +117,17 @@ namespace napkin
 	};
 
 	/**
+	 * Presents a load file dialog, to load a different data file
+	 */
+	class OpenFileAction : public Action
+	{
+	public:
+		OpenFileAction();
+	private:
+		void perform() override;
+	};
+
+	/**
 	 * Updates project data path to point to current loaded document
 	 */
 	class UpdateDefaultAction : public Action

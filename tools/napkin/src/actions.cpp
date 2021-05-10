@@ -22,7 +22,7 @@ Action::Action() : QAction() { connect(this, &QAction::triggered, this, &Action:
 
 NewFileAction::NewFileAction()
 {
-	setText("New file");
+	setText("New");
 	setShortcut(QKeySequence::New);
 }
 
@@ -52,15 +52,11 @@ void NewFileAction::perform()
 
 OpenProjectAction::OpenProjectAction()
 {
-	setText("Open project...");
-	setShortcut(QKeySequence::Open);
+	setText("Open");
 }
 
 void OpenProjectAction::perform()
 {
-	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
-    auto topLevelWidgets = QApplication::topLevelWidgets();
-
 	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Project", "", JSON_FILE_FILTER);
 	if (filename.isNull())
 		return;
@@ -72,23 +68,29 @@ void OpenProjectAction::perform()
 
 napkin::UpdateDefaultAction::UpdateDefaultAction()
 {
-	setText("Set as default");
+	setText("Set as project default");
 }
 
 
 void napkin::UpdateDefaultAction::perform()
 {
-	// Ensure project info is available
-	const auto* project_info = AppContext::get().getProjectInfo();
-	if (project_info == nullptr)
+	// No document, core is not initialized
+	Document* doc = AppContext::get().getDocument();
+	if (doc == nullptr)
 		return;
 
-	// Make sure document is loaded
-	if (!AppContext::get().hasDocument())
-		return;
+	// Save if not saved yet
+	if (doc->getCurrentFilename().isNull())
+	{
+		// Attempt to save document
+		SaveFileAsAction().trigger();
+		if (doc->getCurrentFilename().isNull())
+			return;
+	}
 
 	// Clone current project information
-	assert(AppContext::get().getCore().isInitialized());
+	const auto* project_info = AppContext::get().getProjectInfo();
+	assert(project_info != nullptr);
 	std::unique_ptr<nap::ProjectInfo> new_info = nap::rtti::cloneObject(*project_info, AppContext::get().getCore().getResourceManager()->getFactory());
 	
 	// Get data directory and create relative path
@@ -115,7 +117,7 @@ void napkin::UpdateDefaultAction::perform()
 	// Write to disk
 	std::string json = writer.GetJSON();
 	output.write(json.data(), json.size());
-	nap::Logger::info("Updated project, new default: %s", new_path.toUtf8().constData());
+	nap::Logger::info("Updated project default: %s", new_path.toUtf8().constData());
 }
 
 
@@ -123,8 +125,9 @@ void napkin::UpdateDefaultAction::perform()
 
 ReloadFileAction::ReloadFileAction()
 {
-	setText("Reload file");
+	setText("Reload");
 }
+
 
 void ReloadFileAction::perform()
 {
@@ -135,7 +138,7 @@ void ReloadFileAction::perform()
 
 SaveFileAction::SaveFileAction()
 {
-	setText("Save file");
+	setText("Save");
 	setShortcut(QKeySequence::Save);
 }
 
@@ -158,30 +161,36 @@ void SaveFileAction::perform()
 	AppContext::get().saveDocument();
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SaveFileAsAction::SaveFileAsAction()
 {
-	setText("Save file as...");
+	setText("Save as...");
 	setShortcut(QKeySequence::SaveAs);
 }
+
 
 void SaveFileAsAction::perform()
 {
 	auto& ctx = AppContext::get();
-	napkin::Document* doc  = ctx.getDocument();
+	napkin::Document* doc = ctx.getDocument();
+	
+	// Core not initialized
 	if (doc == nullptr)
-	{
-		nap::Logger::warn("Unable to save file");
 		return;
+
+	// Get name and location to store
+	auto cur_file_name = doc->getCurrentFilename();
+	if (cur_file_name.isNull())
+	{
+		assert(AppContext::get().getProjectInfo() != nullptr);
+		cur_file_name =  QString::fromStdString(AppContext::get().getProjectInfo()->getDataDirectory());
+		cur_file_name += "/untitled.json";
 	}
-
-	auto prevFilename = doc->getCurrentFilename();
-	if (prevFilename.isNull())
-		prevFilename = "untitled.json";
-
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Data File",
-													prevFilename, JSON_FILE_FILTER);
+		cur_file_name, JSON_FILE_FILTER);
+
 	if (filename.isNull())
 		return;
 
@@ -193,7 +202,39 @@ void SaveFileAsAction::perform()
 		nap::Logger::error("Unable to save file: %s", filename.toUtf8().constData());
 		return;
 	}
-	ctx.loadDocument(filename);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+napkin::OpenFileAction::OpenFileAction()
+{
+	setText("Open");
+	setShortcut(QKeySequence::Open);
+}
+
+
+void napkin::OpenFileAction::perform()
+{
+	auto& ctx = AppContext::get();
+
+	// Doc exists, use current file or data directory as starting point
+	napkin::Document* doc = ctx.getDocument();
+	QString dir = "";
+	if (doc != nullptr)
+	{	
+		dir = doc->getCurrentFilename().isNull() ?
+			QString::fromStdString(ctx.getProjectInfo()->getDataDirectory()) :
+			ctx.getDocument()->getCurrentFilename();
+	}
+
+	// Get file to open
+	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Data File", dir, JSON_FILE_FILTER);
+	if (filename.isNull())
+		return;
+
+	AppContext::get().loadDocument(filename);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,6 +243,7 @@ CreateResourceAction::CreateResourceAction()
 {
 	setText("Create Resource...");
 }
+
 
 void CreateResourceAction::perform()
 {

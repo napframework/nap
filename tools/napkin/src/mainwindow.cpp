@@ -84,17 +84,26 @@ void MainWindow::addDocks()
 
 void MainWindow::addMenu()
 {
-	auto filemenu = new QMenu("File", menuBar());
+	// Project
+	auto projectmenu = new QMenu("Project", menuBar());
 	{
 		auto openFileAction = new OpenProjectAction();
 		addAction(openFileAction);
-		filemenu->addAction(openFileAction);
+		projectmenu->addAction(openFileAction);
+		mRecentProjectsMenu = projectmenu->addMenu("Recent Projects");
+	}
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), projectmenu);
 
-		mRecentProjectsMenu = filemenu->addMenu("Recent Projects");
-
+	// File (Data)
+	auto filemenu = new QMenu("File", menuBar());
+	{
 		auto newFileAction = new NewFileAction();
 		addAction(newFileAction);
 		filemenu->addAction(newFileAction);
+
+		auto openFileAction = new OpenFileAction();
+		addAction(openFileAction);
+		filemenu->addAction(openFileAction);
 
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);
@@ -114,6 +123,7 @@ void MainWindow::addMenu()
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 
+	// General Options
 	auto optionsMenu = new QMenu("Options", menuBar());
 	{
 		optionsMenu->addMenu(&mThemeMenu);
