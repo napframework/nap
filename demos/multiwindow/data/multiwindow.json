@@ -181,6 +181,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_2",
+                    "Visible": true,
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
@@ -189,6 +190,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -232,6 +234,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_3",
+                    "Visible": true,
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
@@ -247,12 +250,14 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "TextureTwo"
                             }
                         ],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -296,6 +301,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
+                    "Visible": true,
                     "Mesh": "WorldMesh",
                     "MaterialInstance": {
                         "Material": "WorldMaterial",
@@ -304,6 +310,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -389,6 +396,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "TextureOne"
                 }
             ],
@@ -439,6 +447,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "WorldTexture"
                 }
             ],
@@ -473,6 +482,14 @@
                 "x": 0.0,
                 "y": 0.0
             },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "Rows": 1,
             "Columns": 1
         },
@@ -493,7 +510,8 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::RenderWindow",
@@ -512,7 +530,8 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::RenderWindow",
@@ -531,7 +550,8 @@
                 "z": 0.14900000393390656,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -582,7 +602,15 @@
             "CullMode": "Back",
             "Radius": 1.0,
             "Rings": 50.0,
-            "Sectors": 50.0
+            "Sectors": 50.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }
