@@ -152,7 +152,7 @@ namespace nap
 		{
 			if (input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput))
 			{
-				auto& curve_output = *rtti_cast<SequencePlayerCurveOutput>(input.get());
+				auto& curve_output = static_cast<SequencePlayerCurveOutput&>(*input.get());
 
 				if(curve_output.mParameter != nullptr)
 				{
@@ -167,7 +167,7 @@ namespace nap
 							current_item = count;
 
 							assert(input.get()->get_type() == RTTI_OF(SequencePlayerCurveOutput)); // type mismatch
-							assigned_parameter = rtti_cast<SequencePlayerCurveOutput>(input.get())->mParameter.get();
+							assigned_parameter = static_cast<SequencePlayerCurveOutput*>(input.get())->mParameter.get();
 						}
 
 						curve_outputs.emplace_back(input->mID);
@@ -1006,7 +1006,8 @@ namespace nap
 		double time,
 		int curveIndex)
 	{
-		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<float>>(&track);
+		assert(track.get_type().is_derived_from<SequenceTrackCurve<float>>());
+		const auto& curve_track = static_cast<const SequenceTrackCurve<float>&>(track);
 
 		ImGui::BeginTooltip();
 
@@ -1028,7 +1029,8 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 2);
 
-		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<glm::vec2>>(&track);
+		assert(track.get_type().is_derived_from<SequenceTrackCurve<glm::vec2>>());
+		const auto& curve_track = static_cast<const SequenceTrackCurve<glm::vec2>&>(track);
 
 		ImGui::BeginTooltip();
 
@@ -1058,7 +1060,8 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 3);
 
-		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<glm::vec3>>(&track);
+		assert(track.get_type().is_derived_from<SequenceTrackCurve<glm::vec3>>());
+		const auto& curve_track = static_cast<const SequenceTrackCurve<glm::vec3>&>(track);
 
 		ImGui::BeginTooltip();
 
@@ -1088,7 +1091,8 @@ namespace nap
 		assert(curveIndex >= 0);
 		assert(curveIndex < 4);
 
-		const auto& curve_track = *rtti_cast<const SequenceTrackCurve<glm::vec4>>(&track);
+		assert(track.get_type().is_derived_from<SequenceTrackCurve<glm::vec4>>());
+		const auto& curve_track = static_cast<const SequenceTrackCurve<glm::vec4>&>(track);
 
 		ImGui::BeginTooltip();
 
@@ -1376,8 +1380,7 @@ namespace nap
 			assert(controller!= nullptr);
 
 			// assume we can upcast it to a curve controller
-			auto* curve_controler = rtti_cast<SequenceControllerCurve>(controller);
-			assert(curve_controler!= nullptr);
+			auto* curve_controler = static_cast<SequenceControllerCurve*>(controller);
 
 			// change duration
 			action->mNewDuration += amount;
@@ -1426,8 +1429,8 @@ namespace nap
 		assert(controller!= nullptr);
 
 		// assume we can upcast it to a curve controller
-		auto* curve_controller = rtti_cast<SequenceControllerCurve>(controller);
-		assert(curve_controller != nullptr);
+		assert(controller->get_type().is_derived_from<SequenceControllerCurve>());
+		auto* curve_controller = static_cast<SequenceControllerCurve*>(controller);
 
 		// tell the controller to change the curve segment value
 		curve_controller->changeCurveSegmentValue(

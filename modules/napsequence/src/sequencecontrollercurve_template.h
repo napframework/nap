@@ -86,7 +86,7 @@ namespace nap
 							}
 
 							//
-							auto& segment_curve_2 = *rtti_cast<SequenceTrackSegmentCurve<T>>(segment.get());
+							auto& segment_curve_2 = *static_cast<SequenceTrackSegmentCurve<T>*>(segment.get());
 
 							// set the value by evaluation curve
 							new_segment->setStartValue(segment_curve_2.getValue(
@@ -97,7 +97,7 @@ namespace nap
 							if (segment_count < track->mSegments.size())
 							{
 								// if there is a next segment, the new segments end value is the start value of the next segment ...
-								auto& next_segment_curve = *rtti_cast<SequenceTrackSegmentCurve<T>>(track->mSegments[segment_count].get());
+								auto& next_segment_curve = *static_cast<SequenceTrackSegmentCurve<T>*>(track->mSegments[segment_count].get());
 
 								new_segment->setEndValue(next_segment_curve.getEndValue());
 							}
@@ -135,8 +135,7 @@ namespace nap
 							// insert segment at the end of the list
 
 							// create new segment & set parameters
-							std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment =
-																			  std::make_unique<SequenceTrackSegmentCurve<T>>();
+							std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
 							new_segment->mStartTime = segment->mStartTime + segment->mDuration;
 							new_segment->mDuration = time - new_segment->mStartTime;
 							new_segment->mCurves.resize(curve_count);
@@ -226,18 +225,14 @@ namespace nap
 	template<typename T>
 	void SequenceControllerCurve::changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex)
 	{
-		auto* segment_curve = rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
-		assert(segment_curve != nullptr); // type mismatch
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
+		assert(curve_segment.mCurveTypes.size() > curveIndex); // curveIndex invalid
 
-		if (segment_curve != nullptr)
+		curve_segment.mCurveTypes[curveIndex] = type;
+		for (int j = 0; j < curve_segment.mCurves[curveIndex]->mPoints.size(); j++)
 		{
-			assert(segment_curve->mCurveTypes.size() > curveIndex); // curveIndex invalid
-
-			segment_curve->mCurveTypes[curveIndex] = type;
-			for (int j = 0; j < segment_curve->mCurves[curveIndex]->mPoints.size(); j++)
-			{
-				segment_curve->mCurves[curveIndex]->mPoints[j].mInterp = type;
-			}
+			curve_segment.mCurves[curveIndex]->mPoints[j].mInterp = type;
 		}
 	}
 
@@ -247,7 +242,7 @@ namespace nap
 														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 
 		switch (valueType)
 		{
@@ -276,7 +271,7 @@ namespace nap
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 
-		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 
 		// iterate trough points of curve
@@ -313,7 +308,7 @@ namespace nap
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 
 		//
-		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 
 		if (index < curve_segment.mCurves[curveIndex]->mPoints.size())
@@ -330,7 +325,7 @@ namespace nap
 	{
 		// obtain curve segment
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
@@ -349,7 +344,7 @@ namespace nap
 
 		// obtain curve segment
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 
 		//
@@ -368,7 +363,7 @@ namespace nap
 	bool SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(&segment);
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
@@ -471,12 +466,9 @@ namespace nap
 		prev_segment = nullptr;
 		for (auto track_segment : track.mSegments)
 		{
-			auto& segment_curve = *rtti_cast<SequenceTrackSegmentCurve<T>>(track_segment.get());
+			auto& segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track_segment.get());
 
-			if (prev_segment == nullptr)
-			{
-			}
-			else
+			if (prev_segment != nullptr)
 			{
 				// if we have a previous segment, the curve gets the value of the start value of the current segment
 				segment_curve.setStartValue(prev_segment->getEndValue());
@@ -494,11 +486,11 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			auto* track_curve = rtti_cast<SequenceTrackCurve<T>>(track);
+			auto* track_curve = static_cast<SequenceTrackCurve<T>*>(track);
 
 			for(auto& segment : track_curve->mSegments)
 			{
-				auto& curve_segment = *rtti_cast<SequenceTrackSegmentCurve<T>>(segment.get());
+				auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
 				int curve_count = 0;
 				for(auto& curve : curve_segment.mCurves)
 				{

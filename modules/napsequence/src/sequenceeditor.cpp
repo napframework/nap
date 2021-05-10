@@ -15,7 +15,7 @@
 #include <functional>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS(nap::SequenceEditor)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor)
 RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -25,6 +25,9 @@ using namespace nap::SequenceCurveEnums;
 
 namespace nap
 {
+	SequenceEditor::SequenceEditor(SequenceService& service) : mService(service){}
+
+
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -33,7 +36,7 @@ namespace nap
 		}
 
 		// create controllers for all types of tracks
-		auto& factory = SequenceController::getControllerFactory();
+		const auto& factory = mService.getControllerFactory();
 		for (const auto& it : factory)
 		{
 			mControllers.emplace(it.first, it.second(*mSequencePlayer.get(), *this));
@@ -43,54 +46,18 @@ namespace nap
 	}
 
 
-	std::unordered_map<rttr::type, rttr::type>& getControllerTrackTypeMap()
-	{
-		static std::unordered_map<rttr::type, rttr::type> map;
-		return map;
-	}
-
-
-	bool SequenceEditor::registerControllerForTrackType(const rttr::type& trackType, const rttr::type& controllerType)
-	{
-		auto& map = getControllerTrackTypeMap();
-		assert(map.find(controllerType) == map.end()); // duplicate entry
-		if (map.find(controllerType) == map.end())
-		{
-			map.emplace(trackType, controllerType);
-			return true;
-		}
-
-		return false;
-	}
-
-
-	SequenceController* SequenceEditor::getControllerWithTrackType(const rttr::type& type)
-	{
-		auto& map = getControllerTrackTypeMap();
-		if (map.find(type) != map.end())
-		{
-			auto it = getControllerTrackTypeMap().find(type);
-			if (mControllers.find(it->second) != mControllers.end())
-			{
-				return mControllers[it->second].get();
-			}
-		}
-		
-		return nullptr;
-	}
-
-
 	SequenceController* SequenceEditor::getControllerWithTrackID(const std::string& trackID)
 	{
 		const auto& sequence = mSequencePlayer->getSequence();
 		for(const auto& track : sequence.mTracks)
 		{
-			auto track_ptr = track.get();
-			auto track_type = track_ptr->get_type();
-			auto it = getControllerTrackTypeMap().find(track_type);
-			if (mControllers.find(it->second) != mControllers.end())
+			if(trackID==track->mID)
 			{
-				return mControllers[it->second].get();
+				auto track_ptr = track.get();
+				auto track_type = track_ptr->get_type();
+				auto controller_type = mService.getControllerTypeForTrackType(track_type);
+				assert(mControllers.find(controller_type)!=mControllers.end()); // entry not found
+				return mControllers[controller_type].get();
 			}
 		}
 		return nullptr;

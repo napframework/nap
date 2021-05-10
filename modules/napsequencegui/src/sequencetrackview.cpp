@@ -291,7 +291,8 @@ namespace nap
 		if(mState.mAction.get()->get_type().is_derived_from<TrackAction>())
 		{
 			// get derived track action
-			const auto* track_action = rtti_cast<const TrackAction>(mState.mAction.get());
+			assert(mState.mAction.get()->get_type().is_derived_from<TrackAction>());
+			const auto* track_action = static_cast<const TrackAction*>(mState.mAction.get());
 
 			// find the track this track action belongs to
 			const auto& sequence = getEditor().mSequencePlayer->getSequenceConst();

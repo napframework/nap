@@ -57,5 +57,5 @@ namespace nap
 
 	};
 
-	using SequencePlayerCurveInputObjectCreator = rtti::ObjectCreator<SequencePlayerCurveOutput, SequenceService>;
+	using SequencePlayerCurveOutputObjectCreator = rtti::ObjectCreator<SequencePlayerCurveOutput, SequenceService>;
 }

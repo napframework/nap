@@ -12,18 +12,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static bool register_default_track_creator = sequenceutils::registerDefaultTrackCreator(
-		RTTI_OF(SequencePlayerEventOutput), [](const SequencePlayerOutput* output) -> std::unique_ptr<SequenceTrack> {
-			return std::make_unique<SequenceTrackEvent>();
-		});
-
-
-	static bool register_object_creator = SequenceService::registerObjectCreator([](SequenceService* service)->std::unique_ptr<rtti::IObjectCreator>
-	{
-		return std::make_unique<SequencePlayerEventOutputObjectCreator>(*service);
-	});
-
-
 	SequencePlayerEventOutput::SequencePlayerEventOutput(SequenceService& service)
 		: SequencePlayerOutput(service){}
 

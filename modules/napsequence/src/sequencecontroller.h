@@ -18,9 +18,6 @@ namespace nap
 	class SequenceController;
 	class SequenceEditor;
 
-	// shortcut to factory method
-	using SequenceControllerFactoryFunc = std::unique_ptr<SequenceController>(*)(SequencePlayer&, SequenceEditor&);
-
 	/**
 	 * Base class for controllers for specific track types
 	 */
@@ -100,20 +97,6 @@ namespace nap
 		 * @return const pointer to tracksegment, returns nullptr when not found
 		 */
 		const SequenceTrackSegment* getSegment(const std::string& trackID, const std::string& segmentID) const;
-
-		/**
-		 * static method that returns factory method for creating a controller
-		 * @return reference to factory method
-		 */
-		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& getControllerFactory();
-
-		/**
-		 * registers the factory method for a type of controller
-		 * @param type the type of controller
-		 * @param factoryFunc the factory method
-		 * @return true on successfull registration
-		 */
-		static bool registerControllerFactory(const rttr::type& type, SequenceControllerFactoryFunc factoryFunc);
 	protected:
 		/**
 		 * @return returns reference to sequence of player

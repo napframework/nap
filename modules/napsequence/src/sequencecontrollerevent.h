@@ -98,13 +98,10 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			if (track != nullptr)
-			{
-				track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
+			track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
 
-				return_ptr = new_segment.get();
-				getPlayerOwnedObjects().emplace_back(std::move(new_segment));
-			}
+			return_ptr = new_segment.get();
+			getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 		});
 
 		return return_ptr;
@@ -119,22 +116,13 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			if (track != nullptr)
-			{
-				SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-				assert(segment != nullptr); // segment not found
+			SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+			assert(segment != nullptr); // segment not found
 
-				if (segment != nullptr)
-				{
-					auto* event_segment = rtti_cast<SequenceTrackSegmentEvent<T>>(segment);
-					assert(event_segment != nullptr); // type mismatch
+			assert(segment->get_type().template is_derived_from<SequenceTrackSegmentEvent<T>>());
+			auto* event_segment = static_cast<SequenceTrackSegmentEvent<T>*>(segment);
 
-					if (event_segment != nullptr)
-					{
-						event_segment->mValue = value;
-					}
-				}
-			}
+			event_segment->mValue = value;
 		});
 	}
 }

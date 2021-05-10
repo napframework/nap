@@ -739,7 +739,8 @@ namespace nap
 	template<>
 	void SequenceEventTrackSegmentView<std::string>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
 	{
-		const auto& segment_event = *rtti_cast<const SequenceTrackSegmentEventString>(&segment);
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventString>());
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventString&>(segment);
 
 		std::ostringstream string_stream;
 		string_stream << "\"" << segment_event.mValue << "\"" ;
@@ -771,7 +772,8 @@ namespace nap
 	template<>
 	void SequenceEventTrackSegmentView<float>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
 	{
-		const auto& segment_event = *rtti_cast<const SequenceTrackSegmentEventFloat>(&segment);
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventFloat>());
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventFloat&>(segment);
 
 		std::ostringstream string_stream;
 		string_stream << segment_event.mValue;
@@ -804,7 +806,8 @@ namespace nap
 	template<>
 	void SequenceEventTrackSegmentView<int>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
 	{
-		const auto& segment_event = *rtti_cast<const SequenceTrackSegmentEventInt>(&segment);
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventInt>());
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventInt&>(segment);
 
 		std::ostringstream string_stream;
 		string_stream << segment_event.mValue;
@@ -837,7 +840,8 @@ namespace nap
 	template<>
 	void SequenceEventTrackSegmentView<glm::vec2>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
 	{
-		const auto& segment_event = *rtti_cast<const SequenceTrackSegmentEventVec2>(&segment);
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec2>());
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
 
 		std::ostringstream string_stream;
 		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ")";
@@ -867,7 +871,8 @@ namespace nap
 	template<>
 	void SequenceEventTrackSegmentView<glm::vec3>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
 	{
-		const auto& segment_event = *rtti_cast<const SequenceTrackSegmentEventVec3>(&segment);
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec3>());
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
 
 		std::ostringstream string_stream;
 		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ")";

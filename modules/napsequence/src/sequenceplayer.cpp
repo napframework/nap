@@ -18,7 +18,7 @@
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
 
-RTTI_BEGIN_CLASS(nap::SequencePlayer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Outputs", &nap::SequencePlayer::mOutputs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
@@ -29,7 +29,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayer::SequencePlayer() = default;
+	SequencePlayer::SequencePlayer(SequenceService& service) : mService(service){}
 
 
 	bool SequencePlayer::init(utility::ErrorState& errorState)
@@ -53,7 +53,7 @@ namespace nap
 		{
 			nap::Logger::info(*this, load_error.toString());
 			nap::Logger::info(*this, "Unable to load default show, creating default sequence");
-			mSequence = sequenceutils::createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
+			mSequence = mService.createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
 		return true;
@@ -426,7 +426,7 @@ namespace nap
 			return false;
 		}
 
-		auto adapter = SequencePlayerAdapter::invokeFactory(track->get_type(), *track, *output, *this);
+		auto adapter = mService.invokeAdapterFactory(track->get_type(), *track, *output, *this);
 
 		if (adapter == nullptr)
 		{

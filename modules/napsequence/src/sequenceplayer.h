@@ -8,6 +8,7 @@
 #include "sequence.h"
 #include "sequenceplayeradapter.h"
 #include "sequenceplayeroutput.h"
+#include "sequenceservice.h"
 
 // external includes
 #include <rtti/factory.h>
@@ -40,7 +41,7 @@ namespace nap
 		/**
 		 * Constructor used by factory
 		 */
-		SequencePlayer();
+		SequencePlayer(SequenceService& service);
 
 		/**
 		 * Evaluates the data of the player. It loads the linked default sequence. 
@@ -277,5 +278,10 @@ namespace nap
 
 		// list of instantiated adapters
 		std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
+
+		// Reference to sequence service
+		SequenceService& mService;
 	};
+
+	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;
 }

@@ -9,15 +9,6 @@
 
 namespace nap
 {
-	static bool register_controller_factory = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerEvent), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
-	{
-	  return std::make_unique<SequenceControllerEvent>(player, editor);
-	});
-
-
-	static bool register_controller_type = SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent));
-
-
 	double SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, double time)
 	{
 		double return_time = time;
@@ -32,7 +23,7 @@ namespace nap
 
 				if (segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)))
 				{
-					auto& segment_event = *rtti_cast<SequenceTrackSegmentEventBase>(segment);
+					auto& segment_event = static_cast<SequenceTrackSegmentEventBase&>(*segment);
 					segment_event.mStartTime = time;
 					return_time = segment_event.mStartTime;
 				}

@@ -453,20 +453,21 @@ namespace nap
 		static std::unordered_map<rttr::type, std::function<float(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)>> get_value_map
 		{
 			{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float{
-			  return rtti_cast<const SequenceTrackSegmentCurve<float>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
+			  return static_cast<const SequenceTrackSegmentCurve<float>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
 			}},
 			{ RTTI_OF(glm::vec2), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-			  return rtti_cast<const SequenceTrackSegmentCurve<glm::vec2>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			  return static_cast<const SequenceTrackSegmentCurve<glm::vec2>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 			} },
 			{ RTTI_OF(glm::vec3), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-			  return rtti_cast<const SequenceTrackSegmentCurve<glm::vec3>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			  return static_cast<const SequenceTrackSegmentCurve<glm::vec3>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 			}},
 			{ RTTI_OF(glm::vec4), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-			  return rtti_cast<const SequenceTrackSegmentCurve<glm::vec4>>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			  return static_cast<const SequenceTrackSegmentCurve<glm::vec4>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 			}}
 		};
 
-		const auto& segment = *rtti_cast<const SequenceTrackSegmentCurve<T>>(&segmentBase);
+		assert(segmentBase.get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>());
+		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 
 		for (int v = 0; v < segment.mCurves.size(); v++)
 		{
@@ -510,8 +511,8 @@ namespace nap
 					}
 					else if (ImGui::IsMouseDown(1))
 					{
-						const auto& curve_segment = *rtti_cast<const SequenceTrackSegmentCurve<T>>(&segment);
-						const auto& curve_track = *rtti_cast<const SequenceTrackCurve<T>>(&track);
+						const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
+						const auto& curve_track = static_cast<const SequenceTrackCurve<T>&>(track);
 
 						mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>(
 							track.mID,
@@ -918,7 +919,7 @@ namespace nap
 						float delta_time = mState.mMouseDelta.x / mState.mStepSize;
 						float delta_value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
-						const auto& curve_segment = *rtti_cast<const SequenceTrackSegmentCurve<T>>(&segment);
+						const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
 
 						float new_time;
 						float new_value;
@@ -994,10 +995,8 @@ namespace nap
 				assert(base_controller != nullptr);
 
 				// upcast
-				auto* curve_controller = rtti_cast<SequenceControllerCurve>(base_controller);
-
-				// assert if upcast failed
-				assert(curve_controller != nullptr);
+				assert(base_controller->get_type().template is_derived_from<SequenceControllerCurve>());
+				auto* curve_controller = static_cast<SequenceControllerCurve*>(base_controller);
 
 				// insert new segment
 				const auto* new_segment = curve_controller->insertSegment(trackId, time + curve_segment->mStartTime);
@@ -1075,58 +1074,51 @@ namespace nap
 			const auto* target_segment = curve_controller.getSegment(trackId, segmentId);
 
 			// upcast target segment to type of T
-			const T* target_segment_upcast = rtti_cast<const T>(target_segment);
-			assert(target_segment_upcast != nullptr); // error in upcast
+			assert(target_segment->get_type().template is_derived_from<T>()); // cannot upcast
+			const T* target_segment_upcast = static_cast<const T*>(target_segment);
 
-			// proceed upon successful cast
-			if( target_segment_upcast != nullptr )
+			// delete all points except the first and last one
+			for(size_t c = 0; c < target_segment_upcast->mCurves.size(); c++)
 			{
-				// delete all points except the first and last one
-				for(size_t c = 0; c < target_segment_upcast->mCurves.size(); c++)
+				for(size_t p = 1; p < target_segment_upcast->mCurves[c]->mPoints.size() - 1; p++)
 				{
-					for(size_t p = 1; p < target_segment_upcast->mCurves[c]->mPoints.size() - 1; p++)
-					{
-						curve_controller.deleteCurvePoint(trackId, segmentId, p, c);
-					}
+					curve_controller.deleteCurvePoint(trackId, segmentId, p, c);
 				}
-
-				// change duration
-				curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
-
-				// copy curve points
-				for(int c = 0; c < curve_segment->mCurves.size(); c++)
-				{
-					for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
-					{
-						curve_controller.insertCurvePoint(trackId, target_segment_upcast->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
-					}
-				}
-
-				// change all curvepoints to match the copied clipboard curve segment
-				// note that the first point is always determined by the previous segment
-				for(int c = 0; c < curve_segment->mCurves.size(); c++)
-				{
-					for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
-					{
-						curve_controller.changeCurvePoint(trackId, target_segment_upcast->mID, i, c,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
-														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
-
-						curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, SequenceCurveEnums::IN,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
-					}
-				}
-
-				// make the controller re-align start & end points of segments
-				curve_controller.updateCurveSegments(trackId);
-
-				// update any segments we have in the clipboard
-				updateSegmentsInClipboard(trackId);
-			}else
-			{
-				nap::Logger::error("Error casting target segment");
 			}
+
+			// change duration
+			curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
+
+			// copy curve points
+			for(int c = 0; c < curve_segment->mCurves.size(); c++)
+			{
+				for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
+				{
+					curve_controller.insertCurvePoint(trackId, target_segment_upcast->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
+				}
+			}
+
+			// change all curvepoints to match the copied clipboard curve segment
+			// note that the first point is always determined by the previous segment
+			for(int c = 0; c < curve_segment->mCurves.size(); c++)
+			{
+				for (int i = 0; i < curve_segment->mCurves[c]->mPoints.size(); i++)
+				{
+					curve_controller.changeCurvePoint(trackId, target_segment_upcast->mID, i, c,
+													  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
+													  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
+
+					curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, SequenceCurveEnums::IN,
+													curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
+													curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
+				}
+			}
+
+			// make the controller re-align start & end points of segments
+			curve_controller.updateCurveSegments(trackId);
+
+			// update any segments we have in the clipboard
+			updateSegmentsInClipboard(trackId);
 		}else
 		{
 			nap::Logger::error(errorState.toString());

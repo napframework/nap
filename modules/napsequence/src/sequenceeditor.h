@@ -11,6 +11,7 @@
 #include "sequenceplayer.h"
 #include "sequenceutils.h"
 #include "sequenceservice.h"
+#include "sequenceservice.h"
 
 // external includes
 #include <nap/resource.h>
@@ -35,6 +36,8 @@ namespace nap
 
 		RTTI_ENABLE(Resource)
 	public:
+		SequenceEditor(SequenceService& service);
+
 		/**
 		 * initializes editor
 		 * @param errorState contains any errors
@@ -88,14 +91,6 @@ namespace nap
 		}
 
 		/**
-		 * Static method that registers a certain controller type for a certain view type, this can be used by views to map controller types to view types
-		 * @param viewType the viewtype
-		 * @param controllerType the controller type
-		 * @return true on succesfull registration
-		 */
-		static bool registerControllerForTrackType(const rttr::type& viewType, const rttr::type& controllerType);
-
-		/**
 		 * inserts marker at given time in seconds
 		 * @param time the time at where to insert the new marker in seconds
 		 * @param message const reference to the message that the new marker should contain
@@ -137,5 +132,10 @@ namespace nap
 		// make sure we don't perform two edit actions at the same time and make sure they are executed on the main thread
 		// during the update call to the SequenceEditor
 		std::atomic_bool mPerformingEditAction = { false };
+
+		// service reference
+		SequenceService& mService;
 	};
+
+	using SequenceEditorObjectCreator = rtti::ObjectCreator<SequenceEditor, SequenceService>;
 }

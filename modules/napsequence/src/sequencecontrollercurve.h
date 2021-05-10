@@ -22,13 +22,14 @@ namespace nap
 	 */
 	class NAPAPI SequenceControllerCurve : public SequenceController
 	{
+		RTTI_ENABLE(SequenceController)
 	public:
 		/**
 		 * Constructor
 		 * @param player reference to player
 		 * @param editor reference to editor
 		 */
-		SequenceControllerCurve(SequencePlayer & player, SequenceEditor& editor) : SequenceController(player, editor) { }
+		SequenceControllerCurve(SequencePlayer & player, SequenceEditor& editor);
 
 		/**
 		 * @param trackID the id of the track
@@ -133,7 +134,7 @@ namespace nap
 		 * overloaded insert track function
 		 * @param type track type
 		 */
-		void insertTrack(rttr::type type) override;
+		void insertTrack(rtti::TypeInfo type) override;
 
 		/**
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
@@ -165,12 +166,6 @@ namespace nap
 		 * @return true on success
 		 */
 		static bool registerInsertSegmentFunctionForTrackType(const rttr::type& trackType, const SequenceTrackSegment*(SequenceControllerCurve::*memFun)(const std::string&, double));
-
-		/**
-		 * this method is called during static initialization to register controllers & functions for curved track types
-		 * @return true on success
-		 */
-		static bool registerControllerForTrackTypes();
 	protected:
 		/**
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
@@ -254,10 +249,10 @@ namespace nap
 									 SequenceCurveEnums::SegmentValueTypes valueType);
 
 		// map for updating segments
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)>& getUpdateSegmentFunctionMap();
+		std::unordered_map<rttr::type, std::function<void(SequenceTrack&)>> mUpdateSegmentFunctionMap;
 
 		// map for inserting segments
-		static std::unordered_map<rttr::type, const SequenceTrackSegment*(SequenceControllerCurve::*)(const std::string&, double)>& getInsertSegmentFunctionMap();
+		std::unordered_map<rttr::type, std::function<void(const std::string&, double)>> mInsertSegmentFunctionMap;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
