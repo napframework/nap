@@ -86,15 +86,15 @@ void MainWindow::addMenu()
 {
 	auto filemenu = new QMenu("File", menuBar());
 	{
-		auto newFileAction = new NewFileAction();
-		addAction(newFileAction);
-		filemenu->addAction(newFileAction);
-
 		auto openFileAction = new OpenProjectAction();
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
 
 		mRecentProjectsMenu = filemenu->addMenu("Recent Projects");
+
+		auto newFileAction = new NewFileAction();
+		addAction(newFileAction);
+		filemenu->addAction(newFileAction);
 
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);

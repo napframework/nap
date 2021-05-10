@@ -22,7 +22,7 @@ Action::Action() : QAction() { connect(this, &QAction::triggered, this, &Action:
 
 NewFileAction::NewFileAction()
 {
-	setText("New");
+	setText("New file");
 	setShortcut(QKeySequence::New);
 }
 
@@ -115,6 +115,7 @@ void napkin::UpdateDefaultAction::perform()
 	// Write to disk
 	std::string json = writer.GetJSON();
 	output.write(json.data(), json.size());
+	nap::Logger::info("Updated project, new default: %s", new_path.toUtf8().constData());
 }
 
 

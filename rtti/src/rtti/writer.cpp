@@ -230,7 +230,7 @@ namespace nap
 				std::vector<ObjectLink> links;
 				findObjectLinks(*object, links);
 
-				// Visit each links; the target of each link is a potential root object
+				// Visit each link; the target of each link is a potential root object
 				all_object_links.reserve(all_object_links.size() + links.size());
 				objects_to_visit.reserve(objects_to_visit.size() + links.size());
 				for (ObjectLink& link : links)
@@ -326,11 +326,6 @@ namespace nap
 
 		bool serializeObject(rtti::Object& object, Writer& writer, utility::ErrorState& errorState)
 		{
-			// Determine which objects actually need to be written (expands the set with pointees, handle embedded pointers)
-			ObjectSet all_objects;
-			ObjectList objects_to_write;
-			getObjectsToSerialize({ &object }, writer, all_objects, objects_to_write);
-
 			if (!errorState.check(!object.mID.empty(), "Encountered object of type: %s without ID. This is not allowed", object.get_type().get_name().data()))
 				return false;
 
@@ -339,7 +334,7 @@ namespace nap
 				return false;
 
 			// Recurse into object
-			if (!serializeObjectRecursive(object, all_objects, false, writer, errorState))
+			if (!serializeObjectRecursive(object, { &object }, false, writer, errorState))
 				return false;
 
 			// Finish object
