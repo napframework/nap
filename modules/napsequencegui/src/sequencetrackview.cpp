@@ -16,31 +16,9 @@ using namespace nap::SequenceGUIActions;
 
 namespace nap
 {
-	std::unordered_map<rttr::type, SequenceTrackViewFactoryFunc>& SequenceTrackView::getFactoryMap()
-	{
-		static std::unordered_map<rttr::type, SequenceTrackViewFactoryFunc> map;
-		return map;
-	}
-
-
-	bool SequenceTrackView::registerFactory(const rttr::type& type, SequenceTrackViewFactoryFunc func)
-	{
-		auto& map = getFactoryMap();
-		auto it = map.find(type);
-		assert(it == map.end()); // duplicate entry
-		if (it == map.end())
-		{
-			map.emplace(type, func);
-
-			return false;
-		}
-
-		return false;
-	}
-
 
 	SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
-		mView(view), mState(state)
+		mView(view), mState(state), mService(view.getService())
 	{
 
 	}
@@ -302,7 +280,8 @@ namespace nap
 				if(track_ptr->mID == track_action->mTrackID)
 				{
 					// does the track type match for this view?
-					rttr::type view_type_for_track = SequenceEditorGUIView::getViewForTrackType(track_ptr->get_type());
+					assert(mService.getTrackTypeForViewTypeMap().find(track_ptr->get_type())!=mService.getTrackTypeForViewTypeMap().end()); // entry not found
+					rttr::type view_type_for_track = mService.getTrackTypeForViewTypeMap().find(track_ptr->get_type())->second;
 					rttr::type current_view_type = get_type();
 
 					if(view_type_for_track == current_view_type)

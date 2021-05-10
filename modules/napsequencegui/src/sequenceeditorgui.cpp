@@ -16,7 +16,7 @@
 #include <iomanip>
 #include <utility>
 
-RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
@@ -30,34 +30,8 @@ using namespace nap::SequenceGUIClipboards;
 
 namespace nap
 {
-	static std::unordered_map<rttr::type, rttr::type>& getTrackViewTypeViewMap()
+	SequenceEditorGUI::SequenceEditorGUI(SequenceGUIService& service) : mService(service)
 	{
-		static std::unordered_map<rttr::type, rttr::type> map;
-		return map;
-	};
-
-
-	bool SequenceEditorGUIView::registerTrackViewType(const rttr::type& trackType, const rttr::type& viewType)
-	{
-		auto& map = getTrackViewTypeViewMap();
-		auto it = map.find(trackType);
-		assert(it == map.end()); // duplicate entry
-		if (it == map.end())
-		{
-			map.emplace(trackType, viewType);
-			return true;
-		}
-
-		return false;
-	}
-
-
-	rttr::type SequenceEditorGUIView::getViewForTrackType(const rttr::type& type)
-	{
-		auto& map = getTrackViewTypeViewMap();
-		auto it = map.find(type);
-		assert(it != map.end()); // entry not found
-		return it->second;
 	}
 
 
@@ -68,7 +42,11 @@ namespace nap
 			return false;
 		}
 
-		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
+		mView = std::make_unique<SequenceEditorGUIView>(mService,
+														*mSequenceEditor.get(),
+														mID,
+														mRenderWindow.get(),
+														mDrawFullWindow);
 
 		return true;
 	}
@@ -85,18 +63,12 @@ namespace nap
 	}
 
 
-	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
-		: mEditor(editor), mID(std::move(id)), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
+	SequenceEditorGUIView::SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
+		: mService(service), mEditor(editor), mID(std::move(id)), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
 		// start with empty clipboard and empty action
 		mState.mAction = createAction<None>();
 		mState.mClipboard = createClipboard<Empty>();
-
-		// invoke registered factory functions to create registered view types
-		for (auto& factory : SequenceTrackView::getFactoryMap())
-		{
-			mViews.emplace(factory.first, factory.second(*this, mState));
-		}
 
 		// register handlers for actions
 		registerActionHandler(RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
@@ -111,6 +83,13 @@ namespace nap
 		registerActionHandler(RTTI_OF(None), [this] { handleNone(); } );
 		registerActionHandler(RTTI_OF(NonePressed), [this] { handleNonePressed(); } );
 		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
+
+		//
+		const auto& track_view_factory = mService.getTrackViewFactory();
+		for(const auto& factory_func : track_view_factory)
+		{
+			mViews.emplace(factory_func.first, factory_func.second(mService, *this, mState));
+		}
 	}
 
 
@@ -473,17 +452,14 @@ namespace nap
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
-			auto view_map = getTrackViewTypeViewMap();
+			const auto& view_map = mService.getTrackTypeForViewTypeMap();
 			auto it = view_map.find(track_type);
 			assert(it != view_map.end()); // no view type for track
 			if (it != view_map.end())
 			{
 				auto it2 = mViews.find(it->second);
 				assert(it2 != mViews.end()); // no view class created for this view type
-				if (it2 != mViews.end())
-				{
-					it2->second->showTrack(*sequence.mTracks[i].get());
-				}
+				it2->second->showTrack(*sequence.mTracks[i].get());
 			}
 		}
 	}
@@ -500,17 +476,14 @@ namespace nap
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
-			auto view_map = getTrackViewTypeViewMap();
+			const auto& view_map = mService.getTrackTypeForViewTypeMap();
 			auto it = view_map.find(track_type);
 			assert(it != view_map.end()); // no view type for track
 			if (it != view_map.end())
 			{
 				auto it2 = mViews.find(it->second);
 				assert(it2 != mViews.end()); // no view class created for this view type
-				if (it2 != mViews.end())
-				{
-					it2->second->showInspector(*sequence.mTracks[i].get());
-				}
+				it2->second->showInspector(*sequence.mTracks[i].get());
 			}
 		}
 	}
@@ -1194,7 +1167,8 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Insert New Track"))
 			{
-				for (auto& it : getTrackViewTypeViewMap())
+				const auto& view_map = mService.getTrackTypeForViewTypeMap();
+				for (const auto& it : view_map)
 				{
 					const auto& name = it.first.get_name().to_string();
 					if (ImGui::Button(name.c_str()))

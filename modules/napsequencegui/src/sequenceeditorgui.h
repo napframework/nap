@@ -10,6 +10,7 @@
 #include "sequenceeditorguistate.h"
 #include "sequenceeditorguiactions.h"
 #include "sequenceeditorguiclipboard.h"
+#include "sequenceguiservice.h"
 
 // external includes
 #include <imgui/imgui.h>
@@ -34,6 +35,8 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		SequenceEditorGUI(SequenceGUIService& service);
+
 		/**
 		 * @param errorState contains any errors
 		 * @return true on success
@@ -49,6 +52,8 @@ namespace nap
 		 * Call this method to draw the GUI
 		 */
 		virtual void show();
+
+		SequenceGUIService& getService(){ return mService; }
 	public:
 		// properties
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
@@ -57,7 +62,12 @@ namespace nap
 	protected:
 		// instantiated view
 		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
+
+		// reference to service
+		SequenceGUIService& mService;
 	};
+
+	using SequenceEditorGUIObjectCreator = rtti::ObjectCreator<SequenceEditorGUI, SequenceGUIService>;
 
 	/**
 	 * Responsible for drawing the GUI for the sequence editor
@@ -74,24 +84,14 @@ namespace nap
 		 * @param renderWindow the render window
 		 * @param drawFullWindow if the editor occupies the entire window space
 		 */
-		SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
+		SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
 		/**
 		 * shows the editor interface
 		 */
 		virtual void show();
 
-		/**
-		 * static method for registering a view type that draws the appropriate track type
-		 */
-		static bool registerTrackViewType(const rttr::type& trackType, const rttr::type& viewType);
-
-		/**
-		 * returns view that corresponds to a certain track type, asserts when not found
-		 * @param type the track type
-		 * @return the view type
-		 */
-		static rttr::type getViewForTrackType(const rttr::type& type);
+		SequenceGUIService& getService(){ return mService; }
 	protected:
 		/**
 		 * Draws the tracks of the sequence
@@ -202,9 +202,6 @@ namespace nap
 		// id
 		std::string mID;
 
-		// map of all track views
-		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
-
 		// set to true if we draw full window
 		bool mDrawFullWindow = false;
 
@@ -213,5 +210,10 @@ namespace nap
 
 		// map of action handlers
 		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
+
+		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
+
+		// reference to service
+		SequenceGUIService& mService;
 	};
 }

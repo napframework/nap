@@ -8,6 +8,7 @@
 #include "sequenceeditorgui.h"
 #include "sequenceeditorguiactions.h"
 #include "sequenceeditorguistate.h"
+#include "sequenceguiservice.h"
 
 // nap includes
 #include <nap/core.h>
@@ -20,9 +21,6 @@ namespace nap
 	class SequenceTrack;
 	class SequenceTrackView;
 	class SequenceEditorGUIView;
-
-	// shortcut to factory function
-	using SequenceTrackViewFactoryFunc = std::unique_ptr<SequenceTrackView>(*)(SequenceEditorGUIView&, SequenceEditorGUIState& state);
 
 	/**
 	 * Base class of track views
@@ -66,22 +64,6 @@ namespace nap
 		 * @param track reference to track
 		 */
 		virtual void showTrack(const SequenceTrack& track);
-
-		/////////////////////////////////////////////////////////////////////////////
-		// static factory methods
-		////////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * @return reference to static map holding all factory functions for registered track types
-		 */
-		static std::unordered_map<rttr::type, SequenceTrackViewFactoryFunc>& getFactoryMap();
-
-		/**
-		 * register a factory function
-		 * @param type the type
-		 * @param func the factory function
-		 */
-		static bool registerFactory(const rttr::type& type, SequenceTrackViewFactoryFunc func);
 	public:
 		/////////////////////////////////////////////////////////////////////////////
 		// static utility methods
@@ -146,5 +128,8 @@ namespace nap
 
 		// map of action handlers
 		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
+
+		// reference to service
+		SequenceGUIService& mService;
 	};
 }

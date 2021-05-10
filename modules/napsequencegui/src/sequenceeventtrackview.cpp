@@ -8,6 +8,7 @@
 #include "sequenceeditorgui.h"
 #include "sequenceplayereventoutput.h"
 #include "sequencetrackevent.h"
+#include "sequenceguiservice.h"
 
 #include <nap/logger.h>
 #include <iostream>
@@ -17,40 +18,8 @@ namespace nap
 	using namespace SequenceGUIActions;
 	using namespace SequenceGUIClipboards;
 
-	std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& SequenceEventTrackView::getSegmentViews()
-	{
-		static std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>> segment_views;
-		return segment_views;
-	}
-
-	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()>& SequenceEventTrackView::getEditEventHandlers()
-	{
-		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> popup_handlers;
-		return popup_handlers;
-	}
-
-	std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double)>& SequenceEventTrackView::getPasteEventMap()
-	{
-		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double)> paste_handlers;
-		return paste_handlers;
-	}
-
-	static bool track_view_registration = SequenceEditorGUIView::registerTrackViewType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView));
-
-	static bool register_track_view_factory = SequenceTrackView::registerFactory(RTTI_OF(SequenceEventTrackView), [](SequenceEditorGUIView& view, SequenceEditorGUIState& state)->std::unique_ptr<SequenceTrackView>
-	{
-		return std::make_unique<SequenceEventTrackView>(view, state);
-	});
-
-	std::vector<rttr::type>& SequenceEventTrackView::getEventTypesVector()
-	{
-		static std::vector<rttr::type> eventTypes;
-		return eventTypes;
-	}
-
-
-	SequenceEventTrackView::SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
-		: SequenceTrackView(view, state)
+	SequenceEventTrackView::SequenceEventTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
+		: mService(service), SequenceTrackView(view, state)
 	{
 		// register applicable action handlers
 		registerActionHandler(RTTI_OF(OpenInsertEventSegmentPopup), [this] { handleInsertEventSegmentPopup(); });
@@ -65,7 +34,7 @@ namespace nap
 		 * these views and actions are registered at static initialization, since we know all possible actions and
 		 * their corresponding views at that time ( see SequenceEventTrackView::registerViewType<T> )
 		 */
-		auto& edit_popup_map = getEditEventHandlers();
+		auto& edit_popup_map = mService.getEditEventHandlerMap();
 		for(auto& pair : edit_popup_map)
 		{
 			registerActionHandler(pair.first, std::bind(pair.second, this));
@@ -208,13 +177,11 @@ namespace nap
 
 			// static map of draw functions for different event types
 			auto type = (segment.get())->get_type();
-			auto& segment_views = getSegmentViews();
+			auto& segment_views = mService.getEventSegmentViews();
 			auto it = segment_views.find(type);
 			assert(it != segment_views.end()); // type not found
-			if( it != segment_views.end())
-			{
-				it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x);
-			}
+			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x);
+
 
 			//
 			prev_segment_x = segment_x;
@@ -243,20 +210,19 @@ namespace nap
 			{
 				auto* action = mState.mAction->getDerived<InsertingEventSegment>();
 
-				for(auto& type : getEventTypesVector())
+				auto& event_map = mService.getEventTypes();
+				for(auto& type : event_map)
 				{
 					std::string buttonString = "Insert " + type.get_name().to_string();
 					if( ImGui::Button(buttonString.c_str()))
 					{
-						auto& views = getSegmentViews();
+						auto& views = mService.getEventSegmentViews();
 						auto it = views.find(type);
 						assert(it!=views.end()); // type not found
-						if( it != views.end() )
-						{
-							it->second->insertSegment(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
-							ImGui::CloseCurrentPopup();
-							mState.mAction = createAction<None>();
-						}
+
+						it->second->insertSegment(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
+						ImGui::CloseCurrentPopup();
+						mState.mAction = createAction<None>();
 					}
 				}
 
@@ -572,13 +538,10 @@ namespace nap
 							{
 								rttr::type type = eventSegment->get_type();
 
-								auto& views = getSegmentViews();
+								auto& views = mService.getEventSegmentViews();
 								auto it = views.find(type);
 								assert(it!=views.end()); // type not found
-								if(it!=views.end())
-								{
-									mState.mAction = it->second->createEditAction(eventSegment, action->mTrackID, action->mSegmentID);
-								}
+								mState.mAction = it->second->createEditAction(eventSegment, action->mTrackID, action->mSegmentID);
 							}
 
 							ImGui::CloseCurrentPopup();
@@ -643,7 +606,7 @@ namespace nap
 
 			for(const auto* event : deserialized_event_segments)
 			{
-				auto& paste_event_map = getPasteEventMap();
+				auto& paste_event_map = mService.getPasteEventMap();
 				auto it = paste_event_map.find(event->get_type());
 				assert(it!=paste_event_map.end()); // type not found
 				if( it != paste_event_map.end() )
@@ -750,10 +713,6 @@ namespace nap
 			guicolors::red, string_stream.str().c_str());
 	}
 
-
-	static bool register_segment_view_string = SequenceEventTrackView::registerEventView<std::string>();
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// float event segment view specialization
 	//////////////////////////////////////////////////////////////////////////
@@ -783,10 +742,6 @@ namespace nap
 			guicolors::red,
 			string_stream.str().c_str());
 	}
-
-
-	static bool register_segment_view_float = SequenceEventTrackView::registerEventView<float>();
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// int event segment view specialization
@@ -818,10 +773,6 @@ namespace nap
 			string_stream.str().c_str());
 	}
 
-
-	static bool register_segment_view_int = SequenceEventTrackView::registerEventView<int>();
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// glm::vec2 event segment view specialization
 	//////////////////////////////////////////////////////////////////////////
@@ -848,10 +799,6 @@ namespace nap
 
 		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,string_stream.str().c_str());
 	}
-
-
-	static bool register_segment_view_vec2 = SequenceEventTrackView::registerEventView<glm::vec2>();
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// glm::vec3 event segment view specialization
@@ -880,7 +827,4 @@ namespace nap
 		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },guicolors::red,
 						  string_stream.str().c_str());
 	}
-
-
-	static bool register_segment_view_vec3 = SequenceEventTrackView::registerEventView<glm::vec3>();
 }

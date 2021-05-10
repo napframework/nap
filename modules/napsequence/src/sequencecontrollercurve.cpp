@@ -28,10 +28,10 @@ namespace nap
 
 		mInsertSegmentFunctionMap =
 		{
-			{RTTI_OF(SequenceTrackCurveFloat), 	[this](const std::string& trackID, double time){return this->insertCurveSegment<float>(trackID, time); }},
-			{RTTI_OF(SequenceTrackCurveVec2), 	[this](const std::string& trackID, double time){return this->insertCurveSegment<glm::vec2>(trackID, time); }},
-			{RTTI_OF(SequenceTrackCurveVec3), 	[this](const std::string& trackID, double time){return this->insertCurveSegment<glm::vec3>(trackID, time); }},
-			{RTTI_OF(SequenceTrackCurveVec4), 	[this](const std::string& trackID, double time){return this->insertCurveSegment<glm::vec4>(trackID, time); }},
+			{RTTI_OF(SequenceTrackCurveFloat), 	[this](const std::string& trackID, double time)->const SequenceTrackSegment*{return this->insertCurveSegment<float>(trackID, time); }},
+			{RTTI_OF(SequenceTrackCurveVec2), 	[this](const std::string& trackID, double time)->const SequenceTrackSegment*{return this->insertCurveSegment<glm::vec2>(trackID, time); }},
+			{RTTI_OF(SequenceTrackCurveVec3), 	[this](const std::string& trackID, double time)->const SequenceTrackSegment*{return this->insertCurveSegment<glm::vec3>(trackID, time); }},
+			{RTTI_OF(SequenceTrackCurveVec4), 	[this](const std::string& trackID, double time)->const SequenceTrackSegment*{return this->insertCurveSegment<glm::vec4>(trackID, time); }},
 		};
 	}
 
@@ -104,7 +104,7 @@ namespace nap
 		{
 			auto it = mInsertSegmentFunctionMap.find(track->get_type());
 			assert(it != mInsertSegmentFunctionMap.end()); // type not found
-			it->second(trackID, time);
+			return it->second(trackID, time);
 		}
 
 		return nullptr;

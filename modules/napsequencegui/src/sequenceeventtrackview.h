@@ -18,6 +18,7 @@ namespace nap
 
 	// forward declares
 	class SequenceEventTrackView;
+	class SequenceGUIService;
 
 	/**
 	 * Base class for an event segment view
@@ -138,24 +139,18 @@ namespace nap
 	 */
 	class NAPAPI SequenceEventTrackView final : public SequenceTrackView
 	{
+		friend class SequenceGUIService;
 		friend class SequenceEventTrackSegmentViewBase;
+
 		RTTI_ENABLE(SequenceTrackView)
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to gui service
 		 * @param view reference to editor view
 		 * @param state reference to editor state
 		 */
-		SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
-
-		/**
-		 * call this static method to register you a custom view for a custom event type
-		 * T is the value type of the event ( SequenceEvent<T> )
-		 * @tparam T value to of the event
-		 * @return true when called
-		 */
-		template<typename T>
-		static bool registerEventView();
+		SequenceEventTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 	protected:
 		/**
 		 * shows inspector content
@@ -232,17 +227,7 @@ namespace nap
 		 */
 		void handleSegmentDrag();
 	private:
-		// map of segment view types
-		static std::unordered_map<rttr::type, std::unique_ptr<SequenceEventTrackSegmentViewBase>>& getSegmentViews();
-
-		// map of segment edit event handlers
-		static std::unordered_map<rttr::type, void (SequenceEventTrackView::*)()>& getEditEventHandlers();
-
-		// map of segment paste handlers
-		static std::unordered_map<rttr::type, void (SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double)>& getPasteEventMap();
-
-		// list of event types
-		static std::vector<rttr::type>& getEventTypesVector();
+		SequenceGUIService& mService;
 	};
 
 
@@ -291,13 +276,10 @@ namespace nap
 			if (ImGui::BeginPopup("Edit Event"))
 			{
 				// draw the registered popup content for this event
-				auto& segment_views = getSegmentViews();
+				auto& segment_views = mService.getEventSegmentViews();
 				auto it = segment_views.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
 				assert(it!= segment_views.end()); // type not found
-				if( it != segment_views.end())
-				{
-					it->second->handleEditPopupContent(*action);
-				}
+				it->second->handleEditPopupContent(*action);
 
 				// time
 				int time_milseconds = (int) ( ( action->mStartTime ) * 100.0 ) % 100;
@@ -361,55 +343,6 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-	}
-
-
-	template<typename T>
-	bool SequenceEventTrackView::registerEventView()
-	{
-		// register type of view
-		auto& types = getEventTypesVector();
-		assert(std::find(types.begin(), types.begin() + types.size(), RTTI_OF(SequenceTrackSegmentEvent<T>)) == types.end()); // type already added
-		types.emplace_back(RTTI_OF(SequenceTrackSegmentEvent<T>));
-
-		// register view
-		auto& segment_views = getSegmentViews();
-
-		auto segment_it = segment_views.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
-		assert(segment_it==segment_views.end()); // type already registered
-		if(segment_it==segment_views.end())
-		{
-			segment_views.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), std::make_unique<SequenceEventTrackSegmentView<T>>());
-		}
-
-		// register popup action handler
-		auto& handle_edit_events = getEditEventHandlers();
-
-		auto event_it = handle_edit_events.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
-		assert(event_it== handle_edit_events.end()); // type already registered
-		if(event_it== handle_edit_events.end())
-		{
-			handle_edit_events.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
-		}
-
-		event_it = handle_edit_events.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
-		assert(event_it== handle_edit_events.end()); // type already registered
-		if(event_it== handle_edit_events.end())
-		{
-			handle_edit_events.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
-		}
-
-		// register paste handler
-		auto& handler_paste_events = getPasteEventMap();
-
-		auto paste_it = handler_paste_events.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
-		assert(paste_it == handler_paste_events.end()); // type already registered
-		if(paste_it == handler_paste_events.end())
-		{
-			handler_paste_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), &SequenceEventTrackView::pasteEvent<SequenceTrackSegmentEvent<T>> );
-		}
-
-		return true;
 	}
 
 

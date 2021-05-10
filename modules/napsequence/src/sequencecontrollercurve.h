@@ -252,7 +252,7 @@ namespace nap
 		std::unordered_map<rttr::type, std::function<void(SequenceTrack&)>> mUpdateSegmentFunctionMap;
 
 		// map for inserting segments
-		std::unordered_map<rttr::type, std::function<void(const std::string&, double)>> mInsertSegmentFunctionMap;
+		std::unordered_map<rttr::type, std::function<const SequenceTrackSegment*(const std::string&, double)>> mInsertSegmentFunctionMap;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

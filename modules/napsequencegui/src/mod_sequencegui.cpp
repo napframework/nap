@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_SERVICE_MODULE("mod_napsequencegui", "0.2.0", "nap::SequenceGuiService")
+NAP_SERVICE_MODULE("mod_napsequencegui", "0.2.0", "nap::SequenceGUIService")

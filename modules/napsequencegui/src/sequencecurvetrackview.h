@@ -10,6 +10,7 @@
 #include "sequencetracksegmentcurve.h"
 #include "sequencecontrollercurve.h"
 #include "napcolors.h"
+#include "sequenceguiservice.h"
 
 namespace nap
 {
@@ -27,7 +28,7 @@ namespace nap
 		 * @param view reference to editor view
 		 * @param state reference to editor state
 		 */
-		SequenceCurveTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state);
+		SequenceCurveTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
 		/**
 		 * Handles any actions
@@ -274,6 +275,8 @@ namespace nap
 
 		// static map of member function pointers
 		static std::unordered_map<rttr::type, DrawSegmentMemFunPtr>& getDrawCurveSegmentsMap();
+
+		SequenceGUIService& mService;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
