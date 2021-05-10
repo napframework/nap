@@ -322,5 +322,31 @@ namespace nap
 
 			return true;
 		}
+
+
+		bool serializeObject(rtti::Object& object, Writer& writer, utility::ErrorState& errorState)
+		{
+			// Determine which objects actually need to be written (expands the set with pointees, handle embedded pointers)
+			ObjectSet all_objects;
+			ObjectList objects_to_write;
+			getObjectsToSerialize({ &object }, writer, all_objects, objects_to_write);
+
+			if (!errorState.check(!object.mID.empty(), "Encountered object of type: %s without ID. This is not allowed", object.get_type().get_name().data()))
+				return false;
+
+			// Write start of object
+			if (!errorState.check(writer.startRootObject(object.get_type()), "Failed to start writing root object"))
+				return false;
+
+			// Recurse into object
+			if (!serializeObjectRecursive(object, all_objects, false, writer, errorState))
+				return false;
+
+			// Finish object
+			if (!errorState.check(writer.finishRootObject(), "Failed to finish writing root object"))
+				return false;
+
+			return true;
+		}
 	}
 }

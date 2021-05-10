@@ -107,6 +107,10 @@ void MainWindow::addMenu()
 		auto reloadFileAction = new ReloadFileAction();
 		addAction(reloadFileAction);
 		filemenu->addAction(reloadFileAction);
+
+		auto updateDefaultAction = new UpdateDefaultAction();
+		addAction(updateDefaultAction);
+		filemenu->addAction(updateDefaultAction);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 

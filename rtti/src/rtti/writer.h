@@ -97,8 +97,23 @@ namespace nap
 		};
 
 		/**
-		 * Serialize a set of objects to the specified writer. This function does all the traversal logic, the actual writing is done by the RTTIWriter passed in.
+		 * Serialize a set of objects to the specified writer. 
+		 * This function does all the traversal logic, the actual writing is done by the RTTIWriter passed in.
+		 * All objects are placed inside the 'Objects' array.
+		 * @param rootObjects the objects to write.
+		 * @param writer the rtti writer
+		 * @param errorState contains the error if writing fails
 		 */
 		bool NAPAPI serializeObjects(const ObjectList& rootObjects, Writer& writer, utility::ErrorState& errorState);
+
+		/**
+		 * Serialize a single RTTI object. 
+		 * This function performs all the traversal logic, the actual writing is done by the RTTIWriter
+		 * Object is placed in the root of the document and is not part of an 'Objects' array. 
+		 * @param rootObjects the objects to write.
+		 * @param writer the rtti writer
+		 * @param errorState contains the error if writing fails
+		 */
+		bool NAPAPI serializeObject(rtti::Object& object, Writer& writer, utility::ErrorState& errorState);
 	}
 }

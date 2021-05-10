@@ -117,6 +117,18 @@ namespace napkin
 	};
 
 	/**
+	 * Updates project data path to point to current loaded document
+	 */
+	class UpdateDefaultAction : public Action
+	{
+	public:
+		UpdateDefaultAction();
+
+	private:
+		void perform() override;
+	};
+
+	/**
 	 * Create a Resource
 	 */
 	class CreateResourceAction : public StandardItemAction

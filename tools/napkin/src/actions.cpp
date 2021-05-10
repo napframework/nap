@@ -10,6 +10,9 @@
 
 #include <QMessageBox>
 #include <QHBoxLayout>
+#include <rtti/rttiutilities.h>
+#include <rtti/jsonwriter.h>
+#include <utility/errorstate.h>
 
 using namespace napkin;
 
@@ -64,6 +67,56 @@ void OpenProjectAction::perform()
 
 	AppContext::get().loadProject(filename);
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+napkin::UpdateDefaultAction::UpdateDefaultAction()
+{
+	setText("Set as default");
+}
+
+
+void napkin::UpdateDefaultAction::perform()
+{
+	// Ensure project info is available
+	const auto* project_info = AppContext::get().getProjectInfo();
+	if (project_info == nullptr)
+		return;
+
+	// Make sure document is loaded
+	if (!AppContext::get().hasDocument())
+		return;
+
+	// Clone current project information
+	assert(AppContext::get().getCore().isInitialized());
+	std::unique_ptr<nap::ProjectInfo> new_info = nap::rtti::cloneObject(*project_info, AppContext::get().getCore().getResourceManager()->getFactory());
+	
+	// Get data directory and create relative path
+	QDir data_dir(QString::fromStdString(project_info->getProjectDir()));
+	QString new_path = data_dir.relativeFilePath(AppContext::get().getDocument()->getCurrentFilename());
+	new_info->mDefaultData = new_path.toStdString();
+
+	nap::rtti::JSONWriter writer;
+	nap::utility::ErrorState error;
+	if (!nap::rtti::serializeObject(*new_info, writer, error))
+	{
+		nap::Logger::error(error.toString());
+		return;
+	}
+
+	// Open output file
+	std::ofstream output(project_info->getFilename(), std::ios::binary | std::ios::out);
+	if (!error.check(output.is_open() && output.good(), "Failed to open %s for writing", project_info->getFilename().c_str()))
+	{
+		nap::Logger::error(error.toString());
+		return;
+	}
+
+	// Write to disk
+	std::string json = writer.GetJSON();
+	output.write(json.data(), json.size());
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -301,4 +354,3 @@ void SetThemeAction::perform()
 {
     AppContext::get().getThemeManager().setTheme(mTheme);
 }
-
