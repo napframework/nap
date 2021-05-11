@@ -144,8 +144,9 @@ namespace nap
 	template<typename T>
 	bool SequenceGUIService::registerEventView()
 	{
-		// register type of view
-		assert(std::find(mSegmentEventTypes.begin(), mSegmentEventTypes.begin() + mSegmentEventTypes.size(), RTTI_OF(SequenceTrackSegmentEvent<T>)) == mSegmentEventTypes.end()); // type already added
+		if(std::find(mSegmentEventTypes.begin(), mSegmentEventTypes.begin() + mSegmentEventTypes.size(), RTTI_OF(SequenceTrackSegmentEvent<T>)) != mSegmentEventTypes.end())
+			return false;
+
 		mSegmentEventTypes.emplace_back(RTTI_OF(SequenceTrackSegmentEvent<T>));
 
 		// register view
@@ -243,4 +244,12 @@ namespace nap
 		}
 		return event_actions;
 	}
+
+	constexpr ImU32 SequenceGUIService::red;
+	constexpr ImU32 SequenceGUIService::black;
+	constexpr ImU32 SequenceGUIService::white;
+	constexpr ImU32 SequenceGUIService::lightGrey;
+	constexpr ImU32 SequenceGUIService::darkGrey;
+	constexpr ImU32 SequenceGUIService::darkerGrey;
+	constexpr ImU32 SequenceGUIService::curvecolors[4];
 }

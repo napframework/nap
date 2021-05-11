@@ -5,7 +5,6 @@
 // Local includes
 #include "sequencetrackview.h"
 #include "sequenceeditorgui.h"
-#include "napcolors.h"
 #include "sequenceeditorguiactions.h"
 
 // External Includes
@@ -99,11 +98,11 @@ namespace nap
 			// draw background & box
 			draw_list->AddRectFilled(	window_pos,
 							  			{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
-									 	guicolors::black);
+									 	SequenceGUIService::black);
 
 			draw_list->AddRect(	window_pos,
 					    		{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
-							   	guicolors::white);
+							   	SequenceGUIService::white);
 
 			//
 			inspector_cursor_pos = ImGui::GetCursorPos();
@@ -219,13 +218,13 @@ namespace nap
 			draw_list->AddRectFilled(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				guicolors::black); // color
+				SequenceGUIService::black); // color
 
 			// draw border of track
 			draw_list->AddRect(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				guicolors::white); // color
+				SequenceGUIService::white); // color
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
@@ -241,7 +240,7 @@ namespace nap
 
 				if (pos.x > 0.0f )
 				{
-					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, guicolors::darkerGrey);
+					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, SequenceGUIService::darkerGrey);
 
 					if(pos.x > mState.mWindowPos.x + mState.mScroll.x + mState.mWindowSize.x)
 					{

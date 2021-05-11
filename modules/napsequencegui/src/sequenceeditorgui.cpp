@@ -4,7 +4,6 @@
 
 // local includes
 #include "sequenceeditorgui.h"
-#include "napcolors.h"
 #include "sequenceeditorguiclipboard.h"
 #include "sequenceeditorgui.h"
 
@@ -515,8 +514,8 @@ namespace nap
 			// get window drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, guicolors::black);
-			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, guicolors::white);
+			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, SequenceGUIService::black);
+			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, SequenceGUIService::white);
 
 			for(const auto& marker : sequence.mMarkers)
 			{
@@ -538,7 +537,7 @@ namespace nap
 				if( ImGui::IsMouseHoveringRect(player_time_top_rect_left, player_time_rect_bottom_right) )
 					hovered = true;
 
-				draw_list->AddText({ player_time_rect_bottom_right.x + 2, player_time_rect_center.y - 10 }, guicolors::white, marker->mMessage.c_str());
+				draw_list->AddText({ player_time_rect_bottom_right.x + 2, player_time_rect_center.y - 10 }, SequenceGUIService::white, marker->mMessage.c_str());
 
 				if( mState.mAction->isAction<None>() && hovered )
 				{
@@ -571,9 +570,9 @@ namespace nap
 				}
 
 				if( hovered )
-					draw_list->AddCircleFilled(player_time_rect_center, 10, guicolors::white);
+					draw_list->AddCircleFilled(player_time_rect_center, 10, SequenceGUIService::white);
 				else
-					draw_list->AddCircle(player_time_rect_center, 10, guicolors::white, 12, 2.0f);
+					draw_list->AddCircle(player_time_rect_center, 10, SequenceGUIService::white, 12, 2.0f);
 			}
 
 			if( mState.mAction->isAction<None>())
@@ -632,11 +631,11 @@ namespace nap
 			// draw backgroundbox of controller
 			draw_list->AddRectFilled(
 				start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15 }, guicolors::black);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15 }, SequenceGUIService::black);
 
 			// draw box of controller
 			draw_list->AddRect(start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15}, guicolors::white);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15}, SequenceGUIService::white);
 
 			// draw handler of player position
 			const double player_time = player.getPlayerTime();
@@ -650,7 +649,7 @@ namespace nap
 				start_pos.y + sequence_controller_height,
 			};
 
-			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, guicolors::red);
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, SequenceGUIService::red);
 
 			// draw timestamp text every 100 pixels
 			const float timestamp_interval = 100.0f;
@@ -670,11 +669,11 @@ namespace nap
 					{
 						double time_in_player = ((float)i * timestamp_interval) / mState.mStepSize;
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
-						draw_list->AddText(timestamp_pos, guicolors::white, formatted_time_string.c_str());
+						draw_list->AddText(timestamp_pos, SequenceGUIService::white, formatted_time_string.c_str());
 
 						if (i != 0)
 						{
-							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + 18 }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + 2 }, guicolors::darkGrey);
+							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + 18 }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + 2 }, SequenceGUIService::darkGrey);
 						}
 					}
 				}
@@ -802,11 +801,11 @@ namespace nap
 
 			if (!draw_filled)
 			{
-				draw_list->AddRect(player_duration_top_rect_left, player_duration_rect_bottom_right, guicolors::white);
+				draw_list->AddRect(player_duration_top_rect_left, player_duration_rect_bottom_right, SequenceGUIService::white);
 			}
 			else
 			{
-				draw_list->AddRectFilled(player_duration_top_rect_left, player_duration_rect_bottom_right, guicolors::white);
+				draw_list->AddRectFilled(player_duration_top_rect_left, player_duration_rect_bottom_right, SequenceGUIService::white);
 			}
 		}
 
@@ -842,7 +841,7 @@ namespace nap
 			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
-				drawlist->AddLine( 	line_begin, line_end, guicolors::red, line_thickness);
+				drawlist->AddLine( 	line_begin, line_end, SequenceGUIService::red, line_thickness);
 			}
 			ImGui::EndChild();
 		}
@@ -852,7 +851,7 @@ namespace nap
 	void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const
 	{
 		const float line_thickness = 2.0f;
-		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(guicolors::white);
+		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(SequenceGUIService::white);
 		const ImU32 color = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 0.5f});
 
 		for(const auto& marker : sequence.mMarkers)
@@ -906,7 +905,7 @@ namespace nap
 			mState.mTimelineControllerPos.y + 15.0f
 		});
 
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, guicolors::white);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, SequenceGUIService::white);
 		if (ImGui::BeginChild(id_string.c_str(), // id
 		{ 1.0f, sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f) + 10.0f }, // size
 			false, // no border

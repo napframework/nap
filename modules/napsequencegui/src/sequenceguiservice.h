@@ -9,9 +9,12 @@
 #include <entity.h>
 #include <nap/datetime.h>
 #include <rtti/factory.h>
+#include <imgui/imgui.h>
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+
 	// forward declares
 	class SequenceEventTrackSegmentViewBase;
 	class SequenceEventTrackView;
@@ -54,10 +57,10 @@ namespace nap
 		static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceGUIService*));
 
 		/**
-		 * call this method to register you a custom view for a custom event type
+		 * call this method to register a custom view for a custom event type
 		 * T is the value type of the event (SequenceEvent<T>)
 		 * @tparam T value to of the event
-		 * @return true when called
+		 * @return true on successful registration
 		 */
 		template<typename T>
 		bool registerEventView();
@@ -135,6 +138,16 @@ namespace nap
 		 * @return the vector
 		 */
 		std::vector<rtti::TypeInfo> getAllRegisteredEventActions() const;
+
+	public:
+		// declare interface colors
+		static constexpr ImU32 red 				= 4285098440;
+		static constexpr ImU32 black 			= 4280685585;
+		static constexpr ImU32 white 			= 4288711819;
+		static constexpr ImU32 lightGrey 		= 4285750877;
+		static constexpr ImU32 darkGrey 		= 4285158482;
+		static constexpr ImU32 darkerGrey 		= 4281674281;
+		static constexpr ImU32 curvecolors[4] 	= {4285098440, 4278255360, 4294901760, 4278255615};
 	protected:
 		/**
 		 * registers all objects that need a specific way of construction

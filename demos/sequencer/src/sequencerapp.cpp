@@ -9,7 +9,6 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
-#include <napcolors.h>
 #include <sequenceplayereventoutput.h>
 #include <sequenceevent.h>
 

@@ -12,7 +12,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * SequenceTrackSegmentCurve
 	 * A SequenceTrackSegment that holds an arbitrary amount of curves
 	 * There are four supported types ( float, vec2, vec3, vec4 ) that can contain 1, 2 , 3 or 4 curves 
 	 */

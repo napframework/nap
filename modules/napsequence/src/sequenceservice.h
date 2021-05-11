@@ -16,6 +16,8 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+
+	// forward declares
 	class SequenceController;
 	class SequenceEditor;
 	class SequencePlayerAdapter;

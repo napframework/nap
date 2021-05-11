@@ -18,7 +18,7 @@ namespace nap
 	namespace SequenceGUIClipboards
 	{
 		/**
-		 * Clipboard is a class that can contain a serialized  object related to the Sequencer
+		 * Clipboard is a class that can contain a serialized object related to the Sequencer
 		 * The state of the gui can contain a clipboard, that can be de-serialized at a certain point
 		 * Typically, the clipboard contains a certain curve segment or event segment, and that segment can be pasted
 		 * at a certain location in a certain Track
