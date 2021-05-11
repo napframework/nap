@@ -279,6 +279,7 @@ namespace nap
 		// list of instantiated adapters
 		std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
 
+	protected:
 		// Reference to sequence service
 		SequenceService& mService;
 	};
