@@ -30,7 +30,11 @@ namespace nap
 	using SequencePlayerAdapterFactoryMap 	= std::unordered_map<rtti::TypeInfo, SequencePlayerAdapterFactoryFunc>;
 
 	/**
-	 * SequenceService is responsible for updating outputs
+	 * SequenceService is responsible for updating outputs and contains information about which controller, adapter is
+	 * used for editing registered track types. When adding a new track type, make sure to register the new controller and
+	 * adapter factory methods by calling the appropriate register functions on the SequenceService.
+	 * A good place to do this from is from your own (app) Module Service that will always initialize itself before any
+	 * SequenceEditor resource
 	 */
 	class NAPAPI SequenceService final : public Service
 	{

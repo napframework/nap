@@ -34,6 +34,15 @@ namespace nap
 	using SequenceEventTrackPasteFunc 				= std::function<void(SequenceEventTrackView&, const std::string&, const SequenceTrackSegmentEventBase&, double)>;
 	using SequenceEventTrackEditFunc 				= std::function<void(SequenceEventTrackView&)>;
 
+	/**
+	 * The SequenceGUIService is responsible for registering track, segment & popup views and supplying the GUI the
+	 * necessary factory methods to dynamically create the views and handlers for all registered types
+	 * When adding a new track type, a new segment type or a new event type with new gui views outside the SequenceGUI
+	 * module you need to register them by calling registerTrackTypeForView, registerTrackViewFactory and/or
+	 * registerEventView on the SequenceGUIService after the service is initialized but before any SequenceEditorGUI is
+	 * created. A good place to do this from is from your own Service that will always initialize itself before any
+	 * SequenceEditorGUI Resource.
+	 */
 	class NAPAPI SequenceGUIService final : public Service
 	{
 		friend class SequencePlayerOutput;
@@ -69,7 +78,7 @@ namespace nap
 		 * registers a factory function for the creation of a certain track type,
 		 * @param trackType the track type for which to register the factory function
 		 * @param factory the factory function
-		 * @return true on succes
+		 * @return true on success
 		 */
 		bool registerTrackViewFactory(rtti::TypeInfo trackType, SequenceTrackViewFactoryFunc factory);
 
@@ -77,7 +86,7 @@ namespace nap
 		 * registers the track view type that belongs to a track type
 		 * @param trackType the track type
 		 * @param viewType the view type
-		 * @return true on succes
+		 * @return true on success
 		 */
 		bool registerTrackTypeForView(rtti::TypeInfo trackType, rtti::TypeInfo viewType);
 
@@ -172,7 +181,7 @@ namespace nap
 		std::unordered_map<rttr::type, SequenceEventTrackEditFunc> mEditEventHandlerMap;
 
 		// map of segment paste handlers
-		std::unordered_map<rttr::type, SequenceEventTrackPasteFunc> mPastEventMap;
+		std::unordered_map<rttr::type, SequenceEventTrackPasteFunc> mPasteEventMap;
 
 		// list of event types
 		std::vector<rtti::TypeInfo> mSegmentEventTypes;

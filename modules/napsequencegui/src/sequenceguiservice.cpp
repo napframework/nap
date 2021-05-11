@@ -173,7 +173,7 @@ namespace nap
 		}
 
 		// register paste handler
-		auto& handler_paste_events = mPastEventMap;
+		auto& handler_paste_events = mPasteEventMap;
 
 		auto paste_it = handler_paste_events.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
 		assert(paste_it == handler_paste_events.end()); // type already registered
@@ -219,8 +219,8 @@ namespace nap
 											    const SequenceTrackSegmentEventBase& eventBase,
 											    double time) const
 	{
-		assert(mPastEventMap.find(eventType)!=mPastEventMap.end());
-		mPastEventMap.find(eventType)->second(view, trackID, eventBase, time);
+		assert(mPasteEventMap.find(eventType)!= mPasteEventMap.end());
+		mPasteEventMap.find(eventType)->second(view, trackID, eventBase, time);
 	}
 
 
