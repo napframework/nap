@@ -22,8 +22,8 @@ using namespace napkin;
 
 void InspectorModel::setPath(const PropertyPath& path)
 {
-	mPath = path;
 	clearItems();
+	mPath = path;
 	populateItems();
 }
 
@@ -35,6 +35,7 @@ const PropertyPath& InspectorModel::path() const
 void InspectorModel::clearItems()
 {
 	removeRows(0, rowCount());
+	mPath = PropertyPath();
 }
 
 InspectorModel::InspectorModel() : QStandardItemModel()
@@ -289,7 +290,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 {
 	auto doc = mModel.path().getDocument();
 
-	if (doc)
+	if (doc != nullptr)
 		disconnect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
 
 	if (path.isValid())
@@ -305,9 +306,8 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	mPathField.setText(QString::fromStdString(path.toString()));
 
 	mModel.setPath(path);
-
 	doc = path.getDocument();
-	if (doc)
+	if (doc != nullptr)
 		connect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
 
 	mTreeView.getTreeView().expandAll();
