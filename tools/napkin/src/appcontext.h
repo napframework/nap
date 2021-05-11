@@ -107,6 +107,11 @@ namespace napkin
 		Document* loadDocument(const QString& filename);
 
 		/**
+		 * Loads all service configurations.
+		 */
+		void loadServiceConfigs(const nap::ProjectInfo& projectInfo);
+
+		/**
 		 * Load the specified project into the application context
 		 * @param projectFilename The json file that contains the project's definition/dependencies/etc
 		 * @return A pointer to the loaded project info or nullptr when loading failed
@@ -372,8 +377,7 @@ namespace napkin
 
 		/**
 		 * Emits when an application-wide blocking operation started, progresses or finishes
-		 * @param fraction How far we are along the process.
-		 * 		           A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
+		 * @param fraction How far we are along the process. A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
 		 * @param message A short message describing what's happening.
 		 */
 		void blockingProgressChanged(float fraction, const QString& message = {});
@@ -398,14 +402,18 @@ namespace napkin
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore;										// The nap::Core
-		ThemeManager mThemeManager;			 					// The theme manager
-		ResourceFactory mResourceFactory;						// Le resource factory
-		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
-		QString mCurrentFilename;								// The currently opened file
-		bool mExitOnLoadFailure = false;						// Whether to exit on any project load failure
-		bool mExitOnLoadSuccess = false;						// Whether to exit on any project load success
-		bool mOpenRecentProjectAtStartup = true;				// Whether to load recent project at startup
+		nap::Core mCore;															// The nap::Core
+		ThemeManager mThemeManager;			 										// The theme manager
+		ResourceFactory mResourceFactory;											// Le resource factory
+		bool mExitOnLoadFailure = false;											// Whether to exit on any project load failure
+		bool mExitOnLoadSuccess = false;											// Whether to exit on any project load success
+		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
+
+		QString mCurrentFilename;													// The currently opened file
+		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
+
+		QString mCurrentConfigFilename;												// Current configuration filename
+		std::vector<std::unique_ptr<nap::ServiceConfiguration>> mServiceConfigs;	// Current loaded service configuration
 	};
 
 };

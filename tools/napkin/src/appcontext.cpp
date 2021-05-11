@@ -75,7 +75,6 @@ Document* AppContext::loadDocument(const QString& filename)
 	if (!QFile::exists(filename))
 	{
 		blockingProgressChanged(1);
-
 		nap::Logger::error("File not found: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
@@ -123,7 +122,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
-
 	// Signal initialization
 	coreInitialized();
 
@@ -133,11 +131,14 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::Logger::info("Loaded successfully, exiting as requested");
         exit(EXIT_ON_SUCCESS_EXIT_CODE);
     }
-
 	addRecentlyOpenedProject(projectFilename);
+	
+	// Load document (data file)
 	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
+	{
 		loadDocument(dataFilename);
+	}
 	else
 	{
 		blockingProgressChanged(1);
@@ -146,6 +147,10 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 			exit(1);
 	}
 
+	// Load (copy) service configurations
+	loadServiceConfigs(*getCore().getProjectInfo());
+
+	// All good
 	blockingProgressChanged(1);
 	return mCore.getProjectInfo();
 }
@@ -425,6 +430,36 @@ void AppContext::onUndoIndexChanged()
 bool napkin::AppContext::isAvailable()
 {
 	return appContextInstance != nullptr;
+}
+
+
+void napkin::AppContext::loadServiceConfigs(const nap::ProjectInfo& projectInfo)
+{
+	mCurrentConfigFilename.clear();
+	if (projectInfo.hasServiceConfigFile())
+	{
+		// Get absolute path
+		std::string patched = projectInfo.mServiceConfigFilename;
+		projectInfo.patchPath(patched);
+
+		// Ensure it exists
+		mCurrentConfigFilename = QString::fromStdString(patched);
+		QFileInfo finf(mCurrentConfigFilename);
+		if (!finf.exists())
+		{
+			nap::Logger::warn("Unable to find service config file: %s", patched.c_str());
+			mCurrentConfigFilename.clear();
+		}
+	}
+
+	// Copy service configurations
+	assert(getCore().isInitialized());
+	mServiceConfigs.clear();
+	std::vector<const nap::ServiceConfiguration*> configs = getCore().getServiceConfigs();
+	for (const auto& config : configs)
+	{
+		 mServiceConfigs.emplace_back(nap::rtti::cloneObject(*config, getCore().getResourceManager()->getFactory()));
+	}
 }
 
 

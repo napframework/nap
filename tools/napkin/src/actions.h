@@ -195,6 +195,17 @@ namespace napkin
 	};
 
 	/**
+	 * Saves a service configuration to disk
+	 */
+	class ClearServiceConfigAction : public Action
+	{
+	public:
+		ClearServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
 	 * Create a Resource
 	 */
 	class CreateResourceAction : public StandardItemAction

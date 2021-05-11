@@ -407,7 +407,7 @@ napkin::NewServiceConfigAction::NewServiceConfigAction()
 
 void napkin::NewServiceConfigAction::perform()
 {
-
+	
 }
 
 
@@ -454,6 +454,18 @@ napkin::DefaultServiceConfigAction::DefaultServiceConfigAction()
 
 
 void napkin::DefaultServiceConfigAction::perform()
+{
+
+}
+
+
+napkin::ClearServiceConfigAction::ClearServiceConfigAction()
+{
+	setText("Clear");
+}
+
+
+void napkin::ClearServiceConfigAction::perform()
 {
 
 }
