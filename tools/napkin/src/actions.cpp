@@ -433,7 +433,7 @@ void SetThemeAction::perform()
 
 napkin::NewServiceConfigAction::NewServiceConfigAction()
 {
-	setText("New (Default)");
+	setText("New Default");
 }
 
 
