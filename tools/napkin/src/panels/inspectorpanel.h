@@ -77,6 +77,11 @@ namespace napkin
 		void clearItems();
 
 		/**
+		 * Clear the property path that is edited, subsequently clears the model items as well
+		 */
+		void clearPath();
+
+		/**
 	 	 * Run through the object's properties and create items for them
 		 */
 		void populateItems();
