@@ -280,9 +280,8 @@ namespace nap
 				if(track_ptr->mID == track_action->mTrackID)
 				{
 					// does the track type match for this view?
-					assert(mService.getTrackTypeForViewTypeMap().find(track_ptr->get_type())!=mService.getTrackTypeForViewTypeMap().end()); // entry not found
-					rttr::type view_type_for_track = mService.getTrackTypeForViewTypeMap().find(track_ptr->get_type())->second;
-					rttr::type current_view_type = get_type();
+					rtti::TypeInfo view_type_for_track = mService.getViewTypeForTrackType(track_ptr->get_type());
+					rtti::TypeInfo current_view_type = get_type();
 
 					if(view_type_for_track == current_view_type)
 					{

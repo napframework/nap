@@ -17,6 +17,7 @@ namespace nap
 	// forward declares
 	class SequenceController;
 	class SequenceEditor;
+	class SequenceService;
 
 	/**
 	 * Base class for controllers for specific track types
@@ -27,10 +28,11 @@ namespace nap
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to service
 		 * @param player reference to player being used
 		 * @param editor reference to editor
 		 */
-		SequenceController(SequencePlayer& player, SequenceEditor& editor) : mPlayer(player), mEditor(editor) {};
+		SequenceController(SequenceService& service, SequencePlayer& player, SequenceEditor& editor) : mService(service), mPlayer(player), mEditor(editor) {};
 
 		/**
 		 * Deconstructor
@@ -146,5 +148,8 @@ namespace nap
 
 		// reference to editor
 		SequenceEditor& mEditor;
+
+		// reference to service
+		SequenceService& mService;
 	};
 }

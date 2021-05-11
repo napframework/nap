@@ -11,7 +11,7 @@ namespace nap
 		{
 			// create sequence track
 			std::unique_ptr<SequenceTrackCurve<T>> sequence_track = std::make_unique<SequenceTrackCurve<T>>();
-			sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs() );
+			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs() );
 
 			//
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackCurve<T>>(sequence_track.get()));
@@ -74,7 +74,7 @@ namespace nap
 								std::unique_ptr<math::FCurve<float, float>> segment_curve = std::make_unique<math::FCurve<float, float>>();
 								segment_curve->mPoints[1].mInTan.mTime = -0.4f;
 								segment_curve->mPoints[1].mOutTan.mTime = 0.4f;
-								segment_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+								segment_curve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 								// assign curve
 								new_segment->mCurves[i] = nap::ResourcePtr<math::FCurve<float, float>>(segment_curve.get());
@@ -114,7 +114,7 @@ namespace nap
 							segment->mDuration = new_segment->mStartTime - segment->mStartTime;
 
 							// generate unique id
-							new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 							// wrap it in a resource ptr and insert it into the track
 							ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
@@ -143,7 +143,7 @@ namespace nap
 							for (int v = 0; v < curve_count; v++)
 							{
 								std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
-								new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+								new_curve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 								new_curve->mPoints[1].mInTan.mTime = -0.4f;
 								new_curve->mPoints[1].mOutTan.mTime = 0.4f;
 								new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
@@ -152,7 +152,7 @@ namespace nap
 							}
 
 							// generate unique id
-							new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 							// wrap it in a resource ptr and insert it into the track
 							ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
@@ -186,7 +186,7 @@ namespace nap
 						for (int v = 0; v < curve_count; v++)
 						{
 							std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
-							new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_curve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 							new_curve->mPoints[1].mInTan.mTime = -0.4f;
 							new_curve->mPoints[1].mOutTan.mTime = 0.4f;
 							new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
@@ -195,7 +195,7 @@ namespace nap
 						}
 
 						// generate unique id
-						new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+						new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 						// wrap it in a resource ptr and insert it into the track
 						ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());

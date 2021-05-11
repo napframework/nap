@@ -9,14 +9,8 @@
 
 namespace nap
 {
-	// map for updating segments
-
-	// map for inserting segments
-	static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> update_segment_functions
-		;
-
-	SequenceControllerCurve::SequenceControllerCurve(SequencePlayer& player, SequenceEditor& editor) :
-		  SequenceController(player, editor)
+	SequenceControllerCurve::SequenceControllerCurve(SequenceService& service, SequencePlayer& player, SequenceEditor& editor) :
+		  SequenceController(service, player, editor)
 	{
 		mUpdateSegmentFunctionMap =
 		{

@@ -3,7 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "sequencecontrollerevent.h"
-#include "sequenceutils.h"
 #include "sequencetrackevent.h"
 #include "sequenceeditor.h"
 
@@ -81,7 +80,7 @@ namespace nap
 		{
 			// create sequence track
 			std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
-			sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 			//
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));

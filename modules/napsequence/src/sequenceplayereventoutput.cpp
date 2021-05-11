@@ -4,7 +4,6 @@
 
 #include "sequenceplayereventoutput.h"
 #include "sequenceservice.h"
-#include "sequenceutils.h"
 #include "sequencetrackevent.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerEventOutput)

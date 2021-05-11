@@ -23,12 +23,13 @@ namespace nap
 	class SequenceEditorGUIState;
 
 	// shortcuts
-	using SequenceTrackViewFactoryFunc 			= std::function<std::unique_ptr<SequenceTrackView>(SequenceGUIService&, SequenceEditorGUIView&, SequenceEditorGUIState&)>;
-	using SequenceEventTrackSegmentViewMap 		= std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase>>;
-	using SequenceTrackViewFactoryMap 			= std::unordered_map<rtti::TypeInfo, SequenceTrackViewFactoryFunc>;
-	using SequenceTrackTypeForViewTypeMap		= std::unordered_map<rtti::TypeInfo, rtti::TypeInfo>;
-	using SequenceEventTrackPasteEventMemFun 	= void (SequenceEventTrackView::*)(const std::string&, const SequenceTrackSegmentEventBase&, double);
-	using SequenceEventTrackEditEventMemFun 	= void (SequenceEventTrackView::*)();
+	using SequenceEventTrackSegmentViewFactoryFunc	= std::function<std::unique_ptr<SequenceEventTrackSegmentViewBase>()>;
+	using SequenceEventTrackSegmentViewFactoryMap 	= std::unordered_map<rtti::TypeInfo, SequenceEventTrackSegmentViewFactoryFunc>;
+	using SequenceTrackViewFactoryFunc 				= std::function<std::unique_ptr<SequenceTrackView>(SequenceGUIService&, SequenceEditorGUIView&, SequenceEditorGUIState&)>;
+	using SequenceTrackViewFactoryMap 				= std::unordered_map<rtti::TypeInfo, SequenceTrackViewFactoryFunc>;
+	using SequenceTrackTypeForViewTypeMap			= std::unordered_map<rtti::TypeInfo, rtti::TypeInfo>;
+	using SequenceEventTrackPasteFunc 				= std::function<void(SequenceEventTrackView&, const std::string&, const SequenceTrackSegmentEventBase&, double)>;
+	using SequenceEventTrackEditFunc 				= std::function<void(SequenceEventTrackView&)>;
 
 	class NAPAPI SequenceGUIService : public Service
 	{
@@ -54,30 +55,86 @@ namespace nap
 
 		/**
 		 * call this method to register you a custom view for a custom event type
-		 * T is the value type of the event ( SequenceEvent<T> )
+		 * T is the value type of the event (SequenceEvent<T>)
 		 * @tparam T value to of the event
 		 * @return true when called
 		 */
 		template<typename T>
 		bool registerEventView();
 
-		bool registerEventTrackSegmentView(rtti::TypeInfo typeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase> view);
-
-		bool registerTrackTypeForView(rtti::TypeInfo trackType, rtti::TypeInfo viewType);
-
+		/**
+		 * registers a factory function for the creation of a certain track type,
+		 * @param trackType the track type for which to register the factory function
+		 * @param factory the factory function
+		 * @return true on succes
+		 */
 		bool registerTrackViewFactory(rtti::TypeInfo trackType, SequenceTrackViewFactoryFunc factory);
 
-		const SequenceEventTrackSegmentViewMap& getEventSegmentViews() const;
+		/**
+		 * registers the track view type that belongs to a track type
+		 * @param trackType the track type
+		 * @param viewType the view type
+		 * @return true on succes
+		 */
+		bool registerTrackTypeForView(rtti::TypeInfo trackType, rtti::TypeInfo viewType);
 
-		const std::vector<rtti::TypeInfo>& getRegisteredEventTypes() const;
+		/**
+		 * returns track view type for corresponding track type, asserts when track type not found
+		 * @param trackType type info of track type
+		 * @return corresponding track view type
+		 */
+		rtti::TypeInfo getViewTypeForTrackType(rtti::TypeInfo trackType) const;
 
+		/**
+		 * returns map of factory functions that create segment views for all event type registered
+		 * @return the factory map
+		 */
+		const SequenceEventTrackSegmentViewFactoryMap& getEventSegmentViewFactory() const;
+
+		/**
+		 * returns map of factory functions that can create a track view for track types
+		 * @return the factory map
+		 */
 		const SequenceTrackViewFactoryMap& getTrackViewFactory() const;
 
-		const SequenceTrackTypeForViewTypeMap& getTrackTypeForViewTypeMap() const;
+		/**
+		 * returns all registered event segment types (SequenceTrackSegmentEvent<T>)
+		 * @return the vector containing type info of all registered event segment types
+		 */
+		const std::vector<rtti::TypeInfo>& getRegisteredSegmentEventTypes() const;
 
-		const std::unordered_map<rtti::TypeInfo, SequenceEventTrackEditEventMemFun>& getEditEventHandlerMap() const;
+		/**
+		 * call this method to invoke the edit event handler for a specific event action
+		 * @param actionType type info of the action (f.e. EditingEventSegment<T>)
+		 * @param view reference to the view invoking the edit event handler
+		 */
+		void invokeEditEventHandler(rtti::TypeInfo actionType, SequenceEventTrackView& view) const;
 
-		const std::unordered_map<rttr::type, SequenceEventTrackPasteEventMemFun>& getPasteEventMap() const;
+		/**
+		 * invoke this method to paste an event of a certain type
+		 * @param eventType typeInfo of the event to paste
+		 * @param view reference to the view invoking the paste event
+		 * @param trackID track id of the track on which to paste the event
+		 * @param eventBase reference to base of event
+		 * @param time time at which to paste the event
+		 */
+		void invokePasteEvent(rtti::TypeInfo eventType,
+							  SequenceEventTrackView& view,
+							  const std::string& trackID,
+							  const SequenceTrackSegmentEventBase& eventBase,
+							  double time) const;
+
+		/**
+		 * returns a vector containing type info of all registered track types
+		 * @return the vector
+		 */
+		std::vector<rtti::TypeInfo> getAllTrackTypes() const;
+
+		/**
+		 * returns a vector containing type info of all registered event actions (f.e. EditingEventSegment<T>)
+		 * @return the vector
+		 */
+		std::vector<rtti::TypeInfo> getAllRegisteredEventActions() const;
 	protected:
 		/**
 		 * registers all objects that need a specific way of construction
@@ -91,27 +148,21 @@ namespace nap
 		 * @return returns true on successful initialization
 		 */
 		bool init(nap::utility::ErrorState& errorState) override;
-
-		/**
-		 * updates any outputs and editors
-		 * @param deltaTime deltaTime
-		 */
-		void update(double deltaTime) override;
 	private:
 		// map of segment view types
-		SequenceEventTrackSegmentViewMap mEventSegmentViews;
+		SequenceEventTrackSegmentViewFactoryMap mEventSegmentViewFactoryMap;
 
 		// map of view factory functions
 		SequenceTrackViewFactoryMap mTrackViewFactoryMap;
 
 		// map of segment edit event handlers
-		std::unordered_map<rttr::type, SequenceEventTrackEditEventMemFun> mEditEventHandlerMap;
+		std::unordered_map<rttr::type, SequenceEventTrackEditFunc> mEditEventHandlerMap;
 
 		// map of segment paste handlers
-		std::unordered_map<rttr::type, SequenceEventTrackPasteEventMemFun> mPastEventMap;
+		std::unordered_map<rttr::type, SequenceEventTrackPasteFunc> mPastEventMap;
 
 		// list of event types
-		std::vector<rtti::TypeInfo> mEventTypes;
+		std::vector<rtti::TypeInfo> mSegmentEventTypes;
 
 		// which view type belongs to which track type
 		SequenceTrackTypeForViewTypeMap mTrackViewTypeMap;

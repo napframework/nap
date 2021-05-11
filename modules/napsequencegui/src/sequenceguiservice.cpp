@@ -59,32 +59,36 @@ namespace nap
 
 	bool SequenceGUIService::init(nap::utility::ErrorState& errorState)
 	{
-		if( !registerEventTrackSegmentView(	RTTI_OF(SequenceEventTrackSegmentView<std::string>),
-									  		std::make_unique<SequenceEventTrackSegmentView<std::string>>()) ||
-			!registerEventTrackSegmentView(	RTTI_OF(SequenceEventTrackSegmentView<int>),
-											  std::make_unique<SequenceEventTrackSegmentView<int>>()) ||
-			!registerEventTrackSegmentView(	RTTI_OF(SequenceEventTrackSegmentView<float>),
-											  std::make_unique<SequenceEventTrackSegmentView<float>>()) ||
-			!registerEventTrackSegmentView(	RTTI_OF(SequenceEventTrackSegmentView<glm::vec2>),
-											  std::make_unique<SequenceEventTrackSegmentView<glm::vec2>>()) ||
-			!registerEventTrackSegmentView(	RTTI_OF(SequenceEventTrackSegmentView<glm::vec3>),
-											  std::make_unique<SequenceEventTrackSegmentView<glm::vec3>>()))
-		{
-			errorState.fail("Error creating event segment views");
+		if(!errorState.check(registerEventView<std::string>(), "Error registering event view"))
 			return false;
-		}
 
-		registerEventView<std::string>();
-		registerEventView<int>();
-		registerEventView<float>();
-		registerEventView<glm::vec2>();
-		registerEventView<glm::vec3>();
+		if(!errorState.check(registerEventView<int>(), "Error registering event view"))
+			return false;
 
-		registerTrackTypeForView(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView));
-		registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<float>), RTTI_OF(SequenceCurveTrackView));
-		registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec2>), RTTI_OF(SequenceCurveTrackView));
-		registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec3>), RTTI_OF(SequenceCurveTrackView));
-		//registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec4>), RTTI_OF(SequenceCurveTrackView));
+		if(!errorState.check(registerEventView<float>(), "Error registering event view"))
+			return false;
+
+		if(!errorState.check(registerEventView<glm::vec2>(), "Error registering event view"))
+			return false;
+
+		if(!errorState.check(registerEventView<glm::vec3>(), "Error registering event view"))
+			return false;
+
+		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView)),
+							  "Error registering track view"))
+			return false;
+
+		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<float>), RTTI_OF(SequenceCurveTrackView)),
+							 "Error registering track view"))
+			return false;
+
+		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec2>), RTTI_OF(SequenceCurveTrackView)),
+							 "Error registering track view"))
+			return false;
+
+		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec3>), RTTI_OF(SequenceCurveTrackView)),
+							 "Error registering track view"))
+			return false;
 
 		if(!registerTrackViewFactory(RTTI_OF(SequenceCurveTrackView), 	[](	SequenceGUIService& service,
 																			SequenceEditorGUIView& editorGuiView,
@@ -112,27 +116,15 @@ namespace nap
 	}
 
 
-	bool SequenceGUIService::registerEventTrackSegmentView(rtti::TypeInfo typeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase> view)
+	const SequenceEventTrackSegmentViewFactoryMap& SequenceGUIService::getEventSegmentViewFactory() const
 	{
-		assert(mEventSegmentViews.find(typeInfo)==mEventSegmentViews.end()); // duplicate entry
-		return mEventSegmentViews.emplace(typeInfo, std::move(view)).second;
+		return mEventSegmentViewFactoryMap;
 	}
 
 
-	void SequenceGUIService::update(double deltaTime)
+	const std::vector<rtti::TypeInfo>& SequenceGUIService::getRegisteredSegmentEventTypes() const
 	{
-	}
-
-
-	const SequenceEventTrackSegmentViewMap& SequenceGUIService::getEventSegmentViews() const
-	{
-		return mEventSegmentViews;
-	}
-
-
-	const std::vector<rtti::TypeInfo>& SequenceGUIService::getRegisteredEventTypes() const
-	{
-		return mEventTypes;
+		return mSegmentEventTypes;
 	}
 
 
@@ -153,32 +145,30 @@ namespace nap
 	bool SequenceGUIService::registerEventView()
 	{
 		// register type of view
-		assert(std::find(mEventTypes.begin(), mEventTypes.begin() + mEventTypes.size(), RTTI_OF(SequenceTrackSegmentEvent<T>)) == mEventTypes.end()); // type already added
-		mEventTypes.emplace_back(RTTI_OF(SequenceTrackSegmentEvent<T>));
+		assert(std::find(mSegmentEventTypes.begin(), mSegmentEventTypes.begin() + mSegmentEventTypes.size(), RTTI_OF(SequenceTrackSegmentEvent<T>)) == mSegmentEventTypes.end()); // type already added
+		mSegmentEventTypes.emplace_back(RTTI_OF(SequenceTrackSegmentEvent<T>));
 
 		// register view
-		auto segment_it = mEventSegmentViews.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
-		assert(segment_it==mEventSegmentViews.end()); // type already registered
-		if(segment_it==mEventSegmentViews.end())
+		auto segment_it = mEventSegmentViewFactoryMap.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
+		assert(segment_it== mEventSegmentViewFactoryMap.end()); // type already registered
+		if(segment_it== mEventSegmentViewFactoryMap.end())
 		{
-			mEventSegmentViews.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), std::make_unique<SequenceEventTrackSegmentView<T>>());
+			mEventSegmentViewFactoryMap.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), []()->std::unique_ptr<SequenceEventTrackSegmentView<T>>{ return std::make_unique<SequenceEventTrackSegmentView<T>>(); });
 		}
 
 		// register popup action handler
-		auto& handle_edit_events = mEditEventHandlerMap;
-
-		auto event_it = handle_edit_events.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
-		assert(event_it== handle_edit_events.end()); // type already registered
-		if(event_it== handle_edit_events.end())
+		auto event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
+		assert(event_it== mEditEventHandlerMap.end()); // type already registered
+		if(event_it== mEditEventHandlerMap.end())
 		{
-			handle_edit_events.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
+			mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 		}
 
-		event_it = handle_edit_events.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
-		assert(event_it== handle_edit_events.end()); // type already registered
-		if(event_it== handle_edit_events.end())
+		event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
+		assert(event_it== mEditEventHandlerMap.end()); // type already registered
+		if(event_it== mEditEventHandlerMap.end())
 		{
-			handle_edit_events.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), &SequenceEventTrackView::handleEditEventSegmentPopup<T> );
+			mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 		}
 
 		// register paste handler
@@ -188,7 +178,13 @@ namespace nap
 		assert(paste_it == handler_paste_events.end()); // type already registered
 		if(paste_it == handler_paste_events.end())
 		{
-			handler_paste_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), &SequenceEventTrackView::pasteEvent<SequenceTrackSegmentEvent<T>> );
+			handler_paste_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), [](	SequenceEventTrackView& view,
+																					   const std::string& trackID,
+																					   const SequenceTrackSegmentEventBase& eventBase,
+																					   double time)
+			{
+			  	view.template pasteEvent<SequenceTrackSegmentEvent<T>>(trackID, eventBase, time);
+			});
 		}
 
 		return true;
@@ -202,20 +198,49 @@ namespace nap
 	}
 
 
-	const SequenceTrackTypeForViewTypeMap& SequenceGUIService::getTrackTypeForViewTypeMap() const
+	rtti::TypeInfo SequenceGUIService::getViewTypeForTrackType(rtti::TypeInfo trackType) const
 	{
-		return mTrackViewTypeMap;
+		assert(mTrackViewTypeMap.find(trackType)!=mTrackViewTypeMap.end()); // entry not found
+		return mTrackViewTypeMap.find(trackType)->second;
 	}
 
 
-	const std::unordered_map<rtti::TypeInfo,  SequenceEventTrackEditEventMemFun>& SequenceGUIService::getEditEventHandlerMap() const
+	void SequenceGUIService::invokeEditEventHandler(rtti::TypeInfo eventType, SequenceEventTrackView& view) const
 	{
-		return mEditEventHandlerMap;
+		assert(mEditEventHandlerMap.find(eventType)!=mEditEventHandlerMap.end());
+		mEditEventHandlerMap.find(eventType)->second(view);
 	}
 
 
-	const std::unordered_map<rttr::type,SequenceEventTrackPasteEventMemFun>& SequenceGUIService::getPasteEventMap() const
+	void SequenceGUIService::invokePasteEvent(	rtti::TypeInfo eventType,
+											    SequenceEventTrackView& view,
+											    const std::string& trackID,
+											    const SequenceTrackSegmentEventBase& eventBase,
+											    double time) const
 	{
-		return mPastEventMap;
+		assert(mPastEventMap.find(eventType)!=mPastEventMap.end());
+		mPastEventMap.find(eventType)->second(view, trackID, eventBase, time);
+	}
+
+
+	std::vector<rtti::TypeInfo> SequenceGUIService::getAllTrackTypes() const
+	{
+		std::vector<rtti::TypeInfo> track_types;
+		for(const auto& it : mTrackViewTypeMap)
+		{
+			track_types.emplace_back(it.first);
+		}
+		return track_types;
+	}
+
+
+	std::vector<rtti::TypeInfo> SequenceGUIService::getAllRegisteredEventActions() const
+	{
+		std::vector<rtti::TypeInfo> event_actions;
+		for(const auto& it : mEditEventHandlerMap)
+		{
+			event_actions.emplace_back(it.first);
+		}
+		return event_actions;
 	}
 }

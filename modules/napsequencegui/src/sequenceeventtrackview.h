@@ -227,7 +227,11 @@ namespace nap
 		 */
 		void handleSegmentDrag();
 	private:
+		// reference to gui service
 		SequenceGUIService& mService;
+
+		// map of segment views for different event views
+		std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase>> mSegmentViews;
 	};
 
 
@@ -276,9 +280,8 @@ namespace nap
 			if (ImGui::BeginPopup("Edit Event"))
 			{
 				// draw the registered popup content for this event
-				auto& segment_views = mService.getEventSegmentViews();
-				auto it = segment_views.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
-				assert(it!= segment_views.end()); // type not found
+				auto it = mSegmentViews.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
+				assert(it!= mSegmentViews.end()); // type not found
 				it->second->handleEditPopupContent(*action);
 
 				// time

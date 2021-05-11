@@ -9,7 +9,6 @@
 #include "sequencecontroller.h"
 #include "sequencecurveenums.h"
 #include "sequenceplayer.h"
-#include "sequenceutils.h"
 #include "sequenceservice.h"
 #include "sequenceservice.h"
 
@@ -64,11 +63,11 @@ namespace nap
 		void changeSequenceDuration(double newDuration);
 
 		/**
-		 * Returns pointer to base class of controller type, returns nullptr when controller type is not found
+		 * Returns pointer to base class of controller type, asserts when type not found
 		 * @param type rttr::type information of controller type to be returned
 		 * @return ptr to controller base class, null ptr when not found
 		 */
-		SequenceController* getControllerWithTrackType(const rttr::type& type);
+		SequenceController* getControllerWithTrackType(rtti::TypeInfo trackType);
 
 		/**
 		 * Returns pointer to base class of controller type that is used for specified track type of track id

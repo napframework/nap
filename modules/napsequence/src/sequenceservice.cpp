@@ -72,55 +72,54 @@ namespace nap
 
 	bool SequenceService::init(nap::utility::ErrorState& errorState)
 	{
-		bool default_track_creator_registered = registerDefaultTrackCreatorForOutput(RTTI_OF(SequencePlayerCurveOutput),
-											 [](const SequencePlayerOutput* output) -> std::unique_ptr<SequenceTrack>
-		{
-			assert(RTTI_OF(SequencePlayerCurveOutput) == output->get_type()); // type mismatch
-
-			// cast the output to a curve output
-			const auto* curve_output = static_cast<const SequencePlayerCurveOutput*>(output);
-
-			// check the parameter
-			assert(curve_output->mParameter != nullptr); // parameter must be assigned
-
-			// declare return ptr
-			std::unique_ptr<SequenceTrack> sequence_track = nullptr;
-
-			// check what type of parameter is being used and create a track that fits the parameter
-			// ParameterVec2 = SequenceTrackCurveVec2
-			// ParameterVec3 = SequenceTrackCurveVec3
-			// ParameterFloat, ParameterLong, ParameterInt & ParameterDouble = SequenceTrackCurveFloat
-			if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
+		// register the default track creation method for curved outputs
+		if(!errorState.check(registerDefaultTrackCreatorForOutput( RTTI_OF(SequencePlayerCurveOutput),
+																  [](const SequencePlayerOutput* output) -> std::unique_ptr<SequenceTrack>
 			{
-			  sequence_track = std::make_unique<SequenceTrackCurveVec2>();
-			}
-			else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
+				assert(RTTI_OF(SequencePlayerCurveOutput) == output->get_type()); // type mismatch
+
+				// cast the output to a curve output
+				const auto* curve_output = static_cast<const SequencePlayerCurveOutput*>(output);
+
+				// check the parameter
+				assert(curve_output->mParameter != nullptr); // parameter must be assigned
+
+				// declare return ptr
+				std::unique_ptr<SequenceTrack> sequence_track = nullptr;
+
+				// check what type of parameter is being used and create a track that fits the parameter
+				// ParameterVec2 = SequenceTrackCurveVec2
+				// ParameterVec3 = SequenceTrackCurveVec3
+				// ParameterFloat, ParameterLong, ParameterInt & ParameterDouble = SequenceTrackCurveFloat
+				if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
+				{
+				  sequence_track = std::make_unique<SequenceTrackCurveVec2>();
+				}
+				else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
+				{
+				  sequence_track = std::make_unique<SequenceTrackCurveVec3>();
+				}else if( 	curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterFloat) ||
+						   curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterLong) ||
+						   curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterInt) ||
+						   curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterDouble) )
+				{
+				  sequence_track = std::make_unique<SequenceTrackCurveFloat>();
+				}
+
+				assert(sequence_track != nullptr); // couldn't create default track with parameter type
+				return sequence_track;
+			}), "Error registering default track creator"))
+				return false;
+
+		// register default track creator for event outputs
+		if(!errorState.check(registerDefaultTrackCreatorForOutput( RTTI_OF(SequencePlayerEventOutput),
+																   [](const SequencePlayerOutput* output) -> std::unique_ptr<SequenceTrack>
 			{
-			  sequence_track = std::make_unique<SequenceTrackCurveVec3>();
-			}else if( 	curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterFloat) ||
-					   curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterLong) ||
-					   curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterInt) ||
-					   curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterDouble) )
-			{
-			  sequence_track = std::make_unique<SequenceTrackCurveFloat>();
-			}
+				return std::make_unique<SequenceTrackEvent>();
+			}), "Error registering default track creator"))
+				return false;
 
-			assert(sequence_track != nullptr); // couldn't create default track with parameter type
-			return sequence_track;
-		});
-
-		if(!errorState.check(default_track_creator_registered, "Error registering track creator"))
-			return false;
-
-		default_track_creator_registered = registerDefaultTrackCreatorForOutput(RTTI_OF(SequencePlayerEventOutput),
-																				[](const SequencePlayerOutput* output) -> std::unique_ptr<SequenceTrack>
-		{
-			return std::make_unique<SequenceTrackEvent>();
-		});
-
-		if(!errorState.check(default_track_creator_registered, "Error registering track creator"))
-			return false;
-
+		// register the same controller for different curved track types
 		if( !registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)) ||
 			!registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)) ||
 			!registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)) ||
@@ -130,112 +129,128 @@ namespace nap
 			return false;
 		}
 
+		// register the event controller type
 		if(!registerControllerForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent)))
 		{
 			errorState.fail("Error registering event controller type");
 			return false;
 		}
 
-		if(	!registerControllerFactoryFunc(
+		// register the curve controller factory function
+		if(	!errorState.check(registerControllerFactoryFunc(
 				RTTI_OF(SequenceControllerCurve),
-				[](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
+				[this](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
 				{
-					return std::make_unique<SequenceControllerCurve>(player, editor);
-				}) ||
-			!registerControllerFactoryFunc(
+					return std::make_unique<SequenceControllerCurve>(*this, player, editor);
+				}), "Error registering controller factory function"))
+					return false;
+
+		// register the event controller factory function
+		if(	!errorState.check(registerControllerFactoryFunc(
 				RTTI_OF(SequenceControllerEvent),
-				[](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
+				[this](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
 				{
-				  	return std::make_unique<SequenceControllerEvent>(player, editor);
-				}))
-		{
-			errorState.fail("Error registering controller factory functions");
-			return false;
-		}
+				  	return std::make_unique<SequenceControllerEvent>(*this, player, editor);
+				}), "Error registering controller factory function"))
+					return false;
 
-		if(	!registerAdapterFactoryFunc(RTTI_OF(SequenceTrackEvent),
+		/**
+		 * register the adapter factory functions for event tracks & curved tracks
+		 */
+
+		// event track adapter factory function
+		if(!errorState.check(registerAdapterFactoryFunc(RTTI_OF(SequenceTrackEvent),
 										[](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
-											{
-												assert(output.get_type() == RTTI_OF(SequencePlayerEventOutput)); // type mismatch
+			{
+				assert(output.get_type() == RTTI_OF(SequencePlayerEventOutput)); // type mismatch
 
-												auto& eventOutput = *rtti_cast<SequencePlayerEventOutput>(&output);
+				auto& eventOutput = *rtti_cast<SequencePlayerEventOutput>(&output);
 
-												auto adapter = std::make_unique<SequencePlayerEventAdapter>(track, eventOutput, player);
-												return std::move(adapter);
-											}) ||
-			!registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveFloat),
+				auto adapter = std::make_unique<SequencePlayerEventAdapter>(track, eventOutput, player);
+				return std::move(adapter);
+			}), "Error registering adapter factory function"))
+				return false;
+
+		// curve float adapter factory function
+		if(!errorState.check(registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveFloat),
 											[](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
-											{
-												assert(track.get_type() == RTTI_OF(SequenceTrackCurveFloat)); // type mismatch
-												assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
+			{
+				assert(track.get_type() == RTTI_OF(SequenceTrackCurveFloat)); // type mismatch
+				assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
 
-												auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
+				auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
 
-												if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterFloat))
-												{
-												  return std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(track, curve_output);
-												}
+				if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterFloat))
+				{
+				  return std::make_unique<SequencePlayerCurveAdapter<float, ParameterFloat, float>>(track, curve_output);
+				}
 
-												if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterLong))
-												{
-												  return std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, long>>(track, curve_output);
-												}
+				if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterLong))
+				{
+				  return std::make_unique<SequencePlayerCurveAdapter<float, ParameterLong, long>>(track, curve_output);
+				}
 
-												if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterDouble))
-												{
-												  return std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(track, curve_output);
-												}
+				if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterDouble))
+				{
+				  return std::make_unique<SequencePlayerCurveAdapter<float, ParameterDouble, double>>(track, curve_output);
+				}
 
-												if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterInt))
-												{
-												  return std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(track, curve_output);
-												}
+				if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterInt))
+				{
+				  	return std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(track, curve_output);
+				}
 
-												assert(false); // no correct parameter type found!
-												return nullptr;
-											}) ||
-			!registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveVec2),
+				assert(false); // no correct parameter type found!
+				return nullptr;
+			}), "Error registering adapter factory function"))
+				return false;
+
+		// vec2 curve adapter factory function
+		if(!errorState.check(registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveVec2),
 										[](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
-											{
-												assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec2)); // type mismatch
-												assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
+			{
+				assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec2)); // type mismatch
+				assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
 
-												auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
+				auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
 
-												assert(curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec2)); // type mismatch
-												if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
-												{
-												  return std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(track, curve_output);
-												}
+				assert(curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec2)); // type mismatch
+				if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
+				{
+				  return std::make_unique<SequencePlayerCurveAdapter<glm::vec2, ParameterVec2, glm::vec2>>(track, curve_output);
+				}
 
-												return nullptr;
-											}) ||
-			!registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveVec3),
+				return nullptr;
+			}), "Error registering adapter factory function"))
+				return false;
+
+		// vec3 adapter factory function
+		if(!errorState.check(registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveVec3),
 										[](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
-											{
-												assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec3)); // type mismatch
-												assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
+			{
+				assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec3)); // type mismatch
+				assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
 
-												auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
+				auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
 
-												assert(curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec3)); // type mismatch
-												if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
-												{
-												  return std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(track, curve_output);
-												}
+				assert(curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec3)); // type mismatch
+				if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
+				{
+				  return std::make_unique<SequencePlayerCurveAdapter<glm::vec3, ParameterVec3, glm::vec3>>(track, curve_output);
+				}
 
-												return nullptr;
-											}) ||
-			!registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveVec4),
+				return nullptr;
+			}), "Error registering adapter factory function"))
+				return false;
+
+		// vec4 adapter factory function
+		if(!errorState.check(registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveVec4),
 										[](const SequenceTrack& track, SequencePlayerOutput& output, const SequencePlayer& player)->std::unique_ptr<SequencePlayerAdapter>
-											{
-												nap::Logger::info("adapter not yet implemented!");
-												return nullptr;
-											}))
-		{
-			errorState.fail("Error registering adapter factory functions");
-			return false;
-		}
+			{
+				nap::Logger::info("adapter not yet implemented!");
+				return nullptr;
+			}), "Error registering adapter factory function"))
+				return false;
 
 		return true;
 	}
@@ -245,7 +260,7 @@ namespace nap
 	{
 		// create the sequence
 		std::unique_ptr<Sequence> sequence = std::make_unique<Sequence>();
-		sequence->mID = sequenceutils::generateUniqueID(objectIDs);
+		sequence->mID = generateUniqueID(objectIDs);
 		sequence->mDuration = 1.0;
 
 		// iterate trough the given outputs and see if we can create a default track for the given output
@@ -256,7 +271,7 @@ namespace nap
 			{
 				auto factory_method = mDefaultTrackCreatorMap[output_ptr->get_type()];
 				std::unique_ptr<SequenceTrack> sequence_track = factory_method(output_ptr);
-				sequence_track->mID = sequenceutils::generateUniqueID(objectIDs);
+				sequence_track->mID = generateUniqueID(objectIDs);
 				sequence_track->mAssignedOutputID = output_ptr->mID;
 				sequence->mTracks.emplace_back(ResourcePtr<SequenceTrack>(sequence_track.get()));
 				createdObjects.emplace_back(std::move(sequence_track));
@@ -337,9 +352,23 @@ namespace nap
 	}
 
 
-	const SequenceControllerFactoryMap& SequenceService::getControllerFactory() const
+	std::unique_ptr<SequenceController> SequenceService::invokeControllerFactory(rtti::TypeInfo controllerType,
+																				 SequencePlayer& player,
+																				 SequenceEditor& editor)
 	{
-		return mControllerFactory;
+		assert(mControllerFactory.find(controllerType)!=mControllerFactory.end());
+		return mControllerFactory.find(controllerType)->second(player, editor);
+	}
+
+
+	std::vector<rtti::TypeInfo> SequenceService::getRegisteredControllerTypes() const
+	{
+		std::vector<rtti::TypeInfo> controller_types;
+		for(const auto& entry : mControllerFactory)
+		{
+			controller_types.emplace_back(entry.first);
+		}
+		return controller_types;
 	}
 
 
@@ -361,5 +390,19 @@ namespace nap
 	{
 		assert(mAdapterFactory.find(type)!=mAdapterFactory.end()); // entry not found
 		return mAdapterFactory[type](track, output, player);
+	}
+
+
+	std::string SequenceService::generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID)
+	{
+		std::string unique_id = baseID;
+
+		int index = 1;
+		while (objectIDs.find(unique_id) != objectIDs.end())
+			unique_id = utility::stringFormat("%s_%d", baseID.c_str(), ++index);
+
+		objectIDs.insert(unique_id);
+
+		return unique_id;
 	}
 }

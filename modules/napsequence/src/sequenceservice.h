@@ -20,19 +20,12 @@ namespace nap
 	class SequenceEditor;
 	class SequencePlayerAdapter;
 
-	using SequenceControllerFactoryFunc =
-		std::function<std::unique_ptr<SequenceController>(SequencePlayer&, SequenceEditor&)>;
-
-	using SequenceControllerFactoryMap =
-		std::unordered_map<rtti::TypeInfo, SequenceControllerFactoryFunc>;
-
-	using DefaultSequenceTrackFactoryMap =
-		std::unordered_map<rtti::TypeInfo, std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput*)>>;
-
-	using SequencePlayerAdapterFactoryFunc =
-		std::function<std::unique_ptr<SequencePlayerAdapter>(const SequenceTrack&, SequencePlayerOutput&, const SequencePlayer&)>;
-
-	using SequencePlayerAdapterFactoryMap = std::unordered_map<rtti::TypeInfo, SequencePlayerAdapterFactoryFunc>;
+	// shortcuts
+	using SequenceControllerFactoryFunc 	= std::function<std::unique_ptr<SequenceController>(SequencePlayer&, SequenceEditor&)>;
+	using SequenceControllerFactoryMap 		= std::unordered_map<rtti::TypeInfo, SequenceControllerFactoryFunc>;
+	using DefaultSequenceTrackFactoryMap 	= std::unordered_map<rtti::TypeInfo, std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput*)>>;
+	using SequencePlayerAdapterFactoryFunc 	= std::function<std::unique_ptr<SequencePlayerAdapter>(const SequenceTrack&, SequencePlayerOutput&, const SequencePlayer&)>;
+	using SequencePlayerAdapterFactoryMap 	= std::unordered_map<rtti::TypeInfo, SequencePlayerAdapterFactoryFunc>;
 
 	/**
 	 * SequenceService is responsible for updating outputs
@@ -78,14 +71,22 @@ namespace nap
 		 * Method that registers a certain controller type for a certain view type, this can be used by views to map controller types to view types
 		 * @param viewType the viewtype
 		 * @param controllerType the controller type
-		 * @return true on succesfull registration
+		 * @return true on successful registration
 		 */
 		bool registerControllerForTrackType(rtti::TypeInfo viewType, rtti::TypeInfo controllerType);
 
+		/**
+		 * returns controller type info for give track type
+		 * @param trackType the track type
+		 * @return the controller type
+		 */
 		rtti::TypeInfo getControllerTypeForTrackType(rtti::TypeInfo trackType);
 
-		const SequenceControllerFactoryMap& getControllerFactory() const;
-
+		/**
+		 * registers a new controller factory function for controller type
+		 * @param controllerType the type of controller for which to register a new factory function
+		 * @return true on success
+		 */
 		bool registerControllerFactoryFunc(rtti::TypeInfo controllerType, SequenceControllerFactoryFunc);
 
 		/**
@@ -97,16 +98,41 @@ namespace nap
 		bool registerAdapterFactoryFunc(rtti::TypeInfo typeInfo, SequencePlayerAdapterFactoryFunc factory);
 
 		/**
-		 * Invokes adapter factory method and returns unique ptr to created adapter, nullptr when not successfull
+		 * Invokes adapter factory method and returns unique ptr to created adapter, assert when track type not found
 		 * @param type track type
 		 * @param track reference to track
 		 * @param output reference to input
 		 * @param player sequence player creating adapter
 		 * @return unique ptr to created adapter, nullptr upon failure
 		 */
-		std::unique_ptr<SequencePlayerAdapter> invokeAdapterFactory(	rtti::TypeInfo type, const SequenceTrack& track,
-																SequencePlayerOutput& output,
-																const SequencePlayer& player);
+		std::unique_ptr<SequencePlayerAdapter> invokeAdapterFactory(rtti::TypeInfo type, const SequenceTrack& track,
+																	SequencePlayerOutput& output,
+																	const SequencePlayer& player);
+
+		/**
+		 * Invokes controller factory method and returns unique_ptr to controller, asserts when controller type is not found
+		 * @param controllerType the type of controller to create
+		 * @param player reference to player
+		 * @param editor reference to editor
+		 * @return unique_ptr to controller
+		 */
+		std::unique_ptr<SequenceController> invokeControllerFactory(rtti::TypeInfo controllerType,
+																	SequencePlayer& player,
+																	SequenceEditor& editor);
+
+		/**
+		 * returns all registered controller types that have registered factory functions
+		 * @return vector of controller type info
+		 */
+		std::vector<rtti::TypeInfo> getRegisteredControllerTypes() const;
+
+		/**
+		 * generate a unique id
+		 * @param objectIDs reference to collections of id's
+		 * @param baseID base id
+		 * @return unique id
+		 */
+		std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated");
 
 		/**
 		 * registers object creator method that can be passed on to the rtti factory
@@ -148,13 +174,16 @@ namespace nap
 		// vector holding raw pointers to outputs
 		std::vector<SequencePlayerOutput*> mOutputs;
 
-		//
+		// factory map for default creation of tracks
 		DefaultSequenceTrackFactoryMap mDefaultTrackCreatorMap;
 
+		// map of controller type information for each track type
 		std::unordered_map<rtti::TypeInfo, rtti::TypeInfo> mControllerTypesTrackTypeMap;
 
+		// map of controller factory functions
 		SequenceControllerFactoryMap mControllerFactory;
 
+		// map of sequence player adapter factory functions
 		SequencePlayerAdapterFactoryMap mAdapterFactory;
 	};
 }

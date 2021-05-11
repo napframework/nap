@@ -6,7 +6,6 @@
 #include "sequenceeditor.h"
 #include "sequencetrack.h"
 #include "sequencetracksegment.h"
-#include "sequenceutils.h"
 #include "sequencemarker.h"
 
 // external includes
@@ -36,10 +35,10 @@ namespace nap
 		}
 
 		// create controllers for all types of tracks
-		const auto& factory = mService.getControllerFactory();
-		for (const auto& it : factory)
+		const auto& controller_types = mService.getRegisteredControllerTypes();
+		for (const auto& controller_type : controller_types)
 		{
-			mControllers.emplace(it.first, it.second(*mSequencePlayer.get(), *this));
+			mControllers.emplace(controller_type, mService.invokeControllerFactory(controller_type, *mSequencePlayer.get(), *this));
 		}
 
 		return true;
@@ -121,7 +120,7 @@ namespace nap
 	{
 		performEdit([this, time, message]() {
 			auto new_marker		 = std::make_unique<SequenceMarker>();
-			new_marker->mID		 = sequenceutils::generateUniqueID(mSequencePlayer->mReadObjectIDs);
+			new_marker->mID		 = mService.generateUniqueID(mSequencePlayer->mReadObjectIDs);
 			new_marker->mTime	 = time;
 			new_marker->mMessage = message;
 
@@ -200,5 +199,13 @@ namespace nap
 			mSequencePlayer->performEditAction(action);
 			mPerformingEditAction.store(false);
 		}
+	}
+
+
+	SequenceController* SequenceEditor::getControllerWithTrackType(rtti::TypeInfo trackType)
+	{
+		auto controller_type = mService.getControllerTypeForTrackType(trackType);
+		assert(mControllers.find(controller_type)!=mControllers.end()); // entry not found
+		return mControllers.find(controller_type)->second.get();
 	}
 }

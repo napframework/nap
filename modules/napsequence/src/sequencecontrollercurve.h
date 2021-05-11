@@ -8,7 +8,6 @@
 #include "sequencecontroller.h"
 #include "sequencecurveenums.h"
 #include "sequencetrackcurve.h"
-#include "sequenceutils.h"
 
 // External Includes
 #include <mathutils.h>
@@ -16,6 +15,7 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	class SequenceService;
 
 	/**
 	 * Controller class for curve tracks
@@ -26,10 +26,11 @@ namespace nap
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to service
 		 * @param player reference to player
 		 * @param editor reference to editor
 		 */
-		SequenceControllerCurve(SequencePlayer & player, SequenceEditor& editor);
+		SequenceControllerCurve(SequenceService& service, SequencePlayer & player, SequenceEditor& editor);
 
 		/**
 		 * @param trackID the id of the track

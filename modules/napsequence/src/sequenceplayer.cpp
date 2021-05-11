@@ -4,7 +4,6 @@
 
 // local includes
 #include "sequenceplayer.h"
-#include "sequenceutils.h"
 
 // nap include
 #include <nap/logger.h>

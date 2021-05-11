@@ -452,15 +452,12 @@ namespace nap
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
-			const auto& view_map = mService.getTrackTypeForViewTypeMap();
-			auto it = view_map.find(track_type);
-			assert(it != view_map.end()); // no view type for track
-			if (it != view_map.end())
-			{
-				auto it2 = mViews.find(it->second);
-				assert(it2 != mViews.end()); // no view class created for this view type
-				it2->second->showTrack(*sequence.mTracks[i].get());
-			}
+			auto view_type 	= mService.getViewTypeForTrackType(track_type);
+
+			auto it = mViews.find(view_type);
+			assert(it != mViews.end()); // no view class created for this view type
+			it->second->showTrack(*sequence.mTracks[i].get());
+
 		}
 	}
 
@@ -476,15 +473,11 @@ namespace nap
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
-			const auto& view_map = mService.getTrackTypeForViewTypeMap();
-			auto it = view_map.find(track_type);
-			assert(it != view_map.end()); // no view type for track
-			if (it != view_map.end())
-			{
-				auto it2 = mViews.find(it->second);
-				assert(it2 != mViews.end()); // no view class created for this view type
-				it2->second->showInspector(*sequence.mTracks[i].get());
-			}
+			auto view_type	= mService.getViewTypeForTrackType(track_type);
+
+			auto it = mViews.find(view_type);
+			assert(it != mViews.end()); // no view class created for this view type
+			it->second->showInspector(*sequence.mTracks[i].get());
 		}
 	}
 
@@ -1167,17 +1160,17 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Insert New Track"))
 			{
-				const auto& view_map = mService.getTrackTypeForViewTypeMap();
-				for (const auto& it : view_map)
+				const auto& track_types = mService.getAllTrackTypes();
+				for (const auto& track_type : track_types)
 				{
-					const auto& name = it.first.get_name().to_string();
+					const auto& name = track_type.get_name().to_string();
 					if (ImGui::Button(name.c_str()))
 					{
-						auto* controller = mEditor.getControllerWithTrackType(it.first);
+						auto* controller = mEditor.getControllerWithTrackType(track_type);
 						assert(controller != nullptr);
 						if (controller != nullptr)
 						{
-							controller->insertTrack(it.first);
+							controller->insertTrack(track_type);
 							mState.mAction = createAction<None>();
 							ImGui::CloseCurrentPopup();
 						}

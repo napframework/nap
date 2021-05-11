@@ -34,10 +34,21 @@ namespace nap
 		 * these views and actions are registered at initialization of sequence gui service, since we know all possible actions and
 		 * their corresponding views at that time
 		 */
-		auto& edit_popup_map = mService.getEditEventHandlerMap();
-		for(auto& pair : edit_popup_map)
+		const auto& event_actions = mService.getAllRegisteredEventActions();
+		for(const auto& action_type : event_actions)
 		{
-			registerActionHandler(pair.first, std::bind(pair.second, this));
+			registerActionHandler(action_type, [this, action_type](){ mService.invokeEditEventHandler(action_type, *this); });
+		}
+
+		/**
+		 * create views for all event segments registered
+		 */
+		const auto& event_types = mService.getRegisteredSegmentEventTypes();
+		const auto& event_segment_view_factory = mService.getEventSegmentViewFactory();
+		for(const auto& event_type : event_types)
+		{
+			assert(event_segment_view_factory.find(event_type)!=event_segment_view_factory.end()); // event type not registered
+			mSegmentViews.emplace(event_type, event_segment_view_factory.find(event_type)->second());
 		}
 	}
 
@@ -177,11 +188,9 @@ namespace nap
 
 			// static map of draw functions for different event types
 			auto type = (segment.get())->get_type();
-			auto& segment_views = mService.getEventSegmentViews();
-			auto it = segment_views.find(type);
-			assert(it != segment_views.end()); // type not found
+			auto it = mSegmentViews.find(type);
+			assert(it != mSegmentViews.end()); // type not found
 			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x);
-
 
 			//
 			prev_segment_x = segment_x;
@@ -210,15 +219,14 @@ namespace nap
 			{
 				auto* action = mState.mAction->getDerived<InsertingEventSegment>();
 
-				auto& event_map = mService.getRegisteredEventTypes();
+				auto& event_map = mService.getRegisteredSegmentEventTypes();
 				for(auto& type : event_map)
 				{
 					std::string buttonString = "Insert " + type.get_name().to_string();
 					if( ImGui::Button(buttonString.c_str()))
 					{
-						auto& views = mService.getEventSegmentViews();
-						auto it = views.find(type);
-						assert(it!=views.end()); // type not found
+						auto it = mSegmentViews.find(type);
+						assert(it!=mSegmentViews.end()); // type not found
 
 						it->second->insertSegment(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
 						ImGui::CloseCurrentPopup();
@@ -538,9 +546,8 @@ namespace nap
 							{
 								rttr::type type = eventSegment->get_type();
 
-								auto& views = mService.getEventSegmentViews();
-								auto it = views.find(type);
-								assert(it!=views.end()); // type not found
+								auto it = mSegmentViews.find(type);
+								assert(it!=mSegmentViews.end()); // type not found
 								mState.mAction = it->second->createEditAction(eventSegment, action->mTrackID, action->mSegmentID);
 							}
 
@@ -574,7 +581,7 @@ namespace nap
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;
 		SequenceTrackSegmentEventBase* event_segment = nullptr;
 
-		// continue upon succesfull de-serialization
+		// continue upon successful de-serialization
 		utility::ErrorState errorState;
 		std::vector<SequenceTrackSegmentEventBase*> deserialized_event_segments = paste_clipboard->deserialize<SequenceTrackSegmentEventBase>(read_objects, errorState);
 
@@ -606,13 +613,7 @@ namespace nap
 
 			for(const auto* event : deserialized_event_segments)
 			{
-				auto& paste_event_map = mService.getPasteEventMap();
-				auto it = paste_event_map.find(event->get_type());
-				assert(it!=paste_event_map.end()); // type not found
-				if( it != paste_event_map.end() )
-				{
-					(*this.*it->second)(trackID, *event, time);
-				}
+				mService.invokePasteEvent(event->get_type(), *this, trackID, *event, time);
 			}
 		}
 	}

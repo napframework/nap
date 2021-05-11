@@ -6,13 +6,13 @@
 
 #include "sequencecontroller.h"
 #include "sequencetracksegmentevent.h"
-#include "sequenceutils.h"
 
 #include <nap/logger.h>
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	class SequenceService;
 
 	/**
 	 * Controller class for event tracks
@@ -23,10 +23,11 @@ namespace nap
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to service
 		 * @param player reference to player
 		 * @param editor reference to the sequence editor
 		 */
-		SequenceControllerEvent(SequencePlayer & player, SequenceEditor& editor) : SequenceController(player, editor) { }
+		SequenceControllerEvent(SequenceService& service, SequencePlayer & player, SequenceEditor& editor) : SequenceController(service, player, editor) { }
 
 		/**
 		 * edits event message
@@ -91,7 +92,7 @@ namespace nap
 			// create new segment & set parameters
 			std::unique_ptr<SEGMENT_TYPE> new_segment = std::make_unique<SEGMENT_TYPE>();
 			new_segment->mStartTime = time;
-			new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+			new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 			new_segment->mDuration = 0.0;
 
 			//

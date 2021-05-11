@@ -4,6 +4,7 @@
 
 #include "sequencecontroller.h"
 #include "sequenceeditor.h"
+#include "sequenceservice.h"
 
 #include <nap/logger.h>
 #include <mathutils.h>
