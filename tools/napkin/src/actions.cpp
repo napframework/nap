@@ -397,3 +397,63 @@ void SetThemeAction::perform()
 {
     AppContext::get().getThemeManager().setTheme(mTheme);
 }
+
+
+napkin::NewServiceConfigAction::NewServiceConfigAction()
+{
+	setText("New");
+}
+
+
+void napkin::NewServiceConfigAction::perform()
+{
+
+}
+
+
+napkin::SaveServiceConfigAction::SaveServiceConfigAction()
+{
+	setText("Save");
+}
+
+
+void napkin::SaveServiceConfigAction::perform()
+{
+
+}
+
+ 
+napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs()
+{
+	setText("Save as...");
+}
+
+
+void napkin::SaveServiceConfigurationAs::perform()
+{
+
+}
+
+
+napkin::OpenServiceConfigAction::OpenServiceConfigAction()
+{
+	setText("Open...");
+}
+
+
+void napkin::OpenServiceConfigAction::perform()
+{
+
+}
+
+
+napkin::DefaultServiceConfigAction::DefaultServiceConfigAction()
+{
+	setText("Set as default");
+}
+
+
+void napkin::DefaultServiceConfigAction::perform()
+{
+
+}

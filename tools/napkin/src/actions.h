@@ -140,6 +140,61 @@ namespace napkin
 	};
 
 	/**
+	 * Creates a service configuration
+	 */
+	class NewServiceConfigAction : public Action
+	{
+	public:
+		NewServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class SaveServiceConfigAction : public Action
+	{
+	public: 
+		SaveServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class SaveServiceConfigurationAs : public Action
+	{
+	public:
+		SaveServiceConfigurationAs();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class OpenServiceConfigAction : public Action
+	{
+	public:
+		OpenServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class DefaultServiceConfigAction : public Action
+	{
+	public:
+		DefaultServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
 	 * Create a Resource
 	 */
 	class CreateResourceAction : public StandardItemAction
