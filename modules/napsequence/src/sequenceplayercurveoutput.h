@@ -22,7 +22,7 @@ namespace nap
 	/**
 	 * SequencePlayerCurveOutput is used to link a parameter to a curve track
 	 */
-	class NAPAPI SequencePlayerCurveOutput : public SequencePlayerOutput
+	class NAPAPI SequencePlayerCurveOutput final : public SequencePlayerOutput
 	{
 		RTTI_ENABLE(SequencePlayerOutput)
 	public:

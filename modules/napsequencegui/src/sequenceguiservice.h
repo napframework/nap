@@ -34,7 +34,7 @@ namespace nap
 	using SequenceEventTrackPasteFunc 				= std::function<void(SequenceEventTrackView&, const std::string&, const SequenceTrackSegmentEventBase&, double)>;
 	using SequenceEventTrackEditFunc 				= std::function<void(SequenceEventTrackView&)>;
 
-	class NAPAPI SequenceGUIService : public Service
+	class NAPAPI SequenceGUIService final : public Service
 	{
 		friend class SequencePlayerOutput;
 

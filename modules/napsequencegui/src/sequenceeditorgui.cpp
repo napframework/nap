@@ -83,7 +83,7 @@ namespace nap
 		registerActionHandler(RTTI_OF(NonePressed), [this] { handleNonePressed(); } );
 		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
 
-		//
+		// create views for all registered track types
 		const auto& track_view_factory = mService.getTrackViewFactory();
 		for(const auto& factory_func : track_view_factory)
 		{

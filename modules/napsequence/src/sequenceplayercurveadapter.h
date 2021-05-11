@@ -37,7 +37,7 @@ namespace nap
 	 * otherwise it sets the parameter value directly from the sequence player thread
 	 */
 	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
-	class SequencePlayerCurveAdapter : public SequencePlayerCurveAdapterBase
+	class SequencePlayerCurveAdapter final : public SequencePlayerCurveAdapterBase
 	{
 	public:
 		/**

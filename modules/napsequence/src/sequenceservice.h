@@ -32,7 +32,7 @@ namespace nap
 	/**
 	 * SequenceService is responsible for updating outputs
 	 */
-	class NAPAPI SequenceService : public Service
+	class NAPAPI SequenceService final : public Service
 	{
 		friend class SequencePlayerOutput;
 
@@ -41,7 +41,7 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		explicit SequenceService(ServiceConfiguration* configuration);
+		SequenceService(ServiceConfiguration* configuration);
 
 		/**
 		 * Deconstructor

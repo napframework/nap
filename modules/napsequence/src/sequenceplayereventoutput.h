@@ -25,7 +25,7 @@ namespace nap
 	/**
 	 * SequencePlayerEventOutput dispatches an event on the timeline
 	 */
-	class NAPAPI SequencePlayerEventOutput : public SequencePlayerOutput
+	class NAPAPI SequencePlayerEventOutput final : public SequencePlayerOutput
 	{
 		friend class SequencePlayerEventAdapter;
 

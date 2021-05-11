@@ -151,22 +151,6 @@ namespace nap
 		 * @param curveIndex the index of the curve
 		 */
 		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
-
-		/**
-		 * register a member function pointer to function responsible for update a segment for a certain track type
-		 * @param trackType rttr of track type
-		 * @param memFun pointer to member function
-		 * @return true on success
-		 */
-		static bool registerUpdateSegmentFunctionForTrackType(const rttr::type& trackType, void(SequenceControllerCurve::*memFun)(SequenceTrack&));
-
-		/**
-		 * register a member function pointer to function responsible for inserting a segment for a certain track type
-		 * @param trackType rttr of track type
-		 * @param memFun pointer to member function
-		 * @return true on success
-		 */
-		static bool registerInsertSegmentFunctionForTrackType(const rttr::type& trackType, const SequenceTrackSegment*(SequenceControllerCurve::*memFun)(const std::string&, double));
 	protected:
 		/**
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
