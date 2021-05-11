@@ -18,7 +18,7 @@ namespace nap
 
 		// mark all events before 'time' as already dispatched
 		assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-		const auto* event_track = rtti_cast<const SequenceTrackEvent>(&mTrack);
+		const auto* event_track = static_cast<const SequenceTrackEvent*>(&mTrack);
 		for (const auto& event_segment : event_track->mSegments)
 		{
 			assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
@@ -49,7 +49,7 @@ namespace nap
 
 				// mark all events after 'time' as already dispatched
 				assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-				const auto& event_track = *rtti_cast<const SequenceTrackEvent>(&mTrack);
+				const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
 				for (const auto& event_segment : event_track.mSegments)
 				{
 					assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
