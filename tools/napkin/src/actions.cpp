@@ -26,26 +26,50 @@ NewFileAction::NewFileAction()
 	setShortcut(QKeySequence::New);
 }
 
-void NewFileAction::perform()
+
+static bool continueAfterSavingChanges(const QString& reason, const QString& type)
 {
-	if (AppContext::get().hasDocument() && AppContext::get().getDocument()->isDirty()) 
+	// No document
+	if (!AppContext::get().hasDocument())
+		return true;
+
+	// Document not dirty
+	if (!AppContext::get().getDocument()->isDirty())
+		return true;
+
+	// Document is dirty
+	auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
+		QString("Save before %1 %2").arg(reason, type),
+		QString("The current document has unsaved changes.\n"
+		"Save the changes before %1 %2?").arg(reason, type),
+		QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+	// Handle result
+	switch (result)
 	{
-		auto result = QMessageBox::question(AppContext::get().getQApplication()->topLevelWidgets()[0],
-											"Save before creating new document",
-											"The current document has unsaved changes.\n"
-													"Save the changes before creating a new document?",
-											QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-		if (result == QMessageBox::Yes)
+		case QMessageBox::Yes:
 		{
 			SaveFileAction action;
 			action.trigger();
+			return true;
 		}
-		else if (result == QMessageBox::Cancel)
-		{
-			return;
-		}
+		case QMessageBox::No:
+			return true;
+		case QMessageBox::Cancel:
+			return false;
+		default:
+			assert(false);
+			return false;
 	}
-	AppContext::get().newDocument();
+}
+
+
+void NewFileAction::perform()
+{
+	if (continueAfterSavingChanges("creating a new", "document"))
+	{
+		AppContext::get().newDocument();
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +142,11 @@ void napkin::UpdateDefaultAction::perform()
 	std::string json = writer.GetJSON();
 	output.write(json.data(), json.size());
 	nap::Logger::info("Updated project data: %s", new_path.toUtf8().constData());
+
+	// Notify user app needs to restart if running
+	auto result = QMessageBox::information(AppContext::get().getQApplication()->topLevelWidgets()[0],
+		"Restart application if running",
+		QString("Please restart %1 for the changes to take effect").arg(QString::fromStdString(project_info->mTitle)));
 }
 
 
@@ -234,7 +263,10 @@ void napkin::OpenFileAction::perform()
 	if (filename.isNull())
 		return;
 
-	AppContext::get().loadDocument(filename);
+	if (continueAfterSavingChanges("opening", "document"))
+	{ 
+		AppContext::get().loadDocument(filename);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -401,7 +433,7 @@ void SetThemeAction::perform()
 
 napkin::NewServiceConfigAction::NewServiceConfigAction()
 {
-	setText("New");
+	setText("New (Default)");
 }
 
 
@@ -445,7 +477,7 @@ void napkin::SaveServiceConfigurationAs::perform()
 		cur_file_name = QString::fromStdString(AppContext::get().getProjectInfo()->getProjectDir());
 		cur_file_name += "/service_config.json";
 	}
-	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Service Config File",
+	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Config File",
 		cur_file_name, JSON_CONFIG_FILTER);
 
 	// Cancelled
@@ -470,7 +502,26 @@ napkin::OpenServiceConfigAction::OpenServiceConfigAction()
 
 void napkin::OpenServiceConfigAction::perform()
 {
+	// Ensure project is available
+	auto& ctx = AppContext::get();
+	if (ctx.getProjectInfo() == nullptr)
+	{
+		nap::Logger::error("No project loaded");
+		return;
+	}
 
+	// Get directory
+	QString dir = ctx.getServiceConfigFilename().isNull() ?
+		QString::fromStdString(ctx.getProjectInfo()->getDataDirectory()) :
+		ctx.getServiceConfigFilename();
+
+	// Get file to open
+	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Config File", dir, JSON_CONFIG_FILTER);
+	if (filename.isNull())
+		return;
+	
+	// Load config
+	ctx.loadServiceConfig(filename);
 }
 
 
@@ -521,6 +572,11 @@ void napkin::DefaultServiceConfigAction::perform()
 	std::string json = writer.GetJSON();
 	output.write(json.data(), json.size());
 	nap::Logger::info("Updated project configuration: %s", new_path.toUtf8().constData());
+
+	// Notify user app needs to restart if running
+	auto result = QMessageBox::information(AppContext::get().getQApplication()->topLevelWidgets()[0],
+		"Restart application if running",
+		QString("Please restart %1 for the changes to take effect").arg(QString::fromStdString(project_info->mTitle)));
 }
 
 
@@ -532,5 +588,5 @@ napkin::ClearServiceConfigAction::ClearServiceConfigAction()
 
 void napkin::ClearServiceConfigAction::perform()
 {
-
+		
 }

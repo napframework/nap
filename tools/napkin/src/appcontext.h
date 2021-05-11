@@ -107,11 +107,6 @@ namespace napkin
 		Document* loadDocument(const QString& filename);
 
 		/**
-		 * Loads all service configurations.
-		 */
-		void loadServiceConfigs(const nap::ProjectInfo& projectInfo);
-
-		/**
 		 * Load the specified project into the application context
 		 * @param projectFilename The json file that contains the project's definition/dependencies/etc
 		 * @return A pointer to the loaded project info or nullptr when loading failed
@@ -207,12 +202,21 @@ namespace napkin
 		const QString& getServiceConfigFilename() const;
 
 		/**
-		 * Updates service configurations
+		 * Creates a new set of default service configuration objects,
+		 * For every service configuration type associated with the active project.
 		 */
 		void newServiceConfig();
 
 		/**
-		 * Saves service configuration to disk
+		 * Loads service configuration settings from file.
+		 * On startup service configuration settings are copied from Core, because
+		 * Core already loads the configuration for us, performs additional checks,
+		 * and creates default configurations if there is none specified for a specific service.
+		 */
+		void loadServiceConfig(QString serviceConfigFile);
+
+		/**
+		 * Saves service configuration file to disk
 		 */
 		bool saveServiceConfig();
 
@@ -424,6 +428,11 @@ namespace napkin
 		 * Closes currently active document if there is one
 		 */
 		void closeDocument();
+
+		/**
+		 * Copies service configuration from core.
+		 */
+		void copyServiceConfig(const nap::ProjectInfo& projectInfo);
 
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };

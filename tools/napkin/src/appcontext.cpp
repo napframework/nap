@@ -149,7 +149,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 
 	// Load (copy) service configurations
-	loadServiceConfigs(*getCore().getProjectInfo());
+	copyServiceConfig(*getCore().getProjectInfo());
 
 	// All good
 	blockingProgressChanged(1);
@@ -434,7 +434,7 @@ bool napkin::AppContext::isAvailable()
 }
 
 
-void napkin::AppContext::loadServiceConfigs(const nap::ProjectInfo& projectInfo)
+void napkin::AppContext::copyServiceConfig(const nap::ProjectInfo& projectInfo)
 {
 	mCurrentConfigFilename.clear();
 	if (projectInfo.hasServiceConfigFile())
@@ -493,6 +493,49 @@ void napkin::AppContext::newServiceConfig()
 	}
 	mServiceConfigs = std::move(new_defaults);
 	mCurrentConfigFilename.clear();
+	nap::Logger::info("Created new default configuration");
+}
+
+
+void napkin::AppContext::loadServiceConfig(QString serviceConfigFile)
+{
+	// De-serialize file
+	assert(getCore().isInitialized());
+	nap::rtti::DeserializeResult result;
+	nap::utility::ErrorState error;
+
+	if (!nap::rtti::deserializeJSONFile(serviceConfigFile.toStdString(),
+		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
+		getCore().getResourceManager()->getFactory(),
+		result,
+		error))
+	{
+		nap::Logger::fatal(error.toString());
+		return;
+	}
+
+	// Clear and fill
+	mServiceConfigs.clear();
+	std::set<nap::rtti::TypeInfo> types;
+	for (std::unique_ptr<nap::rtti::Object>& object : result.mReadObjects)
+	{
+		// Check if it's indeed a service configuration object
+		nap::rtti::TypeInfo object_type = object->get_type();
+		std::unique_ptr<nap::ServiceConfiguration> config =  rtti_cast<nap::ServiceConfiguration>(object);
+		if (config == nullptr)
+		{
+			nap::Logger::warn("%s should only contain ServiceConfigurations, found object of type: %s instead",
+				serviceConfigFile.toUtf8().constData(), object_type.get_name().to_string().c_str());
+			continue;
+		}
+
+		// All good
+		mServiceConfigs.emplace_back(std::move(config));
+	}
+
+	nap::Logger::info("Loaded config '%s'", toLocalURI(serviceConfigFile.toStdString()).c_str());
+	mCurrentConfigFilename = serviceConfigFile;
 }
 
 
