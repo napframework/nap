@@ -117,7 +117,7 @@ void napkin::UpdateDefaultAction::perform()
 	// Write to disk
 	std::string json = writer.GetJSON();
 	output.write(json.data(), json.size());
-	nap::Logger::info("Updated project default: %s", new_path.toUtf8().constData());
+	nap::Logger::info("Updated project data: %s", new_path.toUtf8().constData());
 }
 
 
@@ -149,7 +149,7 @@ void SaveFileAction::perform()
 	napkin::Document* doc = AppContext::get().getDocument();
 	if (doc == nullptr)
 	{
-		nap::Logger::warn("Unable to save file");
+		nap::Logger::warn("Unable to save document to file, no document loaded");
 		return;
 	}
 
@@ -407,7 +407,7 @@ napkin::NewServiceConfigAction::NewServiceConfigAction()
 
 void napkin::NewServiceConfigAction::perform()
 {
-	
+	AppContext::get().newServiceConfig();
 }
 
 
@@ -419,7 +419,12 @@ napkin::SaveServiceConfigAction::SaveServiceConfigAction()
 
 void napkin::SaveServiceConfigAction::perform()
 {
-
+	if (AppContext::get().getServiceConfigFilename().isNull())
+	{
+		SaveServiceConfigurationAs().trigger();
+		return;
+	}
+	AppContext::get().saveServiceConfig();
 }
 
  
@@ -431,7 +436,29 @@ napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs()
 
 void napkin::SaveServiceConfigurationAs::perform()
 {
+	// Get name and location to store
+	auto& ctx = AppContext::get();
+	auto cur_file_name = ctx.getServiceConfigFilename();
+	if (cur_file_name.isNull())
+	{
+		assert(AppContext::get().getProjectInfo() != nullptr);
+		cur_file_name = QString::fromStdString(AppContext::get().getProjectInfo()->getProjectDir());
+		cur_file_name += "/service_config.json";
+	}
+	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Service Config File",
+		cur_file_name, JSON_CONFIG_FILTER);
 
+	// Cancelled
+	if (filename.isNull())
+		return;
+
+	// Ensure extension and save
+	filename = !filename.endsWith("." + JSON_FILE_EXT) ? filename+"."+JSON_FILE_EXT : filename;
+	if (!ctx.saveServiceConfigAs(filename))
+	{
+		nap::Logger::error("Unable to save config file: %s", filename.toUtf8().constData());
+		return;
+	}
 }
 
 
@@ -449,13 +476,51 @@ void napkin::OpenServiceConfigAction::perform()
 
 napkin::DefaultServiceConfigAction::DefaultServiceConfigAction()
 {
-	setText("Set as default");
+	setText("Set as project default");
 }
 
 
 void napkin::DefaultServiceConfigAction::perform()
 {
+	// Save if not saved yet
+	if (AppContext::get().getServiceConfigFilename().isNull())
+	{
+		// Attempt to save document
+		SaveServiceConfigurationAs().trigger();
+		if (AppContext::get().getServiceConfigFilename().isNull())
+			return;
+	}
 
+	// Clone current project information
+	const auto* project_info = AppContext::get().getProjectInfo();
+	assert(project_info != nullptr);
+	std::unique_ptr<nap::ProjectInfo> new_info = nap::rtti::cloneObject(*project_info, AppContext::get().getCore().getResourceManager()->getFactory());
+
+	// Get data directory and create relative path
+	QDir data_dir(QString::fromStdString(project_info->getProjectDir()));
+	QString new_path = data_dir.relativeFilePath(AppContext::get().getServiceConfigFilename());
+	new_info->mServiceConfigFilename = new_path.toStdString();
+
+	nap::rtti::JSONWriter writer;
+	nap::utility::ErrorState error;
+	if (!nap::rtti::serializeObject(*new_info, writer, error))
+	{
+		nap::Logger::error(error.toString());
+		return;
+	}
+
+	// Open output file
+	std::ofstream output(project_info->getFilename(), std::ios::binary | std::ios::out);
+	if (!error.check(output.is_open() && output.good(), "Failed to open %s for writing", project_info->getFilename().c_str()))
+	{
+		nap::Logger::error(error.toString());
+		return;
+	}
+
+	// Write to disk
+	std::string json = writer.GetJSON();
+	output.write(json.data(), json.size());
+	nap::Logger::info("Updated project configuration: %s", new_path.toUtf8().constData());
 }
 
 

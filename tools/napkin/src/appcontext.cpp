@@ -17,6 +17,7 @@
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
+#include <mathutils.h>
 
 // local
 #include <naputils.h>
@@ -66,7 +67,7 @@ Document* AppContext::loadDocument(const QString& filename)
 {
 	blockingProgressChanged(0, "Loading: " + filename);
 	mCurrentFilename = filename;
-	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
+	nap::Logger::info("Loading data '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
@@ -439,17 +440,17 @@ void napkin::AppContext::loadServiceConfigs(const nap::ProjectInfo& projectInfo)
 	if (projectInfo.hasServiceConfigFile())
 	{
 		// Get absolute path
-		std::string patched = projectInfo.mServiceConfigFilename;
-		projectInfo.patchPath(patched);
+		std::string patched = nap::utility::joinPath({ projectInfo.getProjectDir(), projectInfo.mServiceConfigFilename });
 
 		// Ensure it exists
 		mCurrentConfigFilename = QString::fromStdString(patched);
-		QFileInfo finf(mCurrentConfigFilename);
-		if (!finf.exists())
+		QFileInfo info(mCurrentConfigFilename);
+		if (!info.exists())
 		{
-			nap::Logger::warn("Unable to find service config file: %s", patched.c_str());
+			nap::Logger::warn("Unable to find config file: %s", patched.c_str());
 			mCurrentConfigFilename.clear();
 		}
+		nap::Logger::info("Loading config '%s'", toLocalURI(patched).c_str());
 	}
 
 	// Copy service configurations
@@ -466,6 +467,77 @@ void napkin::AppContext::loadServiceConfigs(const nap::ProjectInfo& projectInfo)
 bool napkin::AppContext::hasDocument() const
 {
 	return mDocument != nullptr;
+}
+
+
+bool napkin::AppContext::hasServiceConfig() const
+{
+	return !mCurrentConfigFilename.isNull();
+}
+
+
+const QString& napkin::AppContext::getServiceConfigFilename() const
+{
+	return mCurrentConfigFilename;
+}
+
+
+void napkin::AppContext::newServiceConfig()
+{
+	// Create a clean (default) copy for every loaded service config
+	std::vector<std::unique_ptr<nap::ServiceConfiguration>> new_defaults;
+	new_defaults.reserve(mServiceConfigs.size());
+	for (const auto& config : mServiceConfigs)
+	{
+		new_defaults.emplace_back(config->get_type().create<nap::ServiceConfiguration>());
+	}
+	mServiceConfigs = std::move(new_defaults);
+	mCurrentConfigFilename.clear();
+}
+
+
+bool napkin::AppContext::saveServiceConfig()
+{
+	if (mCurrentConfigFilename.isNull())
+	{
+		nap::Logger::fatal("Cannot save service config, no filename has been set.");
+		return false;
+	}
+	return saveServiceConfigAs(mCurrentConfigFilename);
+}
+
+
+bool napkin::AppContext::saveServiceConfigAs(const QString& file_name)
+{
+	// Create configs to save to disk
+	nap::rtti::ObjectList objects;
+	for (const auto& config : mServiceConfigs)
+	{
+		config->mID = config->mID.empty() ? nap::math::generateUUID() : config->mID;
+		objects.emplace_back(config.get());
+	}
+
+	// Serialize the configurations to json
+	nap::rtti::JSONWriter writer;
+	nap::utility::ErrorState error;
+	if (!serializeObjects(objects, writer, error))
+	{
+		nap::Logger::fatal(error.toString().c_str());
+		return false;
+	}
+
+	// Write to disk
+	std::string json = writer.GetJSON();
+	std::ofstream config_file;
+	config_file.open(file_name.toStdString());
+	config_file << json << std::endl;
+	config_file.close();
+	nap::Logger::info("Written '%s'", toLocalURI(file_name.toStdString()).c_str());
+	
+	// Save
+	mCurrentConfigFilename = file_name;
+
+	return true;
 }
 
 

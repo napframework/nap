@@ -196,6 +196,32 @@ namespace napkin
 		bool hasDocument() const;
 
 		/**
+		 * If there's a file associated with the current service configuration
+		 */
+		bool hasServiceConfig() const;
+
+		/**
+		 * Returs file name associated with service configuration, can be null.
+		 * @return service config file name, can be null
+		 */
+		const QString& getServiceConfigFilename() const;
+
+		/**
+		 * Updates service configurations
+		 */
+		void newServiceConfig();
+
+		/**
+		 * Saves service configuration to disk
+		 */
+		bool saveServiceConfig();
+
+		/**
+		 * Saves service configuration to disk using given filename
+		 */
+		bool saveServiceConfigAs(const QString& fileName);
+
+		/**
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */

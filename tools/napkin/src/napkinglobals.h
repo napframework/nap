@@ -25,6 +25,7 @@ namespace napkin
 
 	// The file filter used by file dialogs
 	static const QString JSON_FILE_EXT = "json";
+	static const QString JSON_CONFIG_FILTER = QString("NAP Config File (*.%1)").arg(JSON_FILE_EXT);
 	static const QString JSON_DATA_FILTER = QString("NAP Data File (*.%1)").arg(JSON_FILE_EXT);
 	static const QString JSON_PROJECT_FILTER = QString("NAP Project File (%1)").arg(PROJECT_INFO_FILENAME);
 

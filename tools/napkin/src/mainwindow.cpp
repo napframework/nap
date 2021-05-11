@@ -98,7 +98,7 @@ void MainWindow::addMenu()
 		auto saveServiceConfigACtion = new SaveServiceConfigAction();
 		auto saveServiceConfigurationAs = new SaveServiceConfigurationAs();
 		auto setDefaultServiceConfig = new DefaultServiceConfigAction();
-		auto service_menu = new QMenu("Service Configuration", projectmenu);
+		auto service_menu = new QMenu("Configuration", projectmenu);
 		{
 			service_menu->addAction(newServiceConfigAction);
 			service_menu->addAction(openServiceConfigAction);
