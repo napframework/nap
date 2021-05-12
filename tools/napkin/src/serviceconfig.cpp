@@ -14,6 +14,7 @@
 #include <qdir.h>
 #include <qstring.h>
 #include <mathutils.h>
+#include <appcontext.h>
 
 namespace napkin
 {
@@ -55,9 +56,11 @@ namespace napkin
 	void ServiceConfig::newDefault()
 	{
 		// Create copies to edit
+		AppContext::get().serviceConfigurationClosing(mDocument->getFilename());
 		nap::rtti::OwnedObjectList configs = copyServiceConfig();
 		mDocument = std::make_unique<Document>(mCore, QString(), std::move(configs));
 		nap::Logger::info("Created new default configuration");
+		AppContext::get().serviceConfigurationChanged();
 	}
 
 
@@ -98,8 +101,10 @@ namespace napkin
 			configs.emplace_back(std::move(config));
 		}
 
+		AppContext::get().serviceConfigurationClosing(mDocument->getFilename());
 		mDocument = std::make_unique<Document>(mCore, serviceConfigFile, std::move(configs));
 		nap::Logger::info("Loaded config '%s'", toLocalURI(serviceConfigFile.toStdString()).c_str());
+		AppContext::get().serviceConfigurationChanged();
 	}
 
 

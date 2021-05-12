@@ -396,6 +396,18 @@ namespace napkin
 		 */
 		void blockingProgressChanged(float fraction, const QString& message = {});
 
+		/**
+		 * Qt Signal
+		 * Emits this signal when service configuration file changed
+		 */
+		void serviceConfigurationChanged();
+
+		/**
+		 * Qt Signal
+		 * Emits this signal when service configuration file is about to change
+		 */
+		void serviceConfigurationClosing(QString file);
+
 	private:
 		/**
 		 * Whenever a new document is created/loaded, register its signals for listeners

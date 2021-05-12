@@ -32,24 +32,32 @@ namespace napkin
 	ServiceConfigModel::ServiceConfigModel() : QStandardItemModel()
 	{
 		auto ctx = &AppContext::get();
-		connect(ctx, &AppContext::coreInitialized, this, &ServiceConfigModel::onCoreInitialized);
+		connect(ctx, &AppContext::coreInitialized, this, &ServiceConfigModel::populate);
+		connect(ctx, &AppContext::serviceConfigurationChanged, this, &ServiceConfigModel::populate);
+		connect(ctx, &AppContext::serviceConfigurationClosing, this, &ServiceConfigModel::onClosing);
 		setHorizontalHeaderLabels({ "Name" });
 	}
 
 
-	void ServiceConfigModel::onCoreInitialized()
+	void ServiceConfigModel::populate()
 	{
-		removeRows(0, rowCount());		
+		// Clear and create new set of items
 		auto& ctx = AppContext::get();
 		assert(ctx.hasServiceConfig());
 		const auto& config_list = ctx.getServiceConfig()->getList();
-
-		for (const auto& item : config_list)
+		for (const auto& config : config_list)
 		{
-			appendRow(new ServiceConfigItem(*item, ctx.getServiceConfig()->getDocument()));
+			auto item = new ServiceConfigItem(*config, ctx.getServiceConfig()->getDocument());
+			item->setEditable(false);
+			appendRow(item);
 		}
 	}
 
+
+	void ServiceConfigModel::onClosing(QString file)
+	{
+		clear();
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Widget

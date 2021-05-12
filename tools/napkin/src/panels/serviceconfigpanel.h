@@ -40,7 +40,8 @@ namespace napkin
 	public:
 		ServiceConfigModel();
 	private:
-		void onCoreInitialized();
+		void populate();
+		void onClosing(QString file);
 	};
 
 

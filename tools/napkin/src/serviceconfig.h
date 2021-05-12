@@ -74,6 +74,10 @@ namespace napkin
 		 */
 		const Document& getDocument() const				{ return *mDocument; }
 
+	Q_SIGNALS:
+
+		void documentChanged();							// Occurs when document is changed (on new config / loaded)
+
 	private:
 		nap::Core& mCore;								// NAP Core reference
 		std::unique_ptr<Document> mDocument = nullptr;	// Document that contains all the configurable objects
