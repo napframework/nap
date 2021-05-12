@@ -19,7 +19,7 @@ namespace napkin
 	class ServiceConfigItem : public QStandardItem
 	{
 	public:
-		ServiceConfigItem(nap::ServiceConfiguration& config);
+		ServiceConfigItem(nap::ServiceConfiguration& config, Document& document);
 
 		/**
 		 * @return item as property path, can be visualized & edited in inspector
@@ -28,6 +28,7 @@ namespace napkin
 
 	private:
 		nap::ServiceConfiguration& mConfig;
+		Document* mDocument;
 	};
 
 

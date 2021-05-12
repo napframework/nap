@@ -11,8 +11,8 @@ namespace napkin
 	// Item
 	//////////////////////////////////////////////////////////////////////////
 
-	ServiceConfigItem::ServiceConfigItem(nap::ServiceConfiguration& config)
-		: QStandardItem(), mConfig(config)
+	ServiceConfigItem::ServiceConfigItem(nap::ServiceConfiguration& config, Document& document)
+		: QStandardItem(), mConfig(config), mDocument(&document)
 	{
 		std::string service_type = config.getServiceType().get_name().to_string();
 		setText(QString::fromStdString(service_type));
@@ -21,8 +21,7 @@ namespace napkin
 
 	napkin::PropertyPath ServiceConfigItem::propertyPath()
 	{
-		// TODO: Remove document reference, not required here!
-		return PropertyPath(mConfig, *AppContext::get().getDocument());
+		return PropertyPath(mConfig, *mDocument);
 	}
 
 
@@ -45,9 +44,9 @@ namespace napkin
 		assert(ctx.hasServiceConfig());
 		const auto& config_list = ctx.getServiceConfig()->getList();
 
-		for (const auto& config : config_list)
+		for (const auto& item : config_list)
 		{
-			appendRow(new ServiceConfigItem(*config));
+			appendRow(new ServiceConfigItem(*item, ctx.getServiceConfig()->getDocument()));
 		}
 	}
 

@@ -349,7 +349,6 @@ AppContext& MainWindow::getContext() const
 
 void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
 {
-	/*
 	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
 	sceneTreeSelection->blockSignals(true);
 	sceneTreeSelection->clearSelection();
@@ -359,5 +358,4 @@ void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
 		auto path = paths.first();
 		mInspectorPanel.setPath(paths.first());
 	}
-	*/
 }

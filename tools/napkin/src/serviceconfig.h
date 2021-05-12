@@ -7,10 +7,12 @@
 
 #include <nap/core.h>
 #include <qobject.h>
+#include <rtti/deserializeresult.h>
+#include "document.h"
 
 namespace napkin
 {
-	using ServiceConfigList = std::vector<std::unique_ptr<nap::ServiceConfiguration>>;
+	using ServiceConfigList = std::vector<std::unique_ptr<nap::rtti::Object>>;
 
 	/**
 	 * Provides functions to create, open and save a service configuration file.
@@ -62,12 +64,23 @@ namespace napkin
 		/**
 		 * Returns all current service configurations
 		 */
-		const ServiceConfigList& getList() const;
+		std::vector<nap::ServiceConfiguration*> getList() const;
+
+		/**
+		 * @return Document that manages configurations
+		 */
+		Document& getDocument()							{ return *mDocument; }
+
+		/**
+		 * @return Document that manages configurations
+		 */
+		const Document& getDocument() const				{ return *mDocument; }
 
 	private:
-		nap::Core& mCore;						// NAP Core reference
-		QString mCurrentConfigFilename;			// Current configuration filename
-		ServiceConfigList mServiceConfigs;		// Current loaded service configuration
+		nap::Core& mCore;								// NAP Core reference
+		QString mCurrentConfigFilename;					// Current configuration filename
+		nap::rtti::OwnedObjectList mServiceConfigs;		// Current loaded service configuration
+		std::unique_ptr<Document> mDocument = nullptr;	// Document that contains all the configurable objects
 
 		/**
 		 * Copies service configuration from core.

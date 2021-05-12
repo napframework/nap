@@ -178,9 +178,18 @@ namespace napkin
 	}
 
 
-	const napkin::ServiceConfigList& ServiceConfig::getList() const
+	std::vector<nap::ServiceConfiguration*> ServiceConfig::getList() const
 	{
-		return mServiceConfigs;
+		std::vector<nap::ServiceConfiguration*> configs;
+		configs.reserve(mDocument->getObjects().size());
+		for (const auto& obj : mDocument->getObjects())
+		{
+			if (obj->get_type().is_derived_from(RTTI_OF(nap::ServiceConfiguration)))
+			{
+				configs.emplace_back(static_cast<nap::ServiceConfiguration*>(obj.get()));
+			}
+		}
+		return configs;
 	}
 
 	void ServiceConfig::copyServiceConfig()
@@ -211,6 +220,7 @@ namespace napkin
 		{
 			mServiceConfigs.emplace_back(nap::rtti::cloneObject(*config, mCore.getResourceManager()->getFactory()));
 		}
+		mDocument = std::make_unique<Document>(mCore, mCurrentConfigFilename, std::move(mServiceConfigs));
 	}
 
 }
