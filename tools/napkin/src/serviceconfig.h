@@ -33,7 +33,7 @@ namespace napkin
 		 * Creates a new set of default service configuration objects,
 		 * For every service configuration type associated with the active project.
 		 */
-		void newDefault();
+		void create();
 
 		/**
 		 * Loads service configuration settings from file.

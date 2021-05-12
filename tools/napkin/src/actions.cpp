@@ -442,7 +442,7 @@ void napkin::NewServiceConfigAction::perform()
 {
 	if (AppContext::get().hasServiceConfig())
 	{
-		AppContext::get().getServiceConfig()->newDefault();
+		AppContext::get().getServiceConfig()->create();
 	}
 }
 

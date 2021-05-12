@@ -424,6 +424,11 @@ namespace napkin
 		 */
 		void closeDocument();
 
+		/**
+		 * Closes currently active configuration if there is one
+		 */
+		void closeServiceConfiguration();
+
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 

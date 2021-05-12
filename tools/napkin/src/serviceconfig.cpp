@@ -53,11 +53,25 @@ namespace napkin
 	}
 
 
-	void ServiceConfig::newDefault()
+	void ServiceConfig::create()
 	{
+		// Create new set of default service configurations
+		assert(mCore.isInitialized());
+		std::vector<const nap::ServiceConfiguration*> current_configs = mCore.getServiceConfigs();
+		nap::rtti::OwnedObjectList configs;
+		configs.reserve(current_configs.size());
+
+		// Use the rtti type to create a new default instance and set ID
+		for (const auto& config : current_configs)
+		{
+			nap::rtti::Object* obj = config->get_type().create<nap::rtti::Object>();
+			std::string type_name = nap::utility::stripNamespace(obj->get_type().get_name().to_string());
+			obj->mID = nap::utility::stringFormat("%s_%s", type_name.c_str(), nap::math::generateUUID().c_str());
+			configs.emplace_back(obj);
+		}
+
 		// Create copies to edit
 		AppContext::get().serviceConfigurationClosing(mDocument->getFilename());
-		nap::rtti::OwnedObjectList configs = copyServiceConfig();
 		mDocument = std::make_unique<Document>(mCore, QString(), std::move(configs));
 		nap::Logger::info("Created new default configuration");
 		AppContext::get().serviceConfigurationChanged();

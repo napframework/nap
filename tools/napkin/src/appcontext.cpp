@@ -38,7 +38,11 @@ AppContext::AppContext()
 
 AppContext::~AppContext()
 {
+	// Close data file
 	closeDocument();
+
+	// Close service configuration
+	closeServiceConfiguration();
 }
 
 
@@ -487,20 +491,33 @@ void napkin::AppContext::closeDocument()
 	if (mDocument == nullptr)
 		return;
 
-	QString prev_doc_name = mDocument->getFilename();
-	documentClosing(prev_doc_name);
+	documentClosing(mDocument->getFilename());
 	mDocument.reset(nullptr);
 }
+
+
+void napkin::AppContext::closeServiceConfiguration()
+{
+	// Close configuration
+	if (mServiceConfig != nullptr)
+	{
+		serviceConfigurationClosing(mServiceConfig->getDocument().getFilename());
+		mServiceConfig.reset(nullptr);
+	}
+}
+
 
 void AppContext::setOpenRecentProjectOnStartup(bool b)
 {
 	mOpenRecentProjectAtStartup = b;
 }
 
+
 void AppContext::setExitOnLoadFailure(bool b)
 {
 	mExitOnLoadFailure = b;
 }
+
 
 void AppContext::setExitOnLoadSuccess(bool b)
 {
