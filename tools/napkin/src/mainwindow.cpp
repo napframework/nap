@@ -97,7 +97,7 @@ void MainWindow::addMenu()
 		auto openServiceConfigAction = new OpenServiceConfigAction();
 		auto saveServiceConfigACtion = new SaveServiceConfigAction();
 		auto saveServiceConfigurationAs = new SaveServiceConfigurationAs();
-		auto setDefaultServiceConfig = new DefaultServiceConfigAction();
+		auto setDefaultServiceConfig = new SetAsDefaultServiceConfigAction();
 		auto service_menu = new QMenu("Configuration", projectmenu);
 		{
 			service_menu->addAction(newServiceConfigAction);
@@ -133,7 +133,7 @@ void MainWindow::addMenu()
 		addAction(reloadFileAction);
 		filemenu->addAction(reloadFileAction);
 
-		auto updateDefaultAction = new UpdateDefaultAction();
+		auto updateDefaultAction = new UpdateDefaultFileAction();
 		addAction(updateDefaultAction);
 		filemenu->addAction(updateDefaultAction);
 	}

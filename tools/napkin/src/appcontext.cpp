@@ -148,8 +148,8 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 			exit(1);
 	}
 
-	// Load (copy) service configurations
-	copyServiceConfig(*getCore().getProjectInfo());
+	// Load service configuration
+	mConfig = std::make_unique<ServiceConfig>(mCore);
 
 	// All good
 	blockingProgressChanged(1);
@@ -434,153 +434,51 @@ bool napkin::AppContext::isAvailable()
 }
 
 
-void napkin::AppContext::copyServiceConfig(const nap::ProjectInfo& projectInfo)
-{
-	mCurrentConfigFilename.clear();
-	if (projectInfo.hasServiceConfigFile())
-	{
-		// Get absolute path
-		std::string patched = nap::utility::joinPath({ projectInfo.getProjectDir(), projectInfo.mServiceConfigFilename });
-
-		// Ensure it exists
-		mCurrentConfigFilename = QString::fromStdString(patched);
-		QFileInfo info(mCurrentConfigFilename);
-		if (!info.exists())
-		{
-			nap::Logger::warn("Unable to find config file: %s", patched.c_str());
-			mCurrentConfigFilename.clear();
-		}
-		nap::Logger::info("Loading config '%s'", toLocalURI(patched).c_str());
-	}
-
-	// Copy service configurations
-	assert(getCore().isInitialized());
-	mServiceConfigs.clear();
-	std::vector<const nap::ServiceConfiguration*> configs = getCore().getServiceConfigs();
-	for (const auto& config : configs)
-	{
-		 mServiceConfigs.emplace_back(nap::rtti::cloneObject(*config, getCore().getResourceManager()->getFactory()));
-	}
-}
-
-
 bool napkin::AppContext::hasDocument() const
 {
 	return mDocument != nullptr;
 }
 
 
-bool napkin::AppContext::hasServiceConfig() const
+bool napkin::AppContext::hasConfig() const
 {
-	return !mCurrentConfigFilename.isNull();
+	return mConfig != nullptr;
 }
 
 
-const QString& napkin::AppContext::getServiceConfigFilename() const
+const napkin::ServiceConfig* napkin::AppContext::getConfig() const
 {
-	return mCurrentConfigFilename;
+	return mConfig.get();
 }
 
 
-void napkin::AppContext::newServiceConfig()
+QApplication* napkin::AppContext::getQApplication() const
 {
-	// Create a clean (default) copy for every loaded service config
-	std::vector<std::unique_ptr<nap::ServiceConfiguration>> new_defaults;
-	new_defaults.reserve(mServiceConfigs.size());
-	for (const auto& config : mServiceConfigs)
-	{
-		new_defaults.emplace_back(config->get_type().create<nap::ServiceConfiguration>());
-	}
-	mServiceConfigs = std::move(new_defaults);
-	mCurrentConfigFilename.clear();
-	nap::Logger::info("Created new default configuration");
+	return dynamic_cast<QApplication*>(qGuiApp);
 }
 
 
-void napkin::AppContext::loadServiceConfig(QString serviceConfigFile)
+QUndoStack& napkin::AppContext::getUndoStack()
 {
-	// De-serialize file
-	assert(getCore().isInitialized());
-	nap::rtti::DeserializeResult result;
-	nap::utility::ErrorState error;
-
-	if (!nap::rtti::deserializeJSONFile(serviceConfigFile.toStdString(),
-		nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-		nap::rtti::EPointerPropertyMode::OnlyRawPointers,
-		getCore().getResourceManager()->getFactory(),
-		result,
-		error))
-	{
-		nap::Logger::fatal(error.toString());
-		return;
-	}
-
-	// Clear and fill
-	mServiceConfigs.clear();
-	std::set<nap::rtti::TypeInfo> types;
-	for (std::unique_ptr<nap::rtti::Object>& object : result.mReadObjects)
-	{
-		// Check if it's indeed a service configuration object
-		nap::rtti::TypeInfo object_type = object->get_type();
-		std::unique_ptr<nap::ServiceConfiguration> config =  rtti_cast<nap::ServiceConfiguration>(object);
-		if (config == nullptr)
-		{
-			nap::Logger::warn("%s should only contain ServiceConfigurations, found object of type: %s instead",
-				serviceConfigFile.toUtf8().constData(), object_type.get_name().to_string().c_str());
-			continue;
-		}
-
-		// All good
-		mServiceConfigs.emplace_back(std::move(config));
-	}
-
-	nap::Logger::info("Loaded config '%s'", toLocalURI(serviceConfigFile.toStdString()).c_str());
-	mCurrentConfigFilename = serviceConfigFile;
+	return getDocument()->getUndoStack();
 }
 
 
-bool napkin::AppContext::saveServiceConfig()
+napkin::ThemeManager& napkin::AppContext::getThemeManager()
 {
-	if (mCurrentConfigFilename.isNull())
-	{
-		nap::Logger::fatal("Cannot save service config, no filename has been set.");
-		return false;
-	}
-	return saveServiceConfigAs(mCurrentConfigFilename);
+	return mThemeManager;
 }
 
 
-bool napkin::AppContext::saveServiceConfigAs(const QString& file_name)
+void napkin::AppContext::executeCommand(QUndoCommand* cmd)
 {
-	// Create configs to save to disk
-	nap::rtti::ObjectList objects;
-	for (const auto& config : mServiceConfigs)
-	{
-		config->mID = config->mID.empty() ? nap::math::generateUUID() : config->mID;
-		objects.emplace_back(config.get());
-	}
+	getDocument()->executeCommand(cmd);
+}
 
-	// Serialize the configurations to json
-	nap::rtti::JSONWriter writer;
-	nap::utility::ErrorState error;
-	if (!serializeObjects(objects, writer, error))
-	{
-		nap::Logger::fatal(error.toString().c_str());
-		return false;
-	}
 
-	// Write to disk
-	std::string json = writer.GetJSON();
-	std::ofstream config_file;
-	config_file.open(file_name.toStdString());
-	config_file << json << std::endl;
-	config_file.close();
-	nap::Logger::info("Written '%s'", toLocalURI(file_name.toStdString()).c_str());
-	
-	// Save
-	mCurrentConfigFilename = file_name;
-
-	return true;
+napkin::ServiceConfig* napkin::AppContext::getConfig()
+{
+	return mConfig.get();
 }
 
 

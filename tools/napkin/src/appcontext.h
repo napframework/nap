@@ -8,6 +8,7 @@
 #include "thememanager.h"
 #include "document.h"
 #include "resourcefactory.h"
+#include "serviceconfig.h"
 
 #include <vector>
 #include <QApplication>
@@ -191,60 +192,43 @@ namespace napkin
 		bool hasDocument() const;
 
 		/**
-		 * If there's a file associated with the current service configuration
+		 * If there's a service configuration, only available when project is loaded.
+		 * @return if there's a service configuration.
 		 */
-		bool hasServiceConfig() const;
+		bool hasConfig() const;
 
 		/**
-		 * Returs file name associated with service configuration, can be null.
-		 * @return service config file name, can be null
+		 * Get the current service configuration object, nullptr if no project is loaded
+		 * @return the service configuration object, nullptr if no project is loaded
 		 */
-		const QString& getServiceConfigFilename() const;
+		const ServiceConfig* getConfig() const;
 
 		/**
-		 * Creates a new set of default service configuration objects,
-		 * For every service configuration type associated with the active project.
+		 * Get the current service configuration object, nullptr if no project is loaded
+		 * @return the service configuration object, nullptr if no project is loaded
 		 */
-		void newServiceConfig();
-
-		/**
-		 * Loads service configuration settings from file.
-		 * On startup service configuration settings are copied from Core, because
-		 * Core already loads the configuration for us, performs additional checks,
-		 * and creates default configurations if there is none specified for a specific service.
-		 */
-		void loadServiceConfig(QString serviceConfigFile);
-
-		/**
-		 * Saves service configuration file to disk
-		 */
-		bool saveServiceConfig();
-
-		/**
-		 * Saves service configuration to disk using given filename
-		 */
-		bool saveServiceConfigAs(const QString& fileName);
+		ServiceConfig* getConfig();
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */
-		QApplication* getQApplication() const { return dynamic_cast<QApplication*>(qGuiApp); }
+		QApplication* getQApplication() const;
 
 		/**
 		 * @return The currently used undostack, @see QUndoStack
 		 */
-		QUndoStack& getUndoStack() { return getDocument()->getUndoStack(); }
+		QUndoStack& getUndoStack();
 
 		/**
 		 * @return Access to the current application's ThemeManage
 		 */
-		ThemeManager& getThemeManager() { return mThemeManager; }
+		ThemeManager& getThemeManager();
 
 		/**
 		 * @param command THe command to be executed on the current document
 		 */
-		void executeCommand(QUndoCommand* cmd) { getDocument()->executeCommand(cmd); }
+		void executeCommand(QUndoCommand* cmd);
 
 		/**
 		 * To be invoked after the application has shown
@@ -413,7 +397,6 @@ namespace napkin
 		void blockingProgressChanged(float fraction, const QString& message = {});
 
 	private:
-
 		/**
 		 * Whenever a new document is created/loaded, register its signals for listeners
 		 */
@@ -429,11 +412,6 @@ namespace napkin
 		 */
 		void closeDocument();
 
-		/**
-		 * Copies service configuration from core.
-		 */
-		void copyServiceConfig(const nap::ProjectInfo& projectInfo);
-
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
@@ -446,6 +424,8 @@ namespace napkin
 
 		QString mCurrentFilename;													// The currently opened file
 		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
+
+		std::unique_ptr<ServiceConfig> mConfig = nullptr;							// Service configuration
 
 		QString mCurrentConfigFilename;												// Current configuration filename
 		std::vector<std::unique_ptr<nap::ServiceConfiguration>> mServiceConfigs;	// Current loaded service configuration

@@ -130,10 +130,10 @@ namespace napkin
 	/**
 	 * Updates project data path to point to current loaded document
 	 */
-	class UpdateDefaultAction : public Action
+	class UpdateDefaultFileAction : public Action
 	{
 	public:
-		UpdateDefaultAction();
+		UpdateDefaultFileAction();
 
 	private:
 		void perform() override;
@@ -186,10 +186,10 @@ namespace napkin
 	/**
 	 * Saves a service configuration to disk
 	 */
-	class DefaultServiceConfigAction : public Action
+	class SetAsDefaultServiceConfigAction : public Action
 	{
 	public:
-		DefaultServiceConfigAction();
+		SetAsDefaultServiceConfigAction();
 	private:
 		void perform();
 	};
