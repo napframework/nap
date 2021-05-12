@@ -521,7 +521,7 @@ void napkin::OpenServiceConfigAction::perform()
 
 	// Get directory
 	QString dir = ctx.getServiceConfig()->getFilename().isNull() ?
-		QString::fromStdString(ctx.getProjectInfo()->getDataDirectory()) :
+		QString::fromStdString(ctx.getProjectInfo()->getProjectDir()) :
 		ctx.getServiceConfig()->getFilename();
 
 	// Get file to open
