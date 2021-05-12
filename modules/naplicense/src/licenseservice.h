@@ -25,7 +25,7 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 	public:
 		std::string mDirectory = "{PROJECT_DIR}/license";		///< Property: 'LicenseDirectory' directory that contains the .license and .key files 
-		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(LicenseService); }
+		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(LicenseService); }
 	};
 
 

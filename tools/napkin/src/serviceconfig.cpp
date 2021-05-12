@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "serviceconfig.h"
 #include "naputils.h"
@@ -24,10 +28,10 @@ namespace napkin
 	}
 
 
-	void ServiceConfig::newServiceConfig()
+	void ServiceConfig::newDefault()
 	{
 		// Create a clean (default) copy for every loaded service config
-		std::vector<std::unique_ptr<nap::ServiceConfiguration>> new_defaults;
+		ServiceConfigList new_defaults;
 		new_defaults.reserve(mServiceConfigs.size());
 		for (const auto& config : mServiceConfigs)
 		{
@@ -39,7 +43,7 @@ namespace napkin
 	}
 
 
-	void ServiceConfig::loadServiceConfig(QString serviceConfigFile)
+	void ServiceConfig::load(QString serviceConfigFile)
 	{
 		// De-serialize file
 		assert(mCore.isInitialized());
@@ -81,18 +85,18 @@ namespace napkin
 	}
 
 
-	bool ServiceConfig::saveServiceConfig()
+	bool ServiceConfig::save()
 	{
 		if (mCurrentConfigFilename.isNull())
 		{
 			nap::Logger::fatal("Cannot save service config, no filename has been set.");
 			return false;
 		}
-		return saveServiceConfigAs(mCurrentConfigFilename);
+		return saveAs(mCurrentConfigFilename);
 	}
 
 
-	bool ServiceConfig::saveServiceConfigAs(const QString& fileName)
+	bool ServiceConfig::saveAs(const QString& fileName)
 	{
 		// Gather list of configurations to save to disk
 		nap::rtti::ObjectList objects;
@@ -131,7 +135,7 @@ namespace napkin
 	}
 
 
-	bool ServiceConfig::setAsDefault()
+	bool ServiceConfig::makeDefault()
 	{
 		// Ensure file is set
 		if (getFilename().isNull())
@@ -173,6 +177,11 @@ namespace napkin
 		return true;
 	}
 
+
+	const napkin::ServiceConfigList& ServiceConfig::getList() const
+	{
+		return mServiceConfigs;
+	}
 
 	void ServiceConfig::copyServiceConfig()
 	{

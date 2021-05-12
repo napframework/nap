@@ -19,6 +19,7 @@ void MainWindow::bindSignals()
 	connect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	connect(&mServiceConfigPanel, &ServiceConfigPanel::selectionChanged, this, &MainWindow::onServiceConfigChanged);
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
@@ -34,6 +35,7 @@ void MainWindow::unbindSignals()
 	disconnect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	disconnect(&mServiceConfigPanel, &ServiceConfigPanel::selectionChanged, this, &MainWindow::onServiceConfigChanged);
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
@@ -79,6 +81,7 @@ void MainWindow::addDocks()
 	addDock("Curve", &mCurvePanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Instance Properties", &mInstPropPanel);
+	addDock("Services", &mServiceConfigPanel);
 }
 
 
@@ -216,7 +219,6 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 		if (ob)
 			mCurvePanel.editCurve(ob);
 	}
-
 }
 
 void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
@@ -342,4 +344,20 @@ void MainWindow::onDocked(QDockWidget *dockWidget)
 AppContext& MainWindow::getContext() const
 {
 	return AppContext::get();
+}
+
+
+void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
+{
+	/*
+	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
+	sceneTreeSelection->blockSignals(true);
+	sceneTreeSelection->clearSelection();
+	sceneTreeSelection->blockSignals(false);
+	if (!paths.isEmpty())
+	{
+		auto path = paths.first();
+		mInspectorPanel.setPath(paths.first());
+	}
+	*/
 }

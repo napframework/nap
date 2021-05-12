@@ -123,6 +123,9 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
+	// Load service configuration
+	mServiceConfig = std::make_unique<ServiceConfig>(mCore);
+
 	// Signal initialization
 	coreInitialized();
 
@@ -147,9 +150,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		if (mExitOnLoadFailure)
 			exit(1);
 	}
-
-	// Load service configuration
-	mConfig = std::make_unique<ServiceConfig>(mCore);
 
 	// All good
 	blockingProgressChanged(1);
@@ -440,15 +440,15 @@ bool napkin::AppContext::hasDocument() const
 }
 
 
-bool napkin::AppContext::hasConfig() const
+bool napkin::AppContext::hasServiceConfig() const
 {
-	return mConfig != nullptr;
+	return mServiceConfig != nullptr;
 }
 
 
-const napkin::ServiceConfig* napkin::AppContext::getConfig() const
+const napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
 {
-	return mConfig.get();
+	return mServiceConfig.get();
 }
 
 
@@ -476,9 +476,9 @@ void napkin::AppContext::executeCommand(QUndoCommand* cmd)
 }
 
 
-napkin::ServiceConfig* napkin::AppContext::getConfig()
+napkin::ServiceConfig* napkin::AppContext::getServiceConfig()
 {
-	return mConfig.get();
+	return mServiceConfig.get();
 }
 
 

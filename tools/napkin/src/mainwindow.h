@@ -24,6 +24,7 @@
 #include "panels/curvepanel.h"
 #include "panels/modulepanel.h"
 #include "panels/instanceproppanel.h"
+#include "panels/serviceconfigpanel.h"
 
 namespace napkin
 {
@@ -105,6 +106,11 @@ namespace napkin
 		void onSceneSelectionChanged(QList<PropertyPath> paths);
 
 		/**
+		 * Handled when the service config panel selection changes
+		 */
+		void onServiceConfigChanged(QList<PropertyPath> paths);
+
+		/**
 		 * Handled when a scene component selection was requested
 		 * @param path
 		 */
@@ -157,6 +163,7 @@ namespace napkin
 		LogPanel mLogPanel;
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
+		ServiceConfigPanel mServiceConfigPanel;
 		ThemeSelectionMenu mThemeMenu;
 		ScenePanel mScenePanel;
 		QMenu* mRecentProjectsMenu = nullptr;

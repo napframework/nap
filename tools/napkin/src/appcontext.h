@@ -195,19 +195,19 @@ namespace napkin
 		 * If there's a service configuration, only available when project is loaded.
 		 * @return if there's a service configuration.
 		 */
-		bool hasConfig() const;
+		bool hasServiceConfig() const;
 
 		/**
 		 * Get the current service configuration object, nullptr if no project is loaded
 		 * @return the service configuration object, nullptr if no project is loaded
 		 */
-		const ServiceConfig* getConfig() const;
+		const ServiceConfig* getServiceConfig() const;
 
 		/**
 		 * Get the current service configuration object, nullptr if no project is loaded
 		 * @return the service configuration object, nullptr if no project is loaded
 		 */
-		ServiceConfig* getConfig();
+		ServiceConfig* getServiceConfig();
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
@@ -425,9 +425,7 @@ namespace napkin
 		QString mCurrentFilename;													// The currently opened file
 		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
 
-		std::unique_ptr<ServiceConfig> mConfig = nullptr;							// Service configuration
-
-		QString mCurrentConfigFilename;												// Current configuration filename
+		std::unique_ptr<ServiceConfig> mServiceConfig = nullptr;					// Service configuration
 		std::vector<std::unique_ptr<nap::ServiceConfiguration>> mServiceConfigs;	// Current loaded service configuration
 	};
 

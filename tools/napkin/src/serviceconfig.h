@@ -1,3 +1,8 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+* License, v. 2.0. If a copy of the MPL was not distributed with this
+* file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+
 #pragma once
 
 #include <nap/core.h>
@@ -5,9 +10,11 @@
 
 namespace napkin
 {
+	using ServiceConfigList = std::vector<std::unique_ptr<nap::ServiceConfiguration>>;
+
 	/**
-	 * Napkin Service Configuration Model
-	 * Provides utility functions to create, open and save a service configuration file.
+	 * Provides functions to create, open and save a service configuration file.
+	 * Initial configuration is copied from nap::Core on initialization.
 	 */
 	class ServiceConfig : public QObject
 	{
@@ -26,7 +33,7 @@ namespace napkin
 		 * Creates a new set of default service configuration objects,
 		 * For every service configuration type associated with the active project.
 		 */
-		void newServiceConfig();
+		void newDefault();
 
 		/**
 		 * Loads service configuration settings from file.
@@ -34,28 +41,33 @@ namespace napkin
 		 * Core already loads the configuration for us, performs additional checks,
 		 * and creates default configurations if there is none specified for a specific service.
 		 */
-		void loadServiceConfig(QString serviceConfigFile);
+		void load(QString serviceConfigFile);
 
 		/**
 		 * Saves service configuration file to disk
 		 */
-		bool saveServiceConfig();
+		bool save();
 
 		/**
 		 * Saves service configuration to disk using given filename
 		 */
-		bool saveServiceConfigAs(const QString& fileName);
+		bool saveAs(const QString& fileName);
 
 		/**
 		 * Set current configuration as project default.
 		 * For this operation to succeed the filename must be valid.
 		 */
-		bool setAsDefault();
+		bool makeDefault();
+
+		/**
+		 * Returns all current service configurations
+		 */
+		const ServiceConfigList& getList() const;
 
 	private:
-		nap::Core& mCore;															// NAP Core reference
-		QString mCurrentConfigFilename;												// Current configuration filename
-		std::vector<std::unique_ptr<nap::ServiceConfiguration>> mServiceConfigs;	// Current loaded service configuration
+		nap::Core& mCore;						// NAP Core reference
+		QString mCurrentConfigFilename;			// Current configuration filename
+		ServiceConfigList mServiceConfigs;		// Current loaded service configuration
 
 		/**
 		 * Copies service configuration from core.

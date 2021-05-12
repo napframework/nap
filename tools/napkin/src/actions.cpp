@@ -440,9 +440,9 @@ napkin::NewServiceConfigAction::NewServiceConfigAction()
 
 void napkin::NewServiceConfigAction::perform()
 {
-	if (AppContext::get().hasConfig())
+	if (AppContext::get().hasServiceConfig())
 	{
-		AppContext::get().getConfig()->newServiceConfig();
+		AppContext::get().getServiceConfig()->newDefault();
 	}
 }
 
@@ -456,15 +456,15 @@ napkin::SaveServiceConfigAction::SaveServiceConfigAction()
 void napkin::SaveServiceConfigAction::perform()
 {
 	auto& ctx = AppContext::get();
-	if (ctx.hasConfig())
+	if (ctx.hasServiceConfig())
 	{
 		// Save as if no file associated with config
-		if (ctx.getConfig()->getFilename().isNull())
+		if (ctx.getServiceConfig()->getFilename().isNull())
 		{
 			SaveServiceConfigurationAs().trigger();
 			return;
 		}
-		ctx.getConfig()->saveServiceConfig();
+		ctx.getServiceConfig()->save();
 	}
 }
 
@@ -478,11 +478,11 @@ napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs()
 void napkin::SaveServiceConfigurationAs::perform()
 {
 	auto& ctx = AppContext::get();
-	if (!ctx.hasConfig())
+	if (!ctx.hasServiceConfig())
 		return;
 
 	// Get name and location to store
-	auto cur_file_name = ctx.getConfig()->getFilename();
+	auto cur_file_name = ctx.getServiceConfig()->getFilename();
 	if (cur_file_name.isNull())
 	{
 		assert(AppContext::get().getProjectInfo() != nullptr);
@@ -498,7 +498,7 @@ void napkin::SaveServiceConfigurationAs::perform()
 
 	// Ensure extension and save
 	filename = !filename.endsWith("." + JSON_FILE_EXT) ? filename+"."+JSON_FILE_EXT : filename;
-	if (!ctx.getConfig()->saveServiceConfigAs(filename))
+	if (!ctx.getServiceConfig()->saveAs(filename))
 	{
 		nap::Logger::error("Unable to save config file: %s", filename.toUtf8().constData());
 		return;
@@ -516,13 +516,13 @@ void napkin::OpenServiceConfigAction::perform()
 {
 	// Ensure project is available
 	auto& ctx = AppContext::get();
-	if (!ctx.hasConfig())
+	if (!ctx.hasServiceConfig())
 		return;
 
 	// Get directory
-	QString dir = ctx.getConfig()->getFilename().isNull() ?
+	QString dir = ctx.getServiceConfig()->getFilename().isNull() ?
 		QString::fromStdString(ctx.getProjectInfo()->getDataDirectory()) :
-		ctx.getConfig()->getFilename();
+		ctx.getServiceConfig()->getFilename();
 
 	// Get file to open
 	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Config File", dir, JSON_CONFIG_FILTER);
@@ -530,7 +530,7 @@ void napkin::OpenServiceConfigAction::perform()
 		return;
 	
 	// Load config
-	ctx.getConfig()->loadServiceConfig(filename);
+	ctx.getServiceConfig()->load(filename);
 }
 
 
@@ -543,23 +543,25 @@ napkin::SetAsDefaultServiceConfigAction::SetAsDefaultServiceConfigAction()
 void napkin::SetAsDefaultServiceConfigAction::perform()
 {
 	auto& ctx = AppContext::get();
-	if (!ctx.hasConfig())
+	if (!ctx.hasServiceConfig())
 		return;
 
 	// Save if not saved yet
-	if (ctx.getConfig()->getFilename().isNull())
+	if (ctx.getServiceConfig()->getFilename().isNull())
 	{
 		// Attempt to save document
 		SaveServiceConfigurationAs().trigger();
-		if (ctx.getConfig()->getFilename().isNull())
+		if (ctx.getServiceConfig()->getFilename().isNull())
 		{
 			return;
 		}
 	}
 
 	// Set as default in project
-	if (!ctx.getConfig()->setAsDefault())
+	if (!ctx.getServiceConfig()->makeDefault())
+	{
 		return;
+	}
 
 	// Notify user app needs to restart if running
 	auto result = QMessageBox::information
