@@ -12,10 +12,8 @@
 
 namespace napkin
 {
-	using ServiceConfigList = std::vector<std::unique_ptr<nap::rtti::Object>>;
-
 	/**
-	 * Provides functions to create, open and save a service configuration file.
+	 * Provides functionality to create, edit, and save a service configuration file.
 	 * Initial configuration is copied from nap::Core on initialization.
 	 */
 	class ServiceConfig : public QObject

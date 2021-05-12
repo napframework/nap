@@ -14,7 +14,7 @@ namespace napkin
 	ServiceConfigItem::ServiceConfigItem(nap::ServiceConfiguration& config, Document& document)
 		: QStandardItem(), mConfig(config), mDocument(&document)
 	{
-		std::string service_type = config.getServiceType().get_name().to_string();
+		std::string service_type = nap::utility::stripNamespace(config.getServiceType().get_name().to_string());
 		setText(QString::fromStdString(service_type));
 	}
 
