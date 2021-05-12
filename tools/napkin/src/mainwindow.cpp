@@ -81,7 +81,7 @@ void MainWindow::addDocks()
 	addDock("Curve", &mCurvePanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Instance Properties", &mInstPropPanel);
-	addDock("Services", &mServiceConfigPanel);
+	addDock("Configuration", &mServiceConfigPanel);
 }
 
 

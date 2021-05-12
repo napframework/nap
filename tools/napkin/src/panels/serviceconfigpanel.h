@@ -42,6 +42,7 @@ namespace napkin
 	private:
 		void populate();
 		void onClosing(QString file);
+		void clearItems();
 	};
 
 

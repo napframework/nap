@@ -35,7 +35,7 @@ namespace napkin
 		connect(ctx, &AppContext::coreInitialized, this, &ServiceConfigModel::populate);
 		connect(ctx, &AppContext::serviceConfigurationChanged, this, &ServiceConfigModel::populate);
 		connect(ctx, &AppContext::serviceConfigurationClosing, this, &ServiceConfigModel::onClosing);
-		setHorizontalHeaderLabels({ "Name" });
+		setHorizontalHeaderLabels({ "Service" });
 	}
 
 
@@ -56,8 +56,15 @@ namespace napkin
 
 	void ServiceConfigModel::onClosing(QString file)
 	{
-		clear();
+		clearItems();
 	}
+
+
+	void ServiceConfigModel::clearItems()
+	{
+		removeRows(0, rowCount());
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Widget
