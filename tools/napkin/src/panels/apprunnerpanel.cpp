@@ -65,7 +65,7 @@ void napkin::AppRunnerPanel::onStartApp()
 
 	QStringList args;
 	if (AppContext::get().getDocument() != nullptr)
-		args << AppContext::get().getDocument()->getCurrentFilename();
+		args << AppContext::get().getDocument()->getFilename();
 
 	nap::Logger::info("Running: '%s %s'", executable.toStdString().c_str(), args.join(" ").toStdString().c_str());
 	mStartButton.setEnabled(false);

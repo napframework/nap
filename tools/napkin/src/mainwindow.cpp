@@ -176,7 +176,7 @@ void MainWindow::updateWindowTitle()
 	}
 
 	// Otherwise display current project & file
-	QFileInfo fi(getContext().getDocument()->getCurrentFilename());
+	QFileInfo fi(getContext().getDocument()->getFilename());
 	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
 	setWindowTitle(QString("%1%2 %3 | %4 - %5").arg(QString::fromStdString(project_info->mTitle),
 												changed, QString::fromStdString(project_info->mVersion),

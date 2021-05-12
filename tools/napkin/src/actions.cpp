@@ -101,11 +101,11 @@ void napkin::UpdateDefaultFileAction::perform()
 		return;
 
 	// Save if not saved yet
-	if (doc->getCurrentFilename().isNull())
+	if (doc->getFilename().isNull())
 	{
 		// Attempt to save document
 		SaveFileAsAction().trigger();
-		if (doc->getCurrentFilename().isNull())
+		if (doc->getFilename().isNull())
 			return;
 	}
 
@@ -116,7 +116,7 @@ void napkin::UpdateDefaultFileAction::perform()
 	
 	// Get data directory and create relative path
 	QDir data_dir(QString::fromStdString(project_info->getProjectDir()));
-	QString new_path = data_dir.relativeFilePath(AppContext::get().getDocument()->getCurrentFilename());
+	QString new_path = data_dir.relativeFilePath(AppContext::get().getDocument()->getFilename());
 	new_info->mDefaultData = new_path.toStdString();
 
 	nap::rtti::JSONWriter writer;
@@ -183,7 +183,7 @@ void SaveFileAction::perform()
 		return;
 	}
 
-	if (doc->getCurrentFilename().isNull())
+	if (doc->getFilename().isNull())
 	{
 		SaveFileAsAction().trigger();
 		return;
@@ -211,7 +211,7 @@ void SaveFileAsAction::perform()
 		return;
 
 	// Get name and location to store
-	auto cur_file_name = doc->getCurrentFilename();
+	auto cur_file_name = doc->getFilename();
 	if (cur_file_name.isNull())
 	{
 		assert(AppContext::get().getProjectInfo() != nullptr);
@@ -254,9 +254,9 @@ void napkin::OpenFileAction::perform()
 	QString dir = "";
 	if (doc != nullptr)
 	{	
-		dir = doc->getCurrentFilename().isNull() ?
+		dir = doc->getFilename().isNull() ?
 			QString::fromStdString(ctx.getProjectInfo()->getDataDirectory()) :
-			ctx.getDocument()->getCurrentFilename();
+			ctx.getDocument()->getFilename();
 	}
 
 	// Get file to open

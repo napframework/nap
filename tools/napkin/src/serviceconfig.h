@@ -78,13 +78,11 @@ namespace napkin
 
 	private:
 		nap::Core& mCore;								// NAP Core reference
-		QString mCurrentConfigFilename;					// Current configuration filename
-		nap::rtti::OwnedObjectList mServiceConfigs;		// Current loaded service configuration
 		std::unique_ptr<Document> mDocument = nullptr;	// Document that contains all the configurable objects
 
 		/**
 		 * Copies service configuration from core.
 		 */
-		void copyServiceConfig();
+		nap::rtti::OwnedObjectList copyServiceConfig();
 	};
 }

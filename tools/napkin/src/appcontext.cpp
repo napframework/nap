@@ -228,12 +228,12 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 bool AppContext::saveDocument()
 {
-	if (getDocument()->getCurrentFilename().isEmpty())
+	if (getDocument()->getFilename().isEmpty())
 	{
 		nap::Logger::fatal("Cannot save file, no filename has been set.");
 		return false;
 	}
-	return saveDocumentAs(getDocument()->getCurrentFilename());
+	return saveDocumentAs(getDocument()->getFilename());
 }
 
 bool AppContext::saveDocumentAs(const QString& filename)
@@ -487,7 +487,7 @@ void napkin::AppContext::closeDocument()
 	if (mDocument == nullptr)
 		return;
 
-	QString prev_doc_name = mDocument->getCurrentFilename();
+	QString prev_doc_name = mDocument->getFilename();
 	documentClosing(prev_doc_name);
 	mDocument.reset(nullptr);
 }

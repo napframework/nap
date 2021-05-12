@@ -13,32 +13,50 @@
 #include <mathutils.h>
 #include <qdir.h>
 #include <qstring.h>
+#include <mathutils.h>
 
 namespace napkin
 {
 	ServiceConfig::ServiceConfig(nap::Core& core) : QObject(), mCore(core)
 	{
-		copyServiceConfig();
+		// Extract filename of project default
+		QString file_name;
+		if (mCore.getProjectInfo()->hasServiceConfigFile())
+		{
+			// Get absolute path
+			std::string patched = nap::utility::joinPath({ mCore.getProjectInfo()->getProjectDir(),
+				mCore.getProjectInfo()->mServiceConfigFilename });
+			nap::Logger::info("Loading config '%s'", toLocalURI(patched).c_str());
+
+			// Ensure it exists
+			file_name = QString::fromStdString(patched);
+			QFileInfo info(file_name);
+			if (!info.exists())
+			{
+				nap::Logger::warn("Unable to find config file: %s", patched.c_str());
+				file_name.clear();
+			}
+		}
+
+		// Create copies to edit
+		nap::rtti::OwnedObjectList configs = copyServiceConfig();
+
+		// Create document
+		mDocument = std::make_unique<Document>(mCore, file_name, std::move(configs));
 	}
 
 
 	const QString& ServiceConfig::getFilename() const
 	{
-		return mCurrentConfigFilename;
+		return mDocument->getFilename();
 	}
 
 
 	void ServiceConfig::newDefault()
 	{
-		// Create a clean (default) copy for every loaded service config
-		ServiceConfigList new_defaults;
-		new_defaults.reserve(mServiceConfigs.size());
-		for (const auto& config : mServiceConfigs)
-		{
-			new_defaults.emplace_back(config->get_type().create<nap::ServiceConfiguration>());
-		}
-		mServiceConfigs = std::move(new_defaults);
-		mCurrentConfigFilename.clear();
+		// Create copies to edit
+		nap::rtti::OwnedObjectList configs = copyServiceConfig();
+		mDocument = std::make_unique<Document>(mCore, QString(), std::move(configs));
 		nap::Logger::info("Created new default configuration");
 	}
 
@@ -62,7 +80,7 @@ namespace napkin
 		}
 
 		// Clear and fill
-		mServiceConfigs.clear();
+		nap::rtti::OwnedObjectList configs;
 		std::set<nap::rtti::TypeInfo> types;
 		for (std::unique_ptr<nap::rtti::Object>& object : result.mReadObjects)
 		{
@@ -77,22 +95,22 @@ namespace napkin
 			}
 
 			// All good
-			mServiceConfigs.emplace_back(std::move(config));
+			configs.emplace_back(std::move(config));
 		}
 
+		mDocument = std::make_unique<Document>(mCore, serviceConfigFile, std::move(configs));
 		nap::Logger::info("Loaded config '%s'", toLocalURI(serviceConfigFile.toStdString()).c_str());
-		mCurrentConfigFilename = serviceConfigFile;
 	}
 
 
 	bool ServiceConfig::save()
 	{
-		if (mCurrentConfigFilename.isNull())
+		if (mDocument->getFilename().isNull())
 		{
 			nap::Logger::fatal("Cannot save service config, no filename has been set.");
 			return false;
 		}
-		return saveAs(mCurrentConfigFilename);
+		return saveAs(mDocument->getFilename());
 	}
 
 
@@ -100,7 +118,7 @@ namespace napkin
 	{
 		// Gather list of configurations to save to disk
 		nap::rtti::ObjectList objects;
-		for (const auto& config : mServiceConfigs)
+		for (const auto& config : mDocument->getObjects())
 		{
 			config->mID = config->mID.empty() ? nap::math::generateUUID() : config->mID;
 			objects.emplace_back(config.get());
@@ -130,7 +148,7 @@ namespace napkin
 		nap::Logger::info("Written '%s'", toLocalURI(fileName.toStdString()).c_str());
 
 		// Associate file with config on success
-		mCurrentConfigFilename = fileName;
+		mDocument->setFilename(fileName);
 		return true;
 	}
 
@@ -192,35 +210,23 @@ namespace napkin
 		return configs;
 	}
 
-	void ServiceConfig::copyServiceConfig()
+
+	nap::rtti::OwnedObjectList ServiceConfig::copyServiceConfig()
 	{
-		mCurrentConfigFilename.clear();
-		if (mCore.getProjectInfo()->hasServiceConfigFile())
-		{
-			// Get absolute path
-			std::string patched = nap::utility::joinPath({ mCore.getProjectInfo()->getProjectDir(), 
-				mCore.getProjectInfo()->mServiceConfigFilename });
-
-			// Ensure it exists
-			mCurrentConfigFilename = QString::fromStdString(patched);
-			QFileInfo info(mCurrentConfigFilename);
-			if (!info.exists())
-			{
-				nap::Logger::warn("Unable to find config file: %s", patched.c_str());
-				mCurrentConfigFilename.clear();
-			}
-			nap::Logger::info("Loading config '%s'", toLocalURI(patched).c_str());
-		}
-
 		// Copy service configurations
 		assert(mCore.isInitialized());
-		mServiceConfigs.clear();
+		nap::rtti::OwnedObjectList config_copies;
 		std::vector<const nap::ServiceConfiguration*> configs = mCore.getServiceConfigs();
 		for (const auto& config : configs)
 		{
-			mServiceConfigs.emplace_back(nap::rtti::cloneObject(*config, mCore.getResourceManager()->getFactory()));
+			std::unique_ptr<nap::rtti::Object> obj = nap::rtti::cloneObject(*config, mCore.getResourceManager()->getFactory());
+			if (obj->mID.empty())
+			{
+				std::string type_name = nap::utility::stripNamespace(obj->get_type().get_name().to_string());
+				obj->mID = nap::utility::stringFormat("%s_%s", type_name.c_str(), nap::math::generateUUID().c_str());
+			}
+			config_copies.emplace_back(std::move(obj));
 		}
-		mDocument = std::make_unique<Document>(mCore, mCurrentConfigFilename, std::move(mServiceConfigs));
+		return config_copies;
 	}
-
 }
