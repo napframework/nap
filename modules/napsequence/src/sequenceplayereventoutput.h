@@ -23,7 +23,8 @@ namespace nap
 	class SequenceService;
 
 	/**
-	 * SequencePlayerEventOutput dispatches an event on the timeline
+	 * SequencePlayerEventOutput dispatches an event from the sequencer on the main thread.
+	 * The EventOutput receives its update call from the SequenceService
 	 */
 	class NAPAPI SequencePlayerEventOutput final : public SequencePlayerOutput
 	{
