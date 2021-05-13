@@ -94,22 +94,6 @@ void MainWindow::addMenu()
 		addAction(openFileAction);
 		projectmenu->addAction(openFileAction);
 		mRecentProjectsMenu = projectmenu->addMenu("Recent Projects");
-
-		// Services sub menuy
-		auto newServiceConfigAction = new NewServiceConfigAction();
-		auto openServiceConfigAction = new OpenServiceConfigAction();
-		auto saveServiceConfigACtion = new SaveServiceConfigAction();
-		auto saveServiceConfigurationAs = new SaveServiceConfigurationAs();
-		auto setDefaultServiceConfig = new SetAsDefaultServiceConfigAction();
-		auto service_menu = new QMenu("Configuration", projectmenu);
-		{
-			service_menu->addAction(newServiceConfigAction);
-			service_menu->addAction(openServiceConfigAction);
-			service_menu->addAction(saveServiceConfigACtion);
-			service_menu->addAction(saveServiceConfigurationAs);
-			service_menu->addAction(setDefaultServiceConfig);
-		}
-		projectmenu->addMenu(service_menu);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), projectmenu);
 
@@ -142,6 +126,21 @@ void MainWindow::addMenu()
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 
+	// Service Configuration menu
+	auto config_menu = new QMenu("Configuration", menuBar());
+	{
+		auto newServiceConfigAction = new NewServiceConfigAction();
+		config_menu->addAction(newServiceConfigAction);
+		auto openServiceConfigAction = new OpenServiceConfigAction();
+		config_menu->addAction(openServiceConfigAction);
+		auto saveServiceConfigACtion = new SaveServiceConfigAction();
+		config_menu->addAction(saveServiceConfigACtion);
+		auto saveServiceConfigurationAs = new SaveServiceConfigurationAs();
+		config_menu->addAction(saveServiceConfigurationAs);
+		auto setDefaultServiceConfig = new SetAsDefaultServiceConfigAction();
+		config_menu->addAction(setDefaultServiceConfig);
+	}
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), config_menu);
 
 	// General Options
 	auto optionsMenu = new QMenu("Options", menuBar());
