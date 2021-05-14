@@ -13,8 +13,8 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
 
-	mStartButton.setIcon(QIcon(QRC_ICONS_PLAY));
-	mStopButton.setIcon(QIcon(QRC_ICONS_STOP));
+	mStartButton.setIcon(QIcon(QRC_ICONS_PLAY_APP));
+	mStopButton.setIcon(QIcon(QRC_ICONS_STOP_APP));
 	mStopButton.setEnabled(false);
 
 	mLayout.addWidget(&mFileSelector);

@@ -54,8 +54,8 @@ namespace napkin
 	static const QString QRC_ICONS_TANGENTS_FLAT            = ":/icons/tangents-flat.png";
 	static const QString QRC_ICONS_CONFIGURATION			= ":/icons/serviceconfig.png";
 	static const QString QRC_ICONS_MODULE					= ":/icons/module.png";
-	static const QString QRC_ICONS_PLAY						= ":/icons/play.png";
-	static const QString QRC_ICONS_STOP						= ":/icons/stop.png";
+	static const QString QRC_ICONS_PLAY_APP					= ":/icons/app-play.png";
+	static const QString QRC_ICONS_STOP_APP					= ":/icons/app-stop.png";
 	static const QString QRC_FONTS_MONTSERRAT_EXTRABOLD     = ":/fonts/Montserrat-ExtraBold.ttf";
 	static const QString QRC_FONTS_MONTSERRAT_LIGHT         = ":/fonts/Montserrat-Light.ttf";
 	static const QString QRC_FONTS_MONTSERRAT_MEDIUM        = ":/fonts/Montserrat-Medium.ttf";

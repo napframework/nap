@@ -47,8 +47,8 @@
 		<file>icons/tangents-flat.png</file>
 		<file>icons/serviceconfig.png</file>
 		<file>icons/module.png</file>
-		<file>icons/play.png</file>
-		<file>icons/stop.png</file>
+		<file>icons/app-play.png</file>
+		<file>icons/app-stop.png</file>
 		<file>fonts/Montserrat-ExtraBold.ttf</file>
 		<file>fonts/Montserrat-Light.ttf</file>
 		<file>fonts/Montserrat-Medium.ttf</file>
