@@ -83,7 +83,6 @@ void napkin::AppRunnerPanel::onReadOut()
 }
 
 
-
 void napkin::AppRunnerPanel::onReadErr()
 {
 	QString err = mProcess.readAllStandardError().trimmed();

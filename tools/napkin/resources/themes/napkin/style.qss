@@ -66,8 +66,8 @@ QDockWidget {
     color: #b0b2cb;
     border: 1px solid #444;
     font-family: "Montserrat";
-    titlebar-close-icon:url(:/icons/icon_close.png);
-    titlebar-normal-icon:url(:/icons/icon_restore.png);
+    titlebar-close-icon:url(:/icons/icon_close_nap.png);
+    titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
     /*padding: 10px;*/
 }
 
@@ -144,7 +144,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 QPushButton, QToolButton {
     font-family: "Nunito Sans SemiBold";
     color: #111426;
-    background: #8B8CA0;
+    background: #5d5e73;
     border-radius: 2px;
     margin: 2px;
     border: 0;
@@ -152,14 +152,14 @@ QPushButton, QToolButton {
 }
 
 QPushButton:hover {
-    background: #5D5E73;
+    background: #8B8CA0;
 }
 QPushButton:pressed {
     background: #111426;
-    color: #8B8CA0
+    color: #8B8CA0;
 }
 QPushButton:!enabled {
-    background-color: #5D5E73;
+    background-color: #171b33;
     color: #111426;
 }
 

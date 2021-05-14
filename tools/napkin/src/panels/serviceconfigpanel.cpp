@@ -57,7 +57,6 @@ namespace napkin
 	}
 
 
-
 	void ServiceConfigModel::onClosing(QString file)
 	{
 		clearItems();

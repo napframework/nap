@@ -105,7 +105,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     background: none;
 }
 
-QPushButton {
+QPushButton, QToolButton {
     color: #DDD;
     background: #555;
     border-radius: 4px;
