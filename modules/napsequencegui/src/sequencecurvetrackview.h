@@ -29,6 +29,10 @@ namespace nap
 		 */
 		SequenceCurveTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
+		// make this class explicitly non-copyable
+		SequenceCurveTrackView(const SequenceCurveTrackView&) = delete;
+		SequenceCurveTrackView& operator =(const SequenceCurveTrackView&) = delete;
+
 		/**
 		 * Handles any actions
 		 */

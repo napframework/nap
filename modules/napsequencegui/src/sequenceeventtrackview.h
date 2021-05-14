@@ -139,7 +139,6 @@ namespace nap
 	class NAPAPI SequenceEventTrackView final : public SequenceTrackView
 	{
 		friend class SequenceGUIService;
-		friend class SequenceEventTrackSegmentViewBase;
 
 		RTTI_ENABLE(SequenceTrackView)
 	public:
@@ -150,6 +149,10 @@ namespace nap
 		 * @param state reference to editor state
 		 */
 		SequenceEventTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
+
+		// make this class explicitly non-copyable
+		SequenceEventTrackView(const SequenceEventTrackView&) = delete;
+		SequenceEventTrackView& operator =(const SequenceEventTrackView&) = delete;
 	protected:
 		/**
 		 * shows inspector content
@@ -226,9 +229,6 @@ namespace nap
 		 */
 		void handleSegmentDrag();
 	private:
-		// for some reason we need to have this member variable declared in order the class to be compiled with VS2015
-		std::unique_ptr<SequenceEventTrackSegmentViewBase> mSegmentViewNullPtr = nullptr;
-
 		// map of segment views for different event views
 		std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase>> mSegmentViews;
 	};
