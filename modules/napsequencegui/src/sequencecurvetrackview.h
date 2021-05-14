@@ -274,8 +274,6 @@ namespace nap
 
 		// static map of member function pointers
 		static std::unordered_map<rttr::type, DrawSegmentMemFunPtr>& getDrawCurveSegmentsMap();
-
-		SequenceGUIService& mService;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

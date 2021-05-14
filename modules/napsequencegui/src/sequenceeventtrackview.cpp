@@ -18,7 +18,7 @@ namespace nap
 	using namespace SequenceGUIClipboards;
 
 	SequenceEventTrackView::SequenceEventTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
-		: mService(service), SequenceTrackView(view, state)
+		: SequenceTrackView(view, state)
 	{
 		// register applicable action handlers
 		registerActionHandler(RTTI_OF(OpenInsertEventSegmentPopup), [this] { handleInsertEventSegmentPopup(); });
@@ -43,11 +43,13 @@ namespace nap
 		 * create views for all event segments registered
 		 */
 		const auto& event_types = mService.getRegisteredSegmentEventTypes();
-		const auto& event_segment_view_factory = mService.getEventSegmentViewFactory();
 		for(const auto& event_type : event_types)
 		{
-			assert(event_segment_view_factory.find(event_type)!=event_segment_view_factory.end()); // event type not registered
-			mSegmentViews.emplace(event_type, event_segment_view_factory.find(event_type)->second());
+			// create segment view
+			auto segment_view = mService.invokeEventTrackSegmentViewFactory(event_type);
+
+			// move ownership
+			mSegmentViews.emplace(event_type, std::move(segment_view));
 		}
 	}
 

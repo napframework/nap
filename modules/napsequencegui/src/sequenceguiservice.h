@@ -18,7 +18,6 @@ namespace nap
 	// forward declares
 	class SequenceEventTrackSegmentViewBase;
 	class SequenceEventTrackView;
-	class SequenceEventTrackView;
 	class SequenceTrackSegmentEventBase;
 	class SequenceTrackView;
 	class SequenceGUIService;
@@ -90,24 +89,16 @@ namespace nap
 		 */
 		bool registerTrackTypeForView(rtti::TypeInfo trackType, rtti::TypeInfo viewType);
 
+		std::unique_ptr<SequenceTrackView> invokeTrackViewFactory(rtti::TypeInfo viewType, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
+
+		std::unique_ptr<SequenceEventTrackSegmentViewBase> invokeEventTrackSegmentViewFactory(rtti::TypeInfo eventType);
+
 		/**
 		 * returns track view type for corresponding track type, asserts when track type not found
 		 * @param trackType type info of track type
 		 * @return corresponding track view type
 		 */
 		rtti::TypeInfo getViewTypeForTrackType(rtti::TypeInfo trackType) const;
-
-		/**
-		 * returns map of factory functions that create segment views for all event type registered
-		 * @return the factory map
-		 */
-		const SequenceEventTrackSegmentViewFactoryMap& getEventSegmentViewFactory() const;
-
-		/**
-		 * returns map of factory functions that can create a track view for track types
-		 * @return the factory map
-		 */
-		const SequenceTrackViewFactoryMap& getTrackViewFactory() const;
 
 		/**
 		 * returns all registered event segment types (SequenceTrackSegmentEvent<T>)
@@ -121,6 +112,7 @@ namespace nap
 		 * @param view reference to the view invoking the edit event handler
 		 */
 		void invokeEditEventHandler(rtti::TypeInfo actionType, SequenceEventTrackView& view) const;
+
 
 		/**
 		 * invoke this method to paste an event of a certain type
@@ -178,10 +170,10 @@ namespace nap
 		SequenceTrackViewFactoryMap mTrackViewFactoryMap;
 
 		// map of segment edit event handlers
-		std::unordered_map<rttr::type, SequenceEventTrackEditFunc> mEditEventHandlerMap;
+		std::unordered_map<rtti::TypeInfo, SequenceEventTrackEditFunc> mEditEventHandlerMap;
 
 		// map of segment paste handlers
-		std::unordered_map<rttr::type, SequenceEventTrackPasteFunc> mPasteEventMap;
+		std::unordered_map<rtti::TypeInfo, SequenceEventTrackPasteFunc> mPasteEventMap;
 
 		// list of event types
 		std::vector<rtti::TypeInfo> mSegmentEventTypes;

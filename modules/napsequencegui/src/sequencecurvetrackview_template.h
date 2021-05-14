@@ -1058,13 +1058,11 @@ namespace nap
 		// continue upon successful de-serialization
 		utility::ErrorState errorState;
 		curve_segments = curve_segment_clipboard->deserialize<T>(read_objects, errorState);
-
-		// expect 1 deserialized object
-		assert(curve_segments.size() == 1);
-
-		T* curve_segment = curve_segments[0];
+		
 		if( !errorState.hasErrors() )
 		{
+			T* curve_segment = curve_segments[0];
+
 			assert(curve_segment != nullptr); // curve segment cannot be null here
 
 			// obtain controller

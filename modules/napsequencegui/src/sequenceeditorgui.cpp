@@ -84,10 +84,17 @@ namespace nap
 		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
 
 		// create views for all registered track types
-		const auto& track_view_factory = mService.getTrackViewFactory();
-		for(const auto& factory_func : track_view_factory)
+		const auto& track_types = mService.getAllTrackTypes();
+		for (const auto& track_type : track_types)
 		{
-			mViews.emplace(factory_func.first, factory_func.second(mService, *this, mState));
+			// get view type
+			auto view_type = mService.getViewTypeForTrackType(track_type);
+
+			// create the track view
+			auto track_view = mService.invokeTrackViewFactory(view_type, *this, mState);
+
+			// store the raw pointer
+			mViews.emplace(view_type, std::move(track_view));
 		}
 	}
 
