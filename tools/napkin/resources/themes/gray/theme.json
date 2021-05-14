@@ -2,12 +2,12 @@
   "name": "Gray",
   "stylesheet": "style.qss",
   "logColors": {
-    "fine": "#333",
-    "debug": "#555",
-    "info": "#58F",
-    "warn": "#F80",
-    "error": "#F00",
-    "fatal": "#F0F"
+    "fine": "#222222",
+    "debug": "#222222",
+    "info": "#222222",
+    "warn": "#ffd200",
+    "error": "#ff0000",
+    "fatal": "#ff0000"
   },
   "colors": {
     "componentWithOverrides": "#BA9",
