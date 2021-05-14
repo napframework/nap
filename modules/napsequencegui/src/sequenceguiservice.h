@@ -89,8 +89,20 @@ namespace nap
 		 */
 		bool registerTrackTypeForView(rtti::TypeInfo trackType, rtti::TypeInfo viewType);
 
+		/**
+		 * invoke this method to create a track view for a certain view type, asserts when view type is not found
+		 * @param viewType the viewType to create
+		 * @param view reference to editor view creating the view
+		 * @param state reference to gui state
+		 * @return unique ptr to created track view
+		 */
 		std::unique_ptr<SequenceTrackView> invokeTrackViewFactory(rtti::TypeInfo viewType, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
+		/**
+		 * invoke this method to create a event segment view for a certain event type, assert when event type is not found
+		 * @param eventType type info of the event type
+		 * @return unique ptr to create segment view
+		 */
 		std::unique_ptr<SequenceEventTrackSegmentViewBase> invokeEventTrackSegmentViewFactory(rtti::TypeInfo eventType);
 
 		/**
