@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "apprunnerpanel.h"
+#include "napkin-resources.h"
 
 #include <nap/logger.h>
 #include <napqt/qtutils.h>
@@ -12,26 +13,23 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
 
-	mStartButton.setText(TXT_START);
-	mStopButton.setText(TXT_STOP);
+	mStartButton.setIcon(QIcon(QRC_ICONS_PLAY));
+	mStopButton.setIcon(QIcon(QRC_ICONS_STOP));
 	mStopButton.setEnabled(false);
 
 	mLayout.addWidget(&mFileSelector);
 	mLayout.addWidget(&mStartButton);
 	mLayout.addWidget(&mStopButton);
 
-	//    mLayout.addStretch(1);
-
 	connect(&mFileSelector, &nap::qt::FileSelector::filenameChanged, this, &AppRunnerPanel::onAppChanged);
-
 	connect(&mStartButton, &QPushButton::clicked, this, &AppRunnerPanel::onStartApp);
 	connect(&mStopButton, &QPushButton::clicked, this, &AppRunnerPanel::onStopApp);
-
-	connect(&mProcess, &QProcess::started, this, &AppRunnerPanel::onAppStarted);
+	connect(&mProcess, &QProcess::started,	this, &AppRunnerPanel::onAppStarted);
 	connect(&mProcess, &QProcess::errorOccurred, this, &AppRunnerPanel::onAppError);
 	connect(&mProcess, &QProcess::stateChanged, this, &AppRunnerPanel::onAppState);
 	connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AppRunnerPanel::onReadOut);
 	connect(&mProcess, &QProcess::readyReadStandardError, this, &AppRunnerPanel::onReadErr);
+
 	// Cast to tell the compiler which override to use
 	connect(&mProcess, (void (QProcess::*)(int)) & QProcess::finished, this, &AppRunnerPanel::onAppFinished);
 }
@@ -72,10 +70,12 @@ void napkin::AppRunnerPanel::onStartApp()
 	mProcess.start(executable, args);
 }
 
+
 void napkin::AppRunnerPanel::onStopApp()
 {
 	mProcess.terminate();
 }
+
 
 void napkin::AppRunnerPanel::onReadOut()
 {
@@ -83,6 +83,7 @@ void napkin::AppRunnerPanel::onReadOut()
 	for (auto line : out.split("\n"))
 		nap::Logger::info(QString("[NAP] %1").arg(line).toStdString());
 }
+
 
 void napkin::AppRunnerPanel::onReadErr()
 {
@@ -99,10 +100,12 @@ void napkin::AppRunnerPanel::onReadErr()
 	}
 }
 
+
 void napkin::AppRunnerPanel::onAppStarted()
 {
 	mStopButton.setEnabled(true);
 }
+
 
 void napkin::AppRunnerPanel::onAppError(QProcess::ProcessError error)
 {
@@ -110,6 +113,7 @@ void napkin::AppRunnerPanel::onAppError(QProcess::ProcessError error)
 	mStartButton.setEnabled(true);
 	mStopButton.setEnabled(false);
 }
+
 
 void napkin::AppRunnerPanel::onAppState(QProcess::ProcessState state)
 {

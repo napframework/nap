@@ -3,7 +3,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "serviceconfigpanel.h"
-#include <appcontext.h>
+
+#include <napkin-resources.h>
+#include <appcontext.h>"
 
 namespace napkin
 {
@@ -16,6 +18,8 @@ namespace napkin
 	{
 		std::string service_type = nap::utility::stripNamespace(config.getServiceType().get_name().to_string());
 		setText(QString::fromStdString(service_type));
+		setIcon(QIcon(QRC_ICONS_CONFIGURATION));
+		setEditable(false);
 	}
 
 
@@ -48,10 +52,10 @@ namespace napkin
 		for (const auto& config : config_list)
 		{
 			auto item = new ServiceConfigItem(*config, ctx.getServiceConfig()->getDocument());
-			item->setEditable(false);
 			appendRow(item);
 		}
 	}
+
 
 
 	void ServiceConfigModel::onClosing(QString file)
