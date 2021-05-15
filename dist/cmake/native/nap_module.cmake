@@ -16,6 +16,7 @@ if(NOT MODULE_INTO_PROJ)
     target_architecture(ARCH)
 
     include(${NAP_ROOT}/cmake/dist_shared_native.cmake)
+    include(${NAP_ROOT}/cmake/cross_context_macros.cmake)
 
     # Set our default build type if we haven't specified one (Linux)
     set_default_build_type()
@@ -62,6 +63,11 @@ if(NOT MODULE_INTO_PROJ)
                 unset(_LIB CACHE)
             endforeach ()
         endif()
+    endif()
+
+    # Ensure we have patchelf on Linux, preventing silent failures
+    if(UNIX AND NOT APPLE)
+        ensure_patchelf_installed()
     endif()
 endif(NOT MODULE_INTO_PROJ)
 
