@@ -85,7 +85,7 @@ elseif(APPLE)
         install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                               -add_rpath
                                               @loader_path/../../../../thirdparty/libartnet/bin
-                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/${build_type}/libmod_napartnet.dylib
+                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napartnet/lib/${build_type}/mod_napartnet.dylib
                                       ERROR_QUIET
                                       )")
     endforeach()
