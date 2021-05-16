@@ -30,6 +30,7 @@ namespace nap
 	 */
 	class NAPAPI Bitmap : public Resource
 	{
+		friend class BitmapFileBuffer;
 		RTTI_ENABLE(Resource)
 	public:
 
@@ -61,11 +62,11 @@ namespace nap
 		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
-		* Writes this bitmap to a snapshots folder on disk with a specified image extension
+		* Writes this bitmap to the given location on disk with the specified image format
 		* @param path the path including filename and image extension of the output file e.g. "targetFolder/MyOutputFile.png"
-		* @param errorState contains the error if the image could not be loaded
+		* @param errorState contains the error if the image could not be saved to disk
 		*/
-		bool writeToDisk(const std::string& filename, utility::ErrorState& errorState);
+		bool save(const std::string& path, utility::ErrorState& errorState);
 
 		/**
 		 * @return the type of color associated with this bitmap

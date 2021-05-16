@@ -8,8 +8,9 @@
 #include <utility/fileutils.h>
 #include <rtti/typeinfo.h>
 #include <texture2d.h>
+
+#include "bitmapfilebuffer.h"
 #include "copyimagedata.h"
-#include "bitmaputils.h"
 
 #include <FreeImage.h>
 #undef BYTE
@@ -20,7 +21,7 @@ RTTI_BEGIN_CLASS(nap::Bitmap)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::BitmapFromFile)
-	RTTI_PROPERTY("Path",		&nap::BitmapFromFile::mPath,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Path",		&nap::BitmapFromFile::mPath,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 
@@ -155,86 +156,17 @@ namespace nap
 
 	bool Bitmap::initFromFile(const std::string& path, nap::utility::ErrorState& errorState)
 	{
-		if (!errorState.check(utility::fileExists(path), "unable to load image: %s, file does not exist: %s", path.c_str(), mID.c_str()))
-			return false;
-
-		// Get format
-		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFilename(path.c_str());
-		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format of file: %s", path.c_str()))
-			return false;
-
-		// Load
-		FIBITMAP* fi_bitmap = FreeImage_Load(fi_img_format, path.c_str());
-		if (!errorState.check(fi_bitmap != nullptr, "Unable to load bitmap: %s", path.c_str()))
+		BitmapFileBuffer file_buffer;
+		if (!file_buffer.load(path, mSurfaceDescriptor, errorState))
 		{
-			FreeImage_Unload(fi_bitmap);
+			errorState.fail("Failed to load bitmap from disk");
 			return false;
 		}
 
-		// Get associated bitmap type for free image type
-		FREE_IMAGE_TYPE fi_bitmap_type = FreeImage_GetImageType(fi_bitmap);
-
-		ESurfaceDataType data_type;
-		switch (fi_bitmap_type)
-		{
-		case FIT_BITMAP:
-			data_type = ESurfaceDataType::BYTE;
-			break;
-		case FIT_UINT16:
-		case FIT_RGB16:
-		case FIT_RGBA16:
-			data_type = ESurfaceDataType::USHORT;
-			break;
-		case FIT_FLOAT:
-		case FIT_RGBF:
-		case FIT_RGBAF:
-			data_type = ESurfaceDataType::FLOAT;
-			break;
-		default:
-			errorState.fail("Can't load bitmap from file; unknown pixel format");
-			FreeImage_Unload(fi_bitmap);
-			return false;
-		}
-		
-		// Get color type
-		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
-		if (fi_bitmap_color_type == FIC_RGB)
-		{
-			FIBITMAP* converted_bitmap = FreeImage_ConvertTo32Bits(fi_bitmap);
-			FreeImage_Unload(fi_bitmap);
-			fi_bitmap = converted_bitmap;
-			fi_bitmap_color_type = FIC_RGBALPHA;
-		}
-
-		// If we're dealing with an rgb or rgba map and a bitmap
-		// The endian of the loaded free image map becomes important
-		// If so we might have to swap the red and blue channels regarding the internal color representation
-		bool swap = (fi_bitmap_type == FREE_IMAGE_TYPE::FIT_BITMAP && FI_RGBA_RED == 2);
-
-		ESurfaceChannels channels;
-		switch (fi_bitmap_color_type)
-		{
-		case FIC_MINISBLACK:
-			channels = ESurfaceChannels::R;
-			break;
-		case FIC_RGBALPHA:
-			channels = swap ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
-			break;
-		default:
-			errorState.fail("Can't load bitmap from file; unknown pixel format");
-			FreeImage_Unload(fi_bitmap);
-			return false;
-		}
-
-		int width = FreeImage_GetWidth(fi_bitmap);
-		int height = FreeImage_GetHeight(fi_bitmap);
-
-		// copy image data
-		mSurfaceDescriptor = SurfaceDescriptor(width, height, data_type, channels);
 		updatePixelFormat();
 		mData.resize(getSizeInBytes());
-		copyImageData(FreeImage_GetBits(fi_bitmap), FreeImage_GetPitch(fi_bitmap), channels, mData.data(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(), getWidth(), getHeight());
-		FreeImage_Unload(fi_bitmap);
+		copyImageData((const uint8*)file_buffer.getData(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(), mData.data(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(), getWidth(), getHeight());
+
 		return true;
 	}
 
@@ -248,31 +180,19 @@ namespace nap
 	}
 
 
-	bool Bitmap::writeToDisk(const std::string& path, utility::ErrorState& errorState)
+	bool Bitmap::save(const std::string& path, utility::ErrorState& errorState)
 	{
-		// Check if image is allocated
+		// Check if the bitmap is allocated
 		if (!errorState.check(!empty(), "Bitmap is not allocated"))
 			return false;
 
-		FREE_IMAGE_TYPE fi_img_type = utility::getFIType(mSurfaceDescriptor.getDataType(), mSurfaceDescriptor.getChannels());
-		int bpp = mSurfaceDescriptor.getBytesPerPixel() * 8;
-		int pitch = mSurfaceDescriptor.getPitch();
-		
-		// Wrap bitmap data with FIBITMAP header
-		// Please note that color masks are only supported for 16-bit RGBA images and ignored for any other color depth
-		FIBITMAP* fi_bitmap = FreeImage_ConvertFromRawBitsEx(
-			false, mData.data(), fi_img_type, getWidth(), getHeight(), pitch, bpp,
-			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
-		);
-
-		// Write
-		if (!utility::writeToDisk(fi_bitmap, fi_img_type, path, errorState)) {
+		// Wrap the bitmap data and write to disk
+		BitmapFileBuffer file_buffer{ *this, false };
+		if (!file_buffer.save(path, errorState)) 
+		{
 			errorState.fail("Failed to write bitmap to disk");
 			return false;
 		}
-
-		// Unload header
-		FreeImage_Unload(fi_bitmap);
 		return true;
 	}
 

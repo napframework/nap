@@ -8,7 +8,7 @@
 #include "surfacedescriptor.h"
 #include "renderservice.h"
 #include "bitmap.h"
-#include "bitmaputils.h"
+#include "bitmapfilebuffer.h"
 #include "perspcameracomponent.h"
 
 // External Includes
@@ -31,19 +31,7 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 
-		/**
-		* All supported output extensions for snapshots
-		*/
-		enum class EOutputExtension
-		{
-			PNG,					///< Portable Network Graphics (*.PNG)
-			JPG,					///< Independent JPEG Group (*.JPG, *.JIF, *.JPEG, *.JPE)
-			TIFF,					///< Tagged Image File Format (*.TIF, *.TIFF)
-			BMP						///< Windows or OS/2 Bitmap File (*.BMP)
-		};
-
 		Snapshot(Core& core);
-		~Snapshot() override;
 
 		/**
 		* Initialize this object after de-serialization
@@ -59,10 +47,22 @@ namespace nap
 
 		/**
 		* Take a high-res snapshot of the scene and save to the configured location on disk
+		* Make sure begin a headless recording in the render service e.g.
+		*
+		* ~~~~~{.cpp}
+		*				mRenderService->beginFrame();
+		*				if (mRenderService->beginHeadlessRecording())
+		*				{
+		*					...
+		*					mSnapShot->snap(camera, components_to_render);
+		*					mRenderService->endHeadlessRecording();
+		*				}
+		* ~~~~~
+		*
 		* @param camera Camera to take snapshot with
 		* @param comps Components to render
 		*/
-		bool takeSnapshot(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
+		bool snap(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
 
 		/**
 		* Returns the size of the snapshot
@@ -70,26 +70,19 @@ namespace nap
 		*/
 		glm::u32vec2 getSize() { return { mWidth, mHeight }; };
 
-		/**
-		* Returns a string representation of the configured output extension
-		* @return the output extension
-		*/
-		std::string getExtension();
+		uint32 mWidth = 0;															///< Property: 'Width' width of the snapshot in texels
+		uint32 mHeight = 0;															///< Property: 'Height' height of the snapshot in texels
 
+		uint32 mMaxCellWidth = 1920;												///< Property: 'mMaxCellWidth' max width of a cell
+		uint32 mMaxCellHeight = 1080;												///< Property: 'mMaxCellHeight' max height of a cell
 
-		uint32_t mWidth = 0;													///< Property: 'Width' width of the snapshot in texels
-		uint32_t mHeight = 0;													///< Property: 'Height' height of the snapshot in texels
+		glm::vec4 mClearColor{ 0.f, 0.f, 0.f, 1.f };								///< Property: 'ClearColor' color selection used for clearing the render target
+		RenderTexture2D::EFormat mTextureFormat = RenderTexture2D::EFormat::RGBA8;	///< Property: 'Format' texture format
+		ERasterizationSamples mRequestedSamples = ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'
+		bool mSampleShading = true;													///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
 
-		uint32_t mMaxCellWidth = 1920;											///< Property: 'mMaxCellWidth' max width of a cell
-		uint32_t mMaxCellHeight = 1080;											///< Property: 'mMaxCellHeight' max height of a cell
-
-		glm::vec4 mClearColor{ 0.f, 0.f, 0.f, 1.f };							///< Property: 'ClearColor' color selection used for clearing the render target
-		RenderTexture2D::EFormat mFormat = RenderTexture2D::EFormat::RGBA8;		///< Property: 'Format' texture format
-		ERasterizationSamples mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		bool mSampleShading = true;												///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-
-		std::string mOutputDir = "";											///< Property: 'OutputPath' Location of the directory where snapshots are saved to.
-		EOutputExtension mOutputExtension = EOutputExtension::PNG;				///< Property: 'OutputExtension' Extension of the snapshot image file.
+		std::string mOutputDirectory = "";																///< Property: 'OutputDirectory' Location of the directory where snapshots are saved to
+		BitmapFileBuffer::EImageFileFormat mImageFileFormat = BitmapFileBuffer::EImageFileFormat::PNG;	///< Property: 'ImageFormat' Image format of the snapshot image file
 
 		// Triggered when a snapshot is being processed
 		nap::Signal<> onSnapshot;
@@ -105,28 +98,23 @@ namespace nap
 		* Writes the destination bitmap to disk
 		* @return true if successful
 		*
-		* TODO: Make this into an async task! Guard mDstBitmap while writing to disk.
+		* TODO: Make this into an async task! Guard mDestBitmapFileBuffer while writing to disk.
 		*/
-		bool writeToDisk();
-		nap::Slot<> writeBitmapSlot = { [this]() -> void { writeToDisk(); } };
+		bool save();
+		nap::Slot<> mSaveBitmapSlot = { [this]() -> void { save(); } };
 
-		uint32_t mNumRows = 1;
-		uint32_t mNumColumns = 1;
+		uint32 mNumRows = 1;
+		uint32 mNumColumns = 1;
 
-		uint32_t mNumCells = 0;
+		uint32 mNumCells = 0;
 		glm::u32vec2 mCellSize = { 0, 0 };
 
 		std::vector<std::unique_ptr<RenderTexture2D>> mColorTextures;
 		std::unique_ptr<SnapshotRenderTarget> mRenderTarget;
 
-		std::unique_ptr<utility::FIBitmapInfo> mFIBitmapInfo;
-		std::vector<bool> mBitmapUpdateFlags;
+		std::vector<bool> mCellUpdateFlags;											//< List of update flags for each cell
+		nap::Signal<> onCellsUpdated;												//< Triggered when all cells are updated
 
-		// Triggered when all cells are updated
-		nap::Signal<> onCellsUpdated;
-
-		// Destination bitmap
-		FIBITMAP* mDstBitmap = nullptr;
-		bool mDstBitmapAllocated = false;
+		std::unique_ptr<BitmapFileBuffer> mDestBitmapFileBuffer;					//< The destination bitmap file buffer
 	};
 }
