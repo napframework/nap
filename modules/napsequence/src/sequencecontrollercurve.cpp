@@ -74,6 +74,7 @@ namespace nap
 							track_segment->mDuration = duration;
 
 							auto it = sUpdateSegmentFunctionMap.find(track->get_type());
+							assert(it!=sUpdateSegmentFunctionMap.end());
 							if (it != sUpdateSegmentFunctionMap.end())
 							{
 								(*this.*it->second)(*track);

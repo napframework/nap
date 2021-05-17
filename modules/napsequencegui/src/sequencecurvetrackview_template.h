@@ -5,10 +5,8 @@
 namespace nap
 {
 	template<typename T>
-	bool SequenceCurveTrackView::handleCurvePointActionPopup()
+	void SequenceCurveTrackView::handleCurvePointActionPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenCurvePointActionPopup<T>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenCurvePointActionPopup<T>>();
@@ -28,8 +26,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::CurvePointActionPopup<T>>();
 				int curveIndex = action->mCurveIndex;
 
@@ -45,6 +41,7 @@ namespace nap
 					mCurveCache.clear();
 
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mDirty = true;
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -80,16 +77,12 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
 	template<typename T>
-	bool SequenceCurveTrackView::handleSegmentValueActionPopup()
+	void SequenceCurveTrackView::handleSegmentValueActionPopup()
 	{
-		bool handled = false;
-
 		if (mState.mAction->isAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>())
 		{
 			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditSegmentCurveValuePopup<T>>();
@@ -109,8 +102,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Segment Value Actions"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingSegmentCurveValue<T>>();
 				int curveIndex = action->mCurveIndex;
 
@@ -145,8 +136,6 @@ namespace nap
 				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 			}
 		}
-
-		return handled;
 	}
 
 
@@ -340,7 +329,7 @@ namespace nap
 			if( mState.mClipboard->isClipboard<SequenceGUIClipboards::CurveSegmentClipboard>())
 			{
 				auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
-				if( curve_segment_clipboard->containsObject(segment.mID) )
+				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
 					ImVec4 red = ImGui::ColorConvertU32ToFloat4(guicolors::red);
 					red.w = 0.25f;
@@ -895,10 +884,12 @@ namespace nap
 			if (mState.mIsWindowFocused)
 			{
 				// check if hovered
-				if ((mState.mAction->isAction<SequenceGUIActions::None>() || mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
+				if ((mState.mAction->template isAction<SequenceGUIActions::None>() ||
+				     mState.mAction->template isAction<SequenceGUIActions::HoveringCurve>() ||
+					 mState.mAction->template isAction<SequenceGUIActions::HoveringSegment>())
 					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
 				{
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(tan_stream.str());
+					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(track.mID, tan_stream.str());
 					tan_point_hovered = true;
 				}
 				else if (mState.mAction->isAction<SequenceGUIActions::HoveringTanPoint>())

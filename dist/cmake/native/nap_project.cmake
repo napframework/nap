@@ -157,5 +157,11 @@ endif()
 
 # Package redistributable help on Windows
 if(WIN32)
-    INSTALL(FILES ${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
+    install(FILES ${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
+endif()
+
+# Provide Gatekeeper unquarantine script on macOS
+if(APPLE)
+    install(PROGRAMS "${NAP_ROOT}/cmake/project_creator/template/Unquarantine Project.command" DESTINATION .)
+    install(FILES "${NAP_ROOT}/cmake/project_creator/template/Help launching on macOS.txt" DESTINATION .)
 endif()

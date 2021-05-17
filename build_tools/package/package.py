@@ -62,6 +62,7 @@ def package(zip_release,
             clean, 
             include_timestamp_in_name, 
             build_label, 
+            package_name,
             build_projects,
             archive_source, 
             archive_source_zipped,
@@ -84,9 +85,17 @@ def package(zip_release,
 
     # Add timestamp and git revision for build info
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
-    (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
-    git_revision = git_revision.strip()
-    (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label, cross_compile_target)
+    git_revision = None
+    try:
+        (git_revision, _) = call(WORKING_DIR, ['git', 'rev-parse', 'HEAD'], True)
+        git_revision = git_revision.strip()
+    except Exception as e:
+        print("Warning: unable to get git revision")
+
+    # Construct package name if name not given
+    package_basename, source_archive_basename = package_name, package_name
+    if package_name is None:
+        (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label, cross_compile_target);
 
     # Ensure we won't overwrite any existing package
     if not archive_source_only and not overwrite:
@@ -760,6 +769,8 @@ if __name__ == '__main__':
                         help="Don't include timestamp in the release archive and folder name, for final releases")
     labelling_group.add_argument("-l", "--label", type=str,
                         help="An optional suffix for the package")    
+    labelling_group.add_argument("-n", "--name", type=str,
+                        help="Overrides the package name. NAP timestamp, version and label information is excluded")
 
     core_group = parser.add_argument_group('Core Behaviour')
     core_group.add_argument("-nz", "--no-zip", action="store_true",
@@ -848,6 +859,7 @@ if __name__ == '__main__':
             args.clean, 
             not args.no_timestamp, 
             args.label,
+            args.name,
             args.build_projects,
             args.archive_source or args.source_archive_only, 
             args.source_archive_zipped,

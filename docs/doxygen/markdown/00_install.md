@@ -41,7 +41,10 @@ NAP $(NAP_VERSION_FULL) supports macOS Catalina with XCode 11.7. Although NAP is
 
 Follow these steps for a guided installation:
 1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
-2. In `NAP-$(NAP_VERSION_FULL)-macOS/tools` run `check_build_environment` to guide you through installing prerequisites, following the instructions
+2. Ctrl-click on `tools/unquarantine_framework.command` and select Open to remove the framework from <a href="https://en.wikipedia.org/wiki/Gatekeeper_(macOS)" target="_blank">macOS' Gatekeeper</a> quarantine (see note below)
+3. In `NAP-$(NAP_VERSION_FULL)-macOS/tools` run `check_build_environment` to guide you through installing prerequisites, following the instructions
+
+Note: In a future release support for application bundles and codesigning will be assessed, however for the moment the script above is required to allow the framework to operate on a system with the Gatekeeper enabled. A similar script is included with packaged projects.
 
 _Manual Dependency Installation_
 

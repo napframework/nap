@@ -84,17 +84,26 @@ void MainWindow::addDocks()
 
 void MainWindow::addMenu()
 {
+	// Project
+	auto projectmenu = new QMenu("Project", menuBar());
+	{
+		auto openFileAction = new OpenProjectAction();
+		addAction(openFileAction);
+		projectmenu->addAction(openFileAction);
+		mRecentProjectsMenu = projectmenu->addMenu("Recent Projects");
+	}
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), projectmenu);
+
+	// File (Data)
 	auto filemenu = new QMenu("File", menuBar());
 	{
 		auto newFileAction = new NewFileAction();
 		addAction(newFileAction);
 		filemenu->addAction(newFileAction);
 
-		auto openFileAction = new OpenProjectAction();
+		auto openFileAction = new OpenFileAction();
 		addAction(openFileAction);
 		filemenu->addAction(openFileAction);
-
-		mRecentProjectsMenu = filemenu->addMenu("Recent Projects");
 
 		auto saveFileAction = new SaveFileAction();
 		addAction(saveFileAction);
@@ -107,9 +116,14 @@ void MainWindow::addMenu()
 		auto reloadFileAction = new ReloadFileAction();
 		addAction(reloadFileAction);
 		filemenu->addAction(reloadFileAction);
+
+		auto updateDefaultAction = new UpdateDefaultAction();
+		addAction(updateDefaultAction);
+		filemenu->addAction(updateDefaultAction);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 
+	// General Options
 	auto optionsMenu = new QMenu("Options", menuBar());
 	{
 		optionsMenu->addMenu(&mThemeMenu);
@@ -141,11 +155,13 @@ void MainWindow::updateWindowTitle()
 		return;
 	}
 
-	// Otherwise display current project
+	// Otherwise display current project & file
+	QFileInfo fi(getContext().getDocument()->getCurrentFilename());
 	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
-	setWindowTitle(QString("%1%2 %3 - %4").arg(QString::fromStdString(project_info->mTitle),
-											   changed, QString::fromStdString(project_info->mVersion),
-											   QApplication::applicationName()));
+	setWindowTitle(QString("%1%2 %3 | %4 - %5").arg(QString::fromStdString(project_info->mTitle),
+												changed, QString::fromStdString(project_info->mVersion),
+												fi.exists() ? fi.fileName() : "No File",
+												QApplication::applicationName()));
 }
 
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)

@@ -76,9 +76,14 @@ namespace nap
 			bool mAllowDeviceFailure = true;
 			
 			/**
-			 * If set to false the audio will start with only an output device.
+			 * If set to true the audio will start with only an output device.
 			 */
 			bool mDisableInput = false;
+
+			/**
+			 * If set to true the audio will start with only an input device.
+			 */
+			bool mDisableOutput = false;
 			
 			/**
 			 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
@@ -237,8 +242,7 @@ namespace nap
 			 * Tries to open the audio stream using the given settings.
 			 * @return true on success.
 			 */
-			bool openStream(int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount,
-			                float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState);
+			bool openStream(int hostApi, int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState);
 			
 			/**
 			 * Closes the current stream. Assumes that it has been opened successfully.

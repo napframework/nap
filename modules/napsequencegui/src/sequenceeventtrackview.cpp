@@ -23,9 +23,9 @@ namespace nap
 		return segment_views;
 	}
 
-	std::unordered_map<rttr::type, bool (SequenceEventTrackView::*)()>& SequenceEventTrackView::getEditEventHandlers()
+	std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()>& SequenceEventTrackView::getEditEventHandlers()
 	{
-		static std::unordered_map<rttr::type, bool(SequenceEventTrackView::*)()> popup_handlers;
+		static std::unordered_map<rttr::type, void(SequenceEventTrackView::*)()> popup_handlers;
 		return popup_handlers;
 	}
 
@@ -52,6 +52,22 @@ namespace nap
 	SequenceEventTrackView::SequenceEventTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state)
 		: SequenceTrackView(view, state)
 	{
+		// register applicable action handlers
+		registerActionHandler(RTTI_OF(OpenInsertEventSegmentPopup), std::bind(&SequenceEventTrackView::handleInsertEventSegmentPopup, this));
+		registerActionHandler(RTTI_OF(InsertingEventSegment), std::bind(&SequenceEventTrackView::handleInsertEventSegmentPopup, this));
+		registerActionHandler(RTTI_OF(OpenEditSegmentValuePopup), std::bind(&SequenceEventTrackView::handleEditSegmentValuePopup, this));
+		registerActionHandler(RTTI_OF(EditingSegment), std::bind(&SequenceEventTrackView::handleEditSegmentValuePopup, this));
+
+		/**
+		 * register all edit popups for all registered views for possible event actions
+		 * these views and actions are registered at static initialization, since we know all possible actions and
+		 * their corresponding views at that time ( see SequenceEventTrackView::registerViewType<T> )
+		 */
+		auto& edit_popup_map = getEditEventHandlers();
+		for(auto& pair : edit_popup_map)
+		{
+			registerActionHandler(pair.first, std::bind(pair.second, this));
+		}
 	}
 
 
@@ -192,9 +208,6 @@ namespace nap
 				0.0f, draw_list);
 
 			// static map of draw functions for different event types
-
-
-			//
 			auto type = segment.get()->get_type();
 			auto& segment_views = getSegmentViews();
 			auto it = segment_views.find(type);
@@ -213,37 +226,8 @@ namespace nap
 	}
 
 
-	bool SequenceEventTrackView::handlePopups()
+	void SequenceEventTrackView::handleInsertEventSegmentPopup()
 	{
-		if( handleInsertEventSegmentPopup() )
-			return true;
-
-		if( handleDeleteSegmentPopup() )
-			return true;
-
-		for(auto& type : getEventTypesVector())
-		{
-			auto& edit_popup_map = getEditEventHandlers();
-			auto it = edit_popup_map.find(type);
-			assert(it != edit_popup_map.end()); // type not found
-			if( it != edit_popup_map.end())
-			{
-				if( (*this.*it->second)() )
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-
-	bool SequenceEventTrackView::handleInsertEventSegmentPopup()
-	{
-		// popup handled
-		bool handled = false;
-
 		if (mState.mAction->isAction<OpenInsertEventSegmentPopup>())
 		{
 			// invoke insert sequence popup
@@ -258,8 +242,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Insert Event"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<InsertingEventSegment>();
 
 				for(auto& type : getEventTypesVector())
@@ -307,8 +289,6 @@ namespace nap
 				mState.mAction = createAction<None>();
 			}
 		}
-
-		return handled;
 	}
 
 
@@ -406,7 +386,7 @@ namespace nap
 					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
 					// if the clipboard contains this segment or is a different sequence, remove it
-					if (clipboard->containsObject(segment.mID))
+					if (clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
 					{
 						clipboard->removeObject(segment.mID);
 					}else
@@ -415,7 +395,7 @@ namespace nap
 
 
 						utility::ErrorState errorState;
-						clipboard->addObject(&segment, errorState);
+						clipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
 
 						// log any errors
 						if(errorState.hasErrors())
@@ -433,7 +413,7 @@ namespace nap
 			// if segment is in clipboard, line is red
 			if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
 			{
-				if( mState.mClipboard->containsObject(segment.mID) )
+				if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
 					line_color = guicolors::red;
 				}
@@ -469,11 +449,8 @@ namespace nap
 	}
 
 
-	bool SequenceEventTrackView::handleDeleteSegmentPopup()
+	void SequenceEventTrackView::handleEditSegmentValuePopup()
 	{
-		//
-		bool handled = false;
-
 		if (mState.mAction->isAction<OpenEditSegmentValuePopup>())
 		{
 			// invoke insert sequence popup
@@ -488,8 +465,6 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Edit Segment"))
 			{
-				handled = true;
-
 				auto* action = mState.mAction->getDerived<EditingSegment>();
 
 				bool display_copy = !mState.mClipboard->isClipboard<EventSegmentClipboard>();
@@ -512,14 +487,14 @@ namespace nap
 						utility::ErrorState errorState;
 						auto& controller = getEditor().getController<SequenceControllerEvent>();
 						const auto* event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-						mState.mClipboard->addObject(event_segment, errorState);
+						mState.mClipboard->addObject(event_segment, getPlayer().getSequenceFilename(), errorState);
 
 						// exit popup
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
 						ImGui::EndPopup();
 
-						return handled;
+						return;
 					}
 				}else
 				{
@@ -527,7 +502,7 @@ namespace nap
 					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
 					// is event contained by clipboard ? if so, add remove button
-					bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID);
+					bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename());
 
 					if( display_remove_from_clipboard )
 					{
@@ -546,7 +521,7 @@ namespace nap
 							mState.mAction = createAction<None>();
 							ImGui::EndPopup();
 
-							return handled;
+							return;
 						}
 					}else
 					{
@@ -561,7 +536,7 @@ namespace nap
 
 							// serialize object into clipboard
 							utility::ErrorState errorState;
-							clipboard->addObject(segment, errorState);
+							clipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
 
 							// log any errors
 							if(errorState.hasErrors())
@@ -574,7 +549,7 @@ namespace nap
 							mState.mAction = createAction<None>();
 							ImGui::EndPopup();
 
-							return handled;
+							return;
 						}
 					}
 				}
@@ -585,7 +560,7 @@ namespace nap
 					controller.deleteSegment(action->mTrackID, action->mSegmentID);
 
 					// remove segment from clipboard
-					if(mState.mClipboard->containsObject(action->mSegmentID))
+					if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
 					{
 						mState.mClipboard->removeObject(action->mSegmentID);
 					}
@@ -639,7 +614,7 @@ namespace nap
 			}
 		}
 
-		return handled;
+		return;
 	}
 
 
@@ -701,7 +676,7 @@ namespace nap
 		{
 			auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
-			if( mState.mClipboard->containsObject(segmentID) && getEditor().mSequencePlayer->getSequenceFilename() == clipboard->getSequenceName() )
+			if( mState.mClipboard->containsObject(segmentID, getPlayer().getSequenceFilename()) )
 			{
 				mState.mClipboard->removeObject(segmentID);
 
@@ -709,7 +684,7 @@ namespace nap
 				const auto* segment = controller.getSegment(trackID, segmentID);
 
 				utility::ErrorState errorState;
-				mState.mClipboard->addObject(segment, errorState);
+				mState.mClipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
 			}
 		}
 
@@ -749,7 +724,7 @@ namespace nap
 	}
 
 
-	static bool register_segment_view_string = SequenceEventTrackView::registerSegmentView<std::string>();
+	static bool register_segment_view_string = SequenceEventTrackView::registerEventView<std::string>();
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -782,7 +757,7 @@ namespace nap
 	}
 
 
-	static bool register_segment_view_float = SequenceEventTrackView::registerSegmentView<float>();
+	static bool register_segment_view_float = SequenceEventTrackView::registerEventView<float>();
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -815,7 +790,7 @@ namespace nap
 	}
 
 
-	static bool register_segment_view_int = SequenceEventTrackView::registerSegmentView<int>();
+	static bool register_segment_view_int = SequenceEventTrackView::registerEventView<int>();
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -845,7 +820,7 @@ namespace nap
 	}
 
 
-	static bool register_segment_view_vec2 = SequenceEventTrackView::registerSegmentView<glm::vec2>();
+	static bool register_segment_view_vec2 = SequenceEventTrackView::registerEventView<glm::vec2>();
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -876,5 +851,5 @@ namespace nap
 	}
 
 
-	static bool register_segment_view_vec3 = SequenceEventTrackView::registerSegmentView<glm::vec3>();
+	static bool register_segment_view_vec3 = SequenceEventTrackView::registerEventView<glm::vec3>();
 }

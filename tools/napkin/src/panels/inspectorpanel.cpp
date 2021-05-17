@@ -289,7 +289,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 {
 	auto doc = mModel.path().getDocument();
 
-	if (doc)
+	if (doc != nullptr)
 		disconnect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
 
 	if (path.isValid())
@@ -305,9 +305,8 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	mPathField.setText(QString::fromStdString(path.toString()));
 
 	mModel.setPath(path);
-
 	doc = path.getDocument();
-	if (doc)
+	if (doc != nullptr)
 		connect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
 
 	mTreeView.getTreeView().expandAll();
@@ -344,7 +343,10 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 
 void napkin::InspectorPanel::onFileClosing(const QString& filename)
 {
-	clear();
+	mModel.clearPath();
+	mPathField.setText("");
+	mTitle.setText("");
+	mSubTitle.setText("");
 }
 
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
@@ -368,6 +370,12 @@ void InspectorPanel::onObjectRemoved(Object* obj)
 	// If the currently edited object is being removed, clear the view
 	if (obj == mModel.path().getObject())
 		setPath({});
+}
+
+void napkin::InspectorModel::clearPath()
+{
+	mPath = PropertyPath();
+	clearItems();
 }
 
 bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const

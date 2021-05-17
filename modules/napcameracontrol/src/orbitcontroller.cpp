@@ -51,7 +51,6 @@ namespace nap
 		pointer_component->released.connect(std::bind(&OrbitControllerInstance::onMouseUp, this, std::placeholders::_1));
 
 		enable(getComponent<OrbitController>()->mLookAtPos);
-
 		return true;
 	}
 
@@ -64,28 +63,22 @@ namespace nap
 
 	void OrbitControllerInstance::enable(const glm::vec3& cameraPos, const glm::vec3& lookAtPos)
 	{
-		if (!mEnabled)
-		{
-			// Construct a lookat matrix. Note that if this is currently called when facing up or downward, the
-			// camera may flip around the y axis. Currently this is only called when starting orbit so it isn't
-			// much of a problem, but if it is, we need to find another way of constructing a lookat camera.
-			glm::vec3 up(0.0f, 1.0f, 0.0f);
-			glm::mat4 rotation = glm::lookAt(cameraPos, lookAtPos, up);
-			rotation = glm::inverse(rotation);
-			mTransformComponent->setRotate(rotation);
-			mLookAtPos = lookAtPos;
-			mEnabled = true;
-		}
+		// Construct a lookat matrix. Note that if this is currently called when facing up or downward, the
+		// camera may flip around the y axis. Currently this is only called when starting orbit so it isn't
+		// much of a problem, but if it is, we need to find another way of constructing a lookat camera.
+		glm::vec3 up(0.0f, 1.0f, 0.0f);
+		glm::mat4 rotation = glm::lookAt(cameraPos, lookAtPos, up);
+		rotation = glm::inverse(rotation);
+		mTransformComponent->setRotate(rotation);
+		mLookAtPos = lookAtPos;
+		mEnabled = true;
 	}
 
 
 	void OrbitControllerInstance::enable(const glm::vec3& lookAtPos)
 	{
-		if (!mEnabled)
-		{
-			glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
-			enable(translate, lookAtPos);
-		}
+		glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
+		enable(translate, lookAtPos);
 	}
 
 
@@ -94,13 +87,16 @@ namespace nap
 		if (!mEnabled)
 			return;
 
-		if (pointerPressEvent.mButton == EMouseButton::LEFT)
+		switch (pointerPressEvent.mButton)
 		{
+		case EMouseButton::LEFT:
 			mMode = EMode::Rotating;
-		}
-		else if (pointerPressEvent.mButton == EMouseButton::RIGHT)
-		{
+			break;
+		case EMouseButton::RIGHT:
 			mMode = EMode::Zooming;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -166,5 +162,4 @@ namespace nap
 		components.push_back(RTTI_OF(TransformComponent));
 		components.push_back(RTTI_OF(KeyInputComponent));
 	}
-
 }

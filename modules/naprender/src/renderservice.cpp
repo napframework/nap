@@ -1189,7 +1189,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero, 0, errorState);
+		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::Clear, 0, errorState);
 	}
 
 
@@ -1201,11 +1201,13 @@ namespace nap
 		assert(mSceneService != nullptr);
 
 		// Initialize SDL video
-		if (!errorState.check(SDL::initVideo(), "Failed to init SDL"))
+		mSDLInitialized = SDL::initVideo(errorState);
+		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
 			return false;
 
 		// Initialize shader compiler
-		if (!errorState.check(ShInitialize() != 0, "Failed to initialize shader compiler"))
+		mShInitialized = ShInitialize() != 0;
+		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
 
 		// Store render settings, used for initialization and global window creation
@@ -1511,8 +1513,18 @@ namespace nap
 			mInstance = VK_NULL_HANDLE;
 		}
 
-		SDL::shutdownVideo();
-		ShFinalize();
+		if (mShInitialized)
+		{
+			ShFinalize();
+			mShInitialized = false;
+		}
+
+		if (mSDLInitialized)
+		{
+			SDL::shutdownVideo();
+			mSDLInitialized = false;
+		}
+
 		mInitialized = false;
 	}
 	
@@ -1553,6 +1565,10 @@ namespace nap
 		// Transfer data to the GPU, including texture data and general purpose render buffers.
 		transferData(commandBuffer, [commandBuffer, this]()
 		{
+			for (Texture2D* texture : mTexturesToClear)
+				texture->clear(commandBuffer);
+			mTexturesToClear.clear();
+
 			for (Texture2D* texture : mTexturesToUpload)
 				texture->upload(commandBuffer);
 			mTexturesToUpload.clear();
@@ -1766,6 +1782,7 @@ namespace nap
 	void RenderService::removeTextureRequests(Texture2D& texture)
 	{
 		// When textures are destroyed, we also need to remove any pending texture requests
+		mTexturesToClear.erase(&texture);
 		mTexturesToUpload.erase(&texture);
 
 		for (Frame& frame : mFramesInFlight)
@@ -1775,6 +1792,12 @@ namespace nap
 				return existingTexture == &texture;
 			}), frame.mTextureDownloads.end());
 		}
+	}
+
+
+	void RenderService::requestTextureClear(Texture2D& texture)
+	{
+		mTexturesToClear.insert(&texture);
 	}
 
 

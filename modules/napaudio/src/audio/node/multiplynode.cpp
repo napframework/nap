@@ -8,14 +8,20 @@ namespace nap
 {
 	namespace audio
 	{
+
+		MultiplyNode::MultiplyNode(NodeManager& nodeManager, int reservedInputCount) : Node(nodeManager), inputs(this, reservedInputCount)
+		{
+			mInputBuffers.reserve(reservedInputCount);
+		}
+
 		
 		void MultiplyNode::process()
 		{
 			auto& outputBuffer = getOutputBuffer(audioOutput);
-			auto& inputBuffers = inputs.pull();
+			inputs.pull(mInputBuffers);
 			
 			// In case no inputs are connected, return zeros
-			if (inputBuffers.empty()) {
+			if (mInputBuffers.empty()) {
 				for (auto i = 0; i < outputBuffer.size(); ++i)
 					outputBuffer[i] = 0;
 				return;
@@ -23,17 +29,17 @@ namespace nap
 			
 			// Copy the first input to the output
 			auto inputIndex = 0;
-			auto inputBuffer = *inputBuffers.begin();
+			auto inputBuffer = *mInputBuffers.begin();
 			for (auto i = 0; i < outputBuffer.size(); ++i)
 				outputBuffer[i] = (*inputBuffer)[i];
 			
 			// Multiply the output with the consecutive inputs from the second onwards
-			for (inputIndex = 1; inputIndex < inputBuffers.size(); ++inputIndex) {
-				inputBuffer = inputBuffers[inputIndex];
+			for (inputIndex = 1; inputIndex < mInputBuffers.size(); ++inputIndex) {
+				inputBuffer = mInputBuffers[inputIndex];
 				for (auto i = 0; i < outputBuffer.size(); ++i)
 					outputBuffer[i] *= (*inputBuffer)[i];
 			}
 		}
-		
+
 	}
 }

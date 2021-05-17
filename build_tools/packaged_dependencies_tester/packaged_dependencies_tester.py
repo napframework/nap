@@ -2,6 +2,7 @@
 
 """This script does some crude dependencies testing on a NAP framework release. See the README."""
 
+from __future__ import print_function
 import argparse
 import copy
 import datetime
@@ -15,6 +16,7 @@ import shutil
 import signal
 import sys
 import time
+import sys
 
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
@@ -272,6 +274,9 @@ SCRIPT_DEBUG_ONE_PROJECT_ONLY = False
 # TODO Temporary global until upcoming small restructure
 TREAT_UNEXPECTED_LIBS_AS_ERROR = True
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 def call_capturing_output(cmd, shell=True):
     """Run specified command, capturing output
 
@@ -323,7 +328,7 @@ def get_packaged_project_output_path(project_name, pre_files, post_files):
         if f.lower().startswith(project_name):
             return f
 
-    print("Error: get_packaged_project_output_path() sees no difference")
+    eprint("Error: get_packaged_project_output_path() sees no difference")
     return None
 
 def is_linux():
@@ -453,7 +458,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
             # Process done, if the success code matches we've had a successful Napkin run
             success = p.returncode == success_exit_code
         else:
-            print("  Error: Process already done?")
+            eprint("  Error: Process already done?")
             (stdout, stderr) = p.communicate()
             if type(stdout) == bytes:
                 stdout = stdout.decode('utf8')
@@ -632,7 +637,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
                 in_system_path = True
 
                 if not ".so" in filename:
-                    print("Error: Unhandled Linux library due to lacking .so: %s" % path)
+                    eprint("Error: Unhandled Linux library due to lacking .so: %s" % path)
                     return False
 
                 # Get short library name used for verification
@@ -656,10 +661,10 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
             return True
         else:
             level = "Error" if TREAT_UNEXPECTED_LIBS_AS_ERROR else "Warning"
-            print("%s: unexpected system library encountered: %s" % (level, file_path))
+            eprint("%s: unexpected system library encountered: %s" % (level, file_path))
             return False
     else:
-        print("Error: library found outside of system path: %s" % file_path)
+        eprint("Error: library found outside of system path: %s" % file_path)
         return False
 
 def linux_system_library_accepted(short_lib_name):
@@ -715,9 +720,9 @@ def regenerate_cwd_project(build_type=PROJECT_BUILD_TYPE):
     if success:
         print("  Done.")
     else:
-        print("  Error: Couldn't regenerate, return code: %s" % returncode)
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
+        eprint("  Error: Couldn't regenerate, return code: %s" % returncode)
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
     
     return (success, stdout, stderr)
 
@@ -758,9 +763,9 @@ def build_cwd_project(project_name, build_type=PROJECT_BUILD_TYPE):
     if success:
         print("  Done.")              
     else:
-        print("  Error: Couldn't build, return code: %s" % returncode)
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
+        eprint("  Error: Couldn't build, return code: %s" % returncode)
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
 
     os.chdir(os.path.pardir)
 
@@ -809,9 +814,9 @@ def package_cwd_project_with_napkin(project_name, root_output_dir, timestamp):
         patch_audio_service_configuration('.', home_output, project_name, nap_framework_full_path)
         print("  Done. Moving to %s." % home_output)
     else:
-        print("  Error: Couldn't package project, return code: %s" % returncode)
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
+        eprint("  Error: Couldn't package project, return code: %s" % returncode)
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
 
     return (success, stdout, stderr)
 
@@ -855,11 +860,11 @@ def run_cwd_project(project_name, nap_framework_full_path, build_type=PROJECT_BU
     if success:
         print("  Done.")
     else:
-        print("  Error: Couldn't run from build dir")
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
-        print("  Unexpected libraries: %s" % repr(unexpected_libs))
-        print("  Exit code: %s" % return_code) 
+        eprint("  Error: Couldn't run from build dir")
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
+        eprint("  Exit code: %s" % return_code) 
 
     return (success, stdout, stderr, unexpected_libs, return_code)
 
@@ -890,11 +895,11 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
     if success:
         print("  Done.")
     else:
-        print("  Error: Couldn't run from package")
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
-        print("  Unexpected libraries: %s" % repr(unexpected_libs))
-        print("  Exit code: %s" % return_code)
+        eprint("  Error: Couldn't run from package")
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
+        eprint("  Exit code: %s" % return_code)
 
     results['runFromPackagedOutput'] = {}
     results['runFromPackagedOutput']['success'] = success
@@ -904,7 +909,7 @@ def run_packaged_project(results, root_output_dir, timestamp, project_name, has_
     if not success:
         results['runFromPackagedOutput']['exitCode'] = return_code
 
-def build_and_package(root_output_dir, timestamp, testing_projects_dir):
+def build_and_package(root_output_dir, timestamp, testing_projects_dir, projects_to_exclude):
     """Configure, build and package all demos
 
     Parameters
@@ -923,8 +928,10 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
     """
 
     demos_root_dir = os.getcwd()
-
     demo_results = {}
+    excluded_projects = projects_to_exclude.split()
+    for project in excluded_projects:
+        print("excluding project: {0}".format(project))
 
     # Iterate demos
     sorted_dirs = os.listdir('.')
@@ -938,6 +945,10 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir):
         # If we're iterating our projects directory and we've already got our template project in there
         # from a previous run, don't built it in here as we'll build it separately later
         if demo_name == TEMPLATE_APP_NAME.lower() and testing_projects_dir != DEFAULT_TESTING_PROJECTS_DIR:
+            continue
+
+        # If the project is excluded, skip
+        if demo_name.lower() in excluded_projects:
             continue
 
         print("----------------------------")
@@ -1066,7 +1077,7 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
 
     # Fail if there's no healthy demo
     if napkin_package_demo is None:
-        print("Error: no demo found to package Napkin with")
+        eprint("Error: no demo found to package Napkin with")
         return {}
 
     print("Demo: %s" % napkin_package_demo)
@@ -1098,9 +1109,9 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
         print("  Done. Moving to %s." % home_output)
         os.rename(output_path, home_output)
     else:
-        print("  Error: Couldn't package with Napkin, return code: %s" % returncode)
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
+        eprint("  Error: Couldn't package with Napkin, return code: %s" % returncode)
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
 
     os.chdir(os.path.pardir)
     misc_results = {'packagedWithoutNapkin': results}
@@ -1173,9 +1184,9 @@ def create_build_and_package_template_app(root_output_dir, timestamp):
                 template_results['package']['stderr'] = stderr
     else:
         # Couldn't create, print logs
-        print("  Error: Couldn't create project from template, return code: %s" % returncode)
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
+        eprint("  Error: Couldn't create project from template, return code: %s" % returncode)
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
 
     os.chdir(prev_cwd)
     return template_results
@@ -1300,11 +1311,11 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
     if success:
         print("  Done.")
     else:
-        print("  Error: Running Napkin from Framework Release without project failed")
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
-        print("  Unexpected libraries: %s" % repr(unexpected_libs))        
-        print("  Exit code: %s" % return_code)
+        eprint("  Error: Running Napkin from Framework Release without project failed")
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        eprint("  Exit code: %s" % return_code)
 
     os.chdir(prev_wd)
 
@@ -1347,11 +1358,11 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
         if success:
             print("  Done.")
         else:
-            print("  Error: Failed to open project")
-            print("  STDOUT: %s" % stdout)
-            print("  STDERR: %s" % stderr)
-            print("  Unexpected libraries: %s" % repr(unexpected_libs))
-            print("  Exit code: %s" % return_code)
+            eprint("  Error: Failed to open project")
+            eprint("  STDOUT: %s" % stdout)
+            eprint("  STDERR: %s" % stderr)
+            eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
+            eprint("  Exit code: %s" % return_code)
 
         print("----------------------------")
 
@@ -1393,11 +1404,11 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
         if success:
             print("  Done.")
         else:
-            print("  Error: Failed to open project")
-            print("  STDOUT: %s" % stdout)
-            print("  STDERR: %s" % stderr)
-            print("  Unexpected libraries: %s" % repr(unexpected_libs))        
-            print("  Exit code: %s" % return_code)
+            eprint("  Error: Failed to open project")
+            eprint("  STDOUT: %s" % stdout)
+            eprint("  STDERR: %s" % stderr)
+            eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+            eprint("  Exit code: %s" % return_code)
     else:
         print("  Skipping due to build failure")
 
@@ -1450,11 +1461,11 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     if success:
         print("  Done.")
     else:
-        print("  Error: Napkin from package failed to run")
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
-        print("  Unexpected libraries: %s" % repr(unexpected_libs))        
-        print("  Exit code: %s" % return_code)
+        eprint("  Error: Napkin from package failed to run")
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        eprint("  Exit code: %s" % return_code)
 
 def open_project_in_napkin_from_packaged_app(results, project_name, root_output_dir, timestamp):
     """Open project from Napkin in packaged app
@@ -1494,11 +1505,11 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
     if success:
         print("  Done.")
     else:
-        print("  Error: Napkin from package failed to open project")
-        print("  STDOUT: %s" % stdout)
-        print("  STDERR: %s" % stderr)
-        print("  Unexpected libraries: %s" % repr(unexpected_libs))        
-        print("  Exit code: %s" % return_code)
+        eprint("  Error: Napkin from package failed to open project")
+        eprint("  STDOUT: %s" % stdout)
+        eprint("  STDERR: %s" % stderr)
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        eprint("  Exit code: %s" % return_code)
 
     print("----------------------------")
 
@@ -1879,7 +1890,8 @@ def dump_json_report(starting_dir,
                      napkin_results,
                      misc_results,
                      always_include_logs,
-                     warnings):
+                     warnings,
+                     excluded_projects):
     """Create a JSON report for the test run, to REPORT_FILENAME
 
     Parameters
@@ -1906,6 +1918,7 @@ def dump_json_report(starting_dir,
         Whether to force inclusion logs for all processes into report, not just on failure
     warnings : list of str
         Any warnings generated throughout the testing
+    excluded: projects that are excluded str
     """
     
     report = {}
@@ -1917,6 +1930,7 @@ def dump_json_report(starting_dir,
     report['run']['startTime'] = timestamp
     report['run']['frameworkPath'] = nap_framework_full_path
     report['run']['warnings'] = warnings
+    report['run']['excluded'] = excluded_projects
 
     # Pull in build info
     with open(os.path.join(nap_framework_full_path, 'cmake', 'build_info.json'), 'r') as build_data:
@@ -2198,6 +2212,7 @@ def perform_test_run(nap_framework_path,
                      rename_framework, 
                      rename_qt, 
                      create_fake_projects,
+                     excluded_projects,
                      fail_on_unexpected_libs):
     """Main entry point to the testing
 
@@ -2226,11 +2241,6 @@ def perform_test_run(nap_framework_path,
         Success of entire run
     """
 
-    # Check to see if the specified path exists
-    if not os.path.exists(nap_framework_path):
-        print("Error: %s doesn't exist" % nap_framework_path)
-        return False
-
     starting_dir = os.getcwd()
     root_output_dir = os.path.abspath('.')
     nap_framework_full_path = os.path.abspath(nap_framework_path)
@@ -2244,7 +2254,7 @@ def perform_test_run(nap_framework_path,
 
     # Check to see if our framework path looks valid
     if not os.path.exists(os.path.join(nap_framework_full_path, 'cmake', 'build_info.json')):
-        print("Error: %s doesn't look like a valid extracted NAP framework" % nap_framework_path)
+        eprint("Error: %s doesn't look like a valid extracted NAP framework" % nap_framework_path)
         return False
 
     # Warn if an existing template is about to be overwritten
@@ -2283,7 +2293,7 @@ def perform_test_run(nap_framework_path,
     # Configure, build and package all demos
     phase += 1
     print("============ Phase #%s - Building and packaging demos ============" % phase)
-    demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir)
+    demo_results = build_and_package(root_output_dir, timestamp, testing_projects_dir, excluded_projects)
 
     # Package a demo with Napkin
     phase += 1
@@ -2304,7 +2314,7 @@ def perform_test_run(nap_framework_path,
     os.chdir(os.path.join(nap_framework_full_path, testing_projects_dir))
     build_other_build_type_demo(other_build_type, misc_results)
     if not misc_results['otherBuildType']:
-        print("Error: Didn't build %s build type demo" % other_build_type)
+        eprint("Error: Didn't build %s build type demo" % other_build_type)
 
     # If running as root on Linux (which is necessary to test websocket functionality) launch pulseaudio for root
     if is_linux_root():
@@ -2438,7 +2448,8 @@ def perform_test_run(nap_framework_path,
             napkin_results,
             misc_results,
             force_log_reporting,
-            warnings)
+            warnings,
+            excluded_projects)
 
     # Log summary
     print("============ Summary ============")        
@@ -2456,7 +2467,7 @@ def perform_test_run(nap_framework_path,
         for warning in warnings:
             print("- %s" % warning)
     else:
-        print("Error: %s has issues" % nap_framework_path)
+        eprint("Error: %s has issues" % nap_framework_path)
 
     return run_success
 
@@ -2475,6 +2486,8 @@ if __name__ == '__main__':
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
     parser.add_argument('-nf', '--no-fake-projects', action='store_true',
                         help="Don't create fake projects for modules that aren't represented in any demos")
+    parser.add_argument('--exclude-projects', type=str, default='', action='store',
+                        help="space separated list of projects that are excluded from testing")
     parser.add_argument('--fail-on-unexpected-libs', action='store_true',
                         help="Fail the test run if unexpected libraries are encountered")
     if not is_windows():
@@ -2485,7 +2498,15 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # TODO Look into better options, or at least gracefully handle failure
+    # Ensure working directory is location of this file, ensures relative paths are resolved correctly
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    # Ensure package directory exists
+    if not os.path.exists(args.NAP_FRAMEWORK_PATH):
+        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))  
+        sys.exit(1)
+
+    # Import python helpers
     sys.path.append(os.path.join(args.NAP_FRAMEWORK_PATH, 'tools', 'platform'))
     from nap_shared import get_full_project_module_requirements
 
@@ -2501,5 +2522,6 @@ if __name__ == '__main__':
                                not args.no_rename_framework,
                                not args.no_rename_qt,
                                not args.no_fake_projects,
+                               args.exclude_projects,
                                args.fail_on_unexpected_libs)
     sys.exit(not success)

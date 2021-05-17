@@ -4,6 +4,8 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
+#include <rendergnomoncomponent.h>
+#include <perspcameracomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@PROJECT_NAME_PASCALCASE@App)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -26,9 +28,6 @@ namespace nap
 		// Fetch the resource manager
 		mResourceManager = getCore().getResourceManager();
 
-		// Fetch the scene
-		mScene = mResourceManager->findObject<Scene>("Scene");
-
 		// Convert our path and load resources from file
 		if (!mResourceManager->loadFile("objects.json", error))
 			return false;
@@ -41,6 +40,16 @@ namespace nap
 		// Get the scene that contains our entities and components
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
+			return false;
+
+		// Get the camera entity
+		mCameraEntity = mScene->findEntity("CameraEntity");
+		if (!error.check(mCameraEntity != nullptr, "unable to find camera entity with name: %s", "CameraEntity"))
+			return false;
+
+		// Get the Gnomon entity
+		mGnomonEntity = mScene->findEntity("GnomonEntity");
+		if (!error.check(mGnomonEntity != nullptr, "unable to find origin Gnomon entity with name: %s", "GnomonEntity"))
 			return false;
 
 		// All done!
@@ -70,6 +79,18 @@ namespace nap
 		{
 			// Begin render pass
 			mRenderWindow->beginRendering();
+
+			// Get Perspective camera to render with
+			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+
+			// Add Gnomon
+			std::vector<nap::RenderableComponentInstance*> components_to_render
+			{
+				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>()
+			};
+
+			// Render Gnomon
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render);
 
 			// Render GUI elements
 			mGuiService->draw();
