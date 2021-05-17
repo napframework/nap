@@ -6,13 +6,14 @@
 
 // Local Includes
 #include "color.h"
+#include "surfacedescriptor.h"
 
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
 #include <nap/event.h>
 #include <nap/signalslot.h>
-#include "surfacedescriptor.h"
+
 
 namespace nap
 {

@@ -15,7 +15,7 @@
 
 RTTI_BEGIN_ENUM(nap::BitmapFileBuffer::EImageFileFormat)
 	RTTI_ENUM_VALUE(nap::BitmapFileBuffer::EImageFileFormat::PNG, "PNG"),
-	RTTI_ENUM_VALUE(nap::BitmapFileBuffer::EImageFileFormat::JPG, "JPG"),
+	RTTI_ENUM_VALUE(nap::BitmapFileBuffer::EImageFileFormat::JPEG, "JPEG"),
 	RTTI_ENUM_VALUE(nap::BitmapFileBuffer::EImageFileFormat::TIFF, "TIFF"),
 	RTTI_ENUM_VALUE(nap::BitmapFileBuffer::EImageFileFormat::BMP, "BMP")
 RTTI_END_ENUM
@@ -28,7 +28,7 @@ RTTI_END_ENUM
 static const std::unordered_map<nap::BitmapFileBuffer::EImageFileFormat, FREE_IMAGE_FORMAT> sImageFileFormatMap
 {
 	{ nap::BitmapFileBuffer::EImageFileFormat::PNG,		FREE_IMAGE_FORMAT::FIF_PNG },
-	{ nap::BitmapFileBuffer::EImageFileFormat::JPG,		FREE_IMAGE_FORMAT::FIF_JPEG },
+	{ nap::BitmapFileBuffer::EImageFileFormat::JPEG,	FREE_IMAGE_FORMAT::FIF_JPEG },
 	{ nap::BitmapFileBuffer::EImageFileFormat::TIFF,	FREE_IMAGE_FORMAT::FIF_TIFF },
 	{ nap::BitmapFileBuffer::EImageFileFormat::BMP,		FREE_IMAGE_FORMAT::FIF_BMP }
 };
@@ -241,9 +241,8 @@ namespace nap
 			}
 		}
 
-		// Get format
+		// Get free image format from file format
 		std::string ext = utility::getFileExtension(path).c_str();
-		ext = (ext == "jpg") ? "jpeg" : ext;
 
 		FREE_IMAGE_FORMAT fi_img_format = FreeImage_GetFIFFromFormat(ext.c_str());
 		if (!errorState.check(fi_img_format != FIF_UNKNOWN, "Unable to determine image format: %s", ext.c_str()))

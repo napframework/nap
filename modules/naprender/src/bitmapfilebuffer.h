@@ -22,7 +22,7 @@ namespace nap
 		enum class EImageFileFormat : int
 		{
 			PNG,		///< Portable Network Graphics (*.PNG)
-			JPG,		///< Independent JPEG Group (*.JPG, *.JIF, *.JPEG, *.JPE)
+			JPEG,		///< Independent JPEG Group (*.JPG, *.JIF, *.JPEG, *.JPE)
 			TIFF,		///< Tagged Image File Format (*.TIF, *.TIFF)
 			BMP			///< Windows or OS/2 Bitmap File (*.BMP)
 		};

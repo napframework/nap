@@ -27,6 +27,8 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
+constexpr const char* snapshotFolderName = "snapshots";
+
 /**
  * Deduce bitmap type from render texture format. Also informs of the supported output types.
  * @param format the render texture format
@@ -226,7 +228,7 @@ namespace nap
 	bool Snapshot::save()
 	{
 		// Save to snapshots directory in executable directory if the given output directory is empty
-		std::string output_dir = mOutputDirectory.empty() ? utility::joinPath({ utility::getExecutableDir(), "snapshots" }) : mOutputDirectory;
+		std::string output_dir = mOutputDirectory.empty() ? utility::joinPath({ utility::getExecutableDir(), snapshotFolderName }) : mOutputDirectory;
 		std::string path = utility::appendFileExtension(utility::joinPath(
 		{
 			output_dir.c_str(),
@@ -236,8 +238,8 @@ namespace nap
 		utility::ErrorState error_state;
 		if (!mDestBitmapFileBuffer->save(path, error_state))
 		{
-			error_state.fail("%s: Failed to save snapshot to %s", mID.c_str(), path.c_str());
-			nap::Logger::error("%s", error_state.toString().c_str());
+			error_state.fail("%s: Failed to save snapshot %s", mID.c_str(), path.c_str());
+			nap::Logger::error(error_state.toString());
 			return false;
 		};
 
