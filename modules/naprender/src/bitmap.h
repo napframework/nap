@@ -11,7 +11,6 @@
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
-#include <nap/event.h>
 #include <nap/signalslot.h>
 
 
