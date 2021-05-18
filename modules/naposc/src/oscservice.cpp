@@ -110,7 +110,8 @@ namespace nap
 		auto receiverPtr = &receiver;
 		if (mControlThread != nullptr)
 			mControlThread->enqueue([&, receiverPtr](){ mReceivers.emplace_back(receiverPtr); });
-		mReceivers.emplace_back(receiverPtr);
+		else
+			mReceivers.emplace_back(receiverPtr);
 	}
 
 
@@ -138,9 +139,8 @@ namespace nap
 		auto inputPtr = &input;
 		if (mControlThread != nullptr)
 			mControlThread->enqueue([&, inputPtr](){ mInputs.emplace_back(inputPtr); });
-		mInputs.emplace_back(inputPtr);
-
-		mInputs.emplace_back(inputPtr);
+		else
+			mInputs.emplace_back(inputPtr);
 	}
 
 
