@@ -62,10 +62,12 @@ namespace nap
 
 	void ControlThread::loop()
 	{
-		HighResolutionTimer timer;
 		MicroSeconds frame_time;
 		MicroSeconds delay_time;
 		mRunning =  true;
+		mLastTimeStamp = 0.f;
+		HighResolutionTimer timer;
+		timer.start();
 
 		while (isRunning())
 		{
