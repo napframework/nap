@@ -232,7 +232,6 @@ bool AppContext::saveDocument()
 
 bool AppContext::saveDocumentAs(const QString& filename)
 {
-
 	std::string serialized_document = documentToString();
 	if (serialized_document.empty())
 		return false;
@@ -242,13 +241,11 @@ bool AppContext::saveDocumentAs(const QString& filename)
 	out.close();
 
 	getDocument()->setFilename(filename);
-
-	nap::Logger::info("Written file: " + filename.toStdString());
+	nap::Logger::info("Written '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	documentSaved(filename);
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
-
 	return true;
 }
 

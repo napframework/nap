@@ -156,6 +156,7 @@ add_subdirectory(demos/facedetection/module)
 add_subdirectory(demos/sequencer)
 add_subdirectory(demos/paintobject)
 add_subdirectory(demos/licensecheck)
+add_subdirectory(demos/tween)
 
 # Unit tests
 add_subdirectory(unittests)
@@ -198,6 +199,7 @@ add_subdirectory(modules/napcolor)
 add_subdirectory(modules/napsequence)
 add_subdirectory(modules/napsequencegui)
 add_subdirectory(modules/naplicense)
+add_subdirectory(modules/naptween)
 add_subdirectory(modules/napcalendar)
 
 # Packaging

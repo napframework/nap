@@ -6,6 +6,7 @@
 
 #include <QString>
 #include <QStandardItem>
+#include <nap/core.h>
 
 /**
  * It's kinda dirty but we do need some literals and this is the limbo they end up in (for now...).
@@ -24,7 +25,8 @@ namespace napkin
 
 	// The file filter used by file dialogs
 	static const QString JSON_FILE_EXT = "json";
-	static const QString JSON_FILE_FILTER = QString("NAP JSON File (*.%1)").arg(JSON_FILE_EXT);
+	static const QString JSON_DATA_FILTER = QString("NAP Data File (*.%1)").arg(JSON_FILE_EXT);
+	static const QString JSON_PROJECT_FILTER = QString("NAP Project File (%1)").arg(PROJECT_INFO_FILENAME);
 
 	static const QString DEFAULT_SETTINGS_FILE = "resources/defaultsettings.ini";
 
