@@ -15,7 +15,6 @@ using namespace nap::SequenceGUIActions;
 
 namespace nap
 {
-
 	SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
 		mView(view), mState(state), mService(view.getService())
 	{

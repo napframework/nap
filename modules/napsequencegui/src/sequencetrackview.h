@@ -41,7 +41,7 @@ namespace nap
 		/**
 		 * Destructor
 		 */
-        virtual ~SequenceTrackView()= default;;
+        virtual ~SequenceTrackView()= default;
 
 		/**
 		 * handles any actions that are created upon show

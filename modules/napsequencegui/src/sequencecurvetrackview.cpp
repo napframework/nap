@@ -22,7 +22,7 @@ namespace nap
 	using namespace SequenceGUIClipboards;
 
 	SequenceCurveTrackView::SequenceCurveTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
-		: mService(service), SequenceTrackView(view, state)
+		: SequenceTrackView(view, state)
 	{
 		registerActionHandler(RTTI_OF(OpenInsertSegmentPopup) , std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
 		registerActionHandler(RTTI_OF(InsertingSegmentPopup) , std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));

@@ -32,7 +32,7 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		SequenceEventTrackSegmentViewBase()= default;
+		SequenceEventTrackSegmentViewBase() = default;
 
 		/**
 		 * Deconstructor
@@ -41,14 +41,14 @@ namespace nap
 
 		/**
 		 * Extend this method to implement the way editing this event type must be handle in the GUI
-		 * For examples, see template specialisations in SequenceEventTrackView.cpp
+		 * For examples, see template specializations in SequenceEventTrackView.cpp
 		 * @param action the incoming action from the gui, contains information about the track time and segment. Segment can be assumed to be of type SequenceTrackSegmentEvent<T>
 		 */
 		virtual void handleEditPopupContent(SequenceGUIActions::Action& action) = 0;
 
 		/**
 		 * Extend this method to specify a way to draw this event type
-		 * For examples, see template specialisations in SequenceEventTrackView.cpp
+		 * For examples, see template specializations in SequenceEventTrackView.cpp
 		 * @param segment reference to segment
 		 * @param drawList pointer to ImGui drawlist
 		 * @param topLeft top left position
@@ -58,7 +58,7 @@ namespace nap
 
 		/**
 		 * Extend this method to specify the way the controller needs to be called to add your custom event type
-		 * Generally, this method doesn't need specialisation
+		 * Generally, this method doesn't need specialization
 		 * @param controller reference to controller
 		 * @param trackID id of event track
 		 * @param time time at which to insert custom event
@@ -67,7 +67,7 @@ namespace nap
 
 		/**
 		 * Extend this method to specify the way an edit action for this event segment needs to be created
-		 * Generally, this method doesn't need specialisation
+		 * Generally, this method doesn't need specialization
 		 * @param segment const pointer to segment
 		 * @param trackID the track id
 		 * @param segmentID the segment id
@@ -83,7 +83,7 @@ namespace nap
 	 * You can register new views for new type of events from outside, enabling to write your own views and add your own event types relatively simple
 	 * Extend this class if you want a view for your own event type
 	 * Override the methods "handleEditPopupContent" and "drawEvent" when implementing your custom view for your custom event
-	 * For examples. Take a look at the template specialisations in SequenceEventTrackView.cpp
+	 * For examples. Take a look at the template specializations in SequenceEventTrackView.cpp
 	 */
 	template<typename T>
 	class NAPAPI SequenceEventTrackSegmentView final : public SequenceEventTrackSegmentViewBase
@@ -97,14 +97,14 @@ namespace nap
 
 		/**
 		 * This method needs specialization in order to implement the way popups are handled when editing this segment
-		 * For examples, see template specialisations in SequenceEventTrackView.cpp
+		 * For examples, see template specializations in SequenceEventTrackView.cpp
 		 * @param action the incoming action from the gui, contains information about the track time and segment. Segment can be assumed to be of type SequenceTrackSegmentEvent<T>
 		 */
 		void handleEditPopupContent(SequenceGUIActions::Action& action) override;
 
 		/**
-		 * Specialise this method to specify a way to draw this event type
-		 * For examples, see template specialisations in SequenceEventTrackView.cpp
+		 * Specialize this method to specify a way to draw this event type
+		 * For examples, see template specializations in SequenceEventTrackView.cpp
 		 * @param segment reference to segment
 		 * @param drawList pointer to ImGui drawlist
 		 * @param topLeft top left position
@@ -113,8 +113,8 @@ namespace nap
 		void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x) override;
 
 		/**
-		 * Specialise this method to specify the way the controller needs to be called to add your custom event type
-		 * Generally, this method doesn't need specialisation
+		 * Specialize this method to specify the way the controller needs to be called to add your custom event type
+		 * Generally, this method doesn't need specialization
 		 * @param controller reference to controller
 		 * @param trackID id of event track
 		 * @param time time at which to insert custom event
@@ -122,8 +122,8 @@ namespace nap
 		void insertSegment(SequenceControllerEvent& controller, const std::string& trackID, double time) override;
 
 		/**
-		 * Specialise this method to specify the way an edit action for this event segment needs to be created
-		 * Generally, this method doesn't need specialisation
+		 * Specialize this method to specify the way an edit action for this event segment needs to be created
+		 * Generally, this method doesn't need specialization
 		 * @param segment const pointer to segment
 		 * @param trackID the track id
 		 * @param segmentID the segment id
@@ -133,14 +133,12 @@ namespace nap
 	protected:
 	};
 
-
 	/**
 	 * SequenceEventTrackView is a view for event tracks
 	 */
 	class NAPAPI SequenceEventTrackView final : public SequenceTrackView
 	{
 		friend class SequenceGUIService;
-		friend class SequenceEventTrackSegmentViewBase;
 
 		RTTI_ENABLE(SequenceTrackView)
 	public:
@@ -151,6 +149,10 @@ namespace nap
 		 * @param state reference to editor state
 		 */
 		SequenceEventTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
+
+		// make this class explicitly non-copyable
+		SequenceEventTrackView(const SequenceEventTrackView&) = delete;
+		SequenceEventTrackView& operator =(const SequenceEventTrackView&) = delete;
 	protected:
 		/**
 		 * shows inspector content
@@ -227,9 +229,6 @@ namespace nap
 		 */
 		void handleSegmentDrag();
 	private:
-		// reference to gui service
-		SequenceGUIService& mService;
-
 		// map of segment views for different event views
 		std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase>> mSegmentViews;
 	};

@@ -16,9 +16,10 @@
 #include "sequencetrackcurve.h"
 #include "sequencetrackevent.h"
 #include "sequencecurvetrackview.h"
+#include "sequencetrackview.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceGUIService)
-		RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
 namespace nap
@@ -116,12 +117,6 @@ namespace nap
 	}
 
 
-	const SequenceEventTrackSegmentViewFactoryMap& SequenceGUIService::getEventSegmentViewFactory() const
-	{
-		return mEventSegmentViewFactoryMap;
-	}
-
-
 	const std::vector<rtti::TypeInfo>& SequenceGUIService::getRegisteredSegmentEventTypes() const
 	{
 		return mSegmentEventTypes;
@@ -135,9 +130,20 @@ namespace nap
 	}
 
 
-	const SequenceTrackViewFactoryMap& SequenceGUIService::getTrackViewFactory() const
+	std::unique_ptr<SequenceTrackView> SequenceGUIService::invokeTrackViewFactory(
+		rtti::TypeInfo viewType,
+		SequenceEditorGUIView& view,
+		SequenceEditorGUIState& state)
 	{
-		return mTrackViewFactoryMap;
+		assert(mTrackViewFactoryMap.find(viewType) != mTrackViewFactoryMap.end()); // entry not found
+		return mTrackViewFactoryMap.find(viewType)->second(*this, view, state);
+	}
+
+
+	std::unique_ptr<SequenceEventTrackSegmentViewBase> SequenceGUIService::invokeEventTrackSegmentViewFactory(rtti::TypeInfo eventType)
+	{
+		assert(mEventSegmentViewFactoryMap.find(eventType) != mEventSegmentViewFactoryMap.end()); // entry not found
+		return mEventSegmentViewFactoryMap.find(eventType)->second();
 	}
 
 
@@ -152,42 +158,30 @@ namespace nap
 		// register view
 		auto segment_it = mEventSegmentViewFactoryMap.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
 		assert(segment_it== mEventSegmentViewFactoryMap.end()); // type already registered
-		if(segment_it== mEventSegmentViewFactoryMap.end())
-		{
-			mEventSegmentViewFactoryMap.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), []()->std::unique_ptr<SequenceEventTrackSegmentView<T>>{ return std::make_unique<SequenceEventTrackSegmentView<T>>(); });
-		}
+		mEventSegmentViewFactoryMap.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), []()->std::unique_ptr<SequenceEventTrackSegmentViewBase>{ return std::make_unique<SequenceEventTrackSegmentView<T>>(); });
 
 		// register popup action handler
 		auto event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		if(event_it== mEditEventHandlerMap.end())
-		{
-			mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
-		}
+		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
 		event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		if(event_it== mEditEventHandlerMap.end())
-		{
-			mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
-		}
+		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
 		// register paste handler
 		auto& handler_paste_events = mPasteEventMap;
 
 		auto paste_it = handler_paste_events.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
 		assert(paste_it == handler_paste_events.end()); // type already registered
-		if(paste_it == handler_paste_events.end())
+		handler_paste_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), [](SequenceEventTrackView& view,
+			const std::string& trackID,
+			const SequenceTrackSegmentEventBase& eventBase,
+			double time)
 		{
-			handler_paste_events.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), [](	SequenceEventTrackView& view,
-																					   const std::string& trackID,
-																					   const SequenceTrackSegmentEventBase& eventBase,
-																					   double time)
-			{
-			  	view.template pasteEvent<SequenceTrackSegmentEvent<T>>(trackID, eventBase, time);
-			});
-		}
-
+			view.template pasteEvent<SequenceTrackSegmentEvent<T>>(trackID, eventBase, time);
+		});
+		
 		return true;
 	}
 
