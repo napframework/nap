@@ -435,5 +435,23 @@ namespace nap
 			std::string mObjectID;
 			
 		};
+
+		/**
+		 * Action that tells the gui to open help popup
+		 */
+		class OpenHelpPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+		};
+
+		/**
+		 * Action that tells the gui its inside the help popup
+		 */
+		class InsideHelpPopup : public Action
+		{
+			RTTI_ENABLE(Action)
+		public:
+		};
 	}
 }

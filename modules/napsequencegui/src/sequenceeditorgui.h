@@ -187,6 +187,11 @@ namespace nap
 		 void handleHorizontalZoom();
 
 		 /**
+		  * when show help popup is pressed, show modal help popup
+		  */
+		 void handleHelpPopup();
+
+		 /**
 		  * registers handlers for actions
 		  * @param actionType the action type to register a handler function for
 		  * @param action the handler function

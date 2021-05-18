@@ -82,6 +82,8 @@ namespace nap
 		registerActionHandler(RTTI_OF(None), [this] { handleNone(); } );
 		registerActionHandler(RTTI_OF(NonePressed), [this] { handleNonePressed(); } );
 		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
+		registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
+		registerActionHandler(RTTI_OF(InsideHelpPopup), [this]{ handleHelpPopup(); });
 
 		// create views for all registered track types
 		const auto& track_types = mService.getAllTrackTypes();
@@ -263,12 +265,19 @@ namespace nap
 				ImGui::SetScrollX(scroll_x);
 			}
 
+			ImGui::SameLine();
+
+			if(ImGui::Button("Help"))
+			{
+				mState.mAction = createAction<OpenHelpPopup>();
+			}
+
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
 
 			// allow mouse zoom-in with mouse wheel and ctrl
-			if( ImGui::GetIO().KeyCtrl )
+			if(ImGui::GetIO().KeyCtrl)
 			{
 				mState.mHorizontalResolution += ImGui::GetIO().MouseWheel * 5.0f;
 				mState.mHorizontalResolution = math::max<float>(mState.mHorizontalResolution, 2.5f);
@@ -313,7 +322,7 @@ namespace nap
 			ImVec2 timeline_window_size =
 			{
 				mState.mTimelineWidth + 50.0f,
-				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + top_size + 10.0f
+				(mState.mVerticalResolution + 10.0f) * sequence.mTracks.size() + top_size + 10.0f
 			};
 
 			// inspector window properties
@@ -1448,6 +1457,55 @@ namespace nap
 		if(it==mActionHandlers.end())
 		{
 			mActionHandlers.insert({actionType, action});
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleHelpPopup()
+	{
+		if(mState.mAction->isAction<OpenHelpPopup>())
+		{
+			mState.mAction = createAction<InsideHelpPopup>();
+			ImGui::OpenPopup("Help");
+		}
+
+		const float column_width = 200.0f;
+		const float window_width = column_width * 2;
+		ImGui::SetNextWindowSizeConstraints({window_width, -1}, {window_width, -1});
+
+		if(ImGui::BeginPopupModal("Help", (bool*)0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if(ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanFullWidth ))
+			{
+				ImGui::Columns(2, nullptr, false);
+
+				ImGui::SetColumnWidth(0, column_width);
+				ImGui::SetColumnWidth(1, column_width);
+
+				auto red_color = ImGui::ColorConvertU32ToFloat4(SequenceGUIService::red);
+				ImGui::Text("Select & drag :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Left mouse button"); ImGui::NextColumn();
+				ImGui::Text("Select & open edit popup :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Right mouse button"); ImGui::NextColumn();
+				ImGui::Text("Zoom in & out :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Control + Scroll Wheel"); ImGui::NextColumn();
+				ImGui::Text("Horizontal Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Shift + Scroll Wheel"); ImGui::NextColumn();
+				ImGui::Text("Vertical Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Scroll Wheel"); ImGui::NextColumn();
+
+				ImGui::Columns(1);
+			}
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			if(ImGui::Button("Exit"))
+			{
+				ImGui::CloseCurrentPopup();
+				mState.mAction = createAction<None>();
+			}
+			ImGui::EndPopup();
+		}else
+		{
+			// clicked outside so exit popup
+			mState.mAction = createAction<None>();
 		}
 	}
 }

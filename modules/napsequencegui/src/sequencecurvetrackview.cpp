@@ -573,7 +573,7 @@ namespace nap
 					mCurveCache.clear();
 				}
 
-				if (ImGui::Button("Cancel"))
+				if (ImGui::Button("Done"))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
@@ -1186,7 +1186,7 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::Button("Cancel"))
+				if (ImGui::Button("Done"))
 				{
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 
@@ -1246,7 +1246,7 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::Button("Cancel"))
+				if (ImGui::Button("Done"))
 				{
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 
