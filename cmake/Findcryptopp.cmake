@@ -24,7 +24,11 @@ else()
         message(STATUS "Extracting Cryptopp...")
         execute_process(COMMAND unxz ${CRYPTOPP_LIB_RELEASE}.xz
                         WORKING_DIRECTORY ${CRYPTOPP_LIB_DIR}
+                        RESULT_VARIABLE EXIT_CODE
                        )
+        if(NOT ${EXIT_CODE} EQUAL 0)
+            message(FATAL_ERROR "Failed to extract ${CRYPTOPP_LIB_RELEASE}.xz")
+        endif()
     endif()
 endif()
 mark_as_advanced(CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DIR)
