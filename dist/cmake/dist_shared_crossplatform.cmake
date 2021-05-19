@@ -67,7 +67,11 @@ macro(find_nap_module MODULE_NAME)
                               execute_process(COMMAND patchelf 
                                                       --set-rpath 
                                                       $ORIGIN/.
-                                                      ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so)")
+                                                      ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
+                                              RESULT_VARIABLE EXIT_CODE)
+                              if(NOT \${EXIT_CODE} EQUAL 0)
+                                  message(FATAL_ERROR \"Failed to fetch RPATH on ${MODULE_NAME} using patchelf. Is patchelf installed?\")
+                              endif()")
             endif()
         endif()
 

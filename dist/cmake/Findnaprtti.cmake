@@ -118,7 +118,10 @@ if(NOT WIN32 AND NOT ANDROID)
                                               --set-rpath 
                                               $ORIGIN/.
                                               ${CMAKE_INSTALL_PREFIX}/lib/naprtti.so
-                                              )
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to fetch RPATH on naprtti.so using patchelf\")
+                      endif()
                       ")
     endif()   
 

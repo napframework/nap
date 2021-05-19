@@ -92,6 +92,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libXrender',
     'libXxf86vm',
     'libaom',
+    'libapparmor',
     'libasound',
     'libasound_module_pcm_a52',
     'libasound_module_pcm_jack',
@@ -920,6 +921,8 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir, projects
         Timestamp of the test run
     testing_projects_dir : str
         Directory to iterate for testing, by default 'demos'        
+    projects_to_exclude: str
+        Projects to exclude
         
     Returns
     -------
@@ -931,7 +934,7 @@ def build_and_package(root_output_dir, timestamp, testing_projects_dir, projects
     demo_results = {}
     excluded_projects = projects_to_exclude.split()
     for project in excluded_projects:
-        print("excluding project: {0}".format(project))
+        print("Excluding project: {0}".format(project))
 
     # Iterate demos
     sorted_dirs = os.listdir('.')
@@ -1918,7 +1921,8 @@ def dump_json_report(starting_dir,
         Whether to force inclusion logs for all processes into report, not just on failure
     warnings : list of str
         Any warnings generated throughout the testing
-    excluded: projects that are excluded str
+    excluded_projects: str
+        Projects that are excluded
     """
     
     report = {}
@@ -2487,7 +2491,7 @@ if __name__ == '__main__':
     parser.add_argument('-nf', '--no-fake-projects', action='store_true',
                         help="Don't create fake projects for modules that aren't represented in any demos")
     parser.add_argument('--exclude-projects', type=str, default='', action='store',
-                        help="space separated list of projects that are excluded from testing")
+                        help="Space separated list of projects that are excluded from testing")
     parser.add_argument('--fail-on-unexpected-libs', action='store_true',
                         help="Fail the test run if unexpected libraries are encountered")
     if not is_windows():
