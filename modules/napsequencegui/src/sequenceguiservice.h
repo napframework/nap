@@ -35,7 +35,7 @@ namespace nap
 
 	/**
 	 * The SequenceGUIService is responsible for registering track, segment & popup views and supplying the GUI the
-	 * necessary factory methods to dynamically create the views and handlers for all registered types
+	 * necessary factory methods to dynamically create the views and handlers for all registered types.
 	 * When adding a new track type, a new segment type or a new event type with new gui views outside the SequenceGUI
 	 * module you need to register them by calling registerTrackTypeForView, registerTrackViewFactory and/or
 	 * registerEventView on the SequenceGUIService after the service is initialized but before any SequenceEditorGUI is
@@ -152,8 +152,7 @@ namespace nap
 		 */
 		std::vector<rtti::TypeInfo> getAllRegisteredEventActions() const;
 
-	public:
-		// declare interface colors
+		// Interface colors
 		static constexpr ImU32 red 				= 4285098440;
 		static constexpr ImU32 black 			= 4280685585;
 		static constexpr ImU32 white 			= 4288711819;
@@ -161,6 +160,7 @@ namespace nap
 		static constexpr ImU32 darkGrey 		= 4285158482;
 		static constexpr ImU32 darkerGrey 		= 4281674281;
 		static constexpr ImU32 curvecolors[4] 	= {4285098440, 4278255360, 4294901760, 4278255615};
+
 	protected:
 		/**
 		 * registers all objects that need a specific way of construction

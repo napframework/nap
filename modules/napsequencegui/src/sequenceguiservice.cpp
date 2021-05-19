@@ -238,12 +238,4 @@ namespace nap
 		}
 		return event_actions;
 	}
-
-	constexpr ImU32 SequenceGUIService::red;
-	constexpr ImU32 SequenceGUIService::black;
-	constexpr ImU32 SequenceGUIService::white;
-	constexpr ImU32 SequenceGUIService::lightGrey;
-	constexpr ImU32 SequenceGUIService::darkGrey;
-	constexpr ImU32 SequenceGUIService::darkerGrey;
-	constexpr ImU32 SequenceGUIService::curvecolors[4];
 }
