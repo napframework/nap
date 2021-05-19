@@ -7,9 +7,11 @@
 #include "renderablemeshcomponent.h"
 
 #include <nap/logger.h>
+#include <nap/numeric.h>
 #include <FreeImage.h>
 #undef BYTE
-#define STITCH_COMBINE 256
+
+constexpr int StitchCombine = 256;	// 0-255 = alpha blended, value > 255 = source image is combined to the distination image
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -204,7 +206,7 @@ namespace nap
 				FIBITMAP* fi_bitmap_dst = FreeImage_CreateView(fi_bitmap_handle, min.x, min.y, max.x, max.y);
 
 				// Copy bitmap header src into dest
-				FreeImage_Paste(fi_bitmap_dst, fi_bitmap_src, 0, 0, STITCH_COMBINE);
+				FreeImage_Paste(fi_bitmap_dst, fi_bitmap_src, 0, 0, StitchCombine);
 
 				// Unload headers
 				FreeImage_Unload(fi_bitmap_src);

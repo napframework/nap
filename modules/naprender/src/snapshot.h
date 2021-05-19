@@ -50,13 +50,13 @@ namespace nap
 		* Make sure begin a headless recording in the render service e.g.
 		*
 		* ~~~~~{.cpp}
-		*				mRenderService->beginFrame();
-		*				if (mRenderService->beginHeadlessRecording())
-		*				{
-		*					...
-		*					mSnapShot->snap(camera, components_to_render);
-		*					mRenderService->endHeadlessRecording();
-		*				}
+		*	mRenderService->beginFrame();
+		*	if (mRenderService->beginHeadlessRecording())
+		*	{
+		*		...
+		*		mSnapShot->snap(camera, components_to_render);
+		*		mRenderService->endHeadlessRecording();
+		*	}
 		* ~~~~~
 		*
 		* @param camera Camera to take snapshot with

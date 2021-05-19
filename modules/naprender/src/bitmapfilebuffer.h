@@ -59,10 +59,16 @@ namespace nap
 		~BitmapFileBuffer();
 
 		/**
-		* BitmapFileBuffer cannot be copied
-		*/
+		 * BitmapFileBuffer cannot be copied
+		 */
 		BitmapFileBuffer(const BitmapFileBuffer& rhs) = delete;
 		BitmapFileBuffer& operator=(const BitmapFileBuffer& rhs) = delete;
+
+		/**
+		 * BitmapFileBuffer cannot be moved
+		 */
+		BitmapFileBuffer(const BitmapFileBuffer&& rhs) = delete;
+		BitmapFileBuffer& operator=(const BitmapFileBuffer&& rhs) = delete;
 
 		/**
 		* Loads an image from disk and creates the bitmap file buffer
