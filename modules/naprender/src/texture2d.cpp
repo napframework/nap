@@ -304,6 +304,7 @@ namespace nap
 		if (mUsage == ETextureUsage::DynamicRead)
 		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
+			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
@@ -543,6 +544,9 @@ namespace nap
 	{
 		assert(mCurrentStagingBufferIndex != -1);
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+
+		// Store the staging buffer index associated with the download in the current frame for lookup later
+		mDownloadStagingBufferIndices[mRenderService->getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
@@ -600,10 +604,22 @@ namespace nap
  		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
  		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
 		{
- 			bitmap.initFromDescriptor(mDescriptor);
- 			memcpy(bitmap.getData(), data, sizeInBytes);
+			// Check if initialization is necessary
+			if (bitmap.empty() || bitmap.mSurfaceDescriptor != mDescriptor) {
+				bitmap.initFromDescriptor(mDescriptor);
+			}
+			memcpy(bitmap.getData(), data, sizeInBytes);
+			bitmap.mBitmapUpdated();
  		};
- 		mRenderService->requestTextureDownload(*this);	
+		mRenderService->requestTextureDownload(*this);
+	}
+
+
+	void Texture2D::asyncGetData(std::function<void(const void*, size_t)> copyFunction)
+	{
+		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
+		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = copyFunction;
+		mRenderService->requestTextureDownload(*this);
 	}
 
 
@@ -613,7 +629,9 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
-		BufferData& buffer = mStagingBuffers[frameIndex];
+		int downloaded_staging_buffer_index = mDownloadStagingBufferIndices[frameIndex];
+		BufferData& buffer = mStagingBuffers[downloaded_staging_buffer_index];
+
 		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);
