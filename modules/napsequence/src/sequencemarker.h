@@ -19,7 +19,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		virtual ~SequenceMarker() = default;
+		~SequenceMarker() override = default;
 
 		std::string mMessage; ///< Property: 'Message' message in marker
 		double 		mTime;  ///< Property: 'Time' time in seconds of marker in sequence

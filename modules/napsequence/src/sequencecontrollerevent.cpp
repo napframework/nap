@@ -3,22 +3,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "sequencecontrollerevent.h"
-#include "sequenceutils.h"
 #include "sequencetrackevent.h"
 #include "sequenceeditor.h"
 
 namespace nap
 {
-	static bool sRegistered = SequenceController::registerControllerFactory(RTTI_OF(SequenceControllerEvent), [](SequencePlayer& player, SequenceEditor& editor)->std::unique_ptr<SequenceController>
-	{
-	  return std::make_unique<SequenceControllerEvent>(player, editor);
-	});
-
-
-	static bool sRegisterControllerType = SequenceEditor::registerControllerForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent));
-
-
-	double SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time)
+	double SequenceControllerEvent::segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, double time)
 	{
 		double return_time = time;
 		performEditAction([this, trackID, segmentID, time, &return_time]()
@@ -90,7 +80,7 @@ namespace nap
 		{
 			// create sequence track
 			std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
-			sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 			//
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));

@@ -8,6 +8,7 @@
 #include "sequence.h"
 #include "sequenceplayeradapter.h"
 #include "sequenceplayeroutput.h"
+#include "sequenceservice.h"
 
 // external includes
 #include <rtti/factory.h>
@@ -16,6 +17,7 @@
 #include <future>
 #include <mutex>
 #include <nap/timer.h>
+#include <concurrentqueue.h>
 
 namespace nap
 {
@@ -39,7 +41,7 @@ namespace nap
 		/**
 		 * Constructor used by factory
 		 */
-		SequencePlayer();
+		SequencePlayer(SequenceService& service);
 
 		/**
 		 * Evaluates the data of the player. It loads the linked default sequence. 
@@ -128,21 +130,22 @@ namespace nap
 		/**
 		 * called before deconstruction. This stops the actual player thread. To stop the player but NOT the player thread call setIsPlaying( false )
 		 */
-		virtual void stop() override;
+		void stop() override;
 
 		/**
 		 * starts player thread, called after successfully initialization
 		 * This starts the actual player thread
 		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		bool start(utility::ErrorState& errorState) override;
 
 		/**
+		 * returns a const reference to the current sequence, not thread-safe. Only call this from the main thread
 		 * @return get const reference to sequence
 		 */
 		const Sequence& getSequenceConst() const;
 
 		/**
-		 * @return returns current sequence filename
+		 * @return returns current sequence filename, not thread-safe. Only call this from the main thread
 		 */
 		const std::string& getSequenceFilename() const;
 	public:
@@ -195,7 +198,7 @@ namespace nap
 	protected:
 		/**
 		 * adptersCreated Signal is triggered from main thread, after creating adapters
-		 * This is useful for creating your own custom outputs & adapters for custom  tracks if necessary
+		 * This is useful for creating your own custom outputs & adapters for custom tracks if necessary
 		 * You should do so only when writing your own player extended on SequencePlayer
 		 * It passes a reference to a lambda function that you can call to add an adapter to mAdapters member of
 		 * SequencePlayer
@@ -203,20 +206,19 @@ namespace nap
 		Signal<std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)>&> adaptersCreated;
 	private:
 		/**
-		 * returns reference to sequence
+		 * returns reference to sequence, can only be called internally or by friend class ( SequenceEditor or SequenceController )
 		 */
 		Sequence& getSequence();
 
 		/**
-		 * createAdapter
-		 * creates an adapter with string objectID for track with trackid. This searches the list of appropriate adapter types for the corresponding track id and creates it if available
+		 * creates an adapter with string objectID for track with trackid.
+		 * This searches the list of appropriate adapter types for the corresponding track id and creates one if available
 		 * @param objectID the id of the adapter object
 		 * @param trackID the id of the track
 		 */
 		bool createAdapter(const std::string& objectID, const std::string& trackID);
 
 		/**
-		 * onUpdate
 		 * The threaded update function
 		 */
 		void onUpdate();
@@ -242,7 +244,7 @@ namespace nap
 		 * performs given action when mutex is unlocked, makes sure edit action on sequence are thread safe
 		 * @param action the edit action
 		 */
-		void performEditAction(std::function<void()> action);
+		void performEditAction(std::function<void()>& action);
 
 		// the update task
 		std::future<void>	mUpdateTask;
@@ -254,7 +256,7 @@ namespace nap
 		Sequence* mSequence = nullptr;
 
 		// true when thread is running
-		bool mUpdateThreadRunning;
+		std::atomic_bool mUpdateThreadRunning = { false };
 
 		// is playing
 		bool mIsPlaying = false;
@@ -276,5 +278,11 @@ namespace nap
 
 		// list of instantiated adapters
 		std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
+
+	protected:
+		// Reference to sequence service
+		SequenceService& mService;
 	};
+
+	using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;
 }

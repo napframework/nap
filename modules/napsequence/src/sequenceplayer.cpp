@@ -4,7 +4,6 @@
 
 // local includes
 #include "sequenceplayer.h"
-#include "sequenceutils.h"
 
 // nap include
 #include <nap/logger.h>
@@ -18,7 +17,7 @@
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
 
-RTTI_BEGIN_CLASS(nap::SequencePlayer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
 RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
 RTTI_PROPERTY("Outputs", &nap::SequencePlayer::mOutputs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_PROPERTY("Frequency", &nap::SequencePlayer::mFrequency, nap::rtti::EPropertyMetaData::Default)
@@ -29,9 +28,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayer::SequencePlayer()
-	{
-	}
+	SequencePlayer::SequencePlayer(SequenceService& service) : mService(service){}
 
 
 	bool SequencePlayer::init(utility::ErrorState& errorState)
@@ -55,7 +52,7 @@ namespace nap
 		{
 			nap::Logger::info(*this, load_error.toString());
 			nap::Logger::info(*this, "Unable to load default show, creating default sequence");
-			mSequence = sequenceutils::createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
+			mSequence = mService.createDefaultSequence(mReadObjects, mReadObjectIDs, mOutputs);
 			nap::Logger::info(*this, "Done creating default sequence");
 		}
 		return true;
@@ -64,11 +61,10 @@ namespace nap
 
 	bool SequencePlayer::start(utility::ErrorState& errorState)
 	{
-
 		// launch player thread
-		mUpdateThreadRunning = true;
+		mUpdateThreadRunning.store(true);
 		mBefore = HighResolutionClock::now();
-		mUpdateTask = std::async(std::launch::async, std::bind(&SequencePlayer::onUpdate, this));
+		mUpdateTask = std::async(std::launch::async, [this] { onUpdate(); });
 
 		return true;
 	}
@@ -77,14 +73,14 @@ namespace nap
 	void SequencePlayer::stop()
 	{
 		// stop running thread
-		mUpdateThreadRunning = false;
+		mUpdateThreadRunning.store(false);
 		if (mUpdateTask.valid())
 		{
 			mUpdateTask.wait();
 		}
 
 		// clear adapters
-		mAdapters.clear();
+		destroyAdapters();
 	}
 
 
@@ -224,23 +220,30 @@ namespace nap
 	void SequencePlayer::createAdapters()
 	{
 		// create adapters
-		mAdapters.clear();
+		destroyAdapters();
 		for (auto& track : mSequence->mTracks)
 		{
 			createAdapter(track->mAssignedOutputID, track->mID);
 		}
 
-		std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function = [this](const std::string& outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
+		// add adapter function to be dispatched by signal, in case a custom adapter is to be added
+		std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function =
+			[this](const std::string& outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
 		{
 			mAdapters.emplace(outputID, std::move(adapter));
 		};
 
+		// dispatch signal with add adapter function
 		adaptersCreated.trigger(add_adapter_function);
 	}
 
 
 	void SequencePlayer::destroyAdapters()
 	{
+		for(auto& pair : mAdapters)
+		{
+			pair.second->destroy();
+		}
 		mAdapters.clear();
 	}
 
@@ -369,7 +372,6 @@ namespace nap
 				// Notify listeners
 				postTick.trigger(*this);
 			}
-
 			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
 		}
 	}
@@ -378,7 +380,7 @@ namespace nap
 	bool SequencePlayer::createAdapter(const std::string& inputID, const std::string& trackID)
 	{
 		// bail if empty output id
-		if (inputID == "")
+		if (inputID.empty())
 			return false;
 
 		// find track
@@ -423,7 +425,7 @@ namespace nap
 			return false;
 		}
 
-		auto adapter = SequencePlayerAdapter::invokeFactory(track->get_type(), *track, *output, *this);
+		auto adapter = mService.invokeAdapterFactory(track->get_type(), *track, *output, *this);
 
 		if (adapter == nullptr)
 		{
@@ -437,7 +439,7 @@ namespace nap
 	}
 
 
-	void SequencePlayer::performEditAction(std::function<void()> action)
+	void SequencePlayer::performEditAction(std::function<void()>& action)
 	{
 		std::lock_guard<std::mutex> lock(mMutex);
 		action();
