@@ -13,8 +13,6 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequenceEventTrackSegmentViewBase;
 	class SequenceEventTrackView;
@@ -32,6 +30,22 @@ namespace nap
 	using SequenceTrackTypeForViewTypeMap			= std::unordered_map<rtti::TypeInfo, rtti::TypeInfo>;
 	using SequenceEventTrackPasteFunc 				= std::function<void(SequenceEventTrackView&, const std::string&, const SequenceTrackSegmentEventBase&, double)>;
 	using SequenceEventTrackEditFunc 				= std::function<void(SequenceEventTrackView&)>;
+
+	namespace sequencer
+	{
+		namespace colors
+		{
+			// Sequencer colors
+			// TODO: Use colors from ImGUIService instead
+			constexpr ImU32 red = 4285098440;
+			constexpr ImU32 black = 4280685585;
+			constexpr ImU32 white = 4288711819;
+			constexpr ImU32 lightGrey = 4285750877;
+			constexpr ImU32 darkGrey = 4285158482;
+			constexpr ImU32 darkerGrey = 4281674281;
+			constexpr ImU32 curvecolors[4] = { 4285098440, 4278255360, 4294901760, 4278255615 };
+		}
+	}
 
 	/**
 	 * The SequenceGUIService is responsible for registering track, segment & popup views and supplying the GUI the
@@ -151,15 +165,6 @@ namespace nap
 		 * @return the vector
 		 */
 		std::vector<rtti::TypeInfo> getAllRegisteredEventActions() const;
-
-		// Interface colors
-		static constexpr ImU32 red 				= 4285098440;
-		static constexpr ImU32 black 			= 4280685585;
-		static constexpr ImU32 white 			= 4288711819;
-		static constexpr ImU32 lightGrey 		= 4285750877;
-		static constexpr ImU32 darkGrey 		= 4285158482;
-		static constexpr ImU32 darkerGrey 		= 4281674281;
-		static constexpr ImU32 curvecolors[4] 	= {4285098440, 4278255360, 4294901760, 4278255615};
 
 	protected:
 		/**

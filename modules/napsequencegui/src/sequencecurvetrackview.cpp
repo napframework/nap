@@ -222,7 +222,7 @@ namespace nap
 					draw_list->AddLine(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						SequenceGUIService::lightGrey, // color
+						sequencer::colors::lightGrey, // color
 						1.0f); // thickness
 
 					ImGui::BeginTooltip();
@@ -253,7 +253,7 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						SequenceGUIService::lightGrey, // color
+						sequencer::colors::lightGrey, // color
 						1.0f); // thickness
 				}
 			}
@@ -269,7 +269,7 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						SequenceGUIService::lightGrey, // color
+						sequencer::colors::lightGrey, // color
 						1.0f); // thickness
 				}
 			}
@@ -328,7 +328,7 @@ namespace nap
 			drawList->AddLine(
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				SequenceGUIService::white, // color
+				sequencer::colors::white, // color
 				3.0f); // thickness
 
 			// we are hovering this segment with the mouse
@@ -406,7 +406,7 @@ namespace nap
 				drawList->AddLine(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						SequenceGUIService::white, // color
+						sequencer::colors::white, // color
 						3.0f); // thickness
 
 				ImGui::BeginTooltip();
@@ -419,7 +419,7 @@ namespace nap
 				drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					SequenceGUIService::white, // color
+					sequencer::colors::white, // color
 					1.0f); // thickness
 			}
 		}
@@ -429,7 +429,7 @@ namespace nap
 			drawList->AddLine(
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				SequenceGUIService::white, // color
+				sequencer::colors::white, // color
 				1.0f); // thickness
 
 			// release if we are not hovering this segment

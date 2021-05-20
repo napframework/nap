@@ -123,7 +123,7 @@ namespace nap
 					draw_list->AddLine(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						SequenceGUIService::lightGrey, // color
+						sequencer::colors::lightGrey, // color
 						1.0f); // thickness
 
 					ImGui::BeginTooltip();
@@ -153,7 +153,7 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						SequenceGUIService::lightGrey, // color
+						sequencer::colors::lightGrey, // color
 						1.0f); // thickness
 				}
 			}
@@ -167,7 +167,7 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						SequenceGUIService::lightGrey, // color
+						sequencer::colors::lightGrey, // color
 						1.0f); // thickness
 				}
 			}
@@ -298,7 +298,7 @@ namespace nap
 			drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				SequenceGUIService::white, // color
+				sequencer::colors::white, // color
 				3.0f); // thickness
 
 			if (!isAlreadyHovering && !isAlreadyDragging)
@@ -370,14 +370,14 @@ namespace nap
 		}
 		else 
 		{
-			ImU32 line_color = SequenceGUIService::white;
+			ImU32 line_color = sequencer::colors::white;
 
 			// if segment is in clipboard, line is red
 			if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
 			{
 				if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					line_color = SequenceGUIService::red;
+					line_color = sequencer::colors::red;
 				}
 			}
 
@@ -712,7 +712,7 @@ namespace nap
 
 		drawList->AddText(
 			{ topLeft.x + x + 5, topLeft.y + 5 },
-			SequenceGUIService::red, string_stream.str().c_str());
+			sequencer::colors::red, string_stream.str().c_str());
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -741,7 +741,7 @@ namespace nap
 
 		drawList->AddText(
 			{ topLeft.x + x + 5, topLeft.y + 5 },
-			SequenceGUIService::red,
+			sequencer::colors::red,
 			string_stream.str().c_str());
 	}
 
@@ -771,7 +771,7 @@ namespace nap
 
 		drawList->AddText(
 			{ topLeft.x + x + 5, topLeft.y + 5 },
-			SequenceGUIService::red,
+			sequencer::colors::red,
 			string_stream.str().c_str());
 	}
 
@@ -799,7 +799,7 @@ namespace nap
 		std::ostringstream string_stream;
 		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ")";
 
-		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },SequenceGUIService::red,string_stream.str().c_str());
+		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 }, sequencer::colors::red,string_stream.str().c_str());
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -825,8 +825,6 @@ namespace nap
 
 		std::ostringstream string_stream;
 		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ")";
-
-		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 },SequenceGUIService::red,
-						  string_stream.str().c_str());
+		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 }, sequencer::colors::red, string_stream.str().c_str());
 	}
 }

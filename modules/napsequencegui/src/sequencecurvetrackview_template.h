@@ -279,11 +279,11 @@ namespace nap
 				{
 					// draw points of curve
 					drawList->AddPolyline(
-						&*mCurveCache[segment.mID][i].begin(), // points array
-						mCurveCache[segment.mID][i].size(),	 // size of points array
-						SequenceGUIService::curvecolors[i],  // color
-						false, // closed
-						selected_curve == i ? 3.0f : 1.0f); // thickness
+						&*mCurveCache[segment.mID][i].begin(),	// points array
+						mCurveCache[segment.mID][i].size(),		// size of points array
+						sequencer::colors::curvecolors[i],		// color
+						false,									// closed
+						selected_curve == i ? 3.0f : 1.0f);		// thickness
 				}
 			}
 		}
@@ -345,7 +345,7 @@ namespace nap
 				// does it contain this segment ?
 				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					ImVec4 red = ImGui::ColorConvertU32ToFloat4(SequenceGUIService::red);
+					ImVec4 red = ImGui::ColorConvertU32ToFloat4(sequencer::colors::red);
 					red.w = 0.25f;
 
 					drawList->AddRectFilled(
@@ -579,9 +579,9 @@ namespace nap
 			}
 
 			if (hovered)
-				drawList->AddCircleFilled(segment_value_pos, 5.0f, SequenceGUIService::curvecolors[v]);
+				drawList->AddCircleFilled(segment_value_pos, 5.0f, sequencer::colors::curvecolors[v]);
 			else
-				drawList->AddCircle(segment_value_pos, 5.0f, SequenceGUIService::curvecolors[v]);
+				drawList->AddCircle(segment_value_pos, 5.0f, sequencer::colors::curvecolors[v]);
 		}
 	}
 
@@ -753,7 +753,7 @@ namespace nap
 				// draw the control point
 				drawList->AddCircleFilled(circle_point,
 										  4.0f,
-										  hovered ? SequenceGUIService::white : SequenceGUIService::lightGrey);
+										  hovered ? sequencer::colors::white : sequencer::colors::lightGrey);
 
 				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
 				{
@@ -941,10 +941,10 @@ namespace nap
 			}
 
 			// draw line
-			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? SequenceGUIService::white : SequenceGUIService::darkGrey, 1.0f);
+			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey, 1.0f);
 
 			// draw handler
-			drawList->AddCircleFilled(tan_point, 3.0f, tan_point_hovered ? SequenceGUIService::white : SequenceGUIService::darkGrey);
+			drawList->AddCircleFilled(tan_point, 3.0f, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey);
 		}
 	}
 
