@@ -163,6 +163,13 @@ namespace nap
 		 */
 		void asyncGetData(Bitmap& bitmap);
 
+		/**
+		* Starts a transfer of texture data from GPU to CPU. Use this overload to pass your own copy function.
+		* This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
+		* @param copyFunction the copy function to call when the texture data is available for download.
+		*/
+		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
+
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
 	private:
@@ -195,6 +202,7 @@ namespace nap
 	private:
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
+
 		ImageData							mImageData;							///< 2D Texture vulkan image buffers
 		std::vector<BufferData>				mStagingBuffers;					///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
 		int									mCurrentStagingBufferIndex = -1;	///< Currently used staging buffer
@@ -202,6 +210,7 @@ namespace nap
 		SurfaceDescriptor					mDescriptor;						///< Texture description
 		VkFormat							mFormat = VK_FORMAT_UNDEFINED;		///< Vulkan texture format
 		std::vector<TextureReadCallback>	mReadCallbacks;						///< Number of callbacks based on number of frames in flight
+		std::vector<int>					mDownloadStagingBufferIndices;		///< Staging buffer indices associated with a frameindex
 		uint32								mMipLevels = 1;						///< Total number of generated mip-maps
 		VkClearColorValue					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };	///< Property: 'ClearColor' color selection used for clearing the texture
 	};

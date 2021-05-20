@@ -31,6 +31,7 @@ namespace nap
 		enum class EFormat
 		{
 			RGBA8,			///< 08 bit unsigned, 4 components
+			BGRA8,			///< 08 bit unsigned, 4 components
 			R8,				///< 08 bit unsigned, 1 component
 			RGBA16,			///< 16 bit unsigned, 4 components
 			R16,			///< 16 bit unsigned, 1 component
@@ -38,7 +39,7 @@ namespace nap
 			R32				///< 32 bit float, 1 component
 		};
 
-		RenderTexture2D(Core& renderService);
+		RenderTexture2D(Core& core);
 
 		/**
 		 * Creates the texture on the GPU.
