@@ -7,9 +7,7 @@
 
 RTTI_BEGIN_CLASS(nap::SequenceTrackSegment)
 RTTI_PROPERTY("Start Time", &nap::SequenceTrackSegment::mStartTime, nap::rtti::EPropertyMetaData::Default)
-
 RTTI_PROPERTY("Duration", &nap::SequenceTrackSegment::mDuration, nap::rtti::EPropertyMetaData::Default)
-
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

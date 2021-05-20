@@ -51,7 +51,7 @@ namespace nap
 		// current timelinewidth
 		float mTimelineWidth;
 
-		// stepsize ( how many pixels per second ? )
+		// stepsize amount pixels per second
 		float mStepSize;
 
 		// current trackheight / vertical resolution

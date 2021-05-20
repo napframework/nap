@@ -6,7 +6,6 @@
 #include "sequenceeditor.h"
 #include "sequencetrack.h"
 #include "sequencetracksegment.h"
-#include "sequenceutils.h"
 #include "sequencemarker.h"
 
 // external includes
@@ -15,7 +14,7 @@
 #include <functional>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS(nap::SequenceEditor)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor)
 RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -25,6 +24,9 @@ using namespace nap::SequenceCurveEnums;
 
 namespace nap
 {
+	SequenceEditor::SequenceEditor(SequenceService& service) : mService(service){}
+
+
 	bool SequenceEditor::init(utility::ErrorState& errorState)
 	{
 		if (!Resource::init(errorState))
@@ -33,49 +35,13 @@ namespace nap
 		}
 
 		// create controllers for all types of tracks
-		auto& factory = SequenceController::getControllerFactory();
-		for (auto it : factory)
+		const auto& controller_types = mService.getRegisteredControllerTypes();
+		for (const auto& controller_type : controller_types)
 		{
-			mControllers.emplace(it.first, it.second(*mSequencePlayer.get(), *this));
+			mControllers.emplace(controller_type, mService.invokeControllerFactory(controller_type, *mSequencePlayer.get(), *this));
 		}
 
 		return true;
-	}
-
-	std::unordered_map<rttr::type, rttr::type>& getControllerTrackTypeMap()
-	{
-		static std::unordered_map<rttr::type, rttr::type> map;
-		return map;
-	}
-
-
-	bool SequenceEditor::registerControllerForTrackType(rttr::type trackType, rttr::type controllerType)
-	{
-		auto& map = getControllerTrackTypeMap();
-		assert(map.find(controllerType) == map.end()); // duplicate entry
-		if (map.find(controllerType) == map.end())
-		{
-			map.emplace(trackType, controllerType);
-			return true;
-		}
-
-		return false;
-	}
-
-
-	SequenceController* SequenceEditor::getControllerWithTrackType(rttr::type type)
-	{
-		auto& map = getControllerTrackTypeMap();
-		if (map.find(type) != map.end())
-		{
-			auto it = getControllerTrackTypeMap().find(type);
-			if (mControllers.find(it->second) != mControllers.end())
-			{
-				return mControllers[it->second].get();
-			}
-		}
-		
-		return nullptr;
 	}
 
 
@@ -84,14 +50,13 @@ namespace nap
 		const auto& sequence = mSequencePlayer->getSequence();
 		for(const auto& track : sequence.mTracks)
 		{
-			if(trackID == track->mID)
+			if(trackID==track->mID)
 			{
-				auto track_type = track.get()->get_type();
-				auto it = getControllerTrackTypeMap().find(track_type);
-				if (mControllers.find(it->second) != mControllers.end())
-				{
-					return mControllers[it->second].get();
-				}
+				auto track_ptr = track.get();
+				auto track_type = track_ptr->get_type();
+				auto controller_type = mService.getControllerTypeForTrackType(track_type);
+				assert(mControllers.find(controller_type)!=mControllers.end()); // entry not found
+				return mControllers[controller_type].get();
 			}
 		}
 		return nullptr;
@@ -110,11 +75,13 @@ namespace nap
 
 	void SequenceEditor::load(const std::string& file)
 	{
-		utility::ErrorState error_state;
-		if(!mSequencePlayer->load(file, error_state) )
-		{
-			nap::Logger::error(error_state.toString());
-		}
+		performEdit([this, file]() {
+			utility::ErrorState error_state;
+			if (!mSequencePlayer->load(file, error_state))
+			{
+				nap::Logger::error(error_state.toString());
+			}
+		});
 	}
 
 	
@@ -122,10 +89,9 @@ namespace nap
 	{
 		newDuration = math::max<double>(newDuration, 0.01);
 
-		performEditAction([this, newDuration]()
-		{
+		performEdit([this, newDuration]() {
 			auto& sequence = mSequencePlayer->getSequence();
-			
+
 			// sequence must be at least as long as longest track
 			double longest_track = 0.0;
 			for (auto& track : sequence.mTracks)
@@ -133,7 +99,7 @@ namespace nap
 				double longest_segment = 0.0;
 				for (auto& segment : track->mSegments)
 				{
-					double time = segment->mStartTime + segment->mDuration;
+					double time		= segment->mStartTime + segment->mDuration;
 					longest_segment = math::max<double>(longest_segment, time);
 				}
 				longest_track = math::max<double>(longest_segment, longest_track);
@@ -152,11 +118,10 @@ namespace nap
 
 	void SequenceEditor::insertMarker(double time, const std::string& message)
 	{
-		performEditAction([this, time, message]()
-	  	{
-		    auto new_marker = std::make_unique<SequenceMarker>();
-			new_marker->mID = sequenceutils::generateUniqueID(mSequencePlayer->mReadObjectIDs);
-			new_marker->mTime = time;
+		performEdit([this, time, message]() {
+			auto new_marker		 = std::make_unique<SequenceMarker>();
+			new_marker->mID		 = mService.generateUniqueID(mSequencePlayer->mReadObjectIDs);
+			new_marker->mTime	 = time;
 			new_marker->mMessage = message;
 
 			mSequencePlayer->mSequence->mMarkers.emplace_back(ResourcePtr<SequenceMarker>(new_marker.get()));
@@ -167,46 +132,41 @@ namespace nap
 
 	void SequenceEditor::changeMarkerTime(const std::string& markerID, double time)
 	{
-		performEditAction([this, markerID, time]()
-		{
-			auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
-			{
-		   		return markerID == a->mID;
-		   	});
+		performEdit([this, markerID, time]() {
+			auto it =
+				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
+							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
 
 			assert(it != mSequencePlayer->mSequence->mMarkers.end());
 
-			if(it != mSequencePlayer->mSequence->mMarkers.end())
+			if (it != mSequencePlayer->mSequence->mMarkers.end())
 			{
 				it->get()->mTime = time;
 			}
-	  	});
+		});
 
 	}
 
 
 	void SequenceEditor::deleteMarker(const std::string& markerID)
 	{
-		performEditAction([this, markerID]()
-		{
-			auto it_1 = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
-			{
-			  return markerID == a->mID;
-			});
+		performEdit([this, markerID]() {
+			auto it_1 =
+				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
+							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
 			assert(it_1 != mSequencePlayer->mSequence->mMarkers.end());
 
-			if(it_1 != mSequencePlayer->mSequence->mMarkers.end())
+			if (it_1 != mSequencePlayer->mSequence->mMarkers.end())
 			{
 				mSequencePlayer->mSequence->mMarkers.erase(it_1);
 			}
 
-			auto it_2 = std::find_if(mSequencePlayer->mReadObjects.begin(), mSequencePlayer->mReadObjects.end(), [markerID](std::unique_ptr<rtti::Object>& a)->bool
-			{
-			  	return markerID == a->mID;
-			});
+			auto it_2 =
+				std::find_if(mSequencePlayer->mReadObjects.begin(), mSequencePlayer->mReadObjects.end(),
+							 [markerID](std::unique_ptr<rtti::Object>& a) -> bool { return markerID == a->mID; });
 			assert(it_2 != mSequencePlayer->mReadObjects.end());
 
-			if(it_2 != mSequencePlayer->mReadObjects.end())
+			if (it_2 != mSequencePlayer->mReadObjects.end())
 			{
 				mSequencePlayer->mReadObjects.erase(it_2);
 			}
@@ -216,16 +176,14 @@ namespace nap
 
 	void SequenceEditor::changeMarkerMessage(const std::string& markerID, const std::string& markerMessage)
 	{
-		performEditAction([this, markerID, markerMessage]()
-		{
-			auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a)->bool
-			{
-			  return markerID == a->mID;
-			});
+		performEdit([this, markerID, markerMessage]() {
+			auto it =
+				std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(),
+							 [markerID](ResourcePtr<SequenceMarker>& a) -> bool { return markerID == a->mID; });
 
 			assert(it != mSequencePlayer->mSequence->mMarkers.end());
 
-			if(it != mSequencePlayer->mSequence->mMarkers.end())
+			if (it != mSequencePlayer->mSequence->mMarkers.end())
 			{
 				it->get()->mMessage = markerMessage;
 			}
@@ -233,14 +191,21 @@ namespace nap
 	}
 
 
-	void SequenceEditor::performEditAction(std::function<void()> action)
+	void SequenceEditor::performEdit(std::function<void()> action)
 	{
-		assert(!mPerformingEditAction); // already performing action, only possible when doing an edit action inside another action
-		if (!mPerformingEditAction)
+		if (!mPerformingEditAction.load())
 		{
-			mPerformingEditAction = true;
+			mPerformingEditAction.store(true);
 			mSequencePlayer->performEditAction(action);
-			mPerformingEditAction = false;
+			mPerformingEditAction.store(false);
 		}
+	}
+
+
+	SequenceController* SequenceEditor::getControllerWithTrackType(rtti::TypeInfo trackType)
+	{
+		auto controller_type = mService.getControllerTypeForTrackType(trackType);
+		assert(mControllers.find(controller_type)!=mControllers.end()); // entry not found
+		return mControllers.find(controller_type)->second.get();
 	}
 }

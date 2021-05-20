@@ -10,6 +10,7 @@
 #include "sequenceeditorguistate.h"
 #include "sequenceeditorguiactions.h"
 #include "sequenceeditorguiclipboard.h"
+#include "sequenceguiservice.h"
 
 // external includes
 #include <imgui/imgui.h>
@@ -34,21 +35,25 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		SequenceEditorGUI(SequenceGUIService& service);
+
 		/**
 		 * @param errorState contains any errors
 		 * @return true on success
 		 */
-		virtual bool init(utility::ErrorState& errorState);
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * called before deconstruction
 		 */
-		virtual void onDestroy();
+		void onDestroy() override;
 
 		/**
 		 * Call this method to draw the GUI
 		 */
 		virtual void show();
+
+		SequenceGUIService& getService(){ return mService; }
 	public:
 		// properties
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
@@ -57,7 +62,12 @@ namespace nap
 	protected:
 		// instantiated view
 		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
+
+		// reference to service
+		SequenceGUIService& mService;
 	};
+
+	using SequenceEditorGUIObjectCreator = rtti::ObjectCreator<SequenceEditorGUI, SequenceGUIService>;
 
 	/**
 	 * Responsible for drawing the GUI for the sequence editor
@@ -74,24 +84,14 @@ namespace nap
 		 * @param renderWindow the render window
 		 * @param drawFullWindow if the editor occupies the entire window space
 		 */
-		SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
+		SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
 		/**
 		 * shows the editor interface
 		 */
 		virtual void show();
 
-		/**
-		 * static method for registering a view type that draws the appropriate track type
-		 */
-		static bool registerTrackViewType(rttr::type trackType, rttr::type viewType);
-
-		/**
-		 * returns view that corresponds to a certain track type, asserts when not found
-		 * @param type the track type
-		 * @return the view type
-		 */
-		static rttr::type getViewForTrackType(rttr::type type);
+		SequenceGUIService& getService(){ return mService; }
 	protected:
 		/**
 		 * Draws the tracks of the sequence
@@ -119,7 +119,7 @@ namespace nap
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player);
+		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
 
 		/**
 		 * draws player controller bar
@@ -132,7 +132,7 @@ namespace nap
 		 * @param sequence reference to sequence
 		 * @param player reference to player
 		 */
-		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player);
+		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player) const;
 
 		/**
 		 * draws end of sequence
@@ -161,12 +161,12 @@ namespace nap
 		 */
 		void handleSequenceDurationPopup();
 
-		/*
+		/**
 		 * handle editing of markers
 		 */
 		void handleEditMarkerPopup();
 
-		/*
+		/**
 		 * handle insertion of new markers
 		 */
 		void handleInsertMarkerPopup();
@@ -185,24 +185,40 @@ namespace nap
 		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
 		  */
 		 void handleHorizontalZoom();
+
+		 /**
+		  * when show help popup is pressed, show modal help popup
+		  */
+		 void handleHelpPopup();
+
+		 /**
+		  * registers handlers for actions
+		  * @param actionType the action type to register a handler function for
+		  * @param action the handler function
+		  */
+		 void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;
 
-		// holds current state information
+		// holds current gui state information
 		SequenceEditorGUIState mState;
 
 		// id
 		std::string mID;
 
-		// map of all track views
-		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
-
-		//
+		// set to true if we draw full window
 		bool mDrawFullWindow = false;
 
+		// pointer to render window
 		RenderWindow* mRenderWindow = nullptr;
 
-		std::unordered_map<rttr::type, std::function<void()>> mPopups;
+		// map of action handlers
+		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
+
+		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
+
+		// reference to service
+		SequenceGUIService& mService;
 	};
 }

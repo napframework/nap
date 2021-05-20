@@ -17,27 +17,27 @@ namespace nap
 	// forward declares
 	class SequenceController;
 	class SequenceEditor;
-
-	// shortcut to factory method
-	using SequenceControllerFactoryFunc = std::unique_ptr<SequenceController>(*)(SequencePlayer&, SequenceEditor&);
+	class SequenceService;
 
 	/**
 	 * Base class for controllers for specific track types
 	 */
 	class NAPAPI SequenceController
 	{
+		RTTI_ENABLE()
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to service
 		 * @param player reference to player being used
 		 * @param editor reference to editor
 		 */
-		SequenceController(SequencePlayer& player, SequenceEditor& editor) : mPlayer(player), mEditor(editor) {};
+		SequenceController(SequenceService& service, SequencePlayer& player, SequenceEditor& editor) : mService(service), mPlayer(player), mEditor(editor) {};
 
 		/**
 		 * Deconstructor
 		 */
-		virtual ~SequenceController(){};
+		virtual ~SequenceController()= default;
 
 		/**
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
@@ -99,20 +99,6 @@ namespace nap
 		 * @return const pointer to tracksegment, returns nullptr when not found
 		 */
 		const SequenceTrackSegment* getSegment(const std::string& trackID, const std::string& segmentID) const;
-
-		/**
-		 * static method that returns factory method for creating a controller
-		 * @return reference to factory method
-		 */
-		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& getControllerFactory();
-
-		/**
-		 * registers the factory method for a type of controller
-		 * @param type the type of controller
-		 * @param factoryFunc the factory method
-		 * @return true on successfull registration
-		 */
-		static bool registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc factoryFunc);
 	protected:
 		/**
 		 * @return returns reference to sequence of player
@@ -162,5 +148,8 @@ namespace nap
 
 		// reference to editor
 		SequenceEditor& mEditor;
+
+		// reference to service
+		SequenceService& mService;
 	};
 }

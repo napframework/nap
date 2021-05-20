@@ -76,12 +76,12 @@
         },
         {
             "Type": "nap::RenderWindow",
-            "mID": "TimelineWindow",
+            "mID": "SequencerWindow",
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
             "SampleShading": true,
-            "Title": "Timeline",
+            "Title": "Sequencer",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
@@ -108,7 +108,7 @@
             "Type": "nap::SequenceEditorGUI",
             "mID": "SequenceEditorGUI",
             "Sequence Editor": "SequenceEditor",
-            "Render Window": "TimelineWindow",
+            "Render Window": "SequencerWindow",
             "Draw Full Window": true
         },
         {

@@ -4,7 +4,6 @@
 
 // local includes
 #include "sequenceeditorgui.h"
-#include "napcolors.h"
 #include "sequenceeditorguiclipboard.h"
 #include "sequenceeditorgui.h"
 
@@ -14,8 +13,9 @@
 #include <nap/logger.h>
 #include <utility/fileutils.h>
 #include <iomanip>
+#include <utility>
 
-RTTI_BEGIN_CLASS(nap::SequenceEditorGUI)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
@@ -29,34 +29,8 @@ using namespace nap::SequenceGUIClipboards;
 
 namespace nap
 {
-	static std::unordered_map<rttr::type, rttr::type>& getTrackViewTypeViewMap()
+	SequenceEditorGUI::SequenceEditorGUI(SequenceGUIService& service) : mService(service)
 	{
-		static std::unordered_map<rttr::type, rttr::type> map;
-		return map;
-	};
-
-
-	bool SequenceEditorGUIView::registerTrackViewType(rttr::type trackType, rttr::type viewType)
-	{
-		auto& map = getTrackViewTypeViewMap();
-		auto it = map.find(trackType);
-		assert(it == map.end()); // duplicate entry
-		if (it == map.end())
-		{
-			map.emplace(trackType, viewType);
-			return true;
-		}
-
-		return false;
-	}
-
-
-	rttr::type SequenceEditorGUIView::getViewForTrackType(rttr::type type)
-	{
-		auto& map = getTrackViewTypeViewMap();
-		auto it = map.find(type);
-		assert(it != map.end()); // entry not found
-		return it->second;
 	}
 
 
@@ -67,7 +41,11 @@ namespace nap
 			return false;
 		}
 
-		mView = std::make_unique<SequenceEditorGUIView>(*mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
+		mView = std::make_unique<SequenceEditorGUIView>(mService,
+														*mSequenceEditor.get(),
+														mID,
+														mRenderWindow.get(),
+														mDrawFullWindow);
 
 		return true;
 	}
@@ -84,40 +62,49 @@ namespace nap
 	}
 
 
-	SequenceEditorGUIView::SequenceEditorGUIView(SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
-		: mEditor(editor), mID(id), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
+	SequenceEditorGUIView::SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
+		: mService(service), mEditor(editor), mID(std::move(id)), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
 	{
+		// start with empty clipboard and empty action
 		mState.mAction = createAction<None>();
 		mState.mClipboard = createClipboard<Empty>();
 
-		for (auto& factory : SequenceTrackView::getFactoryMap())
-		{
-			mViews.emplace(factory.first, factory.second(*this, mState));
-		}
+		// register handlers for actions
+		registerActionHandler(RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
+		registerActionHandler(RTTI_OF(EditingSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
+		registerActionHandler(RTTI_OF(InsertingSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } );
+		registerActionHandler(RTTI_OF(OpenInsertTrackPopup), [this] { handleInsertTrackPopup(); } );
+		registerActionHandler(RTTI_OF(InsertingTrackPopup), [this] { handleInsertTrackPopup(); } );
+		registerActionHandler(RTTI_OF(OpenSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
+		registerActionHandler(RTTI_OF(EditSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
+		registerActionHandler(RTTI_OF(LoadPopup), [this] { handleLoadPopup(); });
+		registerActionHandler(RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); } );
+		registerActionHandler(RTTI_OF(None), [this] { handleNone(); } );
+		registerActionHandler(RTTI_OF(NonePressed), [this] { handleNonePressed(); } );
+		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
+		registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
+		registerActionHandler(RTTI_OF(InsideHelpPopup), [this]{ handleHelpPopup(); });
 
-		// register different popups for different actions
-		mPopups =
+		// create views for all registered track types
+		const auto& track_types = mService.getAllTrackTypes();
+		for (const auto& track_type : track_types)
 		{
-			{ RTTI_OF(OpenEditSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
-			{ RTTI_OF(EditingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleEditMarkerPopup, this) },
-			{ RTTI_OF(OpenInsertSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
-			{ RTTI_OF(InsertingSequenceMarkerPopup), std::bind(&SequenceEditorGUIView::handleInsertMarkerPopup, this) },
-			{ RTTI_OF(OpenInsertTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
-			{ RTTI_OF(InsertingTrackPopup), std::bind(&SequenceEditorGUIView::handleInsertTrackPopup, this) },
-			{ RTTI_OF(OpenSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
-			{ RTTI_OF(EditSequenceDurationPopup), std::bind(&SequenceEditorGUIView::handleSequenceDurationPopup, this)},
-			{ RTTI_OF(LoadPopup), std::bind(&SequenceEditorGUIView::handleLoadPopup, this) },
-			{ RTTI_OF(SaveAsPopup), std::bind(&SequenceEditorGUIView::handleSaveAsPopup, this) },
-			{ RTTI_OF(None), std::bind(&SequenceEditorGUIView::handleNone, this) },
-			{ RTTI_OF(NonePressed), std::bind(&SequenceEditorGUIView::handleNonePressed, this) }
-		};
+			// get view type
+			auto view_type = mService.getViewTypeForTrackType(track_type);
+
+			// create the track view
+			auto track_view = mService.invokeTrackViewFactory(view_type, *this, mState);
+
+			// store the raw pointer
+			mViews.emplace(view_type, std::move(track_view));
+		}
 	}
 
 
 	void SequenceEditorGUIView::show()
 	{
 		bool reset_dirty_flag = mState.mDirty;
-		mState.mInspectorWidth = 300.0f;		
+		mState.mInspectorWidth = 300.0f;
 		mState.mMousePos = ImGui::GetMousePos();
 
 		mState.mMouseDelta = ImGui::GetIO().MouseDelta;
@@ -133,7 +120,10 @@ namespace nap
 		mState.mStepSize = mState.mHorizontalResolution;
 
 		// calc width of content in timeline window
-		mState.mTimelineWidth = mState.mStepSize * sequence.mDuration;
+		mState.mTimelineWidth = (float)(mState.mStepSize * sequence.mDuration);
+
+		// set content width of next window
+		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + mState.mVerticalResolution, 0.0f));
 
 		// set window flags
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
@@ -181,7 +171,9 @@ namespace nap
 			}
 			mState.mScroll = scroll;
 
+			// move controls according to scroll, so they will alway be visible
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetScrollY());
 
 			//
 			if (ImGui::Button("Save"))
@@ -269,8 +261,15 @@ namespace nap
 
 			if (mState.mFollow)
 			{
-				float scroll_x = (float) (sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
+				float scroll_x = (float)(sequence_player.getPlayerTime() / sequence_player.getDuration()) * mState.mTimelineWidth;
 				ImGui::SetScrollX(scroll_x);
+			}
+
+			ImGui::SameLine();
+
+			if(ImGui::Button("Help"))
+			{
+				mState.mAction = createAction<OpenHelpPopup>();
 			}
 
 			ImGui::Spacing();
@@ -278,7 +277,7 @@ namespace nap
 			ImGui::Spacing();
 
 			// allow mouse zoom-in with mouse wheel and ctrl
-			if( ImGui::GetIO().KeyCtrl )
+			if(ImGui::GetIO().KeyCtrl)
 			{
 				mState.mHorizontalResolution += ImGui::GetIO().MouseWheel * 5.0f;
 				mState.mHorizontalResolution = math::max<float>(mState.mHorizontalResolution, 2.5f);
@@ -288,13 +287,12 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 
 			ImGui::PushItemWidth(200.0f);
-			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 2.5f, 1000, "%0.1f"))
+			if (ImGui::DragFloat("H-Zoom", &mState.mHorizontalResolution, 0.5f, 2.5, 1000, "%0.1f"))
 			{
 				handleHorizontalZoom();
 			}
 
 			ImGui::SameLine();
-
 			if (ImGui::DragFloat("V-Zoom", &mState.mVerticalResolution, 0.5f, 150, 1000, "%0.1f"))
 				mState.mDirty = true;
 
@@ -304,30 +302,37 @@ namespace nap
 			ImGui::Separator();
 			ImGui::Spacing();
 
+			//
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetScrollY());
+
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position
 			mState.mTimelineControllerPos = ImGui::GetCursorPos();
 
-			float top_size 			= 68.0f; // size of player & marker area combined
-			float start_clip_y 		= 25.0f; // title bar overlaps clipping area
-			float end_clip_y 		= ImGui::GetWindowHeight() - 10; // bottom scrollbar overlaps clipping area
-			float end_clip_x		= ImGui::GetWindowWidth() - 10; // right scrollbar overlaps clipping area
+			float top_size			= 68.0f; // area of comments, playercontroller and error messages combined
+			float clip_start_y		= ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
+			float end_clip_y 		= ImGui::GetWindowHeight() - 10.0f; // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowWidth() - 10.0f; 	// right scrollbar overlaps clipping area
 
 			// timeline window properties
-			ImVec2 timeline_window_pos = {
+			ImVec2 timeline_window_pos =
+			{
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x + mState.mInspectorWidth - mState.mScroll.x,
 				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y
 			};
-			ImVec2 timeline_window_size = {
+			ImVec2 timeline_window_size =
+			{
 				mState.mTimelineWidth + 50.0f,
-				( mState.mVerticalResolution + 10.0f ) * sequence.mTracks.size() + top_size
+				(mState.mVerticalResolution + 10.0f) * sequence.mTracks.size() + top_size + 10.0f
 			};
 
 			// inspector window properties
-			ImVec2 inspector_window_pos = {
+			ImVec2 inspector_window_pos =
+			{
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x,
 				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + top_size
 			};
-			ImVec2 inspector_window_size = {
+			ImVec2 inspector_window_size =
+			{
 				mState.mInspectorWidth,
 				timeline_window_size.y - top_size
 			};
@@ -339,14 +344,16 @@ namespace nap
 			if( ImGui::BeginChild(std::string(mID + "_timeline_window").c_str(),
 								  timeline_window_size,
 								  false,
-								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground ) )
+								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs ) )
 
 			{
-				ImGui::PushClipRect(
-					{ 	inspector_window_pos.x + inspector_window_size.x,
-						timeline_window_pos.y > start_clip_y ? timeline_window_pos.y : start_clip_y},
-					{	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
-						timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y}, false );
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mScroll.y);
+
+				ImVec2 clip_rect_min_top = {	inspector_window_pos.x + inspector_window_size.x, timeline_window_pos.y > clip_start_y - top_size ? timeline_window_pos.y : clip_start_y - top_size };
+				ImVec2 clip_rect_max_top = {	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
+												timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y };
+
+				ImGui::PushClipRect(clip_rect_min_top, clip_rect_max_top, false);
 
 				// draw markers
 				drawMarkers(sequence_player, sequence);
@@ -354,11 +361,34 @@ namespace nap
 				// draw player controller
 				drawPlayerController(sequence_player);
 
+				ImGui::PopClipRect();
+
+				//
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState.mScroll.y);
+
+				// calc clipping rectangle
+				ImVec2 clip_rect_min_tracks = {	inspector_window_pos.x + inspector_window_size.x,timeline_window_pos.y > clip_start_y ? timeline_window_pos.y : clip_start_y };
+				ImVec2 clip_rect_max_tracks = {	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
+												   timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y };
+
+
+				// push it
+				ImGui::PushClipRect(clip_rect_min_tracks, clip_rect_max_tracks, false);
+
 				// draw tracks
 				drawTracks(sequence_player, sequence);
 
+				// pop clip rect, we slightly adjust it in Y start when drawing markers and playerposition line
+				ImGui::PopClipRect();
+
+				ImGui::PushClipRect({clip_rect_min_tracks.x, clip_rect_min_tracks.y - 5}, clip_rect_max_tracks, false);
+
 				// draw time line position line
 				drawTimelinePlayerPosition(sequence, sequence_player);
+
+				ImGui::PopClipRect();
+
+				ImGui::PushClipRect({clip_rect_min_tracks.x, clip_rect_min_tracks.y - 50}, clip_rect_max_tracks, false);
 
 				// draw marker lines
 				drawMarkerLines(sequence, sequence_player);
@@ -377,37 +407,43 @@ namespace nap
 			if( ImGui::BeginChild(std::string(mID + "_timeline_inspectors").c_str(),
 								  inspector_window_size,
 								  false,
-								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground ) )
+								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs) )
 			{
+				ImGui::PushClipRect({inspector_window_pos.x,
+									 inspector_window_pos.y > clip_start_y ? inspector_window_pos.y : clip_start_y},
+									{inspector_window_pos.x + inspector_window_size.x < end_clip_x ? inspector_window_pos.x + inspector_window_size.x : end_clip_x,
+									 inspector_window_pos.y + inspector_window_size.y < end_clip_y ? inspector_window_pos.y + inspector_window_size.y : end_clip_y}, false);
+
 				drawInspectors(sequence_player, sequence);
+
+				ImGui::PopClipRect();
 			}
 			ImGui::EndChild();
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY());
 			if (ImGui::Button("Insert New Track"))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
 
-			// handle actions in views for tracks
+			// handle actions
 			for (auto& it : mViews)
 			{
 				it.second->handleActions();
 			}
 
 			// handle actions for popups
-			auto it = mPopups.find(mState.mAction.get()->get_type());
-			if(it!=mPopups.end())
+			auto it = mActionHandlers.find(mState.mAction.get()->get_type());
+			if(it!= mActionHandlers.end())
 			{
 				it->second();
 			}
 		}
 
-		ImGui::End();
-
 		// pop id
+		ImGui::End();
 		ImGui::PopID();
 
 		if(reset_dirty_flag)
@@ -427,22 +463,16 @@ namespace nap
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * i });
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * (float)i });
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
-			auto view_map = getTrackViewTypeViewMap();
-			auto it = view_map.find(track_type);
-			assert(it != view_map.end()); // no view type for track
-			if (it != view_map.end())
-			{
-				auto it2 = mViews.find(it->second);
-				assert(it2 != mViews.end()); // no view class created for this view type
-				if (it2 != mViews.end())
-				{
-					it2->second->showTrack(*sequence.mTracks[i].get());
-				}
-			}
+			auto view_type 	= mService.getViewTypeForTrackType(track_type);
+
+			auto it = mViews.find(view_type);
+			assert(it != mViews.end()); // no view class created for this view type
+			it->second->showTrack(*sequence.mTracks[i].get());
+
 		}
 	}
 
@@ -454,22 +484,15 @@ namespace nap
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * i });
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + 10.0f ) * (float)i });
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
-			auto view_map = getTrackViewTypeViewMap();
-			auto it = view_map.find(track_type);
-			assert(it != view_map.end()); // no view type for track
-			if (it != view_map.end())
-			{
-				auto it2 = mViews.find(it->second);
-				assert(it2 != mViews.end()); // no view class created for this view type
-				if (it2 != mViews.end())
-				{
-					it2->second->showInspector(*sequence.mTracks[i].get());
-				}
-			}
+			auto view_type	= mService.getViewTypeForTrackType(track_type);
+
+			auto it = mViews.find(view_type);
+			assert(it != mViews.end()); // no view class created for this view type
+			it->second->showInspector(*sequence.mTracks[i].get());
 		}
 	}
 
@@ -507,8 +530,8 @@ namespace nap
 			// get window drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, guicolors::black);
-			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, guicolors::white);
+			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, sequencer::colors::black);
+			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, sequencer::colors::white);
 
 			for(const auto& marker : sequence.mMarkers)
 			{
@@ -530,7 +553,7 @@ namespace nap
 				if( ImGui::IsMouseHoveringRect(player_time_top_rect_left, player_time_rect_bottom_right) )
 					hovered = true;
 
-				draw_list->AddText({ player_time_rect_bottom_right.x + 2, player_time_rect_center.y - 10 }, guicolors::white, marker->mMessage.c_str());
+				draw_list->AddText({ player_time_rect_bottom_right.x + 2, player_time_rect_center.y - 10 }, sequencer::colors::white, marker->mMessage.c_str());
 
 				if( mState.mAction->isAction<None>() && hovered )
 				{
@@ -563,9 +586,9 @@ namespace nap
 				}
 
 				if( hovered )
-					draw_list->AddCircleFilled(player_time_rect_center, 10, guicolors::white);
+					draw_list->AddCircleFilled(player_time_rect_center, 10, sequencer::colors::white);
 				else
-					draw_list->AddCircle(player_time_rect_center, 10, guicolors::white, 12, 2.0f);
+					draw_list->AddCircle(player_time_rect_center, 10, sequencer::colors::white, 12, 2.0f);
 			}
 
 			if( mState.mAction->isAction<None>())
@@ -624,11 +647,11 @@ namespace nap
 			// draw backgroundbox of controller
 			draw_list->AddRectFilled(
 				start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15 }, guicolors::black);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15 }, sequencer::colors::black);
 
 			// draw box of controller
 			draw_list->AddRect(start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15}, guicolors::white);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15}, sequencer::colors::white);
 
 			// draw handler of player position
 			const double player_time = player.getPlayerTime();
@@ -642,16 +665,16 @@ namespace nap
 				start_pos.y + sequence_controller_height,
 			};
 
-			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, guicolors::red);
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, sequencer::colors::red);
 
 			// draw timestamp text every 100 pixels
 			const float timestamp_interval = 100.0f;
-			int steps = mState.mTimelineWidth / timestamp_interval;
-			int step_start = math::max<float>(mState.mScroll.x - start_pos.x, start_pos.x) / mState.mTimelineWidth;
+			int steps =(int) ( mState.mTimelineWidth / timestamp_interval );
+			int step_start = (int) ( math::max<float>(mState.mScroll.x - start_pos.x, start_pos.x) / mState.mTimelineWidth );
 			for (int i = step_start; i < steps; i++)
 			{
 				ImVec2 timestamp_pos;
-				timestamp_pos.x = i * timestamp_interval + start_pos.x;
+				timestamp_pos.x = (float)i * timestamp_interval + start_pos.x;
 				timestamp_pos.y = start_pos.y - 18;
 
 				if (timestamp_pos.x < parent_window_size.x &&
@@ -660,13 +683,13 @@ namespace nap
 					if (timestamp_pos.y >= 0 &&
 						timestamp_pos.y < parent_window_size.y)
 					{
-						double time_in_player = (i * timestamp_interval) / mState.mStepSize;
+						double time_in_player = ((float)i * timestamp_interval) / mState.mStepSize;
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
-						draw_list->AddText(timestamp_pos, guicolors::white, formatted_time_string.c_str());
+						draw_list->AddText(timestamp_pos, sequencer::colors::white, formatted_time_string.c_str());
 
 						if (i != 0)
 						{
-							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + 18 }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + 2 }, guicolors::darkGrey);
+							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + 18 }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + 2 }, sequencer::colors::darkGrey);
 						}
 					}
 				}
@@ -794,11 +817,11 @@ namespace nap
 
 			if (!draw_filled)
 			{
-				draw_list->AddRect(player_duration_top_rect_left, player_duration_rect_bottom_right, guicolors::white);
+				draw_list->AddRect(player_duration_top_rect_left, player_duration_rect_bottom_right, sequencer::colors::white);
 			}
 			else
 			{
-				draw_list->AddRectFilled(player_duration_top_rect_left, player_duration_rect_bottom_right, guicolors::white);
+				draw_list->AddRectFilled(player_duration_top_rect_left, player_duration_rect_bottom_right, sequencer::colors::white);
 			}
 		}
 
@@ -810,7 +833,7 @@ namespace nap
 
 	void SequenceEditorGUIView::drawTimelinePlayerPosition(
 		const Sequence& sequence,
-		SequencePlayer& player)
+		SequencePlayer& player) const
 	{
 		const float line_thickness = 2.0f;
 
@@ -834,17 +857,17 @@ namespace nap
 			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
-				drawlist->AddLine( 	line_begin, line_end, guicolors::red, line_thickness);
+				drawlist->AddLine( 	line_begin, line_end, sequencer::colors::red, line_thickness);
 			}
 			ImGui::EndChild();
 		}
 	}
 
 
-	void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player)
+	void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const
 	{
 		const float line_thickness = 2.0f;
-		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(guicolors::white);
+		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(sequencer::colors::white);
 		const ImU32 color = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 0.5f});
 
 		for(const auto& marker : sequence.mMarkers)
@@ -898,15 +921,12 @@ namespace nap
 			mState.mTimelineControllerPos.y + 15.0f
 		});
 
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, guicolors::white);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, sequencer::colors::white);
 		if (ImGui::BeginChild(id_string.c_str(), // id
 		{ 1.0f, sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f) + 10.0f }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
-		{
-
-
-		}
+		{}
 		ImGui::EndChild();
 		ImGui::PopStyleColor();
 
@@ -1027,7 +1047,7 @@ namespace nap
 						shows.push_back(utility::getFileName(filename));
 					}
 				}
-				shows.push_back("<New...>");
+				shows.emplace_back("<New...>");
 
 				if (SequenceTrackView::Combo("Shows",
 					&save_as_action->mSelectedShowIndex,
@@ -1076,7 +1096,7 @@ namespace nap
 					
 					if (mEditor.mSequencePlayer->save(utility::getFileName(new_show_filename), error_state))
 					{
-						save_as_action->mSelectedShowIndex = shows.size() - 2;
+						save_as_action->mSelectedShowIndex = (int) shows.size() - 2;
 						mState.mDirty = true;
 					}
 					else
@@ -1155,16 +1175,17 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Insert New Track"))
 			{
-				for (auto& it : getTrackViewTypeViewMap())
+				const auto& track_types = mService.getAllTrackTypes();
+				for (const auto& track_type : track_types)
 				{
-					const auto& name = it.first.get_name().to_string();
+					const auto& name = track_type.get_name().to_string();
 					if (ImGui::Button(name.c_str()))
 					{
-						auto* controller = mEditor.getControllerWithTrackType(it.first);
+						auto* controller = mEditor.getControllerWithTrackType(track_type);
 						assert(controller != nullptr);
 						if (controller != nullptr)
 						{
-							controller->insertTrack(it.first);
+							controller->insertTrack(track_type);
 							mState.mAction = createAction<None>();
 							ImGui::CloseCurrentPopup();
 						}
@@ -1352,7 +1373,7 @@ namespace nap
 		float  time_focus = (float) ( time_start + time_end ) * 0.5f;
 
 		// calc new timeline width
-		mState.mTimelineWidth = mState.mHorizontalResolution * sequence_player.getDuration();
+		mState.mTimelineWidth = mState.mHorizontalResolution * (float)sequence_player.getDuration();
 
 		// calc the new scroll keeping time_focus in the middle
 		mState.mScroll.x = (float) (time_focus / sequence_player.getDuration()) * mState.mTimelineWidth - ((mState.mWindowSize.x - mState.mInspectorWidth) * 0.5f );
@@ -1425,6 +1446,66 @@ namespace nap
 				// clicked outside so exit popup
 				mState.mAction = createAction<None>();
 			}
+		}
+	}
+
+
+	void SequenceEditorGUIView::registerActionHandler(const rttr::type& actionType, const std::function<void()>& action)
+	{
+		auto it = mActionHandlers.find(actionType);
+		assert(it==mActionHandlers.end()); // key already present
+		if(it==mActionHandlers.end())
+		{
+			mActionHandlers.insert({actionType, action});
+		}
+	}
+
+
+	void SequenceEditorGUIView::handleHelpPopup()
+	{
+		if(mState.mAction->isAction<OpenHelpPopup>())
+		{
+			mState.mAction = createAction<InsideHelpPopup>();
+			ImGui::OpenPopup("Help");
+		}
+
+		const float column_width = 200.0f;
+		const float window_width = column_width * 2;
+		ImGui::SetNextWindowSizeConstraints({window_width, -1}, {window_width, -1});
+
+		if(ImGui::BeginPopupModal("Help", (bool*)0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if(ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanFullWidth ))
+			{
+				ImGui::Columns(2, nullptr, false);
+
+				ImGui::SetColumnWidth(0, column_width);
+				ImGui::SetColumnWidth(1, column_width);
+
+				auto red_color = ImGui::ColorConvertU32ToFloat4(sequencer::colors::red);
+				ImGui::Text("Select & drag :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Left mouse button"); ImGui::NextColumn();
+				ImGui::Text("Select & open edit popup :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Right mouse button"); ImGui::NextColumn();
+				ImGui::Text("Zoom in & out :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Control + Scroll Wheel"); ImGui::NextColumn();
+				ImGui::Text("Horizontal Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Shift + Scroll Wheel"); ImGui::NextColumn();
+				ImGui::Text("Vertical Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Scroll Wheel"); ImGui::NextColumn();
+
+				ImGui::Columns(1);
+			}
+
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+
+			if(ImGui::Button("Exit"))
+			{
+				ImGui::CloseCurrentPopup();
+				mState.mAction = createAction<None>();
+			}
+			ImGui::EndPopup();
+		}else
+		{
+			// clicked outside so exit popup
+			mState.mAction = createAction<None>();
 		}
 	}
 }

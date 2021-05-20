@@ -6,26 +6,28 @@
 
 #include "sequencecontroller.h"
 #include "sequencetracksegmentevent.h"
-#include "sequenceutils.h"
 
 #include <nap/logger.h>
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	class SequenceService;
 
 	/**
 	 * Controller class for event tracks
 	 */
 	class NAPAPI SequenceControllerEvent : public SequenceController
 	{
+		RTTI_ENABLE(SequenceController)
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to service
 		 * @param player reference to player
 		 * @param editor reference to the sequence editor
 		 */
-		SequenceControllerEvent(SequencePlayer & player, SequenceEditor& editor) : SequenceController(player, editor) { }
+		SequenceControllerEvent(SequenceService& service, SequencePlayer & player, SequenceEditor& editor) : SequenceController(service, player, editor) { }
 
 		/**
 		 * edits event message
@@ -42,14 +44,14 @@ namespace nap
 		 * @param segmentID the segmentID
 		 * @param time the new time
 		 */
-		double segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, float time);
+		double segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, double time);
 
 		/**
 		 * overloaded insert segment message
 		 * @param trackID the track id
 		 * @param time the time
 		 */
-		virtual const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
+		const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
 
 		/**
 		* insert event segment of type SEGMENT_TYPE
@@ -64,7 +66,7 @@ namespace nap
 		 * @param trackID the track id
 		 * @param segmentID the segment id
 		 */
-		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
+		void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
 
 		/**
 		 *  add new event track method
@@ -75,7 +77,7 @@ namespace nap
 		 * overloaded insert track method
 		 * @param type the track type
 		 */
-		virtual void insertTrack(rttr::type type) override;
+		void insertTrack(rttr::type type) override;
 	private:
 	};
 
@@ -90,20 +92,17 @@ namespace nap
 			// create new segment & set parameters
 			std::unique_ptr<SEGMENT_TYPE> new_segment = std::make_unique<SEGMENT_TYPE>();
 			new_segment->mStartTime = time;
-			new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+			new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 			new_segment->mDuration = 0.0;
 
 			//
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			if (track != nullptr)
-			{
-				track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
+			track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
 
-				return_ptr = new_segment.get();
-				getPlayerOwnedObjects().emplace_back(std::move(new_segment));
-			}
+			return_ptr = new_segment.get();
+			getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 		});
 
 		return return_ptr;
@@ -118,22 +117,13 @@ namespace nap
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
-			if (track != nullptr)
-			{
-				SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-				assert(segment != nullptr); // segment not found
+			SequenceTrackSegment* segment = findSegment(trackID, segmentID);
+			assert(segment != nullptr); // segment not found
 
-				if (segment != nullptr)
-				{
-					SequenceTrackSegmentEvent<T>* event_segment = dynamic_cast<SequenceTrackSegmentEvent<T>*>(segment);
-					assert(event_segment != nullptr); // type mismatch
+			assert(segment->get_type().template is_derived_from<SequenceTrackSegmentEvent<T>>());
+			auto* event_segment = static_cast<SequenceTrackSegmentEvent<T>*>(segment);
 
-					if (event_segment != nullptr)
-					{
-						event_segment->mValue = value;
-					}
-				}
-			}
+			event_segment->mValue = value;
 		});
 	}
 }

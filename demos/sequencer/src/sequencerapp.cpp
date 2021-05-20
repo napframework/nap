@@ -9,7 +9,6 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
-#include <napcolors.h>
 #include <sequenceplayereventoutput.h>
 #include <sequenceevent.h>
 
@@ -39,8 +38,8 @@ namespace nap
 			return false;
 
 		// Get the time-line window
-		mTimelineWindow = mResourceManager->findObject<nap::RenderWindow>("TimelineWindow");
-		if (!error.check(mTimelineWindow != nullptr, "unable to find TimelineWindow"))
+		mTimelineWindow = mResourceManager->findObject<nap::RenderWindow>("SequencerWindow");
+		if (!error.check(mTimelineWindow != nullptr, "unable to find SequencerWindow"))
 			return false;
 
 		// Get the parameter window
