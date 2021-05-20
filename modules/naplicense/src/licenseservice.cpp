@@ -18,6 +18,7 @@
 #include <rsa.h>
 #include <hex.h>
 #include <files.h>
+#include <sha.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
 	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)
@@ -33,7 +34,7 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	constexpr const char* licenceToken = "LICENSE@";
+	constexpr const char* licenseToken = "LICENSE@";
 	constexpr const char* licenseExtension = "license";
 	constexpr const char* keyExtension = "key";
 
@@ -136,8 +137,8 @@ namespace nap
 			return false;
 
 		// Remove first part
-		assert(utility::startsWith(user_license, licenceToken, true));
-		user_license.erase(0, strlen(licenceToken));
+		assert(utility::startsWith(user_license, licenseToken, true));
+		user_license.erase(0, strlen(licenseToken));
 
 		// Split using delimiter and create map of arguments
 		std::vector<std::string> output = utility::splitString(user_license, '|');
@@ -168,6 +169,7 @@ namespace nap
 		setArgument(arguments, "name", outInformation.mName);
 		setArgument(arguments, "application", outInformation.mApp);
 		setArgument(arguments, "tag", outInformation.mTag);
+		setArgument(arguments, "uuid", outInformation.mUuid);
 
 		// If an expiration date is specified check if it expired
 		outInformation.mExpires = false;
@@ -187,7 +189,6 @@ namespace nap
 		}
 		return true;
 	}
-
 
 	bool LicenseService::init(utility::ErrorState& error)
 	{

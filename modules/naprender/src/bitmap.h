@@ -6,11 +6,13 @@
 
 // Local Includes
 #include "color.h"
+#include "surfacedescriptor.h"
 
 // External Includes
 #include <nap/resource.h>
 #include <utility/dllexport.h>
-#include "surfacedescriptor.h"
+#include <nap/signalslot.h>
+
 
 namespace nap
 {
@@ -28,6 +30,7 @@ namespace nap
 	 */
 	class NAPAPI Bitmap : public Resource
 	{
+		friend class BitmapFileBuffer;
 		RTTI_ENABLE(Resource)
 	public:
 
@@ -57,6 +60,13 @@ namespace nap
 		 * @param surfaceDescriptor the settings used to initialize this texture.
 		 */
 		void initFromDescriptor(const SurfaceDescriptor& surfaceDescriptor);
+
+		/**
+		* Writes this bitmap to the given location on disk with the specified image format
+		* @param path the path including filename and image extension of the output file e.g. "targetFolder/MyOutputFile.png"
+		* @param errorState contains the error if the image could not be saved to disk
+		*/
+		bool save(const std::string& path, utility::ErrorState& errorState);
 
 		/**
 		 * @return the type of color associated with this bitmap
@@ -269,6 +279,11 @@ namespace nap
 		 * These properties are set  when initializing the bitmap from file or texture
 		 */
 		SurfaceDescriptor		mSurfaceDescriptor;
+
+		/**
+		* Triggered by Texture2D when this bitmap is updated
+		*/
+		Signal<> mBitmapUpdated;
 
 	private:
 		/**

@@ -38,6 +38,7 @@ namespace nap
 		std::string			mMail;					///< Extracted user mail
 		std::string			mApp;					///< Extracted application signature
 		std::string			mTag;					///< Extracted additional license information
+		std::string			mUuid;					///< Extracted additional uuid
 		bool				mExpires = false;		///< If this license can expire
 		DateTime			mTime;					///< License expiry date as system timestamp
 

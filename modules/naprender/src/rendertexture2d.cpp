@@ -8,6 +8,7 @@
 
 RTTI_BEGIN_ENUM(nap::RenderTexture2D::EFormat)
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA8,	"RGBA8"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::BGRA8,	"BGRA8"),
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R8,		"R8"),
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA16,	"RGBA16"),
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R16,		"R16"),
@@ -52,6 +53,12 @@ namespace nap
 				settings.mDataType = ESurfaceDataType::BYTE;
 				settings.mChannels = ESurfaceChannels::RGBA;
 				return Texture2D::init(settings, false, clear_mode, clear_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+			}
+			case RenderTexture2D::EFormat::BGRA8:
+			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::BGRA;
+				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 			}
 			case RenderTexture2D::EFormat::R8:
 			{
