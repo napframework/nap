@@ -46,6 +46,7 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("VulkanMajor",		&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMinor",		&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableHighDPI",		&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RequireCompute",     &nap::RenderServiceConfiguration::mRequireCompute,              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",			&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",		&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AnisotropicSamples",	&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
@@ -422,7 +423,7 @@ namespace nap
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, bool requireCompute, VkSurfaceKHR presentSurface, PhysicalDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -437,16 +438,20 @@ namespace nap
 		// Show device information
 		Logger::info("Found %d GPU(s):", physical_device_count);
 		
-		// Pick the right GPU, based on type preference, api-version and queue support
+		// Allocate space for properties of every physical device that was found.
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
-		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
+
+		// If compute is required use graphics transfer and compute bit, else only graphics and transfer
+		const VkQueueFlags required_flags_with_compute = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT | VK_QUEUE_COMPUTE_BIT;
+		const VkQueueFlags required_flags_without_compute = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
+		const VkQueueFlags required_flags = requireCompute ? required_flags_with_compute : required_flags_without_compute;
 
 		// All valid physical devices
 		std::vector<PhysicalDevice> valid_devices;
 
 		// Iterate over every available physical device and gather valid ones.
-		// A valid physical device has a graphics and compute queue, if presentSurface != NULL,
-		// present functionality is also required.
+		// A valid physical device has atleast one queue family with the required flags, 
+		// and if presentSurface != NULL, the physical device must also be able to present to presentSurface.
 		int preferred_idx = -1;
 		for (int device_idx = 0; device_idx < physical_devices.size(); ++device_idx)
 		{
@@ -1279,7 +1284,7 @@ namespace nap
 
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, render_config->mRequireCompute, dummy_window.mSurface, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
