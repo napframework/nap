@@ -19,7 +19,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_PROPERTY("Height", &nap::Snapshot::mHeight, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaxCellWidth", &nap::Snapshot::mMaxCellWidth, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaxCellHeight", &nap::Snapshot::mMaxCellHeight, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputDirectory", &nap::Snapshot::mOutputDirectory, nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY("OutputDirectory", &nap::Snapshot::mOutputDirectory, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ImageFileFormat", &nap::Snapshot::mImageFileFormat, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TextureFormat", &nap::Snapshot::mTextureFormat, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleShading", &nap::Snapshot::mSampleShading, nap::rtti::EPropertyMetaData::Default)
@@ -28,8 +28,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
-
-constexpr const char* snapshotFolderName = "snapshots";
 
 /**
  * Deduce bitmap type from render texture format. Also informs of the supported output types.
@@ -74,6 +72,22 @@ namespace nap
 		if (!errorState.check(getFreeImageType(mTextureFormat) != FREE_IMAGE_TYPE::FIT_UNKNOWN, 
 			"%s: Unsupported RenderTexture2D format (%s) for writing to disk", mID.c_str(), rtti::Variant(mTextureFormat).to_string().c_str()))
 			return false;
+		
+		// Verify the output directory. The default is 'data/'
+		if (!mOutputDirectory.empty())
+		{
+			// Check if the configured output directory exists
+			std::string absolute_path = utility::getAbsolutePath(mOutputDirectory);
+			if (!utility::dirExists(absolute_path))
+			{
+				// If the directory does not exist, try to create it
+				if (!utility::makeDirs(absolute_path))
+				{
+					errorState.fail("Failed to create directory: %s", absolute_path.c_str());
+					return false;
+				}
+			}
+		}
 
 		// Make sure not to create textures that exceed the hardware image dimension limit
 		uint32 max_image_dimension = mRenderService->getPhysicalDeviceProperties().limits.maxImageDimension2D;
@@ -229,11 +243,10 @@ namespace nap
 
 	bool Snapshot::save()
 	{
-		// Save to snapshots directory in executable directory if the given output directory is empty
-		std::string output_dir = mOutputDirectory.empty() ? utility::joinPath({ utility::getExecutableDir(), snapshotFolderName }) : mOutputDirectory;
+		// Create a filename for the snapshot file
 		std::string path = utility::appendFileExtension(utility::joinPath(
 		{
-			output_dir.c_str(),
+			utility::getAbsolutePath(mOutputDirectory).c_str(),
 			timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str()
 		}), utility::toLower(rtti::Variant(mImageFileFormat).to_string()));
 

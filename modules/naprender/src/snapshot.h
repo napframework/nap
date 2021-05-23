@@ -70,8 +70,8 @@ namespace nap
 		*/
 		glm::u32vec2 getSize() { return { mWidth, mHeight }; };
 
-		uint32 mWidth = 0;															///< Property: 'Width' width of the snapshot in texels
-		uint32 mHeight = 0;															///< Property: 'Height' height of the snapshot in texels
+		uint32 mWidth = 1920;														///< Property: 'Width' width of the snapshot in texels
+		uint32 mHeight = 1080;														///< Property: 'Height' height of the snapshot in texels
 
 		uint32 mMaxCellWidth = 1920;												///< Property: 'mMaxCellWidth' max width of a cell
 		uint32 mMaxCellHeight = 1080;												///< Property: 'mMaxCellHeight' max height of a cell
