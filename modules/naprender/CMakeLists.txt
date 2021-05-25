@@ -44,7 +44,6 @@ endif()
 find_package(assimp REQUIRED)
 
 # Find other package dependencies
-find_package(glm REQUIRED)
 find_package(freeimage REQUIRED)
 find_package(vulkansdk REQUIRED)
 find_package(SPIRVCross REQUIRED)
@@ -59,7 +58,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 # Add includes
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
-    ${GLM_INCLUDE_DIRS}
     ${FREEIMAGE_INCLUDE_DIRS}
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}

@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
 #include <nap/numeric.h>
+#include <utility/errorstate.h>
 
 // SDL Forward declares
 struct SDL_Window;
@@ -120,7 +121,7 @@ namespace nap
 		 * Call this before creating any windows or render contexts!
 		 * @return if the system initialized correctly or not
 		 */
-		bool initVideo();
+		bool initVideo(utility::ErrorState& error);
 
 		/**
 	 	 * Controls if the window has any borders.

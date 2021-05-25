@@ -53,9 +53,23 @@ namespace nap
 		 */
 		enum class EClearMode : uint8
 		{
-			DontClear		= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
-			FillWithZero	= 1				///< Texture is created and initialized to black on the GPU.
+			DontClear	= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
+			Clear		= 1				///< Texture is created and cleared on the GPU.
 		};
+
+		/**
+		* Creates the texture on the GPU using the provided settings.
+		* The texture is initialized to 'clearColor' if 'clearMode' is set to 'FillWithZero'.
+		* The Vulkan image usage flags are derived from texture usage.
+		* @param descriptor texture description.
+		* @param generateMipMaps if mip maps are generated when data is uploaded.
+		* @param clearMode if the texture is immediately initialized to black after creation.
+		* @param clearColor the color to clear the texture with.
+		* @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
+		* @param errorState contains the error if the texture can't be initialized.
+		* @return if the texture initialized successfully.
+		*/
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 		
 		/**
 		 * Creates the texture on the GPU using the provided settings.
@@ -149,9 +163,21 @@ namespace nap
 		 */
 		void asyncGetData(Bitmap& bitmap);
 
+		/**
+		* Starts a transfer of texture data from GPU to CPU. Use this overload to pass your own copy function.
+		* This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
+		* @param copyFunction the copy function to call when the texture data is available for download.
+		*/
+		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
+
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
 	private:
+		/**
+		* Clears the texture to the specified clear colors
+		*/
+		void clear(VkCommandBuffer commandBuffer);
+
 		/**
 		 * Called by the render service when data can be uploaded.
 		 */
@@ -176,6 +202,7 @@ namespace nap
 	private:
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
+
 		ImageData							mImageData;							///< 2D Texture vulkan image buffers
 		std::vector<BufferData>				mStagingBuffers;					///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
 		int									mCurrentStagingBufferIndex = -1;	///< Currently used staging buffer
@@ -183,6 +210,8 @@ namespace nap
 		SurfaceDescriptor					mDescriptor;						///< Texture description
 		VkFormat							mFormat = VK_FORMAT_UNDEFINED;		///< Vulkan texture format
 		std::vector<TextureReadCallback>	mReadCallbacks;						///< Number of callbacks based on number of frames in flight
+		std::vector<int>					mDownloadStagingBufferIndices;		///< Staging buffer indices associated with a frameindex
 		uint32								mMipLevels = 1;						///< Total number of generated mip-maps
+		VkClearColorValue					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };	///< Property: 'ClearColor' color selection used for clearing the texture
 	};
 }

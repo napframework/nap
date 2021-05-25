@@ -65,10 +65,11 @@ elseif(APPLE)
 
     # Add RPATH for FFmpeg to packaged module on macOS
     foreach(build_type Release Debug)
+        # Errors are ignored as duplicate RPATHs are possible
         install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                               -add_rpath
                                               @loader_path/../../../../thirdparty/FFmpeg/lib
-                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napvideo/lib/${build_type}/libmod_napvideo.dylib                                           
+                                              ${CMAKE_INSTALL_PREFIX}/modules/mod_napvideo/lib/${build_type}/mod_napvideo.dylib                                           
                                       ERROR_QUIET
                                       )")
     endforeach()
@@ -79,7 +80,12 @@ elseif(UNIX)
     # Let our installed FFmpeg libs find each other
     install(CODE "file(GLOB FFMPEG_DYLIBS ${CMAKE_INSTALL_PREFIX}/thirdparty/FFmpeg/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
                   foreach(FFMPEG_DYLIB \${FFMPEG_DYLIBS})
-                      execute_process(COMMAND patchelf --set-rpath \$ORIGIN/. \${FFMPEG_DYLIB})
+                      execute_process(COMMAND patchelf --set-rpath \$ORIGIN/. \${FFMPEG_DYLIB}
+                                      RESULT_VARIABLE EXIT_CODE
+                                      )
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to add inter-FFmpeg RPATHs on ${FFMPEG_DYLIB}\")
+                      endif()
                   endforeach()
                   ")
 endif()

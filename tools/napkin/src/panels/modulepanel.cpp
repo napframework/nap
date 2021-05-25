@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "modulepanel.h"
+#include "napkin-resources.h"
 #include <appcontext.h>
 
 using namespace napkin;
@@ -12,6 +13,8 @@ ModuleItem::ModuleItem(const nap::Module& module)
 {
 	std::string name(module.getDescriptor().mID);
 	setText(QString::fromStdString(name));
+	setIcon(QIcon(QRC_ICONS_MODULE));
+	setEditable(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,13 +26,16 @@ ModuleModel::ModuleModel() : QStandardItemModel()
 	setHorizontalHeaderLabels({"Name"});
 }
 
+
 void ModuleModel::onCoreInitialized()
 {
 	removeRows(0, rowCount());
 	nap::Core& core = AppContext::get().getCore();
 	assert(core.isInitialized());
 	for (const auto& mod : core.getModuleManager().getModules())
+	{
 		appendRow(new ModuleItem(*mod));
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

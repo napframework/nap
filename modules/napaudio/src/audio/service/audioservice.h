@@ -30,8 +30,7 @@ namespace nap
 			RTTI_ENABLE(ServiceConfiguration)
 			
 		public:
-			virtual rtti::TypeInfo getServiceType()
-			{ return RTTI_OF(AudioService); }
+			virtual rtti::TypeInfo getServiceType() const	{ return RTTI_OF(AudioService); }
 			
 			/**
 			 * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
@@ -76,9 +75,14 @@ namespace nap
 			bool mAllowDeviceFailure = true;
 			
 			/**
-			 * If set to false the audio will start with only an output device.
+			 * If set to true the audio will start with only an output device.
 			 */
 			bool mDisableInput = false;
+
+			/**
+			 * If set to true the audio will start with only an input device.
+			 */
+			bool mDisableOutput = false;
 			
 			/**
 			 * The sample rate the audio stream will run on, the number of samples processed per channel per second.

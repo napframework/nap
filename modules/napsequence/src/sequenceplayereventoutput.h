@@ -23,9 +23,10 @@ namespace nap
 	class SequenceService;
 
 	/**
-	 * SequencePlayerEventOutput dispatches an event on the timeline
+	 * SequencePlayerEventOutput dispatches an event from the sequencer on the main thread.
+	 * The EventOutput receives its update call from the SequenceService
 	 */
-	class NAPAPI SequencePlayerEventOutput : public SequencePlayerOutput
+	class NAPAPI SequencePlayerEventOutput final : public SequencePlayerOutput
 	{
 		friend class SequencePlayerEventAdapter;
 
@@ -35,7 +36,7 @@ namespace nap
 		 * Constructor
 		 * @param service reference to SequenceService
 		 */
-		SequencePlayerEventOutput(SequenceService& service);
+		explicit SequencePlayerEventOutput(SequenceService& service);
 
 	public:
 		/**
@@ -47,7 +48,7 @@ namespace nap
 		 * called from sequence service main thread
 		 * @param deltaTime time since last update
 		 */
-		virtual void update(double deltaTime) override ;
+		void update(double deltaTime) override ;
 
 		/**
 		 * called from sequence player thread, adds event to queue.
@@ -62,5 +63,5 @@ namespace nap
 		std::mutex mEventMutex;
 	};
 
-	using SequencePlayerEventInputObjectCreator = rtti::ObjectCreator<SequencePlayerEventOutput, SequenceService>;
+	using SequencePlayerEventOutputObjectCreator = rtti::ObjectCreator<SequencePlayerEventOutput, SequenceService>;
 }

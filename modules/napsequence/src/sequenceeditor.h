@@ -9,12 +9,14 @@
 #include "sequencecontroller.h"
 #include "sequencecurveenums.h"
 #include "sequenceplayer.h"
-#include "sequenceutils.h"
+#include "sequenceservice.h"
+#include "sequenceservice.h"
 
 // external includes
 #include <nap/resource.h>
 #include <parameter.h>
 #include <nap/logger.h>
+#include <atomic>
 
 namespace nap
 {
@@ -33,12 +35,14 @@ namespace nap
 
 		RTTI_ENABLE(Resource)
 	public:
+		SequenceEditor(SequenceService& service);
+
 		/**
 		 * initializes editor
 		 * @param errorState contains any errors
 		 * @return returns true on successful initialization
 		*/
-		virtual bool init(utility::ErrorState& errorState);
+		bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * saves sequence of player to file
@@ -59,11 +63,11 @@ namespace nap
 		void changeSequenceDuration(double newDuration);
 
 		/**
-		 * Returns pointer to base class of controller type, returns nullptr when controller type is not found
+		 * Returns pointer to base class of controller type, asserts when type not found
 		 * @param type rttr::type information of controller type to be returned
 		 * @return ptr to controller base class, null ptr when not found
 		 */
-		SequenceController* getControllerWithTrackType(rttr::type type);
+		SequenceController* getControllerWithTrackType(rtti::TypeInfo trackType);
 
 		/**
 		 * Returns pointer to base class of controller type that is used for specified track type of track id
@@ -84,14 +88,6 @@ namespace nap
 			assert(mControllers.find(RTTI_OF(T)) != mControllers.end()); // type not found
 			return static_cast<T&>(*mControllers[RTTI_OF(T)].get());
 		}
-
-		/**
-		 * Static method that registers a certain controller type for a certain view type, this can be used by views to map controller types to view types
-		 * @param viewType the viewtype
-		 * @param controllerType the controller type
-		 * @return true on succesfull registration
-		 */
-		static bool registerControllerForTrackType(rttr::type viewType, rttr::type controllerType);
 
 		/**
 		 * inserts marker at given time in seconds
@@ -127,13 +123,18 @@ namespace nap
 		std::unordered_map<rttr::type, std::unique_ptr<SequenceController>> mControllers;
 
 		/**
-		 * performs edit action when mutex of player is unlocked, makes sure edit action are carried out thread safe, is blocking
+		 * performs edit action when mutex of player is unlocked
 		 * @param action the edit action
 		 */
-		void performEditAction(std::function<void()> action);
+		void performEdit(std::function<void()> action);
 
-		// make sure we don't perform two edit actions at the same time ( only possible when performing an edit action inside another edit action )
-		// edit actions are performed on player thread but block main thread
-		bool mPerformingEditAction = false;
+		// make sure we don't perform two edit actions at the same time and make sure they are executed on the main thread
+		// during the update call to the SequenceEditor
+		std::atomic_bool mPerformingEditAction = { false };
+
+		// service reference
+		SequenceService& mService;
 	};
+
+	using SequenceEditorObjectCreator = rtti::ObjectCreator<SequenceEditor, SequenceService>;
 }

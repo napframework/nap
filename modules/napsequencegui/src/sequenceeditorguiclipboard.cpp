@@ -13,10 +13,17 @@ namespace nap
 
 	}
 
-	void Clipboard::addObject(const rtti::Object* object, utility::ErrorState& errorState)
+	void Clipboard::addObject(const rtti::Object* object, const std::string& sequenceName, utility::ErrorState& errorState)
 	{
+		// clear serialized objects if we loaded another show and add a segment from that sequence
+		if(sequenceName != mSequenceName)
+		{
+			mSerializedObjects.clear();
+		}
+		mSequenceName = sequenceName;
+
 		// first remove the object if it already exists in the clipboard
-		if(containsObject(object->mID))
+		if(containsObject(object->mID, sequenceName))
 		{
 			removeObject(object->mID);
 		}
@@ -41,8 +48,12 @@ namespace nap
 	}
 
 
-	bool Clipboard::containsObject(const std::string& objectID) const
+	bool Clipboard::containsObject(const std::string& objectID, const std::string& sequenceName) const
 	{
+		// different sequence so, does not contain
+		if( sequenceName != mSequenceName )
+			return false;
+
 		return mSerializedObjects.find(objectID) != mSerializedObjects.end();
 	}
 
@@ -60,7 +71,7 @@ namespace nap
 	std::vector<std::string> Clipboard::getObjectIDs() const
 	{
 		std::vector<std::string> ids;
-		for(auto pair : mSerializedObjects)
+		for(const auto& pair : mSerializedObjects)
 		{
 			ids.emplace_back(pair.first);
 		}
