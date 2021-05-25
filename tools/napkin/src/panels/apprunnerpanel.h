@@ -17,9 +17,6 @@
 
 #define LAST_CORE_APP "lastCoreApp"
 
-#define TXT_START "Start"
-#define TXT_STOP "Stop"
-
 namespace napkin
 {
 

@@ -34,7 +34,7 @@ namespace napkin
 		 * @return The name of the currently opened file
 		 * or an empty string if no file is open or the data hasn't been saved yet.
 		 */
-		const QString& getCurrentFilename() { return mCurrentFilename; }
+		const QString& getFilename() { return mCurrentFilename; }
 
 		/**
 		 * Set this document's filename

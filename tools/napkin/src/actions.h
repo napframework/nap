@@ -130,13 +130,79 @@ namespace napkin
 	/**
 	 * Updates project data path to point to current loaded document
 	 */
-	class UpdateDefaultAction : public Action
+	class UpdateDefaultFileAction : public Action
 	{
 	public:
-		UpdateDefaultAction();
+		UpdateDefaultFileAction();
 
 	private:
 		void perform() override;
+	};
+
+	/**
+	 * Creates a service configuration
+	 */
+	class NewServiceConfigAction : public Action
+	{
+	public:
+		NewServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class SaveServiceConfigAction : public Action
+	{
+	public: 
+		SaveServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class SaveServiceConfigurationAs : public Action
+	{
+	public:
+		SaveServiceConfigurationAs();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class OpenServiceConfigAction : public Action
+	{
+	public:
+		OpenServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class SetAsDefaultServiceConfigAction : public Action
+	{
+	public:
+		SetAsDefaultServiceConfigAction();
+	private:
+		void perform();
+	};
+
+	/**
+	 * Saves a service configuration to disk
+	 */
+	class ClearServiceConfigAction : public Action
+	{
+	public:
+		ClearServiceConfigAction();
+	private:
+		void perform();
 	};
 
 	/**

@@ -110,7 +110,7 @@ namespace nap
 		/**
 		 *	@return The Service type associated with this configuration.
 		 */
-		virtual rtti::TypeInfo getServiceType()
+		virtual rtti::TypeInfo getServiceType() const override
 		{
 			return RTTI_OF(ParameterService);
 		}
