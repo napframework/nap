@@ -90,7 +90,7 @@ namespace nap
 
 	BitmapFileBuffer::BitmapFileBuffer(const SurfaceDescriptor& surfaceDescriptor, const void* data, bool copyData)
 	{
-		// Wrap the data
+		// Get the FreeImage type
 		FREE_IMAGE_TYPE fi_img_type = getFreeImageType(surfaceDescriptor.mDataType, surfaceDescriptor.mChannels);
 		int bpp = surfaceDescriptor.getBytesPerPixel() * 8;
 		int pitch = surfaceDescriptor.getPitch();
@@ -233,12 +233,8 @@ namespace nap
 		std::string path_filedir = utility::getFileDir(path);
 		if (!utility::dirExists(path_filedir))
 		{
-			// If not, try to create it
-			if (!utility::makeDirs(path_filedir))
-			{
-				errorState.fail("Failed to create directory: %s", path.c_str());
-				return false;
-			}
+			errorState.fail("Directory does not exist: %s", path.c_str());
+			return false;
 		}
 
 		// Get free image format from file format
