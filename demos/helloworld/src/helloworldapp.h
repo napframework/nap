@@ -16,6 +16,7 @@
 #include <spheremesh.h>
 #include <font.h>
 #include <imagefromfile.h>
+#include <snapshot.h>
 
 namespace nap
 {
@@ -91,5 +92,8 @@ namespace nap
 		ObjectPtr<EntityInstance> mOrthographicCamEntity = nullptr;		//< Pointer to the entity with an orthographic camera
 		ObjectPtr<ImageFromFile> mWorldTexture = nullptr;				//< Pointer to the world texture
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+
+		bool mTakeSnapshot = false;
+		ObjectPtr<Snapshot> mSnapshot;
 	};
 }
