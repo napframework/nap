@@ -630,4 +630,15 @@ namespace nap
 		return mInitialized;
 	}
 
+
+	std::vector<const ServiceConfiguration*> Core::getServiceConfigs() const
+	{
+		std::vector<const ServiceConfiguration*> configs;
+		configs.reserve(mServiceConfigs.size());
+		for (const auto& config : mServiceConfigs)
+		{
+			configs.emplace_back(config.second.get());
+		}
+		return configs;
+	}
 }

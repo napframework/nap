@@ -19,6 +19,7 @@ void MainWindow::bindSignals()
 	connect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	connect(&mServiceConfigPanel, &ServiceConfigPanel::selectionChanged, this, &MainWindow::onServiceConfigChanged);
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
@@ -34,6 +35,7 @@ void MainWindow::unbindSignals()
 	disconnect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	disconnect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
 	disconnect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
+	disconnect(&mServiceConfigPanel, &ServiceConfigPanel::selectionChanged, this, &MainWindow::onServiceConfigChanged);
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
@@ -79,6 +81,7 @@ void MainWindow::addDocks()
 	addDock("Curve", &mCurvePanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Instance Properties", &mInstPropPanel);
+	addDock("Configuration", &mServiceConfigPanel);
 }
 
 
@@ -117,11 +120,27 @@ void MainWindow::addMenu()
 		addAction(reloadFileAction);
 		filemenu->addAction(reloadFileAction);
 
-		auto updateDefaultAction = new UpdateDefaultAction();
+		auto updateDefaultAction = new UpdateDefaultFileAction();
 		addAction(updateDefaultAction);
 		filemenu->addAction(updateDefaultAction);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
+
+	// Service Configuration menu
+	auto config_menu = new QMenu("Configuration", menuBar());
+	{
+		auto newServiceConfigAction = new NewServiceConfigAction();
+		config_menu->addAction(newServiceConfigAction);
+		auto openServiceConfigAction = new OpenServiceConfigAction();
+		config_menu->addAction(openServiceConfigAction);
+		auto saveServiceConfigACtion = new SaveServiceConfigAction();
+		config_menu->addAction(saveServiceConfigACtion);
+		auto saveServiceConfigurationAs = new SaveServiceConfigurationAs();
+		config_menu->addAction(saveServiceConfigurationAs);
+		auto setDefaultServiceConfig = new SetAsDefaultServiceConfigAction();
+		config_menu->addAction(setDefaultServiceConfig);
+	}
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), config_menu);
 
 	// General Options
 	auto optionsMenu = new QMenu("Options", menuBar());
@@ -156,7 +175,7 @@ void MainWindow::updateWindowTitle()
 	}
 
 	// Otherwise display current project & file
-	QFileInfo fi(getContext().getDocument()->getCurrentFilename());
+	QFileInfo fi(getContext().getDocument()->getFilename());
 	QString changed = getContext().getDocument()->isDirty() ? "*" : "";
 	setWindowTitle(QString("%1%2 %3 | %4 - %5").arg(QString::fromStdString(project_info->mTitle),
 												changed, QString::fromStdString(project_info->mVersion),
@@ -199,7 +218,6 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 		if (ob)
 			mCurvePanel.editCurve(ob);
 	}
-
 }
 
 void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
@@ -325,4 +343,18 @@ void MainWindow::onDocked(QDockWidget *dockWidget)
 AppContext& MainWindow::getContext() const
 {
 	return AppContext::get();
+}
+
+
+void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
+{
+	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
+	sceneTreeSelection->blockSignals(true);
+	sceneTreeSelection->clearSelection();
+	sceneTreeSelection->blockSignals(false);
+	if (!paths.isEmpty())
+	{
+		auto path = paths.first();
+		mInspectorPanel.setPath(paths.first());
+	}
 }

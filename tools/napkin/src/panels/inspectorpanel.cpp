@@ -78,14 +78,10 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	mTreeView.setMenuHook(std::bind(&InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
 
 	// TODO: Move this back to the model and let it update its state whenever properties change
-	connect(&AppContext::get(), &AppContext::propertyValueChanged,
-			this, &InspectorPanel::onPropertyValueChanged);
-
-	connect(&AppContext::get(), &AppContext::propertySelectionChanged,
-			this, &InspectorPanel::onPropertySelectionChanged);
-
-	connect(&AppContext::get(), &AppContext::documentClosing, 
-		this, &InspectorPanel::onFileClosing);
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &InspectorPanel::onPropertyValueChanged);
+	connect(&AppContext::get(), &AppContext::propertySelectionChanged, this, &InspectorPanel::onPropertySelectionChanged);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &InspectorPanel::onFileClosing);
+	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
@@ -341,13 +337,13 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 		mTreeView.selectAndReveal(pathItem);
 }
 
+
 void napkin::InspectorPanel::onFileClosing(const QString& filename)
 {
 	mModel.clearPath();
-	mPathField.setText("");
-	mTitle.setText("");
-	mSubTitle.setText("");
+	clear();
 }
+
 
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {

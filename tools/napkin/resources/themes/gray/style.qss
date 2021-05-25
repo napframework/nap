@@ -53,8 +53,8 @@ QDockWidget::close-button,QDockWidget::float-button{
   position:absolute;
   top:3px;
   bottom:0px;
-  width:16px;
-  height:16px;
+  width:12px;
+  height:12px;
   border:none;
 }
 
@@ -63,7 +63,7 @@ QDockWidget::close-button{
 }
 
 QDockWidget::float-button{
-  right:25px;
+  right:18px;
 }
 
 QLineEdit {
@@ -105,7 +105,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     background: none;
 }
 
-QPushButton {
+QPushButton, QToolButton {
     color: #DDD;
     background: #555;
     border-radius: 4px;

@@ -30,8 +30,7 @@ namespace nap
 			RTTI_ENABLE(ServiceConfiguration)
 			
 		public:
-			virtual rtti::TypeInfo getServiceType()
-			{ return RTTI_OF(AudioService); }
+			virtual rtti::TypeInfo getServiceType() const	{ return RTTI_OF(AudioService); }
 			
 			/**
 			 * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
