@@ -121,6 +121,6 @@ namespace nap
 
 		// Screenshot
 		ObjectPtr<Snapshot> mSnapshot = nullptr;						//< Takes screenshot
-		bool mTakeSnapshot = true;
+		bool mTakeSnapshot = false;
 	};
 }
