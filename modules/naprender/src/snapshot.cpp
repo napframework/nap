@@ -228,7 +228,6 @@ namespace nap
 
 				// Keep a record of updated bitmaps
 				mCellUpdateFlags[index] = true;
-
 				if (mNumCells == 1 || std::find(std::begin(mCellUpdateFlags), std::end(mCellUpdateFlags), false) == std::end(mCellUpdateFlags)) 
 				{
 					onCellsUpdated();

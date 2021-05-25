@@ -38,6 +38,7 @@ namespace nap
 		// Extract loaded resources and listen to window resize events
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");
 		mRenderWindow->mWindowEvent.connect(std::bind(&VinylApp::handleWindowEvent, this, std::placeholders::_1));
+		mSnapshot = mResourceManager->findObject<nap::Snapshot>("Snapshot");
 
 		// Fetch vinyl textures
 		mVinylLabelImg = mResourceManager->findObject<nap::ImageFromFile>("LabelImage");
@@ -68,12 +69,30 @@ namespace nap
 		// Update our shader variables
 		setCameraLocation();
 
-		// Set vinyl color
+		// Add some gui elements
 		ImGui::Begin("Controls");
-		ImGui::Text("'f'=fullscreen, 'esc'=quit");
-		if (ImGui::ColorPicker3("Vinyl Color", mRecordColor.getData()))
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		ImGui::TextColored(clr, "'f'=fullscreen, 'esc'=quit");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+	
+		// Color manipulation
+		if (ImGui::CollapsingHeader("Vinyl Color"))
 		{
-			setRecordColor();
+			if (ImGui::ColorPicker3("Vinyl Color", mRecordColor.getData()))
+			{
+				setRecordColor();
+			}
+		}
+
+		// Take screenshot
+		if (ImGui::CollapsingHeader("Snapshot"))
+		{
+			ImGui::Text("Output directory: %s", utility::getAbsolutePath(mSnapshot->mOutputDirectory).c_str());
+			if (ImGui::Button("Take"))
+			{
+				mTakeSnapshot = true;
+			}
 		}
 		ImGui::End();
 	}
@@ -91,10 +110,30 @@ namespace nap
 		// Set back buffer color
 		mRenderWindow->setClearColor({ 0.0705f, 0.49f, 0.5647f, 1.0f });
 		
+		// Get vinyl meshes
+		std::vector<nap::RenderableComponentInstance*> vinyl_meshes;
+		for (const nap::EntityInstance* e : mModelEntity->getChildren())
+		{
+			if (e->hasComponent<nap::RenderableMeshComponentInstance>())
+				vinyl_meshes.emplace_back(&(e->getComponent<nap::RenderableMeshComponentInstance>()));
+		}
+
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
+
+		// Take screenshot. Only render vinyl meshes, background = transparent.
+		if (mTakeSnapshot)
+		{
+			if (mRenderService->beginHeadlessRecording())
+			{
+				// Find the world and add as an object to render
+				mSnapshot->snap(mCameraEntity->getComponent<PerspCameraComponentInstance>(), vinyl_meshes);
+				mRenderService->endHeadlessRecording();
+			}
+			mTakeSnapshot = false;
+		}
 
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
@@ -108,13 +147,7 @@ namespace nap
 			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<nap::OrthoCameraComponentInstance>(), components_to_render);
 
 			// Render Vinyl
-			components_to_render.clear();
-			for (const nap::EntityInstance* e : mModelEntity->getChildren())
-			{
-				if (e->hasComponent<nap::RenderableMeshComponentInstance>())
-					components_to_render.emplace_back(&(e->getComponent<nap::RenderableMeshComponentInstance>()));
-			}
-			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<nap::PerspCameraComponentInstance>(), components_to_render);
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<nap::PerspCameraComponentInstance>(), vinyl_meshes);
 
 			// Tell the GUI to draw
 			mGuiService->draw();
@@ -166,6 +199,11 @@ namespace nap
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
 				mRenderWindow->toggleFullscreen();
+			}
+
+			if (press_event->mKey == nap::EKeyCode::KEY_s)
+			{
+				mTakeSnapshot = true;
 			}
 		}
 	}

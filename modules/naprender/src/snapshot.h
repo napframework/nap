@@ -72,16 +72,14 @@ namespace nap
 
 		uint32 mWidth = 1920;														///< Property: 'Width' width of the snapshot in texels
 		uint32 mHeight = 1080;														///< Property: 'Height' height of the snapshot in texels
-
 		uint32 mMaxCellWidth = 1920;												///< Property: 'mMaxCellWidth' max width of a cell
 		uint32 mMaxCellHeight = 1080;												///< Property: 'mMaxCellHeight' max height of a cell
-
-		glm::vec4 mClearColor{ 0.f, 0.f, 0.f, 1.f };								///< Property: 'ClearColor' color selection used for clearing the render target
+		glm::vec4 mClearColor{ 0.0f, 0.0f, 0.0f, 0.0f };							///< Property: 'ClearColor' color selection used for clearing the render target
 		RenderTexture2D::EFormat mTextureFormat = RenderTexture2D::EFormat::RGBA8;	///< Property: 'Format' texture format
 		ERasterizationSamples mRequestedSamples = ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'
 		bool mSampleShading = true;													///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
 
-		std::string mOutputDirectory = "";																///< Property: 'OutputDirectory' Location of the directory where snapshots are saved to
+		std::string mOutputDirectory = "snapshots";									///< Property: 'OutputDirectory' Location of the directory where snapshots are saved to, defaults to 'data'
 		BitmapFileBuffer::EImageFileFormat mImageFileFormat = BitmapFileBuffer::EImageFileFormat::PNG;	///< Property: 'ImageFormat' Image format of the snapshot image file
 
 		// Triggered when a snapshot is being processed
