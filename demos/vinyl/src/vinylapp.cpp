@@ -123,7 +123,7 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		// Take screenshot. Only render vinyl meshes, background = transparent.
+		// Take screenshot. Only render vinyl, background = transparent.
 		if (mTakeSnapshot)
 		{
 			if (mRenderService->beginHeadlessRecording())

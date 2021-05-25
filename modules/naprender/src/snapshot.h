@@ -46,8 +46,8 @@ namespace nap
 		void setClearColor(const glm::vec4& color);
 
 		/**
-		* Take a high-res snapshot of the scene and save to the configured location on disk
-		* Make sure begin a headless recording in the render service e.g.
+		* Takes a high-res snapshot and saves the result to a location on disk.
+		* Make sure to begin a headless recording in the render service e.g.
 		*
 		* ~~~~~{.cpp}
 		*	mRenderService->beginFrame();
@@ -62,7 +62,30 @@ namespace nap
 		* @param camera Camera to take snapshot with
 		* @param comps Components to render
 		*/
-		bool snap(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
+		void snap(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps);
+
+
+		/**
+		* Takes a high-res snapshot using a callback and saves the result to a location on disk.
+		* This call gives you more freedom in setting up your own render commands compared to the call above,
+		* which assumes you're rendering a fixed number of components through the render service.
+		*
+		* Make sure begin a headless recording in the render service e.g.
+		*
+		* ~~~~~{.cpp}
+		*	mRenderService->beginFrame();
+		*	if (mRenderService->beginHeadlessRecording())
+		*	{
+		*		...
+		*		mSnapShot->snap(camera, callback);
+		*		mRenderService->endHeadlessRecording();
+		*	}
+		* ~~~~~
+		*
+		* @param camera camera to take snapshot with
+		* @param renderCallback function that is called when snapshot is taken.
+		*/
+		void snap(PerspCameraComponentInstance& camera, std::function<void(nap::SnapshotRenderTarget&)> renderCallback);
 
 		/**
 		* Returns the size of the snapshot
@@ -100,6 +123,11 @@ namespace nap
 		*/
 		bool save();
 		nap::Slot<> mSaveBitmapSlot = { [this]() -> void { save(); } };
+
+		/**
+		 * Called after completing the render call
+		 */
+		void postSnap();
 
 		uint32 mNumRows = 1;
 		uint32 mNumColumns = 1;

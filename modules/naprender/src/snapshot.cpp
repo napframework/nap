@@ -160,21 +160,32 @@ namespace nap
 	}
 
 
-	bool Snapshot::snap(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps)
+	void Snapshot::snap(PerspCameraComponentInstance& camera, std::vector<RenderableComponentInstance*>& comps)
+	{
+		snap(camera, [&comps, &camera, this](nap::SnapshotRenderTarget& target)
+		{
+			target.beginRendering();
+			mRenderService->renderObjects(target, camera, comps);
+			target.endRendering();
+		});
+	}
+
+
+	void Snapshot::snap(PerspCameraComponentInstance& camera, std::function<void(nap::SnapshotRenderTarget&)> renderCallback)
 	{
 		camera.setGridDimensions(mNumRows, mNumColumns);
-
-		for (int i = 0; i < mNumCells; i++) 
+		for (int i = 0; i < mNumCells; i++)
 		{
+			// Set grid bounds in camera
 			uint32 x = i % mNumColumns;
 			uint32 y = i / mNumRows;
 			camera.setGridLocation(y, x);
 
+			// Select right cell in render target
 			mRenderTarget->setCellIndex(i);
-			mRenderTarget->beginRendering();
 
-			mRenderService->renderObjects(*mRenderTarget, camera, comps);
-			mRenderTarget->endRendering();
+			// Render
+			renderCallback(*mRenderTarget);
 		}
 		camera.setGridLocation(0, 0);
 		camera.setGridDimensions(1, 1);
@@ -195,12 +206,12 @@ namespace nap
 		int bits_per_pixel = mColorTextures[0]->getDescriptor().getBytesPerPixel() * 8;
 
 		// Insert callbacks for copying image data per cell from staging buffer directly into the destination bitmap
-		for (int i = 0; i < mNumCells; i++) 
+		for (int i = 0; i < mNumCells; i++)
 		{
 			mColorTextures[i]->asyncGetData([this, index = i, bpp = bits_per_pixel, type = fi_image_type](const void* data, size_t bytes)
 			{
 				// Wrap staging buffer data in a bitmap header
-				int cell_pitch = mCellSize.x*(bpp/8);
+				int cell_pitch = mCellSize.x*(bpp / 8);
 				FIBITMAP* fi_bitmap_src = FreeImage_ConvertFromRawBitsEx(
 					false, (uint8*)data, type, mCellSize.x, mCellSize.y, cell_pitch, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
 				);
@@ -236,7 +247,6 @@ namespace nap
 			});
 		}
 		onSnapshot();
-		return true;
 	}
 
 
@@ -262,5 +272,11 @@ namespace nap
 			onSnapshotSaved(path);
 		}
 		return true;
+	}
+
+
+	void Snapshot::postSnap()
+	{
+
 	}
 }
