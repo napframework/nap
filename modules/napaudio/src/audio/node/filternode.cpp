@@ -20,6 +20,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::FilterNode)
 	RTTI_FUNCTION("setResonance", &nap::audio::FilterNode::setResonance)
 	RTTI_FUNCTION("setBand", &nap::audio::FilterNode::setBand)
 	RTTI_FUNCTION("setGain", &nap::audio::FilterNode::setGain)
+	RTTI_FUNCTION("prepare", &nap::audio::FilterNode::prepare)
 	RTTI_FUNCTION("getMode", &nap::audio::FilterNode::getMode)
 	RTTI_FUNCTION("getFrequency", &nap::audio::FilterNode::getFrequency)
 	RTTI_FUNCTION("getResonance", &nap::audio::FilterNode::getResonance)
@@ -37,15 +38,15 @@ namespace nap
 		{
 			if (mIsDirty.check())
 				update();
-			
+
 			auto inputBuffer = audioInput.pull();
 			auto& outputBuffer = getOutputBuffer(audioOutput);
 			
 			if (inputBuffer) {
 				for (auto i = 0; i < outputBuffer.size(); ++i) {
 					mInput.write((*inputBuffer)[i]);
-					auto temp = a0 * mInput.read(0) + a1 * mInput.read(1) + a2 * mInput.read(2) - b1 * mOutput.read(0) -
-					            b2 * mOutput.read(1);
+					auto temp = a0.getNextValue() * mInput.read(0) + a1.getNextValue() * mInput.read(1) + a2.getNextValue() * mInput.read(2) - b1.getNextValue() * mOutput.read(0) -
+					            b2.getNextValue() * mOutput.read(1);
 					
 					mOutput.write(temp);
 					outputBuffer[i] = temp;
@@ -54,19 +55,38 @@ namespace nap
 				// process with 0 input
 				for (auto i = 0; i < outputBuffer.size(); ++i) {
 					mInput.write(0);
-					auto temp = a0 * mInput.read(0) + a1 * mInput.read(1) + a2 * mInput.read(2) - b1 * mOutput.read(0) -
-					            b2 * mOutput.read(1);
+					auto temp = a0.getNextValue() * mInput.read(0) + a1.getNextValue() * mInput.read(1) + a2.getNextValue() * mInput.read(2) - b1.getNextValue() * mOutput.read(0) -
+					            b2.getNextValue() * mOutput.read(1);
 					
 					mOutput.write(temp);
 					outputBuffer[i] = temp;
 				}
 			}
 		}
+
+
+		void FilterNode::prepare(ControllerValue frequency, ControllerValue resonanceBand, ControllerValue gain)
+		{
+			mFrequency = frequency;
+			mResonance = pow(10., -(resonanceBand * 0.1));
+			mBand = resonanceBand;
+			mGain = gain;
+			mOutput.clear();
+			mInput.clear();
+			calcCoeffs();
+			a0.reset(a0Dest);
+			a1.reset(a1Dest);
+			b1.reset(b1Dest);
+			b2.reset(b2Dest);
+
+		}
+
 		
 		
 		void FilterNode::setMode(EMode mode)
 		{
 			mMode = mode;
+			calcCoeffs();
 			mIsDirty.set();
 		}
 		
@@ -76,6 +96,7 @@ namespace nap
 			mFrequency = frequency;
 			if (mFrequency <= 0)
 				mFrequency = 1;
+			calcCoeffs();
 			mIsDirty.set();
 		}
 		
@@ -83,6 +104,7 @@ namespace nap
 		void FilterNode::setResonance(ControllerValue resonance)
 		{
 			mResonance = pow(10., -(resonance * 0.1));
+			calcCoeffs();
 			mIsDirty.set();
 		}
 		
@@ -92,6 +114,7 @@ namespace nap
 			mBand = band;
 			if (mBand <= 0)
 				mBand = 1;
+			calcCoeffs();
 			mIsDirty.set();
 		}
 		
@@ -99,65 +122,86 @@ namespace nap
 		void FilterNode::setGain(ControllerValue gain)
 		{
 			mGain = gain;
+			calcCoeffs();
 			mIsDirty.set();
 		}
 		
 		
 		void FilterNode::update()
 		{
-			ControllerValue c, d, cSqr, q;
+			a0.setValue(a0Dest);
+			a1.setValue(a1Dest);
+			b1.setValue(b1Dest);
+			b2.setValue(b2Dest);
+		}
+		
+		
+		void FilterNode::calcCoeffs()
+		{
 			switch (mMode) {
 				case EMode::LowPass:
-					c = 1 / tan(M_PI * mFrequency / getSampleRate());
+				{
+					ControllerValue c, d, cSqr, q;
+					c	 = 1 / tan(M_PI * mFrequency / getSampleRate());
 					cSqr = c * c;
-					a0 = (1 / (1 + M_SQRT2 * c + cSqr));
-					a1 = 2 * a0;
-					a2 = a0;
-					b1 = 2 * a0 * (1 - cSqr);
-					b2 = a0 * (1 - M_SQRT2 * c + cSqr);
+					a0Dest = mGain / (1 + M_SQRT2 * c + cSqr);
+					a1Dest = 2 * a0Dest;
+					a2Dest = a0Dest;
+					b1Dest = 2 * a0Dest * (1 - cSqr);
+					b2Dest =a0Dest * (1 - M_SQRT2 * c + cSqr);
 					break;
+				}
 				case EMode::HighPass:
+				{
+					ControllerValue c, d, cSqr, q;
 					c = tan(M_PI * mFrequency / getSampleRate());
 					cSqr = c * c;
-					a0 = 1 / (1 + M_SQRT2 * c + cSqr);
-					a1 = -2 * a0;
-					a2 = a0;
-					b1 = 2 * a0 * (cSqr - 1);
-					b2 = a0 * (1 - M_SQRT2 * c + cSqr);
+					a0Dest = mGain / (1 + M_SQRT2 * c + cSqr);
+					a1Dest = -2 * a0Dest;
+					a2Dest = a0Dest;
+					b1Dest = 2 * a0Dest * (cSqr - 1);
+					b2Dest = a0Dest * (1 - M_SQRT2 * c + cSqr);
 					break;
+				}
 				case EMode::BandPass:
+				{
+					ControllerValue c, d, cSqr, q;
 					c = 1 / tan(M_PI * mBand / getSampleRate());
 					d = 2 * cos(2 * M_PI * mFrequency / getSampleRate());
-					a0 = 1 / (1 + c);
-					a1 = 0;
-					a2 = -a0;
-					b1 = a2 * c * d;
-					b2 = a0 * (c - 1);
+					a0Dest = mGain / (1 + c);
+					a1Dest = 0;
+					a2Dest = -a0Dest;
+					b1Dest = a2Dest * c * d;
+					b2Dest = a0Dest * (c - 1);
 					break;
+				}
 				case EMode::LowRes:
+				{
+					ControllerValue c, d, cSqr, q;
 					c = 1 / tan(M_PI * mFrequency / getSampleRate());
 					cSqr = c * c;
 					q = M_SQRT2 * mResonance;
-					a0 = (1 / (1 + q * c + cSqr));
-					a1 = 2 * a0;
-					a2 = a0;
-					b1 = 2 * a0 * (1 - cSqr);
-					b2 = a0 * (1 - q * c + cSqr);
+					a0Dest = mGain / (1 + q * c + cSqr);
+					a1Dest = 2 * a0Dest;
+					a2Dest = a0Dest;
+					b1Dest = 2 * a0Dest * (1 - cSqr);
+					b2Dest = a0Dest * (1 - q * c + cSqr);
 					break;
+				}
 				case EMode::HighRes:
+				{
+					ControllerValue c, d, cSqr, q;
 					c = tan(M_PI * mFrequency / getSampleRate());
 					cSqr = c * c;
 					q = M_SQRT2 * mResonance;
-					a0 = 1 / (1 + q * c + cSqr);
-					a1 = -2 * a0;
-					a2 = a0;
-					b1 = 2 * a0 * (cSqr - 1);
-					b2 = a0 * (1 - q * c + cSqr);
+					a0Dest = mGain / (1 + q * c + cSqr);
+					a1Dest = -2 * a0Dest;
+					a2Dest = a0Dest;
+					b1Dest = 2 * a0Dest * (cSqr - 1);
+					b2Dest = a0Dest * (1 - q * c + cSqr);
 					break;
+				}
 			}
-			a0 *= mGain;
-			a1 *= mGain;
-			a2 *= mGain;
 		}
 		
 		
