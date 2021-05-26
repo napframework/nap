@@ -44,7 +44,6 @@ namespace nap
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("WorldTexture");
-		mSnapshot = mResourceManager->findObject<nap::Snapshot>("Snapshot");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -52,7 +51,6 @@ namespace nap
 		// Fetch world and text
 		mWorldEntity = scene->findEntity("World");
 		mTextEntity = scene->findEntity("Text");
-
 
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
@@ -118,7 +116,6 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
@@ -155,24 +152,6 @@ namespace nap
 			mRenderService->endRecording();
 		}
 
-
-		// Take screenshot
-		if (mRenderService->beginHeadlessRecording())
-		{
-			if (mTakeSnapshot)
-			{
-				// Find the world and add as an object to render
-				std::vector<nap::RenderableComponentInstance*> components_to_render;
-				nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-				components_to_render.emplace_back(&renderable_world);
-
-				mSnapshot->snap(mPerspectiveCamEntity->getComponent<PerspCameraComponentInstance>(), components_to_render);
-				mTakeSnapshot = false;
-			}
-			mRenderService->endHeadlessRecording();
-		}
-
-
 		// Signal the ending of the frame
 		mRenderService->endFrame();
 	}
@@ -208,12 +187,9 @@ namespace nap
 			{
 				mRenderWindow->toggleFullscreen();
 			}
-
-			if (press_event->mKey == nap::EKeyCode::KEY_s)
-			{
-				mTakeSnapshot = true;
-			}
 		}
+
+		mInputService->addEvent(std::move(inputEvent));
 	}
 
 

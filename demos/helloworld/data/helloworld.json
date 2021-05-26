@@ -115,7 +115,6 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
-                    "Visible": true,
                     "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
                     "TextColor": {
@@ -130,8 +129,7 @@
                         "y": 0
                     },
                     "Orientation": "Center",
-                    "DepthMode": "NoReadWrite",
-                    "IgnoreTransform": true
+                    "DepthMode": "NoReadWrite"
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -165,7 +163,6 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
-                    "Visible": true,
                     "Mesh": "WorldMesh",
                     "MaterialInstance": {
                         "Material": "WorldMaterial",
@@ -174,7 +171,6 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
-                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -330,40 +326,13 @@
             "FragShader": "shaders/helloworld/world.frag"
         },
         {
-            "Type": "nap::Snapshot",
-            "mID": "Snapshot",
-            "Width": 1920,
-            "Height": 1080,
-            "MaxCellWidth": 1920,
-            "MaxCellHeight": 1080,
-            "OutputDirectory": "snapshots",
-            "ImageFileFormat": "PNG",
-            "TextureFormat": "RGBA8",
-            "SampleShading": true,
-            "RequestedSamples": "Four",
-            "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            }
-        },
-        {
             "Type": "nap::SphereMesh",
             "mID": "WorldMesh",
             "Usage": "Static",
             "CullMode": "None",
             "Radius": 1.0,
             "Rings": 50.0,
-            "Sectors": 50.0,
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
+            "Sectors": 50.0
         }
     ]
 }
