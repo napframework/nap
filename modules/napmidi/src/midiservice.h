@@ -81,8 +81,15 @@ namespace nap {
          * Processes all received midi events
          */
         void update(double deltaTime) override;
-        
-    protected:
+
+		/**
+		 * Enqueue a new midi event to be processed by the app.
+		 * Mostly these are received through midi input ports but they can also be generated programmatically.
+		 * @param event The event to enqueue
+		 */
+		void enqueueEvent(std::unique_ptr<MidiEvent> event) { mEventQueue.enqueue(std::move(event)); }
+
+	protected:
         void registerObjectCreators(rtti::Factory& factory) override final;
         
     private:
@@ -97,9 +104,6 @@ namespace nap {
         
          // Used by input component to unregister itself.
         void unregisterInputComponent(MidiInputComponentInstance& component) { mInputComponents.erase(&component); }
-        
-         // Used by midi input port to enqueue a freshly received midi event from the input thread.
-        void enqueueEvent(std::unique_ptr<MidiEvent> event) { mEventQueue.enqueue(std::move(event)); }
         
         std::unique_ptr<RtMidiIn> mMidiIn = nullptr; // used to poll for available input ports
         std::unique_ptr<RtMidiOut> mMidiOut = nullptr; // used to poll available output ports.
