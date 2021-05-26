@@ -122,8 +122,15 @@ namespace nap
 				mHostApiIndex = getHostApiIndex(configuration->mHostApi);
 			if (mHostApiIndex < 0)
 			{
-				errorState.fail("Audio host API not found: %s", configuration->mHostApi.c_str());
-				return false;
+				if (!configuration->mAllowDeviceFailure)
+				{
+					errorState.fail("Audio host API not found: %s", configuration->mHostApi.c_str());
+					return false;
+				}
+				else {
+					Logger::warn("Audio host API not found: %s", configuration->mHostApi.c_str());
+					return true;
+				}
 			}
 
 			if (configuration->mDisableInput)
@@ -168,12 +175,18 @@ namespace nap
 
 			if (inputDeviceIndex < 0 && outputDeviceIndex < 0)
 			{
-				errorState.fail("Cannot start audio stream with neither input nor output.");
-				return false;
+				if (!configuration->mAllowDeviceFailure)
+				{
+					errorState.fail("Cannot start audio stream with neither input nor output.");
+					return false;
+				}
+				else {
+					Logger::warn("Cannot start audio stream with neither input nor output.");
+					return true;
+				}
 			}
 
-			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
-			                        errorState))
+			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, errorState))
 				return false;
 
 			if (!(openStream(mHostApiIndex, inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
