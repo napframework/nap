@@ -16,7 +16,7 @@ Resources {#resources}
 Overview {#overview}
 =======================
 
-Resources are small stand-alone building blocks that can be added to your application. Resources are used to load an image from disk, define a three-dimensional shape, create a render window, etc. All resources are objects that can be authored in <a href="https://en.wikipedia.org/wiki/JSON" target="_blank">JSON</a>. In fact: all content in NAP is authored in a readable text format. NAP uses JSON because it's a well known format that is easy to edit and read. If you don't feel like typing JSON you can use Napkin (our editor) to add, remove and modify resources. Here is an example of a JSON file that exposes two resources:
+Resources are small stand-alone building blocks that can be added to your application. Resources are used to load an image from disk, define a three-dimensional shape, create a render window, etc. All resources are objects that can be authored in <a href="https://en.wikipedia.org/wiki/JSON" target="_blank">JSON</a>. In fact: all content in NAP is authored in a readable text format. NAP uses JSON because it's a well known format that is easy to edit and read. If you don't feel like typing JSON you can use [Napkin](@ref napkin) (our editor) to add, remove and modify resources. Here is an example of a JSON file that exposes two resources:
 
 ```
 {

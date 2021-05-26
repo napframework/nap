@@ -17,6 +17,7 @@ Napkin {#napkin}
 *	[Panels](@ref napkin_panels)
 	* [Resources](@ref napkin_resources)
 	* [Scene](@ref napkin_scene)
+	* [Configuration](@ref napkin_configuration)
 	* [Apprunner](@ref napkin_apprunner)
 	* [Inspector](@ref napkin_inspector)
 	* [Log](@ref napkin_log)
@@ -25,7 +26,7 @@ Napkin {#napkin}
 What is Napkin? {#what_is_napkin}
 =======================
 
-Napkin allows you to create and edit application content, associated with a specific NAP project. NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are creating. Napkin helps you do that. Fire up the editor, launch your NAP application and edit your file to see the changes you make reflected in real time. This way you can get near-realtime feedback from even the most invasive structural changes in your app. Take note that the data files work cross platform and can be shared between Windows, macOS and Linux.
+Napkin allows you to create and edit application content, associated with a specific NAP project. NAP's main storage format is JSON, which we consider to be quite a readable format. But as projects get larger, it helps to have a more ergonomical view on the data you are creating. Napkin helps you do that. Fire up the editor, launch your NAP application and edit your file to see the changes you make reflected in real time. Files work cross platform and can be shared between Windows, macOS and Linux.
 
 ![](@ref content/napkin.png)
 
@@ -46,31 +47,56 @@ See [Project Management](@ref project_management) for further details, including
 General Structure {#napkin_structure}
 =======================
 
-Content is stored in a `myapp.json` file, which is referenced by the `project.json file.` Both the NAP application and Napkin use the project information to resolve dependencies, load modules into memory and inspect / create resources. Napkin and the application therefore 'share' the same code base. If you adjust a Resource in code, Napkin will reflect those changes in the editor.
+Content and configuration settings are stored in `.json` files. Both can be created and edited using Napkin. The app and Napkin share the same code base. If you adjust and recompile a `Resource`, Napkin will reflect those changes in the editor.
 
 Opening a Project {#napkin_project_management}
 -----------------------
 
 To open a project:
-- `File > Open Project` or `CTRL + O`<br>
+- `File > Open Project`<br>
 
-Use the file browser to select the project you want to load. The project is a `.json` file with the name: `project.json`. 
+Use the file browser to select the project you want to load. The project is a `.json` file with the name: `project.json`. The `project.json` file points to a `Data` and `ServiceConfig` file. Both documents can be edited by napkin. The `Data` file contains application content, the [ServiceConfig](@ref service_config) file contains application configuration settings.
 
-Inside `project.json` there's a `nap::ProjectInfo` structure that points to a `Data` file. This is the file Napkin will load after successfully loading the project. 
-
-Before Napkin can load the file it will attempt to load all the `RequiredModules`. Every module has it's own set of dependencies, which will be resolved as well. If loading succeeds, Napkin can safely create and edit files because it can access all the resources exposed by the modules. You can safely launch multiple instances of Napkin to work on multiple projects at once.
+Before Napkin can load the `Data` file it will attempt to load all the `RequiredModules`. Every module has it's own set of dependencies, which will be resolved as well. If loading succeeds, Napkin can safely create and edit files because it can access all the resources exposed by the modules. You can safely launch multiple instances of Napkin to work on multiple projects at once.
 
 Document Management {#napkin_doc_management}
 -----------------------
 
+To make a new data file: 
+- `File > New` or `CTRL + N` creates an empty document.<br> 
+
+To open a different data file:
+- `File > Open` or `CTRL + O` <br>
+
 To save the data file:
 - `File > Save` or `CTRL + S` <br>
 
-To save thedata  file with a different name:
-- `File > Save as...`
+To save the data file under a different name:
+- `File > Save as...`<br> 
 
-To make a new data file: 
-- `File > New` or `CTRL + N` creates an empty document.<br> 
+To reload the data file:
+- `File > Reload`<br> 
+
+To set the data file as project default:
+- `File > Set as project default`<br>
+
+Configuration Management {#napkin_config_management}
+-----------------------
+
+To make a new config file: 
+- `Configuration > New` creates an empty document.<br> 
+
+To open a different config file:
+- `Configuration > Open`<br>	
+
+To save the config file:
+- `Configuration > Save`<br>
+
+To save the config file under a different name:
+- `Configuration > Save as...`<br>
+
+To set the config file as project default:
+- `Configuration > Set as project default`<br>
 
 Resource Management {#napkin_res_management}
 -----------------------
@@ -137,6 +163,12 @@ Scene {#napkin_scene}
 ![](@ref content/napkin-panel-scene.png)
 Shows the entities that will be instantiated when the document is loaded. You can add the same entity to a scene multiple times. <br>
 
+Configuration {#napkin_configuration}
+-----------------------
+
+![](@ref content/napkin-panel-configuration.png)
+Shows all the service configurations. You can edit a configuration in the [Inspector](@ref  napkin_inspector)
+
 AppRunner {#napkin_apprunner}
 -----------------------
 
@@ -179,6 +211,7 @@ Inspector {#napkin_inspector}
 This panel shows the **properties** for the currently selected object.<br>
 - If an object is selected in the `Resources` panel you are editing the default (shared) properties
 - If an object is selected in the `Scene` panel you are editing unique instance properties
+- If an object is selected in the `Configuration` panel you are editing service configuration properties
 
 Most properties are changed by typing in a new value in the `value` column. Some values like `Pointers` provide a button next to the field that allows you to select the target object. File properties have their own button that shows a file selection dialog in which you can select the file. 
 
@@ -209,9 +242,7 @@ You can view all the overridden properties in the 'Instance Properties' panel.
 
 Loaded Modules
 -----------------------
-Shows all currently loaded modules by Napkin.
+Shows all currently loaded modules by Napkin. The modules expose all available components and resources to Napkin and the running application.
 
 ![](@ref content/napkin-panel-modules.png)
-
-The modules expose all available components and resources to Napkin and the running application.
 

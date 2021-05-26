@@ -24,8 +24,7 @@ namespace nap
 	/**
 	 * Base class of all Calendar types.
 	 * Acts as an interface to the underlying calendar instance.
-	 * Every derived class must create and return a calendar instance, but
-	 * can provide it's own read-only interface in JSON.
+	 * Every derived class must create and return a calendar instance. 
 	 */
 	class NAPAPI ICalendar : public Resource
 	{
@@ -109,9 +108,6 @@ namespace nap
 	 * Actual runtime version of a simple calendar, created by a nap::ICalendar resource on initialization.
 	 * Allows for inspection, creation, loading and saving of calendar items.
 	 * This model is: NOT THREAD SAFE. Don't edit, remove or add items on a different thread!
-	 *
-	 * TODO: Potentially use SQLite database for item inspection and retrieval.
-	 * TODO: At the moment (based on actual use cases) not required.
 	 */
 	class NAPAPI CalendarInstance final
 	{
