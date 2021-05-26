@@ -129,6 +129,7 @@ add_subdirectory(test/render)
 #add_subdirectory(apps/rain)
 #add_subdirectory(apps/rain/module)
 add_subdirectory(apps/4dsound)
+add_subdirectory(apps/napaudioapp)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -203,6 +204,7 @@ add_subdirectory(modules/napcolor)
 add_subdirectory(modules/napsequence)
 add_subdirectory(modules/napsequencegui)
 add_subdirectory(modules/naplicense)
+add_subdirectory(modules/nappythonparameter)
 
 # 4dsound modules
 add_subdirectory(4dsound_modules/spatialdsp)
