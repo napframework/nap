@@ -1,11 +1,5 @@
 include(${NAP_ROOT}/cmake/dist_shared_crossplatform.cmake)
 
-if(NOT TARGET glm)
-    set(GLM_FIND_QUIETLY TRUE)
-    find_package(glm REQUIRED)
-endif()
-add_include_to_interface_target(mod_naprender ${GLM_INCLUDE_DIRS})
-
 if(NOT TARGET vulkansdk)
     find_package(vulkansdk REQUIRED)
 endif()
@@ -62,7 +56,6 @@ endif()
 
 # Install thirdparty licenses into lib
 install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/license/ DESTINATION licenses/FreeImage)
-install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION licenses/glm)
 install(FILES ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION licenses/assimp)
 install(FILES ${THIRDPARTY_DIR}/SDL2/COPYING.txt DESTINATION licenses/SDL2)
 install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION licenses/vulkansdk)

@@ -4,35 +4,16 @@
 
 #include "sequencecontroller.h"
 #include "sequenceeditor.h"
+#include "sequenceservice.h"
 
 #include <nap/logger.h>
 #include <mathutils.h>
 
+#include <utility>
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-
-	std::unordered_map<rttr::type, SequenceControllerFactoryFunc>& SequenceController::getControllerFactory()
-	{
-		static std::unordered_map<rttr::type, SequenceControllerFactoryFunc> factory;
-		return factory;
-	}
-
-	bool SequenceController::registerControllerFactory(rttr::type type, SequenceControllerFactoryFunc func)
-	{
-		auto& factory = getControllerFactory();
-		auto it = factory.find(type);
-		assert(it == factory.end()); // duplicate entry
-		if (it == factory.end())
-		{
-			factory.emplace(type, func);
-
-			return true;
-		}
-
-		return false;
-	}
-
 
 	void SequenceController::updateTracks()
 	{
@@ -59,8 +40,6 @@ namespace nap
 
 		mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
 	}
-
-
 
 
 	SequenceTrackSegment* SequenceController::findSegment(const std::string& trackID, const std::string& segmentID)
@@ -203,9 +182,9 @@ namespace nap
 				{
 					if( index > 0 )
 					{
-						auto track = sequence.mTracks[index];
+						auto track_to_move = sequence.mTracks[index];
 						sequence.mTracks.erase(sequence.mTracks.begin() + index);
-						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index - 1 ), track);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index - 1 ), track_to_move);
 					}
 
 					break;
@@ -230,9 +209,9 @@ namespace nap
 				{
 					if( index < sequence.mTracks.size() - 1 )
 					{
-						auto track = sequence.mTracks[index];
+						auto track_to_move = sequence.mTracks[index];
 						sequence.mTracks.erase(sequence.mTracks.begin() + index);
-						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index + 1 ), track);
+						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index + 1 ), track_to_move);
 					}
 
 					break;
@@ -263,6 +242,6 @@ namespace nap
 
 	void SequenceController::performEditAction(std::function<void()> action)
 	{
-		mEditor.performEditAction(action);
+		mEditor.performEdit(std::move(action));
 	}
 }

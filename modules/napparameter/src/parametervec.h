@@ -116,5 +116,6 @@ namespace nap
 			RTTI_PROPERTY("Clamp",		&Type::mClamp,			nap::rtti::EPropertyMetaData::Default)				\
 			RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)				\
 			RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)				\
+			RTTI_FUNCTION("setValue",	static_cast<void (Type::*)(decltype(Type::mValue))>(&Type::setValue))	\
 		RTTI_END_CLASS
 }

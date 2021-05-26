@@ -30,8 +30,7 @@ namespace nap
 			RTTI_ENABLE(ServiceConfiguration)
 			
 		public:
-			virtual rtti::TypeInfo getServiceType()
-			{ return RTTI_OF(AudioService); }
+			virtual rtti::TypeInfo getServiceType() const	{ return RTTI_OF(AudioService); }
 			
 			/**
 			 * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
@@ -242,8 +241,7 @@ namespace nap
 			 * Tries to open the audio stream using the given settings.
 			 * @return true on success.
 			 */
-			bool openStream(int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount,
-			                float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState);
+			bool openStream(int hostApi, int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState);
 			
 			/**
 			 * Closes the current stream. Assumes that it has been opened successfully.

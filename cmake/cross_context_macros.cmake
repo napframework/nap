@@ -47,3 +47,14 @@ macro(find_path_mapping SYSTEM_MAPPINGS PROJECT_DIR CONTEXT)
         endforeach()
     endif()
 endmacro()
+
+# Ensure that patchelf is installed on a Linux system. Configuration will fail if it's missing.
+macro(ensure_patchelf_installed)
+    execute_process(COMMAND sh -c "which patchelf"
+                    OUTPUT_QUIET
+                    RESULT_VARIABLE EXIT_CODE)
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not locate patchelf. Please run check_build_environment.")
+    endif()
+endmacro()
+

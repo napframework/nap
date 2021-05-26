@@ -19,12 +19,17 @@ namespace nap
 			RTTI_ENABLE(Node)
 		
 		public:
-			MixNode(NodeManager& manager) : Node(manager) { }
+			/**
+			 * Constructor
+			 * @param manager the node manager this node will be processed by
+			 * @param reservedInputCount the number of input pointers that will be pre allocated to hold the result value.
+			 */
+			MixNode(NodeManager& manager, int reservedInputCount = 2);
 			
 			/**
 			 * The input to be mixed
 			 */
-			MultiInputPin inputs = {this};
+			MultiInputPin inputs;
 			
 			/**
 			 * Outputs the mixed signal
@@ -36,6 +41,8 @@ namespace nap
 			 * Calculate the output, perform the scaling
 			 */
 			void process() override;
+
+			std::vector<SampleBuffer*> mInputBuffers; // Internal preallocated input result buffer
 		};
 		
 	}

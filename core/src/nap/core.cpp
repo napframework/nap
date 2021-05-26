@@ -157,12 +157,18 @@ namespace nap
 	{
 		// Initialize all services one by one
 		std::vector<Service*> objects;
+
+		std::string si;
 		for (const auto& service : mServices)
 		{
-			nap::Logger::info("initializing service: %s", service->getTypeName().c_str());
+			si = utility::stringFormat("Initializing service: %s", service->getTypeName().c_str());
+			std::cout << std::string(si.size(), '-') << std::endl;
+			nap::Logger::info(si);
+
 			if (!service->init(errorState))
 				return false;
 		}
+		std::cout << std::string(si.size(), '-') << std::endl;
 
 		// Listen to potential resource file changes and 
 		// forward those to all registered services
@@ -624,4 +630,15 @@ namespace nap
 		return mInitialized;
 	}
 
+
+	std::vector<const ServiceConfiguration*> Core::getServiceConfigs() const
+	{
+		std::vector<const ServiceConfiguration*> configs;
+		configs.reserve(mServiceConfigs.size());
+		for (const auto& config : mServiceConfigs)
+		{
+			configs.emplace_back(config.second.get());
+		}
+		return configs;
+	}
 }

@@ -37,6 +37,7 @@ public:
 			ValueArg<std::string>			mail					("m",  "mail", "Client mail address", false, "", "client_mail");
 			ValueArg<std::string>			date					("d",  "date", "Expiry date, format: day/month/year -> 30/12/2025", false, "", "expiry_date");
 			ValueArg<std::string>			tag						("t",  "tag", "Additional information", false, "", "tag");
+			ValueArg<std::string>			uuid					("u",  "uuid", "Generate unique user id", false, "", "uuid");
 
 			command.add(output_directory);
 			command.add(private_key);
@@ -46,6 +47,7 @@ public:
 			command.add(mail);
 			command.add(date);
 			command.add(tag);
+			command.add(uuid);
 			command.parse(argc, argv);
 
 			commandLine.mOutputDirectory = output_directory.getValue();
@@ -56,6 +58,7 @@ public:
 			commandLine.mMail = mail.getValue();
 			commandLine.mDate = date.getValue();
 			commandLine.mTag = tag.getValue();
+			commandLine.mUuid = uuid.getValue();
 		}
 		catch (ArgException& e)
 		{
@@ -73,4 +76,5 @@ public:
 	std::string					mDate;
 	std::string					mApplication;
 	std::string					mTag;
+	std::string					mUuid;
 };

@@ -5,7 +5,6 @@
 // Local includes
 #include "sequencetrackview.h"
 #include "sequenceeditorgui.h"
-#include "napcolors.h"
 #include "sequenceeditorguiactions.h"
 
 // External Includes
@@ -16,29 +15,8 @@ using namespace nap::SequenceGUIActions;
 
 namespace nap
 {
-	std::unordered_map<rttr::type, SequenceTrackViewFactoryFunc>& SequenceTrackView::getFactoryMap()
-	{
-		static std::unordered_map<rttr::type, SequenceTrackViewFactoryFunc> map;
-		return map;
-	}
-
-	bool SequenceTrackView::registerFactory(rttr::type type, SequenceTrackViewFactoryFunc func)
-	{
-		auto& map = getFactoryMap();
-		auto it = map.find(type);
-		assert(it == map.end()); // duplicate entry
-		if (it == map.end())
-		{
-			map.emplace(type, func);
-
-			return false;
-		}
-
-		return false;
-	}
-
 	SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
-		mView(view), mState(state)
+		mView(view), mState(state), mService(view.getService())
 	{
 
 	}
@@ -50,7 +28,7 @@ namespace nap
 		if (idx < 0 || idx >= static_cast<int>(vector.size())) { return false; }
 		*out_text = vector.at(idx).c_str();
 		return true;
-	};
+	}
 
 
 	bool SequenceTrackView::Combo(const char* label, int* currIndex, std::vector<std::string>& values)
@@ -71,7 +49,7 @@ namespace nap
 
 	std::string SequenceTrackView::formatTimeString(double time)
 	{
-		int hours = time / 3600.0f;
+		int hours = (int)(time / 3600.0f);
 		int minutes = (int)(time / 60.0f) % 60;
 		int seconds = (int)time % 60;
 		int milliseconds = (int)(time * 100.0f) % 100;
@@ -119,14 +97,14 @@ namespace nap
 			// draw background & box
 			draw_list->AddRectFilled(	window_pos,
 							  			{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
-									 	guicolors::black);
+									 	sequencer::colors::black);
 
 			draw_list->AddRect(	window_pos,
 					    		{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
-							   	guicolors::white);
+							   	sequencer::colors::white);
 
 			//
-			ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
+			inspector_cursor_pos = ImGui::GetCursorPos();
 			inspector_cursor_pos.x += 5;
 			inspector_cursor_pos.y += 5;
 			ImGui::SetCursorPos(inspector_cursor_pos);
@@ -227,7 +205,7 @@ namespace nap
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 			// get current imgui cursor position
-			ImVec2 cursor_pos = ImGui::GetCursorPos();
+			cursor_pos = ImGui::GetCursorPos();
 
 			// get window position
 			ImVec2 window_top_left = ImGui::GetWindowPos();
@@ -239,34 +217,34 @@ namespace nap
 			draw_list->AddRectFilled(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				guicolors::black); // color
+				sequencer::colors::black); // color
 
 			// draw border of track
 			draw_list->AddRect(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				guicolors::white); // color
+				sequencer::colors::white); // color
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
 			int steps = mState.mTimelineWidth / timestamp_interval;
 
 			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
-			bool first_line_drawn = false;
 			for (;i < steps; i++)
 			{
 				if(i==0) // ignore first timestamp since it will hide window left border
 					continue;
 
 				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
-				if (ImGui::IsRectVisible(pos, { pos.x + 1, pos.y + mState.mTrackHeight } ))
+
+				if (pos.x > 0.0f )
 				{
-					first_line_drawn = true;
-					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, guicolors::darkerGrey);
-				}
-				else if(first_line_drawn) // right side of window, so bail
-				{
-					break;
+					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, sequencer::colors::darkerGrey);
+
+					if(pos.x > mState.mWindowPos.x + mState.mScroll.x + mState.mWindowSize.x)
+					{
+						break;
+					}
 				}
 			}
 
@@ -289,7 +267,8 @@ namespace nap
 		if(mState.mAction.get()->get_type().is_derived_from<TrackAction>())
 		{
 			// get derived track action
-			const auto* track_action = rtti_cast<const TrackAction>(mState.mAction.get());
+			assert(mState.mAction.get()->get_type().is_derived_from<TrackAction>());
+			const auto* track_action = static_cast<const TrackAction*>(mState.mAction.get());
 
 			// find the track this track action belongs to
 			const auto& sequence = getEditor().mSequencePlayer->getSequenceConst();
@@ -299,8 +278,8 @@ namespace nap
 				if(track_ptr->mID == track_action->mTrackID)
 				{
 					// does the track type match for this view?
-					rttr::type view_type_for_track = SequenceEditorGUIView::getViewForTrackType(track_ptr->get_type());
-					rttr::type current_view_type = get_type();
+					rtti::TypeInfo view_type_for_track = mService.getViewTypeForTrackType(track_ptr->get_type());
+					rtti::TypeInfo current_view_type = get_type();
 
 					if(view_type_for_track == current_view_type)
 					{
@@ -325,7 +304,7 @@ namespace nap
 	SequenceEditor& SequenceTrackView::getEditor() { return mView.mEditor; }
 
 
-	void SequenceTrackView::registerActionHandler(rttr::type type, std::function<void()> handler)
+	void SequenceTrackView::registerActionHandler(const rttr::type& type, const std::function<void()>& handler)
 	{
 		// Assert is triggered when element with same key already exists
 		auto it = mActionHandlers.emplace(std::make_pair(type, handler));

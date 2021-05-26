@@ -176,9 +176,7 @@ namespace nap
 			                        errorState))
 				return false;
 
-			if (!(openStream(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
-			                 configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize,
-			                 errorState) && start(errorState)))
+			if (!(openStream(mHostApiIndex, inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize, errorState) && start(errorState)))
 			{
 				if (!configuration->mAllowDeviceFailure)
 				{
@@ -245,13 +243,11 @@ namespace nap
 		}
 
 
-		bool AudioService::openStream(int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount,
-		                              int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize,
-		                              utility::ErrorState& errorState)
+		bool AudioService::openStream(int hostApi, int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState)
 		{
 			// The stream can only be opened when it's closed
 			assert(mStream == nullptr);
-			
+
 			if (inputChannelCount != mNodeManager.getInputChannelCount())
 				mNodeManager.setInputChannelCount(inputChannelCount);
 			if (outputChannelCount != mNodeManager.getOutputChannelCount())
@@ -260,23 +256,24 @@ namespace nap
 				mNodeManager.setSampleRate(sampleRate);
 			if (internalBufferSize != mNodeManager.getInternalBufferSize())
 				mNodeManager.setInternalBufferSize(internalBufferSize);
-			
+
+			mHostApiIndex = hostApi;
 			mInputDeviceIndex = inputDeviceIndex;
 			mOutputDeviceIndex = outputDeviceIndex;
 			mBufferSize = bufferSize;
-			
+
 			PaStreamParameters inputParameters;
 			inputParameters.device = mInputDeviceIndex;
 			inputParameters.channelCount = mNodeManager.getInputChannelCount();
 			inputParameters.sampleFormat = paFloat32 | paNonInterleaved;
 			inputParameters.hostApiSpecificStreamInfo = nullptr;
-			
+
 			PaStreamParameters outputParameters;
 			outputParameters.device = mOutputDeviceIndex;
 			outputParameters.channelCount = mNodeManager.getOutputChannelCount();
 			outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
 			outputParameters.hostApiSpecificStreamInfo = nullptr;
-			
+
 			PaStreamParameters* inputParamsPtr = nullptr;
 			if (mInputDeviceIndex >= 0)
 			{
@@ -289,20 +286,19 @@ namespace nap
 				outputParameters.suggestedLatency = Pa_GetDeviceInfo(mOutputDeviceIndex)->defaultLowOutputLatency;
 				outputParamsPtr = &outputParameters;
 			}
-			
-			PaError error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, mNodeManager.getSampleRate(),
-			                              mBufferSize, paNoFlag, &audioCallback, this);
+
+			PaError error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, mNodeManager.getSampleRate(), mBufferSize, paNoFlag, &audioCallback, this);
 			if (error != paNoError)
 			{
 				errorState.fail("Error opening audio stream: %s", Pa_GetErrorText(error));
 				mInputDeviceIndex = -1;
 				mOutputDeviceIndex = -1;
 				mStream = nullptr;
-				
+
 				saveConfiguration();
 				return false;
 			}
-			
+
 			saveConfiguration();
 			return true;
 		}

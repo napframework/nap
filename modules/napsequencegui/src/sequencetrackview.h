@@ -8,6 +8,7 @@
 #include "sequenceeditorgui.h"
 #include "sequenceeditorguiactions.h"
 #include "sequenceeditorguistate.h"
+#include "sequenceguiservice.h"
 
 // nap includes
 #include <nap/core.h>
@@ -20,9 +21,6 @@ namespace nap
 	class SequenceTrack;
 	class SequenceTrackView;
 	class SequenceEditorGUIView;
-
-	// shortcut to factory function
-	using SequenceTrackViewFactoryFunc = std::unique_ptr<SequenceTrackView>(*)(SequenceEditorGUIView&, SequenceEditorGUIState& state);
 
 	/**
 	 * Base class of track views
@@ -43,7 +41,7 @@ namespace nap
 		/**
 		 * Destructor
 		 */
-        virtual ~SequenceTrackView(){};
+        virtual ~SequenceTrackView()= default;
 
 		/**
 		 * handles any actions that are created upon show
@@ -66,29 +64,12 @@ namespace nap
 		 * @param track reference to track
 		 */
 		virtual void showTrack(const SequenceTrack& track);
-
-		/////////////////////////////////////////////////////////////////////////////
-		// static factory methods
-		////////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * @return reference to static map holding all factory functions for registered track types
-		 */
-		static std::unordered_map<rttr::type, SequenceTrackViewFactoryFunc>& getFactoryMap();
-
-		/**
-		 * register a factory function
-		 * @param type the type
-		 * @param func the factory function
-		 */
-		static bool registerFactory(rttr::type type, SequenceTrackViewFactoryFunc func);
 	public:
 		/////////////////////////////////////////////////////////////////////////////
 		// static utility methods
 		////////////////////////////////////////////////////////////////////////////
 
 		/**
-		 * Combo
 		 * Combobox that takes std::vector as input
 		 * @param label label of box
 		 * @param currIndex current index of combo box
@@ -98,7 +79,6 @@ namespace nap
 		static bool Combo(const char* label, int* currIndex, std::vector<std::string>& values);
 
 		/**
-		 * ListBox
 		 * ListBox that takes std::vector as input
 		 * @param label label of box
 		 * @param currIndex current index of combo box
@@ -107,9 +87,7 @@ namespace nap
 		 */
 		static bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
 
-
 		/**
-		 * formatTimeString
 		 * formats time ( seconds ) to human readable time
 		 * @param time time
 		 * @return string with readable time
@@ -134,7 +112,7 @@ namespace nap
 		 * @param type action type info
 		 * @param handler handler function
 		 */
-		void registerActionHandler(rttr::type type, std::function<void()> handler);
+		void registerActionHandler(const rttr::type& type, const std::function<void()>& handler);
 
 		// reference to gui view
 		SequenceEditorGUIView& mView;
@@ -150,5 +128,8 @@ namespace nap
 
 		// map of action handlers
 		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
+
+		// reference to service
+		SequenceGUIService& mService;
 	};
 }

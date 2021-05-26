@@ -8,6 +8,7 @@
 
 RTTI_BEGIN_ENUM(nap::RenderTexture2D::EFormat)
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA8,	"RGBA8"),
+	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::BGRA8,	"BGRA8"),
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R8,		"R8"),
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::RGBA16,	"RGBA16"),
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R16,		"R16"),
@@ -22,6 +23,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
 	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mFormat,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorSpace", &nap::RenderTexture2D::mColorSpace, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor", &nap::RenderTexture2D::mClearColor, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -40,9 +42,8 @@ namespace nap
 		settings.mColorSpace = mColorSpace;
 
 		// Figure out if the texture needs to be filled
-		Texture2D::EClearMode clear_mode = mUsage == ETextureUsage::Static && !mFill ? 
-			Texture2D::EClearMode::DontClear : 
-			Texture2D::EClearMode::FillWithZero;
+		EClearMode clear_mode = mFill ? EClearMode::Clear : EClearMode::DontClear;
+		glm::vec4 clear_color = mClearColor.toVec4();
 
 		// Initialize based on selected format
 		switch (mFormat)
@@ -51,37 +52,43 @@ namespace nap
 			{
 				settings.mDataType = ESurfaceDataType::BYTE;
 				settings.mChannels = ESurfaceChannels::RGBA;
+				return Texture2D::init(settings, false, clear_mode, clear_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+			}
+			case RenderTexture2D::EFormat::BGRA8:
+			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::BGRA;
 				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 			}
 			case RenderTexture2D::EFormat::R8:
 			{
 				settings.mDataType = ESurfaceDataType::BYTE;
 				settings.mChannels = ESurfaceChannels::R;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, clear_mode, clear_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 			}
 			case RenderTexture2D::EFormat::RGBA16:
 			{
 				settings.mDataType = ESurfaceDataType::USHORT;
 				settings.mChannels = ESurfaceChannels::RGBA;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, clear_mode, clear_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 			}
 			case RenderTexture2D::EFormat::R16:
 			{
 				settings.mDataType = ESurfaceDataType::USHORT;
 				settings.mChannels = ESurfaceChannels::R;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, clear_mode, clear_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 			}
 			case RenderTexture2D::EFormat::RGBA32:
 			{
 				settings.mDataType = ESurfaceDataType::FLOAT;
 				settings.mChannels = ESurfaceChannels::RGBA;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, clear_mode, clear_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 			}
 			case RenderTexture2D::EFormat::R32:
 			{
 				settings.mDataType = ESurfaceDataType::FLOAT;
 				settings.mChannels = ESurfaceChannels::R;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, clear_mode, clear_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, errorState);
 			}
 			default:
 			{

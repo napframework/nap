@@ -63,7 +63,7 @@ namespace nap
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
 		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		virtual rtti::TypeInfo		getServiceType() override										{ return RTTI_OF(RenderService); }
+		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
 	};
 
 
@@ -779,6 +779,12 @@ namespace nap
 		void removeTextureRequests(Texture2D& texture);
 
 		/**
+		* Request a texture clear
+		* @param texture the texture to clear.
+		*/
+		void requestTextureClear(Texture2D& texture);
+
+		/**
 		 * Request a pixel data transfer, from a staging buffer to image buffer.
 		 * @param texture the texture to upload.
 		 */
@@ -885,6 +891,7 @@ namespace nap
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
 		std::unique_ptr<Texture2D>				mEmptyTexture;
+		TextureSet								mTexturesToClear;
 		TextureSet								mTexturesToUpload;
 		BufferSet								mBuffersToUpload;
 

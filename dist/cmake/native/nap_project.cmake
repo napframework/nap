@@ -72,9 +72,14 @@ if(WIN32)
     endif()
 endif()
 
+# Ensure we have patchelf on Linux, preventing silent failures
+if(UNIX AND NOT APPLE)
+    ensure_patchelf_installed()
+endif()
+
 include_directories(${NAP_ROOT}/include/)
 
-#add all cpp files to SOURCES
+# Add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
 file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert)
@@ -157,5 +162,11 @@ endif()
 
 # Package redistributable help on Windows
 if(WIN32)
-    INSTALL(FILES ${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
+    install(FILES ${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
+endif()
+
+# Provide Gatekeeper unquarantine script on macOS
+if(APPLE)
+    install(PROGRAMS "${NAP_ROOT}/cmake/project_creator/template/Unquarantine Project.command" DESTINATION .)
+    install(FILES "${NAP_ROOT}/cmake/project_creator/template/Help launching on macOS.txt" DESTINATION .)
 endif()

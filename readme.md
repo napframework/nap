@@ -2,6 +2,9 @@
   <img width=256 height=256 src="https://www.napframework.com/png/nap_logo_small.png">
 </p>
 
+# Beta Branch
+Not all changes are verified & tested.
+
 *	[Description](#description)
 	*	[Features](#features)
 	*	[Documentation](#documentation)

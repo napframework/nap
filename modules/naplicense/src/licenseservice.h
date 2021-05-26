@@ -25,7 +25,7 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 	public:
 		std::string mDirectory = "{PROJECT_DIR}/license";		///< Property: 'LicenseDirectory' directory that contains the .license and .key files 
-		virtual rtti::TypeInfo getServiceType() override { return RTTI_OF(LicenseService); }
+		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(LicenseService); }
 	};
 
 
@@ -38,6 +38,7 @@ namespace nap
 		std::string			mMail;					///< Extracted user mail
 		std::string			mApp;					///< Extracted application signature
 		std::string			mTag;					///< Extracted additional license information
+		std::string			mUuid;					///< Extracted additional uuid
 		bool				mExpires = false;		///< If this license can expire
 		DateTime			mTime;					///< License expiry date as system timestamp
 

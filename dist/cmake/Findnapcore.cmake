@@ -75,7 +75,11 @@ if(NOT WIN32 AND NOT ANDROID)
                       execute_process(COMMAND patchelf
                                               --set-rpath 
                                               $ORIGIN/.
-                                              ${CMAKE_INSTALL_PREFIX}/lib/napcore.so)
+                                              ${CMAKE_INSTALL_PREFIX}/lib/napcore.so
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to fetch RPATH on napcore.so using patchelf\")
+                      endif()
                       ")
     endif()      
 endif()

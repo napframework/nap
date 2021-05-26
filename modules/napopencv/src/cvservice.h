@@ -23,8 +23,8 @@ namespace nap
 	{
 		RTTI_ENABLE(ServiceConfiguration)
 	public:
-		virtual rtti::TypeInfo getServiceType() override	{ return RTTI_OF(CVService); }
-		int mThreadCount = -1;								///< Property: 'ThreadCount' max number of threads to use, -1 = default
+		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(CVService); }
+		int mThreadCount = -1;									///< Property: 'ThreadCount' max number of threads to use, -1 = default
 	};
 
 	/**

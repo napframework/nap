@@ -245,7 +245,7 @@ QString napkin::getResourceReferencePath(const QString& reference)
 	QString ref = reference;
 	if (reference.isEmpty())
 	{
-		auto reffile = AppContext::get().getDocument()->getCurrentFilename();
+		auto reffile = AppContext::get().getDocument()->getFilename();
 		ref = QFileInfo(reffile).path();
 	}
 

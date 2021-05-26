@@ -78,14 +78,10 @@ InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
 	mTreeView.setMenuHook(std::bind(&InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
 
 	// TODO: Move this back to the model and let it update its state whenever properties change
-	connect(&AppContext::get(), &AppContext::propertyValueChanged,
-			this, &InspectorPanel::onPropertyValueChanged);
-
-	connect(&AppContext::get(), &AppContext::propertySelectionChanged,
-			this, &InspectorPanel::onPropertySelectionChanged);
-
-	connect(&AppContext::get(), &AppContext::documentClosing, 
-		this, &InspectorPanel::onFileClosing);
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &InspectorPanel::onPropertyValueChanged);
+	connect(&AppContext::get(), &AppContext::propertySelectionChanged, this, &InspectorPanel::onPropertySelectionChanged);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &InspectorPanel::onFileClosing);
+	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
@@ -289,7 +285,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 {
 	auto doc = mModel.path().getDocument();
 
-	if (doc)
+	if (doc != nullptr)
 		disconnect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
 
 	if (path.isValid())
@@ -305,9 +301,8 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	mPathField.setText(QString::fromStdString(path.toString()));
 
 	mModel.setPath(path);
-
 	doc = path.getDocument();
-	if (doc)
+	if (doc != nullptr)
 		connect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
 
 	mTreeView.getTreeView().expandAll();
@@ -342,10 +337,13 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 		mTreeView.selectAndReveal(pathItem);
 }
 
+
 void napkin::InspectorPanel::onFileClosing(const QString& filename)
 {
+	mModel.clearPath();
 	clear();
 }
+
 
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
@@ -368,6 +366,12 @@ void InspectorPanel::onObjectRemoved(Object* obj)
 	// If the currently edited object is being removed, clear the view
 	if (obj == mModel.path().getObject())
 		setPath({});
+}
+
+void napkin::InspectorModel::clearPath()
+{
+	mPath = PropertyPath();
+	clearItems();
 }
 
 bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const

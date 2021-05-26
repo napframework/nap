@@ -278,6 +278,12 @@ namespace nap
 		bool writeConfigFile(utility::ErrorState& errorState);
 
 		/**
+		 * Returns all available and used service configurations.
+		 * @return all available service configurations.
+		 */
+		std::vector<const ServiceConfiguration*> getServiceConfigs() const;
+
+		/**
 		 * Used on macOS to apply an environment variable for Vulkan.
 		 */
 		void setupPlatformSpecificEnvironment();

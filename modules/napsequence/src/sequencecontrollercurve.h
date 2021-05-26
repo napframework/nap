@@ -8,7 +8,6 @@
 #include "sequencecontroller.h"
 #include "sequencecurveenums.h"
 #include "sequencetrackcurve.h"
-#include "sequenceutils.h"
 
 // External Includes
 #include <mathutils.h>
@@ -16,19 +15,22 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	class SequenceService;
 
 	/**
 	 * Controller class for curve tracks
 	 */
 	class NAPAPI SequenceControllerCurve : public SequenceController
 	{
+		RTTI_ENABLE(SequenceController)
 	public:
 		/**
 		 * Constructor
+		 * @param service reference to service
 		 * @param player reference to player
 		 * @param editor reference to editor
 		 */
-		SequenceControllerCurve(SequencePlayer & player, SequenceEditor& editor) : SequenceController(player, editor) { }
+		SequenceControllerCurve(SequenceService& service, SequencePlayer & player, SequenceEditor& editor);
 
 		/**
 		 * @param trackID the id of the track
@@ -36,7 +38,7 @@ namespace nap
 		 * @param duration the new duration
 		 * @return new duration of segment
 	 	 */
-		virtual double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
+		double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
 
 		/**
 		 * adds a new curve track of type T ( float, vec2, vec3, vec4 )
@@ -52,7 +54,7 @@ namespace nap
 		 * @param curveIndex the curve index of the value
 		 * @param valueType the segment value type ( first or last value )
 		 */
-		virtual void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
+		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
 
 		/**
 		 * insert point in curve of segment
@@ -61,7 +63,7 @@ namespace nap
 		 * @param pos the position at which to insert the curvepoint in curve ( range 0-1 )
 		 * @param curveIndex the index of the curve
 		 */
-		virtual void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
+		void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos, int curveIndex);
 
 		/**
 		 * deletes point from curve
@@ -70,7 +72,7 @@ namespace nap
 		 * @param index the point index
 		 * @param curveIndex the curveIndex
 		 */
-		virtual void deleteCurvePoint(const std::string& trackID, const std::string& segmentID, const int index, int curveIndex);
+		void deleteCurvePoint(const std::string& trackID, const std::string& segmentID, int index, int curveIndex);
 
 		/**
 		 * changes a curvepoint value and time / position
@@ -81,7 +83,7 @@ namespace nap
 		 * @param time new time
 		 * @param value new value
 		 */
-		virtual void changeCurvePoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, float time, float value);
+		void changeCurvePoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, float time, float value);
 
 		/**
 		 * changes tangent of curve point. Tangents are always aligned
@@ -92,8 +94,9 @@ namespace nap
 		 * @param tanType in or out tangent
 		 * @param time offset for new time
 		 * @param value offset for new value
+		 * @return if true, tangents have been flipped
 		 */
-		virtual void changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+		bool changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes minimum and maximum value of track
@@ -119,26 +122,26 @@ namespace nap
 		 * @param time time
 		 * @return const pointer to newly created segment
 		 */
-		virtual const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
+		const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
 
 		/**
 		 * overloaded delete segment function
 		 * @param trackID track id
 		 * @param segmentID segment id
 		 */
-		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
+		void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
 
 		/**
 		 * overloaded insert track function
 		 * @param type track type
 		 */
-		virtual void insertTrack(rttr::type type) override;
+		void insertTrack(rtti::TypeInfo type) override;
 
 		/**
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
 		 * @param trackID the track id of the track that we want to update
 		 */
-		virtual void updateCurveSegments(const std::string& trackID);
+		void updateCurveSegments(const std::string& trackID);
 
 		/**
 		 * changes curvetype ( linear or bezier )
@@ -147,7 +150,7 @@ namespace nap
 		 * @param type the new curve type
 		 * @param curveIndex the index of the curve
 		 */
-		virtual void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
+		void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type, int curveIndex);
 	protected:
 		/**
 		 * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
@@ -175,9 +178,10 @@ namespace nap
 		 * @param tanType in or out tangent
 		 * @param time offset for new time
 		 * @param value offset for new value
+		 * @param bool if true, tangents have been flipped
 		 */
 		template <typename  T>
-		void changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value);
+		bool changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes a curvepoint value and time / position
@@ -190,10 +194,10 @@ namespace nap
 		 * @param value offset for new value
 		 */
 		template <typename  T>
-		void changeCurvePoint(SequenceTrackSegment& segment, const int pointIndex, const int curveIndex, float time, float value);
+		void changeCurvePoint(SequenceTrackSegment& segment, int pointIndex, int curveIndex, float time, float value);
 
 		template <typename T>
-		void changeLastCurvePoint(SequenceTrackSegment& segment, const int curveIndex, float time, float value);
+		void changeLastCurvePoint(SequenceTrackSegment& segment, int curveIndex, float time, float value);
 
 		/**
 		 * deletes point from curve
@@ -204,7 +208,7 @@ namespace nap
 		 * @param curveIndex the curveIndex
 		 */
 		template<typename T>
-		void deleteCurvePoint(SequenceTrackSegment& segment, const int index, int curveIndex);
+		void deleteCurvePoint(SequenceTrackSegment& segment, int index, int curveIndex);
 
 		/**
 		 * insert point in curve of segment
@@ -226,11 +230,14 @@ namespace nap
 		 * @param valueType the segment value type ( first or last value )
 		 */
 		template<typename T>
-		void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float amount, int curveIndex,
+		void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex,
 									 SequenceCurveEnums::SegmentValueTypes valueType);
 
 		// map for updating segments
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&)> sUpdateSegmentFunctionMap;
+		std::unordered_map<rttr::type, std::function<void(SequenceTrack&)>> mUpdateSegmentFunctionMap;
+
+		// map for inserting segments
+		std::unordered_map<rttr::type, std::function<const SequenceTrackSegment*(const std::string&, double)>> mInsertSegmentFunctionMap;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

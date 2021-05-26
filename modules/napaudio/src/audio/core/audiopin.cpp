@@ -116,7 +116,6 @@ namespace nap
 		
 		MultiInputPin::MultiInputPin(Node* node, unsigned int reservedInputCount) : InputPinBase(node)
 		{
-			mPullResult.reserve(reservedInputCount);
 			mInputsCache.reserve(reservedInputCount);
 		}
 		
@@ -127,16 +126,14 @@ namespace nap
 		}
 		
 		
-		std::vector<SampleBuffer*>& MultiInputPin::pull()
+		void MultiInputPin::pull(std::vector<SampleBuffer*>& result)
 		{
 			// Make a copy of mInputs because its contents can change while pulling its content.
 			mInputsCache = mInputs;
 			
-			mPullResult.clear();
-			for (auto& input : mInputsCache)
-				mPullResult.emplace_back(input->pull());
-			
-			return mPullResult;
+			result.resize(mInputsCache.size());
+			for (auto i = 0; i < mInputsCache.size(); ++i)
+				result[i] = mInputsCache[i]->pull();
 		}
 		
 		
@@ -168,16 +165,13 @@ namespace nap
 				assert(it != mInputs.end());
 				mInputs.erase(it);
 			}
-			mPullResult.clear();
 			mInputsCache.clear();
 		}
 		
 		
 		void MultiInputPin::reserveInputs(unsigned int inputCount)
 		{
-			mPullResult.shrink_to_fit();
 			mInputsCache.shrink_to_fit();
-			mPullResult.reserve(inputCount);
 			mInputsCache.reserve(inputCount);
 		}
 		
