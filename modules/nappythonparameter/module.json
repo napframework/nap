@@ -1,0 +1,9 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "mod_nappython",
+        "mod_napparameter"
+    ],
+    "WindowsDllSearchPaths": []
+}
