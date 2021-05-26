@@ -25,6 +25,7 @@ namespace nap
 	 * Base class of all Calendar types.
 	 * Acts as an interface to the underlying calendar instance.
 	 * Every derived class must create and return a calendar instance. 
+	 * Use the nap::CalendarComponent to receive a notification when an event starts and ends.
 	 */
 	class NAPAPI ICalendar : public Resource
 	{
@@ -61,8 +62,9 @@ namespace nap
 	 * set of 'Items' defined by this resource. If a calendar with the same ID 
 	 * exists on disk (saved previously) it is loaded instead.
 	 *
-	 * Note that this calendar is meant to be used with a 'limited' (1000x) set of events, 
-	 * especially when queried every frame, as it doesn't make use of a database.
+	 * Use the nap::CalendarComponent to receive a notification when an event starts and ends.
+	 * Note that this calendar is meant to be used with a 'limited' (1000x) set of events,
+	 * as it doesn't make use of a database.
 	 */
 	class NAPAPI Calendar : public ICalendar
 	{
