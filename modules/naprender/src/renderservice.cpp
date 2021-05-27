@@ -483,7 +483,7 @@ namespace nap
 			int selected_queue_idx = -1;
 			for (uint32 i = 0; i < family_queue_count; i++)
 			{
-				if (queue_properties[i].queueFlags & required_flags)
+				if ((queue_properties[i].queueFlags & required_flags) == required_flags)
 				{
 					// Make sure this family supports presentation to the given surface
 					// If running headless this check is not performed.

@@ -46,7 +46,7 @@ namespace nap
 			Point() = default;
 			Point(Time time, Time duration);
 			Time mTime;							///< Property: 'Time' time of the event: hours (0-23) & minutes (0-59)
-			Time mDuration;						///< Property: 'Duration' length of event: hours (0-23) & minutes (0-59). Duration of 0 = never
+			Time mDuration;						///< Property: 'Duration' length of event: hours (0-X) & minutes (0-59). Duration of 0 = never
 			bool valid() const;  				///< Returns if time is valid
 		};
 

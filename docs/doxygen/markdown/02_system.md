@@ -146,7 +146,9 @@ Configuration {#service_config}
 =======================
 Some services are configurable, including the [audio](@ref nap::AudioService), [render](@ref nap::RenderService) and [gui](@ref nap::IMGuiService) service. Every service that is configurable is initialized using a class derived from [ServiceConfiguration](@ref nap::ServiceConfiguration). The render service is initialized using a [render service configuration](@ref nap::RenderServiceConfiguration) and the audio service is initialized using an [audio service configuration](@ref nap::audio::AudioServiceConfiguration).
 
-All service configurable settings are stored in a `config.json` file, which should be placed next to the executable. This file is not placed in the `data` folder because service configurable settings are system specific, not application specific. You might want to select a different audio output port, change the gui font size or disable high dpi rendering. If no `config.json` file is provided the system defaults are used. 
+All service configurable settings are stored in a `config.json` file, which should be placed next to the executable. This file is not placed in the `data` folder because service configurable settings are system specific, not application specific. You might want to select a different audio output port, change the gui font size or disable high dpi rendering. If no `config.json` file is provided the system defaults are used.
+
+Use [Napkin](@ref napkin) to generate and edit service config files.
 
 `config.json` example:
 
@@ -188,10 +190,3 @@ All service configurable settings are stored in a `config.json` file, which shou
     ]
 }
 ```
-
-You can automatically generate a config file, using the currently loaded settings of your application, by calling :
-
-~~~~~~~~~~~~~~~{.cpp}
-	if (!getCore().writeConfigFile(error))
-		return false;
-~~~~~~~~~~~~~~~
