@@ -8,10 +8,11 @@ import sys
 import webbrowser
 
 REQUIRED_WINDOWS_VERSION = '10.0'
-VS_2015_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE.14.0'
-VS_2015_VERSION_REG_QUERY = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevDiv\\vs\\Servicing\\14.0\\devenv /v UpdateVersion'
-REQUIRED_VS_2015_PATCH_VERSION = 25420
+VS_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE.16.0'
+REQUIRED_VS_VERSION = "2019"
 REQUIRED_QT_VERSION = '5.11.3'
+VS_VERSION_REG_QUERY = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevDiv\\vs\\Servicing\\16.0\\devenv /v UpdateVersion'
+REQUIRED_PATCH_VERSION = 25420
 
 def call(cmd, provide_exit_code=False):
     """Execute command and return stdout"""
@@ -62,45 +63,39 @@ def check_windows_version():
     ver_output = call('ver').strip()
     version = ver_output.split()[-1]
     windows_version_ok = version.startswith(REQUIRED_WINDOWS_VERSION + '.')
-    log_test_success('for Windows 10', windows_version_ok)
+    log_test_success('for Windows {0}'.format(REQUIRED_WINDOWS_VERSION), windows_version_ok)
     return windows_version_ok    
 
-def check_visual_studio_2015_installed():
-    """Check if Visual Studio 2015 is installed"""
+def check_visual_studio_installed():
+    """Check if Visual Studio is installed"""
 
-    return_code = call('reg query "%s"' % VS_2015_INSTALLED_REG_KEY, True)
+    return_code = call('reg query "%s"' % VS_INSTALLED_REG_KEY, True)
 
-    visual_studio_2015_installed = return_code == 0
-    log_test_success('for Visual Studio 2015', visual_studio_2015_installed)
-    return visual_studio_2015_installed    
+    visual_studio_installed = return_code == 0
+    log_test_success('for Visual Studio {0}'.format(REQUIRED_VS_VERSION), visual_studio_installed)
+    return visual_studio_installed    
     
-def check_visual_studio_2015_is_update3():
-    """Check if Visual Studio 2015 version is Update 3"""
+def check_visual_studio_has_update():
+    """Check Visual Studio version"""
 
-    ver_output = call('reg query %s' % VS_2015_VERSION_REG_QUERY)
+    ver_output = call('reg query %s' % VS_VERSION_REG_QUERY)
     version = ver_output.strip("'").split()[-1]
     (_, minor, patch) = version.split('.')
-    version_ok = int(minor) == 0 and int(patch) >= REQUIRED_VS_2015_PATCH_VERSION
-    log_test_success('Visual Studio 2015 is Update 3', version_ok)
+    version_ok = int(minor) == 0 and int(patch) >= REQUIRED_PATCH_VERSION
+    log_test_success('Visual Studio Update', version_ok)
     return version_ok
 
-def handle_missing_vs2015_update3(have_earlier_vs_2015):
-    """If we don't have Visual Studio 2015 Update 3 help install it"""
+def handle_missing_vs():
+    """If we don't have Visual Studio, help install it"""
 
     # Show different help depending on whether they already have an older version installed.
-    if have_earlier_vs_2015:        
-        print("\nVisual Studio 2015 is installed but is an older version.  Update 3 is required and can be installed within VS or downloaded from https://www.visualstudio.com/vs/older-downloads/.")
-    else:
-        print("\nVisual Studio 2015 Update 3 is required and Community Edition can be downloaded for free from https://www.visualstudio.com/vs/older-downloads/.")
+    print("\nVisual Studio {0} is required. The Community Edition can be downloaded for free from https://www.visualstudio.com".format(REQUIRED_VS_VERSION))
 
     # Offer to open download page
     open_vs_download = read_yes_no("Open download page?")
     if open_vs_download:
-        webbrowser.open('https://www.visualstudio.com/vs/older-downloads/')
-        print("\nPlease re-run check_build_environment after update has completed and you have rebooted.")
-    else:
-        # Provide more specific instruction if they aren't downloading now
-        print("\nPlease re-run check_build_environment after you have installed Visual Studio 2015 Update 3 and rebooted.")        
+        webbrowser.open('https://www.visualstudio.com')
+    print("\nPlease re-run check_build_environment after you have installed Visual Studio {0}".format(REQUIRED_VS_VERSION))        
 
 def check_qt_env_var():
     """Check Qt env. var. for source user"""
@@ -150,9 +145,9 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     """Log help for source user Qt problems"""
 
     if not qt_env_var_ok:
-        print("\nThis version of NAP requires Qt v%s. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"C:\\Qt%s\\%s\\msvc2015_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
+        print("\nThis version of NAP requires Qt, preferably v%s. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"C:\\Qt%s\\%s\\msvc2015_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
-        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions are currently unsupported." % (REQUIRED_QT_VERSION, qt_found_version))    
+        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))    
     
 def get_nap_root():
     """Get framework root directory"""
@@ -165,11 +160,8 @@ def check_build_environment(against_source):
     # Check Windows version
     windows_version_ok = check_windows_version()
 
-    # Check if Visual Studio 2015 is installed
-    have_vs_2015 = check_visual_studio_2015_installed()
-
-    # Check if Visual Studio 2015 Update 3 is installed
-    have_vs_2015_update3 = have_vs_2015 and check_visual_studio_2015_is_update3()
+    # Check if Visual Studio is installed
+    have_vs = check_visual_studio_installed()
 
     if against_source:
         # Check for Qt
@@ -190,7 +182,7 @@ def check_build_environment(against_source):
         extra_source_requirements_ok = False 
 
     # If everything looks good log and exit
-    if windows_version_ok and have_vs_2015_update3 and extra_source_requirements_ok:
+    if windows_version_ok and have_vs and extra_source_requirements_ok:
         print("Your build environment appears to be ready for NAP!")
         return
 
@@ -198,11 +190,11 @@ def check_build_environment(against_source):
 
     # Warn about wrong Windows version
     if not windows_version_ok:
-        print("\nWarning: This version of NAP is supported on Windows 10.  Other Windows versions may work but are unsupported.")
+        print("\nWarning: This version of NAP is supported on Windows {0}. Other Windows versions may work but are unsupported.".format(REQUIRED_WINDOWS_VERSION))
 
-    # If we don't have Visual Studio 2015 Update 3 help install it
-    if not have_vs_2015_update3:
-        handle_missing_vs2015_update3(have_vs_2015)
+    # If we don't have Visual help install it
+    if not have_vs:
+        handle_missing_vs()
 
     # Show Qt help
     if against_source:
