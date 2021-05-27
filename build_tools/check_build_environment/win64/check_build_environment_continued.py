@@ -145,7 +145,7 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     """Log help for source user Qt problems"""
 
     if not qt_env_var_ok:
-        print("\nThis version of NAP requires Qt, preferably v%s. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"C:\\Qt%s\\%s\\msvc2015_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
+        print("\nThis version of NAP requires Qt, preferably v%s. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"C:\\Qt%s\\%s\\msvc2019_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
         print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))    
     
