@@ -115,6 +115,8 @@ On success, run:
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
 
+On Windows, make sure the <a href=https://www.microsoft.com/en-us/download/details.aspx?id=40784" target="_blank">Visual C++ 2013 Redistributable (x64)</a> is installed. This is unfortunately required because of 1 pre-compiled third party dependency.
+
 ## Run a Demo
 
 Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `sh build.sh target:helloworld`.

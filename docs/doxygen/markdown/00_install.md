@@ -25,7 +25,9 @@ The prerequisites installation script is called `check_build_environment` and ca
 
 NAP $(NAP_VERSION_FULL) supports Windows 10 with Visual Studio 2019 (v142) . Although NAP is known to work on other versions of Windows, v10 is the current supported platform. Other versions of Visual Studio are not supported at this moment. 
 
-Download and install <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Visual Studio 2019</a>. This link points to the community edition which can be used for free. Make sure to select `Desktop development with C++` when installing Visual Studio, including `MSVC v142 - VS 2019 C++ x64/x86` and the `Windows 10 SDK`. Other settings are optional.
+Download and install <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Visual Studio 2019</a>. This link points to the community edition which can be used for free. Make sure to select `Desktop development with C++` when installing Visual Studio, including `MSVC v142 - VS 2019 C++ x64/x86` and the `Windows 10 SDK`. Other settings are optional. 
+
+Download and install the <a href=https://www.microsoft.com/en-us/download/details.aspx?id=40784" target="_blank">Visual C++ 2013 Redistributable (x64)</a>.
 
 Follow these steps for a guided installation:
 1. Extract `NAP-$(NAP_VERSION_FULL)-Win64.zip` using Explorer (or your preferred tool)
