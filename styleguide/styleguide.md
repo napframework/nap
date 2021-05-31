@@ -110,9 +110,10 @@ for (int i = 0; i < 100; ++i)
 - If you need a static or global variable of a class type, consider initializing a pointer (which will never be freed), from either your `main()` function or from `pthread_once()`. Note that this must be a raw pointer, not a "smart" pointer, since the smart pointer's destructor will have the
 order-of-destructor issue that we are trying to avoid.
 - Don't use `#define` to declare constants, use const or constexpr [instead](https://stackoverflow.com/questions/15218760/should-i-avoid-using-define-in-c-why-and-what-alternatives-can-i-use)
-	
-`inline constexpr int maxRotations = 12`
-`inline static constexpr int maxMidiValue = 127`
+```
+inline constexpr int maxRotations = 12
+inline static constexpr int maxMidiValue = 127
+```
 
 Classes
 -----------------------
