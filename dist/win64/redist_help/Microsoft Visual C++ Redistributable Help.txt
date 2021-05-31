@@ -1,9 +1,9 @@
-NAP projects require both the 2013 and 2015 Visual C++ redistributable packages installed.
+NAP projects require Visual C++ redistributable packages to be installed.
 
 Error message DLL: MSVCP140.DLL
-Missing redistributable: 2015
-Download: https://www.microsoft.com/en-us/download/details.aspx?id=53587
+Missing redistributable: Visual Studio 2015, 2017 and 2019
+Download: https://aka.ms/vs/16/release/vc_redist.x64.exe
 
 Error message DLL: VCOMP120.DLL
-Missing redistributable: 2013
+Missing redistributable: Visual Studio 2013
 Download: https://support.microsoft.com/en-us/help/3138367/update-for-visual-c-2013-and-visual-c-redistributable-package
