@@ -18,9 +18,9 @@ namespace nap
 	{
 		namespace video
 		{
-			constexpr const char* YSampler = "yTexture";	///< video shader Y sampler name
-			constexpr const char* USampler = "uTexture";	///< video shader U sampler name
-			constexpr const char* VSampler = "vTexture";	///< video shader V sampler name
+			inline constexpr const char* YSampler  = "yTexture";	///< video shader Y sampler name
+			inline constexpr const char* USampler  = "uTexture";	///< video shader U sampler name
+			inline constexpr const char* VSampler  = "vTexture";	///< video shader V sampler name
 		}
 	}
 

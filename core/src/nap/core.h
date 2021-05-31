@@ -22,14 +22,14 @@
 #include <vector>
 
 // Default name to use when writing the file that contains all the settings for the NAP services.
-constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
-constexpr char PROJECT_INFO_FILENAME[] = "project.json";
+inline constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
+inline constexpr char PROJECT_INFO_FILENAME[] = "project.json";
 
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x
 #define STRINGIZE_VALUE_OF(x) STRINGIZE(x)
-constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
-constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_TYPE);
+inline constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
+inline constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_TYPE);
 
 namespace nap
 {

@@ -29,7 +29,7 @@ namespace nap
 		class RampedValue
 		{
 		public:
-			static constexpr T smallestFactor = 0.0001f;
+			inline constexpr T smallestFactor = 0.0001f;
 		
 		public:
 			RampedValue(const T& initValue) : mValue(initValue)

@@ -22,12 +22,12 @@ namespace nap
     class NAPAPI MidiEvent : public nap::Event
     {
     public:
-        static constexpr MidiValue MIDI_MAX_VALUE = 127;                /**< Maximum value of a midi byte */
-        static constexpr MidiValue MIDI_CONTROLLER_SUSTAIN = 64;        /**< CC number for sustain pedal */
-        static constexpr MidiValue MIDI_VALUE_OMNI = -1;                /**< Wildcard value for midi values */
-        static constexpr MidiValue MIDI_NUMBER_OMNI = MIDI_VALUE_OMNI;  /**< Wildcard value for midi numbers */
-        static constexpr MidiValue MIDI_CHANNEL_OMNI = MIDI_VALUE_OMNI; /**< Wildcard value for midi channels */
-        static constexpr MidiValue MIDI_NUMBER_NONE = 0;
+        inline constexpr MidiValue MIDI_MAX_VALUE = 127;				/**< Maximum value of a midi byte */
+		inline constexpr MidiValue MIDI_CONTROLLER_SUSTAIN = 64;		/**< CC number for sustain pedal */
+		inline constexpr MidiValue MIDI_VALUE_OMNI = -1;				/**< Wildcard value for midi values */
+		inline constexpr MidiValue MIDI_NUMBER_OMNI = MIDI_VALUE_OMNI;	/**< Wildcard value for midi numbers */
+		inline constexpr MidiValue MIDI_CHANNEL_OMNI = MIDI_VALUE_OMNI;	/**< Wildcard value for midi channels */
+		inline constexpr MidiValue MIDI_NUMBER_NONE = 0;
         
         /**
          * Different kinds of midi events

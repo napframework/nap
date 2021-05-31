@@ -34,9 +34,9 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	constexpr const char* licenseToken = "LICENSE@";
-	constexpr const char* licenseExtension = "license";
-	constexpr const char* keyExtension = "key";
+	inline constexpr const char* licenseToken = "LICENSE@";
+	inline constexpr const char* licenseExtension = "license";
+	inline constexpr const char* keyExtension = "key";
 
 	static bool findFile(const char* extension, const std::vector<std::string>& files, std::string& outFile)
 	{
