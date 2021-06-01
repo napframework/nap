@@ -37,13 +37,13 @@ namespace nap
 		{
 			// Sequencer colors
 			// TODO: Use colors from ImGUIService instead
-			constexpr ImU32 red = 4285098440;
-			constexpr ImU32 black = 4280685585;
-			constexpr ImU32 white = 4288711819;
-			constexpr ImU32 lightGrey = 4285750877;
-			constexpr ImU32 darkGrey = 4285158482;
-			constexpr ImU32 darkerGrey = 4281674281;
-			constexpr ImU32 curvecolors[4] = { 4285098440, 4278255360, 4294901760, 4278255615 };
+			inline constexpr ImU32 red = 4285098440;
+			inline constexpr ImU32 black = 4280685585;
+			inline constexpr ImU32 white = 4288711819;
+			inline constexpr ImU32 lightGrey = 4285750877;
+			inline constexpr ImU32 darkGrey	 = 4285158482;
+			inline constexpr ImU32 darkerGrey = 4281674281;
+			inline constexpr ImU32 curvecolors[4] = {4285098440, 4278255360, 4294901760, 4278255615};
 		}
 	}
 

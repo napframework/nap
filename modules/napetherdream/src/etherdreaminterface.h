@@ -123,7 +123,7 @@ namespace nap
 		/**
 		 *	@return etherdream DAC max value
 		 */
-		static constexpr int16_t etherMax()		{ return  std::numeric_limits<int16_t>::max(); }
+		static constexpr int16_t etherMax()		{ return std::numeric_limits<int16_t>::max(); }
 
 	private:
 		// Number of available dacs found after initialization
