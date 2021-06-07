@@ -101,7 +101,7 @@ NAP depends on various other third party libraries. A set of compatible librarie
 
 NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`. Only the editor (Napkin) depends on Qt, NAP applications do not have a dependency on Qt.
 
-On Windows, make sure the [Visual C++ 2013 Redistributable (x64)](https://www.microsoft.com/en-us/download/details.aspx?id=40784) is installed. This is unfortunately required because of 1 third party dependency.
+On Windows, make sure the [Visual C++ 2013 Redistributable (x64)](https://www.microsoft.com/en-us/download/details.aspx?id=40784) is installed. This is (unfortunately) required because of a third party dependency.
 
 ## Create the Solution
 
