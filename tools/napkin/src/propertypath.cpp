@@ -98,8 +98,7 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document
 
 PropertyPath::~PropertyPath()
 {
-	if(mDocument != nullptr)
-		mDocument->deregisterPath(*this);
+	if(mDocument != nullptr) { mDocument->deregisterPath(*this); }
 }
 
 const std::string PropertyPath::getName() const
@@ -158,6 +157,7 @@ std::string PropertyPath::getComponentInstancePath() const
 		return {};
 
 	// First object must be Scene
+	assert(mDocument != nullptr);
 	auto leadObject = mDocument->getObject(mObjectPath[0].mID);
 	if (!leadObject || !leadObject->get_type().is_derived_from<nap::Scene>())
 		return {};
@@ -181,6 +181,7 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 	if (mObjectPath.size() < 2)
 		return nullptr;
 
+	assert(mDocument != nullptr);
 	auto scene = dynamic_cast<nap::Scene*>(mDocument->getObject(mObjectPath[0].mID));
 	if (!scene)
 		return nullptr;
@@ -355,6 +356,7 @@ void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, r
 
 	// Remove from object list
 	removeInstancePropertyValue(val, this->getType());
+	assert(mDocument != nullptr);
 	mDocument->objectChanged(component);
 	for (auto scene : mDocument->getObjects<nap::Scene>())
 		mDocument->objectChanged(scene);
@@ -384,8 +386,8 @@ void PropertyPath::setPointee(Object* pointee)
 	{
 		// Assign the new value to the pointer (note that we're modifying a copy)
 		auto targetVal = getValue();
+		assert(mDocument != nullptr);
 		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
-
 		assignMethod.invoke(targetVal, path, *pointee);
 
 		// Apply the modified value back to the source property
@@ -403,7 +405,6 @@ PropertyPath PropertyPath::getParent() const
 	assert(mDocument != nullptr);
 	if (hasProperty())
 	{
-		assert(mDocument != nullptr);
 		if (mPropertyPath.size() > 1)
 			return { mObjectPath, PPath(mPropertyPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1), *mDocument };
 
@@ -502,6 +503,7 @@ bool PropertyPath::isInstanceProperty() const
 
 PropertyPath PropertyPath::getChild(const std::string& name) const
 {
+	assert(mDocument != nullptr);
 	return {objectPathStr(), propPathStr() + "/" + name, *mDocument};
 }
 
@@ -510,6 +512,7 @@ nap::rtti::Object* PropertyPath::getObject() const
 	if (mObjectPath.empty())
 		return nullptr;
 
+	assert(mDocument != nullptr);
 	return mDocument->getObject(mObjectPath.back().mID);
 }
 
@@ -559,6 +562,10 @@ bool PropertyPath::hasProperty() const
 
 bool PropertyPath::isValid() const
 {
+	// Path must be associated with a document
+	if (mDocument == nullptr)
+		return false;
+
 	// A valid path must always point to an object
 	auto obj = getObject();
 	if (!obj)
@@ -821,5 +828,10 @@ void PropertyPath::updateObjectName(const std::string& oldName, const std::strin
 		if (nameIdx.mID == oldName)
 			nameIdx.mID = newName;
 	}
+}
+
+void PropertyPath::invalidate()
+{
+	mDocument = nullptr;
 }
 
