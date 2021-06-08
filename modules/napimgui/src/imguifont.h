@@ -18,4 +18,11 @@ namespace nap
 	 * The compressed font data used by IMGui
 	 */
 	NAPAPI extern const uint nunitoSansSemiBoldData[15109];
+
+    /**
+     * 4DSOUND's chosen font.
+     */
+    NAPAPI extern const uint suisseIntlRegularWebTrialSize;
+    NAPAPI extern const uint suisseIntlRegularWebTrialData[3848];
+
 }

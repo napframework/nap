@@ -549,7 +549,7 @@ namespace nap
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
 			float font_size = getConfiguration<IMGuiServiceConfiguration>()->mFontSize;
-			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+			mFontAtlas->AddFontFromMemoryCompressedTTF(suisseIntlRegularWebTrialData, suisseIntlRegularWebTrialSize, font_size, &font_config);
 			mSampleCount = window.getSampleCount();
 
 			// Create context and apply style
