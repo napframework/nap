@@ -836,7 +836,11 @@ void Document::registerPath(PropertyPath& p)
 
 void Document::deregisterPath(PropertyPath& p)
 {
-	mPropertyPaths.erase(std::remove(mPropertyPaths.begin(), mPropertyPaths.end(), &p), mPropertyPaths.end());
+	auto it = std::find(mPropertyPaths.begin(), mPropertyPaths.end(), &p);
+	if (it != mPropertyPaths.end())
+	{
+		mPropertyPaths.erase(it);
+	}
 }
 
 QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject,
@@ -915,8 +919,8 @@ Document::~Document()
 {
 	for (auto& prop : mPropertyPaths)
 		prop->invalidate();
-	mPropertyPaths.clear();
 
+	mPropertyPaths.clear();
 	mUndoStack.disconnect();
 }
 
