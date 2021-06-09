@@ -100,10 +100,6 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	auto oldName = object.mID;
 	object.mID = newName;
 
-	// Ensure all relevant property paths point to the new object name
-	for (auto& p : mPropertyPaths)
-		p->updateObjectName(oldName, newName);
-
 	// Update pointers to this object
 	for (auto propPath : getPointersTo(object, false, false, false))
 		propPath.setPointee(&object);
@@ -121,10 +117,6 @@ const std::string& Document::forceSetObjectName(nap::rtti::Object& object, const
 
 	auto oldName = object.mID;
 	object.mID = newName;
-
-	// Ensure all relevant property paths point to the new object name
-	for (auto& p : mPropertyPaths)
-		p->updateObjectName(oldName, newName);
 
 	// Update pointers to this object
 	for (auto propPath : getPointersTo(object, false, false, false))
@@ -829,20 +821,6 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-void Document::registerPath(PropertyPath& p)
-{
-	mPropertyPaths.emplace_back(&p);
-}
-
-void Document::deregisterPath(PropertyPath& p)
-{
-	auto it = std::find(mPropertyPaths.begin(), mPropertyPaths.end(), &p);
-	if (it != mPropertyPaths.end())
-	{
-		mPropertyPaths.erase(it);
-	}
-}
-
 QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject,
 		bool excludeArrays,
 		bool excludeParent,
@@ -917,10 +895,6 @@ QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::
 
 Document::~Document()
 {
-	for (auto& prop : mPropertyPaths)
-		prop->invalidate();
-
-	mPropertyPaths.clear();
 	mUndoStack.disconnect();
 }
 

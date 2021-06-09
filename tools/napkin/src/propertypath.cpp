@@ -34,7 +34,6 @@ PropertyPath::PropertyPath(Object& obj, Document& doc)
 	: mDocument(&doc)
 {
 	mObjectPath.emplace_back(obj.mID);
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const std::string& abspath, Document& doc) 
@@ -48,8 +47,6 @@ PropertyPath::PropertyPath(const std::string& abspath, Document& doc)
 	if (pathParts.size() > 1)
 		for (auto propElm : nap::utility::splitString(pathParts[1], '/'))
 			mPropertyPath.emplace_back(propElm);
-
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath, Document& doc) 
@@ -61,21 +58,17 @@ PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppa
 
 	for (const auto& propElm : nap::utility::splitString(proppath, '/'))
 		mPropertyPath.emplace_back(propElm);
-
-	mDocument->registerPath(*this);
 }
 
 
 PropertyPath::PropertyPath(const PPath& abspath, Document& doc)
 		: mObjectPath(abspath), mDocument(&doc)
 {
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const PPath& absPath, const PPath& propPath, Document& doc)
 		: mObjectPath(absPath), mPropertyPath(propPath), mDocument(&doc)
 {
-	mDocument->registerPath(*this);
 }
 
 
@@ -84,8 +77,6 @@ PropertyPath::PropertyPath(Object& obj, const Path& path, Document& doc) : mDocu
 	auto id = obj.mID;
 	mObjectPath.emplace_back(NameIndex(id));
 	mPropertyPath.emplace_back(path.toString());
-
-	mDocument->registerPath(*this);
 }
 
 
@@ -93,13 +84,10 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document
 {
 	mObjectPath.emplace_back(obj.mID);
 	mPropertyPath.emplace_back(std::string(prop.get_name().data()));
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::~PropertyPath()
-{
-	if(mDocument != nullptr) { mDocument->deregisterPath(*this); }
-}
+{ }
 
 const std::string PropertyPath::getName() const
 {
