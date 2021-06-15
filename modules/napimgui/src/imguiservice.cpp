@@ -23,6 +23,7 @@
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontFile",			&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiServiceConfiguration::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiServiceConfiguration::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DarkColor",			&nap::IMGuiServiceConfiguration::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
@@ -549,9 +550,15 @@ namespace nap
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
             
-            // Add 4DSOUND font
-            float font_size = 15.f;
-            ImFont* regular = mFontAtlas->AddFontFromFileTTF("/Users/casimirgeelhoed/Projects/4DSOUND/swisstypefaces-free-trial-suisse/Suisse Intl/SuisseIntl-Regular.otf", font_size, &font_config);
+            // Add font
+			auto config = getConfiguration<IMGuiServiceConfiguration>();
+			float font_size = config->mFontSize;
+			auto font_file = config->mFontFile;
+
+			if (!font_file.empty())
+				mFontAtlas->AddFontFromFileTTF(font_file.c_str(), font_size, &font_config);
+			else
+				mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
 
 			mSampleCount = window.getSampleCount();
 
