@@ -23,6 +23,7 @@
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontFile",			&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiServiceConfiguration::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiServiceConfiguration::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DarkColor",			&nap::IMGuiServiceConfiguration::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
@@ -200,7 +201,7 @@ namespace nap
 		style.GrabMinSize = 5.0f;
 		style.GrabRounding = 1.0f;
 		style.WindowBorderSize = 0.0f;
-
+        
 		style.Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
@@ -337,7 +338,7 @@ namespace nap
 		const auto it = mContexts.find(current_window);
 		assert(it != mContexts.end());	
 		ImGui::SetCurrentContext(it->second->mContext);
-		
+        
 		// Render GUI
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), 
@@ -543,13 +544,22 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
-			// Add font
+			// Create font atlas & font config
 			mFontAtlas = std::make_unique<ImFontAtlas>();
 			ImFontConfig font_config;
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
-			float font_size = getConfiguration<IMGuiServiceConfiguration>()->mFontSize;
-			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+            
+            // Add font
+			auto config = getConfiguration<IMGuiServiceConfiguration>();
+			float font_size = config->mFontSize;
+			auto font_file = config->mFontFile;
+
+			if (!font_file.empty())
+				mFontAtlas->AddFontFromFileTTF(font_file.c_str(), font_size, &font_config);
+			else
+				mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+
 			mSampleCount = window.getSampleCount();
 
 			// Create context and apply style
