@@ -55,9 +55,16 @@ namespace nap
     bool PythonScriptComponentInstance::init(utility::ErrorState& errorState)
     {
         mResource = getComponent<PythonScriptComponent>();
-        
-        mInstance = mResource->mPythonClass(getEntityInstance());
-        
+
+		try {
+			mInstance = mResource->mPythonClass(getEntityInstance());
+		}
+		catch (const pybind11::error_already_set& err)
+		{
+			errorState.fail("Runtime python error while constructing Component %s: %s", mResource->mClassName.c_str(), err.what());
+			return false;
+		}
+
         return true;
     }
     
