@@ -22,7 +22,7 @@ namespace nap
     /**
      * 4DSOUND's chosen font.
      */
-    NAPAPI extern const uint suisseIntlRegularWebTrialSize;
-    NAPAPI extern const uint suisseIntlRegularWebTrialData[3848];
+    NAPAPI extern const uint SuisseRegular_size;
+    NAPAPI extern const uint SuisseRegular_data[130136/4];
 
 }

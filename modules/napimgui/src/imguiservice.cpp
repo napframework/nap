@@ -200,7 +200,7 @@ namespace nap
 		style.GrabMinSize = 5.0f;
 		style.GrabRounding = 1.0f;
 		style.WindowBorderSize = 0.0f;
-
+        
 		style.Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
 		style.Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
 		style.Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
@@ -337,7 +337,7 @@ namespace nap
 		const auto it = mContexts.find(current_window);
 		assert(it != mContexts.end());	
 		ImGui::SetCurrentContext(it->second->mContext);
-		
+        
 		// Render GUI
 		ImGui::Render();
 		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), 
@@ -543,13 +543,16 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
-			// Add font
+			// Create font atlas & font config
 			mFontAtlas = std::make_unique<ImFontAtlas>();
 			ImFontConfig font_config;
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
-			float font_size = getConfiguration<IMGuiServiceConfiguration>()->mFontSize;
-			mFontAtlas->AddFontFromMemoryCompressedTTF(suisseIntlRegularWebTrialData, suisseIntlRegularWebTrialSize, font_size, &font_config);
+            
+            // Add 4DSOUND font
+            float font_size = 15.f;
+            ImFont* regular = mFontAtlas->AddFontFromFileTTF("/Users/casimirgeelhoed/Projects/4DSOUND/swisstypefaces-free-trial-suisse/Suisse Intl/SuisseIntl-Regular.otf", font_size, &font_config);
+
 			mSampleCount = window.getSampleCount();
 
 			// Create context and apply style
