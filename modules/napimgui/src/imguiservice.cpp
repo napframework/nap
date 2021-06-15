@@ -15,7 +15,7 @@
 #include <color.h>
 #include <SDL_clipboard.h>
 #include <SDL_syswm.h>
-#include <SDL_mouse.h> 
+#include <SDL_mouse.h>
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
 #include <materialcommon.h>
@@ -23,6 +23,7 @@
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontFile",			&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiServiceConfiguration::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiServiceConfiguration::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DarkColor",			&nap::IMGuiServiceConfiguration::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
@@ -92,7 +93,7 @@ namespace nap
 
 		err = vkQueueWaitIdle(renderService.getQueue());
 		checkVKResult(err);
-		
+
 		vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &commandBuffer);
 	}
 
@@ -122,7 +123,7 @@ namespace nap
 		binding[0].descriptorCount = 1;
 		binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		binding[0].pImmutableSamplers = VK_NULL_HANDLE;
-		
+
 		VkDescriptorSetLayoutCreateInfo set_info = {};
 		set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		set_info.bindingCount = 1;
@@ -176,7 +177,7 @@ namespace nap
 
 	static void applyStyle(const IMGuiServiceConfiguration& config)
 	{
-		// Get ImGUI colors 
+		// Get ImGUI colors
 		ImVec4 IMGUI_NAPDARK(config.mDarkColor, 1.0f);
 		ImVec4 IMGUI_NAPBACK(config.mBackgroundColor, 0.94f);
 		ImVec4 IMGUI_NAPMODA(config.mDarkColor, 0.85f);
@@ -333,16 +334,16 @@ namespace nap
 			return;
 		}
 
-		// Switch context based on currently activated render window 
+		// Switch context based on currently activated render window
 		const auto it = mContexts.find(current_window);
-		assert(it != mContexts.end());	
+		assert(it != mContexts.end());
 		ImGui::SetCurrentContext(it->second->mContext);
-		
+
 		// Render GUI
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), 
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
 			it->second->mContext,
-			mRenderService->getCurrentCommandBuffer(), 
+			mRenderService->getCurrentCommandBuffer(),
 			current_window->getRenderPass(),
 			current_window->getSampleCount());
 	}
@@ -379,7 +380,7 @@ namespace nap
 		WindowInputEvent& input_event = static_cast<WindowInputEvent&>(event);
 		nap::RenderWindow* window = mRenderService->findWindow(input_event.mWindow);
 		assert(window != nullptr);
-		
+
 		// Get context for window
 		auto context = mContexts.find(window);
 		assert(context != mContexts.end());
@@ -387,7 +388,7 @@ namespace nap
 		// Select contect and get input / output information
 		ImGui::SetCurrentContext(context->second->mContext);
 		ImGuiIO& io = ImGui::GetIO();
-		
+
 		// Key event
 		if (event.get_type().is_derived_from(RTTI_OF(nap::KeyEvent)))
 		{
@@ -399,14 +400,14 @@ namespace nap
 			io.KeyAlt	= ((SDL_GetModState() & KMOD_ALT)	!= 0);
 			io.KeySuper	= ((SDL_GetModState() & KMOD_GUI)	!= 0);
 		}
-		
+
 		// Text input event
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::TextInputEvent)))
 		{
 			nap::TextInputEvent& press_event = static_cast<nap::TextInputEvent&>(event);
 			io.AddInputCharactersUTF8(press_event.mText.c_str());
 		}
-		
+
 		// Mouse wheel event
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
 		{
@@ -466,7 +467,7 @@ namespace nap
 		write_desc[0].descriptorCount = 1;
 		write_desc[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		write_desc[0].pImageInfo = desc_image;
-		
+
 		vkUpdateDescriptorSets(mRenderService->getDevice(), 1, write_desc, 0, NULL);
 		mDescriptors.emplace(std::make_pair(&texture, descriptor_set));
 		return (ImTextureID)(descriptor_set);
@@ -548,8 +549,17 @@ namespace nap
 			ImFontConfig font_config;
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
-			float font_size = getConfiguration<IMGuiServiceConfiguration>()->mFontSize;
-			mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+
+            // Add font
+			auto config = getConfiguration<IMGuiServiceConfiguration>();
+			float font_size = config->mFontSize;
+			auto font_file = config->mFontFile;
+
+			if (!font_file.empty())
+				mFontAtlas->AddFontFromFileTTF(font_file.c_str(), font_size, &font_config);
+			else
+				mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+
 			mSampleCount = window.getSampleCount();
 
 			// Create context and apply style
@@ -570,7 +580,7 @@ namespace nap
 
 	void IMGuiService::onWindowRemoved(RenderWindow& window)
 	{
-		// Find context 
+		// Find context
 		auto it = mContexts.find(&window);
 		assert(it != mContexts.end());
 
