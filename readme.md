@@ -82,7 +82,7 @@ Windows 10<br/>
 Ubuntu 20.04<br/>
 [![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
-MacOS 10.9<br/>
+macOS 10.15<br/>
 [![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
@@ -111,9 +111,9 @@ Run:
 
 On success, run:
 
-`generate_solution.sh` to generate an `XCode project` (macOS x86-64)<br>
+`generate_solution.sh` to generate an `XCode project` (macOS Catalina/10.15 x86-64)<br>
 `generate_solution.bat` to generate a `Visual Studio Solution` (Windows 10 x86-64)<br>
-`generate_solution.sh` to generate `make files` (Linux, Ubuntu LTS x86-64)<br>
+`generate_solution.sh` to generate `make files` (Ubuntu LTS Linux 20.04 x86-64)<br>
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
 
@@ -174,9 +174,9 @@ Do not use the github `issues` page to ask questions. We already have a perfectl
 
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://community.napframework.com/) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
-Clang targeting OSX 10.14 (macOS)
-MSVC, Platform Toolset v142 (Windows10)
-GCC <= 9.3.0 x86-64 (Ubuntu LTS Linux)		
+MSVC, Platform Toolset v142 on Windows 10
+Clang targeting Catalina/10.15 on macOS
+GCC <= 9.3.0 on Ubuntu LTS 20.04
 ```
 
 # License
