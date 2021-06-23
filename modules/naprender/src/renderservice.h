@@ -553,6 +553,18 @@ namespace nap
 		bool getWideLinesSupported() const											{ return mWideLinesSupported; }
 
 		/**
+		 * Returns if point and wire-frame rasterization fill modes are supported.
+		 * @return if point and wire-frame rasterization fill modes are supported
+		 */
+		bool getNonSolidFillSupported() const										{ return mNonSolidFillModeSupported; }
+
+		/**
+		 * Checks if the selected polygon mode is supported by current selected device.
+		 * @param mode the mode to check.
+		 */
+		bool getPolygonModeSupported(EPolygonMode mode)								{ return mode == EPolygonMode::Fill || mNonSolidFillModeSupported; }
+
+		/**
 		 * Returns if rendering large points is supported.
 		 * @return if rendering large points is supported.
 		 */
@@ -885,6 +897,7 @@ namespace nap
 		bool									mAnisotropicFilteringSupported = false;
 		bool									mWideLinesSupported = false;
 		bool									mLargePointsSupported = false;
+		bool									mNonSolidFillModeSupported = false;
 		uint32									mAnisotropicSamples = 1;
 		WindowList								mWindows;												
 		SceneService*							mSceneService = nullptr;								

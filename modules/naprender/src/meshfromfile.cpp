@@ -30,9 +30,8 @@ namespace nap
 	{
 		// Load our mesh
 		nap::Logger::info("loading mesh: %s", mPath.c_str());
-
 		std::unique_ptr<MeshInstance> mesh_instance = loadMesh(*mRenderService, mPath, errorState);
-		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
+ 		if (!errorState.check(mesh_instance != nullptr, "Unable to load mesh %s for resource %d", mPath.c_str(), mID.c_str()))
 			return false;
 
 		// Set the usage and cull mode for the mesh

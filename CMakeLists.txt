@@ -131,6 +131,10 @@ add_subdirectory(test/render)
 # app targets, add your own app targets here!
 add_subdirectory(apps/example)
 add_subdirectory(apps/example/module)
+add_subdirectory(apps/elbphil)
+add_subdirectory(apps/elbphil/module)
+add_subdirectory(apps/shylight)
+add_subdirectory(apps/shylight/module)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets

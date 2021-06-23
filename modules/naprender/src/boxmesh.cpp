@@ -124,13 +124,8 @@ namespace nap
 
 	bool BoxMesh::init(utility::ErrorState& errorState)
 	{
-		// Setup box
 		setup();
-
-		// Initialize mesh
-		if (!mMeshInstance->init(errorState))
-			return false;
-		return true;
+		return mMeshInstance->init(errorState);
 	}
 
 
@@ -177,8 +172,8 @@ namespace nap
 		mesh.setNumVertices((int)boxVertCount);
 		mesh.setDrawMode(EDrawMode::Triangles);
 		mesh.setCullMode(mCullMode);
-		mesh.setPolygonMode(mPolygonMode);
 		mesh.setUsage(mUsage);
+		mesh.setPolygonMode(mPolygonMode);
 
 		// Create vertex data based on scale factor
 		std::vector<glm::vec3> vertex_data(boxVertCount);

@@ -104,7 +104,6 @@ namespace nap
 		flags = mGenerateNormals ? flags | aiProcess_GenSmoothNormals : flags;
 		flags = mCalculateTangents ? flags | aiProcess_CalcTangentSpace : flags;
 
-
 		// Load file using flags
 		importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, (int)mSmoothingAngle);
 		const aiScene* ai_scene = importer.ReadFile(mPath, flags);

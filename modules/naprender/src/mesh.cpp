@@ -248,4 +248,14 @@ namespace nap
 		mIndices.resize(cur_num_indices + numIndices);
 		std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32));
 	}
+
+
+	void nap::MeshInstance::setPolygonMode(EPolygonMode mode)
+	{
+		// TODO: How to properly handle unsupported polygon modes?
+		// Do we require support for non fill polygon types on service startup?
+		// Do we revert to fill when not available? This is a tricky one.
+		NAP_ASSERT_MSG(mRenderService.getPolygonModeSupported(mode), "Selected polygon mode is not supported");
+		mProperties.mPolygonMode = mode;
+	}
 }

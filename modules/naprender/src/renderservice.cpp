@@ -617,6 +617,7 @@ namespace nap
 		device_features.samplerAnisotropy = physicalDevice.getFeatures().samplerAnisotropy;
 		device_features.largePoints = physicalDevice.getFeatures().largePoints;
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
+		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
 
 		// Device creation information	
 		VkDeviceCreateInfo create_info = { };
@@ -1324,6 +1325,8 @@ namespace nap
 		nap::Logger::info("Wide lines: %s", mWideLinesSupported ? "Supported" : "Not Supported");
 		mLargePointsSupported = mPhysicalDevice.getFeatures().largePoints > 0;
 		nap::Logger::info("Large points: %s", mLargePointsSupported ? "Supported" : "Not Supported");
+		mNonSolidFillModeSupported = mPhysicalDevice.getFeatures().fillModeNonSolid > 0;
+		nap::Logger::info("Non solid fill mode: %s", mNonSolidFillModeSupported ? "Supported" : "Not Supported");
 
 		// Get extensions that are required for NAP render engine to function.
 		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();

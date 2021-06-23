@@ -34,8 +34,11 @@ namespace nap
 
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
+		// Setup plane
 		if (!setup(errorState))
 			return false;
+
+		// Initialize instance
 		return mMeshInstance->init(errorState);
 	}
 

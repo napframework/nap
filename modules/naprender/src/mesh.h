@@ -150,7 +150,7 @@ namespace nap
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
-		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use
+		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be default
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -169,7 +169,7 @@ namespace nap
 	 * A MeshInstance can be created in two ways:
 	 *		1) Manually allocate a MeshInstance object, add attributes to it, and call the regular init() on it. 
 	 *		   This is useful for creation of procedural meshes.
-	 *
+	 * 
 	 *      2) Initialize a MeshInstance object through the init() function that takes an RTTIMeshProperties struct.
 	 *         This is intended for situations where the MeshInstance is created from an RTTI based object (either 
 	 *         rtti-json or rtti-binary).
@@ -295,10 +295,11 @@ namespace nap
 		ECullMode getCullMode() const											{ return mProperties.mCullMode; }
 
 		/**
-		 * Sets the polygon mode of this mesh (fill, line, point)
+		 * Sets the polygon mode of this mesh (fill, line, point). Asserts if
+		 * the requested mode is not supported! Fill (default) is always supported.
 		 * @param mode the polygon mode to use
 		 */
-		void setPolygonMode(EPolygonMode mode)									{ mProperties.mPolygonMode = mode; }
+		void setPolygonMode(EPolygonMode mode);
 
 		/**
 		 * @return the polygon mode of this mesh
