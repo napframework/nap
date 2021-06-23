@@ -184,6 +184,28 @@ namespace nap
 
 
 	/**
+	 * @return Vulkan polygon mode based on given NAP Polygon mode
+	 */
+	static VkPolygonMode getPolygonMode(EPolygonMode mode)
+	{
+		switch (mode)
+		{
+		case EPolygonMode::Fill:
+			return VK_POLYGON_MODE_FILL;
+		case EPolygonMode::Line:
+			return VK_POLYGON_MODE_LINE;
+		case EPolygonMode::Point:
+			return VK_POLYGON_MODE_POINT;
+		default:
+		{
+			assert(false);
+			return VK_POLYGON_MODE_FILL;
+		}
+		}
+	}
+
+
+	/**
 	 * @return device type name
 	 */
 	static std::string getDeviceTypeName(VkPhysicalDeviceType type)
@@ -784,7 +806,8 @@ namespace nap
 		VkRenderPass renderPass, 
 		VkSampleCountFlagBits sampleCount, 
 		bool enableSampleShading,
-		ECullMode cullMode, 
+		ECullMode cullMode,
+		EPolygonMode polygonMode,
 		VkPipelineLayout& pipelineLayout, 
 		VkPipeline& graphicsPipeline, 
 		utility::ErrorState& errorState)
@@ -858,7 +881,7 @@ namespace nap
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
-		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+		rasterizer.polygonMode = getPolygonMode(polygonMode);
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = getCullMode(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
@@ -992,9 +1015,12 @@ namespace nap
 
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
 		ECullMode cull_mode = mesh.getMeshInstance().getCullMode();
-		
+		EPolygonMode poly_mode = mesh.getMeshInstance().getPolygonMode();
+
 		// Create pipeline key based on draw properties
-		PipelineKey pipeline_key(shader, draw_mode, 
+		PipelineKey pipeline_key (
+			shader,
+			draw_mode, 
 			materialInstance.getDepthMode(), 
 			materialInstance.getBlendMode(), 
 			renderTarget.getWindingOrder(), 
@@ -1002,7 +1028,9 @@ namespace nap
 			renderTarget.getDepthFormat(), 
 			renderTarget.getSampleCount(), 
 			renderTarget.getSampleShadingEnabled(),
-			cull_mode);
+			cull_mode,
+			poly_mode
+		);
 
 		// Find key in cache and use previously created pipeline
 		PipelineCache::iterator pos = mPipelineCache.find(pipeline_key);
@@ -1018,6 +1046,7 @@ namespace nap
 			renderTarget.getSampleCount(),
 			renderTarget.getSampleShadingEnabled(),
 			cull_mode,
+			poly_mode,
 			pipeline.mLayout, pipeline.mPipeline, errorState))
 		{
 			mPipelineCache.emplace(std::make_pair(pipeline_key, pipeline));

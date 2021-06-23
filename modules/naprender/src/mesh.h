@@ -49,6 +49,17 @@ namespace nap
 	};
 
 
+	/**
+	 * Polygon modes
+	 */
+	enum class EPolygonMode : int32
+	{
+		Fill			= 0,				///< Polygons are interpreted and rendered using the specified 'EDrawMode'
+		Line			= 1,				///< Polygon edges are drawn as line segments.
+		Point			= 2					///< polygon vertices are drawn as points.
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// MeshShape
 	//////////////////////////////////////////////////////////////////////////
@@ -139,6 +150,7 @@ namespace nap
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
+		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -273,7 +285,7 @@ namespace nap
 		EDrawMode getDrawMode() const											{ return mProperties.mDrawMode; }
 
 		/**
-		 * @return set the cull mode of this mesh (front, back etc.)
+		 * @param mode the cull mode of this mesh (front, back etc.)
 		 */
 		void setCullMode(ECullMode mode)										{ mProperties.mCullMode = mode; }
 
@@ -281,6 +293,17 @@ namespace nap
 		 * @return the cull mode of this mesh (front, back etc.)
 		 */
 		ECullMode getCullMode() const											{ return mProperties.mCullMode; }
+
+		/**
+		 * Sets the polygon mode of this mesh (fill, line, point)
+		 * @param mode the polygon mode to use
+		 */
+		void setPolygonMode(EPolygonMode mode)									{ mProperties.mPolygonMode = mode; }
+
+		/**
+		 * @return the polygon mode of this mesh
+		 */
+		EPolygonMode getPolygonMode() const										{ return mProperties.mPolygonMode; }							
 
 		/**
 		 * Get the shape at the specified index

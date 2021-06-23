@@ -14,11 +14,12 @@
 // nap::boxmesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",		&nap::BoxMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",	&nap::BoxMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",		&nap::BoxMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",	&nap::BoxMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",		&nap::BoxMesh::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::BoxMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",		&nap::BoxMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PolygonMode",	&nap::BoxMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",			&nap::BoxMesh::mSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Position",		&nap::BoxMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",			&nap::BoxMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -176,6 +177,7 @@ namespace nap
 		mesh.setNumVertices((int)boxVertCount);
 		mesh.setDrawMode(EDrawMode::Triangles);
 		mesh.setCullMode(mCullMode);
+		mesh.setPolygonMode(mPolygonMode);
 		mesh.setUsage(mUsage);
 
 		// Create vertex data based on scale factor
