@@ -64,14 +64,15 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Enable responding to input for this controller, and set translate and lookat.
+		 * Enable responding to input for this controller. Set translate and look-at position.
 		 * @param cameraPos Worldspace camera position to set.
 		 * @param lookAtPos Worldspace position to target.
 		 */
 		void enable(const glm::vec3& cameraPos, const glm::vec3& lookAtPos);
 
 		/**
-		 * Enable responding to input for this controller.
+		 * Enable this controller using the given look-at position.
+		 * @param lookAtPos position to look at.
 		 */
 		void enable(const glm::vec3& lookAtPos);
 
