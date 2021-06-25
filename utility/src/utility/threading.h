@@ -32,7 +32,7 @@ namespace nap
         /**
          * Add a task to the end of the queue.
          */
-        void enqueue(Task task) { mQueue.enqueue(task); }
+        bool enqueue(Task task) { return mQueue.enqueue(task); }
         
         /**
          * If the queue is empty, this function blocks until tasks are enqueued and executes them.
