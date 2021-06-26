@@ -134,8 +134,12 @@ namespace nap
     void ThreadPool::addThread()
     {
         mThreads.emplace_back([&](){
+			TaskQueue::Task dequeuedTask;
             while (!mStop)
-                mTaskQueue.processBlocking();
+			{
+				mTaskQueue.wait_dequeue(dequeuedTask);
+				dequeuedTask();
+			}
         });
         auto& thread = mThreads.back();
         
