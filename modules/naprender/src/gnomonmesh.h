@@ -32,7 +32,7 @@ namespace nap
 		/**
 		 * @return the mesh instance
 		 */
-		virtual MeshInstance& getMeshInstance()							{ return *mMeshInstance; }
+		virtual MeshInstance& getMeshInstance()	override				{ return *mMeshInstance; }
 
 		/**
 		 * @return the mesh instance
