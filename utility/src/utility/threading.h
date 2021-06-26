@@ -5,6 +5,7 @@
 #pragma once
 
 // Local Includes
+#include "readerwriterqueue.h"
 #include "blockingconcurrentqueue.h"
 
 // External Includes
@@ -46,7 +47,7 @@ namespace nap
         void process();
         
     private:
-        moodycamel::BlockingConcurrentQueue<Task> mQueue;
+        moodycamel::BlockingReaderWriterQueue<Task> mQueue;
         std::vector<Task> mDequeuedTasks;
     };
     
@@ -146,7 +147,7 @@ namespace nap
         
         std::vector<std::thread> mThreads;
         std::atomic<bool> mStop;
-        TaskQueue mTaskQueue;
+        moodycamel::BlockingConcurrentQueue<TaskQueue::Task> mTaskQueue;
         bool mRealTimePriority = false;
     };
 }

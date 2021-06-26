@@ -11,7 +11,7 @@
 
 // Nap includes
 #include <utility/dllexport.h>
-#include <concurrentqueue.h>
+#include <readerwriterqueue.h>
 
 namespace nap
 {
@@ -99,7 +99,7 @@ namespace nap
 			void clear();
 		
 		private:
-			moodycamel::ConcurrentQueue<std::unique_ptr<SafeOwnerBase::Data>> mQueue; // Lockfree queue that holds SafeOwner::Data objects to be deleted because the enclosing SafeOwner went out of scope.
+			moodycamel::ReaderWriterQueue<std::unique_ptr<SafeOwnerBase::Data>> mQueue; // Lockfree queue that holds SafeOwner::Data objects to be deleted because the enclosing SafeOwner went out of scope.
 		};
 		
 		
