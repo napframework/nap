@@ -95,6 +95,14 @@ namespace nap
 	using HighResolutionTimer = Timer<HighResolutionClock>;
 
 
+	/**
+	 * Keeps track of time from the moment the timer is started.
+	 * This timer uses the chrono SteadyClock.
+	 * This clock cannot move back in time and the time in between ticks is guaranteed to be constant.
+	 */
+	 using SteadyTimer = Timer<SteadyClock>;
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////

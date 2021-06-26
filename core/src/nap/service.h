@@ -30,7 +30,7 @@ namespace nap
 		/**
 		 *	@return The Service type associated with this configuration.
 		 */
-		virtual rtti::TypeInfo getServiceType() = 0;
+		virtual rtti::TypeInfo getServiceType() const = 0;
 	};
 
 

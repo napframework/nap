@@ -8,6 +8,7 @@
 #include "thememanager.h"
 #include "document.h"
 #include "resourcefactory.h"
+#include "serviceconfig.h"
 
 #include <vector>
 #include <QApplication>
@@ -191,25 +192,43 @@ namespace napkin
 		bool hasDocument() const;
 
 		/**
+		 * If there's a service configuration, only available when project is loaded.
+		 * @return if there's a service configuration.
+		 */
+		bool hasServiceConfig() const;
+
+		/**
+		 * Get the current service configuration object, nullptr if no project is loaded
+		 * @return the service configuration object, nullptr if no project is loaded
+		 */
+		const ServiceConfig* getServiceConfig() const;
+
+		/**
+		 * Get the current service configuration object, nullptr if no project is loaded
+		 * @return the service configuration object, nullptr if no project is loaded
+		 */
+		ServiceConfig* getServiceConfig();
+
+		/**
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */
-		QApplication* getQApplication() const { return dynamic_cast<QApplication*>(qGuiApp); }
+		QApplication* getQApplication() const;
 
 		/**
 		 * @return The currently used undostack, @see QUndoStack
 		 */
-		QUndoStack& getUndoStack() { return getDocument()->getUndoStack(); }
+		QUndoStack& getUndoStack();
 
 		/**
 		 * @return Access to the current application's ThemeManage
 		 */
-		ThemeManager& getThemeManager() { return mThemeManager; }
+		ThemeManager& getThemeManager();
 
 		/**
 		 * @param command THe command to be executed on the current document
 		 */
-		void executeCommand(QUndoCommand* cmd) { getDocument()->executeCommand(cmd); }
+		void executeCommand(QUndoCommand* cmd);
 
 		/**
 		 * To be invoked after the application has shown
@@ -372,14 +391,24 @@ namespace napkin
 
 		/**
 		 * Emits when an application-wide blocking operation started, progresses or finishes
-		 * @param fraction How far we are along the process.
-		 * 		           A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
+		 * @param fraction How far we are along the process. A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
 		 * @param message A short message describing what's happening.
 		 */
 		void blockingProgressChanged(float fraction, const QString& message = {});
 
-	private:
+		/**
+		 * Qt Signal
+		 * Emits this signal when service configuration file changed
+		 */
+		void serviceConfigurationChanged();
 
+		/**
+		 * Qt Signal
+		 * Emits this signal when service configuration file is about to change
+		 */
+		void serviceConfigurationClosing(QString file);
+
+	private:
 		/**
 		 * Whenever a new document is created/loaded, register its signals for listeners
 		 */
@@ -395,17 +424,26 @@ namespace napkin
 		 */
 		void closeDocument();
 
+		/**
+		 * Closes currently active configuration if there is one
+		 */
+		void closeServiceConfiguration();
+
 		// Slot to relay nap log messages into a Qt Signal (for thread safety)
 		nap::Slot<nap::LogMessage> mLogHandler = { this, &AppContext::logMessage };
 
-		nap::Core mCore;										// The nap::Core
-		ThemeManager mThemeManager;			 					// The theme manager
-		ResourceFactory mResourceFactory;						// Le resource factory
-		std::unique_ptr<Document> mDocument = nullptr; 			// Keep objects here
-		QString mCurrentFilename;								// The currently opened file
-		bool mExitOnLoadFailure = false;						// Whether to exit on any project load failure
-		bool mExitOnLoadSuccess = false;						// Whether to exit on any project load success
-		bool mOpenRecentProjectAtStartup = true;				// Whether to load recent project at startup
+		nap::Core mCore;															// The nap::Core
+		ThemeManager mThemeManager;			 										// The theme manager
+		ResourceFactory mResourceFactory;											// Le resource factory
+		bool mExitOnLoadFailure = false;											// Whether to exit on any project load failure
+		bool mExitOnLoadSuccess = false;											// Whether to exit on any project load success
+		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
+
+		QString mCurrentFilename;													// The currently opened file
+		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
+
+		std::unique_ptr<ServiceConfig> mServiceConfig = nullptr;					// Service configuration
+		std::vector<std::unique_ptr<nap::ServiceConfiguration>> mServiceConfigs;	// Current loaded service configuration
 	};
 
 };

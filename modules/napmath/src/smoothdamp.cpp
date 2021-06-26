@@ -11,6 +11,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::math::FloatSmoothOperator)
 	RTTI_CONSTRUCTOR(const float&, float, float)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::math::DoubleSmoothOperator)
+	RTTI_CONSTRUCTOR(const double&, float)
+	RTTI_CONSTRUCTOR(const double&, float, float)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::math::Vec2SmoothOperator)
 	RTTI_CONSTRUCTOR(const glm::vec2&, float)
 	RTTI_CONSTRUCTOR(const glm::vec2&, float, float)
@@ -35,6 +40,13 @@ namespace nap
 		{
 			mVelocity = 0.0f;
 			mTarget = 0.0f;
+		}
+
+		template<>
+		void SmoothOperator<double>::init()
+		{
+			mVelocity = 0.0;
+			mTarget = 0.0;
 		}
 
 		template<>
@@ -64,6 +76,13 @@ namespace nap
 		{
 			mValue = value;
 			mVelocity = 0.0f;
+		}
+
+		template<>
+		void SmoothOperator<double>::setValue(const double& value)
+		{
+			mValue = value;
+			mVelocity = 0.0;
 		}
 
 		template<>

@@ -46,13 +46,20 @@ elseif(APPLE)
                                           -add_rpath 
                                           @executable_path/lib
                                           ${CMAKE_INSTALL_PREFIX}/napkin/napkin
-                                  ERROR_QUIET)")
+                                  ERROR_QUIET
+                                  RESULT_VARIABLE EXIT_CODE)
+                  if(NOT \${EXIT_CODE} EQUAL 0)
+                      message(FATAL_ERROR \"Failed to add RPATH for napkin\")
+                  endif()")
     install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                           -add_rpath 
                                           @executable_path/../lib
                                           ${CMAKE_INSTALL_PREFIX}/napkin/napkin
-                                  ERROR_QUIET)")
-
+                                  ERROR_QUIET
+                                  RESULT_VARIABLE EXIT_CODE)
+                  if(NOT \${EXIT_CODE} EQUAL 0)
+                      message(FATAL_ERROR \"Failed to add parent lib RPATH for napkin\")
+                  endif()")
 
     # Update paths to Qt frameworks in libqcocoa plugin
     macos_replace_qt_framework_links_install_time("${NAPKIN_QT_INSTALL_FRAMEWORKS}" 
@@ -88,7 +95,11 @@ else()
                                           --set-rpath
                                           \$ORIGIN/../lib
                                           ${CMAKE_INSTALL_PREFIX}/napkin/platforms/libqxcb.so
-                                  ERROR_QUIET)")   
+                                  ERROR_QUIET
+                                  RESULT_VARIABLE EXIT_CODE)
+                  if(NOT \${EXIT_CODE} EQUAL 0)
+                      message(FATAL_ERROR \"Failed to fetch RPATH on libqxcb.so using patchelf\")
+                  endif()")
 
     linux_append_rpath_at_install_time(${CMAKE_INSTALL_PREFIX}/napkin/napkin "\$ORIGIN/../lib/")
 

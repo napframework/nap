@@ -11,7 +11,7 @@ namespace nap
 		{
 			// create sequence track
 			std::unique_ptr<SequenceTrackCurve<T>> sequence_track = std::make_unique<SequenceTrackCurve<T>>();
-			sequence_track->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs() );
+			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs() );
 
 			//
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackCurve<T>>(sequence_track.get()));
@@ -72,7 +72,9 @@ namespace nap
 							for (int i = 0; i < curve_count; i++)
 							{
 								std::unique_ptr<math::FCurve<float, float>> segment_curve = std::make_unique<math::FCurve<float, float>>();
-								segment_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+								segment_curve->mPoints[1].mInTan.mTime = -0.4f;
+								segment_curve->mPoints[1].mOutTan.mTime = 0.4f;
+								segment_curve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 								// assign curve
 								new_segment->mCurves[i] = nap::ResourcePtr<math::FCurve<float, float>>(segment_curve.get());
@@ -84,7 +86,7 @@ namespace nap
 							}
 
 							//
-							SequenceTrackSegmentCurve<T>& segment_curve_2 = static_cast<SequenceTrackSegmentCurve<T>&>(*segment.get());
+							auto& segment_curve_2 = *static_cast<SequenceTrackSegmentCurve<T>*>(segment.get());
 
 							// set the value by evaluation curve
 							new_segment->setStartValue(segment_curve_2.getValue(
@@ -95,7 +97,7 @@ namespace nap
 							if (segment_count < track->mSegments.size())
 							{
 								// if there is a next segment, the new segments end value is the start value of the next segment ...
-								SequenceTrackSegmentCurve<T>& next_segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track->mSegments[segment_count].get());
+								auto& next_segment_curve = *static_cast<SequenceTrackSegmentCurve<T>*>(track->mSegments[segment_count].get());
 
 								new_segment->setEndValue(next_segment_curve.getEndValue());
 							}
@@ -112,7 +114,7 @@ namespace nap
 							segment->mDuration = new_segment->mStartTime - segment->mStartTime;
 
 							// generate unique id
-							new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 							// wrap it in a resource ptr and insert it into the track
 							ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
@@ -133,8 +135,7 @@ namespace nap
 							// insert segment at the end of the list
 
 							// create new segment & set parameters
-							std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment =
-																			  std::make_unique<SequenceTrackSegmentCurve<T>>();
+							std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
 							new_segment->mStartTime = segment->mStartTime + segment->mDuration;
 							new_segment->mDuration = time - new_segment->mStartTime;
 							new_segment->mCurves.resize(curve_count);
@@ -142,14 +143,16 @@ namespace nap
 							for (int v = 0; v < curve_count; v++)
 							{
 								std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
-								new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+								new_curve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
+								new_curve->mPoints[1].mInTan.mTime = -0.4f;
+								new_curve->mPoints[1].mOutTan.mTime = 0.4f;
 								new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
 								new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
 								getPlayerOwnedObjects().emplace_back(std::move(new_curve));
 							}
 
 							// generate unique id
-							new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 							// wrap it in a resource ptr and insert it into the track
 							ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
@@ -170,7 +173,7 @@ namespace nap
 					}
 
 					//
-					if (track->mSegments.size() == 0)
+					if (track->mSegments.empty())
 					{
 						// create new segment & set parameters
 						std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
@@ -183,14 +186,16 @@ namespace nap
 						for (int v = 0; v < curve_count; v++)
 						{
 							std::unique_ptr<math::FCurve<float, float>> new_curve = std::make_unique<math::FCurve<float, float>>();
-							new_curve->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+							new_curve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
+							new_curve->mPoints[1].mInTan.mTime = -0.4f;
+							new_curve->mPoints[1].mOutTan.mTime = 0.4f;
 							new_segment->mCurves[v] = ResourcePtr<math::FCurve<float, float>>(new_curve.get());
 							new_segment->mCurveTypes[v] = math::ECurveInterp::Bezier;
 							getPlayerOwnedObjects().emplace_back(std::move(new_curve));
 						}
 
 						// generate unique id
-						new_segment->mID = sequenceutils::generateUniqueID(getPlayerReadObjectIDs());
+						new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
 						// wrap it in a resource ptr and insert it into the track
 						ResourcePtr<SequenceTrackSegment> new_segment_resource_ptr(new_segment.get());
@@ -220,18 +225,14 @@ namespace nap
 	template<typename T>
 	void SequenceControllerCurve::changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex)
 	{
-		auto* segment_curve = dynamic_cast<SequenceTrackSegmentCurve<T>*>(&segment);
-		assert(segment_curve != nullptr); // type mismatch
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
+		assert(curve_segment.mCurveTypes.size() > curveIndex); // curveIndex invalid
 
-		if (segment_curve != nullptr)
+		curve_segment.mCurveTypes[curveIndex] = type;
+		for (int j = 0; j < curve_segment.mCurves[curveIndex]->mPoints.size(); j++)
 		{
-			assert(segment_curve->mCurveTypes.size() > curveIndex); // curveIndex invalid
-
-			segment_curve->mCurveTypes[curveIndex] = type;
-			for (int j = 0; j < segment_curve->mCurves[curveIndex]->mPoints.size(); j++)
-			{
-				segment_curve->mCurves[curveIndex]->mPoints[j].mInterp = type;
-			}
+			curve_segment.mCurves[curveIndex]->mPoints[j].mInterp = type;
 		}
 	}
 
@@ -241,7 +242,7 @@ namespace nap
 														  SequenceCurveEnums::SegmentValueTypes valueType)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		SequenceTrackSegmentCurve<T>& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 
 		switch (valueType)
 		{
@@ -324,7 +325,7 @@ namespace nap
 	{
 		// obtain curve segment
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
@@ -343,7 +344,7 @@ namespace nap
 
 		// obtain curve segment
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 
 		//
@@ -359,46 +360,57 @@ namespace nap
 
 
 	template <typename  T>
-	void SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::TanPointTypes tanType, float time, float value)
+	bool SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
-		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);;
+		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 		assert(curveIndex < curve_segment.mCurves.size()); // invalid curve index
 		assert(pointIndex < curve_segment.mCurves[curveIndex]->mPoints.size()); // invalid point index
 
-		//
+		// if tangents are flipped, set this to true
+		bool flipped = false;
+
+		// get reference to curve point
 		auto& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
 		switch (tanType)
 		{
-		case SequenceCurveEnums::TanPointTypes::IN:
+		case SequenceCurveEnums::ETanPointTypes::IN:
 		{
-			if (time < curve_point.mOutTan.mTime)
+			// if we have aligned tangents, check if IN and OUT can be flipped
+			if( curve_point.mTangentsAligned && time > 0.0f )
 			{
-				curve_point.mInTan.mTime = time;
-				curve_point.mInTan.mValue = value;
+				time = -time;
+				value = -value;
+				flipped = true;
+			}
 
-				if (curve_point.mTangentsAligned)
-				{
-					curve_point.mOutTan.mTime = -curve_point.mInTan.mTime;
-					curve_point.mOutTan.mValue = -curve_point.mInTan.mValue;
-				}
+			curve_point.mInTan.mTime = time;
+			curve_point.mInTan.mValue = value;
+
+			if (curve_point.mTangentsAligned)
+			{
+				curve_point.mOutTan.mTime = -curve_point.mInTan.mTime;
+				curve_point.mOutTan.mValue = -curve_point.mInTan.mValue;
 			}
 		}
 			break;
-		case SequenceCurveEnums::TanPointTypes::OUT:
+		case SequenceCurveEnums::ETanPointTypes::OUT:
 		{
-			if (time > curve_point.mInTan.mTime)
+			if( curve_point.mTangentsAligned && time < 0.0f )
 			{
-				curve_point.mOutTan.mTime = time;
-				curve_point.mOutTan.mValue = value;
-
-				if (curve_point.mTangentsAligned)
-				{
-					curve_point.mInTan.mTime = -curve_point.mOutTan.mTime;
-					curve_point.mInTan.mValue = -curve_point.mOutTan.mValue;
-				}
+				time = -time;
+				value = -value;
+				flipped = true;
 			}
 
+			curve_point.mOutTan.mTime = time;
+			curve_point.mOutTan.mValue = value;
+
+			if (curve_point.mTangentsAligned)
+			{
+				curve_point.mInTan.mTime = -curve_point.mOutTan.mTime;
+				curve_point.mInTan.mValue = -curve_point.mOutTan.mValue;
+			}
 		}
 			break;
 		}
@@ -421,12 +433,13 @@ namespace nap
 					next_segment_curve_point.mInTan.mValue = curve_point.mInTan.mValue;
 					next_segment_curve_point.mOutTan.mTime = curve_point.mOutTan.mTime;
 					next_segment_curve_point.mOutTan.mValue = curve_point.mOutTan.mValue;
-
 				}
 			}
 		}
 
 		curve_segment.mCurves[curveIndex]->invalidate();
+
+		return flipped;
 	}
 
 
@@ -455,10 +468,7 @@ namespace nap
 		{
 			auto& segment_curve = static_cast<SequenceTrackSegmentCurve<T>&>(*track_segment.get());
 
-			if (prev_segment == nullptr)
-			{
-			}
-			else
+			if (prev_segment != nullptr)
 			{
 				// if we have a previous segment, the curve gets the value of the start value of the current segment
 				segment_curve.setStartValue(prev_segment->getEndValue());

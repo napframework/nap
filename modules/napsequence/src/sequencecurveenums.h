@@ -8,7 +8,7 @@ namespace nap
 {
 	namespace SequenceCurveEnums
 	{
-		enum TanPointTypes
+		enum ETanPointTypes
 		{
 			IN,
 			OUT

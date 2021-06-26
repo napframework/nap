@@ -10,6 +10,7 @@
 // External Includes
 #include <texture2d.h>
 #include <utility/dllexport.h>
+#include <rtti/typeinfo.h>
 
 /**
  * This file contains NAP overrides for popular IMGui functions
@@ -35,4 +36,22 @@ namespace ImGui
 	 * @return the ImTextureID
 	 */
 	ImTextureID IMGUI_API GetTextureHandle(nap::Texture2D& texture);
+
+	/**
+	 * Displays all members of an rtti defined enumeration type inside a combo box.
+	 * Call asserts if the provided type is not an enumeration object.
+	 *  
+	 * ~~~~~{.cpp}
+	 *	if(ImGui::Combo("Type Selection", &item, RTTI_OF(nap::ETweenEasing));
+	 *	{
+	 *		...
+	 *	}
+	 * ~~~~~
+	 *
+	 * @param label name of the combo box
+	 * @param current_item current selected item
+	 * @param enum_type the enum type to display
+	 * @return if selection changed
+	 */
+	bool IMGUI_API Combo(const char* label, int* current_item, nap::rtti::TypeInfo enum_type);
 }

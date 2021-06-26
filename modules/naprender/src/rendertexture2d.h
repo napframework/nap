@@ -7,6 +7,7 @@
 // External Includes
 #include "texture2d.h"
 #include "irendertarget.h"
+#include <color.h>
 
 namespace nap
 {
@@ -18,7 +19,7 @@ namespace nap
 	 * You can use this texture to store the result of a render pass by a nap::RenderTarget.
 	 * When usage is 'Static' and 'Fill' is turned off the texture on the GPU is in an undefined state until being rendered to.
 	 * This is ok when using the texture as a render target, before the texture is read somewhere else.
-	 * All other usage modes initialize the texture to black.
+	 * All other usage modes initialize the texture to the specified clear color.
 	 */
 	class NAPAPI RenderTexture2D : public Texture2D
 	{
@@ -30,6 +31,7 @@ namespace nap
 		enum class EFormat
 		{
 			RGBA8,			///< 08 bit unsigned, 4 components
+			BGRA8,			///< 08 bit unsigned, 4 components
 			R8,				///< 08 bit unsigned, 1 component
 			RGBA16,			///< 16 bit unsigned, 4 components
 			R16,			///< 16 bit unsigned, 1 component
@@ -37,7 +39,7 @@ namespace nap
 			R32				///< 32 bit float, 1 component
 		};
 
-		RenderTexture2D(Core& renderService);
+		RenderTexture2D(Core& core);
 
 		/**
 		 * Creates the texture on the GPU.
@@ -50,6 +52,7 @@ namespace nap
 		int					mHeight		= 0;								///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace	= EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mFormat		= EFormat::RGBA8;					///< Property: 'Format' texture format
+		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
 		bool				mFill		= false;							///< Property: 'Fill' if the texture is initialized to black when usage is static
 	};
 }

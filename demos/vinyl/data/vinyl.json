@@ -7,6 +7,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_3",
+                    "Visible": true,
                     "Mesh": "BackgroundPlaneMesh",
                     "MaterialInstance": {
                         "Material": "BackgroundMaterial",
@@ -36,12 +37,14 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "BackgroundImage"
                             }
                         ],
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -144,6 +147,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_2",
+                    "Visible": true,
                     "Mesh": "CoverMesh",
                     "MaterialInstance": {
                         "Material": "CoverMaterial",
@@ -159,12 +163,14 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "CoverImage"
                             }
                         ],
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -253,6 +259,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
+                    "Visible": true,
                     "Mesh": "VinylMesh",
                     "MaterialInstance": {
                         "Material": "VinylMaterial",
@@ -268,6 +275,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "LabelImage"
                             },
                             {
@@ -280,6 +288,7 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "MaskImage"
                             },
                             {
@@ -292,12 +301,14 @@
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
                                 "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
                                 "Texture": "GrooveNormalMap"
                             }
                         ],
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -626,6 +637,14 @@
                 "x": 0.0,
                 "y": 0.0
             },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
             "Rows": 1,
             "Columns": 1
         },
@@ -646,7 +665,8 @@
                 "z": 0.0,
                 "w": 1.0
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -683,6 +703,25 @@
             "mID": "VinylShader",
             "VertShader": "shaders/vinyl/vinyl.vert",
             "FragShader": "shaders/vinyl/vinyl.frag"
+        },
+        {
+            "Type": "nap::Snapshot",
+            "mID": "Snapshot",
+            "Width": 1920,
+            "Height": 1080,
+            "MaxCellWidth": 1920,
+            "MaxCellHeight": 1080,
+            "OutputDirectory": "snapshots",
+            "ImageFileFormat": "PNG",
+            "TextureFormat": "RGBA8",
+            "SampleShading": true,
+            "RequestedSamples": "Four",
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
         }
     ]
 }

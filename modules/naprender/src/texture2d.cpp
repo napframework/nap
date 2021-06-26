@@ -11,6 +11,7 @@
 // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <glm/gtc/type_ptr.hpp>
 
 RTTI_BEGIN_ENUM(nap::ETextureUsage)
 	RTTI_ENUM_VALUE(nap::ETextureUsage::Static,			"Static"),
@@ -303,6 +304,7 @@ namespace nap
 		if (mUsage == ETextureUsage::DynamicRead)
 		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
+			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
@@ -346,27 +348,21 @@ namespace nap
 			}
 		}
 
-		// Set image usage flags
+		// Set image usage flags: can be written and sampled
 		VkImageUsageFlags usage = requiredFlags;
+		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		switch (mUsage)
 		{
 			case ETextureUsage::DynamicRead:
 			{
-				// written, can be sampled, read
-				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+				// can be read
+				usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 				break;
 			}
 			case ETextureUsage::DynamicWrite:
-			{
-				// written, can be sampled, if mip-map enabled, also read
-				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
-				break;
-			}
 			case ETextureUsage::Static:
 			{
-				// written, can be sampled, if mip-map enabled, also read
-				usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+				// can be read if mipmaps are enabled
 				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
 				break;
 			}
@@ -391,12 +387,20 @@ namespace nap
 		mDescriptor = descriptor;
 
 		// Fill the texture with nothing (black)
-		if (clearMode == Texture2D::EClearMode::FillWithZero)
+		if (clearMode == Texture2D::EClearMode::Clear)
 		{
-			std::vector<uint8_t> empty_texture_data;
-			empty_texture_data.resize(mImageSizeInBytes);
-			update(empty_texture_data.data(), descriptor);
+			mRenderService->requestTextureClear(*this);
 		}
+		return true;
+	}
+
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	{
+		if (!init(descriptor, generateMipMaps, clearMode, requiredFlags, errorState))
+			return false;
+
+		memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
 		return true;
 	}
 
@@ -432,6 +436,47 @@ namespace nap
 	const nap::SurfaceDescriptor& Texture2D::getDescriptor() const
 	{
 		return mDescriptor;
+	}
+
+
+	void Texture2D::clear(VkCommandBuffer commandBuffer)
+	{
+		VkAccessFlags srcMask = 0;
+		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
+		{
+			srcMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+
+		// Get image ready for clear, applied to all mipmap layers
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			srcMask, dstMask,
+			srcStage, dstStage,
+			0, mMipLevels);
+
+		VkImageSubresourceRange image_subresource_range = {};
+		image_subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		image_subresource_range.baseMipLevel = 0;
+		image_subresource_range.levelCount = mMipLevels;
+		image_subresource_range.baseArrayLayer = 0;
+		image_subresource_range.layerCount = 1;
+
+		vkCmdClearColorImage(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
+
+		// Transition image layout
+		transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				0, 1);
+
+		// We store the last image layout, which is used as input for a subsequent upload
+		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
 
@@ -499,6 +544,9 @@ namespace nap
 	{
 		assert(mCurrentStagingBufferIndex != -1);
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
+
+		// Store the staging buffer index associated with the download in the current frame for lookup later
+		mDownloadStagingBufferIndices[mRenderService->getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
@@ -556,10 +604,22 @@ namespace nap
  		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
  		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
 		{
- 			bitmap.initFromDescriptor(mDescriptor);
- 			memcpy(bitmap.getData(), data, sizeInBytes);
+			// Check if initialization is necessary
+			if (bitmap.empty() || bitmap.mSurfaceDescriptor != mDescriptor) {
+				bitmap.initFromDescriptor(mDescriptor);
+			}
+			memcpy(bitmap.getData(), data, sizeInBytes);
+			bitmap.mBitmapUpdated();
  		};
- 		mRenderService->requestTextureDownload(*this);	
+		mRenderService->requestTextureDownload(*this);
+	}
+
+
+	void Texture2D::asyncGetData(std::function<void(const void*, size_t)> copyFunction)
+	{
+		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
+		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = copyFunction;
+		mRenderService->requestTextureDownload(*this);
 	}
 
 
@@ -569,7 +629,9 @@ namespace nap
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
 
 		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
-		BufferData& buffer = mStagingBuffers[frameIndex];
+		int downloaded_staging_buffer_index = mDownloadStagingBufferIndices[frameIndex];
+		BufferData& buffer = mStagingBuffers[downloaded_staging_buffer_index];
+
 		void* mapped_memory = nullptr;
 		VkResult result = vmaMapMemory(vulkan_allocator, buffer.mAllocation, &mapped_memory);
 		assert(result == VK_SUCCESS);

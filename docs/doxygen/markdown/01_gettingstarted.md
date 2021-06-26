@@ -260,7 +260,7 @@ To create a distributable package of your application, including:
 
 run: 
 
-`./package` on macOS and Linux, `package.bat` on Windows. Note that on macOS you (might) have to [disable gatekeeper](https://disable-gatekeeper.github.io/) to run the application: NAP application are not signed by default.
+`./package` on macOS and Linux, `package.bat` on Windows. Note that on macOS you (might) have to run the `unquarantine_framework.command` and `Unquarantine Project.command`. The NAP package and NAP applications are not signed by default.
 
 
 

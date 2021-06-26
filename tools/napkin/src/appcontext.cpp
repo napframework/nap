@@ -17,6 +17,7 @@
 // nap
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
+#include <mathutils.h>
 
 // local
 #include <naputils.h>
@@ -37,7 +38,11 @@ AppContext::AppContext()
 
 AppContext::~AppContext()
 {
+	// Close data file
 	closeDocument();
+
+	// Close service configuration
+	closeServiceConfiguration();
 }
 
 
@@ -66,7 +71,7 @@ Document* AppContext::loadDocument(const QString& filename)
 {
 	blockingProgressChanged(0, "Loading: " + filename);
 	mCurrentFilename = filename;
-	nap::Logger::info("Loading '%s'", toLocalURI(filename.toStdString()).c_str());
+	nap::Logger::info("Loading data '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
@@ -75,7 +80,6 @@ Document* AppContext::loadDocument(const QString& filename)
 	if (!QFile::exists(filename))
 	{
 		blockingProgressChanged(1);
-
 		nap::Logger::error("File not found: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
@@ -123,6 +127,8 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
+	// Load service configuration
+	mServiceConfig = std::make_unique<ServiceConfig>(mCore);
 
 	// Signal initialization
 	coreInitialized();
@@ -133,11 +139,14 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::Logger::info("Loaded successfully, exiting as requested");
         exit(EXIT_ON_SUCCESS_EXIT_CODE);
     }
-
 	addRecentlyOpenedProject(projectFilename);
+	
+	// Load document (data file)
 	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
+	{
 		loadDocument(dataFilename);
+	}
 	else
 	{
 		blockingProgressChanged(1);
@@ -146,6 +155,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 			exit(1);
 	}
 
+	// All good
 	blockingProgressChanged(1);
 	return mCore.getProjectInfo();
 }
@@ -222,17 +232,16 @@ Document* AppContext::loadDocumentFromString(const std::string& data, const QStr
 
 bool AppContext::saveDocument()
 {
-	if (getDocument()->getCurrentFilename().isEmpty())
+	if (getDocument()->getFilename().isEmpty())
 	{
 		nap::Logger::fatal("Cannot save file, no filename has been set.");
 		return false;
 	}
-	return saveDocumentAs(getDocument()->getCurrentFilename());
+	return saveDocumentAs(getDocument()->getFilename());
 }
 
 bool AppContext::saveDocumentAs(const QString& filename)
 {
-
 	std::string serialized_document = documentToString();
 	if (serialized_document.empty())
 		return false;
@@ -242,13 +251,11 @@ bool AppContext::saveDocumentAs(const QString& filename)
 	out.close();
 
 	getDocument()->setFilename(filename);
-
-	nap::Logger::info("Written file: " + filename.toStdString());
+	nap::Logger::info("Written '%s'", toLocalURI(filename.toStdString()).c_str());
 
 	documentSaved(filename);
 	getUndoStack().setClean();
 	documentChanged(mDocument.get());
-
 	return true;
 }
 
@@ -437,25 +444,80 @@ bool napkin::AppContext::hasDocument() const
 }
 
 
+bool napkin::AppContext::hasServiceConfig() const
+{
+	return mServiceConfig != nullptr;
+}
+
+
+const napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
+{
+	return mServiceConfig.get();
+}
+
+
+QApplication* napkin::AppContext::getQApplication() const
+{
+	return dynamic_cast<QApplication*>(qGuiApp);
+}
+
+
+QUndoStack& napkin::AppContext::getUndoStack()
+{
+	return getDocument()->getUndoStack();
+}
+
+
+napkin::ThemeManager& napkin::AppContext::getThemeManager()
+{
+	return mThemeManager;
+}
+
+
+void napkin::AppContext::executeCommand(QUndoCommand* cmd)
+{
+	getDocument()->executeCommand(cmd);
+}
+
+
+napkin::ServiceConfig* napkin::AppContext::getServiceConfig()
+{
+	return mServiceConfig.get();
+}
+
+
 void napkin::AppContext::closeDocument()
 {
 	if (mDocument == nullptr)
 		return;
 
-	QString prev_doc_name = mDocument->getCurrentFilename();
-	documentClosing(prev_doc_name);
+	documentClosing(mDocument->getFilename());
 	mDocument.reset(nullptr);
 }
+
+
+void napkin::AppContext::closeServiceConfiguration()
+{
+	// Close configuration
+	if (mServiceConfig != nullptr)
+	{
+		serviceConfigurationClosing(mServiceConfig->getDocument().getFilename());
+		mServiceConfig.reset(nullptr);
+	}
+}
+
 
 void AppContext::setOpenRecentProjectOnStartup(bool b)
 {
 	mOpenRecentProjectAtStartup = b;
 }
 
+
 void AppContext::setExitOnLoadFailure(bool b)
 {
 	mExitOnLoadFailure = b;
 }
+
 
 void AppContext::setExitOnLoadSuccess(bool b)
 {

@@ -31,6 +31,8 @@
 		<file>icons/frame-selection.png</file>
 		<file>icons/icon_close.png</file>
 		<file>icons/icon_restore.png</file>
+		<file>icons/icon_close_nap.png</file>
+		<file>icons/icon_restore_nap.png</file>
 		<file>icons/information.png</file>
 		<file>icons/link.png</file>
 		<file>icons/nap-logo.png</file>
@@ -45,6 +47,10 @@
 		<file>icons/tangents-aligned.png</file>
 		<file>icons/tangents-broken.png</file>
 		<file>icons/tangents-flat.png</file>
+		<file>icons/serviceconfig.png</file>
+		<file>icons/module.png</file>
+		<file>icons/app-play.png</file>
+		<file>icons/app-stop.png</file>
 		<file>fonts/Montserrat-ExtraBold.ttf</file>
 		<file>fonts/Montserrat-Light.ttf</file>
 		<file>fonts/Montserrat-Medium.ttf</file>

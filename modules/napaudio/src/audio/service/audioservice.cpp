@@ -189,9 +189,7 @@ namespace nap
 			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, errorState))
 				return false;
 
-			if (!(openStream(mHostApiIndex, inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount,
-			                 configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize,
-			                 errorState) && start(errorState)))
+			if (!(openStream(mHostApiIndex, inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize, errorState) && start(errorState)))
 			{
 				if (!configuration->mAllowDeviceFailure)
 				{
@@ -486,7 +484,8 @@ namespace nap
 		}
 
 
-		bool AudioService::checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, int& inputChannelCount, int& outputChannelCount, utility::ErrorState& errorState)
+		bool AudioService::checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, int& inputChannelCount,
+		                                      int& outputChannelCount, utility::ErrorState& errorState)
 		{
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
 
@@ -519,7 +518,9 @@ namespace nap
 					// There are less channels than requested
 					if (configuration->mAllowChannelCountFailure)
 					{
-						Logger::warn( "AudioService: Requested number of %i input channels not available, initializing with only %i", configuration->mInputChannelCount, inputDeviceInfo->maxInputChannels);
+						Logger::warn(
+								"AudioService: Requested number of %i input channels not available, initializing with only %i",
+								configuration->mInputChannelCount, inputDeviceInfo->maxInputChannels);
 						inputChannelCount = inputDeviceInfo->maxInputChannels;
 					}
 					else {
@@ -558,7 +559,9 @@ namespace nap
 					// There are less channels than requested
 					if (configuration->mAllowChannelCountFailure)
 					{
-						Logger::warn( "AudioService: Requested number of %i output channels not available, initializing with only %i", configuration->mOutputChannelCount, outputDeviceInfo->maxOutputChannels);
+						Logger::warn(
+								"AudioService: Requested number of %i output channels not available, initializing with only %i",
+								configuration->mOutputChannelCount, outputDeviceInfo->maxOutputChannels);
 						outputChannelCount = outputDeviceInfo->maxOutputChannels;
 					}
 					else {

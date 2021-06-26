@@ -34,7 +34,7 @@
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete,		"Discrete"),
-	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Virtual,		"Integrated"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Virtual,		"Virtual"),
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
 RTTI_END_ENUM
 
@@ -483,7 +483,7 @@ namespace nap
 			int selected_queue_idx = -1;
 			for (uint32 i = 0; i < family_queue_count; i++)
 			{
-				if (queue_properties[i].queueFlags & required_flags)
+				if ((queue_properties[i].queueFlags & required_flags) == required_flags)
 				{
 					// Make sure this family supports presentation to the given surface
 					// If running headless this check is not performed.
@@ -1189,7 +1189,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::FillWithZero, 0, errorState);
+		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::Clear, 0, errorState);
 	}
 
 
@@ -1201,8 +1201,8 @@ namespace nap
 		assert(mSceneService != nullptr);
 
 		// Initialize SDL video
-		mSDLInitialized = SDL::initVideo();
-		if (!errorState.check(mSDLInitialized, "Failed to init SDL"))
+		mSDLInitialized = SDL::initVideo(errorState);
+		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
 			return false;
 
 		// Initialize shader compiler
@@ -1565,6 +1565,10 @@ namespace nap
 		// Transfer data to the GPU, including texture data and general purpose render buffers.
 		transferData(commandBuffer, [commandBuffer, this]()
 		{
+			for (Texture2D* texture : mTexturesToClear)
+				texture->clear(commandBuffer);
+			mTexturesToClear.clear();
+
 			for (Texture2D* texture : mTexturesToUpload)
 				texture->upload(commandBuffer);
 			mTexturesToUpload.clear();
@@ -1635,7 +1639,7 @@ namespace nap
 		// fence has been signaled, we can be assured that all resources for the entire frame, including resources used 
 		// by other VkQueueSubmits, are free to use.
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
-
+		
 		// We call updateTextureDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
 		// status which could still not be signaled at that point, causing the notify not to be called. If we then wait for
 		// the fence anyway, we missed the opportunity to notify textures that downloads were ready. Because we reset the fence
@@ -1778,6 +1782,7 @@ namespace nap
 	void RenderService::removeTextureRequests(Texture2D& texture)
 	{
 		// When textures are destroyed, we also need to remove any pending texture requests
+		mTexturesToClear.erase(&texture);
 		mTexturesToUpload.erase(&texture);
 
 		for (Frame& frame : mFramesInFlight)
@@ -1790,6 +1795,12 @@ namespace nap
 	}
 
 
+	void RenderService::requestTextureClear(Texture2D& texture)
+	{
+		mTexturesToClear.insert(&texture);
+	}
+
+
 	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
 		mTexturesToUpload.insert(&texture);
@@ -1799,7 +1810,7 @@ namespace nap
 	void RenderService::requestTextureDownload(Texture2D& texture)
 	{
 		// We push a texture download specifically for this frame. When the fence for that frame is signaled,
-		// we now the download has been processed by the GPU, and we can send the texture a notification that
+		// we know the download has been processed by the GPU, and we can send the texture a notification that
 		// transfer has completed.
 		mFramesInFlight[mCurrentFrameIndex].mTextureDownloads.push_back(&texture);
 	}

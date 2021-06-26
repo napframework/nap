@@ -216,8 +216,6 @@ const PropertyPath PropertyValueItemDelegate::getPropertyPathFromIndex(const QMo
 	return {};
 }
 
-
-
 QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
 												 const QModelIndex& index) const
 {

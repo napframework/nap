@@ -80,8 +80,16 @@ macro(package_nap)
         # Package documentation
         if(INCLUDE_DOCS)
             find_package(Doxygen REQUIRED)
-            install(CODE "execute_process(COMMAND python ${NAP_ROOT}/docs/doxygen/generateDocumentation.py)
-                          execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc)")
+            install(CODE "execute_process(COMMAND python ${NAP_ROOT}/docs/doxygen/generateDocumentation.py
+                                          RESULT_VARIABLE EXIT_CODE)
+                          if(NOT \${EXIT_CODE} EQUAL 0)
+                              message(FATAL_ERROR \"Failed to generate documentation\")
+                          endif()
+                          execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${NAP_ROOT}/docs/html/ ${CMAKE_INSTALL_PREFIX}/doc
+                                          RESULT_VARIABLE EXIT_CODE)
+                          if(NOT \${EXIT_CODE} EQUAL 0)
+                              message(FATAL_ERROR \"Failed to copy HTML documentation\")
+                          endif()")
         endif()
 
         # Package IDE templates
@@ -97,6 +105,13 @@ macro(package_nap)
         # Package Windows redistributable help
         if(WIN32)
             install(FILES "${NAP_ROOT}/dist/win64/redist_help/Microsoft Visual C++ Redistributable Help.txt" DESTINATION tools/platform)
+        endif()
+
+        # Package Gatekeeper unquarantine scripts for macOS
+        if(APPLE)
+            install(PROGRAMS ${NAP_ROOT}/dist/macos/gatekeeper_unquarantine/unquarantine_framework.command DESTINATION tools)
+            install(PROGRAMS "${NAP_ROOT}/dist/macos/gatekeeper_unquarantine/Unquarantine Project.command" DESTINATION cmake/project_creator/template)
+            install(FILES "${NAP_ROOT}/dist/macos/gatekeeper_unquarantine/Help launching on macOS.txt" DESTINATION cmake/project_creator/template)
         endif()
     else() # ANDROID
         # Package shared CMake files
@@ -125,6 +140,14 @@ macro(package_nap)
 
     # Install NAP readme
     install(FILES ${NAP_ROOT}/dist/license/README.txt DESTINATION .)
+    if(APPLE)
+        install(CODE "execute_process(COMMAND sh -c \"cat ${NAP_ROOT}/dist/macos/gatekeeper_unquarantine/framework_readme_extra.txt >> ${CMAKE_INSTALL_PREFIX}/README.txt\"
+                                      ERROR_QUIET
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to add macOS gatekeeper note\")
+                      endif()")
+    endif()
 
     # Install NAP Packaged App license 
     install(FILES ${NAP_ROOT}/dist/license/NAP.txt DESTINATION cmake/project_creator)
@@ -244,8 +267,11 @@ macro(package_qt)
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
                                                   -id @rpath/Qt${QT_INSTALL_FRAMEWORK}
                                                   ${FRAMEWORK_INSTALL_LOC}
-                                          ERROR_QUIET)")
-
+                                          ERROR_QUIET
+                                          RESULT_VARIABLE EXIT_CODE)
+                          if(NOT \${EXIT_CODE} EQUAL 0)
+                              message(FATAL_ERROR \"Failed to change Qt framework installed id\")
+                          endif()")
 
             macos_replace_qt_framework_links("${QT_FRAMEWORKS}" Qt${QT_INSTALL_FRAMEWORK} ${QT_FRAMEWORK_SRC} ${FRAMEWORK_INSTALL_LOC} "@loader_path")
         endforeach()
@@ -302,7 +328,11 @@ macro(package_qt)
                                               --set-rpath
                                               \$ORIGIN/../../../thirdparty/Qt/lib
                                               ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqxcb.so
-                                      ERROR_QUIET)")   
+                                      ERROR_QUIET
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to run patchelf on Qt's libqxcb.so\")
+                      endif()")
     endif()
 endmacro()
 
@@ -389,7 +419,10 @@ macro(package_project_into_release DEST_DIR)
                                               -DCMAKE_ONLY=1
                                               -DMODULE_NAME_PASCALCASE=Unused
                                               -P ${NAP_ROOT}/dist/cmake/native/module_creator/module_creator.cmake
-                                     )")
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to package project module CMake\")
+                      endif()")
         # Package module extra
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake)
             install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/dist/module/module_extra.cmake DESTINATION ${DEST_DIR}/module)
@@ -473,7 +506,12 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SKIP_FRAMEWORK_NAME LIB_SRC_LO
     foreach(QT_LINK_FRAMEWORK ${FRAMEWORKS})
         if(NOT Qt${QT_LINK_FRAMEWORK} STREQUAL ${SKIP_FRAMEWORK_NAME})
             execute_process(COMMAND sh -c "otool -L ${LIB_SRC_LOCATION} | grep Qt${QT_LINK_FRAMEWORK} | awk -F'(' '{print $1}'"
-                            OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+                            OUTPUT_VARIABLE REPLACE_INSTALL_NAME
+                            RESULT_VARIABLE EXIT_CODE
+                            )
+            if(NOT ${EXIT_CODE} EQUAL 0)
+                message(FATAL_ERROR "Could not extract Qt library names from ${LIB_SRC_LOCATION}")
+            endif()
             if(NOT ${REPLACE_INSTALL_NAME} STREQUAL "")
                 # message("Adding install name change in ${QT_INSTALL_FRAMEWORK} for Qt${QT_LINK_FRAMEWORK}")
                 string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
@@ -484,7 +522,11 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SKIP_FRAMEWORK_NAME LIB_SRC_LO
                                                       ${REPLACE_INSTALL_NAME}
                                                       ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}
                                                       ${LIB_INSTALL_LOCATION}
-                                              ERROR_QUIET)")
+                                              ERROR_QUIET
+                                              RESULT_VARIABLE EXIT_CODE)
+                              if(NOT \${EXIT_CODE} EQUAL 0)
+                                  message(FATAL_ERROR \"Failed to replace install name in ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}\")
+                              endif()")
             endif()
         endif()
     endforeach()    
@@ -512,7 +554,11 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
     # Change link to dylib
     install(CODE "if(EXISTS ${FILEPATH})
                       execute_process(COMMAND sh -c \"otool -L ${FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'\"
-                                      OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+                                      OUTPUT_VARIABLE REPLACE_INSTALL_NAME
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to search library names in ${FILEPATH}\")
+                      endif()
                       if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
                           #message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
                           # Strip read path
@@ -524,7 +570,11 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                                                   \${REPLACE_INSTALL_NAME}
                                                   ${PATH_PREFIX}/${REPLACE_LIB_NAME}
                                                   ${FILEPATH}
-                                          ERROR_QUIET)
+                                          ERROR_QUIET
+                                          RESULT_VARIABLE EXIT_CODE)
+                          if(NOT \${EXIT_CODE} EQUAL 0)
+                              message(FATAL_ERROR \"Failed to replace library install name in ${FILEPATH}\")
+                          endif()
                       endif()
                   endif()
                   ")
@@ -555,7 +605,10 @@ macro(macos_remove_rpaths_from_object_at_install_time FILEPATH PATH_PREFIX CONFI
                       execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/build_tools/macos_rpath_stripper/strip_rpaths.py
                                               ${FILEPATH}
                                               ${PATH_PREFIX}
-                                      )
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to strip RPATHs on ${FILEPATH}\")
+                      endif()
                   endif()
                   "
             CONFIGURATIONS ${CONFIGURATION})

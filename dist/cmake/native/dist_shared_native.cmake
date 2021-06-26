@@ -123,7 +123,11 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                                                   \${REPLACE_INSTALL_NAME}
                                                   ${PATH_PREFIX}/${REPLACE_LIB_NAME}
                                                   ${FILEPATH}
-                                          ERROR_QUIET)
+                                          ERROR_QUIET
+                                          RESULT_VARIABLE EXIT_CODE)
+                          if(NOT \${EXIT_CODE} EQUAL 0)
+                              message(FATAL_ERROR \"Failed to replace install name on ${FILEPATH}\")
+                          endif()
                       endif()
                   endif()
                   ")
@@ -152,7 +156,11 @@ endmacro()
 # PATH_PREFIX: The new path prefix for the framework
 macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEPATH PATH_PREFIX)
     execute_process(COMMAND sh -c "otool -L ${SRC_FILEPATH} | grep ${REPLACE_LIB_NAME} | awk -F'(' '{print $1}'"
-                    OUTPUT_VARIABLE REPLACE_INSTALL_NAME)
+                    OUTPUT_VARIABLE REPLACE_INSTALL_NAME
+                    RESULT_VARIABLE EXIT_CODE)
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Failed to replace install name on ${SRC_FILEPATH} using otool")
+    endif()
     if(NOT ${REPLACE_INSTALL_NAME} STREQUAL "")
         string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -427,7 +435,11 @@ endmacro()
 macro(linux_append_rpath_at_install_time FILEPATH EXTRA_RPATH)
     install(CODE "if(EXISTS ${FILEPATH})
                       execute_process(COMMAND sh -c \"patchelf --print-rpath ${FILEPATH}\"
-                                      OUTPUT_VARIABLE ORIG_RPATH)
+                                      OUTPUT_VARIABLE ORIG_RPATH
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to fetch RPATH from ${FILEPATH} using patchelf. Is patchelf installed?\")
+                      endif()
                       set(NEW_RPATH \"\")
                       if(NOT \${ORIG_RPATH} STREQUAL \"\")
                           string(STRIP \${ORIG_RPATH} NEW_RPATH)
@@ -438,7 +450,11 @@ macro(linux_append_rpath_at_install_time FILEPATH EXTRA_RPATH)
                                               --set-rpath
                                               \"\${NEW_RPATH}\"
                                               \${FILEPATH}
-                                      ERROR_QUIET)
+                                      ERROR_QUIET
+                                      RESULT_VARIABLE EXIT_CODE)
+                      if(NOT \${EXIT_CODE} EQUAL 0)
+                          message(FATAL_ERROR \"Failed to set RPATH on ${FILEPATH} using patchelf\")
+                      endif()
                   endif()
                   ")
 endmacro()

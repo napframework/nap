@@ -18,7 +18,7 @@ namespace nap
 	namespace SequenceGUIClipboards
 	{
 		/**
-		 * Clipboard is a class that can contain a serialized  object related to the Sequencer
+		 * Clipboard is a class that can contain a serialized object related to the Sequencer
 		 * The state of the gui can contain a clipboard, that can be de-serialized at a certain point
 		 * Typically, the clipboard contains a certain curve segment or event segment, and that segment can be pasted
 		 * at a certain location in a certain Track
@@ -32,7 +32,7 @@ namespace nap
 			 * Constructor
 			 * @param trackType expects tracktype
 			 */
-			Clipboard(const rttr::type& trackType);
+			explicit Clipboard(const rttr::type& trackType);
 
 			/**
 			 * Default decontructor
@@ -44,7 +44,7 @@ namespace nap
 			 * @param object pointer object to serialize
 			 * @param errorState holds information about any errors
 			 */
-			void addObject(const rtti::Object* object, utility::ErrorState& errorState);
+			void addObject(const rtti::Object* object, const std::string& sequenceName, utility::ErrorState& errorState);
 
 			/**
 			 * Deserialize clipboard content to object of type T
@@ -91,7 +91,7 @@ namespace nap
 			 * @param objectID the object id of serialized object
 			 * @return true if clipboard contains serialized object
 			 */
-			bool containsObject(const std::string& objectID) const;
+			bool containsObject(const std::string& objectID, const std::string& sequenceName) const;
 
 			/**
 			 * removes specified object from clipboard when it is contained, no assert when not present
@@ -115,6 +115,7 @@ namespace nap
 			// the serialized objects
 			std::map<std::string, std::string> 	mSerializedObjects;
 			rttr::type 							mTrackType;
+			std::string 						mSequenceName;
 		};
 
 		// shortcut
@@ -166,7 +167,7 @@ namespace nap
 
 				// Make sure we deserialized something
 				T* root_object = nullptr;
-				if(!errorState.check(result.mReadObjects.size() > 0, "No objects deserialized"))
+				if(!errorState.check(!result.mReadObjects.empty(), "No objects deserialized"))
 					return std::vector<T*>();
 
 				auto* first_object = result.mReadObjects[0].get();

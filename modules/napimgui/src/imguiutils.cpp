@@ -20,10 +20,24 @@ namespace ImGui
 	}
 
 
-	ImTextureID IMGUI_API GetTextureHandle(nap::Texture2D& texture)
+	ImTextureID GetTextureHandle(nap::Texture2D& texture)
 	{
 		nap::Core& core = texture.getRenderService().getCore();
 		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
 		return gui_service->getTextureHandle(texture);
+	}
+
+
+	bool Combo(const char* label, int* current_item, nap::rtti::TypeInfo enum_type)
+	{
+		assert(enum_type.is_enumeration());
+		rttr::enumeration enum_instance = enum_type.get_enumeration();
+		std::vector<rttr::string_view> items(enum_instance.get_names().begin(), enum_instance.get_names().end());
+		return ImGui::Combo(label, current_item, [](void* data, int index, const char** out_text)
+		{
+			std::vector<rttr::string_view>* items = (std::vector<rttr::string_view>*)data;
+			*out_text = (*items)[index].data();
+			return true;
+		}, &items, items.size());
 	}
 }

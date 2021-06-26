@@ -103,6 +103,11 @@ if(WIN32 AND NOT ANDROID)
     endif()
 endif()
 
+# Ensure we have patchelf on Linux, preventing silent failures
+if(UNIX AND NOT APPLE)
+    ensure_patchelf_installed()
+endif()
+
 # store project directory
 get_filename_component(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
 

@@ -399,7 +399,6 @@ void Document::removeInstanceProperties(PropertyPath path)
 				auto compID = nap::utility::getFileName(compPathStr);
 				auto entPath = nap::utility::getFileDir(compPathStr);
 				auto _entityID = nap::utility::getFileName(entPath);
-
 				auto _parentID = nap::utility::getFileName(nap::utility::getFileDir(entPath));
 
 				auto split = nap::utility::splitString(_entityID, ':');

@@ -44,7 +44,7 @@ namespace nap
 		RGBColor8 mFront1Color		= RGBColor8(0x52, 0x54, 0x6A);		///< Property: 'FrontColor1' Gui front color 1
 		RGBColor8 mFront2Color		= RGBColor8(0x5D, 0x5E, 0x73);		///< Property: 'FrontColor2' Gui front color 2
 		RGBColor8 mFront3Color		= RGBColor8(0x8B, 0x8C, 0xA0);		///< Property: 'FrontColor3' Gui front color 3
-		virtual rtti::TypeInfo		getServiceType() override			{ return RTTI_OF(IMGuiService); }
+		virtual rtti::TypeInfo getServiceType() const override			{ return RTTI_OF(IMGuiService); }
 	};
 
 	/**

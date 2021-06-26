@@ -21,6 +21,7 @@
 #include <imguiservice.h>
 #include <renderservice.h>
 #include <imagefromfile.h>
+#include <snapshot.h>
 
 namespace nap
 {
@@ -37,6 +38,9 @@ namespace nap
 	 * This example applies a basic light to both the record and sleeve using the vertex and fragment shader. 
 	 * NAP does not include lights by default. 
 	 * IMGUI is used to render a GUI panel that you can use to change some properties.
+	 *
+	 * You can take a screenshot with transparent background of the Vinyl using the 'Snapshot' resource. 
+	 * Edit the 'Snapshot' properties in JSON to change the resolution, type etc.
 	 *
 	 * The meshes are both extracted from 'vinyl_cover.fbx'. Nap automatically detects and converts fbx files.
 	 * The output of this conversion is one or multiple binary .mesh file(s). This .mesh file is generated for every individual mesh inside the fbx. 
@@ -111,5 +115,12 @@ namespace nap
 
 		// Color of the vinyl record
 		nap::RGBColorFloat			mRecordColor = nap::RGBColorFloat(0.07f, 0.07f, 0.07f);
+		
+		// GUI
+		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+
+		// Screenshot
+		ObjectPtr<Snapshot> mSnapshot = nullptr;						//< Takes screenshot
+		bool mTakeSnapshot = false;
 	};
 }
