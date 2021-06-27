@@ -29,6 +29,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 # preprocessors
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY_IMGUI)
 
 # link libs
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})

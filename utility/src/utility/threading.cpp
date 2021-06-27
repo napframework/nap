@@ -28,15 +28,9 @@ namespace nap
     
     void TaskQueue::process()
     {
-        auto it = mDequeuedTasks.begin();
-        auto count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
-        while (count > 0)
-        {
-            for (auto i = 0; i < count; ++i)
-                (*it++)();
-            it = mDequeuedTasks.begin();
-            count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
-        }
+		Task task;
+		while (mQueue.try_dequeue(task))
+			task();
     }
 
 
@@ -140,8 +134,12 @@ namespace nap
     void ThreadPool::addThread()
     {
         mThreads.emplace_back([&](){
+			TaskQueue::Task dequeuedTask;
             while (!mStop)
-                mTaskQueue.processBlocking();
+			{
+				mTaskQueue.wait_dequeue(dequeuedTask);
+				dequeuedTask();
+			}
         });
         auto& thread = mThreads.back();
         

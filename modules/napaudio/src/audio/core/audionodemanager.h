@@ -73,7 +73,7 @@ namespace nap
 			 * This way modifications to the processing chain can be made in a threadsafe manner from outside of the audio thread, with a timing accuracy that corresponds to the internal buffer size.
 			 * @param task Lamba without arguments that will be called on the next audio callback
 			 */
-			void enqueueTask(nap::TaskQueue::Task task) { mTaskQueue.enqueue(task); }
+			void enqueueTask(nap::TaskQueue::Task task);
 			
 			/**
 			 * @return: the number of input channels that will be fed into the node system

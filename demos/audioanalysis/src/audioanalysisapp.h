@@ -77,7 +77,7 @@ namespace nap
         rtti::ObjectPtr<EntityInstance> mAudioEntity = nullptr;         //< Entity that contains the audio processing
         audio::ControllerValue mAnalysisFrequency = 500.f;              //< Center frequency of the analysis
         audio::ControllerValue mAnalysisBand = 100.f;                   //< Bandwidth of the analysis
-        audio::ControllerValue mAnalysisGain = 5.0f;                    //< Factor to gain the analysis input before analyzing
+        audio::ControllerValue mAnalysisGain = 1.0f;                    //< Factor to gain the analysis input before analyzing
         std::vector<audio::ControllerValue> mPlotvalues = { };  //< Output of the analysis will be stored chronologically in this factor, so we can draw a plot of the data
 		uint32 mTickSum = 0;
 		uint32 mTickIdx = 0;

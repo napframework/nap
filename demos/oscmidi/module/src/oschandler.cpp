@@ -51,15 +51,15 @@ namespace nap
 		// Convert and push back the message
 		std::string message(event.getAddress());
 		for (const auto& argument : event.getArguments())
-		{
-			// Add
-			mReceivedEvents.emplace_back(message + " " + argument->toString());
+			message.append(" " + argument->toString());
 
-			// Remove first element when out of range
-			if (mReceivedEvents.size() > 25)
-			{
-				mReceivedEvents.erase(mReceivedEvents.begin());
-			}
+		// Add
+		mReceivedEvents.emplace_back(message);
+
+		// Remove first element when out of range
+		if (mReceivedEvents.size() > 25)
+		{
+			mReceivedEvents.erase(mReceivedEvents.begin());
 		}
     }
 }

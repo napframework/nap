@@ -29,8 +29,8 @@ namespace nap
 		{
 			if (mLastCalculatedSample < getSampleTime())
 			{
-				process();
 				mLastCalculatedSample = getSampleTime();
+				process();
 			}
 		}
 		

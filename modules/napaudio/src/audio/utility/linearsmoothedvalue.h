@@ -21,10 +21,21 @@ namespace nap
 		public:
 		
 		public:
-			LinearSmoothedValue(const T& initValue, int stepCount) : mNewDestination(initValue), mValue(initValue),
-			                                                         mDestination(initValue)
+			LinearSmoothedValue(const T& initValue, int stepCount) : mNewDestination(initValue), mValue(initValue), mDestination(initValue)
 			{
 				mStepCount = stepCount;
+			}
+
+			/**
+			 * Quit all smoothing in progress and reset output to the passed value.
+			 * Don't call this while getNextValue() can be called.
+			 * @param initValue the new output value.
+			 */
+			void reset(const T& initValue)
+			{
+				mNewDestination = initValue;
+				mValue = initValue;
+				mDestination = initValue;
 			}
 			
 			/**

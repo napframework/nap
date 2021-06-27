@@ -11,6 +11,7 @@
 #include <audio/core/audionode.h>
 #include <audio/utility/delay.h>
 #include <audio/utility/dirtyflag.h>
+#include <audio/utility/linearsmoothedvalue.h>
 
 namespace nap
 {
@@ -32,6 +33,7 @@ namespace nap
 		public:
 			FilterNode(NodeManager& nodeManager) : Node(nodeManager), mOutput(8), mInput(8)
 			{
+				update();
 			}
 			
 			// Inherited from Node
@@ -46,6 +48,14 @@ namespace nap
 			 * Outputs the filtered signal
 			 */
 			OutputPin audioOutput = {this};
+
+			/**
+			 * Immediately changes the settings of the filter.
+			 * Only call this before the filter starts being processed.
+			 * @param frequency cutoff frequency of the filter in Hz
+			 * @param resonanceBand In case of LowRes or HighRes: Resonance value. 0 means no resonance, 30 means self-oscillation. In case of bandpass: bandwith in herz.
+			 */
+			void prepare(ControllerValue frequency, ControllerValue resonanceBand, ControllerValue gain);
 			
 			/**
 			 * Sets the mode of the filter.
@@ -102,6 +112,7 @@ namespace nap
 		
 		private:
 			void update();
+			void calcCoeffs();
 			
 			std::atomic<EMode> mMode = {EMode::LowPass};
 			std::atomic<ControllerValue> mFrequency = {440.f};
@@ -109,10 +120,17 @@ namespace nap
 			std::atomic<ControllerValue> mBand = {100.f};
 			std::atomic<ControllerValue> mGain = {1.f};
 			DirtyFlag mIsDirty;
-			
+
 			// Filter coefficients
-			ControllerValue a0, a1, a2, b1, b2;
-			
+			LinearSmoothedValue<ControllerValue> a0 = { 0, 64 };
+			LinearSmoothedValue<ControllerValue> a1 = { 0, 64 };
+			LinearSmoothedValue<ControllerValue> a2 = { 0, 64 };
+			LinearSmoothedValue<ControllerValue> b1 = { 0, 64 };
+			LinearSmoothedValue<ControllerValue> b2 = { 0, 64 };
+
+			// Coeffecient destinations before update.
+			ControllerValue a0Dest, a1Dest, a2Dest, b1Dest, b2Dest = 0;
+
 			Delay mOutput; // Delay line storing the input signal.
 			Delay mInput; // Delay line storing the output signal.
 		};

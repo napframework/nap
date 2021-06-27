@@ -13,7 +13,6 @@
 #include <mpg123.h>
 
 // Nap include
-#include <nap/logger.h>
 #include <utility/fileutils.h>
 #include <utility/stringutils.h>
 
@@ -36,8 +35,6 @@ namespace nap
 			int channelCount;
 			int encoding;
 			size_t done;
-			
-			nap::Logger::info("Loading mp3 audio file: %s", fileName.c_str());
 			
 			// Acquire a mpg123 handle
 			mpgHandle = mpg123_new(NULL, &error);
@@ -113,8 +110,6 @@ namespace nap
 			mpg123_close(mpgHandle);
 			mpg123_delete(mpgHandle);
 			
-			nap::Logger::info("Loaded mp3 audio file: %s", fileName.c_str());
-			
 			return true;
 		}
 		
@@ -159,8 +154,6 @@ namespace nap
 			
 			// cleanup
 			sf_close(sndFile);
-			
-			nap::Logger::info("Loaded audio file: %s", fileName.c_str());
 			
 			return true;
 		}

@@ -21,23 +21,22 @@ namespace nap
 {
 	namespace audio
 	{
-		
-		LevelMeterNode::LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize, bool rootProcess)
-				: Node(nodeManager), mRootProcess(rootProcess)
+
+		LevelMeterNode::LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize, bool rootProcess) : Node(nodeManager), mRootProcess(rootProcess), mAnalysisWindowSize(analysisWindowSize)
 		{
-			mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * analysisWindowSize);
+			mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * mAnalysisWindowSize);
 			if (rootProcess)
 				getNodeManager().registerRootProcess(*this);
 		}
-		
-		
+
+
 		LevelMeterNode::~LevelMeterNode()
 		{
 			if (mRootProcess)
 				getNodeManager().unregisterRootProcess(*this);
 		}
-		
-		
+
+
 		float LevelMeterNode::getLevel()
 		{
 			if (mDirty.check()) {
@@ -45,7 +44,7 @@ namespace nap
 					case PEAK:
 						mValue = calculatePeak();
 						break;
-					
+
 					default:
 						mValue = calculateRms();
 						break;
@@ -53,15 +52,15 @@ namespace nap
 			}
 			return mValue;
 		}
-		
-		
+
+
 		void LevelMeterNode::process()
 		{
 			auto inputBuffer = input.pull();
-			
+
 			if (inputBuffer == nullptr)
 				return;
-			
+
 			for (auto& sample : *inputBuffer) {
 				mBuffer[mIndex++] = sample;
 				if (mIndex == mBuffer.size()) {
@@ -71,18 +70,24 @@ namespace nap
 			}
 		}
 		
-		
+
+		void LevelMeterNode::sampleRateChanged(float sampleRate)
+		{
+			mBuffer.resize(getNodeManager().getSamplesPerMillisecond() * mAnalysisWindowSize);
+		}
+
+
 		float LevelMeterNode::calculateRms()
 		{
 			float x = 0;
 			for (auto i = 0; i < mBuffer.size(); ++i)
 				x += mBuffer[i] * mBuffer[i];
 			x /= float(mBuffer.size());
-			
+
 			return sqrt(x);
 		}
-		
-		
+
+
 		float LevelMeterNode::calculatePeak()
 		{
 			float x = 0;
@@ -93,6 +98,6 @@ namespace nap
 			}
 			return x;
 		}
-		
+
 	}
 }

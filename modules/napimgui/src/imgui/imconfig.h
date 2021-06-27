@@ -16,7 +16,7 @@
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 #ifdef _WIN32
-#ifdef NAP_SHARED_LIBRARY
+#ifdef NAP_SHARED_LIBRARY_IMGUI
 	#define IMGUI_API __declspec(dllexport)    // Export the symbols
 #else
 	#define IMGUI_API __declspec(dllimport)    // Import the symbols

@@ -60,7 +60,7 @@ namespace nap
         // Set parameters for level meter component
         levelMeter->setCenterFrequency(mAnalysisFrequency);
         levelMeter->setBandWidth(mAnalysisBand);
-        levelMeter->setFilterGain(mAnalysisGain);
+        levelMeter->setFilterGain(1.f);
         
         // Resize the vector containing the results of the analysis
         mPlotvalues.resize(512, 0);
@@ -86,8 +86,8 @@ namespace nap
         assert(player);
 
 		// Store new value in array
-		mPlotvalues[mTickIdx] = levelMeter->getLevel();	// save new value so it can be subtracted later		
-		if (++mTickIdx == mPlotvalues.size())			// increment current sample index
+		mPlotvalues[mTickIdx] = levelMeter->getLevel() * mAnalysisGain;	// save new value so it can be subtracted later
+		if (++mTickIdx == mPlotvalues.size())							// increment current sample index
 			mTickIdx = 0;
 
 		// Draw some gui elements
@@ -96,7 +96,7 @@ namespace nap
         ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(ImGui::GetColumnWidth(), 128)); // Plot the output values
         ImGui::SliderFloat("Filter Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Filter Bandwidth", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
-        ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
+        ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.5f, 5.f, "%.3f", 1.f);
         if (ImGui::RadioButton("Audio file input", mInputSource == EAudioFile))
             mInputSource = EAudioFile;
         if (ImGui::RadioButton("Audio device input", mInputSource == EAudioDevice))
@@ -126,7 +126,6 @@ namespace nap
         // Update the audio level meter analysis component
         levelMeter->setCenterFrequency(mAnalysisFrequency);
         levelMeter->setBandWidth(mAnalysisBand);
-        levelMeter->setFilterGain(mAnalysisGain);
 	}
 
 	
