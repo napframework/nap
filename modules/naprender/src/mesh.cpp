@@ -254,7 +254,7 @@ namespace nap
 	void nap::MeshInstance::setPolygonMode(EPolygonMode mode)
 	{
 		/// Warn and return if the polygon mode is not supported.
-		if(mRenderService.getPolygonModeSupported(mode))
+		if(!mRenderService.getPolygonModeSupported(mode))
 		{
 			nap::Logger::warn("Selected polygon mode %s is not supported",
 				RTTI_OF(EPolygonMode).get_enumeration().value_to_name(mode).to_string().c_str());
