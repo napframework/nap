@@ -20,10 +20,6 @@ macro(nap_qt_pre)
     find_path(QT_DIR lib/cmake/Qt5/Qt5Config.cmake
               HINTS
               ${QTDIR}
-              ${NAP_ROOT}/../Qt/5.9.1/msvc2015_64
-              ${NAP_ROOT}/../Qt/5.9.2/msvc2015_64
-              ${NAP_ROOT}/../Qt/5.10.0/msvc2015_64
-              ~/Qt/5.8/clang_64
               )
 
     if(QT_DIR)
