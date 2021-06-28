@@ -56,7 +56,7 @@ namespace nap
 	{
 		Fill			= 0,				///< Polygons are interpreted and rendered using the specified 'EDrawMode'
 		Line			= 1,				///< Polygon edges are drawn as line segments.
-		Point			= 2					///< polygon vertices are drawn as points.
+		Point			= 2					///< Polygon vertices are drawn as points.
 	};
 
 
@@ -150,7 +150,7 @@ namespace nap
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
-		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be default
+		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be the default
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -295,8 +295,9 @@ namespace nap
 		ECullMode getCullMode() const											{ return mProperties.mCullMode; }
 
 		/**
-		 * Sets the polygon mode of this mesh (fill, line, point). Asserts if
-		 * the requested mode is not supported! Fill (default) is always supported.
+		 * Sets the polygon mode of this mesh to use (fill, line or point).
+		 * Logs a warning if the requested mode is not supported.
+		 * To ensure a specific mode is supported call: RenderService::getPolygonModeSupported().
 		 * @param mode the polygon mode to use
 		 */
 		void setPolygonMode(EPolygonMode mode);

@@ -13,6 +13,7 @@
 #include <rtti/rttiutilities.h>
 #include <nap/core.h>
 #include <nap/assert.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_ENUM(nap::EDrawMode)
 	RTTI_ENUM_VALUE(nap::EDrawMode::Unknown,		"Unknown"),
@@ -244,18 +245,21 @@ namespace nap
 
 	void MeshShape::addIndices(uint32* indices, int numIndices)
 	{
-		int cur_num_indices = mIndices.size();
-		mIndices.resize(cur_num_indices + numIndices);
-		std::memcpy(&mIndices[cur_num_indices], indices, numIndices * sizeof(uint32));
+		size_t cur_num_indices = mIndices.size();
+		mIndices.resize(cur_num_indices + (size_t)numIndices);
+		std::memcpy(&mIndices[cur_num_indices], indices, (size_t)numIndices * sizeof(uint32));
 	}
 
 
 	void nap::MeshInstance::setPolygonMode(EPolygonMode mode)
 	{
-		// TODO: How to properly handle unsupported polygon modes?
-		// Do we require support for non fill polygon types on service startup?
-		// Do we revert to fill when not available? This is a tricky one.
-		NAP_ASSERT_MSG(mRenderService.getPolygonModeSupported(mode), "Selected polygon mode is not supported");
+		/// Warn and return if the polygon mode is not supported.
+		if(mRenderService.getPolygonModeSupported(mode))
+		{
+			nap::Logger::warn("Selected polygon mode %s is not supported",
+				RTTI_OF(EPolygonMode).get_enumeration().value_to_name(mode).to_string().c_str());
+			return;
+		}
 		mProperties.mPolygonMode = mode;
 	}
 }
