@@ -134,7 +134,6 @@ add_subdirectory(test/render)
 #add_subdirectory(apps/rain)
 #add_subdirectory(apps/rain/module)
 add_subdirectory(apps/4dsound)
-add_subdirectory(apps/napaudioapp)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
