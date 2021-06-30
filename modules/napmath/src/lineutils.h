@@ -47,10 +47,10 @@ namespace nap
 		 * The distance map allows you to easily retrieve the closest vertex associated with a certain distance
 		 * @param vertexPositions the vertex position data
 		 * @param outDistances a map that has a distance entry for every vertex of the line
-		 * @param closed if the line is closed or not
+		 * @param loop if the last vertex should be connected to the first vertex, creating a loop
 		 * @return the total length of the line
 		 */
-		float NAPAPI getDistancesAlongLine(const std::vector<glm::vec3>& vertexPositions, std::map<float, int>& outDistances, bool closed);
+		float NAPAPI getDistancesAlongLine(const std::vector<glm::vec3>& vertexPositions, std::map<float, int>& outDistances, bool loop);
 
 		/**
 		 * Utility function that returns a normalized blend value between two line vertices based on a position along the line
