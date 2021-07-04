@@ -25,7 +25,8 @@ def generate(forced_path, linux_build_type, use_codeblocks):
         call(['%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s' % (cmake, nap_root, build_dir, build_type)], shell=True)
     elif platform == 'darwin':
         build_dir = forced_path if forced_path else os.path.join(nap_root, MACOS_BUILD_DIR)
-        call(['%s -H%s -B%s -G Xcode' % (cmake, nap_root, build_dir)], shell=True)
+        osx_arch = '-DCMAKE_OSX_ARCHITECTURES=x86_64'
+        call(['%s -H%s -B%s -G Xcode %s' % (cmake, nap_root, build_dir, osx_arch)], shell=True)
     else:
         build_dir = forced_path if forced_path else os.path.join(nap_root, MSVC_BUILD_DIR)
         cmd = '%s -H%s -B%s -G "Visual Studio 16 2019" -DPYBIND11_PYTHON_VERSION=3.5' % (cmake, nap_root, build_dir)

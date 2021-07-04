@@ -90,6 +90,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
                                '-H%s' % project_path, 
                                '-B%s' % build_dir_name, 
                                '-G', 'Xcode',
+                               '-DCMAKE_OSX_ARCHITECTURES=x86_64',
                                '-DNAP_PACKAGED_APP_BUILD=1',
                                '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
