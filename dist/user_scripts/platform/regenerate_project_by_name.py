@@ -36,7 +36,8 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
         #     call(["nautilus -s %s > /dev/null 2>&1 &" % BUILD_DIR], shell=True)
 
     elif sys.platform == 'darwin':
-        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=project_path)
+        osx_arch = '-DCMAKE_OSX_ARCHITECTURES=x86_64'
+        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode', osx_arch], cwd=project_path)
 
         # Show in Finder
         if exit_code == 0 and show_solution:
