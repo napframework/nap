@@ -181,7 +181,7 @@ namespace nap
 	}
 
 
-	void ParameterGUI::showParameters(ParameterGroup& parameterGroup)
+	void ParameterGUI::showParameters(ParameterGroup& parameterGroup, int depth)
 	{
 		for (auto& parameter : parameterGroup.mParameters)
 		{
@@ -193,12 +193,20 @@ namespace nap
 			ImGui::PopID();
 		}
 
+		if (depth > 0)
+		{
+			ImGui::Indent(ImGui::GetStyle().FramePadding.x + 1.0f);
+		}
 		for (auto& child : parameterGroup.mChildren)
 		{
 			if (ImGui::CollapsingHeader(child->mID.c_str()))
 			{
-				showParameters(*child);
+				showParameters(*child, depth+1);
 			}
+		}
+		if (depth > 0)
+		{
+			ImGui::Unindent(ImGui::GetStyle().FramePadding.x + 1.0f);
 		}
 	}
 

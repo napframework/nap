@@ -81,7 +81,7 @@ namespace nap
 		/**
 		 * Display all parameters as GUI elements.
 		 */
-		void showParameters(ParameterGroup& parameterGroup);
+		void showParameters(ParameterGroup& parameterGroup, int depth = 0);
 
 	private:
 		ParameterService&							mParameterService;					///< The parameter service
