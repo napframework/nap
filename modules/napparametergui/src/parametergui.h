@@ -97,6 +97,5 @@ namespace nap
 		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterGroup. Used to restore the state if the user cancels creation of a new preset.
 		int											mSelectedPresetIndex = -1;			///< The currently selected preset's index
 		int											mPrevSelectedPresetIndex = -1;		///< The previously selected preset's index. Used to restore the state if the user cancels creation of a new preset.
-		bool										mLoadPresetPopupActive = false;		///< Whether the preset load popup window is currently active
 	};
 }

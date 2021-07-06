@@ -241,7 +241,6 @@ namespace nap
 						ImGui::CloseCurrentPopup();
 					ImGui::EndPopup();
 				}
-
 			}
 			else
 			{
