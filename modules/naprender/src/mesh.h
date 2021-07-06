@@ -122,6 +122,20 @@ namespace nap
 		 */
 		void addIndex(int index)										{ mIndices.emplace_back(index); }
 
+		/**
+		 * Array subscript overload.
+		 * @param index lookup index
+		 * @return value at the given index
+		 */
+		uint32& operator[](std::size_t index)							{ return mIndices[index]; }
+		
+		/**
+		 * Const array subscript overload.
+		 * @param index lookup index
+		 * @return value at the given index
+		 */
+		const uint32& operator[](std::size_t index) const				{ return mIndices[index]; }
+
 	public:
 		std::vector<uint32>			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};

@@ -134,7 +134,7 @@ namespace nap
 
 	MeshShape& MeshInstance::createShape()
 	{
-		mProperties.mShapes.push_back(MeshShape());
+		mProperties.mShapes.emplace_back(MeshShape());
 		return mProperties.mShapes.back();
 	}
 
