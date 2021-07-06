@@ -38,6 +38,13 @@ namespace nap
 		void show(bool newWindow = true);
 
 		/**
+		 * Load a preset programatically
+		 * @param preset the filename of the preset to load
+		 * @param errorState contains the error if the preset load failed
+		 */
+		bool load(std::string preset, utility::ErrorState& errorState);
+
+		/**
 		 * Initializes the parameter GUI
 		 * @param errorState contains the error if initialization failed
 		 * @return if initialization succeeded
@@ -90,5 +97,6 @@ namespace nap
 		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterGroup. Used to restore the state if the user cancels creation of a new preset.
 		int											mSelectedPresetIndex = -1;			///< The currently selected preset's index
 		int											mPrevSelectedPresetIndex = -1;		///< The previously selected preset's index. Used to restore the state if the user cancels creation of a new preset.
+		bool										mLoadPresetPopupActive = false;		///< Whether the preset load popup window is currently active
 	};
 }

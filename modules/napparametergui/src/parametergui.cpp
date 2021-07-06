@@ -25,7 +25,6 @@ namespace nap
 	{
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			mPresets = mParameterService.getPresets(*mParameterGroup);
 			if (!mPresets.empty() && mSelectedPresetIndex == -1)
 				mSelectedPresetIndex = 0;
 
@@ -36,27 +35,32 @@ namespace nap
 				return true;
 			}, &mPresets, mPresets.size());
 
-			if (ImGui::Button("OK"))
+			if (!mPresets.empty())
 			{
-				utility::ErrorState errorState;
-				if (mParameterService.loadPreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
-					ImGui::CloseCurrentPopup();
-				else
-					ImGui::OpenPopup("Failed to load preset");
-
-				if (ImGui::BeginPopupModal("Failed to load preset"))
+				if (ImGui::Button("OK"))
 				{
-					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
+					utility::ErrorState errorState;
+					if (mParameterService.loadPreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
 					{
 						ImGui::CloseCurrentPopup();
 					}
+					else
+						ImGui::OpenPopup("Failed to load preset");
 
-					ImGui::EndPopup();
+					if (ImGui::BeginPopupModal("Failed to load preset"))
+					{
+						ImGui::Text(errorState.toString().c_str());
+						if (ImGui::Button("OK"))
+						{
+							ImGui::CloseCurrentPopup();
+						}
+
+						ImGui::EndPopup();
+					}
 				}
+				ImGui::SameLine();
 			}
 
-			ImGui::SameLine();
 			if (ImGui::Button("Cancel"))
 			{
 				restorePresetState();
@@ -123,36 +127,39 @@ namespace nap
 
 			if (ImGui::Button("OK"))
 			{
-				utility::ErrorState errorState;
-				if (mParameterService.savePreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
+				if (mSelectedPresetIndex != -1)
 				{
-					ImGui::CloseCurrentPopup();
-					std::string previous_selection = mPresets[mSelectedPresetIndex];
-
-					// After we have retrieved the filenames from the service, the list may be in a different order,
-					// so we search for the item in the list to find the selected index.
-					mPresets = mParameterService.getPresets(*mParameterGroup);
-					for (int index = 0; index < mPresets.size(); ++index)
+					utility::ErrorState errorState;
+					if (mParameterService.savePreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
 					{
-						if (mPresets[index] == previous_selection)
+						ImGui::CloseCurrentPopup();
+						std::string previous_selection = mPresets[mSelectedPresetIndex];
+
+						// After we have retrieved the filenames from the service, the list may be in a different order,
+						// so we search for the item in the list to find the selected index.
+						mPresets = mParameterService.getPresets(*mParameterGroup);
+						for (int index = 0; index < mPresets.size(); ++index)
 						{
-							mSelectedPresetIndex = index;
-							break;
+							if (mPresets[index] == previous_selection)
+							{
+								mSelectedPresetIndex = index;
+								break;
+							}
 						}
+
+					}
+					else
+					{
+						ImGui::OpenPopup("Failed to save preset");
 					}
 
-				}
-				else
-				{
-					ImGui::OpenPopup("Failed to save preset");
-				}
-
-				if (ImGui::BeginPopupModal("Failed to save preset"))
-				{
-					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
-						ImGui::CloseCurrentPopup();
-					ImGui::EndPopup();
+					if (ImGui::BeginPopupModal("Failed to save preset"))
+					{
+						ImGui::Text(errorState.toString().c_str());
+						if (ImGui::Button("OK"))
+							ImGui::CloseCurrentPopup();
+						ImGui::EndPopup();
+					}
 				}
 			}
 
@@ -257,6 +264,7 @@ namespace nap
 		{
 			ImGui::OpenPopup("Load");
 			savePresetState();
+			mPresets = mParameterService.getPresets(*mParameterGroup);
 		}
 
 		handleLoadPresetPopup();
@@ -280,6 +288,30 @@ namespace nap
 				showPresets();
 			showParameters(*mParameterGroup);
 		}
+	}
+
+
+	bool ParameterGUI::load(std::string preset, utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mParameterGroup != nullptr, "No parameter group to reference"))
+			return false;
+
+		mPresets = mParameterService.getPresets(*mParameterGroup);
+		if (!errorState.check(!mPresets.empty(), "No presets found"))
+			return false;
+
+		const auto it = std::find(mPresets.begin(), mPresets.end(), preset);
+		if (!errorState.check(it != mPresets.end(), "Preset %s not found", preset.c_str()))
+			return false;
+
+		if (!mParameterService.loadPreset(*mParameterGroup, *it, errorState))
+		{
+			errorState.fail("Failed to load preset %s", (*it).c_str());
+			return false;
+		}
+
+		mSelectedPresetIndex = it - mPresets.begin();
+		return true;
 	}
 
 
