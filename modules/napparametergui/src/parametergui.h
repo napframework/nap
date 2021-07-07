@@ -38,9 +38,10 @@ namespace nap
 		void show(bool newWindow = true);
 
 		/**
-		 * Load a preset programatically
+		 * Load a preset programmatically
 		 * @param preset the filename of the preset to load
 		 * @param errorState contains the error if the preset load failed
+		 * @return if the preset loaded successfully
 		 */
 		bool load(std::string preset, utility::ErrorState& errorState);
 
