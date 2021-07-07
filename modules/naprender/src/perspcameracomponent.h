@@ -97,6 +97,12 @@ namespace nap
 		void setGridLocation(int row, int column);
 
 		/**
+		 * Sets whether the render projection matrix should be projected onto a perpendicular surface
+		 * @param enable if perpendicular render projection should be enabled
+		 */
+		void setPerpendicularRenderProjection(bool enable)			{ mPerpendicularRenderProjection = enable; }
+
+		/**
 		 * Sets the fov parameter
 		 * @param fov the new field of view
 		 */
@@ -129,10 +135,12 @@ namespace nap
 		void updateProjectionMatrices() const;
 
 	protected:
-		mutable glm::mat4x4				mProjectionMatrix;			// The composed projection matrix
-		mutable glm::mat4x4				mRenderProjectionMatrix;	// The composed projection matrix used by the renderer
-		mutable bool					mDirty = true;				// If the projection matrix needs to be recalculated
-		PerpCameraProperties			mProperties;				// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
-		TransformComponentInstance*		mTransformComponent;		// Cached transform component
+		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
+		mutable glm::mat4x4				mRenderProjectionMatrix;				// The composed projection matrix used by the renderer
+		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated
+		PerpCameraProperties			mProperties;							// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		TransformComponentInstance*		mTransformComponent;					// Cached transform component
+
+		bool							mPerpendicularRenderProjection = true;	// Whether the render projection matrix should be projected onto a perpendicular surface
 	};
 }
