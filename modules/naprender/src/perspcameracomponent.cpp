@@ -200,7 +200,7 @@ namespace nap
 		max = glm::tan(max_angle) * aspectRatio * nearPlane;
 	}
 
-	// Helper function to calculate either left/right or top/bottom camera planes, avoiding spherical distortion. The output is the physical location of the near plane in camera space.
+	// Helper function to calculate either left/right or top/bottom camera planes, avoiding view angle distortion. The output is the physical location of the near plane in camera space.
 	static void calculatePerpendicularCameraPlanes(float fov, float aspectRatio, float nearPlane, int numDimensions, int location, float& min, float& max)
 	{
 		assert(location < numDimensions);
