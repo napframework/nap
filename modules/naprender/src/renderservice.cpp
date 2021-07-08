@@ -1187,7 +1187,7 @@ namespace nap
 		sortFunction(components_to_render, camera);
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
-		// responding to various changes in render arget sizes.
+		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getBufferSize());
 
 		// Extract camera projection matrix
