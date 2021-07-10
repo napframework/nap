@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include <qmap.h>
 
 #include "abstractcurvemodel.h"
 
