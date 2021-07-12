@@ -300,6 +300,12 @@ namespace nap
 				: Clipboard(segmentType), mTrackID(std::move(trackID)), mSequenceName(std::move(sequenceName)){}
 
 			/**
+			 * Change track id
+			 * @param newTrackID the new track id
+			 */
+			void changeTrackID(const std::string& newTrackID);
+
+			/**
 			 * returns track id
 			 * @return the track id that contains the segment
 			 */

@@ -1031,6 +1031,9 @@ namespace nap
 														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
 														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
 					}
+
+					// also copy curve type
+					curve_controller->changeCurveType(trackId, new_segment->mID, curve_segment->mCurveTypes[c], c);
 				}
 
 				// make the controller re-align start & end points of segments

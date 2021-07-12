@@ -1283,13 +1283,22 @@ namespace nap
 
 			if( mState.mClipboard->containsObject(segmentID, getPlayer().getSequenceFilename()))
 			{
-				mState.mClipboard->removeObject(segmentID);
-
 				auto& controller = getEditor().getController<SequenceControllerCurve>();
 				const auto* segment = controller.getSegment(trackID, segmentID);
 
-				utility::ErrorState errorState;
-				mState.mClipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
+				/**
+				 * segment can be null, in which case we don't need to update anything because the segment doesn't exist
+				 * in the current sequence, but the clipboard can still hold the serialized content
+				 */
+				if(segment!=nullptr)
+				{
+					// remove the segment previous serialized data
+					mState.mClipboard->removeObject(segmentID);
+
+					// serialize the current segment
+					utility::ErrorState errorState;
+					mState.mClipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
+				}
 			}
 		}
 
@@ -1482,6 +1491,12 @@ namespace nap
 		{
 			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
 		}
+	}
+
+
+	void CurveSegmentClipboard::changeTrackID(const std::string& newTrackID)
+	{
+		mTrackID = newTrackID;
 	}
 }
 
