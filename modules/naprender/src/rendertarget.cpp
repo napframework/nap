@@ -30,6 +30,8 @@ namespace nap
 		// Create a single or multi-sample renderpass based on rasterization samples
 		static bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
+			bool multi_sample = samples != VK_SAMPLE_COUNT_1_BIT;
+
 			VkAttachmentDescription color_attachment = {};
 			color_attachment.format = colorFormat;
 			color_attachment.samples = samples;
@@ -38,7 +40,7 @@ namespace nap
 			color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			color_attachment.finalLayout = !multi_sample ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 			VkAttachmentDescription depth_attachment = {};
 			depth_attachment.format = depthFormat;
@@ -85,11 +87,11 @@ namespace nap
 			renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 			renderpass_info.subpassCount = 1;
 			renderpass_info.pSubpasses = &subpass;
-			renderpass_info.dependencyCount = dependencies.size();
+			renderpass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
 			renderpass_info.pDependencies = dependencies.data();
 
 			// Single-sample render pass
-			if (samples == VK_SAMPLE_COUNT_1_BIT)
+			if (!multi_sample)
 			{
 				std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
 				renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
