@@ -96,6 +96,8 @@ namespace nap
 				std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
 				renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
 				renderpass_info.pAttachments = attachments.data();
+
+				return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 			}
 			// Multi-sample render pass
 			else
@@ -122,8 +124,6 @@ namespace nap
 
 				return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
 			}
-
-			return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
 		}
 	}
 
