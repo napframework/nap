@@ -57,8 +57,6 @@ macro(nap_qt_pre)
 endmacro()
 
 macro(nap_qt_post PROJECTNAME)
-    qt5_use_modules(${PROJECT_NAME} Core Widgets Gui OpenGL)
-
     if(WIN32)
         add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
                            $<TARGET_FILE:Qt5::Widgets>
