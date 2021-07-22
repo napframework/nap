@@ -5,6 +5,7 @@ namespace nap
 
 	ControlThread::ControlThread(float rate)
 	{
+		mTicks.fill(0.f);
 		setDesiredControlRate(rate);
 	}
 
@@ -22,11 +23,11 @@ namespace nap
 	}
 
 
-	void ControlThread::start()
-	{
-		if (!mRunning)
-			mThread = std::make_unique<std::thread>([&](){ loop(); });
-	}
+    void ControlThread::start()
+    {
+        if (!mRunning)
+            mThread = std::make_unique<std::thread>([&](){ loop(); });
+    }
 
 
 	void ControlThread::stop()
