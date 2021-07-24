@@ -37,7 +37,7 @@ namespace nap
 		/**
 		 * @return the mesh instance
 		 */
-		virtual const MeshInstance& getMeshInstance() const	override	{ return *mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const override	{ return *mMeshInstance; }
 
 		float mSize = 1.0f;												///< Property: 'Size' axis length
 		glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };						///< Property: 'Position' position in object space

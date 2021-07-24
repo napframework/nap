@@ -56,7 +56,8 @@ namespace nap
     {
         mResource = getComponent<PythonScriptComponent>();
 
-		try {
+		try
+		{
 			mInstance = mResource->mPythonClass(getEntityInstance());
 		}
 		catch (const pybind11::error_already_set& err)

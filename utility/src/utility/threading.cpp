@@ -135,16 +135,16 @@ namespace nap
     {
         mThreads.emplace_back([&](){
 			TaskQueue::Task dequeuedTask;
-            while (!mStop)
+			while (!mStop)
 			{
 				mTaskQueue.wait_dequeue(dequeuedTask);
 				dequeuedTask();
 			}
         });
-        auto& thread = mThreads.back();
-        
-        if (mRealTimePriority)
-        {
+		auto& thread = mThreads.back();
+
+		if (mRealTimePriority)
+		{
 #ifdef _WIN32
             auto result = SetThreadPriority(thread.native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
             // If this assertion fails the thread failed to acquire realtime priority
