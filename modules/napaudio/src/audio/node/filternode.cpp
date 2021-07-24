@@ -4,6 +4,8 @@
 
 #include "filternode.h"
 
+#include <mathutils.h>
+
 RTTI_BEGIN_ENUM(nap::audio::FilterNode::EMode)
 	RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::LowPass, "LowPass"),
 	RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::HighPass, "HighPass"),
@@ -93,9 +95,7 @@ namespace nap
 		
 		void FilterNode::setFrequency(ControllerValue frequency)
 		{
-			mFrequency = frequency;
-			if (mFrequency <= 0)
-				mFrequency = 1;
+			mFrequency = math::max<float>(frequency, 1.f);
 			calcCoeffs();
 			mIsDirty.set();
 		}
