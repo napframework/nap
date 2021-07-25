@@ -23,7 +23,7 @@
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FontFile",			&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default, nap::rtti::EPropertyFileType::Font)
 	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiServiceConfiguration::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiServiceConfiguration::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DarkColor",			&nap::IMGuiServiceConfiguration::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
