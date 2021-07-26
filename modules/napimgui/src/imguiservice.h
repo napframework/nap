@@ -36,6 +36,7 @@ namespace nap
 
 	public:
 		float mFontSize				= 17.0f;							///< Property: 'FontSize' Gui Font Size
+		std::string mFontFile 		= "";								///< Property: 'FontFile' Path to a ttf font file in the data folder. If left empty the default NAP font will be used.
 		RGBColor8 mHighlightColor	= RGBColor8(0xC8, 0x69, 0x69);		///< Property: 'HighlightColor' Gui highlight color
 		RGBColor8 mBackgroundColor	= RGBColor8(0x2D, 0x2E, 0x42);		///< Property: 'BackgroundColor' Gui background color
 		RGBColor8 mDarkColor		= RGBColor8(0x11, 0x14, 0x26);		///< Property: 'DarkColor' Gui dark color
@@ -219,7 +220,7 @@ namespace nap
 		 * Simple struct that combines an ImGUI context with additional state information
 		 * Takes ownership of the context, destroys it on destruction
 		 */
-		struct GUIContext
+		struct NAPAPI GUIContext
 		{
 			GUIContext(ImGuiContext* context) : mContext(context) { };
 			~GUIContext();

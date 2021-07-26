@@ -8,6 +8,9 @@
 #include <audio/service/audioservice.h>
 #include <audio/utility/audiofileutils.h>
 
+// nap includes
+#include <nap/logger.h>
+
 // RTTI
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileResource)
 	RTTI_CONSTRUCTOR(nap::audio::AudioService &)
@@ -29,6 +32,7 @@ namespace nap
 			float sampleRate;
 			if (readAudioFile(mAudioFilePath, *getBuffer(), sampleRate, errorState))
 			{
+				nap::Logger::info("Loaded audio file: %s", mAudioFilePath.c_str());
 				setSampleRate(sampleRate);
 				return true;
 			}
@@ -50,6 +54,7 @@ namespace nap
 			{
 				if (readAudioFile(mAudioFilePaths[i], *getBuffer(), sampleRate, errorState))
 				{
+					nap::Logger::info("Loaded audio file: %s", mAudioFilePaths[i].c_str());
 					if (i == 0)
 						setSampleRate(sampleRate);
 					else {
