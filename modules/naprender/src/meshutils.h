@@ -50,7 +50,7 @@ namespace nap
 		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
 		/**
-		* Computes the bounding box of a mesh using its associated position data
+		* Computes the bounding box of a mesh using its associated position data.
 		* Note that indices are not considered. This call loops over all available
 		* points regardless of whether if they're drawn or not
 		* @param mesh the mesh to get the bounding box for
@@ -66,6 +66,15 @@ namespace nap
 		* @return the computed bounding box
 		*/
 		math::Box NAPAPI computeBoundingBox(const nap::MeshInstance& mesh);
+
+		/**
+		* Computes the bounding box of a single shape within a mesh using its associated position data.
+		* Note that the given shape must be part of the mesh.
+		* @param mesh the mesh that contains position data
+		* @param shape the shape to compute the bounding box for
+		* @param outBox the computed bounding box
+		*/
+		math::Box NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape);
 
 		/**
 		* Automatically re-computes all the normals of a mesh
