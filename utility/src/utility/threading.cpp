@@ -28,15 +28,9 @@ namespace nap
     
     void TaskQueue::process()
     {
-        auto it = mDequeuedTasks.begin();
-        auto count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
-        while (count > 0)
-        {
-            for (auto i = 0; i < count; ++i)
-                (*it++)();
-            it = mDequeuedTasks.begin();
-            count = mQueue.try_dequeue_bulk(it, mDequeuedTasks.size());
-        }
+		Task task;
+		while (mQueue.try_dequeue(task))
+			task();
     }
 
 
@@ -140,13 +134,17 @@ namespace nap
     void ThreadPool::addThread()
     {
         mThreads.emplace_back([&](){
-            while (!mStop)
-                mTaskQueue.processBlocking();
+			TaskQueue::Task dequeuedTask;
+			while (!mStop)
+			{
+				mTaskQueue.wait_dequeue(dequeuedTask);
+				dequeuedTask();
+			}
         });
-        auto& thread = mThreads.back();
-        
-        if (mRealTimePriority)
-        {
+		auto& thread = mThreads.back();
+
+		if (mRealTimePriority)
+		{
 #ifdef _WIN32
             auto result = SetThreadPriority(thread.native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
             // If this assertion fails the thread failed to acquire realtime priority
