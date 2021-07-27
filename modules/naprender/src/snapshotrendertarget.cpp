@@ -18,8 +18,9 @@ namespace nap
 		// Static functions
 		//////////////////////////////////////////////////////////////////////////
 		
-		// Create a single or multi-sample renderpass based on rasterization samples
-		static bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		// Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
+		// The renderpass is given an execution and memory dependency for resolving WAW hazards with color and depth attachments.
+		static bool createSnapshotRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
 			bool multi_sample = samples != VK_SAMPLE_COUNT_1_BIT;
 
@@ -201,7 +202,7 @@ namespace nap
 		framebuffer_info.layers = 1;
 
 		// Create single or multi-sample renderpass based on rasterization samples
-		if (!createRenderPass(mRenderService->getDevice(), mFormat, mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
+		if (!createSnapshotRenderPass(mRenderService->getDevice(), mFormat, mRenderService->getDepthFormat(), mRasterizationSamples, mRenderPass, errorState))
 			return false;
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
