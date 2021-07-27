@@ -200,6 +200,7 @@ namespace nap
 			ImGui::PopID();
 		}
 
+		// Add indentation if depth is higher than zero
 		if (depth > 0)
 		{
 			ImGui::Indent(ImGui::GetStyle().FramePadding.x + 1.0f);
@@ -208,9 +209,11 @@ namespace nap
 		{
 			if (ImGui::CollapsingHeader(child->mID.c_str()))
 			{
+			    // Increment the current depth to keep track of the indentation level
 				showParameters(*child, depth+1);
 			}
 		}
+		// Undo previously added indentation
 		if (depth > 0)
 		{
 			ImGui::Unindent(ImGui::GetStyle().FramePadding.x + 1.0f);
