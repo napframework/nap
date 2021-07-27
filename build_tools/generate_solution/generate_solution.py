@@ -28,7 +28,7 @@ def generate(forced_path, linux_build_type, use_codeblocks):
         call(['%s -H%s -B%s -G Xcode' % (cmake, nap_root, build_dir)], shell=True)
     else:
         build_dir = forced_path if forced_path else os.path.join(nap_root, MSVC_BUILD_DIR)
-        cmd = '%s -H%s -B%s -G "Visual Studio 14 2015 Win64" -DPYBIND11_PYTHON_VERSION=3.5' % (cmake, nap_root, build_dir)
+        cmd = '%s -H%s -B%s -G "Visual Studio 16 2019" -DPYBIND11_PYTHON_VERSION=3.5' % (cmake, nap_root, build_dir)
         call(cmd, shell=True)
     
 def get_cmake_path():

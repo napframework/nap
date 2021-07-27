@@ -73,6 +73,7 @@ namespace nap
 		mesh.setDrawMode(EDrawMode::TriangleStrip);
 		mesh.setCullMode(ECullMode::Back);
 		mesh.setUsage(EMeshDataUsage::Static);
+		mesh.setPolygonMode(EPolygonMode::Fill);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vertices.size());

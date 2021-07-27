@@ -19,7 +19,7 @@ namespace nap
 {
 	class CalendarInstance;
 	using CalendarItemList = std::vector<nap::ResourcePtr<CalendarItem>>;
-	constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
+	inline constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
 
 	/**
 	 * Base class of all Calendar types.

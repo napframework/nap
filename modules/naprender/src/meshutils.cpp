@@ -148,6 +148,26 @@ namespace nap
 		}
 
 
+		math::Box computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape)
+		{
+			glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
+			glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
+
+			const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(vertexid::position);
+			for (unsigned int i : shape.getIndices())
+			{
+				const glm::vec3& point = positions[i];
+				if (point.x < min.x) { min.x = point.x; }
+				if (point.x > max.x) { max.x = point.x; }
+				if (point.y < min.y) { min.y = point.y; }
+				if (point.y > max.y) { max.y = point.y; }
+				if (point.z < min.z) { min.z = point.z; }
+				if (point.z > max.z) { max.z = point.z; }
+			}
+			return math::Box(min, max);
+		}
+
+
 		void computeNormals(const MeshInstance& meshInstance, const VertexAttribute<glm::vec3>& positions, VertexAttribute<glm::vec3>& outNormals)
 		{
 			assert(outNormals.getCount() == positions.getCount());

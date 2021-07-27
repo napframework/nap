@@ -14,9 +14,9 @@ namespace nap
 	{
 		namespace constant
 		{	
-			constexpr const char* color			= "color";		///< Name of the 2D sampler that points to the glyph
-			constexpr const char* alpha			= "alpha";		///< Text color vec3 
-			constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
+			inline constexpr const char* color			= "color";		///< color value (0-1)
+			inline constexpr const char* alpha			= "alpha";		///< alpha value (0-1)
+			inline constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
 		}
 	}
 
