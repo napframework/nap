@@ -93,8 +93,14 @@ namespace nap
 				mUpdateSignal(mSampleTime);
 			}
 		}
-		
-		
+
+
+		void NodeManager::enqueueTask(nap::TaskQueue::Task task)
+		{
+			auto result = mTaskQueue.enqueue(task);
+		}
+
+
 		void NodeManager::setInputChannelCount(int inputChannelCount)
 		{
 			mInputChannelCount = inputChannelCount;
