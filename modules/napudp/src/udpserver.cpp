@@ -19,11 +19,10 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UDPServer)
-	RTTI_PROPERTY("Thread", &nap::UDPServer::mThread, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AllowFailure", &nap::UDPServer::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Endpoint", &nap::UDPServer::mIPRemoteEndpoint, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port", &nap::UDPServer::mPort, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::UDPServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AllowFailure", &nap::UDPServer::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap

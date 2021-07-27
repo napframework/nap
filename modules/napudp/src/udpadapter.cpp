@@ -5,6 +5,10 @@
 #include "udpadapter.h"
 #include "udpthread.h"
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UDPAdapter)
+	RTTI_PROPERTY("Thread", &nap::UDPAdapter::mThread, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -13,11 +17,10 @@ namespace nap
 
 	bool UDPAdapter::init(utility::ErrorState& errorState)
 	{
-		if(!errorState.check(mThread !=nullptr, "UDPThread cannot be nullptr"))
+		if(!errorState.check(mThread !=nullptr, "Thread cannot be nullptr"))
 			return false;
 
 		mThread->registerAdapter(this);
-
 		return true;
 	}
 
