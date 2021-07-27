@@ -87,7 +87,9 @@ namespace nap
 		void restorePresetState();
 
 		/**
-		 * Display all parameters as GUI elements.
+		 * Display all parameters as GUI elements. This function is recursive.
+		 * @param parameterGroup the parameter group to display
+		 * @param depth the current recursion depth. This is zero by default and is incremented automatically when dealing with nested parameter groups.
 		 */
 		void showParameters(ParameterGroup& parameterGroup, int depth = 0);
 
