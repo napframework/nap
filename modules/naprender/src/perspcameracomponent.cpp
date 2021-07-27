@@ -186,22 +186,9 @@ namespace nap
 		return projection;
 	}
 
+
 	// Helper function to calculate either left/right or top/bottom camera planes. The output is the physical location of the near plane in camera space.
 	static void calculateCameraPlanes(float fov, float aspectRatio, float nearPlane, int numDimensions, int location, float& min, float& max)
-	{
-		assert(location < numDimensions);
-		assert(numDimensions > 0);
-
-		const float start_angle = -fov * 0.5f;
-		const float split_angle = fov / (float)numDimensions;
-		const float min_angle = start_angle + split_angle * (float)location;
-		const float max_angle = min_angle + split_angle;
-		min = glm::tan(min_angle) * aspectRatio * nearPlane;
-		max = glm::tan(max_angle) * aspectRatio * nearPlane;
-	}
-
-	// Helper function to calculate either left/right or top/bottom camera planes, avoiding view angle distortion. The output is the physical location of the near plane in camera space.
-	static void calculatePerpendicularCameraPlanes(float fov, float aspectRatio, float nearPlane, int numDimensions, int location, float& min, float& max)
 	{
 		assert(location < numDimensions);
 		assert(numDimensions > 0);
@@ -242,7 +229,7 @@ namespace nap
 	}
 
 
-	// Use this function to split the projection into a grid of same-sized rectangles.
+	// Use this function to split the projection into a regular grid
 	void PerspCameraComponentInstance::setGridDimensions(int numRows, int numColumns)
 	{
 		if (numColumns != mProperties.mGridDimensions.x || numRows != mProperties.mGridDimensions.y)
@@ -291,17 +278,9 @@ namespace nap
 			const float aspect_ratio = ((float)(getRenderTargetSize().x * mProperties.mGridDimensions.x)) / ((float)(getRenderTargetSize().y * mProperties.mGridDimensions.y));
 
 			float left, right, top, bottom;
+			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
+			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
 
-			if (mPerpendicularRenderProjection)
-			{
-				calculatePerpendicularCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
-				calculatePerpendicularCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
-			}
-			else
-			{
-				calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
-				calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
-			}
 			mRenderProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
 			mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
 			mDirty = false;

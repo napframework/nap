@@ -174,7 +174,6 @@ namespace nap
 
 	void Snapshot::snap(PerspCameraComponentInstance& camera, std::function<void(nap::SnapshotRenderTarget&)> renderCallback)
 	{
-		camera.setPerpendicularRenderProjection(true);
 		camera.setGridDimensions(mNumRows, mNumColumns);
 		for (int i = 0; i < mNumCells; i++)
 		{
@@ -191,7 +190,6 @@ namespace nap
 		}
 		camera.setGridLocation(0, 0);
 		camera.setGridDimensions(1, 1);
-		camera.setPerpendicularRenderProjection(false);
 
 		// Create a surface descriptor for the fullsize bitmap
 		SurfaceDescriptor fullsize_surface_descriptor = mColorTextures[0]->getDescriptor();
