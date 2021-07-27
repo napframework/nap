@@ -18,6 +18,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GeometryFromFile)
 	RTTI_PROPERTY("NormalSmoothingAngle",	&nap::GeometryFromFile::mSmoothingAngle,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage",					&nap::GeometryFromFile::mUsage,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CullMode",				&nap::GeometryFromFile::mCullMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PolygonMode",			&nap::GeometryFromFile::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,6 +92,7 @@ namespace nap
 		mesh_instance->setUsage(mUsage);
 		mesh_instance->setCullMode(mCullMode);
 		mesh_instance->setDrawMode(EDrawMode::Triangles);
+		mesh_instance->setPolygonMode(mPolygonMode);
 
 		// Create importer
 		Assimp::Importer importer;
@@ -101,7 +103,6 @@ namespace nap
 			aiProcess_JoinIdenticalVertices;
 		flags = mGenerateNormals ? flags | aiProcess_GenSmoothNormals : flags;
 		flags = mCalculateTangents ? flags | aiProcess_CalcTangentSpace : flags;
-
 
 		// Load file using flags
 		importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, (int)mSmoothingAngle);

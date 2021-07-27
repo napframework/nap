@@ -8,6 +8,6 @@ namespace nap
 {
 	namespace rtti
 	{
-		constexpr char gRTTIBinaryVersion[] = "RTTIBinary-1.1";
+		inline constexpr char gRTTIBinaryVersion[] = "RTTIBinary-1.1";
 	}
 }

@@ -67,9 +67,9 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 
 Currently, whether working with the packaged framework release or against the framework source, we support the following operating systems:
 
-- macOS Catalina (10.9)
+- macOS Catalina (10.15)
 - Ubuntu Linux LTS (20.04)
-- Windows 10 with Visual Studio 2015
+- Windows 10, Visual Studio 2019 (v142)
 
 NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release. 
 When working against a binary package, follow the official [installation](https://www.napframework.com/doxygen/) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
@@ -82,7 +82,7 @@ Windows 10<br/>
 Ubuntu 20.04<br/>
 [![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
-MacOS 10.9<br/>
+macOS 10.15<br/>
 [![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
@@ -93,13 +93,15 @@ To generate a solution and compile the source code you need to have installed:
 	- The precompiled package uses Qt 5.11.3, although other versions are known to work.
 	- Use the Qt Online Installer and select the **Archive** package category to access older versions
 
-NAP depends on various other third party libraries. A set of compatible libraries can be downloaded from our github page. Put the thirdparty library directory next to the NAP source directory:
+NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
 
 - /dev
 	- nap
 	- thirdparty
 
-NAP requires that your Qt version is a build from [qt.io](http://download.qt.io/official_releases/qt/) and that the environment variable `QT_DIR` points to the directory that holds the libraries, e.g.: `C:\mycomp\qt\5.11.3\msvc2015_64`. Only the editor (Napkin) depends on Qt, NAP applications do not have a dependency on Qt.
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.11.3\msvc2015_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP applications do not have a dependency on Qt.
+
+On Windows, make sure the [Visual C++ 2013 Redistributable (x64)](https://www.microsoft.com/en-us/download/details.aspx?id=40784) is installed. This is (unfortunately) required because of a third party dependency.
 
 ## Create the Solution
 
@@ -109,9 +111,9 @@ Run:
 
 On success, run:
 
-`generate_solution.sh` to generate an `XCode project` (macOS x86-64)<br>
+`generate_solution.sh` to generate an `XCode project` (macOS Catalina/10.15 x86-64)<br>
 `generate_solution.bat` to generate a `Visual Studio Solution` (Windows 10 x86-64)<br>
-`generate_solution.sh` to generate `make files` (Linux, Ubuntu LTS x86-64)<br>
+`generate_solution.sh` to generate `make files` (Ubuntu LTS Linux 20.04 x86-64)<br>
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
 
@@ -172,11 +174,10 @@ Do not use the github `issues` page to ask questions. We already have a perfectl
 
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://community.napframework.com/) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
-Clang targeting macOS 10.9  macOS
-MSVC, VS2015x64             Windows10
-GCC <= 9.3.0 x86-64         Ubuntu LTS Linux		
+MSVC, Platform Toolset v142 on Windows 10
+Clang targeting Catalina/10.15 on macOS
+GCC <= 9.3.0 on Ubuntu LTS 20.04
 ```
-
 
 # License
 

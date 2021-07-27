@@ -21,7 +21,7 @@ if(NOT MODULE_INTO_PROJ)
     # Set our default build type if we haven't specified one (Linux)
     set_default_build_type()
 
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     if (WIN32)

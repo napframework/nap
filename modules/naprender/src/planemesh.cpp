@@ -15,13 +15,14 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",		&nap::PlaneMesh::mUsage,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",	&nap::PlaneMesh::mCullMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",		&nap::PlaneMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",	&nap::PlaneMesh::mPosition, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",		&nap::PlaneMesh::mColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Rows",		&nap::PlaneMesh::mRows,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Columns",	&nap::PlaneMesh::mColumns,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::PlaneMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CullMode",		&nap::PlaneMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PolygonMode",	&nap::PlaneMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",			&nap::PlaneMesh::mSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Position",		&nap::PlaneMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",			&nap::PlaneMesh::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Rows",			&nap::PlaneMesh::mRows,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Columns",		&nap::PlaneMesh::mColumns,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
  
 namespace nap
@@ -33,8 +34,11 @@ namespace nap
 
 	bool PlaneMesh::init(utility::ErrorState& errorState)
 	{
+		// Setup plane
 		if (!setup(errorState))
 			return false;
+
+		// Initialize instance
 		return mMeshInstance->init(errorState);
 	}
 
@@ -140,6 +144,7 @@ namespace nap
 		mesh.setDrawMode(EDrawMode::Triangles);
 		mesh.setUsage(mUsage);
 		mesh.setCullMode(mCullMode);
+		mesh.setPolygonMode(mPolygonMode);
 
 		// Push vertex data
 		position_attribute.setData(vertices.data(), vert_count);

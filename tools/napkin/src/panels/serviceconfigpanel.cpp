@@ -5,7 +5,7 @@
 #include "serviceconfigpanel.h"
 
 #include <napkin-resources.h>
-#include <appcontext.h>"
+#include <appcontext.h>
 
 namespace napkin
 {
