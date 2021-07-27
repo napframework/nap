@@ -92,7 +92,7 @@ namespace nap
 		void setGridDimensions(int numRows, int numColumns);
 
 		/**
-		* Sets the horizontal and vertical index into the projection grid as set by setSplitDimensions.
+		* Sets the horizontal and vertical index into the projection grid as set by setGridDimensions.
 		*/
 		void setGridLocation(int row, int column);
 
