@@ -28,16 +28,16 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The UDPClient class can be used send UdpPackets to an endpoint
+	 * The UDP Client class can be used send UDP Packets to an endpoint
 	 */
 	class NAPAPI UDPClient final : public UDPAdapter
 	{
 		RTTI_ENABLE(UDPAdapter)
 	public:
 		/**
-		 * initialization
+		 * Initializes the UDP client
 		 * @param error contains error information
-		 * @return true on succes
+		 * @return true on success
 		 */
 		bool init(utility::ErrorState& errorState) override;
 
@@ -47,20 +47,23 @@ namespace nap
 		void onDestroy() override;
 
 		/**
-		 * copies packet and queues the copied packet for sending
+		 * Makes a copy of the packet and queues if for sending.
+		 * Call send(std::move(packet)) if you want to move the packet instead.
+		 * @param packet the packet to copy and queue
 		 */
-		void copyQueuePacket(const UDPPacket& packet);
+		void send(const UDPPacket& packet);
 
 		/**
-		 * moves packet and queues the moved packet for sending
-		 * @param packet to move
+		 * Moves and queues the packet for sending.
+		 * @param packet to move and queue
 		 */
-		void moveQueuePacket(UDPPacket& packet);
+		void send(UDPPacket&& packet);
+
 	public:
 		// properties
 		int mPort 							= 13251; 		///< Property: 'Port' the port the client socket binds to
-		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip adress the client socket binds to
-		bool mThrowOnInitError 				= true;			///< Property: 'ThrowOnFailure' when client fails to bind socket, return false on start
+		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
+		bool mAllowFailure 					= false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
 	protected:

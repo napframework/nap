@@ -23,7 +23,7 @@ RTTI_BEGIN_CLASS(nap::UDPServer)
 	RTTI_PROPERTY("Endpoint", &nap::UDPServer::mIPRemoteEndpoint, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port", &nap::UDPServer::mPort, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::UDPServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ThrowOnFailure", &nap::UDPServer::mThrowOnInitError, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AllowFailure", &nap::UDPServer::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -42,37 +42,39 @@ namespace nap
 		// try to open socket
 		asio::error_code asio_error_code;
 		mSocket.open(udp::v4(), asio_error_code);
-
-		if( asio_error_code )
+		if(asio_error_code)
 		{
-			errorState.fail(asio_error_code.message());
-
-			if(mThrowOnInitError)
+			if(!mAllowFailure)
 			{
+				errorState.fail(asio_error_code.message());
 				return false;
 			}
 			else
 			{
-				nap::Logger::warn(*this, asio_error_code.message());
+				nap::Logger::error(*this, asio_error_code.message());
 			}
-		}else
+		}
+		else
 		{
 			// try to bind socket
 			nap::Logger::info(*this, "Listening at port %i", mPort);
 			mSocket.bind(udp::endpoint(address::from_string(mIPRemoteEndpoint), mPort), asio_error_code);
 			if( asio_error_code )
 			{
-				errorState.fail(asio_error_code.message());
-
-				if(mThrowOnInitError)
+				if (!mAllowFailure)
+				{
+					errorState.fail(asio_error_code.message());
 					return false;
+				}
 				else
-					nap::Logger::warn(*this, asio_error_code.message());
+				{
+					nap::Logger::error(*this, asio_error_code.message());
+				}
 			}
 		}
-
 		return true;
 	}
+
 
 	void UDPServer::onDestroy()
 	{
@@ -80,17 +82,13 @@ namespace nap
 		mSocket.close();
 	}
 
+
 	void UDPServer::process()
 	{
 		asio::error_code asio_error;
-
-		//
 		if(mSocket.available(asio_error) > 0)
 		{
-			mSocket.receive_from(asio::buffer(mBuffer),
-								 mRemoteEndpoint,
-								 0,
-								 asio_error);
+			mSocket.receive_from(asio::buffer(mBuffer), mRemoteEndpoint, 0,asio_error);
 
 			// construct udp packet, clears current buffer
 			std::vector<nap::uint8> buffer;

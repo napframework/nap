@@ -13,7 +13,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * UDPAdapters process() function will be called from the UDPThread the UDPAdapter registers to.
+	 * UDPAdapters process() function will be called from the UDP thread this UDP adapter registers to.
 	 * Both UDPClient & UDPServer extend on UDPAdapter
 	 */
 	class NAPAPI UDPAdapter : public Resource

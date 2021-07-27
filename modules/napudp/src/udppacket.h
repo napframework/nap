@@ -6,6 +6,7 @@
 
 // External includes
 #include <nap/core.h>
+#include <nap/event.h>
 
 namespace nap
 {
@@ -15,19 +16,35 @@ namespace nap
 	 * A UDPPacket can be send by a UDPClient to an endpoint, or created by the UDPServer upon receiving data
 	 * A UDPPacket can be moved or copied
 	 */
-	struct NAPAPI UDPPacket
+	struct NAPAPI UDPPacket final
 	{
 	public:
+		// Default constructor
+		UDPPacket() = default;
+
+		// Default copy constructor
+		UDPPacket(const UDPPacket& other) = default;
+
+		// Default copy assignment operator
+		UDPPacket& operator=(const UDPPacket& other) = default;
+
+		// Move constructor
+		UDPPacket(UDPPacket&& other) noexcept							{ mBuffer = std::move(other.mBuffer); }
+
+		// Move assignment operator
+		UDPPacket& operator=(UDPPacket&& other) noexcept				{ mBuffer = std::move(other.mBuffer); return *this;  }
+
 		/**
-		 * UDPPacket constructor
+		 * UDPPacket constructor moves the contents of supplied buffer if rvalue
+		 * @param buffer the buffer to be copied
 		 */
-		UDPPacket(){}
+		UDPPacket(std::vector<nap::uint8>&& buffer) : mBuffer(std::move(buffer)){}
 
 		/**
 		 * UDPPacket constructor copies the contents of supplied buffer
 		 * @param buffer the buffer to be copied
 		 */
-		UDPPacket(std::vector<nap::uint8> buffer) : mBuffer(std::move(buffer)){}
+		UDPPacket(const std::vector<nap::uint8>& buffer) : mBuffer(buffer) {}
 
 		/**
 		 * returns const reference to vector holding data
