@@ -38,6 +38,14 @@ namespace nap
 		void show(bool newWindow = true);
 
 		/**
+		 * Load a preset programmatically
+		 * @param preset the filename of the preset to load
+		 * @param errorState contains the error if the preset load failed
+		 * @return if the preset loaded successfully
+		 */
+		bool load(std::string preset, utility::ErrorState& errorState);
+
+		/**
 		 * Initializes the parameter GUI
 		 * @param errorState contains the error if initialization failed
 		 * @return if initialization succeeded
@@ -79,9 +87,11 @@ namespace nap
 		void restorePresetState();
 
 		/**
-		 * Display all parameters as GUI elements.
+		 * Display all parameters as GUI elements. This function is recursive.
+		 * @param parameterGroup the parameter group to display
+		 * @param depth the current recursion depth. This is zero by default and is incremented automatically when dealing with nested parameter groups.
 		 */
-		void showParameters(ParameterGroup& parameterGroup);
+		void showParameters(ParameterGroup& parameterGroup, int depth = 0);
 
 	private:
 		ParameterService&							mParameterService;					///< The parameter service
