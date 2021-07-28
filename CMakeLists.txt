@@ -164,9 +164,6 @@ add_subdirectory(demos/paintobject)
 add_subdirectory(demos/licensecheck)
 add_subdirectory(demos/tween)
 
-# Unit tests
-add_subdirectory(unittests)
-
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
     add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
