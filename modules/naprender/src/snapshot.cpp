@@ -17,8 +17,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width", &nap::Snapshot::mWidth, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height", &nap::Snapshot::mHeight, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaxCellWidth", &nap::Snapshot::mMaxCellWidth, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaxCellHeight", &nap::Snapshot::mMaxCellHeight, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Divisor", &nap::Snapshot::mDivisor, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OutputDirectory", &nap::Snapshot::mOutputDirectory, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ImageFileFormat", &nap::Snapshot::mImageFileFormat, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TextureFormat", &nap::Snapshot::mTextureFormat, nap::rtti::EPropertyMetaData::Default)
@@ -66,7 +65,7 @@ namespace nap
 	bool Snapshot::init(utility::ErrorState& errorState)
 	{
 		assert(mWidth > 0 && mHeight > 0);
-		assert(mMaxCellWidth > 0 && mMaxCellHeight > 0);
+		mDivisor = mDivisor > 0 ? mDivisor : 1;
 
 		// Ensure the RenderTexture2D format is supported for writing
 		if (!errorState.check(getFreeImageType(mTextureFormat) != FREE_IMAGE_TYPE::FIT_UNKNOWN, 
@@ -91,23 +90,25 @@ namespace nap
 
 		// Make sure not to create textures that exceed the hardware image dimension limit
 		uint32 max_image_dimension = mRenderService->getPhysicalDeviceProperties().limits.maxImageDimension2D;
-		mMaxCellWidth = std::min(mMaxCellWidth, max_image_dimension);
-		mMaxCellHeight = std::min(mMaxCellHeight, max_image_dimension);
+		if (!errorState.check(mWidth <= max_image_dimension && mHeight <= max_image_dimension, "Snapshot dimension exceeds maximum device image dimension of %d", max_image_dimension))
+			return false;
 
-		// Subdivide into cells if the max cellwidth|cellheight are smaller than the snapshot size
-		mNumRows = ceil(mWidth / static_cast<double>(mMaxCellWidth));
-		mNumColumns = ceil(mHeight / static_cast<double>(mMaxCellHeight));
+		// Ensure the width and height are divisible by the divisor
+		if (!errorState.check(mWidth%mDivisor == 0 && mHeight%mDivisor == 0, "mDivisor (%d) must be a common divisor of mWidth (%d) and mHeight (%d)", mDivisor, mWidth, mHeight))
+			return false;
 
-		assert(mNumRows > 0 && mNumColumns > 0);
-		assert(mNumRows < mWidth / 2 && mNumColumns < mHeight / 2);
+		mCellWidth = mWidth/mDivisor;
+		mCellHeight = mHeight/mDivisor;
+		mCellSize = { mCellWidth, mCellHeight };
 
+		mNumRows = mDivisor;
+		mNumColumns = mDivisor;
 		mNumCells = mNumRows * mNumColumns;
-		mCellSize = { mWidth / mNumRows, mHeight / mNumColumns };
 
 		// Inform user in case we have to subdivide the texture
 		if (mNumCells > 1)
 		{
-			Logger::info("%s: Dividing target buffer into %d %dx%d cells", mID.c_str(), mNumRows*mNumColumns, mCellSize.x, mCellSize.y);
+			Logger::info("%s: Dividing target buffer into %d %dx%d cells", mID.c_str(), mNumRows*mNumColumns, mCellWidth, mCellHeight);
 		}
 
 		// Check if we need to render to BGRA for image formats on little endian machines
@@ -123,8 +124,8 @@ namespace nap
 		for (auto& cell : mColorTextures)
 		{
 			cell = std::make_unique<RenderTexture2D>(mRenderService->getCore());
-			cell->mWidth = mCellSize.x;
-			cell->mHeight = mCellSize.y;
+			cell->mWidth = mCellWidth;
+			cell->mHeight = mCellHeight;
 			cell->mFill = true;
 			cell->mUsage = ETextureUsage::DynamicRead;
 			cell->mFormat = mTextureFormat;
@@ -211,9 +212,9 @@ namespace nap
 			mColorTextures[i]->asyncGetData([this, index = i, bpp = bits_per_pixel, type = fi_image_type](const void* data, size_t bytes)
 			{
 				// Wrap staging buffer data in a bitmap header
-				int cell_pitch = mCellSize.x*(bpp / 8);
+				int cell_pitch = mCellWidth*(bpp / 8);
 				FIBITMAP* fi_bitmap_src = FreeImage_ConvertFromRawBitsEx(
-					false, (uint8*)data, type, mCellSize.x, mCellSize.y, cell_pitch, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
+					false, (uint8*)data, type, mCellWidth, mCellHeight, cell_pitch, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK
 				);
 
 				// Unflatten index
@@ -221,7 +222,7 @@ namespace nap
 				uint32 y = index / mNumRows;
 
 				// Calculate area to copy
-				glm::u32vec2 min = { x*mCellSize.x, y*mCellSize.y };
+				glm::u32vec2 min = { x* mCellWidth, y* mCellHeight };
 				glm::u32vec2 max = min + mCellSize;
 
 				// Cast to a FreeImage bitmap handle
