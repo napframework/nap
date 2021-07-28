@@ -280,8 +280,8 @@ namespace nap
 			float left, right, top, bottom;
 			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
 			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
-
 			mRenderProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
+
 			mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
 			mDirty = false;
 		}
