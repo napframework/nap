@@ -707,10 +707,9 @@
         {
             "Type": "nap::Snapshot",
             "mID": "Snapshot",
-            "Width": 1920,
-            "Height": 1080,
-            "MaxCellWidth": 1920,
-            "MaxCellHeight": 1080,
+            "Width": 3840,
+            "Height": 2160,
+            "Divisor": 4,
             "OutputDirectory": "snapshots",
             "ImageFileFormat": "PNG",
             "TextureFormat": "RGBA8",

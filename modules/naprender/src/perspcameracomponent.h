@@ -84,7 +84,7 @@ namespace nap
 		virtual const glm::mat4 getViewMatrix() const override;
 
 		/**
-		 * Use this function to split the projection into a grid of squares. This can be used to render to multiple screens 
+		 * Use this function to split the projection into a regular grid. This can be used to render to multiple screens
 		 * with a single camera. Use setGridLocation to set the horizontal and vertical index into this grid.
 		 * @param numRows the number of cells in the horizontal
 		 * @param numColumns the number of cells in the vertical direction.
@@ -92,7 +92,7 @@ namespace nap
 		void setGridDimensions(int numRows, int numColumns);
 
 		/**
-		* Sets the horizontal and vertical index into the projection grid as set by setSplitDimensions.
+		* Sets the horizontal and vertical index into the projection grid as set by setGridDimensions.
 		*/
 		void setGridLocation(int row, int column);
 
@@ -129,10 +129,12 @@ namespace nap
 		void updateProjectionMatrices() const;
 
 	protected:
-		mutable glm::mat4x4				mProjectionMatrix;			// The composed projection matrix
-		mutable glm::mat4x4				mRenderProjectionMatrix;	// The composed projection matrix used by the renderer
-		mutable bool					mDirty = true;				// If the projection matrix needs to be recalculated
-		PerpCameraProperties			mProperties;				// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
-		TransformComponentInstance*		mTransformComponent;		// Cached transform component
+		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
+		mutable glm::mat4x4				mRenderProjectionMatrix;				// The composed projection matrix used by the renderer
+		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated
+		PerpCameraProperties			mProperties;							// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		TransformComponentInstance*		mTransformComponent;					// Cached transform component
+
+		bool							mPerpendicularRenderProjection = true;	// Whether the render projection matrix should be projected onto a perpendicular surface
 	};
 }
