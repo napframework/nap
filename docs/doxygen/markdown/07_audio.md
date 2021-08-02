@@ -45,7 +45,7 @@ Secondly, we need an entity with a [PlaybackComponent](@ref nap::audio::Playback
     "mID": "playbackComponent",
     "ChannelRouting": [ 0, 1 ],
     "Buffer": "audioFile",
-    "AutoPlay": "False",
+    "AutoPlay": false,
     "StartPosition": 0,
     "Duration": 0,
     "FadeInTime": 50,
