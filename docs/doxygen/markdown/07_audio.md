@@ -42,7 +42,7 @@ Secondly, we need an entity with a [PlaybackComponent](@ref nap::audio::Playback
 ```
 {
     "Type": "nap::audio::PlaybackComponent",
-    "mID": "audioComponent",
+    "mID": "playbackComponent",
     "ChannelRouting": [ 0, 1 ],
     "Buffer": "audioFile",
     "AutoPlay": "False",
@@ -69,7 +69,7 @@ This PlaybackComponent on its own does not produce any sound coming out of the s
     "Type": "nap::audio::OutputComponent",
     "mID": "output",
     "Routing": [ 0, 1 ],
-    "Input": "audioComponent"
+    "Input": "playbackComponent"
 }
 ```
 This component simply tells the audio engine to send the audio signals produced by the component specified as Input to the hardware outputs. The int array property Routing tells for each hardware output channel which channel of the input audio it will be routed to it. A value of -1 means no output will be sent to the corresponding channel.
