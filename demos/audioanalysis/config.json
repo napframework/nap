@@ -6,7 +6,7 @@
             "SampleRate" : 44100,
             "InputChannelCount" : 1,
             "OutputChannelCount" : 2,
-            "AllowChannelCountFailure": "True"
+            "AllowChannelCountFailure": true
         }
     ]
 }
