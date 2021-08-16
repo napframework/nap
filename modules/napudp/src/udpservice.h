@@ -52,6 +52,7 @@ namespace nap
 		 * @param deltaTime time since last udpate
 		 */
 		virtual void update(double deltaTime) override;
+
 	private:
 		/**
 		 * registers an UDPThread

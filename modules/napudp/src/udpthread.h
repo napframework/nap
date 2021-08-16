@@ -26,16 +26,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Enum describing the different update methods of a UDPThread
-	 * MAIN_THREAD 		= process UDPAdapters on main thread
-	 * SPAWN_OWN_THREAD = process UDPAdapters in newly spawned thread
-	 * MANUAL 			= only process UDPAdapters when the user explicitly calls manualProcess on the UDPThread
+	 * Different update methods of an UDPThread.
 	 */
 	enum EUDPThreadUpdateMethod : int
 	{
-		MAIN_THREAD 		= 0,
-		SPAWN_OWN_THREAD 	= 1,
-		MANUAL 				= 2
+		MAIN_THREAD			= 0,			///< process UDPAdapters on main thread
+		SPAWN_OWN_THREAD	= 1,			///< process UDPAdapters in newly spawned thread
+		MANUAL				= 2				///< only process UDPAdapters when the user explicitly calls manualProcess on the UDPThread
 	};
 
 	// forward declares
@@ -43,11 +40,11 @@ namespace nap
 	class UDPService;
 
 	/**
-	 * UDPThread is a device that calls the process() function on UDPAdapters
-	 * UDPAdapters are typically UDPServers or UDPClients
+	 * UDPThread is a device that calls the process() function on UDPAdapters.
+	 * UDPAdapters are typically UDPServers or UDPClients.
 	 * The UDPThread can can run on the main thread, in which case it registers itself to the UDPService,
-	 * in that case the UDPThread will call process() of the registered adapters inside the update() call of the UDPService
-	 * The UDPThread can spawn its own thread, in which case process() will be called within the while loop of a newly spawned thread
+	 * in that case the UDPThread will call process() of the registered adapters inside the update() call of the UDPService.
+	 * The UDPThread can spawn its own thread, in which case process() will be called within the while loop of a newly spawned thread.
 	 * When the user chooses to use MANUAL, process() will be called only when the user explicitly calls the manualProcess()
 	 * function of the UDPThread
 	 */
@@ -77,10 +74,11 @@ namespace nap
 		virtual void stop() override;
 	public:
 		// properties
-		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adaptares
+		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
 
 		/**
-		 * manual process can be called when update method is set to manual. If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything
+		 * Call this when update method is set to manual.
+		 If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything.
 		 */
 		void manualProcess();
 	private:

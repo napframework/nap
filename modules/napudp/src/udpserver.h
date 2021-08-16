@@ -29,9 +29,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The UDP Server connects to an endpoint and receives any UDP packets send to the endpoint
-	 * The server will invoke the packetReceived signal when packets are received
-	 * The signal will be fired on the thread this UDPServer is registered to, see UDPThread
+	 * The UDP Server connects to an endpoint and receives any UDP packets send to the endpoint.
+	 * The server will invoke the packetReceived signal when packets are received.
+	 * The signal will be fired on the thread this UDPServer is registered to, see UDPThread.
 	 */
 	class NAPAPI UDPServer final : public UDPAdapter
 	{

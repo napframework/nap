@@ -6,15 +6,14 @@
 
 // External includes
 #include <nap/core.h>
-#include <nap/event.h>
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * A UDPPacket can be send by a UDPClient to an endpoint, or created by the UDPServer upon receiving data
-	 * A UDPPacket can be moved or copied
+	 * Sent to an endpoint by an UDPClient or created by the UDPServer upon receiving data.
+	 * Light object that can be copied and moved.
 	 */
 	struct NAPAPI UDPPacket final
 	{
@@ -57,6 +56,7 @@ namespace nap
 		 * @return size of data buffer
 		 */
 		size_t size() const{ return mBuffer.size(); }
+
 	private:
 		std::vector<nap::uint8> mBuffer; ///< Vector containing packet data
 	};

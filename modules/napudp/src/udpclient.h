@@ -28,7 +28,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The UDP Client class can be used send UDP Packets to an endpoint
+	 * The UDP Client class is used to send UDP Packets to an endpoint.
 	 */
 	class NAPAPI UDPClient final : public UDPAdapter
 	{

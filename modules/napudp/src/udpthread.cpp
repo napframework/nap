@@ -38,35 +38,42 @@ namespace nap
 
 	bool UDPThread::start(utility::ErrorState& errorState)
 	{
-		mRun.store(true);
-		if(mUpdateMethod == EUDPThreadUpdateMethod::SPAWN_OWN_THREAD)
+		switch (mUpdateMethod)
 		{
+		case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
 			mThread = std::thread([this] { thread(); });
-		}else if(mUpdateMethod == EUDPThreadUpdateMethod::MAIN_THREAD)
-		{
+			break;
+		case EUDPThreadUpdateMethod::MAIN_THREAD:
 			mService.registerUdpThread(this);
-		}else if(mUpdateMethod == EUDPThreadUpdateMethod::MANUAL)
-		{
-			mManualProcessFunc = [this](){ process(); };
+			break;
+		case EUDPThreadUpdateMethod::MANUAL:
+			mManualProcessFunc = [this]() { process(); };
+			break;
+		default:
+			errorState.fail("Unknown UDP thread update method");
+			return false;
 		}
-
+		mRun = true;
 		return true;
 	}
 
 
 	void UDPThread::stop()
 	{
-		if( mRun.load() )
+		if(mRun)
 		{
-			mRun.store(false);
-
-			if(mUpdateMethod == EUDPThreadUpdateMethod::SPAWN_OWN_THREAD)
+			switch (mUpdateMethod)
 			{
+			case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
 				mThread.join();
-			}else if(mUpdateMethod == EUDPThreadUpdateMethod::MAIN_THREAD)
-			{
+				break;
+			case EUDPThreadUpdateMethod::MAIN_THREAD:
 				mService.removeUdpThread(this);
+				break;
+			default:
+				break;
 			}
+			mRun = false;
 		}
 	}
 
