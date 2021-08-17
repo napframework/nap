@@ -193,12 +193,10 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					auto variant = index.data(Qt::UserRole);
 					if (variant.canConvert<PropertyPath>())
 					{
-						nap::qt::ColorPicker picker;
-						picker.setColor(QColor(255, 255, 255));
-						picker.show();
+						nap::qt::ColorPickerDialog dialog(AppContext::get().getMainWindow());
+						dialog.exec();
 						return true;
 					}
-
 				}
 
 				else if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))

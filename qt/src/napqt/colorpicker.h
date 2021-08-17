@@ -11,6 +11,7 @@
 #include <QPainter>
 #include <QLineEdit>
 #include <QDoubleSpinBox>
+#include <QDialog>
 
 namespace nap
 {
@@ -198,6 +199,17 @@ namespace nap
 			ChannelInput mSliderValue;
 
 			QLineEdit mHexEdit;
+		};
+
+		class ColorPickerDialog : public QDialog
+		{
+			Q_OBJECT
+		public:
+			explicit ColorPickerDialog(QWidget* parent);
+
+		private:
+			QVBoxLayout mLayout;
+			ColorPicker mColorPicker;
 		};
 	}
 }

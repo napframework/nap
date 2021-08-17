@@ -622,3 +622,12 @@ void ColorPicker::onColorChanged(const QColor& col)
 
 	mHexEdit.setText(mColor.hex());
 }
+
+
+nap::qt::ColorPickerDialog::ColorPickerDialog(QWidget* parent) : QDialog(parent)
+{
+	setWindowTitle("Select Color");
+	setLayout(&mLayout);
+	mLayout.addWidget(&mColorPicker);
+	setWindowModality(Qt::ApplicationModal);
+}
