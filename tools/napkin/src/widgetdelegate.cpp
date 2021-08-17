@@ -194,6 +194,8 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					if (variant.canConvert<PropertyPath>())
 					{
 						nap::qt::ColorPickerDialog dialog(AppContext::get().getMainWindow());
+						dialog.move(QCursor::pos());
+						dialog.setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
 						dialog.exec();
 						return true;
 					}
