@@ -35,11 +35,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-
-set(NAPKIN_LIB ${PROJECT_NAME}_lib)
-
 # Create library from app for unittests
+set(NAPKIN_LIB ${PROJECT_NAME}_lib)
 add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+set_target_properties(${NAPKIN_LIB} PROPERTIES FOLDER Tools)
 
 # The NAP modules Napkin needs
 set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_nappython mod_napcolor)

@@ -12,13 +12,16 @@
 #include <QMouseEvent>
 #include <QFileDialog>
 #include <QPainter>
+#include <color.h>
+#include <napqt/colorpicker.h>
 
 using namespace napkin;
 
 PropertyValueItemDelegate::PropertyValueItemDelegate()
 {
-	mLinkIcon = QIcon(QRC_ICONS_LINK);
-	mFileIcon = QIcon(QRC_ICONS_FILE);
+	mLinkIcon  = QIcon(QRC_ICONS_LINK);
+	mFileIcon  = QIcon(QRC_ICONS_FILE);
+	mColorIcon = QIcon(QRC_COLOR_WHEEL_FILE);
 }
 
 
@@ -27,7 +30,9 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 {
 	QVariant col = index.data(Qt::BackgroundRole);
 	if (col.isValid())
+	{
 		painter->fillRect(option.rect, col.value<QColor>());
+	}
 
 	auto type = getTypeFromModelIndex(index);
 	auto path = getPropertyPathFromIndex(index);
@@ -36,9 +41,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	{
 		uint val = index.model()->data(index, Qt::DisplayRole).toUInt();
 		QStyleOptionViewItem op(option);
-
 		op.text = enumIndexToQString(type.get_enumeration(), val);
-
 		QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
 	}
 	else if (path.isPointer())
@@ -62,6 +65,19 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		auto pixmap = mLinkIcon.pixmap(rect_btn.size());
 		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
 	}
+	else if (path.isColor())
+	{
+		// Forward to draw text field
+		QRect rect_txt = QRect( option.rect.left(),  option.rect.top(), option.rect.width() - option.rect.height(), option.rect.height());
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.height(), option.rect.height());
+		QStyleOptionViewItem viewop(option);
+		viewop.rect = rect_txt;
+		QStyledItemDelegate::paint(painter, viewop, index);
+
+		// Add pointer button
+		auto pixmap = mColorIcon.pixmap(rect_btn.size());
+		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
+	}
 	else if (type == rttr::type::get<bool>())
 	{
 
@@ -77,8 +93,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		}
 		QApplication::style()->drawControl(QStyle::CE_CheckBox, &styleOption, painter);
 	}
-	else if (type == rttr::type::get<std::string>()
-			 && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
+	else if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 	{
 		// Forward to draw text field
 		QRect rect_txt = QRect(option.rect.left(),
@@ -104,17 +119,18 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	}
 }
 
+
 QSize PropertyValueItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
 	return QStyledItemDelegate::sizeHint(option, index);
 }
 
-bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model,
-											const QStyleOptionViewItem& option, const QModelIndex& index)
+
+bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
 	auto path = getPropertyPathFromIndex(index);
-
 	auto type = getTypeFromModelIndex(index);
+
 	if (path.isEnum())
 	{
 		return false;
@@ -171,8 +187,21 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 					}
 
 				}
-				else if (type == rttr::type::get<std::string>()
-						 && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
+
+				if (propertyPath.isColor())
+				{
+					auto variant = index.data(Qt::UserRole);
+					if (variant.canConvert<PropertyPath>())
+					{
+						nap::qt::ColorPicker picker;
+						picker.setColor(QColor(255, 255, 255));
+						picker.show();
+						return true;
+					}
+
+				}
+
+				else if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 				{
 					bool ok;
 
@@ -212,7 +241,9 @@ const PropertyPath PropertyValueItemDelegate::getPropertyPathFromIndex(const QMo
 {
 	auto variant = idx.data(Qt::UserRole);
 	if (variant.canConvert<PropertyPath>())
+	{
 		return variant.value<PropertyPath>();
+	}
 	return {};
 }
 

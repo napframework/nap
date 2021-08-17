@@ -50,6 +50,12 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 		items << new PropertyValueItem(path);
 		items << new RTTITypeItem(type);
 	}
+	else if (path.isColor())
+	{
+		items << new CompoundPropertyItem(path);
+		items << new CompoundPropertyItem(path);
+		items << new RTTITypeItem(type);
+	}
 	else
 	{
         // Assuming leftovers are compounds
