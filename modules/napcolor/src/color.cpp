@@ -16,26 +16,31 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_STRUCT(nap::RGBColor8)
 	RTTI_VALUE_CONSTRUCTOR(nap::uint8, nap::uint8, nap::uint8)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RGBColor8::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RGBAColor8)
 	RTTI_VALUE_CONSTRUCTOR(nap::uint8, nap::uint8, nap::uint8, nap::uint8)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RGBAColor8::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RGBColor16)
 	RTTI_VALUE_CONSTRUCTOR(nap::uint16, nap::uint16, nap::uint16)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RGBColor16::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RGBAColor16)
 	RTTI_VALUE_CONSTRUCTOR(nap::uint16, nap::uint16, nap::uint16, nap::uint16)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RGBAColor16::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RGBColorFloat)
 	RTTI_VALUE_CONSTRUCTOR(float, float, float)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RGBColorFloat::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
@@ -46,16 +51,19 @@ RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RColor8)
 	RTTI_VALUE_CONSTRUCTOR(nap::uint8)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RColor8::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RColor16)
 	RTTI_VALUE_CONSTRUCTOR(nap::uint16)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RColor16::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RColorFloat)
 	RTTI_VALUE_CONSTRUCTOR(float)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RColorFloat::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 

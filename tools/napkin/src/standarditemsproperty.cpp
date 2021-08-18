@@ -212,24 +212,34 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 	nap::rtti::ResolvedPath resolved = mPath.resolve();
 	assert(resolved.getType().is_derived_from(RTTI_OF(nap::BaseColor)));
 	nap::rtti::Variant var = resolved.getValue();
-	const nap::BaseColor& current_color = var.get_value<nap::BaseColor>();
+	const nap::BaseColor& target_color = var.get_value<nap::BaseColor>();
 
 	// Number of channels <= target
-	int channel_count = color_str.size() / 2;
-	if (channel_count > current_color.getNumberOfChannels())
+	int display_channel_count = color_str.size() / 2;
+	if (display_channel_count > target_color.getNumberOfChannels())
 		return;
 
-	// Convert string to nap color RGBA8
-	nap::RGBAColor8 nap_color;
-	for (int i = 0; i < channel_count; i++)
-	{
+		// Convert string to nap color RGBA8
+		nap::RGBAColor8 nap_color;
 		bool valid = false;
-		nap::uint8 color_val = static_cast<nap::uint8>(color_str.midRef(i * 2, 2).toUInt(&valid, 16));
-		if (!valid)
+		for (int i = 0; i < display_channel_count; i++)
 		{
-			return;
+			nap_color[i] = static_cast<nap::uint8>(color_str.midRef(i * 2, 2).toUInt(&valid, 16));
+			if (!valid)
+			{
+				return;
+			}
 		}
+
+	// Create target color using RTTI and set.
+	// The color constructor, registered with RTTI, is called and converts the RGBA8 color for us.
+	rttr::variant new_color = resolved.getType().create({ *static_cast<nap::BaseColor*>(&nap_color) });
+	if (!new_color.is_valid())
+	{
+		assert(false);
+		return;
 	}
+	resolved.setValue(new_color);
 }
 
 
