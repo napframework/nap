@@ -236,7 +236,7 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 	rttr::variant new_color = resolved.getType().create({ *static_cast<nap::BaseColor*>(&nap_color) });
 	if (!new_color.is_valid())
 	{
-		assert(false);
+		assert(false);	///< Color could not be constructed!
 		return;
 	}
 	resolved.setValue(new_color);
