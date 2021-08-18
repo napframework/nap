@@ -179,7 +179,7 @@ namespace nap
 
 	static void shortToFLoat(const BaseColor& inColor, BaseColor& outColor, int channel)
 	{
-		assert(inColor.getValueType() == RTTI_OF(uint16));
+		assert(inColor.getValueType()  == RTTI_OF(uint16));
 		assert(outColor.getValueType() == RTTI_OF(float));
 		
 		float* out(nullptr);
@@ -189,7 +189,7 @@ namespace nap
 
 	static void shortToByte(const BaseColor& inColor, BaseColor& outColor, int channel)
 	{
-		assert(inColor.getValueType() == RTTI_OF(uint16));
+		assert(inColor.getValueType()  == RTTI_OF(uint16));
 		assert(outColor.getValueType() == RTTI_OF(uint8));
 
 		uint8* out(nullptr);
@@ -199,7 +199,7 @@ namespace nap
 
 	static void shortToShort(const BaseColor& inColor, BaseColor& outColor, int channel)
 	{
-		assert(inColor.getValueType() == RTTI_OF(uint16));
+		assert(inColor.getValueType()  == RTTI_OF(uint16));
 		assert(outColor.getValueType() == RTTI_OF(uint16));
 
 		uint16* out(nullptr);
