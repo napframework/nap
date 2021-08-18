@@ -131,11 +131,14 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	auto path = getPropertyPathFromIndex(index);
 	auto type = getTypeFromModelIndex(index);
 
+	// Enum
 	if (path.isEnum())
 	{
 		return false;
 	}
-	else if (type == rttr::type::get<bool>())
+
+	// Toggle
+	if (type == rttr::type::get<bool>())
 	{
 		if (event->type() == QEvent::MouseButtonPress)
 		{
@@ -144,86 +147,78 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 		}
 		return true;
 	}
-	else
+
+	// Mouse click on icon
+	QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.right(), option.rect.height());
+	auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
+	if(event->type() == QEvent::MouseButtonPress && rect_btn.contains(mouseEvent->pos()))
 	{
-		if (event->type() == QEvent::MouseButtonPress)
+
+		// TODO: There must be a less convoluted way.
+		// In the case of array elements, the type will be the array type, not the element type.
+		// For now, grab the array's element type and use that.
+		nap::rtti::TypeInfo wrapped_type = path.getWrappedType();
+		if (type.is_array())
 		{
-			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
-			QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
-								   option.rect.top(),
-								   option.rect.right(),
-								   option.rect.height());
+			nap::rtti::Variant value = path.getValue();
+			nap::rtti::VariantArray array = value.create_array_view();
+			nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+			wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
+		}
 
-			if (rect_btn.contains(mouseEvent->pos()))
+		if (path.isPointer())
+		{
+			auto variant = index.data(Qt::UserRole);
+
+			if (variant.canConvert<PropertyPath>())
 			{
-				auto propertyPath = getPropertyPathFromIndex(index);
+				auto path = variant.value<PropertyPath>();
+				auto objects = AppContext::get().getDocument()->getObjects(wrapped_type);
+				auto selected = napkin::showObjectSelector(AppContext::get().getMainWindow(), objects);
+				if (selected != nullptr)
+					model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
 
-				// TODO: There must be a less convoluted way.
-				// In the case of array elements, the type will be the array type, not the element type.
-				// For now, grab the array's element type and use that.
+				return true;
+			}
 
-				nap::rtti::TypeInfo wrapped_type = propertyPath.getWrappedType();
-				if (type.is_array())
-				{
-					nap::rtti::Variant value = propertyPath.getValue();
-					nap::rtti::VariantArray array = value.create_array_view();
-					nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
-					wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-				}
+		}
 
-				if (propertyPath.isPointer())
-				{
-					auto variant = index.data(Qt::UserRole);
-
-					if (variant.canConvert<PropertyPath>())
-					{
-						auto path = variant.value<PropertyPath>();
-						auto objects = AppContext::get().getDocument()->getObjects(wrapped_type);
-						auto selected = napkin::showObjectSelector(AppContext::get().getMainWindow(), objects);
-						if (selected != nullptr)
-							model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
-
-						return true;
-					}
-
-				}
-
-				if (propertyPath.isColor())
-				{
-					auto variant = index.data(Qt::UserRole);
-					if (variant.canConvert<PropertyPath>())
-					{
-						nap::qt::ColorPickerDialog dialog(AppContext::get().getMainWindow());
-						dialog.move(QCursor::pos());
-						dialog.setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
-						dialog.exec();
-						return true;
-					}
-				}
-
-				else if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
-				{
-					bool ok;
-
-					QString currentFilePath = getAbsoluteResourcePath(QString::fromStdString(path.getValue().to_string(&ok)));
-					QString dir = QFileInfo(currentFilePath).path();
-
-					auto& ctx = AppContext::get();
-					auto parent = ctx.getMainWindow();
-					auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
-					auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
-					if (!filename.isEmpty())
-					{
-						// Make relative if inside resource dir
-						if (nap::qt::directoryContains(getResourceReferencePath(), filename))
-							filename = getRelativeResourcePath(filename);
-						model->setData(index, filename);
-					}
-					return true;
-				}
+		if (path.isColor())
+		{
+			auto variant = index.data(Qt::UserRole);
+			if (variant.canConvert<PropertyPath>())
+			{
+				nap::qt::ColorPickerDialog dialog(AppContext::get().getMainWindow());
+				dialog.move(QCursor::pos());
+				dialog.setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
+				dialog.exec();
+				return true;
 			}
 		}
+
+		if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
+		{
+			bool ok;
+
+			QString currentFilePath = getAbsoluteResourcePath(QString::fromStdString(path.getValue().to_string(&ok)));
+			QString dir = QFileInfo(currentFilePath).path();
+
+			auto& ctx = AppContext::get();
+			auto parent = ctx.getMainWindow();
+			auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
+			auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
+			if (!filename.isEmpty())
+			{
+				// Make relative if inside resource dir
+				if (nap::qt::directoryContains(getResourceReferencePath(), filename))
+					filename = getRelativeResourcePath(filename);
+				model->setData(index, filename);
+			}
+			return true;
+		}
 	}
+
+	// Default
 	return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 

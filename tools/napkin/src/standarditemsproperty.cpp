@@ -170,11 +170,13 @@ QVariant napkin::ColorValueItem::data(int role) const
 	case Qt::DisplayRole:
 	case Qt::EditRole:
 	{
-		// Get color (copy)
-		nap::rtti::Variant var = mPath.resolve().getValue();
+		// Get nap color
+		nap::rtti::ResolvedPath resolved = mPath.resolve();
+		assert(resolved.getType().is_derived_from(RTTI_OF(nap::BaseColor)));
+		nap::rtti::Variant var = resolved.getValue();
 		const nap::BaseColor& color = var.get_value<nap::BaseColor>();
 
-		// Create color for conversion
+		// Create color for display conversion
 		nap::RGBAColor8 display_color;
 		assert(color.getNumberOfChannels() <= display_color.getNumberOfChannels());
 
@@ -200,7 +202,34 @@ QVariant napkin::ColorValueItem::data(int role) const
 
 void napkin::ColorValueItem::setData(const QVariant& value, int role)
 {
-	nap::Logger::info("Set Color!");
+	// Ensure we can parse string, must be dividable by 2
+	QString color_str = value.toString();
+	color_str.remove('#');
+	if (color_str.size() % 2 != 0)
+		return;
+
+	// Resolve path
+	nap::rtti::ResolvedPath resolved = mPath.resolve();
+	assert(resolved.getType().is_derived_from(RTTI_OF(nap::BaseColor)));
+	nap::rtti::Variant var = resolved.getValue();
+	const nap::BaseColor& current_color = var.get_value<nap::BaseColor>();
+
+	// Number of channels <= target
+	int channel_count = color_str.size() / 2;
+	if (channel_count > current_color.getNumberOfChannels())
+		return;
+
+	// Convert string to nap color RGBA8
+	nap::RGBAColor8 nap_color;
+	for (int i = 0; i < channel_count; i++)
+	{
+		bool valid = false;
+		nap::uint8 color_val = static_cast<nap::uint8>(color_str.midRef(i * 2, 2).toUInt(&valid, 16));
+		if (!valid)
+		{
+			return;
+		}
+	}
 }
 
 
@@ -246,7 +275,6 @@ napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
 
 QVariant napkin::PropertyValueItem::data(int role) const
 {
-
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
 		QVariant variant;
