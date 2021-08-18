@@ -53,7 +53,7 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 	else if (path.isColor())
 	{
 		items << new CompoundPropertyItem(path);
-		items << new CompoundPropertyItem(path);
+		items << new ColorValueItem(path);
 		items << new RTTITypeItem(type);
 	}
 	else
@@ -155,8 +155,37 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 
 napkin::PointerValueItem::PointerValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
+{ }
+
+
+napkin::ColorValueItem::ColorValueItem(const PropertyPath& path) : PropertyPathItem(path)
+{ }
+
+
+QVariant napkin::ColorValueItem::data(int role) const
 {
+	switch (role)
+	{
+	case Qt::DisplayRole:
+	case Qt::EditRole:
+	{
+		return "";
+	}
+	case Qt::UserRole:
+	{
+		return QVariant::fromValue(mPath);
+	}
+	default:
+		return QStandardItem::data(role);
+	}
 }
+
+
+void napkin::ColorValueItem::setData(const QVariant& value, int role)
+{
+	nap::Logger::info("Set Color!");
+}
+
 
 void napkin::EmbeddedPointerItem::populateChildren()
 {
@@ -241,4 +270,3 @@ napkin::PropertyValueItem::PropertyValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
 }
-
