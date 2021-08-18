@@ -46,6 +46,7 @@ RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::RGBAColorFloat)
 	RTTI_VALUE_CONSTRUCTOR(float, float, float, float)
+	RTTI_VALUE_CONSTRUCTOR(const nap::BaseColor&)
 	RTTI_PROPERTY("Values", &nap::RGBAColorFloat::mValues, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
