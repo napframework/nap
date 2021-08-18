@@ -11,6 +11,7 @@
 
 #include <QtDebug>
 #include <rtti/object.h>
+#include <color.h>
 
 QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 {
@@ -169,7 +170,23 @@ QVariant napkin::ColorValueItem::data(int role) const
 	case Qt::DisplayRole:
 	case Qt::EditRole:
 	{
-		return "";
+		// Get color (copy)
+		nap::rtti::Variant var = mPath.resolve().getValue();
+		const nap::BaseColor& color = var.get_value<nap::BaseColor>();
+
+		// Create color for conversion
+		nap::RGBAColor8 display_color;
+		assert(color.getNumberOfChannels() <= display_color.getNumberOfChannels());
+
+		// Create base 16 color display
+		nap::BaseColor::Converter converter = color.getConverter(display_color);
+		QString display = "#";
+		for (int i = 0; i < color.getNumberOfChannels(); i++)
+		{
+			 converter(color, display_color, i);
+			 display.append(QString::number(display_color[i], 16).toUpper());
+		}
+		return display;
 	}
 	case Qt::UserRole:
 	{
