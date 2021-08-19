@@ -17,6 +17,43 @@
 
 using namespace napkin;
 
+/**
+ * Converts a NAP hex display color (#RRGGBBAA) to QColor.
+ * The color is invalid when conversion fails.
+ */
+static QColor getColorFromString(const QString& colorString)
+{
+	assert(colorString.startsWith('#'));
+	assert((colorString.size() - 1) % 2 == 0);
+	int channels = (colorString.size() - 1) / 2;
+
+	// Compensate for alpha, this sucks but so does QT here: #AARRGGBB?
+	// Colors are always ordered and displayed as #RRGGBBAA
+	// Colors of only 1 value can't be converted to QColor, append 0 to form RGB
+	QString cur_color_str = colorString;
+	switch (channels)
+	{
+	case 1:
+		cur_color_str.append("0000");
+		break;
+	case 3:
+		break;
+	case 4:
+	{
+		QString red = cur_color_str.mid(1, 2);
+		cur_color_str.replace((0 * 2) + 1, 2, cur_color_str.mid(3 * 2, 2));
+		cur_color_str.replace((3 * 2) + 1, 2, red);
+		break;
+	}
+	default:
+		break;
+	}
+
+	// Create color from string
+	return QColor(cur_color_str);
+}
+
+
 PropertyValueItemDelegate::PropertyValueItemDelegate()
 {
 	mLinkIcon  = QIcon(QRC_ICONS_LINK);
@@ -68,15 +105,33 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	else if (path.isColor())
 	{
 		// Forward to draw text field
-		QRect rect_txt = QRect( option.rect.left(),  option.rect.top(), option.rect.width() - option.rect.height(), option.rect.height());
-		QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.height(), option.rect.height());
+		QRect rect_txt = QRect(option.rect.left(), option.rect.top(), option.rect.width() - option.rect.height(), option.rect.height());
+
+		int offset = int(float(option.rect.height()) * 0.25);
+		QRect rect_btn = QRect
+		(
+			QPoint(option.rect.right() - option.rect.height() + offset, option.rect.top() + offset),
+			QPoint(option.rect.right() - offset, option.rect.top() + option.rect.height() - offset)
+		);
+
+		// Text
 		QStyleOptionViewItem viewop(option);
 		viewop.rect = rect_txt;
 		QStyledItemDelegate::paint(painter, viewop, index);
 
-		// Add pointer button
-		auto pixmap = mColorIcon.pixmap(rect_btn.size());
-		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
+		// Get current color and set as background
+		QString cur_color_str = index.model()->data(index, Qt::DisplayRole).toString();
+		QColor background_color = getColorFromString(cur_color_str);
+		if (!background_color.isValid())
+		{
+			background_color = Qt::white;
+		}
+
+		// Create and draw color picker icon
+		painter->setBrush(QBrush(background_color));
+		painter->setPen(QPen(option.palette.color(option.palette.Dark), 1.5f) );
+		painter->setRenderHint(QPainter::Antialiasing);
+		painter->drawEllipse(rect_btn);
 	}
 	else if (type == rttr::type::get<bool>())
 	{
@@ -96,14 +151,8 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	else if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 	{
 		// Forward to draw text field
-		QRect rect_txt = QRect(option.rect.left(),
-							   option.rect.top(),
-							   option.rect.width() - option.rect.height(),
-							   option.rect.height());
-		QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
-							   option.rect.top(),
-							   option.rect.height(),
-							   option.rect.height());
+		QRect rect_txt = QRect(option.rect.left(), option.rect.top(), option.rect.width() - option.rect.height(), option.rect.height());
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.height(), option.rect.height()); 
 
 		QStyleOptionViewItem viewop(option);
 		viewop.rect = rect_txt;
@@ -188,24 +237,13 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 			auto variant = index.data(Qt::UserRole);
 			if (variant.canConvert<PropertyPath>())
 			{
+				// Color as string
 				QString cur_color_str  = model->data(index, Qt::DisplayRole).toString();
-				assert(cur_color_str.startsWith('#'));
-				assert((cur_color_str.size() - 1) % 2 == 0);
 
-				// Compensate for alpha, this sucks but so does QT here: #AARRGGBB?
-				// Colors are always ordered and displayed as #RRGGBBAA
-				if ((cur_color_str.size() -1) / 2 == 4)
-				{
-					QString red = cur_color_str.mid(1, 2);
-					cur_color_str.replace((0*2) + 1, 2, cur_color_str.mid(3 * 2, 2));
-					cur_color_str.replace((3*2) + 1, 2, red);
-				}
-				std::string temp_str = cur_color_str.toStdString();
-
-				// Create color
-				QColor current_qcolor(cur_color_str);
+				// Create color from string
+				QColor current_qcolor = getColorFromString(cur_color_str);;
 				if (!current_qcolor.isValid())
-					current_qcolor = QColor(0xFF, 0xFF, 0xFF, 0xFF);
+					current_qcolor = QColor(Qt::white);
 
 				// Color picker dialog
 				QColor color_sel = nap::qt::ColorPickerDialog::selectColor(AppContext::get().getMainWindow(), current_qcolor);
