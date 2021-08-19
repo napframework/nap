@@ -30,35 +30,40 @@ static QColor getColorFromString(const QString& colorString)
 	// Compensate for alpha, this sucks but so does QT here: #AARRGGBB?
 	// Colors are always ordered and displayed as #RRGGBBAA
 	// Colors of only 1 value can't be converted to QColor, append 0 to form RGB
+	QString rgb_string = colorString;
+	uint alpha = 0xFF;
+
 	switch (channels)
 	{
 	case 1:
 	{
-		QString cur_color_str = colorString;
-		cur_color_str.append("0000");
-		return QColor(cur_color_str);
+		rgb_string.append("0000");
+		break;
 	}
 	case 3:
-		return QColor(colorString);
+		break;
 	case 4:
 	{
 		// Get alpha value
-		QString cur_color_str = colorString;
 		bool valid = false;
-		uint alpha = cur_color_str.mid((3 * 2) + 1, 2).toUInt(&valid, 16);
+		alpha = rgb_string.mid((3 * 2) + 1, 2).toUInt(&valid, 16);
 		assert(valid);
-		cur_color_str.chop(2);
-		QColor rcolor(cur_color_str);
-		if (rcolor.isValid())
-		{
-			rcolor.setAlpha(alpha);
-			return rcolor;
-		}
-		return QColor();
+		rgb_string.chop(2);
+		break;
 	}
 	default:
 		return QColor();
 	}
+
+	QColor r_col(rgb_string);
+	if (r_col.isValid())
+	{
+		r_col.setAlpha(alpha);
+		return r_col;
+	}
+
+	// Invalid
+	return QColor();
 }
 
 
