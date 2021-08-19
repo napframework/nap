@@ -115,6 +115,7 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
+                    "Visible": true,
                     "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
                     "TextColor": {
@@ -129,7 +130,8 @@
                         "y": 0
                     },
                     "Orientation": "Center",
-                    "DepthMode": "NoReadWrite"
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -163,6 +165,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
+                    "Visible": true,
                     "Mesh": "WorldMesh",
                     "MaterialInstance": {
                         "Material": "WorldMaterial",
@@ -171,6 +174,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -289,10 +293,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.06599999964237213,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
@@ -330,9 +336,18 @@
             "mID": "WorldMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Radius": 1.0,
             "Rings": 50.0,
-            "Sectors": 50.0
+            "Sectors": 50.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }

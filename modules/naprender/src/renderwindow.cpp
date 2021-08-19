@@ -663,13 +663,13 @@ namespace nap
 	}
 
 
-	void RenderWindow::setClearColor(const glm::vec4& color)
+	void RenderWindow::setClearColor(const RGBAColorFloat& color)
 	{
 		mClearColor = color;
 	}
 
 
-	const glm::vec4& RenderWindow::getClearColor() const
+	const RGBAColorFloat& RenderWindow::getClearColor() const
 	{
 		return mClearColor;
 	}
@@ -979,7 +979,7 @@ namespace nap
 
 		// Clear color
 		std::array<VkClearValue, 2> clear_values = {};
-		clear_values[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
+		clear_values[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		clear_values[1].depthStencil = { 1.0f, 0 };
 		render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
 		render_pass_info.pClearValues = clear_values.data();

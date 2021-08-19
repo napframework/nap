@@ -39,7 +39,7 @@ namespace nap
 		ResourcePtr<VideoPlayer>		mVideoPlayer = nullptr;								///< Property: 'VideoPlayer' the video player to render to texture
 		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;							///< Property: 'OutputTexture' the RGB8 texture to render output to
 		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'
-		RGBColor8						mClearColor = { 255, 255, 255 };					///< Property: 'ClearColor' the color that is used to clear the render target
+		RGBAColor8						mClearColor = { 255, 255, 255, 255 };				///< Property: 'ClearColor' the color that is used to clear the render target
 	};
 
 
