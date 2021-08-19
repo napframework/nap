@@ -215,10 +215,11 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 	nap::rtti::Variant var = resolved.getValue();
 	const nap::BaseColor& target_color = var.get_value<nap::BaseColor>();
 
-	// Number of channels <= target
+	// Number of channels to set: min of the two.
+	// Allows for a wide range of edits, including single channel entries
 	int channel_count = nap::math::min<int>(color_str.size() / 2, target_color.getNumberOfChannels());
 
-	// Convert string to nap color RGBA8
+	// Convert string to nap color RGBA8, which can hold max number of channels
 	nap::RGBAColor8 nap_color;
 	bool valid = false;
 	for (int i = 0; i < channel_count; i++)
