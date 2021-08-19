@@ -135,7 +135,6 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		// Get current color and set as background
 		QString cur_color_str = index.model()->data(index, Qt::DisplayRole).toString();
-		std::string test = cur_color_str.toStdString();
 		QColor background_color = getColorFromString(cur_color_str);
 		if (!background_color.isValid())
 		{
