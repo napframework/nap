@@ -30,27 +30,35 @@ static QColor getColorFromString(const QString& colorString)
 	// Compensate for alpha, this sucks but so does QT here: #AARRGGBB?
 	// Colors are always ordered and displayed as #RRGGBBAA
 	// Colors of only 1 value can't be converted to QColor, append 0 to form RGB
-	QString cur_color_str = colorString;
 	switch (channels)
 	{
 	case 1:
+	{
+		QString cur_color_str = colorString;
 		cur_color_str.append("0000");
-		break;
+		return QColor(cur_color_str);
+	}
 	case 3:
-		break;
+		return QColor(colorString);
 	case 4:
 	{
-		QString red = cur_color_str.mid(1, 2);
-		cur_color_str.replace((0 * 2) + 1, 2, cur_color_str.mid(3 * 2, 2));
-		cur_color_str.replace((3 * 2) + 1, 2, red);
-		break;
+		// Get alpha value
+		QString cur_color_str = colorString;
+		bool valid = false;
+		uint alpha = cur_color_str.mid((3 * 2) + 1, 2).toUInt(&valid, 16);
+		assert(valid);
+		cur_color_str.chop(2);
+		QColor rcolor(cur_color_str);
+		if (rcolor.isValid())
+		{
+			rcolor.setAlpha(alpha);
+			return rcolor;
+		}
+		return QColor();
 	}
 	default:
-		break;
+		return QColor();
 	}
-
-	// Create color from string
-	return QColor(cur_color_str);
 }
 
 
@@ -121,6 +129,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		// Get current color and set as background
 		QString cur_color_str = index.model()->data(index, Qt::DisplayRole).toString();
+		std::string test = cur_color_str.toStdString();
 		QColor background_color = getColorFromString(cur_color_str);
 		if (!background_color.isValid())
 		{
