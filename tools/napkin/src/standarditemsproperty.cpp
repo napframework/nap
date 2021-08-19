@@ -221,6 +221,8 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 
 	// Convert string to nap color RGBA8, which can hold max number of channels
 	nap::RGBAColor8 nap_color;
+	assert(channel_count <= nap_color.getNumberOfChannels());
+
 	bool valid = false;
 	for (int i = 0; i < channel_count; i++)
 	{
