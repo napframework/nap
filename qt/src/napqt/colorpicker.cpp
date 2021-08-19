@@ -5,6 +5,7 @@
 #include "colorpicker.h"
 
 #include <QtGui>
+#include <QPushButton>
 
 using namespace nap::qt;
 
@@ -624,13 +625,15 @@ void ColorPicker::onColorChanged(const QColor& col)
 }
 
 
-nap::qt::ColorPickerDialog::ColorPickerDialog(QWidget* parent) : QDialog(parent)
+nap::qt::ColorPickerDialog::ColorPickerDialog(QWidget* parent) : QDialog(parent),
+	mButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel)
 {
 	init();
 }
 
 
-nap::qt::ColorPickerDialog::ColorPickerDialog(QWidget* parent, const QColor& color) : QDialog(parent)
+nap::qt::ColorPickerDialog::ColorPickerDialog(QWidget* parent, const QColor& color) : QDialog(parent),
+	mButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel)
 {
 	mColorPicker.setColor(color);
 	init();
@@ -643,10 +646,49 @@ QColor nap::qt::ColorPickerDialog::getColor() const
 }
 
 
+QColor nap::qt::ColorPickerDialog::selectColor(QWidget* parent, QColor current)
+{
+	nap::qt::ColorPickerDialog dialog(parent, current);
+	dialog.move(QCursor::pos());
+	dialog.setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
+	if (dialog.exec() > 0)
+	{
+		return dialog.getColor();
+	}
+	return QColor();
+}
+
+
+bool nap::qt::ColorPickerDialog::eventFilter(QObject* obj, QEvent* event)
+{
+	if (event->type() == QEvent::KeyPress)
+	{
+		QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
+		switch (key_event->key())
+		{
+		case Qt::Key_Enter:
+			accept();
+			return true;
+		case Qt::Key_Escape:
+			reject();
+			return true;
+		}
+	}
+	return QObject::eventFilter(obj, event);
+}
+
+
 void nap::qt::ColorPickerDialog::init()
 {
+	// Setup widget
 	setWindowTitle("Select Color");
 	setLayout(&mLayout);
 	mLayout.addWidget(&mColorPicker);
+	mLayout.addWidget(&mButtonBox);
 	setWindowModality(Qt::ApplicationModal);
+	this->installEventFilter(this);
+
+	// Connect buttons
+	connect(mButtonBox.button(QDialogButtonBox::Cancel), &QPushButton::clicked, [this]() { reject(); });
+	connect(mButtonBox.button(QDialogButtonBox::Ok), &QPushButton::clicked, [this]() {accept(); });
 }
