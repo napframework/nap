@@ -188,10 +188,44 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 			auto variant = index.data(Qt::UserRole);
 			if (variant.canConvert<PropertyPath>())
 			{
-				nap::qt::ColorPickerDialog dialog(AppContext::get().getMainWindow());
+				QString cur_color_str  = model->data(index, Qt::DisplayRole).toString();
+				assert(cur_color_str.startsWith('#'));
+				assert((cur_color_str.size() - 1) % 2 == 0);
+
+				// Compensate for alpha, this sucks but so does QT #AARRGGBB!
+				// NAP colors are always ordered and displayed as #RRGGBBAA
+				if ((cur_color_str.size() -1) / 2 == 4)
+				{
+					QString red = cur_color_str.mid(1, 2);
+					cur_color_str.replace((0*2) + 1, 2, cur_color_str.mid(3 * 2, 2));
+					cur_color_str.replace((3*2) + 1, 2, red);
+				}
+				std::string temp_str = cur_color_str.toStdString();
+
+				// Create color
+				QColor current_qcolor(cur_color_str);
+				if (!current_qcolor.isValid())
+				{
+					assert(false);
+					current_qcolor = QColor(0xFF, 0xFF, 0xFF, 0xFF);
+				}
+
+				// Color picker dialog
+				nap::qt::ColorPickerDialog dialog(AppContext::get().getMainWindow(), current_qcolor);
 				dialog.move(QCursor::pos());
 				dialog.setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
 				dialog.exec();
+
+				// Get selected color
+				QColor selected_color = dialog.getColor();
+
+				// Convert to string, ie: #FF00FFFF
+				std::string new_color = selected_color.name(QColor::HexRgb).toStdString();
+				new_color += nap::utility::stringFormat("%02x", selected_color.alpha());
+
+				// Set in model
+				model->setData(index, QString::fromStdString(new_color), Qt::EditRole);
+
 				return true;
 			}
 		}

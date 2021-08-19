@@ -201,11 +201,23 @@ namespace nap
 			QLineEdit mHexEdit;
 		};
 
+		/**
+		 * Color picker dialog
+		 */
 		class ColorPickerDialog : public QDialog
 		{
 			Q_OBJECT
 		public:
 			explicit ColorPickerDialog(QWidget* parent);
+
+			explicit ColorPickerDialog(QWidget* parent, const QColor& color);
+
+			void init();
+
+			/**
+			 * @return selected color
+			 */
+			QColor getColor() const;
 
 		private:
 			QVBoxLayout mLayout;

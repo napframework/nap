@@ -12,6 +12,7 @@
 #include <QtDebug>
 #include <rtti/object.h>
 #include <color.h>
+#include <mathutils.h>
 
 QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 {
@@ -215,14 +216,12 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 	const nap::BaseColor& target_color = var.get_value<nap::BaseColor>();
 
 	// Number of channels <= target
-	int display_channel_count = color_str.size() / 2;
-	if (display_channel_count > target_color.getNumberOfChannels())
-		return;
+	int channel_count = nap::math::min<int>(color_str.size() / 2, target_color.getNumberOfChannels());
 
 	// Convert string to nap color RGBA8
 	nap::RGBAColor8 nap_color;
 	bool valid = false;
-	for (int i = 0; i < display_channel_count; i++)
+	for (int i = 0; i < channel_count; i++)
 	{
 		nap_color[i] = static_cast<nap::uint8>(color_str.midRef(i * 2, 2).toUInt(&valid, 16));
 		if (!valid)

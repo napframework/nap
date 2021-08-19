@@ -626,6 +626,25 @@ void ColorPicker::onColorChanged(const QColor& col)
 
 nap::qt::ColorPickerDialog::ColorPickerDialog(QWidget* parent) : QDialog(parent)
 {
+	init();
+}
+
+
+nap::qt::ColorPickerDialog::ColorPickerDialog(QWidget* parent, const QColor& color) : QDialog(parent)
+{
+	mColorPicker.setColor(color);
+	init();
+}
+
+
+QColor nap::qt::ColorPickerDialog::getColor() const
+{
+	return mColorPicker.color();
+}
+
+
+void nap::qt::ColorPickerDialog::init()
+{
 	setWindowTitle("Select Color");
 	setLayout(&mLayout);
 	mLayout.addWidget(&mColorPicker);
