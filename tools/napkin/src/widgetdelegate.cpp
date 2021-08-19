@@ -78,6 +78,7 @@ PropertyValueItemDelegate::PropertyValueItemDelegate()
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 									  const QModelIndex& index) const
 {
+	painter->save();
 	QVariant col = index.data(Qt::BackgroundRole);
 	if (col.isValid())
 	{
@@ -134,7 +135,6 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		// Get current color and set as background
 		QString cur_color_str = index.model()->data(index, Qt::DisplayRole).toString();
-		std::string test = cur_color_str.toStdString();
 		QColor background_color = getColorFromString(cur_color_str);
 		if (!background_color.isValid())
 		{
@@ -180,6 +180,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	{
 		QStyledItemDelegate::paint(painter, option, index);
 	}
+	painter->restore();
 }
 
 
@@ -205,94 +206,106 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	{
 		if (event->type() == QEvent::MouseButtonPress)
 		{
-			bool val = index.data(Qt::DisplayRole).toBool();
-			model->setData(index, !val, Qt::EditRole);
+			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
+			QRect toggle_rect = QRect
+			(
+				QPoint(option.rect.left(), option.rect.top()),
+				QPoint(option.rect.left() + option.rect.height(), option.rect.top() + option.rect.height())
+			);
+
+			if (toggle_rect.contains(mouseEvent->pos()))
+			{
+				bool val = index.data(Qt::DisplayRole).toBool();
+				model->setData(index, !val, Qt::EditRole);
+				return true;
+			}
 		}
-		return true;
+		return false;
 	}
 
 	// Mouse click on icon
-	QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.right(), option.rect.height());
-	auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
-	if(event->type() == QEvent::MouseButtonPress && rect_btn.contains(mouseEvent->pos()))
+	if(event->type() == QEvent::MouseButtonPress)
 	{
-
-		// TODO: There must be a less convoluted way.
-		// In the case of array elements, the type will be the array type, not the element type.
-		// For now, grab the array's element type and use that.
-		nap::rtti::TypeInfo wrapped_type = path.getWrappedType();
-		if (type.is_array())
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.right(), option.rect.height());
+		auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
+		if (rect_btn.contains(mouseEvent->pos()))
 		{
-			nap::rtti::Variant value = path.getValue();
-			nap::rtti::VariantArray array = value.create_array_view();
-			nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
-			wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-		}
-
-		if (path.isPointer())
-		{
-			auto variant = index.data(Qt::UserRole);
-
-			if (variant.canConvert<PropertyPath>())
+			// TODO: There must be a less convoluted way.
+			// In the case of array elements, the type will be the array type, not the element type.
+			// For now, grab the array's element type and use that.
+			nap::rtti::TypeInfo wrapped_type = path.getWrappedType();
+			if (type.is_array())
 			{
-				auto path = variant.value<PropertyPath>();
-				auto objects = AppContext::get().getDocument()->getObjects(wrapped_type);
-				auto selected = napkin::showObjectSelector(AppContext::get().getMainWindow(), objects);
-				if (selected != nullptr)
-					model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
-
-				return true;
+				nap::rtti::Variant value = path.getValue();
+				nap::rtti::VariantArray array = value.create_array_view();
+				nap::rtti::TypeInfo array_type = array.get_rank_type(array.get_rank());
+				wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 			}
 
-		}
-
-		if (path.isColor())
-		{
-			auto variant = index.data(Qt::UserRole);
-			if (variant.canConvert<PropertyPath>())
+			if (path.isPointer())
 			{
-				// Color as string
-				QString cur_color_str  = model->data(index, Qt::DisplayRole).toString();
+				auto variant = index.data(Qt::UserRole);
 
-				// Create color from string
-				QColor current_qcolor = getColorFromString(cur_color_str);;
-				if (!current_qcolor.isValid())
-					current_qcolor = QColor(Qt::white);
-
-				// Color picker dialog
-				QColor color_sel = nap::qt::ColorPickerDialog::selectColor(AppContext::get().getMainWindow(), current_qcolor);
-				if (color_sel.isValid())
+				if (variant.canConvert<PropertyPath>())
 				{
-					// Convert to string, ie: #FF00FFFF
-					std::string new_color = color_sel.name(QColor::HexRgb).toStdString();
-					new_color += nap::utility::stringFormat("%02x", color_sel.alpha());
+					auto path = variant.value<PropertyPath>();
+					auto objects = AppContext::get().getDocument()->getObjects(wrapped_type);
+					auto selected = napkin::showObjectSelector(AppContext::get().getMainWindow(), objects);
+					if (selected != nullptr)
+						model->setData(index, QString::fromStdString(selected->mID), Qt::EditRole);
+					return true;
+				}
 
-					// Set in model
-					model->setData(index, QString::fromStdString(new_color), Qt::EditRole);
+			}
+
+			if (path.isColor())
+			{
+				auto variant = index.data(Qt::UserRole);
+				if (variant.canConvert<PropertyPath>())
+				{
+					// Color as string
+					QString cur_color_str = model->data(index, Qt::DisplayRole).toString();
+
+					// Create color from string
+					QColor current_qcolor = getColorFromString(cur_color_str);;
+					if (!current_qcolor.isValid())
+						current_qcolor = QColor(Qt::white);
+
+					// Color picker dialog
+					QColor color_sel = nap::qt::ColorPickerDialog::selectColor(AppContext::get().getMainWindow(), current_qcolor);
+					if (color_sel.isValid())
+					{
+						// Convert to string, ie: #FF00FFFF
+						std::string new_color = color_sel.name(QColor::HexRgb).toStdString();
+						new_color += nap::utility::stringFormat("%02x", color_sel.alpha());
+
+						// Set in model
+						model->setData(index, QString::fromStdString(new_color), Qt::EditRole);
+					}
+					return true;
+				}
+			}
+
+			if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
+			{
+				bool ok;
+
+				QString currentFilePath = getAbsoluteResourcePath(QString::fromStdString(path.getValue().to_string(&ok)));
+				QString dir = QFileInfo(currentFilePath).path();
+
+				auto& ctx = AppContext::get();
+				auto parent = ctx.getMainWindow();
+				auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
+				auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
+				if (!filename.isEmpty())
+				{
+					// Make relative if inside resource dir
+					if (nap::qt::directoryContains(getResourceReferencePath(), filename))
+						filename = getRelativeResourcePath(filename);
+					model->setData(index, filename);
 				}
 				return true;
 			}
-		}
-
-		if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
-		{
-			bool ok;
-
-			QString currentFilePath = getAbsoluteResourcePath(QString::fromStdString(path.getValue().to_string(&ok)));
-			QString dir = QFileInfo(currentFilePath).path();
-
-			auto& ctx = AppContext::get();
-			auto parent = ctx.getMainWindow();
-			auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
-			auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
-			if (!filename.isEmpty())
-			{
-				// Make relative if inside resource dir
-				if (nap::qt::directoryContains(getResourceReferencePath(), filename))
-					filename = getRelativeResourcePath(filename);
-				model->setData(index, filename);
-			}
-			return true;
 		}
 	}
 
