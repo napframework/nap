@@ -35,7 +35,8 @@ namespace nap
 
 	bool ArtNetService::addController(ArtNetController& controller, utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mControllers.find(controller.getAddress()) == mControllers.end(), "Controller %s has the same address as a controller that has already been added"))
+		if (!errorState.check(mControllers.find(controller.getAddress()) == mControllers.end(),
+                              "Controller %s has the same address as a controller that has already been added", controller.mID.c_str()))
 			return false;
 
 		const int numChannelsInUniverse = 512;
