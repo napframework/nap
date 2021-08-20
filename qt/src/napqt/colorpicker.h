@@ -11,6 +11,8 @@
 #include <QPainter>
 #include <QLineEdit>
 #include <QDoubleSpinBox>
+#include <QDialog>
+#include <QDialogButtonBox>
 
 namespace nap
 {
@@ -198,6 +200,43 @@ namespace nap
 			ChannelInput mSliderValue;
 
 			QLineEdit mHexEdit;
+		};
+
+		/**
+		 * Color picker dialog. Check exec() return code if color was selected or not.
+		 */
+		class ColorPickerDialog : public QDialog
+		{
+			Q_OBJECT
+		public:
+			explicit ColorPickerDialog(QWidget* parent);
+			explicit ColorPickerDialog(QWidget* parent, const QColor& color);
+
+			void init();
+
+			/**
+			 * @return selected color.
+			 */
+			QColor getColor() const;
+
+			/**
+			 * Shows the color picker dialog at current mouse position, returns selected color.
+			 * Color is invalid when selection is aborted.
+			 * @param parent parent widget
+			 * @param current active color section
+			 */
+			static QColor selectColor(QWidget* parent, QColor current);
+
+			/**
+			 * Handles key events, 'enter' and 'esc' both close the dialog.
+			 * Enter accepts color selection, esc does not.
+			 */
+			bool eventFilter(QObject* obj, QEvent* event);
+
+		private:
+			QVBoxLayout mLayout;
+			ColorPicker mColorPicker;
+			QDialogButtonBox mButtonBox;
 		};
 	}
 }

@@ -76,7 +76,7 @@ namespace nap
 			return false;
 
 		// Setup render target and initialize
-		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
+		mTarget.mClearColor = resource->mClearColor.convert<RGBAColorFloat>();
 		mTarget.mColorTexture  = resource->mOutputTexture;
 		mTarget.mSampleShading = true;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;

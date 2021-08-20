@@ -3,6 +3,9 @@
         {
             "Type": "nap::BoxMesh",
             "mID": "BoxMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 20.0,
                 "y": 1.0,
@@ -12,6 +15,14 @@
                 "x": 0.0,
                 "y": 0.0,
                 "z": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
             }
         },
         {
@@ -109,6 +120,7 @@
                 {
                     "Type": "nap::RenderableCopyMeshComponent",
                     "mID": "nap::RenderableCopyMeshComponent",
+                    "Visible": true,
                     "Orient": false,
                     "Scale": 0.7250000238418579,
                     "RotationSpeed": 2.5,
@@ -227,6 +239,7 @@
             "mID": "CopyBox",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Path": "box.mesh"
         },
         {
@@ -234,6 +247,7 @@
             "mID": "CopyOctahedron",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Path": "octahedron.mesh"
         },
         {
@@ -241,6 +255,7 @@
             "mID": "StampPlane",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 110.0,
                 "y": 120.0
@@ -248,6 +263,14 @@
             "Position": {
                 "x": 0.0,
                 "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
             },
             "Rows": 64,
             "Columns": 64
@@ -264,12 +287,15 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.06700000166893006,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -296,9 +322,18 @@
             "mID": "CopySphere",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Radius": 1.0,
             "Rings": 15.0,
-            "Sectors": 15.0
+            "Sectors": 15.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }
