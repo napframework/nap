@@ -155,7 +155,7 @@ namespace nap
 	}
 
 
-	void Snapshot::setClearColor(const glm::vec4& color)
+	void Snapshot::setClearColor(const RGBAColorFloat& color)
 	{
 		mRenderTarget->setClearColor(color);
 	}

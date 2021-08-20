@@ -31,6 +31,7 @@ namespace napkin
 	static const QString QRC_ICONS_ERROR                    = ":/icons/error.png";
 	static const QString QRC_ICONS_EXCLAMATION              = ":/icons/exclamation.png";
 	static const QString QRC_ICONS_FILE                     = ":/icons/file.png";
+	static const QString QRC_COLOR_WHEEL_FILE				= ":/icons/color_wheel.png";
 	static const QString QRC_ICONS_FOLDER                   = ":/icons/folder.png";
 	static const QString QRC_ICONS_FOLDER_PAGE              = ":/icons/folder_page.png";
 	static const QString QRC_ICONS_FRAME_SELECTION_H        = ":/icons/frame-selection-h.png";

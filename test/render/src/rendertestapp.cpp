@@ -111,7 +111,7 @@ namespace nap
 		// Render window 0
 		{
 			RenderWindow* render_window = mRenderWindows[0].get();
-			render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+			render_window->setClearColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 
 			double currentTime = getCore().getElapsedTime();
 			float value = (sin(currentTime) + 1.0) * 0.5;
@@ -169,7 +169,7 @@ namespace nap
 				transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
 				transform_component.update(identity);
 
-				render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+				render_window->setClearColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 				render_window->beginRendering();
 
 				// Render output texture to plane
