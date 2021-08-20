@@ -179,6 +179,15 @@ namespace nap
 		 * @return returns true on successful initialization
 		 */
 		bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+         * Override this function to register service dependencies
+         * A service that depends on another service is initialized after all it's associated dependencies
+         * This will ensure correct order of initialization, update calls and shutdown of all services
+         * SequenceGUIService depends on SequenceService and IMGuiService
+         * @param dependencies rtti information of the services this service depends on
+         */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
 	private:
 		// map of segment view types
 		SequenceEventTrackSegmentViewFactoryMap mEventSegmentViewFactoryMap;

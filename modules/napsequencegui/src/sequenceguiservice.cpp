@@ -8,6 +8,8 @@
 #include <nap/logger.h>
 #include <iostream>
 #include <utility/stringutils.h>
+#include <sequenceservice.h>
+#include <imguiservice.h>
 
 // Local Includes
 #include "sequenceguiservice.h"
@@ -237,5 +239,12 @@ namespace nap
 			event_actions.emplace_back(it.first);
 		}
 		return event_actions;
+	}
+
+
+	void SequenceGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+	    dependencies.emplace_back(RTTI_OF(SequenceService));
+        dependencies.emplace_back(RTTI_OF(IMGuiService));
 	}
 }
