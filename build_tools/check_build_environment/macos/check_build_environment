@@ -9,7 +9,7 @@ import tty
 
 REQUIRED_MACOS_VERSION = '10.15'
 REQUIRED_MACOS_VERSION_TITLE = 'Catalina'
-REQUIRED_QT_VERSION = '5.11.3'
+REQUIRED_QT_VERSION = '5.15.2'
 
 def getch():
     """Read a char from the console; pause"""
