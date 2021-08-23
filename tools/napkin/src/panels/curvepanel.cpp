@@ -102,7 +102,7 @@ void CurvePanel::editCurve(nap::math::FloatFCurve* curve)
 			return;
 
 		mListenForPropertyChanges = false;
-		qSort(pointIndexes);
+		std::sort(pointIndexes.begin(), pointIndexes.end());
 		for (int index : pointIndexes)
 		{
 			AppContext::get().propertyChildInserted(mCurveModel->curve().pointPath(index).getParent(), index);

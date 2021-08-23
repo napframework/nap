@@ -11,27 +11,13 @@
 #include <QtDebug>
 
 #include <napqt/qtutils.h>
+#include <iostream>
 
 using namespace nap::qt;
 
 QPointF mul(const QPointF& a, const QPointF& b)
 {
-	return QPointF(a.x() * b.x(), a.y() * b.y());
-}
-
-QString secondsToSMPTE(qreal seconds, int framerate)
-{
-	int f = qFloor(fmod(seconds, 1.0) * framerate);
-	int s = qFloor(seconds);
-	int m = qFloor(s / 60.0);
-	int h = qFloor(m / 60.0);
-	m = m % 60;
-	s = s % 60;
-
-	return QString("%1:%2:%3:%4").arg(QString::asprintf("%02d", h),
-									  QString::asprintf("%02d", m),
-									  QString::asprintf("%02d", s),
-									  QString::asprintf("%02d", f));
+	return {a.x() * b.x(), a.y() * b.y()};
 }
 
 GridView::GridView(QWidget* parent) : QGraphicsView(parent), mRubberBand(QRubberBand::Rectangle, this)
@@ -61,10 +47,6 @@ void GridView::mousePressEvent(QMouseEvent* event)
 	mMouseLastPos = event->pos();
 
 	bool lmb = event->buttons() == Qt::LeftButton;
-	bool mmb = event->buttons() == Qt::MiddleButton;
-	bool rmb = event->buttons() == Qt::RightButton;
-	bool altKey = event->modifiers() == Qt::AltModifier;
-
 	auto clickedItem = itemAt(event->pos());
 	if (lmb && !clickedItem)
 		startRubberBand(event->pos());
@@ -201,9 +183,6 @@ void GridView::constrainTransform(QTransform& xf)
 void GridView::constrainView()
 {
 	return;
-	auto xf = transform();
-//	constrainTransform(xf);
-	applyTransform(xf);
 }
 
 void GridView::setVerticalFlipped(bool flipped)
@@ -219,7 +198,7 @@ void GridView::drawBackground(QPainter* painter, const QRectF& rect)
 {
 
 	auto viewRect = mapToScene(viewport()->rect()).boundingRect();
-	QColor bgCol = palette().background().color();
+	QColor bgCol = palette().window().color();
 	QColor holdoutCol = mDrawHoldout ? bgCol.darker(110) : bgCol;
 	painter->fillRect(rect, holdoutCol);
 	if (mDrawHoldout)
@@ -352,8 +331,9 @@ void GridView::drawHatchesVertical(QPainter* painter, const QRectF& rect, qreal 
 
 void GridView::wheelEvent(QWheelEvent* event)
 {
-	qreal delta = 1 + event->delta() * 0.001;
-	zoom(QPointF(delta, delta), mapToScene(event->pos()));
+    qreal a_d = event->modifiers() & Qt::AltModifier ? event->angleDelta().x() : event->angleDelta().y();
+    qreal delta = 1 + a_d * 0.001;
+	zoom(QPointF(delta, delta), mapToScene(event->position().toPoint()));
 }
 
 void GridView::centerView()

@@ -140,7 +140,7 @@ namespace nap
 				view->collapse(index);
 
 			for (int i = 0, len = index.model()->rowCount(index); i < len; i++)
-				nap::qt::expandChildren(view, index.child(i, 0), expanded);
+				nap::qt::expandChildren(view,index.model()->index(i, 0, index), expanded);
 		}
 
 		bool directoryContains(const QString& dir, const QString& filename)
@@ -168,7 +168,7 @@ namespace nap
 			// Linux
 			// We don't have a reliable way of selecting the file after revealing, just open the file browser
 			QString dirname = QFileInfo(filename).dir().path();
-			QProcess::startDetached("xdg-open " + dirname);
+			QProcess::startDetached("xdg-open " + dirname, {});
 #endif
 			return true;
 		}
@@ -228,7 +228,7 @@ namespace nap
 		QList<int> reverseSort(const QList<int>& ints)
 		{
 			auto sortedIndices = ints;
-			qSort(sortedIndices.begin(), sortedIndices.end(), [](const QVariant& a, const QVariant& b)
+			std::sort(sortedIndices.begin(), sortedIndices.end(), [](const QVariant& a, const QVariant& b)
 			{
 				bool ok;
 				return b.toInt(&ok) < a.toInt(&ok);
