@@ -2,9 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+
 #include "mainwindow.h"
 #include "appcontext.h"
 #include "napkin-resources.h"
+
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#endif
 
 #include <QFontDatabase>
 #include <QCommandLineParser>
@@ -47,6 +52,11 @@ void initializeSettings()
  */
 int main(int argc, char* argv[])
 {
+#ifdef Q_OS_WIN
+	if (SetProcessDPIAware() == 0)
+		nap::Logger::error("Unable to make process DPI aware");
+#endif // Q_OS_WIN 
+
 	// Start logging to file next to console
 	nap::Logger::logToDirectory(nap::utility::getExecutableDir() + "/log", "napkin");
 
