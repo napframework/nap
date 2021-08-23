@@ -333,7 +333,7 @@ void GridView::wheelEvent(QWheelEvent* event)
 {
     qreal a_d = event->modifiers() & Qt::AltModifier ? event->angleDelta().x() : event->angleDelta().y();
     qreal delta = 1 + a_d * 0.001;
-	zoom(QPointF(delta, delta), mapToScene(event->position().toPoint()));
+	zoom(QPointF(delta, delta), mapToScene(event->pos()));
 }
 
 void GridView::centerView()
