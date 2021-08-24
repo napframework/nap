@@ -8,10 +8,6 @@
 #include <QLabel>
 #include <iostream>
 
-#ifdef Q_OS_WIN
-#include <Windows.h>
-#endif
-
 #include <napqt/curveeditor/standardcurve.h>
 #include <napqt/curveeditor/curvewidget.h>
 #include <napqt/curveeditor/curveview.h>
@@ -158,15 +154,9 @@ private:
 
 int main(int argc, char* argv[])
 {
-
-#ifdef Q_OS_WIN
-	if (SetProcessDPIAware() == 0)
-		std::cout << "Unable to make process DPI aware" << std::endl;
-#endif // Q_OS_WIN 
-
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication::setApplicationName("napqt");
-	QApplication::setOrganizationName("Naivi");
+	QApplication::setOrganizationName("napframework");
 	QApplication app(argc, argv);
 
 	MainWindow win;
