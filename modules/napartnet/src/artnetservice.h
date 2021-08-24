@@ -12,6 +12,7 @@ namespace nap
 {
 	class ArtNetController;
 	class ArtNetReceiver;
+	class ArtNetInputComponentInstance;
 
 	/**
 	 * Service for sending data over Artnet. Data is natively sent using bytes values, but the service provides
@@ -88,6 +89,16 @@ namespace nap
 		void removeReceiver(ArtNetReceiver& receiver);
 
 		/**
+		 *	Add an Art-Net input component to the service
+		 */
+		void addInputComponent(ArtNetInputComponentInstance& input);
+
+		/**
+		 *	Remove an Art-Net input component from the service
+		 */
+		void removeInputComponent(ArtNetInputComponentInstance& input);
+
+		/**
 		 * Sends normalized float channel data (ranging from 0.0 to 1.0) over the artnet network. Internally, the float data
 		 * is converted to bytes. The actual sending is deferred until the update, where data is sent when needed.
 		 * @param controller Controller to send from, which specifies subnet and universe.
@@ -134,6 +145,8 @@ namespace nap
 	private:
 		friend class ArtNetController;
 		friend class ArtNetReceiver;
+		friend class ArtNetInputComponentInstance;
+
 		struct ControllerData
 		{
 			ArtNetController*			mController;			// ArtNet controller specifying target subnet and universe
@@ -141,14 +154,17 @@ namespace nap
 			double						mLastUpdateTime;		// Last time this controller was transmitted over the network
 			bool						mIsDirty;				// Identifies whether this controller contains new data
 		};
+
 		using ControllerKey = uint8_t;							// The key is the target address (subnet-universe), which is currently limited to 8 bits as it does not include net (7 bits)
 		using ReceiverKey = uint16_t;							// The key is the port which the receiver will listen to
 
 		using ControllerMap = std::unordered_map<ControllerKey, std::unique_ptr<ControllerData>>;
 		using ReceiverMap = std::unordered_map<ReceiverKey, ArtNetReceiver*>;
+		using InputComponents = std::vector<ArtNetInputComponentInstance*>;
 		using DirtyNodeList = std::unordered_set<ControllerKey>;
 
-		ControllerMap	mControllers;							// Controller map that maps an absolute controller address to a controller
-		ReceiverMap		mReceivers;								// Receiver map that maps a receiver port to a receiver
+		ControllerMap					mControllers;			// Controller map that maps an absolute controller address to a controller
+		ReceiverMap						mReceivers;				// Receiver map that maps a receiver port to a receiver
+		InputComponents					mInputs;				// All the Art-Net input components registered to the service
 	};
 }

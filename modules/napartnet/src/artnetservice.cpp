@@ -6,6 +6,8 @@
 #include "artnetservice.h"
 #include "artnetcontroller.h"
 #include "artnetreceiver.h"
+#include "artnetinputcomponent.h"
+#include "artdmxpacketevent.h"
 
 // External Includes
 #include <nap/core.h>
@@ -74,6 +76,23 @@ namespace nap
 	void ArtNetService::removeReceiver(ArtNetReceiver& receiver)
 	{
 		mReceivers.erase(receiver.mPort);
+	}
+
+
+	void ArtNetService::addInputComponent(ArtNetInputComponentInstance& input)
+	{
+		mInputs.emplace_back(&input);
+	}
+
+
+	void ArtNetService::removeInputComponent(ArtNetInputComponentInstance& input)
+	{
+		auto found_it = std::find_if(mInputs.begin(), mInputs.end(), [&](const auto& it)
+			{
+				return it == &input;
+			});
+		assert(found_it != mInputs.end());
+		mInputs.erase(found_it);
 	}
 
 
