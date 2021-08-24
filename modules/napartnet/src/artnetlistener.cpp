@@ -31,45 +31,6 @@ namespace nap
 	}
 
 
-	static void handleReceive(ArtNetListener* self, const asio::error_code& error, std::size_t size)
-	{
-		if (!error)
-		{
-			// Confirm the ID field for the ArtDmx packet
-			std::string protocolId((char*)self->mBuffer, 7);
-			if (protocolId == self->PROTOCOL_ID)
-			{
-				// Check the OpCode and ProtVer fields for the ArtDmx packet
-				uint16_t opCode = (self->mBuffer[9] << 8) | (self->mBuffer[8] & 0xff);
-				uint16_t protVer = (self->mBuffer[10] << 8) | (self->mBuffer[11] & 0xff);
-				if (opCode == self->OP_CODE && protVer >= self->MIN_PROT_VER)
-				{
-					// Decode the rest of the Art-Net package
-					uint8_t sequence = self->mBuffer[12];
-					uint8_t physical = self->mBuffer[13];
-					uint16_t portAddress = (self->mBuffer[15] << 8) | (self->mBuffer[14] & 0xff);
-					uint16_t dataLength = (self->mBuffer[16] << 8) | (self->mBuffer[17] & 0xff);
-
-					// Create out Art-Net event
-					ArtDmxPacketEventPtr event = std::make_unique<ArtDmxPacketEvent>(sequence, physical, portAddress);
-
-					// Set the channel data
-					event->setData(self->mBuffer + self->HEADER_LENGTH, dataLength);
-
-					// Add event to receiver
-					self->mReceiver.addEvent(std::move(event));
-				}
-			}
-
-			// Reset the buffer
-			std::memset(self->mBuffer, 0, self->mBufferSize);
-
-			// Receive more data
-			self->startReceive();
-		}
-	}
-
-
 	ArtNetListener::ArtNetListener(ArtNetReceiver& receiver, void* ioService, uint16_t port)
 		: mReceiver(receiver)
 		, mSocketHandle(nullptr)
@@ -106,5 +67,44 @@ namespace nap
 			asio::buffer(mBuffer, mBufferSize),
 			std::bind(&handleReceive, this,
 				std::placeholders::_1, std::placeholders::_2));
+	}
+
+
+	static void handleReceive(ArtNetListener* self, const asio::error_code& error, std::size_t size)
+	{
+		if (!error)
+		{
+			// Confirm the ID field for the ArtDmx packet
+			std::string protocolId((char*)self->mBuffer, 7);
+			if (protocolId == self->PROTOCOL_ID)
+			{
+				// Check the OpCode and ProtVer fields for the ArtDmx packet
+				uint16_t opCode = (self->mBuffer[9] << 8) | (self->mBuffer[8] & 0xff);
+				uint16_t protVer = (self->mBuffer[10] << 8) | (self->mBuffer[11] & 0xff);
+				if (opCode == self->OP_CODE && protVer >= self->MIN_PROT_VER)
+				{
+					// Decode the rest of the Art-Net package
+					uint8_t sequence = self->mBuffer[12];
+					uint8_t physical = self->mBuffer[13];
+					uint16_t portAddress = (self->mBuffer[15] << 8) | (self->mBuffer[14] & 0xff);
+					uint16_t dataLength = (self->mBuffer[16] << 8) | (self->mBuffer[17] & 0xff);
+
+					// Create out Art-Net event
+					ArtDmxPacketEventPtr event = std::make_unique<ArtDmxPacketEvent>(sequence, physical, portAddress);
+
+					// Set the channel data
+					event->setData(self->mBuffer + self->HEADER_LENGTH, dataLength);
+
+					// Add event to receiver
+					self->mReceiver.addEvent(std::move(event));
+				}
+			}
+
+			// Reset the buffer
+			std::memset(self->mBuffer, 0, self->mBufferSize);
+
+			// Receive more data
+			self->startReceive();
+		}
 	}
 }
