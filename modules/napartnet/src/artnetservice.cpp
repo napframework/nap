@@ -163,6 +163,10 @@ namespace nap
 
 	void ArtNetService::update(double deltaTime)
 	{
+		/*
+		 * Update Art-Net Controllers
+		 */
+
 		double current_time = getCore().getElapsedTime();
 		for (auto& controller : mControllers)
 		{
@@ -196,6 +200,37 @@ namespace nap
 
 				controller_data->mIsDirty = false;
 				controller_data->mLastUpdateTime = current_time;
+			}
+		}
+
+		/*
+		 * Consume events from Art-Net Receivers
+		 */
+
+		std::queue<ArtDmxPacketEventPtr> events;
+
+		// Forward every event to every input component of interest
+		for (auto& receiverPair : mReceivers)
+		{
+			ArtNetReceiver* receiver = receiverPair.second;
+
+			receiver->consumeEvents(events);
+
+			// Keep forwarding events until the queue runs out
+			while (!(events.empty()))
+			{
+				ArtDmxPacketEvent& event = *(events.front());
+				for (const auto& input : mInputs)
+				{
+					// Always forward event when Receive All is true
+					// or when the Net, SubNet and Universe match
+					if (input->mReceiveAll || (
+						input->mNet == event.getNet() &&
+						input->mSubNet == event.getSubNet() &&
+						input->mUniverse == event.getUniverse()))
+						input->trigger(event);
+				}
+				events.pop();
 			}
 		}
 	}
