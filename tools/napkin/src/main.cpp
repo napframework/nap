@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
 	QApplication::setApplicationName("Napkin");
 	QApplication::setApplicationVersion("0.4");
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
 	initializeSettings();
 
