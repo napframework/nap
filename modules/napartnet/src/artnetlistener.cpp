@@ -76,7 +76,7 @@ namespace nap
 		{
 			// Confirm the ID field for the ArtDmx packet
 			std::string protocolId((char*)self->mBuffer, 7);
-			if (protocolId == self->PROTOCOL_ID)
+			if (protocolId.compare(self->PROTOCOL_ID) == 0)
 			{
 				// Check the OpCode and ProtVer fields for the ArtDmx packet
 				uint16_t opCode = (self->mBuffer[9] << 8) | (self->mBuffer[8] & 0xff);
