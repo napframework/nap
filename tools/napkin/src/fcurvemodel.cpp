@@ -22,7 +22,7 @@ int FCurveAdapter::pointCount() const
 void FCurveAdapter::removePoints(const QList<int>& indices)
 {
 	QList<int> indicesSorted = indices;
-	qSort(indicesSorted);
+	std::sort(indicesSorted.begin(), indicesSorted.end());
 	for (int i = indicesSorted.size() - 1; i >= 0; i--)
 	{
 		mCurve.mPoints.erase(mCurve.mPoints.begin() + indicesSorted[i]);
@@ -154,6 +154,6 @@ nap::qt::AbstractCurve* FloatFCurveModel::curve(int index) const
 
 void FloatFCurveModel::movePoints(QMap<nap::qt::AbstractCurve*, QMap<int, QPointF>> values)
 {
-	for (auto curve : values.keys())
+	for (const auto curve : values.keys())
 		curve->movePoints(values[curve], true);
 }
