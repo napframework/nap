@@ -15,8 +15,8 @@ namespace nap
 	/**
 	 * Service for sending data over Artnet. Data is natively sent using bytes values, but the service provides
 	 * a convenience function to send data using normalized float values. When calling one of the send functions, the 
-	 * data is not send directly, this is deferred to the update() call, where the service can control the frequence of 
-	 * sending data and where it can make sure that data is resend when needed. Because of this, updating universes 
+	 * data is not sent directly, this is deferred to the update() call, where the service can control the frequence of 
+	 * sending data and where it can make sure that data is resent when needed. Because of this, updating universes 
 	 * partially and incrementally using multiple send calls does not impact functionality or performance of the system.
 	 *
 	 * To send data, create an ArtNetController and specify the subnet and universe for the controller. Then call send on it,
