@@ -5,6 +5,7 @@
 // Local Includes
 #include "artnetservice.h"
 #include "artnetcontroller.h"
+#include "artnetreceiver.h"
 
 // External Includes
 #include <nap/core.h>
@@ -56,6 +57,23 @@ namespace nap
 	void ArtNetService::removeController(ArtNetController& controller)
 	{
 		mControllers.erase(controller.getAddress());
+	}
+
+
+	bool ArtNetService::addReceiver(ArtNetReceiver& receiver, utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mReceivers.find(receiver.mPort) == mReceivers.end(),
+			"Receiver %s has the same port as a receiver that has already been added", receiver.mID.c_str()))
+			return false;
+
+		mReceivers.emplace(std::make_pair(receiver.mPort, &receiver));
+		return true;
+	}
+
+
+	void ArtNetService::removeReceiver(ArtNetReceiver& receiver)
+	{
+		mReceivers.erase(receiver.mPort);
 	}
 
 
@@ -120,6 +138,7 @@ namespace nap
 	void ArtNetService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<ArtNetNodeCreator>(*this));
+		factory.addObjectCreator(std::make_unique<ArtNetReceiverCreator>(*this));
 	}
 
 

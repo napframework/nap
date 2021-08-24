@@ -18,6 +18,9 @@
 
 namespace nap
 {
+	// Forward Declares
+	class ArtNetService;
+
 	/**
 	 * Receives and processes Art-Net messages.
 	 */
@@ -26,6 +29,12 @@ namespace nap
 		RTTI_ENABLE(Device)
 
 	public:
+
+		// Default constructor
+		ArtNetReceiver() = default;
+
+		// Constructor used by factory
+		ArtNetReceiver(ArtNetService & service);
 
 		/**
 		* Initializes the Art-Net receiver.
@@ -58,7 +67,7 @@ namespace nap
 		void addEvent(ArtDmxPacketEventPtr event);
 
 		/**
-		* Consumes all received Art-Net events and moves them to outEvents
+		* Consumes all received Art-Net events and moves them to outEvents, called by the service on the main thread
 		* Calling this will clear the internal queue and transfers ownership of the events to the caller
 		* @param outEvents will hold the transferred Art-Net events
 		*/
@@ -67,6 +76,10 @@ namespace nap
 		uint16_t mPort = 6454;    ///< Property: 'Port' The port that is opened and used to receive Art-Net messages
 
 	private:
+		friend class ArtNetService;
+
+		// Art-Net service that consumes the events
+		ArtNetService* mService = nullptr;
 
 		// The ASIO I/O service
 		void* mIOServiceHandle = nullptr;
@@ -83,4 +96,6 @@ namespace nap
 		// Mutex associated with setting / getting events
 		std::mutex mEventMutex;
 	};
+
+	using ArtNetReceiverCreator = rtti::ObjectCreator<ArtNetReceiver, ArtNetService>;
 }

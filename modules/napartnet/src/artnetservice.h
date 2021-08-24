@@ -11,6 +11,7 @@
 namespace nap
 {
 	class ArtNetController;
+	class ArtNetReceiver;
 
 	/**
 	 * Service for sending data over Artnet. Data is natively sent using bytes values, but the service provides
@@ -58,7 +59,7 @@ namespace nap
 	private:
 		/**
 		 * Adds a controller to the service. This should be called from init() and the return value should be tested to validate
-		 * that adding of the controller was succesful.
+		 * that adding of the controller was successful.
 		 * @param controller Controller to add.
 		 * @param errorState Out parameter that describes the error if the function returns false.
 		 * @return Whether adding was successful. If not successful, @errorState contains error information.
@@ -70,6 +71,21 @@ namespace nap
 		 * @param controller Controller to remove.
 		 */
 		void removeController(ArtNetController& controller);
+
+		/**
+		 * Adds a receiver to the service. This should be called from start() and the return value should be tested to validate
+		 * that adding of the receiver was successful.
+		 * @param receiver ArtNetReceiver to add.
+		 * @param errorState Out parameter that describes the error if the function returns false.
+		 * @return Whether adding was successful. If not successful, @errorState contains error information.
+		 */
+		bool addReceiver(ArtNetReceiver& receiver, utility::ErrorState& errorState);
+
+		/**
+		 * Removes a receiver that was previously successfully added using @addReceiver. This should be called from stop()
+		 * @param receiver ArtNetReceiver to remove.
+		 */
+		void removeReceiver(ArtNetReceiver& receiver);
 
 		/**
 		 * Sends normalized float channel data (ranging from 0.0 to 1.0) over the artnet network. Internally, the float data
@@ -117,6 +133,7 @@ namespace nap
 
 	private:
 		friend class ArtNetController;
+		friend class ArtNetReceiver;
 		struct ControllerData
 		{
 			ArtNetController*			mController;			// ArtNet controller specifying target subnet and universe
@@ -125,10 +142,13 @@ namespace nap
 			bool						mIsDirty;				// Identifies whether this controller contains new data
 		};
 		using ControllerKey = uint8_t;							// The key is the target address (subnet-universe), which is currently limited to 8 bits as it does not include net (7 bits)
+		using ReceiverKey = uint16_t;							// The key is the port which the receiver will listen to
 
 		using ControllerMap = std::unordered_map<ControllerKey, std::unique_ptr<ControllerData>>;
+		using ReceiverMap = std::unordered_map<ReceiverKey, ArtNetReceiver*>;
 		using DirtyNodeList = std::unordered_set<ControllerKey>;
 
 		ControllerMap	mControllers;							// Controller map that maps an absolute controller address to a controller
+		ReceiverMap		mReceivers;								// Receiver map that maps a receiver port to a receiver
 	};
 }

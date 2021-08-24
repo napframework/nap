@@ -4,6 +4,7 @@
 
  // Local Includes
 #include "artnetreceiver.h"
+#include "artnetservice.h" 
 
 // External includes
 #include <utility>
@@ -26,6 +27,12 @@ namespace nap
 	}
 
 
+	ArtNetReceiver::ArtNetReceiver(ArtNetService& service) : mService(&service)
+	{
+
+	}
+
+
 	bool ArtNetReceiver::init(utility::ErrorState& errorState)
 	{
 		mIOServiceHandle = new asio::io_service();
@@ -35,6 +42,10 @@ namespace nap
 
 	bool ArtNetReceiver::start(utility::ErrorState& errorState)
 	{
+		// Add receiver
+		if (!mService->addReceiver(*this, errorState))
+			return false;
+
 		try
 		{
 			// Create the UDP socket server
@@ -66,6 +77,9 @@ namespace nap
 
 		// Cleanup the server
 		mListener = nullptr;
+
+		// Remove controller from service
+		mService->removeReceiver(*this);
 	}
 
 
