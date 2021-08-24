@@ -95,14 +95,14 @@ namespace nap
 		* @param number the 1-based number of the DMX512 channel, ranging from 1 to the return value of @getChannelCount
 		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
 		*/
-		uint8_t getChannelByNumber(uint16_t number) const { return mData.at(number - 1); };
+		uint8_t getChannelByNumber(uint16_t number) const { return getChannelByIndex(number - 1); };
 
 		/**
 		* Retrieve the 8-bit value of a single DMX512 channel by its 0-based channel index.
 		* @param number the 0-based index of the DMX512 channel, ranging from 0 to the return value of @getChannelCount - 1
 		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
 		*/
-		uint8_t getChannelByIndex(uint16_t index) const { return mData.at(index); };
+		uint8_t getChannelByIndex(uint16_t index) const;
 
 	private:
 

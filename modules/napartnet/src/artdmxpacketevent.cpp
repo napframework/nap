@@ -6,6 +6,7 @@
 #include "artdmxpacketevent.h"
 
 // External Includes
+#include <cassert>
 #include <cstring>
 
 
@@ -27,5 +28,12 @@ namespace nap
 	{
 		mData.resize(size);
 		std::memcpy(mData.data(), data, size);
+	}
+
+
+	uint8_t ArtDmxPacketEvent::getChannelByIndex(uint16_t index) const
+	{
+		assert(index < getChannelCount() && index >= 0);
+		return mData.at(index);
 	}
 }
