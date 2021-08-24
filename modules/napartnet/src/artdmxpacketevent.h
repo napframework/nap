@@ -4,7 +4,7 @@
 
 #pragma once
 
- // External Includes
+// External Includes
 #include <nap/event.h>
 #include <cstdint>
 #include <vector>
