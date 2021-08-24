@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+
 #include "mainwindow.h"
 #include "appcontext.h"
 #include "napkin-resources.h"
@@ -60,6 +61,7 @@ int main(int argc, char* argv[])
 	QApplication::setOrganizationName("napframework");
 	QApplication::setApplicationName("Napkin");
 	QApplication::setApplicationVersion("0.4");
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
 	initializeSettings();
 

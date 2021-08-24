@@ -38,11 +38,10 @@ void CurveTreeModel::setCurveModel(AbstractCurveModel* model)
 	onCurvesInserted(indexes);
 }
 
-void CurveTreeModel::onCurvesInserted(const QList<int> indexes)
+void CurveTreeModel::onCurvesInserted(const QList<int>& indexes)
 {
 	auto sortedIndexes = indexes;
-	qSort(sortedIndexes);
-
+	std::sort(sortedIndexes.begin(), sortedIndexes.end());
 	for (int index : sortedIndexes)
 	{
 		auto curve = mModel->curve(index);
@@ -51,7 +50,7 @@ void CurveTreeModel::onCurvesInserted(const QList<int> indexes)
 	}
 }
 
-void CurveTreeModel::onCurvesRemoved(const QList<int> indexes)
+void CurveTreeModel::onCurvesRemoved(const QList<int>& indexes)
 {
 	for (int i : reverseSort(indexes))
 		removeRow(i);

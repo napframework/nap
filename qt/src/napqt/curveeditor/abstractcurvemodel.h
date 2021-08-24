@@ -27,7 +27,6 @@ namespace nap
 				Stepped = 0,
 				Linear = 1,
 				Bezier = 2,
-
 				UserInterp = 0x0100, // Reserved for user interpolation
 			};
 			Q_ENUM(InterpType)
@@ -89,13 +88,13 @@ namespace nap
 			/**
 			 * Apply the specified interpolation to the segment at the specified index
 			 * @param pointIndex The index of the segment
-			 * @param interp The interpolatiom type to be used when evaluating.
+			 * @param interp The interpolation type to be used when evaluating.
 			 */
 			virtual void setInterpolation(int pointIndex, const InterpType& interp) {}
 
 			/**
 			 * Tells the curve editor whether the left and right tangents are aligned,
-			 * ensuring C1 continuity (C2 or accelleration continuity is not guaranteed)
+			 * ensuring C1 continuity (C2 or acceleration continuity is not guaranteed)
 			 *
 			 * @param pointIndex The index of the point whoms handles to keep aligned during editing
 			 * @return true if the tangents are being kept aligned, false otherwise
@@ -104,7 +103,7 @@ namespace nap
 
 			/**
 			 * Tell the curve editor whether the left and right tangents are aligned,
-			 * ensuring C1 continuity (C2 or accelleration continuity is not guaranteed)
+			 * ensuring C1 continuity (C2 or acceleration continuity is not guaranteed)
 
 			 * @param pointIndex The index of the point whoms handles to keep aligned during editing
 			 */
@@ -164,7 +163,7 @@ namespace nap
 
 			/**
 			 * Invoked when one or more points are deleted from the curve.
-			 * @param indices The incides at which the points are being removed
+			 * @param indices The indices at which the points are being removed
 			 */
 			void pointsRemoved(QList<int> indices);
 		};
@@ -185,7 +184,7 @@ namespace nap
 			virtual int curveCount() const = 0;
 
 			/**
-			 * @param index The indes of the curve to be retrieved
+			 * @param index The indices of the curve to be retrieved
 			 * @return The AbstractCurve at the specified index
 			 */
 			virtual AbstractCurve* curve(int index) const = 0;

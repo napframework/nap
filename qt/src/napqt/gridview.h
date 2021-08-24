@@ -35,7 +35,7 @@ namespace nap
 			};
 
 			explicit GridView(QWidget* parent = nullptr);
-			~GridView() {}
+			~GridView() = default;
 
 			void setPanZoomMode(PanMode panMode, ZoomMode zoomMode)
 			{
@@ -47,10 +47,6 @@ namespace nap
 				mFramePanMode = panMode;
 				mFrameZoomMode = zoomMode;
 			}
-			void setDrawHLabels(bool b) { mDrawLabelsH = b; }
-			void setDrawVLabels(bool b) { mDrawLabelsV = b; }
-			void setDrawHLines(bool b) { mDrawHLines = b; }
-			void setDrawVLines(bool b) { mDrawVLines = b; }
 
 			void pan(const QPointF& delta);
 			void zoom(const QPointF& delta, const QPointF& pivot);
