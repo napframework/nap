@@ -104,6 +104,20 @@ namespace nap
 		*/
 		uint8_t getChannelByIndex(uint16_t index) const;
 
+		/**
+		* Retrieve the 8-bit value of a single DMX512 channel by its 0-based channel index.
+		* @param number the 0-based index of the DMX512 channel, ranging from 0 to the return value of @getChannelCount - 1
+		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
+		*/
+		uint8_t operator[](uint16_t index) { return getChannelByIndex(index); }
+
+		/**
+		* Retrieve the 8-bit value of a single DMX512 channel by its 0-based channel index.
+		* @param number the 0-based index of the DMX512 channel, ranging from 0 to the return value of @getChannelCount - 1
+		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
+		*/
+		const uint8_t operator[](uint16_t index) const { return getChannelByIndex(index); }
+
 	private:
 
 		uint8_t mSequence;
