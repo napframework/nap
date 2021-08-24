@@ -12,7 +12,6 @@
 // nap::ethercatmaster run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
 	RTTI_PROPERTY("ForceOperational",	&nap::EtherCATMaster::mForceOperational,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("OperationalTimeout",	&nap::EtherCATMaster::mOperationalTimeout,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapter",			&nap::EtherCATMaster::mAdapter,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ErrorCycleTime",		&nap::EtherCATMaster::mErrorCycleTime,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RecoveryTimeout",	&nap::EtherCATMaster::mRecoveryTimeout,		nap::rtti::EPropertyMetaData::Default)
@@ -227,17 +226,16 @@ namespace nap
 		mStopErrorTask = false;
 		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
 
-		// request Operational state for all slaves, give it at least mOperationalTimeout ms
-
+		// request Operational state for all slaves, give it 10 seconds
 		nap::Logger::info("Request operational state for all slaves");
-		ESlaveState state = requestState(ESlaveState::Operational, mOperationalTimeout);
+		ESlaveState state = requestState(ESlaveState::Operational, 10000);
 
 		// If not all slaves reached operational state display errors and
 		// bail if operational state of all slaves is required on startup
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
 			// Get error message and bail if required
-			errorState.fail(utility::stringFormat("%s: not all slaves reached operational state (%dms timeout exceeded)!", mID.c_str(), mOperationalTimeout));
+			errorState.fail(utility::stringFormat("%s: not all slaves reached operational state!", mID.c_str()));
 			getStatusMessage(ESlaveState::Operational, errorState);
 			nap::Logger::warn(errorState.toString());
 
