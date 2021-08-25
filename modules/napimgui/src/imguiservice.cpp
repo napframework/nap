@@ -20,6 +20,7 @@
 #include <nap/logger.h>
 #include <materialcommon.h>
 #include <descriptorsetallocator.h>
+#include <sdlhelpers.h>
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
@@ -256,7 +257,7 @@ namespace nap
 	}
 
 
-	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration,  ImFontAtlas& fontAtlas)
+	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration,  ImFontAtlas& fontAtlas, float dpiScale)
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
@@ -292,6 +293,7 @@ namespace nap
 
 		// Push default style
 		applyStyle(configuration);
+		ImGui::GetStyle().ScaleAllSizes(dpiScale);
 
 		// Reset context
 		ImGui::SetCurrentContext(cur_context);
@@ -550,27 +552,43 @@ namespace nap
 			font_config.OversampleH = 3;
 			font_config.OversampleV = 1;
 
-            // Add font
-			auto config = getConfiguration<IMGuiServiceConfiguration>();
-			float font_size = config->mFontSize;
-			auto font_file = config->mFontFile;
+			// Scale font based on main window dpi found
+			int num_displays = SDL::getDisplayCount();
+			if (num_displays >= 1)
+			{
+				float dpi;
+				int r = SDL::getDisplayDPI(0, &dpi, nullptr, nullptr);
+				if (r < 0)
+				{
+					nap::Logger::error(SDL::getSDLError());
+					mScale = 1.0f;
+				}
+				else
+				{
+					mScale = dpi / 96.0f;
+				}
+			}
 
-			if (!font_file.empty())
-				mFontAtlas->AddFontFromFileTTF(font_file.c_str(), font_size, &font_config);
+			// Add font, scale based on main dpi (TODO: Make Monitor Aware)
+			auto config = getConfiguration<IMGuiServiceConfiguration>();
+			float font_size = config->mFontSize * mScale;
+			if (!config->mFontFile.empty())
+				mFontAtlas->AddFontFromFileTTF(config->mFontFile.c_str(), font_size, &font_config);
 			else
 				mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
 
+			// Store number of samples
 			mSampleCount = window.getSampleCount();
 
 			// Create context and apply style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mScale);
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
 		}
 		else
 		{
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, 1.0f);
 		}
 
 		// Add context

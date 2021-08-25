@@ -235,6 +235,7 @@ namespace nap
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
+		float mScale = 1.0f;
 		VkSampleCountFlagBits mSampleCount = VK_SAMPLE_COUNT_1_BIT;
 
 		/**

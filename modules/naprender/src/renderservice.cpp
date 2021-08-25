@@ -31,6 +31,11 @@
 #include <nap/assert.h>
 #include <mathutils.h>
 
+// Required to enbale high dpi rendering on windows
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete,		"Discrete"),
@@ -1230,6 +1235,23 @@ namespace nap
 		mSceneService = getCore().getService<SceneService>();
 		assert(mSceneService != nullptr);
 
+		// Enable high dpi support if requested (windows)
+		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
+
+		// Store render settings, used for initialization and global window creation
+		mEnableHighDPIMode = render_config->mEnableHighDPIMode;
+
+		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
+		mHeadless = render_config->mHeadless;
+
+#ifdef _WIN32
+		if (mEnableHighDPIMode && !mHeadless)
+		{
+			if (!errorState.check(SetProcessDPIAware() > 0, "Unable to make current process DPI Aware"))
+				return false;
+		}
+#endif // _WIN32
+
 		// Initialize SDL video
 		mSDLInitialized = SDL::initVideo(errorState);
 		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
@@ -1239,13 +1261,6 @@ namespace nap
 		mShInitialized = ShInitialize() != 0;
 		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
-
-		// Store render settings, used for initialization and global window creation
-		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
-		mEnableHighDPIMode = render_config->mEnableHighDPIMode;
-
-		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
-		mHeadless = render_config->mHeadless;
 
 		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
 		// Allows for easy destruction of previously created and assigned resources when initialization fails.
