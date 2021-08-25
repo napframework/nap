@@ -149,6 +149,31 @@ namespace nap
 		}
 
 
+		int getDisplayCount()
+		{
+			return SDL_GetNumVideoDisplays();
+		}
+
+
+		int NAPAPI getDisplayIndex(SDL_Window* window)
+		{
+			return SDL_GetWindowDisplayIndex(window);
+		}
+
+
+		int NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi)
+		{
+			return SDL_GetDisplayDPI(displayIndex, ddpi, hdpi, vdpi);
+		}
+
+
+		int NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi)
+		{
+			int idx = getDisplayIndex(window);
+			return idx >= 0 ? getDisplayDPI(idx, ddpi, hdpi, vdpi) : idx;
+		}
+
+
 		void hideCursor()
 		{
 			SDL_ShowCursor(SDL_DISABLE);
