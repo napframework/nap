@@ -546,11 +546,21 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
+			int display_idx = SDL::getDisplayIndex(window.getNativeWindow());
+			if (display_idx < 0)
+			{
+				nap::Logger::error("Unable to get display index for window: %s", window.mID.c_str());
+				display_idx = 0;
+			}
+
 			// Create atlas, scale based on dpi of main monitor
-			mFontAtlas = createFontAtlas(0, mDPIScale);
+			mFontAtlas = createFontAtlas(display_idx, mDPIScale);
+
+			// Check if we need to compensate for the size of the GUI
+			mGUIScale = mDPIScale * (static_cast<float>(window.getWidth()) / static_cast<float>(window.getWidthPixels()));
 
 			// Create context and apply style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mGUIScale);
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
@@ -558,7 +568,7 @@ namespace nap
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mGUIScale);
 		}
 
 		// Add context
@@ -684,7 +694,7 @@ namespace nap
 			else
 			{
 				float dpi = 0.0f;
-				if (SDL::getDisplayDPI(displayIndex, &dpi, nullptr, nullptr) < 0)
+				if (SDL::getDisplayDPI(displayIndex, nullptr, &dpi, nullptr) < 0)
 				{
 					nap::Logger::error(SDL::getSDLError());
 				}

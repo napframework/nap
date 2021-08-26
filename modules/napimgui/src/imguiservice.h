@@ -236,6 +236,7 @@ namespace nap
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		float mDPIScale = 1.0f;
+		float mGUIScale = 1.0f;
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
