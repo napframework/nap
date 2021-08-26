@@ -556,11 +556,8 @@ namespace nap
 			// Create atlas, scale based on dpi of main monitor
 			mFontAtlas = createFontAtlas(display_idx, mDPIScale);
 
-			// Check if we need to compensate for the size of the GUI
-			mGUIScale = mDPIScale * (static_cast<float>(window.getWidth()) / static_cast<float>(window.getWidthPixels()));
-
 			// Create context and apply style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mGUIScale);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
@@ -568,7 +565,7 @@ namespace nap
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mGUIScale);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
 		}
 
 		// Add context
@@ -642,22 +639,30 @@ namespace nap
 
 		// Setup display size (every frame to accommodate for window resizing)
 		ImGuiIO& io = ImGui::GetIO();
-		int w, h;
 		int display_w, display_h;
-		SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
 		SDL_GL_GetDrawableSize(window.getNativeWindow(), &display_w, &display_h);
-		io.DisplaySize = ImVec2((float)w, (float)h);
-		io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+		io.DisplaySize = { (float)display_w, (float)display_h };
+		io.DisplayFramebufferScale = {1.0f, 1.0f};
 		io.DeltaTime = deltaTime;
 
-		// Setup inputs
-		// (we already got mouse wheel, keyboard keys & characters from SDL_PollEvent())
+		// Setup inputs. We already got mouse wheel, keyboard keys & characters from SDL_PollEvent()
+                // Scale SDL mouse position based on width & height in pixels, since we draw everything in
 		int mx, my;
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-
-		// Mouse position, in pixels, set to -1,-1 if no mouse / on another screen, etc.
-		io.MousePos = SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS ?
-			ImVec2((float)mx, (float)my) : io.MousePos = ImVec2(-FLT_MAX, -FLT_MAX);
+                if(SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS)
+                {
+                  int w, h;
+                  SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
+                  io.MousePos =
+                  {
+                      static_cast<float>(mx) * (static_cast<float>(display_w) / static_cast<float>(w)),
+                      static_cast<float>(my) * (static_cast<float>(display_h) / static_cast<float>(h))
+                  };
+                }
+                else
+                {
+                  io.MousePos = { -FLT_MAX, -FLT_MAX };
+                }
 
 		// Update mouse down state
 		io.MouseDown[0] = context.mMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
@@ -707,7 +712,7 @@ namespace nap
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
 		auto config = getConfiguration<IMGuiServiceConfiguration>();
-		float font_size = config->mFontSize * outDPIScale;
+		float font_size = math::floor(config->mFontSize * outDPIScale);
 		if (!config->mFontFile.empty())
 		{
 			new_atlas->AddFontFromFileTTF(config->mFontFile.c_str(), font_size, &font_config);

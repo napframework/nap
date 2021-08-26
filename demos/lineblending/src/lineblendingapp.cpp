@@ -89,6 +89,9 @@ namespace nap
 		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
 			"left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+                ImGui::Text(utility::stringFormat("Pixels: %d, %d", mRenderWindow->getWidthPixels(), mRenderWindow->getHeightPixels()).c_str());
+                ImGui::Text(utility::stringFormat("Size: %d, %d", mRenderWindow->getWidth(), mRenderWindow->getHeight()).c_str());
+                ImGui::Text(utility::stringFormat("DPI: %.2f, Scale: %.2f", mGuiService->getDPIScale() * 96.0f, mGuiService->getDPIScale()).c_str());
 		ImGui::End();
 
 		// The default input router forwards messages to key and mouse input components
