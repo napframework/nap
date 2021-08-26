@@ -235,8 +235,7 @@ namespace nap
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
-		float mScale = 1.0f;
-		VkSampleCountFlagBits mSampleCount = VK_SAMPLE_COUNT_1_BIT;
+		float mDPIScale = 1.0f;
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
@@ -259,5 +258,10 @@ namespace nap
 		 * starts a new imgui frame
 		 */
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
+
+		/**
+		 * creates a new font atlas
+		 */
+		std::unique_ptr<ImFontAtlas> createFontAtlas(int displayIndex, float& outDPIScale);
 	};
 }

@@ -546,49 +546,19 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
-			// Add font
-			mFontAtlas = std::make_unique<ImFontAtlas>();
-			ImFontConfig font_config;
-			font_config.OversampleH = 3;
-			font_config.OversampleV = 1;
-
-			// Scale font based on main window dpi found
-			int num_displays = SDL::getDisplayCount();
-			if (num_displays >= 1)
-			{
-				float dpi;
-				int r = SDL::getDisplayDPI(0, &dpi, nullptr, nullptr);
-				if (r < 0)
-				{
-					nap::Logger::error(SDL::getSDLError());
-					mScale = 1.0f;
-				}
-				else
-				{
-					mScale = dpi / 96.0f;
-				}
-			}
-
-			// Add font, scale based on main dpi (TODO: Make Monitor Aware)
-			auto config = getConfiguration<IMGuiServiceConfiguration>();
-			float font_size = config->mFontSize * mScale;
-			if (!config->mFontFile.empty())
-				mFontAtlas->AddFontFromFileTTF(config->mFontFile.c_str(), font_size, &font_config);
-			else
-				mFontAtlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
-
-			// Store number of samples
-			mSampleCount = window.getSampleCount();
+			// Create atlas, scale based on dpi of main monitor
+			mFontAtlas = createFontAtlas(0, mDPIScale);
 
 			// Create context and apply style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mScale);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
 		}
 		else
 		{
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, 1.0f);
+			// New context for window
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
 		}
 
 		// Add context
@@ -691,6 +661,52 @@ namespace nap
 
 		// Begin new frame
 		ImGui::NewFrame();
+	}
+
+
+	std::unique_ptr<ImFontAtlas> IMGuiService::createFontAtlas(int displayIndex, float& outDPIScale)
+	{
+		// Create font atlas
+		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
+		ImFontConfig font_config;
+		font_config.OversampleH = 3;
+		font_config.OversampleV = 1;
+
+		// Compute dpi scale if not headless and dpi scaling is enabled
+		outDPIScale = 1.0f;
+		if (!mRenderService->isHeadless() && mRenderService->getHighDPIEnabled())
+		{
+			int num_displays = SDL::getDisplayCount();
+			if (num_displays - 1 < displayIndex)
+			{
+				nap::Logger::error("Unable to calculate DPI scaling factor, display index out of bounds");
+			}
+			else
+			{
+				float dpi = 0.0f;
+				if (SDL::getDisplayDPI(displayIndex, &dpi, nullptr, nullptr) < 0)
+				{
+					nap::Logger::error(SDL::getSDLError());
+				}
+				else
+				{
+					outDPIScale = dpi / 96.0f;
+				}
+			}
+		}
+
+		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
+		auto config = getConfiguration<IMGuiServiceConfiguration>();
+		float font_size = config->mFontSize * outDPIScale;
+		if (!config->mFontFile.empty())
+		{
+			new_atlas->AddFontFromFileTTF(config->mFontFile.c_str(), font_size, &font_config);
+		}
+		else
+		{
+			new_atlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+		}
+		return new_atlas;
 	}
 
 

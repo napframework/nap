@@ -571,6 +571,13 @@ namespace nap
 		bool getLargePointsSupported() const										{ return mLargePointsSupported; }
 
 		/**
+		 * Configurable setting.
+		 * When enabled fonts and general scaling is adjusted for high dpi monitors.
+		 * @return if high dpi mode is enabled
+		 */
+		bool getHighDPIEnabled() const												{ return mEnableHighDPIMode; }
+
+		/**
 		 * Returns the (system default) number of anisotropic filter samples. 
 		 * The output is always 1 when anisotropic filtering is not supported.
 		 * @return system default number of max anisotropic filter samples.
