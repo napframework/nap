@@ -49,6 +49,7 @@ QHeaderView:section {
     color: #5D5E73;
     background-color: #252638;
     border: 0;
+    padding-left: 4px;
 }
 
 QGroupBox {
