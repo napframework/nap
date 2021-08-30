@@ -8,6 +8,7 @@
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
 #include "renderutils.h"
+#include "computeshader.h"
 
 // External Includes
 #include <nap/service.h>
@@ -81,7 +82,7 @@ namespace nap
 		PhysicalDevice() = default;
 
 		// Called by the render service
-		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex);
+		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex, int computeQueueIndex = -1);
 
 		/**
 		 * @return Physical device handle
@@ -92,6 +93,11 @@ namespace nap
 		 * @return queue index used for graphics commands and image presentation.
 		 */
 		int getQueueIndex() const { return mQueueIndex; }
+
+		/**
+		 * @return queue index used for compute commands.
+		 */
+		int getComputeQueueIndex() const { return mComputeQueueIndex; }
 
 		/**
 		 * @return physical device properties
@@ -113,6 +119,7 @@ namespace nap
 		VkPhysicalDeviceProperties	mProperties;						///< Properties of the physical device
 		VkPhysicalDeviceFeatures	mFeatures;							///< Physical device features
 		int							mQueueIndex = -1;					///< Graphics queue index
+		int							mComputeQueueIndex = -1;			///< Compute queue index
 	};
 
 
@@ -402,6 +409,8 @@ namespace nap
 		 * @return new or cached pipeline.
 		 */
 		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);
+
+		Pipeline getOrCreateComputePipeline(const ComputeShader& computeShader, utility::ErrorState& errorState);
 
 		/**
 		 * Returns a Vulkan pipeline for the given render target and Renderable-mesh combination.
@@ -859,6 +868,7 @@ namespace nap
 	private:
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
+		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
@@ -925,7 +935,9 @@ namespace nap
 		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
 		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkQueue									mQueue = VK_NULL_HANDLE;
+		VkQueue									mComputeQueue = VK_NULL_HANDLE;
 		PipelineCache							mPipelineCache;
+		ComputePipelineCache					mComputePipelineCache;
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;
 		bool									mSDLInitialized = false;

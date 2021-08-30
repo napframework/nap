@@ -12,6 +12,7 @@ namespace nap
 {
 	// Forward Declares
 	class Shader;
+	class ComputeShader;
 
 	/**
 	 * Key associated with a specific Vulkan pipeline. 
@@ -53,6 +54,18 @@ namespace nap
 		ECullMode				mCullMode = ECullMode::Back;
 		EPolygonMode			mPolygonMode = EPolygonMode::Fill;
 	};
+
+	struct NAPAPI ComputePipelineKey
+	{
+		/**
+		 * Creates the key based on the provided arguments.
+		 */
+		ComputePipelineKey(const ComputeShader& shader);
+
+		bool operator==(const ComputePipelineKey& rhs) const;
+
+		const ComputeShader* mShader = nullptr;
+	};
 }
 
 namespace std
@@ -80,6 +93,17 @@ namespace std
 			size_t cull_mode_hash		= hash<size_t>{}((size_t)key.mCullMode);
 			size_t poly_mode_hash		= hash<size_t>{}((size_t)key.mPolygonMode);
 			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash ^ cull_mode_hash ^ poly_mode_hash;
+		}
+	};
+
+
+	template<>
+	struct hash<nap::ComputePipelineKey>
+	{
+		size_t operator()(const nap::ComputePipelineKey& key) const
+		{
+			size_t shader_hash = hash<size_t>{}((size_t)key.mShader);
+			return shader_hash;
 		}
 	};
 }

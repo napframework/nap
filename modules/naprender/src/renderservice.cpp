@@ -441,6 +441,62 @@ namespace nap
 
 
 	/**
+	 * Finds all queue families for a given VkPhysicalDevice
+	 */
+	bool getQueueFamilyProperties(int device_index, VkPhysicalDevice physical_device, std::vector<VkQueueFamilyProperties>& queue_family_properties)
+	{
+		// Find the number queues this device supports
+		uint32 queue_family_count(0);
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
+		if (queue_family_count == 0)
+		{
+			Logger::warn("%d: No queue families available", device_index);
+			return false;
+		}
+
+		// Extract the properties of all the queue families
+		queue_family_properties.resize(queue_family_count);
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_family_properties.data());
+		return true;
+	}
+
+
+	/**
+	 * Selects a queue family index that supports the desired capabilities.
+	 * Returns false if no valid queue family index was found.
+	 */
+	bool selectQueueFamilyIndex(int device_index, VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, int& queue_family_index)
+	{
+		std::vector<VkQueueFamilyProperties> queue_families;
+		if (!getQueueFamilyProperties(device_index, physical_device, queue_families))
+		{
+			Logger::warn("%d: Could not find queue family properties", device_index);
+			return false;
+		}
+
+		// We want to make sure that we have a queue that supports the required flags
+		for (uint32 index = 0; index < static_cast<uint32>(queue_families.size()); ++index)
+		{
+			// Make sure this family supports presentation to the given surface
+			// If no present surface is specified (e.g. running headless) this check is not performed.
+			if (present_surface != VK_NULL_HANDLE)
+			{
+				VkBool32 supports_presentation = false;
+				vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, index, present_surface, &supports_presentation);
+				if (supports_presentation == 0)
+					continue;
+			}
+			if ((queue_families[index].queueCount > 0) && (queue_families[index].queueFlags & desired_capabilities))
+			{
+				queue_family_index = index;
+				return true;
+			}
+		}
+		return false;
+	}
+
+
+	/**
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
@@ -487,52 +543,23 @@ namespace nap
 				continue;
 			}
 
-			// Find the number queues this device supports
-			uint32 family_queue_count(0);
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, nullptr);
-			if (family_queue_count == 0)
-			{
-				Logger::warn("%d: No queue families available", device_idx);
-				continue;
-			}
-
-			// Extract the properties of all the queue families
-			// We want to make sure that we have a queue that supports the required flags
-			std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, queue_properties.data());
-
-			// Make sure the queue family supports both graphical and transfer commands.
-			int selected_queue_idx = -1;
-			for (uint32 i = 0; i < family_queue_count; i++)
-			{
-				if ((queue_properties[i].queueFlags & required_flags) == required_flags)
-				{
-					// Make sure this family supports presentation to the given surface
-					// If running headless this check is not performed.
-					if (presentSurface != VK_NULL_HANDLE)
-					{
-						VkBool32 supports_presentation = false;
-						vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, presentSurface, &supports_presentation);
-						if (supports_presentation == 0)
-							continue;
-					}
-
-					// Compatible
-					Logger::info("%d: Compatible queue found at index: %d", device_idx, i);
-					selected_queue_idx = i;
-					break;
-				}
-			}
-			
 			// Ensure there's a compatible queue for this device
-			if (selected_queue_idx < 0)
+			int selected_graphics_queue_idx = -1;
+			if (!selectQueueFamilyIndex(device_idx, physical_device, required_flags, presentSurface, selected_graphics_queue_idx))
 			{
-				Logger::warn("%d: Unable to find compatible queue family", device_idx);
+				Logger::warn("%d: Unable to find compatible graphics/transfer queue family", device_idx);
 				continue;
+			}
+
+			// Ensure there's a compatible compute queue for this device
+			int selected_compute_queue_idx = -1;
+			if (!selectQueueFamilyIndex(device_idx, physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, selected_compute_queue_idx))
+			{
+				Logger::warn("%d: Unable to find compatible compute queue family", device_idx);
 			}
 
 			// Add it as a compatible device
-			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_queue_idx));
+			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_graphics_queue_idx, selected_compute_queue_idx));
 
 			// Check if it's the preferred type, if so select it.
 			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? 
@@ -599,10 +626,13 @@ namespace nap
 		for (const auto& name : device_property_names)
 			Logger::info("Applying device extension: %s", name);
 
+		// Create queue information structures used by device based on the previously fetched queue information from the physical device
+		std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+		queue_create_infos.reserve(2);
+		queue_create_infos.emplace_back();
 
-		// Create queue information structure used by device based on the previously fetched queue information from the physical device
-		// We create one command processing queue for graphics
-		VkDeviceQueueCreateInfo queue_create_info = { };
+		// We create one command processing queue for graphics/transfer
+		auto& queue_create_info = queue_create_infos.back();
 		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queue_create_info.queueFamilyIndex = physicalDevice.getQueueIndex();
 		queue_create_info.queueCount = 1;
@@ -610,6 +640,22 @@ namespace nap
 		queue_create_info.pQueuePriorities = queue_prio.data();
 		queue_create_info.pNext = nullptr;
 		queue_create_info.flags = 0;
+
+		// Additionally create a command processing queue for compute if available
+		// We do not have to create it if its the queue index is the same as the graphics queue
+		if (physicalDevice.getComputeQueueIndex() != -1 && physicalDevice.getQueueIndex() != physicalDevice.getComputeQueueIndex())
+		{
+			queue_create_infos.emplace_back();
+
+			auto& queue_create_info = queue_create_infos.back();
+			queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queue_create_info.queueFamilyIndex = physicalDevice.getQueueIndex();
+			queue_create_info.queueCount = 1;
+			std::vector<float> queue_prio = { 1.0f };
+			queue_create_info.pQueuePriorities = queue_prio.data();
+			queue_create_info.pNext = nullptr;
+			queue_create_info.flags = 0;
+		}
 
 		// Enable specific features, we could also enable all supported features here.
 		VkPhysicalDeviceFeatures device_features {0};
@@ -622,8 +668,8 @@ namespace nap
 		// Device creation information	
 		VkDeviceCreateInfo create_info = { };
 		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		create_info.queueCreateInfoCount = 1;
-		create_info.pQueueCreateInfos = &queue_create_info;
+		create_info.queueCreateInfoCount = queue_create_infos.size();
+		create_info.pQueueCreateInfos = &queue_create_infos[0];
 		create_info.ppEnabledLayerNames = layer_names.data();
 		create_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
 		create_info.ppEnabledExtensionNames = device_property_names.data();
@@ -946,6 +992,34 @@ namespace nap
 	}
 
 
+	static bool createComputePipeline(VkDevice device, const ComputeShader& computeShader, VkPipelineLayout& pipelineLayout, VkPipeline& outComputePipeline, utility::ErrorState& errorState)
+	{
+		VkShaderModule comp_shader_module = computeShader.getComputeModule();
+
+		VkPipelineShaderStageCreateInfo comp_shader_stage_info = {};
+		comp_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		comp_shader_stage_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		comp_shader_stage_info.module = comp_shader_module;
+		comp_shader_stage_info.pName = "main";
+
+		VkComputePipelineCreateInfo pipeline_info = {};
+		pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		pipeline_info.pNext = nullptr;
+		pipeline_info.flags = 0;
+		pipeline_info.stage = comp_shader_stage_info;
+		pipeline_info.layout = pipelineLayout;
+		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+		pipeline_info.basePipelineIndex = -1;
+
+		if (vkCreateComputePipelines(device, nullptr, 1, &pipeline_info, nullptr, &outComputePipeline) != VK_SUCCESS)
+		{
+			nap::Logger::info("Could not create compute pipeline");
+			return false;
+		}
+		return true;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service
 	//////////////////////////////////////////////////////////////////////////
@@ -1062,6 +1136,29 @@ namespace nap
 	RenderService::Pipeline RenderService::getOrCreatePipeline(const IRenderTarget& renderTarget, const RenderableMesh& mesh, utility::ErrorState& errorState)
 	{
 		return getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), errorState);
+	}
+
+
+	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeShader& computeShader, utility::ErrorState& errorState)
+	{
+		// Create pipeline key based on draw properties
+		ComputePipelineKey pipeline_key(computeShader);
+
+		// Find key in cache and use previously created pipeline
+		ComputePipelineCache::iterator pos = mComputePipelineCache.find(pipeline_key);
+		if (pos != mComputePipelineCache.end())
+			return pos->second;
+
+		// Otherwise create new pipeline
+		Pipeline pipeline;
+		if (createComputePipeline(mDevice, computeShader, pipeline.mLayout, pipeline.mPipeline, errorState))
+		{
+			mComputePipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			return pipeline;
+		}
+
+		NAP_ASSERT_MSG(false, "Unable to create new pipeline");
+		return Pipeline();
 	}
 	
 
@@ -1357,6 +1454,16 @@ namespace nap
 
 		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
 		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
+
+		// If available, get a compatible compute queue that will process compute commands
+		if (mPhysicalDevice.getComputeQueueIndex() != -1)
+		{
+			// Get compute queue
+			if (mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
+				vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
+			else
+				mComputeQueue = mQueue;
+		}
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
@@ -1909,8 +2016,8 @@ namespace nap
 }
 
 
-nap::PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex) :
-	mDevice(device), mProperties(properties), mQueueIndex(queueIndex)
+nap::PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex, int computeQueueIndex) :
+	mDevice(device), mProperties(properties), mQueueIndex(queueIndex), mComputeQueueIndex(computeQueueIndex)
 {
 	vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
 }
