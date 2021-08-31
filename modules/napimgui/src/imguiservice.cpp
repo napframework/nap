@@ -692,6 +692,17 @@ namespace nap
 		if (!mRenderService->isHeadless() && mRenderService->getHighDPIEnabled())
 		{
 			int num_displays = SDL::getDisplayCount();
+            nap::Logger::info("Found %d displays", num_displays);
+            for(int i=0; i<num_displays; i++)
+            {
+                float ddpi = 0.0f;
+                float hdpi = 0.0f;
+                float vdpi = 0.0f;
+                nap::Logger::info("Display %d: name: %s", i, SDL_GetDisplayName(i));
+                SDL::getDisplayDPI(i, &ddpi, &hdpi, &vdpi);
+                nap::Logger::info("Display %d: ddpi: %.2f, hdpi: %.2f, vdpi: %.2f", i, ddpi, hdpi, vdpi);
+            }
+
 			if (num_displays - 1 < displayIndex)
 			{
 				nap::Logger::error("Unable to calculate DPI scaling factor, display index out of bounds");
