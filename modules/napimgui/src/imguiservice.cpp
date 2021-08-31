@@ -20,6 +20,7 @@
 #include <nap/logger.h>
 #include <materialcommon.h>
 #include <descriptorsetallocator.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
@@ -412,7 +413,12 @@ namespace nap
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
 		{
 			nap::MouseWheelEvent& wheel_event = static_cast<nap::MouseWheelEvent&>(event);
-			context->second->mMouseWheel = wheel_event.mY > 0 ? 1 : -1;
+#ifdef __APPLE__
+			float delta = io.KeyShift ? wheel_event.mX * -1.0f : wheel_event.mY;
+#else
+			float delta = wheel_event.mX;
+#endif
+			context->second->mMouseWheel = delta > 0 ? 1 : -1;
 		}
 
 		// Pointer press event
