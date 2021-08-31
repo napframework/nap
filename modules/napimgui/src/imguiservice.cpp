@@ -416,7 +416,7 @@ namespace nap
 #ifdef __APPLE__
 			float delta = io.KeyShift ? wheel_event.mX * -1.0f : wheel_event.mY;
 #else
-			float delta = wheel_event.mX;
+			float delta = wheel_event.mY;
 #endif
 			context->second->mMouseWheel = delta > 0 ? 1 : -1;
 		}
