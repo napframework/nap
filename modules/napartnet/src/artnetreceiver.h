@@ -11,6 +11,7 @@
 // External Includes
 #include <nap/device.h>
 #include <rtti/factory.h>
+#include <asio/io_service.hpp>
 #include <thread>
 #include <mutex>
 #include <queue>
@@ -38,13 +39,6 @@ namespace nap
 		ArtNetReceiver(ArtNetService & service);
 
 		/**
-		* Initializes the Art-Net receiver.
-		* @param errorState Contains error information in case the function returns false.
-		* @return true on success, false otherwise. In case of an error, errorState contains error information.
-		*/
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
 		 * Starts the Art-Net receiver.
 		 * @param errorState Contains error information in case the function returns false.
 		 * @return true on success, false otherwise. In case of an error, errorState contains error information.
@@ -55,11 +49,6 @@ namespace nap
 		 * Stops the Art-Net receiver.
 		 */
 		virtual void stop() override;
-
-		/**
-		* Destroys the Art-Net receiver.
-		*/
-		virtual void onDestroy() override;
 
 		/**
 		* Adds an event to the queue
@@ -83,7 +72,7 @@ namespace nap
 		ArtNetService* mService = nullptr;
 
 		// The ASIO I/O service
-		void* mIOServiceHandle = nullptr;
+		asio::io_service mIOService;
 
 		// The thread used for running the I/O service
 		std::thread mRunThread;

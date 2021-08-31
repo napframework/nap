@@ -8,11 +8,10 @@
 
 // External includes
 #include <utility>
-#include <asio.hpp>
 
 // nap::ArtNetReceiver run time class definition
 RTTI_BEGIN_CLASS(nap::ArtNetReceiver)
-RTTI_PROPERTY("Port", &nap::ArtNetReceiver::mPort, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Port", &nap::ArtNetReceiver::mPort, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -21,22 +20,9 @@ RTTI_END_CLASS
 namespace nap
 {
 
-	static asio::io_service* toService(void* ioService)
-	{
-		return reinterpret_cast<asio::io_service*>(ioService);
-	}
-
-
 	ArtNetReceiver::ArtNetReceiver(ArtNetService& service) : mService(&service)
 	{
 
-	}
-
-
-	bool ArtNetReceiver::init(utility::ErrorState& errorState)
-	{
-		mIOServiceHandle = new asio::io_service();
-		return true;
 	}
 
 
@@ -49,10 +35,10 @@ namespace nap
 		try
 		{
 			// Create the UDP socket server
-			mListener = std::make_unique<ArtNetListener>(*this, mIOServiceHandle, mPort);
+			mListener = std::make_unique<ArtNetListener>(*this, mIOService, mPort);
 
 			// Run the I/O service in a thread
-			mRunThread = std::thread([&] { toService(mIOServiceHandle)->run(); });
+			mRunThread = std::thread([&] { mIOService.run(); });
 		}
 		catch (std::exception& e)
 		{
@@ -68,8 +54,8 @@ namespace nap
 	void ArtNetReceiver::stop()
 	{
 		// Stop the I/O service if running
-		if (!toService(mIOServiceHandle)->stopped())
-			toService(mIOServiceHandle)->stop();
+		if (!mIOService.stopped())
+			mIOService.stop();
 
 		// Join the run thread if joinable
 		if (mRunThread.joinable())
@@ -80,13 +66,6 @@ namespace nap
 
 		// Remove controller from service
 		mService->removeReceiver(*this);
-	}
-
-
-	void ArtNetReceiver::onDestroy()
-	{
-		if (mIOServiceHandle != nullptr)
-			delete toService(mIOServiceHandle);
 	}
 
 
