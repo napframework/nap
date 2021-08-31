@@ -10,6 +10,7 @@
 
 // External Includes
 #include <nap/device.h>
+#include <rtti/factory.h>
 #include <thread>
 #include <mutex>
 #include <queue>
