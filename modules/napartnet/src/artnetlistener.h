@@ -6,6 +6,9 @@
 
 // External Includes
 #include <cstdint>
+#include <asio/io_service.hpp>
+#include <asio/error_code.hpp>
+#include <asio/ip/udp.hpp>
 
 
 namespace nap
@@ -20,10 +23,13 @@ namespace nap
 
 	public:
 
-		ArtNetListener(ArtNetReceiver& receiver, void* ioService, uint16_t port);
+		ArtNetListener(ArtNetReceiver& receiver, asio::io_service& ioService, uint16_t port);
 		~ArtNetListener();
 
+	private:
+
 		void startReceive();
+		void handleReceive(const asio::error_code& error, std::size_t size);
 
 		static constexpr const char*	PROTOCOL_ID = "Art-Net";
 		static constexpr uint16_t		OP_CODE = 0x5000;
@@ -32,7 +38,7 @@ namespace nap
 		static constexpr uint8_t		HEADER_LENGTH = 18;
 
 		ArtNetReceiver&					mReceiver;		// The Art-Net Receiver that holds the message queue
-		void*							mSocketHandle;	// The UDP socket that is used to receive data
+		asio::ip::udp::socket			mSocket;		// The UDP socket that is used to receive data
 		size_t							mBufferSize;	// The maximum size for the ArtDmx package in bytes
 		uint8_t*						mBuffer;		// The buffer used for receiving ArtDmx packages
 	};
