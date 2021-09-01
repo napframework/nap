@@ -11,11 +11,13 @@
 
 // nap::ethercatmaster run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
-	RTTI_PROPERTY("ForceOperational",	&nap::EtherCATMaster::mForceOperational,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("OperationalTimeout",	&nap::EtherCATMaster::mOperationalTimeout,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Adapter",			&nap::EtherCATMaster::mAdapter,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ErrorCycleTime",		&nap::EtherCATMaster::mErrorCycleTime,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RecoveryTimeout",	&nap::EtherCATMaster::mRecoveryTimeout,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ForceOperational",		&nap::EtherCATMaster::mForceOperational,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ForceSafeOperational",	&nap::EtherCATMaster::mForceSafeOperational,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OperationalTimeout",		&nap::EtherCATMaster::mOperationalTimeout,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SafeOperationalTimeout",	&nap::EtherCATMaster::mSafeOperationalTimeout,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapter",				&nap::EtherCATMaster::mAdapter,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ErrorCycleTime",			&nap::EtherCATMaster::mErrorCycleTime,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RecoveryTimeout",		&nap::EtherCATMaster::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,6 +140,10 @@ namespace nap
 		assert(!mOperational);
 		assert(!mStarted);
 
+		//////////////////////////////////////////////////////////////////////////
+		// Init
+		//////////////////////////////////////////////////////////////////////////
+
 		// Try to initialize adapter
 		ecx_contextt* context = toContext(mContext);
 		if (!ecx_init(context, mAdapter.c_str()))
@@ -161,13 +167,25 @@ namespace nap
 		// Configure DC options for every DC capable slave found in the list
 		ecx_configdc(context);
 
-		// All slaves should be in pre-op mode now
-		if (stateCheck(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::PreOperational)
+		//////////////////////////////////////////////////////////////////////////
+		// Pre Operational
+		//////////////////////////////////////////////////////////////////////////
+
+		// All slaves should be in pre-op mode now, if not show and bail if required
+		if (stateCheck(0, ESlaveState::PreOperational, mSafeOperationalTimeout) != ESlaveState::PreOperational)
 		{
-			nap::Logger::warn("Not all slaves reached pre-operational state");
+			utility::ErrorState pre_op_error;
+			getStatusMessage(ESlaveState::PreOperational, pre_op_error);
+			if (mForceSafeOperational)
+			{
+				errorState = pre_op_error;
+				stop();
+				return false;
+			}
+			nap::Logger::warn(pre_op_error.toString());
 		}
 
-		// Allow derived class to startup
+		// Allow derived class to startup, bail of failure
 		readState();
 		if (!onStarted(errorState))
 		{
@@ -176,23 +194,42 @@ namespace nap
 		}
 
 		// Notify listeners, first update individual slave states
+		// Bail if pre-operation callback of any of the slaves failed
+		bool pre_op_success = true;
 		for (int i = 1; i <= getSlaveCount(); i++)
 		{
 			ec_slavet& cs = context->slavelist[i];
 			if(cs.state == static_cast<uint16>(ESlaveState::PreOperational))
 			{
-				onPreOperational(&cs, i);
+				pre_op_success = onPreOperational(&cs, i, errorState);
 			}
 		}
+		if (!pre_op_success)
+		{
+			stop();
+			return false;
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		// Safe Operational
+		//////////////////////////////////////////////////////////////////////////
 
 		// Map all PDOs from slaves to IOmap with Outputs/Inputs
 		ecx_config_map_group(context, &mIOmap, 0);
 		nap::Logger::info("%s: all slaves mapped", this->mID.c_str());
 
-		// All slaves should be in safe-op mode now
-		if (stateCheck(0, ESlaveState::SafeOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::SafeOperational)
+		// All slaves should be in safe-op mode 
+		if (stateCheck(0, ESlaveState::SafeOperational, mSafeOperationalTimeout) != ESlaveState::SafeOperational)
 		{
-			nap::Logger::warn("Not all slaves reached safe-operational state");
+			utility::ErrorState safe_op_error;
+			getStatusMessage(ESlaveState::SafeOperational, safe_op_error);
+			if (mForceSafeOperational)
+			{
+				errorState = safe_op_error;
+				stop();
+				return false;
+			}
+			nap::Logger::warn(safe_op_error.toString());
 		}
 
 		// Calculate slave work counter, used to check in the error loop if slaves got lost
@@ -201,7 +238,9 @@ namespace nap
 		nap::Logger::info("%s: calculated work-counter: %d", mID.c_str(), mExpectedWKC);
 
 		// Print useful info and notify listeners
+		// Bail if safe operational callback failed, unsafe to proceed
 		readState();
+		bool safe_op_success = true;
 		for (int i = 1; i <= getSlaveCount(); i++)
 		{
 			ec_slavet& cs = context->slavelist[i];
@@ -210,9 +249,18 @@ namespace nap
 
 			if (context->slavelist[i].state == static_cast<uint16>(ESlaveState::SafeOperational))
 			{
-				onSafeOperational(&context->slavelist[i], i);
+				safe_op_success = onSafeOperational(&context->slavelist[i], i, errorState);
 			}
 		}
+		if (!safe_op_success)
+		{
+			stop();
+			return false;
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		// Operational
+		//////////////////////////////////////////////////////////////////////////
 
 		// Enable run mode, we're operational when all slaves reach operational state
 		mOperational = false;
@@ -235,28 +283,19 @@ namespace nap
 		// bail if operational state of all slaves is required on startup
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
-			// Get error message and bail if required
+			// Get error message
+			utility::ErrorState op_error;
 			errorState.fail(utility::stringFormat("%s: not all slaves reached operational state (%dms timeout exceeded)!", mID.c_str(), mOperationalTimeout));
-			getStatusMessage(ESlaveState::Operational, errorState);
-			nap::Logger::warn(errorState.toString());
+			getStatusMessage(ESlaveState::Operational, op_error);
 
-			// Log errors
-			readState();
-			for (int i = 1; i <= getSlaveCount(); i++)
-			{
-				ec_slavet& cs = context->slavelist[i];
-				if (cs.state != static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
-				{
-					nap::Logger::warn("Slave %d failed to reach Operational State", i);
-				}
-			}
-
-			// Stop if operational state for all slaves is enforced
+			// Stop if operational state for all slaves is required
 			if (mForceOperational)
 			{
+				errorState = op_error;
 				stop();
 				return false;
 			}
+			nap::Logger::warn(op_error.toString());
 		}
 		else
 		{
@@ -438,11 +477,6 @@ namespace nap
 				else if (cs.state == static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational))
 				{
 					nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", this->mID.c_str(), slave);
-
-					// TODO: Do we have to call this here again?
-					// If the slave successfully reached this state before, is it required?
-					onSafeOperational(&cs, slave);
-
 					cs.state = static_cast<uint16>(EtherCATMaster::ESlaveState::Operational);
 					writeState(slave);
 				}
