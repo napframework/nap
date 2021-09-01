@@ -209,13 +209,16 @@ namespace nap
 			stop();
 			return false;
 		}
+		nap::Logger::info("%s: all slaves reached pre-operational state", this->mID.c_str());
 
 		//////////////////////////////////////////////////////////////////////////
 		// Safe Operational
 		//////////////////////////////////////////////////////////////////////////
 
 		// Map all PDOs from slaves to IOmap with Outputs/Inputs
+		nap::Logger::info("%s: mapping slaves...", this->mID.c_str());
 		ecx_config_map_group(context, &mIOmap, 0);
+
 		nap::Logger::info("%s: all slaves mapped", this->mID.c_str());
 
 		// All slaves should be in safe-op mode 
@@ -257,6 +260,7 @@ namespace nap
 			stop();
 			return false;
 		}
+		nap::Logger::info("%s: all slaves reached safe-operational state", this->mID.c_str());
 
 		//////////////////////////////////////////////////////////////////////////
 		// Operational
