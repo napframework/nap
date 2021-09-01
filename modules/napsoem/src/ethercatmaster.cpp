@@ -228,7 +228,6 @@ namespace nap
 		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
 
 		// request Operational state for all slaves, give it at least mOperationalTimeout ms
-
 		nap::Logger::info("Request operational state for all slaves");
 		ESlaveState state = requestState(ESlaveState::Operational, mOperationalTimeout);
 
@@ -241,6 +240,17 @@ namespace nap
 			getStatusMessage(ESlaveState::Operational, errorState);
 			nap::Logger::warn(errorState.toString());
 
+			// Log errors
+			readState();
+			for (int i = 1; i <= getSlaveCount(); i++)
+			{
+				ec_slavet& cs = context->slavelist[i];
+				if (cs.state != static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
+				{
+					nap::Logger::warn("Slave %d failed to reach Operational State", i);
+				}
+			}
+
 			// Stop if operational state for all slaves is enforced
 			if (mForceOperational)
 			{
@@ -251,20 +261,10 @@ namespace nap
 		else
 		{
 			nap::Logger::info("%s: all slaves reached operational state", mID.c_str());
-			mOperational = true;
 		}
 
-		// Notify listeners
-		readState();
-		for (int i = 1; i <= getSlaveCount(); i++)
-		{
-			ec_slavet& cs = context->slavelist[i];
-			if (cs.state == static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
-			{
-				onOperational(&cs, i);
-			}
-		}
-
+		// Master is operational, starts error handling thread
+		mOperational = true;
 		mStarted = true;
 		return true;
 	}
@@ -438,20 +438,13 @@ namespace nap
 				else if (cs.state == static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational))
 				{
 					nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", this->mID.c_str(), slave);
+
+					// TODO: Do we have to call this here again?
+					// If the slave successfully reached this state before, is it required?
 					onSafeOperational(&cs, slave);
+
 					cs.state = static_cast<uint16>(EtherCATMaster::ESlaveState::Operational);
 					writeState(slave);
-
-					// Call on operational if state changed
-					if (stateCheck(slave, ESlaveState::Operational) == ESlaveState::Operational)
-					{
-						onOperational(&cs, slave);
-						nap::Logger::info("%s: slave %d OPERATIONAL", mID.c_str(), slave);
-					}
-					else
-					{
-						nap::Logger::info("%s: slave %d unable to reach OPERATIONAL state", mID.c_str(), slave);
-					}
 				}
 
 				// Slave in between none and safe operational

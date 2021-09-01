@@ -192,15 +192,6 @@ namespace nap
 		 */
 		virtual void onSafeOperational(void* slave, int index)		{ }
 
-		/**
-		 * Called when a slave reaches the operational stage on the network.
-		 * Note that this function can be called from multiple threads.
-		 * Drive fully operational, master responds to data via received PDO.
-		 * @param slave ec_slavet* pointer to the slave on the network.
-		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
-		 */
-		virtual void onOperational(void* slave, int index)			{ }
-
 		//////////////////////////////////////////////////////////////////////////
 		// Service Data Objects
 		//////////////////////////////////////////////////////////////////////////
