@@ -445,12 +445,15 @@ namespace nap
 		RenderWindow* findWindow(uint id) const;
 
 		/**
+		 * Returns the total number of displays.
+		 * Note that changes to display configuration are not considered when application is running.
 		 * @return total number of displays
 		 */
 		int getDisplayCount() const;
 
 		/**
-		 * Find a display based on a display number
+		 * Returns the total number of displays.
+		 * Note that changes to display configuration are not considered when application is running.
 		 * @param index the number of the display to find
 		 * @return the display, nullptr if not found
 		 */

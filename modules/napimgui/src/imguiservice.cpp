@@ -570,11 +570,17 @@ namespace nap
 
 		// Add context
 		mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context)));
+
+		// Connect so we can listen to window events such as move
+		window.mWindowEvent.connect(mWindowEventSlot);
 	}
 
 
 	void IMGuiService::onWindowRemoved(RenderWindow& window)
 	{
+		// Disconnect
+		window.mWindowEvent.disconnect(mWindowEventSlot);
+
 		// Find context
 		auto it = mContexts.find(&window);
 		assert(it != mContexts.end());
@@ -582,6 +588,24 @@ namespace nap
 		// Remove on vulkan side and erase
 		ImGui_ImplVulkan_RemoveContext(it->second->mContext);
 		mContexts.erase(it);
+	}
+
+
+	void IMGuiService::onWindowEvent(const WindowEvent& windowEvent)
+	{
+		if (windowEvent.get_type().is_derived_from(RTTI_OF(nap::WindowMovedEvent)))
+		{
+			// Get window
+			nap::RenderWindow* window = mRenderService->findWindow(windowEvent.mWindow);
+			assert(window != nullptr);
+
+			// Get display
+			int idx = SDL::getDisplayIndex(window->getNativeWindow());
+			assert(idx >= 0);
+
+			// Check if it changed
+			nap::Logger::info("Display Index: %d", idx);
+		}
 	}
 
 

@@ -998,7 +998,7 @@ namespace nap
 
 	RenderWindow* RenderService::findWindow(uint id) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		auto pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
 		{
 			return val->getNumber() == id;
 		});
@@ -1008,8 +1008,11 @@ namespace nap
 
 	const nap::Display* RenderService::findDisplay(int index) const
 	{
-		assert(index > 0);
-		return index < mDisplays.size() ? &mDisplays[index] : nullptr;
+		auto found_it = std::find_if(mDisplays.begin(), mDisplays.end(), [&](const auto& it)
+		{
+			return it.getIndex() == index;
+		});
+		return found_it == mDisplays.end() ? nullptr : &(*found_it);
 	}
 
 

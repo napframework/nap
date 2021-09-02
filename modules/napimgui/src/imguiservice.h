@@ -255,6 +255,12 @@ namespace nap
 		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
 
 		/**
+		 * Called when a window event occurs.
+		 */
+		void onWindowEvent(const WindowEvent& windowEvent);
+		nap::Slot<const WindowEvent&> mWindowEventSlot = { this, &IMGuiService::onWindowEvent };
+
+		/**
 		 * Creates all vulkan related resources, for imGUI as well as local
 		 */
 		void createVulkanResources(nap::RenderWindow& window);
