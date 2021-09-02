@@ -1016,6 +1016,12 @@ namespace nap
 	}
 
 
+	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window)
+	{
+		return findDisplay(SDL::getDisplayIndex(window.getNativeWindow()));
+	}
+
+
 	const nap::DisplayList& RenderService::getDisplays() const
 	{
 		return mDisplays;

@@ -453,12 +453,17 @@ namespace nap
 		int getDisplayCount() const;
 
 		/**
-		 * Returns the total number of displays.
+		 * Find a display based on the index provided
 		 * Note that changes to display configuration are not considered when application is running.
 		 * @param index the number of the display to find
 		 * @return the display, nullptr if not found
 		 */
 		const Display* findDisplay(int index) const;
+
+		/**
+		 * @return display that shows the given window, nullptr if not found
+		 */
+		const Display* findDisplay(const nap::RenderWindow& window);
 
 		/**
 		 * @return all available displays

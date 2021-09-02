@@ -257,7 +257,7 @@ namespace nap
 	}
 
 
-	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration,  ImFontAtlas& fontAtlas, float dpiScale)
+	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration,  ImFontAtlas& fontAtlas)
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
@@ -293,7 +293,6 @@ namespace nap
 
 		// Push default style
 		applyStyle(configuration);
-		ImGui::GetStyle().ScaleAllSizes(dpiScale);
 
 		// Reset context
 		ImGui::SetCurrentContext(cur_context);
@@ -485,17 +484,6 @@ namespace nap
 		// Register to window added / removed signals
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
-
-		// Calculate max dpi scale if high dpi rendering is enabled
-		if (mRenderService->getHighDPIEnabled())
-		{
-			for (const auto& display : mRenderService->getDisplays())
-			{
-				float dpi_scale = display.getHorizontalDPI() / referenceDPI;
-				nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
-				mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
-			}
-		}
 		return true;
 	}
 
@@ -556,18 +544,22 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
-			int display_idx = SDL::getDisplayIndex(window.getNativeWindow());
-			if (display_idx < 0)
+			// Calculate max dpi scale if high dpi rendering is enabled
+			if (mRenderService->getHighDPIEnabled())
 			{
-				nap::Logger::error("Unable to get display index for window: %s", window.mID.c_str());
-				display_idx = 0;
+				for (const auto& display : mRenderService->getDisplays())
+				{
+					float dpi_scale = display.getHorizontalDPI() / referenceDPI;
+					nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
+					mFontScale = dpi_scale > mFontScale ? dpi_scale : mFontScale;
+				}
 			}
 
 			// Create atlas, scale based on dpi of main monitor
-			mFontAtlas = createFontAtlas(mDPIScale);
+			mFontAtlas = createFontAtlas(mFontScale);
 
 			// Create context and apply style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
@@ -575,11 +567,18 @@ namespace nap
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
 		}
 
-		// Add context
-		mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context)));
+		// Add context, set display index & push scale accordingly
+		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context)));
+		const auto* display = mRenderService->findDisplay(window);
+		assert(display != nullptr);
+		it.first->second->mDisplayIndex = display->getIndex();
+		if (mRenderService->getHighDPIEnabled())
+		{
+			pushScale(*it.first->second);
+		}
 
 		// Connect so we can listen to window events such as move
 		window.mWindowEvent.connect(mWindowEventSlot);
@@ -621,6 +620,12 @@ namespace nap
 				// Display Changed!
 				nap::Logger::info("Display changed from: %d to %d", it->second->mDisplayIndex, display_index);
 				it->second->mDisplayIndex = display_index;
+
+				// Update Scale
+				if (mRenderService->getHighDPIEnabled())
+				{
+					pushScale(*it->second);
+				}
 			}
 		}
 	}
@@ -687,7 +692,7 @@ namespace nap
 		io.DeltaTime = deltaTime;
 
 		// Setup inputs. We already got mouse wheel, keyboard keys & characters from SDL_PollEvent()
-                // Scale SDL mouse position based on width & height in pixels, since we draw everything in
+        // Scale SDL mouse position based on width & height in pixels, since we draw everything in
 		int mx, my;
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
 		if(SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS)
@@ -729,7 +734,7 @@ namespace nap
 		font_config.OversampleV = 1;
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
-		float dpi_scale = mRenderService->getHighDPIEnabled() ? mDPIScale : 1.0f;
+		float dpi_scale = mRenderService->getHighDPIEnabled() ? mFontScale : 1.0f;
 		auto config = getConfiguration<IMGuiServiceConfiguration>();
 		float font_size = math::floor(config->mFontSize * dpiScale);
 		if (!config->mFontFile.empty())
@@ -744,8 +749,43 @@ namespace nap
 	}
 
 
+	void IMGuiService::pushScale(GUIContext& context)
+	{
+		// Compute scaling factor, relative to global
+		const auto* display = mRenderService->findDisplay(context.mDisplayIndex);
+		assert(display != nullptr);
+		float font_scale = display->getHorizontalDPI() / (mFontScale * referenceDPI);
+
+		// Compute gui scale, taking into consideration previous scale
+		float new_scale  = display->getHorizontalDPI() / referenceDPI;
+		float gui_scale  = (1.0f / context.mScaleFactor) * new_scale;
+
+		// Push scaling for window based on display index
+		ImGuiContext* cur_context = ImGui::GetCurrentContext();
+		context.activate();
+		ImGui::GetIO().FontGlobalScale = font_scale;
+		ImGui::GetStyle().ScaleAllSizes(gui_scale);
+		context.deactivate();
+
+		context.mScaleFactor = new_scale;
+	}
+
+
 	IMGuiService::GUIContext::~GUIContext()
 	{
 		ImGui::DestroyContext(mContext);
+	}
+
+
+	void IMGuiService::GUIContext::activate()
+	{
+		mPrevious = ImGui::GetCurrentContext();
+		ImGui::SetCurrentContext(mContext);
+	}
+
+
+	void IMGuiService::GUIContext::deactivate()
+	{
+		ImGui::SetCurrentContext(mPrevious);
 	}
 }

@@ -189,7 +189,7 @@ namespace nap
 		/** 
          * @return Applied DPI scaling factor
 		 */
-		float getDPIScale() const { return mDPIScale; }
+		float getDPIScale() const { return mFontScale; }
 
 	protected:
 		/**
@@ -223,7 +223,6 @@ namespace nap
 		virtual void shutdown() override;
 
 	private:
-
 		/**
 		 * Simple struct that combines an ImGUI context with additional state information
 		 * Takes ownership of the context, destroys it on destruction
@@ -236,16 +235,23 @@ namespace nap
 			bool mMousePressed[3]		= { false, false, false };
 			float mMouseWheel			= 0.0f;
 			int mDisplayIndex			= 0;
+			float mScaleFactor			= 1.0f;
 			ImGuiContext* mContext		= nullptr;
+			ImGuiContext* mPrevious		= nullptr;
+
+			// Activates current context
+			void activate();
+
+			// Deactivates current context, restores previous
+			void deactivate();
 		};
 
 		RenderService* mRenderService = nullptr;
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
-		std::unordered_map<RenderWindow*, int> mDisplayIndices;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
-		float mDPIScale = 1.0f;
+		float mFontScale = 1.0f;
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
@@ -280,5 +286,10 @@ namespace nap
 		 * @param dpiScale scale to apply to font
 		 */
 		std::unique_ptr<ImFontAtlas> createFontAtlas(float dpiScale);
+
+		/**
+		 * Applies scale to given context associated with given window
+		 */
+		void pushScale(GUIContext& context);
 	};
 }
