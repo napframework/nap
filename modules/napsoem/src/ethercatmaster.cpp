@@ -280,26 +280,27 @@ namespace nap
 		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
 
 		// request Operational state for all slaves, give it at least mOperationalTimeout ms
-		nap::Logger::info("Request operational state for all slaves");
+		nap::Logger::info("request operational state for all slaves...");
 		ESlaveState state = requestState(ESlaveState::Operational, mOperationalTimeout);
 
 		// If not all slaves reached operational state display errors and
 		// bail if operational state of all slaves is required on startup
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
+			nap::Logger::info("%s: not all slaves reached operational state in %dms", mID.c_str(), mOperationalTimeout);
+
 			// Get error message
 			utility::ErrorState op_error;
-			errorState.fail(utility::stringFormat("%s: not all slaves reached operational state (%dms timeout exceeded)!", mID.c_str(), mOperationalTimeout));
 			getStatusMessage(ESlaveState::Operational, op_error);
+			nap::Logger::warn(op_error.toString());
 
 			// Stop if operational state for all slaves is required
 			if (mForceOperational)
 			{
-				errorState = op_error;
 				stop();
+				errorState.fail(utility::stringFormat("%s: not all slaves reached operational state (%dms timeout exceeded)!", mID.c_str(), mOperationalTimeout));
 				return false;
 			}
-			nap::Logger::warn(op_error.toString());
 		}
 		else
 		{
