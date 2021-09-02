@@ -280,7 +280,7 @@ namespace nap
 		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
 
 		// request Operational state for all slaves, give it at least mOperationalTimeout ms
-		nap::Logger::info("request operational state for all slaves...");
+		nap::Logger::info("Request operational state for all slaves");
 		ESlaveState state = requestState(ESlaveState::Operational, mOperationalTimeout);
 
 		// If not all slaves reached operational state display errors and
