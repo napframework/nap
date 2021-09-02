@@ -22,6 +22,9 @@ struct ImGuiContext;
 
 namespace nap
 {
+	// Reference dpi
+	inline constexpr float referenceDPI = 96.0f;
+
 	// Forward Declares
 	class RenderService;
 	class GuiWindow;
@@ -183,10 +186,10 @@ namespace nap
 		 */
 		ImTextureID getTextureHandle(nap::Texture2D& texture);
 
-                /**
-                 * @return DPI scale
-                 */
-                 float getDPIScale() const { return mDPIScale; }
+		/** 
+         * @return Applied DPI scaling factor
+		 */
+		float getDPIScale() const { return mDPIScale; }
 
 	protected:
 		/**
@@ -232,6 +235,7 @@ namespace nap
 
 			bool mMousePressed[3]		= { false, false, false };
 			float mMouseWheel			= 0.0f;
+			int mDisplayIndex			= 0;
 			ImGuiContext* mContext		= nullptr;
 		};
 
@@ -239,6 +243,7 @@ namespace nap
 		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
+		std::unordered_map<RenderWindow*, int> mDisplayIndices;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		float mDPIScale = 1.0f;
 
@@ -272,7 +277,8 @@ namespace nap
 
 		/**
 		 * creates a new font atlas
+		 * @param dpiScale scale to apply to font
 		 */
-		std::unique_ptr<ImFontAtlas> createFontAtlas(int displayIndex, float& outDPIScale);
+		std::unique_ptr<ImFontAtlas> createFontAtlas(float dpiScale);
 	};
 }

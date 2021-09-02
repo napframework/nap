@@ -486,6 +486,16 @@ namespace nap
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
 
+		// Calculate max dpi scale if high dpi rendering is enabled
+		if (mRenderService->getHighDPIEnabled())
+		{
+			for (const auto& display : mRenderService->getDisplays())
+			{
+				float dpi_scale = display.getHorizontalDPI() / referenceDPI;
+				nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
+				mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
+			}
+		}
 		return true;
 	}
 
@@ -554,7 +564,7 @@ namespace nap
 			}
 
 			// Create atlas, scale based on dpi of main monitor
-			mFontAtlas = createFontAtlas(display_idx, mDPIScale);
+			mFontAtlas = createFontAtlas(mDPIScale);
 
 			// Create context and apply style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, mDPIScale);
@@ -600,11 +610,18 @@ namespace nap
 			assert(window != nullptr);
 
 			// Get display
-			int idx = SDL::getDisplayIndex(window->getNativeWindow());
-			assert(idx >= 0);
+			int display_index = SDL::getDisplayIndex(window->getNativeWindow());
+			assert(display_index >= 0);
 
 			// Check if it changed
-			nap::Logger::info("Display Index: %d", idx);
+			auto it = mContexts.find(window);
+			assert(it != mContexts.end());
+			if (it->second->mDisplayIndex != display_index)
+			{
+				// Display Changed!
+				nap::Logger::info("Display changed from: %d to %d", it->second->mDisplayIndex, display_index);
+				it->second->mDisplayIndex = display_index;
+			}
 		}
 	}
 
@@ -673,20 +690,20 @@ namespace nap
                 // Scale SDL mouse position based on width & height in pixels, since we draw everything in
 		int mx, my;
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-                if(SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS)
-                {
-                  int w, h;
-                  SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
-                  io.MousePos =
-                  {
-                      static_cast<float>(mx) * (static_cast<float>(display_w) / static_cast<float>(w)),
-                      static_cast<float>(my) * (static_cast<float>(display_h) / static_cast<float>(h))
-                  };
-                }
-                else
-                {
-                  io.MousePos = { -FLT_MAX, -FLT_MAX };
-                }
+		if(SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS)
+		{
+			int w, h;
+			SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
+			io.MousePos =
+			{
+				static_cast<float>(mx) * (static_cast<float>(display_w) / static_cast<float>(w)),
+				static_cast<float>(my) * (static_cast<float>(display_h) / static_cast<float>(h))
+			};
+		}
+		else
+		{
+			io.MousePos = { -math::max<float>(), -math::max<float>() };
+		}
 
 		// Update mouse down state
 		io.MouseDown[0] = context.mMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
@@ -703,7 +720,7 @@ namespace nap
 	}
 
 
-	std::unique_ptr<ImFontAtlas> IMGuiService::createFontAtlas(int displayIndex, float& outDPIScale)
+	std::unique_ptr<ImFontAtlas> IMGuiService::createFontAtlas(float dpiScale)
 	{
 		// Create font atlas
 		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
@@ -711,43 +728,10 @@ namespace nap
 		font_config.OversampleH = 3;
 		font_config.OversampleV = 1;
 
-		// Compute dpi scale if not headless and dpi scaling is enabled
-		outDPIScale = 1.0f;
-		if (!mRenderService->isHeadless() && mRenderService->getHighDPIEnabled())
-		{
-			int num_displays = SDL::getDisplayCount();
-            nap::Logger::info("Found %d displays", num_displays);
-            for(int i=0; i<num_displays; i++)
-            {
-                float ddpi = 0.0f;
-                float hdpi = 0.0f;
-                float vdpi = 0.0f;
-                nap::Logger::info("Display %d: name: %s", i, SDL_GetDisplayName(i));
-                SDL::getDisplayDPI(i, &ddpi, &hdpi, &vdpi);
-                nap::Logger::info("Display %d: ddpi: %.2f, hdpi: %.2f, vdpi: %.2f", i, ddpi, hdpi, vdpi);
-            }
-
-			if (num_displays - 1 < displayIndex)
-			{
-				nap::Logger::error("Unable to calculate DPI scaling factor, display index out of bounds");
-			}
-			else
-			{
-				float dpi = 0.0f;
-				if (SDL::getDisplayDPI(displayIndex, nullptr, &dpi, nullptr) < 0)
-				{
-					nap::Logger::error(SDL::getSDLError());
-				}
-				else
-				{
-					outDPIScale = dpi / 96.0f;
-				}
-			}
-		}
-
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
+		float dpi_scale = mRenderService->getHighDPIEnabled() ? mDPIScale : 1.0f;
 		auto config = getConfiguration<IMGuiServiceConfiguration>();
-		float font_size = math::floor(config->mFontSize * outDPIScale);
+		float font_size = math::floor(config->mFontSize * dpiScale);
 		if (!config->mFontFile.empty())
 		{
 			new_atlas->AddFontFromFileTTF(config->mFontFile.c_str(), font_size, &font_config);

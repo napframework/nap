@@ -1016,6 +1016,12 @@ namespace nap
 	}
 
 
+	const nap::DisplayList& RenderService::getDisplays() const
+	{
+		return mDisplays;
+	}
+
+
 	int RenderService::getDisplayCount() const
 	{
 		return mDisplays.size();
@@ -1975,7 +1981,7 @@ namespace nap
 	{
 		return utility::stringFormat
 		(
-			"Display: %d, name: %s, ddpi: %.1f, hdpi: %.1f, vdpi: %.1f, bounds-min: %d-%d, bounds-max: %d-%d",
+			"Display: %d, %s, ddpi: %.1f, hdpi: %.1f, vdpi: %.1f, min: %d-%d, max: %d-%d",
 			mIndex,
 			mName.c_str(),
 			mDDPI, mHDPI, mVDPI,

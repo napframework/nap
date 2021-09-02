@@ -194,6 +194,7 @@ namespace nap
 		glm::ivec2 mMax = { 0, 0 };		///< Max display bound position
 		bool mValid = false;					///< If valid after construction
 	};
+	using DisplayList = std::vector<Display>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -458,6 +459,11 @@ namespace nap
 		 * @return the display, nullptr if not found
 		 */
 		const Display* findDisplay(int index) const;
+
+		/**
+		 * @return all available displays
+		 */
+		const DisplayList& getDisplays() const;
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here.
@@ -962,7 +968,6 @@ namespace nap
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
-		using DisplayList = std::vector<Display>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
