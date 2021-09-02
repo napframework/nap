@@ -14,6 +14,7 @@
 #include <windowevent.h>
 #include <rendertarget.h>
 #include <material.h>
+#include <rect.h>
 
 namespace nap
 {
@@ -43,14 +44,14 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 	public:
 		/**
-		 * Supported Vulkan device types. 
+		 * Supported Vulkan device types.
 		 */
 		enum class EPhysicalDeviceType : int
 		{
-			Integrated	= 1,	///< Integrated graphics card
-			Discrete	= 2,	///< Discrete (dedicated) graphics card
-			Virtual		= 3,	///< Virtual graphics card
-			CPU			= 4		///< CPU as graphics card
+			Integrated = 1,	///< Integrated graphics card
+			Discrete = 2,	///< Discrete (dedicated) graphics card
+			Virtual = 3,	///< Virtual graphics card
+			CPU = 4		///< CPU as graphics card
 		};
 
 		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
@@ -63,7 +64,7 @@ namespace nap
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
 		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
+		virtual rtti::TypeInfo		getServiceType() const override { return RTTI_OF(RenderService); }
 	};
 
 
@@ -74,7 +75,7 @@ namespace nap
 	/**
 	 * Vulkan physical device (GPU), binds together physical device information for better management.
 	 */
-	class NAPAPI PhysicalDevice
+	class NAPAPI PhysicalDevice final
 	{
 	public:
 		// Default constructor, invalid object
@@ -106,13 +107,92 @@ namespace nap
 		/**
 		 * @return if the device is valid
 		 */
-		bool isValid() const	{ return mDevice != VK_NULL_HANDLE && mQueueIndex >= 0; }
+		bool isValid() const { return mDevice != VK_NULL_HANDLE && mQueueIndex >= 0; }
 
 	private:
 		VkPhysicalDevice			mDevice = VK_NULL_HANDLE;			///< Handle to physical device
 		VkPhysicalDeviceProperties	mProperties;						///< Properties of the physical device
 		VkPhysicalDeviceFeatures	mFeatures;							///< Physical device features
 		int							mQueueIndex = -1;					///< Graphics queue index
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Display
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Groups together important display information
+	 */
+	class NAPAPI Display final
+	{
+	public:
+		/**
+		 * Extracts display information.
+		 * Index must be >= 0 && < SDL::getDisplayCount()
+		 * @param index display index
+		 */
+		Display(int index);
+
+		/**
+		 * @return display index
+		 */
+		int getIndex() const { return mIndex; }
+
+		/**
+		 * @return diagonal dpi
+		 */
+		float getDiagonalDPI() const { return mDDPI; }
+
+		/**
+		 * @return horizontal dpi
+		 */
+		float getHorizontalDPI() const { return mHDPI; }
+
+		/**
+		 * @return vertical dpi
+		 */
+		float getVerticalDPI() const { return mVDPI; }
+
+		/**
+		 * @return display name
+		 */
+		const std::string& getName() const { return mName; }
+
+		/**
+		 * @return min location of desktop area of this display, with the primary display located at 0,0
+		 */
+		const glm::ivec2& getMin()	const { return mMin; }
+
+		/**
+		 * @return max location of desktop area of this display, with the primary display located at 0,0
+		 */
+		const glm::ivec2& getMax() const { return mMax; }
+
+		/**
+		 * @return desktop area of this display, with the primary display located at 0,0
+		 */
+		math::Rect getBounds() const;
+
+		/**
+		 * @return if display information was extracted successfully on construction
+		 */
+		bool isValid() const { return mValid; }
+
+		/**
+		 * @return human readable string
+		 */
+		std::string toString() const;
+
+	private:
+		std::string mName;						///< Display name
+		int mIndex = -1;						///< Display index
+		float mDDPI = 96.0f;					///< Diagonal DPI
+		float mHDPI = 96.0f;					///< Horizontal DPI
+		float mVDPI = 96.0f;					///< Vertical DPI
+		glm::ivec2 mMin = { 0, 0 };		///< Min display bound position
+		glm::ivec2 mMax = { 0, 0 };		///< Max display bound position
+		bool mValid = false;					///< If valid after construction
 	};
 
 
@@ -363,6 +443,18 @@ namespace nap
 		 * @return the window, nullptr if not found
 		 */
 		RenderWindow* findWindow(uint id) const;
+
+		/**
+		 * @return total number of displays
+		 */
+		int getDisplayCount() const;
+
+		/**
+		 * Find a display based on a display number
+		 * @param index the number of the display to find
+		 * @return the display, nullptr if not found
+		 */
+		const Display* findDisplay(int index) const;
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here.
@@ -867,6 +959,7 @@ namespace nap
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
+		using DisplayList = std::vector<Display>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
@@ -906,7 +999,8 @@ namespace nap
 		bool									mLargePointsSupported = false;
 		bool									mNonSolidFillModeSupported = false;
 		uint32									mAnisotropicSamples = 1;
-		WindowList								mWindows;												
+		WindowList								mWindows;
+		DisplayList								mDisplays;
 		SceneService*							mSceneService = nullptr;								
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;

@@ -1006,6 +1006,19 @@ namespace nap
 	}
 
 
+	const nap::Display* RenderService::findDisplay(int index) const
+	{
+		assert(index > 0);
+		return index < mDisplays.size() ? &mDisplays[index] : nullptr;
+	}
+
+
+	int RenderService::getDisplayCount() const
+	{
+		return mDisplays.size();
+	}
+
+
 	void RenderService::addEvent(WindowEventPtr windowEvent)
 	{
 		nap::Window* window = findWindow(windowEvent->mWindow);
@@ -1238,17 +1251,21 @@ namespace nap
 		// Enable high dpi support if requested (windows)
 		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
 
-		// Store render settings, used for initialization and global window creation
-		mEnableHighDPIMode = render_config->mEnableHighDPIMode;
-
 		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
 		mHeadless = render_config->mHeadless;
 
+		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
+		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
+
 #ifdef _WIN32
-		if (mEnableHighDPIMode && !mHeadless)
+		if (mEnableHighDPIMode)
 		{
-			if (!errorState.check(SetProcessDPIAware() > 0, "Unable to make current process DPI Aware"))
+			// Make process dpi aware
+			if(!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
+				"Unable to make process DPI aware"))
+			{
 				return false;
+			}
 		}
 #endif // _WIN32
 
@@ -1256,6 +1273,17 @@ namespace nap
 		mSDLInitialized = SDL::initVideo(errorState);
 		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
 			return false;
+
+		// Add displays
+		for (int i = 0; i < SDL::getDisplayCount(); i++)
+		{
+			auto it = mDisplays.emplace_back(Display(i));
+			nap::Logger::info(it.toString());
+			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
+			{
+				return false;
+			}
+		}
 
 		// Initialize shader compiler
 		mShInitialized = ShInitialize() != 0;
@@ -1921,11 +1949,42 @@ namespace nap
 	{
 		return mShader != nullptr && mMaterial != nullptr;
 	}
-}
 
 
-nap::PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex) :
-	mDevice(device), mProperties(properties), mQueueIndex(queueIndex)
-{
-	vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
+	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex) :
+		mDevice(device), mProperties(properties), mQueueIndex(queueIndex)
+	{
+		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
+	}
+
+
+	nap::Display::Display(int index) : mIndex(index)
+	{
+		assert(index < SDL::getDisplayCount());
+		int dr = SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
+		bool name = SDL::getDisplayName(index, mName);
+		int br = SDL::getDisplayBounds(index, mMin, mMax);
+		mValid = dr == 0 && name && br == 0;
+	}
+
+
+	std::string nap::Display::toString() const
+	{
+		return utility::stringFormat
+		(
+			"Display: %d, name: %s, ddpi: %.1f, hdpi: %.1f, vdpi: %.1f, bounds-min: %d-%d, bounds-max: %d-%d",
+			mIndex,
+			mName.c_str(),
+			mDDPI, mHDPI, mVDPI,
+			mMin.x, mMin.y,
+			mMax.x, mMax.y
+		);
+	}
+
+
+	nap::math::Rect nap::Display::getBounds() const
+	{
+		return { glm::vec2(mMin), glm::vec2(mMax) };
+	}
+
 }

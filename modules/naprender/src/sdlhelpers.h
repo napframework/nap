@@ -140,6 +140,21 @@ namespace nap
 		int NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi);
 
 		/**
+		 * @param displayIndex index of display to get name for  
+		 * @return display name for given display index, nullptr on failure
+		 */
+		bool NAPAPI getDisplayName(int displayIndex, std::string& outName);
+
+		/**
+		 * Gets desktop area represented by a display, with the primary display located at 0,0
+		 * @param displayIndex index of the display to get the bounds for
+		 * @param outMin min position of desktop area represented by a display, with the primary display located at 0,0
+		 * @param outMax max position of desktop area represented by a display, with the primary display located at 0,0
+		 * @return 0 on success or a negative error code on failure
+		 */
+		int NAPAPI getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax);
+
+		/**
 		 * Hides the mouse cursor
 		 */
 		void NAPAPI hideCursor();
