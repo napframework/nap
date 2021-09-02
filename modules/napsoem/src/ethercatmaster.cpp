@@ -448,6 +448,7 @@ namespace nap
 			processErrors();
 			osal_usleep(mErrorCycleTime);
 		}
+		nap::Logger::info("%s: error process stopped", this->mID.c_str());
 	}
 
 
@@ -504,6 +505,7 @@ namespace nap
 					if (cs.state == static_cast<uint16>(ESlaveState::None))
 					{
 						cs.islost = true;
+						nap::Logger::info("%s: slave %d lost", this->mID.c_str(), slave);
 					}
 				}
 			}
@@ -525,6 +527,10 @@ namespace nap
 					nap::Logger::info("%s: slave %d found", this->mID.c_str(), slave);
 				}
 			}
+
+			// Exit early if the error task is stopped
+			if (mStopErrorTask)
+				return;
 		}
 
 		// Check current group state, notify when all slaves resumed operational state
