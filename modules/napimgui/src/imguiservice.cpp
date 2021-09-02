@@ -734,7 +734,6 @@ namespace nap
 		font_config.OversampleV = 1;
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
-		float dpi_scale = mRenderService->getHighDPIEnabled() ? mFontScale : 1.0f;
 		auto config = getConfiguration<IMGuiServiceConfiguration>();
 		float font_size = math::floor(config->mFontSize * dpiScale);
 		if (!config->mFontFile.empty())
