@@ -257,6 +257,7 @@ namespace nap
 		}
 		if (!safe_op_success)
 		{
+			errorState.fail("%s: failed to complete safe-operational setup", mID.c_str());
 			stop();
 			return false;
 		}
