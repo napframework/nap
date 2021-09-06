@@ -122,7 +122,7 @@ namespace nap
 		 * is converted to bytes. The actual sending is deferred until the update, where data is sent when needed.
 		 * @param controller Controller to send from, which specifies subnet and universe.
 		 * @param channelData Channel data in normalized floats (0.0 to 1.0)
-		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 512.
+		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 511.
 		 */
 		void send(ArtNetController& controller, float channelData, int channel);
 
@@ -140,7 +140,7 @@ namespace nap
 		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update, where data is sent when needed.
 		 * @param controller Controller to send from, which specifies subnet and universe.
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
-		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 512.
+		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 511.
 		 */
 		void send(ArtNetController& controller, uint8_t channelData, int channel);
 
