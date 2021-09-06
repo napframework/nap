@@ -46,7 +46,7 @@
             "Resizable": true,
             "Visible": true,
             "SampleShading": true,
-            "Title": "ArtNetTest",
+            "Title": "ArtNet demo",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
