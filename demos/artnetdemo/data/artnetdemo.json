@@ -1,6 +1,19 @@
 {
     "Objects": [
         {
+            "Type": "nap::ArtNetController",
+            "mID": "ArtNetController",
+            "Subnet": 0,
+            "Universe": 0,
+            "IPAddress": "",
+            "WaitTime": 2.0,
+            "Frequency": 44,
+            "Mode": "Broadcast",
+            "UnicastLimit": 10,
+            "Verbose": false,
+            "Timeout": 2.0
+        },
+        {
             "Type": "nap::ArtNetReceiver",
             "mID": "ArtNetReceiver",
             "Port": 6454

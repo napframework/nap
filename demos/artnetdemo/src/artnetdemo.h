@@ -17,6 +17,7 @@
 #include <scene.h>
 #include <entity.h>
 #include <app.h>
+#include <artnetcontroller.h>
 
 namespace nap
 {
@@ -78,6 +79,7 @@ namespace nap
 
 		void showGeneralInfo();
 		void showReceivedArtnet();
+		void showSendArtnet();
 
 		ResourceManager*			mResourceManager = nullptr;		///< Manages all the loaded data
 		RenderService*				mRenderService = nullptr;		///< Render Service that handles render calls
@@ -87,6 +89,9 @@ namespace nap
 		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mArtNetEntity = nullptr;		///< Pointer to the entity that handles Art-Net sending / receiving
+		ObjectPtr<ArtNetController>	mArtNetController = nullptr;	///< Pointer to the controller responsible for sending Art-Net
 		int32_t						mArtNetInputGroupSize = 8;		///< The maximum amount of channels grouped together in a histogram when receiving
+		int32_t						mArtNetOutputChannelCount = 16;	///< The amount of channels used for sending Art-Net
+		std::vector<int32_t>		mArtNetOutputChannels;			///< The channel data for sending Art-Net
 	};
 }

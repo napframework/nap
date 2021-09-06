@@ -55,6 +55,14 @@ namespace nap
 		if (!error.check(mArtNetEntity != nullptr, "unable to find Art-Net entity with name: %s", "ArtNetEntity"))
 			return false;
 
+		// Get the Art-Net controller
+		mArtNetController = mResourceManager->findObject<ArtNetController>("ArtNetController");
+		if (!error.check(mArtNetController != nullptr, "unable to find Art-Net controller with name: %s", "ArtNetController"))
+			return false;
+
+		// Allocate memory for Art-Net output channels
+		mArtNetOutputChannels.resize(mArtNetOutputChannelCount);
+
 		// All done!
 		return true;
 	}
@@ -72,6 +80,9 @@ namespace nap
 
 		// Display received Art-Net
 		showReceivedArtnet();
+
+		// Display UI for sending Art-Net
+		showSendArtnet();
 	}
 
 
@@ -154,7 +165,7 @@ namespace nap
 		int32_t total_count = static_cast<int32_t>(received_data.size());
 
 		ImGui::SetNextWindowPos(ImVec2(320, 32), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_Once);
+		ImGui::SetNextWindowSize(ImVec2(448, 656), ImGuiCond_Once);
 		ImGui::Begin("Received Art-Net");
 		ImGui::SliderInt("Channels per Group", &mArtNetInputGroupSize, 1, 512);
 
@@ -175,6 +186,29 @@ namespace nap
 
 			// Increment the offset
 			offset += count;
+		}
+
+		ImGui::End();
+	}
+
+
+	void nap::ArtNetDemo::showSendArtnet()
+	{
+		ImGui::SetNextWindowPos(ImVec2(800, 32), ImGuiCond_Once);
+		ImGui::SetNextWindowSize(ImVec2(448, 656), ImGuiCond_Once);
+		ImGui::Begin("Send Art-Net");
+
+		// Define the amount of channels to send
+		if (ImGui::SliderInt("Channel Count", &mArtNetOutputChannelCount, 1, 512))
+			mArtNetOutputChannels.resize(mArtNetOutputChannelCount);
+
+		// Fill the output channels with values
+		for (int16_t i = 0; i < mArtNetOutputChannelCount; i++)
+		{
+			std::stringstream label;
+			label << "Channel " << (i + 1);
+			ImGui::SliderInt(label.str().c_str(), &mArtNetOutputChannels[i], 0, 255);
+			mArtNetController->send(static_cast<uint8_t>(mArtNetOutputChannels[i]), i);
 		}
 
 		ImGui::End();
