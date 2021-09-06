@@ -365,11 +365,14 @@ namespace nap
 
 		// Render GUI
 		ImGui::Render();
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(),
+		ImGui_ImplVulkan_RenderDrawData
+		(
+			ImGui::GetDrawData(),
 			it->second->mContext,
 			mRenderService->getCurrentCommandBuffer(),
 			current_window->getRenderPass(),
-			current_window->getSampleCount());
+			current_window->getSampleCount()
+		);
 	}
 
 
@@ -512,18 +515,6 @@ namespace nap
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
 
-		// Calculate max dpi scale if high dpi rendering is enabled
-		if (mRenderService->getHighDPIEnabled())
-		{
-			mFontScale = 0.0f;
-			for (const auto& display : mRenderService->getDisplays())
-			{
-				float dpi_scale = display.getHorizontalDPI() / referenceDPI;
-				nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
-				mFontScale = dpi_scale > mFontScale ? dpi_scale : mFontScale;
-			}
-		}
-
 		return true;
 	}
 
@@ -584,6 +575,18 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
+			// Calculate max dpi scale if high dpi rendering is enabled
+			if (mRenderService->getHighDPIEnabled())
+			{
+				mFontScale = 0.0f;
+				for (const auto& display : mRenderService->getDisplays())
+				{
+					float dpi_scale = display.getHorizontalDPI() / referenceDPI;
+					nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
+					mFontScale = dpi_scale > mFontScale ? dpi_scale : mFontScale;
+				}
+			}
+
 			// Create atlas, scale based on dpi of main monitor
 			mFontAtlas = createFontAtlas(*mConfiguration, mFontScale);
 
@@ -635,16 +638,15 @@ namespace nap
 			// Get display
 			nap::RenderWindow* window = mRenderService->findWindow(windowEvent.mWindow);
 			assert(window != nullptr);
-
 			const Display* display = mRenderService->findDisplay(*window);
 			assert(display != nullptr);
 
-			// Get context
+			// Get cached display
 			auto it = mContexts.find(window);
 			assert(it != mContexts.end());
 			assert(it->second->mDisplay != nullptr);
 
-			// Check if it changed, if so update scale
+			// Check if changed, if so update (push) scale
 			const auto& current_display = *it->second->mDisplay;
 			if (current_display.getIndex() != display->getIndex())
 			{
@@ -707,37 +709,50 @@ namespace nap
 	{
 		// Switch context
 		ImGui::SetCurrentContext(context.mContext);
-
-		// Setup display size (every frame to accommodate for window resizing)
 		ImGuiIO& io = ImGui::GetIO();
-		int display_w, display_h;
-		SDL_GL_GetDrawableSize(window.getNativeWindow(), &display_w, &display_h);
-		io.DisplaySize = { (float)display_w, (float)display_h };
-		io.DisplayFramebufferScale = {1.0f, 1.0f};
 		io.DeltaTime = deltaTime;
+		io.MousePos = { -math::max<float>(), -math::max<float>() };
 
-		// Setup inputs. We already got mouse wheel, keyboard keys & characters from SDL_PollEvent()
-        // Scale SDL mouse position based on width & height in pixels, since we draw everything in
+		// Current mouse settings
 		int mx, my;
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-		if(SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS)
+		bool mouse_focus = SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS;
+
+		// When high dpi rendering is turned on, we manage scaling of the GUI manually.
+		// Otherwise let the OS manage scaling for us, adjust mouse coordinates accordingly
+		if (mRenderService->getHighDPIEnabled())
 		{
-			int w, h;
-			SDL_GetWindowSize(window.getNativeWindow(), &w, &h);
-			io.MousePos =
+			io.DisplaySize = { (float)window.getBufferSize().x, (float)window.getBufferSize().y };
+			io.DisplayFramebufferScale = { 1.0f, 1.0f };
+
+			if (mouse_focus)
 			{
-				static_cast<float>(mx) * (static_cast<float>(display_w) / static_cast<float>(w)),
-				static_cast<float>(my) * (static_cast<float>(display_h) / static_cast<float>(h))
-			};
+				io.MousePos =
+				{
+					static_cast<float>(mx) * (static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth())),
+					static_cast<float>(my) * (static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight()))
+				};
+			}
 		}
 		else
 		{
-			io.MousePos = { -math::max<float>(), -math::max<float>() };
+			io.DisplaySize = ImVec2((float)window.getWidth(), (float)window.getHeight());
+			io.DisplayFramebufferScale = ImVec2
+			(
+				window.getWidth()  > 0 ? ((float)window.getBufferSize().x / window.getWidth())  : 0,
+				window.getHeight() > 0 ? ((float)window.getBufferSize().y / window.getHeight()) : 0
+			);
+
+			if (mouse_focus)
+			{
+				io.MousePos = { (float)mx, (float)(my) };
+			}
 		}
 
 		// Update mouse down state
-		io.MouseDown[0] = context.mMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-		io.MouseDown[1] = context.mMousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;
+		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+		io.MouseDown[0] = context.mMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT))   != 0;		
+		io.MouseDown[1] = context.mMousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT))  != 0;
 		io.MouseDown[2] = context.mMousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
 		context.mMousePressed[0] = context.mMousePressed[1] = context.mMousePressed[2] = false;
 
