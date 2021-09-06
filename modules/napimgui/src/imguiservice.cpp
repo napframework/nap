@@ -484,6 +484,19 @@ namespace nap
 		// Register to window added / removed signals
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
+
+		// Calculate max dpi scale if high dpi rendering is enabled
+		if (mRenderService->getHighDPIEnabled())
+		{
+			mFontScale = 0.0f;
+			for (const auto& display : mRenderService->getDisplays())
+			{
+				float dpi_scale = display.getHorizontalDPI() / referenceDPI;
+				nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
+				mFontScale = dpi_scale > mFontScale ? dpi_scale : mFontScale;
+			}
+		}
+
 		return true;
 	}
 
@@ -544,17 +557,6 @@ namespace nap
 		ImGuiContext* new_context = nullptr;
 		if (mFontAtlas == nullptr)
 		{
-			// Calculate max dpi scale if high dpi rendering is enabled
-			if (mRenderService->getHighDPIEnabled())
-			{
-				for (const auto& display : mRenderService->getDisplays())
-				{
-					float dpi_scale = display.getHorizontalDPI() / referenceDPI;
-					nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
-					mFontScale = dpi_scale > mFontScale ? dpi_scale : mFontScale;
-				}
-			}
-
 			// Create atlas, scale based on dpi of main monitor
 			mFontAtlas = createFontAtlas(mFontScale);
 
