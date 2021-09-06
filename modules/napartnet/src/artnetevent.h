@@ -17,21 +17,21 @@ namespace nap
 	* Represents a single received ArtDmx packet,
 	* carrying a payload of zero-start code DMX512 data.
 	*/
-	class NAPAPI ArtDmxPacketEvent : public Event
+	class NAPAPI ArtNetEvent : public Event
 	{
 		RTTI_ENABLE(Event)
 	public:
 
-		ArtDmxPacketEvent() = delete;
+		ArtNetEvent() = delete;
 
 		/**
-		* ArtDmxPacketEvent constructor. Creates an ArtDmx packet identified by a Sequence field,
+		* ArtNetEvent constructor. Creates an ArtDmx packet identified by a Sequence field,
 		* Physical field and Port-Address (which will be parsed to the Net, Sub-Net and Universe).
 		* @param sequence the Sequence field of the ArtDmx packet
 		* @param physical the Physical field of the ArtDmx packet
 		* @param portAddress the Port-Address of the ArtDmx packet
 		*/
-		ArtDmxPacketEvent(uint8_t sequence, uint8_t physical, uint16_t portAddress);
+		ArtNetEvent(uint8_t sequence, uint8_t physical, uint16_t portAddress);
 
 		/**
 		* Sets the DMX512 channels for this ArtDmx packet.
@@ -129,5 +129,5 @@ namespace nap
 		std::vector<uint8_t> mData;
 	};
 
-	using ArtDmxPacketEventPtr = std::unique_ptr<nap::ArtDmxPacketEvent>;
+	using ArtDmxPacketEventPtr = std::unique_ptr<nap::ArtNetEvent>;
 }

@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "artdmxpacketevent.h"
+#include "artnetevent.h"
 
 // External Includes
 #include <component.h>
@@ -14,7 +14,7 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	
+
 	class ArtNetInputComponentInstance;
 	class ArtNetService;
 
@@ -49,7 +49,7 @@ namespace nap
 	public:
 		// Default constructor
 		ArtNetInputComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
-		
+
 		// Unregister with service
 		virtual ~ArtNetInputComponentInstance();
 
@@ -65,20 +65,20 @@ namespace nap
 		uint8_t	mUniverse;		///< Property: 'Universe' the Universe from which events should be received.
 		bool	mReceiveAll;	///< Property: 'Receive All' when true, all events are forwarded.
 
-		Signal<const ArtDmxPacketEvent&> packetReceived;	///< Triggered when the component receives an ArtDmx packet event
-        
+		Signal<const ArtNetEvent&> packetReceived;	///< Triggered when the component receives an ArtDmx packet event
+
 		/**
 		 * Returns the signal that is called when an ArtDmx packet is received.
 		 * @return the message received signal.
 		 */
-        Signal<const ArtDmxPacketEvent&>* getPacketReceived() { return &packetReceived; }
+        Signal<const ArtNetEvent&>* getPacketReceived() { return &packetReceived; }
 
 	protected:
 		/**
 		 * This is triggered by the service when a new ArtDmx packet is received
 		 * @param event the ArtDmx packet event that will be forwarded by this component
 		 */
-		void trigger(const ArtDmxPacketEvent& event);
+		void trigger(const ArtNetEvent& event);
 
 	private:
 		friend class ArtNetService;

@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "artdmxpacketevent.h"
+#include "artnetevent.h"
 
 // External Includes
 #include <cassert>
@@ -12,7 +12,7 @@
 
 namespace nap
 {
-	ArtDmxPacketEvent::ArtDmxPacketEvent(uint8_t sequence, uint8_t physical, uint16_t portAddress)
+	ArtNetEvent::ArtNetEvent(uint8_t sequence, uint8_t physical, uint16_t portAddress)
 		: mSequence(sequence)
 		, mPhysical(physical)
 		, mNet(static_cast<uint8_t>((portAddress & 0b0111111100000000) >> 8))
@@ -24,14 +24,14 @@ namespace nap
 	}
 
 
-	void ArtDmxPacketEvent::setData(const uint8_t* data, size_t size)
+	void ArtNetEvent::setData(const uint8_t* data, size_t size)
 	{
 		mData.resize(size);
 		std::memcpy(mData.data(), data, size);
 	}
 
 
-	uint8_t ArtDmxPacketEvent::getChannelByIndex(uint16_t index) const
+	uint8_t ArtNetEvent::getChannelByIndex(uint16_t index) const
 	{
 		assert(index < getChannelCount() && index >= 0);
 		return mData.at(index);

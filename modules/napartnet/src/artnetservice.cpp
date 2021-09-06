@@ -7,7 +7,7 @@
 #include "artnetcontroller.h"
 #include "artnetreceiver.h"
 #include "artnetinputcomponent.h"
-#include "artdmxpacketevent.h"
+#include "artnetevent.h"
 
 // External Includes
 #include <nap/core.h>
@@ -51,7 +51,7 @@ namespace nap
 		controller_data->mLastUpdateTime = 0.0f;
 
 		mControllers.emplace(std::make_pair(controller.getAddress(), std::move(controller_data)));
-		
+
 		return true;
 	}
 
@@ -124,10 +124,10 @@ namespace nap
 	{
 		ControllerMap::iterator pos = mControllers.find(controller.getAddress());
 		assert(pos != mControllers.end());
-		
+
 		ByteChannelData& channel_data = pos->second->mData;
 		assert(channelOffset + channelData.size() <= channel_data.size());
-		
+
 		// Copy into internal buffer that is sent on update
 		std::memcpy(channel_data.data() + channelOffset, channelData.data(), channelData.size());
 		pos->second->mIsDirty = true;
@@ -176,7 +176,7 @@ namespace nap
 			// - There's new data and the max frequency interval has passed
 			// - There's no new data, but four seconds have passed. This is required for ArtNet. Resend existing data in that case.
 			double time_since_last_update = current_time - controller_data->mLastUpdateTime;
-			
+
 			// Get the amount of seconds to use for auto refresh
 			float controller_wait_time = controller_data->mController->mWaitTime;
 
@@ -219,7 +219,7 @@ namespace nap
 			// Keep forwarding events until the queue runs out
 			while (!(events.empty()))
 			{
-				ArtDmxPacketEvent& event = *(events.front());
+				ArtNetEvent& event = *(events.front());
 				for (const auto& input : mInputs)
 				{
 					// Always forward event when Receive All is true

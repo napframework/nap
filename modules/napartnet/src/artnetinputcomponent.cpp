@@ -48,7 +48,7 @@ namespace nap
 	}
 
 
-	void ArtNetInputComponentInstance::trigger(const nap::ArtDmxPacketEvent& event)
+	void ArtNetInputComponentInstance::trigger(const nap::ArtNetEvent& event)
 	{
 		packetReceived(event);
 	}

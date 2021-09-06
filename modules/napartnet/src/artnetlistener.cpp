@@ -5,7 +5,7 @@
 // Local Includes
 #include "artnetlistener.h"
 #include "artnetreceiver.h"
-#include "artdmxpacketevent.h"
+#include "artnetevent.h"
 
 // External includes
 #include <utility>
@@ -69,7 +69,7 @@ namespace nap
 					uint16_t dataLength = (mBuffer[16] << 8) | (mBuffer[17] & 0xff);
 
 					// Create out Art-Net event
-					ArtDmxPacketEventPtr event = std::make_unique<ArtDmxPacketEvent>(sequence, physical, portAddress);
+					ArtDmxPacketEventPtr event = std::make_unique<ArtNetEvent>(sequence, physical, portAddress);
 
 					// Set the channel data
 					event->setData(mBuffer + HEADER_LENGTH, dataLength);

@@ -6,7 +6,7 @@
 
  // Local Includes
 #include "artnetlistener.h"
-#include "artdmxpacketevent.h"
+#include "artnetevent.h"
 
 // External Includes
 #include <nap/device.h>
