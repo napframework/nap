@@ -176,7 +176,7 @@ namespace nap
 	}
 
 
-	static void applyStyle(const IMGuiServiceConfiguration& config)
+	static std::unique_ptr<ImGuiStyle> createStyle(const IMGuiServiceConfiguration& config)
 	{
 		// Get ImGUI colors
 		ImVec4 IMGUI_NAPDARK(config.mDarkColor, 1.0f);
@@ -187,77 +187,80 @@ namespace nap
 		ImVec4 IMGUI_NAPFRO3(config.mFront3Color, 1.0f);
 		ImVec4 IMGUI_NAPHIGH(config.mHighlightColor, 1.0f);
 
-		// Apply style
-		ImGuiStyle& style = ImGui::GetStyle();
+		// Create style
+		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
 
-		style.WindowPadding = ImVec2(15, 15);
-		style.WindowRounding = 3.0f;
-		style.FramePadding = ImVec2(5, 5);
-		style.FrameRounding = 2.0f;
-		style.ItemSpacing = ImVec2(12, 6);
-		style.ItemInnerSpacing = ImVec2(8, 6);
-		style.IndentSpacing = 25.0f;
-		style.ScrollbarSize = 15.0f;
-		style.ScrollbarRounding = 7.0f;
-		style.GrabMinSize = 5.0f;
-		style.GrabRounding = 1.0f;
-		style.WindowBorderSize = 0.0f;
+		// Apply settings from config
+		style->WindowPadding = ImVec2(15, 15);
+		style->WindowRounding = 3.0f;
+		style->FramePadding = ImVec2(5, 5);
+		style->FrameRounding = 2.0f;
+		style->ItemSpacing = ImVec2(12, 6);
+		style->ItemInnerSpacing = ImVec2(8, 6);
+		style->IndentSpacing = 25.0f;
+		style->ScrollbarSize = 15.0f;
+		style->ScrollbarRounding = 7.0f;
+		style->GrabMinSize = 5.0f;
+		style->GrabRounding = 1.0f;
+		style->WindowBorderSize = 0.0f;
 
-		style.Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
-		style.Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_TitleBg] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_ButtonActive] = IMGUI_NAPDARK;
-		style.Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_HeaderActive] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TabHovered] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_TabActive] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIGH;
-		style.Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIGH;
-		style.Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
-		style.Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		style.Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
-		style.Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
-		style.Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
-		style.Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
+		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
+		style->Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
+		style->Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
+		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
+		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIGH;
+
+		return style;
 	}
 
 
-	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration,  ImFontAtlas& fontAtlas)
+	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration, ImFontAtlas& fontAtlas, const ImGuiStyle& style)
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
@@ -291,12 +294,32 @@ namespace nap
 		io.GetClipboardTextFn = getClipboardText;
 		io.ClipboardUserData = NULL;
 
-		// Push default style
-		applyStyle(configuration);
-
-		// Reset context
+		// Set style and pop context
+		ImGui::GetStyle() = style;
 		ImGui::SetCurrentContext(cur_context);
 		return new_context;
+	}
+
+
+	static std::unique_ptr<ImFontAtlas> createFontAtlas(const IMGuiServiceConfiguration& config, float dpiScale)
+	{
+		// Create font atlas
+		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
+		ImFontConfig font_config;
+		font_config.OversampleH = 3;
+		font_config.OversampleV = 1;
+
+		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
+		float font_size = math::floor(config.mFontSize * dpiScale);
+		if (!config.mFontFile.empty())
+		{
+			new_atlas->AddFontFromFileTTF(config.mFontFile.c_str(), font_size, &font_config);
+		}
+		else
+		{
+			new_atlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+		}
+		return new_atlas;
 	}
 
 
@@ -481,6 +504,10 @@ namespace nap
 		mRenderService = getCore().getService<nap::RenderService>();
 		assert(mRenderService != nullptr);
 
+		// Get configuration
+		mConfiguration = getConfiguration<IMGuiServiceConfiguration>();
+		assert(mConfiguration != nullptr);
+
 		// Register to window added / removed signals
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
@@ -558,22 +585,25 @@ namespace nap
 		if (mFontAtlas == nullptr)
 		{
 			// Create atlas, scale based on dpi of main monitor
-			mFontAtlas = createFontAtlas(mFontScale);
+			mFontAtlas = createFontAtlas(*mConfiguration, mFontScale);
 
-			// Create context and apply style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
-			
+			// Create style
+			mStyle = createStyle(*getConfiguration<IMGuiServiceConfiguration>());
+
+			// Create context using font & style
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
+
 			// Create all vulkan required resources
 			createVulkanResources(window);
 		}
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
 		}
 
 		// Add context, set display index & push scale accordingly
-		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context)));
+		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context, mStyle.get())));
 		const auto* display = mRenderService->findDisplay(window);
 		assert(display != nullptr);
 		pushScale(*it.first->second, *display);
@@ -602,18 +632,19 @@ namespace nap
 	{
 		if (windowEvent.get_type().is_derived_from(RTTI_OF(nap::WindowMovedEvent)))
 		{
-			// Get window
+			// Get display
 			nap::RenderWindow* window = mRenderService->findWindow(windowEvent.mWindow);
 			assert(window != nullptr);
 
-			// Get display
 			const Display* display = mRenderService->findDisplay(*window);
 			assert(display != nullptr);
 
-			// Check if it changed
+			// Get context
 			auto it = mContexts.find(window);
 			assert(it != mContexts.end());
 			assert(it->second->mDisplay != nullptr);
+
+			// Check if it changed, if so update scale
 			const auto& current_display = *it->second->mDisplay;
 			if (current_display.getIndex() != display->getIndex())
 			{
@@ -719,65 +750,36 @@ namespace nap
 	}
 
 
-	std::unique_ptr<ImFontAtlas> IMGuiService::createFontAtlas(float dpiScale)
-	{
-		// Create font atlas
-		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
-		ImFontConfig font_config;
-		font_config.OversampleH = 3;
-		font_config.OversampleV = 1;
-
-		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
-		auto config = getConfiguration<IMGuiServiceConfiguration>();
-		float font_size = math::floor(config->mFontSize * dpiScale);
-		if (!config->mFontFile.empty())
-		{
-			new_atlas->AddFontFromFileTTF(config->mFontFile.c_str(), font_size, &font_config);
-		}
-		else
-		{
-			new_atlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
-		}
-		return new_atlas;
-	}
-
-
 	void IMGuiService::pushScale(GUIContext& context, const Display& display)
 	{
 		// Store display
 		context.mDisplay = &display;
 
 		// Don't scale if high dpi rendering is disabled
-		if (!mRenderService->getHighDPIEnabled())
-			return;
-
-		// Compute new font and gui scaling factor based on display DPI
-		float font_scale = display.getHorizontalDPI() / (mFontScale * referenceDPI);
-		float new_scale = display.getHorizontalDPI() / referenceDPI;
-
-		// Push scaling for window and font based on new display
-		context.activate();
-		ImGui::GetStyle() = context.mOriginalStyle;
-		ImGui::GetStyle().ScaleAllSizes(new_scale);
-		ImGui::GetIO().FontGlobalScale = font_scale;
-		context.deactivate();
-
-		// Store active display info
-		context.mScaleFactor = new_scale;
+		if (mRenderService->getHighDPIEnabled())
+		{
+			// Push scaling for window and font based on new display
+			// We must push the original style first before we can scale
+			context.activate();
+			ImGui::GetStyle() = *context.mStyle;
+			ImGui::GetStyle().ScaleAllSizes(display.getHorizontalDPI() / referenceDPI);
+			ImGui::GetIO().FontGlobalScale = display.getHorizontalDPI() / (mFontScale * referenceDPI);
+			context.deactivate();
+		}
 	}
 
 
-	IMGuiService::GUIContext::GUIContext(ImGuiContext* context) : mContext(context)
-	{
-		activate();
-		mOriginalStyle = ImGui::GetStyle();
-		deactivate();
-	}
+	IMGuiService::GUIContext::GUIContext(ImGuiContext* context, ImGuiStyle* style) :
+		mContext(context), mStyle(style)
+	{ }
+
 
 
 	IMGuiService::GUIContext::~GUIContext()
 	{
 		ImGui::DestroyContext(mContext);
+		mStyle = nullptr;
+		mDisplay = nullptr;
 	}
 
 

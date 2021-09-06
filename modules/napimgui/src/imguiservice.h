@@ -225,21 +225,20 @@ namespace nap
 
 	private:
 		/**
-		 * Simple struct that combines an ImGUI context with additional state information
-		 * Takes ownership of the context, destroys it on destruction
+		 * Simple struct that combines an ImGUI context with additional state information.
+		 * Takes ownership of the context, destroys it on destruction.
 		 */
 		struct NAPAPI GUIContext
 		{
-			GUIContext(ImGuiContext* context);;
+			GUIContext(ImGuiContext* context, ImGuiStyle* style);
 			~GUIContext();
 
 			bool mMousePressed[3]			= { false, false, false };
 			float mMouseWheel				= 0.0f;
-			float mScaleFactor				= 1.0f;
 			const Display* mDisplay			= nullptr;
 			ImGuiContext* mContext			= nullptr;
 			ImGuiContext* mPreviousContext	= nullptr;
-			ImGuiStyle mOriginalStyle;
+			ImGuiStyle* mStyle				= nullptr;
 
 			// Activates current context
 			void activate();
@@ -247,13 +246,6 @@ namespace nap
 			// Deactivates current context, restores previous
 			void deactivate();
 		};
-
-		RenderService* mRenderService = nullptr;
-		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
-		std::unique_ptr<DescriptorSetAllocator> mAllocator;
-		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
-		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
-		float mFontScale = 1.0f;
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
@@ -284,14 +276,17 @@ namespace nap
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
 
 		/**
-		 * creates a new font atlas
-		 * @param dpiScale scale to apply to font
-		 */
-		std::unique_ptr<ImFontAtlas> createFontAtlas(float dpiScale);
-
-		/**
 		 * Applies scale to given context associated with given window
 		 */
 		void pushScale(GUIContext& context, const Display& display);
+
+		RenderService* mRenderService = nullptr;
+		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;
+		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
+		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
+		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
+		IMGuiServiceConfiguration* mConfiguration = nullptr;
+		float mFontScale = 1.0f;
 	};
 }
