@@ -69,7 +69,7 @@ namespace nap
 					uint16_t dataLength = (mBuffer[16] << 8) | (mBuffer[17] & 0xff);
 
 					// Create out Art-Net event
-					ArtDmxPacketEventPtr event = std::make_unique<ArtNetEvent>(sequence, physical, portAddress);
+					ArtNetEventPtr event = std::make_unique<ArtNetEvent>(sequence, physical, portAddress);
 
 					// Set the channel data
 					event->setData(mBuffer + HEADER_LENGTH, dataLength);

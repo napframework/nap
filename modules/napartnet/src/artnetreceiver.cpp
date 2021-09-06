@@ -4,7 +4,7 @@
 
  // Local Includes
 #include "artnetreceiver.h"
-#include "artnetservice.h" 
+#include "artnetservice.h"
 
 // External includes
 #include <utility>
@@ -69,14 +69,14 @@ namespace nap
 	}
 
 
-	void ArtNetReceiver::addEvent(ArtDmxPacketEventPtr event)
+	void ArtNetReceiver::addEvent(ArtNetEventPtr event)
 	{
 		std::lock_guard<std::mutex> lock(mEventMutex);
 		mEvents.emplace(std::move(event));
 	}
 
 
-	void ArtNetReceiver::consumeEvents(std::queue<ArtDmxPacketEventPtr>& outEvents)
+	void ArtNetReceiver::consumeEvents(std::queue<ArtNetEventPtr>& outEvents)
 	{
 		std::lock_guard<std::mutex> lock(mEventMutex);
 
@@ -84,7 +84,7 @@ namespace nap
 		outEvents.swap(mEvents);
 
 		// Clear current queue
-		std::queue<ArtDmxPacketEventPtr> empty_queue;;
+		std::queue<ArtNetEventPtr> empty_queue;;
 		mEvents.swap(empty_queue);
 	}
 }

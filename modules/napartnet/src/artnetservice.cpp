@@ -207,7 +207,7 @@ namespace nap
 		 * Consume events from Art-Net Receivers
 		 */
 
-		std::queue<ArtDmxPacketEventPtr> events;
+		std::queue<ArtNetEventPtr> events;
 
 		// Forward every event to every input component of interest
 		for (auto& receiverPair : mReceivers)

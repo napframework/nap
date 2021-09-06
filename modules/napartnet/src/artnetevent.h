@@ -129,5 +129,5 @@ namespace nap
 		std::vector<uint8_t> mData;
 	};
 
-	using ArtDmxPacketEventPtr = std::unique_ptr<nap::ArtNetEvent>;
+	using ArtNetEventPtr = std::unique_ptr<nap::ArtNetEvent>;
 }

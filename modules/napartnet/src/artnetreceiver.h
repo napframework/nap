@@ -54,14 +54,14 @@ namespace nap
 		* Adds an event to the queue
 		* @param event the event to add, note that this receiver will take ownership of the event
 		*/
-		void addEvent(ArtDmxPacketEventPtr event);
+		void addEvent(ArtNetEventPtr event);
 
 		/**
 		* Consumes all received Art-Net events and moves them to outEvents, called by the service on the main thread
 		* Calling this will clear the internal queue and transfers ownership of the events to the caller
 		* @param outEvents will hold the transferred Art-Net events
 		*/
-		void consumeEvents(std::queue<ArtDmxPacketEventPtr>& outEvents);
+		void consumeEvents(std::queue<ArtNetEventPtr>& outEvents);
 
 		uint16_t mPort = 6454;    ///< Property: 'Port' The port that is opened and used to receive Art-Net messages
 
@@ -81,7 +81,7 @@ namespace nap
 		std::unique_ptr<ArtNetListener> mListener = nullptr;
 
 		// Queue that holds all the consumed events
-		std::queue<ArtDmxPacketEventPtr> mEvents;
+		std::queue<ArtNetEventPtr> mEvents;
 
 		// Mutex associated with setting / getting events
 		std::mutex mEventMutex;
