@@ -562,7 +562,7 @@ namespace nap
 
 			// Create context and apply style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas);
-
+			
 			// Create all vulkan required resources
 			createVulkanResources(window);
 		}
@@ -576,10 +576,7 @@ namespace nap
 		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context)));
 		const auto* display = mRenderService->findDisplay(window);
 		assert(display != nullptr);
-		if (mRenderService->getHighDPIEnabled())
-		{
-			pushScale(*it.first->second, *display);
-		}
+		pushScale(*it.first->second, *display);
 
 		// Connect so we can listen to window events such as move
 		window.mWindowEvent.connect(mWindowEventSlot);
@@ -610,22 +607,19 @@ namespace nap
 			assert(window != nullptr);
 
 			// Get display
-			int display_index = SDL::getDisplayIndex(window->getNativeWindow());
-			assert(display_index >= 0);
+			const Display* display = mRenderService->findDisplay(*window);
+			assert(display != nullptr);
 
 			// Check if it changed
 			auto it = mContexts.find(window);
 			assert(it != mContexts.end());
-			if (it->second->mDisplay->getIndex() != display_index)
+			assert(it->second->mDisplay != nullptr);
+			const auto& current_display = *it->second->mDisplay;
+			if (current_display.getIndex() != display->getIndex())
 			{
 				// Display Changed!
-				nap::Logger::info("Display changed from: %d to %d", it->second->mDisplay->getIndex(), display_index);
-
-				// Update Scale
-				if (mRenderService->getHighDPIEnabled())
-				{
-					pushScale(*it->second, *mRenderService->findDisplay(display_index));
-				}
+				nap::Logger::info("Display changed from: %d to %d", it->second->mDisplay->getIndex(), display->getIndex());
+				pushScale(*it->second, *display);
 			}
 		}
 	}
@@ -750,22 +744,34 @@ namespace nap
 
 	void IMGuiService::pushScale(GUIContext& context, const Display& display)
 	{
-		// Compute font scale
-		float font_scale = display.getHorizontalDPI() / (mFontScale * referenceDPI);
+		// Store display
+		context.mDisplay = &display;
 
-		// Compute gui scale, compensate for previous scale
+		// Don't scale if high dpi rendering is disabled
+		if (!mRenderService->getHighDPIEnabled())
+			return;
+
+		// Compute new font and gui scaling factor based on display DPI
+		float font_scale = display.getHorizontalDPI() / (mFontScale * referenceDPI);
 		float new_scale = display.getHorizontalDPI() / referenceDPI;
-		float gui_scale = (1.0f / context.mScaleFactor) * new_scale;
 
 		// Push scaling for window and font based on new display
 		context.activate();
+		ImGui::GetStyle() = context.mOriginalStyle;
+		ImGui::GetStyle().ScaleAllSizes(new_scale);
 		ImGui::GetIO().FontGlobalScale = font_scale;
-		ImGui::GetStyle().ScaleAllSizes(gui_scale);
 		context.deactivate();
 
 		// Store active display info
-		context.mDisplay = &display;
 		context.mScaleFactor = new_scale;
+	}
+
+
+	IMGuiService::GUIContext::GUIContext(ImGuiContext* context) : mContext(context)
+	{
+		activate();
+		mOriginalStyle = ImGui::GetStyle();
+		deactivate();
 	}
 
 

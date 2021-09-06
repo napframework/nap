@@ -230,7 +230,7 @@ namespace nap
 		 */
 		struct NAPAPI GUIContext
 		{
-			GUIContext(ImGuiContext* context) : mContext(context) { };
+			GUIContext(ImGuiContext* context);;
 			~GUIContext();
 
 			bool mMousePressed[3]			= { false, false, false };
@@ -239,6 +239,7 @@ namespace nap
 			const Display* mDisplay			= nullptr;
 			ImGuiContext* mContext			= nullptr;
 			ImGuiContext* mPreviousContext	= nullptr;
+			ImGuiStyle mOriginalStyle;
 
 			// Activates current context
 			void activate();
