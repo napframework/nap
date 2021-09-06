@@ -28,6 +28,12 @@ namespace nap
 	 * and ArtNetReceiver / ArtNetInputComponent, which relay incoming Art-Net messages to
 	 * the application. Use Napkin to change the properties like, Net, SubNet and Universe
 	 * to use for sending and receiving Art-Net.
+	 *
+	 * Note:
+	 * Because this demo both sends and receives Art-Net, you have to enter the IP address
+	 * of the interface to use for receiving Art-Net in the ArtNetReceiver. Failing to do
+	 * so will result in an error that the socket address is already in use. The controller
+	 * will always bind to address 0.0.0.0, which is why it's import to configure the receiver.
 	 */
 	class ArtNetDemo : public App
 	{

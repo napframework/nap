@@ -16,6 +16,7 @@
         {
             "Type": "nap::ArtNetReceiver",
             "mID": "ArtNetReceiver",
+            "IP Address": "",
             "Port": 6454
         },
         {
