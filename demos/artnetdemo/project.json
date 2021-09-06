@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "ArtNet",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "mod_napapp",
+        "mod_napimgui",
+        "mod_artnetdemo"
+    ],
+    "Data": "data/artnetdemo.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

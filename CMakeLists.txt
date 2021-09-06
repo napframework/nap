@@ -163,6 +163,8 @@ add_subdirectory(demos/sequencer)
 add_subdirectory(demos/paintobject)
 add_subdirectory(demos/licensecheck)
 add_subdirectory(demos/tween)
+add_subdirectory(demos/artnetdemo)
+add_subdirectory(demos/artnetdemo/module)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

@@ -1,0 +1,8 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "mod_napartnet"
+    ],
+    "WindowsDllSearchPaths": []
+}
