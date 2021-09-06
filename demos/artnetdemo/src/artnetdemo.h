@@ -87,6 +87,6 @@ namespace nap
 		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mArtNetEntity = nullptr;		///< Pointer to the entity that handles Art-Net sending / receiving
-		int32_t						mArtNetInputGroupSize = 32;		///< Pointer to the entity that handles Art-Net sending / receiving
+		int32_t						mArtNetInputGroupSize = 8;		///< The maximum amount of channels grouped together in a histogram when receiving
 	};
 }
