@@ -576,10 +576,9 @@ namespace nap
 		auto it = mContexts.emplace(std::make_pair(&window, std::make_unique<GUIContext>(new_context)));
 		const auto* display = mRenderService->findDisplay(window);
 		assert(display != nullptr);
-		it.first->second->mDisplayIndex = display->getIndex();
 		if (mRenderService->getHighDPIEnabled())
 		{
-			pushScale(*it.first->second);
+			pushScale(*it.first->second, *display);
 		}
 
 		// Connect so we can listen to window events such as move
@@ -617,16 +616,15 @@ namespace nap
 			// Check if it changed
 			auto it = mContexts.find(window);
 			assert(it != mContexts.end());
-			if (it->second->mDisplayIndex != display_index)
+			if (it->second->mDisplay->getIndex() != display_index)
 			{
 				// Display Changed!
-				nap::Logger::info("Display changed from: %d to %d", it->second->mDisplayIndex, display_index);
-				it->second->mDisplayIndex = display_index;
+				nap::Logger::info("Display changed from: %d to %d", it->second->mDisplay->getIndex(), display_index);
 
 				// Update Scale
 				if (mRenderService->getHighDPIEnabled())
 				{
-					pushScale(*it->second);
+					pushScale(*it->second, *mRenderService->findDisplay(display_index));
 				}
 			}
 		}
@@ -750,24 +748,23 @@ namespace nap
 	}
 
 
-	void IMGuiService::pushScale(GUIContext& context)
+	void IMGuiService::pushScale(GUIContext& context, const Display& display)
 	{
-		// Compute scaling factor, relative to global
-		const auto* display = mRenderService->findDisplay(context.mDisplayIndex);
-		assert(display != nullptr);
-		float font_scale = display->getHorizontalDPI() / (mFontScale * referenceDPI);
+		// Compute font scale
+		float font_scale = display.getHorizontalDPI() / (mFontScale * referenceDPI);
 
-		// Compute gui scale, taking into consideration previous scale
-		float new_scale  = display->getHorizontalDPI() / referenceDPI;
-		float gui_scale  = (1.0f / context.mScaleFactor) * new_scale;
+		// Compute gui scale, compensate for previous scale
+		float new_scale = display.getHorizontalDPI() / referenceDPI;
+		float gui_scale = (1.0f / context.mScaleFactor) * new_scale;
 
-		// Push scaling for window based on display index
-		ImGuiContext* cur_context = ImGui::GetCurrentContext();
+		// Push scaling for window and font based on new display
 		context.activate();
 		ImGui::GetIO().FontGlobalScale = font_scale;
 		ImGui::GetStyle().ScaleAllSizes(gui_scale);
 		context.deactivate();
 
+		// Store active display info
+		context.mDisplay = &display;
 		context.mScaleFactor = new_scale;
 	}
 
@@ -780,13 +777,13 @@ namespace nap
 
 	void IMGuiService::GUIContext::activate()
 	{
-		mPrevious = ImGui::GetCurrentContext();
+		mPreviousContext = ImGui::GetCurrentContext();
 		ImGui::SetCurrentContext(mContext);
 	}
 
 
 	void IMGuiService::GUIContext::deactivate()
 	{
-		ImGui::SetCurrentContext(mPrevious);
+		ImGui::SetCurrentContext(mPreviousContext);
 	}
 }

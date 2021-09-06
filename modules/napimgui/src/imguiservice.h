@@ -27,6 +27,7 @@ namespace nap
 
 	// Forward Declares
 	class RenderService;
+	class Display;
 	class GuiWindow;
 	class IMGuiService;
 
@@ -232,12 +233,12 @@ namespace nap
 			GUIContext(ImGuiContext* context) : mContext(context) { };
 			~GUIContext();
 
-			bool mMousePressed[3]		= { false, false, false };
-			float mMouseWheel			= 0.0f;
-			int mDisplayIndex			= 0;
-			float mScaleFactor			= 1.0f;
-			ImGuiContext* mContext		= nullptr;
-			ImGuiContext* mPrevious		= nullptr;
+			bool mMousePressed[3]			= { false, false, false };
+			float mMouseWheel				= 0.0f;
+			float mScaleFactor				= 1.0f;
+			const Display* mDisplay			= nullptr;
+			ImGuiContext* mContext			= nullptr;
+			ImGuiContext* mPreviousContext	= nullptr;
 
 			// Activates current context
 			void activate();
@@ -290,6 +291,6 @@ namespace nap
 		/**
 		 * Applies scale to given context associated with given window
 		 */
-		void pushScale(GUIContext& context);
+		void pushScale(GUIContext& context, const Display& display);
 	};
 }
