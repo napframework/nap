@@ -9,6 +9,7 @@
 
 // External Includes
 #include <component.h>
+#include <entity.h>
 #include <nap/signalslot.h>
 
 namespace nap
@@ -60,10 +61,10 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		uint8_t	mNet;			///< Property: 'Net' the Net from which events should be received.
-		uint8_t	mSubNet;		///< Property: 'SubNet' the SubNet from which events should be received.
-		uint8_t	mUniverse;		///< Property: 'Universe' the Universe from which events should be received.
-		bool	mReceiveAll;	///< Property: 'Receive All' when true, all events are forwarded.
+		uint8_t	mNet = 0;				///< Property: 'Net' the Net from which events should be received.
+		uint8_t	mSubNet = 0;			///< Property: 'SubNet' the SubNet from which events should be received.
+		uint8_t	mUniverse = 0;			///< Property: 'Universe' the Universe from which events should be received.
+		bool	mReceiveAll = false;	///< Property: 'Receive All' when true, all events are forwarded.
 
 		Signal<const ArtNetEvent&> packetReceived;	///< Triggered when the component receives an ArtDmx packet event
 
@@ -83,6 +84,6 @@ namespace nap
 	private:
 		friend class ArtNetService;
 
-		ArtNetService* mService = nullptr;					// Art-Net Service set when initialized
+		ArtNetService* mService = nullptr;	// Art-Net Service set when initialized
 	};
 }

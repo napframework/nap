@@ -15,7 +15,7 @@ namespace nap
 	class ArtNetInputComponentInstance;
 
 	/**
-	 * Service for sending data over Artnet. Data is natively sent using bytes values, but the service provides
+	 * Service for sending and receiving data over Artnet. Data is natively sent using bytes values, but the service provides
 	 * a convenience function to send data using normalized float values. When calling one of the send functions, the 
 	 * data is not sent directly, this is deferred to the update() call, where the service can control the frequence of 
 	 * sending data and where it can make sure that data is resent when needed. Because of this, updating universes 
@@ -24,10 +24,14 @@ namespace nap
 	 * To send data, create an ArtNetController and specify the subnet and universe for the controller. Then call send on it,
 	 * this will redirect the send call to this service.
 	 *
-	 * Note: in the current implementation, only subnet and universe can be addressed. A correct implementation should include
+	 * To receive data, first create an ArtNetReceiver and specify the port to listen on for receiving ArtDmx packets.
+	 * Then add an ArtNetInputComponent and specify whether to filter on ArtDmx packets by Net, SubNet and Universe or
+	 * to receive all packets. Connect to the input component's packetReceived slot for handling the incoming events.
+	 *
+	 * Note: in the current sending implementation, only subnet and universe can be addressed. A correct implementation should include
 	 * the full 16 bits and be able to address net(7 bits) - subnet(4 bits) - universe (4 bits). As we are using a library
 	 * that doesn't support this correctly, we cannot address multiple nets. Now we are using 8 bits for the address, this should
-	 * change as soon as we have more controller over the implementation.
+	 * change as soon as we have more control over the implementation.
 	 */
 	class NAPAPI ArtNetService : public Service
 	{
@@ -53,13 +57,14 @@ namespace nap
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 		/**
-		* Makes sure that data that is sent using the various send functions is transmitted over the network.
+		* Makes sure that data that is sent using the various send functions is transmitted over the network
+		* and consume incoming ArtDmx packet events from Art-Net Receivers.
 		*/
 		virtual void update(double deltaTime) override;
 
 	private:
 		/**
-		 * Adds a controller to the service. This should be called from init() and the return value should be tested to validate
+		 * Adds a controller to the service. This should be called from start() and the return value should be tested to validate
 		 * that adding of the controller was successful.
 		 * @param controller Controller to add.
 		 * @param errorState Out parameter that describes the error if the function returns false.
@@ -68,7 +73,7 @@ namespace nap
 		bool addController(ArtNetController& controller, utility::ErrorState& errorState);
 
 		/**
-		 * Removes a controller that was previously successfully added using @addController.
+		 * Removes a controller that was previously successfully added using @addController. This should be called from stop().
 		 * @param controller Controller to remove.
 		 */
 		void removeController(ArtNetController& controller);
@@ -83,18 +88,21 @@ namespace nap
 		bool addReceiver(ArtNetReceiver& receiver, utility::ErrorState& errorState);
 
 		/**
-		 * Removes a receiver that was previously successfully added using @addReceiver. This should be called from stop()
+		 * Removes a receiver that was previously successfully added using @addReceiver. This should be called from stop().
 		 * @param receiver ArtNetReceiver to remove.
 		 */
 		void removeReceiver(ArtNetReceiver& receiver);
 
 		/**
-		 *	Add an Art-Net input component to the service
+		 * Add an Art-Net input component to the service, which will receive consumed ArtDmx packet events when its filters
+		 * (Net, SubNet and Universe, or Receive All) match the properties of the incoming event.
+		 * @param input The ArtNetInputComponentInstance to add.
 		 */
 		void addInputComponent(ArtNetInputComponentInstance& input);
 
 		/**
-		 *	Remove an Art-Net input component from the service
+		 * Remove an Art-Net input component from the service.
+		 * @param input The ArtNetInputComponentInstance to remove.
 		 */
 		void removeInputComponent(ArtNetInputComponentInstance& input);
 

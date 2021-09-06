@@ -14,7 +14,7 @@
 namespace nap
 {
 	/**
-	* Represents a single received ArtDmx packet,
+	* Represents a single received ArtDmx packet event,
 	* carrying a payload of zero-start code DMX512 data.
 	*/
 	class NAPAPI ArtNetEvent : public Event
@@ -25,7 +25,7 @@ namespace nap
 		ArtNetEvent() = delete;
 
 		/**
-		* ArtNetEvent constructor. Creates an ArtDmx packet identified by a Sequence field,
+		* ArtNetEvent constructor. Creates an ArtDmx packet event identified by a Sequence field,
 		* Physical field and Port-Address (which will be parsed to the Net, Sub-Net and Universe).
 		* @param sequence the Sequence field of the ArtDmx packet
 		* @param physical the Physical field of the ArtDmx packet
@@ -38,7 +38,7 @@ namespace nap
 		* @param data pointer to the raw data buffer
 		* @param size the length of the data buffer in bytes
 		*/
-		void setData(const unsigned char* data, size_t size);
+		void setData(const uint8_t* data, size_t size);
 
 		/**
 		* The Sequence field is an 8-bit number that is designed to show the order in which packets were
@@ -89,6 +89,12 @@ namespace nap
 		* @return the channel count of the ArtDmx packet
 		*/
 		size_t getChannelCount() const { return mData.size(); };
+
+		/**
+		* Get a pointer to the raw ArtDmx channel data
+		* @return the pointer to the raw ArtDmx channel data
+		*/
+		const uint8_t* getChannelData() const { return mData.data(); };
 
 		/**
 		* Retrieve the 8-bit value of a single DMX512 channel by its 1-based channel number.

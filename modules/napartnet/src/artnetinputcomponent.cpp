@@ -7,7 +7,6 @@
 #include "artnetservice.h"
 
 // External includes
-#include <entity.h>
 #include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::ArtNetInputComponent)
