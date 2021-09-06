@@ -578,7 +578,7 @@ namespace nap
 			// Calculate max dpi scale if high dpi rendering is enabled
 			if (mRenderService->getHighDPIEnabled())
 			{
-				mFontScale = 0.0f;
+				mFontScale = 1.0f;
 				for (const auto& display : mRenderService->getDisplays())
 				{
 					float dpi_scale = display.getHorizontalDPI() / referenceDPI;
@@ -777,8 +777,8 @@ namespace nap
 			// We must push the original style first before we can scale
 			context.activate();
 			ImGui::GetStyle() = *context.mStyle;
-			ImGui::GetStyle().ScaleAllSizes(display.getHorizontalDPI() / referenceDPI);
-			ImGui::GetIO().FontGlobalScale = display.getHorizontalDPI() / (mFontScale * referenceDPI);
+			ImGui::GetStyle().ScaleAllSizes(math::max<float>(display.getHorizontalDPI() / referenceDPI, 1.0f));
+			ImGui::GetIO().FontGlobalScale = math::max<float>(display.getHorizontalDPI() / (mFontScale * referenceDPI), 1.0f / mFontScale);
 			context.deactivate();
 		}
 	}
