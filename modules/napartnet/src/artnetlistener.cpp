@@ -27,7 +27,7 @@ namespace nap
 		// Ensure the buffer starts empty
 		std::memset(mBuffer, 0, mBufferSize);
 
-		// Start receiving UDP packages
+		// Start receiving UDP packets
 		startReceive();
 	}
 

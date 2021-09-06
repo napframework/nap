@@ -16,7 +16,7 @@ namespace nap
 	class ArtNetReceiver;
 
 	/**
-	* Listens for incoming packages and parses them to ArtDmx packet events
+	* Listens for incoming packets and parses them to ArtDmx packet events
 	*/
 	class ArtNetListener
 	{
@@ -40,6 +40,6 @@ namespace nap
 		ArtNetReceiver&					mReceiver;		// The Art-Net Receiver that holds the message queue
 		asio::ip::udp::socket			mSocket;		// The UDP socket that is used to receive data
 		size_t							mBufferSize;	// The maximum size for the ArtDmx package in bytes
-		uint8_t*						mBuffer;		// The buffer used for receiving ArtDmx packages
+		uint8_t*						mBuffer;		// The buffer used for receiving ArtDmx packets
 	};
 }
