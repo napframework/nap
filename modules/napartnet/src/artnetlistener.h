@@ -23,7 +23,7 @@ namespace nap
 
 	public:
 
-		ArtNetListener(ArtNetReceiver& receiver, asio::io_service& ioService, uint16_t port);
+		ArtNetListener(ArtNetReceiver& receiver, asio::io_service& ioService, const std::string& ip, uint16_t port);
 		~ArtNetListener();
 
 	private:

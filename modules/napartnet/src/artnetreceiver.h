@@ -63,7 +63,8 @@ namespace nap
 		*/
 		void consumeEvents(std::queue<ArtNetEventPtr>& outEvents);
 
-		uint16_t mPort = 6454;    ///< Property: 'Port' The port that is opened and used to receive Art-Net messages
+		std::string mIpAddress = "";	///< Property: 'IP Address' The IP address of the interface to use for receiving Art-Net, will use 0.0.0.0 (all local addresses) if left empty
+		uint16_t mPort = 6454;			///< Property: 'Port' The port that is opened and used to receive Art-Net messages
 
 	private:
 		friend class ArtNetService;

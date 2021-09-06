@@ -11,7 +11,8 @@
 
 // nap::ArtNetReceiver run time class definition
 RTTI_BEGIN_CLASS(nap::ArtNetReceiver)
-	RTTI_PROPERTY("Port", &nap::ArtNetReceiver::mPort, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("IP Address", &nap::ArtNetReceiver::mIpAddress, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port", &nap::ArtNetReceiver::mPort, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,10 +33,11 @@ namespace nap
 		if (!mService->addReceiver(*this, errorState))
 			return false;
 
+		// ASIO can throw exceptions, i.e. when the port is in use
 		try
 		{
 			// Create the UDP socket server
-			mListener = std::make_unique<ArtNetListener>(*this, mIOService, mPort);
+			mListener = std::make_unique<ArtNetListener>(*this, mIOService, mIpAddress, mPort);
 
 			// Run the I/O service in a thread
 			mRunThread = std::thread([&] { mIOService.run(); });

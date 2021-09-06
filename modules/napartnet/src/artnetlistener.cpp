@@ -18,9 +18,11 @@
 namespace nap
 {
 
-	ArtNetListener::ArtNetListener(ArtNetReceiver& receiver, asio::io_service& ioService, uint16_t port)
+	ArtNetListener::ArtNetListener(ArtNetReceiver& receiver, asio::io_service& ioService, const std::string& ip, uint16_t port)
 		: mReceiver(receiver)
-		, mSocket(ioService, asio::ip::udp::endpoint(asio::ip::udp::v4(), port))
+		, mSocket(ioService, ip.empty()
+			? asio::ip::udp::endpoint(asio::ip::udp::v4(), port)
+			: asio::ip::udp::endpoint(asio::ip::make_address(ip), port))
 		, mBufferSize(HEADER_LENGTH + DATA_LENGTH)
 		, mBuffer(new uint8_t[mBufferSize])
 	{
