@@ -773,12 +773,16 @@ namespace nap
 		// Don't scale if high dpi rendering is disabled
 		if (mRenderService->getHighDPIEnabled())
 		{
+			// Compute gui and font scaling factor
+			float gscale = math::max<float>(display.getHorizontalDPI() / referenceDPI, 1.0f);
+			float fscale = math::max<float>(display.getHorizontalDPI() / (mFontScale * referenceDPI), 1.0f / mFontScale);
+
 			// Push scaling for window and font based on new display
 			// We must push the original style first before we can scale
 			context.activate();
 			ImGui::GetStyle() = *context.mStyle;
-			ImGui::GetStyle().ScaleAllSizes(math::max<float>(display.getHorizontalDPI() / referenceDPI, 1.0f));
-			ImGui::GetIO().FontGlobalScale = math::max<float>(display.getHorizontalDPI() / (mFontScale * referenceDPI), 1.0f / mFontScale);
+			ImGui::GetStyle().ScaleAllSizes(gscale);
+			ImGui::GetIO().FontGlobalScale = fscale;
 			context.deactivate();
 		}
 	}
