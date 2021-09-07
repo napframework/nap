@@ -440,7 +440,12 @@ namespace nap
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
 		{
 			nap::MouseWheelEvent& wheel_event = static_cast<nap::MouseWheelEvent&>(event);
-			context->second->mMouseWheel = wheel_event.mY > 0 ? 1 : -1;
+#ifdef __APPLE__
+			int delta = io.KeyShift ? wheel_event.mX * -1 : wheel_event.mY;
+#else
+			int delta = wheel_event.mY;
+#endif
+			context->second->mMouseWheel = delta > 0 ? 1.0f : -1.0f;
 		}
 
 		// Pointer press event
