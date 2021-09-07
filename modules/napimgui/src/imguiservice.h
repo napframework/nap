@@ -267,12 +267,12 @@ namespace nap
 		void createVulkanResources(nap::RenderWindow& window);
 
 		/**
-		 * starts a new imgui frame
+		 * Starts a new imgui frame
 		 */
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
 
 		/**
-		 * Applies scale to given context associated with given window
+		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
 		 */
 		void pushScale(GUIContext& context, const Display& display);
 
