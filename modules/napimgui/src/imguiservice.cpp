@@ -797,7 +797,6 @@ namespace nap
 			context.activate();
 			ImGui::GetStyle() = *context.mStyle;
 			ImGui::GetStyle().ScaleAllSizes(mGuiScale);
-			ImGui::GetIO().FontGlobalScale = 1.0f;
 			context.deactivate();
 		}
 	}
