@@ -40,7 +40,8 @@ namespace nap
 
 	public:
 		float mFontSize				= 17.0f;							///< Property: 'FontSize' Gui Font Size
-		std::string mFontFile 		= "";								///< Property: 'FontFile' Path to a ttf font file in the data folder. If left empty the default NAP font will be used.
+		float mScale				= 1.0f;								///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
+		std::string mFontFile 		= "";								///< Property: 'FontFile' Path to a '.ttf' font file in the data folder. If left empty the default NAP font will be used
 		RGBColor8 mHighlightColor	= RGBColor8(0xC8, 0x69, 0x69);		///< Property: 'HighlightColor' Gui highlight color
 		RGBColor8 mBackgroundColor	= RGBColor8(0x2D, 0x2E, 0x42);		///< Property: 'BackgroundColor' Gui background color
 		RGBColor8 mDarkColor		= RGBColor8(0x11, 0x14, 0x26);		///< Property: 'DarkColor' Gui dark color
@@ -187,11 +188,6 @@ namespace nap
 		 */
 		ImTextureID getTextureHandle(nap::Texture2D& texture);
 
-		/** 
-         * @return Applied DPI scaling factor
-		 */
-		float getDPIScale() const { return mFontScale; }
-
 	protected:
 		/**
 		 * Initializes the IMGui library. This will also create all associated gui devices objects
@@ -287,6 +283,7 @@ namespace nap
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
 		IMGuiServiceConfiguration* mConfiguration = nullptr;
-		float mFontScale = 1.0f;
+		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
+		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 	};
 }

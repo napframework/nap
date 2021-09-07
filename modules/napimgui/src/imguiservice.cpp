@@ -24,6 +24,7 @@
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default, nap::rtti::EPropertyFileType::Font)
 	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiServiceConfiguration::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiServiceConfiguration::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
@@ -301,7 +302,7 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<ImFontAtlas> createFontAtlas(const IMGuiServiceConfiguration& config, float dpiScale)
+	static std::unique_ptr<ImFontAtlas> createFontAtlas(float fontSize, const char* fontFile = nullptr)
 	{
 		// Create font atlas
 		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
@@ -310,10 +311,10 @@ namespace nap
 		font_config.OversampleV = 1;
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
-		float font_size = math::floor(config.mFontSize * dpiScale);
-		if (!config.mFontFile.empty())
+		float font_size = math::floor(fontSize);
+		if (fontFile != nullptr)
 		{
-			new_atlas->AddFontFromFileTTF(config.mFontFile.c_str(), font_size, &font_config);
+			new_atlas->AddFontFromFileTTF(fontFile, font_size, &font_config);
 		}
 		else
 		{
@@ -515,6 +516,9 @@ namespace nap
 		mRenderService->windowAdded.connect(mWindowAddedSlot);
 		mRenderService->windowRemoved.connect(mWindowRemovedSlot);
 
+		// Global GUI & DPI scale
+		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
+
 		return true;
 	}
 
@@ -578,17 +582,18 @@ namespace nap
 			// Calculate max dpi scale if high dpi rendering is enabled
 			if (mRenderService->getHighDPIEnabled())
 			{
-				mFontScale = 1.0f;
 				for (const auto& display : mRenderService->getDisplays())
 				{
-					float dpi_scale = display.getHorizontalDPI() / referenceDPI;
+					float dpi_scale = math::max<float>(display.getHorizontalDPI(), referenceDPI) / referenceDPI;
 					nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
-					mFontScale = dpi_scale > mFontScale ? dpi_scale : mFontScale;
+					mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
 				}
 			}
 
 			// Create atlas, scale based on dpi of main monitor
-			mFontAtlas = createFontAtlas(*mConfiguration, mFontScale);
+			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
+			float font_size = mConfiguration->mFontSize * mDPIScale * mGuiScale;
+			mFontAtlas = createFontAtlas(font_size, font_file);
 
 			// Create style
 			mStyle = createStyle(*getConfiguration<IMGuiServiceConfiguration>());
@@ -773,9 +778,11 @@ namespace nap
 		// Don't scale if high dpi rendering is disabled
 		if (mRenderService->getHighDPIEnabled())
 		{
-			// Compute gui and font scaling factor
-			float gscale = math::max<float>(display.getHorizontalDPI() / referenceDPI, 1.0f);
-			float fscale = math::max<float>(display.getHorizontalDPI() / (mFontScale * referenceDPI), 1.0f / mFontScale);
+			// Compute overall Gui and font scaling factor
+			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
+			float gscale = mGuiScale * (math::max<float>(display.getHorizontalDPI(), referenceDPI) / referenceDPI);
+			float fscale = math::max<float>(display.getHorizontalDPI(), referenceDPI) / (mDPIScale * referenceDPI);
+			nap::Logger::info("font scale: %.2f", fscale);
 
 			// Push scaling for window and font based on new display
 			// We must push the original style first before we can scale
@@ -783,6 +790,14 @@ namespace nap
 			ImGui::GetStyle() = *context.mStyle;
 			ImGui::GetStyle().ScaleAllSizes(gscale);
 			ImGui::GetIO().FontGlobalScale = fscale;
+			context.deactivate();
+		}
+		else
+		{
+			context.activate();
+			ImGui::GetStyle() = *context.mStyle;
+			ImGui::GetStyle().ScaleAllSizes(mGuiScale);
+			ImGui::GetIO().FontGlobalScale = 1.0f;
 			context.deactivate();
 		}
 	}
