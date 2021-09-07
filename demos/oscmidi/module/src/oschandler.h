@@ -16,7 +16,7 @@ namespace nap
     class OscHandlerComponentInstance;
    
 	/**
-	 * Component that converts incoming midi messages into a string and stores them for display later on.
+	 * Component that converts incoming osc messages into a string and stores them for display later on.
 	 */
     class NAPAPI OscHandlerComponent : public Component
     {
