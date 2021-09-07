@@ -1,7 +1,7 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "ArtNet",
+    "Title": "ArtNetDemo",
     "Version": "1.0.0",
     "RequiredModules": [
         "mod_napapp",
