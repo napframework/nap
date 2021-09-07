@@ -656,7 +656,7 @@ namespace nap
 			if (current_display.getIndex() != display->getIndex())
 			{
 				// Display Changed!
-				nap::Logger::info("Display changed from: %d to %d", it->second->mDisplay->getIndex(), display->getIndex());
+				//nap::Logger::info("Display changed from: %d to %d", it->second->mDisplay->getIndex(), display->getIndex());
 				pushScale(*it->second, *display);
 			}
 		}
@@ -782,7 +782,7 @@ namespace nap
 			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
 			float gscale = mGuiScale * (math::max<float>(display.getHorizontalDPI(), referenceDPI) / referenceDPI);
 			float fscale = math::max<float>(display.getHorizontalDPI(), referenceDPI) / (mDPIScale * referenceDPI);
-			nap::Logger::info("font scale: %.2f", fscale);
+			//nap::Logger::info("font scale: %.2f", fscale);
 
 			// Push scaling for window and font based on new display
 			// We must push the original style first before we can scale
