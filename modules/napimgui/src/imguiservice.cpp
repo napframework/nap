@@ -192,18 +192,21 @@ namespace nap
 		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
 
 		// Apply settings from config
-		style->WindowPadding = ImVec2(15, 15);
-		style->WindowRounding = 3.0f;
+		style->WindowPadding = ImVec2(10, 10);
+		style->WindowRounding = 0.0f;
 		style->FramePadding = ImVec2(5, 5);
-		style->FrameRounding = 2.0f;
+		style->FrameRounding = 0.0f;
 		style->ItemSpacing = ImVec2(12, 6);
 		style->ItemInnerSpacing = ImVec2(8, 6);
 		style->IndentSpacing = 25.0f;
-		style->ScrollbarSize = 15.0f;
+		style->ScrollbarSize = 10.0f;
 		style->ScrollbarRounding = 7.0f;
 		style->GrabMinSize = 5.0f;
-		style->GrabRounding = 1.0f;
+		style->GrabRounding = 0.0f;
 		style->WindowBorderSize = 0.0f;
+                style->PopupRounding = 0.0f;
+                style->ChildRounding = 0.0f;
+                style->WindowTitleAlign = { 0.5f, 0.5f };
 
 		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
