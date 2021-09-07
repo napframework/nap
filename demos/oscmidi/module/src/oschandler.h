@@ -8,7 +8,8 @@
 #include <component.h>
 #include <nap/signalslot.h>
 #include <oscevent.h>
-#include <queue>
+#include <vector>
+#include <string>
 
 namespace nap
 {
