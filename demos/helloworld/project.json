@@ -5,7 +5,7 @@
     "Version": "1.0.0",
     "Data": "data/helloworld.json",
     "PathMapping": "cache/path_mapping.json",
-    "ServiceConfig": "service_config.json",
+    "ServiceConfig": "",
     "RequiredModules": [
         "mod_napapp",
         "mod_napimgui",
