@@ -655,13 +655,13 @@ namespace nap
 			auto it = mContexts.find(window);
 			assert(it != mContexts.end());
 			assert(it->second->mDisplay != nullptr);
+			const auto& cached_display = *it->second->mDisplay;
 
 			// Check if changed, if so update (push) scale
-			const auto& current_display = *it->second->mDisplay;
-			if (current_display.getIndex() != display->getIndex())
+			if (cached_display != *display)
 			{
 				// Display Changed!
-				//nap::Logger::info("Display changed from: %d to %d", it->second->mDisplay->getIndex(), display->getIndex());
+				//nap::Logger::info("Display changed from: %d to %d", cached_display.getIndex(), display->getIndex());
 				pushScale(*it->second, *display);
 			}
 		}

@@ -184,14 +184,24 @@ namespace nap
 		 */
 		std::string toString() const;
 
+		/**
+		 * @return if two displays are the same based on hardware index.
+		 */
+		bool operator== (const Display& rhs) const							{ return rhs.getIndex() == this->getIndex(); }
+
+		/**
+		 * @return if two displays values are not the same based on hardware index
+		 */
+		bool operator!=(const Display& rhs) const							{ return !(rhs == *this); }
+
 	private:
 		std::string mName;						///< Display name
 		int mIndex = -1;						///< Display index
 		float mDDPI = 96.0f;					///< Diagonal DPI
 		float mHDPI = 96.0f;					///< Horizontal DPI
 		float mVDPI = 96.0f;					///< Vertical DPI
-		glm::ivec2 mMin = { 0, 0 };		///< Min display bound position
-		glm::ivec2 mMax = { 0, 0 };		///< Max display bound position
+		glm::ivec2 mMin = { 0, 0 };				///< Min display bound position
+		glm::ivec2 mMax = { 0, 0 };				///< Max display bound position
 		bool mValid = false;					///< If valid after construction
 	};
 	using DisplayList = std::vector<Display>;
@@ -453,7 +463,7 @@ namespace nap
 		int getDisplayCount() const;
 
 		/**
-		 * Find a display based on the index provided
+		 * Find a display based on the index provided.
 		 * Note that changes to display configuration are not considered when application is running.
 		 * @param index the number of the display to find
 		 * @return the display, nullptr if not found
@@ -461,7 +471,8 @@ namespace nap
 		const Display* findDisplay(int index) const;
 
 		/**
-		 * @return display that shows the given window, nullptr if not found
+		 * Returns the display that currently contains the given window. 
+		 * @return display that contains the given window, nullptr if not found
 		 */
 		const Display* findDisplay(const nap::RenderWindow& window);
 
