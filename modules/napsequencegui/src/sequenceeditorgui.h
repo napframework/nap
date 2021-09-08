@@ -53,7 +53,11 @@ namespace nap
 		 */
 		virtual void show();
 
-		SequenceGUIService& getService(){ return mService; }
+		/**
+		 * @return sequence editor gui service
+		 */
+		SequenceGUIService& getService()	{ return mService; }
+
 	public:
 		// properties
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
@@ -98,48 +102,48 @@ namespace nap
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence);
+		void drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence, float scale);
 
 		/**
 		 * Draws inspectors of the sequence tracks
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence &sequence);
+		void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence &sequence, float scale);
 
 		/**
 		 * Draws markers
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence );
+		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence, float scale);
 
 		/**
 		 * Draw lines of markers
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
+		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player, float scale) const;
 
 		/**
 		 * draws player controller bar
 		 * @param player reference to player
 		 */
-		void drawPlayerController(SequencePlayer& player);
+		void drawPlayerController(SequencePlayer& player, float scale);
 
 		/**
 		 * draws line of player position
 		 * @param sequence reference to sequence
 		 * @param player reference to player
 		 */
-		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player) const;
+		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player, float scale) const;
 
 		/**
 		 * draws end of sequence
 		 * @param sequence reference to sequence
 		 * @param player reference to player
 		 */
-		void drawEndOfSequence(const Sequence& sequence, SequencePlayer& player);
+		void drawEndOfSequence(const Sequence& sequence, SequencePlayer& player, float scale);
 
 		/**
 		 * Handles insertion of track popup
@@ -184,7 +188,7 @@ namespace nap
 		 /**
 		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
 		  */
-		 void handleHorizontalZoom();
+		 void handleHorizontalZoom(float scale);
 
 		 /**
 		  * when show help popup is pressed, show modal help popup

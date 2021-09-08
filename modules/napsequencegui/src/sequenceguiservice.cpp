@@ -9,6 +9,7 @@
 #include <iostream>
 #include <utility/stringutils.h>
 #include <sequenceservice.h>
+#include <imguiservice.h>
 
 // Local Includes
 #include "sequenceguiservice.h"
@@ -61,6 +62,9 @@ namespace nap
 
 	bool SequenceGUIService::init(nap::utility::ErrorState& errorState)
 	{
+		mGuiService = getCore().getService<IMGuiService>();
+		assert(mGuiService != nullptr);
+
 		if(!errorState.check(registerEventView<std::string>(), "Error registering event view"))
 			return false;
 
@@ -113,7 +117,6 @@ namespace nap
 			errorState.fail("Error registering track view factory function");
 			return false;
 		}
-
 		return true;
 	}
 
@@ -244,5 +247,13 @@ namespace nap
 	void SequenceGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 	    dependencies.emplace_back(RTTI_OF(SequenceService));
+		dependencies.emplace_back(RTTI_OF(IMGuiService));
+	}
+
+
+	nap::IMGuiService& SequenceGUIService::getGui()
+	{
+		assert(mGuiService != nullptr);
+		return *mGuiService;
 	}
 }

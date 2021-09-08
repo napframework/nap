@@ -9,7 +9,7 @@
 #include <entity.h>
 #include <nap/datetime.h>
 #include <rtti/factory.h>
-#include <imgui/imgui.h>
+#include <imguiservice.h>
 
 namespace nap
 {
@@ -166,6 +166,11 @@ namespace nap
 		 */
 		std::vector<rtti::TypeInfo> getAllRegisteredEventActions() const;
 
+		/**
+		 * @return gui service
+		 */
+		nap::IMGuiService& getGui();
+
 	protected:
 		/**
 		 * registers all objects that need a specific way of construction
@@ -188,6 +193,7 @@ namespace nap
          * @param dependencies rtti information of the services this service depends on
          */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
+
 	private:
 		// map of segment view types
 		SequenceEventTrackSegmentViewFactoryMap mEventSegmentViewFactoryMap;
@@ -206,5 +212,8 @@ namespace nap
 
 		// which view type belongs to which track type
 		SequenceTrackTypeForViewTypeMap mTrackViewTypeMap;
+
+		// Link to the gui service
+		IMGuiService* mGuiService = nullptr;
 	};
 }
