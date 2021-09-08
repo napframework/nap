@@ -414,9 +414,9 @@ namespace nap
 
 		//
 		ImGui::PushID(track.mID.c_str());
-
+		float offset = 5.0f * mState.mScale;
 		float drag_float_x = ImGui::GetCursorPosX() + (40.0f * mState.mScale);
-		ImGui::SetCursorPos({ ImGui::GetCursorPosX() + (5.0f * mState.mScale), ImGui::GetCursorPosY() + (5.0f * mState.mScale) });
+		ImGui::SetCursorPos({ ImGui::GetCursorPosX() + offset, ImGui::GetCursorPosY() + offset });
 		ImGui::Text("Min:"); ImGui::SameLine();
 		ImGui::PushID("min");
 		ImGui::SetCursorPosX(drag_float_x);
@@ -426,7 +426,7 @@ namespace nap
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 		ImGui::Text("Max:"); ImGui::SameLine();
 		ImGui::PushID("max");
 		ImGui::SetCursorPosX(drag_float_x);
@@ -436,7 +436,6 @@ namespace nap
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
-
 		ImGui::PopID();
 	}
 
@@ -579,10 +578,11 @@ namespace nap
 				}
 			}
 
+			float circle_radius = 5.0f * mState.mScale;
 			if (hovered)
-				drawList->AddCircleFilled(segment_value_pos, 5.0f * mState.mScale, sequencer::colors::curvecolors[v]);
+				drawList->AddCircleFilled(segment_value_pos, circle_radius, sequencer::colors::curvecolors[v]);
 			else
-				drawList->AddCircle(segment_value_pos, 5.0f * mState.mScale, sequencer::colors::curvecolors[v]);
+				drawList->AddCircle(segment_value_pos, circle_radius, sequencer::colors::curvecolors[v]);
 		}
 	}
 
@@ -655,14 +655,15 @@ namespace nap
 
 				// handle mouse hovering
 				bool hovered = false;
+				float offset = 5.0f * mState.mScale;
 				if (mState.mIsWindowFocused)
 				{
 					if ((mState.mAction->isAction<SequenceGUIActions::None>() ||
 						 mState.mAction->isAction<SequenceGUIActions::HoveringControlPoint>() ||
 						 mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
 						&& ImGui::IsMouseHoveringRect(
-						{circle_point.x - (5.0f * mState.mScale), circle_point.y - (5.0f * mState.mScale) },
-						{circle_point.x + (5.0f * mState.mScale), circle_point.y + (5.0f * mState.mScale) }))
+						{circle_point.x - offset, circle_point.y - offset },
+						{circle_point.x + offset, circle_point.y + offset }))
 					{
 						hovered = true;
 					}

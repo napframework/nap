@@ -121,8 +121,9 @@ namespace nap
 		ImGui::Text("Assigned Output");
 
 		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
-		inspector_cursor_pos.x += (5.0f * mState.mScale);
-		inspector_cursor_pos.y += (5.0f * mState.mScale);
+		float offset = mState.mScale * 5.0f;
+		inspector_cursor_pos.x += offset;
+		inspector_cursor_pos.y += offset;
 		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		bool assigned = false;
@@ -194,8 +195,8 @@ namespace nap
 
 		// delete track button
 		ImGui::Spacing();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (5.0f * mState.mScale));
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 	}
 
 

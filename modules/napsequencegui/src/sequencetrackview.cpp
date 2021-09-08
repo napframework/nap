@@ -82,8 +82,9 @@ namespace nap
 		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		// draw inspector window
+		float offset = 5.0f * mState.mScale;
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
-								{ mState.mInspectorWidth , mState.mTrackHeight + (5.0f * mState.mScale) }, // size
+								{ mState.mInspectorWidth , mState.mTrackHeight + offset }, // size
 	  							false, // no border
 	   							ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -96,17 +97,17 @@ namespace nap
 
 			// draw background & box
 			draw_list->AddRectFilled(	window_pos,
-							  			{window_pos.x + window_size.x - (5.0f * mState.mScale), window_pos.y + mState.mTrackHeight },
+							  			{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
 									 	sequencer::colors::black);
 
 			draw_list->AddRect(	window_pos,
-					    		{window_pos.x + window_size.x - (5.0f * mState.mScale), window_pos.y + mState.mTrackHeight },
+					    		{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
 							   	sequencer::colors::white);
 
 			//
 			inspector_cursor_pos = ImGui::GetCursorPos();
-			inspector_cursor_pos.x += (5.0f * mState.mScale);
-			inspector_cursor_pos.y += (5.0f * mState.mScale);
+			inspector_cursor_pos.x += offset;
+			inspector_cursor_pos.y += offset;
 			ImGui::SetCursorPos(inspector_cursor_pos);
 
 			// scale down everything
@@ -118,8 +119,8 @@ namespace nap
 
 			// delete track button
 			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (5.0f * mState.mScale));
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 
 			// when we delete a track, we don't immediately call the controller because we are iterating track atm
 			if (ImGui::SmallButton("Delete"))
@@ -129,8 +130,8 @@ namespace nap
 
 			// show up & down buttons
 			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (5.0f * mState.mScale));
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 
 			if(ImGui::SmallButton("Up"))
 			{
@@ -187,14 +188,14 @@ namespace nap
 	void SequenceTrackView::showTrack(const SequenceTrack& track)
 	{
 		ImVec2 cursor_pos = ImGui::GetCursorPos();
-
-		const ImVec2 window_cursor_pos = {cursor_pos.x + 5, cursor_pos.y };
+		float offset = 5.0f * mState.mScale;
+		const ImVec2 window_cursor_pos = { cursor_pos.x + offset, cursor_pos.y };
 		ImGui::SetCursorPos(window_cursor_pos);
 
 		// begin track
 		if (ImGui::BeginChild(
 			track.mID.c_str(), // id
-			{ mState.mTimelineWidth + (5.0f * mState.mScale) , mState.mTrackHeight + (10.0f * mState.mScale) }, // size
+			{ mState.mTimelineWidth + offset, mState.mTrackHeight + (10.0f * mState.mScale) }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
