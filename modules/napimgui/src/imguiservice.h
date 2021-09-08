@@ -153,9 +153,27 @@ namespace nap
 
 		/**
 		 * Returns the ImGUI context associated with the given window.
+		 * @param window the render window
 		 * @return ImGUI context for the given window, asserts if it doesn't exist.
 		 */
 		ImGuiContext* getContext(nap::ResourcePtr<RenderWindow> window);
+
+		/**
+		 * Returns the scaling factor of the current active context.
+		 * The scaling factor is calculated using the display DPI (if high DPI rendering is enabled)
+		 * and the global GUI scale.
+		 * @return the scaling factor for the current active context, -1.0 if no context is active
+		 */
+		float getScale() const;
+
+		/**
+		 * Returns the scaling factor for the given context.
+		 * The scaling factor is calculated using the display DPI (if high DPI rendering is enabled)
+		 * and the global GUI scale.
+		 * @param context the ImGUI context
+		 * @return the scaling factor for the given context
+		 */
+		float getScale(const ImGuiContext* context) const;
 
 		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
@@ -231,6 +249,7 @@ namespace nap
 
 			bool mMousePressed[3]			= { false, false, false };
 			float mMouseWheel				= 0.0f;
+			float mScale					= 1.0f;
 			const Display* mDisplay			= nullptr;
 			ImGuiContext* mContext			= nullptr;
 			ImGuiContext* mPreviousContext	= nullptr;

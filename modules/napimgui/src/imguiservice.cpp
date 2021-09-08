@@ -402,6 +402,25 @@ namespace nap
 	}
 
 
+	float IMGuiService::getScale(const ImGuiContext* context) const
+	{
+		// Check if service doesn't already exist
+		const auto& found_it = std::find_if(mContexts.begin(), mContexts.end(), [&context](const auto& it)
+		{
+			return it.second->mContext == context;
+		});
+		assert(found_it != mContexts.end());
+		return found_it->second->mScale;
+	}
+
+
+	float IMGuiService::getScale() const
+	{
+		ImGuiContext* context = ImGui::GetCurrentContext();
+		return context != nullptr ? getScale(context) : -1.0f;
+	}
+
+
 	ImGuiContext* IMGuiService::processInputEvent(InputEvent& event)
 	{
 		// Check if it's a window input event
@@ -800,6 +819,9 @@ namespace nap
 			ImGui::GetStyle().ScaleAllSizes(gscale);
 			ImGui::GetIO().FontGlobalScale = fscale;
 			context.deactivate();
+
+			// Store scale, ensures custom widgets can scale accordingly
+			context.mScale = gscale;
 		}
 		else
 		{
@@ -807,6 +829,9 @@ namespace nap
 			ImGui::GetStyle() = *context.mStyle;
 			ImGui::GetStyle().ScaleAllSizes(mGuiScale);
 			context.deactivate();
+
+			// Store scale, ensures custom widgets can scale accordingly
+			context.mScale = mGuiScale;
 		}
 	}
 
