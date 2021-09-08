@@ -309,10 +309,10 @@ namespace nap
 			mState.mTimelineControllerPos = ImGui::GetCursorPos();
 
 			float top_size			= 68.0f * mState.mScale; // area of comments, player controller and error messages combined
-			float ten				= 10.0f * mState.mScale;
+			float offset			= 10.0f * mState.mScale;
 			float clip_start_y		= ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
-			float end_clip_y 		= ImGui::GetWindowHeight() - ten; // bottom scrollbar overlaps clipping area
-			float end_clip_x		= ImGui::GetWindowWidth() - ten; 	// right scrollbar overlaps clipping area
+			float end_clip_y 		= ImGui::GetWindowHeight() - offset; // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
 
 			// timeline window properties
 			ImVec2 timeline_window_pos =
@@ -323,7 +323,7 @@ namespace nap
 			ImVec2 timeline_window_size =
 			{
 				mState.mTimelineWidth + (50.0f * mState.mScale),
-				(ver_res + ten) * sequence.mTracks.size() + top_size + ten
+				(ver_res + offset) * sequence.mTracks.size() + top_size + offset
 			};
 
 			// inspector window properties
@@ -472,7 +472,6 @@ namespace nap
 			auto it = mViews.find(view_type);
 			assert(it != mViews.end()); // no view class created for this view type
 			it->second->showTrack(*sequence.mTracks[i].get());
-
 		}
 	}
 
