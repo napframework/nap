@@ -589,8 +589,12 @@ namespace nap
 					}
 				}
 
-				if( hovered )
-					draw_list->AddCircle(player_time_rect_center, 10.0f * mState.mScale, sequencer::colors::white, 12, 2.0f * mState.mScale);
+				float radius = 10.0f * mState.mScale;
+				int segments = static_cast<int>(12.0f * mState.mScale);
+				if (hovered)
+					draw_list->AddCircleFilled(player_time_rect_center, radius, sequencer::colors::white, segments);
+				else
+					draw_list->AddCircle(player_time_rect_center, radius, sequencer::colors::white, segments, 2.0f * mState.mScale);
 			}
 
 			if( mState.mAction->isAction<None>())
