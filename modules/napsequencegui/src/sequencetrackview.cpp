@@ -83,7 +83,7 @@ namespace nap
 
 		// draw inspector window
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
-								{ mState.mInspectorWidth , mState.mTrackHeight + 5 }, // size
+								{ mState.mInspectorWidth , mState.mTrackHeight + (5.0f * mState.mScale) }, // size
 	  							false, // no border
 	   							ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -96,30 +96,30 @@ namespace nap
 
 			// draw background & box
 			draw_list->AddRectFilled(	window_pos,
-							  			{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
+							  			{window_pos.x + window_size.x - (5.0f * mState.mScale), window_pos.y + mState.mTrackHeight },
 									 	sequencer::colors::black);
 
 			draw_list->AddRect(	window_pos,
-					    		{window_pos.x + window_size.x - 5, window_pos.y + mState.mTrackHeight },
+					    		{window_pos.x + window_size.x - (5.0f * mState.mScale), window_pos.y + mState.mTrackHeight },
 							   	sequencer::colors::white);
 
 			//
 			inspector_cursor_pos = ImGui::GetCursorPos();
-			inspector_cursor_pos.x += 5;
-			inspector_cursor_pos.y += 5;
+			inspector_cursor_pos.x += (5.0f * mState.mScale);
+			inspector_cursor_pos.y += (5.0f * mState.mScale);
 			ImGui::SetCursorPos(inspector_cursor_pos);
 
 			// scale down everything
-			float scale = 0.25f;
-			ImGui::GetStyle().ScaleAllSizes(scale);
+			float global_scale = 0.25f;
+			ImGui::GetStyle().ScaleAllSizes(global_scale);
 
 			//
 			showInspectorContent(track);
 
 			// delete track button
 			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (5.0f * mState.mScale));
 
 			// when we delete a track, we don't immediately call the controller because we are iterating track atm
 			if (ImGui::SmallButton("Delete"))
@@ -129,8 +129,8 @@ namespace nap
 
 			// show up & down buttons
 			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (5.0f * mState.mScale));
 
 			if(ImGui::SmallButton("Up"))
 			{
@@ -143,7 +143,7 @@ namespace nap
 			}
 
 			// pop scale
-			ImGui::GetStyle().ScaleAllSizes(1.0f / scale);
+			ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
 		}
 		ImGui::EndChild();
 
@@ -194,7 +194,7 @@ namespace nap
 		// begin track
 		if (ImGui::BeginChild(
 			track.mID.c_str(), // id
-			{ mState.mTimelineWidth + 5 , mState.mTrackHeight + 10 }, // size
+			{ mState.mTimelineWidth + (5.0f * mState.mScale) , mState.mTrackHeight + (10.0f * mState.mScale) }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -229,7 +229,7 @@ namespace nap
 			const float timestamp_interval = 100.0f;
 			int steps = mState.mTimelineWidth / timestamp_interval;
 
-			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + 100, 0) / timestamp_interval);
+			int i = ( math::max<int>(mState.mScroll.x - mState.mInspectorWidth + (100.0f * mState.mScale), 0) / timestamp_interval);
 			for (;i < steps; i++)
 			{
 				if(i==0) // ignore first timestamp since it will hide window left border
