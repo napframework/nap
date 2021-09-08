@@ -121,8 +121,8 @@ namespace nap
 		ImGui::Text("Assigned Output");
 
 		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
-		inspector_cursor_pos.x += 5;
-		inspector_cursor_pos.y += 5;
+		inspector_cursor_pos.x += (5.0f * mState.mScale);
+		inspector_cursor_pos.y += (5.0f * mState.mScale);
 		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		bool assigned = false;
@@ -161,7 +161,7 @@ namespace nap
 			}
 		}
 
-		ImGui::PushItemWidth(200.0f);
+		ImGui::PushItemWidth(200.0f * mState.mScale);
 		if (Combo(
 			"",
 			&current_item, curve_outputs))
@@ -194,8 +194,8 @@ namespace nap
 
 		// delete track button
 		ImGui::Spacing();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (5.0f * mState.mScale));
 	}
 
 
@@ -223,7 +223,7 @@ namespace nap
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						sequencer::colors::lightGrey, // color
-						1.0f); // thickness
+						1.0f * mState.mScale); // thickness
 
 					ImGui::BeginTooltip();
 
@@ -254,7 +254,7 @@ namespace nap
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						sequencer::colors::lightGrey, // color
-						1.0f); // thickness
+						1.0f * mState.mScale); // thickness
 				}
 			}
 
@@ -270,7 +270,7 @@ namespace nap
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						sequencer::colors::lightGrey, // color
-						1.0f); // thickness
+						1.0f * mState.mScale); // thickness
 				}
 			}
 		}
@@ -316,12 +316,13 @@ namespace nap
 		ImDrawList* drawList)
 	{
 		// segment handler
+		float seg_bounds = 10.0f * mState.mScale;
 		if (mState.mIsWindowFocused &&
 			((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringSegment>()) ||
 			 (mState.mAction->isAction<StartDraggingSegment>() && mState.mAction->getDerived<StartDraggingSegment>()->mSegmentID != segment.mID))&&
 			ImGui::IsMouseHoveringRect(
-					{ trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 }, // top left
-					{ trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 }))  // bottom right 
+					{ trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds }, // top left
+					{ trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + mState.mTrackHeight + seg_bounds }))  // bottom right 
 		{
 			
 			// draw handler of segment duration
@@ -329,7 +330,7 @@ namespace nap
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 				sequencer::colors::white, // color
-				3.0f); // thickness
+				3.0f * mState.mScale); // thickness
 
 			// we are hovering this segment with the mouse
 			mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
@@ -407,7 +408,7 @@ namespace nap
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						sequencer::colors::white, // color
-						3.0f); // thickness
+						3.0f * mState.mScale); // thickness
 
 				ImGui::BeginTooltip();
 				ImGui::Text(formatTimeString(segment.mStartTime+segment.mDuration).c_str());
@@ -420,7 +421,7 @@ namespace nap
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 					sequencer::colors::white, // color
-					1.0f); // thickness
+					1.0f * mState.mScale); // thickness
 			}
 		}
 		else
@@ -430,7 +431,7 @@ namespace nap
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 				sequencer::colors::white, // color
-				1.0f); // thickness
+				1.0f * mState.mScale); // thickness
 
 			// release if we are not hovering this segment
 			if (mState.mAction->isAction<HoveringSegment>()
@@ -1101,7 +1102,7 @@ namespace nap
 	template<>
 	bool SequenceCurveTrackView::inputFloat<float>(float &v, int precision)
 	{
-		ImGui::PushItemWidth(100.0f);
+		ImGui::PushItemWidth(100.0f * mState.mScale);
 		return ImGui::InputFloat("", &v, 0.0f, 0.0f, precision);
 	}
 
@@ -1109,7 +1110,7 @@ namespace nap
 	template<>
 	bool SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2 &v, int precision)
 	{
-		ImGui::PushItemWidth(145.0f);
+		ImGui::PushItemWidth(145.0f * mState.mScale);
 		return ImGui::InputFloat2("", &v[0], precision);
 	}
 
@@ -1117,7 +1118,7 @@ namespace nap
 	template<>
 	bool SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3 &v, int precision)
 	{
-		ImGui::PushItemWidth(180.0f);
+		ImGui::PushItemWidth(180.0f * mState.mScale);
 		return ImGui::InputFloat3("", &v[0], precision);
 	}
 
@@ -1125,7 +1126,7 @@ namespace nap
 	template<>
 	bool SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision)
 	{
-		ImGui::PushItemWidth(225.0f);
+		ImGui::PushItemWidth(225.0f * mState.mScale);
 		return ImGui::InputFloat4("", &v[0], precision);
 	}
 

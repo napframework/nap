@@ -1469,7 +1469,7 @@ namespace nap
 			ImGui::OpenPopup("Help");
 		}
 
-		const float column_width = 200.0f;
+		const float column_width = 200.0f * mState.mScale;
 		const float window_width = column_width * 2;
 		ImGui::SetNextWindowSizeConstraints({window_width, -1}, {window_width, -1});
 

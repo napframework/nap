@@ -154,9 +154,7 @@ namespace nap
 		ImDrawList* drawList)
 	{
 		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
-
 		const float points_per_pixel = 0.5f;
-
 		bool needs_drawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
 
 		if (needs_drawing)
@@ -277,13 +275,16 @@ namespace nap
 			{
 				if (mCurveCache[segment.mID][i].size() > 0)
 				{
+					float thickness = selected_curve == i ? 3.0f : 1.0f;
+					thickness *= mState.mScale;
+
 					// draw points of curve
 					drawList->AddPolyline(
-						&*mCurveCache[segment.mID][i].begin(),	// points array
-						mCurveCache[segment.mID][i].size(),		// size of points array
-						sequencer::colors::curvecolors[i],		// color
-						false,									// closed
-						selected_curve == i ? 3.0f : 1.0f);		// thickness
+						&*mCurveCache[segment.mID][i].begin(),					// points array
+						mCurveCache[segment.mID][i].size(),						// size of points array
+						sequencer::colors::curvecolors[i],						// color
+						false,													// closed
+						thickness);												// thickness
 				}
 			}
 		}
@@ -414,8 +415,8 @@ namespace nap
 		//
 		ImGui::PushID(track.mID.c_str());
 
-		float drag_float_x = ImGui::GetCursorPosX() + 40;
-		ImGui::SetCursorPos({ ImGui::GetCursorPosX() + 5, ImGui::GetCursorPosY() + 5 });
+		float drag_float_x = ImGui::GetCursorPosX() + (40.0f * mState.mScale);
+		ImGui::SetCursorPos({ ImGui::GetCursorPosX() + (5.0f * mState.mScale), ImGui::GetCursorPosY() + (5.0f * mState.mScale) });
 		ImGui::Text("Min:"); ImGui::SameLine();
 		ImGui::PushID("min");
 		ImGui::SetCursorPosX(drag_float_x);
@@ -425,7 +426,7 @@ namespace nap
 		}
 		ImGui::PopID();
 		ImGui::PopItemWidth();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (5.0f * mState.mScale));
 		ImGui::Text("Max:"); ImGui::SameLine();
 		ImGui::PushID("max");
 		ImGui::SetCursorPosX(drag_float_x);
@@ -490,8 +491,8 @@ namespace nap
 					 mState.mAction->isAction<SequenceGUIActions::HoveringSegment>() ||
 					 mState.mAction->isAction<SequenceGUIActions::HoveringCurve>()) &&
 					ImGui::IsMouseHoveringRect(
-						{segment_value_pos.x - 12, segment_value_pos.y - 12 }, // top left
-						{segment_value_pos.x + 12, segment_value_pos.y + 12 }))  // bottom right
+						{segment_value_pos.x - (12.0f * mState.mScale), segment_value_pos.y - (12.0f * mState.mScale) }, // top left
+						{segment_value_pos.x + (12.0f * mState.mScale), segment_value_pos.y + (12.0f * mState.mScale) }))  // bottom right
 				{
 					hovered = true;
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringSegmentValue>(
@@ -579,9 +580,9 @@ namespace nap
 			}
 
 			if (hovered)
-				drawList->AddCircleFilled(segment_value_pos, 5.0f, sequencer::colors::curvecolors[v]);
+				drawList->AddCircleFilled(segment_value_pos, 5.0f * mState.mScale, sequencer::colors::curvecolors[v]);
 			else
-				drawList->AddCircle(segment_value_pos, 5.0f, sequencer::colors::curvecolors[v]);
+				drawList->AddCircle(segment_value_pos, 5.0f * mState.mScale, sequencer::colors::curvecolors[v]);
 		}
 	}
 
@@ -660,8 +661,8 @@ namespace nap
 						 mState.mAction->isAction<SequenceGUIActions::HoveringControlPoint>() ||
 						 mState.mAction->isAction<SequenceGUIActions::HoveringCurve>())
 						&& ImGui::IsMouseHoveringRect(
-						{circle_point.x - 5, circle_point.y - 5 },
-						{circle_point.x + 5, circle_point.y + 5 }))
+						{circle_point.x - (5.0f * mState.mScale), circle_point.y - (5.0f * mState.mScale) },
+						{circle_point.x + (5.0f * mState.mScale), circle_point.y + (5.0f * mState.mScale) }))
 					{
 						hovered = true;
 					}
@@ -752,7 +753,7 @@ namespace nap
 
 				// draw the control point
 				drawList->AddCircleFilled(circle_point,
-										  4.0f,
+										  4.0f * mState.mScale,
 										  hovered ? sequencer::colors::white : sequencer::colors::lightGrey);
 
 				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
@@ -849,6 +850,7 @@ namespace nap
 
 			// set if we are hoverting this point with the mouse
 			bool tan_point_hovered = false;
+			float tan_bounds = mState.mScale * 5.0f;
 
 			if (mState.mIsWindowFocused)
 			{
@@ -856,7 +858,11 @@ namespace nap
 				if ((mState.mAction->template isAction<SequenceGUIActions::None>() ||
 				     mState.mAction->template isAction<SequenceGUIActions::HoveringCurve>() ||
 					 mState.mAction->template isAction<SequenceGUIActions::HoveringSegment>())
-					&& ImGui::IsMouseHoveringRect({tan_point.x - 5, tan_point.y - 5 }, {tan_point.x + 5, tan_point.y + 5 }))
+					&& ImGui::IsMouseHoveringRect
+					(
+						{ tan_point.x - tan_bounds, tan_point.y - tan_bounds },
+						{ tan_point.x + tan_bounds, tan_point.y + tan_bounds })
+					)
 				{
 					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::HoveringTanPoint>(track.mID, tan_stream.str());
 					tan_point_hovered = true;
@@ -869,8 +875,8 @@ namespace nap
 					if (action->mTanPointID == tan_stream.str())
 					{
 						if (ImGui::IsMouseHoveringRect(
-							{tan_point.x - 5, tan_point.y - 5 },
-							{tan_point.x + 5, tan_point.y + 5 }))
+							{tan_point.x - tan_bounds, tan_point.y - tan_bounds },
+							{tan_point.x + tan_bounds, tan_point.y + tan_bounds }))
 						{
 							// still hovering
 							tan_point_hovered = true;
@@ -941,10 +947,10 @@ namespace nap
 			}
 
 			// draw line
-			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey, 1.0f);
+			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey, 1.0f * mState.mScale);
 
 			// draw handler
-			drawList->AddCircleFilled(tan_point, 3.0f, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey);
+			drawList->AddCircleFilled(tan_point, 3.0f * mState.mScale, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey);
 		}
 	}
 
