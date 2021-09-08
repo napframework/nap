@@ -691,7 +691,7 @@ namespace nap
 
 						if (i != 0)
 						{
-							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + (18.0f * mState.mScale) }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + (2.0f * mState.mScale) }, sequencer::colors::darkGrey);
+							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + (18.0f * mState.mScale) }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + (2.0f * mState.mScale) }, sequencer::colors::darkGrey, 1.0f * mState.mScale);
 						}
 					}
 				}
