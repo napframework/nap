@@ -744,42 +744,29 @@ namespace nap
 		ImGui::SetCurrentContext(context.mContext);
 		ImGuiIO& io = ImGui::GetIO();
 		io.DeltaTime = deltaTime;
-		io.MousePos = { -math::max<float>(), -math::max<float>() };
+
+		// We manage scaling of the GUI manually, removing the need to scale the buffer when high DPI is enabled
+		io.DisplaySize = { (float)window.getBufferSize().x, (float)window.getBufferSize().y };
+		io.DisplayFramebufferScale = { 1.0f, 1.0f };
 
 		// Current mouse settings
 		int mx, my;
 		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
 		bool mouse_focus = SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS;
 
-		// When high dpi rendering is turned on, we manage scaling of the GUI manually.
-		// Otherwise let the OS manage scaling for us, adjust mouse coordinates accordingly
-		if (mRenderService->getHighDPIEnabled())
+		// Mouse coordinates are scaled accordingly when high dpi rendering is enabled
+		if (mouse_focus)
 		{
-			io.DisplaySize = { (float)window.getBufferSize().x, (float)window.getBufferSize().y };
-			io.DisplayFramebufferScale = { 1.0f, 1.0f };
-
-			if (mouse_focus)
+			io.MousePos = ImVec2(static_cast<float>(mx), static_cast<float>(my));
+			if (mRenderService->getHighDPIEnabled())
 			{
-				io.MousePos =
-				{
-					static_cast<float>(mx) * (static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth())),
-					static_cast<float>(my) * (static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight()))
-				};
+				io.MousePos.x *= static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth());
+				io.MousePos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
 			}
 		}
 		else
 		{
-			io.DisplaySize = ImVec2((float)window.getWidth(), (float)window.getHeight());
-			io.DisplayFramebufferScale = ImVec2
-			(
-				window.getWidth()  > 0 ? ((float)window.getBufferSize().x / window.getWidth())  : 0,
-				window.getHeight() > 0 ? ((float)window.getBufferSize().y / window.getHeight()) : 0
-			);
-
-			if (mouse_focus)
-			{
-				io.MousePos = { (float)mx, (float)(my) };
-			}
+			io.MousePos = { -math::max<float>(), -math::max<float>() };
 		}
 
 		// Update mouse down state
