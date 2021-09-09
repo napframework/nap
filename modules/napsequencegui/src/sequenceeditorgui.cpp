@@ -306,9 +306,9 @@ namespace nap
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetScrollY());
 
 			// store position of next window ( player controller ), we need it later to draw the timelineplayer position
-			mState.mTimelineControllerPos = ImGui::GetCursorPos();
+			mState.mTimelineControllerPos   = ImGui::GetCursorPos();
 
-			float top_size			= 68.0f * mState.mScale; // area of comments, player controller and error messages combined
+			float top_size			= 70.0f * mState.mScale; // area of markers and player controller combined
 			float offset			= 10.0f * mState.mScale;
 			float clip_start_y		= ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
 			float end_clip_y 		= ImGui::GetWindowHeight() - offset; // bottom scrollbar overlaps clipping area
@@ -330,12 +330,12 @@ namespace nap
 			ImVec2 inspector_window_pos =
 			{
 				ImGui::GetCursorPos().x + ImGui::GetWindowPos().x,
-				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y + top_size
+				ImGui::GetCursorPos().y + ImGui::GetWindowPos().y - mState.mScroll.y
 			};
 			ImVec2 inspector_window_size =
 			{
 				mState.mInspectorWidth,
-				timeline_window_size.y - top_size
+				timeline_window_size.y
 			};
 
 			// setup up position for next window, which contains all tracks
@@ -364,8 +364,8 @@ namespace nap
 
 				ImGui::PopClipRect();
 
-				//
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState.mScroll.y);
+				// move the cursor below player and marker area
+				ImGui::SetCursorPosY(top_size);
 
 				// calc clipping rectangle
 				ImVec2 clip_rect_min_tracks = {	inspector_window_pos.x + inspector_window_size.x,timeline_window_pos.y > clip_start_y ? timeline_window_pos.y : clip_start_y };
@@ -414,6 +414,9 @@ namespace nap
 									{inspector_window_pos.x + inspector_window_size.x < end_clip_x ? inspector_window_pos.x + inspector_window_size.x : end_clip_x,
 									 inspector_window_pos.y + inspector_window_size.y < end_clip_y ? inspector_window_pos.y + inspector_window_size.y : end_clip_y}, false);
 
+                                // align inspectors with track views
+                                ImGui::SetCursorPosY(top_size);
+
 				drawInspectors(sequence_player, sequence);
 
 				ImGui::PopClipRect();
@@ -422,7 +425,6 @@ namespace nap
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY());
 			if (ImGui::Button("Insert New Track"))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
@@ -463,7 +465,7 @@ namespace nap
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + (10.0f * mState.mScale)) * (float)i });
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + (mState.mTrackHeight + (10.0f * mState.mScale)) * (float)i });
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
@@ -483,7 +485,7 @@ namespace nap
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + ( mState.mTrackHeight + (10.0f * mState.mScale)) * (float)i });
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + (mState.mTrackHeight + (10.0f * mState.mScale)) * (float)i });
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
@@ -725,7 +727,7 @@ namespace nap
 							{
 								player.setIsPaused(true);
 							}
-							
+
 							// snap to mouse position
 							double time = ((ImGui::GetMousePos().x - start_pos.x) / mState.mTimelineWidth) * player.getDuration();
 							player.setPlayerTime(time);
@@ -747,7 +749,7 @@ namespace nap
 						if (ImGui::IsMouseReleased(0))
 						{
 							const auto* drag_action = mState.mAction->getDerived<DraggingPlayerTime>();
-							assert(drag_action != nullptr); 
+							assert(drag_action != nullptr);
 							if (drag_action->mWasPlaying && !drag_action->mWasPaused)
 							{
 								player.setIsPlaying(true);
@@ -816,7 +818,7 @@ namespace nap
 					{
 						mState.mAction = createAction<None>();
 					}
-					
+
 				}
 			}
 
@@ -975,7 +977,7 @@ namespace nap
 				SequenceTrackView::Combo("Sequences",
 					&load_action->mSelectedShowIndex,
 					shows);
-					
+
 				utility::ErrorState error_state;
 				if (ImGui::Button("Load"))
 				{
@@ -1096,7 +1098,7 @@ namespace nap
 					shows.insert(shows.end() - 1, new_show_filename);
 
 					utility::ErrorState error_state;
-					
+
 					if (mEditor.mSequencePlayer->save(utility::getFileName(new_show_filename), error_state))
 					{
 						save_as_action->mSelectedShowIndex = (int) shows.size() - 2;
@@ -1113,7 +1115,7 @@ namespace nap
 				if (ImGui::BeginPopupModal("Overwrite"))
 				{
 					utility::ErrorState error_state;
-					ImGui::Text(("Are you sure you want to overwrite " + 
+					ImGui::Text(("Are you sure you want to overwrite " +
 						shows[save_as_action->mSelectedShowIndex] + " ?").c_str());
 					if (ImGui::Button("OK"))
 					{
