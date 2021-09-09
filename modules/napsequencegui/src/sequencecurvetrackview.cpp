@@ -933,8 +933,7 @@ namespace nap
 					bool edit_time = false;
 
 					ImGui::Separator();
-
-					ImGui::PushItemWidth(100.0f);
+					ImGui::PushItemWidth(100.0f * mState.mScale);
 
 					int time_array[3] =
 						{
