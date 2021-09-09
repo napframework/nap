@@ -107,18 +107,14 @@ namespace nap
 		// push id
 		ImGui::PushID(mID.c_str());
 
-		// Apply scaling to horizontal & vertical resolution
-		float hor_res = mState.mHorizontalResolution * mState.mScale;
-		float ver_res = mState.mVerticalResolution * mState.mScale;
-
 		// Set as amount of pixels per second
-		mState.mStepSize = hor_res;
+		mState.mStepSize = mState.mHorizontalResolution * mState.mScale;
 
 		// calc width of content in timeline window
 		mState.mTimelineWidth = (float)(mState.mStepSize * sequence.mDuration);
 
 		// set content width of next window
-		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + ver_res, 0.0f));
+		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + (mState.mVerticalResolution * mState.mScale), 0.0f));
 
 		// set window flags
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
@@ -323,7 +319,7 @@ namespace nap
 			ImVec2 timeline_window_size =
 			{
 				mState.mTimelineWidth + (50.0f * mState.mScale),
-				(ver_res + offset) * sequence.mTracks.size() + top_size + offset
+				((mState.mVerticalResolution * mState.mScale) + offset) * sequence.mTracks.size() + top_size + offset
 			};
 
 			// inspector window properties
