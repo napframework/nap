@@ -22,8 +22,12 @@ struct ImGuiContext;
 
 namespace nap
 {
+	// Reference dpi
+	inline constexpr float referenceDPI = 96.0f;
+
 	// Forward Declares
 	class RenderService;
+	class Display;
 	class GuiWindow;
 	class IMGuiService;
 
@@ -36,7 +40,8 @@ namespace nap
 
 	public:
 		float mFontSize				= 17.0f;							///< Property: 'FontSize' Gui Font Size
-		std::string mFontFile 		= "";								///< Property: 'FontFile' Path to a ttf font file in the data folder. If left empty the default NAP font will be used.
+		float mScale				= 1.0f;								///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
+		std::string mFontFile 		= "";								///< Property: 'FontFile' Path to a '.ttf' font file in the data folder. If left empty the default NAP font will be used
 		RGBColor8 mHighlightColor	= RGBColor8(0xC8, 0x69, 0x69);		///< Property: 'HighlightColor' Gui highlight color
 		RGBColor8 mBackgroundColor	= RGBColor8(0x2D, 0x2E, 0x42);		///< Property: 'BackgroundColor' Gui background color
 		RGBColor8 mDarkColor		= RGBColor8(0x11, 0x14, 0x26);		///< Property: 'DarkColor' Gui dark color
@@ -148,9 +153,27 @@ namespace nap
 
 		/**
 		 * Returns the ImGUI context associated with the given window.
+		 * @param window the render window
 		 * @return ImGUI context for the given window, asserts if it doesn't exist.
 		 */
 		ImGuiContext* getContext(nap::ResourcePtr<RenderWindow> window);
+
+		/**
+		 * Returns the scaling factor of the current active context.
+		 * The scaling factor is calculated using the display DPI (if high DPI rendering is enabled)
+		 * and the global GUI scale.
+		 * @return the scaling factor for the current active context, -1.0 if no context is active
+		 */
+		float getScale() const;
+
+		/**
+		 * Returns the scaling factor for the given context.
+		 * The scaling factor is calculated using the display DPI (if high DPI rendering is enabled)
+		 * and the global GUI scale.
+		 * @param context the ImGUI context
+		 * @return the scaling factor for the given context
+		 */
+		float getScale(const ImGuiContext* context) const;
 
 		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
@@ -215,27 +238,29 @@ namespace nap
 		virtual void shutdown() override;
 
 	private:
-
 		/**
-		 * Simple struct that combines an ImGUI context with additional state information
-		 * Takes ownership of the context, destroys it on destruction
+		 * Simple struct that combines an ImGUI context with additional state information.
+		 * Takes ownership of the context, destroys it on destruction.
 		 */
 		struct NAPAPI GUIContext
 		{
-			GUIContext(ImGuiContext* context) : mContext(context) { };
+			GUIContext(ImGuiContext* context, ImGuiStyle* style);
 			~GUIContext();
 
-			bool mMousePressed[3]		= { false, false, false };
-			float mMouseWheel			= 0.0f;
-			ImGuiContext* mContext		= nullptr;
-		};
+			bool mMousePressed[3]			= { false, false, false };
+			float mMouseWheel				= 0.0f;
+			float mScale					= 1.0f;
+			const Display* mDisplay			= nullptr;
+			ImGuiContext* mContext			= nullptr;
+			ImGuiContext* mPreviousContext	= nullptr;
+			ImGuiStyle* mStyle				= nullptr;
 
-		RenderService* mRenderService = nullptr;
-		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
-		std::unique_ptr<DescriptorSetAllocator> mAllocator;
-		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
-		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
-		VkSampleCountFlagBits mSampleCount = VK_SAMPLE_COUNT_1_BIT;
+			// Activates current context
+			void activate();
+
+			// Deactivates current context, restores previous
+			void deactivate();
+		};
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
@@ -250,13 +275,34 @@ namespace nap
 		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
 
 		/**
+		 * Called when a window event occurs.
+		 */
+		void onWindowEvent(const WindowEvent& windowEvent);
+		nap::Slot<const WindowEvent&> mWindowEventSlot = { this, &IMGuiService::onWindowEvent };
+
+		/**
 		 * Creates all vulkan related resources, for imGUI as well as local
 		 */
 		void createVulkanResources(nap::RenderWindow& window);
 
 		/**
-		 * starts a new imgui frame
+		 * Starts a new imgui frame
 		 */
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
+
+		/**
+		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
+		 */
+		void pushScale(GUIContext& context, const Display& display);
+
+		RenderService* mRenderService = nullptr;
+		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;
+		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
+		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
+		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
+		IMGuiServiceConfiguration* mConfiguration = nullptr;
+		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
+		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 	};
 }
