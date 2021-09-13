@@ -4,7 +4,7 @@ if(ANDROID)
     return()
 endif()
 
-project(mod_artnetdemo)
+project(mod_artnetreceive)
 
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)

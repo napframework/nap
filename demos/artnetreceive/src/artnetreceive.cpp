@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "artnetdemo.h"
+#include "artnetreceive.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -35,7 +35,7 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Convert our path and load resources from file
-		if (!mResourceManager->loadFile("artnetdemo.json", error))
+		if (!mResourceManager->loadFile("artnetreceive.json", error))
 			return false;
 
 		// Get the render window

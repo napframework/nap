@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_MODULE("mod_artnetdemo", "0.1.0")
+NAP_MODULE("mod_artnetreceive", "0.1.0")

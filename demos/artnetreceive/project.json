@@ -1,14 +1,14 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "ArtNetDemo",
+    "Title": "ArtNetReceive",
     "Version": "1.0.0",
     "RequiredModules": [
         "mod_napapp",
         "mod_napimgui",
-        "mod_artnetdemo"
+        "mod_artnetreceive"
     ],
-    "Data": "data/artnetdemo.json",
+    "Data": "data/artnetreceive.json",
     "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json"
 }

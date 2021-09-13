@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "artnetdemo.h"
+#include "artnetreceive.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -13,7 +13,7 @@
 
 /**
  * Art-Net Receiving Demo
- * refer to artnetdemo.h for a more detailed description of the application
+ * refer to artnetreceive.h for a more detailed description of the application
  */
 int main(int argc, char *argv[])
 {
