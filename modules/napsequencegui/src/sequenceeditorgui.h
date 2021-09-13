@@ -53,7 +53,11 @@ namespace nap
 		 */
 		virtual void show();
 
-		SequenceGUIService& getService(){ return mService; }
+		/**
+		 * @return sequence editor gui service
+		 */
+		SequenceGUIService& getService()	{ return mService; }
+
 	public:
 		// properties
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
@@ -112,7 +116,7 @@ namespace nap
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence );
+		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence);
 
 		/**
 		 * Draw lines of markers

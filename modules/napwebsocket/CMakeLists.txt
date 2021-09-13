@@ -28,12 +28,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${WEBSOCKETPP_INCLUDE_DIRS
 
 # preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PUBLIC _WEBSOCKETPP_CPP11_INTERNAL_)
-
-# link with external libs
-if(NOT WIN32)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
-endif()
-
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 
 # Deploy module.json as MODULENAME.json alongside module post-build
