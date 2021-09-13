@@ -17,25 +17,17 @@
 #include <scene.h>
 #include <entity.h>
 #include <app.h>
-#include <artnetcontroller.h>
 
 namespace nap
 {
 	using namespace rtti;
 
 	/**
-	 * Demo application that demonstrates the use of ArtNetController, which sends Art-Net
-	 * and ArtNetReceiver / ArtNetInputComponent, which relay incoming Art-Net messages to
-	 * the application. Use Napkin to change the properties like, Net, SubNet and Universe
-	 * to use for sending and receiving Art-Net.
-	 *
-	 * Note:
-	 * Because this demo both sends and receives Art-Net, you have to enter the IP address
-	 * of the interface to use for receiving Art-Net in the ArtNetReceiver. Failing to do
-	 * so will result in an error that the socket address is already in use. The controller
-	 * will always bind to address 0.0.0.0, which is why it's import to configure the receiver.
+	 * Demo application that demonstrates the use of ArtNetReceiver / ArtNetInputComponent,
+	 * which relay incoming Art-Net messages to the application. Use Napkin to change
+	 * properties like the Net, SubNet and Universe to use for receiving Art-Net.
 	 */
-	class ArtNetDemo : public App
+	class ArtNetReceive : public App
 	{
 		RTTI_ENABLE(App)
 	public:
@@ -43,7 +35,7 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		ArtNetDemo(nap::Core& core) : App(core) { }
+		ArtNetReceive(nap::Core& core) : App(core) { }
 
 		/**
 		 * Initialize all the services and app specific data structures
@@ -85,7 +77,6 @@ namespace nap
 
 		void showGeneralInfo();
 		void showReceivedArtnet();
-		void showSendArtnet();
 
 		ResourceManager*			mResourceManager = nullptr;		///< Manages all the loaded data
 		RenderService*				mRenderService = nullptr;		///< Render Service that handles render calls
@@ -95,9 +86,6 @@ namespace nap
 		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mArtNetEntity = nullptr;		///< Pointer to the entity that handles Art-Net sending / receiving
-		ObjectPtr<ArtNetController>	mArtNetController = nullptr;	///< Pointer to the controller responsible for sending Art-Net
 		int32_t						mArtNetInputGroupSize = 8;		///< The maximum amount of channels grouped together in a histogram when receiving
-		int32_t						mArtNetOutputChannelCount = 16;	///< The amount of channels used for sending Art-Net
-		std::vector<int32_t>		mArtNetOutputChannels;			///< The channel data for sending Art-Net
 	};
 }

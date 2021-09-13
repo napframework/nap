@@ -9,13 +9,11 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
-#include <rendergnomoncomponent.h>
-#include <perspcameracomponent.h>
 #include <artnethandler.h>
 #include <algorithm>
 #include <sstream>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetDemo)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetReceive)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -25,7 +23,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool ArtNetDemo::init(utility::ErrorState& error)
+	bool ArtNetReceive::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -55,21 +53,13 @@ namespace nap
 		if (!error.check(mArtNetEntity != nullptr, "unable to find Art-Net entity with name: %s", "ArtNetEntity"))
 			return false;
 
-		// Get the Art-Net controller
-		mArtNetController = mResourceManager->findObject<ArtNetController>("ArtNetController");
-		if (!error.check(mArtNetController != nullptr, "unable to find Art-Net controller with name: %s", "ArtNetController"))
-			return false;
-
-		// Allocate memory for Art-Net output channels
-		mArtNetOutputChannels.resize(mArtNetOutputChannelCount);
-
 		// All done!
 		return true;
 	}
 
 
 	// Called when the window is updating
-	void ArtNetDemo::update(double deltaTime)
+	void ArtNetReceive::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
@@ -80,14 +70,11 @@ namespace nap
 
 		// Display received Art-Net
 		showReceivedArtnet();
-
-		// Display UI for sending Art-Net
-		showSendArtnet();
 	}
 
 
 	// Called when the window is going to render
-	void ArtNetDemo::render()
+	void ArtNetReceive::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -115,13 +102,13 @@ namespace nap
 	}
 
 
-	void ArtNetDemo::windowMessageReceived(WindowEventPtr windowEvent)
+	void ArtNetReceive::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 
 
-	void ArtNetDemo::inputMessageReceived(InputEventPtr inputEvent)
+	void ArtNetReceive::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -139,24 +126,33 @@ namespace nap
 	}
 
 
-	int ArtNetDemo::shutdown()
+	int ArtNetReceive::shutdown()
 	{
 		return 0;
 	}
 
 
-	void nap::ArtNetDemo::showGeneralInfo()
+	void nap::ArtNetReceive::showGeneralInfo()
 	{
 		ImGui::SetNextWindowPos(ImVec2(32, 32), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(256, 128), ImGuiCond_Once);
-		ImGui::Begin("Art-Net Demo");
+		ImGui::SetNextWindowSize(ImVec2(320, 0), ImGuiCond_Once);
+		ImGui::Begin("Art-Net Receiving Demo");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Separator();
+		ImGui::TextWrapped("Use Napkin to change properties like the Net, SubNet and Universe for receiving Art-Net.");
+		ImGui::Separator();
+		std::stringstream note;
+		note << "Note:";
+		note << "\n\nWhen using this demo together with the ArtNetController (in the artnetsend demo), make sure to select an ethernet interface for the ArtNetReceiver.";
+		note << "\n\nThe ArtNetController will always bind a socket to 0.0.0.0:6454, the ArtNetReceiver will bind to the IP Address and Port specified in the JSON file.";
+		note << "\n\nThis way you can prevent the conflict of two ports listening on the same local endpoint";
+		ImGui::TextWrapped(note.str().c_str());
 		ImGui::End();
 	}
 
 
-	void nap::ArtNetDemo::showReceivedArtnet()
+	void nap::ArtNetReceive::showReceivedArtnet()
 	{
 		auto artnet_handler = mArtNetEntity->findComponent<ArtNetHandlerComponentInstance>();
 		auto received_data = artnet_handler->getData();
@@ -164,10 +160,11 @@ namespace nap
 		int32_t offset = 0;
 		int32_t total_count = static_cast<int32_t>(received_data.size());
 
-		ImGui::SetNextWindowPos(ImVec2(320, 32), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(448, 656), ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(384, 32), ImGuiCond_Once);
+		ImGui::SetNextWindowSize(ImVec2(480, 656), ImGuiCond_Once);
 		ImGui::Begin("Received Art-Net");
 		ImGui::SliderInt("Channels per Group", &mArtNetInputGroupSize, 1, 512);
+		ImGui::Separator();
 
 		while (offset < total_count)
 		{
@@ -186,29 +183,6 @@ namespace nap
 
 			// Increment the offset
 			offset += count;
-		}
-
-		ImGui::End();
-	}
-
-
-	void nap::ArtNetDemo::showSendArtnet()
-	{
-		ImGui::SetNextWindowPos(ImVec2(800, 32), ImGuiCond_Once);
-		ImGui::SetNextWindowSize(ImVec2(448, 656), ImGuiCond_Once);
-		ImGui::Begin("Send Art-Net");
-
-		// Define the amount of channels to send
-		if (ImGui::SliderInt("Channel Count", &mArtNetOutputChannelCount, 1, 512))
-			mArtNetOutputChannels.resize(mArtNetOutputChannelCount);
-
-		// Fill the output channels with values
-		for (int16_t i = 0; i < mArtNetOutputChannelCount; i++)
-		{
-			std::stringstream label;
-			label << "Channel " << (i + 1);
-			ImGui::SliderInt(label.str().c_str(), &mArtNetOutputChannels[i], 0, 255);
-			mArtNetController->send(static_cast<uint8_t>(mArtNetOutputChannels[i]), i);
 		}
 
 		ImGui::End();

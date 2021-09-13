@@ -12,7 +12,7 @@
 #include <guiappeventhandler.h>
 
 /**
- * Art-Net Demo
+ * Art-Net Receiving Demo
  * refer to artnetdemo.h for a more detailed description of the application
  */
 int main(int argc, char *argv[])
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::ArtNetDemo, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::ArtNetReceive, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;
