@@ -277,14 +277,14 @@ namespace nap
 				{
 					float thickness = selected_curve == i ? 3.0f : 1.0f;
 					thickness *= mState.mScale;
-
-					// draw points of curve
-					drawList->AddPolyline(
+					drawList->AddPolyline
+					(
 						&*mCurveCache[segment.mID][i].begin(),					// points array
 						mCurveCache[segment.mID][i].size(),						// size of points array
-						sequencer::colors::curvecolors[i],						// color
+						mService.getColors().curvecolors[i],					// color
 						false,													// closed
-						thickness);												// thickness
+						thickness												// thickness
+					);												
 				}
 			}
 		}
@@ -335,7 +335,8 @@ namespace nap
 				{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // top right
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,0.25f))); // color
-		}else
+		}
+		else
 		{
 			// is this segment currently serialized in the clipboard
 			if( mState.mClipboard->isClipboard<SequenceGUIClipboards::CurveSegmentClipboard>())
@@ -346,13 +347,14 @@ namespace nap
 				// does it contain this segment ?
 				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					ImVec4 red = ImGui::ColorConvertU32ToFloat4(sequencer::colors::red);
+					ImVec4 red = ImGui::ColorConvertU32ToFloat4(mService.getColors().red);
 					red.w = 0.25f;
-
-					drawList->AddRectFilled(
+					drawList->AddRectFilled
+					(
 						{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  // top right
-						ImGui::ColorConvertFloat4ToU32(red)); // color
+						ImGui::ColorConvertFloat4ToU32(red) // color
+					); 
 				}
 			}
 		}
@@ -580,9 +582,9 @@ namespace nap
 
 			float circle_radius = 5.0f * mState.mScale;
 			if (hovered)
-				drawList->AddCircleFilled(segment_value_pos, circle_radius, sequencer::colors::curvecolors[v]);
+				drawList->AddCircleFilled(segment_value_pos, circle_radius, mService.getColors().curvecolors[v]);
 			else
-				drawList->AddCircle(segment_value_pos, circle_radius, sequencer::colors::curvecolors[v]);
+				drawList->AddCircle(segment_value_pos, circle_radius, mService.getColors().curvecolors[v]);
 		}
 	}
 
@@ -753,9 +755,11 @@ namespace nap
 				}
 
 				// draw the control point
-				drawList->AddCircleFilled(circle_point,
-										  4.0f * mState.mScale,
-										  hovered ? sequencer::colors::white : sequencer::colors::lightGrey);
+				drawList->AddCircleFilled
+				(
+					circle_point, 4.0f * mState.mScale,
+					hovered ? mService.getColors().white : mService.getColors().lightGrey
+				);
 
 				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
 				{
@@ -948,10 +952,10 @@ namespace nap
 			}
 
 			// draw line
-			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey, 1.0f * mState.mScale);
+			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? mService.getColors().white : mService.getColors().darkGrey, 1.0f * mState.mScale);
 
 			// draw handler
-			drawList->AddCircleFilled(tan_point, 3.0f * mState.mScale, tan_point_hovered ? sequencer::colors::white : sequencer::colors::darkGrey);
+			drawList->AddCircleFilled(tan_point, 3.0f * mState.mScale, tan_point_hovered ? mService.getColors().white : mService.getColors().darkGrey);
 		}
 	}
 

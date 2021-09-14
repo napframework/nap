@@ -91,13 +91,18 @@ namespace nap
 			const ImVec2 window_size = ImGui::GetWindowSize();
 
 			// draw background & box
-			draw_list->AddRectFilled(window_pos,
-						 {window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
-						 sequencer::colors::black);
-
-			draw_list->AddRect(window_pos,
-                                           {window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
-                                           sequencer::colors::white);
+			draw_list->AddRectFilled
+			(
+				window_pos,
+				{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
+				mService.getColors().black
+			);
+			draw_list->AddRect
+			(
+				window_pos,
+				{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
+				mService.getColors().white
+			);
 
 			//
 			inspector_cursor_pos = ImGui::GetCursorPos();
@@ -214,13 +219,13 @@ namespace nap
 			draw_list->AddRectFilled(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				sequencer::colors::black); // color
+				mService.getColors().black); // color
 
 			// draw border of track
 			draw_list->AddRect(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				sequencer::colors::white); // color
+				mService.getColors().white); // color
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
@@ -236,7 +241,7 @@ namespace nap
 
 				if (pos.x > 0.0f )
 				{
-					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, sequencer::colors::darkerGrey);
+					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, mService.getColors().darkerGrey);
 
 					if(pos.x > mState.mWindowPos.x + mState.mScroll.x + mState.mWindowSize.x)
 					{

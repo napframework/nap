@@ -22,16 +22,20 @@
 #include <descriptorsetallocator.h>
 #include <sdlhelpers.h>
 
+RTTI_BEGIN_STRUCT(nap::IMGuiColorPalette)
+	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiColorPalette::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DarkColor",			&nap::IMGuiColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor1",		&nap::IMGuiColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor2",		&nap::IMGuiColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor3",		&nap::IMGuiColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
-	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default, nap::rtti::EPropertyFileType::Font)
-	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiServiceConfiguration::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiServiceConfiguration::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DarkColor",			&nap::IMGuiServiceConfiguration::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor1",		&nap::IMGuiServiceConfiguration::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor2",		&nap::IMGuiServiceConfiguration::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor3",		&nap::IMGuiServiceConfiguration::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,		nap::rtti::EPropertyMetaData::Default, nap::rtti::EPropertyFileType::Font)
+	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mColors,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
@@ -180,13 +184,13 @@ namespace nap
 	static std::unique_ptr<ImGuiStyle> createStyle(const IMGuiServiceConfiguration& config)
 	{
 		// Get ImGUI colors
-		ImVec4 IMGUI_NAPDARK(config.mDarkColor, 1.0f);
-		ImVec4 IMGUI_NAPBACK(config.mBackgroundColor, 0.94f);
-		ImVec4 IMGUI_NAPMODA(config.mDarkColor, 0.85f);
-		ImVec4 IMGUI_NAPFRO1(config.mFront1Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO2(config.mFront2Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO3(config.mFront3Color, 1.0f);
-		ImVec4 IMGUI_NAPHIGH(config.mHighlightColor, 1.0f);
+		ImVec4 IMGUI_NAPDARK(config.mColors.mDarkColor, 1.0f);
+		ImVec4 IMGUI_NAPBACK(config.mColors.mBackgroundColor, 0.94f);
+		ImVec4 IMGUI_NAPMODA(config.mColors.mDarkColor, 0.85f);
+		ImVec4 IMGUI_NAPFRO1(config.mColors.mFront1Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO2(config.mColors.mFront2Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO3(config.mColors.mFront3Color, 1.0f);
+		ImVec4 IMGUI_NAPHIGH(config.mColors.mHighlightColor, 1.0f);
 
 		// Create style
 		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
@@ -527,6 +531,13 @@ namespace nap
 		vkUpdateDescriptorSets(mRenderService->getDevice(), 1, write_desc, 0, NULL);
 		mDescriptors.emplace(std::make_pair(&texture, descriptor_set));
 		return (ImTextureID)(descriptor_set);
+	}
+
+
+	const nap::IMGuiColorPalette& IMGuiService::getColors() const
+	{
+		assert(mConfiguration != nullptr);
+		return mConfiguration->mColors;
 	}
 
 
