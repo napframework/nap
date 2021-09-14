@@ -75,7 +75,7 @@ namespace nap
 		registerActionHandler(RTTI_OF(NonePressed), [this] { handleNonePressed(); } );
 		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
 		registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
-		registerActionHandler(RTTI_OF(InsideHelpPopup), [this]{ handleHelpPopup(); });
+		registerActionHandler(RTTI_OF(ShowHelpPopup), [this]{ handleHelpPopup(); });
 
 		// create views for all registered track types
 		const auto& track_types = mService.getAllTrackTypes();
@@ -1464,11 +1464,17 @@ namespace nap
 	{
 		if (mState.mAction->isAction<OpenHelpPopup>())
 		{
+			mState.mAction = createAction<ShowHelpPopup>();
+			ImGui::OpenPopup("Help");
+		}
+
+		if (mState.mAction->isAction<ShowHelpPopup>())
+		{
 			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
 				ImGui::Text("Select & drag :"); ImGui::SameLine(200.0f * mState.mScale);
-				ImGui::TextColored(red_color, "Left mouse button");
+				ImGui::TextColored(red_color, "Left mouse button"); 
 				ImGui::Text("Select & open edit popup :"); ImGui::SameLine(200.0f * mState.mScale);
 				ImGui::TextColored(red_color, "Right mouse button");
 				ImGui::Text("Zoom in & out :"); ImGui::SameLine(200.0f * mState.mScale);

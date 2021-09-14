@@ -448,7 +448,7 @@ namespace nap
 		/**
 		 * Action that tells the gui its inside the help popup
 		 */
-		class InsideHelpPopup : public Action
+		class ShowHelpPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
