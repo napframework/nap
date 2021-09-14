@@ -1462,48 +1462,38 @@ namespace nap
 
 	void SequenceEditorGUIView::handleHelpPopup()
 	{
-		if(mState.mAction->isAction<OpenHelpPopup>())
+		if (mState.mAction->isAction<OpenHelpPopup>())
 		{
-			mState.mAction = createAction<InsideHelpPopup>();
-			ImGui::OpenPopup("Help");
-		}
-
-		const float column_width = 200.0f * mState.mScale;
-		const float window_width = column_width * 2;
-		ImGui::SetNextWindowSizeConstraints({window_width, -1}, {window_width, -1});
-
-		if(ImGui::BeginPopupModal("Help", (bool*)0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize))
-		{
-			if(ImGui::CollapsingHeader("Controls", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanFullWidth ))
+			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				ImGui::Columns(2, nullptr, false);
-
-				ImGui::SetColumnWidth(0, column_width);
-				ImGui::SetColumnWidth(1, column_width);
-
 				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
-				ImGui::Text("Select & drag :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Left mouse button"); ImGui::NextColumn();
-				ImGui::Text("Select & open edit popup :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Right mouse button"); ImGui::NextColumn();
-				ImGui::Text("Zoom in & out :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Control + Scroll Wheel"); ImGui::NextColumn();
-				ImGui::Text("Horizontal Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Shift + Scroll Wheel"); ImGui::NextColumn();
-				ImGui::Text("Vertical Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Scroll Wheel"); ImGui::NextColumn();
-				ImGui::Columns(1);	
+				ImGui::Text("Select & drag :"); ImGui::SameLine(200.0f * mState.mScale);
+				ImGui::TextColored(red_color, "Left mouse button");
+				ImGui::Text("Select & open edit popup :"); ImGui::SameLine(200.0f * mState.mScale);
+				ImGui::TextColored(red_color, "Right mouse button");
+				ImGui::Text("Zoom in & out :"); ImGui::SameLine(200.0f * mState.mScale);
+				ImGui::TextColored(red_color, "Control + Scroll Wheel");
+				ImGui::Text("Horizontal Scroll :"); ImGui::SameLine(200.0f * mState.mScale);
+				ImGui::TextColored(red_color, "Shift + Scroll Wheel");
+				ImGui::Text("Vertical Scroll :"); ImGui::SameLine(200.0f * mState.mScale);
+				ImGui::TextColored(red_color, "Scroll Wheel");
+
+				ImGui::Spacing();
+				ImGui::Separator();
+				ImGui::Spacing();
+
+				if (ImGui::Button("Exit"))
+				{
+					ImGui::CloseCurrentPopup();
+					mState.mAction = createAction<None>();
+				}
+				ImGui::EndPopup();
 			}
-
-			ImGui::Spacing();
-			ImGui::Separator();
-			ImGui::Spacing();
-
-			if(ImGui::Button("Exit"))
+			else
 			{
-				ImGui::CloseCurrentPopup();
+				// clicked outside so exit popup
 				mState.mAction = createAction<None>();
 			}
-			ImGui::EndPopup();
-		}else
-		{
-			// clicked outside so exit popup
-			mState.mAction = createAction<None>();
 		}
 	}
 }
