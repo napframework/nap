@@ -262,11 +262,11 @@ namespace nap
 
 	void SequenceGUIService::Colors::init(const IMGuiColorPalette& palette)
 	{
-		red = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor));
-		black = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mDarkColor));
-		white = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
-		lightGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
-		darkGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront1Color));
-		darkerGrey = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mBackgroundColor));
+		mHigh = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor));
+		mDark = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mDarkColor));
+		mFro3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
+		mFro2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
+		mFro1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront1Color));
+		mBack = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mBackgroundColor));
 	}
 }

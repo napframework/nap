@@ -58,13 +58,14 @@ namespace nap
 			 */
 			void init(const IMGuiColorPalette& palette);
 
-			ImU32 red = 0;
-			ImU32 black = 0;
-			ImU32 white = 0;
-			ImU32 lightGrey = 0;
-			ImU32 darkGrey = 0;
-			ImU32 darkerGrey = 0;
-			ImU32 curvecolors[4] = { 4285098440, 4278255360, 4294901760, 4278255615 };
+			ImU32 mHigh = 0;		///< Special Highlight Color
+			ImU32 mDark = 0;		///< Dark background Color
+			ImU32 mBack = 0;		///< Background color
+			ImU32 mFro1 = 0;		///< Darker Foreground
+			ImU32 mFro2 = 0;		///< Dark Foreground
+			ImU32 mFro3 = 0;		///< Light Foreground
+
+			ImU32 mCurveColors[4] = { 4285098440, 4278255360, 4294901760, 4278255615 };
 		};
 
 		SequenceGUIService(ServiceConfiguration* configuration);

@@ -224,7 +224,7 @@ namespace nap
 					(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						mService.getColors().lightGrey, // color
+						mService.getColors().mFro2, // color
 						1.0f * mState.mScale // thickness
 					); 
 
@@ -257,7 +257,7 @@ namespace nap
 					(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						mService.getColors().lightGrey, // color
+						mService.getColors().mFro2, // color
 						1.0f * mState.mScale // thickness
 					); 
 				}
@@ -275,7 +275,7 @@ namespace nap
 					(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						mService.getColors().lightGrey, // color
+						mService.getColors().mFro2, // color
 						1.0f * mState.mScale  // thickness
 					);
 				}
@@ -332,7 +332,7 @@ namespace nap
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().white, // color
+				mService.getColors().mFro3, // color
 				3.0f * mState.mScale // thickness
 			); 
 
@@ -412,7 +412,7 @@ namespace nap
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					mService.getColors().white, // color
+					mService.getColors().mFro3, // color
 					3.0f * mState.mScale // thickness
 				); 
 				ImGui::BeginTooltip();
@@ -426,7 +426,7 @@ namespace nap
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					mService.getColors().white, // color
+					mService.getColors().mFro3, // color
 					1.0f * mState.mScale // thickness
 				); 
 			}
@@ -438,7 +438,7 @@ namespace nap
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().white, // color
+				mService.getColors().mFro3, // color
 				1.0f * mState.mScale // thickness
 			); 
 

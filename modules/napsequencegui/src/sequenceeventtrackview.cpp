@@ -123,7 +123,7 @@ namespace nap
 					draw_list->AddLine(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						mService.getColors().lightGrey, // color
+						mService.getColors().mFro2, // color
 						1.0f * mState.mScale); // thickness
 
 					ImGui::BeginTooltip();
@@ -153,7 +153,7 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						mService.getColors().lightGrey, // color
+						mService.getColors().mFro2, // color
 						1.0f * mState.mScale); // thickness
 				}
 			}
@@ -167,7 +167,7 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						mService.getColors().lightGrey, // color
+						mService.getColors().mFro2, // color
 						1.0f * mState.mScale); // thickness
 				}
 			}
@@ -191,7 +191,7 @@ namespace nap
 			auto type = (segment.get())->get_type();
 			auto it = mSegmentViews.find(type);
 			assert(it != mSegmentViews.end()); // type not found
-			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x + (5.0f * mState.mScale), mService.getColors().red);
+			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x + (5.0f * mState.mScale), mService.getColors().mHigh);
 
 			prev_segment_x = segment_x;
 			segment_count++;
@@ -297,7 +297,7 @@ namespace nap
 			drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().white, // color
+				mService.getColors().mFro3, // color
 				3.0f * mState.mScale); // thickness
 
 			if (!isAlreadyHovering && !isAlreadyDragging)
@@ -369,14 +369,14 @@ namespace nap
 		}
 		else 
 		{
-			ImU32 line_color = mService.getColors().white;
+			ImU32 line_color = mService.getColors().mFro3;
 
 			// if segment is in clipboard, line is red
 			if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
 			{
 				if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					line_color = mService.getColors().red;
+					line_color = mService.getColors().mHigh;
 				}
 			}
 

@@ -281,7 +281,7 @@ namespace nap
 					(
 						&*mCurveCache[segment.mID][i].begin(),					// points array
 						mCurveCache[segment.mID][i].size(),						// size of points array
-						mService.getColors().curvecolors[i],					// color
+						mService.getColors().mCurveColors[i],					// color
 						false,													// closed
 						thickness												// thickness
 					);												
@@ -347,7 +347,7 @@ namespace nap
 				// does it contain this segment ?
 				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					ImVec4 red = ImGui::ColorConvertU32ToFloat4(mService.getColors().red);
+					ImVec4 red = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
 					red.w = 0.25f;
 					drawList->AddRectFilled
 					(
@@ -582,9 +582,9 @@ namespace nap
 
 			float circle_radius = 5.0f * mState.mScale;
 			if (hovered)
-				drawList->AddCircleFilled(segment_value_pos, circle_radius, mService.getColors().curvecolors[v]);
+				drawList->AddCircleFilled(segment_value_pos, circle_radius, mService.getColors().mCurveColors[v]);
 			else
-				drawList->AddCircle(segment_value_pos, circle_radius, mService.getColors().curvecolors[v]);
+				drawList->AddCircle(segment_value_pos, circle_radius, mService.getColors().mCurveColors[v]);
 		}
 	}
 
@@ -758,7 +758,7 @@ namespace nap
 				drawList->AddCircleFilled
 				(
 					circle_point, 4.0f * mState.mScale,
-					hovered ? mService.getColors().white : mService.getColors().lightGrey
+					hovered ? mService.getColors().mFro3 : mService.getColors().mFro2
 				);
 
 				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
@@ -952,10 +952,10 @@ namespace nap
 			}
 
 			// draw line
-			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? mService.getColors().white : mService.getColors().darkGrey, 1.0f * mState.mScale);
+			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? mService.getColors().mFro3 : mService.getColors().mFro1, 1.0f * mState.mScale);
 
 			// draw handler
-			drawList->AddCircleFilled(tan_point, 3.0f * mState.mScale, tan_point_hovered ? mService.getColors().white : mService.getColors().darkGrey);
+			drawList->AddCircleFilled(tan_point, 3.0f * mState.mScale, tan_point_hovered ? mService.getColors().mFro3 : mService.getColors().mFro1);
 		}
 	}
 

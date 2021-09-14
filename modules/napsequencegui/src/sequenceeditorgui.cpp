@@ -526,8 +526,8 @@ namespace nap
 			cursor_pos.y += (5.0f * mState.mScale);
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().black);
-			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().white);
+			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().mDark);
+			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().mFro3);
 
 			for(const auto& marker : sequence.mMarkers)
 			{
@@ -555,7 +555,7 @@ namespace nap
 				if( ImGui::IsMouseHoveringRect(player_time_top_rect_left, player_time_rect_bottom_right) )
 					hovered = true;
 
-				draw_list->AddText({ player_time_rect_bottom_right.x + (2.0f * mState.mScale), player_time_rect_center.y - (10.0f * mState.mScale) }, mService.getColors().white, marker->mMessage.c_str());
+				draw_list->AddText({ player_time_rect_bottom_right.x + (2.0f * mState.mScale), player_time_rect_center.y - (10.0f * mState.mScale) }, mService.getColors().mFro3, marker->mMessage.c_str());
 				if( mState.mAction->isAction<None>() && hovered )
 				{
 					// start dragging
@@ -589,9 +589,9 @@ namespace nap
 				float radius = 10.0f * mState.mScale;
 				int segments = static_cast<int>(12.0f * mState.mScale);
 				if (hovered)
-					draw_list->AddCircleFilled(player_time_rect_center, radius, mService.getColors().white, segments);
+					draw_list->AddCircleFilled(player_time_rect_center, radius, mService.getColors().mFro3, segments);
 				else
-					draw_list->AddCircle(player_time_rect_center, radius, mService.getColors().white, segments, 2.0f * mState.mScale);
+					draw_list->AddCircle(player_time_rect_center, radius, mService.getColors().mFro3, segments, 2.0f * mState.mScale);
 			}
 
 			if( mState.mAction->isAction<None>())
@@ -649,11 +649,11 @@ namespace nap
 			// draw backgroundbox of controller
 			draw_list->AddRectFilled(
 				start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - (15.0f * mState.mScale) }, mService.getColors().black);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - (15.0f * mState.mScale) }, mService.getColors().mDark);
 
 			// draw box of controller
 			draw_list->AddRect(start_pos,
-				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - (15.0f * mState.mScale) }, mService.getColors().white);
+				{start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - (15.0f * mState.mScale) }, mService.getColors().mFro3);
 
 			// draw handler of player position
 			const double player_time = player.getPlayerTime();
@@ -667,7 +667,7 @@ namespace nap
 				start_pos.y + sequence_controller_height,
 			};
 
-			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().red);
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().mHigh);
 
 			// draw timestamp text every ~100 pixels
 			const float timestamp_interval = 100.0f * mState.mScale;
@@ -687,11 +687,11 @@ namespace nap
 					{
 						double time_in_player = ((float)i * timestamp_interval) / mState.mStepSize;
 						std::string formatted_time_string = SequenceTrackView::formatTimeString(time_in_player);
-						draw_list->AddText(timestamp_pos, mService.getColors().white, formatted_time_string.c_str());
+						draw_list->AddText(timestamp_pos, mService.getColors().mFro3, formatted_time_string.c_str());
 
 						if (i != 0)
 						{
-							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + (18.0f * mState.mScale) }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + (2.0f * mState.mScale) }, mService.getColors().darkGrey, 1.0f * mState.mScale);
+							draw_list->AddLine({timestamp_pos.x, timestamp_pos.y + (18.0f * mState.mScale) }, {timestamp_pos.x, timestamp_pos.y + sequence_controller_height + (2.0f * mState.mScale) }, mService.getColors().mFro1, 1.0f * mState.mScale);
 						}
 					}
 				}
@@ -819,11 +819,11 @@ namespace nap
 
 			if (!draw_filled)
 			{
-				draw_list->AddRect(player_duration_top_rect_left, player_duration_rect_bottom_right, mService.getColors().white);
+				draw_list->AddRect(player_duration_top_rect_left, player_duration_rect_bottom_right, mService.getColors().mFro3);
 			}
 			else
 			{
-				draw_list->AddRectFilled(player_duration_top_rect_left, player_duration_rect_bottom_right, mService.getColors().white);
+				draw_list->AddRectFilled(player_duration_top_rect_left, player_duration_rect_bottom_right, mService.getColors().mFro3);
 			}
 		}
 
@@ -856,7 +856,7 @@ namespace nap
 			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y}, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
-				drawlist->AddLine( 	line_begin, line_end, mService.getColors().red, line_thickness);
+				drawlist->AddLine( 	line_begin, line_end, mService.getColors().mHigh, line_thickness);
 			}
 			ImGui::EndChild();
 
@@ -867,7 +867,7 @@ namespace nap
 	void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const
 	{
 		const float line_thickness = 2.0f * mState.mScale;
-		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().white);
+		const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mFro3);
 		const ImU32 color = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 0.5f});
 
 		for(const auto& marker : sequence.mMarkers)
@@ -921,7 +921,7 @@ namespace nap
 			mState.mTimelineControllerPos.y + (15.0f * mState.mScale)
 		});
 
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, mService.getColors().white);
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, mService.getColors().mFro3);
 		if (ImGui::BeginChild(id_string.c_str(), // id
 		{ 1.0f, sequence.mTracks.size() * ((mState.mVerticalResolution + 10.0f) * mState.mScale) + (10.0f * mState.mScale) }, // size
 			false, // no border
@@ -1481,13 +1481,13 @@ namespace nap
 				ImGui::SetColumnWidth(0, column_width);
 				ImGui::SetColumnWidth(1, column_width);
 
-				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().red);
+				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
 				ImGui::Text("Select & drag :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Left mouse button"); ImGui::NextColumn();
 				ImGui::Text("Select & open edit popup :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Right mouse button"); ImGui::NextColumn();
 				ImGui::Text("Zoom in & out :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Control + Scroll Wheel"); ImGui::NextColumn();
 				ImGui::Text("Horizontal Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Shift + Scroll Wheel"); ImGui::NextColumn();
 				ImGui::Text("Vertical Scroll :"); ImGui::NextColumn(); ImGui::TextColored(red_color, "Scroll Wheel"); ImGui::NextColumn();
-				ImGui::Columns(1);
+				ImGui::Columns(1);	
 			}
 
 			ImGui::Spacing();
