@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "artnetreceive.h"
+#include "artnetreceiveapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <sstream>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetReceive)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetReceiveApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -23,7 +23,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool ArtNetReceive::init(utility::ErrorState& error)
+	bool ArtNetReceiveApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -59,7 +59,7 @@ namespace nap
 
 
 	// Called when the window is updating
-	void ArtNetReceive::update(double deltaTime)
+	void ArtNetReceiveApp::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
@@ -74,7 +74,7 @@ namespace nap
 
 
 	// Called when the window is going to render
-	void ArtNetReceive::render()
+	void ArtNetReceiveApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -102,13 +102,13 @@ namespace nap
 	}
 
 
-	void ArtNetReceive::windowMessageReceived(WindowEventPtr windowEvent)
+	void ArtNetReceiveApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 
 
-	void ArtNetReceive::inputMessageReceived(InputEventPtr inputEvent)
+	void ArtNetReceiveApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -126,13 +126,13 @@ namespace nap
 	}
 
 
-	int ArtNetReceive::shutdown()
+	int ArtNetReceiveApp::shutdown()
 	{
 		return 0;
 	}
 
 
-	void nap::ArtNetReceive::showGeneralInfo()
+	void nap::ArtNetReceiveApp::showGeneralInfo()
 	{
 		ImGui::SetNextWindowPos(ImVec2(32, 32), ImGuiCond_Once);
 		ImGui::SetNextWindowSize(ImVec2(320, 0), ImGuiCond_Once);
@@ -152,7 +152,7 @@ namespace nap
 	}
 
 
-	void nap::ArtNetReceive::showReceivedArtnet()
+	void nap::ArtNetReceiveApp::showReceivedArtnet()
 	{
 		auto artnet_handler = mArtNetEntity->findComponent<ArtNetHandlerComponentInstance>();
 		auto received_data = artnet_handler->getData();
@@ -172,14 +172,12 @@ namespace nap
 			int32_t count = std::min(mArtNetInputGroupSize, total_count - offset);
 
 			// The label for this histogram
-			std::stringstream label;
-			if (count > 1)
-				label << "Channels " << (offset + 1) << " to " << (offset + count);
-			else
-				label << "Channel " << (offset + 1);
+			std::string label = count > 1 ?
+				utility::stringFormat("Channels: %.3d to %.3d", offset + 1, offset + count) :
+				utility::stringFormat("Channel: %.3d", offset + 1);
 
 			// Plot the historgram
-			ImGui::PlotHistogram(label.str().c_str(), received_data.data() + offset, count, 0, NULL, 0.0f, 255.0f, ImVec2(0, 64));
+			ImGui::PlotHistogram(label.c_str(), received_data.data() + offset, count, 0, NULL, 0.0f, 255.0f, ImVec2(0, 64));
 
 			// Increment the offset
 			offset += count;

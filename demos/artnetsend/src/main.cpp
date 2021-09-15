@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "artnetsend.h"
+#include "artnetsendapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::ArtNetSend, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::ArtNetSendApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

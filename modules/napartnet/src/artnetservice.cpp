@@ -39,14 +39,12 @@ namespace nap
 	bool ArtNetService::addController(ArtNetController& controller, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mControllers.find(controller.getAddress()) == mControllers.end(),
-                              "Controller %s has the same address as a controller that has already been added", controller.mID.c_str()))
+			"Controller %s has the same address as a controller that has already been added", controller.mID.c_str()))
 			return false;
-
-		const int numChannelsInUniverse = 512;
 
 		std::unique_ptr<ControllerData> controller_data = std::make_unique<ControllerData>();
 		controller_data->mController = &controller;
-		controller_data->mData.resize(numChannelsInUniverse);
+		controller_data->mData.resize(512);
 		controller_data->mIsDirty = true;
 		controller_data->mLastUpdateTime = 0.0f;
 
@@ -163,10 +161,7 @@ namespace nap
 
 	void ArtNetService::update(double deltaTime)
 	{
-		/*
-		 * Update Art-Net Controllers
-		 */
-
+		// Update Art-Net Controllers
 		double current_time = getCore().getElapsedTime();
 		for (auto& controller : mControllers)
 		{
@@ -203,10 +198,7 @@ namespace nap
 			}
 		}
 
-		/*
-		 * Consume events from Art-Net Receivers
-		 */
-
+		// Consume events from Art-Net Receivers
 		std::queue<ArtNetEventPtr> events;
 
 		// Forward every event to every input component of interest

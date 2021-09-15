@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "artnetsend.h"
+#include "artnetsendapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -11,7 +11,7 @@
 #include <inputrouter.h>
 #include <sstream>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetSend)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetSendApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -21,7 +21,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool ArtNetSend::init(utility::ErrorState& error)
+	bool ArtNetSendApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -60,7 +60,7 @@ namespace nap
 
 
 	// Called when the window is updating
-	void ArtNetSend::update(double deltaTime)
+	void ArtNetSendApp::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
@@ -75,7 +75,7 @@ namespace nap
 
 
 	// Called when the window is going to render
-	void ArtNetSend::render()
+	void ArtNetSendApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -103,13 +103,13 @@ namespace nap
 	}
 
 
-	void ArtNetSend::windowMessageReceived(WindowEventPtr windowEvent)
+	void ArtNetSendApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 
 
-	void ArtNetSend::inputMessageReceived(InputEventPtr inputEvent)
+	void ArtNetSendApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -127,13 +127,13 @@ namespace nap
 	}
 
 
-	int ArtNetSend::shutdown()
+	int ArtNetSendApp::shutdown()
 	{
 		return 0;
 	}
 
 
-	void nap::ArtNetSend::showGeneralInfo()
+	void nap::ArtNetSendApp::showGeneralInfo()
 	{
 		ImGui::SetNextWindowPos(ImVec2(32, 32), ImGuiCond_Once);
 		ImGui::SetNextWindowSize(ImVec2(320, 0), ImGuiCond_Once);
@@ -146,14 +146,14 @@ namespace nap
 		std::stringstream notes;
 		notes << "Notes:";
 		notes << "\n\n- The Net property of the Port Address is currently not supported for sending Art-Net.";
-		notes << "\n\n- Even though the adapter for sending artnet can be selected, the socket will always bind to 0.0.0.0:6454. Make sure to select a different interface for the ArtNetReceiver when using these together.";
-		notes << "\n\n- The current implementation will always send 512 channels per packet. Lowering the channel count here just removes them from the UI.";
+		notes << "\n\n- Even though the adapter for sending artnet can be selected, the socket will always bind to 0.0.0.0:6454, which is the art-net default. Make sure to select a different interface for the ArtNetReceiver when using these together.";
+		notes << "\n\n- The current implementation sends all 512 channels per packet. Lowering the channel count here just removes them from the UI.";
 		ImGui::TextWrapped(notes.str().c_str());
 		ImGui::End();
 	}
 
 
-	void nap::ArtNetSend::showSendArtnet()
+	void nap::ArtNetSendApp::showSendArtnet()
 	{
 		ImGui::SetNextWindowPos(ImVec2(384, 32), ImGuiCond_Once);
 		ImGui::SetNextWindowSize(ImVec2(480, 656), ImGuiCond_Once);

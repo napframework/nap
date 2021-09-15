@@ -20,6 +20,14 @@ namespace nap
 	// Forward Declares
 	class ArtNetService;
 
+	namespace artnet
+	{
+		// This maximum is defined as the maximum refresh rate that can be achieved on the DMX512-A
+		// physical layer with a full 512 channel(data slot) payload. The actual value is 44 packets per second.
+		inline constexpr int refreshRate = 44;	///< The max supported artnet refresh rate
+	}
+
+
 	/**
 	 * Mode used by an artnet controller to send data.
 	 * When set to broadcast the message is broadcasted over the network.
@@ -123,15 +131,9 @@ namespace nap
 		 */
 		static void convertAddress(Address address, uint8_t& subnet, uint8_t& universe);
 
-		/**
-		 * @return the max update frequency
-		 * 44hz, see http ://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
-		 */
-		static const int getMaxUpdateFrequency();
-
 		uint8_t				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
 		uint8_t				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
-		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
+		int					mUpdateFrequency = artnet::refreshRate;			///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
 		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is send regardless of changes
 		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Property: 'Mode' artnet message mode, Broadcast or Unicast
 		int					mUnicastLimit = 10;								///< Property: 'UnicastLimit' allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
