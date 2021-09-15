@@ -53,7 +53,8 @@ namespace nap
 		assert(mNode == nullptr);
 		mNode = artnet_new((mIpAddress.empty() ? NULL : mIpAddress.c_str()), (mVerbose ? 1 : 0));
 
-		if (!errorState.check(mNode != nullptr, "Unable to create new ArtNode using address: %s error: %s", mIpAddress.c_str(), artnet_strerror()))
+		if (!errorState.check(mNode != nullptr,
+			"Unable to create new ArtNode using address: %s error: %s", mIpAddress.c_str(), artnet_strerror()))
 			return false;
 
 		// Add controller
@@ -67,15 +68,18 @@ namespace nap
 		artnet_set_port_type(mNode, 0, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX);
 
 		// Set artnet port
-		if (!errorState.check(artnet_set_port_addr(mNode, 0, ARTNET_INPUT_PORT, mUniverse) == 0, "Unable to set port address of ArtNode: %s error: %s", mID.c_str(), artnet_strerror()))
+		if (!errorState.check(artnet_set_port_addr(mNode, 0, ARTNET_INPUT_PORT, mUniverse) == 0,
+			"Unable to set port address of ArtNode: %s error: %s", mID.c_str(), artnet_strerror()))
 			return false;
 
 		// Set artnet subnet address
-		if (!errorState.check(artnet_set_subnet_addr(mNode, mSubnet) == 0, "Unable to set ArtNode subnet address: %s error: %s", mID.c_str(), artnet_strerror()))
+		if (!errorState.check(artnet_set_subnet_addr(mNode, mSubnet) == 0,
+			"Unable to set ArtNode subnet address: %s error: %s", mID.c_str(), artnet_strerror()))
 			return false;
 
 		// Start running
-		if (!errorState.check(artnet_start(mNode) == 0, "Unable to start ArtNode node %s, error: %s", mID.c_str(), artnet_strerror()))
+		if (!errorState.check(artnet_start(mNode) == 0,
+			"Unable to start ArtNode node %s, error: %s", mID.c_str(), artnet_strerror()))
 			return false;
 
 		// get the socket descriptor
