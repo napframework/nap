@@ -38,7 +38,7 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
-		using ByteChannelData = std::vector<uint8_t>;
+		using ByteChannelData = std::vector<uint8>;
 		using FloatChannelData = std::vector<float>;
 
 		// Default Constructor
@@ -142,7 +142,7 @@ namespace nap
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
 		 * @param channel The target channel where @channelData should be applied to. Must be between 0 and 511.
 		 */
-		void send(ArtNetController& controller, uint8_t channelData, int channel);
+		void send(ArtNetController& controller, uint8 channelData, int channel);
 
 		/**
 		 * Clears all data associated with a specific controller, ie: sets the controller buffer to 0
@@ -163,8 +163,8 @@ namespace nap
 			bool						mIsDirty;				// Identifies whether this controller contains new data
 		};
 
-		using ControllerKey = uint8_t;							// The key is the target address (subnet-universe), which is currently limited to 8 bits as it does not include net (7 bits)
-		using ReceiverKey = uint16_t;							// The key is the port which the receiver will listen to
+		using ControllerKey = uint8;							// The key is the target address (subnet-universe), which is currently limited to 8 bits as it does not include net (7 bits)
+		using ReceiverKey = uint16;								// The key is the port which the receiver will listen to
 
 		using ControllerMap = std::unordered_map<ControllerKey, std::unique_ptr<ControllerData>>;
 		using ReceiverMap = std::unordered_map<ReceiverKey, ArtNetReceiver*>;

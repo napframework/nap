@@ -12,26 +12,24 @@
 
 namespace nap
 {
-	ArtNetEvent::ArtNetEvent(uint8_t sequence, uint8_t physical, uint16_t portAddress)
+	ArtNetEvent::ArtNetEvent(uint8 sequence, uint8 physical, uint16 portAddress)
 		: mSequence(sequence)
 		, mPhysical(physical)
-		, mNet(static_cast<uint8_t>((portAddress & 0b0111111100000000) >> 8))
-		, mSubNet(static_cast<uint8_t>((portAddress & 0b000000011110000) >> 4))
-		, mUniverse(static_cast<uint8_t>(portAddress & 0b000000000001111))
+		, mNet(static_cast<uint8>((portAddress & 0b0111111100000000) >> 8))
+		, mSubNet(static_cast<uint8>((portAddress & 0b000000011110000) >> 4))
+		, mUniverse(static_cast<uint8>(portAddress & 0b000000000001111))
 		, mPortAddress(portAddress)
-	{
-
-	}
+	{ }
 
 
-	void ArtNetEvent::setData(const uint8_t* data, size_t size)
+	void ArtNetEvent::setData(const uint8* data, size_t size)
 	{
 		mData.resize(size);
 		std::memcpy(mData.data(), data, size);
 	}
 
 
-	uint8_t ArtNetEvent::getChannelByIndex(uint16_t index) const
+	uint8 ArtNetEvent::getChannelByIndex(uint16 index) const
 	{
 		assert(index < getChannelCount() && index >= 0);
 		return mData.at(index);

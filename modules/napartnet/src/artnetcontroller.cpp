@@ -146,7 +146,7 @@ namespace nap
 	}
 
 
-	void ArtNetController::send(uint8_t channelData, int channel)
+	void ArtNetController::send(uint8 channelData, int channel)
 	{
 		mService->send(*this, channelData, channel);
 	}
@@ -243,13 +243,13 @@ namespace nap
 	}
 
 
-	nap::ArtNetController::Address ArtNetController::createAddress(uint8_t subnet, uint8_t universe)
+	nap::ArtNetController::Address ArtNetController::createAddress(uint8 subnet, uint8 universe)
 	{
 		return (subnet << 4) | universe;
 	}
 
 
-	void ArtNetController::convertAddress(Address address, uint8_t& subnet, uint8_t& universe)
+	void ArtNetController::convertAddress(Address address, uint8& subnet, uint8& universe)
 	{
 		subnet = address >> 4;
 		universe = address & 0xF;

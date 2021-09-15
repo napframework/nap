@@ -18,7 +18,7 @@
 namespace nap
 {
 
-	ArtNetListener::ArtNetListener(ArtNetReceiver& receiver, asio::io_service& ioService, const std::string& ip, uint16_t port)
+	ArtNetListener::ArtNetListener(ArtNetReceiver& receiver, asio::io_service& ioService, const std::string& ip, uint16 port)
 		: mReceiver(receiver)
 		, mSocket(ioService, ip.empty()
 			? asio::ip::udp::endpoint(asio::ip::udp::v4(), port)
@@ -48,15 +48,15 @@ namespace nap
 			if (protocolId == artnet::protocolID)
 			{
 				// Check the OpCode and ProtVer fields for the ArtDmx packet
-				uint16_t opCode = (mBuffer[9] << 8) | (mBuffer[8] & 0xff);
-				uint16_t protVer = (mBuffer[10] << 8) | (mBuffer[11] & 0xff);
+				uint16 opCode = (mBuffer[9] << 8) | (mBuffer[8] & 0xff);
+				uint16 protVer = (mBuffer[10] << 8) | (mBuffer[11] & 0xff);
 				if (opCode == artnet::opCode && protVer >= artnet::minProtVer)
 				{
 					// Decode the rest of the Art-Net package
-					uint8_t sequence = mBuffer[12];
-					uint8_t physical = mBuffer[13];
-					uint16_t portAddress = (mBuffer[15] << 8) | (mBuffer[14] & 0xff);
-					uint16_t dataLength = (mBuffer[16] << 8) | (mBuffer[17] & 0xff);
+					uint8 sequence = mBuffer[12];
+					uint8 physical = mBuffer[13];
+					uint16 portAddress = (mBuffer[15] << 8) | (mBuffer[14] & 0xff);
+					uint16 dataLength = (mBuffer[16] << 8) | (mBuffer[17] & 0xff);
 
 					// Create out Art-Net event
 					ArtNetEventPtr event = std::make_unique<ArtNetEvent>(sequence, physical, portAddress);

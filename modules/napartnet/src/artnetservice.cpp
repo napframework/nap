@@ -103,7 +103,7 @@ namespace nap
 		for (int index = 0; index < channelData.size(); ++index)
 		{
 			assert(channelData[index] >= 0.0f && channelData[index] <= 1.0f);
-			data[index] = (uint8_t)(channelData[index] * 255.0f);
+			data[index] = (uint8)(channelData[index] * 255.0f);
 		}
 
 		send(controller, data, channelOffset);
@@ -113,7 +113,7 @@ namespace nap
 	void ArtNetService::send(ArtNetController& controller, float channelData, int channel)
 	{
 		assert(channelData >= 0.0f && channelData <= 1.0f);
-		uint8_t byte_data = (uint8_t)(channelData * 255.0f);
+		uint8 byte_data = (uint8)(channelData * 255.0f);
 		send(controller, byte_data, channel);
 	}
 
@@ -132,7 +132,7 @@ namespace nap
 	}
 
 
-	void ArtNetService::send(ArtNetController& controller, uint8_t channelData, int channel)
+	void ArtNetService::send(ArtNetController& controller, uint8 channelData, int channel)
 	{
 		ControllerMap::iterator pos = mControllers.find(controller.getAddress());
 		assert(pos != mControllers.end());
@@ -198,14 +198,12 @@ namespace nap
 			}
 		}
 
-		// Consume events from Art-Net Receivers
-		std::queue<ArtNetEventPtr> events;
-
 		// Forward every event to every input component of interest
+		std::queue<ArtNetEventPtr> events;
 		for (auto& receiverPair : mReceivers)
 		{
+			// Consume events from Art-Net Receivers
 			ArtNetReceiver* receiver = receiverPair.second;
-
 			receiver->consumeEvents(events);
 
 			// Keep forwarding events until the queue runs out

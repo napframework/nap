@@ -52,9 +52,9 @@ namespace nap
 		RTTI_ENABLE(Device)
 
 	public:
-		using ByteChannelData = std::vector<uint8_t>;
+		using ByteChannelData = std::vector<uint8>;
 		using FloatChannelData = std::vector<float>;
-		using Address = uint8_t;
+		using Address = uint8;
 
 		// Default constructor
 		ArtNetController() = default;
@@ -104,7 +104,7 @@ namespace nap
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
 		 * @param channel The target channel where channelData should be applied to. Must be between 0 and 511.
 		 */
-		void send(uint8_t channelData, int channel);
+		void send(uint8 channelData, int channel);
 
 		/**
 		 *	Clears all the data associated with this controller, ie: sets their values to 0
@@ -121,7 +121,7 @@ namespace nap
 		 * @param subnet the artnet subnet address
 		 * @param universe the artnet universe address
 		 */
-		static Address createAddress(uint8_t subnet, uint8_t universe);
+		static Address createAddress(uint8 subnet, uint8 universe);
 
 		/**
 		 * Converts a nap artnet address in to a subnet and universe
@@ -129,10 +129,10 @@ namespace nap
 		 * @param subnet the subnet part of the address
 		 * @param universe the universe part of the address;
 		 */
-		static void convertAddress(Address address, uint8_t& subnet, uint8_t& universe);
+		static void convertAddress(Address address, uint8& subnet, uint8& universe);
 
-		uint8_t				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
-		uint8_t				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
+		uint8				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
+		uint8				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
 		int					mUpdateFrequency = artnet::refreshRate;			///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
 		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is send regardless of changes
 		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Property: 'Mode' artnet message mode, Broadcast or Unicast
