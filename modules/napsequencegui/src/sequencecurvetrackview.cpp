@@ -220,11 +220,13 @@ namespace nap
 					{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
 				{
 					// position of mouse in track
-					draw_list->AddLine(
+					draw_list->AddLine
+					(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						sequencer::colors::lightGrey, // color
-						1.0f * mState.mScale); // thickness
+						mService.getColors().mFro2, // color
+						1.0f * mState.mScale // thickness
+					); 
 
 					ImGui::BeginTooltip();
 
@@ -251,11 +253,13 @@ namespace nap
 				if (action->mTrackID == track.mID)
 				{
 					// position of insertion in track
-					draw_list->AddLine(
+					draw_list->AddLine
+					(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						sequencer::colors::lightGrey, // color
-						1.0f * mState.mScale); // thickness
+						mService.getColors().mFro2, // color
+						1.0f * mState.mScale // thickness
+					); 
 				}
 			}
 
@@ -267,17 +271,18 @@ namespace nap
 				if (action->mTrackID == track.mID)
 				{
 					// position of insertion in track
-					draw_list->AddLine(
+					draw_list->AddLine
+					(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						sequencer::colors::lightGrey, // color
-						1.0f * mState.mScale); // thickness
+						mService.getColors().mFro2, // color
+						1.0f * mState.mScale  // thickness
+					);
 				}
 			}
 		}
 
 		float previous_segment_x = 0.0f;
-
 		int segment_count = 0;
 		for (const auto& segment : track.mSegments)
 		{
@@ -295,14 +300,10 @@ namespace nap
 			auto it = getDrawCurveSegmentsMap().find(segment_ptr->get_type());
 			if (it != getDrawCurveSegmentsMap().end())
 			{
-				(*this.*it->second)(track, *segment_ptr, trackTopLeft, previous_segment_x, segment_width, segment_x,
-									draw_list, (segment_count == 0));
+				(*this.*it->second)(track, *segment_ptr, trackTopLeft, previous_segment_x, segment_width, segment_x, draw_list, (segment_count == 0));
 			}
 
-			//
 			previous_segment_x = segment_x;
-
-			//
 			segment_count++;
 		}
 	}
@@ -327,11 +328,13 @@ namespace nap
 		{
 			
 			// draw handler of segment duration
-			drawList->AddLine(
-			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				sequencer::colors::white, // color
-				3.0f * mState.mScale); // thickness
+			drawList->AddLine
+			(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+				mService.getColors().mFro3, // color
+				3.0f * mState.mScale // thickness
+			); 
 
 			// we are hovering this segment with the mouse
 			mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
@@ -405,12 +408,13 @@ namespace nap
 			if (action->mSegmentID == segment.mID)
 			{
 				// draw handler of segment duration
-				drawList->AddLine(
+				drawList->AddLine
+				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						sequencer::colors::white, // color
-						3.0f * mState.mScale); // thickness
-
+					mService.getColors().mFro3, // color
+					3.0f * mState.mScale // thickness
+				); 
 				ImGui::BeginTooltip();
 				ImGui::Text(formatTimeString(segment.mStartTime+segment.mDuration).c_str());
 				ImGui::EndTooltip();
@@ -418,21 +422,25 @@ namespace nap
 			else
 			{
 				// draw handler of segment duration
-				drawList->AddLine(
-				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					sequencer::colors::white, // color
-					1.0f * mState.mScale); // thickness
+				drawList->AddLine
+				(
+					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+					mService.getColors().mFro3, // color
+					1.0f * mState.mScale // thickness
+				); 
 			}
 		}
 		else
 		{
 			// draw handler of segment duration
-			drawList->AddLine(
-			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				sequencer::colors::white, // color
-				1.0f * mState.mScale); // thickness
+			drawList->AddLine
+			(
+				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+				mService.getColors().mFro3, // color
+				1.0f * mState.mScale // thickness
+			); 
 
 			// release if we are not hovering this segment
 			if (mState.mAction->isAction<HoveringSegment>()
