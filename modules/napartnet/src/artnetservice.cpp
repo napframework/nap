@@ -26,14 +26,12 @@ namespace nap
 	// ctor delibarately in cpp for unique_ptr
 	ArtNetService::ArtNetService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
 
 
 	// dtor delibarately in cpp for unique_ptr
 	ArtNetService::~ArtNetService()
-	{
-	}
+	{ }
 
 
 	bool ArtNetService::addController(ArtNetController& controller, utility::ErrorState& errorState)
@@ -165,11 +163,10 @@ namespace nap
 		double current_time = getCore().getElapsedTime();
 		for (auto& controller : mControllers)
 		{
-			ControllerData* controller_data = controller.second.get();
-
 			// Controllers are updated when:
 			// - There's new data and the max frequency interval has passed
 			// - There's no new data, but four seconds have passed. This is required for ArtNet. Resend existing data in that case.
+			ControllerData* controller_data = controller.second.get();
 			double time_since_last_update = current_time - controller_data->mLastUpdateTime;
 
 			// Get the amount of seconds to use for auto refresh
