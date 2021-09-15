@@ -32,24 +32,35 @@ namespace nap
 	class IMGuiService;
 
 	/**
-	 * IMGUI configuration options
+	 * Configurable palette of ImGUI colors
+	 */
+	struct NAPAPI IMGuiColorPalette
+	{
+		IMGuiColorPalette() = default;
+		RGBColor8 mHighlightColor = { 0xC8, 0x69, 0x69 };		///< Property: 'HighlightColor' Gui highlight color
+		RGBColor8 mBackgroundColor = { 0x2D, 0x2E, 0x42 };		///< Property: 'BackgroundColor' Gui background color
+		RGBColor8 mDarkColor = { 0x11, 0x14, 0x26 };			///< Property: 'DarkColor' Gui dark color
+		RGBColor8 mFront1Color = { 0x52, 0x54, 0x6A };			///< Property: 'FrontColor1' Gui front color 1
+		RGBColor8 mFront2Color = { 0x5D, 0x5E, 0x73 };			///< Property: 'FrontColor2' Gui front color 2
+		RGBColor8 mFront3Color = { 0x8B, 0x8C, 0xA0 };			///< Property: 'FrontColor3' Gui front color 3
+	};
+
+
+	/**
+	 * ImGUI configuration options
 	 */
 	class NAPAPI IMGuiServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		float mFontSize				= 17.0f;							///< Property: 'FontSize' Gui Font Size
-		float mScale				= 1.0f;								///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
-		std::string mFontFile 		= "";								///< Property: 'FontFile' Path to a '.ttf' font file in the data folder. If left empty the default NAP font will be used
-		RGBColor8 mHighlightColor	= RGBColor8(0xC8, 0x69, 0x69);		///< Property: 'HighlightColor' Gui highlight color
-		RGBColor8 mBackgroundColor	= RGBColor8(0x2D, 0x2E, 0x42);		///< Property: 'BackgroundColor' Gui background color
-		RGBColor8 mDarkColor		= RGBColor8(0x11, 0x14, 0x26);		///< Property: 'DarkColor' Gui dark color
-		RGBColor8 mFront1Color		= RGBColor8(0x52, 0x54, 0x6A);		///< Property: 'FrontColor1' Gui front color 1
-		RGBColor8 mFront2Color		= RGBColor8(0x5D, 0x5E, 0x73);		///< Property: 'FrontColor2' Gui front color 2
-		RGBColor8 mFront3Color		= RGBColor8(0x8B, 0x8C, 0xA0);		///< Property: 'FrontColor3' Gui front color 3
-		virtual rtti::TypeInfo getServiceType() const override			{ return RTTI_OF(IMGuiService); }
+		float mFontSize = 17.0f;								///< Property: 'FontSize' Gui font size
+		float mScale = 1.0f;									///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
+		std::string mFontFile = "";								///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
+		IMGuiColorPalette mColors;								///< Property: 'Colors' Gui colors
+		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
+
 
 	/**
 	 * This service manages the global ImGui state.
@@ -174,6 +185,12 @@ namespace nap
 		 * @return the scaling factor for the given context
 		 */
 		float getScale(const ImGuiContext* context) const;
+
+		/**
+		 * Returns the GUI color palette.
+		 * @return the GUI color palette.
+		 */
+		const IMGuiColorPalette& getColors() const;
 
 		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.

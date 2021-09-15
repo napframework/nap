@@ -42,8 +42,7 @@ namespace nap
 
 	SequenceGUIService::SequenceGUIService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
 
 
 	SequenceGUIService::~SequenceGUIService() = default;
@@ -62,9 +61,11 @@ namespace nap
 
 	bool SequenceGUIService::init(nap::utility::ErrorState& errorState)
 	{
+		// Get gui service and colors
 		mGuiService = getCore().getService<IMGuiService>();
-		assert(mGuiService != nullptr);
+		mColors.init(mGuiService->getColors());
 
+		// Register all views
 		if(!errorState.check(registerEventView<std::string>(), "Error registering event view"))
 			return false;
 
@@ -80,6 +81,7 @@ namespace nap
 		if(!errorState.check(registerEventView<glm::vec3>(), "Error registering event view"))
 			return false;
 
+		// Register track types
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView)),
 			"Error registering track view"))
 			return false;
@@ -255,5 +257,16 @@ namespace nap
 	{
 		assert(mGuiService != nullptr);
 		return *mGuiService;
+	}
+
+
+	void SequenceGUIService::Colors::init(const IMGuiColorPalette& palette)
+	{
+		mHigh = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor));
+		mDark = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mDarkColor));
+		mFro3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
+		mFro2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
+		mFro1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront1Color));
+		mBack = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mBackgroundColor));
 	}
 }
