@@ -140,13 +140,13 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Separator();
-		ImGui::TextWrapped("Use Napkin to change properties like the Net, SubNet and Universe for receiving Art-Net.");
+		ImGui::TextWrapped("Use Napkin to change properties such as the Net, SubNet and Universe for receiving Art-Net.");
 		ImGui::Separator();
 		std::stringstream note;
 		note << "Note:";
-		note << "\n\nWhen using this demo together with the ArtNetController (in the artnetsend demo), make sure to specify an IP Address for the ArtNetReceiver.";
-		note << "\n\nThe ArtNetController will always bind a socket to 0.0.0.0:6454, the ArtNetReceiver will bind to the IP Address and Port specified in the JSON file.";
-		note << "\n\nThis way you can prevent the conflict of two ports listening on the same local endpoint";
+		note << "\n\nWhen using this demo together with the Art-Net controller (artnetsend demo), make sure to specify an IP Address for the Art-Net receiver.";
+		note << "\n\nThe controller will always bind a socket to 0.0.0.0:6454, which is the Art-Net default. The receiver will bind to the IP Address and Port specified in the JSON file.";
+		note << "\n\nThis prevents a conflict of two ports listening to the same local end-point";
 		ImGui::TextWrapped(note.str().c_str());
 		ImGui::End();
 	}
@@ -163,6 +163,7 @@ namespace nap
 		ImGui::SetNextWindowPos(ImVec2(384, 32), ImGuiCond_Once);
 		ImGui::SetNextWindowSize(ImVec2(480, 656), ImGuiCond_Once);
 		ImGui::Begin("Received Art-Net");
+		ImGui::Text("Universe: %d, Subnet: %d", artnet_handler->mInput->mUniverse, artnet_handler->mInput->mSubNet);
 		ImGui::SliderInt("Channels per Group", &mArtNetInputGroupSize, 1, 512);
 		ImGui::Separator();
 

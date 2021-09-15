@@ -141,12 +141,12 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Separator();
-		ImGui::TextWrapped("Use Napkin to change properties like the SubNet and Universe for sending Art-Net.");
+		ImGui::TextWrapped("Use Napkin to change properties such as the SubNet and Universe for sending Art-Net.");
 		ImGui::Separator();
 		std::stringstream notes;
 		notes << "Notes:";
 		notes << "\n\n- The Net property of the Port Address is currently not supported for sending Art-Net.";
-		notes << "\n\n- Even though the adapter for sending artnet can be selected, the socket will always bind to 0.0.0.0:6454, which is the art-net default. Make sure to select a different ip address for the ArtNetReceiver when using these apps together.";
+		notes << "\n\n- Even though the adapter for sending Art-Net can be selected, the socket will always bind to 0.0.0.0:6454, which is the Art-Net default. Make sure to select a different ip address for the Art-Net receiver when using these apps together.";
 		notes << "\n\n- The current implementation sends all 512 channels per packet. Lowering the channel count here just removes them from the UI.";
 		ImGui::TextWrapped(notes.str().c_str());
 		ImGui::End();
@@ -158,6 +158,9 @@ namespace nap
 		ImGui::SetNextWindowPos(ImVec2(384, 32), ImGuiCond_Once);
 		ImGui::SetNextWindowSize(ImVec2(480, 656), ImGuiCond_Once);
 		ImGui::Begin("Send Art-Net");
+
+		// Show universe and subnet
+		ImGui::Text("Universe: %d, Subnet: %d", mArtNetController->mUniverse, mArtNetController->mSubnet);
 
 		// Define the amount of channels to send
 		if (ImGui::SliderInt("Channel Count", &mArtNetOutputChannelCount, 1, 512))
