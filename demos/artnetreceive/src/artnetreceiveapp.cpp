@@ -167,7 +167,9 @@ namespace nap
 		ImGui::SliderInt("Channels per Group", &mArtNetInputGroupSize, 1, 512);
 		ImGui::Separator();
 
-		if (total_count == 0) { ImGui::Text("No data"); }
+		if (total_count == 0)
+			ImGui::TextColored(ImVec4(mGuiService->getColors().mFront2Color), "No data");
+
 		while (offset < total_count)
 		{
 			// The amount of channels to display in this histogram
