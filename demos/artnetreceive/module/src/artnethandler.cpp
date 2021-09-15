@@ -41,6 +41,6 @@ namespace nap
 
 		// Store data as float so we can render it directly in the ImGui histogram
 		for (int16_t i = 0; i < event.getChannelCount(); i++)
-			mReceivedData.push_back(static_cast<float>(event[i]));
+			mReceivedData.emplace_back(static_cast<float>(event[i]));
 	}
 }

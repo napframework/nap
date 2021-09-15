@@ -139,7 +139,7 @@ namespace nap
 		int					mUnicastLimit = 10;								///< Property: 'UnicastLimit' allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
 		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the console
 		float				mReadTimeout = 2.0f;							///< Property: 'Timeout' poll network node read timeout, only used when mode is set to Unicast
-		std::string			mIpAddress = "";								///< Property: 'IPAddress' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
+		std::string			mIpAddress = "";								///< Property: 'IP Address' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
 
 	private:
 

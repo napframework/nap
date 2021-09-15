@@ -24,7 +24,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_CLASS(nap::ArtNetController)
 	RTTI_PROPERTY("Subnet",			&nap::ArtNetController::mSubnet,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Universe",		&nap::ArtNetController::mUniverse,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("IPAddress",		&nap::ArtNetController::mIpAddress,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("IP Address",		&nap::ArtNetController::mIpAddress,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("WaitTime",		&nap::ArtNetController::mWaitTime,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Frequency",		&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Mode",			&nap::ArtNetController::mMode,				nap::rtti::EPropertyMetaData::Default)

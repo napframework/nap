@@ -146,7 +146,7 @@ namespace nap
 		std::stringstream notes;
 		notes << "Notes:";
 		notes << "\n\n- The Net property of the Port Address is currently not supported for sending Art-Net.";
-		notes << "\n\n- Even though the adapter for sending artnet can be selected, the socket will always bind to 0.0.0.0:6454, which is the art-net default. Make sure to select a different interface for the ArtNetReceiver when using these together.";
+		notes << "\n\n- Even though the adapter for sending artnet can be selected, the socket will always bind to 0.0.0.0:6454, which is the art-net default. Make sure to select a different ip address for the ArtNetReceiver when using these apps together.";
 		notes << "\n\n- The current implementation sends all 512 channels per packet. Lowering the channel count here just removes them from the UI.";
 		ImGui::TextWrapped(notes.str().c_str());
 		ImGui::End();

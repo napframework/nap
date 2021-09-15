@@ -144,7 +144,7 @@ namespace nap
 		ImGui::Separator();
 		std::stringstream note;
 		note << "Note:";
-		note << "\n\nWhen using this demo together with the ArtNetController (in the artnetsend demo), make sure to select an ethernet interface for the ArtNetReceiver.";
+		note << "\n\nWhen using this demo together with the ArtNetController (in the artnetsend demo), make sure to specify an IP Address for the ArtNetReceiver.";
 		note << "\n\nThe ArtNetController will always bind a socket to 0.0.0.0:6454, the ArtNetReceiver will bind to the IP Address and Port specified in the JSON file.";
 		note << "\n\nThis way you can prevent the conflict of two ports listening on the same local endpoint";
 		ImGui::TextWrapped(note.str().c_str());
@@ -166,6 +166,7 @@ namespace nap
 		ImGui::SliderInt("Channels per Group", &mArtNetInputGroupSize, 1, 512);
 		ImGui::Separator();
 
+		if (total_count == 0) { ImGui::Text("No data"); }
 		while (offset < total_count)
 		{
 			// The amount of channels to display in this histogram
