@@ -140,7 +140,7 @@ namespace nap
 			return false;
 
 		// Set text, needs to succeed on initialization
-		mFontScale = scale;
+		mDPIScale = scale;
 		if (!addLine(resource->mText, errorState))
 			return false;
 
@@ -172,7 +172,7 @@ namespace nap
 		for (const auto& letter : text)
 		{
 			// Fetch glyph.
-			RenderableGlyph* glyph = getRenderableGlyph(mFont->getGlyphIndex(letter), mFontScale, error);
+			RenderableGlyph* glyph = getRenderableGlyph(mFont->getGlyphIndex(letter), mDPIScale, error);
 			if (!error.check(glyph != nullptr, "%s: unsupported character: %d, %s", mID.c_str(), letter, error.toString().c_str()))
 			{
 				success = false;
@@ -184,7 +184,7 @@ namespace nap
 
 		// Set text and compute bounding box
 		mLinesCache[mIndex]  = text;
-		mFont->getBoundingBox(text, mFontScale, mTextBounds[mIndex]);
+		mFont->getBoundingBox(text, mDPIScale, mTextBounds[mIndex]);
 		return success;
 	}
 

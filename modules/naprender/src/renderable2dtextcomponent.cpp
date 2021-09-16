@@ -141,7 +141,7 @@ namespace nap
 		{
 			auto* display = mRenderService->findDisplay(*cur_window);
 			assert(display != nullptr);
-			dpi_scale = (1.0f / getScale()) * (math::max<float>(display->getHorizontalDPI(), font::dpi) / font::dpi);
+			dpi_scale = (1.0f / getDPIScale()) * (math::max<float>(display->getHorizontalDPI(), font::dpi) / font::dpi);
 		}
 
 		// Get object space position based on orientation of text

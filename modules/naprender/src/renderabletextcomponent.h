@@ -176,9 +176,10 @@ namespace nap
 		MaterialInstance& getMaterialInstance()							{ return mMaterialInstance; }
 
 		/**
-		 * @return font scaling factor
+		 * Returns the font dpi scaling factor
+		 * @return font dpi scaling factor
 		 */
-		float getScale() const											{ return mFontScale; }
+		float getDPIScale() const											{ return mDPIScale; }
 
 	protected:
 		/**
@@ -215,7 +216,7 @@ namespace nap
 
 	private:
 		int mIndex = 0;													///< Current line index to update or draw
-		float mFontScale = 1.0f;											///< Font scaling factor
+		float mDPIScale = 1.0f;											///< Font DPI scaling factor
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform

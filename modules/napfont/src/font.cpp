@@ -228,24 +228,24 @@ namespace nap
 		
 		// Try to find a cached Glyph set based on scale
 		int font_dpi = static_cast<int>(font::dpi * scale);
-		auto it = mGlyphs.find(font_dpi);
-		if (it == mGlyphs.end())
+		auto set_it = mGlyphs.find(font_dpi);
+		if (set_it == mGlyphs.end())
 		{
-			auto new_set(toFreetypeFace(mFace)->num_glyphs);
+			GlyphCacheSet new_set(toFreetypeFace(mFace)->num_glyphs);
 			auto emplace = mGlyphs.emplace(std::make_pair(font_dpi, std::move(new_set)));
-			it = emplace.first;
+			set_it = emplace.first;
 		}
 
 		// Ensure glyph index is within bounds
-		if (!errorCode.check(index < it->second.size(), "glyph index out of bounds"))
+		if (!errorCode.check(index < set_it->second.size(), "glyph index out of bounds"))
 			return nullptr;
 
 		// Parent glyph is part of the system
-		std::unique_ptr<GlyphCache>& glyph_cache = it->second[index];
+		std::unique_ptr<GlyphCache>& glyph_cache = set_it->second[index];
 		if (glyph_cache != nullptr)
 			return glyph_cache.get();
 
-		// Set character size (TODO: cache all sizes)
+		// Set character size
 		FT_Error ft_error = FT_Set_Char_Size(toFreetypeFace(mFace), 0, mProperties.mSize * 64, font_dpi, font_dpi);
 		if (!errorCode.check(ft_error == 0, "unsupported font size and resolution"))
 			return false;

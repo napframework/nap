@@ -257,6 +257,7 @@ namespace nap
 		* Returns a native Glyph cache object that holds a a glyph and the available glyph presentation modes
 		* The Glyph is cached internally, to speed up future requests.
 		* @param index the index of the glyph inside the font.
+		* @param scale font scaling factor
 		* @param errorCode contains the error if the glyph could not be created or fetched
 		* @return a Glyph Cache associated with a specific index of the font.
 		*/
@@ -269,8 +270,8 @@ namespace nap
 		std::string mFont;												///< Font that is loaded
 		FontService* mService;											///< Font service
 
-		using GlyphCacheSet = std::vector<std::unique_ptr<GlyphCache>>;
-		using GlyphCacheMap = std::unordered_map<int, GlyphCacheSet>;
+		using GlyphCacheSet = std::vector<std::unique_ptr<GlyphCache>>;	///< Collection of Glyphs and associated representations
+		using GlyphCacheMap = std::unordered_map<int, GlyphCacheSet>;	///< Glyphs ordered on size
 		mutable GlyphCacheMap mGlyphs;									///< All cached glyphs
 	};
 
