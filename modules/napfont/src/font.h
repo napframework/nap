@@ -182,7 +182,7 @@ namespace nap
 		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
 		 */
 		template<typename T>
-		T* getOrCreateGlyphRepresentation(nap::uint index, utility::ErrorState& errorCode);
+		T* getOrCreateGlyphRepresentation(nap::uint index, float scale, utility::ErrorState& errorCode);
 
 		/**
 		 * Use this to acquire a handle to a glyph representation, associated with a character at that index.
@@ -196,7 +196,7 @@ namespace nap
 		 * @param errorCode contains the error if the glyph could not be created or fetched.
 		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
 		 */
-		IGlyphRepresentation* getOrCreateGlyphRepresentation(nap::uint index, const rtti::TypeInfo& type, utility::ErrorState& errorCode);
+		IGlyphRepresentation* getOrCreateGlyphRepresentation(nap::uint index, float scale, const rtti::TypeInfo& type, utility::ErrorState& errorCode);
 
 		/**
 		 * Returns a native Glyph object that can be represented using a Glyph Representation object.
@@ -205,7 +205,7 @@ namespace nap
 		 * @param errorCode contains the error if the glyph could not be created or fetched
 		 * @return a Glyph Cache associated with a specific index of the font.
 		 */
-		const Glyph* getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode);
+		const Glyph* getOrCreateGlyph(nap::uint index, float scale, utility::ErrorState& errorCode);
 
 		/**
 		 * Returns the bounding box in pixels associated with a string of text.
@@ -214,7 +214,7 @@ namespace nap
 		 * @param text the string of characters to compute the bounding box for
 		 * @param outRect contains the text bounds
 		 */
-		void getBoundingBox(const std::string& text, math::Rect& outRect);
+		void getBoundingBox(const std::string& text, float scale, math::Rect& outRect);
 
 		/**
 		 * Returns the number of glyphs in this font, -1 when the font hasn't been created yet
@@ -257,7 +257,7 @@ namespace nap
 		* @param errorCode contains the error if the glyph could not be created or fetched
 		* @return a Glyph Cache associated with a specific index of the font.
 		*/
-		GlyphCache* getOrCreateGlyphCache(nap::uint index, utility::ErrorState& errorCode);
+		GlyphCache* getOrCreateGlyphCache(nap::uint index, float scale, utility::ErrorState& errorCode);
 
 
 		void* mFace = nullptr;											///< Handle to the free-type face object
@@ -265,7 +265,10 @@ namespace nap
 		FontProperties mProperties = { -1, -1 };						///< Describes current font properties
 		std::string mFont;												///< Font that is loaded
 		FontService* mService;											///< Font service
-		mutable std::vector<std::unique_ptr<GlyphCache>> mGlyphs;		///< All cached glyphs
+
+		using GlyphCacheSet = std::vector<std::unique_ptr<GlyphCache>>;
+		using GlyphCacheMap = std::unordered_map<int, GlyphCacheSet>;
+		mutable GlyphCacheMap mGlyphs;									///< All cached glyphs
 	};
 
 
@@ -333,9 +336,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T* nap::FontInstance::getOrCreateGlyphRepresentation(nap::uint index, utility::ErrorState& errorCode)
+	T* nap::FontInstance::getOrCreateGlyphRepresentation(nap::uint index, float scale, utility::ErrorState& errorCode)
 	{
-		IGlyphRepresentation* representation = this->getOrCreateGlyphRepresentation(index, RTTI_OF(T), errorCode);
+		IGlyphRepresentation* representation = this->getOrCreateGlyphRepresentation(index, scale, RTTI_OF(T), errorCode);
 		return rtti_cast<T>(representation);
 	}
 

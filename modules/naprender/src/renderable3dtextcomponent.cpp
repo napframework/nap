@@ -70,7 +70,7 @@ namespace nap
 
 		// Get text bounding box
 		nap::math::Rect bbox;
-		mFont->getBoundingBox(referenceText, bbox);
+		mFont->getBoundingBox(referenceText, 1.0f, bbox);
 		if (!bbox.hasWidth())
 			return false;
 
@@ -84,7 +84,7 @@ namespace nap
 	nap::RenderableGlyph* Renderable3DTextComponentInstance::getRenderableGlyph(uint index, utility::ErrorState& error) const
 	{
 		assert(mFont != nullptr);
-		return mFont->getOrCreateGlyphRepresentation<Renderable2DMipMapGlyph>(index, error);
+		return mFont->getOrCreateGlyphRepresentation<Renderable2DMipMapGlyph>(index, 1.0f, error);
 	}
 
 

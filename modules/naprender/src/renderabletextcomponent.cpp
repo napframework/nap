@@ -183,7 +183,7 @@ namespace nap
 
 		// Set text and compute bounding box
 		mLinesCache[mIndex]  = text;
-		mFont->getBoundingBox(text, mTextBounds[mIndex]);
+		mFont->getBoundingBox(text, 1.0f, mTextBounds[mIndex]);
 		return success;
 	}
 

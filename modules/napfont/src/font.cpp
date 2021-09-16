@@ -133,11 +133,6 @@ namespace nap
 		if (!error.check(face->charmap != nullptr, "no default unicode charmap associated with typeface"))
 			return false;
 
-		// Set character size
-		fterror = FT_Set_Char_Size(face, 0, properties.mSize * 64, properties.mDPI, properties.mDPI);
-		if (!error.check(fterror == 0, "unsupported font size and resolution"))
-			return false;
-
 		// Remove previous typeface if present
 		if (mFace != nullptr)
 		{
@@ -211,7 +206,6 @@ namespace nap
 	{
 		assert(isValid());
 		mGlyphs.clear();
-		mGlyphs.resize(toFreetypeFace(mFace)->num_glyphs);
 	}
 
 
@@ -228,21 +222,36 @@ namespace nap
 	}
 
 
-	GlyphCache* nap::FontInstance::getOrCreateGlyphCache(nap::uint index, utility::ErrorState& errorCode)
+	GlyphCache* nap::FontInstance::getOrCreateGlyphCache(nap::uint index, float scale, utility::ErrorState& errorCode)
 	{
 		// Ensure the index is valid
 		assert(isValid());
-		if (!errorCode.check(index < mGlyphs.size(), "glyph index out of bounds"))
-			return nullptr;
 		
-		// Try to find a cached Glyph
-		std::unique_ptr<GlyphCache>& cache = mGlyphs[index];
+		// Try to find a cached Glyph set based on scale
+		int font_size = static_cast<int>((float)mProperties.mSize * scale);
+		auto it = mGlyphs.find(font_size);
+		if (it == mGlyphs.end())
+		{
+			auto new_set(toFreetypeFace(mFace)->num_glyphs);
+			auto emplace = mGlyphs.emplace(std::make_pair(font_size, std::move(new_set)));
+			it = emplace.first;
+		}
 
-		// Parent glyph is part of system
-		if (cache != nullptr)
-			return cache.get();
+		// Ensure glyph index is within bounds
+		if (!errorCode.check(index < it->second.size(), "glyph index out of bounds"))
+			return nullptr;
 
-		// Load a new glyph
+		// Parent glyph is part of the system
+		std::unique_ptr<GlyphCache>& glyph_cache = it->second[index];
+		if (glyph_cache != nullptr)
+			return glyph_cache.get();
+
+		// Set character size (TODO: cache all sizes)
+		FT_Error ft_error = FT_Set_Char_Size(toFreetypeFace(mFace), 0, font_size * 64, mProperties.mDPI, mProperties.mDPI);
+		if (!errorCode.check(ft_error == 0, "unsupported font size and resolution"))
+			return false;
+
+		// Load Glyph into memory
 		if (!errorCode.check(loadGlyph(index), "unable to load glyph: %d into memory", index))
 			return nullptr;
 
@@ -255,13 +264,12 @@ namespace nap
 		Glyph* ptr = new Glyph(glyph_handle, index);
 
 		// Now wrap a Glyph cache around it so we can bind it to various representations
-		GlyphCache* new_cache = new GlyphCache(std::unique_ptr<Glyph>(ptr));
-		cache.reset(new_cache);
-		return new_cache;
+		glyph_cache.reset(new GlyphCache(std::unique_ptr<Glyph>(ptr)));
+		return glyph_cache.get();
 	}
 
 
-	void FontInstance::getBoundingBox(const std::string& text, math::Rect& outRect)
+	void FontInstance::getBoundingBox(const std::string& text, float scale, math::Rect& outRect)
 	{
 		// Clear if text is empty
 		if (text.empty())
@@ -279,7 +287,7 @@ namespace nap
 		int idx = 0;
 		for (const auto& letter : text)
 		{
-			const Glyph* glyph = getOrCreateGlyph(getGlyphIndex(letter), error);
+			const Glyph* glyph = getOrCreateGlyph(getGlyphIndex(letter), scale, error);
 			if (glyph == nullptr)
 			{
 				nap::Logger::warn(error.toString());
@@ -320,11 +328,11 @@ namespace nap
 	}
 
 
-	IGlyphRepresentation* FontInstance::getOrCreateGlyphRepresentation(nap::uint index, const rtti::TypeInfo& type, utility::ErrorState& errorCode)
+	IGlyphRepresentation* FontInstance::getOrCreateGlyphRepresentation(nap::uint index, float scale, const rtti::TypeInfo& type, utility::ErrorState& errorCode)
 	{
 		// Acquire handle to glyph cache
 		assert(isValid());
-		GlyphCache* cache = getOrCreateGlyphCache(index, errorCode);
+		GlyphCache* cache = getOrCreateGlyphCache(index, scale, errorCode);
 		if (cache == nullptr)
 			return nullptr;
 
@@ -373,11 +381,9 @@ namespace nap
 	}
 
 
-	const Glyph* nap::FontInstance::getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode)
+	const Glyph* nap::FontInstance::getOrCreateGlyph(nap::uint index, float scale, utility::ErrorState& errorCode)
 	{
-		nap::GlyphCache* cache = getOrCreateGlyphCache(index, errorCode);
-		if (cache == nullptr)
-			return nullptr;
-		return &(cache->getGlyph());
+		nap::GlyphCache* cache = getOrCreateGlyphCache(index, scale, errorCode);
+		return cache != nullptr ? &(cache->getGlyph()) : nullptr;
 	}
 }

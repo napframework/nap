@@ -111,7 +111,7 @@ namespace nap
 	nap::RenderableGlyph* Renderable2DTextComponentInstance::getRenderableGlyph(uint index, utility::ErrorState& error) const
 	{
 		assert(mFont != nullptr);
-		return mFont->getOrCreateGlyphRepresentation<Renderable2DGlyph>(index, error);
+		return mFont->getOrCreateGlyphRepresentation<Renderable2DGlyph>(index, 1.0f, error);
 	}
 
 
