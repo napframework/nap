@@ -42,21 +42,21 @@ namespace nap
 		mService = getEntityInstance()->getCore()->getService<RenderService>();
 		assert(mService != nullptr);
 
-		// Compute max font scaling factor based on highest DPI value
+		// Compute max font scaling factor based on highest display DPI value
 		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
 		mDPIAware = resource->mDPIAware && mService->getHighDPIEnabled();
-		float font_scale = 1.0f;
+		float fscale = 1.0f;
 		if (mDPIAware)
 		{
 			for (const auto& display : mRenderService->getDisplays())
 			{
-				float display_scale = display.getHorizontalDPI() / font::dpi;
-				font_scale = display_scale > font_scale ? display_scale : font_scale;
+				float dscale = display.getHorizontalDPI() / font::dpi;
+				fscale = dscale > fscale ? dscale : fscale;
 			}
 		}
 
 		// Init base class (setting up the plane glyph plane etc.)
-		if (!setup(font_scale, errorState))
+		if (!setup(fscale, errorState))
 			return false;
 		
 		// Copy flags
@@ -135,12 +135,13 @@ namespace nap
 		float dpi_scale = 1.0f;
 		auto* cur_window = mRenderService->getCurrentRenderWindow();
 
-		// Compute dpi scaling factor, based on highest dpi scaling value, always < 1 
+		// Compute dpi scaling factor, based on highest dpi scaling value, always < 1
+		// Note that current window is unavailable when rendering headless
 		if (mDPIAware && cur_window != nullptr)
 		{
 			auto* display = mRenderService->findDisplay(*cur_window);
 			assert(display != nullptr);
-			dpi_scale = (1.0f / getScale()) * (display->getHorizontalDPI() / font::dpi);
+			dpi_scale = (1.0f / getScale()) * (math::max<float>(display->getHorizontalDPI(), font::dpi) / font::dpi);
 		}
 
 		// Get object space position based on orientation of text
