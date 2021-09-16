@@ -91,18 +91,24 @@ namespace nap
 		glm::ivec2 rvalue(mLocation.x, mLocation.y);
 		switch (mOrientation)
 		{
-		case utility::ETextOrientation::Center:
-		{
-			rvalue.x -= static_cast<int>((bounds.getWidth() * scale) / 2.0f);
-			break;
-		}
-		case utility::ETextOrientation::Right:
-		{
-			rvalue.x -= static_cast<int>(bounds.getWidth() * scale);
-			break;
-		}
-		default:
-			assert(false);
+			case utility::ETextOrientation::Left:
+			{
+				break;
+			}
+			case utility::ETextOrientation::Center:
+			{
+				rvalue.x -= static_cast<int>((bounds.getWidth() * scale) / 2.0f);
+				break;
+			}
+			case utility::ETextOrientation::Right:
+			{
+				rvalue.x -= static_cast<int>(bounds.getWidth() * scale);
+				break;
+			}
+			default:
+			{
+				assert(false);
+			}
 		}
 
 		// Extract component transform (x - y coordinates)
