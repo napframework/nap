@@ -15,9 +15,8 @@
 #include FT_GLYPH_H
 
 RTTI_BEGIN_STRUCT(nap::FontProperties)
-	RTTI_VALUE_CONSTRUCTOR(int, int)
+	RTTI_VALUE_CONSTRUCTOR(int)
 	RTTI_PROPERTY("Size",		&nap::FontProperties::mSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DPI",		&nap::FontProperties::mDPI,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 // nap::fontresource run time class definition 
@@ -228,12 +227,12 @@ namespace nap
 		assert(isValid());
 		
 		// Try to find a cached Glyph set based on scale
-		int font_size = static_cast<int>((float)mProperties.mSize * scale);
-		auto it = mGlyphs.find(font_size);
+		int font_dpi = static_cast<int>(font::dpi * scale);
+		auto it = mGlyphs.find(font_dpi);
 		if (it == mGlyphs.end())
 		{
 			auto new_set(toFreetypeFace(mFace)->num_glyphs);
-			auto emplace = mGlyphs.emplace(std::make_pair(font_size, std::move(new_set)));
+			auto emplace = mGlyphs.emplace(std::make_pair(font_dpi, std::move(new_set)));
 			it = emplace.first;
 		}
 
@@ -247,7 +246,7 @@ namespace nap
 			return glyph_cache.get();
 
 		// Set character size (TODO: cache all sizes)
-		FT_Error ft_error = FT_Set_Char_Size(toFreetypeFace(mFace), 0, font_size * 64, mProperties.mDPI, mProperties.mDPI);
+		FT_Error ft_error = FT_Set_Char_Size(toFreetypeFace(mFace), 0, mProperties.mSize * 64, font_dpi, font_dpi);
 		if (!errorCode.check(ft_error == 0, "unsupported font size and resolution"))
 			return false;
 

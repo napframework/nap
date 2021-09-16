@@ -623,7 +623,7 @@ namespace nap
 			{
 				for (const auto& display : mRenderService->getDisplays())
 				{
-					float dpi_scale = math::max<float>(display.getHorizontalDPI(), referenceDPI) / referenceDPI;
+					float dpi_scale = math::max<float>(display.getHorizontalDPI(), gui::dpi) / gui::dpi;
 					//nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
 					mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
 				}
@@ -806,8 +806,8 @@ namespace nap
 		{
 			// Compute overall Gui and font scaling factor
 			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
-			float gscale = mGuiScale * (math::max<float>(display.getHorizontalDPI(), referenceDPI) / referenceDPI);
-			float fscale = math::max<float>(display.getHorizontalDPI(), referenceDPI) / (mDPIScale * referenceDPI);
+			float gscale = mGuiScale * (math::max<float>(display.getHorizontalDPI(), gui::dpi) / gui::dpi);
+			float fscale = math::max<float>(display.getHorizontalDPI(), gui::dpi) / (mDPIScale * gui::dpi);
 			//nap::Logger::info("font scale: %.2f", fscale);
 
 			// Push scaling for window and font based on new display

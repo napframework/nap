@@ -224,6 +224,5 @@ namespace nap
 		RenderService*	mService = nullptr;			///< Render service
 		bool			mIgnoreTransform = true;	///< If transform should be ignored when present
 		bool			mDPIAware = true;			///< If the text is scaled according to display dpi
-		float			mFontDPI = 96.0f;			///< Default DPI setting
 	};
 }

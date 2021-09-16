@@ -45,13 +45,12 @@ namespace nap
 		// Compute max font scaling factor based on highest DPI value
 		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
 		mDPIAware = resource->mDPIAware && mService->getHighDPIEnabled();
-		mFontDPI = static_cast<float>(resource->mFont->mProperties.mDPI);
 		float font_scale = 1.0f;
 		if (mDPIAware)
 		{
 			for (const auto& display : mRenderService->getDisplays())
 			{
-				float display_scale = display.getHorizontalDPI() / mFontDPI;
+				float display_scale = display.getHorizontalDPI() / font::dpi;
 				font_scale = display_scale > font_scale ? display_scale : font_scale;
 			}
 		}
@@ -141,7 +140,7 @@ namespace nap
 		{
 			auto* display = mRenderService->findDisplay(*cur_window);
 			assert(display != nullptr);
-			dpi_scale = (1.0f / getScale()) * (display->getHorizontalDPI() / mFontDPI);
+			dpi_scale = (1.0f / getScale()) * (display->getHorizontalDPI() / font::dpi);
 		}
 
 		// Get object space position based on orientation of text

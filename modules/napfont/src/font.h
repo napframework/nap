@@ -25,6 +25,12 @@ namespace nap
 
 namespace nap
 {
+	namespace font
+	{
+		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for font elements
+	}
+
+
 	/**
 	 * Simple struct that describes common properties of a font
 	 * This struct can be copied easily and is used by all font related classes
@@ -39,12 +45,9 @@ namespace nap
 		/**
 		 * Value constructor
 		 */
-		FontProperties(int size, int dpi) :
-			mSize(size),
-			mDPI(dpi)				{ }
+		FontProperties(int size) : mSize(size) { }
 
 		int mSize	= 12;			///< Property: 'Size' size of the font in em
-		int mDPI	= 96;			///< Property: "DPI' dots per inch of the monitor, typically 96 or 72
 	};
 
 
@@ -262,7 +265,7 @@ namespace nap
 
 		void* mFace = nullptr;											///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
-		FontProperties mProperties = { -1, -1 };						///< Describes current font properties
+		FontProperties mProperties = { -1 };							///< Describes current font properties
 		std::string mFont;												///< Font that is loaded
 		FontService* mService;											///< Font service
 
