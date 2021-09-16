@@ -279,15 +279,23 @@ namespace nap
 		float x = 0.0f;
 		float y = 0.0f;
 
-		// Get pipeline
+		// Get and bind pipeline
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
-		
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+
+		// Bind vertex and index buffers
+		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
+		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
+		vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
 		// Scissor rectangle
 		VkRect2D scissor_rect {
 			{0, 0},
 			{(uint32_t)(renderTarget.getBufferSize().x), (uint32_t)(renderTarget.getBufferSize().y) }
 		};
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor_rect);
 
 		// Draw individual glyphs
 		for (auto& render_glyph : mGlyphCache[mIndex])
@@ -317,19 +325,11 @@ namespace nap
 
 			// Get new descriptor set that contains the updated settings and bind pipeline
 			VkDescriptorSet descriptor_set = mMaterialInstance.update();
-			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 			// Bind descriptor set
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
-			// Bind vertex buffers
-			const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
-			const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
-			vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
-			vkCmdSetScissor(commandBuffer, 0, 1, &scissor_rect);
-
 			// Draw geometry
-			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 
 			// Update x

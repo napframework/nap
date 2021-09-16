@@ -624,7 +624,7 @@ namespace nap
 				for (const auto& display : mRenderService->getDisplays())
 				{
 					float dpi_scale = math::max<float>(display.getHorizontalDPI(), referenceDPI) / referenceDPI;
-					nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
+					//nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
 					mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
 				}
 			}
