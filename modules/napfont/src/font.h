@@ -181,6 +181,7 @@ namespace nap
 		 * T must be of type IGlyphRepresentation, multiple representations of every character are allowed.
 		 * This means that you can associate multiple Glyph representations with the same character index.
 		 * @param index the index of the glyph inside the font.
+		 * @param scale glyph scaling factor
 		 * @param errorCode contains the error if the glyph could not be created or fetched
 		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
 		 */
@@ -195,6 +196,7 @@ namespace nap
 		 * type must be of type IGlyphRepresentation, multiple representations of every character are allowed.
 		 * This means that you can associate multiple Glyph representations with the same character index.
 		 * @param index the index of the glyph inside the font.
+		 * @param scale glyph scaling factor
 		 * @param type the type of glyph representation to create.
 		 * @param errorCode contains the error if the glyph could not be created or fetched.
 		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
@@ -205,6 +207,7 @@ namespace nap
 		 * Returns a native Glyph object that can be represented using a Glyph Representation object.
 		 * The Glyph is cached internally, to speed up future requests.
 		 * @param index the index of the glyph inside the font.
+		 * @param scale glyph scaling factor
 		 * @param errorCode contains the error if the glyph could not be created or fetched
 		 * @return a Glyph Cache associated with a specific index of the font.
 		 */
@@ -215,6 +218,7 @@ namespace nap
 		 * This bounding box tightly wraps the text and excludes initial horizontal bearing
 		 * All requested glyphs are cached internally.
 		 * @param text the string of characters to compute the bounding box for
+		 * @param scale glyph scaling factor
 		 * @param outRect contains the text bounds
 		 */
 		void getBoundingBox(const std::string& text, float scale, math::Rect& outRect);
