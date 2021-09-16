@@ -38,7 +38,7 @@ namespace nap
 			return false;
 
 		// Setup base class
-		if (!setup(errorState))
+		if (!setup(1.0f, errorState))
 			return false;
 
 		// Transform is required since text is rendered in 3D in the scene.
@@ -81,10 +81,10 @@ namespace nap
 	}
 
 
-	nap::RenderableGlyph* Renderable3DTextComponentInstance::getRenderableGlyph(uint index, utility::ErrorState& error) const
+	nap::RenderableGlyph* Renderable3DTextComponentInstance::getRenderableGlyph(uint index, float scale, utility::ErrorState& error) const
 	{
 		assert(mFont != nullptr);
-		return mFont->getOrCreateGlyphRepresentation<Renderable2DMipMapGlyph>(index, 1.0f, error);
+		return mFont->getOrCreateGlyphRepresentation<Renderable2DMipMapGlyph>(index, scale, error);
 	}
 
 

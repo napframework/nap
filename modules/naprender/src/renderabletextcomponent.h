@@ -156,12 +156,14 @@ namespace nap
 		const math::Rect& getBoundingBox(int index);
 
 		/**
-		 * Needs to be implemented by derived classes. Creates a RenderableGlyph for the given index in the font.
+		 * Needs to be implemented by derived classes.
+		 * Creates a Glyph that can be rendered using the given index and scaling factor.
 		 * @param index the index to create the render-able glyph for.
+		 * @param scale the render-able glyph scaling factor.
 		 * @param error contains the error if the glyph representation could not be created.
 		 * @return the render-able glyph for the given character index.
 		 */
-		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const = 0;
+		virtual RenderableGlyph* getRenderableGlyph(uint index, float scale, utility::ErrorState& error) const = 0;
 
 		/**
 		 * @return the material instance used to render the text
@@ -172,6 +174,11 @@ namespace nap
 		 * @return the material instance used to render the text
 		 */
 		MaterialInstance& getMaterialInstance()							{ return mMaterialInstance; }
+
+		/**
+		 * @return font scaling factor
+		 */
+		float getScale() const											{ return mFontScale; }
 
 	protected:
 		/**
@@ -197,16 +204,18 @@ namespace nap
 
 		/**
 		 * Loads the shader and initializes this component, call this in a derived class on initialization.
+		 * @param scale the font scaling factor
 		 * @param errorState holds the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
-		virtual bool setup(utility::ErrorState& errorState);
+		virtual bool setup(float scale, utility::ErrorState& errorState);
 
 		FontInstance* mFont = nullptr;									///< Pointer to the font, set on initialization
 		RenderService* mRenderService = nullptr;						///< Pointer to the Renderer
 
 	private:
 		int mIndex = 0;													///< Current line index to update or draw
+		float mFontScale = 1.0f;											///< Font scaling factor
 		MaterialInstance mMaterialInstance;								///< The MaterialInstance as created from the resource. 
 		PlaneMesh mPlane;												///< Plane used to draws a single letter
 		Sampler2DInstance* mGlyphUniform = nullptr;						///< Found glyph uniform
