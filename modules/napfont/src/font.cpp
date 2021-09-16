@@ -247,7 +247,7 @@ namespace nap
 
 		// Set character size
 		FT_Error ft_error = FT_Set_Char_Size(toFreetypeFace(mFace), 0, mProperties.mSize * 64, font_dpi, font_dpi);
-		if (!errorCode.check(ft_error == 0, "unsupported font size and resolution"))
+		if (!errorCode.check(ft_error == 0, "unable to set size for glyph: %d, unsupported size or resolution", index))
 			return false;
 
 		// Load Glyph into memory
