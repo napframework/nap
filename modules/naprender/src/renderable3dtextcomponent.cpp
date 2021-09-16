@@ -70,7 +70,7 @@ namespace nap
 
 		// Get text bounding box
 		nap::math::Rect bbox;
-		mFont->getBoundingBox(referenceText, 1.0f, bbox);
+		mFont->getBoundingBox(referenceText, getDPIScale(), bbox);
 		if (!bbox.hasWidth())
 			return false;
 
