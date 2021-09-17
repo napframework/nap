@@ -49,7 +49,7 @@ namespace nap
 	}
 
 
-	bool RenderableTextComponentInstance::setup(utility::ErrorState& errorState)
+	bool RenderableTextComponentInstance::setup(float scale, utility::ErrorState& errorState)
 	{
 		// Get resource and extract font and transform
 		RenderableTextComponent* resource = getComponent<RenderableTextComponent>();
@@ -140,6 +140,7 @@ namespace nap
 			return false;
 
 		// Set text, needs to succeed on initialization
+		mDPIScale = scale;
 		if (!addLine(resource->mText, errorState))
 			return false;
 
@@ -171,7 +172,7 @@ namespace nap
 		for (const auto& letter : text)
 		{
 			// Fetch glyph.
-			RenderableGlyph* glyph = getRenderableGlyph(mFont->getGlyphIndex(letter), error);
+			RenderableGlyph* glyph = getRenderableGlyph(mFont->getGlyphIndex(letter), mDPIScale, error);
 			if (!error.check(glyph != nullptr, "%s: unsupported character: %d, %s", mID.c_str(), letter, error.toString().c_str()))
 			{
 				success = false;
@@ -183,7 +184,7 @@ namespace nap
 
 		// Set text and compute bounding box
 		mLinesCache[mIndex]  = text;
-		mFont->getBoundingBox(text, mTextBounds[mIndex]);
+		mFont->getBoundingBox(text, mDPIScale, mTextBounds[mIndex]);
 		return success;
 	}
 

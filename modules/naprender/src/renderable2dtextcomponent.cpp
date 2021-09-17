@@ -12,6 +12,7 @@
 #include <mathutils.h>
 #include <orthocameracomponent.h>
 #include <nap/core.h>
+#include <nap/logger.h>
 
 // nap::Renderable2DTextComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
@@ -19,6 +20,7 @@ RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
 	RTTI_PROPERTY("Orientation",		&nap::Renderable2DTextComponent::mOrientation,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",			&nap::Renderable2DTextComponent::mDepthMode,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("IgnoreTransform",	&nap::Renderable2DTextComponent::mIgnoreTransform,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DPI Aware",			&nap::Renderable2DTextComponent::mDPIAware,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::Renderable2DTextComponentInstance run time class definition 
@@ -36,20 +38,32 @@ namespace nap
 		if (!RenderableTextComponentInstance::init(errorState))
 			return false;
 
+		// Fetch render service
+		mService = getEntityInstance()->getCore()->getService<RenderService>();
+		assert(mService != nullptr);
+
+		// Compute max font scaling factor based on highest display DPI value
+		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
+		mDPIAware = resource->mDPIAware && mService->getHighDPIEnabled();
+		float fscale = 1.0f;
+		if (mDPIAware)
+		{
+			for (const auto& display : mRenderService->getDisplays())
+			{
+				float dscale = display.getHorizontalDPI() / font::dpi;
+				fscale = dscale > fscale ? dscale : fscale;
+			}
+		}
+
 		// Init base class (setting up the plane glyph plane etc.)
-		if (!setup(errorState))
+		if (!setup(fscale, errorState))
 			return false;
 		
 		// Copy flags
-		Renderable2DTextComponent* resource = getComponent<Renderable2DTextComponent>();
 		getMaterialInstance().setDepthMode(resource->mDepthMode);
 		setOrientation(resource->mOrientation);
 		setLocation(resource->mLocation);
 		mIgnoreTransform = resource->mIgnoreTransform;
-
-		// Fetch render service
-		mService = getEntityInstance()->getCore()->getService<RenderService>();
-		assert(mService != nullptr);
 
 		return true;
 	}
@@ -70,30 +84,31 @@ namespace nap
 	}
 
 
-	glm::ivec2 Renderable2DTextComponentInstance::getTextPosition()
+	glm::ivec2 Renderable2DTextComponentInstance::getTextPosition(float scale)
 	{
 		// Calculate offset
 		const math::Rect& bounds = getBoundingBox();
-		glm::ivec2 rvalue(0, mLocation.y);
+		glm::ivec2 rvalue(mLocation.x, mLocation.y);
 		switch (mOrientation)
 		{
-		case utility::ETextOrientation::Left:
-		{
-			rvalue.x = mLocation.x - (int)(bounds.mMinPosition.x);
-			break;
-		}
-		case utility::ETextOrientation::Center:
-		{
-			rvalue.x = mLocation.x - (int)(bounds.getWidth() / 2.0f);
-			break;
-		}
-		case utility::ETextOrientation::Right:
-		{
-			rvalue.x = mLocation.x - (int)(bounds.getWidth());
-			break;
-		}
-		default:
-			assert(false);
+			case utility::ETextOrientation::Left:
+			{
+				break;
+			}
+			case utility::ETextOrientation::Center:
+			{
+				rvalue.x -= static_cast<int>((bounds.getWidth() * scale) / 2.0f);
+				break;
+			}
+			case utility::ETextOrientation::Right:
+			{
+				rvalue.x -= static_cast<int>(bounds.getWidth() * scale);
+				break;
+			}
+			default:
+			{
+				assert(false);
+			}
 		}
 
 		// Extract component transform (x - y coordinates)
@@ -108,10 +123,10 @@ namespace nap
 	}
 
 
-	nap::RenderableGlyph* Renderable2DTextComponentInstance::getRenderableGlyph(uint index, utility::ErrorState& error) const
+	nap::RenderableGlyph* Renderable2DTextComponentInstance::getRenderableGlyph(uint index, float scale, utility::ErrorState& error) const
 	{
 		assert(mFont != nullptr);
-		return mFont->getOrCreateGlyphRepresentation<Renderable2DGlyph>(index, error);
+		return mFont->getOrCreateGlyphRepresentation<Renderable2DGlyph>(index, scale, error);
 	}
 
 
@@ -123,16 +138,22 @@ namespace nap
 
 	void Renderable2DTextComponentInstance::computeTextModelMatrix(glm::mat4x4& outMatrix)
 	{
-		// Get object space position based on orientation of text
-		glm::ivec2 pos = getTextPosition();
+		float dpi_scale = 1.0f;
+		auto* cur_window = mRenderService->getCurrentRenderWindow();
 
-		// Compose model matrix
-		outMatrix = glm::translate(glm::mat4(),
+		// Compute dpi scaling factor, based on highest dpi scaling value, always < 1
+		// Note that current window is unavailable when rendering headless
+		if (mDPIAware && cur_window != nullptr)
 		{
-			(float)pos.x,
-			(float)pos.y,
-			0.0f
-		});
+			auto* display = mRenderService->findDisplay(*cur_window);
+			assert(display != nullptr);
+			dpi_scale = (1.0f / getDPIScale()) * (math::max<float>(display->getHorizontalDPI(), font::dpi) / font::dpi);
+		}
+
+		// Get object space position based on orientation of text
+		glm::ivec2 pos = getTextPosition(dpi_scale);
+		outMatrix = glm::translate(glm::mat4(), { (float)pos.x, (float)pos.y, 0.0f });
+		outMatrix = glm::scale(outMatrix, { dpi_scale, dpi_scale, 1.0f });
 	}
 
 

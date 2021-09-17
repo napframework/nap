@@ -22,8 +22,10 @@ struct ImGuiContext;
 
 namespace nap
 {
-	// Reference dpi
-	inline constexpr float referenceDPI = 96.0f;
+	namespace gui
+	{
+		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+	}
 
 	// Forward Declares
 	class RenderService;

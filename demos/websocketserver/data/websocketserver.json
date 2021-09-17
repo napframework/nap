@@ -42,7 +42,8 @@
                     },
                     "Orientation": "Center",
                     "DepthMode": "NoReadWrite",
-                    "IgnoreTransform": true
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
                 },
                 {
                     "Type": "nap::APIComponent",
@@ -65,8 +66,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 32,
-                "DPI": 96
+                "Size": 32
             },
             "Font": "fonts/Montserrat-Light.otf"
         },
