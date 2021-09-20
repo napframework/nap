@@ -57,7 +57,7 @@ namespace nap
 		void addEvent(ArtNetEventPtr event);
 
 		/**
-		* Consumes all received Art-Net events and moves them to outEvents, called by the service on the main thread
+		* Consumes all received Art-Net events and moves them to outEvents, called by the service on the main thread.
 		* Calling this will clear the internal queue and transfers ownership of the events to the caller
 		* @param outEvents will hold the transferred Art-Net events
 		*/
