@@ -676,6 +676,7 @@
             "mID": "CanvasMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -724,10 +725,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.06700000166893006,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1

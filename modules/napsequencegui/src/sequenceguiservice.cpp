@@ -8,6 +8,8 @@
 #include <nap/logger.h>
 #include <iostream>
 #include <utility/stringutils.h>
+#include <sequenceservice.h>
+#include <imguiservice.h>
 
 // Local Includes
 #include "sequenceguiservice.h"
@@ -40,8 +42,7 @@ namespace nap
 
 	SequenceGUIService::SequenceGUIService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
 
 
 	SequenceGUIService::~SequenceGUIService() = default;
@@ -60,6 +61,11 @@ namespace nap
 
 	bool SequenceGUIService::init(nap::utility::ErrorState& errorState)
 	{
+		// Get gui service and colors
+		mGuiService = getCore().getService<IMGuiService>();
+		mColors.init(mGuiService->getColors());
+
+		// Register all views
 		if(!errorState.check(registerEventView<std::string>(), "Error registering event view"))
 			return false;
 
@@ -75,44 +81,44 @@ namespace nap
 		if(!errorState.check(registerEventView<glm::vec3>(), "Error registering event view"))
 			return false;
 
+		// Register track types
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView)),
-							  "Error registering track view"))
+			"Error registering track view"))
 			return false;
 
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<float>), RTTI_OF(SequenceCurveTrackView)),
-							 "Error registering track view"))
+			"Error registering track view"))
 			return false;
 
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec2>), RTTI_OF(SequenceCurveTrackView)),
-							 "Error registering track view"))
+                        "Error registering track view"))
 			return false;
 
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec3>), RTTI_OF(SequenceCurveTrackView)),
-							 "Error registering track view"))
+                        "Error registering track view"))
 			return false;
 
 		if(!registerTrackViewFactory(RTTI_OF(SequenceCurveTrackView), 	[](	SequenceGUIService& service,
-																			SequenceEditorGUIView& editorGuiView,
-																			SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
-																			{
-																				return std::make_unique<SequenceCurveTrackView>(service, editorGuiView, state);
-																			}))
+                                                                                        SequenceEditorGUIView& editorGuiView,
+                                                                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
+                                                                                        {
+                                                                                                return std::make_unique<SequenceCurveTrackView>(service, editorGuiView, state);
+                                                                                        }))
 		{
 			errorState.fail("Error registering track view factory function");
 			return false;
 		}
 
 		if(!registerTrackViewFactory(RTTI_OF(SequenceEventTrackView), 	[](	SequenceGUIService& service,
-																	  		SequenceEditorGUIView& editorGuiView,
-																	  		SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
-									  									{
-										  									return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
-									  									}))
+                                                                                        SequenceEditorGUIView& editorGuiView,
+                                                                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
+                                                                                {
+                                                                                        return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
+                                                                                }))
 		{
 			errorState.fail("Error registering track view factory function");
 			return false;
 		}
-
 		return true;
 	}
 
@@ -223,7 +229,7 @@ namespace nap
 		std::vector<rtti::TypeInfo> track_types;
 		for(const auto& it : mTrackViewTypeMap)
 		{
-			track_types.emplace_back(it.first);
+                  track_types.emplace_back(it.first);
 		}
 		return track_types;
 	}
@@ -234,8 +240,33 @@ namespace nap
 		std::vector<rtti::TypeInfo> event_actions;
 		for(const auto& it : mEditEventHandlerMap)
 		{
-			event_actions.emplace_back(it.first);
+                  event_actions.emplace_back(it.first);
 		}
 		return event_actions;
+	}
+
+
+	void SequenceGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+	    dependencies.emplace_back(RTTI_OF(SequenceService));
+            dependencies.emplace_back(RTTI_OF(IMGuiService));
+	}
+
+
+	nap::IMGuiService& SequenceGUIService::getGui()
+	{
+		assert(mGuiService != nullptr);
+		return *mGuiService;
+	}
+
+
+	void SequenceGUIService::Colors::init(const IMGuiColorPalette& palette)
+	{
+		mHigh = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor));
+		mDark = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mDarkColor));
+		mFro3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
+		mFro2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
+		mFro1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront1Color));
+		mBack = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mBackgroundColor));
 	}
 }

@@ -253,10 +253,10 @@ namespace nap
 	void SnapshotRenderTarget::beginRendering()
 	{
 		glm::ivec2 size = getBufferSize();
-		const glm::vec4& clear_color = mSnapshot->mClearColor;
+		const RGBAColorFloat& clear_color = mSnapshot->mClearColor;
 
 		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { clear_color.r, clear_color.g, clear_color.b, clear_color.a };
+		clearValues[0].color = { clear_color[0], clear_color[1], clear_color[2], clear_color[3] };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		// Setup render pass

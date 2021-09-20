@@ -12,6 +12,7 @@
 #include <stack>
 #include <cctype>
 #include <mathutils.h>
+#include <color.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -604,6 +605,13 @@ bool PropertyPath::isEnum() const
 	return getWrappedType().is_enumeration();
 }
 
+
+bool PropertyPath::isColor() const
+{
+	return getWrappedType().is_derived_from(RTTI_OF(nap::BaseColor));
+}
+
+
 void PropertyPath::iterateChildren(std::function<bool(const PropertyPath&)> visitor, int flags) const
 {
 	if (!getObject())
@@ -822,4 +830,3 @@ void PropertyPath::invalidate()
 {
 	mDocument = nullptr;
 }
-

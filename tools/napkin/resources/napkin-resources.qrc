@@ -58,5 +58,6 @@
 		<file>fonts/NunitoSans-ExtraBold.ttf</file>
 		<file>fonts/NunitoSans-Regular.ttf</file>
 		<file>fonts/NunitoSans-SemiBold.ttf</file>
+		<file>icons/color_wheel.png</file>
 	</qresource>
 </RCC>

@@ -66,12 +66,12 @@ namespace nap
 		 * Updates the render target clear color.
 		 * @param color the new clear color to use.
 		 */
-		virtual void setClearColor(const glm::vec4& color) override				{ mClearColor = color; }
+		virtual void setClearColor(const RGBAColorFloat& color) override		{ mClearColor = color; }
 		
 		/**
 		 * @return the currently used render target clear color.
 		 */
-		virtual const glm::vec4& getClearColor() const override					{ return mClearColor; }
+		virtual const RGBAColorFloat& getClearColor() const override			{ return mClearColor; }
 
 		/**
 		 * Geometry winding order, defaults to clockwise. 
@@ -117,7 +117,7 @@ namespace nap
 		glm::u32vec2				mSize = { 0, 0 };
 
 		bool						mSampleShading = true;
-		glm::vec4					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+		RGBAColorFloat				mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 		VkSampleCountFlagBits		mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkFormat					mFormat = VK_FORMAT_R8G8B8A8_UNORM;

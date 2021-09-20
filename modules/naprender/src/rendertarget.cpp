@@ -145,7 +145,7 @@ namespace nap
 	{
 		glm::ivec2 size = mColorTexture->getSize();
 		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
+		clearValues[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		// Setup render pass
