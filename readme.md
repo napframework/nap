@@ -62,6 +62,8 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 [EGO](https://www.studiodrift.com/work#/ego/) by Studio Drift
 ![4DSound System](https://www.napframework.com/jpg/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
+![NAP Framework](https://www.napframework.com/jpg/nap_heightmap_demo_1280.jpg)
+[NAP Framework](https://napframework.com/) editor & demo
 
 # Where to Start
 
