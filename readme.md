@@ -54,6 +54,8 @@ NAP documentation can be found online at [www.napframework.com/doxygen](https://
 
 Visit [www.napframework.com](https://www.napframework.com/showcase) for more examples
 
+![NAP Framework](https://www.napframework.com/jpg/nap_heightmap_demo_1280.jpg)
+[NAP Framework](https://napframework.com/) editor & demo
 ![Between Mind and Matter, Nick Verstand](https://www.napframework.com/jpg/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
 ![Habitat, Heleen Blanken](https://www.napframework.com/jpg/habitat_1280.jpg)
@@ -62,8 +64,6 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 [EGO](https://www.studiodrift.com/work#/ego/) by Studio Drift
 ![4DSound System](https://www.napframework.com/jpg/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://www.napframework.com/jpg/nap_heightmap_demo_1280.jpg)
-[NAP Framework](https://napframework.com/) editor & demo
 
 # Where to Start
 
