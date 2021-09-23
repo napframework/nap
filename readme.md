@@ -56,10 +56,10 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 
 ![Between Mind and Matter, Nick Verstand](https://www.napframework.com/jpg/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
+![Shylight, Studio Drift](https://www.napframework.com/jpg/shylight_basel_1280.jpg)
+[Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
 ![Habitat, Heleen Blanken](https://www.napframework.com/jpg/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
-![Shylight, Studio Drift](https://www.napframework.com/jpg/shylight_basel_1280.jpg)
-[Shylight](https://www.studiodrift.com/work#/ego/) by Studio Drift
 ![4DSound System](https://www.napframework.com/jpg/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
 ![NAP Framework](https://www.napframework.com/jpg/nap_heightmap_demo_1280.jpg)
