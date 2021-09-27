@@ -51,9 +51,7 @@ namespace nap
 	public:
 		// properties
 		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
-		std::string mIPRemoteEndpoint 	= "127.0.0.1";  ///< Property: 'Endpoint' the ip address the server socket binds to
 		int mBufferSize 				= 1024;			///< Property: 'BufferSize' the size of the buffer the server writes to
-		bool mAllowFailure 				= false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
 	public:
 		/**
 		 * packet received signal will be dispatched on the thread this UDPServer is registered to, see UDPThread

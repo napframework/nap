@@ -36,10 +36,15 @@ namespace nap
 		 * called on destruction
 		 */
 		virtual void onDestroy() override;
+    public:
+        // Properties
+        bool mAllowFailure 					= false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
 	protected:
 		/**
 		 * called by a UDPThread
 		 */
 		virtual void process() = 0;
+
+        bool handleAsioError(const asio::error_code& errorCode, utility::ErrorState& errorState, bool& success);
 	};
 }

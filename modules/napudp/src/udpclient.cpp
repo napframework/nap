@@ -19,7 +19,6 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UDPClient)
-	RTTI_PROPERTY("AllowFailure", &nap::UDPClient::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Endpoint", &nap::UDPClient::mRemoteIp, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port", &nap::UDPClient::mPort, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxQueueSize", &nap::UDPClient::mMaxPacketQueueSize, nap::rtti::EPropertyMetaData::Default)
@@ -37,26 +36,21 @@ namespace nap
 		if(!UDPAdapter::init(errorState))
 			return false;
 
+        // when asio error occurs, init_success indicates whether initialization should fail or succeed
+        bool init_success = false;
+
 		// try to open socket
 		asio::error_code asio_error_code;
 		mSocket.open(udp::v4(), asio_error_code);
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
 
-		if(asio_error_code)
-		{
-			if(!mAllowFailure)
-			{
-				errorState.fail(asio_error_code.message());
-				return false;
-			}
-			else
-			{
-				nap::Logger::error(*this, asio_error_code.message());
-			}
-		}
-		else
-		{
-			mRemoteEndpoint = udp::endpoint(address::from_string(mRemoteIp), mPort);
-		}
+        // create address from string
+        auto address = address::from_string(mRemoteIp, asio_error_code);
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
+
+        mRemoteEndpoint = udp::endpoint(address, mPort);
 
 		return true;
 	}

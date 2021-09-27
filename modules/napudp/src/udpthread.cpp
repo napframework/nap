@@ -38,6 +38,8 @@ namespace nap
 
 	bool UDPThread::start(utility::ErrorState& errorState)
 	{
+        mRun.store(true);
+
 		switch (mUpdateMethod)
 		{
 		case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
@@ -53,15 +55,17 @@ namespace nap
 			errorState.fail("Unknown UDP thread update method");
 			return false;
 		}
-		mRun = true;
+
 		return true;
 	}
 
 
 	void UDPThread::stop()
 	{
-		if(mRun)
+		if(mRun.load())
 		{
+            mRun.store(false);
+
 			switch (mUpdateMethod)
 			{
 			case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
@@ -73,7 +77,6 @@ namespace nap
 			default:
 				break;
 			}
-			mRun = false;
 		}
 	}
 

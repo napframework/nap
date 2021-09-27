@@ -63,7 +63,6 @@ namespace nap
 		// properties
 		int mPort 							= 13251; 		///< Property: 'Port' the port the client socket binds to
 		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
-		bool mAllowFailure 					= false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
 	protected:

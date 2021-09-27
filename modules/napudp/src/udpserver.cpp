@@ -19,8 +19,6 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UDPServer)
-	RTTI_PROPERTY("AllowFailure", &nap::UDPServer::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Endpoint", &nap::UDPServer::mIPRemoteEndpoint, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port", &nap::UDPServer::mPort, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::UDPServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -38,39 +36,21 @@ namespace nap
 
 		mBuffer.resize(mBufferSize);
 
-		// try to open socket
+        // when asio error occurs, init_success indicates whether initialization should fail or succeed
+        bool init_success = false;
+
+        // try to open socket
 		asio::error_code asio_error_code;
 		mSocket.open(udp::v4(), asio_error_code);
-		if(asio_error_code)
-		{
-			if(!mAllowFailure)
-			{
-				errorState.fail(asio_error_code.message());
-				return false;
-			}
-			else
-			{
-				nap::Logger::error(*this, asio_error_code.message());
-			}
-		}
-		else
-		{
-			// try to bind socket
-			nap::Logger::info(*this, "Listening at port %i", mPort);
-			mSocket.bind(udp::endpoint(address::from_string(mIPRemoteEndpoint), mPort), asio_error_code);
-			if( asio_error_code )
-			{
-				if (!mAllowFailure)
-				{
-					errorState.fail(asio_error_code.message());
-					return false;
-				}
-				else
-				{
-					nap::Logger::error(*this, asio_error_code.message());
-				}
-			}
-		}
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
+
+        // try to bind socket
+        nap::Logger::info(*this, "Listening at port %i", mPort);
+        mSocket.bind(udp::endpoint(asio::ip::address_v4::any(), mPort), asio_error_code);
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
+
 		return true;
 	}
 
@@ -87,7 +67,7 @@ namespace nap
 		asio::error_code asio_error;
 		if(mSocket.available(asio_error) > 0)
 		{
-			mSocket.receive_from(asio::buffer(mBuffer), mRemoteEndpoint, 0,asio_error);
+			mSocket.receive(asio::buffer(mBuffer), 0,asio_error);
 
 			// construct udp packet, clears current buffer
 			std::vector<nap::uint8> buffer;
