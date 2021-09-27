@@ -60,8 +60,8 @@ namespace nap
 		ImGui::Text("Assigned Output");
 
 		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
-		inspector_cursor_pos.x += 5;
-		inspector_cursor_pos.y += 5;
+		inspector_cursor_pos.x += (5.0f * mState.mScale);
+		inspector_cursor_pos.y += (5.0f * mState.mScale);
 		ImGui::SetCursorPos(inspector_cursor_pos);
 
 		bool assigned = false;
@@ -91,7 +91,7 @@ namespace nap
 			}
 		}
 
-		ImGui::PushItemWidth(200.0f);
+		ImGui::PushItemWidth(200.0f * mState.mScale);
 		if (Combo(
 			"",
 			&current_item, event_outputs))
@@ -123,8 +123,8 @@ namespace nap
 					draw_list->AddLine(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						sequencer::colors::lightGrey, // color
-						1.0f); // thickness
+						mService.getColors().mFro2, // color
+						1.0f * mState.mScale); // thickness
 
 					ImGui::BeginTooltip();
 					ImGui::Text(formatTimeString(mState.mMouseCursorTime).c_str());
@@ -153,8 +153,8 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						sequencer::colors::lightGrey, // color
-						1.0f); // thickness
+						mService.getColors().mFro2, // color
+						1.0f * mState.mScale); // thickness
 				}
 			}
 
@@ -167,8 +167,8 @@ namespace nap
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-						sequencer::colors::lightGrey, // color
-						1.0f); // thickness
+						mService.getColors().mFro2, // color
+						1.0f * mState.mScale); // thickness
 				}
 			}
 		}
@@ -191,12 +191,9 @@ namespace nap
 			auto type = (segment.get())->get_type();
 			auto it = mSegmentViews.find(type);
 			assert(it != mSegmentViews.end()); // type not found
-			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x);
+			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x + (5.0f * mState.mScale), mService.getColors().mHigh);
 
-			//
 			prev_segment_x = segment_x;
-
-			//
 			segment_count++;
 		}
 	}
@@ -274,10 +271,12 @@ namespace nap
 		const float segmentWidth,
 		ImDrawList* drawList)
 	{
+		float seg_bounds = 10.0f * mState.mScale;
+
 		// segment handler
         if (((mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
-            { trackTopLeft.x + segmentX - 10, trackTopLeft.y - 10 },
-            { trackTopLeft.x + segmentX + 10, trackTopLeft.y + mState.mTrackHeight + 10 })) &&
+            { trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds },
+            { trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + mState.mTrackHeight + seg_bounds })) &&
              ( mState.mAction->isAction<None>() || ( mState.mAction->isAction<HoveringSegment>() && mState.mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID)))
 			||
 			( mState.mAction->isAction<DraggingSegment>() &&  mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID))
@@ -298,8 +297,8 @@ namespace nap
 			drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				sequencer::colors::white, // color
-				3.0f); // thickness
+				mService.getColors().mFro3, // color
+				3.0f * mState.mScale); // thickness
 
 			if (!isAlreadyHovering && !isAlreadyDragging)
 			{
@@ -370,14 +369,14 @@ namespace nap
 		}
 		else 
 		{
-			ImU32 line_color = sequencer::colors::white;
+			ImU32 line_color = mService.getColors().mFro3;
 
 			// if segment is in clipboard, line is red
 			if( mState.mClipboard->isClipboard<EventSegmentClipboard>() )
 			{
 				if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					line_color = sequencer::colors::red;
+					line_color = mService.getColors().mHigh;
 				}
 			}
 
@@ -386,7 +385,7 @@ namespace nap
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 				line_color, // color
-				1.0f); // thickness
+				1.0f * mState.mScale); // thickness
 
 			if (mState.mAction->isAction<HoveringSegment>())
 			{
@@ -702,17 +701,13 @@ namespace nap
 
 
 	template<>
-	void SequenceEventTrackSegmentView<std::string>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	void SequenceEventTrackSegmentView<std::string>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventString>());
 		const auto& segment_event = static_cast<const SequenceTrackSegmentEventString&>(segment);
-
 		std::ostringstream string_stream;
 		string_stream << "\"" << segment_event.mValue << "\"" ;
-
-		drawList->AddText(
-			{ topLeft.x + x + 5, topLeft.y + 5 },
-			sequencer::colors::red, string_stream.str().c_str());
+		drawList->AddText ( { topLeft.x + x, topLeft.y }, color, string_stream.str().c_str() );
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -731,7 +726,7 @@ namespace nap
 
 
 	template<>
-	void SequenceEventTrackSegmentView<float>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	void SequenceEventTrackSegmentView<float>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventFloat>());
 		const auto& segment_event = static_cast<const SequenceTrackSegmentEventFloat&>(segment);
@@ -740,8 +735,8 @@ namespace nap
 		string_stream << segment_event.mValue;
 
 		drawList->AddText(
-			{ topLeft.x + x + 5, topLeft.y + 5 },
-			sequencer::colors::red,
+			{ topLeft.x + x, topLeft.y },
+			color,
 			string_stream.str().c_str());
 	}
 
@@ -761,7 +756,7 @@ namespace nap
 
 
 	template<>
-	void SequenceEventTrackSegmentView<int>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	void SequenceEventTrackSegmentView<int>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventInt>());
 		const auto& segment_event = static_cast<const SequenceTrackSegmentEventInt&>(segment);
@@ -769,10 +764,12 @@ namespace nap
 		std::ostringstream string_stream;
 		string_stream << segment_event.mValue;
 
-		drawList->AddText(
-			{ topLeft.x + x + 5, topLeft.y + 5 },
-			sequencer::colors::red,
-			string_stream.str().c_str());
+		drawList->AddText
+		(
+			{ topLeft.x + x, topLeft.y },
+			color,
+			string_stream.str().c_str()
+		);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -785,21 +782,18 @@ namespace nap
 	{
 		auto* edit_action = action.getDerived<SequenceGUIActions::EditingEventSegment<glm::vec2>>();
 		auto& value = static_cast<glm::vec2&>(edit_action->mValue);
-
 		ImGui::InputFloat2("Value", &value.x);
 	}
 
 
 	template<>
-	void SequenceEventTrackSegmentView<glm::vec2>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	void SequenceEventTrackSegmentView<glm::vec2>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec2>());
 		const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec2&>(segment);
-
 		std::ostringstream string_stream;
 		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ")";
-
-		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 }, sequencer::colors::red,string_stream.str().c_str());
+		drawList->AddText({ topLeft.x + x, topLeft.y }, color,string_stream.str().c_str());
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -818,13 +812,12 @@ namespace nap
 
 
 	template<>
-	void SequenceEventTrackSegmentView<glm::vec3>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, const float x)
+	void SequenceEventTrackSegmentView<glm::vec3>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec3>());
 		const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec3&>(segment);
-
 		std::ostringstream string_stream;
 		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ")";
-		drawList->AddText({ topLeft.x + x + 5, topLeft.y + 5 }, sequencer::colors::red, string_stream.str().c_str());
+		drawList->AddText({ topLeft.x + x, topLeft.y }, color, string_stream.str().c_str());
 	}
 }

@@ -108,7 +108,8 @@ namespace nap
 		 * This call asserts if the conversion can't be performed.
 		 * When converting to and from float colors, normalized color values are used.
 		 * Float values that do not fall within the 0-1 range are clamped
-		 * This call won't work with colors that point to values in memory! Valid options for T are: RGBColor8, RColor8, RGBColorFloat etc.
+		 * This call won't work with colors that point to values in memory!
+		 * Valid options for T are: RGBColor8, RColor8, RGBColorFloat etc.
 		 * 
 		 * Example:
 		 *
@@ -219,6 +220,13 @@ namespace nap
 		 */
 		Color(const std::array<T, CHANNELS>& colors) : 
 			BaseColor(CHANNELS, sizeof(T)), mValues(colors)								{ }
+
+		/**
+		 * Initializes this color using a different type of color. Colors are converted automatically.
+		 * The source color must have an equal or higher amount of channels.
+		 * @param source the color to initialize this color with.
+		 */
+		Color(const nap::BaseColor& source);
 
 		/**
 		 *	@return the type of the value
@@ -367,14 +375,21 @@ namespace nap
 		RTTI_ENABLE(BaseColor)
 	public:
 		/**
-		 *	Constructor that creates an RGB color based on the given values
+		 * Constructor that creates an RGB color based on the given values
 		 */
 		RGBColor(T red, T green, T blue) : Color<T, 3>({red, green, blue})		{ }
 
 		/**
-		 *	Default constructor
+		 * Default constructor
 		 */
 		RGBColor() : Color<T, 3>()												{ }
+
+		/**
+		 * Initialize using a different type of color. Colors are converted.
+		 * The source color must have an equal or higher amount of channels.
+		 * @param source the source color to convert.
+		 */
+		RGBColor(const nap::BaseColor& source) : Color<T, 3>(source)			{ }
 
 		/**
 		* Sets the red channel to the incoming value
@@ -425,15 +440,22 @@ namespace nap
 		RTTI_ENABLE(BaseColor)
 	public:
 		/**
-		*	Constructor that creates an RGB color based on the given values
-		*/
+		 *	Constructor that creates an RGB color based on the given values
+		 */
 		RGBAColor(T red, T green, T blue, T alpha) :
 			Color<T, 4>({ red, green, blue, alpha }) { }
 
 		/**
-		*	Default constructor
-		*/
+		 *	Default constructor
+		 */
 		RGBAColor() : Color<T, 4>()												{ }
+
+		/**
+		 * Initialize using a different type of color. Colors are converted.
+		 * The source color must have an equal or higher amount of channels.
+		 * @param source the source color to convert.
+		 */
+		RGBAColor(const nap::BaseColor& source) : Color<T, 4>(source)			{ }
 
 		/**
 		 * Sets the red channel to the incoming value
@@ -495,14 +517,21 @@ namespace nap
 		RTTI_ENABLE(BaseColor)
 	public:
 		/**
-		* Constructor that creates an R color based on the given value
-		*/
+		 * Constructor that creates an R color based on the given value
+		 */
 		RColor(T value) : Color<T, 1>({ value }) { }
 
 		/**
-		*	Default constructor
-		*/
+		 * Default constructor
+		 */
 		RColor() : Color<T, 1>() { }
+
+		/**
+		 * Initialize using a different type of color. Colors are converted.
+		 * The source color must have an equal or higher amount of channels.
+		 * @param source the source color to convert.
+		 */
+		RColor(const nap::BaseColor& source) : Color<T, 1>(source)				{ }
 
 		/**
 		* Sets the red channel to the incoming value
@@ -555,6 +584,14 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
+
+
+	template<typename T, int CHANNELS>
+	nap::Color<T, CHANNELS>::Color(const nap::BaseColor& source) : BaseColor(CHANNELS, sizeof(T))
+	{
+		source.convert(*this);
+	}
+
 
 	template<typename T, int CHANNELS>
 	bool nap::Color<T, CHANNELS>::operator==(const Color<T, CHANNELS>& rhs) const

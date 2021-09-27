@@ -49,6 +49,7 @@ QHeaderView:section {
     color: #5D5E73;
     background-color: #252638;
     border: 0;
+    padding-left: 4px;
 }
 
 QGroupBox {
@@ -101,7 +102,7 @@ QDockWidget::title {
 
 QLineEdit {
     border: none;
-    border-radius: 2px;
+    border-radius: 0px;
     padding-left: 3px;
     padding-right: 10px;
     background: #171b33;
@@ -115,19 +116,19 @@ QLineEdit:focus {
 
 QScrollBar:horizontal,
 QScrollBar:vertical {
-    border-radius: 2px;
+    border-radius: 0px;
     background: #252638;
 }
 
 QScrollBar::handle:horizontal,
 QScrollBar::handle:vertical {
     background: #343544;
-    border-radius: 2px;
+    border-radius: 0px;
 }
 QScrollBar::handle:horizontal:hover,
 QScrollBar::handle:vertical:hover {
     background: #5D5E73;
-    border-radius: 2px;
+    border-radius: 0px;
 }
 
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,

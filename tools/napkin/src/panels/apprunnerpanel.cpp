@@ -29,7 +29,7 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 	connect(&mProcess, &QProcess::readyReadStandardError, this, &AppRunnerPanel::onReadErr);
 
 	// Cast to tell the compiler which override to use
-	connect(&mProcess, (void (QProcess::*)(int)) & QProcess::finished, this, &AppRunnerPanel::onAppFinished);
+	connect(&mProcess, (void (QProcess::*)(int, QProcess::ExitStatus)) & QProcess::finished, this, &AppRunnerPanel::onAppFinished);
 }
 
 napkin::AppRunnerPanel::~AppRunnerPanel()
@@ -118,7 +118,7 @@ void napkin::AppRunnerPanel::onAppState(QProcess::ProcessState state)
 	nap::Logger::info("App State Changed: %s", nap::qt::QEnumToString(state).toStdString().c_str());
 }
 
-void napkin::AppRunnerPanel::onAppFinished(int exitCode)
+void napkin::AppRunnerPanel::onAppFinished(int exitCode, QProcess::ExitStatus)
 {
 	nap::Logger::info(QString("App Exit with code %1").arg(exitCode).toStdString());
 	mStartButton.setEnabled(true);

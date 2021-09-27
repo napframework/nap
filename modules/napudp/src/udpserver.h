@@ -29,9 +29,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * The UDPServer connects to an endpoint and receives any UDP packets send to the endpoint
-	 * The server will invoke the packetReceived signal when packets are received
-	 * The signal will be fired on the thread this UDPServer is registered to, see UDPThread
+	 * The UDP Server connects to an endpoint and receives any UDP packets send to the endpoint.
+	 * The server will invoke the packetReceived signal when packets are received.
+	 * The signal will be fired on the thread this UDPServer is registered to, see UDPThread.
 	 */
 	class NAPAPI UDPServer final : public UDPAdapter
 	{
@@ -51,9 +51,7 @@ namespace nap
 	public:
 		// properties
 		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
-		std::string mIPRemoteEndpoint 	= "127.0.0.1";  ///< Property: 'Endpoint' the ip adress the server socket binds to
 		int mBufferSize 				= 1024;			///< Property: 'BufferSize' the size of the buffer the server writes to
-		bool mThrowOnInitError 			= true;			///< Property: 'ThrowOnFailure' when server fails to bind socket, return false on start
 	public:
 		/**
 		 * packet received signal will be dispatched on the thread this UDPServer is registered to, see UDPThread

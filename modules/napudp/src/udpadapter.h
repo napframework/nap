@@ -13,8 +13,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * UDPAdapters process() function will be called from the UDPThread the UDPAdapter registers to.
-	 * Both UDPClient & UDPServer extend on UDPAdapter
+	 * Base class of specific UDP client and server resources.  
+	 * process() is automatically called by the thread this adapter links to.
+	 * Both UDPClient & UDPServer extend UDPAdapter.
 	 */
 	class NAPAPI UDPAdapter : public Resource
 	{
@@ -25,9 +26,9 @@ namespace nap
 		ResourcePtr<UDPThread> mThread = nullptr; ///< Property: 'Thread' the udp thread the adapter registers itself to
 
 		/**
-		 * initialization
+		 * Initialization
 		 * @param error contains error information
-		 * @return true on succes
+		 * @return true on success
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -35,10 +36,15 @@ namespace nap
 		 * called on destruction
 		 */
 		virtual void onDestroy() override;
+    public:
+        // Properties
+        bool mAllowFailure 					= false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
 	protected:
 		/**
 		 * called by a UDPThread
 		 */
 		virtual void process() = 0;
+
+        bool handleAsioError(const asio::error_code& errorCode, utility::ErrorState& errorState, bool& success);
 	};
 }

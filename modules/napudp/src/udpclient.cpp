@@ -19,7 +19,6 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UDPClient)
-	RTTI_PROPERTY("Thread", &nap::UDPClient::mThread, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Endpoint", &nap::UDPClient::mRemoteIp, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port", &nap::UDPClient::mPort, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxQueueSize", &nap::UDPClient::mMaxPacketQueueSize, nap::rtti::EPropertyMetaData::Default)
@@ -37,26 +36,21 @@ namespace nap
 		if(!UDPAdapter::init(errorState))
 			return false;
 
+        // when asio error occurs, init_success indicates whether initialization should fail or succeed
+        bool init_success = false;
+
 		// try to open socket
 		asio::error_code asio_error_code;
 		mSocket.open(udp::v4(), asio_error_code);
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
 
-		if( asio_error_code )
-		{
-			errorState.fail(asio_error_code.message());
+        // create address from string
+        auto address = address::from_string(mRemoteIp, asio_error_code);
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
 
-			if(mThrowOnInitError)
-			{
-				return false;
-			}
-			else
-			{
-				nap::Logger::warn(*this, asio_error_code.message());
-			}
-		}else
-		{
-			mRemoteEndpoint = udp::endpoint(address::from_string(mRemoteIp), mPort);
-		}
+        mRemoteEndpoint = udp::endpoint(address, mPort);
 
 		return true;
 	}
@@ -68,40 +62,48 @@ namespace nap
 
 		asio::error_code err;
 		mSocket.close(err);
-		if(err)
-			nap::Logger::warn(*this, "error closing socket : %s", err.message().c_str());
+		if (err)
+		{
+			nap::Logger::error(*this, "error closing socket : %s", err.message().c_str());
+		}
 	}
 
 
-	void UDPClient::copyQueuePacket(const UDPPacket& packet)
+	void UDPClient::send(const UDPPacket& packet)
 	{
 		if(!mStopOnMaxQueueSizeExceeded)
 		{
 			mQueue.enqueue(packet);
-		}else
+		}
+		else
 		{
 			if(mQueue.size_approx() < mMaxPacketQueueSize)
 			{
 				mQueue.enqueue(packet);
-			}else{
-				nap::Logger::warn(*this, "max queue size exceeded, dropping packet");
+			}
+			else
+			{
+				nap::Logger::error(*this, "max queue size exceeded, dropping packet");
 			}
 		}
 	}
 
 
-	void UDPClient::moveQueuePacket(UDPPacket& packet)
+	void UDPClient::send(UDPPacket&& packet)
 	{
 		if(!mStopOnMaxQueueSizeExceeded)
 		{
 			mQueue.enqueue(std::move(packet));
-		}else
+		}
+		else
 		{
 			if(mQueue.size_approx() < mMaxPacketQueueSize)
 			{
 				mQueue.enqueue(std::move(packet));
-			}else{
-				nap::Logger::warn(*this, "max queue size exceeded, dropping packet");
+			}
+			else
+			{
+				nap::Logger::error(*this, "max queue size exceeded, dropping packet");
 			}
 		}
 	}
@@ -118,7 +120,7 @@ namespace nap
 
 			if(err)
 			{
-				nap::Logger::warn(*this, "error sending packet : %s", err.message().c_str());
+				nap::Logger::error(*this, "error sending packet : %s", err.message().c_str());
 			}
 		}
 	}

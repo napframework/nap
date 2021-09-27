@@ -66,7 +66,7 @@ elseif(UNIX)
 endif()
 
 if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
 if(NOT ANDROID OR ANDROID_PYTHON)
@@ -163,9 +163,9 @@ add_subdirectory(demos/sequencer)
 add_subdirectory(demos/paintobject)
 add_subdirectory(demos/licensecheck)
 add_subdirectory(demos/tween)
-
-# Unit tests
-add_subdirectory(unittests)
+add_subdirectory(demos/artnetsend)
+add_subdirectory(demos/artnetreceive)
+add_subdirectory(demos/artnetreceive/module)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -208,6 +208,7 @@ add_subdirectory(modules/naplicense)
 add_subdirectory(modules/napudp)
 add_subdirectory(modules/naptween)
 add_subdirectory(modules/napcalendar)
+add_subdirectory(modules/napasio)
 
 # Packaging
 include(cmake/packaging_macros.cmake)

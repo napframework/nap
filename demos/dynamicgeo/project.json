@@ -9,7 +9,7 @@
         "mod_napcameracontrol",
         "mod_napimgui"
     ],
-    "Data": "data/objects.json",
+    "Data": "data/dynamicgeo.json",
     "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json"
 }

@@ -221,6 +221,11 @@ namespace napkin
 		bool isEnum() const;
 
 		/**
+		 * @return if the property pointed to is representing a color
+		 */
+		bool isColor() const;
+
+		/**
 		 * @return true if the property pointed to is an array
 		 */
 		bool isArray() const;

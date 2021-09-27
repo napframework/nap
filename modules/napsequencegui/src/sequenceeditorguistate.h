@@ -66,10 +66,10 @@ namespace nap
 		// previous window scroll
 		ImVec2 mScroll;
 
-		// vertical resolution
+		// vertical resolution (not scaled)
 		float mVerticalResolution = 150.0f;
 
-		// horizontal resolution
+		// horizontal resolution (not scaled)
 		float mHorizontalResolution = 100.0f;
 
 		// current time in sequence of mouse cursor
@@ -80,6 +80,9 @@ namespace nap
 
 		// scroll follows player position
 		bool mFollow = false;
+
+		// current gui scaling factor 
+		float mScale = 1.0f;
 
 		// current sequence name
 		std::string mSequenceName;

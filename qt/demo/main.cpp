@@ -6,18 +6,18 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QLabel>
+#include <iostream>
 
 #include <napqt/curveeditor/standardcurve.h>
 #include <napqt/curveeditor/curvewidget.h>
-
-#include "curveeditor/curveview.h"
-#include "basewindow.h"
-#include "fileselector.h"
-#include "errordialog.h"
-#include "randomnames.h"
-#include "filterpopup.h"
-#include "autosettings.h"
-#include "colorpicker.h"
+#include <napqt/curveeditor/curveview.h>
+#include <napqt/basewindow.h>
+#include <napqt/fileselector.h>
+#include <napqt/errordialog.h>
+#include <napqt/randomnames.h>
+#include <napqt/filterpopup.h>
+#include <napqt/autosettings.h>
+#include <napqt/colorpicker.h>
 
 using namespace nap::qt;
 
@@ -154,8 +154,10 @@ private:
 
 int main(int argc, char* argv[])
 {
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QApplication::setApplicationName("napqt");
-	QApplication::setOrganizationName("Naivi");
+	QApplication::setOrganizationName("napframework");
 	QApplication app(argc, argv);
 
 	MainWindow win;

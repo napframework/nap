@@ -5,6 +5,13 @@
 #include "udpadapter.h"
 #include "udpthread.h"
 
+#include <nap/logger.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UDPAdapter)
+	RTTI_PROPERTY("Thread", &nap::UDPAdapter::mThread, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("AllowFailure", &nap::UDPAdapter::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -13,11 +20,10 @@ namespace nap
 
 	bool UDPAdapter::init(utility::ErrorState& errorState)
 	{
-		if(!errorState.check(mThread !=nullptr, "UDPThread cannot be nullptr"))
+		if(!errorState.check(mThread !=nullptr, "Thread cannot be nullptr"))
 			return false;
 
 		mThread->registerAdapter(this);
-
 		return true;
 	}
 
@@ -26,4 +32,27 @@ namespace nap
 	{
 		mThread->removeAdapter(this);
 	}
+
+
+    bool UDPAdapter::handleAsioError(const asio::error_code& errorCode, utility::ErrorState& errorState, bool& success)
+    {
+        if(errorCode)
+        {
+            if(!mAllowFailure)
+            {
+                success = false;
+                errorState.fail(errorCode.message());
+
+                return true;
+            }else
+            {
+                success = true;
+                nap::Logger::error(*this, errorCode.message());
+
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

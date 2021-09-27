@@ -29,9 +29,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link with external libs
-if(NOT WIN32)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
-endif()
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} freetype)
 
 # Copy freetype DLL

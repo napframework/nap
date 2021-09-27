@@ -68,10 +68,11 @@ namespace nap
 		DECLARE_COMPONENT(Renderable2DTextComponent, Renderable2DTextComponentInstance)
 
 	public:
-		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;	///< Property: 'Orientation' Text draw orientation
+		utility::ETextOrientation mOrientation = utility::ETextOrientation::Left;	///< Property: 'Orientation' text draw orientation
 		glm::ivec2 mLocation = { 0,0 };												///< Property: 'Location' text location in pixel coordinates
 		EDepthMode mDepthMode = EDepthMode::NoReadWrite;							///< Property: 'DepthMode' how text is handled by z-buffer.
 		bool mIgnoreTransform = true;												///< Property: 'IgnoreTransform' if the transform is ignored when present
+		bool mDPIAware = true;														///< Property: 'DPI Aware' if the text is scaled based on display DPI. High DPI rendering must be enabled for this flag to have any effect.
 	};
 
 
@@ -178,15 +179,16 @@ namespace nap
 		* Actual screen space position still depends on camera location, orientation and shader effects.
 		* @return start position of the text based based on stored location, orientation mode and text transformation.
 		*/
-		glm::ivec2 getTextPosition();
+		glm::ivec2 getTextPosition(float scale);
 
 		/**
-		 * Creates a Renderable2DGlyph for the given index in the font.
-		 * @param index the index to create the renderable glyph for.
+		 * Creates a Renderable2DGlyph for the given index and scale in the font.
+		 * @param index the index to create the render-able glyph for.
+		 * @param scale the render-able glyph scaling factor.
 		 * @param error contains the error if the glyph representation could not be created.
 		 * @return the Renderable2DGlyph glyph for the given character index.
 		 */
-		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const override;
+		virtual RenderableGlyph* getRenderableGlyph(uint index, float scale, utility::ErrorState& error) const override;
 
 		/**
 		 * This component can only be rendered with an orthographic camera!
@@ -221,5 +223,6 @@ namespace nap
 		glm::ivec2		mLocation = { 0,0 };		///< Text location in pixel coordinates
 		RenderService*	mService = nullptr;			///< Render service
 		bool			mIgnoreTransform = true;	///< If transform should be ignored when present
+		bool			mDPIAware = true;			///< If the text is scaled according to display dpi
 	};
 }

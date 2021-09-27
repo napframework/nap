@@ -395,7 +395,7 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 {
 	if (role == Qt::UserRole)
 	{
-		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+		auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (valueItem)
 		{
 			return QVariant::fromValue(valueItem->getPath());
@@ -405,8 +405,8 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	{
 		if (auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index)))
 		{
-			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) ||
-							   dynamic_cast<PropertyValueItem*>(valueItem);
+			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) ||  dynamic_cast<PropertyValueItem*>(valueItem);
+
 			if (isValueItem && valueItem->getPath().isInstanceProperty())
 			{
 				auto& themeManager = AppContext::get().getThemeManager();
