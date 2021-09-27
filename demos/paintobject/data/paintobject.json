@@ -21,7 +21,8 @@
                         "Values": [
                             0,
                             0,
-                            0
+                            0,
+                            255
                         ]
                     }
                 }
@@ -134,7 +135,8 @@
                         "Values": [
                             0,
                             0,
-                            0
+                            0,
+                            255
                         ]
                     }
                 }
@@ -176,7 +178,8 @@
                         "Values": [
                             0,
                             0,
-                            0
+                            0,
+                            255
                         ]
                     }
                 }
@@ -541,6 +544,7 @@
             "mID": "BearMesh",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Path": "bear.mesh"
         },
         {
@@ -548,6 +552,7 @@
             "mID": "PigMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Path": "optimized_pig.mesh"
         },
         {
@@ -630,7 +635,15 @@
             "Width": 512,
             "Height": 512,
             "Format": "RGBA8",
-            "ColorSpace": "sRGB"
+            "ColorSpace": "sRGB",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -640,7 +653,15 @@
             "Width": 2048,
             "Height": 2048,
             "Format": "RGBA8",
-            "ColorSpace": "sRGB"
+            "ColorSpace": "sRGB",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -650,7 +671,15 @@
             "Width": 2048,
             "Height": 2048,
             "Format": "RGBA8",
-            "ColorSpace": "sRGB"
+            "ColorSpace": "sRGB",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderWindow",
@@ -664,10 +693,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.06700000166893006,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
@@ -717,6 +748,7 @@
             "mID": "SphereMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Radius": 1.0,
             "Rings": 25.0,
             "Sectors": 25.0,

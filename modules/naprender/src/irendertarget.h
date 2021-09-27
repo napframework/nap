@@ -11,6 +11,7 @@
 #include <utility/dllexport.h>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_core.h>
+#include <color.h>
 
 namespace nap
 {
@@ -38,12 +39,12 @@ namespace nap
 		/**
 		 * Allows for setting the clear color
 		 */
-		virtual void setClearColor(const glm::vec4& color) = 0;
+		virtual void setClearColor(const RGBAColorFloat& color) = 0;
 
 		/**
 		 * @return the clear color
 		 */
-		virtual const glm::vec4& getClearColor() const = 0;
+		virtual const RGBAColorFloat& getClearColor() const = 0;
 
 		/**
 		 * @return triangle winding order

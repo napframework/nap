@@ -6,7 +6,7 @@ import shutil
 import sys
 
 REQUIRED_UBUNTU_VERSION = '20.04'
-REQUIRED_QT_VERSION = '5.11.3'
+REQUIRED_QT_VERSION = '5.15.2'
 
 def call(cmd):
     """Execute command and return stdout"""

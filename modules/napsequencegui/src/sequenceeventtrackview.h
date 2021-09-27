@@ -54,7 +54,7 @@ namespace nap
 		 * @param topLeft top left position
 		 * @param x x position of segment on track
 		 */
-		virtual void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x) = 0;
+		virtual void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color) = 0;
 
 		/**
 		 * Extend this method to specify the way the controller needs to be called to add your custom event type
@@ -110,7 +110,7 @@ namespace nap
 		 * @param topLeft top left position
 		 * @param x x position of segment on track
 		 */
-		void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x) override;
+		void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color) override;
 
 		/**
 		 * Specialize this method to specify the way the controller needs to be called to add your custom event type
@@ -291,8 +291,7 @@ namespace nap
 				bool edit_time;
 
 				ImGui::Separator();
-
-				ImGui::PushItemWidth(100.0f);
+				ImGui::PushItemWidth(100.0f * mState.mScale);
 
 				int time_array[3] =
 					{

@@ -45,14 +45,14 @@ namespace nap
 	 * Creates a new SDL window based on the settings provided by the render window
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, nap::utility::ErrorState& errorState)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, nap::utility::ErrorState& errorState)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
 		options = renderWindow.mResizable  ? options | SDL_WINDOW_RESIZABLE : options;
 		options = renderWindow.mBorderless ? options | SDL_WINDOW_BORDERLESS : options;
 		options = !renderWindow.mVisible ? options | SDL_WINDOW_HIDDEN : options;
-		options = options | SDL_WINDOW_ALLOW_HIGHDPI;
+		options = allowHighDPI ? options | SDL_WINDOW_ALLOW_HIGHDPI : options;
 
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
 			SDL_WINDOWPOS_CENTERED,
@@ -537,7 +537,7 @@ namespace nap
 
 		// Create SDL window first
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = createSDLWindow(*this, errorState);
+		mSDLWindow = createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState);
 		if (mSDLWindow == nullptr)
 			return false;
 
@@ -663,13 +663,13 @@ namespace nap
 	}
 
 
-	void RenderWindow::setClearColor(const glm::vec4& color)
+	void RenderWindow::setClearColor(const RGBAColorFloat& color)
 	{
 		mClearColor = color;
 	}
 
 
-	const glm::vec4& RenderWindow::getClearColor() const
+	const RGBAColorFloat& RenderWindow::getClearColor() const
 	{
 		return mClearColor;
 	}
@@ -979,7 +979,7 @@ namespace nap
 
 		// Clear color
 		std::array<VkClearValue, 2> clear_values = {};
-		clear_values[0].color = { mClearColor.r, mClearColor.g, mClearColor.b, mClearColor.a };
+		clear_values[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		clear_values[1].depthStencil = { 1.0f, 0 };
 		render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
 		render_pass_info.pClearValues = clear_values.data();

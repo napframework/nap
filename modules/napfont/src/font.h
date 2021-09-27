@@ -25,6 +25,12 @@ namespace nap
 
 namespace nap
 {
+	namespace font
+	{
+		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for font elements
+	}
+
+
 	/**
 	 * Simple struct that describes common properties of a font
 	 * This struct can be copied easily and is used by all font related classes
@@ -39,12 +45,9 @@ namespace nap
 		/**
 		 * Value constructor
 		 */
-		FontProperties(int size, int dpi) :
-			mSize(size),
-			mDPI(dpi)				{ }
+		FontProperties(int size) : mSize(size) { }
 
 		int mSize	= 12;			///< Property: 'Size' size of the font in em
-		int mDPI	= 96;			///< Property: "DPI' dots per inch of the monitor, typically 96 or 72
 	};
 
 
@@ -178,11 +181,12 @@ namespace nap
 		 * T must be of type IGlyphRepresentation, multiple representations of every character are allowed.
 		 * This means that you can associate multiple Glyph representations with the same character index.
 		 * @param index the index of the glyph inside the font.
+		 * @param scale glyph scaling factor
 		 * @param errorCode contains the error if the glyph could not be created or fetched
 		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
 		 */
 		template<typename T>
-		T* getOrCreateGlyphRepresentation(nap::uint index, utility::ErrorState& errorCode);
+		T* getOrCreateGlyphRepresentation(nap::uint index, float scale, utility::ErrorState& errorCode);
 
 		/**
 		 * Use this to acquire a handle to a glyph representation, associated with a character at that index.
@@ -192,29 +196,32 @@ namespace nap
 		 * type must be of type IGlyphRepresentation, multiple representations of every character are allowed.
 		 * This means that you can associate multiple Glyph representations with the same character index.
 		 * @param index the index of the glyph inside the font.
+		 * @param scale glyph scaling factor
 		 * @param type the type of glyph representation to create.
 		 * @param errorCode contains the error if the glyph could not be created or fetched.
 		 * @return a glyph associated with a specific character, nullptr if retrieval fails.
 		 */
-		IGlyphRepresentation* getOrCreateGlyphRepresentation(nap::uint index, const rtti::TypeInfo& type, utility::ErrorState& errorCode);
+		IGlyphRepresentation* getOrCreateGlyphRepresentation(nap::uint index, float scale, const rtti::TypeInfo& type, utility::ErrorState& errorCode);
 
 		/**
 		 * Returns a native Glyph object that can be represented using a Glyph Representation object.
 		 * The Glyph is cached internally, to speed up future requests.
 		 * @param index the index of the glyph inside the font.
+		 * @param scale glyph scaling factor
 		 * @param errorCode contains the error if the glyph could not be created or fetched
 		 * @return a Glyph Cache associated with a specific index of the font.
 		 */
-		const Glyph* getOrCreateGlyph(nap::uint index, utility::ErrorState& errorCode);
+		const Glyph* getOrCreateGlyph(nap::uint index, float scale, utility::ErrorState& errorCode);
 
 		/**
 		 * Returns the bounding box in pixels associated with a string of text.
 		 * This bounding box tightly wraps the text and excludes initial horizontal bearing
 		 * All requested glyphs are cached internally.
 		 * @param text the string of characters to compute the bounding box for
+		 * @param scale glyph scaling factor
 		 * @param outRect contains the text bounds
 		 */
-		void getBoundingBox(const std::string& text, math::Rect& outRect);
+		void getBoundingBox(const std::string& text, float scale, math::Rect& outRect);
 
 		/**
 		 * Returns the number of glyphs in this font, -1 when the font hasn't been created yet
@@ -254,18 +261,22 @@ namespace nap
 		* Returns a native Glyph cache object that holds a a glyph and the available glyph presentation modes
 		* The Glyph is cached internally, to speed up future requests.
 		* @param index the index of the glyph inside the font.
+		* @param scale font scaling factor
 		* @param errorCode contains the error if the glyph could not be created or fetched
 		* @return a Glyph Cache associated with a specific index of the font.
 		*/
-		GlyphCache* getOrCreateGlyphCache(nap::uint index, utility::ErrorState& errorCode);
+		GlyphCache* getOrCreateGlyphCache(nap::uint index, float scale, utility::ErrorState& errorCode);
 
 
 		void* mFace = nullptr;											///< Handle to the free-type face object
 		void* mFreetypeLib = nullptr;									///< Handle to the free-type library
-		FontProperties mProperties = { -1, -1 };						///< Describes current font properties
+		FontProperties mProperties = { -1 };							///< Describes current font properties
 		std::string mFont;												///< Font that is loaded
 		FontService* mService;											///< Font service
-		mutable std::vector<std::unique_ptr<GlyphCache>> mGlyphs;		///< All cached glyphs
+
+		using GlyphCacheSet = std::vector<std::unique_ptr<GlyphCache>>;	///< Collection of Glyphs and associated representations
+		using GlyphCacheMap = std::unordered_map<int, GlyphCacheSet>;	///< Glyphs ordered on size
+		mutable GlyphCacheMap mGlyphs;									///< All cached glyphs
 	};
 
 
@@ -333,9 +344,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T* nap::FontInstance::getOrCreateGlyphRepresentation(nap::uint index, utility::ErrorState& errorCode)
+	T* nap::FontInstance::getOrCreateGlyphRepresentation(nap::uint index, float scale, utility::ErrorState& errorCode)
 	{
-		IGlyphRepresentation* representation = this->getOrCreateGlyphRepresentation(index, RTTI_OF(T), errorCode);
+		IGlyphRepresentation* representation = this->getOrCreateGlyphRepresentation(index, scale, RTTI_OF(T), errorCode);
 		return rtti_cast<T>(representation);
 	}
 

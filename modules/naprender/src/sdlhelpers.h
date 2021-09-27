@@ -107,6 +107,54 @@ namespace nap
 		uint32_t NAPAPI getWindowId(SDL_Window* window);
 
 		/**
+		 * Get the number of available video displays.
+		 * @return A number >= 1, negative error code on failure;
+		 */
+		int NAPAPI getDisplayCount();
+
+		/**
+		 * Get the index of the display associated with a window.
+		 * @param window the window to get the display index for 
+		 * @return The index of the display containing the center of the window on success or a negative error code 
+		 */
+		int NAPAPI getDisplayIndex(SDL_Window* window);
+
+		/**
+		 * Get he dots/pixels-per-inch for a display.
+		 * @param displayIndex The index of the display from which DPI information should be queried
+		 * @param ddpi a pointer filled in with the diagonal DPI of the display; may be nullptr
+		 * @param hdpi a pointer filled in with the horizontal DPI of the display; may be nullptr
+		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
+		 * @return 0 on success or a negative error code on failure
+		 */
+		int NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi);
+
+		/**
+		 * Get the dots/pixels-per-inch of the display that holds the given window
+		 * @param window the window to get the dpi for
+		 * @param ddpi a pointer filled in with the diagonal DPI of the display; may be nullptr
+		 * @param hdpi a pointer filled in with the horizontal DPI of the display; may be nullptr
+		 * @param vdpi a pointer filled in with the vertical DPI of the display; may be nullptr
+		 * @return 0 on success or a negative error code on failure
+		 */
+		int NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi);
+
+		/**
+		 * @param displayIndex index of display to get name for  
+		 * @return display name for given display index, nullptr on failure
+		 */
+		bool NAPAPI getDisplayName(int displayIndex, std::string& outName);
+
+		/**
+		 * Gets desktop area represented by a display, with the primary display located at 0,0
+		 * @param displayIndex index of the display to get the bounds for
+		 * @param outMin min position of desktop area represented by a display, with the primary display located at 0,0
+		 * @param outMax max position of desktop area represented by a display, with the primary display located at 0,0
+		 * @return 0 on success or a negative error code on failure
+		 */
+		int NAPAPI getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax);
+
+		/**
 		 * Hides the mouse cursor
 		 */
 		void NAPAPI hideCursor();
