@@ -49,7 +49,7 @@ namespace nap
 		}
 		else
 		{
-			address = asio::ip::address::from_string(mIPAddress, asio_error_code);
+			address = asio::ip::make_address(mIPAddress, asio_error_code);
 			if (handleAsioError(asio_error_code, errorState, init_success))
 				return init_success;
 		}
