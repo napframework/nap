@@ -19,8 +19,8 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UDPServer)
-	RTTI_PROPERTY("Port", &nap::UDPServer::mPort, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BufferSize", &nap::UDPServer::mBufferSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port",			&nap::UDPServer::mPort,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("IP Address",		&nap::UDPServer::mIPAddress,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -31,11 +31,6 @@ namespace nap
 
 	bool UDPServer::init(utility::ErrorState& errorState)
 	{
-		if(!UDPAdapter::init(errorState))
-			return false;
-
-		mBuffer.resize(mBufferSize);
-
         // when asio error occurs, init_success indicates whether initialization should fail or succeed
         bool init_success = false;
 
@@ -45,11 +40,29 @@ namespace nap
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
+		// try to create ip address
+		// when address property is left empty, bind to any local address
+		asio::ip::address address;
+		if (mIPAddress.empty())
+		{
+			address = asio::ip::address_v4::any();
+		}
+		else
+		{
+			address = asio::ip::address::from_string(mIPAddress, asio_error_code);
+			if (handleAsioError(asio_error_code, errorState, init_success))
+				return init_success;
+		}
+
         // try to bind socket
         nap::Logger::info(*this, "Listening at port %i", mPort);
-        mSocket.bind(udp::endpoint(asio::ip::address_v4::any(), mPort), asio_error_code);
+        mSocket.bind(udp::endpoint(address, mPort), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
+
+		// init UDPAdapter, registering the server to an UDPThread
+		if (!UDPAdapter::init(errorState))
+			return false;
 
 		return true;
 	}
@@ -65,23 +78,25 @@ namespace nap
 	void UDPServer::process()
 	{
 		asio::error_code asio_error;
-		if(mSocket.available(asio_error) > 0)
+		size_t available_bytes = mSocket.available(asio_error);
+		if(available_bytes > 0)
 		{
-			mSocket.receive(asio::buffer(mBuffer), 0,asio_error);
+			// fill buffer
+			std::vector<uint8> buffer;
+			buffer.resize(available_bytes);
+			mSocket.receive(asio::buffer(buffer), 0, asio_error);
 
-			// construct udp packet, clears current buffer
-			std::vector<nap::uint8> buffer;
-			buffer.resize(mBufferSize);
-			buffer.swap(mBuffer);
-
-			// forward buffer to any listeners
-			UDPPacket packet(std::move(buffer));
-			packetReceived.trigger(packet);
+			if (!asio_error)
+			{
+				// make UDPPacket and forward packet to any listeners
+				UDPPacket packet(std::move(buffer));
+				packetReceived.trigger(packet);
+			}
 		}
 
 		if(asio_error)
 		{
-			nap::Logger::warn(*this, asio_error.message());
+			nap::Logger::error(*this, asio_error.message());
 		}
 	}
 }

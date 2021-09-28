@@ -93,22 +93,22 @@ namespace nap
 		void process();
 
 		/**
-		 * registers an adapter
+		 * registers an adapter. Thread-safe
 		 * @param adapter the UDPAdapter to process
 		 */
 		void registerAdapter(UDPAdapter* adapter);
 
 		/**
-		 * removes an adapter
+		 * removes an adapter. Thread-safe
 		 * @param adapter the UDPAdapter to remove
 		 */
 		void removeAdapter(UDPAdapter* adapter);
 
 		// threading
 		std::thread 										mThread;
+		std::mutex											mMutex;
 		std::atomic_bool 									mRun = { false };
 		std::function<void()> 								mManualProcessFunc;
-		moodycamel::ConcurrentQueue<std::function<void()>> 	mTaskQueue;
 
 		// service
 		UDPService& 				mService;
@@ -118,5 +118,5 @@ namespace nap
 	};
 
 	// Object creator used for constructing the UDP thread
-	using UDPThreadPoolObjectCreator = rtti::ObjectCreator<UDPThread, UDPService>;
+	using UDPThreadObjectCreator = rtti::ObjectCreator<UDPThread, UDPService>;
 }

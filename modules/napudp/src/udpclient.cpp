@@ -19,10 +19,10 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_CLASS(nap::UDPClient)
-	RTTI_PROPERTY("Endpoint", &nap::UDPClient::mRemoteIp, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port", &nap::UDPClient::mPort, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxQueueSize", &nap::UDPClient::mMaxPacketQueueSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("StopOnMaxQueueSizeExceeded", &nap::UDPClient::mStopOnMaxQueueSizeExceeded, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Endpoint",					&nap::UDPClient::mRemoteIp,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Port",						&nap::UDPClient::mPort,							nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MaxQueueSize",				&nap::UDPClient::mMaxPacketQueueSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("StopOnMaxQueueSizeExceeded", &nap::UDPClient::mStopOnMaxQueueSizeExceeded,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -33,9 +33,6 @@ namespace nap
 
 	bool UDPClient::init(utility::ErrorState& errorState)
 	{
-		if(!UDPAdapter::init(errorState))
-			return false;
-
         // when asio error occurs, init_success indicates whether initialization should fail or succeed
         bool init_success = false;
 
@@ -51,6 +48,10 @@ namespace nap
             return init_success;
 
         mRemoteEndpoint = udp::endpoint(address, mPort);
+
+		// init UDPAdapter, registering the client to an UDPThread
+		if (!UDPAdapter::init(errorState))
+			return false;
 
 		return true;
 	}
@@ -111,7 +112,7 @@ namespace nap
 
 	void UDPClient::process()
 	{
-		// let the socket copyQueuePacket the packets
+		// let the socket send queued packets
 		UDPPacket packet_to_send;
 		while(mQueue.try_dequeue(packet_to_send))
 		{

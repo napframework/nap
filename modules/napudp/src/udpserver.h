@@ -51,7 +51,7 @@ namespace nap
 	public:
 		// properties
 		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
-		int mBufferSize 				= 1024;			///< Property: 'BufferSize' the size of the buffer the server writes to
+		std::string mIPAddress			= "";	        ///< Property: 'IP Address' local ip address to bind to, if left empty will bind to any local address
 	public:
 		/**
 		 * packet received signal will be dispatched on the thread this UDPServer is registered to, see UDPThread
@@ -66,7 +66,6 @@ namespace nap
 		// ASIO
 		asio::io_service 			mIOService;
 		asio::ip::udp::socket 		mSocket{mIOService};
-		std::vector<nap::uint8>		mBuffer;
 		asio::ip::udp::endpoint 	mRemoteEndpoint;
 	};
 }

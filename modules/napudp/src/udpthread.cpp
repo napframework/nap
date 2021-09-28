@@ -38,8 +38,6 @@ namespace nap
 
 	bool UDPThread::start(utility::ErrorState& errorState)
 	{
-        mRun.store(true);
-
 		switch (mUpdateMethod)
 		{
 		case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
@@ -55,6 +53,8 @@ namespace nap
 			errorState.fail("Unknown UDP thread update method");
 			return false;
 		}
+
+		mRun.store(true);
 
 		return true;
 	}
@@ -92,11 +92,7 @@ namespace nap
 
 	void UDPThread::process()
 	{
-		std::function<void()> task;
-		while (mTaskQueue.try_dequeue(task))
-		{
-			task();
-		}
+		std::lock_guard lock(mMutex);
 
 		for(auto& adapter : mAdapters)
 		{
@@ -111,26 +107,23 @@ namespace nap
 	}
 
 
-
 	void UDPThread::removeAdapter(UDPAdapter * adapter)
 	{
-		mTaskQueue.enqueue([this, adapter]
-	    {
-			auto found_it = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)
+		std::lock_guard lock(mMutex);
+
+		auto found_it = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto& it)
 			{
 				return it == adapter;
 			});
-			assert(found_it != mAdapters.end());
-			mAdapters.erase(found_it);
-		});
+		assert(found_it != mAdapters.end());
+		mAdapters.erase(found_it);
 	}
 
 
 	void UDPThread::registerAdapter(UDPAdapter * adapter)
 	{
-		mTaskQueue.enqueue([this, adapter]()
-	    {
-			mAdapters.emplace_back(adapter);
-	    });
+		std::lock_guard lock(mMutex);
+
+		mAdapters.emplace_back(adapter);
 	}
 }

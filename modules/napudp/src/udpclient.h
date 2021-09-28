@@ -49,13 +49,15 @@ namespace nap
 		/**
 		 * Makes a copy of the packet and queues if for sending.
 		 * Call send(std::move(packet)) if you want to move the packet instead.
-		 * @param packet the packet to copy and queue
+		 * Calling this method is Thread-Safe.
+		 * @param packet to send
 		 */
 		void send(const UDPPacket& packet);
 
 		/**
 		 * Moves and queues the packet for sending.
-		 * @param packet to move and queue
+		 * Calling this method is Thread-Safe.
+		 * @param packet to send
 		 */
 		void send(UDPPacket&& packet);
 

@@ -38,7 +38,7 @@ namespace nap
 
 	void UDPService::registerObjectCreators(rtti::Factory& factory)
 	{
-		factory.addObjectCreator(std::make_unique<UDPThreadPoolObjectCreator>(*this));
+		factory.addObjectCreator(std::make_unique<UDPThreadObjectCreator>(*this));
 	}
 
 
@@ -51,19 +51,19 @@ namespace nap
 	}
 
 
-	void UDPService::removeUdpThread(UDPThread* threadPool)
+	void UDPService::removeUdpThread(UDPThread* thread)
 	{
 		auto found_it = std::find_if(mThreads.begin(), mThreads.end(), [&](const auto& it)
 		{
-		  return it == threadPool;
+		  return it == thread;
 		});
 		assert(found_it != mThreads.end());
 		mThreads.erase(found_it);
 	}
 
 
-	void UDPService::registerUdpThread(UDPThread* threadPool)
+	void UDPService::registerUdpThread(UDPThread* thread)
 	{
-		mThreads.emplace_back(threadPool);
+		mThreads.emplace_back(thread);
 	}
 }
