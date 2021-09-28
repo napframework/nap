@@ -34,6 +34,11 @@ namespace nap
 		UDPPacket& operator=(UDPPacket&& other) noexcept				{ mBuffer = std::move(other.mBuffer); return *this;  }
 
 		/**
+		 * UDPPacket constructor copies the contents of string into buffer
+		 */
+		UDPPacket(const std::string& string) noexcept					{ std::copy(string.begin(), string.end(), std::back_inserter(mBuffer)); }
+
+		/**
 		 * UDPPacket constructor moves the contents of supplied buffer if rvalue
 		 * @param buffer the buffer to be copied
 		 */
@@ -57,6 +62,10 @@ namespace nap
 		 */
 		size_t size() const{ return mBuffer.size(); }
 
+		/**
+		 * @return string with contents of internal buffer
+		 */
+		std::string toString() const{ return std::string(mBuffer.begin(), mBuffer.end()); }
 	private:
 		std::vector<nap::uint8> mBuffer; ///< Vector containing packet data
 	};
