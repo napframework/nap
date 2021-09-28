@@ -71,7 +71,14 @@ namespace nap
 	void UDPServer::onDestroy()
 	{
 		UDPAdapter::onDestroy();
-		mSocket.close();
+
+        asio::error_code asio_error_code;
+		mSocket.close(asio_error_code);
+
+        if(asio_error_code)
+        {
+            nap::Logger::error(*this, asio_error_code.message());
+        }
 	}
 
 
