@@ -84,7 +84,10 @@ namespace napkin
 
 		// Listen to changes
 		connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceConfigPanel::onSelectionChanged);
-		connect(&mModel, &ServiceConfigModel::populated, this, [&](){ mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder); });
+		connect(&mModel, &ServiceConfigModel::populated, this, [&]()
+		{
+			mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder);
+		});
 	}
 
 
