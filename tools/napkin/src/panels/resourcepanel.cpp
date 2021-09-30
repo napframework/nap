@@ -119,7 +119,6 @@ napkin::ResourcePanel::ResourcePanel()
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 300);
-	mTreeView.getTreeView().setSortingEnabled(false);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
@@ -227,6 +226,7 @@ void napkin::ResourcePanel::populate()
 	mModel.populate();
 	mTreeView.getTreeView().expandAll();
 	emitSelectionChanged();
+	mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder);
 }
 
 

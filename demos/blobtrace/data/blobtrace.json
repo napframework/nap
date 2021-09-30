@@ -252,11 +252,11 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": true,
+            "SampleShading": false,
             "Title": "Window 1",
             "Width": 1280,
             "Height": 720,
-            "Mode": "Immediate",
+            "Mode": "FIFO Relaxed",
             "ClearColor": {
                 "Values": [
                     0.06700000166893006,
