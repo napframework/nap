@@ -82,6 +82,12 @@ namespace nap
 			QLineEdit& getLineEdit() { return mLineEditFilter; }
 
 			/**
+			 * Turns sorting on / off
+			 * @param value is sorting should be turned on or off
+			 */
+			void setSortingEnabled(bool value);
+
+			/**
 			 * Select and item and make sure it's visible on screen by scrolling if needed.
 			 * @param item
 			 */

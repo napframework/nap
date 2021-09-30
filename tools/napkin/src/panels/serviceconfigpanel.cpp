@@ -54,6 +54,7 @@ namespace napkin
 			auto item = new ServiceConfigItem(*config, ctx.getServiceConfig()->getDocument());
 			appendRow(item);
 		}
+		populated();
 	}
 
 
@@ -79,10 +80,11 @@ namespace napkin
 		mLayout.setContentsMargins(0, 0, 0, 0);
 		mLayout.addWidget(&mTreeView);
 		mTreeView.setModel(&mModel);
+		mTreeView.setSortingEnabled(true);
 
 		// Listen to changes
-		connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
-			&ServiceConfigPanel::onSelectionChanged);
+		connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceConfigPanel::onSelectionChanged);
+		connect(&mModel, &ServiceConfigModel::populated, this, [&](){ mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder); });
 	}
 
 

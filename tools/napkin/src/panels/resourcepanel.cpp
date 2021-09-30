@@ -119,6 +119,7 @@ napkin::ResourcePanel::ResourcePanel()
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 300);
+	mTreeView.setSortingEnabled(true);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
@@ -290,4 +291,3 @@ void ResourcePanel::emitSelectionChanged()
 
 	selectionChanged(selectedPaths);
 }
-

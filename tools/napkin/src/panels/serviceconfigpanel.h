@@ -37,8 +37,13 @@ namespace napkin
 	 */
 	class ServiceConfigModel : public QStandardItemModel
 	{
+	Q_OBJECT
 	public:
 		ServiceConfigModel();
+
+	Q_SIGNALS:
+		void populated();
+
 	private:
 		void populate();
 		void onClosing(QString file);

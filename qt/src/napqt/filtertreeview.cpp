@@ -31,6 +31,7 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 
 	mTreeView = treeview;
 	mTreeView->setParent(this);
+	mTreeView->setSortingEnabled(false);
 
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.setSpacing(0);
@@ -178,5 +179,11 @@ void FilterTreeView::setSelectedAndCurrent(QModelIndex index)
 QWidget& FilterTreeView::getCornerWidget()
 {
 	return mCornerWidget;
+}
+
+
+void nap::qt::FilterTreeView::setSortingEnabled(bool value)
+{
+	mTreeView->setSortingEnabled(value);
 }
 
