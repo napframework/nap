@@ -54,10 +54,16 @@ namespace napkin
 		bool saveAs(const QString& fileName);
 
 		/**
+		 * Returns if the current service configuration is set as project default.
+		 * @return if the current service configuration is set as project default
+		 */
+		bool isProjectDefault() const;
+
+		/**
 		 * Set current configuration as project default.
 		 * For this operation to succeed the filename must be valid.
 		 */
-		bool makeDefault();
+		bool makeProjectDefault();
 
 		/**
 		 * Returns all current service configurations

@@ -147,6 +147,12 @@ namespace napkin
         bool saveDocumentAs(const QString& filename);
 
 		/**
+		 * 
+		 * Returns if the current data file is set as project default, asserts if no document is loaded.
+		 */
+		bool documentIsProjectDefault() const;
+
+		/**
 		 * Serialize the current document to a string
 		 * @return The document, serialized to string
 		 */

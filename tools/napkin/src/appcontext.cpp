@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QTimer>
 #include <QProcess>
+#include <QDir>
 
 // nap
 #include <rtti/jsonreader.h>
@@ -435,6 +436,15 @@ void AppContext::onUndoIndexChanged()
 bool napkin::AppContext::isAvailable()
 {
 	return appContextInstance != nullptr;
+}
+
+
+bool napkin::AppContext::documentIsProjectDefault() const
+{
+	assert(hasDocument());
+	QDir proj_dir(QString::fromStdString(AppContext::get().getProjectInfo()->getProjectDir()));
+	auto cur_file = proj_dir.relativeFilePath(mDocument->getFilename()).toStdString();
+	return cur_file == getProjectInfo()->mDefaultData;
 }
 
 

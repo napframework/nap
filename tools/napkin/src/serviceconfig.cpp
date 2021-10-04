@@ -172,10 +172,22 @@ namespace napkin
 	}
 
 
-	bool ServiceConfig::makeDefault()
+	bool ServiceConfig::isProjectDefault() const
+	{
+		QString qstring;
+		std::string string = qstring.toStdString();
+
+		auto& ctx = AppContext::get();
+		QDir proj_dir(QString::fromStdString(ctx.getProjectInfo()->getProjectDir()));
+		std::string config_file = proj_dir.relativeFilePath(getFilename()).toStdString();
+		return ctx.getProjectInfo()->mServiceConfigFilename == config_file;
+	}
+
+
+	bool ServiceConfig::makeProjectDefault()
 	{
 		// Ensure file is set
-		if (getFilename().isNull())
+		if (getFilename().isEmpty())
 		{
 			nap::Logger::fatal("No filename specified");
 			return false;
@@ -187,8 +199,8 @@ namespace napkin
 		std::unique_ptr<nap::ProjectInfo> new_info = nap::rtti::cloneObject(*project_info, mCore.getResourceManager()->getFactory());
 
 		// Get data directory and create relative path
-		QDir data_dir(QString::fromStdString(project_info->getProjectDir()));
-		QString new_path = data_dir.relativeFilePath(getFilename());
+		QDir proj_dir(QString::fromStdString(project_info->getProjectDir()));
+		QString new_path = proj_dir.relativeFilePath(getFilename());
 		new_info->mServiceConfigFilename = new_path.toStdString();
 
 		nap::rtti::JSONWriter writer;
