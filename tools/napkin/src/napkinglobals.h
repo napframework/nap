@@ -14,39 +14,37 @@
 namespace napkin
 {
 	// Display texts
-	static const QString TXT_UNCONVERTIBLE_TYPE = "<<Could not convert to QVariant>>";
-	static const QString TXT_LABEL_NAME			= "Name";
-	static const QString TXT_LABEL_VALUE		= "Value";
-	static const QString TXT_LABEL_TYPE			= "Type";
-	static const QString TXT_LABEL_RESOURCES	= "Resources";
-	static const QString TXT_LABEL_ENTITIES		= "Entities";
-	static const QString TXT_UNTITLED_DOCUMENT	= "Untitled Document";
-	static const QString TXT_THEME_DEFAULT		= "Napkin";
+	inline constexpr char* TXT_UNCONVERTIBLE_TYPE	= "<<Could not convert to QVariant>>";
+	inline constexpr char* TXT_LABEL_NAME			= "Name";
+	inline constexpr char* TXT_LABEL_VALUE			= "Value";
+	inline constexpr char* TXT_LABEL_TYPE			= "Type";
+	inline constexpr char* TXT_LABEL_RESOURCES		= "Resources";
+	inline constexpr char* TXT_LABEL_ENTITIES		= "Entities";
+	inline constexpr char* TXT_UNTITLED_DOCUMENT	= "Untitled Document";
+	inline constexpr char* TXT_THEME_DEFAULT		= "Napkin";
 
 	// The file filter used by file dialogs
-	static const QString JSON_FILE_EXT = "json";
-	static const QString JSON_CONFIG_FILTER = QString("NAP Config File (*.%1)").arg(JSON_FILE_EXT);
-	static const QString JSON_DATA_FILTER = QString("NAP Data File (*.%1)").arg(JSON_FILE_EXT);
-	static const QString JSON_PROJECT_FILTER = QString("NAP Project File (%1)").arg(PROJECT_INFO_FILENAME);
+	inline constexpr char* JSON_FILE_EXT			= "json";
+	inline constexpr char* JSON_CONFIG_FILTER		= "NAP Config File (*.json)";
+	inline constexpr char* JSON_DATA_FILTER			= "NAP Data File (*.json)";
+	inline constexpr char* JSON_PROJECT_FILTER		= "NAP Project File (*.json)";
 
-	static const QString DEFAULT_SETTINGS_FILE = "resources/defaultsettings.ini";
-
-	static const int MAX_RECENT_FILES = 10;
+	inline constexpr char* DEFAULT_SETTINGS_FILE	= "resources/defaultsettings.ini";
+	inline constexpr int MAX_RECENT_FILES			= 10;
 
 	// Constants used by QSettings entries
 	namespace settingsKey
 	{
-		static const QString WIN_GEO		   	= "windowGeometry";
-		static const QString WIN_STATE		   	= "windowState";
-		static const QString LAST_THEME		   	= "lastTheme";
-		static const QString RECENTLY_OPENED	= "recentProjects";
+		inline constexpr char* WIN_GEO				= "windowGeometry";
+		inline constexpr char* WIN_STATE			= "windowState";
+		inline constexpr char* LAST_THEME			= "lastTheme";
+		inline constexpr char* RECENTLY_OPENED		= "recentProjects";
 	}
 
-	static const std::string PROP_CHILDREN   = "Children";
-	static const std::string PROP_COMPONENTS = "Components";
-
-	static const std::string NAP_URI_PREFIX	 = "nap";
+	inline constexpr char* PROP_CHILDREN			= "Children";
+	inline constexpr char* PROP_COMPONENTS			= "Components";
+	inline constexpr char* NAP_URI_PREFIX			= "nap";
 
     // Testing success exit code. Avoids some common Unix error codes
-	static const int EXIT_ON_SUCCESS_EXIT_CODE = 180;
+	inline constexpr int EXIT_ON_SUCCESS_EXIT_CODE = 180;
 }

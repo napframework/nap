@@ -224,8 +224,8 @@ void SaveFileAsAction::perform()
 	if (filename.isNull())
 		return;
 
-	if (!filename.endsWith("." + JSON_FILE_EXT))
-		filename = filename + "." + JSON_FILE_EXT;
+	if (!filename.endsWith("." + QString(JSON_FILE_EXT)))
+		filename = filename + "." + QString(JSON_FILE_EXT);
 
 	if (!ctx.saveDocumentAs(filename))
 	{
@@ -487,7 +487,7 @@ void napkin::SaveServiceConfigurationAs::perform()
 	{
 		assert(AppContext::get().getProjectInfo() != nullptr);
 		cur_file_name = QString::fromStdString(AppContext::get().getProjectInfo()->getProjectDir());
-		cur_file_name += "/service_config.json";
+		cur_file_name += "/service_config." + QString(JSON_FILE_EXT);
 	}
 	QString filename = QFileDialog::getSaveFileName(QApplication::topLevelWidgets()[0], "Save NAP Config File",
 		cur_file_name, JSON_CONFIG_FILTER);
@@ -497,7 +497,7 @@ void napkin::SaveServiceConfigurationAs::perform()
 		return;
 
 	// Ensure extension and save
-	filename = !filename.endsWith("." + JSON_FILE_EXT) ? filename+"."+JSON_FILE_EXT : filename;
+	filename = !filename.endsWith("." + QString(JSON_FILE_EXT)) ? filename + "." + QString(JSON_FILE_EXT) : filename;
 	if (!ctx.getServiceConfig()->saveAs(filename))
 	{
 		nap::Logger::error("Unable to save config file: %s", filename.toUtf8().constData());

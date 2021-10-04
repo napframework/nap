@@ -30,7 +30,7 @@ namespace nap
 			void exemptSourceIndex(QModelIndex sourceIndex);
 
 			/**
-			 * Custom sorting behavior.
+			 * Applies custom sorting behavior if a sorter (using `setSorter()`) is installed.
 			 * Returns true if the value of the item referred to by the given index left is less than
 			 * the value of the item referred to by the given index right, otherwise returns false.
 			 * @param left left source index

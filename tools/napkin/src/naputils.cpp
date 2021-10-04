@@ -69,7 +69,7 @@ QVariant napkin::RTTITypeItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
 	{
-		return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(sThemeCol_dimmedItem));
+		return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(themeColDimmedItem));
 	}
 	return QStandardItem::data(role);
 }
@@ -271,12 +271,12 @@ std::string napkin::fromLocalURI(const std::string& fileuri)
 
 std::string napkin::toURI(const nap::rtti::Object& object)
 {
-	return NAP_URI_PREFIX + "://" + object.mID;
+	return std::string(NAP_URI_PREFIX) + "://" + object.mID;
 }
 
 std::string napkin::toURI(const napkin::PropertyPath& path)
 {
-	return NAP_URI_PREFIX + "://" + path.toString();
+	return std::string(NAP_URI_PREFIX) + "://" + path.toString();
 }
 
 bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
