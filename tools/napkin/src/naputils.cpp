@@ -60,17 +60,18 @@ void napkin::dumpTypes(rttr::type type, const std::string& indent)
 
 napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
 {
-
-	const void * address = static_cast<const void*>(&type);
-	std::stringstream ss;
-	ss << address;
-	std::string name = ss.str();
-
 	setText(type.get_name().data());
 	setEditable(false);
-	//    setForeground(getSoftForeground());
-	//    setBackground(getSoftBackground());
 	refresh();
+}
+
+QVariant napkin::RTTITypeItem::data(int role) const
+{
+	if (role == Qt::ForegroundRole)
+	{
+		return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(sThemeCol_dimmedItem));
+	}
+	return QStandardItem::data(role);
 }
 
 napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)

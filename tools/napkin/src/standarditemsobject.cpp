@@ -132,7 +132,10 @@ QVariant ObjectItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole && isPointer())
 	{
-		return AppContext::get().getThemeManager().getColor(sThemeCol_dimmedItem);
+		if (isPointer())
+		{
+			return AppContext::get().getThemeManager().getColor(sThemeCol_dimmedItem);
+		}
 	}
 	return QStandardItem::data(role);
 }
