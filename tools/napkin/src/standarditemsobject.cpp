@@ -6,6 +6,7 @@
 #include "commands.h"
 #include "sceneservice.h"
 #include "naputils.h"
+#include "napkin-resources.h"
 
 using namespace napkin;
 
@@ -13,6 +14,7 @@ using namespace napkin;
 
 GroupItem::GroupItem(const QString& name, GroupItem::GroupType t) : QStandardItem(name), mType(t)
 {
+	setIcon(t == GroupItem::GroupType::Entities ? QIcon(QRC_ICONS_ENTITY) : QIcon(QRC_ICONS_RTTIOBJECT));
 	setEditable(false);
 }
 
