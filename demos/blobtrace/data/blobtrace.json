@@ -256,7 +256,7 @@
             "Title": "Window 1",
             "Width": 1280,
             "Height": 720,
-            "Mode": "FIFO Relaxed",
+            "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
                     0.06700000166893006,
