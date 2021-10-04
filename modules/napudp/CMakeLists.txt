@@ -12,22 +12,20 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-# udp depends on asio
-find_package(asio REQUIRED)
-
 # LIBRARY
 
 # compile shared lib as target
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src ${ASIO_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 # preprocessor
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PUBLIC ASIO_STANDALONE)
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # additional definitions
 if(NOT WIN32)
@@ -41,8 +39,3 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
 package_module()
-
-# Package asio into platform release
-install(FILES ${THIRDPARTY_DIR}/asio/LICENSE_1_0.txt
-        DESTINATION thirdparty/asio)
-install(DIRECTORY ${ASIO_INCLUDE_DIRS}/ DESTINATION thirdparty/asio/include)
