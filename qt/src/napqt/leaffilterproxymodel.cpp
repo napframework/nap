@@ -69,4 +69,9 @@ bool LeafFilterProxyModel::isExempt(int sourceRow, const QModelIndex& sourcePare
 }
 
 
+bool nap::qt::LeafFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
+{
+	return QSortFilterProxyModel::lessThan(left, right);
+}
+
 

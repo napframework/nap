@@ -30,6 +30,16 @@ namespace nap
 			void exemptSourceIndex(QModelIndex sourceIndex);
 
 			/**
+			 * Custom sorting behavior.
+			 * Returns true if the value of the item referred to by the given index left is less than
+			 * the value of the item referred to by the given index right, otherwise returns false.
+			 * @param left left source index
+			 * @param right right source index
+			 * @return true if the value on the left is less than the value on the right, otherwise false
+			 */
+			bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+
+			/**
 			 * Add a filter to the model
 			 */
 			void addExtraFilter(FilterFunction func);
