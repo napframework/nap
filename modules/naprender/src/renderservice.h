@@ -8,7 +8,6 @@
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
 #include "renderutils.h"
-#include "computeshader.h"
 
 // External Includes
 #include <nap/service.h>
@@ -54,17 +53,28 @@ namespace nap
 			CPU			= 4		///< CPU as graphics card
 		};
 
-		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
-		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
-		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
-		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
-		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
-		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
-		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
-		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
-		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
+		/**
+		 * Supported queue families.
+		 */
+		struct QueueFamilyOptions
+		{
+			bool mGraphics	= true;		///< Graphics
+			bool mCompute = false;		///< Compute
+			bool mTransfer	= true;		///< Transfer
+		};
+
+		bool						mHeadless = false;														///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
+		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;							///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected.
+		bool						mEnableHighDPIMode = true;												///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		uint32						mVulkanVersionMajor = 1;												///< Property: 'VulkanMajor The major required vulkan API instance version.
+		uint32						mVulkanVersionMinor = 0;												///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		QueueFamilyOptions			mQueueFamilies = { };													///< Property: 'RequiredQueues' Required Vulkan queue family operations
+		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };							///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
+		std::vector<std::string>	mAdditionalExtensions = { };											///< Property: 'Extensions' Additional required Vulkan device extensions
+		bool						mPrintAvailableLayers = false;											///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
+		bool						mPrintAvailableExtensions = false;										///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		uint32						mAnisotropicFilterSamples = 8;											///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
+		virtual rtti::TypeInfo		getServiceType() const override { return RTTI_OF(RenderService); }
 	};
 
 
@@ -478,6 +488,12 @@ namespace nap
 		 * @return the command buffer that is being recorded.
 		 */
 		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+
+		/**
+		 * Returns the ompute command buffer that is being recorded.
+		 * @return the command buffer that is being recorded, returns nullptr if compute is not enabled or supported
+		 */
+		VkCommandBuffer getComputeCommandBuffer()									{ assert(mComputeCommandBuffer != nullptr); return mComputeCommandBuffer; }
 		
 		/**
 		 * Returns the window that is being rendered to, only valid between a
@@ -921,6 +937,7 @@ namespace nap
 		int										mCurrentFrameIndex = 0;
 		std::vector<Frame>						mFramesInFlight;
 		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
+		VkCommandBuffer							mComputeCommandBuffer = VK_NULL_HANDLE;
 		RenderWindow*							mCurrentRenderWindow = nullptr;		
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;

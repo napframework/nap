@@ -40,7 +40,7 @@ namespace nap
 	 *
 	 * Internally it will maintain a free-list of available DescriptorSets. When a VkDescriptorSet is acquired,
 	 * it is marked for use by that frame (the current RenderService frame is used). When a frame is fully  
-	 * completed, release should be called for that frame so that the resources are return to the freel-ist, to 
+	 * completed, release should be called for that frame so that the resources are return to the free-list, to 
 	 * be used by subsequent frames.
 	 */
 	class NAPAPI DescriptorSetCache final

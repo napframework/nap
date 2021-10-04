@@ -126,4 +126,17 @@ namespace nap
 		int														mBinding;	///< Shader binding identifier
 		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment etc.
 	};
+
+	class StorageTexelBufferObjectDeclaration : public UniformBufferObjectDeclaration
+	{
+		RTTI_ENABLE(UniformBufferObjectDeclaration)
+
+	public:
+		StorageTexelBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size);
+
+		StorageTexelBufferObjectDeclaration(StorageTexelBufferObjectDeclaration&& inRHS);
+		StorageTexelBufferObjectDeclaration& operator=(StorageTexelBufferObjectDeclaration&& inRHS);
+		StorageTexelBufferObjectDeclaration(const StorageTexelBufferObjectDeclaration&) = delete;
+		StorageTexelBufferObjectDeclaration& operator=(const StorageTexelBufferObjectDeclaration&) = delete;
+	};
 }

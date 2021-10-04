@@ -23,6 +23,9 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformBufferObjectDeclaration)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageTexelBufferObjectDeclaration)
+RTTI_END_CLASS
+
 
 namespace nap
 {
@@ -123,4 +126,23 @@ namespace nap
 		return *this;
 	}
 
+	//////////////////////////////////////////////////////////////////////////
+
+	StorageTexelBufferObjectDeclaration::StorageTexelBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size) :
+		UniformBufferObjectDeclaration(name, 0, inStage, size)
+	{
+	}
+
+
+	StorageTexelBufferObjectDeclaration::StorageTexelBufferObjectDeclaration(StorageTexelBufferObjectDeclaration&& inRHS) :
+		UniformBufferObjectDeclaration(std::move(inRHS))
+	{
+	}
+
+
+	StorageTexelBufferObjectDeclaration& StorageTexelBufferObjectDeclaration::operator=(StorageTexelBufferObjectDeclaration&& inRHS)
+	{
+		UniformBufferObjectDeclaration::operator=(std::move(inRHS));
+		return *this;
+	}
 }

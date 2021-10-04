@@ -176,7 +176,7 @@ namespace nap
 		std::vector<VkDescriptorImageInfo>		mSamplerWriteDescriptors;				// List of sampler images, used to update Descriptor Sets.
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
 	};
-
+	
 	template<class T>
 	T* MaterialInstance::getOrCreateSampler(const std::string& name)
 	{

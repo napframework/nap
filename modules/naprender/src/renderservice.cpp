@@ -38,9 +38,16 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
 RTTI_END_ENUM
 
+RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueFamilyOptions)
+	RTTI_PROPERTY("Graphics", &nap::RenderServiceConfiguration::QueueFamilyOptions::mGraphics, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Compute", &nap::RenderServiceConfiguration::QueueFamilyOptions::mCompute, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Transfer", &nap::RenderServiceConfiguration::QueueFamilyOptions::mTransfer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Headless",			&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PreferredGPU",		&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RequiredQueues",		&nap::RenderServiceConfiguration::mQueueFamilies,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",				&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",			&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMajor",		&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
@@ -110,6 +117,18 @@ namespace nap
 			assert(false);
 		}
 		return VK_PHYSICAL_DEVICE_TYPE_OTHER;
+	}
+
+	/**
+	 * @return VK queue flags
+	 */
+	static VkQueueFlags getQueueFlags(RenderServiceConfiguration::QueueFamilyOptions opts)
+	{
+		VkQueueFlags flags = 0;
+		flags |= opts.mGraphics ? VK_QUEUE_GRAPHICS_BIT : 0;
+		flags |= opts.mCompute ? VK_QUEUE_COMPUTE_BIT : 0;
+		flags |= opts.mTransfer ? VK_QUEUE_TRANSFER_BIT : 0;
+		return flags;
 	}
 
 
@@ -500,7 +519,7 @@ namespace nap
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueFlags, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -517,7 +536,6 @@ namespace nap
 		
 		// Pick the right GPU, based on type preference, api-version and queue support
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
-		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
 
 		// All valid physical devices
 		std::vector<PhysicalDevice> valid_devices;
@@ -545,7 +563,7 @@ namespace nap
 
 			// Ensure there's a compatible queue for this device
 			int selected_graphics_queue_idx = -1;
-			if (!selectQueueFamilyIndex(device_idx, physical_device, required_flags, presentSurface, selected_graphics_queue_idx))
+			if (!selectQueueFamilyIndex(device_idx, physical_device, requiredQueueFlags, presentSurface, selected_graphics_queue_idx))
 			{
 				Logger::warn("%d: Unable to find compatible graphics/transfer queue family", device_idx);
 				continue;
@@ -1002,6 +1020,17 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = "main";
 
+		VkDescriptorSetLayout set_layout = computeShader.getDescriptorSetLayout();
+
+		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
+		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipeline_layout_info.setLayoutCount = 1;
+		pipeline_layout_info.pSetLayouts = &set_layout;
+		pipeline_layout_info.pushConstantRangeCount = 0;
+
+		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
+			return false;
+
 		VkComputePipelineCreateInfo pipeline_info = {};
 		pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
 		pipeline_info.pNext = nullptr;
@@ -1406,7 +1435,11 @@ namespace nap
 
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, errorState))
+
+		// Get the required queue flags
+		VkQueueFlags req_queue_flags = getQueueFlags(render_config->mQueueFamilies);
+
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_flags, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
@@ -1495,6 +1528,13 @@ namespace nap
 				return false;
 
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffers, errorState))
+				return false;
+		}
+
+		// If compute is enabled, create the compute command buffer
+		if (req_queue_flags & VK_QUEUE_COMPUTE_BIT)
+		{
+			if (!createCommandBuffer(mDevice, mCommandPool, mComputeCommandBuffer, errorState))
 				return false;
 		}
 

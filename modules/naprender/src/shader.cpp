@@ -29,6 +29,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 	RTTI_PROPERTY_FILELINK("FragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
+RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
+RTTI_END_CLASS
+
 using namespace std; // Include the standard namespace
 
 
@@ -202,25 +207,6 @@ struct BindingResolver : public glslang::TDefaultGlslIoResolver
 };
 
 
-static bool tryReadFile(const std::string& filename, std::vector<char>& outBuffer)
-{
-	std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open())
-		return false;
-
-	size_t fileSize = (size_t)file.tellg();
-	std::vector<char> buffer(fileSize);
-
-	file.seekg(0);
-	file.read(buffer.data(), fileSize);
-	file.close();
-	outBuffer = std::move(buffer);
-
-	return true;
-}
-
-
 static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, VkDevice device)
 {
 	VkShaderModuleCreateInfo createInfo = {};
@@ -349,6 +335,58 @@ static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const char* 
 
 	return true;
 }
+
+
+static bool compileComputeProgram(VkDevice device, uint32_t vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, nap::utility::ErrorState& errorState)
+{
+	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, errorState);
+	if (compute_shader == nullptr)
+	{
+		errorState.fail("Unable to compile compute shader");
+		return false;
+	}
+
+	EShMessages messages = EShMsgDefault;
+	messages = (EShMessages)(messages | EShMsgSpvRules);
+	messages = (EShMessages)(messages | EShMsgVulkanRules);
+
+	// We need to create a program containing both the vertex & fragment shaders so that bindings are correctly numbered and input/outputs are correctly mapped between the stages.
+	glslang::TProgram program;
+	program.addShader(compute_shader.get());
+
+	// Link the program first. This merges potentially multiple compilation units within a single stage into a single intermediate representation.
+	// Note that this usually doesn't do anything (1 compilation unit per stage is the most common case), but it is neccessary in order to execute the next step.
+	// In addition, if this isn't called, glslang will not correctly resolve built-in variables such as gl_PerVertex, which will result in invalid SPIR-V being generated
+	if (!errorState.check(program.link(messages), "Failed to link shader program: %s", program.getInfoLog()))
+		return false;
+
+	// We need to create our own IO mapper/resolver for automatic numbering of locations/bindings. See comment above BindingResolver at the top of this file.
+	BindingResolver io_resolver(*program.getIntermediate(EShLangCompute));
+	glslang::TGlslIoMapper io_mapper;
+
+	// Call mapIO to automatically number the bindings and correctly map input/output locations in both stages
+	if (!errorState.check(program.mapIO(&io_resolver, &io_mapper), "Failed to map input/outputs: %s", program.getInfoLog()))
+		return false;
+
+	glslang::SpvOptions spv_options;
+	spv_options.generateDebugInfo = false;
+	spv_options.disableOptimizer = false;
+	spv_options.optimizeSize = false;
+	spv_options.disassemble = false;
+	spv_options.validate = true;
+
+	// Generate the SPIR-V for the compute shader
+	{
+		spv::SpvBuildLogger logger;
+		glslang::GlslangToSpv(*program.getIntermediate(EShLangCompute), computeSPIRV, &logger, &spv_options);
+
+		if (!errorState.check(!computeSPIRV.empty(), "Failed to compile compute shader: %s", logger.getAllMessages().c_str()))
+			return false;
+	}
+
+	return true;
+}
+
 
 static nap::EUniformValueType getUniformValueType(spirv_cross::SPIRType type)
 {
@@ -510,6 +548,23 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
 	}
 
+	for (const spirv_cross::Resource& resource : shader_resources.storage_buffers)
+	{
+		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
+
+		// TODO: Check for texel buffer: 'imageBuffer' as opposed to 'buffer'
+
+		uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+		size_t struct_size = compiler.get_declared_struct_size(type);
+
+		nap::StorageTexelBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, struct_size);
+
+		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, errorState))
+			return false;
+
+		uboDeclarations.emplace_back(std::move(storage_buffer_object));
+	}
+
 	for (const spirv_cross::Resource& sampled_image : shader_resources.sampled_images)
 	{
 		spirv_cross::SPIRType sampler_type = compiler.get_type(sampled_image.type_id);
@@ -555,19 +610,75 @@ namespace nap
 	// Base Shader
 	//////////////////////////////////////////////////////////////////////////
 
-	Shader::Shader(Core& core) : mRenderService(core.getService<RenderService>())
+	BaseShader::BaseShader(Core& core) : mRenderService(core.getService<RenderService>())
 	{ }
+
+	BaseShader::~BaseShader()
+	{
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
+		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout/*, vertexModule = mVertexModule, fragmentModule = mFragmentModule*/](RenderService& renderService)
+		{
+			if (descriptorSetLayout != nullptr)
+				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
+		});
+	}
+
+
+	bool BaseShader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
+	{
+		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
+		for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
+		{
+			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+			uboLayoutBinding.binding = declaration.mBinding;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.pImmutableSamplers = nullptr;
+			uboLayoutBinding.stageFlags = declaration.mStage;
+
+			bool is_ssbo = declaration.get_type().is_derived_from(RTTI_OF(StorageTexelBufferObjectDeclaration));
+			uboLayoutBinding.descriptorType = is_ssbo ? VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+			descriptor_set_layouts.push_back(uboLayoutBinding);
+		}
+
+		for (const SamplerDeclaration& declaration : mSamplerDeclarations)
+		{
+			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+			samplerLayoutBinding.binding = declaration.mBinding;
+			samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
+			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			samplerLayoutBinding.pImmutableSamplers = nullptr;
+			samplerLayoutBinding.stageFlags = declaration.mStage;
+
+			descriptor_set_layouts.push_back(samplerLayoutBinding);
+		}
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
+		layoutInfo.pBindings = descriptor_set_layouts.data();
+
+		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
+	}
+	
+
+	//////////////////////////////////////////////////////////////////////////
+	// Shader
+	//////////////////////////////////////////////////////////////////////////
+
+	Shader::Shader(Core& core) : BaseShader(core)
+	{ }
+
 
 	Shader::~Shader()
 	{
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
-		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout, vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
+		mRenderService->queueVulkanObjectDestructor([vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
 		{
-			if (descriptorSetLayout != nullptr)
-				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
-
 			if (vertexModule != nullptr)
 				vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
 
@@ -629,47 +740,63 @@ namespace nap
 	}
 
 
-	bool Shader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
+	//////////////////////////////////////////////////////////////////////////
+	// Compute Shader
+	//////////////////////////////////////////////////////////////////////////
+
+	ComputeShader::ComputeShader(Core& core) : BaseShader(core)
+	{ }
+
+
+	ComputeShader::~ComputeShader()
 	{
-		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
-		for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
+		mRenderService->queueVulkanObjectDestructor([compModule = mComputeModule](RenderService& renderService)
 		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-			uboLayoutBinding.binding = declaration.mBinding;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			uboLayoutBinding.pImmutableSamplers = nullptr;
-			uboLayoutBinding.stageFlags = declaration.mStage;
-
-			descriptor_set_layouts.push_back(uboLayoutBinding);
-		}
-
-		for (const SamplerDeclaration& declaration : mSamplerDeclarations)
-		{
-			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-			samplerLayoutBinding.binding = declaration.mBinding;
-			samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
-			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			samplerLayoutBinding.pImmutableSamplers = nullptr;
-			samplerLayoutBinding.stageFlags = declaration.mStage;
-
-			descriptor_set_layouts.push_back(samplerLayoutBinding);
-		}
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
-		layoutInfo.pBindings = descriptor_set_layouts.data();
-
-		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
+			if (compModule != nullptr)
+				vkDestroyShaderModule(renderService.getDevice(), compModule, nullptr);
+		});
 	}
-	
+
+
+	bool ComputeShader::load(const std::string& displayName, const char* compShader, int compSize, utility::ErrorState& errorState)
+	{
+		// Set display name
+		assert(mRenderService->isInitialized());
+		mDisplayName = displayName;
+
+		VkDevice device = mRenderService->getDevice();
+		uint32_t vulkan_version = mRenderService->getVulkanVersion();
+
+		// Compile vertex & fragment shader into program and get resulting SPIR-V
+		std::vector<uint32> comp_shader_spirv;
+
+		// Compile both vert and frag into single shader pipeline program
+		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, errorState))
+			return false;
+
+		// Create compute shader module
+		mComputeModule = createShaderModule(comp_shader_spirv, device);
+		if (!errorState.check(mComputeModule != nullptr, "Unable to load compute shader module"))
+			return false;
+
+		// Extract shader uniforms & inputs
+		spirv_cross::Compiler comp_shader_compiler(comp_shader_spirv.data(), comp_shader_spirv.size());
+		if (!parseUniforms(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
+			return false;
+
+		return initLayout(device, errorState);
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
-	// Shader
+	// Shader From File
 	//////////////////////////////////////////////////////////////////////////
 
-	ShaderFromFile::ShaderFromFile(Core& core) : Shader(core) { }
+	ShaderFromFile::ShaderFromFile(Core& core) : Shader(core)
+	{ }
 
 
 	// Store path and create display names
@@ -684,17 +811,42 @@ namespace nap
 			return false;
 
 		// Read vert shader file
-		std::vector<char> vert_source;
-		if (!errorState.check(tryReadFile(mVertPath, vert_source), "Unable to read shader file %s", mVertPath.c_str()))
+		std::string vert_source;
+		if (!errorState.check(utility::readFileToString(mVertPath, vert_source, errorState), "Unable to read shader file %s", mVertPath.c_str()))
 			return false;
 
 		// Read frag shader file
-		std::vector<char> frag_source;
-		if (!errorState.check(tryReadFile(mFragPath, frag_source), "Unable to read shader file %s", mFragPath.c_str()))
+		std::string frag_source;
+		if (!errorState.check(utility::readFileToString(mFragPath, frag_source, errorState), "Unable to read shader file %s", mFragPath.c_str()))
 			return false;
 
 		// Compile shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
 		return this->load(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Compute Shader From File
+	//////////////////////////////////////////////////////////////////////////
+
+	ComputeShaderFromFile::ComputeShaderFromFile(Core& core) : ComputeShader(core) { }
+
+
+	// Store path and create display names
+	bool ComputeShaderFromFile::init(utility::ErrorState& errorState)
+	{
+		// Ensure compute shader exists
+		if (!errorState.check(!mComputePath.empty(), "Compute shader path not set"))
+			return false;
+
+		// Read comp shader file
+		std::string comp_source;
+		if (!errorState.check(utility::readFileToString(mComputePath, comp_source, errorState), "Unable to read shader file %s", mComputePath.c_str()))
+			return false;
+
+		// Compile shader
+		std::string shader_name = utility::getFileNameWithoutExtension(mComputePath);
+		return this->load(shader_name, comp_source.data(), comp_source.size(), errorState);
 	}
 }
