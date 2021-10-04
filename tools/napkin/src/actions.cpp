@@ -106,22 +106,23 @@ void napkin::UpdateDefaultFileAction::perform()
 		// Attempt to save document
 		SaveFileAsAction().trigger();
 		if (doc->getFilename().isNull())
+		{
 			return;
+		}
 	}
 
 	// Clone current project information
-	const auto* project_info = AppContext::get().getProjectInfo();
+	auto* project_info = AppContext::get().getProjectInfo();
 	assert(project_info != nullptr);
-	std::unique_ptr<nap::ProjectInfo> new_info = nap::rtti::cloneObject(*project_info, AppContext::get().getCore().getResourceManager()->getFactory());
 	
 	// Get data directory and create relative path
 	QDir proj_dir(QString::fromStdString(project_info->getProjectDir()));
 	QString new_path = proj_dir.relativeFilePath(AppContext::get().getDocument()->getFilename());
-	new_info->mDefaultData = new_path.toStdString();
+	project_info->mDefaultData = new_path.toStdString();
 
 	nap::rtti::JSONWriter writer;
 	nap::utility::ErrorState error;
-	if (!nap::rtti::serializeObject(*new_info, writer, error))
+	if (!nap::rtti::serializeObject(*project_info, writer, error))
 	{
 		nap::Logger::error(error.toString());
 		return;
@@ -145,7 +146,7 @@ void napkin::UpdateDefaultFileAction::perform()
 	(
 		AppContext::get().getMainWindow(),
 		"Project updated",
-		QString("Project updated successfully.\nRestart '%1' for the changes to take effect").
+		QString("Restart '%1' for the changes to take effect").
 		arg(QString::fromStdString(project_info->mTitle))
 	);
 }
@@ -625,7 +626,7 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 	(
 		AppContext::get().getMainWindow(),
 		"Project updated",
-		QString("Project updated successfully.\nRestart '%1' for the changes to take effect").
+		QString("Restart '%1' for the changes to take effect").
 		arg(QString::fromStdString(ctx.getProjectInfo()->mTitle))
 	);
 }

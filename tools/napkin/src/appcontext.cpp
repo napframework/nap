@@ -44,6 +44,9 @@ AppContext::~AppContext()
 
 	// Close service configuration
 	closeServiceConfiguration();
+
+	// Clear project info
+	mProjectInfo.reset(nullptr);
 }
 
 
@@ -128,8 +131,13 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		return nullptr;
 	}
 
+	// Clone current project information, allows us to edit it
+	const auto* project_info = mCore.getProjectInfo();
+	mProjectInfo = nap::rtti::cloneObject(*project_info, mCore.getResourceManager()->getFactory());
+	mProjectInfo->setFilename(project_info->getFilename());
+
 	// Load service configuration
-	mServiceConfig = std::make_unique<ServiceConfig>(mCore);
+	mServiceConfig = std::make_unique<ServiceConfig>(mCore, *mProjectInfo);
 
 	// Signal initialization
 	coreInitialized();
@@ -153,7 +161,9 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		blockingProgressChanged(1);
 		nap::Logger::error("No data file specified");
 		if (mExitOnLoadFailure)
+		{
 			exit(1);
+		}
 	}
 
 	// All good
@@ -161,10 +171,12 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	return mCore.getProjectInfo();
 }
 
+
 const nap::ProjectInfo* AppContext::getProjectInfo() const
 {
-	return mCore.getProjectInfo();
+	return mProjectInfo.get();
 }
+
 
 void AppContext::reloadDocument()
 {
@@ -436,6 +448,12 @@ void AppContext::onUndoIndexChanged()
 bool napkin::AppContext::isAvailable()
 {
 	return appContextInstance != nullptr;
+}
+
+
+nap::ProjectInfo* napkin::AppContext::getProjectInfo()
+{
+	return mProjectInfo.get();
 }
 
 

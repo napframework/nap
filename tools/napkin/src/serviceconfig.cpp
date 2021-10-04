@@ -18,11 +18,12 @@
 
 namespace napkin
 {
-	ServiceConfig::ServiceConfig(nap::Core& core) : QObject(), mCore(core)
+	ServiceConfig::ServiceConfig(nap::Core& core, nap::ProjectInfo& projectInfo) : QObject(),
+		mCore(core), mProjectInfo(projectInfo)
 	{
 		// Extract filename of project default
 		QString file_name;
-		if (mCore.getProjectInfo()->hasServiceConfigFile())
+		if (mProjectInfo.hasServiceConfigFile())
 		{
 			// Get absolute path
 			std::string patched = nap::utility::joinPath({ mCore.getProjectInfo()->getProjectDir(),
@@ -174,13 +175,12 @@ namespace napkin
 
 	bool ServiceConfig::isProjectDefault() const
 	{
-		QString qstring;
-		std::string string = qstring.toStdString();
-
-		auto& ctx = AppContext::get();
-		QDir proj_dir(QString::fromStdString(ctx.getProjectInfo()->getProjectDir()));
+		// Get relative path
+		QDir proj_dir(QString::fromStdString(mProjectInfo.getProjectDir()));
 		std::string config_file = proj_dir.relativeFilePath(getFilename()).toStdString();
-		return ctx.getProjectInfo()->mServiceConfigFilename == config_file;
+
+		// Compare to cached service config file
+		return mProjectInfo.mServiceConfigFilename == config_file;
 	}
 
 
@@ -193,27 +193,22 @@ namespace napkin
 			return false;
 		}
 
-		// Clone current project information
-		assert(mCore.isInitialized());
-		const auto* project_info = mCore.getProjectInfo();
-		std::unique_ptr<nap::ProjectInfo> new_info = nap::rtti::cloneObject(*project_info, mCore.getResourceManager()->getFactory());
-
 		// Get data directory and create relative path
-		QDir proj_dir(QString::fromStdString(project_info->getProjectDir()));
+		QDir proj_dir(QString::fromStdString(mProjectInfo.getProjectDir()));
 		QString new_path = proj_dir.relativeFilePath(getFilename());
-		new_info->mServiceConfigFilename = new_path.toStdString();
+		mProjectInfo.mServiceConfigFilename = new_path.toStdString();
 
 		nap::rtti::JSONWriter writer;
 		nap::utility::ErrorState error;
-		if (!nap::rtti::serializeObject(*new_info, writer, error))
+		if (!nap::rtti::serializeObject(mProjectInfo, writer, error))
 		{
 			nap::Logger::fatal(error.toString());
 			return false;
 		}
 
 		// Open output file
-		std::ofstream output(project_info->getFilename(), std::ios::binary | std::ios::out);
-		if (!error.check(output.is_open() && output.good(), "Failed to open %s for writing", project_info->getFilename().c_str()))
+		std::ofstream output(mProjectInfo.getFilename(), std::ios::binary | std::ios::out);
+		if (!error.check(output.is_open() && output.good(), "Failed to open %s for writing", mProjectInfo.getFilename().c_str()))
 		{
 			nap::Logger::fatal(error.toString());
 			return false;

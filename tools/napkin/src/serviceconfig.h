@@ -20,7 +20,7 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-		ServiceConfig(nap::Core& core);
+		ServiceConfig(nap::Core& core, nap::ProjectInfo& projectInfo);
 
 		/**
 		 * Returns file name associated with service configuration, can be null (not saved).
@@ -86,6 +86,7 @@ namespace napkin
 
 	private:
 		nap::Core& mCore;								// NAP Core reference
+		nap::ProjectInfo& mProjectInfo;					// Editable Project info reference
 		std::unique_ptr<Document> mDocument = nullptr;	// Document that contains all the configurable objects
 
 		/**
