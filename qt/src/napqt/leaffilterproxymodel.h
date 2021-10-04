@@ -18,8 +18,8 @@ namespace nap
 		class LeafFilterProxyModel : public QSortFilterProxyModel
 		{
 		public:
-			using FilterFunction = std::function<bool(const LeafFilterProxyModel& model, int sourceRow,
-													  const QModelIndex& sourceParent)>;
+			using FilterFunction  = std::function<bool(const LeafFilterProxyModel& model, int sourceRow, const QModelIndex& sourceParent)>;
+			using SortingFunction = std::function<bool(const QModelIndex&, const QModelIndex&, QAbstractItemModel* sourceModel)>;
 
 			LeafFilterProxyModel();
 
@@ -38,6 +38,11 @@ namespace nap
 			 * @return true if the value on the left is less than the value on the right, otherwise false
 			 */
 			bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
+
+			/**
+			 * Set sorting callback.
+			 */
+			void setSorter(SortingFunction sorter);
 
 			/**
 			 * Add a filter to the model
@@ -64,6 +69,7 @@ namespace nap
 
 			QSet<QModelIndex> mExemptions;
 			QList<FilterFunction> mExtraFilters;
+			SortingFunction mSorter = nullptr;
 		};
 
 	} // namespace qt

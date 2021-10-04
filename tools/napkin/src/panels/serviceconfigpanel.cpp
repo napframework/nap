@@ -80,7 +80,7 @@ namespace napkin
 		mLayout.setContentsMargins(0, 0, 0, 0);
 		mLayout.addWidget(&mTreeView);
 		mTreeView.setModel(&mModel);
-		mTreeView.setSortingEnabled(true);
+		mTreeView.enableSorting();
 
 		// Listen to changes
 		connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceConfigPanel::onSelectionChanged);

@@ -47,6 +47,7 @@ ModulePanel::ModulePanel() : QWidget()
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
+	mTreeView.enableSorting();
 	connect(&mModel, &ModuleModel::populated, [&]()
 	{
 		mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder); 

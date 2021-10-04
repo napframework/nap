@@ -37,15 +37,15 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
 
-	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
-	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
+	mSortModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
+	mSortModel.setFilterKeyColumn(-1); // Filter all columns
 
 	mLineEditFilter.setPlaceholderText("filter...");
 	mLineEditFilter.setClearButtonEnabled(true);
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
 	mLayout.addWidget(&mLineEditFilter);
 
-	mTreeView->setModel(&mSortFilter);
+	mTreeView->setModel(&mSortModel);
 
 	mLayout.addWidget(mTreeView);
 
@@ -58,12 +58,12 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 
 void FilterTreeView::setModel(QAbstractItemModel* model)
 {
-	mSortFilter.setSourceModel(model);
+	mSortModel.setSourceModel(model);
 }
 
 QStandardItemModel* FilterTreeView::getModel() const
 {
-	return dynamic_cast<QStandardItemModel*>(mSortFilter.sourceModel());
+	return dynamic_cast<QStandardItemModel*>(mSortModel.sourceModel());
 }
 
 void FilterTreeView::selectAndReveal(QStandardItem* item)
@@ -75,7 +75,7 @@ void FilterTreeView::selectAndReveal(QStandardItem* item)
 	if (!idx.isValid())
 	{
 		// Probably filtered out, add an exception and try again
-		mSortFilter.exemptSourceIndex(item->index());
+		mSortModel.exemptSourceIndex(item->index());
 		idx = getFilterModel().mapFromSource(item->index());
 		if (!idx.isValid())
 			return;
@@ -108,14 +108,14 @@ QList<QModelIndex> FilterTreeView::getSelectedIndexes() const
 {
 	QList<QModelIndex> ret;
 	for (auto idx : getSelectionModel()->selectedRows())
-		ret.append(mSortFilter.mapToSource(idx));
+		ret.append(mSortModel.mapToSource(idx));
 	return ret;
 }
 
 void FilterTreeView::onFilterChanged(const QString& text)
 {
-	mSortFilter.setFilterRegExp(text);
-	mSortFilter.clearExemptions();
+	mSortModel.setFilterRegExp(text);
+	mSortModel.clearExemptions();
 	mTreeView->expandAll();
 	setTopItemSelected();
 }
@@ -124,7 +124,7 @@ void FilterTreeView::onExpandSelected()
 {
 	for (auto& idx : getSelectedIndexes())
 	{
-		auto index = mSortFilter.mapFromSource(idx);
+		auto index = mSortModel.mapFromSource(idx);
 		expandChildren(mTreeView, index, true);
 	}
 
@@ -134,7 +134,7 @@ void FilterTreeView::onCollapseSelected()
 {
 	for (auto& idx : getSelectedIndexes())
 	{
-		auto index = mSortFilter.mapFromSource(idx);
+		auto index = mSortModel.mapFromSource(idx);
 		expandChildren(mTreeView, index, false);
 	}
 }
@@ -182,8 +182,15 @@ QWidget& FilterTreeView::getCornerWidget()
 }
 
 
-void nap::qt::FilterTreeView::setSortingEnabled(bool value)
+void nap::qt::FilterTreeView::enableSorting(LeafFilterProxyModel::SortingFunction sorter /*= nullptr*/)
 {
-	mTreeView->setSortingEnabled(value);
+	mSortModel.setSorter(sorter);
+	mTreeView->setSortingEnabled(true);
+}
+
+
+void nap::qt::FilterTreeView::disableSorting()
+{
+	mTreeView->setSortingEnabled(false);
 }
 

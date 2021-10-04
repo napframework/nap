@@ -68,10 +68,15 @@ bool LeafFilterProxyModel::isExempt(int sourceRow, const QModelIndex& sourcePare
 	return false;
 }
 
-
+	
 bool nap::qt::LeafFilterProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
-	return QSortFilterProxyModel::lessThan(left, right);
+	return mSorter != nullptr ? mSorter(left, right, sourceModel()) : QSortFilterProxyModel::lessThan(left, right);
 }
 
+
+void nap::qt::LeafFilterProxyModel::setSorter(SortingFunction sorter)
+{
+	mSorter = sorter;
+}
 

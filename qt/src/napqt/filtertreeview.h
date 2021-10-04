@@ -59,12 +59,12 @@ namespace nap
 			/**
 			 * @return The sort/filter model that sits between the user model and the view.
 			 */
-			const LeafFilterProxyModel& getFilterModel() const { return mSortFilter; }
+			const LeafFilterProxyModel& getFilterModel() const { return mSortModel; }
 
 			/**
 			 * @return The sort/filter model that sits between the user model and the view.
 			 */
-			LeafFilterProxyModel& getFilterModel() { return mSortFilter; }
+			LeafFilterProxyModel& getFilterModel() { return mSortModel; }
 
 			/**
 			 * @return The actual QTreeView used by this widget.
@@ -82,10 +82,15 @@ namespace nap
 			QLineEdit& getLineEdit() { return mLineEditFilter; }
 
 			/**
-			 * Turns sorting on / off
-			 * @param value is sorting should be turned on or off
+			 * Turns sorting on
+			 * @param sorter the sorting function to use, reverts to default when nullptr is provided
 			 */
-			void setSortingEnabled(bool value);
+			void enableSorting(LeafFilterProxyModel::SortingFunction sorter = nullptr);
+
+			/**
+			 * Turns sorting off
+			 */
+			void disableSorting();
 
 			/**
 			 * Select and item and make sure it's visible on screen by scrolling if needed.
@@ -176,7 +181,7 @@ namespace nap
 			QLineEdit mLineEditFilter; ///< The filter box
 			QWidget mCornerWidget;    ///< The [empty] widget at the tip right corner
 			QTreeView* mTreeView;
-			LeafFilterProxyModel mSortFilter; ///< Sits in between the user model and the tree view
+			LeafFilterProxyModel mSortModel; ///< Sits in between the user model and the tree view
 			std::function<void(QMenu&)> mMenuHookFn = nullptr; ///< Gives subclasses the chance to add to the menu
 		};
 
