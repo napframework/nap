@@ -79,7 +79,7 @@ namespace napkin
 	}
 
 
-	void ServiceConfig::load(QString serviceConfigFile)
+	bool ServiceConfig::load(QString serviceConfigFile)
 	{
 		// De-serialize file
 		assert(mCore.isInitialized());
@@ -94,7 +94,7 @@ namespace napkin
 			error))
 		{
 			nap::Logger::fatal(error.toString());
-			return;
+			return false;
 		}
 
 		// Clear and fill
@@ -120,6 +120,7 @@ namespace napkin
 		mDocument = std::make_unique<Document>(mCore, serviceConfigFile, std::move(configs));
 		nap::Logger::info("Loaded config '%s'", toLocalURI(serviceConfigFile.toStdString()).c_str());
 		AppContext::get().serviceConfigurationChanged();
+		return true;
 	}
 
 

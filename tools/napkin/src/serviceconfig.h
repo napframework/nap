@@ -41,7 +41,7 @@ namespace napkin
 		 * Core already loads the configuration for us, performs additional checks,
 		 * and creates default configurations if there is none specified for a specific service.
 		 */
-		void load(QString serviceConfigFile);
+		bool load(QString serviceConfigFile);
 
 		/**
 		 * Saves service configuration file to disk

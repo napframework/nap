@@ -192,20 +192,8 @@ void SaveFileAction::perform()
 		return;
 	}
 
-	// Override
-	if (ctx.saveDocument())
-	{
-		/// If the saved document is different from current project default, ask to update
-		if (!ctx.documentIsProjectDefault())
-		{
-			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("File saved successfully, set as project default?"));
-
-			if (result == QMessageBox::StandardButton::Yes)
-				UpdateDefaultFileAction().trigger();
-		}
-	}
-	else
+	// Override existing
+	if (!ctx.saveDocument())
 	{
 		nap::Logger::error("Unable to save file: %s", doc->getFilename().toUtf8().constData());
 	}
@@ -295,9 +283,22 @@ void napkin::OpenFileAction::perform()
 	if (filename.isNull())
 		return;
 
-	if (continueAfterSavingChanges("opening", "document"))
-	{ 
-		AppContext::get().loadDocument(filename);
+	// Bail if we don't want to continue
+	if (!continueAfterSavingChanges("opening", "document"))
+		return;
+
+	// Load document
+	if (ctx.loadDocument(filename) != nullptr)
+	{
+		/// If the saved document is different from current project default, ask to update
+		if (!ctx.documentIsProjectDefault())
+		{
+			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
+				"Set as Project Default?", QString("Set file as project default?"));
+
+			if (result == QMessageBox::StandardButton::Yes)
+				UpdateDefaultFileAction().trigger();
+		}
 	}
 }
 
@@ -497,20 +498,9 @@ void napkin::SaveServiceConfigAction::perform()
 		}
 
 		// Save config and ask to set as default if different
-		if (ctx.getServiceConfig()->save())
+		if (!ctx.getServiceConfig()->save())
 		{
-			if (!ctx.getServiceConfig()->isProjectDefault())
-			{
-				auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-					"Set as Project Default?", QString("Configuration saved successfully, set as project default?"));
-
-				if (result == QMessageBox::StandardButton::Yes)
-					SetAsDefaultServiceConfigAction().trigger();
-			}
-		}
-		else
-		{
-			nap::Logger::error("Unable to save config file: %s",
+			nap::Logger::error("Unable to save config file: %s", 
 				ctx.getServiceConfig()->getFilename().toUtf8().constData());
 		}
 	}
@@ -588,7 +578,18 @@ void napkin::OpenServiceConfigAction::perform()
 		return;
 	
 	// Load config
-	ctx.getServiceConfig()->load(filename);
+	if (ctx.getServiceConfig()->load(filename))
+	{
+		// Set as project default if new config is different from project default
+		if (!ctx.getServiceConfig()->isProjectDefault())
+		{
+			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
+				"Set as Project Default?", QString("Set configuration as project default ? "));
+
+			if (result == QMessageBox::StandardButton::Yes)
+				SetAsDefaultServiceConfigAction().trigger();
+		}
+	}
 }
 
 
