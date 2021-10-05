@@ -21,15 +21,38 @@ namespace nap
 	class DescriptorSetCache;
 	class Core;
 
+	class BaseMaterial : public Resource, public UniformContainer
+	{
+		RTTI_ENABLE(Resource)
+	public:
+		/**
+		* Base constructor associated with a material
+		*/
+		BaseMaterial(Core& core);
+		virtual ~BaseMaterial() = default;
+
+		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<Sampler>>			mSamplers;											///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
+
+	protected:
+		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);
+
+	private:
+		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
+		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
+
+		RenderService* mRenderService = nullptr;
+	};
+
 	/**
 	 * Resource that acts as the main interface to a shader. Controls how vertex buffers are bound to shader inputs.
 	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
 	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use 
 	 * that same value, unless overridden by a nap::MaterialInstance. 
 	 */
-	class NAPAPI Material : public Resource, public UniformContainer
+	class NAPAPI Material : public BaseMaterial
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(BaseMaterial)
 	public:
 		/**
 		 * @param core the core instance
@@ -107,17 +130,42 @@ namespace nap
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
 	public:
-		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<Sampler>>			mSamplers;											///< Property: 
 		std::vector<VertexAttributeBinding>			mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
 		ResourcePtr<Shader>							mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 		EBlendMode									mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
 		EDepthMode									mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
+	};
 
-	private:
-		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
-		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 
-		RenderService*								mRenderService = nullptr;
+	/**
+	 * Resource that acts as the main interface to a shader. Controls how vertex buffers are bound to shader inputs.
+	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use
+	 * that same value, unless overridden by a nap::MaterialInstance.
+	 */
+	class NAPAPI ComputeMaterial : public BaseMaterial
+	{
+		RTTI_ENABLE(BaseMaterial)
+	public:
+		/**
+		 * @param core the core instance
+		 */
+		ComputeMaterial(Core& core);
+
+		/**
+		 * Initializes the material.
+		 * Validates and converts all the declared uniform values into instances and sets up the vertex buffer bindings.
+		 * @param errorState contains the error if initialization fails.
+		 * @return if initialization succeeded.
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return The underlying shader
+		 */
+		const ComputeShader& getShader() const { assert(mShader != nullptr); return *mShader; }
+
+	public:
+		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 	};
 }

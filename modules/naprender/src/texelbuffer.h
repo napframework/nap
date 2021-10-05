@@ -17,9 +17,8 @@ namespace nap
 	/**
 	 * Storage buffer, allows setting usage manually
 	 * For more information on GPU buffers in general see: nap::GPUBuffer
-	 * TODO: Rename to TexelBuffer
 	 */
-	class NAPAPI StorageBuffer : public GPUBuffer
+	class NAPAPI TexelBuffer : public GPUBuffer
 	{
 	public:
 		/**
@@ -30,7 +29,7 @@ namespace nap
 		 * @param format buffer format, defines element size in bytes
 		 * @param usage how the buffer is used at runtime.
 		 */
-		StorageBuffer(RenderService& renderService, VkFormat format, EMeshDataUsage usage);
+		TexelBuffer(RenderService& renderService, VkFormat format, EMeshDataUsage usage);
 
 		/**
 		 * @return vertex buffer format

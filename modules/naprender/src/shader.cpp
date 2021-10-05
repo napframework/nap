@@ -21,6 +21,7 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 
+RTTI_DEFINE_BASE(nap::BaseShader)
 RTTI_DEFINE_BASE(nap::Shader)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
@@ -30,8 +31,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
-RTTI_CONSTRUCTOR(nap::Core&)
-RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace

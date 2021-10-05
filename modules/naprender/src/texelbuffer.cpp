@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "storagebuffer.h"
+#include "texelbuffer.h"
 
 // External Includes
 #include <assert.h>
@@ -33,14 +33,14 @@ namespace nap
 	}
 
 
-	StorageBuffer::StorageBuffer(RenderService& renderService, VkFormat format, EMeshDataUsage usage) :
+	TexelBuffer::TexelBuffer(RenderService& renderService, VkFormat format, EMeshDataUsage usage) :
 		GPUBuffer(renderService, usage),
 		mFormat(format),
 		mElementSize(getElementSize(format))
 	{ }
 
 
-	bool StorageBuffer::setData(void* data, size_t size, VkBufferUsageFlagBits bufferUsage, utility::ErrorState& error)
+	bool TexelBuffer::setData(void* data, size_t size, VkBufferUsageFlagBits bufferUsage, utility::ErrorState& error)
 	{
 		// The buffer size must be a multiple of the element size
 		assert(size % mElementSize == 0);

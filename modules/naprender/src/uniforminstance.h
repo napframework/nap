@@ -100,7 +100,10 @@ namespace nap
 		virtual const UniformDeclaration& getDeclaration() const override		{ return mDeclaration; }
 
 	private:
+		friend class BaseMaterial;
+		friend class ComputeMaterial;
 		friend class Material;
+		friend class BaseMaterialInstance;
 		friend class MaterialInstance;
 
 		/**

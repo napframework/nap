@@ -37,6 +37,8 @@ RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
 RTTI_END_STRUCT
 
 
+RTTI_DEFINE_BASE(nap::BaseMaterial)
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
@@ -47,22 +49,30 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_PROPERTY("DepthMode",					&nap::Material::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)
+RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterial::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterial::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Shader",						&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Material
+	// BaseMaterial
 	//////////////////////////////////////////////////////////////////////////
 
-	Material::Material(Core& core) :
+	BaseMaterial::BaseMaterial(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{
 	}
 
 	/**
-	 * The Material init will initialize all uniforms that can be used with the bound shader. The shader contains the authoritative set of Uniforms that can be set;
-	 * the Uniforms defined in the material must match the Uniforms declared by the shader. If the shader declares a Uniform that is not present in the Material, a 
-	 * default Uniform will be used. 
-	 
+	 * The BaseMaterial rebuild will initialize all uniforms that can be used with the bound shader. The shader contains the authoritative set of Uniforms that can be set;
+	 * the Uniforms defined in the material must match the Uniforms declared by the shader. If the shader declares a Uniform that is not present in the Material, a
+	 * default Uniform will be used.
+	 *
 	 * To prevent us from having to check everywhere whether a uniform is present in the material or not, we create Uniforms for *all* uniforms
 	 * declared by the shader, even if they're present in the material. Then, if the Uniform is also present in the material, we simply copy the existing uniform over the
 	 * newly-constructed uniform. Furthermore, it is important to note why we always create new uniforms and do not touch the input data:
@@ -79,15 +89,12 @@ namespace nap
 	 * - First, we create uniforms for all uniforms declared in the shader. This is a recursive process, due to the presence of arrays/struct uniforms
 	 * - Then, we apply all uniforms that are present in the material (mUniforms) onto the newly-constructed uniforms. This is also a recursive process.
 	 *
-	 * Note that the first pass creates a 'tree' of uniforms (arrays can contain structs, which can contains uniforms, etc); the tree of uniforms defined in the material 
+	 * Note that the first pass creates a 'tree' of uniforms (arrays can contain structs, which can contains uniforms, etc); the tree of uniforms defined in the material
 	 * must match the tree generated in the first pass.
 	 */
-	bool Material::init(utility::ErrorState& errorState)
+	bool BaseMaterial::rebuild(const BaseShader& shader, utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
-			return false;
-
-		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = mShader->getUBODeclarations();
+		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
@@ -97,11 +104,11 @@ namespace nap
 				return false;
 		}
 
-		const SamplerDeclarations& sampler_declarations = mShader->getSamplerDeclarations();
+		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
 			if (!errorState.check(declaration.mType == SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
-					return false;
+				return false;
 
 			bool is_array = declaration.mNumArrayElements > 1;
 			std::unique_ptr<SamplerInstance> sampler_instance;
@@ -136,6 +143,24 @@ namespace nap
 		}
 
 		return true;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Material
+	//////////////////////////////////////////////////////////////////////////
+
+	Material::Material(Core& core) :
+		BaseMaterial(core)
+	{
+	}
+
+
+	bool Material::init(utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
+			return false;
+
+		return rebuild(*mShader, errorState);
 	}
 
 
@@ -179,4 +204,22 @@ namespace nap
 		mMeshAttributeID(meshAttributeID),
 		mShaderAttributeID(shaderAttributeID)
 	{ }
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ComputeMaterial
+	//////////////////////////////////////////////////////////////////////////
+
+	ComputeMaterial::ComputeMaterial(Core& core) :
+		BaseMaterial(core)
+	{
+	}
+
+	bool ComputeMaterial::init(utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
+			return false;
+
+		return rebuild(*mShader, errorState);
+	}
 }
