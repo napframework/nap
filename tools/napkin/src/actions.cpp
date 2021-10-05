@@ -140,15 +140,6 @@ void napkin::UpdateDefaultFileAction::perform()
 	std::string json = writer.GetJSON();
 	output.write(json.data(), json.size());
 	nap::Logger::info("Updated project data: %s", new_path.toUtf8().constData());
-
-	// Notify user app needs to restart if running
-	auto result = QMessageBox::information
-	(
-		AppContext::get().getMainWindow(),
-		"Project updated",
-		QString("Restart '%1' for the changes to take effect").
-		arg(QString::fromStdString(project_info->mTitle))
-	);
 }
 
 
@@ -241,7 +232,8 @@ void SaveFileAsAction::perform()
 		if (!ctx.documentIsProjectDefault())
 		{
 			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("File saved successfully, set as project default?"));
+				"Set as Project Default?",
+				QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
 
 			if (result == QMessageBox::StandardButton::Yes)
 				UpdateDefaultFileAction().trigger();
@@ -294,7 +286,7 @@ void napkin::OpenFileAction::perform()
 		if (!ctx.documentIsProjectDefault())
 		{
 			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("Set file as project default?"));
+				"Set as Project Default?", QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
 
 			if (result == QMessageBox::StandardButton::Yes)
 				UpdateDefaultFileAction().trigger();
@@ -546,7 +538,8 @@ void napkin::SaveServiceConfigurationAs::perform()
 	if(!ctx.getServiceConfig()->isProjectDefault())
 	{
 		auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-			"Set as Project Default?", QString("Configuration saved successfully, set as project default?"));
+			"Set as Project Default?",
+			QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
 
 		if (result == QMessageBox::StandardButton::Yes)
 			SetAsDefaultServiceConfigAction().trigger();
@@ -584,7 +577,7 @@ void napkin::OpenServiceConfigAction::perform()
 		if (!ctx.getServiceConfig()->isProjectDefault())
 		{
 			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("Set configuration as project default ? "));
+				"Set as Project Default?", QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
 
 			if (result == QMessageBox::StandardButton::Yes)
 				SetAsDefaultServiceConfigAction().trigger();
@@ -617,19 +610,7 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 	}
 
 	// Set as default in project
-	if (!ctx.getServiceConfig()->makeProjectDefault())
-	{
-		return;
-	}
-
-	// Notify user app needs to restart if running
-	auto result = QMessageBox::information
-	(
-		AppContext::get().getMainWindow(),
-		"Project updated",
-		QString("Restart '%1' for the changes to take effect").
-		arg(QString::fromStdString(ctx.getProjectInfo()->mTitle))
-	);
+	ctx.getServiceConfig()->makeProjectDefault();
 }
 
 
