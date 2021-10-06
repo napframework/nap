@@ -264,7 +264,7 @@ namespace nap
 		/**
 		 *	@return all the values associated with this color
 		 */
-		const std::vector<T>& getValues() const											{ return mValues; }
+		const std::array<T, CHANNELS>& getValues() const											{ return mValues; }
 
 		/**
 		 *	@return pointer to the beginning of the data
