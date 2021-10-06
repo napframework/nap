@@ -37,7 +37,7 @@ RTTI_BEGIN_ENUM(nap::ETweenEaseType)
 	RTTI_ENUM_VALUE(nap::ETweenEaseType::QUINT_IN,			"Quint In"),
 	RTTI_ENUM_VALUE(nap::ETweenEaseType::QUINT_INOUT,		"Quint In Out"),
 	RTTI_ENUM_VALUE(nap::ETweenEaseType::QUINT_OUT,			"Quint Out"),
-	RTTI_ENUM_VALUE(nap::ETweenEaseType::SINE_IN,			"Quint In"),
-	RTTI_ENUM_VALUE(nap::ETweenEaseType::SINE_INOUT,		"Quint In Out"),
-	RTTI_ENUM_VALUE(nap::ETweenEaseType::SINE_OUT,			"Quint Out")
+	RTTI_ENUM_VALUE(nap::ETweenEaseType::SINE_IN,			"Sine In"),
+	RTTI_ENUM_VALUE(nap::ETweenEaseType::SINE_INOUT,		"Sine In Out"),
+	RTTI_ENUM_VALUE(nap::ETweenEaseType::SINE_OUT,			"Sine Out")
 RTTI_END_ENUM
