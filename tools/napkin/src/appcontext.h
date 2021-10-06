@@ -115,9 +115,14 @@ namespace napkin
 		const nap::ProjectInfo* loadProject(const QString& projectFilename);
 
 		/**
-		 * @return The currently loaded project or a nullptr when no project is loaded
+		 * @return The current loaded project or a nullptr when no project is loaded
 		 */
 		const nap::ProjectInfo* getProjectInfo() const;
+
+		/**
+		 * @return The current loaded project or a nullptr when no project is loaded
+		 */
+		nap::ProjectInfo* getProjectInfo();
 
 		/**
 		 * Reload the current document from disk
@@ -145,6 +150,12 @@ namespace napkin
 		 * @param filename The file to save the data to.
 		 */
         bool saveDocumentAs(const QString& filename);
+
+		/**
+		 * 
+		 * Returns if the current data file is set as project default, asserts if no document is loaded.
+		 */
+		bool documentIsProjectDefault() const;
 
 		/**
 		 * Serialize the current document to a string
@@ -439,6 +450,7 @@ namespace napkin
 		bool mExitOnLoadSuccess = false;											// Whether to exit on any project load success
 		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
 
+		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;					// Clone of core project info
 		QString mCurrentFilename;													// The currently opened file
 		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
 
