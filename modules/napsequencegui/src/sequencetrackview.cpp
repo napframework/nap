@@ -11,7 +11,7 @@
 #include <imgui/imgui.h>
 #include <iomanip>
 
-using namespace nap::SequenceGUIActions;
+using namespace nap::sequenceguiactions;
 
 namespace nap
 {

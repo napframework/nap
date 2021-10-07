@@ -6,7 +6,7 @@ namespace nap
 	// Sequence Curve Track Actions
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIActions
+	namespace sequenceguiactions
 	{
 		/**
 		 * TrackAction that tells the GUI we're currently hovering a curve control point

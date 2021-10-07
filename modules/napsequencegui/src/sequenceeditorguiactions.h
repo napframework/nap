@@ -18,7 +18,7 @@ namespace nap
 	 * Types of possible interactions with GUI
 	 * Used by the gui state to handle mouse input / popups / actions
 	 */
-	namespace SequenceGUIActions
+	namespace sequenceguiactions
 	{
 		/**
 		 * Action base class

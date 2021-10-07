@@ -22,7 +22,7 @@ namespace nap
 	{
 	public:
 		// action 
-		SequenceGUIActions::SequenceActionPtr mAction = nullptr;
+		sequenceguiactions::SequenceActionPtr mAction = nullptr;
 
 		// clipboard
 		SequenceGUIClipboards::SequenceClipboardPtr mClipboard = nullptr;

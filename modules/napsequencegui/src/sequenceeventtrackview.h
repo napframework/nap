@@ -44,7 +44,7 @@ namespace nap
 		 * For examples, see template specializations in SequenceEventTrackView.cpp
 		 * @param action the incoming action from the gui, contains information about the track time and segment. Segment can be assumed to be of type SequenceTrackSegmentEvent<T>
 		 */
-		virtual void handleEditPopupContent(SequenceGUIActions::Action& action) = 0;
+		virtual void handleEditPopupContent(sequenceguiactions::Action& action) = 0;
 
 		/**
 		 * Extend this method to specify a way to draw this event type
@@ -73,7 +73,7 @@ namespace nap
 		 * @param segmentID the segment id
 		 * @return unique pointer to created action, cannot be nullptr
 		 */
-		virtual std::unique_ptr<SequenceGUIActions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
+		virtual std::unique_ptr<sequenceguiactions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
 	protected:
 	};
 
@@ -100,7 +100,7 @@ namespace nap
 		 * For examples, see template specializations in SequenceEventTrackView.cpp
 		 * @param action the incoming action from the gui, contains information about the track time and segment. Segment can be assumed to be of type SequenceTrackSegmentEvent<T>
 		 */
-		void handleEditPopupContent(SequenceGUIActions::Action& action) override;
+		void handleEditPopupContent(sequenceguiactions::Action& action) override;
 
 		/**
 		 * Specialize this method to specify a way to draw this event type
@@ -129,7 +129,7 @@ namespace nap
 		 * @param segmentID the segment id
 		 * @return unique pointer to created action, cannot be nullptr
 		 */
-		std::unique_ptr<SequenceGUIActions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) override;
+		std::unique_ptr<sequenceguiactions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) override;
 	protected:
 	};
 
@@ -260,21 +260,21 @@ namespace nap
 	template<typename T>
 	void SequenceEventTrackView::handleEditEventSegmentPopup()
 	{
-		if (mState.mAction->isAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>())
+		if (mState.mAction->isAction<sequenceguiactions::OpenEditEventSegmentPopup<T>>())
 		{
 			// invoke insert sequence popup
 			ImGui::OpenPopup("Edit Event");
 
-			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditEventSegmentPopup<T>>();
+			auto* action = mState.mAction->getDerived<sequenceguiactions::OpenEditEventSegmentPopup<T>>();
 			ImGui::SetNextWindowPos(action->mWindowPos);
 
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingEventSegment<T>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue, action->mStartTime);
+			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingEventSegment<T>>(action->mTrackID, action->mSegmentID, action->mWindowPos, action->mValue, action->mStartTime);
 		}
 
 		// handle insert segment popup
-		if (mState.mAction->isAction<SequenceGUIActions::EditingEventSegment<T>>())
+		if (mState.mAction->isAction<sequenceguiactions::EditingEventSegment<T>>())
 		{
-			auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingEventSegment<T>>();
+			auto* action = mState.mAction->getDerived<sequenceguiactions::EditingEventSegment<T>>();
 
 			if (ImGui::BeginPopup("Edit Event"))
 			{
@@ -324,14 +324,14 @@ namespace nap
 					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
 					event_controller.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
                     ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button("Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 				}
 
 				action->mWindowPos = ImGui::GetWindowPos();
@@ -341,7 +341,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+				mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 			}
 		}
 	}
@@ -374,9 +374,9 @@ namespace nap
 
 
 	template<typename T>
-	std::unique_ptr<SequenceGUIActions::Action> SequenceEventTrackSegmentView<T>::createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
+	std::unique_ptr<sequenceguiactions::Action> SequenceEventTrackSegmentView<T>::createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID)
 	{
 		const auto *event = static_cast<const SequenceTrackSegmentEvent<T>*>(segment);
-		return SequenceGUIActions::createAction<SequenceGUIActions::OpenEditEventSegmentPopup<T>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
+		return sequenceguiactions::createAction<sequenceguiactions::OpenEditEventSegmentPopup<T>>(trackID,segmentID,ImGui::GetWindowPos(), event->mValue, segment->mStartTime);
 	}
 }

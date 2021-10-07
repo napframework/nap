@@ -18,7 +18,7 @@
 
 namespace nap
 {
-	using namespace SequenceGUIActions;
+	using namespace sequenceguiactions;
 	using namespace SequenceGUIClipboards;
 
 	SequenceCurveTrackView::SequenceCurveTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
@@ -168,9 +168,9 @@ namespace nap
 			&current_item, curve_outputs))
 		{
 			if (current_item != 0)
-				mState.mAction = SequenceGUIActions::createAction<AssignOutputIDToTrack>(track.mID, curve_outputs[current_item]);
+				mState.mAction = sequenceguiactions::createAction<AssignOutputIDToTrack>(track.mID, curve_outputs[current_item]);
 			else
-				mState.mAction = SequenceGUIActions::createAction<AssignOutputIDToTrack>(track.mID, "");
+				mState.mAction = sequenceguiactions::createAction<AssignOutputIDToTrack>(track.mID, "");
 		}
 
 		//
@@ -669,10 +669,10 @@ namespace nap
 
 	void SequenceCurveTrackView::handleTanPointActionPopup()
 	{
-		if (mState.mAction->isAction<SequenceGUIActions::OpenEditTanPointPopup>())
+		if (mState.mAction->isAction<sequenceguiactions::OpenEditTanPointPopup>())
 		{
-			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditTanPointPopup>();
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingTanPointPopup>(
+			auto* action = mState.mAction->getDerived<sequenceguiactions::OpenEditTanPointPopup>();
+			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingTanPointPopup>(
 				action->mTrackID,
 				action->mSegmentID,
 				action->mControlPointIndex,
@@ -688,7 +688,7 @@ namespace nap
 		{
 			if (ImGui::BeginPopup("Tan Point Actions"))
 			{
-				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingTanPointPopup>();
+				auto* action = mState.mAction->getDerived<sequenceguiactions::EditingTanPointPopup>();
 				int curveIndex = action->mCurveIndex;
 
 				bool change = false;
@@ -732,7 +732,7 @@ namespace nap
 
 				if (ImGui::Button("Done"))
 				{
-					mState.mAction = createAction<SequenceGUIActions::None>();
+					mState.mAction = createAction<sequenceguiactions::None>();
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -1142,10 +1142,10 @@ namespace nap
 	template<>
 	void SequenceCurveTrackView::handleCurvePointActionPopup<float>()
 	{
-		if (mState.mAction->isAction<SequenceGUIActions::OpenCurvePointActionPopup<float>>())
+		if (mState.mAction->isAction<sequenceguiactions::OpenCurvePointActionPopup<float>>())
 		{
-			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenCurvePointActionPopup<float>>();
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::CurvePointActionPopup<float>>(
+			auto* action = mState.mAction->getDerived<sequenceguiactions::OpenCurvePointActionPopup<float>>();
+			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::CurvePointActionPopup<float>>(
 				action->mTrackID,
 				action->mSegmentID,
 				action->mControlPointIndex,
@@ -1158,11 +1158,11 @@ namespace nap
 			ImGui::OpenPopup("Curve Point Actions");
 		}
 
-		if (mState.mAction->isAction<SequenceGUIActions::CurvePointActionPopup<float>>())
+		if (mState.mAction->isAction<sequenceguiactions::CurvePointActionPopup<float>>())
 		{
 			if (ImGui::BeginPopup("Curve Point Actions"))
 			{
-				auto* action = mState.mAction->getDerived<SequenceGUIActions::CurvePointActionPopup<float>>();
+				auto* action = mState.mAction->getDerived<sequenceguiactions::CurvePointActionPopup<float>>();
 
 				if (ImGui::Button("Delete"))
 				{
@@ -1175,7 +1175,7 @@ namespace nap
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					mCurveCache.clear();
 
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -1197,7 +1197,7 @@ namespace nap
 
 				if (ImGui::Button("Done"))
 				{
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -1207,7 +1207,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+				mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 			}
 		}
 	}
@@ -1217,10 +1217,10 @@ namespace nap
 	template<>
 	void SequenceCurveTrackView::handleSegmentValueActionPopup<float>()
 	{
-		if (mState.mAction->isAction<SequenceGUIActions::OpenEditSegmentCurveValuePopup<float>>())
+		if (mState.mAction->isAction<sequenceguiactions::OpenEditSegmentCurveValuePopup<float>>())
 		{
-			auto* action = mState.mAction->getDerived<SequenceGUIActions::OpenEditSegmentCurveValuePopup<float>>();
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::EditingSegmentCurveValue<float>>(
+			auto* action = mState.mAction->getDerived<sequenceguiactions::OpenEditSegmentCurveValuePopup<float>>();
+			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingSegmentCurveValue<float>>(
 				action->mTrackID,
 				action->mSegmentID,
 				action->mType,
@@ -1232,11 +1232,11 @@ namespace nap
 			ImGui::OpenPopup("Segment Value Actions");
 		}
 
-		if (mState.mAction->isAction<SequenceGUIActions::EditingSegmentCurveValue<float>>())
+		if (mState.mAction->isAction<sequenceguiactions::EditingSegmentCurveValue<float>>())
 		{
 			if (ImGui::BeginPopup("Segment Value Actions"))
 			{
-				auto* action = mState.mAction->getDerived<SequenceGUIActions::EditingSegmentCurveValue<float>>();
+				auto* action = mState.mAction->getDerived<sequenceguiactions::EditingSegmentCurveValue<float>>();
 				int curveIndex = action->mCurveIndex;
 
 				float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
@@ -1257,7 +1257,7 @@ namespace nap
 
 				if (ImGui::Button("Done"))
 				{
-					mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -1267,7 +1267,7 @@ namespace nap
 			else
 			{
 				// click outside popup so cancel action
-				mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+				mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 			}
 		}
 	}
@@ -1314,7 +1314,7 @@ namespace nap
 	void SequenceCurveTrackView::handleDragTanPoint()
 	{
 		//
-		auto* action = mState.mAction->getDerived<SequenceGUIActions::DraggingTanPoint>();
+		auto* action = mState.mAction->getDerived<sequenceguiactions::DraggingTanPoint>();
 
 		// get editor
 		auto& editor = getEditor();
@@ -1351,7 +1351,7 @@ namespace nap
 		// discard action if mouse is released
 		if (ImGui::IsMouseReleased(0))
 		{
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 		}
 	}
 
@@ -1405,7 +1405,7 @@ namespace nap
 		curve_controller.assignNewObjectID(action->mTrackID, action->mObjectID);
 
 		// action is done
-		mState.mAction = SequenceGUIActions::createAction<None>();
+		mState.mAction = sequenceguiactions::createAction<None>();
 
 		// redraw curves and caches
 		mState.mDirty = true;
@@ -1443,7 +1443,7 @@ namespace nap
 		//
 		if( ImGui::IsMouseReleased(0) )
 		{
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 		}
 	}
 
@@ -1451,7 +1451,7 @@ namespace nap
 	void SequenceCurveTrackView::handleDraggingControlPoints()
 	{
 		// get the action
-		auto* action = mState.mAction->getDerived<SequenceGUIActions::DraggingControlPoint>();
+		auto* action = mState.mAction->getDerived<sequenceguiactions::DraggingControlPoint>();
 
 		// get editor
 		auto& editor = getEditor();
@@ -1477,7 +1477,7 @@ namespace nap
 
 		if (ImGui::IsMouseReleased(0))
 		{
-			mState.mAction = SequenceGUIActions::createAction<SequenceGUIActions::None>();
+			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 		}
 	}
 }

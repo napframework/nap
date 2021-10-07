@@ -23,7 +23,7 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
-using namespace nap::SequenceGUIActions;
+using namespace nap::sequenceguiactions;
 using namespace nap::SequenceCurveEnums;
 using namespace nap::SequenceGUIClipboards;
 

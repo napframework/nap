@@ -8,7 +8,7 @@ namespace nap
 	// Event Actions
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIActions
+	namespace sequenceguiactions
 	{
 		/**
 		 * TrackAction to tell the GUI to open an insert event segment popup

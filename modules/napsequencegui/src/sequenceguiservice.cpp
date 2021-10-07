@@ -167,13 +167,13 @@ namespace nap
 		mEventSegmentViewFactoryMap.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), []()->std::unique_ptr<SequenceEventTrackSegmentViewBase>{ return std::make_unique<SequenceEventTrackSegmentView<T>>(); });
 
 		// register popup action handler
-		auto event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
+		auto event_it = mEditEventHandlerMap.find(RTTI_OF(sequenceguiactions::OpenEditEventSegmentPopup<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
+		mEditEventHandlerMap.emplace(RTTI_OF(sequenceguiactions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
-		event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
+		event_it = mEditEventHandlerMap.find(RTTI_OF(sequenceguiactions::EditingEventSegment<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
+		mEditEventHandlerMap.emplace(RTTI_OF(sequenceguiactions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
 		// register paste handler
 		auto& handler_paste_events = mPasteEventMap;
