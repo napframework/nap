@@ -28,8 +28,10 @@ namespace nap
 	class RenderableMesh;
 	class IMesh;
 	class MaterialInstance;
+	class ComputeMaterialInstance;
 	class Texture2D;
 	class GPUBuffer;
+	class ComputeInstance;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
@@ -179,10 +181,13 @@ namespace nap
 	{
 		friend class Texture2D;
 		friend class GPUBuffer;
+		friend class ComputeInstance;
+		friend class RenderWindow;
 		RTTI_ENABLE(Service)
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
+		using SemaphoreWaitList = std::vector<SemaphoreWaitInfo>;
 		
 		/**
 		 * Binds a pipeline and pipeline layout together.
@@ -420,7 +425,13 @@ namespace nap
 		 */
 		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
-		Pipeline getOrCreateComputePipeline(const ComputeShader& computeShader, utility::ErrorState& errorState);
+		/**
+		 * Returns a Vulkan compute pipeline for the given render target, mesh and material combination.
+		 * @param computeMaterialInstance the compute material instance
+		 * @param errorState contains the error if the pipeline can't be created
+		 * @return new or cached compute pipeline.
+		 */
+		Pipeline getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState);
 
 		/**
 		 * Returns a Vulkan pipeline for the given render target and Renderable-mesh combination.
@@ -488,12 +499,6 @@ namespace nap
 		 * @return the command buffer that is being recorded.
 		 */
 		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
-
-		/**
-		 * Returns the ompute command buffer that is being recorded.
-		 * @return the command buffer that is being recorded, returns nullptr if compute is not enabled or supported
-		 */
-		VkCommandBuffer getComputeCommandBuffer()									{ assert(mComputeCommandBuffer != nullptr); return mComputeCommandBuffer; }
 		
 		/**
 		 * Returns the window that is being rendered to, only valid between a
@@ -634,6 +639,24 @@ namespace nap
 		VkQueue getQueue() const													{ return mQueue; }
 
 		/**
+		 * Returns the index of the selected compute queue family.
+		 * @return the compute queue index.
+		 */
+		int getComputeQueueIndex() const											{ return mPhysicalDevice.getComputeQueueIndex(); }
+
+		/**
+		 * Returns the selected compute queue, used to execute recorded command buffers.
+		 * This queue must support Compute operations.
+		 * @return the queue that is used to execute recorded command buffers.
+		 */
+		VkQueue getComputeQueue() const												{ return mComputeQueue; }
+
+		/**
+		 * Returns true of compute is available, else returns false
+		 */
+		bool isComputeAvailable() const												{ return mPhysicalDevice.getComputeQueueIndex() >= 0; }
+
+		/**
 		 * Returns an empty texture that is available on the GPU for temporary biding or storage.
 		 * @return empty texture that is available on the GPU
 		 */
@@ -755,6 +778,12 @@ namespace nap
 		 * @param frameIndex The index of the frame to wait for
 		 */
 		void waitForFence(int frameIndex);
+
+		/**
+		 * Pushes a semaphore - pipelineflags pair onto the wait list for the current of next frame to be rendered.
+		 * This combination will create a synchronization condition for the next queue submission.
+		 */
+		void pushSemaphoreWaitInfo(const SemaphoreWaitInfo& semaphoreWaitInfo);
 
 	protected:
 		/**
@@ -937,8 +966,9 @@ namespace nap
 		int										mCurrentFrameIndex = 0;
 		std::vector<Frame>						mFramesInFlight;
 		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
-		VkCommandBuffer							mComputeCommandBuffer = VK_NULL_HANDLE;
-		RenderWindow*							mCurrentRenderWindow = nullptr;		
+		RenderWindow*							mCurrentRenderWindow = nullptr;
+
+		std::vector<SemaphoreWaitList>			mSemaphoreWaitList;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
@@ -963,6 +993,3 @@ namespace nap
 		bool									mHeadless = false;
 	};
 } // nap
-
-
-

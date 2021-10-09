@@ -54,6 +54,18 @@ namespace nap
 
 
 	/**
+	 * Semaphore wait info
+	 */
+	struct NAPAPI SemaphoreWaitInfo
+	{
+		SemaphoreWaitInfo() = default;
+
+		VkSemaphore				mSemaphore;
+		VkPipelineStageFlags	mFlags;
+	};
+
+
+	/**
 	 * Number of rasterization samples
 	 */
 	enum class ERasterizationSamples : int
@@ -65,7 +77,6 @@ namespace nap
 		Sixteen = 0x00000010,
 		Max		= 0x00000000		///< Request max available number of rasterization samples.
 	};
-
 
 	/**
 	 * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.

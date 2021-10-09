@@ -534,6 +534,7 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
+	// Uniform buffers e.g. 'uniform float'
 	for (const spirv_cross::Resource& resource : shader_resources.uniform_buffers)
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
@@ -541,7 +542,7 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 		size_t struct_size = compiler.get_declared_struct_size(type);
 
-		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, struct_size);
+		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Uniform, struct_size);
 
 		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
@@ -549,16 +550,15 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
 	}
 
+	// Storage buffers e.g. 'uniform buffer'
 	for (const spirv_cross::Resource& resource : shader_resources.storage_buffers)
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
-		// TODO: Check for texel buffer: 'imageBuffer' as opposed to 'buffer'
-
 		uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 		size_t struct_size = compiler.get_declared_struct_size(type);
 
-		nap::StorageTexelBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, struct_size);
+		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Storage, struct_size);
 
 		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
@@ -566,6 +566,7 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		uboDeclarations.emplace_back(std::move(storage_buffer_object));
 	}
 
+	// Samplers e.g. 'uniform sampler2D'
 	for (const spirv_cross::Resource& sampled_image : shader_resources.sampled_images)
 	{
 		spirv_cross::SPIRType sampler_type = compiler.get_type(sampled_image.type_id);
@@ -637,9 +638,7 @@ namespace nap
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.pImmutableSamplers = nullptr;
 			uboLayoutBinding.stageFlags = declaration.mStage;
-
-			bool is_ssbo = declaration.get_type().is_derived_from(RTTI_OF(StorageTexelBufferObjectDeclaration));
-			uboLayoutBinding.descriptorType = is_ssbo ? VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uboLayoutBinding.descriptorType = (declaration.mType == nap::EBufferObjectType::Uniform) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}

@@ -17,6 +17,7 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
+#include "computeinstance.h"
 
 // External Includes
 #include <nap/core.h>
@@ -1168,10 +1169,12 @@ namespace nap
 	}
 
 
-	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeShader& computeShader, utility::ErrorState& errorState)
+	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{
 		// Create pipeline key based on draw properties
-		ComputePipelineKey pipeline_key(computeShader);
+		const ComputeMaterial& material = computeMaterialInstance.getComputeMaterial();
+		const ComputeShader& shader = material.getShader();
+		ComputePipelineKey pipeline_key(shader);
 
 		// Find key in cache and use previously created pipeline
 		ComputePipelineCache::iterator pos = mComputePipelineCache.find(pipeline_key);
@@ -1180,7 +1183,7 @@ namespace nap
 
 		// Otherwise create new pipeline
 		Pipeline pipeline;
-		if (createComputePipeline(mDevice, computeShader, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (createComputePipeline(mDevice, shader, pipeline.mLayout, pipeline.mPipeline, errorState))
 		{
 			mComputePipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
 			return pipeline;
@@ -1531,12 +1534,8 @@ namespace nap
 				return false;
 		}
 
-		// If compute is enabled, create the compute command buffer
-		if (req_queue_flags & VK_QUEUE_COMPUTE_BIT)
-		{
-			if (!createCommandBuffer(mDevice, mCommandPool, mComputeCommandBuffer, errorState))
-				return false;
-		}
+		// Initialize semaphore wait list
+		mSemaphoreWaitList.resize(getMaxFramesInFlight());
 
 		mInitialized = true;
 		return true;
@@ -1564,6 +1563,12 @@ namespace nap
 	void RenderService::waitForFence(int frameIndex)
 	{
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[frameIndex].mFence, VK_TRUE, UINT64_MAX);
+	}
+
+
+	void RenderService::pushSemaphoreWaitInfo(const SemaphoreWaitInfo& semaphoreWaitInfo)
+	{
+		mSemaphoreWaitList[getCurrentFrameIndex()].emplace_back(semaphoreWaitInfo);
 	}
 
 
@@ -1851,7 +1856,7 @@ namespace nap
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
 		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
-		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
+		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % getMaxFramesInFlight();
 		mIsRenderingFrame = false;
 	}
 

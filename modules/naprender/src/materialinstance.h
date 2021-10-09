@@ -27,6 +27,7 @@ namespace nap
 	 */
 	class NAPAPI BaseMaterialInstanceResource
 	{
+		RTTI_ENABLE()
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs that you're overriding
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
@@ -34,6 +35,7 @@ namespace nap
 
 	class NAPAPI MaterialInstanceResource : public BaseMaterialInstanceResource
 	{
+		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
 		ResourcePtr<Material>						mMaterial;										///< Property: "Material" source material
 		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
@@ -42,6 +44,7 @@ namespace nap
 
 	class NAPAPI ComputeMaterialInstanceResource : public BaseMaterialInstanceResource
 	{
+		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
 		ResourcePtr<ComputeMaterial>				mComputeMaterial;								///< Property: "ComputeMaterial" source material
 	};
@@ -326,6 +329,12 @@ namespace nap
 		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
 		 */
 		virtual VkDescriptorSet update() override;
+
+		/**
+		 * Specialization of update() that returns a reference to the descriptorset structure
+		 * @return DescriptorSet structure
+		 */
+		const DescriptorSet& updateCompute();
 
 	private:
 		ComputeMaterialInstanceResource* mResource;								// Resource this instance is associated with

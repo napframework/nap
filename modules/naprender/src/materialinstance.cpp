@@ -9,6 +9,7 @@
 #include "renderservice.h"
 #include "descriptorsetcache.h"
 #include "vk_mem_alloc.h"
+#include "renderutils.h"
 
 // External includes
 #include <nap/logger.h>
@@ -586,6 +587,25 @@ namespace nap
 		updateSamplers(descriptor_set);
 
 		return descriptor_set.mSet;
+	}
+
+
+	const DescriptorSet& ComputeMaterialInstance::updateCompute()
+	{
+		if (mUniformsCreated)
+		{
+			for (UniformBufferObject& ubo : mUniformBufferObjects)
+				rebuildUBO(getComputeMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
+
+			mUniformsCreated = false;
+		}
+
+		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
+
+		updateUniforms(descriptor_set);
+		updateSamplers(descriptor_set);
+
+		return descriptor_set;
 	}
 
 

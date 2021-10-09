@@ -787,11 +787,19 @@ namespace nap
 
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
-		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[current_frame] };
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = waitSemaphores;
-		submit_info.pWaitDstStageMask = waitStages;
+		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame] };
+		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+		for (const auto wait_semaphore_info : mRenderService->mSemaphoreWaitList[current_frame])
+		{
+			wait_semaphores.emplace_back(wait_semaphore_info.mSemaphore);
+			wait_stages.emplace_back(wait_semaphore_info.mFlags);
+		}
+		mRenderService->mSemaphoreWaitList[current_frame].clear();
+
+		submit_info.waitSemaphoreCount = wait_semaphores.size();
+		submit_info.pWaitSemaphores = &wait_semaphores[0];
+		submit_info.pWaitDstStageMask = &wait_stages[0];
 
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];

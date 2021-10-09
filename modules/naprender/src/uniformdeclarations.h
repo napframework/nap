@@ -29,6 +29,15 @@ namespace nap
 		Mat4 = 9			///< 4x4 float matrix
 	};
 
+	/**
+	 * Supported buffer types
+	 */
+	enum class EBufferObjectType : uint8_t
+	{
+		Uniform = 0,		///< readonly
+		Storage = 1			///< read/write
+	};
+
 
 	/**
 	 * Uniform shader declaration base class.
@@ -116,7 +125,7 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformStructDeclaration)
 	public:
-		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size);
+		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
 
 		UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration& operator=(UniformBufferObjectDeclaration&& inRHS);
@@ -125,18 +134,6 @@ namespace nap
 
 		int														mBinding;	///< Shader binding identifier
 		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment etc.
-	};
-
-	class StorageTexelBufferObjectDeclaration : public UniformBufferObjectDeclaration
-	{
-		RTTI_ENABLE(UniformBufferObjectDeclaration)
-
-	public:
-		StorageTexelBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, int size);
-
-		StorageTexelBufferObjectDeclaration(StorageTexelBufferObjectDeclaration&& inRHS);
-		StorageTexelBufferObjectDeclaration& operator=(StorageTexelBufferObjectDeclaration&& inRHS);
-		StorageTexelBufferObjectDeclaration(const StorageTexelBufferObjectDeclaration&) = delete;
-		StorageTexelBufferObjectDeclaration& operator=(const StorageTexelBufferObjectDeclaration&) = delete;
+		EBufferObjectType										mType;		///< Usage: uniform, storage
 	};
 }

@@ -30,7 +30,9 @@ namespace nap
 	{
 		VkDescriptorSetLayout				mLayout;
 		VkDescriptorSet						mSet;
-		std::vector<BufferData>	mBuffers;
+		std::vector<BufferData>				mBuffers;
+
+		const std::vector<BufferData>& getBuffers() const { return mBuffers; }
 	};
 
 	/** 

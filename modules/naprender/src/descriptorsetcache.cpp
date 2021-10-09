@@ -11,6 +11,29 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static methods
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Returns the vulkan buffer usage flags for a given buffer type
+	 */
+	static VkBufferUsageFlags getBufferUsage(EBufferObjectType type)
+	{
+		if (type == EBufferObjectType::Uniform)
+			return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+		// Storage buffers may be used as vertex attribute buffers on device memory
+		else if (type == EBufferObjectType::Storage)
+			return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;// | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// DescriptorsetCache
+	//////////////////////////////////////////////////////////////////////////
+
 	DescriptorSetCache::DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
 		mRenderService(&renderService),
 		mDescriptorSetAllocator(&descriptorSetAllocator),
@@ -69,7 +92,7 @@ namespace nap
 
 			BufferData buffer;
 			utility::ErrorState error_state;
-			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
+			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, getBufferUsage(ubo_declaration.mType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
 			assert(success);
 
 			descriptor_set.mBuffers.push_back(buffer);
@@ -84,7 +107,7 @@ namespace nap
 			ubo_descriptor.dstSet = descriptor_set.mSet;
 			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
 			ubo_descriptor.dstArrayElement = 0;
-			ubo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			ubo_descriptor.descriptorType = (ubo_declaration.mType == nap::EBufferObjectType::Uniform) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 		}
