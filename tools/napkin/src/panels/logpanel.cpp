@@ -126,7 +126,7 @@ LogPanel::LogPanel() : QWidget()
 	mCornerLayout.addWidget(&mFilterCombo);
 
 	// Let the treeview filter log messages (Look at these beautiful placeholders)
-	mTreeView.getFilterModel().addExtraFilter(std::bind(&LogPanel::levelFilter, this,
+	mTreeView.getProxyModel().addExtraFilter(std::bind(&LogPanel::levelFilter, this,
 														std::placeholders::_1,
 														std::placeholders::_2,
 														std::placeholders::_3));
@@ -150,12 +150,12 @@ void LogPanel::populateFilterCombo()
 
 void LogPanel::onLevelChanged(int index)
 {
-	mTreeView.getFilterModel().refreshFilter();
+	mTreeView.getProxyModel().refreshFilter();
 }
 
 void LogPanel::onDoubleClicked(const QModelIndex& index)
 {
-	auto sourceindex = mTreeView.getFilterModel().mapToSource(index);
+	auto sourceindex = mTreeView.getProxyModel().mapToSource(index);
 	auto textitem = dynamic_cast<LogTextItem*>(mTreeView.getModel()->itemFromIndex(sourceindex));
 	if (textitem == nullptr)
 		return;
