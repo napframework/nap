@@ -59,12 +59,12 @@ namespace nap
 			/**
 			 * @return The sort/filter model that sits between the user model and the view.
 			 */
-			const LeafFilterProxyModel& getFilterModel() const { return mSortModel; }
+			const LeafFilterProxyModel& getProxyModel() const { return mProxyModel; }
 
 			/**
 			 * @return The sort/filter model that sits between the user model and the view.
 			 */
-			LeafFilterProxyModel& getFilterModel() { return mSortModel; }
+			LeafFilterProxyModel& getProxyModel() { return mProxyModel; }
 
 			/**
 			 * @return The actual QTreeView used by this widget.
@@ -176,13 +176,13 @@ namespace nap
 
 
 		private:
-			QVBoxLayout mLayout; ///< The main layout
-			QHBoxLayout mTopLayout; ///< The layout containing the filter input and the corner widget
-			QLineEdit mLineEditFilter; ///< The filter box
-			QWidget mCornerWidget;    ///< The [empty] widget at the tip right corner
-			QTreeView* mTreeView;
-			LeafFilterProxyModel mSortModel; ///< Sits in between the user model and the tree view
-			std::function<void(QMenu&)> mMenuHookFn = nullptr; ///< Gives subclasses the chance to add to the menu
+			QVBoxLayout mLayout;								///< The main layout
+			QHBoxLayout mTopLayout;								///< The layout containing the filter input and the corner widget
+			QLineEdit mLineEditFilter;							///< The filter box
+			QWidget mCornerWidget;								///< The [empty] widget at the tip right corner
+			QTreeView* mTreeView;								///< Tree view that displays items
+			LeafFilterProxyModel mProxyModel;					///< Sits in between the user model and the tree view
+			std::function<void(QMenu&)> mMenuHookFn = nullptr;	///< Gives subclasses the chance to add to the menu
 		};
 
 	} // namespace qt

@@ -301,7 +301,7 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 	finder.connect(&tree->getTreeView(), &QAbstractItemView::doubleClicked,
 				   [tree, &dialog](const QModelIndex& idx)
 	{
-		const auto sourceIndex = tree->getFilterModel().mapToSource(idx);
+		const auto sourceIndex = tree->getProxyModel().mapToSource(idx);
 		auto item = tree->getModel()->itemFromIndex(sourceIndex);
 		auto propitem = dynamic_cast<PropertyDisplayItem*>(item);
 		assert(propitem);
