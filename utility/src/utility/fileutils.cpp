@@ -323,12 +323,6 @@ namespace nap
 #error Cannot yet find the executable on this platform
 #endif
 			out_path = &buffer[0];
-
-#if defined(_WIN32)
-			// Replace any Windows-style backslashes with forward slashes
-			replaceAllInstances(out_path, "\\", "/");
-#endif
-
 			return out_path;
 		}
 
