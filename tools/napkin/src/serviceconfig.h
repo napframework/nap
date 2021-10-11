@@ -40,6 +40,8 @@ namespace napkin
 		 * On startup service configuration settings are copied from Core, because
 		 * Core already loads the configuration for us, performs additional checks,
 		 * and creates default configurations if there is none specified for a specific service.
+		 * @param serviceConfigFile the service configuration file to load
+		 * @return if loading succeeded
 		 */
 		bool load(QString serviceConfigFile);
 
