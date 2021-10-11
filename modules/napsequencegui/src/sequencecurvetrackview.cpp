@@ -576,7 +576,6 @@ namespace nap
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
 					mCurveCache.clear();
-
 				}
 
 				if (ImGui::Button("Bezier"))

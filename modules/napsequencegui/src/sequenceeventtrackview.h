@@ -354,11 +354,11 @@ namespace nap
 		auto& controller = getEditor().getController<SequenceControllerEvent>();
 
 		// insert new segment
-		const auto* new_segment = rtti_cast<const T>(controller.insertEventSegment<T>(trackID, baseEvent.mStartTime + time));
+		const auto* new_segment = dynamic_cast<const T*>(controller.insertEventSegment<T>(trackID, baseEvent.mStartTime + time));
 		assert(new_segment!= nullptr); // cast failed
 
 		// upcast de-serialized event
-		const auto* event_upcast = rtti_cast<const T>(&baseEvent);
+		const auto* event_upcast = dynamic_cast<const T*>(&baseEvent);
 		assert(event_upcast!= nullptr); // cast failed
 
 		// copy values from deserialized event segment

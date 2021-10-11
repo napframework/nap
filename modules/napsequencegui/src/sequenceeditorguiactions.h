@@ -486,6 +486,9 @@ namespace nap
             float mVerticalResolution;
         };
 
+        /**
+         * Action that tells the gui to delete the track with specified track id
+         */
         class DeleteTrack : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
@@ -493,6 +496,9 @@ namespace nap
             DeleteTrack(const std::string& id) : TrackAction(id){}
         };
 
+        /**
+         * Action that tells the gui to move the track with specified track id up in hierarchy
+         */
         class MoveTrackUp : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
@@ -500,6 +506,9 @@ namespace nap
             MoveTrackUp(const std::string& id) : TrackAction(id){}
         };
 
+        /**
+         * Action that tells the gui to move the track with specified track id down in hierarchy
+         */
         class MoveTrackDown : public TrackAction
         {
         RTTI_ENABLE(TrackAction)

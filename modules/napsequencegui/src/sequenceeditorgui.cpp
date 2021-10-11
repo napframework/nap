@@ -172,12 +172,11 @@ namespace nap
 
 		// set window flags
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
-		if( mDrawFullWindow )
+		if(mDrawFullWindow)
 			window_flags = window_flags | ImGuiWindowFlags_NoResize;
 
-		// TODO: Take into consideration high DPI rendering on / off
 		// Influences window size handling
-		if( mDrawFullWindow )
+		if(mDrawFullWindow)
 		{
 			ImGui::SetNextWindowPos({0,0});
 			ImGui::SetNextWindowSize
@@ -423,7 +422,6 @@ namespace nap
                 /**
                  * First the player controller and markers are drawn, after that, the tracks are drawn below the player controller
                  */
-
 				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + mState.mScroll.y);
 
 				ImVec2 clip_rect_min_top = { inspector_window_pos.x + inspector_window_size.x, timeline_window_pos.y > clip_start_y - top_size ? timeline_window_pos.y : clip_start_y - top_size };
@@ -493,8 +491,8 @@ namespace nap
 									{inspector_window_pos.x + inspector_window_size.x < end_clip_x ? inspector_window_pos.x + inspector_window_size.x : end_clip_x,
 									 inspector_window_pos.y + inspector_window_size.y < end_clip_y ? inspector_window_pos.y + inspector_window_size.y : end_clip_y}, false);
 
-                                // align inspectors with track views
-                                ImGui::SetCursorPosY(top_size);
+                // align inspectors with track views
+                ImGui::SetCursorPosY(top_size);
 
 				drawInspectors(sequence_player, sequence);
 

@@ -664,9 +664,8 @@ namespace nap
 					if ((mState.mAction->isAction<sequenceguiactions::None>() ||
 						 mState.mAction->isAction<sequenceguiactions::HoveringControlPoint>() ||
 						 mState.mAction->isAction<sequenceguiactions::HoveringCurve>())
-						&& ImGui::IsMouseHoveringRect(
-						{circle_point.x - offset, circle_point.y - offset },
-						{circle_point.x + offset, circle_point.y + offset }))
+						&& ImGui::IsMouseHoveringRect({circle_point.x - offset, circle_point.y - offset },
+                                                      {circle_point.x + offset, circle_point.y + offset }))
 					{
 						hovered = true;
 					}
