@@ -77,6 +77,26 @@ namespace nap
 		registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
 		registerActionHandler(RTTI_OF(ShowHelpPopup), [this]{ handleHelpPopup(); });
 
+        /**
+         * action handlers for changing horizontal and vertical resolution (zoom)
+         */
+        registerActionHandler(RTTI_OF(ChangeHorizontalResolution), [this]
+        {
+            assert(mState.mAction->isAction<ChangeHorizontalResolution>());
+            auto* action = mState.mAction->getDerived<ChangeHorizontalResolution>();
+            mState.mHorizontalResolution = action->mHorizontalResolution;
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(ChangeVerticalResolution), [this]
+        {
+            assert(mState.mAction->isAction<ChangeVerticalResolution>());
+            auto* action = mState.mAction->getDerived<ChangeVerticalResolution>();
+            mState.mVerticalResolution = action->mVerticalResolution;
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+
 		// create views for all registered track types
 		const auto& track_types = mService.getAllTrackTypes();
 		for (const auto& track_type : track_types)
@@ -280,9 +300,12 @@ namespace nap
                 float scroll = ImGui::GetIO().MouseWheel;
                 if(scroll != 0.0f)
                 {
-                    mState.mHorizontalResolution += ImGui::GetIO().MouseWheel * 5.0f;
-                    mState.mHorizontalResolution = math::max<float>(mState.mHorizontalResolution, 2.5f);
-                    handleHorizontalZoom();
+                    if(mState.mAction->isAction<None>())
+                    {
+                        float new_resolution = mState.mHorizontalResolution + ImGui::GetIO().MouseWheel * 5.0f;
+                        new_resolution = math::max<float>(new_resolution, 2.5f);
+                        mState.mAction = createAction<ChangeHorizontalResolution>(new_resolution);
+                    }
                 }
 			}
 
@@ -290,14 +313,26 @@ namespace nap
 
             item_width = 200.0f * mState.mScale;
 			ImGui::PushItemWidth(item_width);
-			if (ImGui::SliderFloat("Horizontal Zoom", &mState.mHorizontalResolution, 2.5, 500, ""))
+            float horizontal_resolution = mState.mHorizontalResolution;
+			if (ImGui::SliderFloat("Horizontal Zoom", &horizontal_resolution, 2.5, 500, ""))
 			{
-				handleHorizontalZoom();
+                if(mState.mAction->isAction<None>() || mState.mAction->isAction<NonePressed>())
+                {
+                    float new_resolution    = horizontal_resolution;
+                    new_resolution          = math::max<float>(new_resolution, 2.5f);
+                    mState.mAction          = createAction<ChangeHorizontalResolution>(new_resolution);
+                }
 			}
 
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
-			if (ImGui::SliderFloat("Vertical Zoom", &mState.mVerticalResolution, 150, 500, ""))
-				mState.mDirty = true;
+            float vertical_resolution = mState.mVerticalResolution;
+			if (ImGui::SliderFloat("Vertical Zoom", &vertical_resolution, 150, 500, ""))
+            {
+                if(mState.mAction->isAction<None>() || mState.mAction->isAction<NonePressed>())
+                {
+                    mState.mAction = createAction<ChangeVerticalResolution>(vertical_resolution);
+                }
+            }
 
 			ImGui::PopItemWidth();
 

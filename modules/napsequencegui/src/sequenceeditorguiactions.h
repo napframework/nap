@@ -453,5 +453,37 @@ namespace nap
 			RTTI_ENABLE(Action)
 		public:
 		};
+
+        /**
+         * Action that tells the gui to change horizontal resolution
+         */
+        class ChangeHorizontalResolution: public Action
+        {
+            RTTI_ENABLE(Action)
+        public:
+            /**
+             * Constructor
+             * @param newResolution the new horizontal resolution
+             */
+            ChangeHorizontalResolution(float newResolution) : mHorizontalResolution(newResolution){}
+
+            float mHorizontalResolution;
+        };
+
+        /**
+         * Action that tells the gui to change vertical resolution
+         */
+        class ChangeVerticalResolution: public Action
+        {
+        RTTI_ENABLE(Action)
+        public:
+            /**
+             * Constructor
+             * @param newResolution the new vertical resolution
+             */
+            ChangeVerticalResolution(float newResolution) : mVerticalResolution(newResolution){}
+
+            float mVerticalResolution;
+        };
 	}
 }
