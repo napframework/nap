@@ -97,6 +97,40 @@ namespace nap
             mState.mAction = createAction<None>();
         });
 
+        /**
+         * action handlers for moving and deleting track types
+         */
+        registerActionHandler(RTTI_OF(DeleteTrack), [this]
+        {
+            assert(mState.mAction->isAction<DeleteTrack>());
+            auto* action = mState.mAction->getDerived<DeleteTrack>();
+            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr); // controller not found
+            controller->deleteTrack(action->mTrackID);
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(MoveTrackUp), [this]
+        {
+            assert(mState.mAction->isAction<MoveTrackUp>());
+            auto* action = mState.mAction->getDerived<MoveTrackUp>();
+            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr); // controller not found
+            controller->moveTrackUp(action->mTrackID);
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(MoveTrackDown), [this]
+        {
+            assert(mState.mAction->isAction<MoveTrackDown>());
+            auto* action = mState.mAction->getDerived<MoveTrackDown>();
+            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr); // controller not found
+            controller->moveTrackDown(action->mTrackID);
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+
 		// create views for all registered track types
 		const auto& track_types = mService.getAllTrackTypes();
 		for (const auto& track_type : track_types)
@@ -107,7 +141,7 @@ namespace nap
 			// create the track view
 			auto track_view = mService.invokeTrackViewFactory(view_type, *this, mState);
 
-			// store the raw pointer
+			// move & store the unique pointer
 			mViews.emplace(view_type, std::move(track_view));
 		}
 	}

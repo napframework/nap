@@ -485,5 +485,26 @@ namespace nap
 
             float mVerticalResolution;
         };
+
+        class DeleteTrack : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            DeleteTrack(const std::string& id) : TrackAction(id){}
+        };
+
+        class MoveTrackUp : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            MoveTrackUp(const std::string& id) : TrackAction(id){}
+        };
+
+        class MoveTrackDown : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            MoveTrackDown(const std::string& id) : TrackAction(id){}
+        };
 	}
 }

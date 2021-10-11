@@ -146,16 +146,13 @@ namespace nap
 			//
 			Sequence& sequence = mPlayer.getSequence();
 
+            mPlayer.destroyAdapters();
+
 			int index = 0;
 			for (const auto& track : sequence.mTracks)
 			{
 				if (track->mID == deleteTrackID)
 				{
-					if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
-					{
-						mPlayer.mAdapters.erase(track->mID);
-					}
-
 					sequence.mTracks.erase(sequence.mTracks.begin() + index);
 
 					deleteObjectFromSequencePlayer(deleteTrackID);
@@ -164,6 +161,8 @@ namespace nap
 				}
 				index++;
 			}
+
+            mPlayer.createAdapters();
 		});
 	}
 

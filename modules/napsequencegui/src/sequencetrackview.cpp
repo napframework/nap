@@ -151,36 +151,18 @@ namespace nap
 		ImGui::SetCursorPos(cursor_pos);
 
 		if (delete_track)
-		{
-			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
-			assert(controller!= nullptr); // controller not found
-			if(controller!= nullptr)
-			{
-				controller->deleteTrack(track.mID);
-				mState.mDirty = true;
-			}
-		}
+        {
+            mState.mAction = createAction<DeleteTrack>(track.mID);
+        }
 
 		if(move_track_up)
 		{
-			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
-			assert(controller!= nullptr); // controller not found
-			if(controller!= nullptr)
-			{
-				controller->moveTrackUp(track.mID);
-				mState.mDirty = true;
-			}
+            mState.mAction = createAction<MoveTrackUp>(track.mID);
 		}
 
 		if(move_track_down)
 		{
-			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
-			assert(controller!= nullptr); // controller not found
-			if(controller!= nullptr)
-			{
-				controller->moveTrackDown(track.mID);
-				mState.mDirty = true;
-			}
+            mState.mAction = createAction<MoveTrackDown>(track.mID);
 		}
 	}
 
