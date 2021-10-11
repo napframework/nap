@@ -291,7 +291,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 				auto& ctx = AppContext::get(); bool ok;
 				std::string cur_path = path.getValue().to_string(&ok);
 				QString dir = cur_path.empty() ? QString::fromStdString(ctx.getProjectInfo()->getDataDirectory()) :
-					QFileInfo(QString::fromStdString(cur_path)).path();
+					QFileInfo(getAbsoluteResourcePath(QString::fromStdString(cur_path))).path();
 
 				auto parent = ctx.getMainWindow();
 				auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
