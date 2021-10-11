@@ -165,7 +165,7 @@ namespace nap
 		std::string data_file = utility::getFileName(mCore.getProjectInfo()->getDataFile());
 		nap::Logger::info("Loading data: %s", data_file.c_str());
 		if (!error.check(mCore.getResourceManager()->loadFile(data_file, error),
-			"Failed to load data file: %s", data_file.c_str()))
+			"Failed to load data: %s", data_file.c_str()))
 			return false;
 
 		// Watch the data directory
