@@ -54,7 +54,7 @@ namespace nap
 		 * @param curveIndex the curve index of the value
 		 * @param valueType the segment value type ( first or last value )
 		 */
-		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, SequenceCurveEnums::SegmentValueTypes valueType);
+		void changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex, sequencecurveenums::ESegmentValueTypes valueType);
 
 		/**
 		 * insert point in curve of segment
@@ -96,7 +96,7 @@ namespace nap
 		 * @param value offset for new value
 		 * @return if true, tangents have been flipped
 		 */
-		bool changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
+		bool changeTanPoint(const std::string& trackID, const std::string& segmentID, int pointIndex, int curveIndex, sequencecurveenums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes minimum and maximum value of track
@@ -181,7 +181,7 @@ namespace nap
 		 * @param bool if true, tangents have been flipped
 		 */
 		template <typename  T>
-		bool changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value);
+		bool changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex, sequencecurveenums::ETanPointTypes tanType, float time, float value);
 
 		/**
 		 * changes a curvepoint value and time / position
@@ -231,7 +231,7 @@ namespace nap
 		 */
 		template<typename T>
 		void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex,
-									 SequenceCurveEnums::SegmentValueTypes valueType);
+                                     sequencecurveenums::ESegmentValueTypes valueType);
 
 		// map for updating segments
 		std::unordered_map<rttr::type, std::function<void(SequenceTrack&)>> mUpdateSegmentFunctionMap;

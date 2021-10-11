@@ -238,7 +238,7 @@ namespace nap
 	// Event Clipboards
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIClipboards
+	namespace sequenceguiclipboard
 	{
 		class EventSegmentClipboard :
 			public Clipboard

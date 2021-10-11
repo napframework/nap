@@ -271,13 +271,13 @@ namespace nap
 			 * @param curveIndex curve index
 			 * @param type tan point type, in or out
 			 */
-			DraggingTanPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes type)
+			DraggingTanPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, sequencecurveenums::ETanPointTypes type)
 				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
 
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
-			SequenceCurveEnums::ETanPointTypes mType;
+			sequencecurveenums::ETanPointTypes mType;
 
 			float mNewValue = 0.0f;
 			float mNewTime = 0.0f;
@@ -300,13 +300,13 @@ namespace nap
 			 * @param value new tan point value
 			 * @param time new tan point time
 			 */
-			OpenEditTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes type, float value, float time)
+			OpenEditTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, sequencecurveenums::ETanPointTypes type, float value, float time)
 				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time) {}
 
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
-			SequenceCurveEnums::ETanPointTypes mType;
+			sequencecurveenums::ETanPointTypes mType;
 			float mValue;
 			float mTime;
 		};
@@ -328,13 +328,13 @@ namespace nap
 			 * @param value new tan point value
 			 * @param time new tan point time
 			 */
-			EditingTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes type, float value, float time)
+			EditingTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, sequencecurveenums::ETanPointTypes type, float value, float time)
 				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time){}
 
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
-			SequenceCurveEnums::ETanPointTypes mType;
+			sequencecurveenums::ETanPointTypes mType;
 			float mValue;
 			float mTime;
 		};
@@ -408,14 +408,14 @@ namespace nap
 			 * @param maximum the new maximum
 			 */
 			OpenEditSegmentCurveValuePopup(const std::string& trackId, std::string segmentID,
-										   SequenceCurveEnums::SegmentValueTypes type, int curveIndex, T value,
-										   T minimum, T maximum) :
+                                           sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value,
+                                           T minimum, T maximum) :
 				TrackAction(trackId), mSegmentID(std::move(segmentID)),
 				mType(type), mCurveIndex(curveIndex), mValue(value),
 				mMinimum(minimum), mMaximum(maximum) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 			T mValue;
 			T mMinimum;
@@ -442,11 +442,11 @@ namespace nap
 			 * @param minimum the new minimum
 			 * @param maximum the new maximum
 			 */
-			EditingSegmentCurveValue(const std::string& trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex, T value, T minimum, T maximum)
+			EditingSegmentCurveValue(const std::string& trackId, std::string segmentID, sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value, T minimum, T maximum)
 				: TrackAction(trackId), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex), mValue(value), mMinimum(minimum), mMaximum(maximum) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 			T mValue;
 			T mMinimum;
@@ -490,11 +490,11 @@ namespace nap
 			 * @param type segment value, begin or end
 			 * @param curveIndex the index of the curve
 			 */
-			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
+			HoveringSegmentValue(std::string trackId, std::string segmentID, sequencecurveenums::ESegmentValueTypes type, int curveIndex)
 				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 		};
 
@@ -514,11 +514,11 @@ namespace nap
 			 * @param curveIndex the index of the curve
 			 * @param newValue the new value
 			 */
-			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex, float newValue)
+			DraggingSegmentValue(std::string trackId, std::string segmentID, sequencecurveenums::ESegmentValueTypes type, int curveIndex, float newValue)
 				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex), mNewValue(newValue) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 			float mNewValue;
 		};

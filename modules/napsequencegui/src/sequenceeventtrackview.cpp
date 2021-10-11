@@ -15,7 +15,7 @@
 namespace nap
 {
 	using namespace sequenceguiactions;
-	using namespace SequenceGUIClipboards;
+	using namespace sequenceguiclipboard;
 
 	SequenceEventTrackView::SequenceEventTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
 		: SequenceTrackView(view, state)
@@ -575,7 +575,7 @@ namespace nap
 
 	void SequenceEventTrackView::pasteEventsFromClipboard(const std::string& trackID, double time)
 	{
-		auto* paste_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::EventSegmentClipboard>();
+		auto* paste_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::EventSegmentClipboard>();
 
 		// create vector & object ptr to be filled by de-serialization
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;

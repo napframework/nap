@@ -25,7 +25,7 @@ namespace nap
 		sequenceguiactions::SequenceActionPtr mAction = nullptr;
 
 		// clipboard
-		SequenceGUIClipboards::SequenceClipboardPtr mClipboard = nullptr;
+		sequenceguiclipboard::SequenceClipboardPtr mClipboard = nullptr;
 
 		// dirty means view has changed, and content of tracks need to be redrawn and cached
 		bool mDirty = false;

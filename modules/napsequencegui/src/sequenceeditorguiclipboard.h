@@ -15,7 +15,7 @@
 
 namespace nap
 {
-	namespace SequenceGUIClipboards
+	namespace sequenceguiclipboard
 	{
 		/**
 		 * Clipboard is a class that can contain a serialized object related to the Sequencer

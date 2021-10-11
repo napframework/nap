@@ -185,9 +185,9 @@ namespace nap
 
 
 	void SequenceControllerCurve::changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID, float newValue, int curveIndex,
-														  SequenceCurveEnums::SegmentValueTypes valueType)
+                                                          sequencecurveenums::ESegmentValueTypes valueType)
 	{
-		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&, SequenceTrackSegment& segment, float, int, SequenceCurveEnums::SegmentValueTypes)> change_segment_value_map
+		static std::unordered_map<rttr::type, void(SequenceControllerCurve::*)(SequenceTrack&, SequenceTrackSegment& segment, float, int, sequencecurveenums::ESegmentValueTypes)> change_segment_value_map
 			{
 				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeCurveSegmentValue<float> },
 				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeCurveSegmentValue<glm::vec2> },
@@ -357,11 +357,11 @@ namespace nap
 
 
 	bool SequenceControllerCurve::changeTanPoint(const std::string& trackID, const std::string& segmentID, const int pointIndex, const int curveIndex,
-												 SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
+                                                 sequencecurveenums::ETanPointTypes tanType, float time, float value)
 	{
 		//
 		static std::unordered_map<rttr::type, bool(SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int,
-																			   SequenceCurveEnums::ETanPointTypes, float, float)> change_curve_point_map
+                                                                               sequencecurveenums::ETanPointTypes, float, float)> change_curve_point_map
 			{
 				{ RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceControllerCurve::changeTanPoint<float> },
 				{ RTTI_OF(SequenceTrackSegmentCurveVec2), &SequenceControllerCurve::changeTanPoint<glm::vec2> },

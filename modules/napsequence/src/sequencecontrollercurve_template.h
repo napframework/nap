@@ -239,20 +239,20 @@ namespace nap
 
 	template<typename T>
 	void SequenceControllerCurve::changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex,
-														  SequenceCurveEnums::SegmentValueTypes valueType)
+                                                          sequencecurveenums::ESegmentValueTypes valueType)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
 
 		switch (valueType)
 		{
-		case SequenceCurveEnums::BEGIN:
+		case sequencecurveenums::BEGIN:
 		{
 			curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue = newValue;
 			curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue = math::clamp(curve_segment.mCurves[curveIndex]->mPoints[0].mPos.mValue, 0.0f, 1.0f);
 		}
 			break;
-		case SequenceCurveEnums::END:
+		case sequencecurveenums::END:
 		{
 			int lastPoint = curve_segment.mCurves[curveIndex]->mPoints.size() - 1;
 			curve_segment.mCurves[curveIndex]->mPoints[lastPoint].mPos.mValue = newValue;
@@ -360,7 +360,7 @@ namespace nap
 
 
 	template <typename  T>
-	bool SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, SequenceCurveEnums::ETanPointTypes tanType, float time, float value)
+	bool SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, const int pointIndex, const int curveIndex, sequencecurveenums::ETanPointTypes tanType, float time, float value)
 	{
 		assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 		auto& curve_segment = static_cast<SequenceTrackSegmentCurve<T>&>(segment);
@@ -374,7 +374,7 @@ namespace nap
 		auto& curve_point = curve_segment.mCurves[curveIndex]->mPoints[pointIndex];
 		switch (tanType)
 		{
-		case SequenceCurveEnums::ETanPointTypes::IN:
+		case sequencecurveenums::ETanPointTypes::IN:
 		{
 			// if we have aligned tangents, check if IN and OUT can be flipped
 			if( curve_point.mTangentsAligned && time > 0.0f )
@@ -394,7 +394,7 @@ namespace nap
 			}
 		}
 			break;
-		case SequenceCurveEnums::ETanPointTypes::OUT:
+		case sequencecurveenums::ETanPointTypes::OUT:
 		{
 			if( curve_point.mTangentsAligned && time < 0.0f )
 			{

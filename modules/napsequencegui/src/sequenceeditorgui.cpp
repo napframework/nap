@@ -24,8 +24,8 @@ RTTI_END_CLASS
 //////////////////////////////////////////////////////////////////////////
 
 using namespace nap::sequenceguiactions;
-using namespace nap::SequenceCurveEnums;
-using namespace nap::SequenceGUIClipboards;
+using namespace nap::sequencecurveenums;
+using namespace nap::sequenceguiclipboard;
 
 namespace nap
 {

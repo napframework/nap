@@ -6,7 +6,7 @@
 
 namespace nap
 {
-	namespace SequenceCurveEnums
+	namespace sequencecurveenums
 	{
 		enum ETanPointTypes
 		{
@@ -14,7 +14,7 @@ namespace nap
 			OUT
 		};
 
-		enum SegmentValueTypes
+		enum ESegmentValueTypes
 		{
 			BEGIN,
 			END

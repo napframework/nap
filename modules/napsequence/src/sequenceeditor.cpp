@@ -20,7 +20,7 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
-using namespace nap::SequenceCurveEnums;
+using namespace nap::sequencecurveenums;
 
 namespace nap
 {

@@ -154,7 +154,7 @@ namespace nap
 		ImDrawList* drawList)
 	{
 		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
-		const float points_per_pixel = 0.5f;
+		const float points_per_pixel = 0.5f * mState.mScale;
 		bool needs_drawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
 
 		if (needs_drawing)
@@ -182,6 +182,7 @@ namespace nap
 								if (x > start_x)
 								{
 									float value = 1.0f - segment.mCurves[v]->evaluate(p);
+                                    value = math::clamp(value, 0.0f, 1.0f);
 									ImVec2 point =
 									{
 										x,
@@ -210,8 +211,8 @@ namespace nap
 			// determine if mouse is hovering curve
 			if ((mState.mAction->isAction<sequenceguiactions::None>() || mState.mAction->isAction<sequenceguiactions::HoveringCurve>())
 				&& ImGui::IsMouseHoveringRect(
-				{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }))  // bottom right
+				    { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
+				    { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }))  // bottom right
 			{
 				// translate mouse position to position in curve
 				ImVec2 mouse_pos = ImGui::GetMousePos();
@@ -339,10 +340,10 @@ namespace nap
 		else
 		{
 			// is this segment currently serialized in the clipboard
-			if( mState.mClipboard->isClipboard<SequenceGUIClipboards::CurveSegmentClipboard>())
+			if( mState.mClipboard->isClipboard<sequenceguiclipboard::CurveSegmentClipboard>())
 			{
 				// get derived clipboard
-				auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
+				auto* curve_segment_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::CurveSegmentClipboard>();
 
 				// does it contain this segment ?
 				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
@@ -385,24 +386,24 @@ namespace nap
 		{
 			// draw segment value handler
 			drawSegmentValue<T>(
-				track,
-				segment,
-				trackTopLeft,
-				segmentX,
-				segmentWidth,
-				SequenceCurveEnums::SegmentValueTypes::BEGIN,
-				drawList);
+                    track,
+                    segment,
+                    trackTopLeft,
+                    segmentX,
+                    segmentWidth,
+                    sequencecurveenums::ESegmentValueTypes::BEGIN,
+                    drawList);
 		}
 
 		// draw segment value handler
 		drawSegmentValue<T>(
-			track,
-			segment,
-			trackTopLeft,
-			segmentX,
-			segmentWidth,
-			SequenceCurveEnums::SegmentValueTypes::END,
-			drawList);
+                track,
+                segment,
+                trackTopLeft,
+                segmentX,
+                segmentWidth,
+                sequencecurveenums::ESegmentValueTypes::END,
+                drawList);
 	}
 
 
@@ -449,22 +450,22 @@ namespace nap
 		const ImVec2 &trackTopLeft,
 		const float segmentX,
 		const float segmentWidth,
-		const SequenceCurveEnums::SegmentValueTypes segmentType,
+		const sequencecurveenums::ESegmentValueTypes segmentType,
 		ImDrawList* drawList)
 	{
-		static std::unordered_map<rttr::type, std::function<float(const SequenceTrackSegment&, int, SequenceCurveEnums::SegmentValueTypes)>> get_value_map
+		static std::unordered_map<rttr::type, std::function<float(const SequenceTrackSegment&, int, sequencecurveenums::ESegmentValueTypes)>> get_value_map
 		{
-			{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float{
-			  return static_cast<const SequenceTrackSegmentCurve<float>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f);
+			{ RTTI_OF(float), [](const SequenceTrackSegment& segment, int curveIndex, sequencecurveenums::ESegmentValueTypes segmentType)->float{
+			  return static_cast<const SequenceTrackSegmentCurve<float>*>(&segment)->getValue(segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f);
 			}},
-			{ RTTI_OF(glm::vec2), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-			  return static_cast<const SequenceTrackSegmentCurve<glm::vec2>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			{ RTTI_OF(glm::vec2), [](const SequenceTrackSegment& segment, int curveIndex, sequencecurveenums::ESegmentValueTypes segmentType)->float {
+			  return static_cast<const SequenceTrackSegmentCurve<glm::vec2>*>(&segment)->getValue(segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 			} },
-			{ RTTI_OF(glm::vec3), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-			  return static_cast<const SequenceTrackSegmentCurve<glm::vec3>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			{ RTTI_OF(glm::vec3), [](const SequenceTrackSegment& segment, int curveIndex, sequencecurveenums::ESegmentValueTypes segmentType)->float {
+			  return static_cast<const SequenceTrackSegmentCurve<glm::vec3>*>(&segment)->getValue(segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 			}},
-			{ RTTI_OF(glm::vec4), [](const SequenceTrackSegment& segment, int curveIndex, SequenceCurveEnums::SegmentValueTypes segmentType)->float {
-			  return static_cast<const SequenceTrackSegmentCurve<glm::vec4>*>(&segment)->getValue(segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f)[curveIndex];
+			{ RTTI_OF(glm::vec4), [](const SequenceTrackSegment& segment, int curveIndex, sequencecurveenums::ESegmentValueTypes segmentType)->float {
+			  return static_cast<const SequenceTrackSegmentCurve<glm::vec4>*>(&segment)->getValue(segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 			}}
 		};
 
@@ -476,8 +477,8 @@ namespace nap
 			// calculate point of this value in the window
 			ImVec2 segment_value_pos =
 				{
-					trackTopLeft.x + segmentX - (segmentType == SequenceCurveEnums::BEGIN ? segmentWidth : 0.0f),
-					trackTopLeft.y + mState.mTrackHeight * (1.0f - ((segmentType == SequenceCurveEnums::BEGIN ?
+					trackTopLeft.x + segmentX - (segmentType == sequencecurveenums::BEGIN ? segmentWidth : 0.0f),
+					trackTopLeft.y + mState.mTrackHeight * (1.0f - ((segmentType == sequencecurveenums::BEGIN ?
 																	 (float)segment.mCurves[v]->mPoints[0].mPos.mValue :
 																	 (float)segment.mCurves[v]->mPoints[segment.mCurves[v]->mPoints.size() - 1].mPos.mValue) / 1.0f))
 				};
@@ -521,7 +522,7 @@ namespace nap
 							segment.mID,
 							segmentType,
 							v,
-							(segmentType == SequenceCurveEnums::SegmentValueTypes::BEGIN) ? curve_segment.getStartValue() : curve_segment.getEndValue(),
+                            (segmentType == sequencecurveenums::ESegmentValueTypes::BEGIN) ? curve_segment.getStartValue() : curve_segment.getEndValue(),
 							curve_track.mMinimum,
 							curve_track.mMaximum);
 					}
@@ -529,8 +530,8 @@ namespace nap
 					showValue<T>(
 						track,
 						segment,
-						segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
-						segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+                        segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f,
+                        segmentType == sequencecurveenums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 						v);
 				}
 				else if (!mState.mAction->isAction<sequenceguiactions::DraggingSegmentValue>())
@@ -548,8 +549,8 @@ namespace nap
 							showValue<T>(
 								track,
 								segment,
-								segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
-								segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+                                segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f,
+                                segmentType == sequencecurveenums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 								v);
 						}
 					}
@@ -567,8 +568,8 @@ namespace nap
 							showValue<T>(
 								track,
 								segment,
-								segmentType == SequenceCurveEnums::BEGIN ? 0.0f : 1.0f,
-								segmentType == SequenceCurveEnums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
+                                segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f,
+                                segmentType == sequencecurveenums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 								v);
 
 							float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
@@ -618,22 +619,22 @@ namespace nap
 				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
 				{
 					drawTanHandler<T>(
-						track,
-						segment, string_stream,
-						segmentWidth, curve_point, circle_point,
-						0,
-						v,
-						SequenceCurveEnums::ETanPointTypes::IN,
-						drawList);
+                            track,
+                            segment, string_stream,
+                            segmentWidth, curve_point, circle_point,
+                            0,
+                            v,
+                            sequencecurveenums::ETanPointTypes::IN,
+                            drawList);
 
 					drawTanHandler<T>(
-						track,
-						segment, string_stream,
-						segmentWidth, curve_point, circle_point,
-						0,
-						v,
-						SequenceCurveEnums::ETanPointTypes::OUT,
-						drawList);
+                            track,
+                            segment, string_stream,
+                            segmentWidth, curve_point, circle_point,
+                            0,
+                            v,
+                            sequencecurveenums::ETanPointTypes::OUT,
+                            drawList);
 				}
 			}
 		}
@@ -765,22 +766,22 @@ namespace nap
 				{
 					// draw the handlers
 					drawTanHandler<T>(
-						track,
-						segment, string_stream,
-						segmentWidth, curve_point, circle_point,
-						i,
-						v,
-						SequenceCurveEnums::ETanPointTypes::IN,
-						drawList);
+                            track,
+                            segment, string_stream,
+                            segmentWidth, curve_point, circle_point,
+                            i,
+                            v,
+                            sequencecurveenums::ETanPointTypes::IN,
+                            drawList);
 
 					drawTanHandler<T>(
-						track,
-						segment, string_stream,
-						segmentWidth, curve_point, circle_point,
-						i,
-						v,
-						SequenceCurveEnums::ETanPointTypes::OUT,
-						drawList);
+                            track,
+                            segment, string_stream,
+                            segmentWidth, curve_point, circle_point,
+                            i,
+                            v,
+                            sequencecurveenums::ETanPointTypes::OUT,
+                            drawList);
 				}
 			}
 		}
@@ -803,20 +804,20 @@ namespace nap
 			if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
 			{
 				drawTanHandler<T>(
-					track,
-					segment, string_stream,
-					segmentWidth, curve_point, circle_point, control_point_index,
-					v,
-					SequenceCurveEnums::ETanPointTypes::IN,
-					drawList);
+                        track,
+                        segment, string_stream,
+                        segmentWidth, curve_point, circle_point, control_point_index,
+                        v,
+                        sequencecurveenums::ETanPointTypes::IN,
+                        drawList);
 
 				drawTanHandler<T>(
-					track,
-					segment, string_stream,
-					segmentWidth, curve_point, circle_point, control_point_index,
-					v,
-					SequenceCurveEnums::ETanPointTypes::OUT,
-					drawList);
+                        track,
+                        segment, string_stream,
+                        segmentWidth, curve_point, circle_point, control_point_index,
+                        v,
+                        sequencecurveenums::ETanPointTypes::OUT,
+                        drawList);
 			}
 		}
 
@@ -835,17 +836,17 @@ namespace nap
 		const ImVec2 &circlePoint,
 		const int controlPointIndex,
 		const int curveIndex,
-		const SequenceCurveEnums::ETanPointTypes type,
+		const sequencecurveenums::ETanPointTypes type,
 		ImDrawList* drawList)
 	{
 		// draw tan handlers
 		{
 			// create a string stream to create identifier of this object
 			std::ostringstream tan_stream;
-			tan_stream << stringStream.str() << ( (type == SequenceCurveEnums::ETanPointTypes::IN) ? "inTan" : "outTan" );
+			tan_stream << stringStream.str() << ((type == sequencecurveenums::ETanPointTypes::IN) ? "inTan" : "outTan" );
 
 			//
-			const math::FComplex<float, float>& tan_complex = (type == SequenceCurveEnums::ETanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
+			const math::FComplex<float, float>& tan_complex = (type == sequencecurveenums::ETanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
 
 			// get the offset from the tan
 			ImVec2 offset =
@@ -934,7 +935,7 @@ namespace nap
 
 						float new_time;
 						float new_value;
-						if( type == SequenceCurveEnums::ETanPointTypes::IN )
+						if(type == sequencecurveenums::ETanPointTypes::IN )
 						{
 							new_time = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mTime + delta_time;
 							new_value = curve_segment.mCurves[curveIndex]->mPoints[controlPointIndex].mInTan.mValue + delta_value;
@@ -964,7 +965,7 @@ namespace nap
 	void SequenceCurveTrackView::pasteClipboardSegments(const std::string& trackId, double time)
 	{
 		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::CurveSegmentClipboard>();
 
 		// create vector & object ptr to be filled by de-serialization
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;
@@ -1037,9 +1038,9 @@ namespace nap
 														  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
 														  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
 
-						curve_controller->changeTanPoint(trackId, new_segment->mID, i, c, SequenceCurveEnums::IN,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
-														curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
+						curve_controller->changeTanPoint(trackId, new_segment->mID, i, c, sequencecurveenums::IN,
+                                                         curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
+                                                         curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
 					}
 				}
 
@@ -1057,7 +1058,7 @@ namespace nap
 	void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentId)
 	{
 		// get clipboard action
-		auto* curve_segment_clipboard = mState.mClipboard->getDerived<SequenceGUIClipboards::CurveSegmentClipboard>();
+		auto* curve_segment_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::CurveSegmentClipboard>();
 
 		// expect 1 object
 		assert(curve_segment_clipboard->getObjectCount() == 1);
@@ -1117,9 +1118,9 @@ namespace nap
 													  curve_segment->mCurves[c]->mPoints[i].mPos.mTime,
 													  curve_segment->mCurves[c]->mPoints[i].mPos.mValue);
 
-					curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, SequenceCurveEnums::IN,
-													curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
-													curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
+					curve_controller.changeTanPoint(trackId, target_segment_upcast->mID, i, c, sequencecurveenums::IN,
+                                                    curve_segment->mCurves[c]->mPoints[i].mInTan.mTime,
+                                                    curve_segment->mCurves[c]->mPoints[i].mInTan.mValue);
 				}
 			}
 
