@@ -157,8 +157,9 @@ namespace nap
 		 * All files linked to by the application that reside in the current working directory will be monitored.
 		 * If a file change is detected to any of the files, the resource manager
 		 * will attempt to hot-load the changes directly into the running application
+		 * @param directory the directory to monitor
 		 */
-		void watchDirectory();
+		void watchDirectory(const std::string& directory);
 
 		/**
 		 * Signal that is emitted when a file is about to be loaded

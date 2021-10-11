@@ -16,6 +16,15 @@ namespace nap
 {
 	namespace utility
 	{
+		namespace path
+		{
+#ifdef _WIN32
+			inline constexpr char* separator = "\\";
+#else
+			inline constexpr char* separator = "/";
+#endif
+		}
+
 		/**
 		* List all files in a directory
 		* @param directory The directory to search in
@@ -129,7 +138,7 @@ namespace nap
 		 * @return returns a string that can be used to compare against other filenames. Is also suitable for use as key in map or set.
 		 * @param filename: the source filename.
 		 */
-		const std::string toComparableFilename(const std::string& filename);
+		std::string toComparableFilename(const std::string& filename);
 
 		/**
 		 * @param filenameA filename to compare against filenameB.
@@ -184,12 +193,7 @@ namespace nap
 		/**
 		 * Join parts path parts using the correct path separator for the current platform
 		 */
-		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep = "/");
-
-		/**
-		 * @return The current platform's file path separator
-		 */
-		std::string pathSep();
+		std::string joinPath(const std::vector<std::string>& parts);
 
 		/**
 		 * @return A file path with the correct path separator for the current platform

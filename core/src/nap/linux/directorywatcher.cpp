@@ -49,15 +49,11 @@ namespace nap
 	void DirectoryWatcher::PImpl_deleter::operator()(DirectoryWatcher::PImpl* ptr) const { delete ptr; }
 
 
-	DirectoryWatcher::DirectoryWatcher()
+	DirectoryWatcher::DirectoryWatcher(const std::string& directory)
 	{
 		// PImpl instantiation using unique_ptr because we only want a unique snowflake
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
-
-		// Retrieve the path to the current working dir
-		char buffer[PATH_MAX];
-		std::string path = std::string(getcwd(buffer, PATH_MAX));
-		mPImpl->currentPath = path;
+		mPImpl->currentPath = directory;
 
 		nap::Logger::debug("Watching directory: %s", path.c_str());
 		mPImpl->watchID = mPImpl->fileWatcher.addWatch(path, &(*mPImpl), true);

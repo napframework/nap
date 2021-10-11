@@ -38,8 +38,6 @@
     #include <fstream>
 #endif
 
-// clang-format on
-
 #ifdef _WIN32
 	#ifdef MAX_PATH
 		#define MAX_PATH_SIZE MAX_PATH
@@ -263,7 +261,7 @@ namespace nap
 		}
 
 
-		const std::string toComparableFilename(const std::string& filename)
+		std::string toComparableFilename(const std::string& filename)
 		{
 			std::string comparable = filename;
 			std::transform(comparable.begin(), comparable.end(), comparable.begin(), ::tolower);
@@ -350,6 +348,7 @@ namespace nap
 #endif
 		}
 
+
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err)
 		{
 			std::ifstream in(filename, std::ios::in | std::ios::binary);
@@ -369,6 +368,7 @@ namespace nap
 			return true;
 		}
 
+
 		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs)
         {
 			for (const auto& dir : dirs)
@@ -380,26 +380,16 @@ namespace nap
 			return {};
 		}
 
-		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep)
+
+		std::string joinPath(const std::vector<std::string>& parts)
 		{
-			return joinString(parts, sep);
+			return joinString(parts, path::separator);
 		}
 
-		std::string pathSep() {
-#if defined(_WIN32)
-			return "\\";
-#else
-			return "/";
-#endif
-		}
 
 		std::string forceSeparator(const std::string& path)
 		{
-#if defined(_WIN32)
-			return replaceAllInstances(path, "/", pathSep());
-#else
-			return replaceAllInstances(path, "\\", pathSep());
-#endif
+			return replaceAllInstances(path, "/", path::separator);
 		}
 
 	}

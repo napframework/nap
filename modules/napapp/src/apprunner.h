@@ -17,7 +17,6 @@
 
 namespace nap
 {
-
 	/**
 	 * Utility class that runs a nap::BaseApp until BaseApp::quit() is called or
 	 * AppRunner::stop(). The APP template argumentshould be derived from
@@ -136,7 +135,7 @@ namespace nap
 		// Initialize engine
 		if (!mCore.initializeEngine(error))
 		{
-			error.fail("unable to initialize engine");
+			error.fail("Unable to initialize engine");
 			return false;
 		}
 
@@ -152,28 +151,26 @@ namespace nap
 		if (!mCore.initializePython(error))
 			return false;
 #endif
+		// Change current working directory to directory that contains the data file
+		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
+		utility::changeDir(data_dir);
 
-		// TODO: Enable after merge and test properly
-		// Enables loading of data file from project info automatically before initialization
-		/* 
-		// Ensure data file exists
-		std::string data_file = mCore.getProjectInfo().getDataFile();
-		if (!error.check(utility::fileExists(data_file), "data file: %s does not exist", data_file.c_str()))
+		// Ensure project data is available
+		if(!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
+			mCore.getProjectInfo()->getProjectDir().c_str()))
 			return false;
 
-		// Load file
-		if (!mCore.getResourceManager()->loadFile(data_file, error))
-		{
-			error.fail("failed to load data file: %s", data_file.c_str());
+		// Load project data
+		std::string data_file = utility::getFileName(mCore.getProjectInfo()->getDataFile());
+		if (!error.check(mCore.getResourceManager()->loadFile(data_file, error),
+			"Failed to load data file: %s", data_file.c_str()))
 			return false;
-		}
-		*/
 
-		// Setup data listener current working directory
-		mCore.getResourceManager()->watchDirectory();
+		// Watch the data directory
+		mCore.getResourceManager()->watchDirectory(data_dir);
 
 		// Initialize application
-		if(!error.check(app.init(error), "unable to initialize application"))
+		if(!error.check(app.init(error), "Unable to initialize application"))
 		{
 			mCore.shutdownServices();
 			return false;

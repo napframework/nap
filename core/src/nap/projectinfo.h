@@ -12,6 +12,11 @@ namespace nap
 {
 	class ModuleManager;
 
+	namespace projectinfo
+	{
+		constexpr const char* defaultDataDir = "data";	///< Default data directory
+	}
+
 	/**
 	 * Allows ProjectInfo to find the executable, editor and modules.
 	 */
