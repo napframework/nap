@@ -98,7 +98,7 @@ namespace nap
 			assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
 			auto& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
 
-			if ( ( !mPlayingBackwards && time > event.mStartTime ) || (mPlayingBackwards && time < event.mStartTime))
+			if ((!mPlayingBackwards && time > event.mStartTime) || (mPlayingBackwards && time < event.mStartTime))
 			{
 				if (mDispatchedEvents.find(&event) == mDispatchedEvents.end())
 				{
