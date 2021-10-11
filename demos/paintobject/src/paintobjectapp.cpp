@@ -48,8 +48,6 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("paintobject.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow			= mResourceManager->findObject<nap::RenderWindow>("Window0");

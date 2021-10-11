@@ -26,12 +26,6 @@ namespace nap
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
 
-		// Convert our path and load resources from file
-        auto abspath = utility::getAbsolutePath(mFilename);
-        nap::Logger::info("Loading: %s", abspath.c_str());
-        if (!mResourceManager->loadFile(mFilename, error))
-            return false;
-
 		// Fetch parameter GUI
 		mParameterGUI = mResourceManager->findObject<ParameterGUI>("ParameterGUI");
 		if (!error.check(mParameterGUI != nullptr, "unable to find parameter GUI"))

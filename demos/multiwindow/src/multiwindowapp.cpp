@@ -38,8 +38,6 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("multiwindow.json", error))
-			return false;
 
 		// Get screen size
 		glm::ivec2 screen_size = SDL::getScreenSize(0);

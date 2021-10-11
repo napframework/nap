@@ -41,10 +41,8 @@ namespace nap
 		mGuiService			= getCore().getService<nap::IMGuiService>();
 		mParameterService	= getCore().getService<nap::ParameterService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("lineblending.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
