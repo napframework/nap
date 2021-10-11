@@ -154,7 +154,7 @@ namespace nap
 		// Change current working directory to directory that contains the data file
 		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
 		utility::changeDir(data_dir);
-		nap::Logger::info("Working directory: % s", data_dir.c_str());
+		nap::Logger::info("Current working directory: % s", data_dir.c_str());
 
 		// Ensure project data is available
 		if(!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
