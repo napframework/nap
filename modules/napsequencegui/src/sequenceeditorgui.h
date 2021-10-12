@@ -175,16 +175,6 @@ namespace nap
 		 */
 		void handleInsertMarkerPopup();
 
-		/**
-		 * handle no action, when mouse is pressed, ignore any following actions in sequencer window
-		 */
-		void handleNone();
-
-		/**
-		 * when mouse is released, switch back to None action
-		 */
-		 void handleNonePressed();
-
 		 /**
 		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
 		  */
@@ -202,6 +192,8 @@ namespace nap
 		  */
 		 void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
 	protected:
+        void registerActionHandlers();
+
 		// reference to editor
 		SequenceEditor& mEditor;
 

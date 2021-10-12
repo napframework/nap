@@ -66,8 +66,8 @@ namespace nap
 		class None : public Action { RTTI_ENABLE() };
 
 		/**
-		 * None pressed is an action that happens when mouse is pressed when no action is active inside
-		 * the sequencer window. This is to prevent un-intented actions to happen when mouse is pressed and then
+		 * NonePressed is an action that happens when mouse is pressed when no action is active inside
+		 * the sequencer window. This is to prevent unintended actions to happen when mouse is pressed and then
 		 * dragged into the sequencer window
 		 */
 		class NonePressed : public Action{ RTTI_ENABLE() };

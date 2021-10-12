@@ -61,75 +61,8 @@ namespace nap
 		mState.mAction = createAction<None>();
 		mState.mClipboard = createClipboard<Empty>();
 
-		// register handlers for actions
-		registerActionHandler(RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
-		registerActionHandler(RTTI_OF(EditingSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
-		registerActionHandler(RTTI_OF(InsertingSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } );
-		registerActionHandler(RTTI_OF(OpenInsertTrackPopup), [this] { handleInsertTrackPopup(); } );
-		registerActionHandler(RTTI_OF(InsertingTrackPopup), [this] { handleInsertTrackPopup(); } );
-		registerActionHandler(RTTI_OF(OpenSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
-		registerActionHandler(RTTI_OF(EditSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
-		registerActionHandler(RTTI_OF(LoadPopup), [this] { handleLoadPopup(); });
-		registerActionHandler(RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); } );
-		registerActionHandler(RTTI_OF(None), [this] { handleNone(); } );
-		registerActionHandler(RTTI_OF(NonePressed), [this] { handleNonePressed(); } );
-		registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
-		registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
-		registerActionHandler(RTTI_OF(ShowHelpPopup), [this]{ handleHelpPopup(); });
-
-        /**
-         * action handlers for changing horizontal and vertical resolution (zoom)
-         */
-        registerActionHandler(RTTI_OF(ChangeHorizontalResolution), [this]
-        {
-            assert(mState.mAction->isAction<ChangeHorizontalResolution>());
-            auto* action = mState.mAction->getDerived<ChangeHorizontalResolution>();
-            mState.mHorizontalResolution = action->mHorizontalResolution;
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
-        registerActionHandler(RTTI_OF(ChangeVerticalResolution), [this]
-        {
-            assert(mState.mAction->isAction<ChangeVerticalResolution>());
-            auto* action = mState.mAction->getDerived<ChangeVerticalResolution>();
-            mState.mVerticalResolution = action->mVerticalResolution;
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
-
-        /**
-         * action handlers for moving and deleting track types
-         */
-        registerActionHandler(RTTI_OF(DeleteTrack), [this]
-        {
-            assert(mState.mAction->isAction<DeleteTrack>());
-            auto* action = mState.mAction->getDerived<DeleteTrack>();
-            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
-            assert(controller!= nullptr); // controller not found
-            controller->deleteTrack(action->mTrackID);
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
-        registerActionHandler(RTTI_OF(MoveTrackUp), [this]
-        {
-            assert(mState.mAction->isAction<MoveTrackUp>());
-            auto* action = mState.mAction->getDerived<MoveTrackUp>();
-            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
-            assert(controller!= nullptr); // controller not found
-            controller->moveTrackUp(action->mTrackID);
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
-        registerActionHandler(RTTI_OF(MoveTrackDown), [this]
-        {
-            assert(mState.mAction->isAction<MoveTrackDown>());
-            auto* action = mState.mAction->getDerived<MoveTrackDown>();
-            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
-            assert(controller!= nullptr); // controller not found
-            controller->moveTrackDown(action->mTrackID);
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
+		// call registerActionHandlers to register all actions handled by the SequenceEditorGUIView
+        registerActionHandlers();
 
 		// create views for all registered track types
 		const auto& track_types = mService.getAllTrackTypes();
@@ -1472,24 +1405,6 @@ namespace nap
 	}
 
 
-	void SequenceEditorGUIView::handleNone()
-	{
-		if( ImGui::IsMouseDown(0))
-		{
-			mState.mAction = createAction<NonePressed>();
-		}
-	}
-
-
-	void SequenceEditorGUIView::handleNonePressed()
-	{
-		if( !ImGui::IsMouseDown(0))
-		{
-			mState.mAction = createAction<None>();
-		}
-	}
-
-
 	void SequenceEditorGUIView::handleHorizontalZoom()
 	{
 		// get sequence player
@@ -1641,4 +1556,94 @@ namespace nap
 			}
 		}
 	}
+
+    void SequenceEditorGUIView::registerActionHandlers()
+    {
+        // register handlers for popups
+        registerActionHandler(RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
+        registerActionHandler(RTTI_OF(EditingSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
+        registerActionHandler(RTTI_OF(InsertingSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); } );
+        registerActionHandler(RTTI_OF(OpenInsertTrackPopup), [this] { handleInsertTrackPopup(); } );
+        registerActionHandler(RTTI_OF(InsertingTrackPopup), [this] { handleInsertTrackPopup(); } );
+        registerActionHandler(RTTI_OF(OpenSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
+        registerActionHandler(RTTI_OF(EditSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
+        registerActionHandler(RTTI_OF(LoadPopup), [this] { handleLoadPopup(); });
+        registerActionHandler(RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); } );
+        registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
+        registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
+        registerActionHandler(RTTI_OF(ShowHelpPopup), [this]{ handleHelpPopup(); });
+
+        /**
+         * action handlers for changing horizontal and vertical resolution (zoom)
+         */
+        registerActionHandler(RTTI_OF(ChangeHorizontalResolution), [this]
+        {
+            assert(mState.mAction->isAction<ChangeHorizontalResolution>());
+            auto* action = mState.mAction->getDerived<ChangeHorizontalResolution>();
+            mState.mHorizontalResolution = action->mHorizontalResolution;
+            handleHorizontalZoom();
+            mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(ChangeVerticalResolution), [this]
+        {
+            assert(mState.mAction->isAction<ChangeVerticalResolution>());
+            auto* action = mState.mAction->getDerived<ChangeVerticalResolution>();
+            mState.mVerticalResolution = action->mVerticalResolution;
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+
+        /**
+         * action handlers for moving and deleting tracks
+         */
+        registerActionHandler(RTTI_OF(DeleteTrack), [this]
+        {
+            assert(mState.mAction->isAction<DeleteTrack>());
+            auto* action = mState.mAction->getDerived<DeleteTrack>();
+            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr); // controller not found
+            controller->deleteTrack(action->mTrackID);
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(MoveTrackUp), [this]
+        {
+            assert(mState.mAction->isAction<MoveTrackUp>());
+            auto* action = mState.mAction->getDerived<MoveTrackUp>();
+            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr); // controller not found
+            controller->moveTrackUp(action->mTrackID);
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(MoveTrackDown), [this]
+        {
+            assert(mState.mAction->isAction<MoveTrackDown>());
+            auto* action = mState.mAction->getDerived<MoveTrackDown>();
+            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr); // controller not found
+            controller->moveTrackDown(action->mTrackID);
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+
+        /**
+         * When mouse is pressed but no actions are taken, switch to NonePressed action so no actions are triggered when
+         * mouse is being dragged into one of the tracks in the sequencer window
+         */
+        registerActionHandler(RTTI_OF(None), [this]
+        {
+            if(ImGui::IsMouseDown(0))
+            {
+                mState.mAction = createAction<NonePressed>();
+            }
+        });
+        registerActionHandler(RTTI_OF(NonePressed), [this]
+        {
+            if(!ImGui::IsMouseDown(0))
+            {
+                mState.mAction = createAction<None>();
+            }
+        });
+    }
 }

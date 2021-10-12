@@ -1,0 +1,12 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::audio::AudioServiceConfiguration",
+            "mID": "AudioServiceConfiguration",
+            "OutputDevice" : "front",
+            "OutputChannelCount" : 2,
+            "AllowChannelCountFailure": "True",
+            "DisableInput" : "True"
+        }
+    ]
+}

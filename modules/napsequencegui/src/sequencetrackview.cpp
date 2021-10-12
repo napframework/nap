@@ -79,9 +79,9 @@ namespace nap
 		// draw inspector window
 		float offset = 5.0f * mState.mScale;
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
-                                        { mState.mInspectorWidth , mState.mTrackHeight + offset }, // size
-                                        false, // no border
-                                        ImGuiWindowFlags_NoMove)) // window flags
+                                { mState.mInspectorWidth , mState.mTrackHeight + offset }, // size
+                                false, // no border
+                                ImGuiWindowFlags_NoMove)) // window flags
 		{
 			// obtain drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
