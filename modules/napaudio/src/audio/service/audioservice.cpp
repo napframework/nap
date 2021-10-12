@@ -35,8 +35,6 @@ RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DisableInput", &nap::audio::AudioServiceConfiguration::mDisableInput,
 		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DisableOutput", &nap::audio::AudioServiceConfiguration::mDisableOutput,
-					  nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::mBufferSize,
@@ -100,7 +98,7 @@ namespace nap
 			int outputDeviceIndex = -1;
 			int inputChannelCount = 0;
 			int outputChannelCount = 0;
-			mOutputDisabled = configuration->mDisableOutput;
+			mOutputDisabled = configuration->mOutputChannelCount == 0;
 			
 			// Initialize the portaudio library
 			PaError error = Pa_Initialize();
@@ -146,7 +144,7 @@ namespace nap
 				}
 			}
 
-			if (configuration->mDisableOutput)
+			if (mOutputDisabled)
 			{
 				outputDeviceIndex = -1;
 			}else

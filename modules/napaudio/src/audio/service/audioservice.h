@@ -56,13 +56,13 @@ namespace nap
 			 * The number of input channels in the stream.
 			 * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
 			 */
-			int mInputChannelCount = 1;
+			int mInputChannelCount = 0;
 			
 			/**
 			 * The number of output channels in the stream.
 			 * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
 			 */
-			int mOutputChannelCount = 2;
+			int mOutputChannelCount = 0;
 			
 			/**
 			 * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
@@ -80,11 +80,6 @@ namespace nap
 			 */
 			bool mDisableInput = true;
 
-			/**
-			 * If set to true the audio will start with only an input device.
-			 */
-			bool mDisableOutput = true;
-			
 			/**
 			 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
 			 */
