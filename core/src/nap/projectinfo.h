@@ -14,7 +14,7 @@ namespace nap
 
 	namespace projectinfo
 	{
-		constexpr const char* defaultDataDir = "data";	///< Default data directory
+		inline constexpr const char* defaultDataDir = "data";	///< Default data directory
 	}
 
 	/**
