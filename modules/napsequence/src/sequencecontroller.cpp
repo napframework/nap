@@ -168,16 +168,14 @@ namespace nap
 			//
 			Sequence& sequence = mPlayer.getSequence();
 
+			if(!mPlayer.mAdapters.empty())
+			   mPlayer.destroyAdapters();
+
 			int index = 0;
 			for (const auto& track : sequence.mTracks)
 			{
 				if (track->mID == deleteTrackID)
 				{
-					if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
-					{
-						mPlayer.mAdapters.erase(track->mID);
-					}
-
 					sequence.mTracks.erase(sequence.mTracks.begin() + index);
 
 					deleteObjectFromSequencePlayer(deleteTrackID);
@@ -186,6 +184,9 @@ namespace nap
 				}
 				index++;
 			}
+
+			if(mPlayer.mIsPlaying)
+				mPlayer.createAdapters();
 		});
 	}
 
@@ -194,6 +195,9 @@ namespace nap
 	{
 		performEditAction([this, trackID]()
 		{
+			if(!mPlayer.mAdapters.empty())
+			  	mPlayer.destroyAdapters();
+
 			//
 			Sequence& sequence = mPlayer.getSequence();
 
@@ -213,6 +217,9 @@ namespace nap
 				}
 				index++;
 			}
+
+			if(mPlayer.mIsPlaying)
+				mPlayer.createAdapters();
 		});
 	}
 
@@ -221,6 +228,9 @@ namespace nap
 	{
 		performEditAction([this, trackID]()
 		{
+		  if(!mPlayer.mAdapters.empty())
+			  mPlayer.destroyAdapters();
+
 			//
 			Sequence& sequence = mPlayer.getSequence();
 
@@ -240,6 +250,9 @@ namespace nap
 				}
 				index++;
 			}
+
+		  if(mPlayer.mIsPlaying)
+			  mPlayer.createAdapters();
 		});
 	}
 
