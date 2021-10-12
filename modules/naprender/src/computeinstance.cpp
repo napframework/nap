@@ -38,7 +38,7 @@ namespace nap
 		semaphore_create_info.pNext = nullptr;
 		semaphore_create_info.flags = 0;
 
-		if (!errorState.check(vkCreateSemaphore(mRenderService->getDevice(), &semaphore_create_info, nullptr, &mComputeSemaphore) == VK_SUCCESS, "Failed to create semaphore"))
+		if (!errorState.check(vkCreateSemaphore(mRenderService->getDevice(), &semaphore_create_info, nullptr, &mSemaphore) == VK_SUCCESS, "Failed to create semaphore"))
 			return false;
 
 		// Create fence
@@ -64,7 +64,7 @@ namespace nap
 	}
 
 
-	bool ComputeInstance::rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> copyFunc, utility::ErrorState& errorState)
+	bool ComputeInstance::rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> onDispatchFinished, utility::ErrorState& errorState)
 	{
 		// Wait for the command buffer to complete execution
 		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
@@ -97,8 +97,8 @@ namespace nap
 		vkCmdDispatch(mComputeCommandBuffer, group_count_x, 1, 1);
 
 		// Copy
-		if (copyFunc != nullptr)
-			copyFunc(descriptor_set);
+		if (onDispatchFinished != nullptr)
+			onDispatchFinished(descriptor_set);
 
 		// Add synchronization between compute and graphics queues if their queue indices are different
 		if (mRenderService->getQueueIndex() != mRenderService->getComputeQueueIndex())
@@ -125,9 +125,9 @@ namespace nap
 
 		// Signal the compute ready semaphore when we have finished running the compute shader,
 		// only then the vertex input stage may be executed - graphics waits for compute to be finished
-		mRenderService->pushSemaphoreWaitInfo({ mComputeSemaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT });
+		mRenderService->pushSemaphoreWaitInfo({ mSemaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT });
 		compute_submit_info.signalSemaphoreCount = 1;
-		compute_submit_info.pSignalSemaphores = &mComputeSemaphore;
+		compute_submit_info.pSignalSemaphores = &mSemaphore;
 
 		return computeInternal(compute_submit_info, errorState);
 	}

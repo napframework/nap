@@ -1,0 +1,297 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ComputeMaterial",
+            "mID": "ComputeMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "Compute_PositionBuffer",
+                    "Name": "PositionBuffer",
+                    "Usage": "Static",
+                    "Uniforms": []
+                }
+            ],
+            "Samplers": [],
+            "Shader": "ComputeShader"
+        },
+        {
+            "Type": "nap::ComputeShaderFromFile",
+            "mID": "ComputeShader",
+            "ComputeShader": "shaders/update.comp"
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 55.0,
+                        "NearClippingPlane": 0.009999999776482582,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::FirstPersonController",
+                    "mID": "nap::FirstPersonController",
+                    "MovementSpeed": 2.0,
+                    "RotateSpeed": 0.0020000000949949028,
+                    "PerspCameraComponent": "PerspCameraComponent"
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": -0.5,
+                            "z": 3.5
+                        },
+                        "Rotate": {
+                            "x": 50.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DefaultInputRouterEntity",
+            "Components": [
+                {
+                    "Type": "nap::DefaultInputRouterComponent",
+                    "mID": "nap::DefaultInputRouterComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ParticleVolumeEntity",
+            "Components": [
+                {
+                    "Type": "nap::ParticleVolumeComponent",
+                    "mID": "ParticleVolumeComponent",
+                    "Visible": true,
+                    "Mesh": "",
+                    "MaterialInstance": {
+                        "Material": "ParticleMaterial",
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    },
+                    "ComputeMaterial": {
+                        "ComputeMaterial": "ComputeMaterial",
+                        "Uniforms": [],
+                        "Samplers": []
+                    },
+                    "NumParticles": 1000448,
+                    "SpawnRate": 400.0,
+                    "LifeTime": 6.0,
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "PositionVariation": {
+                        "x": 4.25,
+                        "y": 0.10000000149011612,
+                        "z": 4.25
+                    },
+                    "LifeTimeVariation": 0.33000001311302187,
+                    "Size": 0.061250001192092898,
+                    "SizeVariation": 0.04500000178813934,
+                    "Rotation": 0.0,
+                    "RotationVariation": 1.0,
+                    "RotationSpeed": 5.0,
+                    "RotationSpeedVariation": 3.0,
+                    "Spread": 25.0,
+                    "Velocity": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "VelocityVariation": 0.25,
+                    "StartColor": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0,
+                        "w": 1.0
+                    },
+                    "EndColor": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0,
+                        "w": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ParticleOne",
+            "Usage": "Static",
+            "ImagePath": "texture_one.jpg",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ParticleTwo",
+            "Usage": "Static",
+            "ImagePath": "texture_two.png",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ParticleMaterial",
+            "Uniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2DArray",
+                    "mID": "UniformTexture2DArray_be091041",
+                    "Name": "texture_input",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Textures": [
+                        "ParticleOne",
+                        "ParticleTwo"
+                    ]
+                }
+            ],
+            "Shader": "ParticleShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "Velocity",
+                    "ShaderAttributeID": "in_Velocity"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Id",
+                    "ShaderAttributeID": "in_Id"
+                }
+            ],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "ReadWrite"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "ComputeParticlesDemo",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.06700000166893006,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "CameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DefaultInputRouterEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "ParticleVolumeEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "ParticleShader",
+            "VertShader": "shaders/particle.vert",
+            "FragShader": "shaders/particle.frag"
+        }
+    ]
+}

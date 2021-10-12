@@ -47,7 +47,7 @@ namespace nap
 		/**
 		 * Rebuilds the compute command buffer
 		 */
-		bool rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> copyFunc, utility::ErrorState& errorState);
+		bool rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> onDispatchFinished, utility::ErrorState& errorState);
 	
 		/**
 		 * Blocking
@@ -92,7 +92,7 @@ namespace nap
 		VkCommandBuffer				mComputeCommandBuffer = VK_NULL_HANDLE;
 
 		VkFence						mFence;
-		VkSemaphore					mComputeSemaphore;
+		VkSemaphore					mSemaphore;
 
 		bool						mDirty = false;
 	};
