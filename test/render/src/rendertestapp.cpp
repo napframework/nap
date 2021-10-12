@@ -28,14 +28,8 @@ namespace nap
 		mInputService  = getCore().getService<InputService>();
 		mSceneService  = getCore().getService<SceneService>();
 
-		// Get resource manager and load
-		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("render.json", error))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;
-		}
-			
+		// Get resource manager
+		mResourceManager = getCore().getResourceManager();			
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
 

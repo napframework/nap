@@ -46,7 +46,7 @@ namespace nap
 		mGuiService			= getCore().getService<nap::IMGuiService>();
 		mParameterService	= getCore().getService<nap::ParameterService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
 
 		// Extract loaded resources

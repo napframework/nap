@@ -30,8 +30,8 @@ namespace nap
 	using RTTIObjectGraph = ObjectGraph<RTTIObjectGraphItem>;
 
 	/**
-	 * The resource manager is responsible for loading a JSON file that contains all the resources that are necessary for an application to run. 
-	 *
+	 * The resource manager is responsible for loading a JSON file that contains all the resources that are necessary for an application to run.
+	 * 
 	 * When loading a JSON file all the objects declared inside that file are created and initialized by the resource manager. 
 	 * These objects are called 'resources'. Every loaded resource is owned by the resource manager. 
 	 * This means that the lifetime of a resource is fully managed by the resource manager and not by the client.
@@ -44,14 +44,7 @@ namespace nap
 	 * If initialization of a resource fails the resource manager will halt execution, return an error message and 
 	 * as a result stop further execution of a program.
 	 *
-	 * File load example:
-	 * 
-	 *~~~~~{.cpp}
-	 *	// Get resource manager and load application JSON
-	 *	mResourceManager = getCore().getResourceManager();
-	 *	if (!mResourceManager->loadFile("helloworld.json", error))
-	 *		return false;
-	 *~~~~~
+	 * loadFile() is automatically called by the nap::AppRunner on startup, using the data file linked to by the nap::ProjectInfo
 	 */
 	class NAPAPI ResourceManager final
 	{

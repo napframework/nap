@@ -243,12 +243,8 @@ bool ExampleApp::init(utility::ErrorState& error)
 	mRenderService = getCore().getService<nap::RenderService>();
 	mSceneService  = getCore().getService<nap::SceneService>();
 		
-	// Get resource manager and load
+	// Get resource manager
 	mResourceManager = getCore().getResourceManager();
-	if (!mResourceManager->loadFile("data/helloworld/helloworld.json", error))
-	{
-		return false;
-	}
         
 	// Extract loaded resources
 	mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
