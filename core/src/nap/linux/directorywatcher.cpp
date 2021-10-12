@@ -55,8 +55,8 @@ namespace nap
 		mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
 		mPImpl->currentPath = directory;
 
-		nap::Logger::debug("Watching directory: %s", path.c_str());
-		mPImpl->watchID = mPImpl->fileWatcher.addWatch(path, &(*mPImpl), true);
+		nap::Logger::debug("Watching directory: %s", directory.c_str());
+		mPImpl->watchID = mPImpl->fileWatcher.addWatch(directory, &(*mPImpl), true);
 	}
 
 

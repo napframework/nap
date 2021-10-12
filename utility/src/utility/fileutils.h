@@ -19,9 +19,9 @@ namespace nap
 		namespace path
 		{
 #ifdef _WIN32
-			inline constexpr char* separator = "\\";
+			inline constexpr const char* separator = "\\";
 #else
-			inline constexpr char* separator = "/";
+			inline constexpr const char* separator = "/";
 #endif
 		}
 
