@@ -147,9 +147,21 @@
                     "mID": "Int Output",
                     "Parameter": "Int",
                     "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerAudioOutput",
+                    "mID": "SequencePlayerAudioOutput"
                 }
             ],
-            "Frequency": 1000.0
+            "Clock": {
+                "Type": "nap::SequencePlayerStandardClock",
+                "mID": "SequencePlayerStandardClock_606577d8"
+            }
+        },
+        {
+            "Type": "nap::audio::AudioFileResource",
+            "mID": "AudioFileResource",
+            "AudioFilePath": "hang.mp3"
         }
     ]
 }

@@ -99,7 +99,8 @@ namespace nap
 			ImGui::SetCursorPos(inspector_cursor_pos);
 
 			ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh),
-							   "No AudioClock used! Audio artifacts will occur!");
+							   "No AudioClock used by player!\nAudioSegments will not play!");
+
 		}
 		ImGui::PopItemWidth();
 	}

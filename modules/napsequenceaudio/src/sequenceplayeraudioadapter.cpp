@@ -5,6 +5,7 @@
 #include "sequenceplayeraudioadapter.h"
 #include "sequencetrackaudio.h"
 #include "sequenceplayeraudiooutput.h"
+#include "sequenceplayeraudioclock.h"
 
 #include <sequenceplayer.h>
 #include <nap/logger.h>
@@ -15,11 +16,19 @@ namespace nap
 		: mTrack(track), mOutput(output), mPlayer(player)
 	{
 		mOutput.registerAdapter(this);
+
+        /**
+         * if clock is different then SequencePlayerAudioClock, updates don't occur on AudioThread and ignore any ticks
+         */
+        mDisabled = mPlayer.mClock.get()->get_type() != RTTI_OF(SequencePlayerAudioClock);
 	}
 
 
 	void SequencePlayerAudioAdapter::tick(double time)
 	{
+        if(mDisabled)
+            return;
+
 		std::string started_segment_id = "";
 		const auto& audio_track = static_cast<const SequenceTrackAudio&>(mTrack);
 

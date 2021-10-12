@@ -11,7 +11,7 @@
         "mod_napsequenceaudio",
         "mod_napsequenceaudiogui"
     ],
-    "ServiceConfig": "",
+    "ServiceConfig": "service_config.json",
     "PathMapping": "cache/path_mapping.json",
     "Data": "data/default.json"
 }

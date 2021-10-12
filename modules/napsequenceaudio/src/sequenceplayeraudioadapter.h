@@ -61,5 +61,8 @@ namespace nap
 
 		// previous time in sequence player, used to calculate delta time
 		double mPrevTime = 0.0;
+
+        // when adapter is created, it checks wether player is using an AudioClock, if not this bool is set to true
+        bool mDisabled = false;
 	};
 }
