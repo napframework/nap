@@ -169,9 +169,10 @@ namespace nap
 		/**
 		 * Change current working directory
 		 *
-		 * @param newDir The directory to change to
+		 * @param newDir The working directory to change to
+		 * @return if working directory changed
 		 */
-		void changeDir(std::string newDir);
+		bool changeDir(const std::string& newDir);
 
 		/**
 		 * Read the contents of a file into a string.

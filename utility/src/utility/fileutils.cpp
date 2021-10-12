@@ -114,8 +114,8 @@ namespace nap
 			return std::string((char*)path);
 #else
 			char resolved[MAX_PATH_SIZE];
-			realpath(relPath.c_str(), resolved);
-			return std::string(resolved);
+			char* rvalue = realpath(relPath.c_str(), resolved);
+			return rvalue == nullptr ? std::string() : resolved;
 #endif
 		}
 
@@ -333,12 +333,12 @@ namespace nap
 		}
 
 
-		void changeDir(std::string newDir) 
+		bool changeDir(const std::string& newDir)
 		{
 #if defined(_WIN32)
-			_chdir(newDir.c_str());
+			return _chdir(newDir.c_str()) == 0;
 #else
-			chdir(newDir.c_str());
+			return chdir(newDir.c_str()) == 0;
 #endif
 		}
 
