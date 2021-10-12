@@ -114,8 +114,8 @@ namespace nap
 			return std::string((char*)path);
 #else
 			char resolved[MAX_PATH_SIZE];
-			char* rvalue = realpath(relPath.c_str(), resolved);
-			return rvalue == nullptr ? std::string() : resolved;
+			realpath(relPath.c_str(), resolved);
+			return resolved;
 #endif
 		}
 
