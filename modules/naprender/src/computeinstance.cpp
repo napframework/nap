@@ -8,8 +8,8 @@
 
 namespace nap
 {
-	ComputeInstance::ComputeInstance(uint groupCountX, uint groupCountY, uint groupCountZ, ComputeMaterialInstanceResource& computeMaterialInstance, RenderService* renderService) :
-		mRenderService(renderService), mGroupInvocations(groupCountX, groupCountY, groupCountZ)
+	ComputeInstance::ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstance, RenderService* renderService) :
+		mRenderService(renderService)
 	{
 		utility::ErrorState error_state;
 		init(computeMaterialInstance, error_state);
@@ -58,14 +58,17 @@ namespace nap
 	}
 
 
-	bool ComputeInstance::rebuild(utility::ErrorState& errorState)
+	bool ComputeInstance::rebuild(uint numInvocations, utility::ErrorState& errorState)
 	{
-		return rebuild(nullptr, errorState);
+		return rebuild(numInvocations, nullptr, errorState);
 	}
 
 
-	bool ComputeInstance::rebuild(std::function<void(const DescriptorSet&)> copyFunc, utility::ErrorState& errorState)
+	bool ComputeInstance::rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> copyFunc, utility::ErrorState& errorState)
 	{
+		// Wait for the command buffer to complete execution
+		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
+
 		// Reset command buffer
 		if (!errorState.check(vkResetCommandBuffer(mComputeCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) == VK_SUCCESS, "Failed to reset compute command buffer"))
 			return false;
@@ -73,7 +76,7 @@ namespace nap
 		// Begin command buffer
 		VkCommandBufferBeginInfo begin_info = {};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		begin_info.flags = 0;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		begin_info.pNext = nullptr;
 
 		if (!errorState.check(vkBeginCommandBuffer(mComputeCommandBuffer, &begin_info) == VK_SUCCESS, "Failed to record to compute command buffer"))
@@ -89,8 +92,9 @@ namespace nap
 		// Bind shader descriptors
 		vkCmdBindDescriptorSets(mComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
-		// Dispatch compute work
-		vkCmdDispatch(mComputeCommandBuffer, mGroupInvocations.x, mGroupInvocations.y, mGroupInvocations.z);
+		// Dispatch compute work with a single group dimension
+		uint group_count_x = numInvocations / getLocalWorkGroupSize().x + 1;
+		vkCmdDispatch(mComputeCommandBuffer, group_count_x, 1, 1);
 
 		// Copy
 		if (copyFunc != nullptr)
@@ -107,6 +111,7 @@ namespace nap
 		if (!errorState.check(vkEndCommandBuffer(mComputeCommandBuffer) == VK_SUCCESS, "Failed to rebuild compute command buffer"))
 			return false;
 
+		mDirty = false;
 		return true;
 	}
 
@@ -150,14 +155,6 @@ namespace nap
 
 	bool ComputeInstance::computeInternal(const VkSubmitInfo& submitInfo, utility::ErrorState& errorState)
 	{
-		if (mWorkGroupsDirty)
-		{
-			if (!rebuild(nullptr, errorState))
-				return false;
-
-			mWorkGroupsDirty = false;
-		}
-
 		// Wait for the compute queue to be available with a fence
 		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
 		vkResetFences(mRenderService->getDevice(), 1, &mFence);
@@ -171,24 +168,5 @@ namespace nap
 		// TODO: Release storage buffer if graphics and compute queue indices differ
 
 		return true;
-	}
-
-
-	void ComputeInstance::setWorkGroups(uint groupCountX, uint groupCountY, uint groupCountZ)
-	{
-		mGroupInvocations = { groupCountX, groupCountY, groupCountZ };
-		mWorkGroupsDirty = true;
-	}
-
-
-	ComputeMaterialInstance& ComputeInstance::getComputeMaterialInstance()
-	{
-		return mComputeMaterialInstance;
-	}
-
-
-	VkCommandBuffer ComputeInstance::getComputeCommandBuffer()
-	{
-		return mComputeCommandBuffer;
 	}
 } 

@@ -130,6 +130,11 @@ namespace nap
 		*/
 		VkShaderModule getComputeModule() const { return mComputeModule; }
 
+		/**
+		* @return local work group size
+		*/
+		glm::u32vec3 getLocalWorkGroupSize() const { return mLocalWorkGroupSize; }
+
 	protected:
 		/**
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
@@ -143,7 +148,7 @@ namespace nap
 		virtual bool load(const std::string& displayName, const char* compShader, int compSize, utility::ErrorState& errorState);
 
 	private:
-		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
+		glm::u32vec3									mLocalWorkGroupSize;
 		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
 	};
 

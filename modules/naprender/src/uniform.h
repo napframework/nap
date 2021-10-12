@@ -18,6 +18,15 @@ namespace nap
 	using UniformCreatedCallback = std::function<void()>;
 
 	/**
+	 * TODO: Add documentation
+	 */
+	enum class EUniformDataUsage
+	{
+		Static,				///< Uniform data is uploaded only once from the CPU to the GPU
+		DynamicWrite,		///< Uniform data is updated more than once from the CPU to the GPU
+	};
+
+	/**PositionBuffer
 	 * Shader uniform resource base class.
 	 */
 	class NAPAPI Uniform : public Resource
@@ -25,6 +34,7 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		std::string mName;		///< Name of uniform in shader
+		EUniformDataUsage mUsage = EUniformDataUsage::DynamicWrite;
 	};
 
 

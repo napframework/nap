@@ -787,6 +787,11 @@ namespace nap
 		if (!parseUniforms(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
+		// Store local workgroup size
+		mLocalWorkGroupSize[0] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 0);
+		mLocalWorkGroupSize[1] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 1);
+		mLocalWorkGroupSize[2] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 2);
+
 		return initLayout(device, errorState);
 	}
 

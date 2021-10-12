@@ -212,7 +212,13 @@ namespace nap
 			
 			void* mapped_memory = allocation.pMappedData;
 			for (auto& uniform : ubo.mUniforms)
+			{
+				// Skip static uniforms that have been pushed at least once
+				if (uniform->getUsage() == EUniformDataUsage::Static && uniform->isPushed())
+					continue;
+
 				uniform->push((uint8_t*)mapped_memory);
+			}
 		}
 	}
 
@@ -601,7 +607,6 @@ namespace nap
 		}
 
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
-
 		updateUniforms(descriptor_set);
 		updateSamplers(descriptor_set);
 

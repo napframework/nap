@@ -199,6 +199,16 @@ namespace nap
 		 * Needs to be implemented in derived classes, pushes buffer to the GPU.
 		 */
 		virtual void push(uint8_t* uniformBuffer) const = 0;
+
+		void setUsage(EUniformDataUsage usage)									{ mUsage = usage; }
+
+		EUniformDataUsage getUsage() const										{ return mUsage; }
+
+		bool isPushed() const													{ return mPushed; }
+
+	protected:
+		EUniformDataUsage mUsage = EUniformDataUsage::DynamicWrite;
+		mutable bool mPushed = false;
 	};
 
 
@@ -216,7 +226,7 @@ namespace nap
 
 		// Constructor
 		UniformValueInstance(const UniformValueDeclaration& declaration) :
-			mDeclaration(&declaration)											{ }
+			mDeclaration(&declaration) { }
 
 		/**
 		 * @return the uniform value declaration.
@@ -238,7 +248,7 @@ namespace nap
 
 	public:
 		TypedUniformValueInstance(const UniformValueDeclaration& declaration) :
-			UniformValueInstance(declaration)				{ }
+			UniformValueInstance(declaration) { }
 
 		/**
 		 * Updates the uniform value, data is not pushed immediately. 
@@ -276,7 +286,7 @@ namespace nap
 
 	public:
 		UniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
-			mDeclaration(&declaration)	{ }
+			mDeclaration(&declaration) { }
 
 		/**
 		 * @return uniform declaration.
@@ -431,6 +441,7 @@ namespace nap
 	{
 		assert(sizeof(mValue) == mDeclaration->mSize);
 		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
+		mPushed = true;
 	}
 
 	template<typename T>
@@ -450,5 +461,6 @@ namespace nap
 				dest += mDeclaration->mStride;
 			}
 		}
+		mPushed = true;
 	}
 }

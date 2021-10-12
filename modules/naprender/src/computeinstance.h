@@ -31,7 +31,7 @@ namespace nap
 		 * Default constructor
 		 */
 		ComputeInstance() = delete;
-		ComputeInstance(uint groupCountX, uint groupCountY, uint groupCountZ, ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService);
+		ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService);
 
 		// Copy constructor
 		ComputeInstance(const RenderableMesh& rhs) = delete;
@@ -40,30 +40,14 @@ namespace nap
 		ComputeInstance& operator=(const ComputeInstance& rhs) = delete;
 
 		/**
-		 * @return current material used when drawing the mesh.
+		 * Rebuilds the compute command buffer
 		 */
-		ComputeMaterialInstance& getComputeMaterialInstance();
-
-		/**
-		 * Returns the compute command buffer
-		 * @return the command buffer, returns nullptr if compute is not supported or enabled
-		 */
-		VkCommandBuffer getComputeCommandBuffer();
+		bool rebuild(uint numInvocations, utility::ErrorState& errorState);
 
 		/**
 		 * Rebuilds the compute command buffer
 		 */
-		bool rebuild(utility::ErrorState& errorState);
-
-		/**
-		 * Rebuilds the compute command buffer
-		 */
-		bool rebuild(std::function<void(const DescriptorSet&)> copyFunc, utility::ErrorState& errorState);
-
-		/**
-		 * Sets the workgroup counts used to dispatch compute work
-		 */
-		void setWorkGroups(uint groupCountX, uint groupCountY, uint groupCountZ);
+		bool rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> copyFunc, utility::ErrorState& errorState);
 	
 		/**
 		 * Blocking
@@ -76,6 +60,21 @@ namespace nap
 		 * Useful when compute shaders modify resources that are read by graphics shaders.
 		 */
 		bool asyncCompute(utility::ErrorState& errorState);
+
+		/**
+		 * @return current material used when drawing the mesh.
+		 */
+		ComputeMaterialInstance& getComputeMaterialInstance() 			{ return mComputeMaterialInstance; }
+
+		/**
+		 * Returns the compute command buffer
+		 * @return the command buffer, returns nullptr if compute is not supported or enabled
+		 */
+		VkCommandBuffer getComputeCommandBuffer() const					{ return mComputeCommandBuffer; }
+
+		/**Returns the local workgroup size
+		 */
+		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
 	private:
 		/**
@@ -92,12 +91,9 @@ namespace nap
 		ComputeMaterialInstance		mComputeMaterialInstance;
 		VkCommandBuffer				mComputeCommandBuffer = VK_NULL_HANDLE;
 
-		glm::u32vec3				mGroupInvocations = { 64, 1, 1 };
-
 		VkFence						mFence;
 		VkSemaphore					mComputeSemaphore;
 
-		bool						mWorkGroupsDirty = false;
-		bool						mSyncGraphics = false;
+		bool						mDirty = false;
 	};
 }
