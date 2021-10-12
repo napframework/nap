@@ -26,6 +26,9 @@ namespace nap
 		
 		bool AudioFileResource::init(utility::ErrorState& errorState)
 		{
+			if(mService.getOutputDisabled())
+				return true;
+			
 			float sampleRate;
 			if (readAudioFile(mAudioFilePath, *getBuffer(), sampleRate, errorState))
 			{

@@ -34,6 +34,10 @@ namespace nap
 			OutputComponent* resource = getComponent<OutputComponent>();
 			
 			mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
+
+			if(mAudioService->getOutputDisabled())
+				return true;
+
 			auto& nodeManager = mAudioService->getNodeManager();
 			
 			mChannelRouting = resource->mChannelRouting;
@@ -77,6 +81,9 @@ namespace nap
 		
 		void OutputComponentInstance::setInput(AudioComponentBaseInstance& input)
 		{
+			if(mAudioService->getOutputDisabled())
+				return;
+
 			OutputComponent* resource = getComponent<OutputComponent>();
 			
 			AudioComponentBaseInstance* inputPtr = &input;

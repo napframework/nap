@@ -62,6 +62,10 @@ namespace nap
 			mPitch = mResource->mPitch;
 			
 			mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
+
+			if(mAudioService->getOutputDisabled())
+				return true;
+
 			mNodeManager = &mAudioService->getNodeManager();
 			
 			// If channel routing is left empty, fill it with the channels in the buffer in ascending order.
@@ -113,6 +117,9 @@ namespace nap
 		{
 			if (mPlaying)
 			{
+				if(mAudioService->getOutputDisabled())
+					return;
+
 				mCurrentPlayingTime += deltaTime * 1000.f;
 				if (mCurrentPlayingTime > mDuration - mFadeOutTime)
 					stop();
@@ -124,6 +131,9 @@ namespace nap
 		{
 			if (!mPlaying)
 				return;
+
+			if(mAudioService->getOutputDisabled())
+				return;
 			
 			mPlaying = false;
 			for (auto& gainControl : mGainControls)
@@ -133,6 +143,9 @@ namespace nap
 		
 		void PlaybackComponentInstance::setGain(ControllerValue gain)
 		{
+			if(mAudioService->getOutputDisabled())
+				return;
+
 			if (gain == mGain)
 				return;
 			mGain = gain;
@@ -143,6 +156,9 @@ namespace nap
 		
 		void PlaybackComponentInstance::setChannelGain(int channel, ControllerValue gain)
 		{
+			if(mAudioService->getOutputDisabled())
+				return;
+
 			// Make sure the channel index is in bounds.
 			assert(channel < mGainControls.size());
 			
@@ -154,6 +170,9 @@ namespace nap
 		
 		void PlaybackComponentInstance::setStereoPanning(ControllerValue panning)
 		{
+			if(mAudioService->getOutputDisabled())
+				return;
+
 			if (panning == mStereoPanning)
 				return;
 			mStereoPanning = panning;
@@ -176,6 +195,9 @@ namespace nap
 		
 		void PlaybackComponentInstance::setPitch(ControllerValue pitch)
 		{
+			if(mAudioService->getOutputDisabled())
+				return;
+
 			if (pitch == mPitch)
 				return;
 			
@@ -188,6 +210,9 @@ namespace nap
 		
 		void PlaybackComponentInstance::applyGain(TimeValue rampTime)
 		{
+			if(mAudioService->getOutputDisabled())
+				return;
+
 			if (mResource->isStereo())
 				equalPowerPan(mStereoPanning, mChannelGains[0], mChannelGains[1]);
 			
@@ -198,6 +223,9 @@ namespace nap
 		
 		void PlaybackComponentInstance::start(TimeValue startPosition, TimeValue duration)
 		{
+			if(mAudioService->getOutputDisabled())
+				return;
+
 			ControllerValue actualSpeed = mPitch * mResource->mBuffer->getSampleRate() / mNodeManager->getSampleRate();
 			if (duration == 0)
 				mDuration = mResource->mBuffer->getSize();

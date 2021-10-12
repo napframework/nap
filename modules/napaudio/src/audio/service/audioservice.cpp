@@ -35,6 +35,8 @@ RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DisableInput", &nap::audio::AudioServiceConfiguration::mDisableInput,
 		              nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DisableOutput", &nap::audio::AudioServiceConfiguration::mDisableOutput,
+					  nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
 		              nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::mBufferSize,
@@ -98,6 +100,7 @@ namespace nap
 			int outputDeviceIndex = -1;
 			int inputChannelCount = 0;
 			int outputChannelCount = 0;
+			mOutputDisabled = configuration->mDisableOutput;
 			
 			// Initialize the portaudio library
 			PaError error = Pa_Initialize();
@@ -142,22 +145,28 @@ namespace nap
 						Logger::info("Audio input device not found: %s", configuration->mInputDevice.c_str());
 				}
 			}
-			
-			if (configuration->mOutputDevice.empty())
-				outputDeviceIndex = Pa_GetDefaultOutputDevice();
-			else
-				outputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mOutputDevice);
-			if (outputDeviceIndex < 0)
+
+			if (configuration->mDisableOutput)
 			{
-				if (!configuration->mAllowDeviceFailure)
-				{
-					errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
-					return false;
-				}
+				outputDeviceIndex = -1;
+			}else
+			{
+				if (configuration->mOutputDevice.empty())
+					outputDeviceIndex = Pa_GetDefaultOutputDevice();
 				else
-					Logger::info("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+					outputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mOutputDevice);
+				if (outputDeviceIndex < 0)
+				{
+					if (!configuration->mAllowDeviceFailure)
+					{
+						errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+						return false;
+					}
+					else
+						Logger::info("Audio output device not found: %s", configuration->mOutputDevice.c_str());
+				}
 			}
-			
+
 			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, errorState))
 				return false;
 			

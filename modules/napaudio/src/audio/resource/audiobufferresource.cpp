@@ -16,7 +16,7 @@ namespace nap
 	namespace audio
 	{
 		
-		AudioBufferResource::AudioBufferResource(AudioService& service)
+		AudioBufferResource::AudioBufferResource(AudioService& service) : mService(service)
 		{
 			mBuffer = service.getNodeManager().makeSafe<MultiSampleBuffer>();
 		}

@@ -78,7 +78,12 @@ namespace nap
 			/**
 			 * If set to false the audio will start with only an output device.
 			 */
-			bool mDisableInput = false;
+			bool mDisableInput = true;
+
+			/**
+			 * If set to true the audio will start with only an input device.
+			 */
+			bool mDisableOutput = true;
 			
 			/**
 			 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
@@ -282,6 +287,8 @@ namespace nap
 			 * Enqueue a task to be executed within the process() method for thread safety
 			 */
 			void enqueueTask(TaskQueue::Task task) { mNodeManager.enqueueTask(task); }
+
+			bool getOutputDisabled() const{ return mOutputDisabled; }
 		
 		private:
 			/*
@@ -309,6 +316,7 @@ namespace nap
 			int mBufferSize = 1024; // The actual buffersize that the audio device runs on
 			bool mPortAudioInitialized = false; // If port audio is initialized
 			bool mMpg123Initialized	   = false;	// If mpg123 is initialized
+			bool mOutputDisabled = true;
 
 			// DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
 			// Clearing is performed on the audio callback to make sure the node can not be destructed while it is being processed.
