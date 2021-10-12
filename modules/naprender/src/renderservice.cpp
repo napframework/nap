@@ -32,6 +32,11 @@
 #include <nap/assert.h>
 #include <mathutils.h>
 
+// Required to enbale high dpi rendering on windows
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete,		"Discrete"),
@@ -1097,11 +1102,39 @@ namespace nap
 
 	RenderWindow* RenderService::findWindow(uint id) const
 	{
-		WindowList::const_iterator pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
+		auto pos = std::find_if(mWindows.begin(), mWindows.end(), [&](auto val)
 		{
 			return val->getNumber() == id;
 		});
 		return pos != mWindows.end() ? *pos : nullptr;
+	}
+
+
+	const nap::Display* RenderService::findDisplay(int index) const
+	{
+		auto found_it = std::find_if(mDisplays.begin(), mDisplays.end(), [&](const auto& it)
+		{
+			return it.getIndex() == index;
+		});
+		return found_it == mDisplays.end() ? nullptr : &(*found_it);
+	}
+
+
+	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window)
+	{
+		return findDisplay(SDL::getDisplayIndex(window.getNativeWindow()));
+	}
+
+
+	const nap::DisplayList& RenderService::getDisplays() const
+	{
+		return mDisplays;
+	}
+
+
+	int RenderService::getDisplayCount() const
+	{
+		return mDisplays.size();
 	}
 
 
@@ -1359,22 +1392,47 @@ namespace nap
 		mSceneService = getCore().getService<SceneService>();
 		assert(mSceneService != nullptr);
 
+		// Enable high dpi support if requested (windows)
+		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
+
+		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
+		mHeadless = render_config->mHeadless;
+
+		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
+		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
+
+#ifdef _WIN32
+		if (mEnableHighDPIMode)
+		{
+			// Make process dpi aware
+			if(!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
+				"Unable to make process DPI aware"))
+			{
+				return false;
+			}
+		}
+#endif // _WIN32
+
 		// Initialize SDL video
 		mSDLInitialized = SDL::initVideo(errorState);
 		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
 			return false;
 
+		// Add displays
+		for (int i = 0; i < SDL::getDisplayCount(); i++)
+		{
+			auto it = mDisplays.emplace_back(Display(i));
+			nap::Logger::info(it.toString());
+			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
+			{
+				return false;
+			}
+		}
+
 		// Initialize shader compiler
 		mShInitialized = ShInitialize() != 0;
 		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
-
-		// Store render settings, used for initialization and global window creation
-		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
-		mEnableHighDPIMode = render_config->mEnableHighDPIMode;
-
-		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
-		mHeadless = render_config->mHeadless;
 
 		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
 		// Allows for easy destruction of previously created and assigned resources when initialization fails.
@@ -2058,11 +2116,42 @@ namespace nap
 	{
 		return mShader != nullptr && mMaterial != nullptr;
 	}
-}
 
 
-nap::PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex, int computeQueueIndex) :
-	mDevice(device), mProperties(properties), mQueueIndex(queueIndex), mComputeQueueIndex(computeQueueIndex)
-{
-	vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
+	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex, int computeQueueIndex) :
+		mDevice(device), mProperties(properties), mQueueIndex(queueIndex), mComputeQueueIndex(computeQueueIndex)
+	{
+		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
+	}
+
+
+	nap::Display::Display(int index) : mIndex(index)
+	{
+		assert(index < SDL::getDisplayCount());
+		int dr = SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
+		bool name = SDL::getDisplayName(index, mName);
+		int br = SDL::getDisplayBounds(index, mMin, mMax);
+		mValid = dr == 0 && name && br == 0;
+	}
+
+
+	std::string nap::Display::toString() const
+	{
+		return utility::stringFormat
+		(
+			"Display: %d, %s, ddpi: %.1f, hdpi: %.1f, vdpi: %.1f, min: %d-%d, max: %d-%d",
+			mIndex,
+			mName.c_str(),
+			mDDPI, mHDPI, mVDPI,
+			mMin.x, mMin.y,
+			mMax.x, mMax.y
+		);
+	}
+
+
+	nap::math::Rect nap::Display::getBounds() const
+	{
+		return { glm::vec2(mMin), glm::vec2(mMax) };
+	}
+
 }

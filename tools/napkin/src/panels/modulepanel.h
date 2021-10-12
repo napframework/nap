@@ -23,8 +23,13 @@ namespace napkin
 
 	class ModuleModel : public QStandardItemModel
 	{
+		Q_OBJECT
 	public:
 		ModuleModel();
+
+	Q_SIGNALS:
+		void populated();
+
 	private:
 		void onCoreInitialized();
 	};

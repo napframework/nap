@@ -149,6 +149,49 @@ namespace nap
 		}
 
 
+		int getDisplayCount()
+		{
+			return SDL_GetNumVideoDisplays();
+		}
+
+
+		int NAPAPI getDisplayIndex(SDL_Window* window)
+		{
+			return SDL_GetWindowDisplayIndex(window);
+		}
+
+
+		int NAPAPI getDisplayDPI(int displayIndex, float* ddpi, float* hdpi, float* vdpi)
+		{
+			return SDL_GetDisplayDPI(displayIndex, ddpi, hdpi, vdpi);
+		}
+
+
+		int NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi)
+		{
+			int idx = getDisplayIndex(window);
+			return idx >= 0 ? getDisplayDPI(idx, ddpi, hdpi, vdpi) : idx;
+		}
+
+
+		bool getDisplayName(int displayIndex, std::string& outName)
+		{
+			const char* display_name = SDL_GetDisplayName(displayIndex);
+			outName = display_name != nullptr ? display_name : "";
+			return display_name != nullptr;
+		}
+
+
+		int getDisplayBounds(int displayIndex, glm::ivec2& outMin, glm::ivec2& outMax)
+		{
+			SDL_Rect sdl_bounds;
+			int r = SDL_GetDisplayBounds(displayIndex, &sdl_bounds);
+			outMin = { sdl_bounds.x, sdl_bounds.y };
+			outMax = { sdl_bounds.x + sdl_bounds.w, sdl_bounds.y + sdl_bounds.h };
+			return r;
+		}
+
+
 		void hideCursor()
 		{
 			SDL_ShowCursor(SDL_DISABLE);

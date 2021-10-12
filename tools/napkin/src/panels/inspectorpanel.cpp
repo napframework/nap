@@ -411,9 +411,9 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 			{
 				auto& themeManager = AppContext::get().getThemeManager();
 				if (valueItem->getPath().isOverridden())
-					return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_overriddenInstanceProperty));
+					return QVariant::fromValue<QColor>(themeManager.getColor(themeColOverriddenInstanceProperty));
 
-				return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_instanceProperty));
+				return QVariant::fromValue<QColor>(themeManager.getColor(themeColInstanceProperty));
 			}
 		}
 	}

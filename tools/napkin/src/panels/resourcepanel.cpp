@@ -12,6 +12,34 @@
 using namespace napkin;
 
 
+static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QAbstractItemModel* model)
+{
+	// Get model
+	ResourceModel* resource_model = dynamic_cast<ResourceModel*>(model);
+	assert(resource_model != nullptr);
+
+	// Get item
+	auto l_item = resource_model->itemFromIndex(left);
+	auto r_item = resource_model->itemFromIndex(right);
+	assert(l_item != nullptr && r_item != nullptr);
+
+	// Don't sort groups
+	GroupItem* lg_item = dynamic_cast<GroupItem*>(l_item);
+	GroupItem* rg_item = dynamic_cast<GroupItem*>(r_item);
+	if (lg_item != nullptr && rg_item != nullptr)
+		return false;
+
+	// Don't sort items of which parent is an entity (components)
+	EntityItem* le_item = dynamic_cast<EntityItem*>(l_item->parent());
+	EntityItem* re_item = dynamic_cast<EntityItem*>(r_item->parent());
+	if (le_item != nullptr && re_item != nullptr)
+		return false;
+
+	// Otherwise sort default
+	return model->data(left, Qt::ItemDataRole::DisplayRole) < model->data(right, Qt::ItemDataRole::DisplayRole);
+}
+
+
 napkin::ResourceModel::ResourceModel()
 		: mObjectsItem(TXT_LABEL_RESOURCES, GroupItem::GroupType::Resources),
 		  mEntitiesItem(TXT_LABEL_ENTITIES, GroupItem::GroupType::Entities)
@@ -119,7 +147,7 @@ napkin::ResourcePanel::ResourcePanel()
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
 	mTreeView.getTreeView().setColumnWidth(0, 300);
-	mTreeView.getTreeView().setSortingEnabled(false);
+	mTreeView.enableSorting(&ResourceSorter);
 
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
@@ -227,6 +255,7 @@ void napkin::ResourcePanel::populate()
 	mModel.populate();
 	mTreeView.getTreeView().expandAll();
 	emitSelectionChanged();
+	mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder);
 }
 
 
@@ -290,4 +319,3 @@ void ResourcePanel::emitSelectionChanged()
 
 	selectionChanged(selectedPaths);
 }
-

@@ -133,12 +133,22 @@ namespace nap
         void resize(int numberOfThreads);
         
         /**
-         * Returns the number ot threads in the pool.
+         * Returns the number of threads in the pool.
          */
         int getThreadCount() const { return int(mThreads.size()); }
+
+		/**
+		 * Returns an estimate of the total number of tasks currently in the queue. This
+		 * estimate is only accurate if the queue has completely stabilized before it is called
+		 * (i.e. all enqueue and dequeue operations have completed and their memory effects are
+		 * visible on the calling thread, and no further operations start while this method is
+		 * being called).
+		 * Thread-safe.
+		 */
+		int getTaskCount() const { return mTaskQueue.size_approx(); }
         
         /**
-         * Returns wether this thread is shutting down.
+         * Returns whether this thread is shutting down.
          */
         bool isStopping() const { return (mStop == true); }
         

@@ -6,6 +6,7 @@
 #include "commands.h"
 #include "sceneservice.h"
 #include "naputils.h"
+#include "napkin-resources.h"
 
 using namespace napkin;
 
@@ -13,6 +14,7 @@ using namespace napkin;
 
 GroupItem::GroupItem(const QString& name, GroupItem::GroupType t) : QStandardItem(name), mType(t)
 {
+	setIcon(t == GroupItem::GroupType::Entities ? QIcon(QRC_ICONS_ENTITY) : QIcon(QRC_ICONS_RTTIOBJECT));
 	setEditable(false);
 }
 
@@ -130,7 +132,10 @@ QVariant ObjectItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole && isPointer())
 	{
-		return AppContext::get().getThemeManager().getColor(sThemeCol_dimmedItem);
+		if (isPointer())
+		{
+			return AppContext::get().getThemeManager().getColor(themeColDimmedItem);
+		}
 	}
 	return QStandardItem::data(role);
 }
@@ -456,7 +461,7 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEnti
 		: ObjectItem(&comp, false), mRootEntity(rootEntity)
 {
 	assert(&mRootEntity);
-	mOverrideColor = AppContext::get().getThemeManager().getColor(sThemeCol_componentWidthOverrides);
+	mOverrideColor = AppContext::get().getThemeManager().getColor(themeColComponentWidthOverrides);
 }
 
 const PropertyPath ComponentInstanceItem::propertyPath() const

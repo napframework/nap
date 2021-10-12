@@ -9,7 +9,7 @@
 #include <entity.h>
 #include <nap/datetime.h>
 #include <rtti/factory.h>
-#include <imgui/imgui.h>
+#include <imguiservice.h>
 
 namespace nap
 {
@@ -31,22 +31,6 @@ namespace nap
 	using SequenceEventTrackPasteFunc 				= std::function<void(SequenceEventTrackView&, const std::string&, const SequenceTrackSegmentEventBase&, double)>;
 	using SequenceEventTrackEditFunc 				= std::function<void(SequenceEventTrackView&)>;
 
-	namespace sequencer
-	{
-		namespace colors
-		{
-			// Sequencer colors
-			// TODO: Use colors from ImGUIService instead
-			inline constexpr ImU32 red = 4285098440;
-			inline constexpr ImU32 black = 4280685585;
-			inline constexpr ImU32 white = 4288711819;
-			inline constexpr ImU32 lightGrey = 4285750877;
-			inline constexpr ImU32 darkGrey	 = 4285158482;
-			inline constexpr ImU32 darkerGrey = 4281674281;
-			inline constexpr ImU32 curvecolors[4] = {4285098440, 4278255360, 4294901760, 4278255615};
-		}
-	}
-
 	/**
 	 * The SequenceGUIService is responsible for registering track, segment & popup views and supplying the GUI the
 	 * necessary factory methods to dynamically create the views and handlers for all registered types.
@@ -62,14 +46,29 @@ namespace nap
 
 		RTTI_ENABLE(Service)
 	public:
-		/**
-		 * Constructor
-		 */
-		SequenceGUIService(ServiceConfiguration* configuration);
 
 		/**
-		 * Deconstructor
+		 * Colors palette used by all sequencer Gui
 		 */
+		struct Colors
+		{
+			/**
+			 * Initialize palette against configurable ImGUI color palette
+			 * @param palette ImGUI color palette
+			 */
+			void init(const IMGuiColorPalette& palette);
+
+			ImU32 mHigh = 0;		///< Special Highlight Color
+			ImU32 mDark = 0;		///< Dark background Color
+			ImU32 mBack = 0;		///< Background color
+			ImU32 mFro1 = 0;		///< Darker Foreground
+			ImU32 mFro2 = 0;		///< Dark Foreground
+			ImU32 mFro3 = 0;		///< Light Foreground
+
+			ImU32 mCurveColors[4] = { 4285098440, 4278255360, 4294901760, 4278255615 };
+		};
+
+		SequenceGUIService(ServiceConfiguration* configuration);
 		~SequenceGUIService() override;
 
 		/**
@@ -148,11 +147,7 @@ namespace nap
 		 * @param eventBase reference to base of event
 		 * @param time time at which to paste the event
 		 */
-		void invokePasteEvent(rtti::TypeInfo eventType,
-							  SequenceEventTrackView& view,
-							  const std::string& trackID,
-							  const SequenceTrackSegmentEventBase& eventBase,
-							  double time) const;
+		void invokePasteEvent(rtti::TypeInfo eventType, SequenceEventTrackView& view, const std::string& trackID, const SequenceTrackSegmentEventBase& eventBase, double time) const;
 
 		/**
 		 * returns a vector containing type info of all registered track types
@@ -165,6 +160,17 @@ namespace nap
 		 * @return the vector
 		 */
 		std::vector<rtti::TypeInfo> getAllRegisteredEventActions() const;
+
+		/**
+		 * @return gui service
+		 */
+		nap::IMGuiService& getGui();
+
+		/**
+		 * Returns the sequencer GUI color palette 
+		 * @return sequencer GUI color palette
+		 */
+		const Colors& getColors() const { return mColors; }
 
 	protected:
 		/**
@@ -188,6 +194,7 @@ namespace nap
          * @param dependencies rtti information of the services this service depends on
          */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
+
 	private:
 		// map of segment view types
 		SequenceEventTrackSegmentViewFactoryMap mEventSegmentViewFactoryMap;
@@ -206,5 +213,11 @@ namespace nap
 
 		// which view type belongs to which track type
 		SequenceTrackTypeForViewTypeMap mTrackViewTypeMap;
+
+		// Link to the gui service
+		IMGuiService* mGuiService = nullptr;
+
+		// Colors
+		Colors mColors;
 	};
 }

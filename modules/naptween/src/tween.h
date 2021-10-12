@@ -292,14 +292,14 @@ namespace nap
 			{
 				mTime += deltaTime * direction;
 
-				if( mTime > mDuration )
+				if(mTime >= mDuration)
 				{
 					mTime = mDuration - ( mTime - mDuration );
 					direction = -1.0f;
 
 					mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
 					UpdateSignal.trigger(mCurrentValue);
-				}else if( mTime < 0.0f )
+				}else if(mTime <= 0.0f)
 				{
 					mTime = -mTime;
 					direction = 1.0f;
@@ -322,7 +322,7 @@ namespace nap
 				{
 					mTime += deltaTime;
 
-					if( mTime > mDuration )
+					if(mTime >= mDuration)
 					{
 						mTime = mDuration - mTime;
 
@@ -345,7 +345,7 @@ namespace nap
 				{
 					mTime += deltaTime;
 
-					if( mTime > mDuration )
+					if(mTime >= mDuration)
 					{
 						mComplete = true;
 					  	mTime = mDuration;
@@ -409,7 +409,7 @@ namespace nap
 			{ETweenEaseType::QUINT_OUT, 	[](){ return std::make_unique<TweenEaseOutQuint<T>>(); 		}},
 			{ETweenEaseType::QUINT_INOUT, 	[](){ return std::make_unique<TweenEaseInOutQuint<T>>(); 	}},
 			{ETweenEaseType::QUINT_IN, 		[](){ return std::make_unique<TweenEaseInQuint<T>>(); 		}},
-			{ETweenEaseType::SINE_OUT, 		[](){ return std::make_unique<TweenEaseInSine<T>>(); 		}},
+			{ETweenEaseType::SINE_OUT, 		[](){ return std::make_unique<TweenEaseOutSine<T>>(); 		}},
 			{ETweenEaseType::SINE_INOUT, 	[](){ return std::make_unique<TweenEaseInOutSine<T>>(); 	}},
 			{ETweenEaseType::SINE_IN, 		[](){ return std::make_unique<TweenEaseInSine<T>>(); 		}}
 		};

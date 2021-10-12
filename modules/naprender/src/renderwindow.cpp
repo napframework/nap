@@ -45,14 +45,14 @@ namespace nap
 	 * Creates a new SDL window based on the settings provided by the render window
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, nap::utility::ErrorState& errorState)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, nap::utility::ErrorState& errorState)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
 		options = renderWindow.mResizable  ? options | SDL_WINDOW_RESIZABLE : options;
 		options = renderWindow.mBorderless ? options | SDL_WINDOW_BORDERLESS : options;
 		options = !renderWindow.mVisible ? options | SDL_WINDOW_HIDDEN : options;
-		options = options | SDL_WINDOW_ALLOW_HIGHDPI;
+		options = allowHighDPI ? options | SDL_WINDOW_ALLOW_HIGHDPI : options;
 
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
 			SDL_WINDOWPOS_CENTERED,
@@ -537,7 +537,7 @@ namespace nap
 
 		// Create SDL window first
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = createSDLWindow(*this, errorState);
+		mSDLWindow = createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState);
 		if (mSDLWindow == nullptr)
 			return false;
 
