@@ -45,6 +45,7 @@ if(APPLE)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
     set(LINUX_EXTRA_RPATH ../../../../thirdparty/FFmpeg/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
 endif()
 package_module()
 
