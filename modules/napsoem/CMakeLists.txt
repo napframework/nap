@@ -37,16 +37,16 @@ copy_module_json_to_bin()
 package_module()
 
 # Install readme
-install(FILES ${THIRDPARTY_DIR}/soem/README.md DESTINATION thirdparty/soem)
-install(FILES ${THIRDPARTY_DIR}/soem/LICENSE DESTINATION thirdparty/soem)
+install(FILES ${THIRDPARTY_DIR}/soem/source/README.md DESTINATION thirdparty/soem)
+install(FILES ${THIRDPARTY_DIR}/soem/source/LICENSE DESTINATION thirdparty/soem)
 
-# install inlcude
+# Install include
 install(DIRECTORY ${SOEM_DIR}/include DESTINATION thirdparty/soem)
 
-#install lib
+# Install lib
 install(DIRECTORY ${SOEM_DIR}/lib DESTINATION thirdparty/soem)
 
-#install wpcap includes (only windows)
+#install wpcap includes (only Windows)
 if(WIN32)
 	install(DIRECTORY ${WPCAP_DIR}/Include DESTINATION thirdparty/soem/wpcap)
 	install(DIRECTORY ${WPCAP_DIR}/Lib DESTINATION thirdparty/soem/wpcap)

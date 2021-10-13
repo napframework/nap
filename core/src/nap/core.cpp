@@ -416,7 +416,7 @@ namespace nap
 #ifdef _WIN32
 		const std::string platformPrefix = "msvc";
 #elif defined(__APPLE__)
-		const std::string platformPrefix = "osx";
+		const std::string platformPrefix = "macos";
 #else // __unix__
 		const std::string platformPrefix = "linux";
 #endif

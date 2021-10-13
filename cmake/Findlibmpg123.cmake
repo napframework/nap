@@ -8,36 +8,33 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-find_path(LIBMPG123_DIR src/libmpg123/mpg123.h.in
+find_path(LIBMPG123_DIR source/src/libmpg123/mpg123.h.in
           HINTS
           ${THIRDPARTY_DIR}/mpg123
           ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
           )
 
 if(WIN32)
-    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/msvc)
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/msvc/x86_64)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dll)
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/msvc)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/msvc/x86_64)
 elseif(APPLE)
-    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/osx/lib)
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/macos/x86_64/lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dylib)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIBS_RELEASE_DLL})
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/osx/include)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/macos/x86_64/include)
 elseif(ANDROID)
-    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/android/lib/Release/${ANDROID_ABI})
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/android/lib/Release/${ANDROID_ABI})
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.so)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIBS_RELEASE_DLL})
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/android/include)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/android/include)
 else()
-    if(${ARCH} STREQUAL "armv6")
-        set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin/arm)
-    else()
-        set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/install/linux/bin/x86_64)
-    endif()
+    set(LIBMPG123_DIR ${LIBMPG123_DIR}/linux/${ARCH})
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.so)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIBS_RELEASE_DLL})
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/install/linux/include)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/include)
 endif()
 
 

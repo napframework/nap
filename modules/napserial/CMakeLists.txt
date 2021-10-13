@@ -38,14 +38,14 @@ copy_module_json_to_bin()
 package_module()
 
 # Package oscpack into platform release
-install(FILES ${THIRDPARTY_DIR}/serial/README.md DESTINATION thirdparty/serial)
-install(DIRECTORY ${THIRDPARTY_DIR}/serial/include 
+install(FILES ${THIRDPARTY_DIR}/serial/source/README.md DESTINATION thirdparty/serial)
+install(DIRECTORY ${THIRDPARTY_DIR}/serial/source/include 
         DESTINATION thirdparty/serial
         PATTERN "*.cpp" EXCLUDE)
 if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/msvc/x64/ DESTINATION thirdparty/serial/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/serial/msvc/x86_64/ DESTINATION thirdparty/serial/lib)
 elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/osx/ DESTINATION thirdparty/serial/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/serial/macos/x86_64/ DESTINATION thirdparty/serial/lib)
 else()
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/linux/ DESTINATION thirdparty/serial/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/serial/linux/${ARCH}/ DESTINATION thirdparty/serial/lib)
 endif()

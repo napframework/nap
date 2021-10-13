@@ -49,16 +49,16 @@ package_module()
 
 # Package yoctopuce into platform release
 # TODO Package yoctopuce into platform release if we can find it
-install(DIRECTORY ${THIRDPARTY_DIR}/yoctopuce/Sources/ 
+install(DIRECTORY ${THIRDPARTY_DIR}/yoctopuce/source/Sources/ 
         DESTINATION thirdparty/yoctopuce/include
         FILES_MATCHING PATTERN "*.h")
 if(WIN32)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Release/yocto.dll DESTINATION thirdparty/yoctopuce/bin/release)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Release/yocto.lib DESTINATION thirdparty/yoctopuce/bin/release)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Debug/yocto.dll DESTINATION thirdparty/yoctopuce/bin/debug)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Debug/yocto.lib DESTINATION thirdparty/yoctopuce/bin/debug)
+    install(FILES ${THIRDPARTY_DIR}/yoctopuce/msvc/x86_64/Release/yocto.dll DESTINATION thirdparty/yoctopuce/bin/release)
+    install(FILES ${THIRDPARTY_DIR}/yoctopuce/msvc/x86_64/Release/yocto.lib DESTINATION thirdparty/yoctopuce/bin/release)
+    install(FILES ${THIRDPARTY_DIR}/yoctopuce/msvc/x86_64/Debug/yocto.dll DESTINATION thirdparty/yoctopuce/bin/debug)
+    install(FILES ${THIRDPARTY_DIR}/yoctopuce/msvc/x86_64/Debug/yocto.lib DESTINATION thirdparty/yoctopuce/bin/debug)
 elseif(APPLE)
-    SET(YOCTO_DYLIB ${THIRDPARTY_DIR}/yoctopuce/Binaries/osx/libyocto.dylib)
+    SET(YOCTO_DYLIB ${THIRDPARTY_DIR}/yoctopuce/macos/x86_64/libyocto.dylib)
     install(FILES ${YOCTO_DYLIB} DESTINATION thirdparty/yoctopuce/bin)
 
     # Ensure our yoctopuce install name id is set properly, this is really for intall into packaging
@@ -76,5 +76,5 @@ elseif(APPLE)
                                       )")
     endforeach()    
 else()
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/linux/64bits/libyocto.so.1.0.1 DESTINATION thirdparty/yoctopuce/bin)
+    install(FILES ${THIRDPARTY_DIR}/yoctopuce/linux/${ARCH}/libyocto.so.1.0.1 DESTINATION thirdparty/yoctopuce/bin)
 endif()

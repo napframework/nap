@@ -83,16 +83,16 @@ endif()
 package_module()
 
 # Package mpg123 into platform release
-install(FILES ${THIRDPARTY_DIR}/mpg123/COPYING DESTINATION thirdparty/mpg123)
+install(FILES ${THIRDPARTY_DIR}/mpg123/source/COPYING DESTINATION thirdparty/mpg123)
 install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
 if(WIN32)
-    file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.dll)
+    file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/*.dll)
     install(FILES ${MPG123_DYLIBS}
             DESTINATION thirdparty/mpg123/bin)
-    file(GLOB MPG123_HEADERS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.h)
+    file(GLOB MPG123_HEADERS ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/*.h)
     install(FILES ${MPG123_HEADERS}
             DESTINATION thirdparty/mpg123/include)
-    file(GLOB MPG123_LIBFILES ${THIRDPARTY_DIR}/mpg123/install/msvc/*.lib)
+    file(GLOB MPG123_LIBFILES ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/*.lib)
     install(FILES ${MPG123_LIBFILES}
             DESTINATION thirdparty/mpg123/lib)
 elseif(APPLE)
@@ -121,7 +121,7 @@ elseif(UNIX)
 endif()
 
 # Package libsndfile into platform release
-install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION thirdparty/libsndfile)
+install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/x86_64/COPYING DESTINATION thirdparty/libsndfile)
 install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
               ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
         DESTINATION thirdparty/libsndfile/include)
@@ -143,7 +143,7 @@ elseif(UNIX)
 endif()
 
 # Package portaudio into platform release
-install(FILES ${THIRDPARTY_DIR}/portaudio/linux/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(FILES ${THIRDPARTY_DIR}/portaudio/linux/x86_64/LICENSE.txt DESTINATION thirdparty/portaudio)
 install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
 if(WIN32)
     install(FILES ${PORTAUDIO_LIBRARIES}

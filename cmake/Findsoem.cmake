@@ -3,11 +3,11 @@ if(WIN32)
   find_path(SOEM_DIR
           NO_CMAKE_FIND_ROOT_PATH
           NAMES include/soem/ethercat.h
-          HINTS ${THIRDPARTY_DIR}/soem/msvc/install
+          HINTS ${THIRDPARTY_DIR}/soem/msvc/x86_64
           )
 
     # wpcap dir
-    set(WPCAP_DIR ${THIRDPARTY_DIR}/soem/oshw/win32/wpcap)
+    set(WPCAP_DIR ${THIRDPARTY_DIR}/soem/source/oshw/win32/wpcap)
 
     # library
     set(SOEM_LIBS 
@@ -27,7 +27,7 @@ elseif(APPLE)
   find_path(SOEM_DIR
           NO_CMAKE_FIND_ROOT_PATH
           NAMES include/soem/ethercat.h
-          HINTS ${THIRDPARTY_DIR}/soem/osx/install
+          HINTS ${THIRDPARTY_DIR}/soem/macos/x86_64
           )
     # library
     set(SOEM_LIBS 
@@ -44,7 +44,7 @@ else()
   find_path(SOEM_DIR
           NO_CMAKE_FIND_ROOT_PATH
           NAMES include/soem/ethercat.h
-          HINTS ${THIRDPARTY_DIR}/soem/linux/install
+          HINTS ${THIRDPARTY_DIR}/soem/linux/${ARCH}
           )
     # library
     set(SOEM_LIBS 

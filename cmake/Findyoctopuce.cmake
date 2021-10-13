@@ -1,29 +1,29 @@
 find_path(
   YOCTO_DIR
-  NAMES Sources/yocto_api.h
-  HINTS ${THIRDPARTY_DIR}/yoctopuce
+  NAMES source/Sources/yocto_api.h
+  HINTS ${THIRDPARTY_DIR}/yoctopuce/
   )
 
-set(YOCTO_INCLUDE_DIRS ${YOCTO_DIR}/Sources ${YOCTO_DIR}/Sources/yapi)
+set(YOCTO_INCLUDE_DIRS ${YOCTO_DIR}/source/Sources ${YOCTO_DIR}/source/Sources/yapi)
 
 if(WIN32)
-    set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/Binaries/windows/x64/Debug/yocto.lib)
-    set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/Binaries/windows/x64/Release/yocto.lib)
-    set(YOCTO_LIBS_DIR ${YOCTO_DIR}/Binaries/windows/x64)
-    set(YOCTO_DEBUG_DLL ${YOCTO_DIR}/Binaries/windows/x64/Debug/yocto.dll)
-    set(YOCTO_RELEASE_DLL ${YOCTO_DIR}/Binaries/windows/x64/Release/yocto.dll)
+    set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/msvc/x86_64/Debug/yocto.lib)
+    set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/msvc/x86_64/Release/yocto.lib)
+    set(YOCTO_LIBS_DIR ${YOCTO_DIR}/)
+    set(YOCTO_DEBUG_DLL ${YOCTO_DIR}/msvc/x86_64/Debug/yocto.dll)
+    set(YOCTO_RELEASE_DLL ${YOCTO_DIR}/msvc/x86_64/Release/yocto.dll)
 elseif(APPLE)
-    set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/Binaries/osx/libyocto.dylib)
-    set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/Binaries/osx/libyocto.dylib)
-    set(YOCTO_LIBS_DIR ${YOCTO_DIR}/Binaries/osx)
+    set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/macos/x86_64/libyocto.dylib)
+    set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/macos/x86_64/libyocto.dylib)
+    set(YOCTO_LIBS_DIR ${YOCTO_DIR}/macos)
     set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG})
     set(YOCTO_RELEASE_DLL ${YOCTO_LIBS_RELEASE})
 else()
-    set(YOCTO_LIBS_DEBUG ${YOCTO_DIR}/Binaries/linux/64bits/libyocto.so.1.0.1)
-    set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/Binaries/linux/64bits/libyocto.so.1.0.1)
-    set(YOCTO_LIBS_DIR ${YOCTO_DIR}/Binaries/linux/64bits)
-    set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG})
+    set(YOCTO_LIBS_DIR ${YOCTO_DIR}/linux/${ARCH})
+    set(YOCTO_LIBS_RELEASE ${YOCTO_DIR}/linux/${ARCH}/libyocto.so.1.0.1)
+    set(YOCTO_LIBS_DEBUG ${YOCTO_LIBS_RELEASE})
     set(YOCTO_RELEASE_DLL ${YOCTO_LIBS_RELEASE})
+    set(YOCTO_DEBUG_DLL ${YOCTO_LIBS_DEBUG})
 endif()
 
 mark_as_advanced(YOCTO_INCLUDE_DIRS)

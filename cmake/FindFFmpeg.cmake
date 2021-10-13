@@ -23,49 +23,49 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
     if(APPLE)
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
-                  HINTS ${THIRDPARTY_DIR}/ffmpeg/osx/install/include
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/macos/x86_64/include
                   )
     elseif(UNIX)
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
-                  HINTS ${THIRDPARTY_DIR}/ffmpeg/linux/install/include
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/linux/${ARCH}/include
                   )
     else()
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
-                  HINTS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/include
+                  HINTS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/include
                   )
     endif()
 
     find_library(FFMPEG_LIBAVCODEC
                  NAMES avcodec
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/bin
+                       ${THIRDPARTY_DIR}/ffmpeg/macos/x86_64/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/${ARCH}/lib
                  NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVFORMAT
                  NAMES avformat
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/bin
+                       ${THIRDPARTY_DIR}/ffmpeg/macos/x86_64/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/${ARCH}/lib
                  NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVUTIL
                  NAMES avutil
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/bin
+                       ${THIRDPARTY_DIR}/ffmpeg/macos/x86_64/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/${ARCH}/lib
                  NO_DEFAULT_PATH
                  )
 				 
     find_library(FFMPEG_SWRESAMPLE
                  NAMES swresample
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib                 
+                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/bin
+                       ${THIRDPARTY_DIR}/ffmpeg/macos/x86_64/lib
+                       ${THIRDPARTY_DIR}/ffmpeg/linux/${ARCH}/lib                 
                  NO_DEFAULT_PATH
                  )				 
 

@@ -56,12 +56,12 @@ install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/licenses/ DESTINATION thirdparty/FFmp
 # Source, as required by their license
 install(FILES ${THIRDPARTY_DIR}/ffmpeg/ffmpeg-3.4.2.tar.xz DESTINATION thirdparty/FFmpeg)
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/msvc/install/ DESTINATION thirdparty/FFmpeg
+    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/ DESTINATION thirdparty/FFmpeg
             PATTERN "osx" EXCLUDE
             PATTERN "linux" EXCLUDE)
 elseif(APPLE)
     # Install FFmpeg into release
-    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/osx/install/ DESTINATION thirdparty/FFmpeg)
+    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/macos/x86_64/ DESTINATION thirdparty/FFmpeg)
 
     # Add RPATH for FFmpeg to packaged module on macOS
     foreach(build_type Release Debug)
@@ -75,7 +75,7 @@ elseif(APPLE)
     endforeach()
 elseif(UNIX)
     # Install FFmpeg into release
-    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/linux/install/ DESTINATION thirdparty/FFmpeg)
+    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/linux/${ARCH}/ DESTINATION thirdparty/FFmpeg)
 
     # Let our installed FFmpeg libs find each other
     install(CODE "file(GLOB FFMPEG_DYLIBS ${CMAKE_INSTALL_PREFIX}/thirdparty/FFmpeg/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)

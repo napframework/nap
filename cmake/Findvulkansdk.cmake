@@ -3,19 +3,19 @@ if(WIN32)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${THIRDPARTY_DIR}/vulkansdk/msvc
+        HINTS ${THIRDPARTY_DIR}/vulkansdk/msvc/x86_64
         )
 elseif(APPLE)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${THIRDPARTY_DIR}/vulkansdk/osx
+        HINTS ${THIRDPARTY_DIR}/vulkansdk/macos/x86_64
         )
 elseif(UNIX)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${THIRDPARTY_DIR}/vulkansdk/linux
+        HINTS ${THIRDPARTY_DIR}/vulkansdk/linux/${ARCH}
         )
 endif()
 

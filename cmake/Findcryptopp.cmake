@@ -1,23 +1,23 @@
 find_path(
     CRYPTOPP_DIR
-    NAMES msvc/include/dll.h
+    NAMES msvc/x86_64/include/dll.h
     HINTS ${THIRDPARTY_DIR}/cryptopp
 )
 if(WIN32)
-    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_DIR}/msvc/include)
-    set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/msvc/lib)
+    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_DIR}/msvc/x86_64/include)
+    set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/msvc/x86_64/lib)
     set(CRYPTOPP_LIB_DEBUG ${CRYPTOPP_LIB_DIR}/Debug/cryptopp.lib)
     set(CRYPTOPP_DLL_DEBUG ${CRYPTOPP_LIB_DIR}/Debug/cryptopp.dll)
     set(CRYPTOPP_LIB_RELEASE ${CRYPTOPP_LIB_DIR}/Release/cryptopp.lib)
     set(CRYPTOPP_DLL_RELEASE ${CRYPTOPP_LIB_DIR}/Release/cryptopp.dll)
 elseif(APPLE)
-    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_DIR}/macos/install/include/cryptopp)
-    set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/macos/install/lib)
+    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_DIR}/macos/x86_64/include/cryptopp)
+    set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/macos/x86_64/lib)
     set(CRYPTOPP_LIB_RELEASE ${CRYPTOPP_LIB_DIR}/libcryptopp.a)
     set(CRYPTOPP_LIB_DEBUG ${CRYPTOPP_LIB_RELEASE})
 else()
-    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_DIR}/linux/install/include/cryptopp)
-    set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/linux/install/lib)
+    set(CRYPTOPP_INCLUDE_DIRS ${CRYPTOPP_DIR}/linux/${ARCH}/include/cryptopp)
+    set(CRYPTOPP_LIB_DIR ${CRYPTOPP_DIR}/linux/${ARCH}/lib)
     set(CRYPTOPP_LIB_RELEASE ${CRYPTOPP_LIB_DIR}/libcryptopp.a)
     set(CRYPTOPP_LIB_DEBUG ${CRYPTOPP_LIB_RELEASE})
     if(NOT EXISTS ${CRYPTOPP_LIB_RELEASE})

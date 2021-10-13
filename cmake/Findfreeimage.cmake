@@ -1,11 +1,11 @@
 if(WIN32)
     find_path(
             FREEIMAGE_DIR
-            NAMES msvc/Dist/x64/FreeImage.h
-            HINTS ${THIRDPARTY_DIR}/FreeImage
+            NAMES x86_64/Dist/x64/FreeImage.h
+            HINTS ${THIRDPARTY_DIR}/FreeImage/msvc
     )
-    set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/msvc/Dist/x64)
-    set(FREEIMAGE_LIBS_DIRS ${FREEIMAGE_DIR}/msvc/Dist/x64)
+    set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/x86_64/Dist/x64)
+    set(FREEIMAGE_LIBS_DIRS ${FREEIMAGE_DIR}/x86_64/Dist/x64)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIRS}/FreeImage.lib)
     set(FREEIMAGE_LIBS_RELEASE_DLL ${FREEIMAGE_LIBS_DIRS}/FreeImage.dll)
 elseif(APPLE)
@@ -13,8 +13,7 @@ elseif(APPLE)
             FREEIMAGE_DIR
             NAMES include/FreeImage.h
             HINTS
-            ${THIRDPARTY_DIR}/FreeImage
-            ${THIRDPARTY_DIR}/FreeImage/osx
+            ${THIRDPARTY_DIR}/FreeImage/macos/x86_64
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage-3.17.0.dylib)
@@ -23,7 +22,7 @@ elseif(UNIX)
             FREEIMAGE_DIR
             NAMES include/FreeImage.h
             HINTS
-            ${THIRDPARTY_DIR}/FreeImage/linux/install
+            ${THIRDPARTY_DIR}/FreeImage/linux/${ARCH}
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage.so)

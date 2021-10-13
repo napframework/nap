@@ -10,20 +10,20 @@ include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 if(NOT ANDROID)
-    find_path(PORTAUDIO_DIR include/portaudio.h
+    find_path(PORTAUDIO_DIR source/include/portaudio.h
               HINTS
               ${THIRDPARTY_DIR}/portaudio
               ${CMAKE_CURRENT_LIST_DIR}/../../portaudio
               )
-    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/include)
+    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/source/include)
 endif()
 
 if(WIN32)
-    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/msvc64)
+    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/msvc/x86_64)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/portaudio_x64.lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll)
 elseif(APPLE)
-    set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/osx/install/lib)
+    set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/macos/x86_64/lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.2.dylib)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
 elseif(ANDROID)
@@ -38,11 +38,7 @@ elseif(ANDROID)
               ${PORTAUDIO_DIR}/include
               )
 else()
-    if(${ARCH} STREQUAL "armv6")
-        set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/lib/arm)
-    else()
-        set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/lib/x86_64)
-    endif()
+    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.so)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
 endif()

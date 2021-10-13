@@ -1,30 +1,37 @@
-find_path(FREETYPE_DIR
-          NAMES include/ft2build.h
-          HINTS ${THIRDPARTY_DIR}/freetype
-          )
-
-set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include)
-
 if(WIN32)
-    set(FREETYPE_LIBS_DEBUG ${FREETYPE_DIR}/msvc/Debug/freetyped.lib)
-    set(FREETYPE_LIBS_RELEASE ${FREETYPE_DIR}/msvc/Release/freetype.lib)
-    set(FREETYPE_LIBS_DIR ${FREETYPE_DIR}/msvc)
-    set(FREETYPE_DEBUG_DLL ${FREETYPE_DIR}/msvc/Debug/freetyped.dll)
-    set(FREETYPE_RELEASE_DLL ${FREETYPE_DIR}/msvc/Release/freetype.dll)
+    find_path(FREETYPE_DIR
+              NAMES include/ft2build.h
+              HINTS ${THIRDPARTY_DIR}/freetype/msvc/x86_64/
+              )
+    set(FREETYPE_LIBS_DEBUG ${FREETYPE_DIR}/Debug/freetyped.lib)
+    set(FREETYPE_LIBS_RELEASE ${FREETYPE_DIR}/Release/freetype.lib)
+    set(FREETYPE_LIBS_DIR ${FREETYPE_DIR})
+    set(FREETYPE_DEBUG_DLL ${FREETYPE_DIR}/Debug/freetyped.dll)
+    set(FREETYPE_RELEASE_DLL ${FREETYPE_DIR}/Release/freetype.dll)
+    set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include/freetype)
 elseif(APPLE)
-    set(FREETYPE_LIBS_DEBUG ${FREETYPE_DIR}/osx/libfreetype.dylib)
-    set(FREETYPE_LIBS_RELEASE ${FREETYPE_DIR}/osx/libfreetype.dylib)
-    set(FREETYPE_LIBS_DIR ${FREETYPE_DIR}/osx)
+    find_path(FREETYPE_DIR
+              NAMES include/freetype/ft2build.h
+              HINTS ${THIRDPARTY_DIR}/freetype/macos/x86_64/
+              )
+    set(FREETYPE_LIBS_DIR ${FREETYPE_DIR}/lib)
+    set(FREETYPE_LIBS_DEBUG ${FREETYPE_LIBS_DIR}/libfreetype.dylib)
+    set(FREETYPE_LIBS_RELEASE ${FREETYPE_LIBS_DIR}/libfreetype.dylib)
     set(FREETYPE_DEBUG_DLL ${FREETYPE_LIBS_DEBUG})
     set(FREETYPE_RELEASE_DLL ${FREETYPE_LIBS_RELEASE})
+    set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include/freetype)
 elseif(UNIX)
-    set(FREETYPE_LIBS_DEBUG ${FREETYPE_DIR}/linux/libfreetype.so)
-    set(FREETYPE_LIBS_RELEASE ${FREETYPE_DIR}/linux/libfreetype.so)
-    set(FREETYPE_LIBS_DIR ${FREETYPE_DIR}/linux)
-    set(FREETYPE_DEBUG_DLL ${FREETYPE_LIBS_DEBUG})
+    find_path(FREETYPE_DIR
+              NAMES include/freetype2/ft2build.h
+              HINTS ${THIRDPARTY_DIR}/freetype/linux/${ARCH}/
+              )
+    set(FREETYPE_LIBS_DIR ${FREETYPE_DIR}/lib)
+    set(FREETYPE_LIBS_RELEASE ${FREETYPE_LIBS_DIR}/libfreetype.so)
+    set(FREETYPE_LIBS_DEBUG ${FREETYPE_LIBS_RELEASE})
     set(FREETYPE_RELEASE_DLL ${FREETYPE_LIBS_RELEASE})
+    set(FREETYPE_DEBUG_DLL ${FREETYPE_LIBS_DEBUG})
+    set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include/freetype2)
 endif()
-
 
 mark_as_advanced(FREETYPE_INCLUDE_DIRS)
 mark_as_advanced(FREETYPE_LIBS_DEBUG)
