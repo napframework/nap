@@ -2,6 +2,7 @@
 import argparse
 import datetime
 import os
+from platform import machine
 from multiprocessing import cpu_count
 import shutil
 import stat
@@ -755,11 +756,17 @@ def get_cmake_path():
     nap_root = get_nap_root()
     cmake_thirdparty_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
     if platform.startswith('linux'):
-        return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
+        arch = machine()
+        if arch == 'x86_64':
+            return os.path.join(cmake_thirdparty_root, 'linux', 'x86_64', 'bin', 'cmake')
+        elif arch == 'aarch64':
+            return os.path.join(cmake_thirdparty_root, 'linux', 'arm64', 'bin', 'cmake')
+        else:
+            return os.path.join(cmake_thirdparty_root, 'linux', 'armhf', 'bin', 'cmake')
     elif platform == 'darwin':
-        return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
+        return os.path.join(cmake_thirdparty_root, 'macos', 'x86_64', 'bin', 'cmake')
     else:
-        return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake.exe')
+        return os.path.join(cmake_thirdparty_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

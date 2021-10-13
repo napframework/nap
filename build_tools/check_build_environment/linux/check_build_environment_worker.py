@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from distutils.version import LooseVersion
 import os
+from platform import machine
 import subprocess
 import shutil
 import sys
@@ -99,7 +100,14 @@ def check_qt_version():
     
     # Run Qt version checking logic, parsing output
     thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
-    cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'install', 'bin', 'cmake')
+    arch = machine()
+    if arch == 'x86_64':
+        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
+    elif arch == 'aarch64':
+        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'arm64', 'bin', 'cmake')
+    else:
+        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'armhf', 'bin', 'cmake')
+
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
         lines = out.split('\n')

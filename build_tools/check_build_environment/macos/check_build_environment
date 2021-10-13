@@ -196,7 +196,7 @@ def check_qt_version():
     
     # Run Qt version checking logic, parsing output
     thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
-    cmake = os.path.join(thirdparty_dir, 'cmake', 'osx', 'install', 'bin', 'cmake')
+    cmake = os.path.join(thirdparty_dir, 'cmake', 'macos', 'x86_64', 'bin', 'cmake')
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
         lines = out.split('\n')

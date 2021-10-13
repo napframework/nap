@@ -339,19 +339,19 @@ endmacro()
 # Package CMake into release
 macro(package_cmake)
     if(APPLE)
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/osx/install/
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/macos/x86_64/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 USE_SOURCE_PERMISSIONS
                 )    
     elseif(UNIX)
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/install/
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/${ARCH}/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 USE_SOURCE_PERMISSIONS
                 )    
     else()
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/install/
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/x86_64/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 )    
