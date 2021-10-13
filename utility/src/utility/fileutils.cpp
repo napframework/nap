@@ -38,8 +38,6 @@
     #include <fstream>
 #endif
 
-// clang-format on
-
 #ifdef _WIN32
 	#ifdef MAX_PATH
 		#define MAX_PATH_SIZE MAX_PATH
@@ -117,7 +115,7 @@ namespace nap
 #else
 			char resolved[MAX_PATH_SIZE];
 			realpath(relPath.c_str(), resolved);
-			return std::string(resolved);
+			return resolved;
 #endif
 		}
 
@@ -263,7 +261,7 @@ namespace nap
 		}
 
 
-		const std::string toComparableFilename(const std::string& filename)
+		std::string toComparableFilename(const std::string& filename)
 		{
 			std::string comparable = filename;
 			std::transform(comparable.begin(), comparable.end(), comparable.begin(), ::tolower);
@@ -325,12 +323,6 @@ namespace nap
 #error Cannot yet find the executable on this platform
 #endif
 			out_path = &buffer[0];
-
-#if defined(_WIN32)
-			// Replace any Windows-style backslashes with forward slashes
-			replaceAllInstances(out_path, "\\", "/");
-#endif
-
 			return out_path;
 		}
 
@@ -341,14 +333,15 @@ namespace nap
 		}
 
 
-		void changeDir(std::string newDir) 
+		bool changeDir(const std::string& newDir)
 		{
 #if defined(_WIN32)
-			_chdir(newDir.c_str());
+			return _chdir(newDir.c_str()) == 0;
 #else
-			chdir(newDir.c_str());
+			return chdir(newDir.c_str()) == 0;
 #endif
 		}
+
 
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err)
 		{
@@ -369,6 +362,7 @@ namespace nap
 			return true;
 		}
 
+
 		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs)
         {
 			for (const auto& dir : dirs)
@@ -380,26 +374,16 @@ namespace nap
 			return {};
 		}
 
-		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep)
+
+		std::string joinPath(const std::vector<std::string>& parts)
 		{
-			return joinString(parts, sep);
+			return joinString(parts, path::separator);
 		}
 
-		std::string pathSep() {
-#if defined(_WIN32)
-			return "\\";
-#else
-			return "/";
-#endif
-		}
 
 		std::string forceSeparator(const std::string& path)
 		{
-#if defined(_WIN32)
-			return replaceAllInstances(path, "/", pathSep());
-#else
-			return replaceAllInstances(path, "\\", pathSep());
-#endif
+			return replaceAllInstances(path, "/", path::separator);
 		}
 
 	}
