@@ -1,34 +1,29 @@
 #version 450
 
-layout(local_size_x = 512) in;
-
-// 512 is the local work group size of a NVIDIA GTX 1050 (mobile)
-// 512 threads * 1954 runs = 1000448 shader invocations
+layout(local_size_x = 1) in;
 
 layout(std430, binding = 0) buffer PositionBuffer 
 {
-    vec4 positions[512*1954];
+	vec4 positions[1000000];
 };
 
 layout(std430, binding = 1) buffer VelocityBuffer 
 {
-    vec4 velocities[512*1954];
+	vec4 velocities[1000000];
 };
 
 layout(std430, binding = 2) buffer RotationBuffer 
 {
-    vec4 rotations[512*1954];
+	vec4 rotations[1000000];
 };
 
 layout(std430, binding = 3) buffer VertexBuffer 
 {
-    vec4 vertices[512*1954*4];
+	vec4 vertices[1000000*4];
 };
 
 uniform UBO 
 {
-	vec4 startColor;
-	vec4 endColor;
 	float velocityTimeScale;
 	float velocityVariationScale;
 	float rotationSpeed;
@@ -50,12 +45,12 @@ mat4 translate(vec3 d)
 
 mat4 rotate(vec3 axis, float angle)
 {
-    axis = normalize(axis);
-    float s = sin(angle);
-    float c = cos(angle);
-    float oc = 1.0 - c;
-    
-    return transpose(mat4(
+	axis = normalize(axis);
+	float s = sin(angle);
+	float c = cos(angle);
+	float oc = 1.0 - c;
+	
+	return transpose(mat4(
 		oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
 		oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
 		oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
@@ -69,8 +64,7 @@ vec3 mod289(vec3 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 mod289(vec4 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 
 float rand(vec2 co) { return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
-float rand (vec2 co, float l) {return rand(vec2(rand(co), l));}
-// float rand (vec2 co, float l, float t) {return rand(vec2(rand(co, l), t));}
+float rand(vec2 co, float l) {return rand(vec2(rand(co), l));}
 
 float permute(float x) { return mod289(((x*34.0)+1.0)*x); }
 vec3 permute(vec3 x)   { return mod289(((x*34.0)+1.0)*x); }
@@ -114,20 +108,6 @@ void main()
 	{
 		vertices[gl_GlobalInvocationID.x*4+i] = translation * rotation * edges[i];
 	}
-
-	//p.timeLeft -= ubo.deltaTime;
-	// if (p.timeLeft < 0.0)
-	// {
-	// 	// reset particle
-	// 	return;
-	// }
-
-	//p.rotation += p.rotationSpeed * ubo.deltaTime;
-
-	// Update color based on time over life
-	// float life_scale = 1.0f - (p.timeLeft / p.lifeTime);
-	// p.color = ubo.startColor + (ubo.endColor - ubo.startColor) * life_scale;
-	// p.color.a = 1.0; //math::bell(life_scale, 2.0f);
 
 	// Write
 	positions[gl_GlobalInvocationID.x] = pos;
@@ -175,9 +155,9 @@ float snoise(vec3 v)
 // Permutations
   i = mod289(i); 
   vec4 p = permute( permute( permute( 
-             i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-           + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
-           + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+			 i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+		   + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
+		   + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
 
 // Gradients: 7x7 points over a square, mapped onto an octahedron.
 // The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)
@@ -221,5 +201,5 @@ float snoise(vec3 v)
   vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
   m = m * m;
   return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), 
-                                dot(p2,x2), dot(p3,x3) ) );
+								dot(p2,x2), dot(p3,x3) ) );
 }

@@ -1711,6 +1711,13 @@ namespace nap
 		}
 		mPipelineCache.clear();
 
+		for (auto kvp : mComputePipelineCache)
+		{
+			vkDestroyPipeline(mDevice, kvp.second.mPipeline, nullptr);
+			vkDestroyPipelineLayout(mDevice, kvp.second.mLayout, nullptr);
+		}
+		mPipelineCache.clear();
+
 		for (Frame& frame : mFramesInFlight)
 		{
 			assert(frame.mQueuedVulkanObjectDestructors.empty());

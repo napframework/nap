@@ -33,6 +33,9 @@ namespace nap
 		ComputeInstance() = delete;
 		ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService);
 
+		// Destructor
+		~ComputeInstance();
+
 		// Copy constructor
 		ComputeInstance(const RenderableMesh& rhs) = delete;
 
@@ -40,26 +43,25 @@ namespace nap
 		ComputeInstance& operator=(const ComputeInstance& rhs) = delete;
 
 		/**
-		 * Rebuilds the compute command buffer
+		 * Initializes the compute instance.
+		 * @param errorState contains the error if initialization fails
+		 * @return if initialization succeeded.
 		 */
-		bool rebuild(uint numInvocations, utility::ErrorState& errorState);
+		bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Rebuilds the compute command buffer
+		 * Executes the compute shader. This call is blocking.
+		 * @return if the compute work was executed successfully.
 		 */
-		bool rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> onDispatchFinished, utility::ErrorState& errorState);
-	
-		/**
-		 * Blocking
-		 */
-		bool compute(utility::ErrorState& errorState);
+		bool compute(uint numInvocations, utility::ErrorState& errorState);
 
 		/**
 		 * Syncs the graphics queue with this compute shader.
 		 * The vertex shader input stage of the current frame will not be executed until the compute shader stage is finished.
 		 * Useful when compute shaders modify resources that are read by graphics shaders.
+		 * @return if the compute work was submitted to the compute queue successfully.
 		 */
-		bool asyncCompute(utility::ErrorState& errorState);
+		bool asyncCompute(uint numInvocations, utility::ErrorState& errorState);
 
 		/**
 		 * @return current material used when drawing the mesh.
@@ -72,28 +74,27 @@ namespace nap
 		 */
 		VkCommandBuffer getComputeCommandBuffer() const					{ return mComputeCommandBuffer; }
 
-		/**Returns the local workgroup size
+		/**
+		 * Returns the local workgroup size
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
+		/**
+		 * Fires when the active compute shader execution is finished.
+		 * This call can be used to push post-dispatch commands onto the compute command buffer such as vkCmdCopyBuffer.
+		 */
+		nap::Signal<const DescriptorSet&> mDispatchFinished;
+
 	private:
-		/**
-		 *
-		 */
-		bool init(ComputeMaterialInstanceResource& computeMaterialInstance, utility::ErrorState& errorState);
+		bool computeInternal(uint numInvocations, const VkSubmitInfo& submitInfo, utility::ErrorState& errorState);
 
-		/**
-		 *
-		 */
-		bool computeInternal(const VkSubmitInfo& submitInfo, utility::ErrorState& errorState);
+		ComputeMaterialInstanceResource*		mComputeMaterialInstanceResource = nullptr;
+		ComputeMaterialInstance					mComputeMaterialInstance;
 
-		RenderService*				mRenderService = nullptr;
-		ComputeMaterialInstance		mComputeMaterialInstance;
-		VkCommandBuffer				mComputeCommandBuffer = VK_NULL_HANDLE;
+		RenderService*							mRenderService = nullptr;
+		VkCommandBuffer							mComputeCommandBuffer = VK_NULL_HANDLE;		///< Each compute instance currently manages its own command buffer
 
-		VkFence						mFence;
-		VkSemaphore					mSemaphore;
-
-		bool						mDirty = false;
+		VkFence									mFence;										///< CPU synchronization with subsequent computations
+		VkSemaphore								mSemaphore;									///< GPU synchronization with vertex input stage 
 	};
 }

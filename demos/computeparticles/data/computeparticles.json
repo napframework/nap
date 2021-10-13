@@ -124,7 +124,7 @@
                         "Uniforms": [],
                         "Samplers": []
                     },
-                    "NumParticles": 1000448,
+                    "NumParticles": 1000000,
                     "SpawnRate": 400.0,
                     "LifeTime": 6.0,
                     "Position": {

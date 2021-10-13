@@ -8,15 +8,12 @@
 
 namespace nap
 {
-	ComputeInstance::ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstance, RenderService* renderService) :
-		mRenderService(renderService)
-	{
-		utility::ErrorState error_state;
-		init(computeMaterialInstance, error_state);
-	}
+	ComputeInstance::ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService) :
+		mComputeMaterialInstanceResource(&computeMaterialInstanceResource), mRenderService(renderService)
+	{}
 
 
-	bool ComputeInstance::init(ComputeMaterialInstanceResource& computeMaterialInstanceResource, utility::ErrorState& errorState)
+	bool ComputeInstance::init(utility::ErrorState& errorState)
 	{
 		// If compute is enabled, create the compute command buffer
 		if (!errorState.check(mRenderService->isComputeAvailable(), "Failed to create compute instance! Compute is unavailable."))
@@ -51,20 +48,51 @@ namespace nap
 			return false;
 
 		// Initialize compute material instance
-		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, computeMaterialInstanceResource, errorState), "Failed to init compute material instannce"))
+		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, *mComputeMaterialInstanceResource, errorState), "Failed to init compute material instannce"))
 			return false;
 
 		return true;
 	}
 
 
-	bool ComputeInstance::rebuild(uint numInvocations, utility::ErrorState& errorState)
+	bool ComputeInstance::asyncCompute(uint numInvocations, utility::ErrorState& errorState)
 	{
-		return rebuild(numInvocations, nullptr, errorState);
+		VkSubmitInfo compute_submit_info = {};
+		compute_submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		compute_submit_info.commandBufferCount = 1;
+		compute_submit_info.pCommandBuffers = &mComputeCommandBuffer;
+
+		// Signal the compute ready semaphore when we have finished running the compute shader,
+		// only then the vertex input stage may be executed - graphics waits for compute to be finished
+		mRenderService->pushSemaphoreWaitInfo({ mSemaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT });
+		compute_submit_info.signalSemaphoreCount = 1;
+		compute_submit_info.pSignalSemaphores = &mSemaphore;
+
+		return computeInternal(numInvocations, compute_submit_info, errorState);
 	}
 
 
-	bool ComputeInstance::rebuild(uint numInvocations, std::function<void(const DescriptorSet&)> onDispatchFinished, utility::ErrorState& errorState)
+	bool ComputeInstance::compute(uint numInvocations, utility::ErrorState& errorState)
+	{
+		VkSubmitInfo compute_submit_info = {};
+		compute_submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		compute_submit_info.commandBufferCount = 1;
+		compute_submit_info.pCommandBuffers = &mComputeCommandBuffer;
+
+		if (!computeInternal(numInvocations, compute_submit_info, errorState))
+		{
+			errorState.fail("Failed to run compute shader");
+			return false;
+		}
+
+		// Wait for the command buffer to complete execution
+		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
+
+		return true;
+	}
+
+
+	bool ComputeInstance::computeInternal(uint numInvocations, const VkSubmitInfo& submitInfo, utility::ErrorState& errorState)
 	{
 		// Wait for the command buffer to complete execution
 		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
@@ -97,8 +125,7 @@ namespace nap
 		vkCmdDispatch(mComputeCommandBuffer, group_count_x, 1, 1);
 
 		// Copy
-		if (onDispatchFinished != nullptr)
-			onDispatchFinished(descriptor_set);
+		mDispatchFinished(descriptor_set);
 
 		// Add synchronization between compute and graphics queues if their queue indices are different
 		if (mRenderService->getQueueIndex() != mRenderService->getComputeQueueIndex())
@@ -111,56 +138,9 @@ namespace nap
 		if (!errorState.check(vkEndCommandBuffer(mComputeCommandBuffer) == VK_SUCCESS, "Failed to rebuild compute command buffer"))
 			return false;
 
-		mDirty = false;
-		return true;
-	}
-
-
-	bool ComputeInstance::asyncCompute(utility::ErrorState& errorState)
-	{
-		VkSubmitInfo compute_submit_info = {};
-		compute_submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		compute_submit_info.commandBufferCount = 1;
-		compute_submit_info.pCommandBuffers = &mComputeCommandBuffer;
-
-		// Signal the compute ready semaphore when we have finished running the compute shader,
-		// only then the vertex input stage may be executed - graphics waits for compute to be finished
-		mRenderService->pushSemaphoreWaitInfo({ mSemaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT });
-		compute_submit_info.signalSemaphoreCount = 1;
-		compute_submit_info.pSignalSemaphores = &mSemaphore;
-
-		return computeInternal(compute_submit_info, errorState);
-	}
-
-
-	bool ComputeInstance::compute(utility::ErrorState& errorState)
-	{
-		VkSubmitInfo compute_submit_info = {};
-		compute_submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		compute_submit_info.commandBufferCount = 1;
-		compute_submit_info.pCommandBuffers = &mComputeCommandBuffer;
-
-		if (!computeInternal(compute_submit_info, errorState))
-		{
-			errorState.fail("Failed to run compute shader");
-			return false;
-		}
-
-		// Wait for the command buffer to complete execution
-		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
-
-		return true;
-	}
-
-
-	bool ComputeInstance::computeInternal(const VkSubmitInfo& submitInfo, utility::ErrorState& errorState)
-	{
-		// Wait for the compute queue to be available with a fence
-		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
-		vkResetFences(mRenderService->getDevice(), 1, &mFence);
-
 		// Submit
 		// TODO: Keep in mind race conditions regarding semaphores when e.g. (1) switching windows or (2) destroying resources
+		vkResetFences(mRenderService->getDevice(), 1, &mFence);
 		if (!errorState.check(vkQueueSubmit(mRenderService->getComputeQueue(), 1, &submitInfo, mFence) == VK_SUCCESS, "Failed to submit compute work"))
 			return false;
 
@@ -168,5 +148,21 @@ namespace nap
 		// TODO: Release storage buffer if graphics and compute queue indices differ
 
 		return true;
+	}
+
+
+	ComputeInstance::~ComputeInstance()
+	{
+		mRenderService->queueVulkanObjectDestructor([fence = mFence, semaphore = mSemaphore, cmd_buf = mComputeCommandBuffer](RenderService& renderService)
+		{
+			if (cmd_buf != VK_NULL_HANDLE)
+				vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &cmd_buf);
+
+			if (fence != VK_NULL_HANDLE)
+				vkDestroyFence(renderService.getDevice(), fence, nullptr);
+
+			if (semaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(renderService.getDevice(), semaphore, nullptr);
+		});
 	}
 } 

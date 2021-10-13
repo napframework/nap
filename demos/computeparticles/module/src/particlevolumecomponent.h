@@ -45,22 +45,14 @@ namespace nap
 	public:
 		ComputeMaterialInstanceResource mComputeMaterial;	///< Compute material
 
-		float				mSpawnRate = 3.0f;				///< Amount of particles to spawn every second
-		float				mLifeTime = 1.5f;				///< How many seconds a particle lives
-		float				mLifeTimeVariation = 0.5f;		///< Variation on life in seconds
 		glm::vec3			mPosition;						///< Particle spawn position
-		glm::vec3			mPositionVariation;				///< Deviation from position
 		float				mRotation = 0.0f;				///< Start rotation
 		float				mRotationVariation = 0.0f;		///< Amount of deviation from initial rotation
 		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
-		float				mRotationSpeedVariation = 0.0f;	///< Amount of deviation from particle rotation speed
 		float				mSize = 0.5f;					///< Default size of a particle
-		float				mSizeVariation = 0.2f;			///< Allowed deviation from the default size
 		float				mSpread;						///< Amount of velocity spread in x / z axis
 		glm::vec3			mVelocity;						///< Initial velocity
 		float				mVelocityVariation;				///< Deviation from initial velocity
-		glm::vec4			mStartColor;					///< Particle start of life color
-		glm::vec4			mEndColor;						///< Particle end of life color
 		int					mNumParticles = 1024;			///< Number of particles 
 	};
 
@@ -86,8 +78,8 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-		float mVelocityTimeScale = 1.0f;
-		float mVelocityVariationScale = 1.0f;
+		float mVelocityTimeScale = 5.0f;
+		float mVelocityVariationScale = 1.25f;
 		float mRotationSpeed = 1.0f;
 		float mParticleSize = 1.0f;
 
@@ -112,9 +104,6 @@ namespace nap
 
 		std::vector<Particle>				mParticles;
 		double								mElapsedTime = 0.0;
-		double								mSpawntime = 0.0;
-		double								mTimeSinceLastSpawn = 0.0;
-		int									mCurrentID = 0;
 
 		std::unique_ptr<ParticleMesh>		mParticleMesh;
 		std::unique_ptr<ComputeInstance>	mComputeInstance;

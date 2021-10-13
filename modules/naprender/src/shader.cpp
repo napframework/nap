@@ -775,7 +775,17 @@ namespace nap
 
 		// Compile both vert and frag into single shader pipeline program
 		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, errorState))
+		{
+			// Query useful compute info
+			std::array<uint, 3> size;
+			std::memcpy(&size[0], &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(size));
+			uint max_invocations = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupInvocations;
+
+			errorState.fail("Compute info (%s): Max WorkGroup Size = (%d, %d, %d) | Max WorkGroup Invocations = %d",
+				mRenderService->getPhysicalDeviceProperties().deviceName, size[0], size[1], size[2], max_invocations);
+
 			return false;
+		}
 
 		// Create compute shader module
 		mComputeModule = createShaderModule(comp_shader_spirv, device);

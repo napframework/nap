@@ -20,22 +20,14 @@
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("ComputeMaterial",			&nap::ParticleVolumeComponent::mComputeMaterial,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SpawnRate",					&nap::ParticleVolumeComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LifeTime",					&nap::ParticleVolumeComponent::mLifeTime,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",					&nap::ParticleVolumeComponent::mPosition,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PositionVariation",			&nap::ParticleVolumeComponent::mPositionVariation,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LifeTimeVariation",			&nap::ParticleVolumeComponent::mLifeTimeVariation,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SizeVariation",				&nap::ParticleVolumeComponent::mSizeVariation,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rotation",					&nap::ParticleVolumeComponent::mRotation,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotationSpeedVariation",		&nap::ParticleVolumeComponent::mRotationSpeedVariation,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Spread",						&nap::ParticleVolumeComponent::mSpread,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Velocity",					&nap::ParticleVolumeComponent::mVelocity,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VelocityVariation",			&nap::ParticleVolumeComponent::mVelocityVariation,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("StartColor",					&nap::ParticleVolumeComponent::mStartColor,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EndColor",					&nap::ParticleVolumeComponent::mEndColor,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParticleVolumeComponentInstance)
@@ -50,8 +42,6 @@ namespace nap
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
 		constexpr const char* particleCount = "particleCount";
-		constexpr const char* startColor = "startColor";
-		constexpr const char* endColor = "endColor";
 		constexpr const char* positionBufferStruct = "PositionBuffer";
 		constexpr const char* velocityBufferStruct = "VelocityBuffer";
 		constexpr const char* rotationBufferStruct = "RotationBuffer";
@@ -189,6 +179,9 @@ namespace nap
 		// Get resource
 		mResource = getComponent<ParticleVolumeComponent>();
 
+		mParticleSize = mResource->mSize;
+		mRotationSpeed = mResource->mRotationSpeed;
+
 		// initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
@@ -206,25 +199,10 @@ namespace nap
 		// Set the particle mesh to be used when drawing
 		setMesh(renderableMesh);
 
-		// Calculate the amount of time it takes within a second to spawn a new particle
-		mSpawntime = static_cast<double>(1.0f / mResource->mSpawnRate);
-
-		// This ensures a particle is spawned immediately
-		mTimeSinceLastSpawn = mSpawntime;
-
 		// Create compute instance
 		mComputeInstance = std::make_unique<ComputeInstance>(mResource->mComputeMaterial, mRenderService);
-
-		// Useful compute information
-		std::array<uint, 3> max_work_group_size;
-		std::memcpy(&max_work_group_size[0], &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(max_work_group_size));
-		uint max_invocations = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupInvocations;
-		nap::Logger::info("max_invocations: %d, max_work_group_size: (%d, %d, %d)", max_invocations, max_work_group_size[0], max_work_group_size[1], max_work_group_size[2]);
-
-		mVelocityTimeScale = 5.0f;
-		mVelocityVariationScale = 1.25f;
-		mRotationSpeed = mResource->mRotationSpeed;
-		mParticleSize = mResource->mSize;
+		if (!errorState.check(mComputeInstance->init(errorState), "Failed to initialize compute instance"))
+			return false;
 
 		// Set uniforms
 		UniformStructInstance* ubo_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
@@ -241,8 +219,6 @@ namespace nap
 
 			// Set
 			mParticleCountUniform->setValue(mParticleMesh->mNumParticles);
-			ubo_struct->getOrCreateUniform<UniformVec4Instance>(uniform::startColor)->setValue(mResource->mStartColor);
-			ubo_struct->getOrCreateUniform<UniformVec4Instance>(uniform::endColor)->setValue(mResource->mEndColor);
 		}
 
 		// Set storage buffer uniforms
@@ -292,6 +268,9 @@ namespace nap
 			//vkCmdCopyBuffer(cmd_buf, vertex_storage_buffer, vertex_buffer, 1, &copyRegion);
 		};
 
+		// Connect dispatch finished callback
+		mComputeInstance->mDispatchFinished.connect(mDispatchFinishedCallback);
+
 		return true;
 	}
 
@@ -310,8 +289,7 @@ namespace nap
 		mParticleSizeUniform->setValue(mParticleSize);
 
 		utility::ErrorState error_state;
-		mComputeInstance->rebuild(mParticleMesh->mNumParticles, mDispatchFinishedCallback, error_state);
-		mComputeInstance->asyncCompute(error_state);
+		mComputeInstance->asyncCompute(mParticleMesh->mNumParticles, error_state);
 	}
 
 
