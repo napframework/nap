@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import os
-import subprocess
 from platform import machine
 from multiprocessing import cpu_count
+import shutil
+import subprocess
 from sys import platform
 import sys
-import shutil
 
 LINUX_BUILD_DIR = 'build'
 MACOS_BUILD_DIR = 'Xcode'

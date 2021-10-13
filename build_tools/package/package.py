@@ -580,8 +580,11 @@ def build_package_basename(timestamp, label, cross_compile_target):
         sys.exit(ERROR_INVALID_VERSION)
     version = chunks[1].strip()
 
+    # Fetch architecture
+    arch = get_architecture()
+
     # Create filename, including timestamp or not as requested
-    package_filename = "NAP-%s-%s" % (version, platform_name)
+    package_filename = "NAP-%s-%s-%s" % (version, platform_name, arch)
     source_archive_basename = "NAP_SOURCE-%s" % version
     if not timestamp is None:
         package_filename += "-%s" % timestamp
@@ -590,6 +593,19 @@ def build_package_basename(timestamp, label, cross_compile_target):
         package_filename += "-%s" % label
         source_archive_basename += "-%s" % label
     return (package_filename, source_archive_basename)
+
+def get_architecture():
+    """Retrieve architecture identifier"""
+    v = 'x86_64'
+    if platform.startswith('linux'):
+        arch = machine()
+        if arch == 'x86_64':
+            v = arch
+        elif arch == 'aarch64':
+            v = 'arm64'
+        else:
+            v = 'armhf'
+    return v
 
 def verify_clean_git_repo():
     """Verify that the git repository has no local changes"""
