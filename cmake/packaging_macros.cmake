@@ -157,12 +157,12 @@ endmacro()
 macro(package_python)
     if(WIN32)
         # Install main framework
-        install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/
+        install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/x86_64/
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
 
         # Install framework for Napkin
-        install(FILES ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python36.zip
+        install(FILES ${THIRDPARTY_DIR}/python/msvc/x86_64/python36.zip
                 DESTINATION tools/napkin/
                 CONFIGURATIONS Release)
 
@@ -179,7 +179,7 @@ macro(package_python)
         if(APPLE)
             set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
         else()
-            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/install)
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/${ARCH})
         endif()
 
         # Install dylib        
@@ -585,11 +585,11 @@ endmacro()
 # PATH_PREFIX: The path (and sub paths) to remove
 macro(macos_remove_rpaths_from_object_at_install_time FILEPATH PATH_PREFIX CONFIGURATION)
     if(CMAKE_HOST_WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/x86_64/python.exe)
     elseif(CMAKE_HOST_APPLE)
         set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
     else()
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/${ARCH}/bin/python3)
     endif()
     if(NOT EXISTS ${PYTHON_BIN})
         message(FATAL_ERROR \"Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?\")

@@ -76,7 +76,7 @@ if(UNIX)
 endif()
 
 if (WIN32)   
-    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
     # TODO Update to find the libraries then install locating them via TARGET_FILE
     install(FILES ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
                   ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll

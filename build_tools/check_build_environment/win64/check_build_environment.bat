@@ -37,5 +37,5 @@ if exist %THIRDPARTY_DIR% (
     pause
     exit /B        
 )
-"%THIRDPARTY_DIR%\python\msvc\python-embed-amd64\python" "%~dp0\check_build_environment_continued.py" "--source"
+"%THIRDPARTY_DIR%\python\msvc\x86_64\python" "%~dp0\check_build_environment_continued.py" "--source"
 exit /B

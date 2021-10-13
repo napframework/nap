@@ -439,7 +439,7 @@ namespace nap
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "python-embed-amd64", "python36.zip"});
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "x86_64", "python36.zip"});
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #elif ANDROID
