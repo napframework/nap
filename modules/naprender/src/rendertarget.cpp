@@ -62,10 +62,10 @@ namespace nap
 
 	RenderTarget::~RenderTarget()
 	{
-		if (mFramebuffer != nullptr)
+		if (mFramebuffer != VK_NULL_HANDLE)
 			vkDestroyFramebuffer(mRenderService->getDevice(), mFramebuffer, nullptr);
 	
-		if (mRenderPass != nullptr)
+		if (mRenderPass != VK_NULL_HANDLE)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
 
 		destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());

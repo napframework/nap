@@ -309,7 +309,7 @@ namespace nap
 			// Create the write descriptor set. This set points to either a single element for non-arrays, or a list of contiguous elements for arrays.
 			VkWriteDescriptorSet& write_descriptor_set = mSamplerWriteDescriptorSets[sampler_index];
 			write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write_descriptor_set.dstSet = nullptr;
+			write_descriptor_set.dstSet = VK_NULL_HANDLE;
 			write_descriptor_set.dstBinding = sampler_instance->getDeclaration().mBinding;
 			write_descriptor_set.dstArrayElement = 0;
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
