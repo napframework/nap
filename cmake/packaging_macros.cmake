@@ -219,12 +219,19 @@ endmacro()
 macro(package_qt)
     set(QT_FRAMEWORKS Core Gui Widgets OpenGL)
 
-    # Install licenses.  This link is a little tenuous but seems to work for Win64
-    # TODO Fail if we don't find sufficient licenses (which happens pre Qt 5.10)
-    install(DIRECTORY ${QT_DIR}/../../Licenses/
-            DESTINATION thirdparty/Qt/licenses
-            CONFIGURATIONS Release
-            )
+    # Install licenses. Prefer license from Qt official download if available,
+    # falling back to licenses in thirdparty for eg. Linux ARM.
+    if(EXISTS ${QT_DIR}/../../Licenses/)
+        install(DIRECTORY ${QT_DIR}/../../Licenses/
+                DESTINATION thirdparty/Qt/licenses
+                CONFIGURATIONS Release
+                )
+    else()
+        install(DIRECTORY ${THIRDPARTY_DIR}/qt/licenses/
+                DESTINATION thirdparty/Qt/licenses
+                CONFIGURATIONS Release
+                )
+    endif()
     if(WIN32)
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
