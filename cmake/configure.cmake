@@ -340,7 +340,7 @@ endmacro()
 macro(add_macos_rttr_rpath)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/xcode/install/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
+                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
                        )    
 endmacro()
 
@@ -360,18 +360,14 @@ endfunction()
 macro(find_rttr)
     if(NOT TARGET RTTR::Core)
         if (WIN32)
-            if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc64/install/cmake")
-            else()
-                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc32/install/cmake")
-            endif()
+            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc/x86_64/cmake")
             find_package(RTTR CONFIG REQUIRED Core)
         elseif(APPLE)
             find_path(
                     RTTR_DIR
                     NAMES rttr-config.cmake
                     HINTS
-                    ${THIRDPARTY_DIR}/rttr/xcode/install/cmake
+                    ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
             )
             find_package(RTTR CONFIG REQUIRED Core)
         elseif(ANDROID)
@@ -397,8 +393,7 @@ macro(find_rttr)
                     RTTR_DIR
                     NAMES rttr-config.cmake
                     HINTS
-                    ${THIRDPARTY_DIR}/rttr/install/cmake
-                    ${THIRDPARTY_DIR}/rttr/linux/install/cmake
+                    ${THIRDPARTY_DIR}/rttr/linux/${ARCH}/cmake
             )
             find_package(RTTR CONFIG REQUIRED Core)
         endif()

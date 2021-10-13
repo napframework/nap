@@ -108,16 +108,16 @@ endif()
 
 # Package RTTR
 if (MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/msvc64/install/ DESTINATION thirdparty/rttr)
+    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/msvc/x86_64/ DESTINATION thirdparty/rttr)
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
     set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/xcode/install/ DESTINATION thirdparty/rttr)
+    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/macos/x86_64/ DESTINATION thirdparty/rttr)
 elseif(ANDROID)
     install(DIRECTORY ${THIRDPARTY_DIR}/rttr/android/install/ DESTINATION thirdparty/rttr)
 elseif(UNIX)
-    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/linux/install/ DESTINATION thirdparty/rttr)
+    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/linux/${ARCH}/ DESTINATION thirdparty/rttr)
 endif()
 
 # Package rapidjson
