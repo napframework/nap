@@ -86,3 +86,4 @@ cmake-build-release
 **/cache/path_mapping.json
 /venv/
 report.json
+build_tools/docker_images/cmake
