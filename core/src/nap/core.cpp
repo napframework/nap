@@ -461,7 +461,7 @@ namespace nap
 		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
-			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, "install"});
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, sBuildArch});
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif

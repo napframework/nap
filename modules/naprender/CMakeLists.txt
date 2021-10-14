@@ -91,6 +91,10 @@ elseif(UNIX)
          )
 endif()
 
+if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
+    list(APPEND LIBRARIES atomic)
+endif()
+
 # Link libraries
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})

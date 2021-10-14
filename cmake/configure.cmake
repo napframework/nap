@@ -20,6 +20,7 @@ if(MSVC OR APPLE)
 
     add_compile_definitions(NAP_BUILD_CONF=${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
     add_compile_definitions(NAP_BUILD_TYPE=$<CONFIG>)
+    add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
 else()
     if(ANDROID)
         set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
@@ -45,6 +46,7 @@ else()
 
     add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
     add_compile_definitions(NAP_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+    add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
 endif()
 
 # Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
