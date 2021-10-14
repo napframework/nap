@@ -22,7 +22,7 @@ else()
     set(CRYPTOPP_LIB_DEBUG ${CRYPTOPP_LIB_RELEASE})
     if(NOT EXISTS ${CRYPTOPP_LIB_RELEASE})
         message(STATUS "Extracting Cryptopp...")
-        execute_process(COMMAND unxz ${CRYPTOPP_LIB_RELEASE}.xz
+        execute_process(COMMAND unxz -k ${CRYPTOPP_LIB_RELEASE}.xz
                         WORKING_DIRECTORY ${CRYPTOPP_LIB_DIR}
                         RESULT_VARIABLE EXIT_CODE
                        )
