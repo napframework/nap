@@ -32,7 +32,7 @@ namespace nap
 		std::string started_segment_id = "";
 		const auto& audio_track = static_cast<const SequenceTrackAudio&>(mTrack);
 
-		// iterate trought audio segment
+		// iterate trough audio segments
 		for (const auto& segment : audio_track.mSegments)
 		{
 			// check if time is inside audio segment

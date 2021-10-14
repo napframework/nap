@@ -8,15 +8,16 @@
 #include <nap/resourceptr.h>
 #include <nap/signalslot.h>
 #include <sequenceplayeroutput.h>
-#include <audio/node/bufferplayernode.h>
 #include <audio/node/outputnode.h>
 #include <audio/resource/audiobufferresource.h>
 #include <audio/service/audioservice.h>
 #include <nap/signalslot.h>
 #include <rtti/objectptr.h>
+#include <audio/node/mixnode.h>
 
 // local includes
 #include "sequenceplayeraudioadapter.h"
+#include "multisamplebufferplayernode.h"
 
 namespace nap
 {
@@ -26,7 +27,8 @@ namespace nap
 	class SequenceService;
 
 	// shortcut to map of created nodes
-	using BufferPlayerMap = std::unordered_map<std::string, std::vector<audio::SafeOwner<audio::BufferPlayerNode>>>;
+	using BufferPlayerMap = std::unordered_map<std::string, audio::SafeOwner<audio::MultiSampleBufferPlayerNode>>;
+
 
 	/**
 	 * The SequencePlayerAudioOutput is responsible for translating updates from SequencePlayerAudioAdapters to
@@ -40,6 +42,12 @@ namespace nap
 
 		RTTI_ENABLE(SequencePlayerOutput);
 	public:
+        enum NAPAPI ESequencePlayerAudioOutputMode
+        {
+            DIRECT = 0,
+            MANUAL = 1
+        };
+
 		/**
 		 * Constructor
 		 * @param service reference to service
@@ -64,6 +72,8 @@ namespace nap
 		 */
 		virtual const std::vector<rtti::ObjectPtr<audio::AudioBufferResource>>& getBuffers() const;
 	public:
+        // properties
+        ESequencePlayerAudioOutputMode mOutputMode = ESequencePlayerAudioOutputMode::DIRECT;
 	protected:
 		/**
 		 * inherited update function, called from sequence service
@@ -105,23 +115,19 @@ namespace nap
 		Slot<> mPostResourcesLoadedSlot;
 		void onPostResourcesLoaded();
 
-		/**
-		 * Called when resources are about to be loaded
-		 */
-		Slot<> mPreResourcesLoadedSlot;
-		void onPreResourcesLoaded();
-
 		// pointer to audio service
 		audio::AudioService* mAudioService;
 
 		// map of BufferPlayerMaps
-		std::unordered_map<const SequencePlayerAudioAdapter*, BufferPlayerMap> mBufferPlayers;
+        std::unordered_map<const SequencePlayerAudioAdapter*, BufferPlayerMap> mBufferPlayers;
 
-		// map of OutputNodes
-		std::unordered_map<const SequencePlayerAudioAdapter*, std::vector<audio::SafeOwner<audio::OutputNode>>> mOutputNodes;
+		// map of output nodes
+		std::vector<audio::SafeOwner<audio::OutputNode>> mOutputNodes;
 
 		// object pointers to audio buffers
 		std::vector<rtti::ObjectPtr<audio::AudioBufferResource>> mAudioBuffers;
+
+        std::vector<audio::SafeOwner<audio::MixNode>> mMixNodes;
 	};
 
 	// shortcut to factory function

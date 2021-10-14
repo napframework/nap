@@ -150,7 +150,8 @@
                 },
                 {
                     "Type": "nap::SequencePlayerAudioOutput",
-                    "mID": "SequencePlayerAudioOutput"
+                    "mID": "SequencePlayerAudioOutput",
+                    "OutputMode": "Direct"
                 }
             ],
             "Clock": {
