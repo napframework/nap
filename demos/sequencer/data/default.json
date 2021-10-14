@@ -154,8 +154,8 @@
                 }
             ],
             "Clock": {
-                "Type": "nap::SequencePlayerStandardClock",
-                "mID": "SequencePlayerStandardClock_606577d8"
+                "Type": "nap::SequencePlayerAudioClock",
+                "mID": "SequencePlayerAudioClock_de214ac0"
             }
         },
         {
