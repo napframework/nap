@@ -490,15 +490,8 @@ namespace nap
 	 * Selects a queue family index that supports the desired capabilities.
 	 * Returns false if no valid queue family index was found.
 	 */
-	bool selectQueueFamilyIndex(int device_index, VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, int& queue_family_index)
+	bool selectQueueFamilyIndex(int device_index, VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, const std::vector<VkQueueFamilyProperties> queue_families, int& queue_family_index)
 	{
-		std::vector<VkQueueFamilyProperties> queue_families;
-		if (!getQueueFamilyProperties(device_index, physical_device, queue_families))
-		{
-			Logger::warn("%d: Could not find queue family properties", device_index);
-			return false;
-		}
-
 		// We want to make sure that we have a queue that supports the required flags
 		for (uint32 index = 0; index < static_cast<uint32>(queue_families.size()); ++index)
 		{
@@ -567,19 +560,37 @@ namespace nap
 				continue;
 			}
 
+			std::vector<VkQueueFamilyProperties> queue_families;
+			if (!getQueueFamilyProperties(device_idx, physical_device, queue_families))
+			{
+				Logger::warn("%d: Could not find queue family properties", device_idx);
+				return false;
+			}
+
 			// Ensure there's a compatible queue for this device
 			int selected_graphics_queue_idx = -1;
-			if (!selectQueueFamilyIndex(device_idx, physical_device, requiredQueueFlags, presentSurface, selected_graphics_queue_idx))
+			if (!selectQueueFamilyIndex(device_idx, physical_device, requiredQueueFlags, presentSurface, queue_families, selected_graphics_queue_idx))
 			{
 				Logger::warn("%d: Unable to find compatible graphics/transfer queue family", device_idx);
 				continue;
 			}
 
-			// Ensure there's a compatible compute queue for this device
+			// If required, ensure there's a compatible compute queue for this device
 			int selected_compute_queue_idx = -1;
-			if (!selectQueueFamilyIndex(device_idx, physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, selected_compute_queue_idx))
+			if (requiredQueueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
-				Logger::warn("%d: Unable to find compatible compute queue family", device_idx);
+				// Only search unselected queue families
+				auto remaining_queue_families = queue_families;
+				remaining_queue_families.erase(remaining_queue_families.begin() + selected_graphics_queue_idx);
+				if (!selectQueueFamilyIndex(device_idx, physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, remaining_queue_families, selected_compute_queue_idx))
+				{
+					// Search again with all queue families
+					if (!selectQueueFamilyIndex(device_idx, physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, selected_compute_queue_idx))
+					{
+						Logger::warn("%d: Unable to find compatible compute queue family", device_idx);
+						continue;
+					}
+				}
 			}
 
 			// Add it as a compatible device
