@@ -1624,7 +1624,7 @@ namespace nap
 	}
 
 
-	void RenderService::pushSemaphoreWaitInfo(const SemaphoreWaitInfo& semaphoreWaitInfo)
+	void RenderService::pushFrameRenderingDependency(const SemaphoreWaitInfo& semaphoreWaitInfo)
 	{
 		mSemaphoreWaitList[getCurrentFrameIndex()].emplace_back(semaphoreWaitInfo);
 	}
@@ -1918,9 +1918,35 @@ namespace nap
 		// Push any texture downloads on the command buffer
 		downloadData();
 
-		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
-		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
-		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
+		// We must reset the registered wait semaphores here in case no rendering has taken place in the current frame
+		// (e.g. due to a recreation of the swapchain). This can be achieved by explicitly waiting for each in vkQueueSubmit()
+		if (!mSemaphoreWaitList[mCurrentFrameIndex].empty())
+		{	
+			std::vector<VkSemaphore> wait_semaphores;
+			std::vector<VkPipelineStageFlags> wait_flags;
+			wait_semaphores.reserve(mSemaphoreWaitList[mCurrentFrameIndex].size());
+			wait_flags.reserve(wait_semaphores.size());
+			for (const auto& semaphore_wait_info : mSemaphoreWaitList[mCurrentFrameIndex])
+			{
+				wait_semaphores.emplace_back(semaphore_wait_info.mSemaphore);
+				wait_flags.emplace_back(VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+			}
+			VkSubmitInfo submit_info = {};
+			submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submit_info.pWaitSemaphores = &wait_semaphores[0];
+			submit_info.waitSemaphoreCount = wait_semaphores.size();
+			submit_info.pWaitDstStageMask = &wait_flags[0];
+
+			vkQueueSubmit(mQueue, 1, &submit_info, mFramesInFlight[mCurrentFrameIndex].mFence);
+			mSemaphoreWaitList[mCurrentFrameIndex].clear();
+		}
+		else
+		{
+			// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
+			// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
+			vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
+		}
+
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % getMaxFramesInFlight();
 		mIsRenderingFrame = false;
 	}

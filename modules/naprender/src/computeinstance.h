@@ -59,9 +59,11 @@ namespace nap
 		 * Syncs the graphics queue with this compute shader.
 		 * The vertex shader input stage of the current frame will not be executed until the compute shader stage is finished.
 		 * Useful when compute shaders modify resources that are read by graphics shaders.
+		 * @param numInvocations the number of compute shader invocations
+		 * @param graphicsStageFlags the graphics stage flags signifying the current computation depends on.
 		 * @return if the compute work was submitted to the compute queue successfully.
 		 */
-		bool asyncCompute(uint numInvocations, utility::ErrorState& errorState);
+		bool asyncCompute(uint numInvocations, VkPipelineStageFlags graphicsStageFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return current material used when drawing the mesh.

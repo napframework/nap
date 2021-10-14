@@ -289,7 +289,7 @@ namespace nap
 		mParticleSizeUniform->setValue(mParticleSize);
 
 		utility::ErrorState error_state;
-		mComputeInstance->asyncCompute(mParticleMesh->mNumParticles, error_state);
+		mComputeInstance->asyncCompute(mParticleMesh->mNumParticles, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, error_state);
 	}
 
 

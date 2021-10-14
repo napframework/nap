@@ -907,7 +907,7 @@ namespace nap
 		 * Pushes a semaphore - pipelineflags pair onto the wait list for the current of next frame to be rendered.
 		 * This combination will create a synchronization condition for the next queue submission.
 		 */
-		void pushSemaphoreWaitInfo(const SemaphoreWaitInfo& semaphoreWaitInfo);
+		void pushFrameRenderingDependency(const SemaphoreWaitInfo& semaphoreWaitInfo);
 
 	protected:
 		/**

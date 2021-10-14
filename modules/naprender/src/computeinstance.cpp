@@ -55,7 +55,7 @@ namespace nap
 	}
 
 
-	bool ComputeInstance::asyncCompute(uint numInvocations, utility::ErrorState& errorState)
+	bool ComputeInstance::asyncCompute(uint numInvocations, VkPipelineStageFlags graphicsStageFlags, utility::ErrorState& errorState)
 	{
 		VkSubmitInfo compute_submit_info = {};
 		compute_submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -64,7 +64,8 @@ namespace nap
 
 		// Signal the compute ready semaphore when we have finished running the compute shader,
 		// only then the vertex input stage may be executed - graphics waits for compute to be finished
-		mRenderService->pushSemaphoreWaitInfo({ mSemaphore, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT });
+		SemaphoreWaitInfo wait_info = { mSemaphore, graphicsStageFlags };
+		mRenderService->pushFrameRenderingDependency(wait_info);
 		compute_submit_info.signalSemaphoreCount = 1;
 		compute_submit_info.pSignalSemaphores = &mSemaphore;
 

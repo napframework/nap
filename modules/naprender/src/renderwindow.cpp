@@ -790,10 +790,10 @@ namespace nap
 		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame] };
 		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-		for (const auto wait_semaphore_info : mRenderService->mSemaphoreWaitList[current_frame])
+		for (const auto& semaphore_wait_info : mRenderService->mSemaphoreWaitList[current_frame])
 		{
-			wait_semaphores.emplace_back(wait_semaphore_info.mSemaphore);
-			wait_stages.emplace_back(wait_semaphore_info.mFlags);
+			wait_semaphores.emplace_back(semaphore_wait_info.mSemaphore);
+			wait_stages.emplace_back(semaphore_wait_info.mFlags);
 		}
 		mRenderService->mSemaphoreWaitList[current_frame].clear();
 
@@ -809,7 +809,7 @@ namespace nap
 		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = signalSemaphores;
-
+		
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
