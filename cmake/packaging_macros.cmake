@@ -333,7 +333,7 @@ macro(package_qt)
         # Allow Qt platform plugin to find Qt frameworks in thirdparty
         install(CODE "execute_process(COMMAND patchelf
                                               --set-rpath
-                                              \$ORIGIN/../../../thirdparty/Qt/lib
+                                              \$ORIGIN/../../../thirdparty/Qt/lib:\$ORIGIN/../../lib
                                               ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqxcb.so
                                       ERROR_QUIET
                                       RESULT_VARIABLE EXIT_CODE)
