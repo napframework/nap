@@ -136,7 +136,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
    r'libc-[0-9]+\.[0-9]+',
     'libcairo',
     'libcairo-gobject',
-    'libcap'
+    'libcap',
     'libcodec2',
     'libcom_err',
    r'libcroco-[0-9]+\.[0-9]+',
@@ -276,7 +276,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxcb-dri2',
     'libxcb-dri3',
     'libxcb-glx',
-    'libxcb-icccm'
+    'libxcb-icccm',
     'libxcb-image',
     'libxcb-keysyms',
     'libxcb-present',
