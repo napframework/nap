@@ -22,11 +22,7 @@ namespace nap
 
         auto& node_manager = audio_service->getNodeManager();
         mAudioClockProcess = node_manager.makeSafe<SequencePlayerAudioClockProcess>(node_manager);
-
-		audio_service->enqueueTask([this]()
-		{
-            mAudioClockProcess->connectSlot(mUpdateSlot);
-		});
+        mAudioClockProcess->connectSlot(mUpdateSlot);
 	}
 
 
