@@ -87,3 +87,4 @@ cmake-build-release
 /venv/
 report.json
 build_tools/docker_images/cmake
+build_tools/cross_arch_linux_packaging/qt-*

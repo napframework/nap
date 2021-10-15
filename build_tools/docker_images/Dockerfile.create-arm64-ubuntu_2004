@@ -23,6 +23,7 @@ RUN \
     libglu1-mesa-dev \
     libjack-dev \
     libogg-dev \
+    libpng-dev \
     libpulse-dev \
     libssl-dev \
     libtool \
