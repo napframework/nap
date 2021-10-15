@@ -23,6 +23,10 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Demos)
 
+if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -z muldefs")
+endif()
+
 # Get our modules list from project.json
 project_json_to_cmake()
 

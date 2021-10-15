@@ -25,6 +25,10 @@ set(UNITTEST_LIBS
 target_link_libraries(${PROJECT_NAME} ${UNITTEST_LIBS})
 target_link_libraries(${PROJECT_NAME}_autorun ${UNITTEST_LIBS})
 
+if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -z muldefs")
+endif()
+
 # First copy some assets
 copy_dir_to_bin(${CMAKE_CURRENT_LIST_DIR}/unit_tests_data unit_tests_data)
 

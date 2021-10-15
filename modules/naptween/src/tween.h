@@ -204,10 +204,11 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// explicit MSVC template specialization exports
 	//////////////////////////////////////////////////////////////////////////
-	template class NAPAPI Tween<float>;
-	template class NAPAPI Tween<double>;
-	template class NAPAPI Tween<glm::vec2>;
-	template class NAPAPI Tween<glm::vec3>;
+    // TODO Temporarily disabled to allow build for Linux ARMhf
+    //template class NAPAPI Tween<float>;
+    //template class NAPAPI Tween<double>;
+    //template class NAPAPI Tween<glm::vec2>;
+    //template class NAPAPI Tween<glm::vec3>;
 
 	//////////////////////////////////////////////////////////////////////////
 	// template definition
