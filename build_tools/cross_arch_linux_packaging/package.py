@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import pathlib
 import shutil
@@ -76,4 +77,7 @@ def main(arch):
     print("Look for output in {}".format(docker_build_context))
 
 if __name__ == '__main__':
-    main('armhf')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('architecture', choices=['x86_64', 'arm64', 'armhf'])
+    args = parser.parse_args()
+    main(args.architecture)
