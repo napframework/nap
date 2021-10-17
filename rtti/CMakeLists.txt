@@ -63,7 +63,7 @@ if(APPLE)
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                -id 
                                @rpath/librttr_core.0.9.6.dylib 
-                               ${THIRDPARTY_DIR}/rttr/xcode/install/bin/librttr_core.0.9.6.dylib
+                               ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin/librttr_core.0.9.6.dylib
                        COMMENT "Setting install name for rttr_core")
 
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -71,7 +71,7 @@ if(APPLE)
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                -id 
                                @rpath/librttr_core_d.0.9.6.dylib 
-                               ${THIRDPARTY_DIR}/rttr/xcode/install/bin/librttr_core_d.0.9.6.dylib
+                               ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin/librttr_core_d.0.9.6.dylib
                        COMMENT "Setting install name for rttr_core_d")    
 endif()
 

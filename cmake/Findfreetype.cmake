@@ -11,7 +11,7 @@ if(WIN32)
     set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include/freetype)
 elseif(APPLE)
     find_path(FREETYPE_DIR
-              NAMES include/freetype/ft2build.h
+              NAMES include/freetype2/ft2build.h
               HINTS ${THIRDPARTY_DIR}/freetype/macos/x86_64/
               )
     set(FREETYPE_LIBS_DIR ${FREETYPE_DIR}/lib)
@@ -19,7 +19,7 @@ elseif(APPLE)
     set(FREETYPE_LIBS_RELEASE ${FREETYPE_LIBS_DIR}/libfreetype.dylib)
     set(FREETYPE_DEBUG_DLL ${FREETYPE_LIBS_DEBUG})
     set(FREETYPE_RELEASE_DLL ${FREETYPE_LIBS_RELEASE})
-    set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include/freetype)
+    set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include/freetype2)
 elseif(UNIX)
     find_path(FREETYPE_DIR
               NAMES include/freetype2/ft2build.h
