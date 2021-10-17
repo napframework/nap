@@ -80,11 +80,11 @@ list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napcolor)
 if (WIN32)   
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
     # TODO Update to find the libraries then install locating them via TARGET_FILE
-    install(FILES ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
-                  ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll
-                  ${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll
-                  ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll
-                  ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll
+    install(FILES ${THIRDPARTY_DIR}/assimp/msvc/x86_64/bin/assimp-vc140-mt.dll
+                  ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll
+                  ${THIRDPARTY_DIR}/rttr/msvc/x86_64/bin/rttr_core.dll
+                  ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/x64/SDL2.dll
+                  ${THIRDPARTY_DIR}/freetype/msvc/x86_64/Release/freetype.dll
                   ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 

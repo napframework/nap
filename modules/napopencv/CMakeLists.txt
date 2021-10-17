@@ -55,7 +55,7 @@ package_module()
 
 # Install opencv directory into package
 if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/x86_64 DESTINATION thirdparty/opencv)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/x86_64/ DESTINATION thirdparty/opencv)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/opencv/macos/x86_64 DESTINATION thirdparty/opencv)
 else()

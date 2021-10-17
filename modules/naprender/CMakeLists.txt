@@ -177,9 +177,9 @@ endif()
 install(FILES ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/COPYING.txt
         DESTINATION thirdparty/SDL2)
 if (WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/ DESTINATION thirdparty/SDL2
+    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/ DESTINATION thirdparty/SDL2
             PATTERN "lib" EXCLUDE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/ DESTINATION thirdparty/SDL2/lib)
+    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/x64/ DESTINATION thirdparty/SDL2/lib)
 elseif(APPLE)
     install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/macos/x86_64/include DESTINATION thirdparty/SDL2)
     file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/macos/x86_64/lib/*.dylib)

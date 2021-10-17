@@ -110,14 +110,14 @@ endmacro()
 macro(copy_base_windows_graphics_dlls)
     # Copy over some window DLLs
     set(FILES_TO_COPY
-        ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
+        ${THIRDPARTY_DIR}/sdl2/msvc/x86_64/lib/x64/SDL2.dll
         )
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
 # Copy Windows FFmpeg DLLs to project bin output
 macro(copy_windows_ffmpeg_dlls)
-    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/bin/*.dll)
     copy_files_to_bin(${FFMPEGDLLS})
 endmacro()
 
