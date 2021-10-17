@@ -103,15 +103,6 @@ namespace nap
 #ifdef NAP_ENABLE_PYTHON
 		setupPythonEnvironment();
 #endif
-		// Change directory to data folder
-		assert(mProjectInfo != nullptr);
-		std::string dataDir = mProjectInfo->getDataDirectory();
-		if (!error.check(utility::dirExists(dataDir), "Data path does not exist: %s", dataDir.c_str()))
-			return false;
-
-		// Everything from this point on is relative to the data directory
-		utility::changeDir(dataDir);
-
 		// Apply any platform specific environment setup
 		setupPlatformSpecificEnvironment();
 

@@ -43,10 +43,8 @@ namespace nap
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 		mTweenService	= getCore().getService<nap::TweenService>();
 
-		// Get resource manager and load curveball json file
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("tween.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");

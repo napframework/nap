@@ -76,7 +76,6 @@ namespace nap
 		mInstance = std::make_unique<FontInstance>(*mService);
 
 		// Load typeface
-		nap::Logger::info("loading font: %s", mFont.c_str());
 		if (!mInstance->create(mFont, mProperties, errorState))
 			return false;
 
