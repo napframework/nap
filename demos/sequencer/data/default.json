@@ -151,7 +151,8 @@
                 {
                     "Type": "nap::SequencePlayerAudioOutput",
                     "mID": "SequencePlayerAudioOutput",
-                    "OutputMode": "Direct"
+                    "Create Output Nodes": true,
+                    "Max Channels": 2
                 }
             ],
             "Clock": {
