@@ -66,18 +66,31 @@ namespace nap
 		virtual const std::vector<rtti::ObjectPtr<audio::AudioBufferResource>>& getBuffers() const;
 
         /**
-         * Connect an inputPin to one of the SequencePlayerAudioOutput channels. Assert when channel is not available.
+         * Connect an inputPin to one of the SequencePlayerAudioOutput channels. Assert when channel index is out of bounds.
          * @param inputPin reference to audio::inputPin
          * @param channel the channel to connect to
          */
         void connectInputPin(audio::InputPin& inputPin, int channel);
 
         /**
-         * Disconnect an inputPin from one of the SequencePlayerAudioOutput channels. Assert when channel is not available.
+         * Disconnect an inputPin from one of the SequencePlayerAudioOutput channels. Assert when channel index is out of bounds.
          * @param inputPin reference to audio::inputPin
          * @param channel the channel to connect to
          */
         void disconnectInputPin(audio::InputPin& inputPin, int channel);
+
+        /**
+         * Returns OutputPin for given channel. Assert when channel index is out of bounds.
+         * @param channel
+         * @return
+         */
+        audio::OutputPin* getOutputForChannel(int channel);
+
+        /**
+         * Returns amount of channels
+         * @return amount of channels
+         */
+        int getChannelCount() const;
 	public:
         // properties
         /**

@@ -228,4 +228,17 @@ namespace nap
 	{
 		return mAudioBuffers;
 	}
+
+
+    audio::OutputPin* SequencePlayerAudioOutput::getOutputForChannel(int channel)
+    {
+        assert(channel < mMaxChannels);
+        return &mMixNodes[channel]->audioOutput;
+    }
+
+
+    int SequencePlayerAudioOutput::getChannelCount() const
+    {
+        return mMaxChannels;
+    }
 }
