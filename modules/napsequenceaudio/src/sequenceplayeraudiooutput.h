@@ -35,7 +35,7 @@ namespace nap
 	 * multiple BufferPlayerNodes are created, each adapter gets its own BufferPlayerNode for each AudioBufferResource
 	 * and channel.
 	 */
-	class NAPAPI SequencePlayerAudioOutput : public SequencePlayerOutput
+	class NAPAPI SequencePlayerAudioOutput final: public SequencePlayerOutput
 	{
 		friend class SequencePlayerAudioAdapter;
 

@@ -19,6 +19,11 @@ namespace nap
 {
     namespace audio
     {
+        /**
+         * The MultiSampleBufferPlayerNode plays back the sample from a MultiSampleBuffer.
+         * They key difference between the MultiSampleBufferPlayerNode and the BufferPlayerNode is that the MultiSampleBufferPlayerNode
+         * creates OutputPins for each channel of the MultiSampleBuffer
+         */
         class NAPAPI MultiSampleBufferPlayerNode : public Node
         {
             RTTI_ENABLE(Node)

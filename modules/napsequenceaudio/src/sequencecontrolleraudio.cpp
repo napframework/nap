@@ -339,9 +339,9 @@ namespace nap
 
 		std::sort (track->mSegments.begin(), track->mSegments.end(),
 				  [](ResourcePtr<SequenceTrackSegmentAudio> a, ResourcePtr<SequenceTrackSegmentAudio> b)->bool
-		{
-			return a->mStartTime < b->mStartTime;
-		});
+        {
+            return a->mStartTime < b->mStartTime;
+        });
 
 		SequenceTrackSegment* prev_segment = nullptr;
 		for(auto segment_resourceptr : track->mSegments)
