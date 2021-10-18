@@ -26,9 +26,8 @@ namespace nap
 	// forward declares
 	class SequenceService;
 
-	// shortcut to map of created nodes
+	// shortcut to map of created multi sample buffer player nodes
 	using BufferPlayerMap = std::unordered_map<std::string, audio::SafeOwner<audio::MultiSampleBufferPlayerNode>>;
-
 
 	/**
 	 * The SequencePlayerAudioOutput is responsible for translating updates from SequencePlayerAudioAdapters to
@@ -42,12 +41,6 @@ namespace nap
 
 		RTTI_ENABLE(SequencePlayerOutput);
 	public:
-        enum NAPAPI ESequencePlayerAudioOutputMode
-        {
-            DIRECT = 0,
-            MANUAL = 1
-        };
-
 		/**
 		 * Constructor
 		 * @param service reference to service
@@ -64,16 +57,40 @@ namespace nap
 		/**
 		 * called before deconstruction of the resource
 		 */
-		void onDestroy() override ;
+		void onDestroy() override;
 
 		/**
-		 * Returns a const reference to a vector of pointers to audio buffer resources
-		 * @return const reference to a vector of pointers to audio buffer resources
+		 * Returns a const reference to a vector of ObjectPointers to audio buffer resources
+		 * @return const reference to a vector of ObjectPointers to audio buffer resources
 		 */
 		virtual const std::vector<rtti::ObjectPtr<audio::AudioBufferResource>>& getBuffers() const;
+
+        /**
+         * Connect an inputPin to one of the SequencePlayerAudioOutput channels. Assert when channel is not available.
+         * @param inputPin reference to audio::inputPin
+         * @param channel the channel to connect to
+         */
+        void connectInputPin(audio::InputPin& inputPin, int channel);
+
+        /**
+         * Disconnect an inputPin from one of the SequencePlayerAudioOutput channels. Assert when channel is not available.
+         * @param inputPin reference to audio::inputPin
+         * @param channel the channel to connect to
+         */
+        void disconnectInputPin(audio::InputPin& inputPin, int channel);
 	public:
         // properties
-        ESequencePlayerAudioOutputMode mOutputMode = ESequencePlayerAudioOutputMode::DIRECT;
+        /**
+         * When set to true the SequencePlayerAudioOutput will create the necessary output nodes to route audio
+         * to the selected playback device by AudioService
+         */
+        bool mCreateOutputNodes = true;
+
+        /**
+         * Maximum output channels, the SequencePlayerAudioOutput cannot play AudioFiles with more then this amount of
+         * channels
+         */
+        int mMaxChannels = 8;
 	protected:
 		/**
 		 * inherited update function, called from sequence service
@@ -121,12 +138,13 @@ namespace nap
 		// map of BufferPlayerMaps
         std::unordered_map<const SequencePlayerAudioAdapter*, BufferPlayerMap> mBufferPlayers;
 
-		// map of output nodes
+		// map of output nodes created and owned by SequencePlayerAudioOutput
 		std::vector<audio::SafeOwner<audio::OutputNode>> mOutputNodes;
 
 		// object pointers to audio buffers
 		std::vector<rtti::ObjectPtr<audio::AudioBufferResource>> mAudioBuffers;
 
+        // mix nodes created and owned by SequencePlayerAudioOutput
         std::vector<audio::SafeOwner<audio::MixNode>> mMixNodes;
 	};
 

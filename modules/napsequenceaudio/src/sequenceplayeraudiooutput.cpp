@@ -10,13 +10,9 @@
 #include <audio/resource/audiobufferresource.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_ENUM(nap::SequencePlayerAudioOutput::ESequencePlayerAudioOutputMode)
-    RTTI_ENUM_VALUE(nap::SequencePlayerAudioOutput::ESequencePlayerAudioOutputMode::DIRECT,		"Direct"),
-    RTTI_ENUM_VALUE(nap::SequencePlayerAudioOutput::ESequencePlayerAudioOutputMode::MANUAL,		"Manual")
-RTTI_END_ENUM
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioOutput)
-        RTTI_PROPERTY("OutputMode", &nap::SequencePlayerAudioOutput::mOutputMode, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Create Output Nodes", &nap::SequencePlayerAudioOutput::mCreateOutputNodes, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Max Channels", &nap::SequencePlayerAudioOutput::mMaxChannels, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 using namespace nap::audio;
@@ -29,10 +25,48 @@ namespace nap
 
 	bool SequencePlayerAudioOutput::init(utility::ErrorState& errorState)
 	{
+        /**
+         * We acquire all ObjectPtrs to AudioBuffers after resources have loaded because we know all AudioBuffer resources
+         * have been initialized at that point
+         */
 		auto* resource_manager = mService->getCore().getResourceManager();
-
 		mPostResourcesLoadedSlot 	= Slot<>([this](){ onPostResourcesLoaded(); });
 		resource_manager->mPostResourcesLoadedSignal.connect(mPostResourcesLoadedSlot);
+
+        /**
+         * Get audio service and acquire audio node manager and create a mix node for each channel.
+         * All buffer players created when registering an adapter to this output will connect their audio output to the created
+         * mix nodes for each channel.
+         * When mCreateOutputNodes is true, the SequencePlayerAudioOutput will also create output nodes for each channel
+         * so audio played by SequencePlayer gets routed to the playback device selected by the AudioService.
+         */
+        mAudioService = mService->getCore().getService<AudioService>();
+        auto& node_manager = mAudioService->getNodeManager();
+
+        // create mix nodes
+        std::vector<SafeOwner<MixNode>> mix_nodes;
+        for(int i = 0 ; i < mMaxChannels; i++)
+        {
+            auto mix_node = node_manager.makeSafe<MixNode>(node_manager);
+            mix_nodes.emplace_back(std::move(mix_node));
+        }
+
+        // create output nodes
+        std::vector<SafeOwner<OutputNode>> output_nodes;
+        if(mCreateOutputNodes)
+        {
+            for(int i = 0 ; i < mMaxChannels; i++)
+            {
+                auto output_node = node_manager.makeSafe<OutputNode>(node_manager);
+                output_node->setOutputChannel(i);
+                output_node->audioInput.connect(mix_nodes[i]->audioOutput);
+                output_nodes.emplace_back(std::move(output_node));
+            }
+        }
+
+        // move ownership
+        mMixNodes = std::move(mix_nodes);
+        mOutputNodes = std::move(output_nodes);
 
 		return true;
 	}
@@ -49,10 +83,8 @@ namespace nap
 		auto it = mBufferPlayers.find(adapter);
 		assert(it!=mBufferPlayers.end()); // entry not found
 		assert(it->second.find(id)!=it->second.end()); // entry not found
-		for(auto& buffer_player : it->second)
-		{
-			buffer_player.second->play(discrete_time, playbackSpeed);
-		}
+        auto buffer_player_it = it->second.find(id);
+        buffer_player_it->second->play(discrete_time, playbackSpeed);
 	}
 
 
@@ -61,10 +93,8 @@ namespace nap
 		auto it = mBufferPlayers.find(adapter);
 		assert(it!=mBufferPlayers.end()); // entry not found
 		assert(it->second.find(id)!=it->second.end()); // entry not found
-		for(auto& buffer_player : it->second)
-		{
-			buffer_player.second->stop();
-		}
+        auto buffer_player_it = it->second.find(id);
+        buffer_player_it->second->stop();
 	}
 
 
@@ -108,6 +138,9 @@ namespace nap
 	{
 		assert(mBufferPlayers.find(adapter)!=mBufferPlayers.end()); // entry not found
 
+        /**
+         * unregister adapter and destroy all associated buffer players
+         */
         mAudioService = mService->getCore().getService<AudioService>();
         auto& node_manager = mAudioService->getNodeManager();
 
@@ -134,7 +167,8 @@ namespace nap
 		mOutputNodes.clear();
 
         auto* resource_manager = mService->getCore().getResourceManager();
-        resource_manager->mPostResourcesLoadedSignal.disconnect(mPostResourcesLoadedSlot);
+        if(resource_manager!= nullptr)
+            resource_manager->mPostResourcesLoadedSignal.disconnect(mPostResourcesLoadedSlot);
 	}
 
 
@@ -154,42 +188,40 @@ namespace nap
 		mAudioBuffers = audio_buffers;
 
         /**
-         * Get audio service and acquire audio node manager
+         * Ignore AudioBuffers that exceed max channels
          */
-        mAudioService = mService->getCore().getService<AudioService>();
-        auto& node_manager = mAudioService->getNodeManager();
-
-        /**
-         * Get maximum amount of channels that can be used by available audio buffers and make that amount of mix nodes and
-         * when output mode is direct also make output nodes that connect with mix nodes
-         */
-        int max_channels = 0;
-        for (auto buffer : mAudioBuffers)
+        auto audio_buffers_it = mAudioBuffers.begin();
+        while (audio_buffers_it!=mAudioBuffers.end())
         {
-            if(buffer->getChannelCount() > max_channels)
-                max_channels = buffer->getChannelCount();
-        }
-        // create mix nodes
-        std::vector<SafeOwner<MixNode>> mix_nodes;
-        for(int i = 0 ; i < max_channels; i++)
-        {
-            auto mix_node = node_manager.makeSafe<MixNode>(node_manager);
-            mix_nodes.emplace_back(std::move(mix_node));
-        }
-        std::vector<SafeOwner<OutputNode>> output_nodes;
-        if(mOutputMode==ESequencePlayerAudioOutputMode::DIRECT)
-        {
-            for(int i = 0 ; i < max_channels; i++)
+            if((*audio_buffers_it)->getChannelCount() > mMaxChannels)
             {
-                auto output_node = node_manager.makeSafe<OutputNode>(node_manager);
-                output_node->setOutputChannel(i);
-                output_node->audioInput.connect(mix_nodes[i]->audioOutput);
-                output_nodes.emplace_back(std::move(output_node));
+                nap::Logger::warn(*this,
+                                  "Ignoring audio buffer %s because it has %i channels and exceeds the %i channels used by this SequencePlayerAudioOutput",
+                                  (*audio_buffers_it)->mID.c_str(),
+                                  (*audio_buffers_it)->getChannelCount(),
+                                  mMaxChannels);
+
+                audio_buffers_it = mAudioBuffers.erase(audio_buffers_it);
+            }else
+            {
+                audio_buffers_it++;
             }
         }
-        mMixNodes = std::move(mix_nodes);
-        mOutputNodes = std::move(output_nodes);
 	}
+
+
+    void SequencePlayerAudioOutput::connectInputPin(audio::InputPin &inputPin, int channel)
+    {
+        assert(channel < mMaxChannels);
+        inputPin.enqueueConnect(mMixNodes[channel]->audioOutput);
+    }
+
+
+    void SequencePlayerAudioOutput::disconnectInputPin(audio::InputPin &inputPin, int channel)
+    {
+        assert(channel < mMaxChannels);
+        inputPin.enqueueDisconnect(mMixNodes[channel]->audioOutput);
+    }
 
 
 	const std::vector<rtti::ObjectPtr<audio::AudioBufferResource>>& SequencePlayerAudioOutput::getBuffers() const
