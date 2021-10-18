@@ -235,6 +235,7 @@ namespace nap
 			mVertexStorageUniform = vertex_struct->getOrCreateUniform<UniformVec4ArrayInstance>("vertices");
 
 			// Push once, then never again
+			// TODO: These can currently not be set in napkin as it would require creating a million default values to match the array size in the shader
 			mPositionStorageUniform->setUsage(EUniformDataUsage::Static);
 			mVelocityStorageUniform->setUsage(EUniformDataUsage::Static);
 			mRotationStorageUniform->setUsage(EUniformDataUsage::Static);
@@ -252,24 +253,17 @@ namespace nap
 			mVertexStorageUniform->setValues(vertices);
 		}
 
-		// Set storage buffer copy callback
-		VkDeviceSize copy_size = mVertexStorageUniform->getNumElements() * sizeof(glm::vec4);
-		mDispatchFinishedCallback = [this, cmd_buf = mComputeInstance->getComputeCommandBuffer(), size = copy_size](const DescriptorSet& descriptor_set)
+		// Set dispatch finished callback
+		mDispatchFinishedCallback = [this](const DescriptorSet& descriptor_set)
 		{
 			// Store a reference to the target storage buffer in a member so it can be bound to when rendering
 			// We need to do this because updating the compute material will fetch a different buffer
 			const VkBuffer& vertex_storage_buffer = descriptor_set.mBuffers[4].mBuffer;
 			mStorageBufferRef = std::make_unique<std::reference_wrapper<const VkBuffer>>(std::cref(vertex_storage_buffer));
-
-			// Copy the result of the computation from the target storage buffer to the vertex buffer of the current frame
-			//VkBufferCopy copyRegion = {};
-			//copyRegion.size = size;
-			//const VkBuffer& vertex_buffer = mRenderableMesh.getVertexBuffers()[0];
-			//vkCmdCopyBuffer(cmd_buf, vertex_storage_buffer, vertex_buffer, 1, &copyRegion);
 		};
 
-		// Connect dispatch finished callback
-		mComputeInstance->mDispatchFinished.connect(mDispatchFinishedCallback);
+		// Connect pre-endcommandbuffer cllback
+		mComputeInstance->mPreEndCommandBuffer.connect(mDispatchFinishedCallback);
 
 		return true;
 	}
@@ -328,7 +322,7 @@ namespace nap
 		// Bind vertex buffers
 		std::vector<VkBuffer> vertex_buffers = { *mStorageBufferRef, mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
 		std::vector<VkDeviceSize> offsets = { 0, 0, 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), &vertex_buffers[0], &offsets[0]);
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();

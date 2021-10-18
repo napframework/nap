@@ -18,7 +18,6 @@ namespace nap
 	/**
 	 * Compute Instance
 	 * This is a work in progress. To-do's:
-	 * - Add synchronization for when compute and graphics queue indices are different
 	 * - Improve abstraction/interface
 	 * - Decide how this instance should be created/used (instance, resource, component?)
 	 * - Finish documentation
@@ -71,21 +70,16 @@ namespace nap
 		ComputeMaterialInstance& getComputeMaterialInstance() 			{ return mComputeMaterialInstance; }
 
 		/**
-		 * Returns the compute command buffer
-		 * @return the command buffer, returns nullptr if compute is not supported or enabled
-		 */
-		VkCommandBuffer getComputeCommandBuffer() const					{ return mComputeCommandBuffer; }
-
-		/**
 		 * Returns the local workgroup size
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
 		/**
-		 * Fires when the active compute shader execution is finished.
+		 * Signaled before command buffer recording ends
 		 * This call can be used to push post-dispatch commands onto the compute command buffer such as vkCmdCopyBuffer.
+		 * Additional synchronization (e.g. vkCmdPipelineBarrier(srcStageMask:COMPUTE, dstStageMask:TRANSFER ...)) must be handled by the user.
 		 */
-		nap::Signal<const DescriptorSet&> mDispatchFinished;
+		nap::Signal<const DescriptorSet&> mPreEndCommandBuffer;
 
 	private:
 		bool computeInternal(uint numInvocations, const VkSubmitInfo& submitInfo, utility::ErrorState& errorState);
@@ -94,7 +88,6 @@ namespace nap
 		ComputeMaterialInstance					mComputeMaterialInstance;
 
 		RenderService*							mRenderService = nullptr;
-		VkCommandBuffer							mComputeCommandBuffer = VK_NULL_HANDLE;		///< Each compute instance currently manages its own command buffer
 
 		VkFence									mFence;										///< CPU synchronization with subsequent computations
 		VkSemaphore								mSemaphore;									///< GPU synchronization with vertex input stage 

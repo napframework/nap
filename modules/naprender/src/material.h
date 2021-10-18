@@ -25,7 +25,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		/**
+		/** 
 		* Base constructor associated with a material
 		*/
 		BaseMaterial(Core& core);

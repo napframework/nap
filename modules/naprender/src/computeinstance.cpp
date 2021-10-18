@@ -8,6 +8,38 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static Functions
+	//////////////////////////////////////////////////////////////////////////
+
+	static bool createSyncObjects(const VkDevice& device, VkFence& outFence, VkSemaphore& outSemaphore, utility::ErrorState& errorState)
+	{
+		// Create semaphore
+		VkSemaphoreCreateInfo semaphore_create_info = {};
+		semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		semaphore_create_info.pNext = nullptr;
+		semaphore_create_info.flags = 0;
+
+		if (!errorState.check(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &outSemaphore) == VK_SUCCESS, "Failed to create semaphore"))
+			return false;
+
+		// Create fence
+		VkFenceCreateInfo fence_create_info = {};
+		fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_create_info.pNext = nullptr;
+		fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		if (!errorState.check(vkCreateFence(device, &fence_create_info, nullptr, &outFence) == VK_SUCCESS, "Failed to create fence"))
+			return false;
+
+		return true;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ComputeInstance
+	//////////////////////////////////////////////////////////////////////////
+
 	ComputeInstance::ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService) :
 		mComputeMaterialInstanceResource(&computeMaterialInstanceResource), mRenderService(renderService)
 	{}
@@ -19,32 +51,8 @@ namespace nap
 		if (!errorState.check(mRenderService->isComputeAvailable(), "Failed to create compute instance! Compute is unavailable."))
 			return false;
 
-		// Create command buffer
-		VkCommandBufferAllocateInfo alloc_info = {};
-		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		alloc_info.commandPool = mRenderService->getCommandPool();
-		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		alloc_info.commandBufferCount = 1;
-
-		if (!errorState.check(vkAllocateCommandBuffers(mRenderService->getDevice(), &alloc_info, &mComputeCommandBuffer) == VK_SUCCESS, "Failed to allocate command buffer"))
-			return false;
-
-		// Create semaphore
-		VkSemaphoreCreateInfo semaphore_create_info = {};
-		semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		semaphore_create_info.pNext = nullptr;
-		semaphore_create_info.flags = 0;
-
-		if (!errorState.check(vkCreateSemaphore(mRenderService->getDevice(), &semaphore_create_info, nullptr, &mSemaphore) == VK_SUCCESS, "Failed to create semaphore"))
-			return false;
-
-		// Create fence
-		VkFenceCreateInfo fence_create_info = {};
-		fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fence_create_info.pNext = nullptr;
-		fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-		if (!errorState.check(vkCreateFence(mRenderService->getDevice(), &fence_create_info, nullptr, &mFence) == VK_SUCCESS, "Failed to create fence"))
+		// Create sync objects
+		if (!errorState.check(createSyncObjects(mRenderService->getDevice(), mFence, mSemaphore, errorState), "Failed to create sync objects"))
 			return false;
 
 		// Initialize compute material instance
@@ -57,30 +65,34 @@ namespace nap
 
 	bool ComputeInstance::asyncCompute(uint numInvocations, VkPipelineStageFlags graphicsStageFlags, utility::ErrorState& errorState)
 	{
-		VkSubmitInfo compute_submit_info = {};
-		compute_submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		compute_submit_info.commandBufferCount = 1;
-		compute_submit_info.pCommandBuffers = &mComputeCommandBuffer;
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+
+		VkCommandBuffer compute_command_buffer = mRenderService->getComputeCommandBuffer();
+		submit_info.pCommandBuffers = &compute_command_buffer;
 
 		// Signal the compute ready semaphore when we have finished running the compute shader,
 		// only then the vertex input stage may be executed - graphics waits for compute to be finished
 		SemaphoreWaitInfo wait_info = { mSemaphore, graphicsStageFlags };
 		mRenderService->pushFrameRenderingDependency(wait_info);
-		compute_submit_info.signalSemaphoreCount = 1;
-		compute_submit_info.pSignalSemaphores = &mSemaphore;
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores = &mSemaphore;
 
-		return computeInternal(numInvocations, compute_submit_info, errorState);
+		return computeInternal(numInvocations, submit_info, errorState);
 	}
 
 
 	bool ComputeInstance::compute(uint numInvocations, utility::ErrorState& errorState)
 	{
-		VkSubmitInfo compute_submit_info = {};
-		compute_submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		compute_submit_info.commandBufferCount = 1;
-		compute_submit_info.pCommandBuffers = &mComputeCommandBuffer;
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
 
-		if (!computeInternal(numInvocations, compute_submit_info, errorState))
+		VkCommandBuffer compute_command_buffer = mRenderService->getComputeCommandBuffer();
+		submit_info.pCommandBuffers = &compute_command_buffer;
+
+		if (!computeInternal(numInvocations, submit_info, errorState))
 		{
 			errorState.fail("Failed to run compute shader");
 			return false;
@@ -98,55 +110,40 @@ namespace nap
 		// Wait for the command buffer to complete execution
 		vkWaitForFences(mRenderService->getDevice(), 1, &mFence, VK_TRUE, UINT64_MAX);
 
-		// Reset command buffer
-		if (!errorState.check(vkResetCommandBuffer(mComputeCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) == VK_SUCCESS, "Failed to reset compute command buffer"))
-			return false;
-
 		// Begin command buffer
 		VkCommandBufferBeginInfo begin_info = {};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		begin_info.pNext = nullptr;
 
-		if (!errorState.check(vkBeginCommandBuffer(mComputeCommandBuffer, &begin_info) == VK_SUCCESS, "Failed to record to compute command buffer"))
+		if (!errorState.check(vkBeginCommandBuffer(mRenderService->getComputeCommandBuffer(), &begin_info) == VK_SUCCESS, "Failed to record to compute command buffer"))
 			return false;
 
 		// Fetch and bind pipeline
 		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, errorState);
-		vkCmdBindPipeline(mComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
+		vkCmdBindPipeline(mRenderService->getComputeCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
 
 		// Acquire new / unique descriptor set
 		const DescriptorSet& descriptor_set = mComputeMaterialInstance.updateCompute();
 
 		// Bind shader descriptors
-		vkCmdBindDescriptorSets(mComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
+		vkCmdBindDescriptorSets(mRenderService->getComputeCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
 		uint group_count_x = numInvocations / getLocalWorkGroupSize().x + 1;
-		vkCmdDispatch(mComputeCommandBuffer, group_count_x, 1, 1);
+		vkCmdDispatch(mRenderService->getComputeCommandBuffer(), group_count_x, 1, 1);
 
-		// Copy
-		mDispatchFinished(descriptor_set);
-
-		// Add synchronization between compute and graphics queues if their queue indices are different
-		if (mRenderService->getQueueIndex() != mRenderService->getComputeQueueIndex())
-		{
-			//VkBufferMemoryBarrier buffer_barrier = {}
-			//vkCmdPipelineBarrier()...
-		}
+		// Signal any connected slots for the user to issue vkCmd commands, or store descriptorset information
+		mPreEndCommandBuffer(descriptor_set);
 
 		// End recording compute commands
-		if (!errorState.check(vkEndCommandBuffer(mComputeCommandBuffer) == VK_SUCCESS, "Failed to rebuild compute command buffer"))
+		if (!errorState.check(vkEndCommandBuffer(mRenderService->getComputeCommandBuffer()) == VK_SUCCESS, "Failed to rebuild compute command buffer"))
 			return false;
 
-		// Submit
-		// TODO: Keep in mind race conditions regarding semaphores when e.g. (1) switching windows or (2) destroying resources
+		// Submit command buffer to compute queue
 		vkResetFences(mRenderService->getDevice(), 1, &mFence);
 		if (!errorState.check(vkQueueSubmit(mRenderService->getComputeQueue(), 1, &submitInfo, mFence) == VK_SUCCESS, "Failed to submit compute work"))
 			return false;
-
-		// TODO: Use a semaphore to specify a dependency between the compute and graphics queue (VK_PIPELINE_STAGE_VERTEX_INPUT_BIT)
-		// TODO: Release storage buffer if graphics and compute queue indices differ
 
 		return true;
 	}
@@ -154,11 +151,8 @@ namespace nap
 
 	ComputeInstance::~ComputeInstance()
 	{
-		mRenderService->queueVulkanObjectDestructor([fence = mFence, semaphore = mSemaphore, cmd_buf = mComputeCommandBuffer](RenderService& renderService)
+		mRenderService->queueVulkanObjectDestructor([fence = mFence, semaphore = mSemaphore](RenderService& renderService)
 		{
-			if (cmd_buf != VK_NULL_HANDLE)
-				vkFreeCommandBuffers(renderService.getDevice(), renderService.getCommandPool(), 1, &cmd_buf);
-
 			if (fence != VK_NULL_HANDLE)
 				vkDestroyFence(renderService.getDevice(), fence, nullptr);
 

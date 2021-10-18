@@ -490,11 +490,14 @@ namespace nap
 	 * Selects a queue family index that supports the desired capabilities.
 	 * Returns false if no valid queue family index was found.
 	 */
-	bool selectQueueFamilyIndex(int device_index, VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, const std::vector<VkQueueFamilyProperties> queue_families, int& queue_family_index)
+	bool selectQueueFamilyIndex(VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, const std::vector<VkQueueFamilyProperties> queue_families, const std::vector<int>& search_mask, int& queue_family_index)
 	{
 		// We want to make sure that we have a queue that supports the required flags
 		for (uint32 index = 0; index < static_cast<uint32>(queue_families.size()); ++index)
 		{
+			if (index >= search_mask.size() || search_mask[index] <= 0)
+				continue;
+
 			// Make sure this family supports presentation to the given surface
 			// If no present surface is specified (e.g. running headless) this check is not performed.
 			if (present_surface != VK_NULL_HANDLE)
@@ -569,7 +572,8 @@ namespace nap
 
 			// Ensure there's a compatible queue for this device
 			int selected_graphics_queue_idx = -1;
-			if (!selectQueueFamilyIndex(device_idx, physical_device, requiredQueueFlags, presentSurface, queue_families, selected_graphics_queue_idx))
+			std::vector<int> search_mask(queue_families.size(), 1);
+			if (!selectQueueFamilyIndex(physical_device, requiredQueueFlags, presentSurface, queue_families, search_mask, selected_graphics_queue_idx))
 			{
 				Logger::warn("%d: Unable to find compatible graphics/transfer queue family", device_idx);
 				continue;
@@ -577,15 +581,15 @@ namespace nap
 
 			// If required, ensure there's a compatible compute queue for this device
 			int selected_compute_queue_idx = -1;
+			search_mask[selected_graphics_queue_idx] = 0;
 			if (requiredQueueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
 				// Only search unselected queue families
-				auto remaining_queue_families = queue_families;
-				remaining_queue_families.erase(remaining_queue_families.begin() + selected_graphics_queue_idx);
-				if (!selectQueueFamilyIndex(device_idx, physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, remaining_queue_families, selected_compute_queue_idx))
+				if (!selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx))
 				{
 					// Search again with all queue families
-					if (!selectQueueFamilyIndex(device_idx, physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, selected_compute_queue_idx))
+					search_mask.resize(queue_families.size(), 1);
+					if (!selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx))
 					{
 						Logger::warn("%d: Unable to find compatible compute queue family", device_idx);
 						continue;
@@ -684,9 +688,8 @@ namespace nap
 
 			auto& queue_create_info = queue_create_infos.back();
 			queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queue_create_info.queueFamilyIndex = physicalDevice.getQueueIndex();
+			queue_create_info.queueFamilyIndex = physicalDevice.getComputeQueueIndex();
 			queue_create_info.queueCount = 1;
-			std::vector<float> queue_prio = { 1.0f };
 			queue_create_info.pQueuePriorities = queue_prio.data();
 			queue_create_info.pNext = nullptr;
 			queue_create_info.flags = 0;
@@ -1560,14 +1563,24 @@ namespace nap
 		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
 		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
 
-		// If available, get a compatible compute queue that will process compute commands
-		if (mPhysicalDevice.getComputeQueueIndex() != -1)
+		// If available, get a compatible compute queue that will process compute commands	
+		bool dedicated_compute_resources = false;
+		if (isComputeAvailable())
 		{
 			// Get compute queue
 			if (mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
+			{
+				// Acquire and create dedicate compute resources
+				dedicated_compute_resources = true;
 				vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
+				if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getComputeQueueIndex(), mComputeCommandPool), "Failed to create Compute Command Pool"))
+					return false;
+			}
 			else
+			{
 				mComputeQueue = mQueue;
+				mComputeCommandPool = mCommandPool;
+			}
 		}
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
@@ -1600,6 +1613,13 @@ namespace nap
 				return false;
 
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffers, errorState))
+				return false;
+		}
+
+		// Create compute command buffer
+		if (dedicated_compute_resources)
+		{
+			if (!errorState.check(createCommandBuffer(mDevice, mComputeCommandPool, mComputeCommandBuffer, errorState), "Failed to create dedicated compute command buffer"))
 				return false;
 		}
 
@@ -1738,6 +1758,9 @@ namespace nap
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
 		}
 
+		if (mComputeCommandBuffer != VK_NULL_HANDLE)
+			vkFreeCommandBuffers(mDevice, mComputeCommandPool, 1, &mComputeCommandBuffer);
+
 		mFramesInFlight.clear();
 		mEmptyTexture.reset();
 		mDescriptorSetCaches.clear();
@@ -1753,6 +1776,12 @@ namespace nap
 		{
 			vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
 			mCommandPool = VK_NULL_HANDLE;
+		}
+
+		if (mComputeCommandPool != VK_NULL_HANDLE)
+		{
+			vkDestroyCommandPool(mDevice, mComputeCommandPool, nullptr);
+			mComputeCommandPool = VK_NULL_HANDLE;
 		}
 
 		if (mDevice != VK_NULL_HANDLE)

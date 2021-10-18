@@ -616,6 +616,12 @@ namespace nap
 		 * @return the command buffer that is being recorded.
 		 */
 		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+
+		/**
+		 * Returns the compute command buffer
+		 * @return the command buffer, returns nullptr if compute is not supported or enabled
+		 */
+		VkCommandBuffer getComputeCommandBuffer()									{ assert(mComputeCommandBuffer != nullptr); return mComputeCommandBuffer; }
 		
 		/**
 		 * Returns the window that is being rendered to, only valid between a
@@ -743,6 +749,13 @@ namespace nap
 		 * @return handle to the Vulkan command pool object.
 		 */
 		VkCommandPool getCommandPool() const										{ return mCommandPool; }
+
+		/**
+		 * Returns a handle to the Vulkan compute command pool object.
+		 * Command pools are opaque objects that command buffer memory is allocated from.
+		 * @return handle to the Vulkan command pool object. VK_NULL_HANDLE is compute is disabled.
+		 */
+		VkCommandPool getComputeCommandPool() const									{ return mComputeCommandPool; }
 		
 		/**
 		 * @return flags that specify which depth aspects of an image are included in a view.
@@ -1090,7 +1103,6 @@ namespace nap
 
 		int										mCurrentFrameIndex = 0;
 		std::vector<Frame>						mFramesInFlight;
-		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
 		RenderWindow*							mCurrentRenderWindow = nullptr;
 
 		std::vector<SemaphoreWaitList>			mSemaphoreWaitList;
@@ -1103,13 +1115,22 @@ namespace nap
 		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
 		PhysicalDevice							mPhysicalDevice;
 		VkDevice								mDevice = VK_NULL_HANDLE;
+
 		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
-		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
-		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkCommandPool							mComputeCommandPool = VK_NULL_HANDLE;
+
 		VkQueue									mQueue = VK_NULL_HANDLE;
 		VkQueue									mComputeQueue = VK_NULL_HANDLE;
+
+		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
+		VkCommandBuffer							mComputeCommandBuffer = VK_NULL_HANDLE;
+
 		PipelineCache							mPipelineCache;
 		ComputePipelineCache					mComputePipelineCache;
+
+		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
+		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;
 		bool									mSDLInitialized = false;

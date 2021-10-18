@@ -3,15 +3,7 @@
         {
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "Compute_PositionBuffer",
-                    "Name": "PositionBuffer",
-                    "Usage": "Static",
-                    "Uniforms": []
-                }
-            ],
+            "Uniforms": [],
             "Samplers": [],
             "Shader": "ComputeShader"
         },
@@ -125,44 +117,22 @@
                         "Samplers": []
                     },
                     "NumParticles": 1000000,
-                    "SpawnRate": 400.0,
-                    "LifeTime": 6.0,
                     "Position": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
                     },
-                    "PositionVariation": {
-                        "x": 4.25,
-                        "y": 0.10000000149011612,
-                        "z": 4.25
-                    },
-                    "LifeTimeVariation": 0.33000001311302187,
                     "Size": 0.061250001192092898,
-                    "SizeVariation": 0.04500000178813934,
                     "Rotation": 0.0,
                     "RotationVariation": 1.0,
                     "RotationSpeed": 5.0,
-                    "RotationSpeedVariation": 3.0,
                     "Spread": 25.0,
                     "Velocity": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
                     },
-                    "VelocityVariation": 0.25,
-                    "StartColor": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0,
-                        "w": 1.0
-                    },
-                    "EndColor": {
-                        "x": 1.0,
-                        "y": 1.0,
-                        "z": 1.0,
-                        "w": 1.0
-                    }
+                    "VelocityVariation": 0.25
                 },
                 {
                     "Type": "nap::TransformComponent",
