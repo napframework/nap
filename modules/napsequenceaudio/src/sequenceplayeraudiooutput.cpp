@@ -59,7 +59,7 @@ namespace nap
             {
                 auto output_node = node_manager.makeSafe<OutputNode>(node_manager);
                 output_node->setOutputChannel(i);
-                output_node->audioInput.connect(mix_nodes[i]->audioOutput);
+                output_node->audioInput.enqueueConnect(mix_nodes[i]->audioOutput);
                 output_nodes.emplace_back(std::move(output_node));
             }
         }

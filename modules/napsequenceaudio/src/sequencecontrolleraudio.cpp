@@ -14,6 +14,9 @@ namespace nap
 {
 	double SequenceControllerAudio::segmentAudioStartTimeChange(const std::string& trackID, const std::string& segmentID, double time)
 	{
+        /**
+         * Change segment start time and make sure segments don't overlap
+         */
 		double return_time = time;
 		performEditAction([this, trackID, segmentID, time, &return_time]()
 	    {
@@ -26,14 +29,14 @@ namespace nap
 				auto& segment_audio = static_cast<SequenceTrackSegmentAudio&>(*segment);
 				segment_audio.mStartTime = time;
 
-				if( segment_audio.mStartTime < 0.0)
+				if(segment_audio.mStartTime < 0.0)
 					segment_audio.mStartTime = 0.0;
 
 				return_time = segment_audio.mStartTime;
 			}
 
+            // make sure segments don't overlap
 		  	alignAudioSegments(trackID);
-
 			updateTracks();
 		});
 
@@ -43,6 +46,9 @@ namespace nap
 
 	double SequenceControllerAudio::segmentAudioStartTimeInSegmentChange(const std::string& trackID, const std::string& segmentID, double time)
 	{
+        /**
+         * Change segment start time in segment and make sure segments don't overlap
+         */
 		double new_time = 0.0;
 		performEditAction([this, trackID, segmentID, time, &new_time]()
 		{
@@ -63,6 +69,9 @@ namespace nap
 					segment_audio.mDuration -= difference;
 				}
 			}
+
+            // make sure audio segments don't overlap
+            alignAudioSegments(trackID);
 		});
 
 		return new_time;
@@ -71,6 +80,9 @@ namespace nap
 
 	double SequenceControllerAudio::segmentAudioDurationChange(const std::string& trackID, const std::string& segmentID, double newDuration)
 	{
+        /**
+         * Change segment duration and make sure segments don't overlap
+         */
 		double adjusted_duration = 0.0;
 		performEditAction([this, trackID, segmentID, newDuration, &adjusted_duration]()
 		{
@@ -90,6 +102,9 @@ namespace nap
 					segment_audio.mDuration = adjusted_duration;
 				}
 			}
+
+            // make sure audio segments don't overlap
+            alignAudioSegments(trackID);
 		});
 
 		return adjusted_duration;
@@ -105,6 +120,9 @@ namespace nap
 
 	void SequenceControllerAudio::deleteSegment(const std::string& trackID, const std::string& segmentID)
 	{
+        /**
+         * Delete an audio segment
+         */
 		performEditAction([this, trackID, segmentID]()
 		{
 			//
@@ -133,6 +151,9 @@ namespace nap
 
 	std::string SequenceControllerAudio::insertAudioSegment(const std::string& trackID, double time, const std::string& audioBufferID)
 	{
+        /**
+         * Create new AudioSegment
+         */
 		std::string created_segment_id = "";
 		performEditAction([this, trackID, time, audioBufferID, &created_segment_id]() mutable
 		{
@@ -154,16 +175,18 @@ namespace nap
 				nap::Logger::error("Couldn't find buffer id %s", audioBufferID.c_str());
 			}
 
-			//
+			// find track
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
+            // create resource ptr
 			track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentAudio>(new_segment.get()));
 
+            // move ownership
 			getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
+            // make sure segments stay aligned
 		  	alignAudioSegments(trackID);
-
 			updateTracks();
 		});
 
@@ -177,6 +200,9 @@ namespace nap
 															double duration,
 															double startTimeInSegment)
 	{
+        /**
+         * Create a new audio segment
+         */
 		std::string created_segment_id = "";
 		performEditAction([	this,
 						   	trackID,
@@ -197,16 +223,18 @@ namespace nap
 			new_segment->mDuration = duration;
 			new_segment->mStartTimeInAudioSegment = startTimeInSegment;
 
-			//
+			// find track
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
 
+            // create resource ptr
 			track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentAudio>(new_segment.get()));
 
+            // move ownership
 			getPlayerOwnedObjects().emplace_back(std::move(new_segment));
 
+            // make sure audio segments stay aligned
 			alignAudioSegments(trackID);
-
 			updateTracks();
 		});
 
@@ -216,13 +244,16 @@ namespace nap
 
 	void SequenceControllerAudio::addNewAudioTrack()
 	{
+        /**
+         * Create new audio track
+         */
 		performEditAction([this]()
 		{
 			// create sequence track
 			std::unique_ptr<SequenceTrackAudio> sequence_track = std::make_unique<SequenceTrackAudio>();
 			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
-			//
+			// create a resource pointer
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackAudio>(sequence_track.get()));
 
 			// move ownership of unique ptrs
@@ -240,6 +271,9 @@ namespace nap
 
 	audio::AudioBufferResource* SequenceControllerAudio::findAudioBufferForTrack(const std::string& trackID, const std::string& audioBufferID)
 	{
+        /**
+         * Find audio buffer with specified ID, return nullptr when not found
+         */
 		SequenceTrack* track = findTrack(trackID);
 		assert(track != nullptr); // track not found
 
@@ -273,6 +307,9 @@ namespace nap
 
 	void SequenceControllerAudio::changeAudioSegmentAudioBuffer(const std::string& trackID, const std::string& segmentID, const std::string& audioBufferID)
 	{
+        /*
+         * Find segment and change audio buffer id. Then change duration to match size of newly assigned audio buffer
+         */
 		performEditAction([this, trackID, segmentID, audioBufferID]()
 		{
 			auto* buffer = findAudioBufferForTrack(trackID, audioBufferID);
@@ -294,7 +331,9 @@ namespace nap
 
 	void SequenceControllerAudio::alignAudioSegments(const std::string& trackID)
 	{
-		//
+		/**
+		 * Sort segments by time, check if they overlap and if segments overlap adjust the start time
+		 */
 		SequenceTrack* track = findTrack(trackID);
 		assert(track != nullptr); // track not found
 
