@@ -378,8 +378,28 @@ namespace nap
 			return;
 		}
 
-		// set whether the response can be shared with requesting code from the given origin.
+		// Set whether the response can be shared with requesting code from the given origin.
 		conp->append_header("Access-Control-Allow-Origin", mAccessAllowControlOrigin);
+
+		// Get request method
+		std::string method = conp->get_request().get_method();
+
+		// Handle CORS preflight request
+		if (method.compare("OPTIONS") == 0)
+		{
+			conp->set_status(websocketpp::http::status_code::no_content);
+			conp->append_header("Access-Control-Allow-Methods", "OPTIONS, POST");
+			conp->append_header("Access-Control-Allow-Headers", "Content-Type");
+			return;
+		}
+
+		// Reject methods other than OPTIONS and POST
+		if (method.compare("POST") != 0)
+		{
+			conp->set_status(websocketpp::http::status_code::method_not_allowed,
+				"only OPTIONS and POST requests are allowed");
+			return;
+		}
 
 		// When there is no access policy the server doesn't generate tickets
 		if (mMode == EAccessMode::EveryOne)
