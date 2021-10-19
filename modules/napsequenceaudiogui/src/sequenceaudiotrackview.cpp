@@ -488,11 +488,11 @@ namespace nap
 								{
 									// draw points of curve
 									draw_list->AddPolyline(
-										&*waveform.begin(),	// points array
-										waveform.size(),		// size of points array
-                                        mService.getColors().mHigh,		// color
-										false,									// closed
-										2.0f * mState.mScale);		// thickness
+										&*waveform.begin(), // points array
+										waveform.size(), // size of points array
+                                        mService.getColors().mHigh, // color
+										false, // closed
+										2.0f * mState.mScale); // thickness
 								}
 							}
 						}

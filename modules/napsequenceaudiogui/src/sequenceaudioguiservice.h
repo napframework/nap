@@ -41,7 +41,7 @@ namespace nap
 		SequenceAudioGUIService(ServiceConfiguration* configuration);
 
 		/**
-		 * Deconstructor
+		 * Destructor
 		 */
 		~SequenceAudioGUIService() override;
 

@@ -266,12 +266,9 @@ namespace nap
                 float scroll = ImGui::GetIO().MouseWheel;
                 if(scroll != 0.0f)
                 {
-                    if(mState.mAction->isAction<None>())
-                    {
-                        float new_resolution = mState.mHorizontalResolution + ImGui::GetIO().MouseWheel * 5.0f;
-                        new_resolution = math::max<float>(new_resolution, 2.5f);
-                        mState.mAction = createAction<ChangeHorizontalResolution>(new_resolution);
-                    }
+					float new_resolution = mState.mHorizontalResolution + ImGui::GetIO().MouseWheel * 5.0f;
+					new_resolution = math::max<float>(new_resolution, 2.5f);
+					mState.mAction = createAction<ChangeHorizontalResolution>(new_resolution);
                 }
 			}
 
