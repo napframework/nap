@@ -30,21 +30,8 @@ namespace nap
 
         bool SequencePlayerAudioOutputComponentInstance::init(utility::ErrorState &errorState)
         {
-            /**
-             * Create OutputNode for each channel of SequencePlayerAudioOutput and connect pins with SequencePlayerAudioOutput
-             */
-            auto *audio_service = getEntityInstance()->getCore()->getService<AudioService>();
-            auto &node_manager = audio_service->getNodeManager();
-
             auto *resource = getComponent<SequencePlayerAudioOutputComponent>();
             mSequencePlayerAudioOutput = resource->mSequencePlayerAudioOutput.get();
-
-            for (int channel = 0; channel < mSequencePlayerAudioOutput->mMaxChannels; channel++)
-            {
-                auto output_node = node_manager.makeSafe<OutputNode>(node_manager);
-                mSequencePlayerAudioOutput->connectInputPin(output_node->audioInput, channel);
-                mOutputNodes.emplace_back(std::move(output_node));
-            }
 
             return true;
         }
@@ -52,11 +39,6 @@ namespace nap
 
         void SequencePlayerAudioOutputComponentInstance::onDestroy()
         {
-            for (int channel = 0; channel < mSequencePlayerAudioOutput->mMaxChannels; channel++)
-            {
-                assert(channel < mOutputNodes.size());
-                mSequencePlayerAudioOutput->disconnectInputPin(mOutputNodes[channel]->audioInput, channel);
-            }
         }
     }
 }

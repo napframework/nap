@@ -31,9 +31,13 @@ namespace nap
 
 	/**
 	 * The SequencePlayerAudioOutput is responsible for translating updates from SequencePlayerAudioAdapters to
-	 * appropriate calls to audio::BufferPlayerNodes. When an adapter registers itself to the SequencePlayerAudioOutput
-	 * multiple BufferPlayerNodes are created, each adapter gets its own BufferPlayerNode for each AudioBufferResource
-	 * and channel.
+	 * appropriate calls to audio::MultiSampleBufferPlayerNodes. When an adapter registers itself to the SequencePlayerAudioOutput
+	 * multiple MultiSampleBufferPlayerNodes are created, each adapter gets its own MultiSampleBufferPlayerNode for each AudioBufferResource.
+	 * All MultiSampleBufferPlayerNodes output pins are connected to MixNodes owned by the SequencePlayerAudioOutput.
+	 * You can connect your own Node inputPins to the appropriate outputPins using connectPinaudio::InputPin& inputPin, int channel)
+	 * or getOutputForChannel(int channel).
+	 * When mCreateOutputNodes is set to true, the SequencePlayerAudioOutput will create it's own OutputNodes routing the audio to the selected
+	 * audio interface by the AudioService.
 	 */
 	class NAPAPI SequencePlayerAudioOutput final: public SequencePlayerOutput
 	{
@@ -82,7 +86,7 @@ namespace nap
         /**
          * Returns OutputPin for given channel. Assert when channel index is out of bounds.
          * @param channel
-         * @return
+         * @return pointer to outputPin of given channel
          */
         audio::OutputPin* getOutputForChannel(int channel);
 

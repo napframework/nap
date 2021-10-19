@@ -1,6 +1,27 @@
 {
     "Objects": [
         {
+            "Type": "nap::Entity",
+            "mID": "AudioEntity",
+            "Components": [
+                {
+                    "Type": "nap::audio::SequencePlayerAudioOutputComponent",
+                    "mID": "nap::audio::SequencePlayerAudioOutputComponent_1a4a883a",
+                    "Sequence Player Audio Output": "SequencePlayerAudioOutput"
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "mID": "nap::audio::OutputComponent_2bd2b70a",
+                    "Input": "./nap::audio::SequencePlayerAudioOutputComponent_1a4a883a",
+                    "Routing": [
+                        0,
+                        1
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": false,
@@ -101,7 +122,12 @@
         {
             "Type": "nap::Scene",
             "mID": "Scene",
-            "Entities": []
+            "Entities": [
+                {
+                    "Entity": "AudioEntity",
+                    "InstanceProperties": []
+                }
+            ]
         },
         {
             "Type": "nap::SequenceEditor",
@@ -151,7 +177,7 @@
                 {
                     "Type": "nap::SequencePlayerAudioOutput",
                     "mID": "SequencePlayerAudioOutput",
-                    "Create Output Nodes": true,
+                    "Create Output Nodes": false,
                     "Max Channels": 2
                 }
             ],

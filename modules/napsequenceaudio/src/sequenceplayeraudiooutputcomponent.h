@@ -22,19 +22,19 @@ namespace nap
         class SequencePlayerAudioOutputComponentInstance;
 
         /**
-         * SequencePlayerAudioOutputComponent is an component that routs output from SequencePlayerAudioOutput to the audio interface.
-         * When "Create Output Nodes" in SequencePlayerAudioOutput is set to true, this component is not necessary because the
-         * SequencePlayerAudioOutput will create its own Output nodes.
+         * SequencePlayerAudioOutputComponent is an component that routes output from SequencePlayerAudioOutput and exposes it
+		 * to other AudioComponents.
+		 * The component has to be used in combination with an @OutputComponent to send the playback to DAC.
          */
-        class NAPAPI SequencePlayerAudioOutputComponent : public Component
+        class NAPAPI SequencePlayerAudioOutputComponent : public AudioComponentBase
         {
-            RTTI_ENABLE(nap::Component)
+            RTTI_ENABLE(AudioComponentBase)
             DECLARE_COMPONENT(SequencePlayerAudioOutputComponent, SequencePlayerAudioOutputComponentInstance)
         public:
             /**
              * Constructor
              */
-            SequencePlayerAudioOutputComponent() : nap::Component()
+            SequencePlayerAudioOutputComponent() : AudioComponentBase()
             {}
 
         public:
@@ -42,9 +42,9 @@ namespace nap
         };
 
 
-        class NAPAPI SequencePlayerAudioOutputComponentInstance : public ComponentInstance
+        class NAPAPI SequencePlayerAudioOutputComponentInstance : public AudioComponentBaseInstance
         {
-            RTTI_ENABLE(nap::ComponentInstance)
+            RTTI_ENABLE(AudioComponentBaseInstance)
 
         public:
             /**
@@ -52,9 +52,14 @@ namespace nap
              * @param entity
              * @param resource
              */
-            SequencePlayerAudioOutputComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity,
-                                                                                                          resource)
+            SequencePlayerAudioOutputComponentInstance(EntityInstance& entity, Component& resource)
+				: AudioComponentBaseInstance(entity, resource)
             {}
+
+			// Inherited from AudioComponentBaseInstance
+			int getChannelCount() const override { return mSequencePlayerAudioOutput->getChannelCount(); }
+
+			OutputPin* getOutputForChannel(int channel) override { return mSequencePlayerAudioOutput->getOutputForChannel(channel); }
 
             /**
              * onDestroy is called before deconstruction
@@ -67,9 +72,6 @@ namespace nap
         private:
             // raw pointer to sequence player audio output
             SequencePlayerAudioOutput*          mSequencePlayerAudioOutput;
-
-            // created output nodes
-            std::vector<SafeOwner<OutputNode>>  mOutputNodes;
         };
 
     }
