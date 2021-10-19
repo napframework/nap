@@ -7,6 +7,7 @@
 #include "sequenceplayeraudiooutput.h"
 #include "sequenceguiservice.h"
 #include "sequenceplayeraudioclock.h"
+#include "sequenceaudioguiservice.h"
 
 // nap includes
 #include <nap/logger.h>
@@ -29,6 +30,8 @@ namespace nap
 	SequenceAudioTrackView::SequenceAudioTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
 		: SequenceTrackView(view, state)
 	{
+		mAudioGUIService = mService.getCore().getService<SequenceAudioGUIService>();
+
 		registerActionHandler(RTTI_OF(AssignOutputIDToTrack), [this]{ handleAssignOutputIDToTrack(); });
 		registerActionHandler(RTTI_OF(StartDraggingSegment), [this]{ handleSegmentDrag(); });
 		registerActionHandler(RTTI_OF(DraggingSegment), [this]{ handleSegmentDrag(); });
@@ -45,7 +48,7 @@ namespace nap
 	{
 		ImGui::Text("Assigned Audio Output");
 
-        float offset = 5 * mState.mScale;
+        const float offset = 5 * mState.mScale;
 		ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
 		inspector_cursor_pos.x += offset;
 		inspector_cursor_pos.y += offset;
@@ -78,7 +81,8 @@ namespace nap
 			}
 		}
 
-		ImGui::PushItemWidth(200.0f * mState.mScale);
+		const float item_width = 200.0f * mState.mScale;
+		ImGui::PushItemWidth(item_width);
 		if (Combo(
 			"",
 			&current_item, audio_outputs))
@@ -122,31 +126,26 @@ namespace nap
         // handle insertion of segment
         if (mState.mAction->isAction<None>())
         {
-            if (ImGui::IsMouseHoveringRect(
-                    trackTopLeft, // top left position
-                    { trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
+            if (ImGui::IsMouseHoveringRect(	trackTopLeft, 
+											{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
             {
                 // position of mouse in track
-                draw_list->AddLine(
-                        { mState.mMousePos.x, trackTopLeft.y }, // top left
-                        { mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-                        mService.getColors().mFro2, // color
-                        1.0f); // thickness
+                draw_list->AddLine(	{ mState.mMousePos.x, trackTopLeft.y }, // top left
+									{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+									mService.getColors().mFro2, // color
+									1.0f); // thickness
 
-                        ImGui::BeginTooltip();
+				// draw tooltip
+				ImGui::BeginTooltip();
+				ImGui::Text(formatTimeString(mState.mMouseCursorTime).c_str());
+				ImGui::EndTooltip();
 
-                        ImGui::Text(formatTimeString(mState.mMouseCursorTime).c_str());
-
-                        ImGui::EndTooltip();
-
-                        // right mouse down
-                        if (ImGui::IsMouseClicked(1))
-                        {
-                            double time = mState.mMouseCursorTime;
-
-                            //
-                            mState.mAction = createAction<OpenInsertSegmentPopup>(track.mID, time, track.get_type());
-                        }
+				// right mouse down, create InsertSegmentPopup
+				if (ImGui::IsMouseClicked(1))
+				{
+					double time = mState.mMouseCursorTime;
+					mState.mAction = createAction<OpenInsertSegmentPopup>(track.mID, time, track.get_type());
+				}
             }
         }
 
@@ -157,12 +156,13 @@ namespace nap
 
             if (action->mTrackID == track.mID)
             {
-                // position of insertion in track
+				// position of insertion in track
+				const float line_thickness = 1.0f * mState.mScale;
                 draw_list->AddLine(
                         { trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
                         { trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
                         mService.getColors().mFro2, // color
-                        1.0f); // thickness
+						line_thickness); // thickness
             }
         }
 
@@ -174,11 +174,12 @@ namespace nap
             if (action->mTrackID == track.mID)
             {
                 // position of insertion in track
+				const float line_thickness = 1.0f * mState.mScale;
                 draw_list->AddLine(
                         { trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
                         { trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
                         mService.getColors().mFro2, // color
-                        1.0f); // thickness
+						line_thickness); // thickness
             }
         }
 
@@ -190,15 +191,11 @@ namespace nap
 			float segment_x	   	= (float)(segment->mStartTime) 	* mState.mStepSize;
 			float segment_width = (float)(segment->mDuration) 	* mState.mStepSize;
 
-			// TODO : put this in service
-			const ImU32 audio_segment_background 					= 3207932457;
-			const ImU32 audio_segment_background_hovering 			= 3211416658;
-			const ImU32 audio_segment_background_clipboard  		= 1080650184;
-			const ImU32 audio_segment_background_hovering_clipboard = 2154392008;
-
+			// calc segment top left and bottom right
 			const float track_height = mState.mTrackHeight;
-			ImVec2 segment_top_left 	= { trackTopLeft.x + segment_x, trackTopLeft.y + 1 };
-			ImVec2 segment_bottom_right = { trackTopLeft.x + segment_x + segment_width, trackTopLeft.y + track_height - 1 };
+			const float one_pixel_offset = 1.0f * mState.mScale;
+			ImVec2 segment_top_left 	= { trackTopLeft.x + segment_x, trackTopLeft.y + one_pixel_offset };
+			ImVec2 segment_bottom_right = { trackTopLeft.x + segment_x + segment_width, trackTopLeft.y + track_height - one_pixel_offset };
 
 			/**
 			 * Handle hovering and dragging of left handler
@@ -380,10 +377,10 @@ namespace nap
 				segment_top_left, // top left
 				segment_bottom_right, // bottom right
 				segment_in_clipboard ?
-									 (hovering_segment ? audio_segment_background_hovering_clipboard : audio_segment_background_clipboard ) :
-									 (hovering_segment ? audio_segment_background_hovering : audio_segment_background)); // color
+					(hovering_segment ? mAudioGUIService->getColors().mAudioSegmentBackgroundClipboardHovering : mAudioGUIService->getColors().mAudioSegmentBackgroundClipboard) :
+					(hovering_segment ? mAudioGUIService->getColors().mAudioSegmentBackgroundHovering : mAudioGUIService->getColors().mAudioSegmentBackground)); // color
 
-			// upcast segment
+			// up cast segment
 			assert(segment.get()->get_type().is_derived_from<SequenceTrackSegmentAudio>()); // type mismatch
 			auto* segment_audio = static_cast<SequenceTrackSegmentAudio*>(segment.get());
 

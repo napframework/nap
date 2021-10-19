@@ -17,6 +17,7 @@ namespace nap
 
 	// forward declares
 	class SequencePlayerAudioOutput;
+	class SequenceAudioGUIService;
 
 	/**
 	 * The SequenceAudioTrackView is created by the SequenceEditorGUI for SequenceAudioTrack types
@@ -100,6 +101,9 @@ namespace nap
 		 * @return vector of audio buffers ids that can be assigned by an AudioTrack
 		 */
 		std::vector<std::string> getAudioBuffersForTrack(const std::string& trackID);
+
+		// pointer to sequence audio gui service
+		SequenceAudioGUIService* mAudioGUIService = nullptr;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

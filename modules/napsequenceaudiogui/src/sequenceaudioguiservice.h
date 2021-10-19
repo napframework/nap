@@ -18,6 +18,23 @@ namespace nap
 		RTTI_ENABLE(Service)
 	public:
 		/**
+		 * Colors palette used by all sequencer audio gui
+		 */
+		struct Colors
+		{
+			/**
+			 * Initialize palette against SequenceGUIService color palette
+			 * @param palette ImGUI color palette
+			 */
+			void init(const SequenceGUIService::Colors& palette);
+
+			ImU32 mAudioSegmentBackground					= 0; ///< Audio Segment Background Color
+			ImU32 mAudioSegmentBackgroundHovering			= 0; ///< Audio Segment Background Color when hovering
+			ImU32 mAudioSegmentBackgroundClipboard			= 0; ///< Audio Segment Background Color when in clipboard
+			ImU32 mAudioSegmentBackgroundClipboardHovering	= 0; ///< Audio Segment Background Color when in clipboard and hovering
+		};
+
+		/**
 		 * Constructor
 		 * @param configuration pointer to ServiceConfiguration
 		 */
@@ -27,6 +44,11 @@ namespace nap
 		 * Deconstructor
 		 */
 		~SequenceAudioGUIService() override;
+
+		/**
+		 * Return colors of audio segments
+		 */
+		const SequenceAudioGUIService::Colors& getColors() const { return mColors; }
 
 	protected:
 		/**
@@ -51,5 +73,6 @@ namespace nap
          */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
 	private:
+		SequenceAudioGUIService::Colors mColors;
 	};
 }

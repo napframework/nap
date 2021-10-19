@@ -36,6 +36,30 @@ namespace nap
 	}
 
 
+	void SequenceAudioGUIService::Colors::init(const SequenceGUIService::Colors& palette)
+	{
+		// audio segment background
+		ImVec4 audio_segment_background_float4 = ImGui::ColorConvertU32ToFloat4(palette.mFro1); 
+		audio_segment_background_float4.w = 0.25f;
+		mAudioSegmentBackground = ImGui::ColorConvertFloat4ToU32(audio_segment_background_float4);
+
+		// audio segment background hovering
+		ImVec4 audio_segment_background_hovering_float4 = ImGui::ColorConvertU32ToFloat4(palette.mFro3);
+		audio_segment_background_hovering_float4.w = 0.25f;
+		mAudioSegmentBackgroundHovering = ImGui::ColorConvertFloat4ToU32(audio_segment_background_hovering_float4); 
+
+		// audio segment clipboard
+		ImVec4 audio_segment_background_clipboard_float4 = ImGui::ColorConvertU32ToFloat4(palette.mHigh);
+		audio_segment_background_clipboard_float4.w = 0.25f;
+		mAudioSegmentBackgroundClipboard = ImGui::ColorConvertFloat4ToU32(audio_segment_background_clipboard_float4);
+
+		// audio segment clipboard hovering
+		ImVec4 audio_segment_background_hovering_clipboard_float4 = ImGui::ColorConvertU32ToFloat4(palette.mHigh);
+		audio_segment_background_hovering_clipboard_float4.w = 0.5f;
+		mAudioSegmentBackgroundClipboardHovering = ImGui::ColorConvertFloat4ToU32(audio_segment_background_hovering_clipboard_float4);
+	}
+
+
 	SequenceAudioGUIService::~SequenceAudioGUIService() = default;
 
 
@@ -53,10 +77,15 @@ namespace nap
 		auto* service_gui = getCore().getService<SequenceGUIService>();
 		assert(service_gui!= nullptr);
 
+		// init colors base on colors of
+		mColors.init(service_gui->getColors());
+
+		// register track view type for SequenceTrackAudio
 		if(!errorState.check(service_gui->registerTrackTypeForView(RTTI_OF(SequenceTrackAudio), RTTI_OF(SequenceAudioTrackView)),
 							 "Error registering track view"))
 			return false;
 
+		// register factory method of SequenceAudioTrackView
 		if(!service_gui->registerTrackViewFactory(RTTI_OF(SequenceAudioTrackView),
 												   [](
 													    SequenceGUIService& service,
