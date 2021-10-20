@@ -7,6 +7,7 @@
 // Internal includes
 #include "vk_mem_alloc.h"
 #include "renderutils.h"
+#include "storagebuffer.h"
 
 // External Includes
 #include <vector>
@@ -31,8 +32,40 @@ namespace nap
 		VkDescriptorSetLayout				mLayout;
 		VkDescriptorSet						mSet;
 		std::vector<BufferData>				mBuffers;
-
 		const std::vector<BufferData>& getBuffers() const { return mBuffers; }
+	};
+
+
+	struct StaticDescriptorSet
+	{
+		VkDescriptorSetLayout							mLayout;
+		VkDescriptorSet									mSet;
+		std::vector<std::unique_ptr<StorageBuffer>>		mBuffers;
+		mutable bool									mUpdated = false;
+
+		const std::vector<std::unique_ptr<StorageBuffer>>& getBuffers() const { return mBuffers; }
+
+		// Construction
+		StaticDescriptorSet() = default;
+
+		// Move construction
+		StaticDescriptorSet(StaticDescriptorSet&& rhs)
+		{
+			mLayout = rhs.mLayout;
+			mSet = rhs.mSet;
+			mBuffers = std::move(rhs.mBuffers);
+			mUpdated = rhs.mUpdated;
+		}
+
+		// Move assignment
+		StaticDescriptorSet& operator=(StaticDescriptorSet&& rhs)
+		{
+			mLayout = rhs.mLayout;
+			mSet = rhs.mSet;
+			mBuffers = std::move(rhs.mBuffers);
+			mUpdated = rhs.mUpdated;
+			return *this;
+		}
 	};
 
 	/** 
@@ -78,7 +111,32 @@ namespace nap
 		DescriptorSetFrameList	mUsedList;					///< List of all used Descriptor, by frame index
 	};
 
+	/**
+	 * 
+	 */
+	class NAPAPI StaticDescriptorSetCache final
+	{
+	public:
+		StaticDescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator);
+		~StaticDescriptorSetCache();
+
+		/**
+		 * Acquires a DescriptorSet from the cache (or allocated it if not in the cache). For new DescriptorSets,
+		 * also allocates Buffers for each UBO from the global Vulkan allocator. The result is a DescriptorSet
+		 * that is fully compatible with the DescriptorSetLayout.
+		 * @param uniformBufferObjects The list of UBOs for this DescriptorSet.
+		 * @param numSamplers The number of samplers for this DescriptorSet
+		 * @return A DescriptorSet that is compatible with the VkDescriptorLayout that was passed upon creation.
+		 */
+		const StaticDescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers);
+
+	private:
+		RenderService* mRenderService;
+		DescriptorSetAllocator* mDescriptorSetAllocator;	///< Allocator that is used to allocate new Descriptors
+		VkDescriptorSetLayout	mLayout;					///< The layout that this cache is managing DescriptorSets for
+		StaticDescriptorSet		mDescriptorSet;				///< Descriptorset
+
+		bool					mAllocated = false;
+	};
+
 } // nap
-
-
-

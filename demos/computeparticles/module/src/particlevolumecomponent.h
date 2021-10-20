@@ -9,7 +9,6 @@
 #include <mesh.h>
 #include <renderablemeshcomponent.h>
 #include <nap/resourceptr.h>
-#include <descriptorsetcache.h>
 #include <computeinstance.h>
 
 namespace nap
@@ -37,7 +36,7 @@ namespace nap
 	 * of 2 triangles connected using 4 vertices and 6 vertex indices. 
 	 * One emitter is rendered using a single draw call, and therefore a single material.
 	 */
-	class ParticleVolumeComponent : public RenderableMeshComponent
+	class NAPAPI ParticleVolumeComponent : public RenderableMeshComponent
 	{
 		RTTI_ENABLE(RenderableMeshComponent)
 		DECLARE_COMPONENT(ParticleVolumeComponent, ParticleVolumeComponentInstance)
@@ -60,7 +59,7 @@ namespace nap
 	/**
 	 * Runtime particle emitter component
 	 */
-	class ParticleVolumeComponentInstance : public RenderableMeshComponentInstance
+	class NAPAPI ParticleVolumeComponentInstance : public RenderableMeshComponentInstance
 	{
 		RTTI_ENABLE(RenderableMeshComponentInstance)
 	public:
@@ -78,15 +77,16 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+
+		bool compute(utility::ErrorState& errorState);
+
 		float mVelocityTimeScale = 5.0f;
 		float mVelocityVariationScale = 1.25f;
 		float mRotationSpeed = 1.0f;
 		float mParticleSize = 1.0f;
 
-		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
-
 	private:
-		ParticleVolumeComponent*			mResource = nullptr;
 		RenderService*						mRenderService = nullptr;
 
 		UniformVec4ArrayInstance*			mPositionStorageUniform = nullptr;
@@ -108,8 +108,6 @@ namespace nap
 		std::unique_ptr<ParticleMesh>		mParticleMesh;
 		std::unique_ptr<ComputeInstance>	mComputeInstance;
 
-		std::function<void(const DescriptorSet& descriptorSet)> mDispatchFinishedCallback = nullptr;
-
-		std::unique_ptr<std::reference_wrapper<const VkBuffer>> mStorageBufferRef;
+		const VkBuffer* mBufferPtr = nullptr;
 	};
 }

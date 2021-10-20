@@ -4,14 +4,8 @@
 
 #include "uniform.h"
 
-RTTI_BEGIN_ENUM(nap::EUniformDataUsage)
-	RTTI_ENUM_VALUE(nap::EUniformDataUsage::Static, "Static"),
-	RTTI_ENUM_VALUE(nap::EUniformDataUsage::DynamicWrite, "DynamicWrite")
-RTTI_END_ENUM
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Uniform)
 	RTTI_PROPERTY("Name", &nap::Uniform::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::Uniform::mUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValue)

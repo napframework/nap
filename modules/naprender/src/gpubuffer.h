@@ -93,6 +93,8 @@ namespace nap
 		 */
 		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 
+		bool setDataInternal(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+
 	private:
 		RenderService*			mRenderService = nullptr;			///< Handle to the render service
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
@@ -102,10 +104,10 @@ namespace nap
 		uint32					mSize = 0;							///< Current used buffer size in bytes
 
 		// Called when usage = static
-		bool setDataInternalStatic(void* data, int elementSize, size_t numVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 		
 		// Called when usage = dynamic write
-		bool setDataInternalDynamic(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 
 		// Uploads data from the staging buffer into GPU buffer. Automatically called by the render service at the appropriate time.
 		// Only occurs when 'usage' = 'static'. Dynamic data shares GPU / CPU memory and is updated immediately.

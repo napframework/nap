@@ -163,7 +163,7 @@ namespace nap
 		/**
 		 * @return The underlying shader
 		 */
-		const ComputeShader& getShader() const { assert(mShader != nullptr); return *mShader; }
+		const ComputeShader& getShader() const				{ assert(mShader != nullptr); return *mShader; }
 
 	public:
 		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The shader that this material is using

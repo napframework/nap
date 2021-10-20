@@ -49,8 +49,8 @@ namespace nap
 		bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Executes the compute shader. This call is blocking.
-		 * @return if the compute work was executed successfully.
+		 * Executes the compute shader.
+		 * @return if the compute work was submitted successfully.
 		 */
 		bool compute(uint numInvocations, utility::ErrorState& errorState);
 
@@ -62,7 +62,7 @@ namespace nap
 		 * @param graphicsStageFlags the graphics stage flags signifying the current computation depends on.
 		 * @return if the compute work was submitted to the compute queue successfully.
 		 */
-		bool asyncCompute(uint numInvocations, VkPipelineStageFlags graphicsStageFlags, utility::ErrorState& errorState);
+		bool compute(uint numInvocations, VkPipelineStageFlags graphicsStageFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return current material used when drawing the mesh.
@@ -79,17 +79,15 @@ namespace nap
 		 * This call can be used to push post-dispatch commands onto the compute command buffer such as vkCmdCopyBuffer.
 		 * Additional synchronization (e.g. vkCmdPipelineBarrier(srcStageMask:COMPUTE, dstStageMask:TRANSFER ...)) must be handled by the user.
 		 */
-		nap::Signal<const DescriptorSet&> mPreEndCommandBuffer;
+		nap::Signal<const DescriptorSet&> mPostDispatch;
 
 	private:
-		bool computeInternal(uint numInvocations, const VkSubmitInfo& submitInfo, utility::ErrorState& errorState);
+		bool computeInternal(uint numInvocations, utility::ErrorState& errorState);
 
 		ComputeMaterialInstanceResource*		mComputeMaterialInstanceResource = nullptr;
 		ComputeMaterialInstance					mComputeMaterialInstance;
 
 		RenderService*							mRenderService = nullptr;
-
-		VkFence									mFence;										///< CPU synchronization with subsequent computations
-		VkSemaphore								mSemaphore;									///< GPU synchronization with vertex input stage 
+		std::vector<VkSemaphore>				mSemaphores;								///< GPU synchronization primitive
 	};
 }

@@ -38,6 +38,46 @@ namespace nap
 		Storage = 1			///< read/write
 	};
 
+	/**
+	 * Supported uniform descriptor set bindings
+	 */
+	enum class EUniformSetBinding : uint8_t
+	{
+		Default = 0,		///< default
+		Static = 1			///< static: update once
+	};
+
+
+	/**
+	 * Returns the vulkan buffer usage flags for a given buffer type
+	 */
+	static VkBufferUsageFlags getBufferUsage(EBufferObjectType type)
+	{
+		if (type == EBufferObjectType::Uniform)
+			return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+		// Storage buffers may be used as vertex attribute buffers on device memory
+		else if (type == EBufferObjectType::Storage)
+			return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	}
+
+
+	/**
+	 * Returns the vulkan descriptor type for a given buffer object type
+	 */
+	static VkDescriptorType getDescriptorType(nap::EBufferObjectType type)
+	{
+		if (type == nap::EBufferObjectType::Uniform)
+			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+		else if (type == nap::EBufferObjectType::Storage)
+			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+
+		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	}
+
 
 	/**
 	 * Uniform shader declaration base class.
@@ -125,7 +165,7 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformStructDeclaration)
 	public:
-		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
+		UniformBufferObjectDeclaration(const std::string& name, int binding, EUniformSetBinding set, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
 
 		UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration& operator=(UniformBufferObjectDeclaration&& inRHS);
@@ -133,6 +173,7 @@ namespace nap
 		UniformBufferObjectDeclaration& operator=(const UniformBufferObjectDeclaration&) = delete;
 
 		int														mBinding;	///< Shader binding identifier
+		EUniformSetBinding										mSet;		///< Shader set binding identifier
 		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment etc.
 		EBufferObjectType										mType;		///< Usage: uniform, storage
 	};

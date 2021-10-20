@@ -74,12 +74,12 @@ namespace nap
 		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
-		auto& comp = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
+		auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
 
-		ImGui::SliderFloat("Velocity Time Scale", &comp.mVelocityTimeScale, 0.0, 10.0f);
-		ImGui::SliderFloat("Velocity Variation Scale", &comp.mVelocityVariationScale, 0.0, 10.0f);
-		ImGui::SliderFloat("Rotation Speed", &comp.mRotationSpeed, 0.0, 50.0f);
-		ImGui::SliderFloat("Particle Size", &comp.mParticleSize, 0.0, 1.0f);
+		ImGui::SliderFloat("Velocity Time Scale", &volume.mVelocityTimeScale, 0.0, 10.0f);
+		ImGui::SliderFloat("Velocity Variation Scale", &volume.mVelocityVariationScale, 0.0, 10.0f);
+		ImGui::SliderFloat("Rotation Speed", &volume.mRotationSpeed, 0.0, 50.0f);
+		ImGui::SliderFloat("Particle Size", &volume.mParticleSize, 0.0, 1.0f);
 		ImGui::End();
 	}
 	
@@ -94,6 +94,16 @@ namespace nap
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
+
+		// Begin recording compute commands
+		if (mRenderService->beginComputeRecording())
+		{
+			utility::ErrorState error_state;
+			auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
+			volume.compute(error_state);
+
+			mRenderService->endComputeRecording();
+		}
 
 		// Begin recording the render commands for the main render window
 		// This prepares a command buffer and starts a render pass

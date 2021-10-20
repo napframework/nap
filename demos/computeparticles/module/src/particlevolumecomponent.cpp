@@ -16,6 +16,7 @@
 #include <renderservice.h>
 #include <renderglobals.h>
 #include <nap/logger.h>
+#include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("ComputeMaterial",			&nap::ParticleVolumeComponent::mComputeMaterial,			nap::rtti::EPropertyMetaData::Required)
@@ -176,18 +177,19 @@ namespace nap
 
 	bool ParticleVolumeComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// Get resource
-		mResource = getComponent<ParticleVolumeComponent>();
-
-		mParticleSize = mResource->mSize;
-		mRotationSpeed = mResource->mRotationSpeed;
-
 		// initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
+		// Get resource
+		ParticleVolumeComponent* resource = getComponent<ParticleVolumeComponent>();
+		mParticleSize = resource->mSize;
+		mRotationSpeed = resource->mRotationSpeed;
+
 		// Initialize particle mesh
-		mParticleMesh->mNumParticles = mResource->mNumParticles;
+		mParticleMesh->mNumParticles = resource->mNumParticles;
+
+		nap::Logger::info("Creating particle mesh...");
 		if (!errorState.check(mParticleMesh->init(errorState), "Unable to create particle mesh"))
 			return false;
 
@@ -200,7 +202,7 @@ namespace nap
 		setMesh(renderableMesh);
 
 		// Create compute instance
-		mComputeInstance = std::make_unique<ComputeInstance>(mResource->mComputeMaterial, mRenderService);
+		mComputeInstance = std::make_unique<ComputeInstance>(resource->mComputeMaterial, mRenderService);
 		if (!errorState.check(mComputeInstance->init(errorState), "Failed to initialize compute instance"))
 			return false;
 
@@ -221,6 +223,8 @@ namespace nap
 			mParticleCountUniform->setValue(mParticleMesh->mNumParticles);
 		}
 
+		nap::Logger::info("%s: Building GPU storage buffers...", mID.c_str());
+
 		// Set storage buffer uniforms
 		UniformStructInstance* position_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::positionBufferStruct);
 		UniformStructInstance* velocity_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::velocityBufferStruct);
@@ -236,35 +240,37 @@ namespace nap
 
 			// Push once, then never again
 			// TODO: These can currently not be set in napkin as it would require creating a million default values to match the array size in the shader
-			mPositionStorageUniform->setUsage(EUniformDataUsage::Static);
-			mVelocityStorageUniform->setUsage(EUniformDataUsage::Static);
-			mRotationStorageUniform->setUsage(EUniformDataUsage::Static);
-			mVertexStorageUniform->setUsage(EUniformDataUsage::Static);
+			//mPositionStorageUniform->setUsage(EUniformDataUsage::Static);
+			//mVelocityStorageUniform->setUsage(EUniformDataUsage::Static);
+			//mRotationStorageUniform->setUsage(EUniformDataUsage::Static);
+			//mVertexStorageUniform->setUsage(EUniformDataUsage::Static);
 
 			for (int i = 0; i < mParticleMesh->mNumParticles; i++)
 			{
-				Particle p = createParticle(glm::vec4(mResource->mPosition, 0.0f), mResource->mSpread, glm::vec4(mResource->mVelocity, 0.0f), mResource->mVelocityVariation, mResource->mRotationVariation);
+				Particle p = createParticle(glm::vec4(resource->mPosition, 0.0f), resource->mSpread, glm::vec4(resource->mVelocity, 0.0f), resource->mVelocityVariation, resource->mRotationVariation);
 				mPositionStorageUniform->setValue(p.mPosition, i);
 				mVelocityStorageUniform->setValue(p.mVelocity, i);
 				mRotationStorageUniform->setValue(p.mRotation, i);
 			}
+
+
 			// Initialize storage buffer vertices to zero
 			std::vector<glm::vec4> vertices(mParticleMesh->getMeshInstance().getNumVertices());
 			mVertexStorageUniform->setValues(vertices);
 		}
 
 		// Set dispatch finished callback
-		mDispatchFinishedCallback = [this](const DescriptorSet& descriptor_set)
-		{
-			// Store a reference to the target storage buffer in a member so it can be bound to when rendering
-			// We need to do this because updating the compute material will fetch a different buffer
-			const VkBuffer& vertex_storage_buffer = descriptor_set.mBuffers[4].mBuffer;
-			mStorageBufferRef = std::make_unique<std::reference_wrapper<const VkBuffer>>(std::cref(vertex_storage_buffer));
-		};
+		//mPostDispatchCallback = [this](const DescriptorSet& descriptor_set)
+		//{
+		//	// Store a reference to the target storage buffer in a member so it can be bound to when rendering
+		//	// We need to do this because updating the compute material will fetch a different buffer
+		//	mBufferPtr = &descriptor_set.mBuffers[4].mBuffer;;
+		//};
 
-		// Connect pre-endcommandbuffer cllback
-		mComputeInstance->mPreEndCommandBuffer.connect(mDispatchFinishedCallback);
+		// Connect pre-endcommandbuffer callback
+		//mComputeInstance->mPostDispatch.connect(mPostDispatchCallback);
 
+		nap::Logger::info("%s: Done", mID.c_str());
 		return true;
 	}
 
@@ -281,13 +287,15 @@ namespace nap
 		mVelocityVariationScaleUniform->setValue(mVelocityVariationScale);
 		mRotationSpeedUniform->setValue(mRotationSpeed);
 		mParticleSizeUniform->setValue(mParticleSize);
-
-		utility::ErrorState error_state;
-		mComputeInstance->asyncCompute(mParticleMesh->mNumParticles, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, error_state);
 	}
 
 
-	// Draw Mesh
+	bool ParticleVolumeComponentInstance::compute(utility::ErrorState& errorState)
+	{
+		return mComputeInstance->compute(mParticleMesh->mNumParticles, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, errorState);
+	}
+
+
 	void ParticleVolumeComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get material to work with
@@ -319,8 +327,11 @@ namespace nap
 		VkDescriptorSet descriptor_set = mat_instance.update();
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
+		const StaticDescriptorSet& compute_descriptor_set = mComputeInstance->getComputeMaterialInstance().getStaticDescriptorSet();
+		VkBuffer vertex_storage_buffer = compute_descriptor_set.getBuffers()[3]->getBuffer();
+
 		// Bind vertex buffers
-		std::vector<VkBuffer> vertex_buffers = { *mStorageBufferRef, mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
+		std::vector<VkBuffer> vertex_buffers = { vertex_storage_buffer, mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
 		std::vector<VkDeviceSize> offsets = { 0, 0, 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 

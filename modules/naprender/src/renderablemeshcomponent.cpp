@@ -50,7 +50,7 @@ namespace nap
 
 		// Initialize material based on resource
 		RenderableMeshComponent* resource = getComponent<RenderableMeshComponent>();
-		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), resource->mMaterialInstanceResource, errorState))
+		if (!mMaterialInstance.init(*mRenderService, resource->mMaterialInstanceResource, errorState))
 			return false;
 
 		// A mesh isn't required, it may be set by a derived class or by some other code through setMesh.

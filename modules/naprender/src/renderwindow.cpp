@@ -798,8 +798,8 @@ namespace nap
 		mRenderService->mSemaphoreWaitList[current_frame].clear();
 
 		submit_info.waitSemaphoreCount = wait_semaphores.size();
-		submit_info.pWaitSemaphores = &wait_semaphores[0];
-		submit_info.pWaitDstStageMask = &wait_stages[0];
+		submit_info.pWaitSemaphores = wait_semaphores.data();
+		submit_info.pWaitDstStageMask = wait_stages.data();
 
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];

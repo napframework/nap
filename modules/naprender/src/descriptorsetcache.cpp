@@ -12,25 +12,6 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Static methods
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Returns the vulkan buffer usage flags for a given buffer type
-	 */
-	static VkBufferUsageFlags getBufferUsage(EBufferObjectType type)
-	{
-		if (type == EBufferObjectType::Uniform)
-			return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-		// Storage buffers may be used as vertex attribute buffers on device memory
-		else if (type == EBufferObjectType::Storage)
-			return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;// | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	}
-
-	//////////////////////////////////////////////////////////////////////////
 	// DescriptorsetCache
 	//////////////////////////////////////////////////////////////////////////
 
@@ -125,5 +106,83 @@ namespace nap
 		mFreeList.splice(mFreeList.end(), used_list);
 	}
 
-}
 
+	//////////////////////////////////////////////////////////////////////////
+	// StaticDescriptorSetCache
+	//////////////////////////////////////////////////////////////////////////
+
+	StaticDescriptorSetCache::StaticDescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
+		mRenderService(&renderService),
+		mDescriptorSetAllocator(&descriptorSetAllocator),
+		mLayout(layout) {}
+
+
+	StaticDescriptorSetCache::~StaticDescriptorSetCache()
+	{
+
+	}
+
+
+	const StaticDescriptorSet& StaticDescriptorSetCache::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers)
+	{
+		if (mAllocated)
+		{
+			return mDescriptorSet;
+		}
+
+		// Allocate descriptorset from the pool. This will allocate a DescriptorSet from a pool that is *compatible* with our layout.
+		// Compatible means that it has the same amount of uniform buffers and same amount of samplers.
+		StaticDescriptorSet descriptor_set;
+		descriptor_set.mLayout = mLayout;
+		descriptor_set.mSet = mDescriptorSetAllocator->allocate(mLayout, uniformBufferObjects.size(), numSamplers);
+
+		int num_descriptors = uniformBufferObjects.size();
+		std::vector<VkWriteDescriptorSet> ubo_descriptors;
+		ubo_descriptors.resize(num_descriptors);
+
+		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
+		descriptor_buffers.resize(num_descriptors);
+
+		// Now we allocate the UBO buffers from the global Vulkan allocator, and bind the buffers to our DescriptorSet
+		for (int ubo_index = 0; ubo_index < uniformBufferObjects.size(); ++ubo_index)
+		{
+			const UniformBufferObject& ubo = uniformBufferObjects[ubo_index];
+			const UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
+
+			std::vector<uint8> buffer_block;
+			buffer_block.resize(ubo_declaration.mSize);
+
+			for (auto& uniform : ubo.mUniforms)
+			{
+				uniform->push(buffer_block.data());
+			}
+
+			std::unique_ptr<StorageBuffer> buffer = std::make_unique<StorageBuffer>(*mRenderService, ubo_declaration.mType, EMeshDataUsage::Static);
+
+			utility::ErrorState error_state;
+			buffer->setData(buffer_block.data(), buffer_block.size(), error_state);
+
+			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
+			bufferInfo.buffer = buffer->getBuffer();
+			bufferInfo.offset = 0;
+			bufferInfo.range = VK_WHOLE_SIZE;
+
+			VkWriteDescriptorSet& ubo_descriptor = ubo_descriptors[ubo_index];
+			ubo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ubo_descriptor.dstSet = descriptor_set.mSet;
+			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
+			ubo_descriptor.dstArrayElement = 0;
+			ubo_descriptor.descriptorType = (ubo_declaration.mType == nap::EBufferObjectType::Uniform) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			ubo_descriptor.descriptorCount = 1;
+			ubo_descriptor.pBufferInfo = &bufferInfo;
+
+			descriptor_set.mBuffers.emplace_back(std::move(buffer));
+		}
+
+		vkUpdateDescriptorSets(mRenderService->getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
+		mDescriptorSet = std::move(descriptor_set);
+		mAllocated = true;
+
+		return mDescriptorSet;
+	}
+}

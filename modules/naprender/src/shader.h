@@ -32,13 +32,13 @@ namespace nap
 		virtual ~BaseShader();
 
 		/**
-		* @return all uniform shader attributes
-		*/
+		 * @return all uniform shader attributes
+		 */
 		const SamplerDeclarations& getSamplerDeclarations() const { return mSamplerDeclarations; }
 
 		/**
-		* @return all UniformBufferObject declarations.
-		*/
+		 * @return all UniformBufferObject declarations.
+		 */
 		const std::vector<UniformBufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
 
 		/**
@@ -47,18 +47,24 @@ namespace nap
 		const std::string& getDisplayName() const { return mDisplayName; }
 
 		/**
-		* @return Vulkan descriptorSetLayout.
-		*/
-		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
+		 * @return Vulkan descriptorSetLayout.
+		 */
+		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayouts[0]; }
+
+		/**
+		 * @return Vulkan descriptorSetLayouts.
+		 */
+		std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts() const { return mDescriptorSetLayouts; }
 
 	protected:
 		RenderService* mRenderService = nullptr;												///< Handle to render engine
-		std::string										mDisplayName;							///< Filename of shader used as display name
-		std::vector<UniformBufferObjectDeclaration>		mUBODeclarations;						///< All uniform buffer object declarations
-		SamplerDeclarations								mSamplerDeclarations;					///< All sampler declarations
-		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
+		std::string											mDisplayName;						///< Filename of shader used as display name
+		std::vector<UniformBufferObjectDeclaration>			mUBODeclarations;					///< All uniform buffer object declarations
+		SamplerDeclarations									mSamplerDeclarations;				///< All sampler declarations
 
-		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
+		std::vector<VkDescriptorSetLayout>					mDescriptorSetLayouts;				///< Descriptor set layouts
+
+		bool initLayouts(VkDevice device, int numLayouts, nap::utility::ErrorState& errorState);
 	};
 
 
@@ -81,13 +87,13 @@ namespace nap
 		const VertexAttributeDeclarations& getAttributes() const { return mShaderAttributes; }
 
 		/**
-		* @return Vulkan vertex module.
-		*/
+		 * @return Vulkan vertex module.
+		 */
 		VkShaderModule getVertexModule() const { return mVertexModule; }
 
 		/**
-		* @return Vulkan fragment module.
-		*/
+		 * @return Vulkan fragment module.
+		 */
 		VkShaderModule getFragmentModule() const { return mFragmentModule; }
 
 	protected:
@@ -126,13 +132,13 @@ namespace nap
 		~ComputeShader() override;
 
 		/**
-		* @return Vulkan vertex module.
-		*/
+		 * @return Vulkan vertex module.
+		 */
 		VkShaderModule getComputeModule() const { return mComputeModule; }
 
 		/**
-		* @return local work group size
-		*/
+		 * @return local work group size
+		 */
 		glm::u32vec3 getLocalWorkGroupSize() const { return mLocalWorkGroupSize; }
 
 	protected:

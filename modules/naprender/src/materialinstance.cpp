@@ -120,6 +120,23 @@ namespace nap
 	}
 
 
+	void updateUniforms(const DescriptorSet& descriptorSet, std::vector<UniformBufferObject>& bufferObjects)
+	{
+		// Go over all the UBOs and memcpy the latest MaterialInstance state into the allocated descriptorSet's VkBuffers
+		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
+		{
+			UniformBufferObject& ubo = bufferObjects[ubo_index];
+			VmaAllocationInfo allocation = descriptorSet.mBuffers[ubo_index].mAllocationInfo;
+
+			void* mapped_memory = allocation.pMappedData;
+			for (auto& uniform : ubo.mUniforms)
+			{
+				uniform->push((uint8_t*)mapped_memory);
+			}
+		}
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// BaseMaterialInstance
 	//////////////////////////////////////////////////////////////////////////
@@ -199,27 +216,6 @@ namespace nap
 		assert(base_struct != nullptr);
 
 		buildUniformBufferObjectRecursive(*base_struct, overrideStruct, ubo);
-	}
-
-
-	void BaseMaterialInstance::updateUniforms(const DescriptorSet& descriptorSet)
-	{
-		// Go over all the UBOs and memcpy the latest MaterialInstance state into the allocated descriptorSet's VkBuffers
-		for (int ubo_index = 0; ubo_index != descriptorSet.mBuffers.size(); ++ubo_index)
-		{
-			UniformBufferObject& ubo = mUniformBufferObjects[ubo_index];
-			VmaAllocationInfo allocation = descriptorSet.mBuffers[ubo_index].mAllocationInfo;
-			
-			void* mapped_memory = allocation.pMappedData;
-			for (auto& uniform : ubo.mUniforms)
-			{
-				// Skip static uniforms that have been pushed at least once
-				if (uniform->getUsage() == EUniformDataUsage::Static && uniform->isPushed())
-					continue;
-
-				uniform->push((uint8_t*)mapped_memory);
-			}
-		}
 	}
 
 
@@ -420,7 +416,9 @@ namespace nap
 			// Pass 2: gather leaf uniform instances for a single ubo
 			UniformBufferObject ubo(ubo_declaration);
 			rebuildUBO(material, ubo, override_struct);
-			mUniformBufferObjects.emplace_back(std::move(ubo));
+
+			auto& buffer_object_list = ubo_declaration.mSet == EUniformSetBinding::Default ? mUniformBufferObjects : mStaticUniformBufferObjects;
+			buffer_object_list.emplace_back(std::move(ubo));
 		}
 
 		mUniformsCreated = false;
@@ -486,7 +484,7 @@ namespace nap
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
 
-		updateUniforms(descriptor_set);
+		updateUniforms(descriptor_set, mUniformBufferObjects); 
 		updateSamplers(descriptor_set);
 
 		return descriptor_set.mSet;
@@ -556,11 +554,23 @@ namespace nap
 		// to act as 'globally' as possible).
 		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(getComputeMaterial().getShader().getDescriptorSetLayout());
 
+		// Get additional (static) descriptor set layout
+		const auto& descriptor_set_layouts = getComputeMaterial().getShader().getDescriptorSetLayouts();
+		int index_static = static_cast<int>(EDescriptorSetLayoutIndex::Static);
+		if (descriptor_set_layouts.size() >= index_static)
+			mStaticDescriptorSetCache = &renderService.getOrCreateStaticDescriptorSetCache(descriptor_set_layouts[index_static]);
+
 		return success;
 	}
 
 
 	VkDescriptorSet ComputeMaterialInstance::update()
+	{
+		return updateCompute().mSet;
+	}
+
+
+	const DescriptorSet& ComputeMaterialInstance::updateCompute()
 	{
 		// The UBO contains pointers to all leaf uniform instances. These can be either defines in the material or the 
 		// material instance, depending on whether it's overridden. If new overrides were created between update calls,
@@ -575,7 +585,7 @@ namespace nap
 
 		// The DescriptorSet contains information about all UBOs and samplers, along with the buffers that are bound to it.
 		// We acquire a descriptor set that is compatible with our shader. The allocator holds a number of allocated descriptor
-		// sets and we acquire one that is not in use anymore (that is not in any active command buffer). We cannot make assumptions
+		// sets and we acquire one that  is not in use anymore (that is not in any active command buffer). We cannot make assumptions
 		// about the contents of the descriptor sets. The UBO buffers that are bound to it may have different contents than our
 		// MaterialInstance, and the samplers may be bound to different images than those that are currently set in the MaterialInstance.
 		// For this reason, we always fully update uniforms and samplers to make the descriptor set up to date with the MaterialInstance
@@ -589,28 +599,39 @@ namespace nap
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
 
-		updateUniforms(descriptor_set);
+		updateUniforms(descriptor_set, mUniformBufferObjects);
 		updateSamplers(descriptor_set);
 
-		return descriptor_set.mSet;
+		return descriptor_set;
 	}
 
 
-	const DescriptorSet& ComputeMaterialInstance::updateCompute()
+	void ComputeMaterialInstance::update(std::vector<VkDescriptorSet>& outDescriptorSets)
 	{
 		if (mUniformsCreated)
 		{
 			for (UniformBufferObject& ubo : mUniformBufferObjects)
 				rebuildUBO(getComputeMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
 
+			for (UniformBufferObject& ubo : mStaticUniformBufferObjects)
+				rebuildUBO(getComputeMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
+
 			mUniformsCreated = false;
 		}
 
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
-		updateUniforms(descriptor_set);
+		const StaticDescriptorSet& static_descriptor_set = mStaticDescriptorSetCache->acquire(mStaticUniformBufferObjects, mSamplerWriteDescriptors.size());
+
+		updateUniforms(descriptor_set, mUniformBufferObjects);
 		updateSamplers(descriptor_set);
 
-		return descriptor_set;
+		outDescriptorSets = { descriptor_set.mSet, static_descriptor_set.mSet };
+	}
+
+
+	const StaticDescriptorSet& ComputeMaterialInstance::getStaticDescriptorSet()
+	{
+		return mStaticDescriptorSetCache->acquire(mStaticUniformBufferObjects, mSamplerWriteDescriptors.size());
 	}
 
 

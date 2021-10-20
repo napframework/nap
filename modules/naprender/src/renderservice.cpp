@@ -1040,12 +1040,12 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = "main";
 
-		VkDescriptorSetLayout set_layout = computeShader.getDescriptorSetLayout();
+		auto set_layouts = computeShader.getDescriptorSetLayouts();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeline_layout_info.setLayoutCount = 1;
-		pipeline_layout_info.pSetLayouts = &set_layout;
+		pipeline_layout_info.setLayoutCount = set_layouts.size();
+		pipeline_layout_info.pSetLayouts = set_layouts.data();
 		pipeline_layout_info.pushConstantRangeCount = 0;
 
 		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
@@ -1609,18 +1609,19 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mUploadCommandBuffer, errorState))
 				return false;
 
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mDownloadCommandBuffers, errorState))
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mDownloadCommandBuffer, errorState))
 				return false;
 
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffers, errorState))
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
 				return false;
-		}
 
-		// Create compute command buffer
-		if (dedicated_compute_resources)
-		{
-			if (!errorState.check(createCommandBuffer(mDevice, mComputeCommandPool, mComputeCommandBuffer, errorState), "Failed to create dedicated compute command buffer"))
-				return false;
+			if (isComputeAvailable())
+			{
+				if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
+					return false;
+			}
+			else
+				frame.mComputeCommandBuffer = VK_NULL_HANDLE;
 		}
 
 		// Initialize semaphore wait list
@@ -1752,18 +1753,20 @@ namespace nap
 		for (Frame& frame : mFramesInFlight)
 		{
 			assert(frame.mQueuedVulkanObjectDestructors.empty());
-			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mHeadlessCommandBuffers);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mHeadlessCommandBuffer);
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mUploadCommandBuffer);
-			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffers);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffer);
+
+			if (frame.mComputeCommandBuffer != VK_NULL_HANDLE)
+				vkFreeCommandBuffers(mDevice, mComputeCommandPool, 1, &frame.mComputeCommandBuffer);
+
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
 		}
-
-		if (mComputeCommandBuffer != VK_NULL_HANDLE)
-			vkFreeCommandBuffers(mDevice, mComputeCommandPool, 1, &mComputeCommandBuffer);
 
 		mFramesInFlight.clear();
 		mEmptyTexture.reset();
 		mDescriptorSetCaches.clear();
+		mStaticDescriptorSetCaches.clear();
 		mDescriptorSetAllocator.reset();
 
 		if (mVulkanAllocator != VK_NULL_HANDLE)
@@ -1873,7 +1876,7 @@ namespace nap
 	{
 		// Push the download of a texture onto the command buffer
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
-		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffers;
+		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffer;
 		transferData(commandBuffer, [commandBuffer, &frame]()
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
@@ -1995,7 +1998,7 @@ namespace nap
 	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
+		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffer;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo begin_info = {};
@@ -2052,6 +2055,60 @@ namespace nap
 	}
 
 
+	bool RenderService::beginComputeRecording()
+	{
+		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
+
+		// Reset command buffer for current frame
+		VkCommandBuffer compute_command_buffer = mFramesInFlight[mCurrentFrameIndex].mComputeCommandBuffer;
+		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
+			return false;
+
+		// Begin command buffer
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		begin_info.pNext = nullptr;
+
+		if (vkBeginCommandBuffer(compute_command_buffer, &begin_info) != VK_SUCCESS)
+			return false;
+
+		mCurrentCommandBuffer = compute_command_buffer;
+		if (mCurrentCommandBuffer == VK_NULL_HANDLE)
+			return false;
+
+		return true;
+	}
+
+	void RenderService::endComputeRecording()
+	{
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
+
+		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
+		assert(result == VK_SUCCESS);
+
+		std::vector<VkSemaphore> signal_semaphores;
+		if (!mSemaphoreWaitList[mCurrentFrameIndex].empty())
+		{
+			signal_semaphores.reserve(mSemaphoreWaitList[mCurrentFrameIndex].size());
+			for (const auto& semaphore_wait_info : mSemaphoreWaitList[mCurrentFrameIndex])
+				signal_semaphores.emplace_back(semaphore_wait_info.mSemaphore);
+		}
+
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
+		submit_info.pSignalSemaphores = signal_semaphores.data();
+		submit_info.signalSemaphoreCount = signal_semaphores.size();
+
+		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, VK_NULL_HANDLE);
+		assert(result == VK_SUCCESS);
+
+		mCurrentCommandBuffer = VK_NULL_HANDLE;
+	}
+
+
 	void RenderService::queueVulkanObjectDestructor(const VulkanObjectDestructor& function)
 	{
 		// If it's possible to destroy vulkan objects immediately (i.e. when we know the device is idle during shutdown/realtime editing),
@@ -2090,6 +2147,18 @@ namespace nap
 
 		std::unique_ptr<DescriptorSetCache> allocator = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
 		auto inserted = mDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
+		return *inserted.first->second;
+	}
+
+
+	StaticDescriptorSetCache& RenderService::getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout)
+	{
+		StaticDescriptorSetCacheMap::iterator pos = mStaticDescriptorSetCaches.find(layout);
+		if (pos != mStaticDescriptorSetCaches.end())
+			return *pos->second;
+
+		std::unique_ptr<StaticDescriptorSetCache> allocator = std::make_unique<StaticDescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
+		auto inserted = mStaticDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
 		return *inserted.first->second;
 	}
 

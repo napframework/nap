@@ -225,8 +225,8 @@
             "Visible": true,
             "SampleShading": true,
             "Title": "ComputeParticlesDemo",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [

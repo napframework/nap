@@ -44,6 +44,13 @@ namespace nap
 	};
 
 
+	enum class EDescriptorSetLayoutIndex : int
+	{
+		Default = 0,
+		Static = 1
+	};
+
+
 	class UniformBufferObject
 	{
 	public:

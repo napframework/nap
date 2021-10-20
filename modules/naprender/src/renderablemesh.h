@@ -65,7 +65,7 @@ namespace nap
 		const MaterialInstance& getMaterialInstance() const						{ return *mMaterialInstance; }
 
 		const std::vector<VkBuffer>& getVertexBuffers();
-		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const { return mVertexBufferOffsets; }
+		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const			{ return mVertexBufferOffsets; }
 
 	protected:
 		/**

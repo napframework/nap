@@ -25,6 +25,7 @@ namespace nap
 	class RenderService;
 	class SceneService;
 	class DescriptorSetCache;
+	class StaticDescriptorSetCache;
 	class DescriptorSetAllocator;
 	class RenderableMesh;
 	class IMesh;
@@ -411,6 +412,10 @@ namespace nap
 		 */
 		void endRecording();
 
+		bool beginComputeRecording();
+
+		void endComputeRecording();
+
 		/**
 		 * Renders all available nap::RenderableComponent(s) in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
@@ -595,6 +600,8 @@ namespace nap
 		 */
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
+		StaticDescriptorSetCache& getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout);
+
 		/**
 		 * @return main Vulkan allocator
 		 */
@@ -616,12 +623,6 @@ namespace nap
 		 * @return the command buffer that is being recorded.
 		 */
 		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
-
-		/**
-		 * Returns the compute command buffer
-		 * @return the command buffer, returns nullptr if compute is not supported or enabled
-		 */
-		VkCommandBuffer getComputeCommandBuffer()									{ assert(mComputeCommandBuffer != nullptr); return mComputeCommandBuffer; }
 		
 		/**
 		 * Returns the window that is being rendered to, only valid between a
@@ -1053,6 +1054,7 @@ namespace nap
 		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
+		using StaticDescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<StaticDescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
@@ -1066,8 +1068,9 @@ namespace nap
 			VkFence								mFence;								///< CPU sync primitive
 			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
-			VkCommandBuffer						mDownloadCommandBuffers;			///< Command buffer used to download data from GPU to CPU
-			VkCommandBuffer						mHeadlessCommandBuffers;			///< Command buffer used to record operations not associated with a window.
+			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
+			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window.
+			VkCommandBuffer						mComputeCommandBuffer;				///< Command buffer used to record compute operations
 			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;		///< All Vulkan resources queued for destruction
 		};
 
@@ -1108,6 +1111,7 @@ namespace nap
 		std::vector<SemaphoreWaitList>			mSemaphoreWaitList;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
+		StaticDescriptorSetCacheMap				mStaticDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
 		VkInstance								mInstance = VK_NULL_HANDLE;
@@ -1115,15 +1119,13 @@ namespace nap
 		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
 		PhysicalDevice							mPhysicalDevice;
 		VkDevice								mDevice = VK_NULL_HANDLE;
+		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
 
 		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
 		VkCommandPool							mComputeCommandPool = VK_NULL_HANDLE;
 
 		VkQueue									mQueue = VK_NULL_HANDLE;
 		VkQueue									mComputeQueue = VK_NULL_HANDLE;
-
-		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
-		VkCommandBuffer							mComputeCommandBuffer = VK_NULL_HANDLE;
 
 		PipelineCache							mPipelineCache;
 		ComputePipelineCache					mComputePipelineCache;

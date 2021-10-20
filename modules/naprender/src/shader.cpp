@@ -222,7 +222,7 @@ static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, V
 }
 
 
-static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, nap::utility::ErrorState& errorState)
+static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uint32 vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, nap::utility::ErrorState& errorState)
 {
 	const char* sources[] = { shaderCode };
 	int source_sizes[] = { shaderSize };
@@ -270,7 +270,7 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, uint32_t
 }
 
 
-static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
+static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
 {
 	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, errorState);
 	if (vertex_shader == nullptr)
@@ -338,7 +338,7 @@ static bool compileProgram(VkDevice device, uint32_t vulkanVersion, const char* 
 }
 
 
-static bool compileComputeProgram(VkDevice device, uint32_t vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, nap::utility::ErrorState& errorState)
+static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, nap::utility::ErrorState& errorState)
 {
 	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, errorState);
 	if (compute_shader == nullptr)
@@ -447,6 +447,18 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 }
 
 
+static nap::EUniformSetBinding getUniformSetBinding(int set)
+{
+	if (set == static_cast<int>(nap::EUniformSetBinding::Default))
+		return nap::EUniformSetBinding::Default;
+
+	else if (set == static_cast<int>(nap::EUniformSetBinding::Static))
+		return nap::EUniformSetBinding::Static;
+
+	return nap::EUniformSetBinding::Default;
+}
+
+
 static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
 {
 	assert(type.basetype == spirv_cross::SPIRType::Struct);
@@ -539,10 +551,13 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
-		uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+		nap::uint32 set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
 		size_t struct_size = compiler.get_declared_struct_size(type);
 
-		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Uniform, struct_size);
+		nap::EUniformSetBinding set_binding = getUniformSetBinding(static_cast<int>(set));
+		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, set_binding, inStage, nap::EBufferObjectType::Uniform, struct_size);
 
 		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
@@ -555,15 +570,41 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
-		uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+		nap::uint32 set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
 		size_t struct_size = compiler.get_declared_struct_size(type);
 
-		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Storage, struct_size);
+		nap::EUniformSetBinding set_binding = getUniformSetBinding(static_cast<int>(set));
+		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, set_binding, inStage, nap::EBufferObjectType::Storage, struct_size);
 
 		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
 
 		uboDeclarations.emplace_back(std::move(storage_buffer_object));
+	}
+
+	// Verify descriptor set indices
+	std::set<int> set_indices;
+	int max_set_index = 0;
+	for (auto& ubo_declaration : uboDeclarations)
+	{
+		int idx = static_cast<int>(ubo_declaration.mSet);
+		set_indices.insert(idx);
+		max_set_index = std::max(idx, max_set_index);
+	}
+
+	for (int i = 0; i <= max_set_index; i++)
+	{
+		bool found = false;
+		for (auto idx : set_indices)
+		{
+			if (idx != i) continue;
+			found = true;
+			break;
+		}
+		if (!errorState.check(found, nap::utility::stringFormat("Descriptor set index %d in layout qualifier breaks required incremental order starting from 0", i)))
+			return false;
 	}
 
 	// Samplers e.g. 'uniform sampler2D'
@@ -598,7 +639,7 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 				return false;
 		}
 
-		uint32_t binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
+		nap::uint32 binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
 		samplerDeclarations.emplace_back(nap::SamplerDeclaration(sampled_image.name, binding, inStage, type, num_elements));
 	}
 
@@ -620,47 +661,65 @@ namespace nap
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
-		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout/*, vertexModule = mVertexModule, fragmentModule = mFragmentModule*/](RenderService& renderService)
+		mRenderService->queueVulkanObjectDestructor([layouts = mDescriptorSetLayouts](RenderService& renderService)
 		{
-			if (descriptorSetLayout != nullptr)
-				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
+			for (auto& layout : layouts)
+			{
+				if (layout != nullptr)
+					vkDestroyDescriptorSetLayout(renderService.getDevice(), layout, nullptr);
+			}
 		});
 	}
 
 
-	bool BaseShader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
+	bool BaseShader::initLayouts(VkDevice device, int numLayouts, nap::utility::ErrorState& errorState)
 	{
-		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
-		for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
-		{
-			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-			uboLayoutBinding.binding = declaration.mBinding;
-			uboLayoutBinding.descriptorCount = 1;
-			uboLayoutBinding.pImmutableSamplers = nullptr;
-			uboLayoutBinding.stageFlags = declaration.mStage;
-			uboLayoutBinding.descriptorType = (declaration.mType == nap::EBufferObjectType::Uniform) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		mDescriptorSetLayouts.resize(numLayouts);
 
-			descriptor_set_layouts.push_back(uboLayoutBinding);
+		// Traverse found set indices
+		for (int layout_index = 0; layout_index < numLayouts; layout_index++)
+		{
+			std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
+			for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
+			{
+				if (declaration.mSet != getUniformSetBinding(layout_index)) continue;
+
+				VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+				uboLayoutBinding.binding = declaration.mBinding;
+				uboLayoutBinding.descriptorCount = 1;
+				uboLayoutBinding.pImmutableSamplers = nullptr;
+				uboLayoutBinding.stageFlags = declaration.mStage;
+				uboLayoutBinding.descriptorType = getDescriptorType(declaration.mType);
+
+				descriptor_set_layouts.push_back(uboLayoutBinding);
+			}
+
+			// Store all samplers under set index 0
+			if (layout_index == 0)
+			{
+				for (const SamplerDeclaration& declaration : mSamplerDeclarations)
+				{
+					VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+					samplerLayoutBinding.binding = declaration.mBinding;
+					samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
+					samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					samplerLayoutBinding.pImmutableSamplers = nullptr;
+					samplerLayoutBinding.stageFlags = declaration.mStage;
+
+					descriptor_set_layouts.push_back(samplerLayoutBinding);
+				}
+			}
+
+			VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
+			layoutInfo.pBindings = descriptor_set_layouts.data();
+
+			if (!errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayouts[layout_index]) == VK_SUCCESS, "Failed to create descriptor set layout"))
+				return false;
 		}
 
-		for (const SamplerDeclaration& declaration : mSamplerDeclarations)
-		{
-			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-			samplerLayoutBinding.binding = declaration.mBinding;
-			samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
-			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			samplerLayoutBinding.pImmutableSamplers = nullptr;
-			samplerLayoutBinding.stageFlags = declaration.mStage;
-
-			descriptor_set_layouts.push_back(samplerLayoutBinding);
-		}
-
-		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
-		layoutInfo.pBindings = descriptor_set_layouts.data();
-
-		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
+		return true;
 	}
 	
 
@@ -695,11 +754,11 @@ namespace nap
 		mDisplayName = displayName;
 
 		VkDevice device = mRenderService->getDevice();
-		uint32_t vulkan_version = mRenderService->getVulkanVersion();
+		nap::uint32 vulkan_version = mRenderService->getVulkanVersion();
 
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
-		std::vector<uint32> vertex_shader_spirv;
-		std::vector<uint32> fragment_shader_spirv;
+		std::vector<nap::uint32> vertex_shader_spirv;
+		std::vector<nap::uint32> fragment_shader_spirv;
 
 		// Compile both vert and frag into single shader pipeline program
 		if (!compileProgram(device, vulkan_version, vertShader, vertSize, fragShader, fragSize, mDisplayName, vertex_shader_spirv, fragment_shader_spirv, errorState))
@@ -727,7 +786,7 @@ namespace nap
 			if (!errorState.check(format != VK_FORMAT_UNDEFINED, "Encountered unsupported vertex attribute type"))
 				return false;
 
-			uint32_t location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
+			nap::uint32 location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
 			mShaderAttributes[stage_input.name] = std::make_unique<VertexAttributeDeclaration>(stage_input.name, location, format);
 		}
 
@@ -736,7 +795,12 @@ namespace nap
 		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		return initLayout(device, errorState);
+		// Count descriptor set layouts
+		int num_layouts = 1;
+		for (auto& declaration : mUBODeclarations)
+			num_layouts = std::max(num_layouts, static_cast<int>(declaration.mSet) + 1);
+
+		return initLayouts(device, num_layouts, errorState);
 	}
 
 
@@ -768,7 +832,7 @@ namespace nap
 		mDisplayName = displayName;
 
 		VkDevice device = mRenderService->getDevice();
-		uint32_t vulkan_version = mRenderService->getVulkanVersion();
+		nap::uint32 vulkan_version = mRenderService->getVulkanVersion();
 
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
 		std::vector<uint32> comp_shader_spirv;
@@ -797,12 +861,17 @@ namespace nap
 		if (!parseUniforms(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
+		// Count descriptor set layouts
+		int num_layouts = 1;
+		for (auto& declaration : mUBODeclarations)
+			num_layouts = std::max(num_layouts, static_cast<int>(declaration.mSet) +1);
+
 		// Store local workgroup size
 		mLocalWorkGroupSize[0] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 0);
 		mLocalWorkGroupSize[1] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 1);
 		mLocalWorkGroupSize[2] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 2);
 
-		return initLayout(device, errorState);
+		return initLayouts(device, num_layouts, errorState);
 	}
 
 
@@ -834,7 +903,7 @@ namespace nap
 		std::string frag_source;
 		if (!errorState.check(utility::readFileToString(mFragPath, frag_source, errorState), "Unable to read shader file %s", mFragPath.c_str()))
 			return false;
-
+		
 		// Compile shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
 		return this->load(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);

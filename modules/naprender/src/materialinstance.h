@@ -19,7 +19,9 @@ namespace nap
 	class Material;
 	class Renderer;
 	struct DescriptorSet;
+	struct StaticDescriptorSet;
 	class DescriptorSetCache;
+	class StaticDescriptorSetCache;
 
 	/**
 	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
@@ -100,7 +102,6 @@ namespace nap
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
 		void rebuildUBO(BaseMaterial& material, UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
-		void updateUniforms(const DescriptorSet& descriptorSet);
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(const BaseMaterialInstanceResource& resource, BaseMaterial& material, const BaseShader& shader, utility::ErrorState& errorState);
 		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
@@ -116,6 +117,10 @@ namespace nap
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerWriteDescriptors;				// List of sampler images, used to update Descriptor Sets.
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
+
+		std::vector<UniformBufferObject>		mStaticUniformBufferObjects;			// List of all UBO instances
+		StaticDescriptorSetCache*				mStaticDescriptorSetCache = nullptr;	// Cache used to acquire Vulkan DescriptorSets on each update
+		bool mStaticDescriptorSetUpdated = false;
 	};
 
 	/**
@@ -329,6 +334,10 @@ namespace nap
 		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
 		 */
 		virtual VkDescriptorSet update() override;
+
+		void update(std::vector<VkDescriptorSet>& outDescriptorSets);
+
+		const StaticDescriptorSet& getStaticDescriptorSet();
 
 		/**
 		 * Specialization of update() that returns a reference to the descriptorset structure

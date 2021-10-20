@@ -63,26 +63,32 @@ namespace nap
 		if (numVertices == 0)
 			return true;
 
+		return setDataInternal(data, elementSize * numVertices, usage, error);
+	}
+
+
+	bool GPUBuffer::setDataInternal(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error)
+	{
+		mSize = size;
+
 		// Update buffers based on selected data usage type
 		switch (mUsage)
 		{
-			case EMeshDataUsage::DynamicWrite:
-				return setDataInternalDynamic(data, elementSize, numVertices, reservedNumVertices, usage, error);
-			case EMeshDataUsage::Static:
-				return setDataInternalStatic(data, elementSize, numVertices, usage, error);
-			default:
-				assert(false);
-				break;
+		case EMeshDataUsage::DynamicWrite:
+			return setDataInternalDynamic(data, mSize, mSize, usage, error);
+		case EMeshDataUsage::Static:
+			return setDataInternalStatic(data, mSize, usage, error);
+		default:
+			assert(false);
+			break;
 		}
 		error.fail("Unsupported buffer usage");
 		return false;
 	}
 
 
-	bool GPUBuffer::setDataInternalStatic(void* data, int elementSize, size_t numVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error)
+	bool GPUBuffer::setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error)
 	{
-		// Calculate buffer byte size and fetch allocator
-		mSize = elementSize * numVertices;
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
 		// Make sure we haven't already uploaded or are attempting to upload data
@@ -117,20 +123,19 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternalDynamic(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error)
+	bool GPUBuffer::setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& error)
 	{
 		// For each update of data, we cycle through the buffers. This has the effect that if you only ever need a single buffer (static data), you 
 		// will use only one buffer.
 		mCurrentBufferIndex = (mCurrentBufferIndex + 1) % mRenderBuffers.size();
 
-		// Calculate buffer byte size and fetch allocator
-		uint32_t required_size_bytes = elementSize * reservedNumVertices;
+		// Fetch allocator
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
 		// If we didn't allocate a buffer yet, or if the buffer has grown, we allocate it. 
 		// The final buffer size is calculated based on the reservedNumVertices.
 		BufferData& buffer_data = mRenderBuffers[mCurrentBufferIndex];
-		if (buffer_data.mBuffer == VK_NULL_HANDLE || required_size_bytes > buffer_data.mAllocationInfo.size)
+		if (buffer_data.mBuffer == VK_NULL_HANDLE || reservedSize > buffer_data.mAllocationInfo.size)
 		{
 			// Queue buffer for destruction if already allocated, the buffer data is copied, not captured by reference.
 			if (buffer_data.mBuffer != VK_NULL_HANDLE)
@@ -142,7 +147,7 @@ namespace nap
 			}
 
 			// Create buffer new buffer
-			if (!createBuffer(allocator, required_size_bytes, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, error))
+			if (!createBuffer(allocator, reservedSize, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, error))
 			{
 				error.fail("Render buffer error");
 				return false;
@@ -150,7 +155,6 @@ namespace nap
 		}
 
 		// Upload directly into buffer, use exact data size
-		mSize = elementSize * numVertices;
 		if (!error.check(uploadToBuffer(allocator, mSize, data, buffer_data), "Buffer upload failed"))
 			return false;
 		bufferChanged();
