@@ -69,26 +69,21 @@ namespace nap
 		Tween<T>* mTween;
 	};
 
+
 	//////////////////////////////////////////////////////////////////////////
-	// shortcuts
+	// Declarations
 	//////////////////////////////////////////////////////////////////////////
+
 	using TweenHandleFloat 	= TweenHandle<float>;
 	using TweenHandleDouble = TweenHandle<double>;
 	using TweenHandleVec2 	= TweenHandle<glm::vec2>;
 	using TweenHandleVec3 	= TweenHandle<glm::vec3>;
 
-	//////////////////////////////////////////////////////////////////////////
-	// explicit MSVC template specialization exports
-	//////////////////////////////////////////////////////////////////////////
-    // TODO Temporarily disabled to allow build for Linux ARMhf
-    //template class NAPAPI TweenHandle<float>;
-    //template class NAPAPI TweenHandle<double>;
-    //template class NAPAPI TweenHandle<glm::vec2>;
-    //template class NAPAPI TweenHandle<glm::vec3>;
 
 	//////////////////////////////////////////////////////////////////////////
-	// template definition
+	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
 	TweenHandle<T>::TweenHandle(TweenService& tweenService, Tween<T>* tween)
 		: TweenHandleBase(tweenService), mTween(tween)
