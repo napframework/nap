@@ -193,25 +193,20 @@ namespace nap
 		ETweenEaseType 	mEasing 		= ETweenEaseType::LINEAR;
 	};
 
+
 	//////////////////////////////////////////////////////////////////////////
-	// shortcuts
+	// Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 	using TweenFloat 	= Tween<float>;
 	using TweenDouble 	= Tween<double>;
 	using TweenVec2 	= Tween<glm::vec2>;
 	using TweenVec3 	= Tween<glm::vec3>;
 
-	//////////////////////////////////////////////////////////////////////////
-	// explicit MSVC template specialization exports
-	//////////////////////////////////////////////////////////////////////////
-	template class NAPAPI Tween<float>;
-	template class NAPAPI Tween<double>;
-	template class NAPAPI Tween<glm::vec2>;
-	template class NAPAPI Tween<glm::vec3>;
 
 	//////////////////////////////////////////////////////////////////////////
-	// template definition
+	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
+
 	template<typename T>
 	Tween<T>::Tween(T start, T end, float duration)
 		: TweenBase(), mStart(start), mEnd(end), mCurrentValue(start), mDuration(duration)
@@ -242,7 +237,8 @@ namespace nap
 			float current_progress = mTime / mDuration;
 			mDuration = duration;
 			mTime = mDuration * current_progress;
-		}else
+		}
+		else
 		{
 			// when duration is 0, it doesn't matter since we will hit complete in next update
 			mDuration = duration;
@@ -254,115 +250,119 @@ namespace nap
 	void Tween<T>::setMode(ETweenMode mode)
 	{
 		mMode = mode;
-
 		switch (mode)
 		{
-		default:
-			nap::Logger::warn("Unknown tween mode, choosing NORMAL mode");
-		case NORMAL:
-		{
-			mUpdateFunc = [this](double deltaTime)
+			default:
 			{
-			  if(!mComplete)
-			  {
-				  mTime += deltaTime;
-
-				  if( mTime >= mDuration )
+				nap::Logger::warn("Unknown tween mode, choosing NORMAL mode");
+			}
+			case NORMAL:
+			{
+				mUpdateFunc = [this](double deltaTime)
+				{
+				  if(!mComplete)
 				  {
-					  mTime = mDuration;
-					  mComplete = true;
+					  mTime += deltaTime;
 
-					  mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					  if( mTime >= mDuration )
+					  {
+						  mTime = mDuration;
+						  mComplete = true;
 
-					  UpdateSignal.trigger(mCurrentValue);
-					  CompleteSignal.trigger(mCurrentValue);
-				  }else
-				  {
-					  mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-					  UpdateSignal.trigger(mCurrentValue);
+						  mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+
+						  UpdateSignal.trigger(mCurrentValue);
+						  CompleteSignal.trigger(mCurrentValue);
+					  }else
+					  {
+						  mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+						  UpdateSignal.trigger(mCurrentValue);
+					  }
 				  }
-			  }
-			};
-		}
-			break;
-		case PING_PONG:
-		{
-			float direction = 1.0f;
-			mUpdateFunc = [this, direction](double deltaTime) mutable
+				};
+				break;
+			}
+			case PING_PONG:
 			{
-				mTime += deltaTime * direction;
-
-				if(mTime >= mDuration)
+				float direction = 1.0f;
+				mUpdateFunc = [this, direction](double deltaTime) mutable
 				{
-					mTime = mDuration - ( mTime - mDuration );
-					direction = -1.0f;
-
-					mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-					UpdateSignal.trigger(mCurrentValue);
-				}else if(mTime <= 0.0f)
-				{
-					mTime = -mTime;
-					direction = 1.0f;
-
-					mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-					UpdateSignal.trigger(mCurrentValue);
-				}else
-				{
-					mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-					UpdateSignal.trigger(mCurrentValue);
-				}
-			};
-		}
-			break;
-		case LOOP:
-		{
-			mUpdateFunc = [this](double deltaTime)
-			{
-				if(!mComplete)
-				{
-					mTime += deltaTime;
+					mTime += deltaTime * direction;
 
 					if(mTime >= mDuration)
 					{
-						mTime = mDuration - mTime;
+						mTime = mDuration - ( mTime - mDuration );
+						direction = -1.0f;
 
 						mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
 						UpdateSignal.trigger(mCurrentValue);
-					}else
+					}
+					else if(mTime <= 0.0f)
+					{
+						mTime = -mTime;
+						direction = 1.0f;
+
+						mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+						UpdateSignal.trigger(mCurrentValue);
+					}
+					else
 					{
 						mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
 						UpdateSignal.trigger(mCurrentValue);
 					}
-				}
-			};
-		}
-			break;
-		case REVERSE:
-		{
-			mUpdateFunc = [this](double deltaTime)
+				};
+				break;
+			}
+			case LOOP:
 			{
-				if(!mComplete)
+				mUpdateFunc = [this](double deltaTime)
 				{
-					mTime += deltaTime;
-
-					if(mTime >= mDuration)
+					if(!mComplete)
 					{
-						mComplete = true;
-					  	mTime = mDuration;
+						mTime += deltaTime;
 
-						mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
+						if(mTime >= mDuration)
+						{
+							mTime = mDuration - mTime;
 
-						UpdateSignal.trigger(mCurrentValue);
-					  	CompleteSignal.trigger(mCurrentValue);
-					}else
-					{
-						mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
-					  	UpdateSignal.trigger(mCurrentValue);
+							mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+							UpdateSignal.trigger(mCurrentValue);
+						}
+						else
+						{
+							mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+							UpdateSignal.trigger(mCurrentValue);
+						}
 					}
-				}
-			};
-		}
-			break;
+				};
+				break;
+			}
+			case REVERSE:
+			{
+				mUpdateFunc = [this](double deltaTime)
+				{
+					if(!mComplete)
+					{
+						mTime += deltaTime;
+						if(mTime >= mDuration)
+						{
+							mComplete = true;
+						  	mTime = mDuration;
+
+							mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
+
+							UpdateSignal.trigger(mCurrentValue);
+						  	CompleteSignal.trigger(mCurrentValue);
+						}
+						else
+						{
+							mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
+						  	UpdateSignal.trigger(mCurrentValue);
+						}
+					}
+				};
+				break;
+			}
 		}
 	}
 
