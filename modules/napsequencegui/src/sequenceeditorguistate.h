@@ -67,7 +67,7 @@ namespace nap
 		ImVec2 mScroll;
 
 		// vertical resolution (not scaled)
-		float mVerticalResolution = 150.0f;
+		float mVerticalResolution = 180.0f;
 
 		// horizontal resolution (not scaled)
 		float mHorizontalResolution = 100.0f;

@@ -25,8 +25,9 @@ namespace nap
 		 * Deconstructor
 		 */
         virtual ~SequenceTrack(){};
-        
-		std::string mAssignedOutputID;	///< Property: 'Assigned Output ID' Assigned output to this track id
+
+        std::string mName; ///< Property : 'Name' Assigned name to this track
+ 		std::string mAssignedOutputID;	///< Property: 'Assigned Output ID' Assigned output to this track id
 		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments;	///< Property: 'Segments' Vector holding track segments
 	};
 }

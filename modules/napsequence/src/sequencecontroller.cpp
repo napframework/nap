@@ -15,6 +15,17 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+    void SequenceController::changeTrackName(const std::string& trackID, const std::string& name)
+    {
+        performEditAction([this, trackID, name]()
+        {
+            SequenceTrack* track = findTrack(trackID);
+            assert(track != nullptr); // track not found
+            track->mName = name;
+        });
+    }
+
+
 	void SequenceController::updateTracks()
 	{
 		double longest_track_duration = 0.0;
@@ -128,11 +139,7 @@ namespace nap
 		{
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
-
-			if (track != nullptr)
-			{
-				track->mAssignedOutputID = objectID;
-			}
+            track->mAssignedOutputID = objectID;
 
 			mPlayer.createAdapters();
 		});

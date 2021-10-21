@@ -515,5 +515,17 @@ namespace nap
         public:
             MoveTrackDown(const std::string& id) : TrackAction(id){}
         };
+
+        /**
+         * Action that tells the gui to change the name of a track
+         */
+        class ChangeTrackName : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            ChangeTrackName(const std::string& id, const std::string& newName) : TrackAction(id), mNewTrackName(newName){}
+
+            std::string mNewTrackName;
+        };
 	}
 }

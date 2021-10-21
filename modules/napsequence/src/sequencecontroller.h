@@ -39,6 +39,13 @@ namespace nap
 		 */
 		virtual ~SequenceController()= default;
 
+        /**
+         * Change track name
+         * @param trackID the track id
+         * @param name the new track name
+         */
+        void changeTrackName(const std::string& trackID, const std::string& name);
+
 		/**
 		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
 		 * @param trackID the track id that gets an assigned object

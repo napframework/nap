@@ -11,11 +11,15 @@ namespace nap
 		{
 			// create sequence track
 			std::unique_ptr<SequenceTrackCurve<T>> sequence_track = std::make_unique<SequenceTrackCurve<T>>();
-			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs() );
+			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
-			//
+            // name is ID
+            sequence_track->mName = sequence_track->mID;
+
+			// create the resource pointer
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackCurve<T>>(sequence_track.get()));
 
+            // move ownership
 			getPlayerOwnedObjects().emplace_back(std::move(sequence_track));
 		});
 	}

@@ -252,6 +252,7 @@ namespace nap
 			// create sequence track
 			std::unique_ptr<SequenceTrackAudio> sequence_track = std::make_unique<SequenceTrackAudio>();
 			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
+            sequence_track->mName = sequence_track->mID;
 
 			// create a resource pointer
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackAudio>(sequence_track.get()));

@@ -289,7 +289,7 @@ namespace nap
 
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
             float vertical_resolution = mState.mVerticalResolution;
-			if (ImGui::SliderFloat("Vertical Zoom", &vertical_resolution, 150, 500, ""))
+			if (ImGui::SliderFloat("Vertical Zoom", &vertical_resolution, 180, 500, ""))
             {
                 if(mState.mAction->isAction<None>() || mState.mAction->isAction<NonePressed>())
                 {
@@ -411,10 +411,10 @@ namespace nap
 			// inspectors will be draw on top of tracks
 			ImGui::SetNextWindowPos(inspector_window_pos);
 
-			if( ImGui::BeginChild(std::string(mID + "_timeline_inspectors").c_str(),
-								  inspector_window_size,
-								  false,
-								  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs) )
+			if(ImGui::BeginChild(std::string(mID + "_timeline_inspectors").c_str(),
+                                 inspector_window_size,
+                                 false,
+                                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs) )
 			{
 				ImGui::PushClipRect({inspector_window_pos.x,
 									 inspector_window_pos.y > clip_start_y ? inspector_window_pos.y : clip_start_y},
@@ -1620,6 +1620,16 @@ namespace nap
             auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
             assert(controller!= nullptr); // controller not found
             controller->moveTrackDown(action->mTrackID);
+            mState.mDirty = true;
+            mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(ChangeTrackName), [this]
+        {
+            assert(mState.mAction->isAction<ChangeTrackName>());
+            auto* action = mState.mAction->getDerived<ChangeTrackName>();
+            auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr); // controller not found
+            controller->changeTrackName(action->mTrackID, action->mNewTrackName);
             mState.mDirty = true;
             mState.mAction = createAction<None>();
         });

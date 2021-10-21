@@ -82,7 +82,10 @@ namespace nap
 			std::unique_ptr<SequenceTrackEvent> sequence_track = std::make_unique<SequenceTrackEvent>();
 			sequence_track->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
-			//
+            // name is id
+            sequence_track->mName = sequence_track->mID;
+
+			// create resource ptr
 			getSequence().mTracks.emplace_back(ResourcePtr<SequenceTrackEvent>(sequence_track.get()));
 
 			// move ownership of unique ptrs

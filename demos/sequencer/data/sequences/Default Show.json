@@ -34,7 +34,8 @@
                             }
                         }
                     ],
-                    "Output ID": "SequencePlayerEventOutput"
+                    "Output ID": "SequencePlayerEventOutput",
+                    "Name": "Event Track\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
                 },
                 {
                     "Type": "nap::SequenceTrackCurveFloat",
@@ -54,6 +55,7 @@
                         }
                     ],
                     "Output ID": "Float Output",
+                    "Name": "Float Track\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -79,6 +81,7 @@
                         }
                     ],
                     "Output ID": "Vec3 Output",
+                    "Name": "Vec3 Track\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
                     "Minimum": {
                         "x": 0.0,
                         "y": 0.0,
@@ -110,6 +113,7 @@
                         }
                     ],
                     "Output ID": "Vec2 Output",
+                    "Name": "Vec2 Track\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
                     "Minimum": {
                         "x": 0.0,
                         "y": 0.0
@@ -149,6 +153,7 @@
                         }
                     ],
                     "Output ID": "Int Output",
+                    "Name": "Float to Int Parameter\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
                     "Minimum": 0.0,
                     "Maximum": 20.0
                 },
@@ -165,7 +170,8 @@
                             "Start Time In Segment": 0.0059645287692546848
                         }
                     ],
-                    "Output ID": "SequencePlayerAudioOutput"
+                    "Output ID": "SequencePlayerAudioOutput",
+                    "Name": "AudioTrack\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
                 }
             ],
             "Sequence Markers": [
