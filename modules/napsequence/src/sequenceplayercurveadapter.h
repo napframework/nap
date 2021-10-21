@@ -23,7 +23,7 @@ namespace nap
 	 * Base class for curve adapters
 	 * setValue must be called from main thread to set value of parameter on main thread
 	 */
-	class SequencePlayerCurveAdapterBase : public SequencePlayerAdapter
+	class NAPAPI SequencePlayerCurveAdapterBase : public SequencePlayerAdapter
 	{
 		friend class SequencePlayerCurveOutput;
 	private:
@@ -46,7 +46,7 @@ namespace nap
 		 * @param output reference to curve output
 		 */
 		SequencePlayerCurveAdapter(const SequenceTrack& track, SequencePlayerCurveOutput& output)
-			:	mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output)
+			: mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output)
 		{
 			assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
 			mTrack = static_cast<const SequenceTrackCurve<CURVE_TYPE>*>(&track);
@@ -55,7 +55,8 @@ namespace nap
 			{
 				mSetFunction = &SequencePlayerCurveAdapter::storeParameterValue;
 				mOutput.registerAdapter(this);
-			}else
+			}
+			else
 			{
 				mSetFunction = &SequencePlayerCurveAdapter::setParameterValue;
 			}
@@ -85,7 +86,7 @@ namespace nap
 
 					// retrieve the source value
 					CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
-					
+
 					// cast it to a parameter value
 					auto value = static_cast<PARAMETER_VALUE_TYPE>(source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 
@@ -125,13 +126,13 @@ namespace nap
 			mStoredValue = value;
 		}
 
-		PARAMETER_TYPE&									mParameter;
-		const SequenceTrackCurve<CURVE_TYPE>*			mTrack;
+		PARAMETER_TYPE& mParameter;
+		const SequenceTrackCurve<CURVE_TYPE>* mTrack;
 		bool											mUseMainThread{};
-		SequencePlayerCurveOutput&						mOutput;
+		SequencePlayerCurveOutput& mOutput;
 		std::mutex										mMutex;
 		PARAMETER_VALUE_TYPE							mStoredValue;
 
-		void (SequencePlayerCurveAdapter::*mSetFunction)(PARAMETER_VALUE_TYPE& value);
+		void (SequencePlayerCurveAdapter::* mSetFunction)(PARAMETER_VALUE_TYPE& value);
 	};
 }
