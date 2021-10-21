@@ -17,10 +17,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
-if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -z muldefs")
-endif()
-
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
