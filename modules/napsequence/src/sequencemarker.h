@@ -15,7 +15,7 @@ namespace nap
 	 * SequenceMarker can be used to mark certain positions in the sequencer
 	 * This can be a useful tool for the user to maintain an overview within created sequences
 	 */
-	class SequenceMarker : public Resource
+	class NAPAPI SequenceMarker : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
