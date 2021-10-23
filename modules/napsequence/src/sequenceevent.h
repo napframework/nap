@@ -16,7 +16,7 @@ namespace nap
 	/**
 	 * Base class for all sequence related events.
 	 */
-	class SequenceEventBase : public Event
+	class NAPAPI SequenceEventBase : public Event
 	{
 		RTTI_ENABLE(Event)
 	public:

@@ -16,7 +16,7 @@ namespace nap
 	 * There are four supported types ( float, vec2, vec3, vec4 ) that can contain 1, 2 , 3 or 4 curves 
 	 */
 	template<typename T>
-	class NAPAPI SequenceTrackSegmentCurve : public SequenceTrackSegment
+	class SequenceTrackSegmentCurve : public SequenceTrackSegment
 	{
 		RTTI_ENABLE(SequenceTrackSegment)
 	public:
