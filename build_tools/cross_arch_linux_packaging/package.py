@@ -12,24 +12,11 @@ def main(arch):
     nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
     thirdparty = os.path.abspath(os.path.join(nap_root, os.pardir, 'thirdparty'))
 
-    # Check for Qt
-    # TODO Kludgy temp. way to source Qt for now. In an automated fashion we'd pull this automatically 
-    # (presuming it's not in thirdparty) using wget.
-    qt_arch_dir = os.path.join(script_dir, 'qt-{}'.format(arch))
-    if not os.path.exists(qt_arch_dir):
-        print("Please provide Qt for {} extracted at {}".format(arch, qt_arch_dir), file=sys.stderr)
-        sys.exit(1)
-
     # Create the docker build context. You want there to be as little as possible in there so as to reduce
     # the deployment time, image size, etc.
     docker_build_context = os.path.abspath(os.path.join(nap_root, os.pardir, 'linux_crossarch_package'))
     if not os.path.exists(docker_build_context):
         pathlib.Path(docker_build_context).mkdir(parents=True, exist_ok=True)
-
-    # Deploy Qt
-    dest_qt_path = os.path.join(docker_build_context, 'qt-{}'.format(arch))
-    cmd = 'rsync -a {} {}'.format(qt_arch_dir, dest_qt_path)
-    run(cmd, shell=True)
 
     # Deploy main repos. rsync is to enable only syncing updated content, at the cost
     # of probably locking this into a *nix machine for now.
@@ -78,6 +65,11 @@ def main(arch):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('architecture', choices=['x86_64', 'arm64', 'armhf'])
+    parser.add_argument('architecture', choices=['arm64', 'armhf'])
     args = parser.parse_args()
+
+    if args.architecture == 'armhf':
+        print("The ARMhf process is currently broken, please verify timings against ARM64", file=sys.stderr)
+        sys.exit(1)
+
     main(args.architecture)

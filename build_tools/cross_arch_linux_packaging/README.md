@@ -8,8 +8,9 @@ This is currently dependent on a Unix host, but could be modified to run on any 
 
 ## How to use
 
-1. Create the Docker image for the target architecture, see `/build_tools/docker_images`
-2. Deploy Qt for the architecture you're compiling in this directory, titled eg. `qt-armhf` for ARMhf. Directly within that directory should be `/lib/` etc.
-3. Run `./package.py <arch>`, eg. `./package.py armhf` for ARMhf.
+Note: A bug is currently impacting ARMhf builds via this process. ARM64 should be used for the time being to get an idea of performance.
 
-The output, if successful will be in a folder titled `linux_crossarch_package` alongside `nap` and `thirdparty`.
+1. Setup Docker Buildx and create the Docker image for the target architecture, see documentation in `/build_tools/docker_images`
+2. Run `./package.py <arch>`, eg. `./package.py arm64` for ARM64.
+
+The output, if successful, will be in a folder titled `linux_crossarch_package` alongside `nap` and `thirdparty`.
