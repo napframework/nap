@@ -4,10 +4,12 @@
 
 // Local Includes
 #include "gpubuffer.h"
+#include "renderservice.h"
 #include "rtti/typeinfo.h"
 
 // External Includes
 #include "vulkan/vulkan.h"
+#include <nap/core.h>
 #include <assert.h>
 #include <string.h>
 #include "renderservice.h"
@@ -18,43 +20,39 @@ RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
 	RTTI_ENUM_VALUE(nap::EMeshDataUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
+RTTI_END_CLASS
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Static functions
+	// GPUBuffer
 	//////////////////////////////////////////////////////////////////////////
 
-	GPUBuffer::GPUBuffer(RenderService& renderService, EMeshDataUsage usage) :
-		mRenderService(&renderService),
-		mUsage(usage)
+	GPUBuffer::GPUBuffer(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{}
+
+
+	GPUBuffer::GPUBuffer(Core& core, EMeshDataUsage usage) :
+		mRenderService(core.getService<RenderService>()), mUsage(usage)
+	{}
+
+
+	bool GPUBuffer::init(utility::ErrorState& errorState)
 	{
+		if (!errorState.check(mRenderBuffers.empty(), utility::stringFormat("%s: Renderbuffers created before initialization", mID.c_str())))
+			return false;
+
 		// Scale buffers based on number of frames in flight when not static.
-		mRenderBuffers.resize(mUsage == EMeshDataUsage::Static ? 1 : 
-			renderService.getMaxFramesInFlight() + 1);
+		mRenderBuffers.resize(mUsage == EMeshDataUsage::Static ? 1 : mRenderService->getMaxFramesInFlight() + 1);
+		return true;
 	}
 
 
 	VkBuffer GPUBuffer::getBuffer() const
 	{
 		return mRenderBuffers[mCurrentBufferIndex].mBuffer;
-	}
-
-
-	GPUBuffer::~GPUBuffer()
-	{	
-		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
-		// This ensures the buffers are destroyed when certain they are not in use.
-		mRenderService->removeBufferRequests(*this);
-		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers, staging_buffer = mStagingBuffer](RenderService& renderService)
-		{
-			// Destroy render buffers
-			for (const BufferData& buffer : buffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
-
-			// Also destroy the staging buffer if we reach this point before the initial upload has occurred.
-			// This could happen e.g. if app initialization fails.
-			destroyBuffer(renderService.getVulkanAllocator(), staging_buffer);
-		});
 	}
 
 	
@@ -186,5 +184,23 @@ namespace nap
 
 		// Signal change
 		bufferChanged();
+	}
+
+
+	GPUBuffer::~GPUBuffer()
+	{
+		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
+		// This ensures the buffers are destroyed when certain they are not in use.
+		mRenderService->removeBufferRequests(*this);
+		mRenderService->queueVulkanObjectDestructor([buffers = mRenderBuffers, staging_buffer = mStagingBuffer](RenderService& renderService)
+		{
+			// Destroy render buffers
+			for (const BufferData& buffer : buffers)
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+
+			// Also destroy the staging buffer if we reach this point before the initial upload has occurred.
+			// This could happen e.g. if app initialization fails.
+			destroyBuffer(renderService.getVulkanAllocator(), staging_buffer);
+		});
 	}
 }

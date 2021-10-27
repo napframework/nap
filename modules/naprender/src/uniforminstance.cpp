@@ -6,6 +6,7 @@
 
 RTTI_DEFINE_BASE(nap::UniformInstance)
 RTTI_DEFINE_BASE(nap::UniformLeafInstance)
+RTTI_DEFINE_BASE(nap::UniformOpaqueInstance)
 RTTI_DEFINE_BASE(nap::UniformValueInstance)
 RTTI_DEFINE_BASE(nap::UniformValueArrayInstance)
 
@@ -250,55 +251,116 @@ namespace nap
 
 				mUniforms.emplace_back(std::move(struct_array_instance));
 			}
-			else if (declaration_type == RTTI_OF(UniformValueArrayDeclaration))
+			else if (declaration_type == RTTI_OF(UniformValueBufferDeclaration) || declaration_type == RTTI_OF(UniformValueArrayDeclaration))
 			{
-				UniformValueArrayDeclaration* value_array_declaration = rtti_cast<UniformValueArrayDeclaration>(uniform_declaration.get());
-				std::unique_ptr<UniformValueArrayInstance> instance_value_array;
+				// If the uniform instance is created from a uniform resource, check the resource type to decide whether to construct an array or buffer uniform
+				bool is_buffer_type = false;
+				if (resource != nullptr)
+				{
+					if (rtti_cast<const UniformValueBuffer>(resource) != nullptr)
+						is_buffer_type = true;
+				}
+				// If the uniform is not created from a resource, use the declaration
+				else if (declaration_type == RTTI_OF(UniformValueBufferDeclaration))
+					is_buffer_type = true;
 
-				const UniformValueArray* value_array_resource = rtti_cast<const UniformValueArray>(resource);
-				if (!errorState.check(resource == nullptr || value_array_resource != nullptr, "Type mismatch between shader type and json type"))
-					return false;
+				if (is_buffer_type)
+				{
+					const UniformValueBuffer* value_buffer_resource = rtti_cast<const UniformValueBuffer>(resource);
+					if (!errorState.check(resource == nullptr || value_buffer_resource != nullptr, "Type mismatch between shader type and json type"))
+						return false;
 
-				if (value_array_declaration->mElementType == EUniformValueType::Int)
-				{
-					instance_value_array = createUniformValueInstance<UniformIntArrayInstance, UniformIntArray>(resource, *value_array_declaration, errorState);
-				}
-				else if (value_array_declaration->mElementType == EUniformValueType::Float)
-				{
-					instance_value_array = createUniformValueInstance<UniformFloatArrayInstance, UniformFloatArray>(resource, *value_array_declaration, errorState);
-				}
-				else if (value_array_declaration->mElementType == EUniformValueType::Vec2)
-				{
-					instance_value_array = createUniformValueInstance<UniformVec2ArrayInstance, UniformVec2Array>(resource, *value_array_declaration, errorState);
-				}
-				else if (value_array_declaration->mElementType == EUniformValueType::Vec3)
-				{
-					instance_value_array = createUniformValueInstance<UniformVec3ArrayInstance, UniformVec3Array>(resource, *value_array_declaration, errorState);
-				}
-				else if (value_array_declaration->mElementType == EUniformValueType::Vec4)
-				{
-					instance_value_array = createUniformValueInstance<UniformVec4ArrayInstance, UniformVec4Array>(resource, *value_array_declaration, errorState);
-				}
-				else if (value_array_declaration->mElementType == EUniformValueType::Mat4)
-				{
-					instance_value_array = createUniformValueInstance<UniformMat4ArrayInstance, UniformMat4Array>(resource, *value_array_declaration, errorState);
+					// If the declaration is for an array, downcast it to a buffer declaration to aid construction
+					UniformValueBufferDeclaration* value_declaration = static_cast<UniformValueBufferDeclaration*>(uniform_declaration.get());
+					std::unique_ptr<UniformValueBufferInstance> instance_value_buffer;
+
+					if (value_declaration->mElementType == EUniformValueType::Int)
+					{
+						instance_value_buffer = createUniformValueInstance<UniformIntBufferInstance, UniformIntBuffer>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Float)
+					{
+						instance_value_buffer = createUniformValueInstance<UniformFloatBufferInstance, UniformFloatBuffer>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Vec2)
+					{
+						instance_value_buffer = createUniformValueInstance<UniformVec2BufferInstance, UniformVec2Buffer>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Vec3)
+					{
+						instance_value_buffer = createUniformValueInstance<UniformVec3BufferInstance, UniformVec3Buffer>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Vec4)
+					{
+						instance_value_buffer = createUniformValueInstance<UniformVec4BufferInstance, UniformVec4Buffer>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Mat4)
+					{
+						instance_value_buffer = createUniformValueInstance<UniformMat4BufferInstance, UniformMat4Buffer>(resource, *value_declaration, errorState);
+					}
+					else
+					{
+						assert(false);
+					}
+
+					if (instance_value_buffer == nullptr)
+						return false;
+
+					if (!errorState.check(resource == nullptr || value_buffer_resource->getCount() == value_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+						return false;
+
+					mUniforms.emplace_back(std::move(instance_value_buffer));
 				}
 				else
 				{
-					assert(false);
+					const UniformValueArray* value_array_resource = rtti_cast<const UniformValueArray>(resource);
+					if (!errorState.check(resource == nullptr || value_array_resource != nullptr, "Type mismatch between shader type and json type"))
+						return false;
+
+					UniformValueArrayDeclaration* value_declaration = rtti_cast<UniformValueArrayDeclaration>(uniform_declaration.get());
+					std::unique_ptr<UniformValueArrayInstance> instance_value_array;
+
+					if (value_declaration->mElementType == EUniformValueType::Int)
+					{
+						instance_value_array = createUniformValueInstance<UniformIntArrayInstance, UniformIntArray>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Float)
+					{
+						instance_value_array = createUniformValueInstance<UniformFloatArrayInstance, UniformFloatArray>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Vec2)
+					{
+						instance_value_array = createUniformValueInstance<UniformVec2ArrayInstance, UniformVec2Array>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Vec3)
+					{
+						instance_value_array = createUniformValueInstance<UniformVec3ArrayInstance, UniformVec3Array>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Vec4)
+					{
+						instance_value_array = createUniformValueInstance<UniformVec4ArrayInstance, UniformVec4Array>(resource, *value_declaration, errorState);
+					}
+					else if (value_declaration->mElementType == EUniformValueType::Mat4)
+					{
+						instance_value_array = createUniformValueInstance<UniformMat4ArrayInstance, UniformMat4Array>(resource, *value_declaration, errorState);
+					}
+					else
+					{
+						assert(false);
+					}
+
+					if (instance_value_array == nullptr)
+						return false;
+
+					// If the array was not set in json, we need to ensure the array has the correct size & is filled with default values
+					if (resource == nullptr)
+						instance_value_array->setDefault();
+
+					if (!errorState.check(resource == nullptr || value_array_resource->getCount() == value_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+						return false;
+
+					mUniforms.emplace_back(std::move(instance_value_array));
 				}
-
-				if (instance_value_array == nullptr)
-					return false;
-
-				// If the array was not set in json, we need to ensure the array has the correct size & is filled with default values
-				if (resource == nullptr)
-					instance_value_array->setDefault();
-
-				if (!errorState.check(resource == nullptr || value_array_resource->getCount() == value_array_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
-					return false;
-
-				mUniforms.emplace_back(std::move(instance_value_array));
 			}
 			else if (declaration_type == RTTI_OF(UniformStructDeclaration))
 			{

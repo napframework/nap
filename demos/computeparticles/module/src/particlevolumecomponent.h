@@ -42,7 +42,7 @@ namespace nap
 		DECLARE_COMPONENT(ParticleVolumeComponent, ParticleVolumeComponentInstance)
 
 	public:
-		ComputeMaterialInstanceResource mComputeMaterial;	///< Compute material
+		ComputeMaterialInstanceResource mComputeMaterial;	///< Compute material instance resource
 
 		glm::vec3			mPosition;						///< Particle spawn position
 		float				mRotation = 0.0f;				///< Start rotation
@@ -92,7 +92,7 @@ namespace nap
 		UniformVec4ArrayInstance*			mPositionStorageUniform = nullptr;
 		UniformVec4ArrayInstance*			mVelocityStorageUniform = nullptr;
 		UniformVec4ArrayInstance*			mRotationStorageUniform = nullptr;
-		UniformVec4ArrayInstance*			mVertexStorageUniform = nullptr;
+		//UniformVec4ArrayInstance*			mVertexStorageUniform = nullptr;
 
 		UniformIntInstance*					mParticleCountUniform = nullptr;
 		UniformFloatInstance*				mDeltaTimeUniform = nullptr;

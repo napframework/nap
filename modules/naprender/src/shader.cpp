@@ -447,18 +447,6 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 }
 
 
-static nap::EUniformSetBinding getUniformSetBinding(int set)
-{
-	if (set == static_cast<int>(nap::EUniformSetBinding::Default))
-		return nap::EUniformSetBinding::Default;
-
-	else if (set == static_cast<int>(nap::EUniformSetBinding::Static))
-		return nap::EUniformSetBinding::Static;
-
-	return nap::EUniformSetBinding::Default;
-}
-
-
 static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
 {
 	assert(type.basetype == spirv_cross::SPIRType::Struct);
@@ -500,6 +488,7 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 					absoluteOffset += stride;
 				}
 
+				// TODO: Make distinction between value array and value buffer for structs
 				parentStruct.mMembers.emplace_back(std::move(array_declaration));
 			}
 			else
@@ -552,12 +541,14 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-		nap::uint32 set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+		int set = static_cast<int>(compiler.get_decoration(resource.id, spv::DecorationDescriptorSet));
+
+		nap::EUniformSetUsage uniform_set;
+		if (!errorState.check(nap::getUniformSetUsage(set) != nap::EUniformSetUsage::None, nap::utility::stringFormat("Unsupported set index %d found", set).c_str()))
+			return false;
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-
-		nap::EUniformSetBinding set_binding = getUniformSetBinding(static_cast<int>(set));
-		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, set_binding, inStage, nap::EBufferObjectType::Uniform, struct_size);
+		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, static_cast<int>(set), inStage, nap::EBufferObjectType::Uniform, struct_size);
 
 		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
@@ -571,40 +562,19 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-		nap::uint32 set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+		int set = static_cast<int>(compiler.get_decoration(resource.id, spv::DecorationDescriptorSet));
+
+		nap::EUniformSetUsage uniform_set;
+		if (!errorState.check(nap::getUniformSetUsage(set) != nap::EUniformSetUsage::None, nap::utility::stringFormat("Unsupported set index %d found", set).c_str()))
+			return false;
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-
-		nap::EUniformSetBinding set_binding = getUniformSetBinding(static_cast<int>(set));
-		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, set_binding, inStage, nap::EBufferObjectType::Storage, struct_size);
+		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, static_cast<int>(set), inStage, nap::EBufferObjectType::Storage, struct_size);
 
 		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
 
 		uboDeclarations.emplace_back(std::move(storage_buffer_object));
-	}
-
-	// Verify descriptor set indices
-	std::set<int> set_indices;
-	int max_set_index = 0;
-	for (auto& ubo_declaration : uboDeclarations)
-	{
-		int idx = static_cast<int>(ubo_declaration.mSet);
-		set_indices.insert(idx);
-		max_set_index = std::max(idx, max_set_index);
-	}
-
-	for (int i = 0; i <= max_set_index; i++)
-	{
-		bool found = false;
-		for (auto idx : set_indices)
-		{
-			if (idx != i) continue;
-			found = true;
-			break;
-		}
-		if (!errorState.check(found, nap::utility::stringFormat("Descriptor set index %d in layout qualifier breaks required incremental order starting from 0", i)))
-			return false;
 	}
 
 	// Samplers e.g. 'uniform sampler2D'
@@ -663,10 +633,10 @@ namespace nap
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService->queueVulkanObjectDestructor([layouts = mDescriptorSetLayouts](RenderService& renderService)
 		{
-			for (auto& layout : layouts)
+			for (auto it = layouts.begin(); it != layouts.end(); it++)
 			{
-				if (layout != nullptr)
-					vkDestroyDescriptorSetLayout(renderService.getDevice(), layout, nullptr);
+				if (it->second != nullptr)
+					vkDestroyDescriptorSetLayout(renderService.getDevice(), it->second, nullptr);
 			}
 		});
 	}
@@ -674,7 +644,12 @@ namespace nap
 
 	bool BaseShader::initLayouts(VkDevice device, int numLayouts, nap::utility::ErrorState& errorState)
 	{
-		mDescriptorSetLayouts.resize(numLayouts);
+		// Initialize layout map
+		rtti::TypeInfo enum_type = RTTI_OF(nap::EUniformSetUsage);
+		auto enum_values = enum_type.get_enumeration().get_values();
+
+		for (auto it = enum_values.begin(); it != enum_values.end(); it++)
+			mDescriptorSetLayouts.insert({ it->get_value<EUniformSetUsage>(), VK_NULL_HANDLE });
 
 		// Traverse found set indices
 		for (int layout_index = 0; layout_index < numLayouts; layout_index++)
@@ -682,7 +657,7 @@ namespace nap
 			std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
 			for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
 			{
-				if (declaration.mSet != getUniformSetBinding(layout_index)) continue;
+				if (layout_index != declaration.mSet) continue;
 
 				VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 				uboLayoutBinding.binding = declaration.mBinding;
@@ -715,13 +690,41 @@ namespace nap
 			layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
 			layoutInfo.pBindings = descriptor_set_layouts.data();
 
-			if (!errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayouts[layout_index]) == VK_SUCCESS, "Failed to create descriptor set layout"))
+			auto it = mDescriptorSetLayouts.find(getUniformSetUsage(layout_index));
+			if (!errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &it->second) == VK_SUCCESS, "Failed to create descriptor set layout"))
 				return false;
 		}
 
 		return true;
 	}
-	
+
+
+	VkDescriptorSetLayout BaseShader::getDescriptorSetLayout(nap::EUniformSetUsage usage) const
+	{
+		const auto it = mDescriptorSetLayouts.find(usage);
+		if (it != mDescriptorSetLayouts.end())
+			return it->second;
+
+		assert(false);
+		return VK_NULL_HANDLE;
+	}
+
+
+	const std::vector<VkDescriptorSetLayout> BaseShader::getDescriptorSetLayouts() const
+	{
+		std::vector<VkDescriptorSetLayout> layouts;
+		for (auto it = mDescriptorSetLayouts.begin(); it != mDescriptorSetLayouts.end(); it++)
+		{
+			// Skip invalid set usage type 'None'
+			if (it->first == EUniformSetUsage::None)
+				continue;
+
+			layouts.push_back(it->second);
+		}
+
+		return layouts;
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Shader
@@ -842,7 +845,7 @@ namespace nap
 		{
 			// Query useful compute info
 			std::array<uint, 3> size;
-			std::memcpy(&size[0], &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(size));
+			std::memcpy(size.data(), &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(size));
 			uint max_invocations = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupInvocations;
 
 			errorState.fail("Compute info (%s): Max WorkGroup Size = (%d, %d, %d) | Max WorkGroup Invocations = %d",

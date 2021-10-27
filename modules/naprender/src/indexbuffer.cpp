@@ -4,16 +4,37 @@
 
 // Local Includes
 #include "indexbuffer.h"
+#include "renderservice.h"
 
 // External Includes
+#include <nap/core.h>
 #include <assert.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IndexBuffer)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Usage", &nap::IndexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 namespace nap
 {
-	IndexBuffer::IndexBuffer(RenderService& renderService, EMeshDataUsage usage) :
-		GPUBuffer(renderService, usage)
+	//////////////////////////////////////////////////////////////////////////
+	// IndexBuffer
+	//////////////////////////////////////////////////////////////////////////
+
+	IndexBuffer::IndexBuffer(Core& core) :
+		GPUBuffer(core)
 	{ }
 
+
+	IndexBuffer::IndexBuffer(Core& core, EMeshDataUsage usage) :
+		GPUBuffer(core, usage)
+	{ }
+
+
+	bool IndexBuffer::init(utility::ErrorState& errorState)
+	{
+		return GPUBuffer::init(errorState);
+	}
 
 	bool IndexBuffer::setData(const std::vector<uint32>& indices, utility::ErrorState& error)
 	{

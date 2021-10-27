@@ -19,7 +19,7 @@
 #include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
-	RTTI_PROPERTY("ComputeMaterial",			&nap::ParticleVolumeComponent::mComputeMaterial,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComputeMaterialInstance",	&nap::ParticleVolumeComponent::mComputeMaterial,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",					&nap::ParticleVolumeComponent::mPosition,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
@@ -229,46 +229,29 @@ namespace nap
 		UniformStructInstance* position_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::positionBufferStruct);
 		UniformStructInstance* velocity_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::velocityBufferStruct);
 		UniformStructInstance* rotation_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::rotationBufferStruct);
-		UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
+		//UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
 
-		if (position_struct != nullptr && velocity_struct != nullptr && vertex_struct != nullptr)
+		bool uniforms_valid = (position_struct != nullptr && velocity_struct != nullptr && rotation_struct != nullptr /* && vertex_struct != nullptr*/);
+		if (!errorState.check(uniforms_valid, "Missing uniform"))
+			return false;
+
+		// Populate buffers
+		mPositionStorageUniform = position_struct->getOrCreateUniform<UniformVec4ArrayInstance>("positions");
+		mVelocityStorageUniform = velocity_struct->getOrCreateUniform<UniformVec4ArrayInstance>("velocities");
+		mRotationStorageUniform = rotation_struct->getOrCreateUniform<UniformVec4ArrayInstance>("rotations");
+		//mVertexStorageUniform = vertex_struct->getOrCreateUniform<UniformVec4ArrayInstance>("vertices");
+
+		for (int i = 0; i < mParticleMesh->mNumParticles; i++)
 		{
-			mPositionStorageUniform = position_struct->getOrCreateUniform<UniformVec4ArrayInstance>("positions");
-			mVelocityStorageUniform = velocity_struct->getOrCreateUniform<UniformVec4ArrayInstance>("velocities");
-			mRotationStorageUniform = rotation_struct->getOrCreateUniform<UniformVec4ArrayInstance>("rotations");
-			mVertexStorageUniform = vertex_struct->getOrCreateUniform<UniformVec4ArrayInstance>("vertices");
-
-			// Push once, then never again
-			// TODO: These can currently not be set in napkin as it would require creating a million default values to match the array size in the shader
-			//mPositionStorageUniform->setUsage(EUniformDataUsage::Static);
-			//mVelocityStorageUniform->setUsage(EUniformDataUsage::Static);
-			//mRotationStorageUniform->setUsage(EUniformDataUsage::Static);
-			//mVertexStorageUniform->setUsage(EUniformDataUsage::Static);
-
-			for (int i = 0; i < mParticleMesh->mNumParticles; i++)
-			{
-				Particle p = createParticle(glm::vec4(resource->mPosition, 0.0f), resource->mSpread, glm::vec4(resource->mVelocity, 0.0f), resource->mVelocityVariation, resource->mRotationVariation);
-				mPositionStorageUniform->setValue(p.mPosition, i);
-				mVelocityStorageUniform->setValue(p.mVelocity, i);
-				mRotationStorageUniform->setValue(p.mRotation, i);
-			}
-
-
-			// Initialize storage buffer vertices to zero
-			std::vector<glm::vec4> vertices(mParticleMesh->getMeshInstance().getNumVertices());
-			mVertexStorageUniform->setValues(vertices);
+			Particle p = createParticle(glm::vec4(resource->mPosition, 0.0f), resource->mSpread, glm::vec4(resource->mVelocity, 0.0f), resource->mVelocityVariation, resource->mRotationVariation);
+			mPositionStorageUniform->setValue(p.mPosition, i);
+			mVelocityStorageUniform->setValue(p.mVelocity, i);
+			mRotationStorageUniform->setValue(p.mRotation, i);
 		}
 
-		// Set dispatch finished callback
-		//mPostDispatchCallback = [this](const DescriptorSet& descriptor_set)
-		//{
-		//	// Store a reference to the target storage buffer in a member so it can be bound to when rendering
-		//	// We need to do this because updating the compute material will fetch a different buffer
-		//	mBufferPtr = &descriptor_set.mBuffers[4].mBuffer;;
-		//};
-
-		// Connect pre-endcommandbuffer callback
-		//mComputeInstance->mPostDispatch.connect(mPostDispatchCallback);
+		// Initialize storage buffer vertices to zero
+		//std::vector<glm::vec4> vertices(mParticleMesh->getMeshInstance().getNumVertices());
+		//mVertexStorageUniform->setValues(vertices);
 
 		nap::Logger::info("%s: Done", mID.c_str());
 		return true;

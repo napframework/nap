@@ -404,6 +404,30 @@ namespace nap
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(resource.mUniforms, ubo_declaration));
 
+			// Verify uniform set index
+			if (struct_resource != nullptr)
+			{
+				EUniformSetUsage declaration_usage = getUniformSetUsage(ubo_declaration.mSet);
+				if (struct_resource->mSet != declaration_usage)
+				{
+					std::string uniform_set_name = rtti::Variant(struct_resource->mSet).to_string();
+					std::string declaration_set_name = rtti::Variant(declaration_usage).to_string();
+					errorState.fail("Uniform %s set index (%d = %s) does not match uniform layout qualifier 'set' (%d = %s) in shader",
+						struct_resource->mName.c_str(), struct_resource->mSet, uniform_set_name.c_str(), ubo_declaration.mSet, declaration_set_name.c_str());
+					return false;
+				}
+
+				// Check if created opaque uniforms are placed in the appropriate set
+				for (const auto& uniform : struct_resource->mUniforms)
+				{
+					if (rtti_cast<const UniformValueBuffer>(uniform.get()) == nullptr)
+						continue;
+
+					if (!errorState.check(declaration_usage == EUniformSetUsage::Opaque, utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not Opaque (%d)", uniform->mID.c_str(), EUniformSetUsage::Opaque)))
+						return false;
+				}
+			}
+
 			// Pass 1: create hierarchical structure
 			UniformStructInstance* override_struct = nullptr;
 			if (struct_resource != nullptr)
@@ -413,11 +437,13 @@ namespace nap
 					return false;
 			}
 
+
+
 			// Pass 2: gather leaf uniform instances for a single ubo
 			UniformBufferObject ubo(ubo_declaration);
 			rebuildUBO(material, ubo, override_struct);
 
-			auto& buffer_object_list = ubo_declaration.mSet == EUniformSetBinding::Default ? mUniformBufferObjects : mStaticUniformBufferObjects;
+			auto& buffer_object_list = ubo_declaration.getUsage() == EUniformSetUsage::DynamicWrite ? mUniformBufferObjects : mStaticUniformBufferObjects;
 			buffer_object_list.emplace_back(std::move(ubo));
 		}
 
@@ -554,11 +580,9 @@ namespace nap
 		// to act as 'globally' as possible).
 		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(getComputeMaterial().getShader().getDescriptorSetLayout());
 
-		// Get additional (static) descriptor set layout
-		const auto& descriptor_set_layouts = getComputeMaterial().getShader().getDescriptorSetLayouts();
-		int index_static = static_cast<int>(EDescriptorSetLayoutIndex::Static);
-		if (descriptor_set_layouts.size() >= index_static)
-			mStaticDescriptorSetCache = &renderService.getOrCreateStaticDescriptorSetCache(descriptor_set_layouts[index_static]);
+		// Get descriptor set layout
+		const auto& layout = getComputeMaterial().getShader().getDescriptorSetLayout(EUniformSetUsage::Static);
+		mStaticDescriptorSetCache = &renderService.getOrCreateStaticDescriptorSetCache(layout);
 
 		return success;
 	}

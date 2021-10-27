@@ -14,11 +14,33 @@
 namespace nap
 {
 	/**
+	 * Vertex Buffer Format
+	 */
+	enum class EVertexBufferFormat : int
+	{
+		R8_SINT					= 0,
+		R32_SINT				= 1,
+		R32_SFLOAT				= 2,
+		R64_SFLOAT				= 4,
+		R32G32_SFLOAT			= 5,
+		R32G32B32_SFLOAT		= 6,
+		R32G32B32A32_SFLOAT		= 7,
+		UNKNOWN					= -1
+	};
+
+	/**
+	 * Returns the vulkan format for the given vertex buffer format
+	 * @param format requested format
+	 * @return vulkan format
+	 */
+	VkFormat getVulkanBufferFormat(EVertexBufferFormat format);
+
+	/**
 	 * Returns the size in bytes, for a single element, of the given format.
 	 * @param format requested format
 	 * @return size in bytes, for a single element, of the given format. -1 if unsupported.
 	 */
-	int getVertexSize(VkFormat format);
+	int getVertexElementSize(VkFormat format);
 
 	/**
 	 * A list of vertices on the GPU that represent a specific attribute of the geometry, for example:
@@ -27,19 +49,28 @@ namespace nap
 	 */
 	class NAPAPI VertexBuffer : public GPUBuffer
 	{
+		RTTI_ENABLE(GPUBuffer)
 	public:
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed. 
 		 * The format defines the vertex element size in bytes.
-		 * @param renderService the render engine
+		 * @param core the nap core
+		 */
+		VertexBuffer(Core& core);
+
+		/**
+		 * Every vertex buffer needs to have access to the render engine.
+		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
+		 * The format defines the vertex element size in bytes.
+		 * @param core the nap core
 		 * @param format buffer format, defines element size in bytes
 		 * @param usage how the buffer is used at runtime.
 		 */
-		VertexBuffer(RenderService& renderService, VkFormat format, EMeshDataUsage usage);
+		VertexBuffer(Core& core, VkFormat format, EMeshDataUsage usage);
 
 		/**
-		 * @return vertex buffer format
+		 * @return vulkan buffer format
 		 */
 		VkFormat getFormat() const { return mFormat; }
 
@@ -55,8 +86,15 @@ namespace nap
 		 */
 		bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error);
 
+		/**
+		 * 
+		 */
+		bool init(utility::ErrorState& errorState);
+
+		EVertexBufferFormat mBufferFormat = EVertexBufferFormat::UNKNOWN;	///< Property
+
 	private:
-		VkFormat		mFormat;
-		int				mVertexSize			= -1;
+		VkFormat		mFormat = VK_FORMAT_UNDEFINED;						///< vulkan buffer format, defines element size in bytes
+		int				mVertexSize			= -1;							// how the buffer is used at runtime.
 	};
 }

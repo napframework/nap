@@ -9,6 +9,7 @@
 #include "vertexattributedeclaration.h"
 #include "samplerdeclaration.h"
 #include "uniformdeclarations.h"
+#include "uniform.h"
 
 // External Includes
 #include <utility/dllexport.h>
@@ -47,14 +48,17 @@ namespace nap
 		const std::string& getDisplayName() const { return mDisplayName; }
 
 		/**
-		 * @return Vulkan descriptorSetLayout.
+		 * Returns the Vulkan DescriptorSetLayout of this shader for a given usage type
+		 * @param usage the usage type of the descriptor set layout, DynamicWrite by default
+		 * @return Vulkan descriptorSetLayout 
 		 */
-		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayouts[0]; }
+		VkDescriptorSetLayout getDescriptorSetLayout(nap::EUniformSetUsage usage = nap::EUniformSetUsage::DynamicWrite) const;
 
 		/**
-		 * @return Vulkan descriptorSetLayouts.
+		 * @return a vector containing all Vulkan DescriptorSetLayouts
 		 */
-		std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts() const { return mDescriptorSetLayouts; }
+		const std::vector<VkDescriptorSetLayout> BaseShader::getDescriptorSetLayouts() const;
+
 
 	protected:
 		RenderService* mRenderService = nullptr;												///< Handle to render engine
@@ -62,7 +66,7 @@ namespace nap
 		std::vector<UniformBufferObjectDeclaration>			mUBODeclarations;					///< All uniform buffer object declarations
 		SamplerDeclarations									mSamplerDeclarations;				///< All sampler declarations
 
-		std::vector<VkDescriptorSetLayout>					mDescriptorSetLayouts;				///< Descriptor set layouts
+		std::map<nap::EUniformSetUsage, VkDescriptorSetLayout>	mDescriptorSetLayouts;			///< Descriptor set layouts
 
 		bool initLayouts(VkDevice device, int numLayouts, nap::utility::ErrorState& errorState);
 	};

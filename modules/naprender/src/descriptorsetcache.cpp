@@ -157,9 +157,10 @@ namespace nap
 				uniform->push(buffer_block.data());
 			}
 
-			std::unique_ptr<StorageBuffer> buffer = std::make_unique<StorageBuffer>(*mRenderService, ubo_declaration.mType, EMeshDataUsage::Static);
+			std::unique_ptr<GPUDataBuffer> buffer = std::make_unique<GPUDataBuffer>(mRenderService->getCore(), ubo_declaration.mType, EMeshDataUsage::Static);
 
 			utility::ErrorState error_state;
+			buffer->init(error_state);
 			buffer->setData(buffer_block.data(), buffer_block.size(), error_state);
 
 			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
@@ -172,7 +173,7 @@ namespace nap
 			ubo_descriptor.dstSet = descriptor_set.mSet;
 			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
 			ubo_descriptor.dstArrayElement = 0;
-			ubo_descriptor.descriptorType = (ubo_declaration.mType == nap::EBufferObjectType::Uniform) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			ubo_descriptor.descriptorType = getDescriptorType(ubo_declaration.mType);
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 

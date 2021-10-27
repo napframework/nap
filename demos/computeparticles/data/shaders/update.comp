@@ -2,24 +2,24 @@
 
 layout(local_size_x = 8) in;
 
-layout(std430, binding = 0, set = 1) buffer PositionBuffer 
+layout(std430, binding = 0, set = 2) buffer PositionBuffer 
 {
 	vec4 positions[1000000];
 };
 
-layout(std430, binding = 1, set = 1) buffer VelocityBuffer 
+layout(std430, binding = 1, set = 2) buffer VelocityBuffer 
 {
 	vec4 velocities[1000000];
 };
 
-layout(std430, binding = 2, set = 1) buffer RotationBuffer 
+layout(std430, binding = 2, set = 2) buffer RotationBuffer 
 {
 	vec4 rotations[1000000];
 };
 
-layout(std430, binding = 3, set = 1) buffer VertexBuffer 
+layout(std430, binding = 3, set = 2) buffer VertexBuffer 
 {
-	vec4 vertices[1000000*4];
+	vec4 vertices[4000000];
 };
 
 uniform UBO 

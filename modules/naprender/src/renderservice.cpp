@@ -447,9 +447,9 @@ namespace nap
 		inst_info.pNext = NULL;
 		inst_info.flags = 0;
 		inst_info.pApplicationInfo = &app_info;
-		inst_info.enabledExtensionCount = static_cast<uint32_t>(ext_names.size());
+		inst_info.enabledExtensionCount = static_cast<uint32>(ext_names.size());
 		inst_info.ppEnabledExtensionNames = ext_names.empty() ? nullptr : ext_names.data();
-		inst_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
+		inst_info.enabledLayerCount = static_cast<uint32>(layer_names.size());
 		inst_info.ppEnabledLayerNames = layer_names.data();
 
 		// Create vulkan runtime instance
@@ -635,7 +635,7 @@ namespace nap
 			layer_names.emplace_back(layer.c_str());
 
 		// Get the number of available extensions for our graphics card
-		uint32_t device_property_count(0);
+		uint32 device_property_count(0);
 		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice.getHandle(), NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
 		if (print) { Logger::info("Found %d Vulkan device extensions:", device_property_count); }
@@ -709,9 +709,9 @@ namespace nap
 		create_info.queueCreateInfoCount = queue_create_infos.size();
 		create_info.pQueueCreateInfos = &queue_create_infos[0];
 		create_info.ppEnabledLayerNames = layer_names.data();
-		create_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
+		create_info.enabledLayerCount = static_cast<uint32>(layer_names.size());
 		create_info.ppEnabledExtensionNames = device_property_names.data();
-		create_info.enabledExtensionCount = static_cast<uint32_t>(device_property_names.size());
+		create_info.enabledExtensionCount = static_cast<uint32>(device_property_names.size());
 		create_info.pNext = nullptr;
 		create_info.pEnabledFeatures = &device_features;
 		create_info.flags = 0;
@@ -904,12 +904,12 @@ namespace nap
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
 		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
-		uint32_t shader_attribute_binding = 0;
+		uint shader_attribute_binding = 0;
 		for (auto& kvp : shader.getAttributes())
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
-			bindingDescriptions.push_back({ shader_attribute_binding, (uint32_t)getVertexSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
-			attributeDescriptions.push_back({ (uint32_t)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
+			bindingDescriptions.push_back({ shader_attribute_binding, (uint32)getVertexElementSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
+			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
 
 			shader_attribute_binding++;
 		}
@@ -935,7 +935,7 @@ namespace nap
 		vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
 		vertex_input_info.vertexBindingDescriptionCount = (int)bindingDescriptions.size();
-		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
 		vertex_input_info.pVertexBindingDescriptions = bindingDescriptions.data();
 		vertex_input_info.pVertexAttributeDescriptions = attributeDescriptions.data();
 
@@ -1040,12 +1040,12 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = "main";
 
-		auto set_layouts = computeShader.getDescriptorSetLayouts();
+		auto layouts = computeShader.getDescriptorSetLayouts();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeline_layout_info.setLayoutCount = set_layouts.size();
-		pipeline_layout_info.pSetLayouts = set_layouts.data();
+		pipeline_layout_info.setLayoutCount = layouts.size();
+		pipeline_layout_info.pSetLayouts = layouts.data();
 		pipeline_layout_info.pushConstantRangeCount = 0;
 
 		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))

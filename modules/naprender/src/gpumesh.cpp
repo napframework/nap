@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "gpumesh.h"
+#include "renderservice.h"
 #include <assert.h>
 
 namespace nap
@@ -15,7 +16,12 @@ namespace nap
 
 	void GPUMesh::addVertexBuffer(const std::string& id, VkFormat format)
 	{
-		mAttributes.emplace(std::make_pair(id, std::make_unique<VertexBuffer>(*mRenderService, format, mUsage)));
+		std::unique_ptr<VertexBuffer> vertex_buffer = std::make_unique<VertexBuffer>(mRenderService->getCore(), format, mUsage);
+
+		utility::ErrorState error_state;
+		vertex_buffer->init(error_state);
+
+		mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer)));
 	}
 
 
@@ -41,7 +47,11 @@ namespace nap
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
 		
-		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>(*mRenderService, mUsage);
+		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage);
+
+		utility::ErrorState error_state;
+		index_buffer->init(error_state);
+
 		mIndexBuffers.emplace_back(std::move(index_buffer));
 		return *mIndexBuffers.back();
 	}

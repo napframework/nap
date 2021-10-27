@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "uniform.h"
+#include "storagebuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -363,6 +364,74 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// UniformOpaqueInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Base class of all opaque uniform instances and uniform instance buffer types.
+	 * Opaques cannot push data to the GPU.
+	 */
+	class NAPAPI UniformOpaqueInstance : public UniformInstance
+	{
+		RTTI_ENABLE(UniformInstance)
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Uniform Value Buffer
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Base class of all uniform value array instances.
+	 */
+	class NAPAPI UniformValueBufferInstance : public UniformOpaqueInstance
+	{
+		RTTI_ENABLE(UniformOpaqueInstance)
+
+	public:
+		UniformValueBufferInstance(const UniformValueBufferDeclaration& declaration) :
+			mDeclaration(&declaration) { }
+
+		/**
+		 * @return uniform declaration.
+		 */
+		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
+
+	protected:
+		const UniformValueBufferDeclaration* mDeclaration;
+	};
+
+
+	/**
+	 * Specific type of uniform value buffer instance
+	 * All supported types are defined below for easier readability.
+	 */
+	template<typename T>
+	class TypedUniformValueBufferInstance : public UniformValueBufferInstance
+	{
+		RTTI_ENABLE(UniformValueBufferInstance)
+
+	public:
+		TypedUniformValueBufferInstance(const UniformValueBufferDeclaration& declaration) :
+			UniformValueBufferInstance(declaration) { }
+
+		/**
+		 * Updates the uniform value from a resource, data is not pushed immediately.
+		 * @param resource resource to copy data from.
+		 */
+		void set(const TypedUniformValueBuffer<T>& resource) { mBuffer = resource.mBuffer; }
+
+		/**
+		 * @return total number of elements in array
+		 */
+		int getNumElements() const { return mBuffer->mCount; }
+
+	private:
+		rtti::ObjectPtr<StorageBuffer<T>> mBuffer;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Type definitions for all supported uniform instance value types
 	//////////////////////////////////////////////////////////////////////////
 
@@ -384,6 +453,18 @@ namespace nap
 	using UniformVec3ArrayInstance	= TypedUniformValueArrayInstance<glm::vec3>;
 	using UniformVec4ArrayInstance	= TypedUniformValueArrayInstance<glm::vec4>;
 	using UniformMat4ArrayInstance	= TypedUniformValueArrayInstance<glm::mat4>;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Type definitions for all supported uniform instance buffer value types
+	//////////////////////////////////////////////////////////////////////////
+
+	using UniformIntBufferInstance = TypedUniformValueBufferInstance<int>;
+	using UniformFloatBufferInstance = TypedUniformValueBufferInstance<float>;
+	using UniformVec2BufferInstance = TypedUniformValueBufferInstance<glm::vec2>;
+	using UniformVec3BufferInstance = TypedUniformValueBufferInstance<glm::vec3>;
+	using UniformVec4BufferInstance = TypedUniformValueBufferInstance<glm::vec4>;
+	using UniformMat4BufferInstance = TypedUniformValueBufferInstance<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,7 @@
 // Internal includes
 #include "vk_mem_alloc.h"
 #include "renderutils.h"
-#include "storagebuffer.h"
+#include "gpudatabuffer.h"
 
 // External Includes
 #include <vector>
@@ -20,6 +20,7 @@ namespace nap
 {
 	// Forward Declares
 	class UniformBufferObject;
+	class UniformOpaqueBufferObject;
 	class SamplerInstance;
 	class RenderService;
 	class DescriptorSetAllocator;
@@ -40,10 +41,10 @@ namespace nap
 	{
 		VkDescriptorSetLayout							mLayout;
 		VkDescriptorSet									mSet;
-		std::vector<std::unique_ptr<StorageBuffer>>		mBuffers;
+		std::vector<std::unique_ptr<GPUDataBuffer>>		mBuffers;
 		mutable bool									mUpdated = false;
 
-		const std::vector<std::unique_ptr<StorageBuffer>>& getBuffers() const { return mBuffers; }
+		const std::vector<std::unique_ptr<GPUDataBuffer>>& getBuffers() const { return mBuffers; }
 
 		// Construction
 		StaticDescriptorSet() = default;
@@ -131,7 +132,7 @@ namespace nap
 		const StaticDescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers);
 
 	private:
-		RenderService* mRenderService;
+		RenderService*			mRenderService;
 		DescriptorSetAllocator* mDescriptorSetAllocator;	///< Allocator that is used to allocate new Descriptors
 		VkDescriptorSetLayout	mLayout;					///< The layout that this cache is managing DescriptorSets for
 		StaticDescriptorSet		mDescriptorSet;				///< Descriptorset

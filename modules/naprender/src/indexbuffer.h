@@ -20,15 +20,29 @@ namespace nap
 	 */
 	class NAPAPI IndexBuffer : public GPUBuffer
 	{
+		RTTI_ENABLE(GPUBuffer)
 	public:
 		/**
 		 * Every index buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a mesh can be updated more than once, 
 		 * and in which memory space it is placed.
-		 * @param renderService the render engine
+		 * @param core the nap core
+		 */
+		IndexBuffer(Core& core);
+
+		/**
+		 * Every index buffer needs to have access to the render engine.
+		 * The given 'usage' controls if a mesh can be updated more than once,
+		 * and in which memory space it is placed.
+		 * @param core the nap core
 		 * @param usage how the buffer is used at runtime.
 		 */
-		IndexBuffer(RenderService& renderService, EMeshDataUsage usage);
+		IndexBuffer(Core& core, EMeshDataUsage usage);
+
+		/**
+		 * 
+		 */
+		bool init(utility::ErrorState& errorState);
 
 		/**
 		 * @return the number of indices specified in this buffer

@@ -657,7 +657,7 @@ namespace nap
 		 * but could be higher.
 		 * @return the version of Vulkan supported by the device
 		 */
-		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDevice.getProperties().apiVersion; }
+		uint32 getPhysicalDeviceVersion() const										{ return mPhysicalDevice.getProperties().apiVersion; }
 
 		/**
 		 * All physical device hardware properties.

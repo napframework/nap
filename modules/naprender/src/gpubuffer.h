@@ -9,6 +9,7 @@
 #include "renderutils.h"
 
 // External Includes
+#include <nap/resource.h>
 #include <vulkan/vulkan_core.h>
 #include <utility/dllexport.h>
 #include <nap/signalslot.h>
@@ -19,6 +20,7 @@
 namespace nap
 {
 	class RenderService;
+	class Core;
 
 	/**
 	 * Flag that determines how the mesh data is used at runtime.
@@ -49,19 +51,29 @@ namespace nap
 	 * allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory
 	 * and are therefore slower to draw.
 	 */
-	class NAPAPI GPUBuffer
+	class NAPAPI GPUBuffer : public Resource
 	{
 		friend class RenderService;
+		RTTI_ENABLE(Resource)
 	public:
 
 		/**
 		 * Every buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once 
 		 * and in which memory space it is placed.
-		 * @param renderService the render engine
+		 * @param core the nap core
+		 */
+		GPUBuffer(Core& core);
+
+		/**
+		 * Every buffer needs to have access to the render engine.
+		 * The given 'usage' controls if a buffer can be updated more than once
+		 * and in which memory space it is placed.
+		 * @param core the nap core
 		 * @param usage how the buffer is used at runtime.
 		 */
-		GPUBuffer(RenderService& renderService, EMeshDataUsage usage);
+		GPUBuffer(Core& core, EMeshDataUsage usage);
+
 		virtual ~GPUBuffer();
 
 		// Copy construction not allowed
@@ -79,6 +91,13 @@ namespace nap
 		 * Called right after the buffer on the GPU has been updated.
 		 */
 		nap::Signal<> bufferChanged;
+
+		/**
+		 * 
+		 */
+		bool init(utility::ErrorState& errorState) override;
+
+		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property 'Usage' How the buffer is used, static, updated frequently etc.
 
 	protected:
 		/**
@@ -100,7 +119,6 @@ namespace nap
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
 		BufferData				mStagingBuffer;						///< Staging buffer, used when uploading static mesh geometry
 		int						mCurrentBufferIndex = 0;			///< Current render buffer index
-		EMeshDataUsage			mUsage;								///< How the buffer is used, static, updated frequently etc.
 		uint32					mSize = 0;							///< Current used buffer size in bytes
 
 		// Called when usage = static

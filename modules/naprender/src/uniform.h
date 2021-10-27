@@ -2,6 +2,7 @@
 
 // Local Includes
 #include "uniformdeclarations.h"
+#include "storagebuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -18,7 +19,44 @@ namespace nap
 	using UniformCreatedCallback = std::function<void()>;
 
 
-	/**PositionBuffer
+	/**
+	 * Usage mode of the uniform struct. Dictates the usage of all child uniforms.
+	 * Uniform usage directly maps to the descriptor set binding index in the shader
+	 */
+	enum class EUniformSetUsage : int
+	{
+		DynamicWrite = 0,	// Update uniform data each frame
+		Static = 1,			// Update uniform data once on descriptorset update
+		Opaque = 2,			// Use for opaque types such as buffers 
+		None = -1			// Invalid usage
+	};
+
+
+	/**
+	 * Sets outSet to the corresponding Uniform set enum type if supported
+	 * @param set the input uniform set index
+	 * @return the output uniform set enum type
+	 */
+	static nap::EUniformSetUsage getUniformSetUsage(int set)
+	{
+		if (set == static_cast<int>(nap::EUniformSetUsage::DynamicWrite))
+			return nap::EUniformSetUsage::DynamicWrite;
+
+		else if (set == static_cast<int>(nap::EUniformSetUsage::Static))
+			return nap::EUniformSetUsage::Static;
+
+		else if (set == static_cast<int>(nap::EUniformSetUsage::Opaque))
+			return nap::EUniformSetUsage::Opaque;
+
+		// If this assert is triggered, an unsupported uniform set index was given
+		assert(false);
+
+		// Return none
+		return nap::EUniformSetUsage::None;
+	}
+
+
+	/**
 	 * Shader uniform resource base class.
 	 */
 	class NAPAPI Uniform : public Resource
@@ -60,6 +98,7 @@ namespace nap
 
 	public:
 		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
+		EUniformSetUsage mSet;	///< Usage of the uniform
 	};
 	
 
@@ -169,12 +208,61 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformValueArray)
 	public:
-
 		/**
 		 * @return total number of elements.
 		 */
 		virtual int getCount() const override { return mValues.size(); }
 		std::vector<T> mValues;
+	};
+
+
+	/**
+	 * Base class for list of uniform values.
+	 * The list must be declared inside a uniform buffer object (block).
+	 * myshader.frag example:
+	 *
+	 * ~~~~~{.cpp}
+	 *	uniform UBO								///< Uniform buffer object
+	 *	{
+	 *		uniform vec3 positions[10];			///< List of object positions
+	 *	} ubo;
+	 * ~~~~~
+	 */
+	class NAPAPI UniformValueBuffer : public UniformValue
+	{
+		RTTI_ENABLE(UniformValue)
+
+	public:
+		/**
+		 * @return The number of elements in this array
+		 */
+		virtual int getCount() const = 0;
+	};
+
+
+	/**
+	 * List of uniform values, for example: float[3], vec3[10] etc.
+	 * The list must be declared inside a uniform buffer object (block).
+	 * myshader.frag example:
+	 *
+	 * ~~~~~{.cpp}
+	 *	uniform UBO								///< Uniform buffer object
+	 *	{
+	 *		uniform vec3 positions[10];			///< List of object position
+	 *	} ubo;
+	 * ~~~~~
+	 */
+	template<typename T>
+	class TypedUniformValueBuffer : public UniformValueBuffer
+	{
+		RTTI_ENABLE(UniformValueBuffer)
+	public:
+		/**
+		 * @return total number of elements.
+		 */
+		virtual int getCount() const override { return mBuffer->mCount; }
+
+		rtti::ObjectPtr<StorageBuffer<T>> mBuffer;	/// Property 'Buffer'
 	};
 
 
@@ -216,4 +304,16 @@ namespace nap
 	using UniformVec3Array = TypedUniformValueArray<glm::vec3>;
 	using UniformVec4Array = TypedUniformValueArray<glm::vec4>;
 	using UniformMat4Array = TypedUniformValueArray<glm::mat4>;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Uniform value buffer type definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	using UniformIntBuffer = TypedUniformValueBuffer<int>;
+	using UniformFloatBuffer = TypedUniformValueBuffer<float>;
+	using UniformVec2Buffer = TypedUniformValueBuffer<glm::vec2>;
+	using UniformVec3Buffer = TypedUniformValueBuffer<glm::vec3>;
+	using UniformVec4Buffer = TypedUniformValueBuffer<glm::vec4>;
+	using UniformMat4Buffer = TypedUniformValueBuffer<glm::mat4>;
 }

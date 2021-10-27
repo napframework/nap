@@ -99,6 +99,31 @@ namespace nap
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
 
+			// Verify uniform set index
+			if (struct_resource != nullptr)
+			{
+				EUniformSetUsage declaration_usage = getUniformSetUsage(ubo_declaration.mSet);
+				if (struct_resource->mSet != declaration_usage)
+				{
+					std::string uniform_set_name = rtti::Variant(struct_resource->mSet).to_string();
+					std::string declaration_set_name = rtti::Variant(declaration_usage).to_string();
+					errorState.fail("Uniform %s set index (%d = %s) does not match uniform layout qualifier 'set' (%d = %s) in shader",
+						struct_resource->mName.c_str(), struct_resource->mSet, uniform_set_name.c_str(), ubo_declaration.mSet, declaration_set_name.c_str());
+					return false;
+				}
+
+				// Check if created opaque uniforms are placed in the appropriate set
+				for (const auto& uniform : struct_resource->mUniforms)
+				{
+					if (rtti_cast<const UniformValueBuffer>(uniform.get()) == nullptr)
+						continue;
+
+					if (!errorState.check(declaration_usage == EUniformSetUsage::Opaque,
+						utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not Opaque (%d)", uniform->mID.c_str(), EUniformSetUsage::Opaque)))
+						return false;
+				}
+			}
+
 			UniformStructInstance& root_struct = createRootStruct(ubo_declaration, UniformCreatedCallback());
 			if (!root_struct.addUniformRecursive(ubo_declaration, struct_resource, UniformCreatedCallback(), true, errorState))
 				return false;

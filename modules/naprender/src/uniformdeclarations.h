@@ -12,6 +12,8 @@
 
 namespace nap
 {
+	enum class EUniformSetUsage;
+
 	/**
 	 * All available shader uniform types
 	 */
@@ -29,22 +31,14 @@ namespace nap
 		Mat4 = 9			///< 4x4 float matrix
 	};
 
+
 	/**
 	 * Supported buffer types
 	 */
 	enum class EBufferObjectType : uint8_t
 	{
-		Uniform = 0,		///< readonly
-		Storage = 1			///< read/write
-	};
-
-	/**
-	 * Supported uniform descriptor set bindings
-	 */
-	enum class EUniformSetBinding : uint8_t
-	{
-		Default = 0,		///< default
-		Static = 1			///< static: update once
+		Uniform = 0,		///< device readonly
+		Storage = 1			///< device read/write
 	};
 
 
@@ -58,8 +52,9 @@ namespace nap
 
 		// Storage buffers may be used as vertex attribute buffers on device memory
 		else if (type == EBufferObjectType::Storage)
-			return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
+		assert(false);
 		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	}
 
@@ -75,6 +70,7 @@ namespace nap
 		else if (type == nap::EBufferObjectType::Storage)
 			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
+		assert(false);
 		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	}
 
@@ -161,20 +157,33 @@ namespace nap
 	};
 
 
+	/**
+	 * List of uniform buffer shader declarations.
+	 */
+	class UniformValueBufferDeclaration : public UniformValueArrayDeclaration
+	{
+		RTTI_ENABLE(UniformDeclaration)
+	public:
+		UniformValueBufferDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements);
+	};
+
+
 	class UniformBufferObjectDeclaration : public UniformStructDeclaration
 	{
 		RTTI_ENABLE(UniformStructDeclaration)
 	public:
-		UniformBufferObjectDeclaration(const std::string& name, int binding, EUniformSetBinding set, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
+		UniformBufferObjectDeclaration(const std::string& name, int binding, int set, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
 
 		UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration& operator=(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration(const UniformBufferObjectDeclaration&) = delete;
 		UniformBufferObjectDeclaration& operator=(const UniformBufferObjectDeclaration&) = delete;
 
+		EUniformSetUsage getUsage() const;
+
 		int														mBinding;	///< Shader binding identifier
-		EUniformSetBinding										mSet;		///< Shader set binding identifier
-		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment etc.
+		int														mSet;		///< Shader set binding identifier
+		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment, compute etc.
 		EBufferObjectType										mType;		///< Usage: uniform, storage
 	};
 }

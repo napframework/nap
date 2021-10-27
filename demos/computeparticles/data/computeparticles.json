@@ -3,7 +3,22 @@
         {
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_a6c1904d",
+                    "Name": "VertexBuffer",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4Buffer",
+                            "mID": "UniformVec4Buffer_add7a73e",
+                            "Name": "vertices",
+                            "Buffer": "StorageVec4Buffer_129051e1"
+                        }
+                    ],
+                    "Set": "Opaque"
+                }
+            ],
             "Samplers": [],
             "Shader": "ComputeShader"
         },
@@ -111,7 +126,7 @@
                             "y": 0.0
                         }
                     },
-                    "ComputeMaterial": {
+                    "ComputeMaterialInstance": {
                         "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
                         "Samplers": []
@@ -262,6 +277,13 @@
             "mID": "ParticleShader",
             "VertShader": "shaders/particle.vert",
             "FragShader": "shaders/particle.frag"
+        },
+        {
+            "Type": "nap::StorageVec4Buffer",
+            "mID": "StorageVec4Buffer_129051e1",
+            "Count": 4000000,
+            "Usage": "Static",
+            "BufferObjectType": "Storage"
         }
     ]
 }

@@ -4,6 +4,12 @@
 
 // Local Includes
 #include "uniformdeclarations.h"
+#include "uniform.h"
+
+RTTI_BEGIN_ENUM(nap::EBufferObjectType)
+	RTTI_ENUM_VALUE(nap::EBufferObjectType::Uniform, "Uniform"),
+	RTTI_ENUM_VALUE(nap::EBufferObjectType::Storage, "Storage")
+RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformDeclaration)
 RTTI_END_CLASS
@@ -98,7 +104,14 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(const std::string& name, int binding, EUniformSetBinding set, VkShaderStageFlagBits inStage, EBufferObjectType type, int size) :
+	UniformValueBufferDeclaration::UniformValueBufferDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements) :
+		UniformValueArrayDeclaration(name, offset, size, stride, elementType, numElements)
+	{
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(const std::string& name, int binding, int set, VkShaderStageFlagBits inStage, EBufferObjectType type, int size) :
 		UniformStructDeclaration(name, 0, size),
 		mBinding(binding),
 		mSet(set),
@@ -127,5 +140,11 @@ namespace nap
 		UniformStructDeclaration::operator=(std::move(inRHS));
 
 		return *this;
+	}
+
+
+	EUniformSetUsage UniformBufferObjectDeclaration::getUsage() const
+	{
+		return getUniformSetUsage(mSet);
 	}
 }
