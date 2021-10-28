@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "uniformdeclarations.h"
-#include "storagebuffer.h"
+#include "gpuvaluebuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -269,7 +269,7 @@ namespace nap
 
 		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
-		rtti::ObjectPtr<StorageBuffer<T>> mBuffer;	/// Property 'Buffer'
+		rtti::ObjectPtr<GPUValueBuffer<T>> mBuffer;	/// Property 'Buffer'
 	};
 
 

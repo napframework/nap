@@ -77,11 +77,12 @@ namespace nap
 		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, errorState);
 		vkCmdBindPipeline(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
 
-		mComputeMaterialInstance.update();
-		const DescriptorSet* descriptor_set = mComputeMaterialInstance.getStaticDescriptorSet();
+		std::vector<VkDescriptorSet> descriptor_sets;
+		if (!mComputeMaterialInstance.update(descriptor_sets))
+			return false;
 
 		// Bind shader descriptors
-		//vkCmdBindDescriptorSets(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
 		uint group_count_x = numInvocations / getLocalWorkGroupSize().x + 1;

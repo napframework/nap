@@ -7,7 +7,6 @@
 // Internal includes
 #include "vk_mem_alloc.h"
 #include "renderutils.h"
-#include "gpudatabuffer.h"
 
 // External Includes
 #include <vector>

@@ -604,6 +604,8 @@ namespace nap
 
 		BaseDescriptorSetCache& getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout);
 
+		DescriptorSet& getOrCreateHandleDescriptorSet(VkDescriptorSetLayout layout, const std::vector<HandleBufferObject>& handleBufferObjects);
+
 		/**
 		 * @return main Vulkan allocator
 		 */
@@ -1056,6 +1058,7 @@ namespace nap
 		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<BaseDescriptorSetCache>>;
+		using HandleDescriptorSetMap = std::unordered_map<VkDescriptorSetLayout, DescriptorSet>;
 		using TextureSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
@@ -1112,6 +1115,7 @@ namespace nap
 		std::vector<SemaphoreWaitList>			mSemaphoreWaitList;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
+		HandleDescriptorSetMap					mHandleDescriptorSets;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
 		VkInstance								mInstance = VK_NULL_HANDLE;

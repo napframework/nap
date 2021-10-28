@@ -165,6 +165,41 @@ namespace nap
 				return std::move(array_instance);
 			}
 		}
+		else if (declaration_type == RTTI_OF(HandleDeclaration))
+		{
+			const HandleDeclaration* handle_declaration = rtti_cast<const HandleDeclaration>(&declaration);
+
+			if (handle_declaration->mElementType == EUniformValueType::Int)
+			{
+				std::unique_ptr<UniformIntBufferInstance> buffer_instance = std::make_unique<UniformIntBufferInstance>(*handle_declaration);
+				return std::move(buffer_instance);
+			}
+			else if (handle_declaration->mElementType == EUniformValueType::Float)
+			{
+				std::unique_ptr<UniformFloatBufferInstance> buffer_instance = std::make_unique<UniformFloatBufferInstance>(*handle_declaration);
+				return std::move(buffer_instance);
+			}
+			else if (handle_declaration->mElementType == EUniformValueType::Vec2)
+			{
+				std::unique_ptr<UniformVec2BufferInstance> buffer_instance = std::make_unique<UniformVec2BufferInstance>(*handle_declaration);
+				return std::move(buffer_instance);
+			}
+			else if (handle_declaration->mElementType == EUniformValueType::Vec3)
+			{
+				std::unique_ptr<UniformVec3BufferInstance> buffer_instance = std::make_unique<UniformVec3BufferInstance>(*handle_declaration);
+				return std::move(buffer_instance);
+			}
+			else if (handle_declaration->mElementType == EUniformValueType::Vec4)
+			{
+				std::unique_ptr<UniformVec4BufferInstance> buffer_instance = std::make_unique<UniformVec4BufferInstance>(*handle_declaration);
+				return std::move(buffer_instance);
+			}
+			else if (handle_declaration->mElementType == EUniformValueType::Mat4)
+			{
+				std::unique_ptr<UniformMat4BufferInstance> buffer_instance = std::make_unique<UniformMat4BufferInstance>(*handle_declaration);
+				return std::move(buffer_instance);
+			}
+		}
 		else if (declaration_type == RTTI_OF(UniformStructDeclaration))
 		{
 			const UniformStructDeclaration* struct_declaration = rtti_cast<const UniformStructDeclaration>(&declaration);
@@ -308,38 +343,38 @@ namespace nap
 					return false;
 
 				HandleDeclaration* value_declaration = rtti_cast<HandleDeclaration>(uniform_declaration.get());
-				std::unique_ptr<UniformValueBufferInstance> instance_value_array;
+				std::unique_ptr<UniformValueBufferInstance> instance_value_buffer;
 
 				if (value_declaration->mElementType == EUniformValueType::Int)
 				{
-					instance_value_array = createUniformValueInstance<UniformIntBufferInstance, UniformIntBuffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createUniformValueInstance<UniformIntBufferInstance, UniformIntBuffer>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mElementType == EUniformValueType::Float)
 				{
-					instance_value_array = createUniformValueInstance<UniformFloatBufferInstance, UniformFloatBuffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createUniformValueInstance<UniformFloatBufferInstance, UniformFloatBuffer>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mElementType == EUniformValueType::Vec2)
 				{
-					instance_value_array = createUniformValueInstance<UniformVec2BufferInstance, UniformVec2Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createUniformValueInstance<UniformVec2BufferInstance, UniformVec2Buffer>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mElementType == EUniformValueType::Vec3)
 				{
-					instance_value_array = createUniformValueInstance<UniformVec3BufferInstance, UniformVec3Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createUniformValueInstance<UniformVec3BufferInstance, UniformVec3Buffer>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mElementType == EUniformValueType::Vec4)
 				{
-					instance_value_array = createUniformValueInstance<UniformVec4BufferInstance, UniformVec4Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createUniformValueInstance<UniformVec4BufferInstance, UniformVec4Buffer>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mElementType == EUniformValueType::Mat4)
 				{
-					instance_value_array = createUniformValueInstance<UniformMat4BufferInstance, UniformMat4Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createUniformValueInstance<UniformMat4BufferInstance, UniformMat4Buffer>(resource, *value_declaration, errorState);
 				}
 				else
 				{
 					assert(false);
 				}
 
-				if (instance_value_array == nullptr)
+				if (instance_value_buffer == nullptr)
 					return false;
 
 				// It is not required for a buffer to be bound in the uniform resource
@@ -349,7 +384,7 @@ namespace nap
 						return false;
 				}
 
-				mUniforms.emplace_back(std::move(instance_value_array));
+				mUniforms.emplace_back(std::move(instance_value_buffer));
 			}
 			else if (declaration_type == RTTI_OF(UniformStructDeclaration))
 			{

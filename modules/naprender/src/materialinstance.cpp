@@ -452,13 +452,13 @@ namespace nap
 					return false;
 				}
 
-				// Check if created opaque uniforms are placed in the appropriate set
+				// Check if created handle uniforms are placed in the appropriate set
 				for (const auto& uniform : struct_resource->mUniforms)
 				{
 					if (rtti_cast<const UniformValueBuffer>(uniform.get()) == nullptr)
 						continue;
 
-					if (!errorState.check(key == EUniformSetKey::Handle, utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not Opaque (%d)", uniform->mID.c_str(), EUniformSetKey::Handle)))
+					if (!errorState.check(key == EUniformSetKey::Handle, utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not 'Handle' (%d)", uniform->mID.c_str(), EUniformSetKey::Handle)))
 						return false;
 				}
 			}
@@ -479,13 +479,10 @@ namespace nap
 				rebuildUBO(material, ubo, override_struct);
 
 				auto it = mUniformBufferObjectMap.find(key);
-				if (it != mUniformBufferObjectMap.end())
-				{
-					if (it->second.empty())
-						mUniformBufferObjectMap.insert({ key, { std::move(ubo) } });
-					else
-						it->second.emplace_back(std::move(ubo));
-				}
+				if (it == mUniformBufferObjectMap.end())
+					mUniformBufferObjectMap.insert({ key, { std::move(ubo) } });
+				else
+					it->second.emplace_back(std::move(ubo));
 			}
 			else
 			{
@@ -496,7 +493,6 @@ namespace nap
 				mHandleBufferObjects.emplace_back(std::move(hbo));
 			}
 		}
-
 		mUniformsCreated = false;
 
 		if (!initSamplers(resource, material, shader, errorState))
@@ -567,26 +563,13 @@ namespace nap
 
 			descriptor_sets.emplace_back(descriptor_set.mSet);
 		}
+
+		// Acquire handle descriptor set
+		if (mHandleDescriptorSet != nullptr)
+			descriptor_sets.emplace_back(mHandleDescriptorSet->mSet);
+
 		outDescriptorSets = descriptor_sets;
 		return true;
-	}
-
-
-	const DescriptorSet* BaseMaterialInstance::getStaticDescriptorSet()
-	{
-		const auto it = mDescriptorSetCaches.find(EUniformSetKey::Static);
-		if (it == mDescriptorSetCaches.end())
-			return nullptr;
-
-		auto it_ubo = mUniformBufferObjectMap.find(EUniformSetKey::Static);
-		if (it_ubo == mUniformBufferObjectMap.end())
-			return nullptr;
-
-		BaseDescriptorSetCache* descriptor_set_cache = it->second;
-		std::vector<UniformBufferObject>& uniform_buffer_objects = it_ubo->second;
-
-		const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, 0);
-		return &descriptor_set;
 	}
 
 
@@ -621,6 +604,12 @@ namespace nap
 			VkDescriptorSetLayout layout = getMaterial().getShader().findDescriptorSetLayout(key);
 			if (layout != VK_NULL_HANDLE)
 			{
+				if (key == EUniformSetKey::Handle)
+				{
+					if (!mHandleBufferObjects.empty())
+						mHandleDescriptorSet = &renderService.getOrCreateHandleDescriptorSet(layout, mHandleBufferObjects);
+					continue;
+				}
 				auto result = &renderService.getOrCreateDescriptorSetCache(layout);
 				mDescriptorSetCaches.insert({ key, result });
 			}
@@ -664,7 +653,7 @@ namespace nap
 
 	bool MaterialInstance::update(std::vector<VkDescriptorSet>& outDescriptorSets)
 	{
-		return true;
+		return updateInternal(outDescriptorSets);
 	}
 
 
@@ -742,6 +731,12 @@ namespace nap
 			VkDescriptorSetLayout layout = getComputeMaterial().getShader().findDescriptorSetLayout(key);
 			if (layout != VK_NULL_HANDLE)
 			{
+				if (key == EUniformSetKey::Handle)
+				{
+					if (!mHandleBufferObjects.empty())
+						mHandleDescriptorSet = &renderService.getOrCreateHandleDescriptorSet(layout, mHandleBufferObjects);
+					continue;
+				}
 				auto result = &renderService.getOrCreateDescriptorSetCache(layout);
 				mDescriptorSetCaches.insert({ key, result });
 			}

@@ -223,13 +223,16 @@ namespace nap
 			mParticleCountUniform->setValue(mParticleMesh->mNumParticles);
 		}
 
-		nap::Logger::info("%s: Building GPU storage buffers...", mID.c_str());
+		// Acquire vertex buffer uniform
+		UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
+		mVertexBufferUniform = vertex_struct->getOrCreateUniform<UniformVec4BufferInstance>("vertices");
 
 		// Set storage buffer uniforms
+		nap::Logger::info("%s: Building GPU storage buffers...", mID.c_str());
+
 		UniformStructInstance* position_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::positionBufferStruct);
 		UniformStructInstance* velocity_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::velocityBufferStruct);
 		UniformStructInstance* rotation_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::rotationBufferStruct);
-		//UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
 
 		bool uniforms_valid = (position_struct != nullptr && velocity_struct != nullptr && rotation_struct != nullptr /* && vertex_struct != nullptr*/);
 		if (!errorState.check(uniforms_valid, "Missing uniform"))
@@ -239,7 +242,6 @@ namespace nap
 		mPositionStorageUniform = position_struct->getOrCreateUniform<UniformVec4ArrayInstance>("positions");
 		mVelocityStorageUniform = velocity_struct->getOrCreateUniform<UniformVec4ArrayInstance>("velocities");
 		mRotationStorageUniform = rotation_struct->getOrCreateUniform<UniformVec4ArrayInstance>("rotations");
-		//mVertexStorageUniform = vertex_struct->getOrCreateUniform<UniformVec4ArrayInstance>("vertices");
 
 		for (int i = 0; i < mParticleMesh->mNumParticles; i++)
 		{
@@ -310,16 +312,13 @@ namespace nap
 		VkDescriptorSet descriptor_set = mat_instance.update();
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
-		// Get static and dynamic from descriptor set update
-		// Get handle from elsewhere (no update required, just bind descriptorset to set Handle=3)
-
-		//const DescriptorSet& compute_descriptor_set = mComputeInstance->getComputeMaterialInstance().getStaticDescriptorSet();
-		//VkBuffer vertex_storage_buffer = compute_descriptor_set.getBuffers()[3]->getBuffer();
+		// Get buffer from uniform
+		const GPUVec4Buffer& buffer = mVertexBufferUniform->getBuffer();
 
 		// Bind vertex buffers
-		//std::vector<VkBuffer> vertex_buffers = { vertex_storage_buffer, mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
-		//std::vector<VkDeviceSize> offsets = { 0, 0, 0 };
-		//vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
+		std::vector<VkBuffer> vertex_buffers = { buffer.getBuffer(), mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
+		std::vector<VkDeviceSize> offsets = { 0, 0, 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();

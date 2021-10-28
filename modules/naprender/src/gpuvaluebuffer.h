@@ -20,7 +20,8 @@ namespace nap
 	 * position, uv0, uv1, color0, color1, normals etc.
 	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
 	 */
-	class NAPAPI GPUDataBuffer : public GPUBuffer
+	template<class T>
+	class NAPAPI GPUValueBuffer : public GPUBuffer
 	{
 		RTTI_ENABLE(GPUBuffer)
 	public:
@@ -28,24 +29,37 @@ namespace nap
 		 * Every vertex buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed. 
 		 * The format defines the vertex element size in bytes.
-		 * @param core the nap core
+		 * @param renderService the render engine
 		 */
-		GPUDataBuffer(Core& core);
+		GPUValueBuffer(Core& core) :
+			GPUBuffer(core)
+		{ }
 
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
 		 * The format defines the vertex element size in bytes.
-		 * @param core the nap core
+		 * @param renderService the render engine
 		 * @param type the buffer object typr
 		 * @param usage how the buffer is used at runtime.
 		 */
-		GPUDataBuffer(Core& core, EBufferObjectType type, EMeshDataUsage usage);
+		GPUValueBuffer(Core& core, EBufferObjectType type, EMeshDataUsage usage) :
+			GPUBuffer(core, usage), mType(type)
+		{ }
 
 		/**
 		 * Init
 		 */
-		bool init(utility::ErrorState& errorState) override;
+		bool init(utility::ErrorState& errorState) override
+		{
+			if (!GPUBuffer::init(errorState))
+				return false;
+
+			mElementSize = sizeof(T);
+			std::vector<T> staging_buffer(mCount);
+
+			return setDataInternal(static_cast<void*>(staging_buffer.data()), mElementSize * mCount, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
+		}
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
@@ -55,8 +69,29 @@ namespace nap
 		 * @param error contains the error if upload operation failed
 		 * @return if upload succeeded
 		 */
-		bool setData(void* data, size_t size, utility::ErrorState& error);
+		bool setData(void* data, size_t size, utility::ErrorState& error)
+		{
+			return setDataInternal(data, size, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), error);
+		}
 
-		EBufferObjectType mType	= EBufferObjectType::Uniform;	///< Property 'Type'
+		uint32 getSize() const { return mCount * mElementSize };
+
+		uint32 mCount = 0;										///< Property 'Count'
+		EBufferObjectType mType	= EBufferObjectType::Uniform;	///< Property 'BufferObjectType'
+
+	private:
+		int	mElementSize = -1;
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// GPU buffer type definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	using GPUIntBuffer = GPUValueBuffer<int>;
+	using GPUFloatBuffer = GPUValueBuffer<float>;
+	using GPUVec2Buffer = GPUValueBuffer<glm::vec2>;
+	using GPUVec3Buffer = GPUValueBuffer<glm::vec3>;
+	using GPUVec4Buffer = GPUValueBuffer<glm::vec4>;
+	using GPUMat4Buffer = GPUValueBuffer<glm::mat4>;
 }

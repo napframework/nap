@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "uniform.h"
-#include "storagebuffer.h"
+
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -426,8 +426,13 @@ namespace nap
 		 */
 		int getNumElements() const { return mBuffer->mCount; }
 
+		/**
+		 * @return buffer
+		 */
+		const GPUValueBuffer<T>& getBuffer() const { return *mBuffer; }
+
 	private:
-		rtti::ObjectPtr<StorageBuffer<T>> mBuffer;
+		rtti::ObjectPtr<GPUValueBuffer<T>> mBuffer;
 	};
 
 

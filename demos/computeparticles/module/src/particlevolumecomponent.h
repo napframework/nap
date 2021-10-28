@@ -92,7 +92,7 @@ namespace nap
 		UniformVec4ArrayInstance*			mPositionStorageUniform = nullptr;
 		UniformVec4ArrayInstance*			mVelocityStorageUniform = nullptr;
 		UniformVec4ArrayInstance*			mRotationStorageUniform = nullptr;
-		//UniformVec4ArrayInstance*			mVertexStorageUniform = nullptr;
+		UniformVec4BufferInstance*			mVertexBufferUniform = nullptr;
 
 		UniformIntInstance*					mParticleCountUniform = nullptr;
 		UniformFloatInstance*				mDeltaTimeUniform = nullptr;

@@ -2148,10 +2148,11 @@ namespace nap
 		if (pos != mDescriptorSetCaches.end())
 			return *pos->second;
 
-		std::unique_ptr<DescriptorSetCache> allocator = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
-		auto inserted = mDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
+		std::unique_ptr<DescriptorSetCache> cache = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
+		auto inserted = mDescriptorSetCaches.insert({ layout, std::move(cache) });
 		return *inserted.first->second;
 	}
+
 
 	BaseDescriptorSetCache& RenderService::getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout)
 	{
@@ -2159,9 +2160,61 @@ namespace nap
 		if (pos != mDescriptorSetCaches.end())
 			return *pos->second;
 
-		std::unique_ptr<StaticDescriptorSetCache> allocator = std::make_unique<StaticDescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
-		auto inserted = mDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
+		std::unique_ptr<StaticDescriptorSetCache> cache = std::make_unique<StaticDescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
+		auto inserted = mDescriptorSetCaches.insert({ layout, std::move(cache) });
 		return *inserted.first->second;
+	}
+
+
+	DescriptorSet& RenderService::getOrCreateHandleDescriptorSet(VkDescriptorSetLayout layout, const std::vector<HandleBufferObject>& handleBufferObjects)
+	{
+		HandleDescriptorSetMap::iterator pos = mHandleDescriptorSets.find(layout);
+		if (pos != mHandleDescriptorSets.end())
+			return pos->second;
+
+		DescriptorSet descriptor_set;
+		descriptor_set.mLayout = layout;
+		descriptor_set.mSet = mDescriptorSetAllocator->allocate(layout, handleBufferObjects.size(), 0);
+
+		int num_descriptors = handleBufferObjects.size();
+		std::vector<VkWriteDescriptorSet> hbo_descriptors;
+		hbo_descriptors.resize(num_descriptors);
+
+		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
+		descriptor_buffers.resize(num_descriptors);
+
+		// Now we allocate the UBO buffers from the global Vulkan allocator, and bind the buffers to our DescriptorSet
+		for (int ubo_index = 0; ubo_index < handleBufferObjects.size(); ++ubo_index)
+		{
+			const HandleBufferObject& hbo = handleBufferObjects[ubo_index];
+			const UniformBufferObjectDeclaration& hbo_declaration = *hbo.mDeclaration;
+
+			BufferData buffer;
+			utility::ErrorState error_state;
+			bool success = createBuffer(getVulkanAllocator(), hbo_declaration.mSize, getBufferUsage(hbo_declaration.mType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
+			assert(success);
+
+			descriptor_set.mBuffers.push_back(buffer);
+
+			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
+			bufferInfo.buffer = buffer.mBuffer;
+			bufferInfo.offset = 0;
+			bufferInfo.range = VK_WHOLE_SIZE;
+
+			VkWriteDescriptorSet& ubo_descriptor = hbo_descriptors[ubo_index];
+			ubo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ubo_descriptor.dstSet = descriptor_set.mSet;
+			ubo_descriptor.dstBinding = hbo_declaration.mBinding;
+			ubo_descriptor.dstArrayElement = 0;
+			ubo_descriptor.descriptorType = getDescriptorType(hbo_declaration.mType);
+			ubo_descriptor.descriptorCount = 1;
+			ubo_descriptor.pBufferInfo = &bufferInfo;
+		}
+
+		vkUpdateDescriptorSets(getDevice(), hbo_descriptors.size(), hbo_descriptors.data(), 0, nullptr);
+
+		auto inserted = mHandleDescriptorSets.insert({ layout, descriptor_set });
+		return inserted.first->second;
 	}
 
 

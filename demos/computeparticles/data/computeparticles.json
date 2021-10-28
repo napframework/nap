@@ -17,6 +17,20 @@
                         }
                     ],
                     "Set": "Handle"
+                },
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_fea9a438",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_a98c83f3",
+                            "Name": "velocityTimeScale",
+                            "Value": 0.3330000042915344
+                        }
+                    ],
+                    "Set": "DynamicWrite"
                 }
             ],
             "Samplers": [],
@@ -175,6 +189,13 @@
             "Children": []
         },
         {
+            "Type": "nap::GPUVec4Buffer",
+            "mID": "StorageVec4Buffer_129051e1",
+            "Count": 4000000,
+            "Usage": "Static",
+            "BufferObjectType": "Storage"
+        },
+        {
             "Type": "nap::ImageFromFile",
             "mID": "ParticleOne",
             "Usage": "Static",
@@ -277,13 +298,6 @@
             "mID": "ParticleShader",
             "VertShader": "shaders/particle.vert",
             "FragShader": "shaders/particle.frag"
-        },
-        {
-            "Type": "nap::StorageVec4Buffer",
-            "mID": "StorageVec4Buffer_129051e1",
-            "Count": 4000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage"
         }
     ]
 }

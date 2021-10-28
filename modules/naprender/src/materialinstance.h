@@ -96,11 +96,6 @@ namespace nap
 		virtual VkDescriptorSet update() = 0;
 
 		virtual bool update(std::vector<VkDescriptorSet>& outDescriptorSets) = 0;
-
-		/**
-		 * 
-		 */
-		const DescriptorSet* getStaticDescriptorSet();
 		
 	protected:
 		friend class RenderableMesh;	// For responding to pipeline state events
@@ -128,6 +123,8 @@ namespace nap
 
 		std::map<nap::EUniformSetKey, BaseDescriptorSetCache*>			mDescriptorSetCaches;		// Cache used to acquire Vulkan DescriptorSets on each update
 		std::map<nap::EUniformSetKey, std::vector<UniformBufferObject>> mUniformBufferObjectMap;	//
+
+		DescriptorSet*							mHandleDescriptorSet;
 
 		std::vector<HandleBufferObject>			mHandleBufferObjects;					// List of all HBO instances
 
