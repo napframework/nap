@@ -7,7 +7,6 @@
 #include "mesh.h"
 #include "material.h"
 #include "renderservice.h"
-#include "descriptorsetcache.h"
 #include "vk_mem_alloc.h"
 #include "renderutils.h"
 
@@ -219,6 +218,42 @@ namespace nap
 	}
 
 
+	void BaseMaterialInstance::rebuildHBO(BaseMaterial& material, HandleBufferObject& hbo, UniformStructInstance* overrideStruct)
+	{
+		hbo.mUniforms.clear();
+
+		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(material.findUniform(hbo.mDeclaration->mName));
+		assert(base_struct != nullptr);
+
+		for (auto& base_uniform : base_struct->getUniforms())
+		{
+			rtti::TypeInfo declaration_type = base_uniform->get_type();
+
+			if (!declaration_type.is_derived_from(RTTI_OF(UniformHandleInstance)))
+			{
+				// If this assert is triggered, a non-handle uniform instance is being processed which should be handled recursively by rebuildUBO()
+				assert(false);
+				return;
+			}
+
+			const UniformInstance* override_uniform = nullptr;
+			if (base_struct != nullptr)
+				override_uniform = findUniformStructInstanceMember(base_struct->getUniforms(), base_uniform->getDeclaration().mName);
+
+			if (declaration_type.is_derived_from(RTTI_OF(UniformValueBufferInstance)))
+			{
+				const UniformValueBufferInstance* base_array_uniform = rtti_cast<const UniformValueBufferInstance>(base_uniform.get());
+				const UniformValueBufferInstance* override_array_uniform = rtti_cast<const UniformValueBufferInstance>(override_uniform);
+
+				if (override_array_uniform != nullptr)
+					hbo.mUniforms.push_back(override_array_uniform);
+				else
+					hbo.mUniforms.push_back(base_array_uniform);
+			}
+		}
+	}
+
+
 	void BaseMaterialInstance::addImageInfo(const Texture2D& texture2D, VkSampler sampler)
 	{
 		VkDescriptorImageInfo imageInfo = {};
@@ -405,13 +440,13 @@ namespace nap
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(resource.mUniforms, ubo_declaration));
 
 			// Verify uniform set index
+			EUniformSetKey key = getUniformSetKey(ubo_declaration.mSet);
 			if (struct_resource != nullptr)
 			{
-				EUniformSetUsage declaration_usage = getUniformSetUsage(ubo_declaration.mSet);
-				if (struct_resource->mSet != declaration_usage)
+				if (struct_resource->mSet != key)
 				{
 					std::string uniform_set_name = rtti::Variant(struct_resource->mSet).to_string();
-					std::string declaration_set_name = rtti::Variant(declaration_usage).to_string();
+					std::string declaration_set_name = rtti::Variant(key).to_string();
 					errorState.fail("Uniform %s set index (%d = %s) does not match uniform layout qualifier 'set' (%d = %s) in shader",
 						struct_resource->mName.c_str(), struct_resource->mSet, uniform_set_name.c_str(), ubo_declaration.mSet, declaration_set_name.c_str());
 					return false;
@@ -423,7 +458,7 @@ namespace nap
 					if (rtti_cast<const UniformValueBuffer>(uniform.get()) == nullptr)
 						continue;
 
-					if (!errorState.check(declaration_usage == EUniformSetUsage::Opaque, utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not Opaque (%d)", uniform->mID.c_str(), EUniformSetUsage::Opaque)))
+					if (!errorState.check(key == EUniformSetKey::Handle, utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not Opaque (%d)", uniform->mID.c_str(), EUniformSetKey::Handle)))
 						return false;
 				}
 			}
@@ -437,14 +472,29 @@ namespace nap
 					return false;
 			}
 
+			if (key != EUniformSetKey::Handle)
+			{
+				// Pass 2: gather leaf uniform instances for a single ubo
+				UniformBufferObject ubo(ubo_declaration);
+				rebuildUBO(material, ubo, override_struct);
 
+				auto it = mUniformBufferObjectMap.find(key);
+				if (it != mUniformBufferObjectMap.end())
+				{
+					if (it->second.empty())
+						mUniformBufferObjectMap.insert({ key, { std::move(ubo) } });
+					else
+						it->second.emplace_back(std::move(ubo));
+				}
+			}
+			else
+			{
+				// Pass 2: gather handles
+				HandleBufferObject hbo(ubo_declaration);
+				rebuildHBO(material, hbo, override_struct);
 
-			// Pass 2: gather leaf uniform instances for a single ubo
-			UniformBufferObject ubo(ubo_declaration);
-			rebuildUBO(material, ubo, override_struct);
-
-			auto& buffer_object_list = ubo_declaration.getUsage() == EUniformSetUsage::DynamicWrite ? mUniformBufferObjects : mStaticUniformBufferObjects;
-			buffer_object_list.emplace_back(std::move(ubo));
+				mHandleBufferObjects.emplace_back(std::move(hbo));
+			}
 		}
 
 		mUniformsCreated = false;
@@ -453,6 +503,90 @@ namespace nap
 			return false;
 
 		return true;
+	}
+
+
+	VkDescriptorSet BaseMaterialInstance::updateInternal()
+	{
+		for (auto& it : mDescriptorSetCaches)
+		{
+			// Skip DynamicWrite
+			EUniformSetKey key = it.first;
+			if (it.first == EUniformSetKey::DynamicWrite)
+				continue;
+
+			const auto it_ubo = mUniformBufferObjectMap.find(key);
+			if (it_ubo == mUniformBufferObjectMap.end())
+				continue;
+
+			std::vector<UniformBufferObject>& uniform_buffer_objects = it_ubo->second;
+
+			BaseDescriptorSetCache* descriptor_set_cache = it.second;
+			const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, mSamplerWriteDescriptors.size());
+
+			updateUniforms(descriptor_set, uniform_buffer_objects);
+			updateSamplers(descriptor_set);
+		}
+
+		auto it = mDescriptorSetCaches.find(EUniformSetKey::DynamicWrite);
+		if (it == mDescriptorSetCaches.end())
+			return nullptr;
+
+		auto it_ubo = mUniformBufferObjectMap.find(EUniformSetKey::DynamicWrite);
+		if (it_ubo == mUniformBufferObjectMap.end())
+			return nullptr;
+
+		BaseDescriptorSetCache* descriptor_set_cache = it->second;
+		std::vector<UniformBufferObject>& uniform_buffer_objects = it_ubo->second;
+		const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, mSamplerWriteDescriptors.size());
+
+		return descriptor_set.mSet;
+	}
+
+
+	bool BaseMaterialInstance::updateInternal(std::vector<VkDescriptorSet>& outDescriptorSets)
+	{
+		std::vector<VkDescriptorSet> descriptor_sets;
+
+		for (auto& it : mDescriptorSetCaches)
+		{
+			EUniformSetKey key = it.first;
+			assert(key != EUniformSetKey::None);
+
+			const auto it_ubo = mUniformBufferObjectMap.find(key);
+			if (it_ubo == mUniformBufferObjectMap.end())
+				continue;
+
+			std::vector<UniformBufferObject>& uniform_buffer_objects = it_ubo->second;
+
+			BaseDescriptorSetCache* descriptor_set_cache = it.second;
+			const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, mSamplerWriteDescriptors.size());
+
+			updateUniforms(descriptor_set, uniform_buffer_objects);
+			updateSamplers(descriptor_set);
+
+			descriptor_sets.emplace_back(descriptor_set.mSet);
+		}
+		outDescriptorSets = descriptor_sets;
+		return true;
+	}
+
+
+	const DescriptorSet* BaseMaterialInstance::getStaticDescriptorSet()
+	{
+		const auto it = mDescriptorSetCaches.find(EUniformSetKey::Static);
+		if (it == mDescriptorSetCaches.end())
+			return nullptr;
+
+		auto it_ubo = mUniformBufferObjectMap.find(EUniformSetKey::Static);
+		if (it_ubo == mUniformBufferObjectMap.end())
+			return nullptr;
+
+		BaseDescriptorSetCache* descriptor_set_cache = it->second;
+		std::vector<UniformBufferObject>& uniform_buffer_objects = it_ubo->second;
+
+		const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, 0);
+		return &descriptor_set;
 	}
 
 
@@ -475,8 +609,22 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(getMaterial().getShader().getDescriptorSetLayout());
+		rtti::TypeInfo enum_type = RTTI_OF(nap::EUniformSetKey);
+		auto enum_values = enum_type.get_enumeration().get_values();
 
+		for (auto it = enum_values.begin(); it != enum_values.end(); it++)
+		{
+			EUniformSetKey key = it->get_value<EUniformSetKey>();
+			if (key == EUniformSetKey::None)
+				continue;
+
+			VkDescriptorSetLayout layout = getMaterial().getShader().findDescriptorSetLayout(key);
+			if (layout != VK_NULL_HANDLE)
+			{
+				auto result = &renderService.getOrCreateDescriptorSetCache(layout);
+				mDescriptorSetCaches.insert({ key, result });
+			}
+		}
 		return success;
 	}
 
@@ -488,9 +636,11 @@ namespace nap
 		// we need to patch pointers in the UBO structure to make sure they point to the correct instances.
 		if (mUniformsCreated)
 		{
-			for (UniformBufferObject& ubo : mUniformBufferObjects)
-				rebuildUBO(getMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
-
+			for (auto& it : mUniformBufferObjectMap)
+			{
+				for (auto& ubo : it.second)
+					rebuildUBO(getMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
+			}
 			mUniformsCreated = false;
 		}
 
@@ -508,12 +658,13 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
+		return updateInternal();
+	}
 
-		updateUniforms(descriptor_set, mUniformBufferObjects); 
-		updateSamplers(descriptor_set);
 
-		return descriptor_set.mSet;
+	bool MaterialInstance::update(std::vector<VkDescriptorSet>& outDescriptorSets)
+	{
+		return true;
 	}
 
 
@@ -578,11 +729,23 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(getComputeMaterial().getShader().getDescriptorSetLayout());
+		
+		rtti::TypeInfo enum_type = RTTI_OF(nap::EUniformSetKey);
+		auto enum_values = enum_type.get_enumeration().get_values();
 
-		// Get descriptor set layout
-		const auto& layout = getComputeMaterial().getShader().getDescriptorSetLayout(EUniformSetUsage::Static);
-		mStaticDescriptorSetCache = &renderService.getOrCreateStaticDescriptorSetCache(layout);
+		for (auto it = enum_values.begin(); it != enum_values.end(); it++)
+		{
+			EUniformSetKey key = it->get_value<EUniformSetKey>();
+			if (key == EUniformSetKey::None)
+				continue;
+
+			VkDescriptorSetLayout layout = getComputeMaterial().getShader().findDescriptorSetLayout(key);
+			if (layout != VK_NULL_HANDLE)
+			{
+				auto result = &renderService.getOrCreateDescriptorSetCache(layout);
+				mDescriptorSetCaches.insert({ key, result });
+			}
+		}
 
 		return success;
 	}
@@ -590,20 +753,16 @@ namespace nap
 
 	VkDescriptorSet ComputeMaterialInstance::update()
 	{
-		return updateCompute().mSet;
-	}
-
-
-	const DescriptorSet& ComputeMaterialInstance::updateCompute()
-	{
 		// The UBO contains pointers to all leaf uniform instances. These can be either defines in the material or the 
 		// material instance, depending on whether it's overridden. If new overrides were created between update calls,
 		// we need to patch pointers in the UBO structure to make sure they point to the correct instances.
 		if (mUniformsCreated)
 		{
-			for (UniformBufferObject& ubo : mUniformBufferObjects)
-				rebuildUBO(getComputeMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
-
+			for (auto& it : mUniformBufferObjectMap)
+			{
+				for (auto& ubo : it.second)
+					rebuildUBO(getComputeMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
+			}
 			mUniformsCreated = false;
 		}
 
@@ -621,41 +780,13 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
-
-		updateUniforms(descriptor_set, mUniformBufferObjects);
-		updateSamplers(descriptor_set);
-
-		return descriptor_set;
+		return updateInternal();
 	}
 
 
-	void ComputeMaterialInstance::update(std::vector<VkDescriptorSet>& outDescriptorSets)
+	bool ComputeMaterialInstance::update(std::vector<VkDescriptorSet>& outDescriptorSets)
 	{
-		if (mUniformsCreated)
-		{
-			for (UniformBufferObject& ubo : mUniformBufferObjects)
-				rebuildUBO(getComputeMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
-
-			for (UniformBufferObject& ubo : mStaticUniformBufferObjects)
-				rebuildUBO(getComputeMaterial(), ubo, findUniform(ubo.mDeclaration->mName));
-
-			mUniformsCreated = false;
-		}
-
-		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mSamplerWriteDescriptors.size());
-		const StaticDescriptorSet& static_descriptor_set = mStaticDescriptorSetCache->acquire(mStaticUniformBufferObjects, mSamplerWriteDescriptors.size());
-
-		updateUniforms(descriptor_set, mUniformBufferObjects);
-		updateSamplers(descriptor_set);
-
-		outDescriptorSets = { descriptor_set.mSet, static_descriptor_set.mSet };
-	}
-
-
-	const StaticDescriptorSet& ComputeMaterialInstance::getStaticDescriptorSet()
-	{
-		return mStaticDescriptorSetCache->acquire(mStaticUniformBufferObjects, mSamplerWriteDescriptors.size());
+		return updateInternal(outDescriptorSets);
 	}
 
 

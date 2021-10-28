@@ -12,7 +12,7 @@
 
 namespace nap
 {
-	enum class EUniformSetUsage;
+	enum class EUniformSetKey;
 
 	/**
 	 * All available shader uniform types
@@ -158,13 +158,17 @@ namespace nap
 
 
 	/**
-	 * List of uniform buffer shader declarations.
+	 * Handle shader declaration base class.
 	 */
-	class UniformValueBufferDeclaration : public UniformValueArrayDeclaration
+	class HandleDeclaration : public UniformDeclaration
 	{
 		RTTI_ENABLE(UniformDeclaration)
 	public:
-		UniformValueBufferDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements);
+		HandleDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements);
+	
+		EUniformValueType	mElementType;										///< Uniform type
+		int					mNumElements;										///< Total number of elements in list
+		int					mStride;											///< Stride of element in array
 	};
 
 
@@ -179,7 +183,7 @@ namespace nap
 		UniformBufferObjectDeclaration(const UniformBufferObjectDeclaration&) = delete;
 		UniformBufferObjectDeclaration& operator=(const UniformBufferObjectDeclaration&) = delete;
 
-		EUniformSetUsage getUsage() const;
+		EUniformSetKey getUsage() const;
 
 		int														mBinding;	///< Shader binding identifier
 		int														mSet;		///< Shader set binding identifier

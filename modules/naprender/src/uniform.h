@@ -20,15 +20,15 @@ namespace nap
 
 
 	/**
-	 * Usage mode of the uniform struct. Dictates the usage of all child uniforms.
+	 * Access key and usage mode of a uniform struct. Dictates the usage of all child uniforms.
 	 * Uniform usage directly maps to the descriptor set binding index in the shader
 	 */
-	enum class EUniformSetUsage : int
+	enum class EUniformSetKey : int
 	{
-		DynamicWrite = 0,	// Update uniform data each frame
-		Static = 1,			// Update uniform data once on descriptorset update
-		Opaque = 2,			// Use for opaque types such as buffers 
-		None = -1			// Invalid usage
+		DynamicWrite = 0,	// DynamicWrite: Update uniform data each frame
+		Static = 1,			// Static: Update uniform data once on descriptorset update
+		Handle = 2,			// Handle: Bring Your Own Resources. Use for pre-initialized data such as GPU buffers
+		None = -1			// None: Invalid usage
 	};
 
 
@@ -37,22 +37,22 @@ namespace nap
 	 * @param set the input uniform set index
 	 * @return the output uniform set enum type
 	 */
-	static nap::EUniformSetUsage getUniformSetUsage(int set)
+	static nap::EUniformSetKey getUniformSetKey(int set)
 	{
-		if (set == static_cast<int>(nap::EUniformSetUsage::DynamicWrite))
-			return nap::EUniformSetUsage::DynamicWrite;
+		if (set == static_cast<int>(nap::EUniformSetKey::DynamicWrite))
+			return nap::EUniformSetKey::DynamicWrite;
 
-		else if (set == static_cast<int>(nap::EUniformSetUsage::Static))
-			return nap::EUniformSetUsage::Static;
+		else if (set == static_cast<int>(nap::EUniformSetKey::Static))
+			return nap::EUniformSetKey::Static;
 
-		else if (set == static_cast<int>(nap::EUniformSetUsage::Opaque))
-			return nap::EUniformSetUsage::Opaque;
+		else if (set == static_cast<int>(nap::EUniformSetKey::Handle))
+			return nap::EUniformSetKey::Handle;
 
 		// If this assert is triggered, an unsupported uniform set index was given
 		assert(false);
 
 		// Return none
-		return nap::EUniformSetUsage::None;
+		return nap::EUniformSetKey::None;
 	}
 
 
@@ -98,7 +98,7 @@ namespace nap
 
 	public:
 		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
-		EUniformSetUsage mSet;	///< Usage of the uniform
+		EUniformSetKey mSet;	///< Usage of the uniform
 	};
 	
 
@@ -237,6 +237,11 @@ namespace nap
 		 * @return The number of elements in this array
 		 */
 		virtual int getCount() const = 0;
+
+		/**
+		 * @return Whether a buffer is set
+		 */
+		virtual bool hasBuffer() const = 0;
 	};
 
 
@@ -260,7 +265,9 @@ namespace nap
 		/**
 		 * @return total number of elements.
 		 */
-		virtual int getCount() const override { return mBuffer->mCount; }
+		virtual int getCount() const override { return hasBuffer() ? mBuffer->mCount : 0; }
+
+		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
 		rtti::ObjectPtr<StorageBuffer<T>> mBuffer;	/// Property 'Buffer'
 	};

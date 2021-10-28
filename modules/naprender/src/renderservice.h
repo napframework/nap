@@ -24,6 +24,7 @@ namespace nap
 	class RenderWindow;
 	class RenderService;
 	class SceneService;
+	class BaseDescriptorSetCache;
 	class DescriptorSetCache;
 	class StaticDescriptorSetCache;
 	class DescriptorSetAllocator;
@@ -596,11 +597,12 @@ namespace nap
 		 * Returns a descriptor set cache based on the given layout.
 		 * The cache is used to acquire descriptor sets.
 		 * @param layout the descriptor set layout to create the cache for.
+		 * @param key
 		 * @return descriptor set cache for the given layout.
 		 */
-		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
+		BaseDescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
-		StaticDescriptorSetCache& getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout);
+		BaseDescriptorSetCache& getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout);
 
 		/**
 		 * @return main Vulkan allocator
@@ -1053,8 +1055,7 @@ namespace nap
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
-		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
-		using StaticDescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<StaticDescriptorSetCache>>;
+		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<BaseDescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
@@ -1111,7 +1112,6 @@ namespace nap
 		std::vector<SemaphoreWaitList>			mSemaphoreWaitList;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
-		StaticDescriptorSetCacheMap				mStaticDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
 		VkInstance								mInstance = VK_NULL_HANDLE;

@@ -16,7 +16,7 @@
                             "Buffer": "StorageVec4Buffer_129051e1"
                         }
                     ],
-                    "Set": "Opaque"
+                    "Set": "Handle"
                 }
             ],
             "Samplers": [],

@@ -310,13 +310,16 @@ namespace nap
 		VkDescriptorSet descriptor_set = mat_instance.update();
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
-		const StaticDescriptorSet& compute_descriptor_set = mComputeInstance->getComputeMaterialInstance().getStaticDescriptorSet();
-		VkBuffer vertex_storage_buffer = compute_descriptor_set.getBuffers()[3]->getBuffer();
+		// Get static and dynamic from descriptor set update
+		// Get handle from elsewhere (no update required, just bind descriptorset to set Handle=3)
+
+		//const DescriptorSet& compute_descriptor_set = mComputeInstance->getComputeMaterialInstance().getStaticDescriptorSet();
+		//VkBuffer vertex_storage_buffer = compute_descriptor_set.getBuffers()[3]->getBuffer();
 
 		// Bind vertex buffers
-		std::vector<VkBuffer> vertex_buffers = { vertex_storage_buffer, mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
-		std::vector<VkDeviceSize> offsets = { 0, 0, 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
+		//std::vector<VkBuffer> vertex_buffers = { vertex_storage_buffer, mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
+		//std::vector<VkDeviceSize> offsets = { 0, 0, 0 };
+		//vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();

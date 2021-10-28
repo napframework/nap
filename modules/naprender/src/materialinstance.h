@@ -12,6 +12,7 @@
 
 // Local includes
 #include "uniformcontainer.h"
+#include "descriptorsetcache.h"
 #include "material.h"
 
 namespace nap
@@ -19,7 +20,7 @@ namespace nap
 	class Material;
 	class Renderer;
 	struct DescriptorSet;
-	struct StaticDescriptorSet;
+	class BaseDescriptorSetCache;
 	class DescriptorSetCache;
 	class StaticDescriptorSetCache;
 
@@ -80,6 +81,7 @@ namespace nap
 		virtual SamplerInstance* getOrCreateSampler(const std::string& name) = 0;
 
 		/**
+		 * TODO: Currently keeping for backwards compatibility. The new update(std::vector<VkDescriptorSet>& outDescriptorSets) is recommended.
 		 * This needs to be called before each draw. It will push the current uniform and sampler data into memory
 		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets
 		 * before the Vulkan draw call is issued.
@@ -93,14 +95,25 @@ namespace nap
 		 */
 		virtual VkDescriptorSet update() = 0;
 
+		virtual bool update(std::vector<VkDescriptorSet>& outDescriptorSets) = 0;
+
+		/**
+		 * 
+		 */
+		const DescriptorSet* getStaticDescriptorSet();
+		
 	protected:
 		friend class RenderableMesh;	// For responding to pipeline state events
 
 		bool initInternal(RenderService& renderService, const BaseMaterialInstanceResource& resource, BaseMaterial& material, const BaseShader& shader, utility::ErrorState& errorState);
 
+		VkDescriptorSet updateInternal();
+		bool updateInternal(std::vector<VkDescriptorSet>& outDescriptorSets);
+
 		void onUniformCreated();
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
 		void rebuildUBO(BaseMaterial& material, UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
+		void rebuildHBO(BaseMaterial& material, HandleBufferObject& hbo, UniformStructInstance* overrideStruct);
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(const BaseMaterialInstanceResource& resource, BaseMaterial& material, const BaseShader& shader, utility::ErrorState& errorState);
@@ -111,16 +124,16 @@ namespace nap
 
 	protected:
 		VkDevice								mDevice = nullptr;						// Vulkan device
-		RenderService*							mRenderService = nullptr;				// RenderService
-		DescriptorSetCache*						mDescriptorSetCache = nullptr;			// Cache used to acquire Vulkan DescriptorSets on each update
-		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
+		RenderService*							mRenderService = nullptr;				// RenderService	
+
+		std::map<nap::EUniformSetKey, BaseDescriptorSetCache*>			mDescriptorSetCaches;		// Cache used to acquire Vulkan DescriptorSets on each update
+		std::map<nap::EUniformSetKey, std::vector<UniformBufferObject>> mUniformBufferObjectMap;	//
+
+		std::vector<HandleBufferObject>			mHandleBufferObjects;					// List of all HBO instances
+
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerWriteDescriptors;				// List of sampler images, used to update Descriptor Sets.
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
-
-		std::vector<UniformBufferObject>		mStaticUniformBufferObjects;			// List of all UBO instances
-		StaticDescriptorSetCache*				mStaticDescriptorSetCache = nullptr;	// Cache used to acquire Vulkan DescriptorSets on each update
-		bool mStaticDescriptorSetUpdated = false;
 	};
 
 	/**
@@ -240,6 +253,8 @@ namespace nap
 		 */
 		virtual VkDescriptorSet update() override;
 
+		virtual bool update(std::vector<VkDescriptorSet>& outDescriptorSets) override;
+
 	private:
 		MaterialInstanceResource*				mResource;								// Resource this instance is associated with
 	};
@@ -335,15 +350,7 @@ namespace nap
 		 */
 		virtual VkDescriptorSet update() override;
 
-		void update(std::vector<VkDescriptorSet>& outDescriptorSets);
-
-		const StaticDescriptorSet& getStaticDescriptorSet();
-
-		/**
-		 * Specialization of update() that returns a reference to the descriptorset structure
-		 * @return DescriptorSet structure
-		 */
-		const DescriptorSet& updateCompute();
+		virtual bool update(std::vector<VkDescriptorSet>& outDescriptorSets) override;
 
 	private:
 		ComputeMaterialInstanceResource* mResource;								// Resource this instance is associated with

@@ -102,7 +102,7 @@ namespace nap
 			// Verify uniform set index
 			if (struct_resource != nullptr)
 			{
-				EUniformSetUsage declaration_usage = getUniformSetUsage(ubo_declaration.mSet);
+				EUniformSetKey declaration_usage = getUniformSetKey(ubo_declaration.mSet);
 				if (struct_resource->mSet != declaration_usage)
 				{
 					std::string uniform_set_name = rtti::Variant(struct_resource->mSet).to_string();
@@ -118,8 +118,8 @@ namespace nap
 					if (rtti_cast<const UniformValueBuffer>(uniform.get()) == nullptr)
 						continue;
 
-					if (!errorState.check(declaration_usage == EUniformSetUsage::Opaque,
-						utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not Opaque (%d)", uniform->mID.c_str(), EUniformSetUsage::Opaque)))
+					if (!errorState.check(declaration_usage == EUniformSetKey::Handle,
+						utility::stringFormat("Uniform %s is a value buffer bound to a uniform set index that is not 'Handle' (%d)", uniform->mID.c_str(), EUniformSetKey::Handle)))
 						return false;
 				}
 			}

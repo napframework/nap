@@ -12,13 +12,22 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	// BaseDescriptorSetCache
+	//////////////////////////////////////////////////////////////////////////
+
+	BaseDescriptorSetCache::BaseDescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
+		mRenderService(&renderService), mLayout(layout), mDescriptorSetAllocator(&descriptorSetAllocator)
+	{ }
+
+	BaseDescriptorSetCache::~BaseDescriptorSetCache()
+	{ }
+
+	//////////////////////////////////////////////////////////////////////////
 	// DescriptorsetCache
 	//////////////////////////////////////////////////////////////////////////
 
 	DescriptorSetCache::DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
-		mRenderService(&renderService),
-		mDescriptorSetAllocator(&descriptorSetAllocator),
-        mLayout(layout)
+		BaseDescriptorSetCache(renderService, layout, descriptorSetAllocator)
 	{
 		mUsedList.resize(mRenderService->getMaxFramesInFlight());
 	}
@@ -88,7 +97,7 @@ namespace nap
 			ubo_descriptor.dstSet = descriptor_set.mSet;
 			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
 			ubo_descriptor.dstArrayElement = 0;
-			ubo_descriptor.descriptorType = (ubo_declaration.mType == nap::EBufferObjectType::Uniform) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			ubo_descriptor.descriptorType = getDescriptorType(ubo_declaration.mType);
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 		}
@@ -112,9 +121,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	StaticDescriptorSetCache::StaticDescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
-		mRenderService(&renderService),
-		mDescriptorSetAllocator(&descriptorSetAllocator),
-		mLayout(layout) {}
+		BaseDescriptorSetCache(renderService, layout, descriptorSetAllocator) {}
 
 
 	StaticDescriptorSetCache::~StaticDescriptorSetCache()
@@ -123,7 +130,7 @@ namespace nap
 	}
 
 
-	const StaticDescriptorSet& StaticDescriptorSetCache::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers)
+	const DescriptorSet& StaticDescriptorSetCache::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers)
 	{
 		if (mAllocated)
 		{
@@ -132,7 +139,7 @@ namespace nap
 
 		// Allocate descriptorset from the pool. This will allocate a DescriptorSet from a pool that is *compatible* with our layout.
 		// Compatible means that it has the same amount of uniform buffers and same amount of samplers.
-		StaticDescriptorSet descriptor_set;
+		DescriptorSet descriptor_set;
 		descriptor_set.mLayout = mLayout;
 		descriptor_set.mSet = mDescriptorSetAllocator->allocate(mLayout, uniformBufferObjects.size(), numSamplers);
 
@@ -157,14 +164,27 @@ namespace nap
 				uniform->push(buffer_block.data());
 			}
 
-			std::unique_ptr<GPUDataBuffer> buffer = std::make_unique<GPUDataBuffer>(mRenderService->getCore(), ubo_declaration.mType, EMeshDataUsage::Static);
-
+			// Create staging buffer
+			BufferData staging_buffer;
 			utility::ErrorState error_state;
-			buffer->init(error_state);
-			buffer->setData(buffer_block.data(), buffer_block.size(), error_state);
+			VmaAllocator allocator = mRenderService->getVulkanAllocator();
+			if (!createBuffer(allocator, buffer_block.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, staging_buffer, error_state))
+				assert(false);
+
+			// Copy data into staging buffer
+			if (!uploadToBuffer(allocator, buffer_block.size(), buffer_block.data(), staging_buffer))
+				assert(false);
+
+			// Now create the GPU buffer to transfer data to, create buffer information
+			BufferData gpu_buffer;
+			if (!createBuffer(allocator, buffer_block.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | getBufferUsage(ubo.mDeclaration->mType), VMA_MEMORY_USAGE_GPU_ONLY, 0, gpu_buffer, error_state))
+				assert(false);
+
+			mStagingBuffers.emplace_back(std::move(staging_buffer));
+			descriptor_set.mBuffers.push_back(gpu_buffer);
 
 			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
-			bufferInfo.buffer = buffer->getBuffer();
+			bufferInfo.buffer = gpu_buffer.mBuffer;
 			bufferInfo.offset = 0;
 			bufferInfo.range = VK_WHOLE_SIZE;
 
@@ -177,8 +197,12 @@ namespace nap
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 
-			descriptor_set.mBuffers.emplace_back(std::move(buffer));
+			descriptor_set.mBuffers.emplace_back(std::move(gpu_buffer));
 		}
+
+		// Destroy staging buffers
+		for (auto& staging_buffer : mStagingBuffers)
+			destroyBuffer(mRenderService->getVulkanAllocator(), staging_buffer);
 
 		vkUpdateDescriptorSets(mRenderService->getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
 		mDescriptorSet = std::move(descriptor_set);

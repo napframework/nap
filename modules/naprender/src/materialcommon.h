@@ -5,12 +5,11 @@
 #pragma once
 
 #include <vector>
+#include "uniforminstance.h"
+#include "uniformdeclarations.h"
 
 namespace nap
 {
-	class UniformLeafInstance;
-	class UniformBufferObjectDeclaration;
-
 	/**
 	 * Blend mode for Materials.
 	 */
@@ -51,10 +50,21 @@ namespace nap
 
 		UniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
-		{
-		}
+		{ }
 
 		const UniformBufferObjectDeclaration*	mDeclaration;
 		UniformList								mUniforms;
+	};
+
+
+	class HandleBufferObject
+	{
+	public:
+		HandleBufferObject(const UniformBufferObjectDeclaration& declaration) :
+			mDeclaration(&declaration)
+		{ }
+
+		const UniformBufferObjectDeclaration*		mDeclaration;
+		std::vector<const UniformHandleInstance*>	mUniforms;
 	};
 }

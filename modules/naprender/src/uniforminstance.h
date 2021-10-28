@@ -364,14 +364,14 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// UniformOpaqueInstance
+	// UniformHandleInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Base class of all opaque uniform instances and uniform instance buffer types.
 	 * Opaques cannot push data to the GPU.
 	 */
-	class NAPAPI UniformOpaqueInstance : public UniformInstance
+	class NAPAPI UniformHandleInstance : public UniformInstance
 	{
 		RTTI_ENABLE(UniformInstance)
 	};
@@ -384,12 +384,12 @@ namespace nap
 	/**
 	 * Base class of all uniform value array instances.
 	 */
-	class NAPAPI UniformValueBufferInstance : public UniformOpaqueInstance
+	class NAPAPI UniformValueBufferInstance : public UniformHandleInstance
 	{
-		RTTI_ENABLE(UniformOpaqueInstance)
+		RTTI_ENABLE(UniformHandleInstance)
 
 	public:
-		UniformValueBufferInstance(const UniformValueBufferDeclaration& declaration) :
+		UniformValueBufferInstance(const HandleDeclaration& declaration) :
 			mDeclaration(&declaration) { }
 
 		/**
@@ -398,7 +398,7 @@ namespace nap
 		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
 
 	protected:
-		const UniformValueBufferDeclaration* mDeclaration;
+		const HandleDeclaration* mDeclaration;
 	};
 
 
@@ -412,7 +412,7 @@ namespace nap
 		RTTI_ENABLE(UniformValueBufferInstance)
 
 	public:
-		TypedUniformValueBufferInstance(const UniformValueBufferDeclaration& declaration) :
+		TypedUniformValueBufferInstance(const HandleDeclaration& declaration) :
 			UniformValueBufferInstance(declaration) { }
 
 		/**

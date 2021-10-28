@@ -994,7 +994,11 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
-		VkDescriptorSetLayout set_layout = material.getShader().getDescriptorSetLayout();
+		VkDescriptorSetLayout set_layout = material.getShader().findDescriptorSetLayout();
+
+		// TODO: Implement multiple set layouts and make it possible to have none
+		if (!errorState.check(set_layout != VK_NULL_HANDLE, "Missing set index"))
+			return false;
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -1766,7 +1770,6 @@ namespace nap
 		mFramesInFlight.clear();
 		mEmptyTexture.reset();
 		mDescriptorSetCaches.clear();
-		mStaticDescriptorSetCaches.clear();
 		mDescriptorSetAllocator.reset();
 
 		if (mVulkanAllocator != VK_NULL_HANDLE)
@@ -2139,7 +2142,7 @@ namespace nap
 	}
 
 
-	DescriptorSetCache& RenderService::getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout)
+	BaseDescriptorSetCache& RenderService::getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout)
 	{
 		DescriptorSetCacheMap::iterator pos = mDescriptorSetCaches.find(layout);
 		if (pos != mDescriptorSetCaches.end())
@@ -2150,15 +2153,14 @@ namespace nap
 		return *inserted.first->second;
 	}
 
-
-	StaticDescriptorSetCache& RenderService::getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout)
+	BaseDescriptorSetCache& RenderService::getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout)
 	{
-		StaticDescriptorSetCacheMap::iterator pos = mStaticDescriptorSetCaches.find(layout);
-		if (pos != mStaticDescriptorSetCaches.end())
+		DescriptorSetCacheMap::iterator pos = mDescriptorSetCaches.find(layout);
+		if (pos != mDescriptorSetCaches.end())
 			return *pos->second;
 
 		std::unique_ptr<StaticDescriptorSetCache> allocator = std::make_unique<StaticDescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
-		auto inserted = mStaticDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
+		auto inserted = mDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
 		return *inserted.first->second;
 	}
 

@@ -48,11 +48,11 @@ namespace nap
 		const std::string& getDisplayName() const { return mDisplayName; }
 
 		/**
-		 * Returns the Vulkan DescriptorSetLayout of this shader for a given usage type
-		 * @param usage the usage type of the descriptor set layout, DynamicWrite by default
-		 * @return Vulkan descriptorSetLayout 
+		 * Returns the Vulkan DescriptorSetLayout of this shader for a given usage type, if it exists
+		 * @param key the uniform set key of the descriptor set layout, DynamicWrite by default
+		 * @return Vulkan descriptorSetLayout, VK_NULL_HANDLE if the layout does not exist
 		 */
-		VkDescriptorSetLayout getDescriptorSetLayout(nap::EUniformSetUsage usage = nap::EUniformSetUsage::DynamicWrite) const;
+		VkDescriptorSetLayout findDescriptorSetLayout(nap::EUniformSetKey key = nap::EUniformSetKey::DynamicWrite) const;
 
 		/**
 		 * @return a vector containing all Vulkan DescriptorSetLayouts
@@ -66,7 +66,7 @@ namespace nap
 		std::vector<UniformBufferObjectDeclaration>			mUBODeclarations;					///< All uniform buffer object declarations
 		SamplerDeclarations									mSamplerDeclarations;				///< All sampler declarations
 
-		std::map<nap::EUniformSetUsage, VkDescriptorSetLayout>	mDescriptorSetLayouts;			///< Descriptor set layouts
+		std::map<nap::EUniformSetKey, VkDescriptorSetLayout> mDescriptorSetLayouts;				///< Descriptor set layouts
 
 		bool initLayouts(VkDevice device, int numLayouts, nap::utility::ErrorState& errorState);
 	};
