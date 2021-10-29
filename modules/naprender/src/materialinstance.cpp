@@ -237,8 +237,8 @@ namespace nap
 			}
 
 			const UniformInstance* override_uniform = nullptr;
-			if (base_struct != nullptr)
-				override_uniform = findUniformStructInstanceMember(base_struct->getUniforms(), base_uniform->getDeclaration().mName);
+			if (overrideStruct != nullptr)
+				override_uniform = findUniformStructInstanceMember(overrideStruct->getUniforms(), base_uniform->getDeclaration().mName);
 
 			if (declaration_type.is_derived_from(RTTI_OF(UniformValueBufferInstance)))
 			{
@@ -504,39 +504,13 @@ namespace nap
 
 	VkDescriptorSet BaseMaterialInstance::updateInternal()
 	{
-		for (auto& it : mDescriptorSetCaches)
-		{
-			// Skip DynamicWrite
-			EUniformSetKey key = it.first;
-			if (it.first == EUniformSetKey::DynamicWrite)
-				continue;
+		std::vector<VkDescriptorSet> descriptor_sets;
+		bool success = updateInternal(descriptor_sets);
+		assert(success);
 
-			const auto it_ubo = mUniformBufferObjectMap.find(key);
-			if (it_ubo == mUniformBufferObjectMap.end())
-				continue;
-
-			std::vector<UniformBufferObject>& uniform_buffer_objects = it_ubo->second;
-
-			BaseDescriptorSetCache* descriptor_set_cache = it.second;
-			const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, mSamplerWriteDescriptors.size());
-
-			updateUniforms(descriptor_set, uniform_buffer_objects);
-			updateSamplers(descriptor_set);
-		}
-
-		auto it = mDescriptorSetCaches.find(EUniformSetKey::DynamicWrite);
-		if (it == mDescriptorSetCaches.end())
-			return nullptr;
-
-		auto it_ubo = mUniformBufferObjectMap.find(EUniformSetKey::DynamicWrite);
-		if (it_ubo == mUniformBufferObjectMap.end())
-			return nullptr;
-
-		BaseDescriptorSetCache* descriptor_set_cache = it->second;
-		std::vector<UniformBufferObject>& uniform_buffer_objects = it_ubo->second;
-		const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, mSamplerWriteDescriptors.size());
-
-		return descriptor_set.mSet;
+		// Should be DynamicWrite if present, otherwise Static
+		// TODO: Probably deprecate this function
+		return descriptor_sets.front();
 	}
 
 
@@ -558,7 +532,9 @@ namespace nap
 			BaseDescriptorSetCache* descriptor_set_cache = it.second;
 			const DescriptorSet& descriptor_set = descriptor_set_cache->acquire(uniform_buffer_objects, mSamplerWriteDescriptors.size());
 
-			updateUniforms(descriptor_set, uniform_buffer_objects);
+			if (key == EUniformSetKey::DynamicWrite)
+				updateUniforms(descriptor_set, uniform_buffer_objects);
+
 			updateSamplers(descriptor_set);
 
 			descriptor_sets.emplace_back(descriptor_set.mSet);
@@ -604,14 +580,21 @@ namespace nap
 			VkDescriptorSetLayout layout = getMaterial().getShader().findDescriptorSetLayout(key);
 			if (layout != VK_NULL_HANDLE)
 			{
-				if (key == EUniformSetKey::Handle)
+				if (key == EUniformSetKey::DynamicWrite)
+				{
+					BaseDescriptorSetCache* cache = &renderService.getOrCreateDescriptorSetCache(layout);
+					mDescriptorSetCaches.insert({ key, cache });
+				}
+				else if (key == EUniformSetKey::Static)
+				{
+					BaseDescriptorSetCache* cache = &renderService.getOrCreateStaticDescriptorSetCache(layout);
+					mDescriptorSetCaches.insert({ key, cache });
+				}
+				else if (key == EUniformSetKey::Handle)
 				{
 					if (!mHandleBufferObjects.empty())
 						mHandleDescriptorSet = &renderService.getOrCreateHandleDescriptorSet(layout, mHandleBufferObjects);
-					continue;
 				}
-				auto result = &renderService.getOrCreateDescriptorSetCache(layout);
-				mDescriptorSetCaches.insert({ key, result });
 			}
 		}
 		return success;
@@ -699,6 +682,13 @@ namespace nap
 	}
 
 
+	UniformStructInstance* MaterialInstance::getOrCreateUniform(const std::string& name)
+	{
+		const Shader& shader = getMaterial().getShader();
+		return getOrCreateUniformInternal(name, shader);
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// ComputeMaterialInstance
 	//////////////////////////////////////////////////////////////////////////
@@ -718,7 +708,7 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		
+
 		rtti::TypeInfo enum_type = RTTI_OF(nap::EUniformSetKey);
 		auto enum_values = enum_type.get_enumeration().get_values();
 
@@ -731,14 +721,21 @@ namespace nap
 			VkDescriptorSetLayout layout = getComputeMaterial().getShader().findDescriptorSetLayout(key);
 			if (layout != VK_NULL_HANDLE)
 			{
-				if (key == EUniformSetKey::Handle)
+				if (key == EUniformSetKey::DynamicWrite)
+				{
+					BaseDescriptorSetCache* cache = &renderService.getOrCreateDescriptorSetCache(layout);
+					mDescriptorSetCaches.insert({ key, cache });
+				}
+				else if (key == EUniformSetKey::Static)
+				{
+					BaseDescriptorSetCache* cache = &renderService.getOrCreateStaticDescriptorSetCache(layout);
+					mDescriptorSetCaches.insert({ key, cache });
+				}
+				else if (key == EUniformSetKey::Handle)
 				{
 					if (!mHandleBufferObjects.empty())
 						mHandleDescriptorSet = &renderService.getOrCreateHandleDescriptorSet(layout, mHandleBufferObjects);
-					continue;
 				}
-				auto result = &renderService.getOrCreateDescriptorSetCache(layout);
-				mDescriptorSetCaches.insert({ key, result });
 			}
 		}
 
@@ -789,6 +786,13 @@ namespace nap
 	{
 		return *mResource->mComputeMaterial;
 	}
+
+
+	UniformStructInstance* ComputeMaterialInstance::getOrCreateUniform(const std::string& name)
+	{
+		const ComputeShader& shader = getComputeMaterial().getShader();
+		return getOrCreateUniformInternal(name,  shader);
+	};
 
 
 	const ComputeMaterial& ComputeMaterialInstance::getComputeMaterial() const

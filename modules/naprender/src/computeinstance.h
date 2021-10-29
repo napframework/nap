@@ -74,13 +74,6 @@ namespace nap
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
-		/**
-		 * Signaled before command buffer recording ends
-		 * This call can be used to push post-dispatch commands onto the compute command buffer such as vkCmdCopyBuffer.
-		 * Additional synchronization (e.g. vkCmdPipelineBarrier(srcStageMask:COMPUTE, dstStageMask:TRANSFER ...)) must be handled by the user.
-		 */
-		nap::Signal<const DescriptorSet&> mPostDispatch;
-
 	private:
 		bool computeInternal(uint numInvocations, utility::ErrorState& errorState);
 

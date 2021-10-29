@@ -251,10 +251,6 @@ namespace nap
 			mRotationStorageUniform->setValue(p.mRotation, i);
 		}
 
-		// Initialize storage buffer vertices to zero
-		//std::vector<glm::vec4> vertices(mParticleMesh->getMeshInstance().getNumVertices());
-		//mVertexStorageUniform->setValues(vertices);
-
 		nap::Logger::info("%s: Done", mID.c_str());
 		return true;
 	}
@@ -313,7 +309,7 @@ namespace nap
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		// Get buffer from uniform
-		const GPUVec4Buffer& buffer = mVertexBufferUniform->getBuffer();
+		const GPUVec4Buffer& buffer = mVertexBufferUniform->getTypedValueBuffer();
 
 		// Bind vertex buffers
 		std::vector<VkBuffer> vertex_buffers = { buffer.getBuffer(), mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };

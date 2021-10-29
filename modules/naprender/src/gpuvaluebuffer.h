@@ -16,14 +16,36 @@
 namespace nap
 {
 	/**
-	 * A list of vertices on the GPU that represent a specific attribute of the geometry, for example:
-	 * position, uv0, uv1, color0, color1, normals etc.
 	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
 	 */
-	template<class T>
 	class NAPAPI GPUValueBuffer : public GPUBuffer
 	{
 		RTTI_ENABLE(GPUBuffer)
+	public:
+		GPUValueBuffer(Core& core) :
+			GPUBuffer(core)
+		{ }
+
+		GPUValueBuffer(Core& core, EBufferObjectType type, EMeshDataUsage usage) :
+			GPUBuffer(core, usage), mType(type)
+		{ }
+
+		/**
+		 * @return the size of the buffer in bytes
+		 */
+		virtual uint32 getSize() const = 0;
+
+		EBufferObjectType mType = EBufferObjectType::Uniform;	///< Property 'BufferObjectType'
+	};
+
+
+	/**
+	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
+	 */
+	template<class T>
+	class NAPAPI TypedGPUValueBuffer : public GPUValueBuffer
+	{
+		RTTI_ENABLE(GPUValueBuffer)
 	public:
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
@@ -31,8 +53,8 @@ namespace nap
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
 		 */
-		GPUValueBuffer(Core& core) :
-			GPUBuffer(core)
+		TypedGPUValueBuffer(Core& core) :
+			GPUValueBuffer(core)
 		{ }
 
 		/**
@@ -43,21 +65,21 @@ namespace nap
 		 * @param type the buffer object typr
 		 * @param usage how the buffer is used at runtime.
 		 */
-		GPUValueBuffer(Core& core, EBufferObjectType type, EMeshDataUsage usage) :
-			GPUBuffer(core, usage), mType(type)
+		TypedGPUValueBuffer(Core& core, EBufferObjectType type, EMeshDataUsage usage) :
+			GPUValueBuffer(core, type, usage)
 		{ }
 
 		/**
 		 * Init
 		 */
-		bool init(utility::ErrorState& errorState) override
+		virtual bool init(utility::ErrorState& errorState) override
 		{
-			if (!GPUBuffer::init(errorState))
+			if (!GPUValueBuffer::init(errorState))
 				return false;
 
 			mElementSize = sizeof(T);
-			std::vector<T> staging_buffer(mCount);
-
+			std::vector<T> staging_buffer;
+			staging_buffer.resize(mCount);
 			return setDataInternal(static_cast<void*>(staging_buffer.data()), mElementSize * mCount, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
 		}
 
@@ -74,10 +96,12 @@ namespace nap
 			return setDataInternal(data, size, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), error);
 		}
 
-		uint32 getSize() const { return mCount * mElementSize };
+		/**
+		 * @return the size of the buffer in bytes
+		 */
+		virtual uint32 getSize() const override { return mCount * mElementSize; };
 
 		uint32 mCount = 0;										///< Property 'Count'
-		EBufferObjectType mType	= EBufferObjectType::Uniform;	///< Property 'BufferObjectType'
 
 	private:
 		int	mElementSize = -1;
@@ -88,10 +112,10 @@ namespace nap
 	// GPU buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using GPUIntBuffer = GPUValueBuffer<int>;
-	using GPUFloatBuffer = GPUValueBuffer<float>;
-	using GPUVec2Buffer = GPUValueBuffer<glm::vec2>;
-	using GPUVec3Buffer = GPUValueBuffer<glm::vec3>;
-	using GPUVec4Buffer = GPUValueBuffer<glm::vec4>;
-	using GPUMat4Buffer = GPUValueBuffer<glm::mat4>;
+	using GPUIntBuffer = TypedGPUValueBuffer<int>;
+	using GPUFloatBuffer = TypedGPUValueBuffer<float>;
+	using GPUVec2Buffer = TypedGPUValueBuffer<glm::vec2>;
+	using GPUVec3Buffer = TypedGPUValueBuffer<glm::vec3>;
+	using GPUVec4Buffer = TypedGPUValueBuffer<glm::vec4>;
+	using GPUMat4Buffer = TypedGPUValueBuffer<glm::mat4>;
 }

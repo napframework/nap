@@ -7,6 +7,7 @@
 // Internal includes
 #include "vk_mem_alloc.h"
 #include "renderutils.h"
+#include "gpudatabuffer.h"
 
 // External Includes
 #include <vector>
@@ -121,8 +122,6 @@ namespace nap
 		virtual const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers) override;
 
 	private:
-		std::vector<BufferData> mStagingBuffers;
-
 		DescriptorSet			mDescriptorSet;
 		bool					mAllocated = false;
 	};

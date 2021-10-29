@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "uniform.h"
-
+#include "gpuvaluebuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -368,6 +368,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
+	 * TODO: Probably put this in another file? Should be be able to change the buffer and raise an event to trigger a descriptor set write.
 	 * Base class of all opaque uniform instances and uniform instance buffer types.
 	 * Opaques cannot push data to the GPU.
 	 */
@@ -396,6 +397,11 @@ namespace nap
 		 * @return uniform declaration.
 		 */
 		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
+
+		/**
+		 * @return value buffer
+		 */
+		virtual const GPUValueBuffer& getValueBuffer() const = 0;
 
 	protected:
 		const HandleDeclaration* mDeclaration;
@@ -429,10 +435,15 @@ namespace nap
 		/**
 		 * @return buffer
 		 */
-		const GPUValueBuffer<T>& getBuffer() const { return *mBuffer; }
+		const TypedGPUValueBuffer<T>& getTypedValueBuffer() const { return *mBuffer; }
+
+		/**
+		 * @return value buffer
+		 */
+		virtual const GPUValueBuffer& getValueBuffer() const override { return *mBuffer; }
 
 	private:
-		rtti::ObjectPtr<GPUValueBuffer<T>> mBuffer;
+		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer;
 	};
 
 

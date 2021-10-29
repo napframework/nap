@@ -3,36 +3,7 @@
         {
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_a6c1904d",
-                    "Name": "VertexBuffer",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec4Buffer",
-                            "mID": "UniformVec4Buffer_add7a73e",
-                            "Name": "vertices",
-                            "Buffer": "StorageVec4Buffer_129051e1"
-                        }
-                    ],
-                    "Set": "Handle"
-                },
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_fea9a438",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_a98c83f3",
-                            "Name": "velocityTimeScale",
-                            "Value": 0.3330000042915344
-                        }
-                    ],
-                    "Set": "DynamicWrite"
-                }
-            ],
+            "Uniforms": [],
             "Samplers": [],
             "Shader": "ComputeShader"
         },
@@ -142,7 +113,22 @@
                     },
                     "ComputeMaterialInstance": {
                         "ComputeMaterial": "ComputeMaterial",
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_afd17387",
+                                "Name": "VertexBuffer",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec4Buffer",
+                                        "mID": "UniformVec4Buffer_72bff4b7",
+                                        "Name": "vertices",
+                                        "Buffer": "StorageVec4Buffer_129051e1"
+                                    }
+                                ],
+                                "Set": "Handle"
+                            }
+                        ],
                         "Samplers": []
                     },
                     "NumParticles": 1000000,

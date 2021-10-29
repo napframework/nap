@@ -88,9 +88,6 @@ namespace nap
 		uint group_count_x = numInvocations / getLocalWorkGroupSize().x + 1;
 		vkCmdDispatch(mRenderService->getCurrentCommandBuffer(), group_count_x, 1, 1);
 
-		// Signal any connected slots for the user to issue vkCmd commands, or store descriptorset information
-		//mPostDispatch(descriptor_set);
-
 		return true;
 	}
 

@@ -124,8 +124,7 @@ namespace nap
 		std::map<nap::EUniformSetKey, BaseDescriptorSetCache*>			mDescriptorSetCaches;		// Cache used to acquire Vulkan DescriptorSets on each update
 		std::map<nap::EUniformSetKey, std::vector<UniformBufferObject>> mUniformBufferObjectMap;	//
 
-		DescriptorSet*							mHandleDescriptorSet;
-
+		DescriptorSet*							mHandleDescriptorSet = nullptr;
 		std::vector<HandleBufferObject>			mHandleBufferObjects;					// List of all HBO instances
 
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
@@ -207,7 +206,7 @@ namespace nap
 		 * @param name: the name of the uniform struct (ubo) as declared in the shader.
 		 * @return uniform that was found or created, nullptr if not available.
 		 */
-		virtual UniformStructInstance* getOrCreateUniform(const std::string& name) override { return getOrCreateUniformInternal(name, getMaterial().getShader()); };
+		virtual UniformStructInstance* getOrCreateUniform(const std::string& name) override;
 
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
@@ -304,7 +303,7 @@ namespace nap
 		 * @param name: the name of the uniform struct (ubo) as declared in the shader.
 		 * @return uniform that was found or created, nullptr if not available.
 		 */
-		virtual UniformStructInstance* getOrCreateUniform(const std::string& name) override { return getOrCreateUniformInternal(name, getComputeMaterial().getShader()); };
+		virtual UniformStructInstance* getOrCreateUniform(const std::string& name) override;
 
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.

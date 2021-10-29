@@ -1868,7 +1868,7 @@ namespace nap
 				texture->upload(commandBuffer);
 			mTexturesToUpload.clear();
 
-			for (GPUBuffer* buffer : mBuffersToUpload)
+			for (BaseGPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
 			mBuffersToUpload.clear();
 		});
@@ -2189,15 +2189,16 @@ namespace nap
 			const HandleBufferObject& hbo = handleBufferObjects[ubo_index];
 			const UniformBufferObjectDeclaration& hbo_declaration = *hbo.mDeclaration;
 
-			BufferData buffer;
-			utility::ErrorState error_state;
-			bool success = createBuffer(getVulkanAllocator(), hbo_declaration.mSize, getBufferUsage(hbo_declaration.mType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
-			assert(success);
+			// Update using existing buffers in HBO
+			// We currently only support one buffer per HBO
+			const UniformHandleInstance* uniform = hbo.mUniforms.back();
+			const UniformValueBufferInstance* uniform_buffer = rtti_cast<const UniformValueBufferInstance>(uniform);
+			assert(uniform_buffer != nullptr);
 
-			descriptor_set.mBuffers.push_back(buffer);
+			descriptor_set.mBuffers.push_back(uniform_buffer->getValueBuffer().getBufferData());
 
 			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
-			bufferInfo.buffer = buffer.mBuffer;
+			bufferInfo.buffer = uniform_buffer->getValueBuffer().getBuffer();
 			bufferInfo.offset = 0;
 			bufferInfo.range = VK_WHOLE_SIZE;
 
@@ -2213,7 +2214,7 @@ namespace nap
 
 		vkUpdateDescriptorSets(getDevice(), hbo_descriptors.size(), hbo_descriptors.data(), 0, nullptr);
 
-		auto inserted = mHandleDescriptorSets.insert({ layout, descriptor_set });
+		auto inserted = mHandleDescriptorSets.insert({ layout, std::move(descriptor_set) });
 		return inserted.first->second;
 	}
 
@@ -2255,14 +2256,14 @@ namespace nap
 	}
 
 
-	void RenderService::removeBufferRequests(GPUBuffer& buffer)
+	void RenderService::removeBufferRequests(BaseGPUBuffer& buffer)
 	{
 		// When buffers are destroyed, we also need to remove any pending upload requests
 		mBuffersToUpload.erase(&buffer);
 	}
 
 
-	void RenderService::requestBufferUpload(GPUBuffer& buffer)
+	void RenderService::requestBufferUpload(BaseGPUBuffer& buffer)
 	{
 		mBuffersToUpload.insert(&buffer);
 	}

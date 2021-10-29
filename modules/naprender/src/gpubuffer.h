@@ -41,6 +41,19 @@ namespace nap
 
 
 	/**
+	 * Base GPU Buffer
+	 */
+	class NAPAPI BaseGPUBuffer
+	{
+		friend class RenderService;
+	public:
+		virtual void upload(VkCommandBuffer commandBuffer) = 0;
+
+		virtual VkBuffer getBuffer() const = 0;
+	};
+
+
+	/**
 	 * Defines a Vulkan buffer object on the GPU.
 	 *
 	 * A static buffer is updated (uploaded to) only once, a dynamic buffer can be updated more frequently but
@@ -51,7 +64,7 @@ namespace nap
 	 * allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory
 	 * and are therefore slower to draw.
 	 */
-	class NAPAPI GPUBuffer : public Resource
+	class NAPAPI GPUBuffer : public Resource, public BaseGPUBuffer
 	{
 		friend class RenderService;
 		RTTI_ENABLE(Resource)
@@ -85,7 +98,12 @@ namespace nap
 		/**
 		 * @return handle to the Vulkan buffer.
 		 */
-		VkBuffer getBuffer() const;
+		virtual VkBuffer getBuffer() const override;
+
+		/**
+		 * @return handle to the buffer data.
+		 */
+		const BufferData& getBufferData() const;
 
 		/**
 		 * Called right after the buffer on the GPU has been updated.
@@ -114,13 +132,13 @@ namespace nap
 
 		bool setDataInternal(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 
-	private:
 		RenderService*			mRenderService = nullptr;			///< Handle to the render service
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
 		BufferData				mStagingBuffer;						///< Staging buffer, used when uploading static mesh geometry
-		int						mCurrentBufferIndex = 0;			///< Current render buffer index
 		uint32					mSize = 0;							///< Current used buffer size in bytes
+		int						mCurrentBufferIndex = 0;			///< Current render buffer index
 
+	private:
 		// Called when usage = static
 		bool setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 		
@@ -129,7 +147,7 @@ namespace nap
 
 		// Uploads data from the staging buffer into GPU buffer. Automatically called by the render service at the appropriate time.
 		// Only occurs when 'usage' = 'static'. Dynamic data shares GPU / CPU memory and is updated immediately.
-		void upload(VkCommandBuffer commandBuffer);
+		virtual void upload(VkCommandBuffer commandBuffer) override;
 	};
 
 }

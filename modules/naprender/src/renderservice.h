@@ -33,7 +33,7 @@ namespace nap
 	class MaterialInstance;
 	class ComputeMaterialInstance;
 	class Texture2D;
-	class GPUBuffer;
+	class BaseGPUBuffer;
 	class ComputeInstance;
 
 	//////////////////////////////////////////////////////////////////////////
@@ -274,6 +274,7 @@ namespace nap
 	{
 		friend class Texture2D;
 		friend class GPUBuffer;
+		friend class GPUDataBuffer;
 		friend class ComputeInstance;
 		friend class RenderWindow;
 		RTTI_ENABLE(Service)
@@ -1008,14 +1009,14 @@ namespace nap
 		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
 		 * @param buffer the butter to upload to the GPU.
 		 */
-		void requestBufferUpload(GPUBuffer& buffer);
+		void requestBufferUpload(BaseGPUBuffer& buffer);
 
 		/**
 		 * Deletes all buffer upload requests.
 		 * Called when the GPU buffer is destroyed.
 		 * @param buffer the buffer to remove pending upload commands for.
 		 */
-		void removeBufferRequests(GPUBuffer& buffer);
+		void removeBufferRequests(BaseGPUBuffer& buffer);
 
 		/**
 		 * Transfers all previously queued data to the GPU.
@@ -1060,7 +1061,7 @@ namespace nap
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<BaseDescriptorSetCache>>;
 		using HandleDescriptorSetMap = std::unordered_map<VkDescriptorSetLayout, DescriptorSet>;
 		using TextureSet = std::unordered_set<Texture2D*>;
-		using BufferSet = std::unordered_set<GPUBuffer*>;
+		using BufferSet = std::unordered_set<BaseGPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 

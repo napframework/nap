@@ -269,7 +269,7 @@ namespace nap
 
 		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
-		rtti::ObjectPtr<GPUValueBuffer<T>> mBuffer;	/// Property 'Buffer'
+		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer;	/// Property 'Buffer'
 	};
 
 

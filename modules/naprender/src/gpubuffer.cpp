@@ -55,6 +55,12 @@ namespace nap
 		return mRenderBuffers[mCurrentBufferIndex].mBuffer;
 	}
 
+
+	const BufferData& GPUBuffer::getBufferData() const
+	{
+		return mRenderBuffers[mCurrentBufferIndex];
+	}
+
 	
 	bool GPUBuffer::setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error)
 	{

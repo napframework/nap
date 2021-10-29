@@ -126,7 +126,9 @@ namespace nap
 
 	StaticDescriptorSetCache::~StaticDescriptorSetCache()
 	{
-
+		// Free all buffers for the allocated sets
+		for (BufferData& buffer : mDescriptorSet.mBuffers)
+			vmaDestroyBuffer(mRenderService->getVulkanAllocator(), buffer.mBuffer, buffer.mAllocation);
 	}
 
 
@@ -160,31 +162,22 @@ namespace nap
 			buffer_block.resize(ubo_declaration.mSize);
 
 			for (auto& uniform : ubo.mUniforms)
-			{
 				uniform->push(buffer_block.data());
-			}
 
-			// Create staging buffer
-			BufferData staging_buffer;
+			// GPU data buffer can prepare the upload of a GPU ONLY buffer for you
+			auto& gpu_buffer = std::make_unique<GPUDataBuffer>(*mRenderService, ubo_declaration.mType);
+
 			utility::ErrorState error_state;
-			VmaAllocator allocator = mRenderService->getVulkanAllocator();
-			if (!createBuffer(allocator, buffer_block.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, staging_buffer, error_state))
+			if (!gpu_buffer->setData(buffer_block.size(), buffer_block.data(), error_state))
 				assert(false);
 
-			// Copy data into staging buffer
-			if (!uploadToBuffer(allocator, buffer_block.size(), buffer_block.data(), staging_buffer))
+			// Request upload and get the buffer data
+			BufferData buffer_data;
+			if (!gpu_buffer->getData(buffer_data, error_state))
 				assert(false);
-
-			// Now create the GPU buffer to transfer data to, create buffer information
-			BufferData gpu_buffer;
-			if (!createBuffer(allocator, buffer_block.size(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | getBufferUsage(ubo.mDeclaration->mType), VMA_MEMORY_USAGE_GPU_ONLY, 0, gpu_buffer, error_state))
-				assert(false);
-
-			mStagingBuffers.emplace_back(std::move(staging_buffer));
-			descriptor_set.mBuffers.push_back(gpu_buffer);
 
 			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
-			bufferInfo.buffer = gpu_buffer.mBuffer;
+			bufferInfo.buffer = buffer_data.mBuffer;
 			bufferInfo.offset = 0;
 			bufferInfo.range = VK_WHOLE_SIZE;
 
@@ -197,12 +190,8 @@ namespace nap
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 
-			descriptor_set.mBuffers.emplace_back(std::move(gpu_buffer));
+			descriptor_set.mBuffers.emplace_back(std::move(buffer_data));
 		}
-
-		// Destroy staging buffers
-		for (auto& staging_buffer : mStagingBuffers)
-			destroyBuffer(mRenderService->getVulkanAllocator(), staging_buffer);
 
 		vkUpdateDescriptorSets(mRenderService->getDevice(), ubo_descriptors.size(), ubo_descriptors.data(), 0, nullptr);
 		mDescriptorSet = std::move(descriptor_set);

@@ -11,6 +11,8 @@
 #include <nap/core.h>
 #include <assert.h>
 
+RTTI_DEFINE_BASE(nap::GPUValueBuffer)
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUIntBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::GPUIntBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
