@@ -60,11 +60,13 @@ namespace nap
 	class HandleBufferObject
 	{
 	public:
+		using HandleList = std::vector<const UniformHandleInstance*>;
+
 		HandleBufferObject(const UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{ }
 
 		const UniformBufferObjectDeclaration*		mDeclaration;
-		std::vector<const UniformHandleInstance*>	mUniforms;
+		HandleList									mUniformHandles;
 	};
 }

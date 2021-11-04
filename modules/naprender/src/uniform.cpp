@@ -17,16 +17,8 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_ENUM(nap::EUniformSetKey)
-	RTTI_ENUM_VALUE(nap::EUniformSetKey::DynamicWrite, "DynamicWrite"),
-	RTTI_ENUM_VALUE(nap::EUniformSetKey::Static, "Static"),
- 	RTTI_ENUM_VALUE(nap::EUniformSetKey::Handle, "Handle"),
-	RTTI_ENUM_VALUE(nap::EUniformSetKey::None, "None")
-RTTI_END_ENUM
-
 RTTI_BEGIN_CLASS(nap::UniformStruct)
 	RTTI_PROPERTY("Uniforms", &nap::UniformStruct::mUniforms, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Set", &nap::UniformStruct::mSet, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformStructArray)

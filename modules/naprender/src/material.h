@@ -34,6 +34,11 @@ namespace nap
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<Sampler>>			mSamplers;											///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
 
+		/**
+		 * @return The underlying base shader
+		 */
+		virtual const BaseShader* getBaseShader() const = 0;
+
 	protected:
 		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);
 
@@ -89,6 +94,11 @@ namespace nap
 		 * @return The underlying shader
 		 */
 		const Shader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
+
+		/**
+		 * @return The underlying base shader
+		 */
+		virtual const BaseShader* getBaseShader() const		{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
 
 		/**
 		 * Returns the current blend mode.
@@ -164,6 +174,11 @@ namespace nap
 		 * @return The underlying shader
 		 */
 		const ComputeShader& getShader() const				{ assert(mShader != nullptr); return *mShader; }
+
+		/**
+		 * @return The underlying base shader
+		 */
+		virtual const BaseShader* getBaseShader() const { assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
 
 	public:
 		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The shader that this material is using

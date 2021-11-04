@@ -25,9 +25,9 @@ namespace nap
 	}
 
 
-	VkDescriptorSet DescriptorSetAllocator::allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors)
+	VkDescriptorSet DescriptorSetAllocator::allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numHBODescriptors, int numSamplerDescriptors)
 	{
-		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | numSamplerDescriptors;
+		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | ((uint64_t)numHBODescriptors << 16) | numSamplerDescriptors;
 
 		DescriptorPool* free_descriptor_pool = nullptr;
 		DescriptorPoolMap::iterator pos = mDescriptorPools.find(key);
@@ -61,11 +61,11 @@ namespace nap
 			if (numUBODescriptors != 0)
 				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, (uint32_t)(numUBODescriptors * maxSets) });
 
+			if (numHBODescriptors != 0)
+				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, (uint32_t)(numHBODescriptors * maxSets) });
+
 			if (numSamplerDescriptors != 0)
 				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(numSamplerDescriptors * maxSets) });
-
-			// TODO: With the addition of compute shaders we may also need to allocate for storage buffers (VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
-			// and take into account their appropriate pool sizes
 
 			VkDescriptorPoolCreateInfo poolInfo = {};
 			poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

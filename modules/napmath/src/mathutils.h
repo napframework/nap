@@ -450,6 +450,9 @@ namespace nap
 		NAPAPI glm::ivec4 random(glm::ivec4 min, glm::ivec4 max);
 
 		template<>
+		NAPAPI glm::mat4 random(glm::mat4 min, glm::mat4 max);
+
+		template<>
 		NAPAPI float abs(float value);
 
 		template<>

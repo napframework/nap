@@ -396,6 +396,19 @@ namespace nap
 		}
 
 
+		template<>
+		glm::mat4 random(glm::mat4 min, glm::mat4 max)
+		{
+			return
+			{
+				random<glm::vec4>(min[0], max[0]),
+				random<glm::vec4>(min[1], max[1]),
+				random<glm::vec4>(min[2], max[2]),
+				random<glm::vec4>(min[3], max[3])
+			};
+		}
+
+
 		void setRandomSeed(int value)
 		{
 			std::mt19937& generator = getGenerator();

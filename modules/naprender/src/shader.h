@@ -48,27 +48,18 @@ namespace nap
 		const std::string& getDisplayName() const { return mDisplayName; }
 
 		/**
-		 * Returns the Vulkan DescriptorSetLayout of this shader for a given usage type, if it exists
-		 * @param key the uniform set key of the descriptor set layout, DynamicWrite by default
-		 * @return Vulkan descriptorSetLayout, VK_NULL_HANDLE if the layout does not exist
-		 */
-		VkDescriptorSetLayout findDescriptorSetLayout(nap::EUniformSetKey key = nap::EUniformSetKey::DynamicWrite) const;
-
-		/**
-		 * @return a vector containing all Vulkan DescriptorSetLayouts
-		 */
-		const std::vector<VkDescriptorSetLayout> BaseShader::getDescriptorSetLayouts() const;
-
+		* @return Vulkan descriptorSetLayout.
+		*/
+		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
 
 	protected:
 		RenderService* mRenderService = nullptr;												///< Handle to render engine
-		std::string											mDisplayName;						///< Filename of shader used as display name
-		std::vector<UniformBufferObjectDeclaration>			mUBODeclarations;					///< All uniform buffer object declarations
-		SamplerDeclarations									mSamplerDeclarations;				///< All sampler declarations
+		std::string										mDisplayName;							///< Filename of shader used as display name
+		std::vector<UniformBufferObjectDeclaration>		mUBODeclarations;						///< All uniform buffer object declarations
+		SamplerDeclarations								mSamplerDeclarations;					///< All sampler declarations
+		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 
-		std::map<nap::EUniformSetKey, VkDescriptorSetLayout> mDescriptorSetLayouts;				///< Descriptor set layouts
-
-		bool initLayouts(VkDevice device, int numLayouts, nap::utility::ErrorState& errorState);
+		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
 	};
 
 
@@ -83,7 +74,7 @@ namespace nap
 	{
 	public:
 		Shader(Core& core);
-		~Shader() override;
+		~Shader();
 
 		/**
 		* @return all vertex shader attribute declarations.
@@ -133,7 +124,7 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		ComputeShader(Core& core);
-		~ComputeShader() override;
+		~ComputeShader();
 
 		/**
 		 * @return Vulkan vertex module.

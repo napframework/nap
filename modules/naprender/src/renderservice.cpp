@@ -581,7 +581,7 @@ namespace nap
 
 			// If required, ensure there's a compatible compute queue for this device
 			int selected_compute_queue_idx = -1;
-			search_mask[selected_graphics_queue_idx] = 0;
+			//search_mask[selected_graphics_queue_idx] = 0;
 			if (requiredQueueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
 				// Only search unselected queue families
@@ -727,11 +727,11 @@ namespace nap
 	/**
 	 * Creates a command pool associated with the given queue index
 	 */
-	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, uint32 graphicsQueueIndex, VkCommandPool& commandPool)
+	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, uint32 queueIndex, VkCommandPool& commandPool)
 	{
 		VkCommandPoolCreateInfo pool_info = {};
 		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		pool_info.queueFamilyIndex = graphicsQueueIndex;
+		pool_info.queueFamilyIndex = queueIndex;
 		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		return vkCreateCommandPool(device, &pool_info, nullptr, &commandPool) == VK_SUCCESS;
 	}
@@ -784,7 +784,21 @@ namespace nap
 		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		return errorState.check(vkCreateFence(device, &fence_info, nullptr, &fence) == VK_SUCCESS, "Failed to create sync objects");
+		return errorState.check(vkCreateFence(device, &fence_info, nullptr, &fence) == VK_SUCCESS, "Failed to create fence");
+	}
+
+
+	/**
+	 * Create GPU synchronization primitive
+	 */
+	static bool createSemaphore(VkDevice device, VkSemaphore& outSemaphore, utility::ErrorState& errorState)
+	{
+		VkSemaphoreCreateInfo semaphoreInfo = {};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		if (!errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &outSemaphore) == VK_SUCCESS, "Failed to create semaphore"))
+			return false;
+
+		return true;
 	}
 
 
@@ -994,16 +1008,12 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
-		VkDescriptorSetLayout set_layout = material.getShader().findDescriptorSetLayout();
-
-		// TODO: Implement multiple set layouts and make it possible to have none
-		if (!errorState.check(set_layout != VK_NULL_HANDLE, "Missing set index"))
-			return false;
+		auto layout = shader.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipeline_layout_info.setLayoutCount = 1;
-		pipeline_layout_info.pSetLayouts = &set_layout;
+		pipeline_layout_info.pSetLayouts = &layout;
 		pipeline_layout_info.pushConstantRangeCount = 0;
 
 		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
@@ -1044,12 +1054,12 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = "main";
 
-		auto layouts = computeShader.getDescriptorSetLayouts();
+		auto layout = computeShader.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeline_layout_info.setLayoutCount = layouts.size();
-		pipeline_layout_info.pSetLayouts = layouts.data();
+		pipeline_layout_info.setLayoutCount = 1;
+		pipeline_layout_info.pSetLayouts = &layout;
 		pipeline_layout_info.pushConstantRangeCount = 0;
 
 		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
@@ -1568,17 +1578,17 @@ namespace nap
 		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
 
 		// If available, get a compatible compute queue that will process compute commands	
-		bool dedicated_compute_resources = false;
 		if (isComputeAvailable())
 		{
 			// Get compute queue
 			if (mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
 			{
 				// Acquire and create dedicate compute resources
-				dedicated_compute_resources = true;
-				vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
 				if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getComputeQueueIndex(), mComputeCommandPool), "Failed to create Compute Command Pool"))
 					return false;
+
+				// Get a compatible queue that will process commands, graphics / transfer needs to be supported
+				vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
 			}
 			else
 			{
@@ -1619,17 +1629,21 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
 				return false;
 
-			if (isComputeAvailable())
-			{
-				if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
-					return false;
-			}
-			else
-				frame.mComputeCommandBuffer = VK_NULL_HANDLE;
+			if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
+				return false;
 		}
 
 		// Initialize semaphore wait list
-		mSemaphoreWaitList.resize(getMaxFramesInFlight());
+		mComputeSemaphoreWaitList.resize(getMaxFramesInFlight());
+		mComputeFinishedSemaphores.resize(getMaxFramesInFlight());
+
+		VkSemaphoreCreateInfo semaphore_info = {};
+		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		for (int frame_index = 0; frame_index < mFramesInFlight.size(); frame_index++)
+		{
+			if (!errorState.check(vkCreateSemaphore(mDevice, &semaphore_info, nullptr, &mComputeFinishedSemaphores[frame_index]) == VK_SUCCESS, "Failed to create sync objects"))
+				return false;
+		}
 
 		mInitialized = true;
 		return true;
@@ -1656,13 +1670,14 @@ namespace nap
 
 	void RenderService::waitForFence(int frameIndex)
 	{
-		vkWaitForFences(mDevice, 1, &mFramesInFlight[frameIndex].mFence, VK_TRUE, UINT64_MAX);
+		VkResult result = vkWaitForFences(mDevice, 1, &mFramesInFlight[frameIndex].mFence, VK_TRUE, UINT64_MAX);
+		assert(result == VK_SUCCESS);
 	}
 
 
-	void RenderService::pushFrameRenderingDependency(const SemaphoreWaitInfo& semaphoreWaitInfo)
+	void RenderService::pushComputeDependency(VkSemaphore waitSemaphore)
 	{
-		mSemaphoreWaitList[getCurrentFrameIndex()].emplace_back(semaphoreWaitInfo);
+		mComputeSemaphoreWaitList[mCurrentFrameIndex].push_back(waitSemaphore);
 	}
 
 
@@ -1767,6 +1782,11 @@ namespace nap
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
 		}
 
+		for (auto semaphore : mComputeFinishedSemaphores)
+		{
+			vkDestroySemaphore(mDevice, semaphore, nullptr);
+		}
+
 		mFramesInFlight.clear();
 		mEmptyTexture.reset();
 		mDescriptorSetCaches.clear();
@@ -1780,14 +1800,23 @@ namespace nap
 
 		if (mCommandPool != VK_NULL_HANDLE)
 		{
-			vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
-			mCommandPool = VK_NULL_HANDLE;
-		}
+			if (mCommandPool != mComputeCommandPool)
+			{
+				vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
+				mCommandPool = VK_NULL_HANDLE;
 
-		if (mComputeCommandPool != VK_NULL_HANDLE)
-		{
-			vkDestroyCommandPool(mDevice, mComputeCommandPool, nullptr);
-			mComputeCommandPool = VK_NULL_HANDLE;
+				if (mComputeCommandPool != VK_NULL_HANDLE)
+				{
+					vkDestroyCommandPool(mDevice, mComputeCommandPool, nullptr);
+					mComputeCommandPool = VK_NULL_HANDLE;
+				}
+			}
+			else
+			{
+				vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
+				mCommandPool = VK_NULL_HANDLE;
+				mComputeCommandPool = VK_NULL_HANDLE;
+			}
 		}
 
 		if (mDevice != VK_NULL_HANDLE)
@@ -1823,7 +1852,7 @@ namespace nap
 		mInitialized = false;
 	}
 	
-	void RenderService::transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
+	void RenderService::transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction, bool upload)
 	{
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
@@ -1847,6 +1876,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &commandBuffer;
+
 		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 		//assert(result == VK_SUCCESS);
 	}
@@ -1871,7 +1901,7 @@ namespace nap
 			for (BaseGPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
 			mBuffersToUpload.clear();
-		});
+		}, true);
 	}
 
 
@@ -1884,7 +1914,7 @@ namespace nap
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
-		});
+		}, false);
 	}
 
 
@@ -1957,41 +1987,19 @@ namespace nap
 
 	void RenderService::endFrame()
 	{
+		// Get the current frame fence status
+		VkResult result = vkGetFenceStatus(mDevice, mFramesInFlight[mCurrentFrameIndex].mFence);
+		assert(result == VK_SUCCESS);
+
 		// We reset the fences at the end of the frame to make sure that multiple waits on the same fence (using WaitForFence) complete correctly.
-		assert(vkGetFenceStatus(mDevice, mFramesInFlight[mCurrentFrameIndex].mFence) == VK_SUCCESS);
 		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
 
 		// Push any texture downloads on the command buffer
 		downloadData();
 
-		// We must reset the registered wait semaphores here in case no rendering has taken place in the current frame
-		// (e.g. due to a recreation of the swapchain). This can be achieved by explicitly waiting for each in vkQueueSubmit()
-		if (!mSemaphoreWaitList[mCurrentFrameIndex].empty())
-		{	
-			std::vector<VkSemaphore> wait_semaphores;
-			std::vector<VkPipelineStageFlags> wait_flags;
-			wait_semaphores.reserve(mSemaphoreWaitList[mCurrentFrameIndex].size());
-			wait_flags.reserve(wait_semaphores.size());
-			for (const auto& semaphore_wait_info : mSemaphoreWaitList[mCurrentFrameIndex])
-			{
-				wait_semaphores.emplace_back(semaphore_wait_info.mSemaphore);
-				wait_flags.emplace_back(VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
-			}
-			VkSubmitInfo submit_info = {};
-			submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submit_info.pWaitSemaphores = &wait_semaphores[0];
-			submit_info.waitSemaphoreCount = wait_semaphores.size();
-			submit_info.pWaitDstStageMask = &wait_flags[0];
-
-			vkQueueSubmit(mQueue, 1, &submit_info, mFramesInFlight[mCurrentFrameIndex].mFence);
-			mSemaphoreWaitList[mCurrentFrameIndex].clear();
-		}
-		else
-		{
-			// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
-			// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
-			vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
-		}
+		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
+		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
+		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
 
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % getMaxFramesInFlight();
 		mIsRenderingFrame = false;
@@ -2062,6 +2070,8 @@ namespace nap
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
 
+		nap::Logger::info(utility::stringFormat("beginComputeRecording() -- frame index %d", mCurrentFrameIndex).c_str());
+
 		// Reset command buffer for current frame
 		VkCommandBuffer compute_command_buffer = mFramesInFlight[mCurrentFrameIndex].mComputeCommandBuffer;
 		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
@@ -2083,6 +2093,7 @@ namespace nap
 		return true;
 	}
 
+
 	void RenderService::endComputeRecording()
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
@@ -2090,23 +2101,29 @@ namespace nap
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
 
-		std::vector<VkSemaphore> signal_semaphores;
-		if (!mSemaphoreWaitList[mCurrentFrameIndex].empty())
-		{
-			signal_semaphores.reserve(mSemaphoreWaitList[mCurrentFrameIndex].size());
-			for (const auto& semaphore_wait_info : mSemaphoreWaitList[mCurrentFrameIndex])
-				signal_semaphores.emplace_back(semaphore_wait_info.mSemaphore);
-		}
-
 		VkSubmitInfo submit_info = {};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
-		submit_info.pSignalSemaphores = signal_semaphores.data();
-		submit_info.signalSemaphoreCount = signal_semaphores.size();
 
-		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, VK_NULL_HANDLE);
-		assert(result == VK_SUCCESS);
+		VkSemaphore signal_semaphores[] = { mComputeFinishedSemaphores[mCurrentFrameIndex] };
+		submit_info.pSignalSemaphores = signal_semaphores;
+		submit_info.signalSemaphoreCount = 1;
+
+		if (!mComputeSemaphoreWaitList[mCurrentFrameIndex].empty())
+		{
+			VkSemaphore wait_semaphores[] = { mComputeSemaphoreWaitList[mCurrentFrameIndex].back() };
+			VkPipelineStageFlags wait_flags[] = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+
+			submit_info.pWaitSemaphores = wait_semaphores;
+			submit_info.pWaitDstStageMask = wait_flags;
+			submit_info.waitSemaphoreCount = 1;
+		}
+
+		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, nullptr);
+ 		assert(result == VK_SUCCESS);
+		
+		mComputeSemaphoreWaitList[mCurrentFrameIndex].clear();
 
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
@@ -2142,7 +2159,7 @@ namespace nap
 	}
 
 
-	BaseDescriptorSetCache& RenderService::getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout)
+	DescriptorSetCache& RenderService::getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout)
 	{
 		DescriptorSetCacheMap::iterator pos = mDescriptorSetCaches.find(layout);
 		if (pos != mDescriptorSetCaches.end())
@@ -2151,71 +2168,6 @@ namespace nap
 		std::unique_ptr<DescriptorSetCache> cache = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
 		auto inserted = mDescriptorSetCaches.insert({ layout, std::move(cache) });
 		return *inserted.first->second;
-	}
-
-
-	BaseDescriptorSetCache& RenderService::getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout)
-	{
-		DescriptorSetCacheMap::iterator pos = mDescriptorSetCaches.find(layout);
-		if (pos != mDescriptorSetCaches.end())
-			return *pos->second;
-
-		std::unique_ptr<StaticDescriptorSetCache> cache = std::make_unique<StaticDescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
-		auto inserted = mDescriptorSetCaches.insert({ layout, std::move(cache) });
-		return *inserted.first->second;
-	}
-
-
-	DescriptorSet& RenderService::getOrCreateHandleDescriptorSet(VkDescriptorSetLayout layout, const std::vector<HandleBufferObject>& handleBufferObjects)
-	{
-		HandleDescriptorSetMap::iterator pos = mHandleDescriptorSets.find(layout);
-		if (pos != mHandleDescriptorSets.end())
-			return pos->second;
-
-		DescriptorSet descriptor_set;
-		descriptor_set.mLayout = layout;
-		descriptor_set.mSet = mDescriptorSetAllocator->allocate(layout, handleBufferObjects.size(), 0);
-
-		int num_descriptors = handleBufferObjects.size();
-		std::vector<VkWriteDescriptorSet> hbo_descriptors;
-		hbo_descriptors.resize(num_descriptors);
-
-		std::vector<VkDescriptorBufferInfo> descriptor_buffers(num_descriptors);
-		descriptor_buffers.resize(num_descriptors);
-
-		// Now we allocate the UBO buffers from the global Vulkan allocator, and bind the buffers to our DescriptorSet
-		for (int ubo_index = 0; ubo_index < handleBufferObjects.size(); ++ubo_index)
-		{
-			const HandleBufferObject& hbo = handleBufferObjects[ubo_index];
-			const UniformBufferObjectDeclaration& hbo_declaration = *hbo.mDeclaration;
-
-			// Update using existing buffers in HBO
-			// We currently only support one buffer per HBO
-			const UniformHandleInstance* uniform = hbo.mUniforms.back();
-			const UniformValueBufferInstance* uniform_buffer = rtti_cast<const UniformValueBufferInstance>(uniform);
-			assert(uniform_buffer != nullptr);
-
-			descriptor_set.mBuffers.push_back(uniform_buffer->getValueBuffer().getBufferData());
-
-			VkDescriptorBufferInfo& bufferInfo = descriptor_buffers[ubo_index];
-			bufferInfo.buffer = uniform_buffer->getValueBuffer().getBuffer();
-			bufferInfo.offset = 0;
-			bufferInfo.range = VK_WHOLE_SIZE;
-
-			VkWriteDescriptorSet& ubo_descriptor = hbo_descriptors[ubo_index];
-			ubo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			ubo_descriptor.dstSet = descriptor_set.mSet;
-			ubo_descriptor.dstBinding = hbo_declaration.mBinding;
-			ubo_descriptor.dstArrayElement = 0;
-			ubo_descriptor.descriptorType = getDescriptorType(hbo_declaration.mType);
-			ubo_descriptor.descriptorCount = 1;
-			ubo_descriptor.pBufferInfo = &bufferInfo;
-		}
-
-		vkUpdateDescriptorSets(getDevice(), hbo_descriptors.size(), hbo_descriptors.data(), 0, nullptr);
-
-		auto inserted = mHandleDescriptorSets.insert({ layout, std::move(descriptor_set) });
-		return inserted.first->second;
 	}
 
 

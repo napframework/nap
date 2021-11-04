@@ -8,8 +8,11 @@
 #include "gpubuffer.h"
 #include "uniformdeclarations.h"
 #include "vulkan/vulkan_core.h"
+#include "mathutils.h"
+#include "bufferinitstrategy.h"
 
 // External Includes
+#include <nap/resourceptr.h>
 #include <stdint.h>
 #include <glm/glm.hpp>
 
@@ -42,7 +45,7 @@ namespace nap
 	/**
 	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
 	 */
-	template<class T>
+	template<typename T>
 	class NAPAPI TypedGPUValueBuffer : public GPUValueBuffer
 	{
 		RTTI_ENABLE(GPUValueBuffer)
@@ -78,9 +81,14 @@ namespace nap
 				return false;
 
 			mElementSize = sizeof(T);
+
 			std::vector<T> staging_buffer;
-			staging_buffer.resize(mCount);
-			return setDataInternal(static_cast<void*>(staging_buffer.data()), mElementSize * mCount, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
+			if (mBufferInitStrategy != nullptr)
+				mBufferInitStrategy->initBuffer(mCount, staging_buffer, errorState);
+			else
+				staging_buffer.resize(mCount, {});
+
+			return setDataInternal(staging_buffer.data(), staging_buffer.size(), static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
 		}
 
 		/**
@@ -101,7 +109,8 @@ namespace nap
 		 */
 		virtual uint32 getSize() const override { return mCount * mElementSize; };
 
-		uint32 mCount = 0;										///< Property 'Count'
+		ResourcePtr<TypedValueBufferInitStrategy<T>>		mBufferInitStrategy;	///< Property 'InitStrategy'
+		uint32												mCount = 0;				///< Property 'Count'
 
 	private:
 		int	mElementSize = -1;

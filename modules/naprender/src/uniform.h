@@ -18,44 +18,6 @@ namespace nap
 
 	using UniformCreatedCallback = std::function<void()>;
 
-
-	/**
-	 * Access key and usage mode of a uniform struct. Dictates the usage of all child uniforms.
-	 * Uniform usage directly maps to the descriptor set binding index in the shader
-	 */
-	enum class EUniformSetKey : int
-	{
-		DynamicWrite = 0,	// DynamicWrite: Update uniform data each frame
-		Static = 1,			// Static: Update uniform data once on descriptorset update
-		Handle = 2,			// Handle: Bring Your Own Resources. Use for pre-initialized data such as GPU buffers
-		None = -1			// None: Invalid usage
-	};
-
-
-	/**
-	 * Sets outSet to the corresponding Uniform set enum type if supported
-	 * @param set the input uniform set index
-	 * @return the output uniform set enum type
-	 */
-	static nap::EUniformSetKey getUniformSetKey(int set)
-	{
-		if (set == static_cast<int>(nap::EUniformSetKey::DynamicWrite))
-			return nap::EUniformSetKey::DynamicWrite;
-
-		else if (set == static_cast<int>(nap::EUniformSetKey::Static))
-			return nap::EUniformSetKey::Static;
-
-		else if (set == static_cast<int>(nap::EUniformSetKey::Handle))
-			return nap::EUniformSetKey::Handle;
-
-		// If this assert is triggered, an unsupported uniform set index was given
-		assert(false);
-
-		// Return none
-		return nap::EUniformSetKey::None;
-	}
-
-
 	/**
 	 * Shader uniform resource base class.
 	 */
@@ -98,7 +60,6 @@ namespace nap
 
 	public:
 		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
-		EUniformSetKey mSet;	///< Usage of the uniform
 	};
 	
 

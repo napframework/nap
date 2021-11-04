@@ -7,9 +7,7 @@
 #include "renderservice.h"
 
 // External Includes
-#include "vulkan/vulkan.h"
 #include <nap/core.h>
-#include <assert.h>
 
 RTTI_DEFINE_BASE(nap::GPUValueBuffer)
 
@@ -18,6 +16,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUIntBuffer)
 	RTTI_PROPERTY("Count", &nap::GPUIntBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUIntBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferObjectType", &nap::GPUIntBuffer::mType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InitStrategy", &nap::GPUIntBuffer::mBufferInitStrategy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUFloatBuffer)
@@ -25,6 +24,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUFloatBuffer)
 	RTTI_PROPERTY("Count", &nap::GPUFloatBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUFloatBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferObjectType", &nap::GPUFloatBuffer::mType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InitStrategy", &nap::GPUFloatBuffer::mBufferInitStrategy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUVec2Buffer)
@@ -32,6 +32,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUVec2Buffer)
 	RTTI_PROPERTY("Count", &nap::GPUVec2Buffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUVec2Buffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferObjectType", &nap::GPUVec2Buffer::mType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InitStrategy", &nap::GPUVec2Buffer::mBufferInitStrategy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUVec3Buffer)
@@ -39,6 +40,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUVec3Buffer)
 	RTTI_PROPERTY("Count", &nap::GPUVec3Buffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUVec3Buffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferObjectType", &nap::GPUVec3Buffer::mType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InitStrategy", &nap::GPUVec3Buffer::mBufferInitStrategy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUVec4Buffer)
@@ -46,6 +48,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUVec4Buffer)
 	RTTI_PROPERTY("Count", &nap::GPUVec4Buffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUVec4Buffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferObjectType", &nap::GPUVec4Buffer::mType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InitStrategy", &nap::GPUVec4Buffer::mBufferInitStrategy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUMat4Buffer)
@@ -53,4 +56,5 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUMat4Buffer)
 	RTTI_PROPERTY("Count", &nap::GPUMat4Buffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUMat4Buffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BufferObjectType", &nap::GPUMat4Buffer::mType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InitStrategy", &nap::GPUMat4Buffer::mBufferInitStrategy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

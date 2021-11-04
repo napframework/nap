@@ -53,8 +53,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
-	UniformStructDeclaration::UniformStructDeclaration(const std::string& name, int offset, int size) :
-		UniformDeclaration(name, offset, size)
+	UniformStructDeclaration::UniformStructDeclaration(const std::string& name, EBufferObjectType type, int offset, int size) :
+		UniformDeclaration(name, offset, size),
+		mBufferObjectType(type)
 	{
 	}
 
@@ -76,7 +77,8 @@ namespace nap
 
 	UniformStructDeclaration::UniformStructDeclaration(UniformStructDeclaration&& inRHS) :
 		UniformDeclaration(std::move(inRHS)),
-		mMembers(std::move(inRHS.mMembers))
+		mMembers(std::move(inRHS.mMembers)),
+		mBufferObjectType(std::move(inRHS.mBufferObjectType))
 	{
 	}
 
@@ -84,6 +86,7 @@ namespace nap
 	UniformStructDeclaration& UniformStructDeclaration::operator=(UniformStructDeclaration&& inRHS)
 	{
 		mMembers = std::move(inRHS.mMembers);
+		mBufferObjectType = std::move(inRHS.mBufferObjectType);
 		UniformDeclaration::operator=(inRHS);
 		return *this;
 	}
@@ -114,11 +117,9 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(const std::string& name, int binding, int set, VkShaderStageFlagBits inStage, EBufferObjectType type, int size) :
-		UniformStructDeclaration(name, 0, size),
+	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EBufferObjectType type, int size) :
+		UniformStructDeclaration(name, type, 0, size),
 		mBinding(binding),
-		mSet(set),
-		mType(type),
 		mStage(inStage)
 	{
 	}
@@ -127,8 +128,6 @@ namespace nap
 	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS) :
 		UniformStructDeclaration(std::move(inRHS)),
 		mBinding(inRHS.mBinding),
-		mSet(inRHS.mSet),
-		mType(inRHS.mType),
 		mStage(inRHS.mStage)
 	{
 	}
@@ -137,17 +136,9 @@ namespace nap
 	UniformBufferObjectDeclaration& UniformBufferObjectDeclaration::operator=(UniformBufferObjectDeclaration&& inRHS)
 	{
 		mBinding = inRHS.mBinding;
-		mSet = inRHS.mSet;
-		mType = inRHS.mType;
 		mStage = inRHS.mStage;
 		UniformStructDeclaration::operator=(std::move(inRHS));
 
 		return *this;
-	}
-
-
-	EUniformSetKey UniformBufferObjectDeclaration::getUsage() const
-	{
-		return getUniformSetKey(mSet);
 	}
 }

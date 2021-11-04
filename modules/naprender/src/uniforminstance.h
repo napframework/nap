@@ -19,8 +19,12 @@ namespace nap
 	// Forward Declares
 	class Texture2D;
 	class UniformInstance;
+	class UniformValueBufferInstance;
 
 	using UniformCreatedCallback = std::function<void()>;
+
+	// Called when the bound buffer resource changes
+	using UniformValueBufferChangedCallback = std::function<void(UniformValueBufferInstance&)>;
 
 	/**
 	 * Instantiated version of a nap::Uniform.
@@ -379,7 +383,7 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Uniform Value Buffer
+	// UniformValueBufferInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
@@ -403,8 +407,21 @@ namespace nap
 		 */
 		virtual const GPUValueBuffer& getValueBuffer() const = 0;
 
+		/**
+		 * TODO: Too specific. Handle instances should be decoupled from uniforms. New descriptor type StorageUniform
+		 */
+		void setValueBufferChangedCallback(const UniformValueBufferChangedCallback& valueBufferChangedCallback) const { mValueBufferChangedCallback = valueBufferChangedCallback; }
+
 	protected:
+		/**
+		 * Called when the buffer changes
+		 */
+		void raiseChanged() { if (mValueBufferChangedCallback) mValueBufferChangedCallback(*this); }
+
 		const HandleDeclaration* mDeclaration;
+
+	private:
+		mutable UniformValueBufferChangedCallback		mValueBufferChangedCallback;
 	};
 
 
@@ -426,6 +443,12 @@ namespace nap
 		 * @param resource resource to copy data from.
 		 */
 		void set(const TypedUniformValueBuffer<T>& resource) { mBuffer = resource.mBuffer; }
+
+		 /**
+		  * Binds a new buffer to the uniform instance
+		  * @param buffer new buffer to bind
+		  */
+		void setValueBuffer(TypedGPUValueBuffer<T>& buffer);
 
 		/**
 		 * @return total number of elements in array
@@ -547,5 +570,13 @@ namespace nap
 				dest += mDeclaration->mStride;
 			}
 		}
+	}
+
+	template<class T>
+	void nap::TypedUniformValueBufferInstance<T>::setValueBuffer(TypedGPUValueBuffer<T>& buffer)
+	{
+		assert(buffer.mSize == mDeclaration->mSize);
+		mBuffer = &buffer;
+		raiseChanged();
 	}
 }

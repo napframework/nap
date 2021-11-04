@@ -47,8 +47,17 @@ namespace nap
 	{
 		friend class RenderService;
 	public:
+		// Default destructor
+		virtual ~BaseGPUBuffer() = default;
+
+		/**
+		 * 
+		 */
 		virtual void upload(VkCommandBuffer commandBuffer) = 0;
 
+		/*
+		 *
+		 */
 		virtual VkBuffer getBuffer() const = 0;
 	};
 

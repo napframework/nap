@@ -590,6 +590,15 @@ namespace nap
 		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
 
+		VkSemaphoreCreateInfo semaphoreInfo = {};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		mRenderFinishedSemaphoresCompute.resize(mRenderService->getMaxFramesInFlight());
+		for (size_t i = 0; i < mRenderService->getMaxFramesInFlight(); i++)
+		{
+			if (!errorState.check(vkCreateSemaphore(mRenderService->getDevice(), &semaphoreInfo, nullptr, &mRenderFinishedSemaphoresCompute[i]) == VK_SUCCESS, "Failed to create sync objects"))
+				return false;
+		}
+
 		// Add window to render service
 		if (!mRenderService->addWindow(*this, errorState))
 			return false;
@@ -787,15 +796,8 @@ namespace nap
 
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
-		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame] };
-		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-		for (const auto& semaphore_wait_info : mRenderService->mSemaphoreWaitList[current_frame])
-		{
-			wait_semaphores.emplace_back(semaphore_wait_info.mSemaphore);
-			wait_stages.emplace_back(semaphore_wait_info.mFlags);
-		}
-		mRenderService->mSemaphoreWaitList[current_frame].clear();
+		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame], mRenderService->mComputeFinishedSemaphores[current_frame] };
+		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 
 		submit_info.waitSemaphoreCount = wait_semaphores.size();
 		submit_info.pWaitSemaphores = wait_semaphores.data();
@@ -806,9 +808,12 @@ namespace nap
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
-		submit_info.signalSemaphoreCount = 1;
+		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame], mRenderFinishedSemaphoresCompute[current_frame] };
+		submit_info.signalSemaphoreCount = 2;
 		submit_info.pSignalSemaphores = signalSemaphores;
+
+		// TEST
+		mRenderService->pushComputeDependency(mRenderFinishedSemaphoresCompute[current_frame]);
 		
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);

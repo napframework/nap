@@ -20,9 +20,7 @@ namespace nap
 	class Material;
 	class Renderer;
 	struct DescriptorSet;
-	class BaseDescriptorSetCache;
 	class DescriptorSetCache;
-	class StaticDescriptorSetCache;
 
 	/**
 	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
@@ -67,7 +65,23 @@ namespace nap
 		 * @param name: the name of the uniform struct (ubo) as declared in the shader.
 		 * @return uniform that was found or created, nullptr if not available.
 		 */
-		virtual UniformStructInstance* getOrCreateUniform(const std::string& name) = 0;
+		virtual UniformStructInstance* getOrCreateUniform(const std::string& name);
+
+		/**
+		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
+		 * This means that the sampler returned is only applicable to this instance.
+		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
+		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
+		 *
+		 * ~~~~~{.cpp}
+		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>("inTexture");
+		 * ~~~~~
+		 *
+		 * @param name: the name of the sampler declared in the shader.
+		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 */
+		template<class T>
+		T* getOrCreateSampler(const std::string& name);
 
 		/**
 		 * Gets or creates a nap::SamplerInstance for this material instance.
@@ -78,7 +92,22 @@ namespace nap
 		 * @param name: the name of the sampler declared in the shader.
 		 * @return nap::SamplerInstance of type T, nullptr if not available.
 		 */
-		virtual SamplerInstance* getOrCreateSampler(const std::string& name) = 0;
+		SamplerInstance* getOrCreateSampler(const std::string& name) { return getOrCreateSamplerInternal(name); }
+
+		/**
+		 * @return base material that this instance is overriding
+		 */
+		virtual BaseMaterial* getBaseMaterial() = 0;
+
+		/**
+		 * @return base material that this instance is overriding
+		 */
+		virtual const BaseMaterial* getBaseMaterial() const = 0;
+
+		/**
+		 * @return base material instance resource
+		 */
+		virtual const BaseMaterialInstanceResource* getResource() const = 0;
 
 		/**
 		 * TODO: Currently keeping for backwards compatibility. The new update(std::vector<VkDescriptorSet>& outDescriptorSets) is recommended.
@@ -93,39 +122,38 @@ namespace nap
 		 *
 		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
 		 */
-		virtual VkDescriptorSet update() = 0;
-
-		virtual bool update(std::vector<VkDescriptorSet>& outDescriptorSets) = 0;
+		virtual VkDescriptorSet update();
 		
 	protected:
 		friend class RenderableMesh;	// For responding to pipeline state events
 
-		bool initInternal(RenderService& renderService, const BaseMaterialInstanceResource& resource, BaseMaterial& material, const BaseShader& shader, utility::ErrorState& errorState);
-
-		VkDescriptorSet updateInternal();
-		bool updateInternal(std::vector<VkDescriptorSet>& outDescriptorSets);
+		bool initInternal(RenderService& renderService, utility::ErrorState& errorState);
 
 		void onUniformCreated();
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
-		void rebuildUBO(BaseMaterial& material, UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
-		void rebuildHBO(BaseMaterial& material, HandleBufferObject& hbo, UniformStructInstance* overrideStruct);
+		void onUniformHandleChanged(int handleBufferIndex, UniformHandleInstance& handleInstance);
+
+		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
+		void rebuildHBO(HandleBufferObject& hbo, UniformStructInstance* overrideStruct, uint hboIndex);
+
+		void updateUniformHandles(const DescriptorSet& descriptorSet);
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
-		bool initSamplers(const BaseMaterialInstanceResource& resource, BaseMaterial& material, const BaseShader& shader, utility::ErrorState& errorState);
+		bool initSamplers(utility::ErrorState& errorState);
 		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
 
-		UniformStructInstance* getOrCreateUniformInternal(const std::string& name, const BaseShader& shader);
-		SamplerInstance* getOrCreateSamplerInternal(const std::string& name, const BaseShader& shader);
+		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
 
 	protected:
 		VkDevice								mDevice = nullptr;						// Vulkan device
 		RenderService*							mRenderService = nullptr;				// RenderService	
 
-		std::map<nap::EUniformSetKey, BaseDescriptorSetCache*>			mDescriptorSetCaches;		// Cache used to acquire Vulkan DescriptorSets on each update
-		std::map<nap::EUniformSetKey, std::vector<UniformBufferObject>> mUniformBufferObjectMap;	//
+		DescriptorSetCache*						mDescriptorSetCache;					// Cache used to acquire Vulkan DescriptorSets on each update
+		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
 
-		DescriptorSet*							mHandleDescriptorSet = nullptr;
 		std::vector<HandleBufferObject>			mHandleBufferObjects;					// List of all HBO instances
+		std::vector<VkWriteDescriptorSet>		mHandleWriteDescriptorSets;				// List of handle descriptors, used to update Descriptor Sets
+		std::vector<VkDescriptorBufferInfo>		mHandleDescriptors;						// List of storage buffers, used to update Descriptor Sets.
 
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerWriteDescriptors;				// List of sampler images, used to update Descriptor Sets.
@@ -173,6 +201,21 @@ namespace nap
 		const Material& getMaterial() const;
 
 		/**
+		 * @return base material that this instance is overriding
+		 */
+		virtual BaseMaterial* getBaseMaterial() override;
+
+		/**
+		 * @return base material that this instance is overriding
+		 */
+		virtual const BaseMaterial* getBaseMaterial() const override;
+
+		/**
+		 * @return base material instance resource
+		 */
+		virtual const BaseMaterialInstanceResource* getResource() const override;
+
+		/**
 		* @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
 		*/
 		EBlendMode getBlendMode() const;
@@ -197,59 +240,6 @@ namespace nap
 		* @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
 		*/
 		EDepthMode getDepthMode() const;
-
-		/**
-		 * Gets or creates a uniform struct (ubo) for this material instance.
-		 * This means that the uniform returned is only applicable to this instance.
-		 * In order to change a uniform so that it's value is shared among MaterialInstances, use getMaterial().getUniform().
-		 *
-		 * @param name: the name of the uniform struct (ubo) as declared in the shader.
-		 * @return uniform that was found or created, nullptr if not available.
-		 */
-		virtual UniformStructInstance* getOrCreateUniform(const std::string& name) override;
-
-		/**
-		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
-		 * This means that the sampler returned is only applicable to this instance.
-		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
-		 *
-		 * ~~~~~{.cpp}
-		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>("inTexture");
-		 * ~~~~~
-		 *
-		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
-		 */
-		template<class T>
-		T* getOrCreateSampler(const std::string& name);
-
-		/**
-		 * Gets or creates a nap::SamplerInstance for this material instance.
-		 * This means that the sampler returned is only applicable to this instance.
-		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
-		 *
-		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
-		 */
-		virtual SamplerInstance* getOrCreateSampler(const std::string& name) override { return getOrCreateSamplerInternal(name, getMaterial().getShader()); };
-
-		/**
-		 * This needs to be called before each draw. It will push the current uniform and sampler data into memory
-		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets
-		 * before the Vulkan draw call is issued.
-		 *
-		 * ~~~~~{.cpp}
-		 *	VkDescriptorSet descriptor_set = mat_instance.update();
-		 *	vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
-		 * ~~~~~
-		 *
-		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
-		 */
-		virtual VkDescriptorSet update() override;
-
-		virtual bool update(std::vector<VkDescriptorSet>& outDescriptorSets) override;
 
 	private:
 		MaterialInstanceResource*				mResource;								// Resource this instance is associated with
@@ -296,71 +286,27 @@ namespace nap
 		const ComputeMaterial& getComputeMaterial() const;
 
 		/**
-		 * Gets or creates a uniform struct (ubo) for this material instance.
-		 * This means that the uniform returned is only applicable to this instance.
-		 * In order to change a uniform so that it's value is shared among MaterialInstances, use getMaterial().getUniform().
-		 *
-		 * @param name: the name of the uniform struct (ubo) as declared in the shader.
-		 * @return uniform that was found or created, nullptr if not available.
+		 * @return base material that this instance is overriding
 		 */
-		virtual UniformStructInstance* getOrCreateUniform(const std::string& name) override;
+		virtual BaseMaterial* getBaseMaterial() override;
 
 		/**
-		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
-		 * This means that the sampler returned is only applicable to this instance.
-		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
-		 *
-		 * ~~~~~{.cpp}
-		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>("inTexture");
-		 * ~~~~~
-		 *
-		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 * @return base material that this instance is overriding
 		 */
-		template<class T>
-		T* getOrCreateSampler(const std::string& name);
+		virtual const BaseMaterial* getBaseMaterial() const override;
 
 		/**
-		 * Gets or creates a nap::SamplerInstance for this material instance.
-		 * This means that the sampler returned is only applicable to this instance.
-		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
-		 *
-		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 * @return base material instance resource
 		 */
-		virtual SamplerInstance* getOrCreateSampler(const std::string& name) override { return getOrCreateSamplerInternal(name, getComputeMaterial().getShader()); };
-
-		/**
-		 * This needs to be called before each draw. It will push the current uniform and sampler data into memory
-		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets
-		 * before the Vulkan draw call is issued.
-		 *
-		 * ~~~~~{.cpp}
-		 *	VkDescriptorSet descriptor_set = mat_instance.update();
-		 *	vkCmdBindDescriptorSets(cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
-		 * ~~~~~
-		 *
-		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
-		 */
-		virtual VkDescriptorSet update() override;
-
-		virtual bool update(std::vector<VkDescriptorSet>& outDescriptorSets) override;
+		virtual const BaseMaterialInstanceResource* getResource() const override;
 
 	private:
 		ComputeMaterialInstanceResource* mResource;								// Resource this instance is associated with
 	};
 	
 	template<class T>
-	T* MaterialInstance::getOrCreateSampler(const std::string& name)
+	T* BaseMaterialInstance::getOrCreateSampler(const std::string& name)
 	{
-		return rtti_cast<T>(getOrCreateSamplerInternal(name, getMaterial().getShader()));
-	}
-
-	template<class T>
-	T* ComputeMaterialInstance::getOrCreateSampler(const std::string& name)
-	{
-		return rtti_cast<T>(getOrCreateSamplerInternal(name, getComputeMaterial().getShader()));
+		return rtti_cast<T>(getOrCreateSamplerInternal(name));
 	}
 }

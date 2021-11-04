@@ -18,17 +18,6 @@ namespace nap
 	class ParticleMesh;
 
 	/**
-	 * Structure describing the runtime state of a spawned particle
-	 */
-	struct Particle
-	{
-		Particle() {};
-		glm::vec4		mPosition;					///< Current position
-		glm::vec4		mVelocity;					///< Current velocity
-		glm::vec4		mRotation;
-	};
-
-	/**
 	 * Component that emits a single set of particles.
 	 * Internally this component manages a particle buffer, ie: it creates, removes and updates particles
 	 * This object also constructs a mesh based on the current state of the particle simulation. 
@@ -89,11 +78,7 @@ namespace nap
 	private:
 		RenderService*						mRenderService = nullptr;
 
-		UniformVec4ArrayInstance*			mPositionStorageUniform = nullptr;
-		UniformVec4ArrayInstance*			mVelocityStorageUniform = nullptr;
-		UniformVec4ArrayInstance*			mRotationStorageUniform = nullptr;
 		UniformVec4BufferInstance*			mVertexBufferUniform = nullptr;
-
 		UniformIntInstance*					mParticleCountUniform = nullptr;
 		UniformFloatInstance*				mDeltaTimeUniform = nullptr;
 		UniformFloatInstance*				mElapsedTimeUniform = nullptr;
@@ -102,12 +87,9 @@ namespace nap
 		UniformFloatInstance*				mRotationSpeedUniform = nullptr;
 		UniformFloatInstance*				mParticleSizeUniform = nullptr;
 
-		std::vector<Particle>				mParticles;
-		double								mElapsedTime = 0.0;
-
 		std::unique_ptr<ParticleMesh>		mParticleMesh;
 		std::unique_ptr<ComputeInstance>	mComputeInstance;
 
-		const VkBuffer* mBufferPtr = nullptr;
+		double								mElapsedTime = 0.0;
 	};
 }

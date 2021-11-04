@@ -447,7 +447,7 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 }
 
 
-static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const nap::EUniformSetKey key, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
+static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
 {
 	assert(type.basetype == spirv_cross::SPIRType::Struct);
 
@@ -471,9 +471,6 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 
 			if (member_type.basetype == spirv_cross::SPIRType::Struct)
 			{
-				if (!errorState.check(key != nap::EUniformSetKey::Handle, nap::utility::stringFormat("Nested structs or single values are not supported for Uniform set key 'Handle' (%d)", nap::EUniformSetKey::Handle).c_str()))
-					return false;
-
 				size_t stride = compiler.type_struct_member_array_stride(type, index);
 				size_t struct_size = compiler.get_declared_struct_size(member_type);
 
@@ -483,8 +480,8 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 				{
 					std::string array_path = nap::utility::stringFormat("%s[%d]", full_path.c_str(), array_index);
 
-					std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, absoluteOffset, struct_size);
-					if (!addUniformsRecursive(*struct_declaration, compiler, key, member_type, absoluteOffset, array_path, errorState))
+					std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
+					if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, errorState))
 						return false;
 
 					array_declaration->mElements.emplace_back(std::move(struct_declaration));
@@ -502,29 +499,31 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 				if (!errorState.check(element_type != nap::EUniformValueType::Unknown, "Encountered unknown uniform type"))
 					return false;
 
-				if (key == nap::EUniformSetKey::Handle)
-				{
-					std::unique_ptr<nap::HandleDeclaration> handle_declaration = std::make_unique<nap::HandleDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
-					parentStruct.mMembers.emplace_back(std::move(handle_declaration));
-				}
-				else
+				nap::EBufferObjectType buffer_object_type = parentStruct.mBufferObjectType;
+
+				// Uniform buffer object declarations generate value arrays
+				if (buffer_object_type == nap::EBufferObjectType::Uniform)
 				{
 					std::unique_ptr<nap::UniformValueArrayDeclaration> array_declaration = std::make_unique<nap::UniformValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
 					parentStruct.mMembers.emplace_back(std::move(array_declaration));
+				}
+
+				// Storage buffer object declarations generate buffer handles
+				else if (buffer_object_type == nap::EBufferObjectType::Storage)
+				{
+					std::unique_ptr<nap::HandleDeclaration> handle_declaration = std::make_unique<nap::HandleDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
+					parentStruct.mMembers.emplace_back(std::move(handle_declaration));
 				}
 			}
 		}
 		else
 		{
-			if (!errorState.check(key != nap::EUniformSetKey::Handle, nap::utility::stringFormat("Nested structs or single values are not supported for Uniform set key Handle %d", nap::EUniformSetKey::Handle).c_str()))
-				return false;
-
 			if (member_type.basetype == spirv_cross::SPIRType::Struct)
 			{
 				size_t struct_size = compiler.get_declared_struct_size(member_type);
 
-				std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, absoluteOffset, struct_size);
-				if (!addUniformsRecursive(*struct_declaration, compiler, key, member_type, absoluteOffset, name, errorState))
+				std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
+				if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, errorState))
 					return false;
 
 				parentStruct.mMembers.emplace_back(std::move(struct_declaration));
@@ -555,16 +554,11 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-		int set = static_cast<int>(compiler.get_decoration(resource.id, spv::DecorationDescriptorSet));
-
-		nap::EUniformSetKey key = nap::getUniformSetKey(set);
-		if (!errorState.check(key != nap::EUniformSetKey::None, nap::utility::stringFormat("Unsupported set index %d found", set).c_str()))
-			return false;
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, static_cast<int>(set), inStage, nap::EBufferObjectType::Uniform, struct_size);
+		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Uniform, struct_size);
 
-		if (!addUniformsRecursive(uniform_buffer_object, compiler, key, type, 0, resource.name, errorState))
+		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
 
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
@@ -576,16 +570,11 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-		int set = static_cast<int>(compiler.get_decoration(resource.id, spv::DecorationDescriptorSet));
-
-		nap::EUniformSetKey key = nap::getUniformSetKey(set);
-		if (!errorState.check(key != nap::EUniformSetKey::None, nap::utility::stringFormat("Unsupported set index %d found", set).c_str()))
-			return false;
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, static_cast<int>(set), inStage, nap::EBufferObjectType::Storage, struct_size);
+		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Storage, struct_size);
 
-		if (!addUniformsRecursive(storage_buffer_object, compiler, key, type, 0, resource.name, errorState))
+		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
 
 		uboDeclarations.emplace_back(std::move(storage_buffer_object));
@@ -645,98 +634,47 @@ namespace nap
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
-		mRenderService->queueVulkanObjectDestructor([layouts = mDescriptorSetLayouts](RenderService& renderService)
+		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout](RenderService& renderService)
 		{
-			for (auto it = layouts.begin(); it != layouts.end(); it++)
-			{
-				if (it->second != nullptr)
-					vkDestroyDescriptorSetLayout(renderService.getDevice(), it->second, nullptr);
-			}
+			if (descriptorSetLayout != nullptr)
+				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
 		});
 	}
 
 
-	bool BaseShader::initLayouts(VkDevice device, int numLayouts, nap::utility::ErrorState& errorState)
+	bool BaseShader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
 	{
-		// Initialize layout map
-		rtti::TypeInfo enum_type = RTTI_OF(nap::EUniformSetKey);
-		auto enum_values = enum_type.get_enumeration().get_values();
-
-		for (auto it = enum_values.begin(); it != enum_values.end(); it++)
-			mDescriptorSetLayouts.insert({ it->get_value<EUniformSetKey>(), VK_NULL_HANDLE });
-
-		// Traverse found set indices
-		for (int layout_index = 0; layout_index < numLayouts; layout_index++)
+		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
+		for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
 		{
-			std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
-			for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
-			{
-				if (layout_index != declaration.mSet) continue;
+			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+			uboLayoutBinding.binding = declaration.mBinding;
+			uboLayoutBinding.descriptorCount = 1;
+			uboLayoutBinding.pImmutableSamplers = nullptr;
+			uboLayoutBinding.stageFlags = declaration.mStage;
+			uboLayoutBinding.descriptorType = getDescriptorType(declaration.mBufferObjectType);
 
-				VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-				uboLayoutBinding.binding = declaration.mBinding;
-				uboLayoutBinding.descriptorCount = 1;
-				uboLayoutBinding.pImmutableSamplers = nullptr;
-				uboLayoutBinding.stageFlags = declaration.mStage;
-				uboLayoutBinding.descriptorType = getDescriptorType(declaration.mType);
-
-				descriptor_set_layouts.push_back(uboLayoutBinding);
-			}
-
-			// Store all samplers under set index 0
-			if (layout_index == 0)
-			{
-				for (const SamplerDeclaration& declaration : mSamplerDeclarations)
-				{
-					VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-					samplerLayoutBinding.binding = declaration.mBinding;
-					samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
-					samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					samplerLayoutBinding.pImmutableSamplers = nullptr;
-					samplerLayoutBinding.stageFlags = declaration.mStage;
-
-					descriptor_set_layouts.push_back(samplerLayoutBinding);
-				}
-			}
-
-			VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-			layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
-			layoutInfo.pBindings = descriptor_set_layouts.data();
-
-			auto it = mDescriptorSetLayouts.find(getUniformSetKey(layout_index));
-			if (!errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &it->second) == VK_SUCCESS, "Failed to create descriptor set layout"))
-				return false;
+			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
-		return true;
-	}
-
-
-	VkDescriptorSetLayout BaseShader::findDescriptorSetLayout(nap::EUniformSetKey usage) const
-	{
-		const auto it = mDescriptorSetLayouts.find(usage);
-		if (it != mDescriptorSetLayouts.end())
-			return it->second;
-
-		assert(false);
-		return VK_NULL_HANDLE;
-	}
-
-
-	const std::vector<VkDescriptorSetLayout> BaseShader::getDescriptorSetLayouts() const
-	{
-		std::vector<VkDescriptorSetLayout> layouts;
-		for (auto it = mDescriptorSetLayouts.begin(); it != mDescriptorSetLayouts.end(); it++)
+		for (const SamplerDeclaration& declaration : mSamplerDeclarations)
 		{
-			// Skip invalid set usage type 'None'
-			if (it->first == EUniformSetKey::None)
-				continue;
+			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+			samplerLayoutBinding.binding = declaration.mBinding;
+			samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
+			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			samplerLayoutBinding.pImmutableSamplers = nullptr;
+			samplerLayoutBinding.stageFlags = declaration.mStage;
 
-			layouts.push_back(it->second);
+			descriptor_set_layouts.push_back(samplerLayoutBinding);
 		}
 
-		return layouts;
+		VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = (int)descriptor_set_layouts.size();
+		layoutInfo.pBindings = descriptor_set_layouts.data();
+
+		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
 	}
 
 
@@ -812,12 +750,7 @@ namespace nap
 		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		// Count descriptor set layouts
-		int num_layouts = 1;
-		for (auto& declaration : mUBODeclarations)
-			num_layouts = std::max(num_layouts, static_cast<int>(declaration.mSet) + 1);
-
-		return initLayouts(device, num_layouts, errorState);
+		return initLayout(device, errorState);
 	}
 
 
@@ -878,17 +811,12 @@ namespace nap
 		if (!parseUniforms(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		// Count descriptor set layouts
-		int num_layouts = 1;
-		for (auto& declaration : mUBODeclarations)
-			num_layouts = std::max(num_layouts, static_cast<int>(declaration.mSet) +1);
-
 		// Store local workgroup size
 		mLocalWorkGroupSize[0] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 0);
 		mLocalWorkGroupSize[1] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 1);
 		mLocalWorkGroupSize[2] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 2);
 
-		return initLayouts(device, num_layouts, errorState);
+		return initLayout(device, errorState);
 	}
 
 

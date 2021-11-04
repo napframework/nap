@@ -37,6 +37,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Constants
+	//////////////////////////////////////////////////////////////////////////
+
 	namespace uniform
 	{
 		constexpr const char* uboStruct = "UBO";
@@ -49,11 +53,17 @@ namespace nap
 		constexpr const char* vertexBufferStruct = "VertexBuffer";
 	}
 
+
 	namespace vertexid
 	{
 		constexpr const char* velocity = "Velocity";
 		constexpr const char* id = "Id";
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Static functions and data
+	//////////////////////////////////////////////////////////////////////////
 
 	// Default normalized plane uv's
 	static glm::vec4 plane_uvs[] =
@@ -63,27 +73,6 @@ namespace nap
 		{ 0.0f,	1.0f, 0.0f, 0.0f },
 		{ 1.0f,	1.0f, 0.0f, 0.0f },
 	};
-
-
-	/**
-	 * Randomizes a value based on a deviation from that value
-	 * @param baseValue the default value
-	 * @param variation the amount that value is allowed to deviate from it's original value
-	 */
-	template<typename T>
-	static T particleRand(T baseValue, T variation)
-	{
-		return math::random<T>(baseValue - variation, baseValue + variation);
-	}
-
-	static Particle createParticle(glm::vec4 basePosition, float spread, glm::vec4 baseVelocity, float velocityVariation, float rotationVariation)
-	{
-		Particle particle{};
-		particle.mPosition = particleRand<glm::vec4>(basePosition, { spread, spread, spread, 0.0f});
-		particle.mVelocity = particleRand<glm::vec4>(baseVelocity, { velocityVariation, velocityVariation, velocityVariation, 0.0f });
-		particle.mRotation = particleRand<glm::vec4>(glm::zero<glm::vec4>(), { rotationVariation, rotationVariation, rotationVariation, 1.0f });
-		return particle;
-	}
 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -111,7 +100,6 @@ namespace nap
 
 			// Create the necessary attributes
 			Vec4VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::position);
-			Vec4VertexAttribute& velocity_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::velocity);
 			Vec4VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getUVName(0));
 			IntVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<int>(vertexid::id);
 			MeshShape& shape = mMeshInstance->createShape();
@@ -121,17 +109,17 @@ namespace nap
 			shape.reserveIndices(mNumParticles);
 
 			// Build the mesh based on the amount of particles
-			glm::vec4 zero = glm::zero<glm::vec4>();
+			std::vector<glm::vec4> zero_buffer(num_vertices);
+			position_attribute.setData(zero_buffer.data(), num_vertices);
+
 			uint cur_num_vertices = 0;
 			for (int i = 0; i < mNumParticles; i++)
 			{
-				position_attribute.addData(&zero, 4);
-				velocity_attribute.addData(&zero, 4);
 				uv_attribute.addData(plane_uvs, 4);
 
 				int id = (cur_num_vertices - cur_num_vertices % 4)/4;
 				std::array<int, 4> id_array = { id, id, id, id };
-				id_attribute.addData(&id_array[0], 4);
+				id_attribute.addData(id_array.data(), 4);
 
 				// Indices for 2 triangles, 1 plane
 				unsigned int indices[] =
@@ -188,8 +176,6 @@ namespace nap
 
 		// Initialize particle mesh
 		mParticleMesh->mNumParticles = resource->mNumParticles;
-
-		nap::Logger::info("Creating particle mesh...");
 		if (!errorState.check(mParticleMesh->init(errorState), "Unable to create particle mesh"))
 			return false;
 
@@ -227,31 +213,6 @@ namespace nap
 		UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
 		mVertexBufferUniform = vertex_struct->getOrCreateUniform<UniformVec4BufferInstance>("vertices");
 
-		// Set storage buffer uniforms
-		nap::Logger::info("%s: Building GPU storage buffers...", mID.c_str());
-
-		UniformStructInstance* position_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::positionBufferStruct);
-		UniformStructInstance* velocity_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::velocityBufferStruct);
-		UniformStructInstance* rotation_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::rotationBufferStruct);
-
-		bool uniforms_valid = (position_struct != nullptr && velocity_struct != nullptr && rotation_struct != nullptr /* && vertex_struct != nullptr*/);
-		if (!errorState.check(uniforms_valid, "Missing uniform"))
-			return false;
-
-		// Populate buffers
-		mPositionStorageUniform = position_struct->getOrCreateUniform<UniformVec4ArrayInstance>("positions");
-		mVelocityStorageUniform = velocity_struct->getOrCreateUniform<UniformVec4ArrayInstance>("velocities");
-		mRotationStorageUniform = rotation_struct->getOrCreateUniform<UniformVec4ArrayInstance>("rotations");
-
-		for (int i = 0; i < mParticleMesh->mNumParticles; i++)
-		{
-			Particle p = createParticle(glm::vec4(resource->mPosition, 0.0f), resource->mSpread, glm::vec4(resource->mVelocity, 0.0f), resource->mVelocityVariation, resource->mRotationVariation);
-			mPositionStorageUniform->setValue(p.mPosition, i);
-			mVelocityStorageUniform->setValue(p.mVelocity, i);
-			mRotationStorageUniform->setValue(p.mRotation, i);
-		}
-
-		nap::Logger::info("%s: Done", mID.c_str());
 		return true;
 	}
 
@@ -273,7 +234,10 @@ namespace nap
 
 	bool ParticleVolumeComponentInstance::compute(utility::ErrorState& errorState)
 	{
-		return mComputeInstance->compute(mParticleMesh->mNumParticles, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, errorState);
+		if (!mComputeInstance->compute(mParticleMesh->mNumParticles, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, errorState))
+			return false;
+
+		return true;
 	}
 
 
@@ -298,6 +262,7 @@ namespace nap
 
 		// Acquire new / unique descriptor set before rendering
 		MaterialInstance& mat_instance = getMaterialInstance();
+		VkDescriptorSet descriptor_set = mat_instance.update();
 
 		// Fetch and bind pipeline
 		utility::ErrorState error_state;
@@ -305,16 +270,18 @@ namespace nap
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 		// Bind shader descriptors
-		VkDescriptorSet descriptor_set = mat_instance.update();
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
-		// Get buffer from uniform
-		const GPUVec4Buffer& buffer = mVertexBufferUniform->getTypedValueBuffer();
+		// Get storage buffer from uniform
+		const VkBuffer storage_buffer = mVertexBufferUniform->getTypedValueBuffer().getBuffer();
 
 		// Bind vertex buffers
-		std::vector<VkBuffer> vertex_buffers = { buffer.getBuffer(), mRenderableMesh.getVertexBuffers()[1], mRenderableMesh.getVertexBuffers()[2] };
-		std::vector<VkDeviceSize> offsets = { 0, 0, 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
+		const std::vector<VkBuffer>& vertex_buffers = mRenderableMesh.getVertexBuffers();
+		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+
+		std::vector<VkBuffer> vertex_buffers_override = { storage_buffer, vertex_buffers[1], vertex_buffers[2] };
+		//vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers_override.size(), vertex_buffers_override.data(), offsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();

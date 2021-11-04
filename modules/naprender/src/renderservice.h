@@ -24,7 +24,6 @@ namespace nap
 	class RenderWindow;
 	class RenderService;
 	class SceneService;
-	class BaseDescriptorSetCache;
 	class DescriptorSetCache;
 	class StaticDescriptorSetCache;
 	class DescriptorSetAllocator;
@@ -282,6 +281,7 @@ namespace nap
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
 		using SemaphoreWaitList = std::vector<SemaphoreWaitInfo>;
+		using SemaphoreList = std::vector<VkSemaphore>;
 		
 		/**
 		 * Binds a pipeline and pipeline layout together.
@@ -601,11 +601,7 @@ namespace nap
 		 * @param key
 		 * @return descriptor set cache for the given layout.
 		 */
-		BaseDescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
-
-		BaseDescriptorSetCache& getOrCreateStaticDescriptorSetCache(VkDescriptorSetLayout layout);
-
-		DescriptorSet& getOrCreateHandleDescriptorSet(VkDescriptorSetLayout layout, const std::vector<HandleBufferObject>& handleBufferObjects);
+		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
 
 		/**
 		 * @return main Vulkan allocator
@@ -926,7 +922,7 @@ namespace nap
 		 * Pushes a semaphore - pipelineflags pair onto the wait list for the current of next frame to be rendered.
 		 * This combination will create a synchronization condition for the next queue submission.
 		 */
-		void pushFrameRenderingDependency(const SemaphoreWaitInfo& semaphoreWaitInfo);
+		void pushComputeDependency(VkSemaphore waitSemaphore);
 
 	protected:
 		/**
@@ -1023,7 +1019,7 @@ namespace nap
 		 * @param commandBuffer the command buffer to record the transfer operations in.
 		 * @param transferFunction function that is called at the appropriate time to upload the data.
 		 */
-		void transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction);
+		void transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction, bool upload);
 		
 		/**
 		 * Downloads all previously queued data from the GPU.
@@ -1058,8 +1054,7 @@ namespace nap
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
-		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<BaseDescriptorSetCache>>;
-		using HandleDescriptorSetMap = std::unordered_map<VkDescriptorSetLayout, DescriptorSet>;
+		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<BaseGPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
@@ -1113,10 +1108,10 @@ namespace nap
 		std::vector<Frame>						mFramesInFlight;
 		RenderWindow*							mCurrentRenderWindow = nullptr;
 
-		std::vector<SemaphoreWaitList>			mSemaphoreWaitList;
+		std::vector<SemaphoreList>				mComputeSemaphoreWaitList;
+		std::vector<VkSemaphore>				mComputeFinishedSemaphores;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
-		HandleDescriptorSetMap					mHandleDescriptorSets;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
 
 		VkInstance								mInstance = VK_NULL_HANDLE;

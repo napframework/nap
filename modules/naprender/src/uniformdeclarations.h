@@ -12,8 +12,6 @@
 
 namespace nap
 {
-	enum class EUniformSetKey;
-
 	/**
 	 * All available shader uniform types
 	 */
@@ -100,7 +98,7 @@ namespace nap
 
 	public:
 		UniformValueDeclaration(const std::string& name, int offset, int size, EUniformValueType type);
-		EUniformValueType	mType;											///< Uniform type
+		EUniformValueType mType;											///< Uniform type
 	};
 
 
@@ -111,7 +109,7 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformDeclaration)
 	public:
-		UniformStructDeclaration(const std::string& name, int offset, int size);
+		UniformStructDeclaration(const std::string& name, EBufferObjectType type, int offset, int size);
 		virtual ~UniformStructDeclaration() override;
 
 		UniformStructDeclaration(UniformStructDeclaration&& inRHS);
@@ -126,6 +124,7 @@ namespace nap
 		 */
 		const UniformDeclaration* findMember(const std::string& name) const;
 		std::vector<std::unique_ptr<UniformDeclaration>> mMembers;				///< All shader declarations associated with struct
+		EBufferObjectType mBufferObjectType;									///< Usage: uniform, storage
 	};
 
 
@@ -176,18 +175,14 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformStructDeclaration)
 	public:
-		UniformBufferObjectDeclaration(const std::string& name, int binding, int set, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
+		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
 
 		UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration& operator=(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration(const UniformBufferObjectDeclaration&) = delete;
 		UniformBufferObjectDeclaration& operator=(const UniformBufferObjectDeclaration&) = delete;
 
-		EUniformSetKey getUsage() const;
-
 		int														mBinding;	///< Shader binding identifier
-		int														mSet;		///< Shader set binding identifier
 		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment, compute etc.
-		EBufferObjectType										mType;		///< Usage: uniform, storage
 	};
 }

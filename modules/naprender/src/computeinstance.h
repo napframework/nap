@@ -49,12 +49,6 @@ namespace nap
 		bool init(utility::ErrorState& errorState);
 
 		/**
-		 * Executes the compute shader.
-		 * @return if the compute work was submitted successfully.
-		 */
-		bool compute(uint numInvocations, utility::ErrorState& errorState);
-
-		/**
 		 * Syncs the graphics queue with this compute shader.
 		 * The vertex shader input stage of the current frame will not be executed until the compute shader stage is finished.
 		 * Useful when compute shaders modify resources that are read by graphics shaders.
@@ -75,12 +69,9 @@ namespace nap
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
 	private:
-		bool computeInternal(uint numInvocations, utility::ErrorState& errorState);
-
 		ComputeMaterialInstanceResource*		mComputeMaterialInstanceResource = nullptr;
 		ComputeMaterialInstance					mComputeMaterialInstance;
 
 		RenderService*							mRenderService = nullptr;
-		std::vector<VkSemaphore>				mSemaphores;								///< GPU synchronization primitive
 	};
 }

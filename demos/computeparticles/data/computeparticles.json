@@ -13,6 +13,16 @@
             "ComputeShader": "shaders/update.comp"
         },
         {
+            "Type": "nap::ConstantVec4BufferInitStrategy",
+            "mID": "ZeroInitStrategy",
+            "Constant": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 0.0
+            }
+        },
+        {
             "Type": "nap::Entity",
             "mID": "CameraEntity",
             "Components": [
@@ -123,10 +133,48 @@
                                         "Type": "nap::UniformVec4Buffer",
                                         "mID": "UniformVec4Buffer_72bff4b7",
                                         "Name": "vertices",
-                                        "Buffer": "StorageVec4Buffer_129051e1"
+                                        "Buffer": "GPUVec4Buffer_Vertices"
                                     }
-                                ],
-                                "Set": "Handle"
+                                ]
+                            },
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_5151d271",
+                                "Name": "PositionBuffer",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec4Buffer",
+                                        "mID": "UniformVec4Buffer_ef5fb1ae",
+                                        "Name": "positions",
+                                        "Buffer": "GPUVec4Buffer_Positions"
+                                    }
+                                ]
+                            },
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_03a6c117",
+                                "Name": "VelocityBuffer",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec4Buffer",
+                                        "mID": "UniformVec4Buffer_e8f73a04",
+                                        "Name": "velocities",
+                                        "Buffer": "GPUVec4Buffer_Velocities"
+                                    }
+                                ]
+                            },
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_ef8639ea",
+                                "Name": "RotationBuffer",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec4Buffer",
+                                        "mID": "UniformVec4Buffer_534105bd",
+                                        "Name": "rotations",
+                                        "Buffer": "GPUVec4Buffer_Rotations"
+                                    }
+                                ]
                             }
                         ],
                         "Samplers": []
@@ -176,10 +224,35 @@
         },
         {
             "Type": "nap::GPUVec4Buffer",
-            "mID": "StorageVec4Buffer_129051e1",
+            "mID": "GPUVec4Buffer_Positions",
+            "Count": 1000000,
+            "Usage": "Static",
+            "BufferObjectType": "Storage",
+            "InitStrategy": "PlusMinusOneInitStrategy"
+        },
+        {
+            "Type": "nap::GPUVec4Buffer",
+            "mID": "GPUVec4Buffer_Rotations",
+            "Count": 1000000,
+            "Usage": "Static",
+            "BufferObjectType": "Storage",
+            "InitStrategy": "PlusMinusOneInitStrategy"
+        },
+        {
+            "Type": "nap::GPUVec4Buffer",
+            "mID": "GPUVec4Buffer_Velocities",
+            "Count": 1000000,
+            "Usage": "Static",
+            "BufferObjectType": "Storage",
+            "InitStrategy": "PlusMinusOneInitStrategy"
+        },
+        {
+            "Type": "nap::GPUVec4Buffer",
+            "mID": "GPUVec4Buffer_Vertices",
             "Count": 4000000,
             "Usage": "Static",
-            "BufferObjectType": "Storage"
+            "BufferObjectType": "Storage",
+            "InitStrategy": "ZeroInitStrategy"
         },
         {
             "Type": "nap::ImageFromFile",
@@ -224,10 +297,6 @@
                     "ShaderAttributeID": "in_Position"
                 },
                 {
-                    "MeshAttributeID": "Velocity",
-                    "ShaderAttributeID": "in_Velocity"
-                },
-                {
                     "MeshAttributeID": "UV0",
                     "ShaderAttributeID": "in_UV0"
                 },
@@ -247,8 +316,8 @@
             "Visible": true,
             "SampleShading": true,
             "Title": "ComputeParticlesDemo",
-            "Width": 1920,
-            "Height": 1080,
+            "Width": 1280,
+            "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
@@ -284,6 +353,22 @@
             "mID": "ParticleShader",
             "VertShader": "shaders/particle.vert",
             "FragShader": "shaders/particle.frag"
+        },
+        {
+            "Type": "nap::UniformRandomVec4BufferInitStrategy",
+            "mID": "PlusMinusOneInitStrategy",
+            "Lowerbound": {
+                "x": -1.0,
+                "y": -1.0,
+                "z": -1.0,
+                "w": -1.0
+            },
+            "UpperBound": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0,
+                "w": 1.0
+            }
         }
     ]
 }

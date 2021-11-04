@@ -43,8 +43,8 @@ namespace nap
 			return false;
 
 		// Create sync objects
-		if (!errorState.check(createSyncObjects(mRenderService->getDevice(), mSemaphores, mRenderService->getMaxFramesInFlight(), errorState), "Failed to create sync objects"))
-			return false;
+		//if (!errorState.check(createSyncObjects(mRenderService->getDevice(), mSemaphores, mRenderService->getMaxFramesInFlight(), errorState), "Failed to create sync objects"))
+		//	return false;
 
 		// Initialize compute material instance
 		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, *mComputeMaterialInstanceResource, errorState), "Failed to init compute material instannce"))
@@ -58,31 +58,18 @@ namespace nap
 	{
 		// Signal the compute ready semaphore when we have finished running the compute shader,
 		// only then the vertex input stage may be executed - graphics waits for compute to be finished
-		SemaphoreWaitInfo wait_info = { mSemaphores[mRenderService->getCurrentFrameIndex()], graphicsStageFlags };
-		mRenderService->pushFrameRenderingDependency(wait_info);
+		
+		//SemaphoreWaitInfo wait_info = { mSemaphores[mRenderService->getCurrentFrameIndex()], graphicsStageFlags };
+		//mRenderService->pushFrameRenderingDependency(wait_info);
 
-		return computeInternal(numInvocations, errorState);
-	}
-
-
-	bool ComputeInstance::compute(uint numInvocations, utility::ErrorState& errorState)
-	{
-		return computeInternal(numInvocations, errorState);
-	}
-
-
-	bool ComputeInstance::computeInternal(uint numInvocations, utility::ErrorState& errorState)
-	{
 		// Fetch and bind pipeline
 		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, errorState);
 		vkCmdBindPipeline(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
 
-		std::vector<VkDescriptorSet> descriptor_sets;
-		if (!mComputeMaterialInstance.update(descriptor_sets))
-			return false;
+		VkDescriptorSet descriptor_set = mComputeMaterialInstance.update();
 
 		// Bind shader descriptors
-		vkCmdBindDescriptorSets(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, descriptor_sets.size(), descriptor_sets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
 		uint group_count_x = numInvocations / getLocalWorkGroupSize().x + 1;
@@ -94,13 +81,13 @@ namespace nap
 
 	ComputeInstance::~ComputeInstance()
 	{
-		mRenderService->queueVulkanObjectDestructor([semaphores = mSemaphores](RenderService& renderService)
-		{
-			for (auto& semaphore : semaphores)
-			{
-				if (semaphore != VK_NULL_HANDLE)
-					vkDestroySemaphore(renderService.getDevice(), semaphore, nullptr);
-			}
-		});
+		//mRenderService->queueVulkanObjectDestructor([semaphores = mSemaphores](RenderService& renderService)
+		//{
+		//	for (auto& semaphore : semaphores)
+		//	{
+		//		if (semaphore != VK_NULL_HANDLE)
+		//			vkDestroySemaphore(renderService.getDevice(), semaphore, nullptr);
+		//	}
+		//});
 	}
 } 
