@@ -273,7 +273,6 @@ namespace nap
 	{
 		friend class Texture2D;
 		friend class GPUBuffer;
-		friend class GPUDataBuffer;
 		friend class ComputeInstance;
 		friend class RenderWindow;
 		RTTI_ENABLE(Service)
@@ -1003,7 +1002,7 @@ namespace nap
 
 		/**
 		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
-		 * @param buffer the butter to upload to the GPU.
+		 * @param buffer the buffer to upload to the GPU.
 		 */
 		void requestBufferUpload(BaseGPUBuffer& buffer);
 
@@ -1019,7 +1018,7 @@ namespace nap
 		 * @param commandBuffer the command buffer to record the transfer operations in.
 		 * @param transferFunction function that is called at the appropriate time to upload the data.
 		 */
-		void transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction, bool upload);
+		void transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction);
 		
 		/**
 		 * Downloads all previously queued data from the GPU.

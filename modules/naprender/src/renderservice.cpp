@@ -581,7 +581,7 @@ namespace nap
 
 			// If required, ensure there's a compatible compute queue for this device
 			int selected_compute_queue_idx = -1;
-			//search_mask[selected_graphics_queue_idx] = 0;
+			search_mask[selected_graphics_queue_idx] = 0;
 			if (requiredQueueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
 				// Only search unselected queue families
@@ -1852,7 +1852,7 @@ namespace nap
 		mInitialized = false;
 	}
 	
-	void RenderService::transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction, bool upload)
+	void RenderService::transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction)
 	{
 		vkResetCommandBuffer(commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
@@ -1877,7 +1877,7 @@ namespace nap
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &commandBuffer;
 
-		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
 		//assert(result == VK_SUCCESS);
 	}
 
@@ -1901,7 +1901,7 @@ namespace nap
 			for (BaseGPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
 			mBuffersToUpload.clear();
-		}, true);
+		});
 	}
 
 
@@ -1914,7 +1914,7 @@ namespace nap
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
-		}, false);
+		});
 	}
 
 
@@ -1958,7 +1958,7 @@ namespace nap
 		mIsRenderingFrame = true;
 
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
-		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
+		// that the fence belongs to, and all resources re1ferenced from it, are available for (re)use.
 		// Notice that there are multiple other VkQueueSubmits that are performed by RenderWindow(s), and headless 
 		// rendering. All those submits do not trigger a fence. They are all part of the same frame, so when the frame
 		// fence has been signaled, we can be assured that all resources for the entire frame, including resources used 
@@ -2070,14 +2070,12 @@ namespace nap
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
 
-		nap::Logger::info(utility::stringFormat("beginComputeRecording() -- frame index %d", mCurrentFrameIndex).c_str());
-
 		// Reset command buffer for current frame
 		VkCommandBuffer compute_command_buffer = mFramesInFlight[mCurrentFrameIndex].mComputeCommandBuffer;
 		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
 			return false;
 
-		// Begin command buffer
+		// Begin command buffe
 		VkCommandBufferBeginInfo begin_info = {};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -2120,7 +2118,7 @@ namespace nap
 			submit_info.waitSemaphoreCount = 1;
 		}
 
-		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, nullptr);
+		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, NULL);
  		assert(result == VK_SUCCESS);
 		
 		mComputeSemaphoreWaitList[mCurrentFrameIndex].clear();

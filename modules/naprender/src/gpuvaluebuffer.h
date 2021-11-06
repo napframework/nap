@@ -88,7 +88,7 @@ namespace nap
 			else
 				staging_buffer.resize(mCount, {});
 
-			return setDataInternal(staging_buffer.data(), staging_buffer.size(), static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
+			return setDataInternal(staging_buffer.data(), staging_buffer.size() * mElementSize, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
 		}
 
 		/**

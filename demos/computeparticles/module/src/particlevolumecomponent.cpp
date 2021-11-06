@@ -47,10 +47,8 @@ namespace nap
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
 		constexpr const char* particleCount = "particleCount";
-		constexpr const char* positionBufferStruct = "PositionBuffer";
-		constexpr const char* velocityBufferStruct = "VelocityBuffer";
-		constexpr const char* rotationBufferStruct = "RotationBuffer";
 		constexpr const char* vertexBufferStruct = "VertexBuffer";
+		constexpr const char* vertices = "vertices";
 	}
 
 
@@ -211,7 +209,7 @@ namespace nap
 
 		// Acquire vertex buffer uniform
 		UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
-		mVertexBufferUniform = vertex_struct->getOrCreateUniform<UniformVec4BufferInstance>("vertices");
+		mVertexBufferUniform = vertex_struct->getOrCreateUniform<UniformVec4BufferInstance>(uniform::vertices);
 
 		return true;
 	}
@@ -234,7 +232,7 @@ namespace nap
 
 	bool ParticleVolumeComponentInstance::compute(utility::ErrorState& errorState)
 	{
-		if (!mComputeInstance->compute(mParticleMesh->mNumParticles, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, errorState))
+		if (!mComputeInstance->compute(mParticleMesh->mNumParticles, errorState))
 			return false;
 
 		return true;
@@ -280,7 +278,6 @@ namespace nap
 		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
 
 		std::vector<VkBuffer> vertex_buffers_override = { storage_buffer, vertex_buffers[1], vertex_buffers[2] };
-		//vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers_override.size(), vertex_buffers_override.data(), offsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported

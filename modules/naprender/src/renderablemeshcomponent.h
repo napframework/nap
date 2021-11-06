@@ -170,7 +170,6 @@ namespace nap
 	 	 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
-	 //private:
 		TransformComponentInstance*				mTransformComponent;			///< Cached pointer to transform
 		MaterialInstance						mMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		math::Rect								mClipRect;						///< Clipping rectangle for this instance, in pixel coordinates

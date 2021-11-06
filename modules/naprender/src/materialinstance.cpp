@@ -210,11 +210,40 @@ namespace nap
 
 	void BaseMaterialInstance::onUniformHandleChanged(int handleBuferIndex, UniformHandleInstance& handleInstance)
 	{
-		// TODO: IMPLEMENT
 		// Update the buffer info structure stored in the buffer info handles
-		if (handleInstance.get_type() == RTTI_OF(UniformValueBufferInstance))
+		if (handleInstance.get_type().is_derived_from(RTTI_OF(UniformValueBufferInstance)))
 		{
-
+			VkDescriptorBufferInfo& buffer_info = mHandleDescriptors[handleBuferIndex];
+			if (handleInstance.get_type() == RTTI_OF(UniformIntBufferInstance))
+			{
+				UniformIntBufferInstance* instance = (UniformIntBufferInstance*)(&handleInstance);
+				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+			}
+			else if (handleInstance.get_type() == RTTI_OF(UniformFloatBufferInstance))
+			{
+				UniformFloatBufferInstance* instance = (UniformFloatBufferInstance*)(&handleInstance);
+				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+			}
+			else if (handleInstance.get_type() == RTTI_OF(UniformVec2BufferInstance))
+			{
+				UniformVec2BufferInstance* instance = (UniformVec2BufferInstance*)(&handleInstance);
+				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+			}
+			else if (handleInstance.get_type() == RTTI_OF(UniformVec3BufferInstance))
+			{
+				UniformVec3BufferInstance* instance = (UniformVec3BufferInstance*)(&handleInstance);
+				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+			}
+			else if (handleInstance.get_type() == RTTI_OF(UniformVec4BufferInstance))
+			{
+				UniformVec4BufferInstance* instance = (UniformVec4BufferInstance*)(&handleInstance);
+				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+			}
+			else if (handleInstance.get_type() == RTTI_OF(UniformMat4BufferInstance))
+			{
+				UniformMat4BufferInstance* instance = (UniformMat4BufferInstance*)(&handleInstance);
+				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+			}
 		}
 	}
 

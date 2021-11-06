@@ -33,7 +33,7 @@ namespace nap
 		ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService);
 
 		// Destructor
-		~ComputeInstance();
+		~ComputeInstance() = default;
 
 		// Copy constructor
 		ComputeInstance(const RenderableMesh& rhs) = delete;
@@ -53,10 +53,9 @@ namespace nap
 		 * The vertex shader input stage of the current frame will not be executed until the compute shader stage is finished.
 		 * Useful when compute shaders modify resources that are read by graphics shaders.
 		 * @param numInvocations the number of compute shader invocations
-		 * @param graphicsStageFlags the graphics stage flags signifying the current computation depends on.
 		 * @return if the compute work was submitted to the compute queue successfully.
 		 */
-		bool compute(uint numInvocations, VkPipelineStageFlags graphicsStageFlags, utility::ErrorState& errorState);
+		bool compute(uint numInvocations, utility::ErrorState& errorState);
 
 		/**
 		 * @return current material used when drawing the mesh.

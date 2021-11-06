@@ -41,28 +41,6 @@ namespace nap
 		// Default constructor
 		BufferData() = default;
 
-		// Copy construction not allowed
-		BufferData(const BufferData& other) = default;
-
-		// Copy assignment not allowed
-		BufferData& operator=(const BufferData& other) = default;
-
-		BufferData(BufferData&& rhs) :
-			mAllocation(rhs.mAllocation), mAllocationInfo(rhs.mAllocationInfo)
-		{
-			mBuffer = rhs.mBuffer;
-			rhs.release();
-		}
-
-		BufferData& operator=(BufferData&& rhs)
-		{
-			mAllocation = rhs.mAllocation;
-			mAllocationInfo = rhs.mAllocationInfo;
-			mBuffer = rhs.mBuffer;
-			rhs.release();
-			return *this;
-		}
-
 		/**
 		 * Releases the buffer, resetting all the handles to null.
 		 * Does not delete it.

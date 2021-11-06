@@ -797,7 +797,7 @@ namespace nap
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
 		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame], mRenderService->mComputeFinishedSemaphores[current_frame] };
-		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
+		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT };
 
 		submit_info.waitSemaphoreCount = wait_semaphores.size();
 		submit_info.pWaitSemaphores = wait_semaphores.data();
@@ -808,9 +808,9 @@ namespace nap
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame], mRenderFinishedSemaphoresCompute[current_frame] };
-		submit_info.signalSemaphoreCount = 2;
-		submit_info.pSignalSemaphores = signalSemaphores;
+		std::vector<VkSemaphore> signalSemaphores = { mRenderFinishedSemaphores[current_frame], mRenderFinishedSemaphoresCompute[current_frame] };
+		submit_info.signalSemaphoreCount = signalSemaphores.size();
+		submit_info.pSignalSemaphores = signalSemaphores.data();
 
 		// TEST
 		mRenderService->pushComputeDependency(mRenderFinishedSemaphoresCompute[current_frame]);
@@ -822,11 +822,11 @@ namespace nap
 		VkPresentInfoKHR present_info = {};
 		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		present_info.waitSemaphoreCount = 1;
-		present_info.pWaitSemaphores = signalSemaphores;
+		present_info.pWaitSemaphores = signalSemaphores.data();
 
 		// Add swap chain
 		VkSwapchainKHR swap_chains[] = { mSwapchain };
-		present_info.swapchainCount = 1;
+		present_info.swapchainCount = 1; // Await only the render finished semaphore
 		present_info.pSwapchains = swap_chains;
 		present_info.pImageIndices = &mCurrentImageIndex;
 
