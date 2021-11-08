@@ -13,7 +13,7 @@ namespace nap
 		/**
 		 * TrackAction to tell the GUI to open an insert event segment popup
 		 */
-		class OpenInsertEventSegmentPopup : public TrackAction
+		class NAPAPI OpenInsertEventSegmentPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -31,7 +31,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently in an insert event segment popup
 		 */
-		class InsertingEventSegment : public TrackAction
+		class NAPAPI InsertingEventSegment : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:

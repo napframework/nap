@@ -34,7 +34,7 @@ RTTI_DEFINE_BASE(nap::math::Vec2FCurvePoint);
 RTTI_DEFINE_BASE(nap::math::Vec3FCurvePoint);
 RTTI_DEFINE_BASE(nap::math::Vec4FCurvePoint);
 
-const static float defaultTanOffset = 0.1f;
+static constexpr float defaultTanOffset = 0.1f;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DEFAULT CURVE CONSTRUCTORS
@@ -42,14 +42,16 @@ const static float defaultTanOffset = 0.1f;
 
 
 template<>
-FCurve<float, float>::FCurve() {
+FCurve<float, float>::FCurve()
+{
 	mPoints.emplace_back(FCurvePoint<float, float>({0.0f, 0.0f}, {-defaultTanOffset, 0.0f}, {defaultTanOffset, 0.0f}));
 	mPoints.emplace_back(FCurvePoint<float, float>({1.0f, 1.0f}, {-defaultTanOffset, 0.0f}, {defaultTanOffset, 0.0f}));
 }
 
 
 template<>
-Vec2FCurve::FCurve() {
+Vec2FCurve::FCurve()
+{
 	glm::vec2 nil(0.0f, 0.0f);
 	glm::vec2 one(1.0f, 1.0f);
 	mPoints.emplace_back(FCurvePoint<float, glm::vec2>({0.0f, nil}, {-defaultTanOffset, nil}, {defaultTanOffset, nil}));

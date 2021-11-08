@@ -21,7 +21,7 @@ namespace nap
 	 * Adapter responsible for handling events from an event track and sync them with the main thread using a
 	 * SequencePlayerEventOutput intermediate class.
 	 */
-	class SequencePlayerEventAdapter final : public SequencePlayerAdapter
+	class NAPAPI SequencePlayerEventAdapter final : public SequencePlayerAdapter
 	{
 	public:
 		/**

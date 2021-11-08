@@ -260,15 +260,6 @@ namespace nap
 
 
 		//////////////////////////////////////////////////////////////////////////
-		// explicit MSVC template specialization exports
-		//////////////////////////////////////////////////////////////////////////
-		template class NAPAPI FCurve<float, float>;
-		template class NAPAPI FCurve<float, glm::vec2>;
-		// template class NAPAPI FCurve<float, glm::vec3>;
-		// template class NAPAPI FCurve<float, glm::vec4>;
-
-
-		//////////////////////////////////////////////////////////////////////////
 		// Template Definitions
 		//////////////////////////////////////////////////////////////////////////
 
@@ -438,5 +429,16 @@ namespace nap
 			pb.mValue = ((pb.mValue - pa.mValue) * rb) + pa.mValue;
 			pc.mValue = ((pc.mValue - pd.mValue) * rc) + pd.mValue;
 		}
+
+
+		//////////////////////////////////////////////////////////////////////////
+		// Forward Declarations
+		//////////////////////////////////////////////////////////////////////////
+
+		template<>
+		NAPAPI nap::math::FCurve<float, float>::FCurve();
+
+		template<>
+		NAPAPI nap::math::FCurve<float, glm::vec2>::FCurve();
 	}
 }
