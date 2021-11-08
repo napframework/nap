@@ -274,7 +274,8 @@
                     "ComputeInstance": "ComputeInstance_A",
                     "NumParticles": 1000000,
                     "Size": 0.03999999910593033,
-                    "RotationSpeed": 0.25,
+                    "RotationSpeed": 0.5,
+                    "Velocity": 0.5,
                     "VelocityVariation": 0.75
                 },
                 {

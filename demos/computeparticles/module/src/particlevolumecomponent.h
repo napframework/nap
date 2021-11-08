@@ -34,8 +34,9 @@ namespace nap
 		ResourcePtr<ComputeInstance> mComputeInstance;		///< Property 'ComputeInstance':
 
 		float				mSize = 0.5f;					///< Default size of a particle
-		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
+		float				mVelocity = 0.5f;				///< How fast the particles move
 		float				mVelocityVariation;				///< Deviation from initial velocity
+		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
 		int					mNumParticles = 1024;			///< Number of particles 
 	};
 

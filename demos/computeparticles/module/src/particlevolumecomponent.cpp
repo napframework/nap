@@ -23,6 +23,7 @@ RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Velocity",					&nap::ParticleVolumeComponent::mVelocity,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VelocityVariation",			&nap::ParticleVolumeComponent::mVelocityVariation,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -170,6 +171,8 @@ namespace nap
 		// Get resource
 		ParticleVolumeComponent* resource = getComponent<ParticleVolumeComponent>();
 		mParticleSize = resource->mSize;
+		mVelocityTimeScale = resource->mVelocity;
+		mVelocityVariationScale = resource->mVelocityVariation;
 		mRotationSpeed = resource->mRotationSpeed;
 
 		// Initialize particle mesh

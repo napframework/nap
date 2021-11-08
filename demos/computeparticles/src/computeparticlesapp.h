@@ -78,11 +78,6 @@ namespace nap
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 		
-		/**
-		 *	Called when loop finishes
-		 */
-		int shutdown() override;
-		
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources

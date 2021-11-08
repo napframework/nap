@@ -173,10 +173,4 @@ namespace nap
 		}
 		mInputService->addEvent(std::move(inputEvent));
 	}
-
-	// Cleanup
-	int ComputeParticlesApp::shutdown()
-	{
-		return 0;
-	}
 }
