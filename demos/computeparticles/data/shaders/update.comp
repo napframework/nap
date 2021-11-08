@@ -1,10 +1,31 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
 layout(local_size_x = 8) in;
 
-layout(std430) buffer PositionBuffer 
+// struct Particle
+// {
+// 	vec4 position;
+// 	vec4 velocity;
+// 	vec4 rotation;
+// 	vec4 color;
+// };
+
+// layout(std430) buffer TestParticleBuffer
+// {
+// 	Particle particles[1000];
+// };
+
+layout(std430) buffer PositionBuffer_In
 {
-	vec4 positions[1000000];
+	vec4 inPositions[1000000];
+};
+
+layout(std430) buffer PositionBuffer_Out 
+{
+	vec4 outPositions[1000000];
 };
 
 layout(std430) buffer VelocityBuffer 
@@ -22,7 +43,6 @@ layout(std430) buffer VertexBuffer
 	vec4 vertices[4000000];
 };
 
-
 uniform UBO 
 {
 	float velocityTimeScale;
@@ -33,6 +53,7 @@ uniform UBO
 	float elapsedTime;
 	int particleCount;
 } ubo; 
+
 
 mat4 translate(vec3 d)
 {
@@ -79,7 +100,7 @@ float snoise(vec3 v);
 void main() 
 {
 	// Read
-	vec4 pos = positions[gl_GlobalInvocationID.x];
+	vec4 pos = inPositions[gl_GlobalInvocationID.x];
 	vec4 vel = velocities[gl_GlobalInvocationID.x];
 	vec4 rot = rotations[gl_GlobalInvocationID.x];
 
@@ -111,7 +132,7 @@ void main()
 	}
 
 	// Write
-	positions[gl_GlobalInvocationID.x] = pos;
+	outPositions[gl_GlobalInvocationID.x] = pos;
 }
 
 

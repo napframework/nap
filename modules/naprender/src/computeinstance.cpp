@@ -6,21 +6,30 @@
 #include "computeinstance.h"
 #include "descriptorsetcache.h"
 
+// External includes
+#include <nap/core.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeInstance)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("ComputeMaterialInstance", &nap::ComputeInstance::mComputeMaterialInstanceResource, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+
 namespace nap
 {
-	ComputeInstance::ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService) :
-		mComputeMaterialInstanceResource(&computeMaterialInstanceResource), mRenderService(renderService)
+	ComputeInstance::ComputeInstance(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{}
 
 
 	bool ComputeInstance::init(utility::ErrorState& errorState)
 	{
-		// If compute is enabled, create the compute command buffer
+		// Ensure compute is enabled
 		if (!errorState.check(mRenderService->isComputeAvailable(), "Failed to create compute instance! Compute is unavailable."))
 			return false;
 
 		// Initialize compute material instance
-		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, *mComputeMaterialInstanceResource, errorState), "Failed to init compute material instannce"))
+		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, mComputeMaterialInstanceResource, errorState), "Failed to init compute material instannce"))
 			return false;
 
 		return true;

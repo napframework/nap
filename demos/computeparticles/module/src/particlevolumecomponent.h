@@ -31,15 +31,10 @@ namespace nap
 		DECLARE_COMPONENT(ParticleVolumeComponent, ParticleVolumeComponentInstance)
 
 	public:
-		ComputeMaterialInstanceResource mComputeMaterial;	///< Compute material instance resource
+		ResourcePtr<ComputeInstance> mComputeInstance;		///< Property 'ComputeInstance':
 
-		glm::vec3			mPosition;						///< Particle spawn position
-		float				mRotation = 0.0f;				///< Start rotation
-		float				mRotationVariation = 0.0f;		///< Amount of deviation from initial rotation
-		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
 		float				mSize = 0.5f;					///< Default size of a particle
-		float				mSpread;						///< Amount of velocity spread in x / z axis
-		glm::vec3			mVelocity;						///< Initial velocity
+		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
 		float				mVelocityVariation;				///< Deviation from initial velocity
 		int					mNumParticles = 1024;			///< Number of particles 
 	};
@@ -70,26 +65,16 @@ namespace nap
 
 		bool compute(utility::ErrorState& errorState);
 
-		float mVelocityTimeScale = 5.0f;
-		float mVelocityVariationScale = 1.25f;
+		float mVelocityTimeScale = 0.15f;
+		float mVelocityVariationScale = 0.75f;
 		float mRotationSpeed = 1.0f;
 		float mParticleSize = 1.0f;
 
+		ComputeInstance* mComputeInstance = nullptr;
+
 	private:
 		RenderService*						mRenderService = nullptr;
-
-		UniformVec4BufferInstance*			mVertexBufferUniform = nullptr;
-		UniformIntInstance*					mParticleCountUniform = nullptr;
-		UniformFloatInstance*				mDeltaTimeUniform = nullptr;
-		UniformFloatInstance*				mElapsedTimeUniform = nullptr;
-		UniformFloatInstance*				mVelocityTimeScaleUniform = nullptr;
-		UniformFloatInstance*				mVelocityVariationScaleUniform = nullptr;
-		UniformFloatInstance*				mRotationSpeedUniform = nullptr;
-		UniformFloatInstance*				mParticleSizeUniform = nullptr;
-
 		std::unique_ptr<ParticleMesh>		mParticleMesh;
-		std::unique_ptr<ComputeInstance>	mComputeInstance;
-
 		double								mElapsedTime = 0.0;
 	};
 }

@@ -408,6 +408,11 @@ namespace nap
 		virtual const GPUValueBuffer& getValueBuffer() const = 0;
 
 		/**
+		 * @return if the value buffer is set
+		 */
+		virtual bool hasBuffer() const = 0;
+
+		/**
 		 * TODO: Too specific. Handle instances should be decoupled from uniforms. New descriptor type StorageUniform
 		 */
 		void setValueBufferChangedCallback(const UniformValueBufferChangedCallback& valueBufferChangedCallback) const { mValueBufferChangedCallback = valueBufferChangedCallback; }
@@ -451,19 +456,19 @@ namespace nap
 		void setValueBuffer(TypedGPUValueBuffer<T>& buffer);
 
 		/**
-		 * @return total number of elements in array
-		 */
-		int getNumElements() const { return mBuffer->mCount; }
-
-		/**
 		 * @return buffer
 		 */
-		const TypedGPUValueBuffer<T>& getTypedValueBuffer() const { return *mBuffer; }
+		const TypedGPUValueBuffer<T>& getTypedValueBuffer() const { assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual const GPUValueBuffer& getValueBuffer() const override { return *mBuffer; }
+		virtual const GPUValueBuffer& getValueBuffer() const override { assert(mBuffer != nullptr); return *mBuffer; }
+
+		/**
+		 * @return if the value buffer is set
+		 */
+		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
 	private:
 		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer;

@@ -43,6 +43,8 @@ namespace nap
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
 		mParticleEntity				= scene->findEntity("ParticleVolumeEntity");
 
+		mComputeInstances = mResourceManager->getObjects<ComputeInstance>();
+
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
@@ -76,9 +78,9 @@ namespace nap
 
 		auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
 
-		ImGui::SliderFloat("Velocity Time Scale", &volume.mVelocityTimeScale, 0.0, 10.0f);
-		ImGui::SliderFloat("Velocity Variation Scale", &volume.mVelocityVariationScale, 0.0, 10.0f);
-		ImGui::SliderFloat("Rotation Speed", &volume.mRotationSpeed, 0.0, 50.0f);
+		ImGui::SliderFloat("Velocity Time Scale", &volume.mVelocityTimeScale, 0.0, 1.0f);
+		ImGui::SliderFloat("Velocity Variation Scale", &volume.mVelocityVariationScale, 0.0, 1.0f);
+		ImGui::SliderFloat("Rotation Speed", &volume.mRotationSpeed, 0.0, 5.0f);
 		ImGui::SliderFloat("Particle Size", &volume.mParticleSize, 0.0, 1.0f);
 		ImGui::End();
 	}
@@ -100,6 +102,8 @@ namespace nap
 		{
 			utility::ErrorState error_state;
 			auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
+
+			volume.mComputeInstance = mComputeInstances[mComputeInstanceIndex].get();
 			volume.compute(error_state);
 
 			mRenderService->endComputeRecording();
@@ -128,6 +132,9 @@ namespace nap
 
 		// Proceed to next frame
 		mRenderService->endFrame();
+
+		// Update compute instance index
+		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
 	}
 	
 

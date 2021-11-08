@@ -1,6 +1,156 @@
 {
     "Objects": [
         {
+            "Type": "nap::ComputeInstance",
+            "mID": "ComputeInstance_A",
+            "ComputeMaterialInstance": {
+                "ComputeMaterial": "ComputeMaterial",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_afd17387",
+                        "Name": "VertexBuffer",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_72bff4b7",
+                                "Name": "vertices",
+                                "Buffer": "GPUVec4Buffer_Vertices"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_5151d271",
+                        "Name": "PositionBuffer_In",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_ef5fb1ae",
+                                "Name": "inPositions",
+                                "Buffer": "GPUVec4Buffer_Positions"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_61a34747",
+                        "Name": "PositionBuffer_Out",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_fb894cb7",
+                                "Name": "outPositions",
+                                "Buffer": "GPUVec4Buffer_Positions2"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_03a6c117",
+                        "Name": "VelocityBuffer",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_e8f73a04",
+                                "Name": "velocities",
+                                "Buffer": "GPUVec4Buffer_Velocities"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_ef8639ea",
+                        "Name": "RotationBuffer",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_534105bd",
+                                "Name": "rotations",
+                                "Buffer": "GPUVec4Buffer_Rotations"
+                            }
+                        ]
+                    }
+                ],
+                "Samplers": []
+            }
+        },
+        {
+            "Type": "nap::ComputeInstance",
+            "mID": "ComputeInstance_B",
+            "ComputeMaterialInstance": {
+                "ComputeMaterial": "ComputeMaterial",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_afd17387B",
+                        "Name": "VertexBuffer",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_72bff4b7B",
+                                "Name": "vertices",
+                                "Buffer": "GPUVec4Buffer_Vertices"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_5151d271B",
+                        "Name": "PositionBuffer_In",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_ef5fb1aeB",
+                                "Name": "inPositions",
+                                "Buffer": "GPUVec4Buffer_Positions2"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_61a34747B",
+                        "Name": "PositionBuffer_Out",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_fb894cb7B",
+                                "Name": "outPositions",
+                                "Buffer": "GPUVec4Buffer_Positions"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_03a6c117B",
+                        "Name": "VelocityBuffer",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_e8f73a04B",
+                                "Name": "velocities",
+                                "Buffer": "GPUVec4Buffer_Velocities"
+                            }
+                        ]
+                    },
+                    {
+                        "Type": "nap::UniformStruct",
+                        "mID": "UniformStruct_ef8639eaB",
+                        "Name": "RotationBuffer",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformVec4Buffer",
+                                "mID": "UniformVec4Buffer_534105bdB",
+                                "Name": "rotations",
+                                "Buffer": "GPUVec4Buffer_Rotations"
+                            }
+                        ]
+                    }
+                ],
+                "Samplers": []
+            }
+        },
+        {
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
@@ -121,81 +271,11 @@
                             "y": 0.0
                         }
                     },
-                    "ComputeMaterialInstance": {
-                        "ComputeMaterial": "ComputeMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_afd17387",
-                                "Name": "VertexBuffer",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec4Buffer",
-                                        "mID": "UniformVec4Buffer_72bff4b7",
-                                        "Name": "vertices",
-                                        "Buffer": "GPUVec4Buffer_Vertices"
-                                    }
-                                ]
-                            },
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_5151d271",
-                                "Name": "PositionBuffer",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec4Buffer",
-                                        "mID": "UniformVec4Buffer_ef5fb1ae",
-                                        "Name": "positions",
-                                        "Buffer": "GPUVec4Buffer_Positions"
-                                    }
-                                ]
-                            },
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_03a6c117",
-                                "Name": "VelocityBuffer",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec4Buffer",
-                                        "mID": "UniformVec4Buffer_e8f73a04",
-                                        "Name": "velocities",
-                                        "Buffer": "GPUVec4Buffer_Velocities"
-                                    }
-                                ]
-                            },
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_ef8639ea",
-                                "Name": "RotationBuffer",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec4Buffer",
-                                        "mID": "UniformVec4Buffer_534105bd",
-                                        "Name": "rotations",
-                                        "Buffer": "GPUVec4Buffer_Rotations"
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": []
-                    },
+                    "ComputeInstance": "ComputeInstance_A",
                     "NumParticles": 1000000,
-                    "Position": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "Size": 0.061250001192092898,
-                    "Rotation": 0.0,
-                    "RotationVariation": 1.0,
-                    "RotationSpeed": 5.0,
-                    "Spread": 25.0,
-                    "Velocity": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "VelocityVariation": 0.25
+                    "Size": 0.03999999910593033,
+                    "RotationSpeed": 0.25,
+                    "VelocityVariation": 0.75
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -228,7 +308,15 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": "PlusMinusOneInitStrategy"
+            "InitStrategy": "PositionBufferInitStrategy"
+        },
+        {
+            "Type": "nap::GPUVec4Buffer",
+            "mID": "GPUVec4Buffer_Positions2",
+            "Count": 1000000,
+            "Usage": "Static",
+            "BufferObjectType": "Storage",
+            "InitStrategy": "ZeroInitStrategy"
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -357,6 +445,22 @@
         {
             "Type": "nap::UniformRandomVec4BufferInitStrategy",
             "mID": "PlusMinusOneInitStrategy",
+            "Lowerbound": {
+                "x": -1.0,
+                "y": -1.0,
+                "z": -1.0,
+                "w": -1.0
+            },
+            "UpperBound": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0,
+                "w": 1.0
+            }
+        },
+        {
+            "Type": "nap::UniformRandomVec4BufferInitStrategy",
+            "mID": "PositionBufferInitStrategy",
             "Lowerbound": {
                 "x": -10.0,
                 "y": -10.0,

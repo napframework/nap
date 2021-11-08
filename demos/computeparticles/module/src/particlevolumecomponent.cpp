@@ -19,15 +19,10 @@
 #include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
-	RTTI_PROPERTY("ComputeMaterialInstance",	&nap::ParticleVolumeComponent::mComputeMaterial,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComputeInstance",			&nap::ParticleVolumeComponent::mComputeInstance,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",					&nap::ParticleVolumeComponent::mPosition,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Rotation",					&nap::ParticleVolumeComponent::mRotation,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Spread",						&nap::ParticleVolumeComponent::mSpread,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Velocity",					&nap::ParticleVolumeComponent::mVelocity,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VelocityVariation",			&nap::ParticleVolumeComponent::mVelocityVariation,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -47,6 +42,12 @@ namespace nap
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
 		constexpr const char* particleCount = "particleCount";
+
+		constexpr const char* PositionBuffer_In = "PositionBuffer_In";
+		constexpr const char* inPositions = "inPositions";
+		constexpr const char* PositionBuffer_Out = "PositionBuffer_Out";
+		constexpr const char* outPositions = "outPositions";
+
 		constexpr const char* vertexBufferStruct = "VertexBuffer";
 		constexpr const char* vertices = "vertices";
 	}
@@ -54,7 +55,6 @@ namespace nap
 
 	namespace vertexid
 	{
-		constexpr const char* velocity = "Velocity";
 		constexpr const char* id = "Id";
 	}
 
@@ -185,31 +185,8 @@ namespace nap
 		// Set the particle mesh to be used when drawing
 		setMesh(renderableMesh);
 
-		// Create compute instance
-		mComputeInstance = std::make_unique<ComputeInstance>(resource->mComputeMaterial, mRenderService);
-		if (!errorState.check(mComputeInstance->init(errorState), "Failed to initialize compute instance"))
-			return false;
-
-		// Set uniforms
-		UniformStructInstance* ubo_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
-		if (ubo_struct != nullptr)
-		{
-			// Cache
-			mParticleCountUniform = ubo_struct->getOrCreateUniform<UniformIntInstance>(uniform::particleCount);
-			mElapsedTimeUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime);
-			mDeltaTimeUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::deltaTime);
-			mVelocityTimeScaleUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>("velocityTimeScale");
-			mVelocityVariationScaleUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>("velocityVariationScale");
-			mRotationSpeedUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>("rotationSpeed");
-			mParticleSizeUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>("particleSize");
-
-			// Set
-			mParticleCountUniform->setValue(mParticleMesh->mNumParticles);
-		}
-
-		// Acquire vertex buffer uniform
-		UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
-		mVertexBufferUniform = vertex_struct->getOrCreateUniform<UniformVec4BufferInstance>(uniform::vertices);
+		// Resolve compute instance
+		mComputeInstance = resource->mComputeInstance.get();
 
 		return true;
 	}
@@ -219,22 +196,27 @@ namespace nap
 	{
 		mElapsedTime += deltaTime;
 
-		// Set uniforms
-		mDeltaTimeUniform->setValue(static_cast<float>(deltaTime));
-		mElapsedTimeUniform->setValue(static_cast<float>(mElapsedTime));
-
-		mVelocityTimeScaleUniform->setValue(mVelocityTimeScale);
-		mVelocityVariationScaleUniform->setValue(mVelocityVariationScale);
-		mRotationSpeedUniform->setValue(mRotationSpeed);
-		mParticleSizeUniform->setValue(mParticleSize);
+		// Update uniforms
+		UniformStructInstance* ubo_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		if (ubo_struct != nullptr)
+		{
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::deltaTime)->setValue(static_cast<float>(deltaTime));
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>("velocityTimeScale")->setValue(mVelocityTimeScale);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>("velocityVariationScale")->setValue(mVelocityVariationScale);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>("rotationSpeed")->setValue(mRotationSpeed);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>("particleSize")->setValue(mParticleSize);
+		}
 	}
 
 
 	bool ParticleVolumeComponentInstance::compute(utility::ErrorState& errorState)
 	{
-		if (!mComputeInstance->compute(mParticleMesh->mNumParticles, errorState))
-			return false;
-
+		if (mComputeInstance != nullptr)
+		{
+			if (!mComputeInstance->compute(mParticleMesh->mNumParticles, errorState))
+				return false;
+		}
 		return true;
 	}
 
@@ -271,7 +253,9 @@ namespace nap
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		// Get storage buffer from uniform
-		const VkBuffer storage_buffer = mVertexBufferUniform->getTypedValueBuffer().getBuffer();
+		UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
+		UniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateUniform<UniformVec4BufferInstance>(uniform::vertices);
+		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
 
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertex_buffers = mRenderableMesh.getVertexBuffers();

@@ -10,8 +10,6 @@
 
 // External Includes
 #include <nap/resourceptr.h>
-#include <transformcomponent.h>
-#include <rect.h>
 
 namespace nap
 {
@@ -22,31 +20,23 @@ namespace nap
 	 * - Decide how this instance should be created/used (instance, resource, component?)
 	 * - Finish documentation
 	 */
-	class NAPAPI ComputeInstance final
+	class NAPAPI ComputeInstance : public Resource
 	{
+		RTTI_ENABLE(Resource)
+
 		friend class RenderService;
 	public:
 		/**
-		 * Default constructor
+		 * Constructor
 		 */
-		ComputeInstance() = delete;
-		ComputeInstance(ComputeMaterialInstanceResource& computeMaterialInstanceResource, RenderService* renderService);
-
-		// Destructor
-		~ComputeInstance() = default;
-
-		// Copy constructor
-		ComputeInstance(const RenderableMesh& rhs) = delete;
-
-		// Copy assignment operator
-		ComputeInstance& operator=(const ComputeInstance& rhs) = delete;
+		ComputeInstance(Core& core);
 
 		/**
 		 * Initializes the compute instance.
 		 * @param errorState contains the error if initialization fails
 		 * @return if initialization succeeded.
 		 */
-		bool init(utility::ErrorState& errorState);
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Syncs the graphics queue with this compute shader.
@@ -67,10 +57,11 @@ namespace nap
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
-	private:
-		ComputeMaterialInstanceResource*		mComputeMaterialInstanceResource = nullptr;
-		ComputeMaterialInstance					mComputeMaterialInstance;
 
-		RenderService*							mRenderService = nullptr;
+		ComputeMaterialInstanceResource		mComputeMaterialInstanceResource;	///< Property 'ComputeMaterialInstance' The compute material instance resource
+
+	private:
+		RenderService*						mRenderService = nullptr;
+		ComputeMaterialInstance				mComputeMaterialInstance;
 	};
 }

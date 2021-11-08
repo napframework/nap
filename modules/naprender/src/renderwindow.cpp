@@ -515,6 +515,9 @@ namespace nap
 		for (VkSemaphore semaphore : mRenderFinishedSemaphores)
 			vkDestroySemaphore(mDevice, semaphore, nullptr);
 
+		for (VkSemaphore semaphore : mRenderFinishedSemaphoresCompute)
+			vkDestroySemaphore(mDevice, semaphore, nullptr);
+
 		// Destroy window surface
 		if (mSurface != VK_NULL_HANDLE)
 		{

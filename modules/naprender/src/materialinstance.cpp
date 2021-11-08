@@ -259,7 +259,7 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::rebuildHBO(HandleBufferObject& hbo, UniformStructInstance* overrideStruct, uint hboIndex)
+	bool BaseMaterialInstance::rebuildHBO(HandleBufferObject& hbo, UniformStructInstance* overrideStruct, uint hboIndex, utility::ErrorState& errorState)
 	{
 		hbo.mUniformHandles.clear();
 
@@ -282,12 +282,18 @@ namespace nap
 
 				if (override_array_uniform != nullptr)
 				{
+					if (!errorState.check(override_array_uniform->hasBuffer(), utility::stringFormat("No valid buffer was set in base material %s", getBaseMaterial()->mID.c_str()).c_str()))
+						return false;
+
 					buffer_handle = override_array_uniform->getValueBuffer().getBuffer();
 					hbo.mUniformHandles.push_back(override_array_uniform);
 					override_array_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onUniformHandleChanged, this, (int)hboIndex, std::placeholders::_1));
 				}
 				else
 				{
+					if (!errorState.check(base_array_uniform->hasBuffer(), utility::stringFormat("No valid buffer was set in material override").c_str()))
+						return false;
+
 					buffer_handle = base_array_uniform->getValueBuffer().getBuffer();
 					hbo.mUniformHandles.push_back(base_array_uniform);
 					base_array_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onUniformHandleChanged, this, (int)hboIndex, std::placeholders::_1));
@@ -554,7 +560,8 @@ namespace nap
 			{
 				// Pass 2: gather handles
 				HandleBufferObject hbo(ubo_declaration);
-				rebuildHBO(hbo, override_struct, hbo_index);
+				if (!rebuildHBO(hbo, override_struct, hbo_index, errorState))
+					return false;
 
 				mHandleBufferObjects.emplace_back(std::move(hbo));
 				++hbo_index;

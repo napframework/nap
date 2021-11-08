@@ -134,7 +134,7 @@ namespace nap
 		void onUniformHandleChanged(int handleBufferIndex, UniformHandleInstance& handleInstance);
 
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
-		void rebuildHBO(HandleBufferObject& hbo, UniformStructInstance* overrideStruct, uint hboIndex);
+		bool rebuildHBO(HandleBufferObject& hbo, UniformStructInstance* overrideStruct, uint hboIndex, utility::ErrorState& errorState);
 
 		void updateUniformHandles(const DescriptorSet& descriptorSet);
 
