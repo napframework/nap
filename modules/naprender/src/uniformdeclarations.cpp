@@ -26,9 +26,6 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueArrayDeclaration)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HandleDeclaration)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformBufferObjectDeclaration)
 RTTI_END_CLASS
 
@@ -105,13 +102,6 @@ namespace nap
 		mElementType(elementType),
 		mNumElements(numElements),
 		mStride(stride)
-	{
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-
-	HandleDeclaration::HandleDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements) :
-		UniformDeclaration(name, offset, size), mStride(stride), mElementType(elementType), mNumElements(numElements)
 	{
 	}
 

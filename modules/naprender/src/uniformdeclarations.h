@@ -156,21 +156,6 @@ namespace nap
 	};
 
 
-	/**
-	 * Handle shader declaration base class.
-	 */
-	class HandleDeclaration : public UniformDeclaration
-	{
-		RTTI_ENABLE(UniformDeclaration)
-	public:
-		HandleDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements);
-	
-		EUniformValueType	mElementType;										///< Uniform type
-		int					mNumElements;										///< Total number of elements in list
-		int					mStride;											///< Stride of element in array
-	};
-
-
 	class UniformBufferObjectDeclaration : public UniformStructDeclaration
 	{
 		RTTI_ENABLE(UniformStructDeclaration)
@@ -185,4 +170,6 @@ namespace nap
 		int														mBinding;	///< Shader binding identifier
 		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment, compute etc.
 	};
+
+	using UBODeclarationList = std::vector<nap::UniformBufferObjectDeclaration>;
 }

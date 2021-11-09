@@ -13,7 +13,6 @@
 namespace nap
 {
 	// Forward Declares
-	class Texture2D;
 	class UniformInstance;
 
 	using UniformCreatedCallback = std::function<void()>;

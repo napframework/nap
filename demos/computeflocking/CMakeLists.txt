@@ -5,7 +5,7 @@ if(ANDROID)
     return()
 endif()
 
-project(computeparticles)
+project(computeflocking)
 
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)

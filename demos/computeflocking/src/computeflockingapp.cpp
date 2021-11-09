@@ -2,46 +2,46 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "computeparticlesapp.h"
+#include "computeflockingapp.h"
 
-// External Includes
+ // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
-#include <particlevolumecomponent.h>
+#include <flockingsystemcomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeParticlesApp)
-	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeFlockingApp)
+RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-namespace nap 
+namespace nap
 {
 	/**
 	* Initialize all the resources and store the objects we need later on
 	*/
-	bool ComputeParticlesApp::init(utility::ErrorState& error)
-	{		
+	bool ComputeFlockingApp::init(utility::ErrorState& error)
+	{
 		// Create render service
-		mRenderService	= getCore().getService<RenderService>();		
-		mInputService	= getCore().getService<InputService>();
-		mSceneService	= getCore().getService<SceneService>();
-		mGuiService		= getCore().getService<IMGuiService>();
+		mRenderService = getCore().getService<RenderService>();
+		mInputService = getCore().getService<InputService>();
+		mSceneService = getCore().getService<SceneService>();
+		mGuiService = getCore().getService<IMGuiService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("computeparticles.json", error))
+		if (!mResourceManager->loadFile(getCore().getProjectInfo()->getDataFile(), error))
 		{
 			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;                
+			return false;
 		}
-		
-		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
-		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
-		mCameraEntity				= scene->findEntity("CameraEntity");
-		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
-		mParticleEntity				= scene->findEntity("ParticleVolumeEntity");
+
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window0");
+		mCameraEntity = scene->findEntity("CameraEntity");
+		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
+		mParticleEntity = scene->findEntity("ParticleVolumeEntity");
 
 		mComputeInstances = mResourceManager->getObjects<ComputeInstance>();
 
@@ -49,19 +49,19 @@ namespace nap
 
 		return true;
 	}
-	
-	
+
+
 	/**
-	 * Forward all received input events to the input router. 
+	 * Forward all received input events to the input router.
 	 * The input router is used to filter the input events and to forward them
 	 * to the input components of a set of entities, in this case our first person camera.
 	 *
 	 * We also set up our gui that is drawn at a later stage.
 	 */
-	void ComputeParticlesApp::update(double deltaTime)
+	void ComputeFlockingApp::update(double deltaTime)
 	{
 		// Update compute instance
-		auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
+		auto& volume = mParticleEntity->getComponent<FlockingSystemComponentInstance>();
 		volume.mComputeInstance = mComputeInstances[mComputeInstanceIndex].get();
 
 		// Update input
@@ -88,13 +88,13 @@ namespace nap
 		ImGui::SliderFloat("Particle Size", &volume.mParticleSize, 0.0, 1.0f);
 		ImGui::End();
 	}
-	
-	
+
+
 	/**
 	 * Render all objects to screen at once
 	 * In this case that's only the particle mesh
 	 */
-	void ComputeParticlesApp::render()
+	void ComputeFlockingApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -105,7 +105,7 @@ namespace nap
 		if (mRenderService->beginComputeRecording())
 		{
 			utility::ErrorState error_state;
-			auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
+			auto& volume = mParticleEntity->getComponent<FlockingSystemComponentInstance>();
 			volume.compute(error_state);
 
 			mRenderService->endComputeRecording();
@@ -138,7 +138,7 @@ namespace nap
 		// Update compute instance index
 		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
 	}
-	
+
 
 	/**
 	* Occurs when the event handler receives a window message.
@@ -146,17 +146,17 @@ namespace nap
 	* On the next update the render service automatically processes all window events.
 	* If you want to listen to specific events associated with a window it's best to listen to a window's mWindowEvent signal
 	*/
-	void ComputeParticlesApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void ComputeFlockingApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
-	
-	
+
+
 	/**
 	* Called by the app loop. It's best to forward messages to the input service for further processing later on
 	* In this case we also check if we need to toggle full-screen or exit the running app
 	*/
-	void ComputeParticlesApp::inputMessageReceived(InputEventPtr inputEvent)
+	void ComputeFlockingApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{

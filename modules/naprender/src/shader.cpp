@@ -544,7 +544,7 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 }
 
 
-static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, std::vector<nap::UniformBufferObjectDeclaration>& uboDeclarations, std::vector<nap::SamplerDeclaration>& samplerDeclarations, nap::utility::ErrorState& errorState)
+static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::UBODeclarationList& uboDeclarations, nap::SUBODeclarationList& suboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
@@ -577,7 +577,7 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, errorState))
 			return false;
 
-		uboDeclarations.emplace_back(std::move(storage_buffer_object));
+		suboDeclarations.emplace_back(std::move(storage_buffer_object));
 	}
 
 	// Samplers e.g. 'uniform sampler2D'
@@ -731,7 +731,7 @@ namespace nap
 
 		// Extract vertex shader uniforms & inputs
 		spirv_cross::Compiler vertex_shader_compiler(vertex_shader_spirv.data(), vertex_shader_spirv.size());
-		if (!parseUniforms(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseUniforms(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		for (const spirv_cross::Resource& stage_input : vertex_shader_compiler.get_shader_resources().stage_inputs)
@@ -747,7 +747,7 @@ namespace nap
 
 		// Extract fragment shader uniforms
 		spirv_cross::Compiler fragment_shader_compiler(fragment_shader_spirv.data(), fragment_shader_spirv.size());
-		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		return initLayout(device, errorState);
@@ -808,7 +808,7 @@ namespace nap
 
 		// Extract shader uniforms & inputs
 		spirv_cross::Compiler comp_shader_compiler(comp_shader_spirv.data(), comp_shader_spirv.size());
-		if (!parseUniforms(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseUniforms(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations,mSUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		// Store local workgroup size
