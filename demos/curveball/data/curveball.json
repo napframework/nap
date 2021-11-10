@@ -95,6 +95,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
+                    "Visible": true,
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
@@ -103,6 +104,7 @@
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "InheritFromBlendMode"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -124,6 +126,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_2",
+                    "Visible": true,
                     "Mesh": "SphereMesh",
                     "MaterialInstance": {
                         "Material": "BallMaterial",
@@ -132,6 +135,7 @@
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -256,6 +260,7 @@
             "mID": "PlaneMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -263,6 +268,14 @@
             "Position": {
                 "x": 0.0,
                 "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
             },
             "Rows": 1,
             "Columns": 1
@@ -279,12 +292,15 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.06700000166893006,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",
@@ -321,9 +337,18 @@
             "mID": "SphereMesh",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Radius": 1.0,
             "Rings": 50.0,
-            "Sectors": 50.0
+            "Sectors": 50.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         },
         {
             "Type": "nap::math::FloatFCurve",

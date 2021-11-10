@@ -147,7 +147,28 @@ namespace napkin
 		 * Reimplemented from QStandardItem
 		 */
 		void setData(const QVariant& value, int role) override;
+	};
 
+	/**
+	 * This item allows for editing a color value
+	 */
+	class ColorValueItem : public PropertyPathItem
+	{
+	public:
+		/**
+		 * @param path The path to the property, pointer.
+		 */
+		ColorValueItem(const PropertyPath& path);
+
+		/**
+		 * Reimplemented from QStandardItem
+		 */
+		QVariant data(int role) const override;
+
+		/**
+		 * Reimplemented from QStandardItem
+		 */
+		void setData(const QVariant& value, int role) override;
 	};
 
 	/**

@@ -8,7 +8,7 @@
 
 namespace nap
 {
-    static constexpr int moduleAPIVersion = 1;      ///< Current  module API version
+    inline constexpr int moduleAPIVersion = 1;      ///< Current  module API version
 
 	/**
 	 * Struct used to describe a particular module to the system. Contains the API version that the module was built against, which is used for forwards/backwards compatibility.

@@ -160,8 +160,8 @@ But we're not there yet: we need to tell the audio playback component which file
 - Click on the `arrow` icon next to `Buffer`
 - Select the `AudioFile`
 - Right click on `ChannelRouting` 
-- Select `Add int`
-- Set the new index to `1`
+- Select `Add int` to add the first channel
+- Add a second channel and set its value to `1`
 
 ![](@ref content/napkin_audioplayback.png)
 
@@ -171,8 +171,8 @@ Next we instruct the output component how to route the stereo output of the play
 - Click on the `arrow` icon next to `Input`
 - Select the `PlaybackComponent`
 - Right click on `Routing`
-- Select `Add int`. 
-- Set the new index to `1`
+- Select `Add int` to add the first channel
+- Add a second channel and set its value to `1`
 
 ![](@ref content/napkin_audiooutput.png)
 
@@ -215,7 +215,7 @@ We just initialized a pointer (link) to the audio entity. We can use this pointe
 
 The `update` method is called every frame. The parameter `deltaTime` indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering.
 
-Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to `True`, the file starts playing automatically on startup. Let's add the button to start and stop the playback at runtime. Set `AutoPlay` to `False` in your `app_structure.json`, add the following headers to the top of  your `newprojectapp.cpp`:
+Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to `True`, the file starts playing automatically on startup. Let's add the button to start and stop the playback at runtime. Set `AutoPlay` to `False` in your `objects.json`, add the following headers to the top of  your `newprojectapp.cpp`:
 
 ~~~{cpp}
 #include <audio/component/playbackcomponent.h>

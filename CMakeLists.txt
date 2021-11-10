@@ -33,9 +33,10 @@ target_architecture(ARCH)
 
 include(cmake/qtconfig.cmake)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if(ANDROID)
     # Avoid for Android
 elseif(WIN32)
@@ -65,7 +66,7 @@ elseif(UNIX)
 endif()
 
 if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
 if(NOT ANDROID OR ANDROID_PYTHON)

@@ -337,7 +337,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
     call(WORKING_DIR, [get_cmake_path(), 
                        '-H.', 
                        '-B%s' % BUILD_DIR, 
-                       '-G', 'Visual Studio 14 2015 Win64',
+                       '-G', 'Visual Studio 16 2019',
                        '-DNAP_PACKAGED_BUILD=1',
                        '-DPYBIND11_PYTHON_VERSION=3.5',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),

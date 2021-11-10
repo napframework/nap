@@ -59,7 +59,9 @@ bool LeafFilterProxyModel::isExempt(int sourceRow, const QModelIndex& sourcePare
 	// Run through any exempted indexes
 	for (int col = 0, len=sourceModel()->columnCount(sourceParent); col < len; col++)
 	{
-		const auto sourceIndex = sourceParent.child(sourceRow, col);
+	    const auto sourceIndex = sourceModel()->index(sourceRow, col, sourceParent);
+
+		//const auto sourceIndex = sourceParent.child(sourceRow, col);
 		if (mExemptions.contains(sourceIndex))
 			return true;
 	}

@@ -6,7 +6,7 @@
 
 namespace nap
 {
-	PipelineKey::PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading, ECullMode cullMode) :
+	PipelineKey::PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading, ECullMode cullMode, EPolygonMode polygonMode) :
 		mShader(&shader),
 		mDrawMode(drawMode),
 		mDepthMode(depthMode),
@@ -16,7 +16,8 @@ namespace nap
 		mDepthFormat(depthFormat),
 		mSampleCount(sampleCount),
 		mSampleShading(sampleShading),
-		mCullMode(cullMode)
+		mCullMode(cullMode),
+		mPolygonMode(polygonMode)
 	{ }
 
 
@@ -31,6 +32,7 @@ namespace nap
 			mDepthFormat == rhs.mDepthFormat &&
 			mSampleCount == rhs.mSampleCount &&
 			mSampleShading == rhs.mSampleShading &&
-			mCullMode == rhs.mCullMode;
+			mCullMode == rhs.mCullMode &&
+			mPolygonMode == rhs.mPolygonMode;
 	}
 }

@@ -56,6 +56,7 @@ namespace nap
 
 		std::string		mPath;									///< Property: 'Path' path to the geometry (.fbx, .obj, etc.) file on disk
 		EMeshDataUsage	mUsage = EMeshDataUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		EPolygonMode	mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' Mesh polygon mode (fill, wires, points)
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 		bool			mGenerateNormals = false;				///< Property: 'GenerateNormals' If normals are generated when not present.
 		float			mSmoothingAngle = 60.0f;				///< Property: 'NormalSmoothingAngle' The maximum angle between two normals at the same vertex position to be considered the same. Only used when normals are generated.

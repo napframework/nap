@@ -82,7 +82,7 @@ namespace napkin
 		/**
 		 * QProcess handler
 		 */
-		void onAppFinished(int exitCode);
+		void onAppFinished(int exitCode, QProcess::ExitStatus);
 
 		nap::qt::FileSelector mFileSelector;  // Widget allowing you to select a file
 		QHBoxLayout mLayout;		        // Layout

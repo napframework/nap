@@ -175,13 +175,13 @@ namespace nap
 		 * Sets the window clear color.
 		 * @param color the new clear color
 		 */
-		virtual void setClearColor(const glm::vec4& color) override;
+		virtual void setClearColor(const RGBAColorFloat& color) override;
 
 		/**
 		 * Returns the window clear color.
 		 * @return the window clear color.
 		 */
-		virtual const glm::vec4& getClearColor() const override;
+		virtual const RGBAColorFloat& getClearColor() const override;
 
 		/**
 		 * Sets the position of the window on screen
@@ -258,17 +258,17 @@ namespace nap
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
-		bool					mSampleShading	= true;									///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		int						mWidth			= 512;										///< Property: 'Width' of the window in pixels
-		int						mHeight			= 512;										///< Property: 'Height' of the window in pixels
-		bool					mBorderless		= false;									///< Property: 'Borderless' if the window has any borders
-		bool					mResizable		= true;										///< Property: 'Resizable' if the window is resizable
-		bool					mVisible		= true;										///< Property: 'Visible' if the render window is visible on screen
-		EPresentationMode		mMode			= EPresentationMode::Immediate;				///< Property: 'Mode' the image presentation mode to use
-		std::string				mTitle			= "";										///< Property: 'Title' window title
-		glm::vec4				mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };				///< Property: 'ClearColor' background clear color
-		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;			///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
-		int						mAddedSwapImages = 1;										///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
+		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
+		int						mHeight			= 512;								///< Property: 'Height' of the window in pixels
+		bool					mBorderless		= false;							///< Property: 'Borderless' if the window has any borders
+		bool					mResizable		= true;								///< Property: 'Resizable' if the window is resizable
+		bool					mVisible		= true;								///< Property: 'Visible' if the render window is visible on screen
+		EPresentationMode		mMode			= EPresentationMode::Immediate;		///< Property: 'Mode' the image presentation mode to use
+		std::string				mTitle			= "";								///< Property: 'Title' window title
+		RGBAColorFloat			mClearColor		= { 0.067f, 0.078f, 0.149f, 1.0f };	///< Property: 'ClearColor' background clear color
+		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
+		int						mAddedSwapImages = 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 
 	private:
 		RenderService*					mRenderService	= nullptr;
@@ -292,7 +292,7 @@ namespace nap
 		bool							mSampleShadingEnabled = false;
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
-		bool mRecreateSwapchain								 = false;
+		bool							mRecreateSwapchain = false;
 
 		/**
 		 * Called by the render service. 

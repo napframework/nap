@@ -22,37 +22,54 @@ struct ImGuiContext;
 
 namespace nap
 {
+	namespace gui
+	{
+		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+	}
+
 	// Forward Declares
 	class RenderService;
+	class Display;
 	class GuiWindow;
 	class IMGuiService;
 
 	/**
-	 * IMGUI configuration options
+	 * Configurable palette of ImGUI colors
+	 */
+	struct NAPAPI IMGuiColorPalette
+	{
+		IMGuiColorPalette() = default;
+		RGBColor8 mHighlightColor = { 0xC8, 0x69, 0x69 };		///< Property: 'HighlightColor' Gui highlight color
+		RGBColor8 mBackgroundColor = { 0x2D, 0x2E, 0x42 };		///< Property: 'BackgroundColor' Gui background color
+		RGBColor8 mDarkColor = { 0x11, 0x14, 0x26 };			///< Property: 'DarkColor' Gui dark color
+		RGBColor8 mFront1Color = { 0x52, 0x54, 0x6A };			///< Property: 'FrontColor1' Gui front color 1
+		RGBColor8 mFront2Color = { 0x5D, 0x5E, 0x73 };			///< Property: 'FrontColor2' Gui front color 2
+		RGBColor8 mFront3Color = { 0x8B, 0x8C, 0xA0 };			///< Property: 'FrontColor3' Gui front color 3
+	};
+
+
+	/**
+	 * ImGUI configuration options
 	 */
 	class NAPAPI IMGuiServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		float mFontSize				= 17.0f;							///< Property: 'FontSize' Gui Font Size
-		std::string mFontFile 		= "";								///< Property: 'FontFile' Path to a ttf font file in the data folder.
-																		///< If left empty the default NAP font will be used.
-		RGBColor8 mHighlightColor	= RGBColor8(0xC8, 0x69, 0x69);		///< Property: 'HighlightColor' Gui highlight color
-		RGBColor8 mBackgroundColor	= RGBColor8(0x2D, 0x2E, 0x42);		///< Property: 'BackgroundColor' Gui background color
-		RGBColor8 mDarkColor		= RGBColor8(0x11, 0x14, 0x26);		///< Property: 'DarkColor' Gui dark color
-		RGBColor8 mFront1Color		= RGBColor8(0x52, 0x54, 0x6A);		///< Property: 'FrontColor1' Gui front color 1
-		RGBColor8 mFront2Color		= RGBColor8(0x5D, 0x5E, 0x73);		///< Property: 'FrontColor2' Gui front color 2
-		RGBColor8 mFront3Color		= RGBColor8(0x8B, 0x8C, 0xA0);		///< Property: 'FrontColor3' Gui front color 3
-		virtual rtti::TypeInfo getServiceType() const override			{ return RTTI_OF(IMGuiService); }
+		float mFontSize = 17.0f;								///< Property: 'FontSize' Gui font size
+		float mScale = 1.0f;									///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
+		std::string mFontFile = "";								///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
+		IMGuiColorPalette mColors;								///< Property: 'Colors' Gui colors
+		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
+
 
 	/**
 	 * This service manages the global ImGui state.
 	 * Call draw() inside a window render pass to draw the GUI to screen.
 	 * Call selectWindow() to select the window subsequent ImGUI calls apply to.
 	 * Explicit window selection is only necessary when there is more than 1 window.
-	 * 
+	 *
 	 * Only call selectWindow() on application update, not when rendering the GUI to screen.
 	 * The service automatically creates a new GUI frame before application update.
 	 *
@@ -113,7 +130,7 @@ namespace nap
 		 *		mRenderWindowOne->endRendering();
 		 *		mRenderService->endRecording();
 		 *	}
-		 * 
+		 *
 		 *	// Draw gui window 2
 		 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
 		 *	{
@@ -149,9 +166,33 @@ namespace nap
 
 		/**
 		 * Returns the ImGUI context associated with the given window.
+		 * @param window the render window
 		 * @return ImGUI context for the given window, asserts if it doesn't exist.
 		 */
 		ImGuiContext* getContext(nap::ResourcePtr<RenderWindow> window);
+
+		/**
+		 * Returns the scaling factor of the current active context.
+		 * The scaling factor is calculated using the display DPI (if high DPI rendering is enabled)
+		 * and the global GUI scale.
+		 * @return the scaling factor for the current active context, -1.0 if no context is active
+		 */
+		float getScale() const;
+
+		/**
+		 * Returns the scaling factor for the given context.
+		 * The scaling factor is calculated using the display DPI (if high DPI rendering is enabled)
+		 * and the global GUI scale.
+		 * @param context the ImGUI context
+		 * @return the scaling factor for the given context
+		 */
+		float getScale(const ImGuiContext* context) const;
+
+		/**
+		 * Returns the GUI color palette.
+		 * @return the GUI color palette.
+		 */
+		const IMGuiColorPalette& getColors() const;
 
 		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
@@ -171,8 +212,8 @@ namespace nap
 
 		/**
 		 * Returns a texture handle that can be used to display a Vulkan texture inside ImGUI.
-		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function, to immediately display a texture instead.		 
-		 * Internally the handles are cached, it is therefore fine to call this function every frame. 
+		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function, to immediately display a texture instead.
+		 * Internally the handles are cached, it is therefore fine to call this function every frame.
 		 * Keep in mind that a handle (descriptor set) is created for every unique texture.
 		 *
 		 * ~~~~~{.cpp}
@@ -216,27 +257,29 @@ namespace nap
 		virtual void shutdown() override;
 
 	private:
-
 		/**
-		 * Simple struct that combines an ImGUI context with additional state information
-		 * Takes ownership of the context, destroys it on destruction
+		 * Simple struct that combines an ImGUI context with additional state information.
+		 * Takes ownership of the context, destroys it on destruction.
 		 */
 		struct NAPAPI GUIContext
 		{
-			GUIContext(ImGuiContext* context) : mContext(context) { };
+			GUIContext(ImGuiContext* context, ImGuiStyle* style);
 			~GUIContext();
 
-			bool mMousePressed[3]		= { false, false, false };
-			float mMouseWheel			= 0.0f;
-			ImGuiContext* mContext		= nullptr;
-		};
+			bool mMousePressed[3]			= { false, false, false };
+			float mMouseWheel				= 0.0f;
+			float mScale					= 1.0f;
+			const Display* mDisplay			= nullptr;
+			ImGuiContext* mContext			= nullptr;
+			ImGuiContext* mPreviousContext	= nullptr;
+			ImGuiStyle* mStyle				= nullptr;
 
-		RenderService* mRenderService = nullptr;
-		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
-		std::unique_ptr<DescriptorSetAllocator> mAllocator;
-		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
-		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
-		VkSampleCountFlagBits mSampleCount = VK_SAMPLE_COUNT_1_BIT;
+			// Activates current context
+			void activate();
+
+			// Deactivates current context, restores previous
+			void deactivate();
+		};
 
 		/**
 		 * Called when a window is added, creates ImGUI related resources
@@ -251,13 +294,34 @@ namespace nap
 		nap::Slot<RenderWindow&> mWindowRemovedSlot = { this, &IMGuiService::onWindowRemoved };
 
 		/**
+		 * Called when a window event occurs.
+		 */
+		void onWindowEvent(const WindowEvent& windowEvent);
+		nap::Slot<const WindowEvent&> mWindowEventSlot = { this, &IMGuiService::onWindowEvent };
+
+		/**
 		 * Creates all vulkan related resources, for imGUI as well as local
 		 */
 		void createVulkanResources(nap::RenderWindow& window);
 
 		/**
-		 * starts a new imgui frame
+		 * Starts a new imgui frame
 		 */
 		void newFrame(RenderWindow& window, GUIContext& context, double deltaTime);
+
+		/**
+		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
+		 */
+		void pushScale(GUIContext& context, const Display& display);
+
+		RenderService* mRenderService = nullptr;
+		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;
+		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
+		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
+		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
+		IMGuiServiceConfiguration* mConfiguration = nullptr;
+		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
+		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 	};
 }

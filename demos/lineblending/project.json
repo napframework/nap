@@ -3,14 +3,14 @@
     "mID": "ProjectInfo",
     "Title": "LineBlending",
     "Version": "1.0.0",
+    "Data": "data/lineblending.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
     "RequiredModules": [
         "mod_lineblending",
         "mod_napapp",
         "mod_napimgui",
         "mod_napcameracontrol",
         "mod_napparametergui"
-    ],
-    "Data": "data/lineblending.json",
-    "ServiceConfig": "",
-    "PathMapping": "cache/path_mapping.json"
+    ]
 }

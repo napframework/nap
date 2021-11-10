@@ -58,6 +58,7 @@ namespace nap
 				mFilter->setMode(FilterNode::EMode::BandPass);
 				mFilter->setFrequency(mResource->mCenterFrequency);
 				mFilter->setGain(mResource->mFilterGain);
+				mFilter->setBand(mBandWidth);
 				mFilter->audioInput.connect(*mInput->getOutputForChannel(mResource->mChannel));
 				mMeter->input.connect(mFilter->audioOutput);
 			}

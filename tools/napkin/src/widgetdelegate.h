@@ -70,5 +70,6 @@ namespace napkin
 	private:
 		QIcon mLinkIcon;
 		QIcon mFileIcon;
+		QIcon mColorIcon;
 	};
 };

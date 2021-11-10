@@ -105,12 +105,15 @@ for (int i = 0; i < 100; ++i)
 - Prefer initialization using braces: vector<int> v = { 1, 2 };
 
 ### Static and Global Variables
-- Variables of class type with static storage duration are forbidden: they cause hard-to-find bugs due to indeterminate order of construction and destruction. However, such variables are allowed if they are constexpr: they have no dynamic initialization or destruction.
+- Variables of class type with static storage duration are forbidden: they cause hard-to-find bugs due to indeterminate order of construction and destruction. However, such variables are allowed if they are constexpr and marked inline.
 - Objects with static storage duration, including global variables, static variables, static class member variables, and function static variables, must be Plain Old Data (POD): only ints, chars, floats, or pointers, or arrays/structs of POD.
 - If you need a static or global variable of a class type, consider initializing a pointer (which will never be freed), from either your `main()` function or from `pthread_once()`. Note that this must be a raw pointer, not a "smart" pointer, since the smart pointer's destructor will have the
 order-of-destructor issue that we are trying to avoid.
-- Don't use `#define` to declare constants, use const or constexpr instead: http://stackoverflow.com/questions/15218760/avoid-using-define-in-c-why-and-what-alt
-ernatives-can-i-use
+- Don't use `#define` to declare constants, use const or constexpr [instead](https://stackoverflow.com/questions/15218760/should-i-avoid-using-define-in-c-why-and-what-alternatives-can-i-use)
+```
+inline constexpr int maxRotations = 12
+inline static constexpr int maxMidiValue = 127
+```
 
 Classes
 -----------------------

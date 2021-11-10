@@ -69,7 +69,7 @@ namespace nap
 		RenderToTextureComponent* resource = getComponent<RenderToTextureComponent>();
 
 		// Create the render target, link in the output texture
-		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
+		mTarget.mClearColor = resource->mClearColor.convert<RGBAColorFloat>();
 		mTarget.mColorTexture = resource->mOutputTexture;
 		mTarget.mSampleShading = true;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;

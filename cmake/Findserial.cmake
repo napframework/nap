@@ -1,4 +1,4 @@
-# default artnet directory
+# default serial directory
 find_path(SERIAL_DIR
           NO_CMAKE_FIND_ROOT_PATH
           NAMES include/serial/serial.h

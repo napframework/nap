@@ -137,7 +137,6 @@ namespace nap
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Clear target and begin render pass
-			mRenderWindow->setClearColor({ mClearColor.toVec3(), 1.0f });
 			mRenderWindow->beginRendering();
 
 			// Get background plane to render

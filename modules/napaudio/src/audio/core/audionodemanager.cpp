@@ -12,7 +12,7 @@ namespace nap
 {
 	namespace audio
 	{
-		
+
 		NodeManager::~NodeManager()
 		{
 			// Tell the nodes that their node manager is outta here, so they won't try to unregister themselves in their dtors.
@@ -22,74 +22,74 @@ namespace nap
 				node->mRegisteredWithNodeManager.store(false);
 			}
 		}
-		
-		
+
+
 		void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
 			// clean the output buffers
 			for (auto channel = 0; channel < mOutputChannelCount; ++channel)
 				memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
-			
+
 			for (auto channel = 0; channel < mInputChannelCount; ++channel)
 				mInputBuffer[channel] = inputBuffer[channel];
-			
+
 			mInternalBufferOffset = 0;
 			while (mInternalBufferOffset < framesPerBuffer)
 			{
 				mTaskQueue.process();
 				for (auto& channelMapping : mOutputMapping)
 					channelMapping.clear();
-				
+
 				{
 					for (auto& root : mRootProcesses)
 						root->process();
 				}
-				
+
 				for (auto channel = 0; channel < mOutputChannelCount; ++channel) {
 					for (auto& output : mOutputMapping[channel])
 						for (auto j = 0; j < mInternalBufferSize; ++j)
 							outputBuffer[channel][mInternalBufferOffset + j] += (*output)[j];
 				}
-				
+
 				mInternalBufferOffset += mInternalBufferSize;
 				mSampleTime += mInternalBufferSize;
-				
+
 				mUpdateSignal(mSampleTime);
 			}
 		}
-		
-		
+
+
 		void NodeManager::process(std::vector<SampleBuffer*>& inputBuffer, std::vector<SampleBuffer*>& outputBuffer,
 		                          unsigned long framesPerBuffer)
 		{
 			// clean the output buffers
 			for (auto channel = 0; channel < mOutputChannelCount; ++channel)
 				memset(outputBuffer[channel]->data(), 0, sizeof(float) * framesPerBuffer);
-			
+
 			for (auto channel = 0; channel < mInputChannelCount; ++channel)
 				mInputBuffer[channel] = inputBuffer[channel]->data();
-			
+
 			mInternalBufferOffset = 0;
 			while (mInternalBufferOffset < framesPerBuffer)
 			{
 				mTaskQueue.process();
 				for (auto& channelMapping : mOutputMapping)
 					channelMapping.clear();
-				
+
 				{
 					for (auto& root : mRootProcesses)
 						root->update();
 				}
-				
+
 				for (auto channel = 0; channel < mOutputChannelCount; ++channel) {
 					for (auto& output : mOutputMapping[channel])
 						for (auto j = 0; j < mInternalBufferSize; ++j)
 							(*outputBuffer[channel])[mInternalBufferOffset + j] += (*output)[j];
 				}
-				
+
 				mInternalBufferOffset += mInternalBufferSize;
 				mSampleTime += mInternalBufferSize;
-				
+
 				mUpdateSignal(mSampleTime);
 			}
 		}
@@ -99,8 +99,6 @@ namespace nap
 		{
 			auto result = mTaskQueue.enqueue(task);
 			assert(result);
-			if (!result)
-				Logger::warn("NodeManager: Failed to enqueue task");
 		}
 
 
@@ -110,8 +108,8 @@ namespace nap
 			mInputBuffer.resize(inputChannelCount);
 			mChannelCountChangedSignal(*this);
 		}
-		
-		
+
+
 		void NodeManager::setOutputChannelCount(int outputChannelCount)
 		{
 			mOutputChannelCount = outputChannelCount;
@@ -119,16 +117,16 @@ namespace nap
 			mOutputMapping.resize(mOutputChannelCount);
 			mChannelCountChangedSignal(*this);
 		}
-		
-		
+
+
 		void NodeManager::setInternalBufferSize(int size)
 		{
 			mInternalBufferSize = size;
 			for (auto& node : mNodes)
 				node->setBufferSize(size);
 		}
-		
-		
+
+
 		void NodeManager::setSampleRate(float sampleRate)
 		{
 			mSampleRate = sampleRate;
@@ -136,8 +134,8 @@ namespace nap
 			for (auto& node : mNodes)
 				node->setSampleRate(sampleRate);
 		}
-		
-		
+
+
 		void NodeManager::registerNode(Node& node)
 		{
 			node.setSampleRate(mSampleRate);
@@ -155,33 +153,32 @@ namespace nap
 				mNodes.emplace(&node);
 			});
 		}
-		
-		
+
+
 		void NodeManager::unregisterNode(Node& node)
 		{
 			mNodes.erase(&node);
 		}
-		
-		
+
+
 		void NodeManager::registerRootProcess(Process& rootProcess)
 		{
 			enqueueTask([&]() { mRootProcesses.emplace(&rootProcess); });
 		}
-		
-		
+
+
 		void NodeManager::unregisterRootProcess(Process& rootProcess)
 		{
 			mRootProcesses.erase(&rootProcess);
 		}
-		
-		
+
+
 		void NodeManager::provideOutputBufferForChannel(SampleBuffer* buffer, int channel)
 		{
 			if (channel < mOutputMapping.size())
 				mOutputMapping[channel].emplace_back(buffer);
 		}
-		
-		
+
+
 	}
 }
-

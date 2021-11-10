@@ -6,7 +6,7 @@ import shutil
 import sys
 
 REQUIRED_UBUNTU_VERSION = '20.04'
-REQUIRED_QT_VERSION = '5.11.3'
+REQUIRED_QT_VERSION = '5.15.2'
 
 def call(cmd):
     """Execute command and return stdout"""
@@ -127,7 +127,7 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     if not qt_env_var_ok:
         print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Distribution versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/home/username/Qt%s/%s/gcc_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
-        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions are currently unsupported." % (REQUIRED_QT_VERSION, qt_found_version))    
+        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))    
 
 def read_yes_no(question):
     """Read a yes/no answer for a question"""

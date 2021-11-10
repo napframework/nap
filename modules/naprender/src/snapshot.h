@@ -43,7 +43,7 @@ namespace nap
 		* Updates the render target clear color.
 		* @param color the new clear color to use.
 		*/
-		void setClearColor(const glm::vec4& color);
+		void setClearColor(const RGBAColorFloat& color);
 
 		/**
 		* Takes a high-res snapshot and saves the result to a location on disk.
@@ -95,9 +95,8 @@ namespace nap
 
 		uint32 mWidth = 1920;														///< Property: 'Width' width of the snapshot in texels
 		uint32 mHeight = 1080;														///< Property: 'Height' height of the snapshot in texels
-		uint32 mMaxCellWidth = 1920;												///< Property: 'mMaxCellWidth' max width of a cell
-		uint32 mMaxCellHeight = 1080;												///< Property: 'mMaxCellHeight' max height of a cell
-		glm::vec4 mClearColor{ 0.0f, 0.0f, 0.0f, 0.0f };							///< Property: 'ClearColor' color selection used for clearing the render target
+		uint32 mDivisor = 1;														///< Property: 'Divisor' subdivides the texture equally over multiple cells
+		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };					///< Property: 'ClearColor' color selection used for clearing the render target
 		RenderTexture2D::EFormat mTextureFormat = RenderTexture2D::EFormat::RGBA8;	///< Property: 'Format' texture format
 		ERasterizationSamples mRequestedSamples = ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'
 		bool mSampleShading = true;													///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
@@ -131,6 +130,9 @@ namespace nap
 
 		uint32 mNumRows = 1;
 		uint32 mNumColumns = 1;
+
+		uint32 mCellWidth = 1920;
+		uint32 mCellHeight = 1080;
 
 		uint32 mNumCells = 0;
 		glm::u32vec2 mCellSize = { 0, 0 };

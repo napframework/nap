@@ -29,10 +29,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${NANOSVG_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PUBLIC NANOSVG_IMPLEMENTATION PUBLIC NANOSVG_ALL_COLOR_KEYWORDS)
 
 # link with external libs
-if(NOT WIN32)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
-endif()
-
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
 
 # Deploy module.json as MODULENAME.json alongside module post-build

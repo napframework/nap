@@ -84,10 +84,10 @@ Configuration Management {#napkin_config_management}
 -----------------------
 
 To make a new config file: 
-- `Configuration > New` creates an empty document.<br> 
+- `Configuration > New` creates an empty document.<br>
 
 To open a different config file:
-- `Configuration > Open`<br>	
+- `Configuration > Open`<br>
 
 To save the config file:
 - `Configuration > Save`<br>

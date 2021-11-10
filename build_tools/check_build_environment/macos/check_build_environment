@@ -9,7 +9,7 @@ import tty
 
 REQUIRED_MACOS_VERSION = '10.15'
 REQUIRED_MACOS_VERSION_TITLE = 'Catalina'
-REQUIRED_QT_VERSION = '5.11.3'
+REQUIRED_QT_VERSION = '5.15.2'
 
 def getch():
     """Read a char from the console; pause"""
@@ -224,7 +224,7 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     if not qt_env_var_ok:
         print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Packaging system versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/Users/username/Qt%s/%s/clang_64/\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
-        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions are currently unsupported." % (REQUIRED_QT_VERSION, qt_found_version))    
+        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))    
 
 def check_and_warn_for_potential_packaged_qt():
     """Attempt to detect if the Qt installation might be a packaging system version and warn if so"""
