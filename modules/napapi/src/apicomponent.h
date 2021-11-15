@@ -5,8 +5,10 @@
 #pragma once
 
 // External Includes
+#include <string>
+#include <vector>
+#include <unordered_map>
 #include <component.h>
-#include <queue>
 #include <nap/signalslot.h>
 
 // Local Includes
@@ -20,7 +22,7 @@ namespace nap
 	class APICallBack;
 
 	/**
-	 * Receives APIEvents from the APIService. 
+	 * Receives APIEvents from the APIService.
 	 * Populate the 'Methods' property with signatures of calls you wish to receive at run-time.
 	 * Only events that have a matching signature are accepted.
 	 */
@@ -36,8 +38,8 @@ namespace nap
 	/**
 	 * Receives APIEvents from the APIService and forwards the event to all registered callbacks.
 	 * An event is received when an external application calls into to API service to perform a specific task.
-	 * Only events with a matching signature are accepted and forwarded. 
-	 * 
+	 * Only events with a matching signature are accepted and forwarded.
+	 *
 	 * To receive api events listen to the 'messageReceived' signal, which is triggered when a new api event is received.
 	 * When received, you know for sure the values of the events precisely match that of the registered signature.
 	 * For a more specific handling of api events you can create a callback for a given API signature and listen to it's messageReceived signal.
@@ -48,13 +50,13 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		/**
-		 * Constructor	
+		 * Constructor
 		 */
 		APIComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		/**
-		 * Destructor, removes itself as a listener from the API service.	
+		 * Destructor, removes itself as a listener from the API service.
 		 */
 		virtual ~APIComponentInstance() override;
 
@@ -74,12 +76,12 @@ namespace nap
 		/**
 		 * Checks to see if a specific API call is accepted by this component.
 		 * @param apiEvent the api event to accept
-		 * @return if a specific API call is accepted by this component	
+		 * @return if a specific API call is accepted by this component
 		 */
 		bool accepts(const APIEvent& apiEvent) const;
 
 		/**
-		 * Registers a specific callback that is called after receiving a specific api event. 
+		 * Registers a specific callback that is called after receiving a specific api event.
 		 * This is a convenience function that takes a slot and binds it to a new or existing callback.
 		 * The signature needs to be acquired using findSignature(). A new callback is created if it doesn't exist already.
 		 * @param signature the signature to register a callback for, must be acquired using findSignature()
