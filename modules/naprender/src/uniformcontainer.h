@@ -7,6 +7,7 @@
 // Local Includes
 #include "samplerinstance.h"
 #include "uniforminstance.h"
+#include "storageuniforminstance.h"
 
 namespace nap
 {
@@ -36,11 +37,25 @@ namespace nap
 		UniformStructInstance* findUniform(const std::string& name);
 
 		/**
+		 * Tries to find a uniform struct instance with the given name.
+		 * @param name name of the uniform struct (ubo) as declared in the shader.
+		 * @return a uniform struct instance (ubo), nullptr if not present.
+		 */
+		StorageUniformStructInstance* findStorageUniform(const std::string& name);
+
+		/**
 		 * Returns a uniform struct instance with the given name, the struct has to exist.
 		 * @param name name of the uniform struct as declared in the shader.
 		 * @return uniform struct instance with the given name, asserts if not present.
 		 */
 		UniformStructInstance& getUniform(const std::string& name);
+
+		/**
+		 * Returns a uniform struct instance with the given name, the struct has to exist.
+		 * @param name name of the uniform struct as declared in the shader.
+		 * @return uniform struct instance with the given name, asserts if not present.
+		 */
+		StorageUniformStructInstance& getStorageUniform(const std::string& name);
 
 		/**
 		 * @return all the uniforms sampler instances.
@@ -55,11 +70,13 @@ namespace nap
 		SamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
-		UniformStructInstance& createRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		UniformStructInstance& createUniformRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		StorageUniformStructInstance& createStorageUniformRootStruct(const UniformStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
 		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:
-		std::vector<std::unique_ptr<UniformStructInstance>> mRootStructs;
+		std::vector<std::unique_ptr<UniformStructInstance>> mUniformRootStructs;
+		std::vector<std::unique_ptr<StorageUniformStructInstance>> mStorageUniformRootStructs;
 		std::vector<std::unique_ptr<SamplerInstance>> mSamplerInstances;
 	};
 }

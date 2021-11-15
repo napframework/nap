@@ -499,21 +499,8 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 				if (!errorState.check(element_type != nap::EUniformValueType::Unknown, "Encountered unknown uniform type"))
 					return false;
 
-				nap::EBufferObjectType buffer_object_type = parentStruct.mBufferObjectType;
-
-				// Uniform buffer object declarations generate value arrays
-				if (buffer_object_type == nap::EBufferObjectType::Uniform)
-				{
-					std::unique_ptr<nap::UniformValueArrayDeclaration> array_declaration = std::make_unique<nap::UniformValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
-					parentStruct.mMembers.emplace_back(std::move(array_declaration));
-				}
-
-				// Storage buffer object declarations generate buffer handles
-				else if (buffer_object_type == nap::EBufferObjectType::Storage)
-				{
-					std::unique_ptr<nap::HandleDeclaration> handle_declaration = std::make_unique<nap::HandleDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
-					parentStruct.mMembers.emplace_back(std::move(handle_declaration));
-				}
+				std::unique_ptr<nap::UniformValueArrayDeclaration> array_declaration = std::make_unique<nap::UniformValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
+				parentStruct.mMembers.emplace_back(std::move(array_declaration));
 			}
 		}
 		else
@@ -544,7 +531,7 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 }
 
 
-static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::UBODeclarationList& uboDeclarations, nap::SUBODeclarationList& suboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
+static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::UBODeclarationList& uboDeclarations, nap::UBODeclarationList& suboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 

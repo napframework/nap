@@ -42,6 +42,7 @@ RTTI_DEFINE_BASE(nap::BaseMaterial)
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("StorageUniforms",			&nap::Material::mStorageUniforms,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::Material::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
@@ -52,6 +53,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)
 RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterial::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("StorageUniforms",			&nap::ComputeMaterial::mStorageUniforms,	nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterial::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -94,16 +96,29 @@ namespace nap
 	 */
 	bool BaseMaterial::rebuild(const BaseShader& shader, utility::ErrorState& errorState)
 	{
+		// Uniforms
 		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
 
-			UniformStructInstance& root_struct = createRootStruct(ubo_declaration, UniformCreatedCallback());
+			UniformStructInstance& root_struct = createUniformRootStruct(ubo_declaration, UniformCreatedCallback());
 			if (!root_struct.addUniformRecursive(ubo_declaration, struct_resource, UniformCreatedCallback(), true, errorState))
 				return false;
 		}
 
+		// Storage uniforms
+		const std::vector<UniformBufferObjectDeclaration>& subo_declarations = shader.getSUBODeclarations();
+		for (const UniformBufferObjectDeclaration& subo_declaration : subo_declarations)
+		{
+			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(mStorageUniforms, subo_declaration));
+
+			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, UniformCreatedCallback());
+			if (!root_struct.addStorageUniform(subo_declaration, struct_resource, StorageUniformChangedCallback(), true, errorState))
+				return false;
+		}
+
+		// Samplers
 		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{

@@ -56,11 +56,11 @@ namespace nap
 		 * also allocates Buffers for each UBO from the global Vulkan allocator. The result is a DescriptorSet
 		 * that is fully compatible with the DescriptorSetLayout.
 		 * @param uniformBufferObjects The list of UBOs for this DescriptorSet.
-		 * @param numHandleUniformBufferObjects The number of HBOs for this DescriptorSet.
+		 * @param numStorageBufferObjects The number of HBOs for this DescriptorSet.
 		 * @param numSamplers The number of samplers for this DescriptorSet
 		 * @return A DescriptorSet that is compatible with the VkDescriptorLayout that was passed upon creation.
 		 */
-		const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numHandleBufferObjects, int numSamplers);
+		const DescriptorSet& acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numStorageBufferObjects, int numSamplers);
 
 		/**
 		 * Releases all DescriptorSets to the internal pool for use by other frames.

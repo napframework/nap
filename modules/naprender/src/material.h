@@ -14,6 +14,8 @@
 #include "materialcommon.h"
 #include "shader.h"
 
+#include "storageuniform.h"
+
 namespace nap
 {
 	// Forward Declares
@@ -31,8 +33,9 @@ namespace nap
 		BaseMaterial(Core& core);
 		virtual ~BaseMaterial() = default;
 
-		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<Sampler>>			mSamplers;											///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<UniformStruct>>			mUniforms;										///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<StorageUniformStruct>>	mStorageUniforms;								///< Property: 'StorageUniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<Sampler>>				mSamplers;										///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
 
 		/**
 		 * @return The underlying base shader

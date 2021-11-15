@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "uniforminstance.h"
+#include "storageuniforminstance.h"
 #include "uniformdeclarations.h"
 
 namespace nap
@@ -50,23 +51,27 @@ namespace nap
 
 		UniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
-		{ }
+		{
+			assert(declaration.mBufferObjectType == EBufferObjectType::Uniform);
+		}
 
 		const UniformBufferObjectDeclaration*	mDeclaration;
 		UniformList								mUniforms;
 	};
 
 
-	class HandleBufferObject
+	class StorageUniformBufferObject
 	{
 	public:
-		using HandleList = std::vector<const UniformHandleInstance*>;
+		using StorageUniformList = std::vector<const StorageUniformBufferInstance*>;
 
-		HandleBufferObject(const UniformBufferObjectDeclaration& declaration) :
+		StorageUniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
-		{ }
+		{
+			assert(declaration.mBufferObjectType == EBufferObjectType::Storage);
+		}
 
 		const UniformBufferObjectDeclaration*		mDeclaration;
-		HandleList									mUniformHandles;
+		StorageUniformList							mStorageUniforms;
 	};
 }

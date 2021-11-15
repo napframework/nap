@@ -14,9 +14,6 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueArray)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformValueBuffer)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS(nap::UniformStruct)
 	RTTI_PROPERTY("Uniforms", &nap::UniformStruct::mUniforms, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
@@ -73,29 +70,6 @@ RTTI_BEGIN_CLASS(nap::UniformMat4Array)
 	RTTI_PROPERTY("Values", &nap::UniformMat4Array::mValues, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformIntBuffer)
-	RTTI_PROPERTY("Buffer", &nap::UniformIntBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformFloatBuffer)
-	RTTI_PROPERTY("Buffer", &nap::UniformFloatBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformVec2Buffer)
-	RTTI_PROPERTY("Buffer", &nap::UniformVec2Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformVec3Buffer)
-	RTTI_PROPERTY("Buffer", &nap::UniformVec3Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformVec4Buffer)
-	RTTI_PROPERTY("Buffer", &nap::UniformVec4Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformMat4Buffer)
-	RTTI_PROPERTY("Buffer", &nap::UniformMat4Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
 
 
 namespace nap

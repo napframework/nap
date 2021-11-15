@@ -4,24 +4,42 @@
 
 #include "storageuniform.h"
 
-RTTI_DEFINE_BASE(nap::StorageUniformBlock)
+RTTI_DEFINE_BASE(nap::StorageUniformBuffer)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniform)
 	RTTI_PROPERTY("Name", &nap::StorageUniform::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformBlockBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformDataBuffer)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformValueBuffer)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStruct)
-	RTTI_PROPERTY("UniformBlock", &nap::StorageUniformStruct::mUniformBlock, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("StorageUniformBuffer", &nap::StorageUniformStruct::mStorageUniformBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::StorageUniformIntBuffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformIntBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
-namespace nap
-{
+RTTI_BEGIN_CLASS(nap::StorageUniformFloatBuffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformFloatBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
-}
+RTTI_BEGIN_CLASS(nap::StorageUniformVec2Buffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformVec2Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::StorageUniformVec3Buffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformVec3Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::StorageUniformVec4Buffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformVec4Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::StorageUniformMat4Buffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformMat4Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS

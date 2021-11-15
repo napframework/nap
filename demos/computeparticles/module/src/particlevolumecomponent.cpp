@@ -17,6 +17,7 @@
 #include <renderglobals.h>
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
+#include <storageuniforminstance.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("ComputeInstance",			&nap::ParticleVolumeComponent::mComputeInstance,			nap::rtti::EPropertyMetaData::Required)
@@ -256,8 +257,8 @@ namespace nap
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		// Get storage buffer from uniform
-		UniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::vertexBufferStruct);
-		UniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateUniform<UniformVec4BufferInstance>(uniform::vertices);
+		StorageUniformStructInstance* vertex_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateStorageUniform(uniform::vertexBufferStruct);
+		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniform<StorageUniformVec4BufferInstance>(uniform::vertices);
 		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
 
 		// Bind vertex buffers

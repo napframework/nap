@@ -177,63 +177,6 @@ namespace nap
 
 
 	/**
-	 * Base class for list of uniform values.
-	 * The list must be declared inside a uniform buffer object (block).
-	 * myshader.frag example:
-	 *
-	 * ~~~~~{.cpp}
-	 *	uniform UBO								///< Uniform buffer object
-	 *	{
-	 *		uniform vec3 positions[10];			///< List of object positions
-	 *	} ubo;
-	 * ~~~~~
-	 */
-	class NAPAPI UniformValueBuffer : public UniformValue
-	{
-		RTTI_ENABLE(UniformValue)
-
-	public:
-		/**
-		 * @return The number of elements in this array
-		 */
-		virtual int getCount() const = 0;
-
-		/**
-		 * @return Whether a buffer is set
-		 */
-		virtual bool hasBuffer() const = 0;
-	};
-
-
-	/**
-	 * List of uniform values, for example: float[3], vec3[10] etc.
-	 * The list must be declared inside a uniform buffer object (block).
-	 * myshader.frag example:
-	 *
-	 * ~~~~~{.cpp}
-	 *	uniform UBO								///< Uniform buffer object
-	 *	{
-	 *		uniform vec3 positions[10];			///< List of object position
-	 *	} ubo;
-	 * ~~~~~
-	 */
-	template<typename T>
-	class TypedUniformValueBuffer : public UniformValueBuffer
-	{
-		RTTI_ENABLE(UniformValueBuffer)
-	public:
-		/**
-		 * @return total number of elements.
-		 */
-		virtual int getCount() const override { return hasBuffer() ? mBuffer->mCount : 0; }
-
-		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
-
-		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer;	/// Property 'Buffer'
-	};
-
-
-	/**
 	 * Find a shader uniform based on the given shader uniform declaration.
 	 * @param members uniforms of type nap::Uniform to search through.
 	 * @param declaration uniform declaration to match
@@ -271,16 +214,4 @@ namespace nap
 	using UniformVec3Array = TypedUniformValueArray<glm::vec3>;
 	using UniformVec4Array = TypedUniformValueArray<glm::vec4>;
 	using UniformMat4Array = TypedUniformValueArray<glm::mat4>;
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Uniform value buffer type definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	using UniformIntBuffer = TypedUniformValueBuffer<int>;
-	using UniformFloatBuffer = TypedUniformValueBuffer<float>;
-	using UniformVec2Buffer = TypedUniformValueBuffer<glm::vec2>;
-	using UniformVec3Buffer = TypedUniformValueBuffer<glm::vec3>;
-	using UniformVec4Buffer = TypedUniformValueBuffer<glm::vec4>;
-	using UniformMat4Buffer = TypedUniformValueBuffer<glm::mat4>;
 }

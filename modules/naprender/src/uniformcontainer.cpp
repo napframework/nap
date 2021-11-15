@@ -19,7 +19,16 @@ namespace nap
 {
 	UniformStructInstance* UniformContainer::findUniform(const std::string& name)
 	{
-		for (auto& instance : mRootStructs)
+		for (auto& instance : mUniformRootStructs)
+			if (instance->getDeclaration().mName == name)
+				return instance.get();
+		return nullptr;
+	}
+
+
+	nap::StorageUniformStructInstance* UniformContainer::findStorageUniform(const std::string& name)
+	{
+		for (auto& instance : mStorageUniformRootStructs)
 			if (instance->getDeclaration().mName == name)
 				return instance.get();
 		return nullptr;
@@ -34,11 +43,28 @@ namespace nap
 	}
 
 
-	UniformStructInstance& UniformContainer::createRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
+	nap::StorageUniformStructInstance& UniformContainer::getStorageUniform(const std::string& name)
+	{
+		StorageUniformStructInstance* instance = findStorageUniform(name);
+		assert(instance != nullptr);
+		return *instance;
+	}
+
+
+	UniformStructInstance& UniformContainer::createUniformRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
 	{
 		std::unique_ptr<UniformStructInstance> instance = std::make_unique<UniformStructInstance>(declaration, uniformCreatedCallback);
 		UniformStructInstance* result = instance.get();
-		mRootStructs.emplace_back(std::move(instance));
+		mUniformRootStructs.emplace_back(std::move(instance));
+		return *result;
+	}
+
+
+	StorageUniformStructInstance& UniformContainer::createStorageUniformRootStruct(const UniformStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback)
+	{
+		std::unique_ptr<StorageUniformStructInstance> instance = std::make_unique<StorageUniformStructInstance>(declaration, uniformChangedCallback);
+		StorageUniformStructInstance* result = instance.get();
+		mStorageUniformRootStructs.emplace_back(std::move(instance));
 		return *result;
 	}
 

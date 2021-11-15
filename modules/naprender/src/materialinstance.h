@@ -30,8 +30,9 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
-		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs that you're overriding
-		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
+		std::vector<ResourcePtr<UniformStruct>>			mUniforms;									///< Property: "Uniforms" uniform structs that you're overriding
+		std::vector<ResourcePtr<StorageUniformStruct>>	mStorageUniforms;							///< Property: "StorageUniforms" storage uniform structs that you're overriding
+		std::vector<ResourcePtr<Sampler>>				mSamplers;									///< Property: "Samplers" samplers that you're overriding
 	};
 
 	class NAPAPI MaterialInstanceResource : public BaseMaterialInstanceResource
@@ -66,6 +67,16 @@ namespace nap
 		 * @return uniform that was found or created, nullptr if not available.
 		 */
 		virtual UniformStructInstance* getOrCreateUniform(const std::string& name);
+
+		/**
+		 * Gets or creates a shader storage uniform struct (ssbo) for this material instance.
+		 * This means that the uniform returned is only applicable to this instance.
+		 * In order to change a uniform so that it's value is shared among MaterialInstances, use getMaterial().getUniform().
+		 *
+		 * @param name: the name of the sorage uniform struct (ssbo) as declared in the shader.
+		 * @return uniform that was found or created, nullptr if not available.
+		 */
+		virtual StorageUniformStructInstance* getOrCreateStorageUniform(const std::string& name);
 
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
@@ -131,12 +142,12 @@ namespace nap
 
 		void onUniformCreated();
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
-		void onUniformHandleChanged(int handleBufferIndex, UniformHandleInstance& handleInstance);
+		void onStorageUniformChanged(int storageBufferIndex, StorageUniformInstance& storageUniformInstance);
 
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
-		bool rebuildHBO(HandleBufferObject& hbo, UniformStructInstance* overrideStruct, uint hboIndex, utility::ErrorState& errorState);
+		bool rebuildSSBO(StorageUniformBufferObject& ssbo, StorageUniformStructInstance* overrideStruct, uint hboIndex, utility::ErrorState& errorState);
 
-		void updateUniformHandles(const DescriptorSet& descriptorSet);
+		void updateStorageUniforms(const DescriptorSet& descriptorSet);
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(utility::ErrorState& errorState);
@@ -151,9 +162,9 @@ namespace nap
 		DescriptorSetCache*						mDescriptorSetCache;					// Cache used to acquire Vulkan DescriptorSets on each update
 		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
 
-		std::vector<HandleBufferObject>			mHandleBufferObjects;					// List of all HBO instances
-		std::vector<VkWriteDescriptorSet>		mHandleWriteDescriptorSets;				// List of handle descriptors, used to update Descriptor Sets
-		std::vector<VkDescriptorBufferInfo>		mHandleDescriptors;						// List of storage buffers, used to update Descriptor Sets.
+		std::vector<StorageUniformBufferObject>	mStorageBufferObjects;					// List of all HBO instances
+		std::vector<VkWriteDescriptorSet>		mStorageWriteDescriptorSets;			// List of storage unform descriptors, used to update Descriptor Sets
+		std::vector<VkDescriptorBufferInfo>		mStorageDescriptors;					// List of storage buffers, used to update Descriptor Sets.
 
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerWriteDescriptors;				// List of sampler images, used to update Descriptor Sets.

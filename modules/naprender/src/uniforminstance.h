@@ -17,14 +17,9 @@
 namespace nap
 {
 	// Forward Declares
-	class Texture2D;
 	class UniformInstance;
-	class UniformValueBufferInstance;
 
 	using UniformCreatedCallback = std::function<void()>;
-
-	// Called when the bound buffer resource changes
-	using UniformValueBufferChangedCallback = std::function<void(UniformValueBufferInstance&)>;
 
 	/**
 	 * Instantiated version of a nap::Uniform.
@@ -368,114 +363,6 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// UniformHandleInstance
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * TODO: Probably put this in another file? Should be be able to change the buffer and raise an event to trigger a descriptor set write.
-	 * Base class of all opaque uniform instances and uniform instance buffer types.
-	 * Opaques cannot push data to the GPU.
-	 */
-	class NAPAPI UniformHandleInstance : public UniformInstance
-	{
-		RTTI_ENABLE(UniformInstance)
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// UniformValueBufferInstance
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Base class of all uniform value array instances.
-	 */
-	class NAPAPI UniformValueBufferInstance : public UniformHandleInstance
-	{
-		RTTI_ENABLE(UniformHandleInstance)
-
-	public:
-		UniformValueBufferInstance(const HandleDeclaration& declaration) :
-			mDeclaration(&declaration) { }
-
-		/**
-		 * @return uniform declaration.
-		 */
-		virtual const UniformDeclaration& getDeclaration() const override { return *mDeclaration; }
-
-		/**
-		 * @return value buffer
-		 */
-		virtual const GPUValueBuffer& getValueBuffer() const = 0;
-
-		/**
-		 * @return if the value buffer is set
-		 */
-		virtual bool hasBuffer() const = 0;
-
-		/**
-		 * TODO: Too specific. Handle instances should be decoupled from uniforms. New descriptor type StorageUniform
-		 */
-		void setValueBufferChangedCallback(const UniformValueBufferChangedCallback& valueBufferChangedCallback) const { mValueBufferChangedCallback = valueBufferChangedCallback; }
-
-	protected:
-		/**
-		 * Called when the buffer changes
-		 */
-		void raiseChanged() { if (mValueBufferChangedCallback) mValueBufferChangedCallback(*this); }
-
-		const HandleDeclaration* mDeclaration;
-
-	private:
-		mutable UniformValueBufferChangedCallback		mValueBufferChangedCallback;
-	};
-
-
-	/**
-	 * Specific type of uniform value buffer instance
-	 * All supported types are defined below for easier readability.
-	 */
-	template<typename T>
-	class TypedUniformValueBufferInstance : public UniformValueBufferInstance
-	{
-		RTTI_ENABLE(UniformValueBufferInstance)
-
-	public:
-		TypedUniformValueBufferInstance(const HandleDeclaration& declaration) :
-			UniformValueBufferInstance(declaration) { }
-
-		/**
-		 * Updates the uniform value from a resource, data is not pushed immediately.
-		 * @param resource resource to copy data from.
-		 */
-		void set(const TypedUniformValueBuffer<T>& resource) { mBuffer = resource.mBuffer; }
-
-		 /**
-		  * Binds a new buffer to the uniform instance
-		  * @param buffer new buffer to bind
-		  */
-		void setValueBuffer(TypedGPUValueBuffer<T>& buffer);
-
-		/**
-		 * @return buffer
-		 */
-		const TypedGPUValueBuffer<T>& getTypedValueBuffer() const { assert(mBuffer != nullptr); return *mBuffer; }
-
-		/**
-		 * @return value buffer
-		 */
-		virtual const GPUValueBuffer& getValueBuffer() const override { assert(mBuffer != nullptr); return *mBuffer; }
-
-		/**
-		 * @return if the value buffer is set
-		 */
-		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
-
-	private:
-		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer;
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
 	// Type definitions for all supported uniform instance value types
 	//////////////////////////////////////////////////////////////////////////
 
@@ -497,18 +384,6 @@ namespace nap
 	using UniformVec3ArrayInstance	= TypedUniformValueArrayInstance<glm::vec3>;
 	using UniformVec4ArrayInstance	= TypedUniformValueArrayInstance<glm::vec4>;
 	using UniformMat4ArrayInstance	= TypedUniformValueArrayInstance<glm::mat4>;
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Type definitions for all supported uniform instance buffer value types
-	//////////////////////////////////////////////////////////////////////////
-
-	using UniformIntBufferInstance = TypedUniformValueBufferInstance<int>;
-	using UniformFloatBufferInstance = TypedUniformValueBufferInstance<float>;
-	using UniformVec2BufferInstance = TypedUniformValueBufferInstance<glm::vec2>;
-	using UniformVec3BufferInstance = TypedUniformValueBufferInstance<glm::vec3>;
-	using UniformVec4BufferInstance = TypedUniformValueBufferInstance<glm::vec4>;
-	using UniformMat4BufferInstance = TypedUniformValueBufferInstance<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -575,13 +450,5 @@ namespace nap
 				dest += mDeclaration->mStride;
 			}
 		}
-	}
-
-	template<class T>
-	void nap::TypedUniformValueBufferInstance<T>::setValueBuffer(TypedGPUValueBuffer<T>& buffer)
-	{
-		assert(buffer.mSize == mDeclaration->mSize);
-		mBuffer = &buffer;
-		raiseChanged();
 	}
 }
