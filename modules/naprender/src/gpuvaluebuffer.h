@@ -109,8 +109,8 @@ namespace nap
 		 */
 		virtual uint32 getSize() const override { return mCount * mElementSize; };
 
-		ResourcePtr<TypedValueBufferInitStrategy<T>>		mBufferInitStrategy;	///< Property 'InitStrategy'
-		uint32												mCount = 0;				///< Property 'Count'
+		ResourcePtr<TypedValueBufferInitStrategy<T>>		mBufferInitStrategy = nullptr;	///< Property 'InitStrategy'
+		uint32												mCount = 0;						///< Property 'Count'
 
 	private:
 		int	mElementSize = -1;

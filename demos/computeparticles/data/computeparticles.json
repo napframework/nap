@@ -309,7 +309,22 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": "PositionBufferInitStrategy"
+            "InitStrategy": {
+                "Type": "nap::UniformRandomVec4BufferInitStrategy",
+                "mID": "UniformRandomVec4BufferInitStrategy_0a3cc73a",
+                "Lowerbound": {
+                    "x": -10.0,
+                    "y": -10.0,
+                    "z": -10.0,
+                    "w": -10.0
+                },
+                "UpperBound": {
+                    "x": 10.0,
+                    "y": 10.0,
+                    "z": 10.0,
+                    "w": 10.0
+                }
+            }
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -317,7 +332,16 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": "ZeroInitStrategy"
+            "InitStrategy": {
+                "Type": "nap::ConstantVec4BufferInitStrategy",
+                "mID": "ConstantVec4BufferInitStrategy_13c1d95a",
+                "Constant": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0,
+                    "w": 0.0
+                }
+            }
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -325,7 +349,7 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": "PlusMinusOneInitStrategy"
+            "InitStrategy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -333,7 +357,7 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": "PlusMinusOneInitStrategy"
+            "InitStrategy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -341,7 +365,7 @@
             "Count": 4000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": "ZeroInitStrategy"
+            "InitStrategy": ""
         },
         {
             "Type": "nap::ImageFromFile",
