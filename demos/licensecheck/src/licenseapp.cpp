@@ -33,10 +33,8 @@ namespace nap
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 		mLicenseService = getCore().getService<nap::LicenseService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("license.json", error))
-			return false;
 
 		// Validate license using application public key
 		if (!mLicenseService->validateLicense(ApplicationPublicKey, mLicenseInfo, mLicenseError))

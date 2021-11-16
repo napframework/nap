@@ -94,7 +94,7 @@ void CurveWidget::setModel(AbstractCurveModel* model)
 
 void CurveWidget::onTreeDoubleClicked(const QModelIndex& idx)
 {
-	const auto& sourceIndex = mTreeView.getFilterModel().mapToSource(idx);
+	const auto& sourceIndex = mTreeView.getProxyModel().mapToSource(idx);
 	auto curve = mTreeModel.curveFromIndex(sourceIndex);
 	mCurveView.selectCurves({curve});
 }

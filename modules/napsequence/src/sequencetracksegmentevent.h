@@ -18,7 +18,7 @@ namespace nap
 	/**
 	 * Base class for event segments
 	 */
-	class SequenceTrackSegmentEventBase : public SequenceTrackSegment
+	class NAPAPI SequenceTrackSegmentEventBase : public SequenceTrackSegment
 	{
 		friend class SequencePlayerEventAdapter;
 

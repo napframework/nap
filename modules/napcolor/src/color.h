@@ -264,7 +264,7 @@ namespace nap
 		/**
 		 *	@return all the values associated with this color
 		 */
-		const std::vector<T>& getValues() const											{ return mValues; }
+		const std::array<T, CHANNELS>& getValues() const											{ return mValues; }
 
 		/**
 		 *	@return pointer to the beginning of the data
@@ -564,7 +564,7 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Type definitions for all supported memory (data) color types
+	// Declarations for all supported memory (data) color types
 	// These colors are used to point to color values in memory 
 	// These colors can't be serialized or used as a resource
 	//////////////////////////////////////////////////////////////////////////

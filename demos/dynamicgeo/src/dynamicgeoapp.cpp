@@ -30,13 +30,8 @@ namespace nap
 		mSceneService	= getCore().getService<SceneService>();
 		mGuiService		= getCore().getService<IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("dynamicgeo.json", error))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;                
-		}
 		
 		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");

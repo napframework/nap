@@ -119,6 +119,7 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 	mFilterView.setModel(&mModel);
 	mFilterView.setMenuHook(std::bind(&napkin::ScenePanel::menuHook, this, std::placeholders::_1));
 	mFilterView.getTreeView().expandAll();
+	mFilterView.disableSorting();
 
 	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
 			&ScenePanel::onSelectionChanged);

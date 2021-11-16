@@ -46,7 +46,7 @@ namespace nap
 		 * @return The joined string.
 		 */
 		template<typename T>
-		std::string joinString(const T& list, const std::string& delim);
+		std::string joinString(const T& list, const char* delim);
 
 		/**
 		 * Writes a string to an output stream
@@ -229,7 +229,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		std::string joinString(const T& list, const std::string& delim)
+		std::string joinString(const T& list, const char* delim)
 		{
 			std::stringstream ss;
 			for (size_t i = 0, len = list.size(); i < len; i++)

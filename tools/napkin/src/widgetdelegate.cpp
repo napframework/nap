@@ -288,12 +288,11 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 
 			if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 			{
-				bool ok;
+				auto& ctx = AppContext::get(); bool ok;
+				std::string cur_path = path.getValue().to_string(&ok);
+				QString dir = cur_path.empty() ? QString::fromStdString(ctx.getProjectInfo()->getDataDirectory()) :
+					QFileInfo(getAbsoluteResourcePath(QString::fromStdString(cur_path))).path();
 
-				QString currentFilePath = getAbsoluteResourcePath(QString::fromStdString(path.getValue().to_string(&ok)));
-				QString dir = QFileInfo(currentFilePath).path();
-
-				auto& ctx = AppContext::get();
 				auto parent = ctx.getMainWindow();
 				auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
 				auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);

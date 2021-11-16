@@ -81,7 +81,7 @@ namespace nap {
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
 	*/
-	DirectoryWatcher::DirectoryWatcher()
+	DirectoryWatcher::DirectoryWatcher(const std::string& directory)
 	{
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
         
@@ -96,10 +96,8 @@ namespace nap {
             
             // retrieve the path to the current working dir
 			char buffer[PATH_MAX];
-			mPImpl->currentPath = std::string(getcwd(buffer, PATH_MAX));
-			
-            std::string dirToWatch = mPImpl->currentPath;			
-            CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, dirToWatch.c_str(), kCFStringEncodingUTF8);
+			mPImpl->currentPath = directory;		
+            CFStringRef pathToWatchCF = CFStringCreateWithCString(NULL, mPImpl->currentPath.c_str(), kCFStringEncodingUTF8);
             mPImpl->pathsToWatch = CFArrayCreate(NULL, (const void **)&pathToWatchCF, 1, NULL);
             
             // create event stream for file change event

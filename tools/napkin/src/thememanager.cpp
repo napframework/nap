@@ -174,7 +174,7 @@ const std::vector<std::unique_ptr<Theme>>& ThemeManager::getAvailableThemes()
 const QString ThemeManager::getThemeDir() const
 {
 	// TODO: This probably needs to be configurable
-	return QString("%1/%2").arg(QCoreApplication::applicationDirPath(), sThemeSubDirectory);
+	return QString("%1/%2").arg(QCoreApplication::applicationDirPath(), themeSubDirectory);
 }
 
 void ThemeManager::applyTheme()
@@ -266,7 +266,7 @@ void ThemeManager::loadThemes()
 {
 	for (const auto& dir : QDir(getThemeDir()).entryInfoList(QDir::AllDirs))
 	{
-		auto filename = QString("%1/%2").arg(dir.absoluteFilePath(), sThemeFilename);
+		auto filename = QString("%1/%2").arg(dir.absoluteFilePath(), themeFilename);
 		if (!QFileInfo::exists(filename))
 			continue;
 		nap::Logger::fine("Loading theme: %s", filename.toStdString().c_str());
