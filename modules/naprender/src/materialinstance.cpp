@@ -574,10 +574,11 @@ namespace nap
 					return false;
 			}
 
-			// Pass 2: gather leaf uniform instances for a single ubo
+			// Verify buffer object type
 			if (!errorState.check(ubo_declaration.mBufferObjectType == EBufferObjectType::Uniform, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str())))
 				return false;
 
+			// Pass 2: gather leaf uniform instances for a single ubo
 			UniformBufferObject ubo(ubo_declaration);
 			rebuildUBO(ubo, override_struct);
 
@@ -603,10 +604,11 @@ namespace nap
 					return false;
 			}
 
-			// Pass 2: gather handles
+			// Verify buffer object type
 			if (!errorState.check(subo_declaration.mBufferObjectType == EBufferObjectType::Storage, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", subo_declaration.mName.c_str())))
 				return false;
 
+			// Pass 2: gather handles
 			StorageUniformBufferObject ssbo(subo_declaration);
 			if (!rebuildSSBO(ssbo, override_struct, ssbo_index, errorState))
 				return false;
@@ -643,6 +645,14 @@ namespace nap
 		{
 			for (UniformBufferObject& ubo : mUniformBufferObjects)
 				rebuildUBO(ubo, findUniform(ubo.mDeclaration->mName));
+
+			utility::ErrorState error_state;
+			uint ssbo_index = 0;
+			for (StorageUniformBufferObject& ssbo : mStorageBufferObjects)
+			{
+				rebuildSSBO(ssbo, findStorageUniform(ssbo.mDeclaration->mName), ssbo_index, error_state);
+				++ssbo_index;
+			}
 
 			mUniformsCreated = false;
 		}

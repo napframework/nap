@@ -43,8 +43,6 @@ namespace nap
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
 		mParticleEntity				= scene->findEntity("ParticleVolumeEntity");
 
-		mParticleEntity->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
-
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
@@ -62,7 +60,6 @@ namespace nap
 	{
 		// Update compute instance
 		auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
-		volume.setComputeInstanceOverride(mComputeInstances[mComputeInstanceIndex]);
 
 		// Update input
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
@@ -105,8 +102,7 @@ namespace nap
 		if (mRenderService->beginComputeRecording())
 		{
 			utility::ErrorState error_state;
-			auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
-			volume.compute(error_state);
+			mParticleEntity->getComponent<ParticleVolumeComponentInstance>().compute(error_state);
 
 			mRenderService->endComputeRecording();
 		}
@@ -134,9 +130,6 @@ namespace nap
 
 		// Proceed to next frame
 		mRenderService->endFrame();
-
-		// Update compute instance index
-		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
 	}
 	
 
@@ -171,7 +164,6 @@ namespace nap
 			{
 				mRenderWindow->toggleFullscreen();
 			}
-
 		}
 		mInputService->addEvent(std::move(inputEvent));
 	}

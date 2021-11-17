@@ -76,7 +76,7 @@ namespace nap
 		/**
 		 * @return all uniform instances contained by this struct.
 		 */
-		const std::vector<std::unique_ptr<StorageUniformInstance>>& getUniforms() const	{ return mUniforms; }
+		const std::vector<std::unique_ptr<StorageUniformInstance>>& getUniforms() const	{ return mStorageUniforms; }
 
 		/**
 		 * Tries to find a uniform with the given name.
@@ -128,7 +128,7 @@ namespace nap
 	private:
 		StorageUniformChangedCallback							mStorageUniformChangedCallback;
 		const UniformStructDeclaration&							mDeclaration;
-		std::vector<std::unique_ptr<StorageUniformInstance>>	mUniforms;
+		std::vector<std::unique_ptr<StorageUniformInstance>>	mStorageUniforms;
 	};
 
 
@@ -354,7 +354,7 @@ namespace nap
 		std::unique_ptr<StorageUniformInstance> new_instance = createStorageUniformFromDeclaration(*declaration, mStorageUniformChangedCallback);
 		T* result = rtti_cast<T>(new_instance.get());
 		assert(result != nullptr);
-		mUniforms.emplace_back(std::move(new_instance));
+		mStorageUniforms.emplace_back(std::move(new_instance));
 
 		// Notify listeners
 		//if (mUniformCreatedCallback)

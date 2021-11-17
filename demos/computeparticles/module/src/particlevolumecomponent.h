@@ -62,7 +62,14 @@ namespace nap
 		DECLARE_COMPONENT(ParticleVolumeComponent, ParticleVolumeComponentInstance)
 
 	public:
-		ComponentPtr<ComputeComponent> mComputeComponent;	///< Property 'ComputeComponent'
+		/**
+		 * Returns the components this component depends upon.
+		 * @param components the various components this component depends upon.
+		 */
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
+		{
+			components.emplace_back(RTTI_OF(ComputeComponent));
+		}
 
 		float				mSize = 0.5f;					///< Default size of a particle
 		float				mVelocity = 0.5f;				///< How fast the particles move
@@ -93,11 +100,15 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		 * 
+		 */
 		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
+		/**
+		 * 
+		 */
 		bool compute(utility::ErrorState& errorState);
-
-		void setComputeInstanceOverride(ComputeComponentInstance* computeInstanceOverride) { mComputeInstanceOverride = computeInstanceOverride; };
 
 		float mVelocityTimeScale = 0.15f;
 		float mVelocityVariationScale = 0.75f;
@@ -105,11 +116,13 @@ namespace nap
 		float mParticleSize = 1.0f;
 
 	private:
-		RenderService*						mRenderService = nullptr;
-		std::unique_ptr<ParticleMesh>		mParticleMesh;
-		double								mElapsedTime = 0.0;
+		RenderService*								mRenderService = nullptr;
+		std::unique_ptr<ParticleMesh>				mParticleMesh;
+		double										mElapsedTime = 0.0;
 
-		ComponentInstancePtr<ComputeComponent> mComputeInstance = { this, &ParticleVolumeComponent::mComputeComponent };
-		ComputeComponentInstance* mComputeInstanceOverride = nullptr;
+		std::vector<ComputeComponentInstance*>		mComputeInstances;					// Compute instances found in the entity
+		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	// The current compute instance
+		uint										mComputeInstanceIndex = 0;			// Current compute instance index
+		bool										mFirstUpdate = true;				// First update flag
 	};
 }

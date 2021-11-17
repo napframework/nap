@@ -35,11 +35,11 @@ namespace nap
 		ComputeComponent* resource = getComponent<ComputeComponent>();
 
 		// Ensure compute is enabled
-		if (!errorState.check(mRenderService->isComputeAvailable(), "Failed to create compute instance! Compute is unavailable."))
+		if (!errorState.check(mRenderService->isComputeAvailable(), utility::stringFormat("%s: Failed to create ComputeComponentInstance because Compute is unavailable.", mID.c_str())))
 			return false;
 
 		// Initialize compute material instance
-		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, resource->mComputeMaterialInstanceResource, errorState), "Failed to init compute material instance"))
+		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, resource->mComputeMaterialInstanceResource, errorState), utility::stringFormat("%s: Failed to initialize ComputeMaterialInstance", mID.c_str())))
 			return false;
 
 		return true;

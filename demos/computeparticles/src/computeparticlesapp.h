@@ -89,8 +89,5 @@ namespace nap
 		ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
 		ObjectPtr<EntityInstance> mParticleEntity;						//< Entity that emits the particles
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-
-		std::vector<ComputeComponentInstance*> mComputeInstances;
-		uint mComputeInstanceIndex = 0;
 	};
 }

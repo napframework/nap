@@ -20,7 +20,6 @@
 #include <storageuniforminstance.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
-	RTTI_PROPERTY("ComputeComponent",			&nap::ParticleVolumeComponent::mComputeComponent,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
@@ -151,7 +150,15 @@ namespace nap
 
 	bool ParticleVolumeComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// initialize base class
+		// Ensure a compute component is available
+		if (!errorState.check(getEntityInstance()->findComponent<ComputeComponentInstance>() != nullptr, "%s: missing ComputeComponent", mID.c_str()))
+			return false;
+
+		// Collect compute instances
+		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
+		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
+
+		// Initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
@@ -175,12 +182,6 @@ namespace nap
 		// Set the particle mesh to be used when drawing
 		setMesh(renderableMesh);
 
-		// Check if storage buffer is available in uniform
-		StorageUniformStructInstance* particle_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateStorageUniform(uniform::particleBufferStruct);
-		StorageUniformStructBufferInstance* particle_buffer_uniform = particle_struct->getOrCreateStorageUniform<StorageUniformStructBufferInstance>(uniform::particles);
-		if (!errorState.check(particle_buffer_uniform->hasBuffer(), "Missing buffer resource. The uniform was not defined in the data."))
-			return false;
-
 		return true;
 	}
 
@@ -189,8 +190,14 @@ namespace nap
 	{
 		mElapsedTime += deltaTime;
 
+		if (!mFirstUpdate)
+		{
+			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
+			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
+		}
+
 		// Update uniforms
-		UniformStructInstance* ubo_struct = mComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
@@ -200,16 +207,15 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>("rotationSpeed")->setValue(mRotationSpeed);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>("particleSize")->setValue(mParticleSize);
 		}
+		mFirstUpdate = false;
 	}
 
 
 	bool ParticleVolumeComponentInstance::compute(utility::ErrorState& errorState)
 	{
-		if (mComputeInstance != nullptr)
-		{
-			if (!mComputeInstance->compute(mParticleMesh->mNumParticles, errorState))
-				return false;
-		}
+		if (!mCurrentComputeInstance->compute(mParticleMesh->mNumParticles, errorState))
+			return false;
+
 		return true;
 	}
 
@@ -245,17 +251,14 @@ namespace nap
 		// Bind shader descriptors
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
-		StorageUniformStructInstance* vertex_struct = (mComputeInstanceOverride != nullptr) ?
-			mComputeInstanceOverride->getComputeMaterialInstance().getOrCreateStorageUniform(uniform::vertexBufferStruct) :
-			mComputeInstance->getComputeMaterialInstance().getOrCreateStorageUniform(uniform::vertexBufferStruct);
-
-		// Get storage buffer from uniform
-		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniform<StorageUniformVec4BufferInstance>(uniform::vertices);
-		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
-
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertex_buffers = mRenderableMesh.getVertexBuffers();
 		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+
+		// Get storage buffer from uniform
+		StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
+		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniform<StorageUniformVec4BufferInstance>(uniform::vertices);
+		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
 
 		std::vector<VkBuffer> vertex_buffers_override = { storage_buffer, vertex_buffers[1], vertex_buffers[2] };
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers_override.size(), vertex_buffers_override.data(), offsets.data());

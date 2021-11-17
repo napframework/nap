@@ -180,7 +180,6 @@
                             "y": 0.0
                         }
                     },
-                    "ComputeComponent": "./ComputeComponent_A",
                     "NumParticles": 1000000,
                     "Size": 0.03999999910593033,
                     "RotationSpeed": 0.5,
@@ -267,7 +266,7 @@
                                 "StorageUniformBuffer": {
                                     "Type": "nap::StorageUniformVec4Buffer",
                                     "mID": "StorageUniformVec4Buffer_91961f42",
-                                    "Name": "",
+                                    "Name": "outPositions",
                                     "Buffer": "GPUVec4Buffer_Positions"
                                 }
                             }
@@ -366,16 +365,7 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": {
-                "Type": "nap::ConstantVec4BufferInitStrategy",
-                "mID": "ConstantVec4BufferInitStrategy_13c1d95a",
-                "Constant": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0,
-                    "w": 0.0
-                }
-            }
+            "InitStrategy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",

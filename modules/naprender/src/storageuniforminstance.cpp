@@ -167,7 +167,7 @@ namespace nap
 
 	nap::StorageUniformInstance* StorageUniformStructInstance::findStorageUniform(const std::string& name)
 	{
-		for (auto& uniform_instance : mUniforms)
+		for (auto& uniform_instance : mStorageUniforms)
 		{
 			if (uniform_instance->getDeclaration().mName == name)
 				return uniform_instance.get();
@@ -197,7 +197,7 @@ namespace nap
 				if (!errorState.check(data_buffer_resource->getCount() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
 					return false;
 
-				mUniforms.emplace_back(std::move(data_buffer_instance));
+				mStorageUniforms.emplace_back(std::move(data_buffer_instance));
 			}
 			else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 			{
@@ -240,14 +240,10 @@ namespace nap
 				if (instance_value_buffer == nullptr)
 					return false;
 
-				// If the array was not set in json, we need to ensure the array has the correct size & is filled with default values
-				//if (resource == nullptr)
-				//	instance_value_buffer->setDefault();
-
 				if (!errorState.check(resource == nullptr || value_buffer_resource->getCount() == value_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
 					return false;
 
-				mUniforms.emplace_back(std::move(instance_value_buffer));
+				mStorageUniforms.emplace_back(std::move(instance_value_buffer));
 			}
 
 			// Unsupported shader declarations
