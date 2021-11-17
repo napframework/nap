@@ -8,46 +8,15 @@ RTTI_DEFINE_BASE(nap::StorageUniformInstance)
 RTTI_DEFINE_BASE(nap::StorageUniformBufferInstance)
 RTTI_DEFINE_BASE(nap::StorageUniformValueBufferInstance)
 
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformStructInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformStructDeclaration&, const nap::UniformCreatedCallback&)
-//	RTTI_FUNCTION("findUniform", (nap::UniformInstance* (nap::UniformStructInstance::*)(const std::string&)) &nap::UniformStructInstance::findUniform)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformStructArrayInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformStructArrayDeclaration&)
-//	RTTI_FUNCTION("findElement", (nap::UniformStructInstance* (nap::UniformStructArrayInstance::*)(int)) &nap::UniformStructArrayInstance::findElement)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIntInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformIntInstance::setValue)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformFloatInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformFloatInstance::setValue)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec2Instance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformVec2Instance::setValue)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec3Instance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformVec3Instance::setValue)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec4Instance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformVec4Instance::setValue)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformMat4Instance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformMat4Instance::setValue)
-//RTTI_END_CLASS
-//
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStructInstance)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableStructDeclaration&, const nap::StorageUniformChangedCallback&)
+	RTTI_FUNCTION("findStorageUniform", (nap::StorageUniformInstance* (nap::StorageUniformStructInstance::*)(const std::string&)) &nap::StorageUniformStructInstance::findStorageUniform)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStructBufferInstance)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableStructArrayDeclaration&)
+RTTI_END_CLASS
+
 //RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIntArrayInstance)
 //	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
 //	RTTI_FUNCTION("setValue", &nap::UniformIntArrayInstance::setValue)
@@ -107,14 +76,14 @@ namespace nap
 	// UniformStructInstance
 	//////////////////////////////////////////////////////////////////////////
 
-	std::unique_ptr<StorageUniformInstance> StorageUniformStructInstance::createUniformFromDeclaration(const UniformDeclaration& declaration, const StorageUniformCreatedCallback& uniformCreatedCallback)
+	std::unique_ptr<StorageUniformInstance> StorageUniformStructInstance::createStorageUniformFromDeclaration(const UniformDeclaration& declaration, const StorageUniformCreatedCallback& uniformCreatedCallback)
 	{
 		rtti::TypeInfo declaration_type = declaration.get_type();
 
-		if (declaration_type == RTTI_OF(UniformStructArrayDeclaration))
+		if (declaration_type == RTTI_OF(ShaderVariableStructArrayDeclaration))
 		{
-			const UniformStructArrayDeclaration* struct_array_declaration = rtti_cast<const UniformStructArrayDeclaration>(&declaration);
-			std::unique_ptr<StorageUniformDataBufferInstance> buffer_instance = std::make_unique<StorageUniformDataBufferInstance>(*struct_array_declaration);
+			const ShaderVariableStructArrayDeclaration* struct_array_declaration = rtti_cast<const ShaderVariableStructArrayDeclaration>(&declaration);
+			std::unique_ptr<StorageUniformStructBufferInstance> buffer_instance = std::make_unique<StorageUniformStructBufferInstance>(*struct_array_declaration);
 			for (auto& struct_declaration : struct_array_declaration->mElements)
 			{
 				//std::unique_ptr<UniformStructInstance> struct_instance = std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
@@ -122,9 +91,9 @@ namespace nap
 			}
 			return std::move(buffer_instance);
 		}
-		else if (declaration_type == RTTI_OF(UniformValueArrayDeclaration))
+		else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 		{
-			const UniformValueArrayDeclaration* value_array_declaration = rtti_cast<const UniformValueArrayDeclaration>(&declaration);
+			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&declaration);
 
 			if (value_array_declaration->mElementType == EUniformValueType::Int)
 			{
@@ -159,12 +128,12 @@ namespace nap
 		}
 		else if (declaration_type == RTTI_OF(UniformStructDeclaration))
 		{
-			const UniformStructDeclaration* struct_declaration = rtti_cast<const UniformStructDeclaration>(&declaration);
+			const ShaderVariableStructDeclaration* struct_declaration = rtti_cast<const ShaderVariableStructDeclaration>(&declaration);
 			return std::make_unique<StorageUniformStructInstance>(*struct_declaration, uniformCreatedCallback);
 		}
 		else
 		{
-			const UniformValueDeclaration* value_declaration = rtti_cast<const UniformValueDeclaration>(&declaration);
+			const ShaderVariableValueDeclaration* value_declaration = rtti_cast<const ShaderVariableValueDeclaration>(&declaration);
 
 			//if (value_declaration->mType == EUniformValueType::Int)
 			//{
@@ -207,7 +176,7 @@ namespace nap
 	}
 
 
-	bool StorageUniformStructInstance::addStorageUniform(const UniformStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, bool createDefaults, utility::ErrorState& errorState)
+	bool StorageUniformStructInstance::addStorageUniform(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState)
 	{
 		for (auto& uniform_declaration : structDeclaration.mMembers)
 		{
@@ -219,30 +188,24 @@ namespace nap
 				if (uniform_declaration->mName == structResource->mStorageUniformBuffer->mName)
 					resource = structResource->mStorageUniformBuffer.get();
 
-			if (resource == nullptr)
-				continue;
-
-			if (declaration_type == RTTI_OF(UniformStructArrayDeclaration))
+			if (declaration_type == RTTI_OF(ShaderVariableStructArrayDeclaration))
 			{
-				UniformStructArrayDeclaration* struct_array_declaration = rtti_cast<UniformStructArrayDeclaration>(uniform_declaration.get());
+				ShaderVariableStructArrayDeclaration* struct_array_declaration = rtti_cast<ShaderVariableStructArrayDeclaration>(uniform_declaration.get());
 
-				//std::unique_ptr<StorageUniformDataBuffer> data_buffer_instance = std::make_unique<StorageUniformDataBuffer>(*struct_array_declaration);
-				//const StorageUniformDataBuffer* data_buffer_resource = rtti_cast<const StorageUniformDataBuffer>(resource);
-
-				// TODO: Create buffer & determine the buffer size here? Or use some sort of comparable buffer descriptor?
-				//mUniforms.emplace_back(std::move(data_buffer_instance));
-
-				// TODO: Remove
-				errorState.fail("Nested storage uniform structs are not yet supported");
-				return false;
-			}
-			else if (declaration_type == RTTI_OF(UniformValueArrayDeclaration))
-			{
-				const StorageUniformValueBuffer* value_buffer_resource = rtti_cast<const StorageUniformValueBuffer>(resource);
-				if (!errorState.check(resource == nullptr || value_buffer_resource != nullptr, "Type mismatch between shader type and json type"))
+				std::unique_ptr<StorageUniformStructBufferInstance> data_buffer_instance = std::make_unique<StorageUniformStructBufferInstance>(*struct_array_declaration);
+				const StorageUniformStructBuffer* data_buffer_resource = rtti_cast<const StorageUniformStructBuffer>(resource);
+				if (!errorState.check(data_buffer_resource->getCount() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
 					return false;
 
-				UniformValueArrayDeclaration* value_declaration = rtti_cast<UniformValueArrayDeclaration>(uniform_declaration.get());
+				mUniforms.emplace_back(std::move(data_buffer_instance));
+			}
+			else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
+			{
+				const StorageUniformValueBuffer* value_buffer_resource = rtti_cast<const StorageUniformValueBuffer>(resource);
+				if (!errorState.check(value_buffer_resource != nullptr, "Type mismatch between shader type and json type"))
+					return false;
+
+				ShaderVariableValueArrayDeclaration* value_declaration = rtti_cast<ShaderVariableValueArrayDeclaration>(uniform_declaration.get());
 				std::unique_ptr<StorageUniformValueBufferInstance> instance_value_buffer;
 
 				if (value_declaration->mElementType == EUniformValueType::Int)
@@ -286,63 +249,15 @@ namespace nap
 
 				mUniforms.emplace_back(std::move(instance_value_buffer));
 			}
-			else if (declaration_type == RTTI_OF(UniformStructDeclaration))
+
+			// Unsupported shader declarations
+			else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 			{
-				UniformStructDeclaration* struct_declaration = rtti_cast<UniformStructDeclaration>(uniform_declaration.get());
-
-				//std::unique_ptr<StorageUniformDataBuffer> data_buffer_instance = std::make_unique<StorageUniformDataBuffer>(*struct_declaration);
-				//const StorageUniformDataBuffer* data_buffer_resource = rtti_cast<const StorageUniformDataBuffer>(resource);
-
-				// TODO: Create buffer & determine the buffer size here? Or use some sort of comparable buffer descriptor?
-				//if (!data_buffer_instance->addUniformRecursive(*struct_declaration, data_buffer_resource, uniformCreatedCallback, createDefaults, errorState))
-				//	return false;
-
-				//mUniforms.emplace_back(std::move(data_buffer_instance));
-
-				// TODO: Remove
 				errorState.fail("Nested storage uniform structs are not yet supported");
 				return false;
 			}
 			else
 			{
-				//UniformValueDeclaration* value_declaration = rtti_cast<UniformValueDeclaration>(uniform_declaration.get());
-				//std::unique_ptr<StorageUniformValueInstance> value_instance;
-
-				//if (value_declaration->mType == EUniformValueType::Int)
-				//{
-				//	value_instance = createUniformValueInstance<UniformIntInstance, UniformInt>(resource, *value_declaration, errorState);
-				//}
-				//else if (value_declaration->mType == EUniformValueType::Float)
-				//{
-				//	value_instance = createUniformValueInstance<UniformFloatInstance, UniformFloat>(resource, *value_declaration, errorState);
-				//}
-				//else if (value_declaration->mType == EUniformValueType::Vec2)
-				//{
-				//	value_instance = createUniformValueInstance<UniformVec2Instance, UniformVec2>(resource, *value_declaration, errorState);
-				//}
-				//else if (value_declaration->mType == EUniformValueType::Vec3)
-				//{
-				//	value_instance = createUniformValueInstance<UniformVec3Instance, UniformVec3>(resource, *value_declaration, errorState);
-				//}
-				//else if (value_declaration->mType == EUniformValueType::Vec4)
-				//{
-				//	value_instance = createUniformValueInstance<UniformVec4Instance, UniformVec4>(resource, *value_declaration, errorState);
-				//}
-				//else if (value_declaration->mType == EUniformValueType::Mat4)
-				//{
-				//	value_instance = createUniformValueInstance<UniformMat4Instance, UniformMat4>(resource, *value_declaration, errorState);
-				//}
-				//else
-				//{
-				//	assert(false);
-				//}
-
-				//if (value_instance == nullptr)
-				//	return false;
-
-				//mUniforms.emplace_back(std::move(value_instance));
-
-				// TODO: Remove
 				errorState.fail("Storage uniform values are not yet supported");
 				return false;
 			}

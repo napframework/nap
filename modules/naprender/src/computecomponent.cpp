@@ -3,40 +3,56 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "computeinstance.h"
+#include "computecomponent.h"
 #include "descriptorsetcache.h"
 
 // External includes
 #include <nap/core.h>
+#include <entity.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeInstance)
-	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("ComputeMaterialInstance", &nap::ComputeInstance::mComputeMaterialInstanceResource, nap::rtti::EPropertyMetaData::Required)
+// nap::ComputeComponent run time class definition 
+RTTI_BEGIN_CLASS(nap::ComputeComponent)
+	RTTI_PROPERTY("ComputeMaterialInstance", &nap::ComputeComponent::mComputeMaterialInstanceResource, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+// nap::ComputeComponentInstance run time class definition 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeComponentInstance)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 
 namespace nap
 {
-	ComputeInstance::ComputeInstance(Core& core) :
-		mRenderService(core.getService<RenderService>())
+	ComputeComponentInstance::ComputeComponentInstance(EntityInstance& entity, Component& resource) :
+		ComponentInstance(entity, resource),
+		mRenderService(entity.getCore()->getService<RenderService>())
 	{}
 
 
-	bool ComputeInstance::init(utility::ErrorState& errorState)
+	bool ComputeComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Get resource
+		ComputeComponent* resource = getComponent<ComputeComponent>();
+
 		// Ensure compute is enabled
 		if (!errorState.check(mRenderService->isComputeAvailable(), "Failed to create compute instance! Compute is unavailable."))
 			return false;
 
 		// Initialize compute material instance
-		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, mComputeMaterialInstanceResource, errorState), "Failed to init compute material instannce"))
+		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, resource->mComputeMaterialInstanceResource, errorState), "Failed to init compute material instance"))
 			return false;
 
 		return true;
 	}
 
 
-	bool ComputeInstance::compute(uint numInvocations, utility::ErrorState& errorState)
+	void ComputeComponentInstance::update(double deltaTime)
+	{
+
+	}
+
+
+	bool ComputeComponentInstance::compute(uint numInvocations, utility::ErrorState& errorState)
 	{
 		// Fetch and bind pipeline
 		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, errorState);

@@ -14,8 +14,6 @@
 #include "materialcommon.h"
 #include "shader.h"
 
-#include "storageuniform.h"
-
 namespace nap
 {
 	// Forward Declares

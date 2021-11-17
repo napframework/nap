@@ -196,22 +196,47 @@ namespace nap
 	// Uniform value type definitions
 	//////////////////////////////////////////////////////////////////////////
 	
-	using UniformInt = TypedUniformValue<int>;
-	using UniformFloat = TypedUniformValue<float>;
-	using UniformVec2 = TypedUniformValue<glm::vec2>;
-	using UniformVec3 = TypedUniformValue<glm::vec3>;
-	using UniformVec4 = TypedUniformValue<glm::vec4>;
-	using UniformMat4 = TypedUniformValue<glm::mat4>;
+	using UniformInt						= TypedUniformValue<int>;
+	using UniformFloat						= TypedUniformValue<float>;
+	using UniformVec2						= TypedUniformValue<glm::vec2>;
+	using UniformVec3						= TypedUniformValue<glm::vec3>;
+	using UniformVec4						= TypedUniformValue<glm::vec4>;
+	using UniformMat4						= TypedUniformValue<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Uniform value array type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using UniformIntArray = TypedUniformValueArray<int>;
-	using UniformFloatArray = TypedUniformValueArray<float>;
-	using UniformVec2Array = TypedUniformValueArray<glm::vec2>;
-	using UniformVec3Array = TypedUniformValueArray<glm::vec3>;
-	using UniformVec4Array = TypedUniformValueArray<glm::vec4>;
-	using UniformMat4Array = TypedUniformValueArray<glm::mat4>;
+	using UniformIntArray					= TypedUniformValueArray<int>;
+	using UniformFloatArray					= TypedUniformValueArray<float>;
+	using UniformVec2Array					= TypedUniformValueArray<glm::vec2>;
+	using UniformVec3Array					= TypedUniformValueArray<glm::vec3>;
+	using UniformVec4Array					= TypedUniformValueArray<glm::vec4>;
+	using UniformMat4Array					= TypedUniformValueArray<glm::mat4>;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Uniform type aliases
+	//////////////////////////////////////////////////////////////////////////
+
+	using ShaderVariableResource			= Uniform;
+	using ShaderVariableStructResource		= UniformStruct;
+	using ShaderVariableStructArrayResource = UniformStructArray;
+	using ShaderVariableValueResource		= UniformValue;
+	using ShaderVariableValueArrayResource	= UniformValueArray;
+
+	using ShaderVariableIntResource			= TypedUniformValue<int>;
+	using ShaderVariableFloatResource		= TypedUniformValue<float>;
+	using ShaderVariableVec2Resource		= TypedUniformValue<glm::vec2>;
+	using ShaderVariableVec3Resource		= TypedUniformValue<glm::vec3>;
+	using ShaderVariableVec4Resource		= TypedUniformValue<glm::vec4>;
+	using ShaderVariableMat4Resource		= TypedUniformValue<glm::mat4>;
+
+	using ShaderVariableIntArrayResource	= TypedUniformValueArray<int>;
+	using ShaderVariableFloatArrayResource	= TypedUniformValueArray<float>;
+	using ShaderVariableVec2ArrayResource	= TypedUniformValueArray<glm::vec2>;
+	using ShaderVariableVec3ArrayResource	= TypedUniformValueArray<glm::vec3>;
+	using ShaderVariableVec4ArrayResource	= TypedUniformValueArray<glm::vec4>;
+	using ShaderVariableMat4ArrayResource	= TypedUniformValueArray<glm::mat4>;
 }

@@ -33,7 +33,6 @@ namespace nap
 	class ComputeMaterialInstance;
 	class Texture2D;
 	class BaseGPUBuffer;
-	class ComputeInstance;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
@@ -273,7 +272,6 @@ namespace nap
 	{
 		friend class Texture2D;
 		friend class GPUBuffer;
-		friend class ComputeInstance;
 		friend class RenderWindow;
 		RTTI_ENABLE(Service)
 	public:

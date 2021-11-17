@@ -17,7 +17,6 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
-#include "computeinstance.h"
 
 // External Includes
 #include <nap/core.h>
@@ -45,9 +44,9 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 RTTI_END_ENUM
 
 RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueFamilyOptions)
-	RTTI_PROPERTY("Graphics", &nap::RenderServiceConfiguration::QueueFamilyOptions::mGraphics, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Compute", &nap::RenderServiceConfiguration::QueueFamilyOptions::mCompute, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Transfer", &nap::RenderServiceConfiguration::QueueFamilyOptions::mTransfer, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Graphics",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mGraphics,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Compute",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mCompute,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Transfer",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mTransfer,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)

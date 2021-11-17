@@ -5,18 +5,18 @@
 
 layout(local_size_x = 8) in;
 
-// struct Particle
-// {
-// 	vec4 position;
-// 	vec4 velocity;
-// 	vec4 rotation;
-// 	vec4 color;
-// };
+struct Particle
+{
+	vec4 position;
+	vec4 velocity;
+	vec4 rotation;
+	vec4 color;
+};
 
-// layout(std430) buffer TestParticleBuffer
-// {
-// 	Particle particles[1000];
-// };
+layout(std430) buffer ParticleBuffer
+{
+	Particle particles[1000];
+};
 
 layout(std430) buffer PositionBuffer_In
 {

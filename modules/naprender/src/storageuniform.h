@@ -7,6 +7,7 @@
 // Local Includes
 #include "uniformdeclarations.h"
 #include "gpuvaluebuffer.h"
+#include "gpustructbuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -87,26 +88,28 @@ namespace nap
 
 		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
-		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer;	/// Property 'Buffer'
+		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer = nullptr;	/// Property 'Buffer'
 	};
 
 
 	/**
-	 * Block of raw data
-	 * TODO: Implement
+	 * Block of uniform data
 	 */
-	class NAPAPI StorageUniformDataBuffer : public StorageUniformBuffer
+	class NAPAPI StorageUniformStructBuffer : public StorageUniformBuffer
 	{
-		RTTI_ENABLE(StorageUniform)
+		RTTI_ENABLE(StorageUniformBuffer)
 	public:
 		/**
 		 * @return total number of elements.
 		 */
-		virtual int getCount() const override { return 0; }
+		virtual int getCount() const override { return mBuffer->getCount(); }
 
-		virtual bool hasBuffer() const override { return nullptr; }
+		/**
+		 * @return if the buffer is set
+		 */
+		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
-		//rtti::ObjectPtr<GPUDataBuffer> mBuffer;
+		rtti::ObjectPtr<GPUStructBuffer> mBuffer = nullptr;
 	};
 
 
@@ -117,25 +120,13 @@ namespace nap
 	 * @return uniform that matches with the given shader declaration, nullptr if not found.
 	 */
 	template<class T>
-	const StorageUniform* findStorageUniformStructMember(const std::vector<T>& members, const UniformDeclaration& declaration)
+	const StorageUniform* findStorageUniformStructMember(const std::vector<T>& members, const ShaderVariableDeclaration& declaration)
 	{
 		for (auto& member : members)
 			if (member->mName == declaration.mName)
 				return member.get();
 		return nullptr;
 	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Storage uniform value type definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	//using StorageUniformInt = TypedStorageUniformValue<int>;
-	//using StorageUniformFloat = TypedStorageUniformValue<float>;
-	//using StorageUniformVec2 = TypedStorageUniformValue<glm::vec2>;
-	//using StorageUniformVec3 = TypedStorageUniformValue<glm::vec3>;
-	//using StorageUniformVec4 = TypedStorageUniformValue<glm::vec4>;
-	//using StorageUniformMat4 = TypedStorageUniformValue<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////

@@ -43,7 +43,7 @@ namespace nap
 		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
 		mParticleEntity				= scene->findEntity("ParticleVolumeEntity");
 
-		mComputeInstances = mResourceManager->getObjects<ComputeInstance>();
+		mParticleEntity->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
 
 		mGuiService->selectWindow(mRenderWindow);
 
@@ -62,7 +62,7 @@ namespace nap
 	{
 		// Update compute instance
 		auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
-		volume.mComputeInstance = mComputeInstances[mComputeInstanceIndex].get();
+		volume.setComputeInstanceOverride(mComputeInstances[mComputeInstanceIndex]);
 
 		// Update input
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;

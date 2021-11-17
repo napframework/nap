@@ -51,7 +51,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)
-RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterial::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("StorageUniforms",			&nap::ComputeMaterial::mStorageUniforms,	nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterial::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
@@ -113,8 +113,8 @@ namespace nap
 		{
 			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(mStorageUniforms, subo_declaration));
 
-			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, UniformCreatedCallback());
-			if (!root_struct.addStorageUniform(subo_declaration, struct_resource, StorageUniformChangedCallback(), true, errorState))
+			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, StorageUniformChangedCallback());
+			if (!root_struct.addStorageUniform(subo_declaration, struct_resource, StorageUniformChangedCallback(), errorState))
 				return false;
 		}
 

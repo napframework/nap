@@ -10,26 +10,39 @@
 
 // External Includes
 #include <nap/resourceptr.h>
+#include <component.h>
 
 namespace nap
 {
+	// Forward Declares
+	class ComputeComponentInstance;
+
 	/**
-	 * Compute Instance
+	 * Compute Component
 	 * This is a work in progress. To-do's:
 	 * - Improve abstraction/interface
 	 * - Decide how this instance should be created/used (instance, resource, component?)
 	 * - Finish documentation
 	 */
-	class NAPAPI ComputeInstance : public Resource
+	class NAPAPI ComputeComponent : public Component
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(ComputeComponent, ComputeComponentInstance)
+	public:
+		ComputeMaterialInstanceResource		mComputeMaterialInstanceResource;	///< Property 'ComputeMaterialInstance' The compute material instance resource
+	};
 
-		friend class RenderService;
+	/**
+	 * Compute Component Instance
+	 */
+	class NAPAPI ComputeComponentInstance : public ComponentInstance
+	{
+		RTTI_ENABLE(ComponentInstance)
 	public:
 		/**
 		 * Constructor
 		 */
-		ComputeInstance(Core& core);
+		ComputeComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Initializes the compute instance.
@@ -39,13 +52,18 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * Update
+		 */
+		virtual void update(double deltaTime) override;
+
+		/**
 		 * Syncs the graphics queue with this compute shader.
 		 * The vertex shader input stage of the current frame will not be executed until the compute shader stage is finished.
 		 * Useful when compute shaders modify resources that are read by graphics shaders.
 		 * @param numInvocations the number of compute shader invocations
 		 * @return if the compute work was submitted to the compute queue successfully.
 		 */
-		bool compute(uint numInvocations, utility::ErrorState& errorState);
+		virtual bool compute(uint numInvocations, utility::ErrorState& errorState);
 
 		/**
 		 * @return current material used when drawing the mesh.
@@ -56,9 +74,6 @@ namespace nap
 		 * Returns the local workgroup size
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
-
-
-		ComputeMaterialInstanceResource		mComputeMaterialInstanceResource;	///< Property 'ComputeMaterialInstance' The compute material instance resource
 
 	private:
 		RenderService*						mRenderService = nullptr;

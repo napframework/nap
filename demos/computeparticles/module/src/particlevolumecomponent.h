@@ -8,14 +8,45 @@
 #include <component.h>
 #include <mesh.h>
 #include <renderablemeshcomponent.h>
-#include <nap/resourceptr.h>
-#include <computeinstance.h>
+#include <componentptr.h>
+#include <computecomponent.h>
 
 namespace nap
 {
 	// Forward declares
 	class ParticleVolumeComponentInstance;
-	class ParticleMesh;
+	class Core;
+
+	/**
+	 * A particle mesh that is populated by the ParticleVolumeComponent
+	 */
+	class ParticleMesh : public IMesh
+	{
+	public:
+		int	mNumParticles = 1024;
+
+		ParticleMesh(Core& core);
+
+		/**
+		 * Initialize this particle mesh
+		 */
+		virtual bool init(utility::ErrorState& errorState);
+
+		/**
+		 * @return MeshInstance as created during init().
+		 */
+		virtual MeshInstance& getMeshInstance()	override { return *mMeshInstance; }
+
+		/**
+		 * @return MeshInstance as created during init().
+		 */
+		virtual const MeshInstance& getMeshInstance() const	override { return *mMeshInstance; }
+
+	private:
+		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;			///< The mesh instance to construct
+		nap::RenderService* mRenderService = nullptr;					///< Handle to the render service
+	};
+
 
 	/**
 	 * Component that emits a single set of particles.
@@ -31,7 +62,7 @@ namespace nap
 		DECLARE_COMPONENT(ParticleVolumeComponent, ParticleVolumeComponentInstance)
 
 	public:
-		ResourcePtr<ComputeInstance> mComputeInstance;		///< Property 'ComputeInstance':
+		ComponentPtr<ComputeComponent> mComputeComponent;	///< Property 'ComputeComponent'
 
 		float				mSize = 0.5f;					///< Default size of a particle
 		float				mVelocity = 0.5f;				///< How fast the particles move
@@ -66,16 +97,19 @@ namespace nap
 
 		bool compute(utility::ErrorState& errorState);
 
+		void setComputeInstanceOverride(ComputeComponentInstance* computeInstanceOverride) { mComputeInstanceOverride = computeInstanceOverride; };
+
 		float mVelocityTimeScale = 0.15f;
 		float mVelocityVariationScale = 0.75f;
 		float mRotationSpeed = 1.0f;
 		float mParticleSize = 1.0f;
 
-		ComputeInstance* mComputeInstance = nullptr;
-
 	private:
 		RenderService*						mRenderService = nullptr;
 		std::unique_ptr<ParticleMesh>		mParticleMesh;
 		double								mElapsedTime = 0.0;
+
+		ComponentInstancePtr<ComputeComponent> mComputeInstance = { this, &ParticleVolumeComponent::mComputeComponent };
+		ComputeComponentInstance* mComputeInstanceOverride = nullptr;
 	};
 }

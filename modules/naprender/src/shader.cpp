@@ -644,6 +644,18 @@ namespace nap
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
+		for (const UniformBufferObjectDeclaration& declaration : mSUBODeclarations)
+		{
+			VkDescriptorSetLayoutBinding suboLayoutBinding = {};
+			suboLayoutBinding.binding = declaration.mBinding;
+			suboLayoutBinding.descriptorCount = 1;
+			suboLayoutBinding.pImmutableSamplers = nullptr;
+			suboLayoutBinding.stageFlags = declaration.mStage;
+			suboLayoutBinding.descriptorType = getDescriptorType(declaration.mBufferObjectType);
+
+			descriptor_set_layouts.push_back(suboLayoutBinding);
+		}
+
 		for (const SamplerDeclaration& declaration : mSamplerDeclarations)
 		{
 			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};

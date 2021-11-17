@@ -4,20 +4,22 @@
 
 #include "storageuniform.h"
 
-RTTI_DEFINE_BASE(nap::StorageUniformBuffer)
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniform)
 	RTTI_PROPERTY("Name", &nap::StorageUniform::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformDataBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformBuffer)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformValueBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStruct)
-	RTTI_PROPERTY("StorageUniformBuffer", &nap::StorageUniformStruct::mStorageUniformBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::StorageUniformStruct)
+	RTTI_PROPERTY("StorageUniformBuffer", &nap::StorageUniformStruct::mStorageUniformBuffer, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::StorageUniformStructBuffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformStructBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StorageUniformIntBuffer)

@@ -19,6 +19,7 @@ RTTI_DEFINE_BASE(nap::BaseMaterialInstanceResource)
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("StorageUniforms",			&nap::MaterialInstanceResource::mStorageUniforms,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
@@ -302,7 +303,7 @@ namespace nap
 	{
 		ssbo.mStorageUniforms.clear();
 
-		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(getBaseMaterial()->findUniform(ssbo.mDeclaration->mName));
+		const StorageUniformStructInstance* base_struct = rtti_cast<const StorageUniformStructInstance>(getBaseMaterial()->findStorageUniform(ssbo.mDeclaration->mName));
 		assert(base_struct != nullptr);
 
 		for (auto& base_uniform : base_struct->getUniforms())
@@ -574,6 +575,9 @@ namespace nap
 			}
 
 			// Pass 2: gather leaf uniform instances for a single ubo
+			if (!errorState.check(ubo_declaration.mBufferObjectType == EBufferObjectType::Uniform, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str())))
+				return false;
+
 			UniformBufferObject ubo(ubo_declaration);
 			rebuildUBO(ubo, override_struct);
 
@@ -586,7 +590,7 @@ namespace nap
 		mStorageWriteDescriptorSets.reserve(subo_declarations.size()); // We reserve to ensure that pointers remain consistent during the iteration
 
 		uint ssbo_index = 0;
-		for (const UniformBufferObjectDeclaration& subo_declaration : ubo_declarations)
+		for (const UniformBufferObjectDeclaration& subo_declaration : subo_declarations)
 		{
 			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(getResource()->mStorageUniforms, subo_declaration));
 
@@ -595,11 +599,14 @@ namespace nap
 			if (struct_resource != nullptr)
 			{
 				override_struct = &createStorageUniformRootStruct(subo_declaration, std::bind(&MaterialInstance::onUniformCreated, this));
-				if (!override_struct->addStorageUniform(subo_declaration, struct_resource, std::bind(&BaseMaterialInstance::onUniformCreated, this), false, errorState))
+				if (!override_struct->addStorageUniform(subo_declaration, struct_resource, std::bind(&BaseMaterialInstance::onUniformCreated, this), errorState))
 					return false;
 			}
 
 			// Pass 2: gather handles
+			if (!errorState.check(subo_declaration.mBufferObjectType == EBufferObjectType::Storage, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", subo_declaration.mName.c_str())))
+				return false;
+
 			StorageUniformBufferObject ssbo(subo_declaration);
 			if (!rebuildSSBO(ssbo, override_struct, ssbo_index, errorState))
 				return false;

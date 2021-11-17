@@ -170,6 +170,12 @@ namespace nap
 		int														mBinding;	///< Shader binding identifier
 		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment, compute etc.
 	};
-
 	using UBODeclarationList = std::vector<nap::UniformBufferObjectDeclaration>;
+
+	// Shader Variable Declaration typedefs
+	using ShaderVariableDeclaration = UniformDeclaration;
+	using ShaderVariableValueDeclaration = UniformValueDeclaration;
+	using ShaderVariableStructDeclaration = UniformStructDeclaration;
+	using ShaderVariableStructArrayDeclaration = UniformStructArrayDeclaration;
+	using ShaderVariableValueArrayDeclaration = UniformValueArrayDeclaration;
 }
