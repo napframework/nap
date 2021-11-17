@@ -9,6 +9,7 @@ from subprocess import call
 from sys import platform
 import sys
 import shutil
+import xml.etree.cElementTree as et
 
 from nap_shared import find_project, call_except_on_failure, get_cmake_path
 
@@ -98,7 +99,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
 
         # Create archive
         if zip_package:
-            packaged_to = archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
+            packaged_to = archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_name_lower, project_version)
         else:
             packaged_to = archive_to_timestamped_dir(timestamp, bin_dir, project_full_name, project_version, 'macOS')
 
@@ -161,7 +162,7 @@ def archive_to_linux_tar_bz2(timestamp, bin_dir, project_full_name, project_vers
     return packaged_to_relpath
 
 # Create build archive to zip on macOS
-def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version): 
+def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_name_lower, project_version):
     package_filename = build_package_filename(project_full_name, project_version, 'macOS', timestamp)
     package_filename_with_ext = '%s.%s' % (package_filename, 'zip')
 
@@ -175,6 +176,37 @@ def archive_to_macos_zip(timestamp, bin_dir, project_full_name, project_version)
 
     # Remove unwanted files (eg. .DS_Store)
     call_except_on_failure(archive_dir, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
+
+    # Create app bundle
+    app_bundle_dir = os.path.join(project_dir, project_full_name + " " + project_version + ".app")
+    if os.path.exists(app_bundle_dir):
+        shutil.rmtree(app_bundle_dir)
+    os.mkdir(app_bundle_dir)
+    app_contents_dir = os.path.join(app_bundle_dir, "Contents")
+    os.mkdir(app_contents_dir)
+    app_macos_dir = os.path.join(app_contents_dir, "MacOS")
+    os.mkdir(app_macos_dir)
+    shutil.copy(os.path.join(archive_dir, project_name_lower), os.path.join(app_macos_dir, project_name_lower)) # copy executable
+    shutil.copytree(os.path.join(archive_dir, "cache"), os.path.join(app_macos_dir, "cache"))                   # copy cache
+    shutil.copytree(os.path.join(archive_dir, "lib"), os.path.join(app_macos_dir, "lib"))                       # copy libraries
+    shutil.copytree(os.path.join(archive_dir, "data"), os.path.join(app_macos_dir, "data"))                     # copy data folder
+    shutil.copy(os.path.join(archive_dir, "project.json"), os.path.join(app_macos_dir, "project.json"))         # copy project.json
+    shutil.copytree(os.path.join(archive_dir, "licenses"), os.path.join(app_contents_dir, "licenses"))          # copy licenses
+    shutil.copy(os.path.join(archive_dir, "NAP.txt"), os.path.join(app_contents_dir, "NAP.txt"))                # copy NAP.txt
+
+    # create plist file
+    plist = et.Element('plist', {'version': '1.0'})
+    dict = et.SubElement(plist, 'dict')
+    addPlistValue(dict, "CFBundleGetInfoString", project_name_lower)
+    addPlistValue(dict, "CFBundleExecutable", project_name_lower)
+    addPlistValue(dict, "CFBundleIdentifier", "com." + project_name_lower + ".napframework.www")
+    addPlistValue(dict, "CFBundleName", project_name_lower)
+    addPlistValue(dict, "CFBundleInfoDictionaryVersion", "6.0")
+    addPlistValue(dict, "CFBundlePackageType", "APPL")
+    addPlistValue(dict, "CFBundleVersion", project_version)
+    addPlistValue(dict, "NSHighResolutionCapable", "True")
+    with open(os.path.join(app_contents_dir, "Info.plist"), "wb") as f:
+        et.ElementTree(plist).write(f, encoding='utf-8', xml_declaration=True, default_namespace=None, method='xml', short_empty_elements=False)
 
     # Archive
     print("Archiving to %s.." % package_filename_with_ext)
@@ -279,7 +311,14 @@ def populate_build_info_into_project(project_package_path, timestamp):
     project_info['buildTimestamp'] = timestamp
     with open(project_info_file, 'w') as outfile:
         json.dump(project_info, outfile, sort_keys=True, indent=2)
-    
+
+# Add a key/value pair to an OSX plist xml element
+def addPlistValue(element, key, value):
+    keyElement = et.SubElement(element, "key")
+    keyElement.text = key
+    valueElement = et.SubElement(element, "string")
+    valueElement.text = value
+
 # Main
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
