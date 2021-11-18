@@ -45,7 +45,7 @@ namespace nap
 		 * Required virtual, needs to be implemented in derived classes
 		 * @return the declaration associated with this uniform instance
 		 */
-		virtual const UniformDeclaration& getDeclaration() const = 0;
+		virtual const ShaderVariableDeclaration& getDeclaration() const = 0;
 	};
 
 
@@ -64,7 +64,7 @@ namespace nap
 	public:
 
 		// Constructor
-		StorageUniformStructInstance(const UniformStructDeclaration& declaration, const StorageUniformChangedCallback& storageUniformChangedCallback) :
+		StorageUniformStructInstance(const ShaderVariableStructDeclaration& declaration, const StorageUniformChangedCallback& storageUniformChangedCallback) :
 			mStorageUniformChangedCallback(storageUniformChangedCallback),
 			mDeclaration(declaration)
 		{ }
@@ -104,7 +104,7 @@ namespace nap
 		/**
 		 * @return the uniform declaration, used to create the uniform instance.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override		{ return mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override { return mDeclaration; }
 
 	private:
 		friend class BaseMaterial;
@@ -116,18 +116,18 @@ namespace nap
 		/**
 		 * Adds all associated uniforms to this instance, based on the struct declaration and resource.
 		 */
-		bool addStorageUniform(const UniformStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState);
+		bool addStorageUniform(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState);
 
 		/**
 		 * Creates a uniform instance from a uniform declaration. 
 		 * @param declaration the uniform declaration
 		 * @param uniformCreatedCallback callback that is triggered when the uniform is created.
 		 */
-		static std::unique_ptr<StorageUniformInstance> createStorageUniformFromDeclaration(const UniformDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
+		static std::unique_ptr<StorageUniformInstance> createStorageUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
 
 	private:
 		StorageUniformChangedCallback							mStorageUniformChangedCallback;
-		const UniformStructDeclaration&							mDeclaration;
+		const ShaderVariableStructDeclaration&					mDeclaration;
 		std::vector<std::unique_ptr<StorageUniformInstance>>	mStorageUniforms;
 	};
 
@@ -175,7 +175,7 @@ namespace nap
 		 * Updates the uniform value from a resource, data is not pushed immediately.
 		 * @param resource resource to copy data from.
 		 */
-		void set(const GPUStructBuffer& resource)							{ assert(false); /*mBuffer = resource.mBuffer;*/ }
+		void set(const StorageUniformStructBuffer& resource)				{ mBuffer = resource.mBuffer; }
 
 		/**
 		 * Binds a new buffer to the uniform instance
@@ -191,7 +191,7 @@ namespace nap
 		/**
 		 * @return declaration used to create this instance. 
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override	{ return *mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override { return *mDeclaration; }
 
 		/**
 		 * @return value buffer
@@ -203,6 +203,11 @@ namespace nap
 		 */
 		virtual bool hasBuffer() const										{ return mBuffer != nullptr; }
 
+		/**
+		 * TODO: Too specific. Handle instances should be decoupled from uniforms. New descriptor type StorageUniform
+		 */
+		void setStructBufferChangedCallback(const StorageUniformStructBufferChangedCallback& structBufferChangedCallback) const { mStructBufferChangedCallback = structBufferChangedCallback; }
+
 	protected:
 		/**
 		 * Called when the buffer changes
@@ -210,7 +215,7 @@ namespace nap
 		void raiseChanged()													{ if (mStructBufferChangedCallback) mStructBufferChangedCallback(*this); }
 
 	private:
-		const UniformStructArrayDeclaration* mDeclaration;
+		const ShaderVariableStructArrayDeclaration* mDeclaration;
 		rtti::ObjectPtr<GPUStructBuffer> mBuffer;
 
 		mutable StorageUniformStructBufferChangedCallback mStructBufferChangedCallback;
@@ -229,13 +234,13 @@ namespace nap
 		RTTI_ENABLE(StorageUniformBufferInstance)
 
 	public:
-		StorageUniformValueBufferInstance(const UniformValueArrayDeclaration& declaration) :
+		StorageUniformValueBufferInstance(const ShaderVariableValueArrayDeclaration& declaration) :
 			mDeclaration(&declaration) { }
 
 		/**
 		 * @return uniform declaration.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override	{ return *mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override	{ return *mDeclaration; }
 
 		/**
 		 * @return value buffer
@@ -258,7 +263,7 @@ namespace nap
 		 */
 		void raiseChanged()													{ if (mValueBufferChangedCallback) mValueBufferChangedCallback(*this); }
 
-		const UniformValueArrayDeclaration* mDeclaration;
+		const ShaderVariableValueArrayDeclaration* mDeclaration;
 
 	private:
 		mutable StorageUniformValueBufferChangedCallback mValueBufferChangedCallback;
@@ -275,7 +280,7 @@ namespace nap
 		RTTI_ENABLE(StorageUniformValueBufferInstance)
 
 	public:
-		TypedStorageUniformValueBufferInstance(const UniformValueArrayDeclaration& declaration) :
+		TypedStorageUniformValueBufferInstance(const ShaderVariableValueArrayDeclaration& declaration) :
 			StorageUniformValueBufferInstance(declaration) { }
 
 		/**
@@ -347,7 +352,7 @@ namespace nap
 		}
 
 		// Otherwise fetch the declaration and use it to create the new instance
-		const UniformDeclaration* declaration = mDeclaration.findMember(name);
+		const ShaderVariableDeclaration* declaration = mDeclaration.findMember(name);
 		if (declaration == nullptr)
 			return nullptr;
 

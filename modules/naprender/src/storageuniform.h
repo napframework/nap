@@ -58,6 +58,11 @@ namespace nap
 		virtual int getCount() const = 0;
 
 		/**
+		 * @return The size in bytes
+		 */
+		virtual size_t getSize() const = 0;
+
+		/**
 		 * @return Whether a buffer is set
 		 */
 		virtual bool hasBuffer() const = 0;
@@ -82,9 +87,14 @@ namespace nap
 		RTTI_ENABLE(StorageUniformValueBuffer)
 	public:
 		/**
-		 * @return total number of elements.
+		 * @return total number of elements
 		 */
 		virtual int getCount() const override { return hasBuffer() ? mBuffer->mCount : 0; }
+
+		/**
+		 * @return The size in bytes
+		 */
+		virtual size_t getSize() const override { return mBuffer->getSize(); }
 
 		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
@@ -103,6 +113,11 @@ namespace nap
 		 * @return total number of elements.
 		 */
 		virtual int getCount() const override { return mBuffer->getCount(); }
+
+		/**
+		 * @return The size in bytes
+		 */
+		virtual size_t getSize() const override { return mBuffer->getSize(); }
 
 		/**
 		 * @return if the buffer is set

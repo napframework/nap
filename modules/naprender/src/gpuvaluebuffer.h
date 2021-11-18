@@ -9,7 +9,7 @@
 #include "uniformdeclarations.h"
 #include "vulkan/vulkan_core.h"
 #include "mathutils.h"
-#include "bufferinitstrategy.h"
+#include "bufferfillpolicy.h"
 
 // External Includes
 #include <nap/resourceptr.h>
@@ -83,11 +83,12 @@ namespace nap
 			mElementSize = sizeof(T);
 
 			std::vector<T> staging_buffer;
-			if (mBufferInitStrategy != nullptr)
-				mBufferInitStrategy->initBuffer(mCount, staging_buffer, errorState);
+			if (mBufferFillPolicy != nullptr)
+				mBufferFillPolicy->fill(mCount, staging_buffer, errorState);
 			else
 				staging_buffer.resize(mCount, {});
 
+			// Prepare staging buffer upload
 			return setDataInternal(staging_buffer.data(), staging_buffer.size() * mElementSize, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
 		}
 
@@ -109,7 +110,7 @@ namespace nap
 		 */
 		virtual uint32 getSize() const override { return mCount * mElementSize; };
 
-		ResourcePtr<TypedValueBufferInitStrategy<T>>		mBufferInitStrategy = nullptr;	///< Property 'InitStrategy'
+		ResourcePtr<TypedValueBufferFillPolicy<T>>			mBufferFillPolicy = nullptr;	///< Property 'FillPolicy'
 		uint32												mCount = 0;						///< Property 'Count'
 
 	private:

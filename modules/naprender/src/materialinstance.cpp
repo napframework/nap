@@ -299,7 +299,7 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::rebuildSSBO(StorageUniformBufferObject& ssbo, StorageUniformStructInstance* overrideStruct, uint hboIndex, utility::ErrorState& errorState)
+	bool BaseMaterialInstance::rebuildSSBO(StorageUniformBufferObject& ssbo, StorageUniformStructInstance* overrideStruct, uint ssboIndex, utility::ErrorState& errorState)
 	{
 		ssbo.mStorageUniforms.clear();
 
@@ -309,52 +309,76 @@ namespace nap
 		for (auto& base_uniform : base_struct->getUniforms())
 		{
 			rtti::TypeInfo declaration_type = base_uniform->get_type();
+			VkBuffer buffer_handle = VK_NULL_HANDLE;
 
 			const StorageUniformInstance* override_uniform = nullptr;
 			if (overrideStruct != nullptr)
 				override_uniform = findStorageUniformStructInstanceMember(overrideStruct->getUniforms(), base_uniform->getDeclaration().mName);
 
-			if (declaration_type.is_derived_from(RTTI_OF(StorageUniformValueBufferInstance)))
+			if (declaration_type == RTTI_OF(StorageUniformStructBufferInstance))
 			{
-				const StorageUniformValueBufferInstance* override_buffer_uniform = rtti_cast<const StorageUniformValueBufferInstance>(override_uniform);
-				const StorageUniformValueBufferInstance* base_array_uniform = rtti_cast<const StorageUniformValueBufferInstance>(base_uniform.get());
-				VkBuffer buffer_handle = VK_NULL_HANDLE;
+				const StorageUniformStructBufferInstance* override_buffer_uniform = rtti_cast<const StorageUniformStructBufferInstance>(override_uniform);
+				const StorageUniformStructBufferInstance* base_buffer_uniform = rtti_cast<const StorageUniformStructBufferInstance>(base_uniform.get());
 
 				if (override_buffer_uniform != nullptr)
 				{
-					if (!errorState.check(override_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was set in base material %s", getBaseMaterial()->mID.c_str()).c_str()))
+					if (!errorState.check(override_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
+						return false;
+
+					buffer_handle = override_buffer_uniform->getStructBuffer().getBuffer();
+					ssbo.mStorageUniforms.push_back(override_buffer_uniform);
+					override_buffer_uniform->setStructBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
+				}
+				else
+				{
+					if (!errorState.check(base_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
+						return false;
+
+					buffer_handle = base_buffer_uniform->getStructBuffer().getBuffer();
+					ssbo.mStorageUniforms.push_back(base_buffer_uniform);
+					base_buffer_uniform->setStructBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
+				}
+			}
+			else if (declaration_type.is_derived_from(RTTI_OF(StorageUniformValueBufferInstance)))
+			{
+				const StorageUniformValueBufferInstance* override_buffer_uniform = rtti_cast<const StorageUniformValueBufferInstance>(override_uniform);
+				const StorageUniformValueBufferInstance* base_buffer_uniform = rtti_cast<const StorageUniformValueBufferInstance>(base_uniform.get());
+
+				if (override_buffer_uniform != nullptr)
+				{
+					if (!errorState.check(override_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 						return false;
 
 					buffer_handle = override_buffer_uniform->getValueBuffer().getBuffer();
 					ssbo.mStorageUniforms.push_back(override_buffer_uniform);
-					override_buffer_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)hboIndex, std::placeholders::_1));
+					override_buffer_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 				}
 				else
 				{
-					if (!errorState.check(base_array_uniform->hasBuffer(), utility::stringFormat("No valid buffer was set in material override").c_str()))
+					if (!errorState.check(base_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 						return false;
 
-					buffer_handle = base_array_uniform->getValueBuffer().getBuffer();
-					ssbo.mStorageUniforms.push_back(base_array_uniform);
-					base_array_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)hboIndex, std::placeholders::_1));
+					buffer_handle = base_buffer_uniform->getValueBuffer().getBuffer();
+					ssbo.mStorageUniforms.push_back(base_buffer_uniform);
+					base_buffer_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 				}
-
-				VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[hboIndex];
-				buffer_info.buffer = buffer_handle;
-				buffer_info.offset = 0;
-				buffer_info.range = VK_WHOLE_SIZE;
-
-				const UniformBufferObjectDeclaration& declaration = *ssbo.mDeclaration;
-
-				VkWriteDescriptorSet& hbo_descriptor = mStorageWriteDescriptorSets.emplace_back();
-				hbo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				hbo_descriptor.dstSet = nullptr;
-				hbo_descriptor.dstBinding = declaration.mBinding;
-				hbo_descriptor.dstArrayElement = 0;
-				hbo_descriptor.descriptorType = getDescriptorType(declaration.mBufferObjectType);
-				hbo_descriptor.descriptorCount = 1;	// TODO: Expand this to support arrays at some point (see: samplers)
-				hbo_descriptor.pBufferInfo = mStorageDescriptors.data() + hboIndex;
 			}
+
+			VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[ssboIndex];
+			buffer_info.buffer = buffer_handle;
+			buffer_info.offset = 0;
+			buffer_info.range = VK_WHOLE_SIZE;
+
+			const UniformBufferObjectDeclaration& declaration = *ssbo.mDeclaration;
+
+			VkWriteDescriptorSet& hbo_descriptor = mStorageWriteDescriptorSets.emplace_back();
+			hbo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			hbo_descriptor.dstSet = nullptr;
+			hbo_descriptor.dstBinding = declaration.mBinding;
+			hbo_descriptor.dstArrayElement = 0;
+			hbo_descriptor.descriptorType = getDescriptorType(declaration.mBufferObjectType);
+			hbo_descriptor.descriptorCount = 1;	// TODO: Expand this to support arrays at some point (see: samplers)
+			hbo_descriptor.pBufferInfo = mStorageDescriptors.data() + ssboIndex;
 		}
 		return true;
 	}
@@ -380,6 +404,7 @@ namespace nap
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 			num_sampler_images += declaration.mNumArrayElements;
 
+		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
 		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
 		mSamplerWriteDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
 

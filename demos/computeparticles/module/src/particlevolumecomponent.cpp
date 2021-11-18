@@ -44,16 +44,11 @@ namespace nap
 		constexpr const char* elapsedTime = "elapsedTime";
 		constexpr const char* particleCount = "particleCount";
 
-		constexpr const char* PositionBuffer_In = "PositionBuffer_In";
-		constexpr const char* inPositions = "inPositions";
-		constexpr const char* PositionBuffer_Out = "PositionBuffer_Out";
-		constexpr const char* outPositions = "outPositions";
+		constexpr const char* ParticleBufferStruct = "ParticleBuffer";
+		constexpr const char* particles = "particles";
 
 		constexpr const char* vertexBufferStruct = "VertexBuffer";
 		constexpr const char* vertices = "vertices";
-
-		constexpr const char* particleBufferStruct = "ParticleBuffer";
-		constexpr const char* particles = "particles";
 	}
 
 
@@ -254,9 +249,12 @@ namespace nap
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertex_buffers = mRenderableMesh.getVertexBuffers();
 		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+		
+		// Find storage buffer uniform in the material instance resource, else the material resource
+		StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform(uniform::vertexBufferStruct);
+		if (vertex_struct == nullptr)
+			vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
 
-		// Get storage buffer from uniform
-		StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
 		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniform<StorageUniformVec4BufferInstance>(uniform::vertices);
 		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
 

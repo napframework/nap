@@ -15,7 +15,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformValueBuffer)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StorageUniformStruct)
-	RTTI_PROPERTY("StorageUniformBuffer", &nap::StorageUniformStruct::mStorageUniformBuffer, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("StorageUniform", &nap::StorageUniformStruct::mStorageUniformBuffer, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StorageUniformStructBuffer)

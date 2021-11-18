@@ -7,68 +7,13 @@
             "StorageUniforms": [
                 {
                     "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_de443ec7",
-                    "Name": "ParticleBuffer",
-                    "StorageUniformBuffer": {
-                        "Type": "nap::StorageUniformStructBuffer",
-                        "mID": "StorageUniformStructBuffer_244314f7",
-                        "Name": "particles",
-                        "Buffer": "GPUStructBuffer_Particles"
-                    }
-                },
-                {
-                    "Type": "nap::StorageUniformStruct",
                     "mID": "StorageUniformStruct_afd17387",
                     "Name": "VertexBuffer",
-                    "StorageUniformBuffer": {
+                    "StorageUniform": {
                         "Type": "nap::StorageUniformVec4Buffer",
-                        "mID": "StorageUniformVec4Buffer_e1e0f4fe",
+                        "mID": "StorageUniformVec4Buffer_970dc79d",
                         "Name": "vertices",
                         "Buffer": "GPUVec4Buffer_Vertices"
-                    }
-                },
-                {
-                    "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_03a6c117",
-                    "Name": "VelocityBuffer",
-                    "StorageUniformBuffer": {
-                        "Type": "nap::StorageUniformVec4Buffer",
-                        "mID": "StorageUniformVec4Buffer_b0470574",
-                        "Name": "velocities",
-                        "Buffer": "GPUVec4Buffer_Velocities"
-                    }
-                },
-                {
-                    "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_ef8639ea",
-                    "Name": "RotationBuffer",
-                    "StorageUniformBuffer": {
-                        "Type": "nap::StorageUniformVec4Buffer",
-                        "mID": "StorageUniformVec4Buffer_57714087",
-                        "Name": "rotations",
-                        "Buffer": "GPUVec4Buffer_Rotations"
-                    }
-                },
-                {
-                    "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_5151d271",
-                    "Name": "PositionBuffer_In",
-                    "StorageUniformBuffer": {
-                        "Type": "nap::StorageUniformVec4Buffer",
-                        "mID": "StorageUniformVec4Buffer_3f09112b",
-                        "Name": "inPositions",
-                        "Buffer": "GPUVec4Buffer_Positions"
-                    }
-                },
-                {
-                    "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_61a34747",
-                    "Name": "PositionBuffer_Out",
-                    "StorageUniformBuffer": {
-                        "Type": "nap::StorageUniformVec4Buffer",
-                        "mID": "StorageUniformVec4Buffer_d03e03de",
-                        "Name": "outPositions",
-                        "Buffer": "GPUVec4Buffer_Positions2"
                     }
                 }
             ],
@@ -180,7 +125,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumParticles": 1000000,
+                    "NumParticles": 1000,
                     "Size": 0.03999999910593033,
                     "RotationSpeed": 0.5,
                     "Velocity": 0.5,
@@ -218,23 +163,23 @@
                             {
                                 "Type": "nap::StorageUniformStruct",
                                 "mID": "StorageUniformStruct_0fa64241",
-                                "Name": "PositionBuffer_In",
-                                "StorageUniformBuffer": {
-                                    "Type": "nap::StorageUniformVec4Buffer",
-                                    "mID": "StorageUniformVec4Buffer_eb6e20cd",
-                                    "Name": "inPositions",
-                                    "Buffer": "GPUVec4Buffer_Positions"
+                                "Name": "ParticleBuffer_In",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_2f2aafc2",
+                                    "Name": "particles",
+                                    "Buffer": "GPUStructBuffer_Particles"
                                 }
                             },
                             {
                                 "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_56fe60d7",
-                                "Name": "PositionBuffer_Out",
-                                "StorageUniformBuffer": {
-                                    "Type": "nap::StorageUniformVec4Buffer",
-                                    "mID": "StorageUniformVec4Buffer_58eaa09a",
-                                    "Name": "outPositions",
-                                    "Buffer": "GPUVec4Buffer_Positions2"
+                                "mID": "StorageUniformStruct_406bb963",
+                                "Name": "ParticleBuffer_Out",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_80e8d81c",
+                                    "Name": "particles",
+                                    "Buffer": "GPUStructBuffer_Particles2"
                                 }
                             }
                         ],
@@ -251,23 +196,23 @@
                             {
                                 "Type": "nap::StorageUniformStruct",
                                 "mID": "StorageUniformStruct_30fe19c9",
-                                "Name": "PositionBuffer_In",
-                                "StorageUniformBuffer": {
-                                    "Type": "nap::StorageUniformVec4Buffer",
-                                    "mID": "StorageUniformVec4Buffer_5cb9bf09",
-                                    "Name": "inPositions",
-                                    "Buffer": "GPUVec4Buffer_Positions2"
+                                "Name": "ParticleBuffer_In",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_b40f779b",
+                                    "Name": "particles",
+                                    "Buffer": "GPUStructBuffer_Particles2"
                                 }
                             },
                             {
                                 "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_570a67dc",
-                                "Name": "PositionBuffer_Out",
-                                "StorageUniformBuffer": {
-                                    "Type": "nap::StorageUniformVec4Buffer",
-                                    "mID": "StorageUniformVec4Buffer_91961f42",
-                                    "Name": "outPositions",
-                                    "Buffer": "GPUVec4Buffer_Positions"
+                                "mID": "StorageUniformStruct_85c16027",
+                                "Name": "ParticleBuffer_Out",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_00e07917",
+                                    "Name": "particles",
+                                    "Buffer": "GPUStructBuffer_Particles"
                                 }
                             }
                         ],
@@ -334,7 +279,71 @@
                 },
                 "Count": 1000
             },
-            "Usage": "Static"
+            "Usage": "Static",
+            "FillPolicy": {
+                "Type": "nap::UniformRandomStructBufferFillPolicy",
+                "mID": "UniformRandomStructBufferFillPolicy_49de23bd"
+            }
+        },
+        {
+            "Type": "nap::GPUStructBuffer",
+            "mID": "GPUStructBuffer_Particles2",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_a35bf039",
+                    "Name": "particles",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_0676c053",
+                            "Name": "position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_ff103c73",
+                            "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_b822b7b5",
+                            "Name": "rotation",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_5c0d40fe",
+                            "Name": "color",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        }
+                    ]
+                },
+                "Count": 1000
+            },
+            "Usage": "Static",
+            "FillPolicy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -342,22 +351,7 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": {
-                "Type": "nap::UniformRandomVec4BufferInitStrategy",
-                "mID": "UniformRandomVec4BufferInitStrategy_0a3cc73a",
-                "Lowerbound": {
-                    "x": -10.0,
-                    "y": -10.0,
-                    "z": -10.0,
-                    "w": -10.0
-                },
-                "UpperBound": {
-                    "x": 10.0,
-                    "y": 10.0,
-                    "z": 10.0,
-                    "w": 10.0
-                }
-            }
+            "FillPolicy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -365,7 +359,7 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": ""
+            "FillPolicy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -373,22 +367,7 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": {
-                "Type": "nap::UniformRandomVec4BufferInitStrategy",
-                "mID": "UniformRandomVec4BufferInitStrategy_931302fc",
-                "Lowerbound": {
-                    "x": -1.0,
-                    "y": -1.0,
-                    "z": -1.0,
-                    "w": -1.0
-                },
-                "UpperBound": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0,
-                    "w": 1.0
-                }
-            }
+            "FillPolicy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
@@ -396,39 +375,15 @@
             "Count": 1000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": {
-                "Type": "nap::UniformRandomVec4BufferInitStrategy",
-                "mID": "UniformRandomVec4BufferInitStrategy_b59e2cfe",
-                "Lowerbound": {
-                    "x": -1.0,
-                    "y": -1.0,
-                    "z": -1.0,
-                    "w": -1.0
-                },
-                "UpperBound": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0,
-                    "w": 1.0
-                }
-            }
+            "FillPolicy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
             "mID": "GPUVec4Buffer_Vertices",
-            "Count": 4000000,
+            "Count": 4000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": {
-                "Type": "nap::ConstantVec4BufferInitStrategy",
-                "mID": "ConstantVec4BufferInitStrategy_2f45bc8a",
-                "Constant": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0,
-                    "w": 0.0
-                }
-            }
+            "FillPolicy": ""
         },
         {
             "Type": "nap::ImageFromFile",

@@ -113,6 +113,10 @@ namespace nap
 		{
 			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(mStorageUniforms, subo_declaration));
 
+			// We must check if the SSBO declaration contains more than a single shader variable and exit early if this is the case
+			if (!errorState.check(subo_declaration.mMembers.size() <= 1, utility::stringFormat("SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", subo_declaration.mName.c_str())))
+				return false;
+
 			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, StorageUniformChangedCallback());
 			if (!root_struct.addStorageUniform(subo_declaration, struct_resource, StorageUniformChangedCallback(), errorState))
 				return false;
@@ -133,7 +137,7 @@ namespace nap
 				{
 					bool target_is_array = sampler->get_type().is_derived_from<SamplerArray>();
 
-					if (!errorState.check(is_array == target_is_array, "Sampler %s does not match array type of sampler in shader", sampler->mName.c_str()))
+					if (!errorState.check(is_array == target_is_array, "Sampler '%s' does not match array type of sampler in shader", sampler->mName.c_str()))
 						return false;
 
 					if (is_array)

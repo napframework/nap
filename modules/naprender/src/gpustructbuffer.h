@@ -6,25 +6,14 @@
 
 // Local Includes
 #include "gpubuffer.h"
-#include "vulkan/vulkan_core.h"
 #include "uniform.h"
 
 // External Includes
 #include <nap/resourceptr.h>
-#include <stdint.h>
 #include <glm/glm.hpp>
 
 namespace nap
 {
-	/**
-	 * StorageBufferDescriptor
-	 */
-	struct NAPAPI StructBufferDescriptor
-	{
-		ResourcePtr<ShaderVariableStructResource> mElement = nullptr;	///<
-		uint mCount = 1;												///<
-	};
-
 	/**
 	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
 	 */
@@ -70,8 +59,9 @@ namespace nap
 		 */
 		int getElementSize() const					{ return mElementSize; };
 
-		StructBufferDescriptor			mDescriptor;
-		EBufferObjectType				mType = EBufferObjectType::Uniform;		///< Property 'BufferObjectType'
+		ResourcePtr<StructBufferFillPolicy>		mBufferFillPolicy = nullptr;			///< Property 'FillPolicy'
+		StructBufferDescriptor					mDescriptor;							///< Property 'Descriptor'
+		EBufferObjectType						mType = EBufferObjectType::Uniform;		///< Property 'BufferObjectType'
 
 	private:
 		int	mElementSize = -1;

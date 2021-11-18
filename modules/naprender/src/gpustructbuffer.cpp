@@ -10,15 +10,11 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_STRUCT(nap::StructBufferDescriptor)
-	RTTI_PROPERTY("Element", &nap::StructBufferDescriptor::mElement, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Count", &nap::StructBufferDescriptor::mCount, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_STRUCT
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUStructBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Descriptor", &nap::GPUStructBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Usage", &nap::GPUStructBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUStructBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 
@@ -139,13 +135,20 @@ namespace nap
 
 		// Calculate element size in bytes
 		mElementSize = getUniformStructSizeRecursive(*element_descriptor);
-		size_t total_size = mElementSize * mDescriptor.mCount;
+		size_t total_size = getSize();
 
 		// Create a staging buffer to upload
 		auto staging_buffer = std::make_unique<uint8[]>(total_size);
-		std::memset(staging_buffer.get(), 0, total_size);
+		if (mBufferFillPolicy != nullptr)
+		{
+			mBufferFillPolicy->fill(mDescriptor, staging_buffer.get(), errorState);
+		}
+		else
+		{
+			std::memset(staging_buffer.get(), 0, total_size);
+		}
 
-		// Prepare a vulkan buffer
+		// Prepare staging buffer upload
 		return setDataInternal(staging_buffer.get(), total_size, static_cast<VkBufferUsageFlagBits>(getBufferUsage(EBufferObjectType::Storage)), errorState);
 	}
 

@@ -17,41 +17,29 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStructBufferInstance)
 	RTTI_CONSTRUCTOR(const nap::ShaderVariableStructArrayDeclaration&)
 RTTI_END_CLASS
 
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIntArrayInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformIntArrayInstance::setValue)
-//	RTTI_FUNCTION("getNumElements", &nap::UniformIntArrayInstance::getNumElements)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformFloatArrayInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformFloatArrayInstance::setValue)
-//	RTTI_FUNCTION("getNumElements", &nap::UniformFloatArrayInstance::getNumElements)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec2ArrayInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformVec2ArrayInstance::setValue)
-//	RTTI_FUNCTION("getNumElements", &nap::UniformVec2ArrayInstance::getNumElements)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec3ArrayInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformVec3ArrayInstance::setValue)
-//	RTTI_FUNCTION("getNumElements", &nap::UniformVec3ArrayInstance::getNumElements)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec4ArrayInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformVec4ArrayInstance::setValue)
-//	RTTI_FUNCTION("getNumElements", &nap::UniformVec4ArrayInstance::getNumElements)
-//RTTI_END_CLASS
-//
-//RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformMat4ArrayInstance)
-//	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
-//	RTTI_FUNCTION("setValue", &nap::UniformMat4ArrayInstance::setValue)
-//	RTTI_FUNCTION("getNumElements", &nap::UniformMat4ArrayInstance::getNumElements)
-//RTTI_END_CLASS
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformIntBufferInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformFloatBufferInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformVec2BufferInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformVec3BufferInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformVec4BufferInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformMat4BufferInstance)
+	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+RTTI_END_CLASS
 
 
 namespace nap
@@ -76,7 +64,7 @@ namespace nap
 	// UniformStructInstance
 	//////////////////////////////////////////////////////////////////////////
 
-	std::unique_ptr<StorageUniformInstance> StorageUniformStructInstance::createStorageUniformFromDeclaration(const UniformDeclaration& declaration, const StorageUniformCreatedCallback& uniformCreatedCallback)
+	std::unique_ptr<StorageUniformInstance> StorageUniformStructInstance::createStorageUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const StorageUniformCreatedCallback& uniformCreatedCallback)
 	{
 		rtti::TypeInfo declaration_type = declaration.get_type();
 
@@ -95,70 +83,50 @@ namespace nap
 		{
 			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&declaration);
 
-			if (value_array_declaration->mElementType == EUniformValueType::Int)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::Int)
 			{
 				std::unique_ptr<StorageUniformIntBufferInstance> buffer_instance = std::make_unique<StorageUniformIntBufferInstance>(*value_array_declaration);
 				return std::move(buffer_instance);
 			}
-			else if (value_array_declaration->mElementType == EUniformValueType::Float)
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::Float)
 			{
 				std::unique_ptr<StorageUniformFloatBufferInstance> buffer_instance = std::make_unique<StorageUniformFloatBufferInstance>(*value_array_declaration);
 				return std::move(buffer_instance);
 			}
-			else if (value_array_declaration->mElementType == EUniformValueType::Vec2)
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec2)
 			{
 				std::unique_ptr<StorageUniformVec2BufferInstance> buffer_instance = std::make_unique<StorageUniformVec2BufferInstance>(*value_array_declaration);
 				return std::move(buffer_instance);
 			}
-			else if (value_array_declaration->mElementType == EUniformValueType::Vec3)
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec3)
 			{
 				std::unique_ptr<StorageUniformVec3BufferInstance> buffer_instance = std::make_unique<StorageUniformVec3BufferInstance>(*value_array_declaration);
 				return std::move(buffer_instance);
 			}
-			else if (value_array_declaration->mElementType == EUniformValueType::Vec4)
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec4)
 			{
 				std::unique_ptr<StorageUniformVec4BufferInstance> buffer_instance = std::make_unique<StorageUniformVec4BufferInstance>(*value_array_declaration);
 				return std::move(buffer_instance);
 			}
-			else if (value_array_declaration->mElementType == EUniformValueType::Mat4)
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::Mat4)
 			{
 				std::unique_ptr<StorageUniformMat4BufferInstance> buffer_instance = std::make_unique<StorageUniformMat4BufferInstance>(*value_array_declaration);
 				return std::move(buffer_instance);
 			}
 		}
-		else if (declaration_type == RTTI_OF(UniformStructDeclaration))
+		else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 		{
 			const ShaderVariableStructDeclaration* struct_declaration = rtti_cast<const ShaderVariableStructDeclaration>(&declaration);
-			return std::make_unique<StorageUniformStructInstance>(*struct_declaration, uniformCreatedCallback);
+
+			// Structs not supported
+			assert(false);
 		}
 		else
 		{
 			const ShaderVariableValueDeclaration* value_declaration = rtti_cast<const ShaderVariableValueDeclaration>(&declaration);
 
-			//if (value_declaration->mType == EUniformValueType::Int)
-			//{
-			//	return std::make_unique<StorageUniformIntInstance>(*value_declaration);
-			//}
-			//else if (value_declaration->mType == EUniformValueType::Float)
-			//{
-			//	return std::make_unique<UniformFloatInstance>(*value_declaration);
-			//}
-			//else if (value_declaration->mType == EUniformValueType::Vec2)
-			//{
-			//	return std::make_unique<UniformVec2Instance>(*value_declaration);
-			//}
-			//else if (value_declaration->mType == EUniformValueType::Vec3)
-			//{
-			//	return std::make_unique<UniformVec3Instance>(*value_declaration);
-			//}
-			//else if (value_declaration->mType == EUniformValueType::Vec4)
-			//{
-			//	return std::make_unique<UniformVec4Instance>(*value_declaration);
-			//}
-			//else if (value_declaration->mType == EUniformValueType::Mat4)
-			//{
-			//	return std::make_unique<UniformMat4Instance>(*value_declaration);
-			//}
+			// Values not supported
+			assert(false);
 		}
 
 		return nullptr;
@@ -182,53 +150,53 @@ namespace nap
 		{
 			rtti::TypeInfo declaration_type = uniform_declaration->get_type();
 
-			// TODO: Implement recursive structures - StorageUniformStructs currently only hold a single StorageUniformBuffer
 			const StorageUniform* resource = nullptr;
-			if (structResource != nullptr)
-				if (uniform_declaration->mName == structResource->mStorageUniformBuffer->mName)
-					resource = structResource->mStorageUniformBuffer.get();
+			if (structResource != nullptr && structResource->mStorageUniformBuffer != nullptr && structResource->mStorageUniformBuffer->mName == uniform_declaration->mName)
+				resource = structResource->mStorageUniformBuffer.get();
 
 			if (declaration_type == RTTI_OF(ShaderVariableStructArrayDeclaration))
 			{
 				ShaderVariableStructArrayDeclaration* struct_array_declaration = rtti_cast<ShaderVariableStructArrayDeclaration>(uniform_declaration.get());
+				const StorageUniformStructBuffer* struct_buffer_resource = rtti_cast<const StorageUniformStructBuffer>(resource);
 
-				std::unique_ptr<StorageUniformStructBufferInstance> data_buffer_instance = std::make_unique<StorageUniformStructBufferInstance>(*struct_array_declaration);
-				const StorageUniformStructBuffer* data_buffer_resource = rtti_cast<const StorageUniformStructBuffer>(resource);
-				if (!errorState.check(data_buffer_resource->getCount() == struct_array_declaration->mElements.size(), "Mismatch between number of array elements in shader and json."))
+				// Ensure buffer size in uniform and shader declaration are the same
+				if (!errorState.check(struct_buffer_resource == nullptr || struct_buffer_resource->getSize() == struct_array_declaration->mSize, "Mismatch between buffer size in shader and json"))
 					return false;
 
-				mStorageUniforms.emplace_back(std::move(data_buffer_instance));
+				std::unique_ptr<StorageUniformStructBufferInstance> struct_buffer_instance = createUniformValueInstance<StorageUniformStructBufferInstance, StorageUniformStructBuffer>(resource, *struct_array_declaration, errorState);
+
+				mStorageUniforms.emplace_back(std::move(struct_buffer_instance));
 			}
 			else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 			{
-				const StorageUniformValueBuffer* value_buffer_resource = rtti_cast<const StorageUniformValueBuffer>(resource);
-				if (!errorState.check(value_buffer_resource != nullptr, "Type mismatch between shader type and json type"))
-					return false;
-
 				ShaderVariableValueArrayDeclaration* value_declaration = rtti_cast<ShaderVariableValueArrayDeclaration>(uniform_declaration.get());
 				std::unique_ptr<StorageUniformValueBufferInstance> instance_value_buffer;
 
-				if (value_declaration->mElementType == EUniformValueType::Int)
+				const StorageUniformValueBuffer* value_buffer_resource = rtti_cast<const StorageUniformValueBuffer>(resource);
+				if (!errorState.check(resource == nullptr || value_buffer_resource != nullptr, "Type mismatch between shader type and json type"))
+					return false;
+
+				if (value_declaration->mElementType == EShaderVariableValueType::Int)
 				{
 					instance_value_buffer = createUniformValueInstance<StorageUniformIntBufferInstance, StorageUniformIntBuffer>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mElementType == EUniformValueType::Float)
+				else if (value_declaration->mElementType == EShaderVariableValueType::Float)
 				{
 					instance_value_buffer = createUniformValueInstance<StorageUniformFloatBufferInstance, StorageUniformFloatBuffer>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mElementType == EUniformValueType::Vec2)
+				else if (value_declaration->mElementType == EShaderVariableValueType::Vec2)
 				{
 					instance_value_buffer = createUniformValueInstance<StorageUniformVec2BufferInstance, StorageUniformVec2Buffer>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mElementType == EUniformValueType::Vec3)
+				else if (value_declaration->mElementType == EShaderVariableValueType::Vec3)
 				{
 					instance_value_buffer = createUniformValueInstance<StorageUniformVec3BufferInstance, StorageUniformVec3Buffer>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mElementType == EUniformValueType::Vec4)
+				else if (value_declaration->mElementType == EShaderVariableValueType::Vec4)
 				{
 					instance_value_buffer = createUniformValueInstance<StorageUniformVec4BufferInstance, StorageUniformVec4Buffer>(resource, *value_declaration, errorState);
 				}
-				else if (value_declaration->mElementType == EUniformValueType::Mat4)
+				else if (value_declaration->mElementType == EShaderVariableValueType::Mat4)
 				{
 					instance_value_buffer = createUniformValueInstance<StorageUniformMat4BufferInstance, StorageUniformMat4Buffer>(resource, *value_declaration, errorState);
 				}
@@ -249,12 +217,12 @@ namespace nap
 			// Unsupported shader declarations
 			else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 			{
-				errorState.fail("Nested storage uniform structs are not yet supported");
+				errorState.fail("Nested storage uniform structs are not yet supported for storage buffer shader variables");
 				return false;
 			}
 			else
 			{
-				errorState.fail("Storage uniform values are not yet supported");
+				errorState.fail("Storage uniform values are not yet supported for storage buffer shader variables");
 				return false;
 			}
 		}

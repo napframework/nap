@@ -145,7 +145,7 @@ namespace nap
 		void onStorageUniformChanged(int storageBufferIndex, StorageUniformInstance& storageUniformInstance);
 
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
-		bool rebuildSSBO(StorageUniformBufferObject& ssbo, StorageUniformStructInstance* overrideStruct, uint hboIndex, utility::ErrorState& errorState);
+		bool rebuildSSBO(StorageUniformBufferObject& ssbo, StorageUniformStructInstance* overrideStruct, uint ssboIndex, utility::ErrorState& errorState);
 
 		void updateStorageUniforms(const DescriptorSet& descriptorSet);
 

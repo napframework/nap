@@ -178,4 +178,6 @@ namespace nap
 	using ShaderVariableStructDeclaration = UniformStructDeclaration;
 	using ShaderVariableStructArrayDeclaration = UniformStructArrayDeclaration;
 	using ShaderVariableValueArrayDeclaration = UniformValueArrayDeclaration;
+
+	using EShaderVariableValueType = EUniformValueType;
 }

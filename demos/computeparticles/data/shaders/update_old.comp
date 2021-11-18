@@ -5,27 +5,29 @@
 
 layout(local_size_x = 8) in;
 
-struct Particle
+layout(std430) buffer PositionBuffer_In
 {
-	vec4 position;
-	vec4 velocity;
-	vec4 rotation;
-	vec4 color;
+	vec4 inPositions[1000000];
 };
 
-layout(std430) buffer ParticleBuffer_In
+layout(std430) buffer PositionBuffer_Out 
 {
-	Particle particles[1000];
-} subo_in;
+	vec4 outPositions[1000000];
+};
 
-layout(std430) buffer ParticleBuffer_Out
+layout(std430) buffer VelocityBuffer 
 {
-	Particle particles[1000];
-} subo_out;
+	vec4 velocities[1000000];
+};
+
+layout(std430) buffer RotationBuffer 
+{
+	vec4 rotations[1000000];
+};
 
 layout(std430) buffer VertexBuffer 
 {
-	vec4 vertices[4000];
+	vec4 vertices[4000000];
 };
 
 uniform UBO 
@@ -85,16 +87,15 @@ float snoise(vec3 v);
 void main() 
 {
 	// Read
-	Particle p = subo_in.particles[gl_GlobalInvocationID.x];
+	vec4 pos = inPositions[gl_GlobalInvocationID.x];
+	vec4 vel = velocities[gl_GlobalInvocationID.x];
+	vec4 rot = rotations[gl_GlobalInvocationID.x];
 
-	float dx = snoise(p.velocity.xyz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
-	float dy = snoise(p.velocity.zyx * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
-	float dz = snoise(p.velocity.yxz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
+	float dx = snoise(vel.xyz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
+	float dy = snoise(vel.zyx * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
+	float dz = snoise(vel.yxz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
 
-	p.position.xyz += vec3(dx, dy, dz) * ubo.deltaTime;
-
-	// Write
-	subo_out.particles[gl_GlobalInvocationID.x] = p;
+	pos.xyz += vec3(dx, dy, dz) * ubo.deltaTime;
 
 	// Create the position vertices
 	float extent = ubo.particleSize * 0.5;
@@ -108,14 +109,17 @@ void main()
 	edges[3] = vec4(extent,		extent, 	0.0, 1.0);
 
 	// Apply particle translation / rotation
-	mat4 translation = translate(p.position.xyz);
-	mat4 rotation = rotate(p.position.xyz, (p.rotation.w + 1.0) * ubo.rotationSpeed * (ubo.elapsedTime + 1.0));
+	mat4 translation = translate(pos.xyz);
+	mat4 rotation = rotate(rot.xyz, (rot.w + 1.0) * ubo.rotationSpeed * (ubo.elapsedTime + 1.0));
 
-	// Write vertex storage buffer
+	// Vertex storage buffer
 	for (int i=0; i<4; i++)
 	{
 		vertices[gl_GlobalInvocationID.x*4+i] = translation * rotation * edges[i];
 	}
+
+	// Write
+	outPositions[gl_GlobalInvocationID.x] = pos;
 }
 
 
