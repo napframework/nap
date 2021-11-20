@@ -8,7 +8,6 @@
 #include <entity.h>
 #include <nap/core.h>
 #include <nap/logger.h>
-#include <entity.h>
 
 // nap::apicomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::APIComponent)
