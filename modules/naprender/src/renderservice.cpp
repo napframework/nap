@@ -1630,10 +1630,12 @@ namespace nap
 
 			if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
 				return false;
+
+			frame.mQueueSubmitOps = { false, false, false };
 		}
 
 		// Initialize semaphore wait list
-		mComputeSemaphoreWaitList.resize(getMaxFramesInFlight());
+		mComputeWaitSemaphoreLists.resize(getMaxFramesInFlight());
 		mComputeFinishedSemaphores.resize(getMaxFramesInFlight());
 
 		VkSemaphoreCreateInfo semaphore_info = {};
@@ -1676,7 +1678,7 @@ namespace nap
 
 	void RenderService::pushComputeDependency(VkSemaphore waitSemaphore)
 	{
-		mComputeSemaphoreWaitList[mCurrentFrameIndex].push_back(waitSemaphore);
+		mComputeWaitSemaphoreLists[mCurrentFrameIndex].push_back(waitSemaphore);
 	}
 
 
@@ -1956,6 +1958,8 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = false;
 		mIsRenderingFrame = true;
 
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = { false, false, false };
+
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
 		// that the fence belongs to, and all resources re1ferenced from it, are available for (re)use.
 		// Notice that there are multiple other VkQueueSubmits that are performed by RenderWindow(s), and headless 
@@ -1996,10 +2000,26 @@ namespace nap
 		// Push any texture downloads on the command buffer
 		downloadData();
 
+		// We must reset the registered wait semaphores here in case no rendering has taken place in the current frame
+		// (e.g. due to a recreation of the swapchain). This can be achieved by explicitly waiting for each in vkQueueSubmit()
+		// We must do it this way as vkWaitSemaphores() is not supported until VK Version 1.2
+		if (!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering)
+		{
+			VkPipelineStageFlags wait_flags[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
+
+			VkSubmitInfo submit_info = {};
+			submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submit_info.pWaitSemaphores = &mComputeFinishedSemaphores[mCurrentFrameIndex];
+			submit_info.waitSemaphoreCount = 1;
+			submit_info.pWaitDstStageMask = wait_flags;
+
+			vkQueueSubmit(mQueue, 1, &submit_info, mFramesInFlight[mCurrentFrameIndex].mFence);
+		}
+
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
 		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
-
+		
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % getMaxFramesInFlight();
 		mIsRenderingFrame = false;
 	}
@@ -2034,6 +2054,7 @@ namespace nap
 		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering = true;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -2107,20 +2128,18 @@ namespace nap
 		submit_info.pSignalSemaphores = signal_semaphores;
 		submit_info.signalSemaphoreCount = 1;
 
-		if (!mComputeSemaphoreWaitList[mCurrentFrameIndex].empty())
-		{
-			VkSemaphore wait_semaphores[] = { mComputeSemaphoreWaitList[mCurrentFrameIndex].back() };
-			VkPipelineStageFlags wait_flags[] = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
+		std::vector<VkPipelineStageFlags> wait_flags;
+		wait_flags.resize(mComputeWaitSemaphoreLists[mCurrentFrameIndex].size(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 
-			submit_info.pWaitSemaphores = wait_semaphores;
-			submit_info.pWaitDstStageMask = wait_flags;
-			submit_info.waitSemaphoreCount = 1;
-		}
+		submit_info.pWaitSemaphores = mComputeWaitSemaphoreLists[mCurrentFrameIndex].data();
+		submit_info.pWaitDstStageMask = wait_flags.data();
+		submit_info.waitSemaphoreCount = mComputeWaitSemaphoreLists[mCurrentFrameIndex].size();
 
 		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, NULL);
  		assert(result == VK_SUCCESS);
-		
-		mComputeSemaphoreWaitList[mCurrentFrameIndex].clear();
+
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mCompute = true;
+		mComputeWaitSemaphoreLists[mCurrentFrameIndex].clear();
 
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}

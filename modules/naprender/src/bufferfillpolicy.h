@@ -47,6 +47,8 @@ namespace nap
 		RTTI_ENABLE(StructBufferFillPolicy)
 	public:
 		virtual bool fill(const StructBufferDescriptor& descriptor, uint8* data, utility::ErrorState& errorState) override;
+
+
 	};
 
 

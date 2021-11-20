@@ -137,7 +137,22 @@ namespace nap
 	public:
 		UniformStructArrayDeclaration(const std::string& name, int offset, int size);
 
-		std::vector<std::unique_ptr<UniformStructDeclaration>> mElements;		///< All struct declarations.
+		std::vector<std::unique_ptr<UniformStructDeclaration>> mElements;		///< Struct declaration
+	};
+
+
+	/**
+	 * Buffer representation of uniform struct shader declarations. Used for storage buffers.
+	 */
+	class UniformStructBufferDeclaration : public UniformDeclaration
+	{
+		RTTI_ENABLE(UniformDeclaration)
+	public:
+		UniformStructBufferDeclaration(const std::string& name, int offset, int size, int stride, int numElements);
+
+		std::unique_ptr<UniformStructDeclaration> mElement;						///< Struct declaration
+		int					mNumElements;										///< Total number of struct elements in list
+		int					mStride;											///< Stride of struct element in array
 	};
 
 
@@ -177,6 +192,7 @@ namespace nap
 	using ShaderVariableValueDeclaration = UniformValueDeclaration;
 	using ShaderVariableStructDeclaration = UniformStructDeclaration;
 	using ShaderVariableStructArrayDeclaration = UniformStructArrayDeclaration;
+	using ShaderVariableStructBufferDeclaration = UniformStructBufferDeclaration;
 	using ShaderVariableValueArrayDeclaration = UniformValueArrayDeclaration;
 
 	using EShaderVariableValueType = EUniformValueType;

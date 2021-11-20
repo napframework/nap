@@ -1058,6 +1058,16 @@ namespace nap
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 
 		/**
+		 * Marks whether render and/or compute queue submission occured in a frame
+		 */
+		struct QueueSubmitOps
+		{
+			bool mRendering = false;
+			bool mHeadlessRendering = false;
+			bool mCompute = false;
+		};
+
+		/**
 		 * Binds together all the Vulkan data for a frame.
 		 */
 		struct Frame
@@ -1069,6 +1079,7 @@ namespace nap
 			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window.
 			VkCommandBuffer						mComputeCommandBuffer;				///< Command buffer used to record compute operations
 			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;		///< All Vulkan resources queued for destruction
+			QueueSubmitOps						mQueueSubmitOps;
 		};
 
 		/**
@@ -1105,7 +1116,7 @@ namespace nap
 		std::vector<Frame>						mFramesInFlight;
 		RenderWindow*							mCurrentRenderWindow = nullptr;
 
-		std::vector<SemaphoreList>				mComputeSemaphoreWaitList;
+		std::vector<SemaphoreList>				mComputeWaitSemaphoreLists;
 		std::vector<VkSemaphore>				mComputeFinishedSemaphores;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;

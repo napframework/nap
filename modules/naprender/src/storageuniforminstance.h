@@ -163,7 +163,7 @@ namespace nap
 		RTTI_ENABLE(StorageUniformBufferInstance)
 	public:
 		// Constructor
-		StorageUniformStructBufferInstance(const UniformStructArrayDeclaration& declaration) :
+		StorageUniformStructBufferInstance(const ShaderVariableStructBufferDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{ }
 
@@ -215,7 +215,7 @@ namespace nap
 		void raiseChanged()													{ if (mStructBufferChangedCallback) mStructBufferChangedCallback(*this); }
 
 	private:
-		const ShaderVariableStructArrayDeclaration* mDeclaration;
+		const ShaderVariableStructBufferDeclaration* mDeclaration;
 		rtti::ObjectPtr<GPUStructBuffer> mBuffer;
 
 		mutable StorageUniformStructBufferChangedCallback mStructBufferChangedCallback;

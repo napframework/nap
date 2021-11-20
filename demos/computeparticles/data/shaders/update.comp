@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
-layout(local_size_x = 8) in;
+layout(local_size_x = 64) in;
 
 struct Particle
 {
@@ -15,17 +15,17 @@ struct Particle
 
 layout(std430) buffer ParticleBuffer_In
 {
-	Particle particles[1000];
+	Particle particles[1000000];
 } subo_in;
 
 layout(std430) buffer ParticleBuffer_Out
 {
-	Particle particles[1000];
+	Particle particles[1000000];
 } subo_out;
 
 layout(std430) buffer VertexBuffer 
 {
-	vec4 vertices[4000];
+	vec4 vertices[4000000];
 };
 
 uniform UBO 

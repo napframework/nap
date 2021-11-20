@@ -221,6 +221,7 @@ namespace nap
 		// Random init the first element
 		size_t element_size = uniformRandomInitShaderVariableStructBufferRecursive(*descriptor.mElement, data);
 
+		// Still poor performance on large buffers
 		for (size_t i = 1; i < descriptor.mCount; i++)
 			uniformRandomInitShaderVariableStructBufferRecursive(*descriptor.mElement, data + i*element_size);
 

@@ -447,7 +447,7 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 }
 
 
-static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::utility::ErrorState& errorState)
+static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::EBufferObjectType boType, nap::utility::ErrorState& errorState)
 {
 	assert(type.basetype == spirv_cross::SPIRType::Struct);
 
@@ -474,22 +474,31 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 				size_t stride = compiler.type_struct_member_array_stride(type, index);
 				size_t struct_size = compiler.get_declared_struct_size(member_type);
 
-				std::unique_ptr<nap::UniformStructArrayDeclaration> array_declaration = std::make_unique<nap::UniformStructArrayDeclaration>(name, absoluteOffset, member_size);
-
-				for (int array_index = 0; array_index < num_elements; ++array_index)
+				if (boType == nap::EBufferObjectType::Storage)
 				{
-					std::string array_path = nap::utility::stringFormat("%s[%d]", full_path.c_str(), array_index);
-
+					std::unique_ptr<nap::UniformStructBufferDeclaration> buffer_declaration = std::make_unique<nap::UniformStructBufferDeclaration>(name, absoluteOffset, member_size, stride, num_elements);
 					std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
-					if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, errorState))
-						return false;
+					buffer_declaration->mElement = std::move(struct_declaration);
 
-					array_declaration->mElements.emplace_back(std::move(struct_declaration));
-					absoluteOffset += stride;
+					parentStruct.mMembers.emplace_back(std::move(buffer_declaration));
 				}
+				else if (boType == nap::EBufferObjectType::Uniform)
+				{
+					std::unique_ptr<nap::UniformStructArrayDeclaration> array_declaration = std::make_unique<nap::UniformStructArrayDeclaration>(name, absoluteOffset, member_size);
 
-				// TODO: Make distinction between value array and value buffer for structs
-				parentStruct.mMembers.emplace_back(std::move(array_declaration));
+					for (int array_index = 0; array_index < num_elements; ++array_index)
+					{
+						std::string array_path = nap::utility::stringFormat("%s[%d]", full_path.c_str(), array_index);
+
+						std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
+						if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, boType, errorState))
+							return false;
+
+						array_declaration->mElements.emplace_back(std::move(struct_declaration));
+						absoluteOffset += stride;
+					}
+					parentStruct.mMembers.emplace_back(std::move(array_declaration));
+				} 
 			}
 			else
 			{
@@ -510,7 +519,7 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 				size_t struct_size = compiler.get_declared_struct_size(member_type);
 
 				std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
-				if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, errorState))
+				if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, boType, errorState))
 					return false;
 
 				parentStruct.mMembers.emplace_back(std::move(struct_declaration));
@@ -545,7 +554,7 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		size_t struct_size = compiler.get_declared_struct_size(type);
 		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Uniform, struct_size);
 
-		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, errorState))
+		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, nap::EBufferObjectType::Uniform, errorState))
 			return false;
 
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
@@ -561,7 +570,7 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		size_t struct_size = compiler.get_declared_struct_size(type);
 		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Storage, struct_size);
 
-		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, errorState))
+		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EBufferObjectType::Storage, errorState))
 			return false;
 
 		suboDeclarations.emplace_back(std::move(storage_buffer_object));

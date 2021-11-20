@@ -125,7 +125,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumParticles": 1000,
+                    "NumParticles": 1000000,
                     "Size": 0.03999999910593033,
                     "RotationSpeed": 0.5,
                     "Velocity": 0.5,
@@ -168,7 +168,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_2f2aafc2",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles"
+                                    "Buffer": "GPUStructBuffer_Particles_A"
                                 }
                             },
                             {
@@ -179,7 +179,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_80e8d81c",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles2"
+                                    "Buffer": "GPUStructBuffer_Particles_B"
                                 }
                             }
                         ],
@@ -201,7 +201,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_b40f779b",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles2"
+                                    "Buffer": "GPUStructBuffer_Particles_B"
                                 }
                             },
                             {
@@ -212,7 +212,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_00e07917",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles"
+                                    "Buffer": "GPUStructBuffer_Particles_A"
                                 }
                             }
                         ],
@@ -224,7 +224,7 @@
         },
         {
             "Type": "nap::GPUStructBuffer",
-            "mID": "GPUStructBuffer_Particles",
+            "mID": "GPUStructBuffer_Particles_A",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -277,7 +277,7 @@
                         }
                     ]
                 },
-                "Count": 1000
+                "Count": 1000000
             },
             "Usage": "Static",
             "FillPolicy": {
@@ -287,7 +287,7 @@
         },
         {
             "Type": "nap::GPUStructBuffer",
-            "mID": "GPUStructBuffer_Particles2",
+            "mID": "GPUStructBuffer_Particles_B",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -340,47 +340,15 @@
                         }
                     ]
                 },
-                "Count": 1000
+                "Count": 1000000
             },
             "Usage": "Static",
             "FillPolicy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Positions",
-            "Count": 1000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "FillPolicy": ""
-        },
-        {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Positions2",
-            "Count": 1000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "FillPolicy": ""
-        },
-        {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Rotations",
-            "Count": 1000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "FillPolicy": ""
-        },
-        {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Velocities",
-            "Count": 1000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "FillPolicy": ""
-        },
-        {
-            "Type": "nap::GPUVec4Buffer",
             "mID": "GPUVec4Buffer_Vertices",
-            "Count": 4000,
+            "Count": 4000000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
             "FillPolicy": ""

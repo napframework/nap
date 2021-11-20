@@ -169,7 +169,7 @@ namespace nap
 			const UniformStructDeclaration* struct_declaration = rtti_cast<const UniformStructDeclaration>(&declaration);
 			return std::make_unique<UniformStructInstance>(*struct_declaration, uniformCreatedCallback);
 		}
-		else
+		else if (declaration_type == RTTI_OF(UniformValueDeclaration))
 		{
 			const UniformValueDeclaration* value_declaration = rtti_cast<const UniformValueDeclaration>(&declaration);
 
@@ -197,6 +197,11 @@ namespace nap
 			{
 				return std::make_unique<UniformMat4Instance>(*value_declaration);
 			}
+		}
+		else
+		{
+			// Possibly UniformStructBufferDeclaration - which is supported for StorageUniforms only
+			assert(false);
 		}
 
 		return nullptr;
@@ -311,7 +316,7 @@ namespace nap
 
 				mUniforms.emplace_back(std::move(struct_instance));
 			}
-			else
+			else if(declaration_type == RTTI_OF(UniformValueDeclaration))
 			{
 				UniformValueDeclaration* value_declaration = rtti_cast<UniformValueDeclaration>(uniform_declaration.get());
 				std::unique_ptr<UniformValueInstance> value_instance;
@@ -349,6 +354,11 @@ namespace nap
 					return false;
 
 				mUniforms.emplace_back(std::move(value_instance));
+			}
+			else
+			{
+				// Possibly UniformStructBufferDeclaration - which is supported for StorageUniforms only
+				assert(false);
 			}
 		}
 		return true;

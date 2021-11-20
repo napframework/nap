@@ -799,8 +799,14 @@ namespace nap
 
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
-		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame], mRenderService->mComputeFinishedSemaphores[current_frame] };
-		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT };
+		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame] };
+		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+		if (mRenderService->isComputeAvailable())
+		{
+			wait_semaphores.push_back(mRenderService->mComputeFinishedSemaphores[current_frame]);
+			wait_stages.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
+		}
 
 		submit_info.waitSemaphoreCount = wait_semaphores.size();
 		submit_info.pWaitSemaphores = wait_semaphores.data();
@@ -811,15 +817,21 @@ namespace nap
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		std::vector<VkSemaphore> signalSemaphores = { mRenderFinishedSemaphores[current_frame], mRenderFinishedSemaphoresCompute[current_frame] };
+		std::vector<VkSemaphore> signalSemaphores = { mRenderFinishedSemaphores[current_frame] };
+		if (mRenderService->isComputeAvailable())
+			signalSemaphores.push_back(mRenderFinishedSemaphoresCompute[current_frame]);
+
 		submit_info.signalSemaphoreCount = signalSemaphores.size();
 		submit_info.pSignalSemaphores = signalSemaphores.data();
 
-		// TEST
-		mRenderService->pushComputeDependency(mRenderFinishedSemaphoresCompute[current_frame]);
+		// Push a compute dependency
+		if (mRenderService->isComputeAvailable())
+			mRenderService->pushComputeDependency(mRenderFinishedSemaphoresCompute[current_frame]);
 		
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
+
+		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps.mRendering = true;
 
 		// Create present information
 		VkPresentInfoKHR present_info = {};

@@ -97,6 +97,15 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
+	UniformStructBufferDeclaration::UniformStructBufferDeclaration(const std::string& name, int offset, int size, int stride, int numElements) :
+		UniformDeclaration(name, offset, size),
+		mNumElements(numElements),
+		mStride(stride)
+	{
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
 	UniformValueArrayDeclaration::UniformValueArrayDeclaration(const std::string& name, int offset, int size, int stride, EUniformValueType elementType, int numElements) :
 		UniformDeclaration(name, offset, size),
 		mElementType(elementType),
