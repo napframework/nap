@@ -209,6 +209,7 @@ add_subdirectory(modules/napudp)
 add_subdirectory(modules/naptween)
 add_subdirectory(modules/napcalendar)
 add_subdirectory(modules/napasio)
+add_subdirectory(modules/napportal)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
