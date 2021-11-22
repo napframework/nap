@@ -53,7 +53,6 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RequiredQueues",				&nap::RenderServiceConfiguration::mQueueFamilies,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RequestUnifiedQueue",		&nap::RenderServiceConfiguration::mRequestUnifiedQueue,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
@@ -1543,7 +1542,10 @@ namespace nap
 
 		// Get the required queue flags
 		VkQueueFlags req_queue_flags = getQueueFlags(render_config->mQueueFamilies);
-		bool req_unified_queue = render_config->mRequestUnifiedQueue;
+
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute.
+		// Not exposed in RenderServiceConfiguration for now as setting this to false requires some buffers to use a potentially slower concurrent sharingmode.
+		bool req_unified_queue = true;
 
 		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_flags, req_unified_queue, mPhysicalDevice, errorState))
 			return false;
