@@ -50,17 +50,19 @@ RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueFamilyOptions)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
-	RTTI_PROPERTY("Headless",			&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PreferredGPU",		&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RequiredQueues",		&nap::RenderServiceConfiguration::mQueueFamilies,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Layers",				&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Extensions",			&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VulkanMajor",		&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VulkanMinor",		&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableHighDPI",		&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShowLayers",			&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShowExtensions",		&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AnisotropicSamples",	&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RequiredQueues",				&nap::RenderServiceConfiguration::mQueueFamilies,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RequestUnifiedQueue",		&nap::RenderServiceConfiguration::mRequestUnifiedQueue,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -520,7 +522,7 @@ namespace nap
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueFlags, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueFlags, bool requireUnifiedQueue, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -580,15 +582,23 @@ namespace nap
 
 			// If required, ensure there's a compatible compute queue for this device
 			int selected_compute_queue_idx = -1;
-			search_mask[selected_graphics_queue_idx] = 0;
 			if (requiredQueueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
+				// If no unified queue is required, do not consider the previously selected graphics queue when selecting the compute queue
+				if (!requireUnifiedQueue)
+					search_mask[selected_graphics_queue_idx] = 0;
+
 				// Only search unselected queue families
 				if (!selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx))
 				{
-					// Search again with all queue families
-					search_mask.resize(queue_families.size(), 1);
-					if (!selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx))
+					bool compute_queue_found = false;
+					if (!requireUnifiedQueue)
+					{
+						// Search again with all queue families
+						search_mask.resize(queue_families.size(), 1);
+						compute_queue_found = selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx);
+					}
+					if (!compute_queue_found)
 					{
 						Logger::warn("%d: Unable to find compatible compute queue family", device_idx);
 						continue;
@@ -618,7 +628,7 @@ namespace nap
 
 		// Set the output
 		outDevice = valid_devices[selected_idx];
-		nap::Logger::info("Selected device: %d", selected_idx, outDevice.getProperties().deviceName);
+		nap::Logger::info("Selected device: %d: %s | Queues: GRAPHICS=%d TRANSFER=%d COMPUTE=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex(), outDevice.getComputeQueueIndex());
 		return true;
 	}
 
@@ -626,7 +636,7 @@ namespace nap
 	/**
 	 * Creates the logical device based on the selected physical device, queue index and required extensions
 	 */
-	static bool createLogicalDevice(const PhysicalDevice& physicalDevice, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
+	static bool createLogicalDevice(const PhysicalDevice& physicalDevice, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, bool robustBufferAccess, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
@@ -701,6 +711,13 @@ namespace nap
 		device_features.largePoints = physicalDevice.getFeatures().largePoints;
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
+
+		// Robust buffer access
+		if (robustBufferAccess)
+		{
+			device_features.robustBufferAccess = VK_TRUE;
+			Logger::info("Robust buffer access enabled");
+		}
 
 		// Device creation information	
 		VkDeviceCreateInfo create_info = { };
@@ -1526,8 +1543,9 @@ namespace nap
 
 		// Get the required queue flags
 		VkQueueFlags req_queue_flags = getQueueFlags(render_config->mQueueFamilies);
+		bool req_unified_queue = render_config->mRequestUnifiedQueue;
 
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_flags, mPhysicalDevice, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_flags, req_unified_queue, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
@@ -1562,7 +1580,8 @@ namespace nap
 
 		// Create a logical device that interfaces with the physical device.
 		bool print_extensions = render_config->mPrintAvailableExtensions;
-		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
+		bool robust_buffer_access = render_config->mEnableRobustBufferAccess;
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, robust_buffer_access, mDevice, errorState))
 			return false;
 
 		// Create command pool

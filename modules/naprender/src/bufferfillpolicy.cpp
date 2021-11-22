@@ -157,7 +157,6 @@ namespace nap
 						size += sizeof(glm::vec4);
 					}
 				}
-
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::mat4>))
 				{
 					assert(false);
@@ -218,12 +217,10 @@ namespace nap
 
 	bool UniformRandomStructBufferFillPolicy::fill(const StructBufferDescriptor& descriptor, uint8* data, utility::ErrorState& errorState)
 	{
-		// Random init the first element
-		size_t element_size = uniformRandomInitShaderVariableStructBufferRecursive(*descriptor.mElement, data);
-
 		// Still poor performance on large buffers
-		for (size_t i = 1; i < descriptor.mCount; i++)
-			uniformRandomInitShaderVariableStructBufferRecursive(*descriptor.mElement, data + i*element_size);
+		size_t element_size = 0;
+		for (size_t i = 0; i < descriptor.mCount; i++)
+			element_size = uniformRandomInitShaderVariableStructBufferRecursive(*descriptor.mElement, data + i*element_size);
 
 		return true;
 	}

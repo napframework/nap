@@ -66,6 +66,7 @@
                 "Compute": true,
                 "Transfer": true
             },
+            "RequestUnifiedQueue": true,
             "Layers": [
                 "VK_LAYER_KHRONOS_validation"
             ],
@@ -73,6 +74,7 @@
             "VulkanMajor": 1,
             "VulkanMinor": 0,
             "EnableHighDPI": true,
+            "EnableRobustBufferAccess": false,
             "ShowLayers": false,
             "ShowExtensions": false,
             "AnisotropicSamples": 8
