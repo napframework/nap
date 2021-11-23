@@ -229,7 +229,7 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 36
+                "Size": 32
             },
             "Font": "fonts/Montserrat-Light.otf"
         },

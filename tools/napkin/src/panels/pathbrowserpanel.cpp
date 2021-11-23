@@ -104,20 +104,17 @@ PathBrowserPanel::PathBrowserPanel()
 		}
 	});
 
-	connect(mTreeView.getTreeView().selectionModel(), &QItemSelectionModel::selectionChanged,
-			[this](const QItemSelection& selected,
-				   const QItemSelection& deselected)
+	connect(mTreeView.getTreeView().selectionModel(), &QItemSelectionModel::selectionChanged, [this](const QItemSelection& selected, const QItemSelection& deselected)
+		{
+			auto indexes = mTreeView.getTreeView().selectionModel()->selectedIndexes();
+			for (auto idx : indexes)
 			{
-				auto indexes = mTreeView.getTreeView().selectionModel()->selectedIndexes();
-				for (auto idx : indexes)
-				{
-					if (idx.column() > 0)
-						continue;
-					auto srcIndex = mTreeView.getFilterModel().mapToSource(idx);
-					auto item = mTreeView.getModel()->itemFromIndex(srcIndex);
-//					auto pathItem = dynamic_cast<PathItem*>(item);
-//					qInfo() << pathItem->text();
-				}
-			});
+				if (idx.column() > 0)
+					continue;
+
+				auto srcIndex = mTreeView.getProxyModel().mapToSource(idx);
+				auto item = mTreeView.getModel()->itemFromIndex(srcIndex);
+			}
+		});
 }
 nap::qt::FilterTreeView& PathBrowserPanel::treeView() { return mTreeView; }
