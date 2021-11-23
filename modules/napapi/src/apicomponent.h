@@ -23,7 +23,7 @@ namespace nap
 
 	/**
 	 * Receives APIEvents from the APIService.
-	 * Populate the 'Methods' property with signatures of calls you wish to receive at run-time.
+	 * Populate the 'Signatures' property with signatures of calls you wish to receive at run-time.
 	 * Only events that have a matching signature are accepted.
 	 */
 	class NAPAPI APIComponent : public Component
@@ -31,7 +31,7 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(APIComponent, APIComponentInstance)
 	public:
-		std::vector<ResourcePtr<APISignature>> mSignatures;			///< Property: 'Methods' all (exact) names of API calls (ids) accepted by this component.
+		std::vector<ResourcePtr<APISignature>> mSignatures;			///< Property: 'Signatures' all (exact) names of API calls (ids) accepted by this component.
 	};
 
 

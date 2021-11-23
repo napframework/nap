@@ -9,12 +9,12 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-// nap::apicomponent run time class definition 
+// nap::apicomponent run time class definition
 RTTI_BEGIN_CLASS(nap::APIComponent)
-	RTTI_PROPERTY("Methods",	&nap::APIComponent::mSignatures, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Signatures",	&nap::APIComponent::mSignatures, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-// nap::apicomponentInstance run time class definition 
+// nap::apicomponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
@@ -48,7 +48,7 @@ namespace nap
 		std::vector<ResourcePtr<APISignature>>& methods = getComponent<APIComponent>()->mSignatures;
 		for (const auto& method : methods)
 			mSignatures.emplace(std::make_pair(method->mID, method.get()));
-		
+
 		return true;
 	}
 
