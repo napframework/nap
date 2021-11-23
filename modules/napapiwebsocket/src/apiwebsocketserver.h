@@ -164,6 +164,12 @@ namespace nap
 		// Called by web-socket server endpoint when a new message is received
 		virtual void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message) override;
 
+		// Forwards a received WebSocket event, called when 'Mode' is 'Both' or 'WebSocketEvent'
+		void forwardWebSocketEvent(const WebSocketConnection& connection, const WebSocketMessage& message);
+
+		// Forwards received API events, called when 'Mode' is 'Both' or 'APIEvent'
+		void forwardAPIEvents(const WebSocketConnection& connection, const WebSocketMessage& message);
+
 		// Called by web-socket server endpoint when a client connection opened
 		virtual void onConnectionOpened(const WebSocketConnection& connection) override;
 

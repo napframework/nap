@@ -84,23 +84,40 @@ namespace nap
 
 	void APIWebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
-		// Add web-socket event
+		// Add web-socket event, API events or both
 		switch(mMode)
 		{
 		case EWebSocketForwardMode::WebSocketEvent:
 		{
-			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
-			return;
+			forwardWebSocketEvent(connection, message);
+			break;
+		}
+		case EWebSocketForwardMode::APIEvent:
+		{
+			forwardAPIEvents(connection, message);
+			break;
 		}
 		case EWebSocketForwardMode::Both:
 		{
-			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+			forwardWebSocketEvent(connection, message);
+			forwardAPIEvents(connection, message);
 			break;
 		}
 		default:
 			break;
 		}
+	}
 
+
+	void APIWebSocketServer::forwardWebSocketEvent(const WebSocketConnection& connection, const WebSocketMessage& message)
+	{
+		// Add event to queue for processing by web-socket service
+		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
+	}
+
+
+	void APIWebSocketServer::forwardAPIEvents(const WebSocketConnection& connection, const WebSocketMessage& message)
+	{
 		// Ensure it's a finalized message
 		nap::utility::ErrorState error;
 		if (!error.check(message.getFin(), "only finalized messages are accepted"))
@@ -113,7 +130,7 @@ namespace nap
 		// Make sure we're dealing with text
 		if (!error.check(message.getCode() == EWebSocketOPCode::Text, "not a text message"))
 		{
-			if(mVerbose)
+			if (mVerbose)
 				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
 			return;
 		}
