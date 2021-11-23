@@ -5,6 +5,7 @@
 
 layout(local_size_x = 64) in;
 
+
 struct Particle
 {
 	vec4 position;

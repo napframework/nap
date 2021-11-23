@@ -9,8 +9,8 @@
 // External Includes
 #include <nap/core.h>
 
+RTTI_DEFINE_BASE(nap::BaseFillPolicy)
 RTTI_DEFINE_BASE(nap::BaseValueBufferFillPolicy)
-RTTI_DEFINE_BASE(nap::BaseStructBufferFillPolicy)
 
 RTTI_DEFINE_BASE(nap::IntBufferFillPolicy)
 RTTI_DEFINE_BASE(nap::FloatBufferFillPolicy)
@@ -24,39 +24,7 @@ RTTI_DEFINE_BASE(nap::Mat4BufferFillPolicy)
 // UniformRandomBufferFillPolicy
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS(nap::UniformRandomIntBufferFillPolicy)
-	RTTI_PROPERTY("Lowerbound", &nap::UniformRandomIntBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomIntBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformRandomFloatBufferFillPolicy)
-	RTTI_PROPERTY("Lowerbound", &nap::UniformRandomFloatBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomFloatBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformRandomIntBufferFillPolicy)
-	RTTI_PROPERTY("Lowerbound", &nap::UniformRandomIntBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomIntBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformRandomVec2BufferFillPolicy)
-	RTTI_PROPERTY("Lowerbound", &nap::UniformRandomVec2BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomVec2BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformRandomVec3BufferFillPolicy)
-	RTTI_PROPERTY("Lowerbound", &nap::UniformRandomVec3BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomVec3BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformRandomVec4BufferFillPolicy)
-	RTTI_PROPERTY("Lowerbound", &nap::UniformRandomVec4BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomVec4BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::UniformRandomMat4BufferFillPolicy)
-	RTTI_PROPERTY("Lowerbound", &nap::UniformRandomMat4BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomMat4BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::UniformRandomFillPolicy)
 RTTI_END_CLASS
 
 
@@ -93,24 +61,123 @@ RTTI_BEGIN_CLASS(nap::ConstantMat4BufferFillPolicy)
 RTTI_END_CLASS
 
 
-//////////////////////////////////////////////////////////////////////////
-// StructBufferFillPolicy
-//////////////////////////////////////////////////////////////////////////
-
-RTTI_BEGIN_CLASS(nap::UniformRandomStructBufferFillPolicy)
-RTTI_END_CLASS
-
-
 namespace nap
 {
-	/**
-	 * Randomly initializes a data element from a ShaderVariableStructResource
-	 * This function is unfinished but works with vec4 for now
-	 */
-	static int uniformRandomInitShaderVariableStructBufferRecursive(const ShaderVariableStructResource& uniformStruct, uint8* data, size_t offset = 0)
+	////////////////////////////////////////////////////////////
+	// UniformRandomFillPolicy
+	////////////////////////////////////////////////////////////
+
+	bool UniformRandomFillPolicy::init(utility::ErrorState& errorState)
+	{
+		// int
+		registerFillPolicyFunction(RTTI_OF(int), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		{
+			const UniformInt* uniform_lowerbound_resolved = rtti_cast<const UniformInt>(lowerBoundUniform);
+			const UniformInt* uniform_upperbound_resolved = rtti_cast<const UniformInt>(upperBoundUniform);
+
+			assert(uniform_lowerbound_resolved != nullptr);
+			assert(uniform_upperbound_resolved != nullptr);
+
+			int value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			std::memcpy(data, &value, sizeof(value));
+		});
+
+		// float
+		registerFillPolicyFunction(RTTI_OF(float), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		{
+			const UniformFloat* uniform_lowerbound_resolved = rtti_cast<const UniformFloat>(lowerBoundUniform);
+			const UniformFloat* uniform_upperbound_resolved = rtti_cast<const UniformFloat>(upperBoundUniform);
+
+			assert(uniform_lowerbound_resolved != nullptr);
+			assert(uniform_upperbound_resolved != nullptr);
+
+			float value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			std::memcpy(data, &value, sizeof(value));
+		});
+
+		// vec2
+		registerFillPolicyFunction(RTTI_OF(glm::vec2), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		{
+			const UniformVec2* uniform_lowerbound_resolved = rtti_cast<const UniformVec2>(lowerBoundUniform);
+			const UniformVec2* uniform_upperbound_resolved = rtti_cast<const UniformVec2>(upperBoundUniform);
+
+			assert(uniform_lowerbound_resolved != nullptr);
+			assert(uniform_upperbound_resolved != nullptr);
+
+			glm::vec2 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			std::memcpy(data, &value, sizeof(value));
+		});
+
+		// vec3
+		registerFillPolicyFunction(RTTI_OF(glm::vec3), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		{
+			const UniformVec3* uniform_lowerbound_resolved = rtti_cast<const UniformVec3>(lowerBoundUniform);
+			const UniformVec3* uniform_upperbound_resolved = rtti_cast<const UniformVec3>(upperBoundUniform);
+
+			assert(uniform_lowerbound_resolved != nullptr);
+			assert(uniform_upperbound_resolved != nullptr);
+
+			glm::vec3 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			std::memcpy(data, &value, sizeof(value));
+		});
+
+		// vec4
+		registerFillPolicyFunction(RTTI_OF(glm::vec4), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		{
+			const UniformVec4* uniform_lowerbound_resolved = rtti_cast<const UniformVec4>(lowerBoundUniform);
+			const UniformVec4* uniform_upperbound_resolved = rtti_cast<const UniformVec4>(upperBoundUniform);
+
+			assert(uniform_lowerbound_resolved != nullptr);
+			assert(uniform_upperbound_resolved != nullptr);
+
+			glm::vec4 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			std::memcpy(data, &value, sizeof(value));
+		});
+
+		// mat4
+		registerFillPolicyFunction(RTTI_OF(glm::mat4), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		{
+			const UniformMat4* uniform_lowerbound_resolved = rtti_cast<const UniformMat4>(lowerBoundUniform);
+			const UniformMat4* uniform_upperbound_resolved = rtti_cast<const UniformMat4>(upperBoundUniform);
+
+			assert(uniform_lowerbound_resolved != nullptr);
+			assert(uniform_upperbound_resolved != nullptr);
+
+			glm::mat4 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			std::memcpy(data, &value, sizeof(value));
+		});
+
+		return true;
+	}
+
+
+	////////////////////////////////////////////////////////////
+	// BaseFillPolicy
+	////////////////////////////////////////////////////////////
+
+	bool BaseFillPolicy::init(utility::ErrorState& errorState)
+	{
+		return true;
+	}
+
+
+	bool BaseFillPolicy::registerFillPolicyFunction(rtti::TypeInfo type, FillPolicyFunction fillFunction)
+	{
+		auto it = mFillMap.find(type);
+		if (it != mFillMap.end())
+		{
+			assert(false);
+			return false;
+		}
+		mFillMap.emplace(type, fillFunction);
+		return true;
+	}
+
+
+	int BaseFillPolicy::fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data)
 	{
 		size_t size = 0;
-		for (const auto& uniform : uniformStruct.mUniforms)
+		for (const auto& uniform : uniformStruct->mUniforms)
 		{
 			rtti::TypeInfo uniform_type = uniform->get_type();
 
@@ -119,7 +186,8 @@ namespace nap
 				UniformStructArray* uniform_resolved = rtti_cast<UniformStructArray>(uniform.get());
 				if (!uniform_resolved->mStructs.empty())
 				{
-					int struct_element_size = uniformRandomInitShaderVariableStructBufferRecursive(*uniform_resolved->mStructs[0].get(), data, offset + size);
+					assert(uniform_resolved->mStructs.size() == 1);
+					size_t struct_element_size = fillFromUniformRecursive(uniform_resolved->mStructs[0].get(), data + size);
 					size += struct_element_size * uniform_resolved->mStructs.size();
 				}
 			}
@@ -129,35 +197,35 @@ namespace nap
 
 				if (uniform_type == RTTI_OF(TypedUniformValueArray<int>))
 				{
-					for (size_t idx = 0; idx < uniform_resolved->getCount(); idx++)
-					{
-						int rand = math::random(-1, 1);
-						std::memcpy((uint8*)(data + offset + size), &rand, sizeof(int));
-						size += sizeof(int);
-					}
+					setValues<Uniform, int>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					size += sizeof(int) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<float>))
 				{
-					assert(false);
+					setValues<Uniform, float>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					size += sizeof(float) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec2>))
 				{
-					assert(false);
+					setValues<Uniform, glm::vec2>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					size += sizeof(glm::vec2) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec3>))
 				{
-					assert(false);
+					setValues<Uniform, glm::vec3>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					size += sizeof(glm::vec3) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec4>))
 				{
-					for (size_t idx = 0; idx < uniform_resolved->getCount(); idx++)
-					{
-						glm::vec4 rand = math::random<glm::vec4>({ -1.0f, -1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
-						std::memcpy((uint8*)(data + offset + size), &rand, sizeof(glm::vec4));
-						size += sizeof(glm::vec4);
-					}
+					setValues<Uniform, glm::vec4>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					size += sizeof(glm::vec4) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::mat4>))
+				{
+					setValues<Uniform, glm::mat4>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					size += sizeof(glm::mat4) * uniform_resolved->getCount();
+				}
+				else
 				{
 					assert(false);
 				}
@@ -165,49 +233,46 @@ namespace nap
 			else if (uniform_type.is_derived_from(RTTI_OF(UniformStruct)))
 			{
 				UniformStruct* uniform_resolved = rtti_cast<UniformStruct>(uniform.get());
-				size += uniformRandomInitShaderVariableStructBufferRecursive(*uniform_resolved, data, offset + size);
+				size_t struct_element_size = fillFromUniformRecursive(uniform_resolved, data + size);
+				size += struct_element_size;
 			}
 			else if (uniform_type.is_derived_from(RTTI_OF(UniformValue)))
 			{
+				UniformValue* uniform_resolved = rtti_cast<UniformValue>(uniform.get());
+
 				if (uniform_type == RTTI_OF(TypedUniformValue<int>))
 				{
-					int rand = math::random(-1, 1);
-					std::memcpy((uint8*)(data + offset + size), &rand, sizeof(int));
+					setValues<Uniform, int>(uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(int);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<float>))
 				{
-					float rand = math::random(-1.0f, 1.0f);
-					std::memcpy((uint8*)(data + offset + size), &rand, sizeof(float));
+					setValues<Uniform, float>(uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(float);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec2>))
 				{
-					glm::vec2 rand = math::random<glm::vec2>({ -1.0f, -1.0f }, { 1.0f, 1.0f });
-					std::memcpy((uint8*)(data + offset + size), &rand, sizeof(glm::vec2));
+					setValues<Uniform, glm::vec2>(uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::vec2);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec3>))
 				{
-					glm::vec3 rand = math::random<glm::vec3>({-1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, 1.0f});
-					std::memcpy((uint8*)(data + offset + size), &rand, sizeof(glm::vec3));
+					setValues<Uniform, glm::vec3>(uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::vec3);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec4>))
 				{
-					glm::vec4 rand = math::random<glm::vec4>({ -1.0f, -1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
-					std::memcpy((uint8*)(data + offset + size), &rand, sizeof(glm::vec4));
+					setValues<Uniform, glm::vec4>(uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::vec4);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::mat4>))
 				{
-					// Uh oh
-					glm::mat4 rand = math::random<glm::mat4>(
-						{ -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f },
-						{ 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f }
-					);
-					std::memcpy((uint8*)(data + offset + size), &rand, sizeof(glm::mat4));
+					setValues<Uniform, glm::mat4>(uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::mat4);
+				}
+				else
+				{
+					assert(false);
 				}
 			}
 		}
@@ -215,12 +280,11 @@ namespace nap
 	}
 
 
-	bool UniformRandomStructBufferFillPolicy::fill(const StructBufferDescriptor& descriptor, uint8* data, utility::ErrorState& errorState)
+	bool BaseFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
 	{
-		// Still poor performance on large buffers
 		size_t element_size = 0;
-		for (size_t i = 0; i < descriptor.mCount; i++)
-			element_size = uniformRandomInitShaderVariableStructBufferRecursive(*descriptor.mElement, data + i*element_size);
+		for (size_t i = 0; i < descriptor->mCount; i++)
+			fillFromUniformRecursive(descriptor->mElement.get(), data);
 
 		return true;
 	}

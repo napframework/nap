@@ -14,7 +14,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUStructBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Descriptor", &nap::GPUStructBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Usage", &nap::GPUStructBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUStructBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUStructBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 
@@ -138,10 +138,10 @@ namespace nap
 		size_t total_size = getSize();
 
 		// Create a staging buffer to upload
-		auto staging_buffer = std::make_unique<uint8[]>(total_size);
-		if (mBufferFillPolicy != nullptr)
+			auto staging_buffer = std::make_unique<uint8[]>(total_size);
+		if (mFillPolicy != nullptr)
 		{
-			mBufferFillPolicy->fill(mDescriptor, staging_buffer.get(), errorState);
+			mFillPolicy->fill(&mDescriptor, staging_buffer.get(), errorState);
 		}
 		else
 		{

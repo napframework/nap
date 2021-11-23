@@ -14,48 +14,61 @@
 
 namespace nap
 {
+	class Uniform;
+
 	//////////////////////////////////////////////////////////////////////////
 	// StructBufferFillPolicies
 	//////////////////////////////////////////////////////////////////////////
 
+	using FillPolicyFunction = std::function<void(const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)>;
 
-	/**
-	 *
-	 */
-	class NAPAPI BaseStructBufferFillPolicy : public Resource
+	class NAPAPI BaseFillPolicy : public Resource
 	{
 		RTTI_ENABLE(Resource)
+	public:
+		BaseFillPolicy() = default;
+
+		virtual ~BaseFillPolicy() = default;
+
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState);
+
+	protected:
+		virtual bool registerFillPolicyFunction(rtti::TypeInfo type, FillPolicyFunction fillFunction);
+		std::unordered_map<rtti::TypeInfo, FillPolicyFunction> mFillMap;
+
+	private:
+		int fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data);
+
+		template<typename UNIFORMTYPE, typename VALUETYPE>
+		void setValues(UNIFORMTYPE* lowerBoundUniform, UNIFORMTYPE* upperBoundUniform, int count, uint8* data)
+		{
+			auto it = mFillMap.find(RTTI_OF(VALUETYPE));
+			assert(it != mFillMap.end());
+
+			for (int idx = 0; idx < count; idx++)
+				it->second(lowerBoundUniform, upperBoundUniform, (uint8*)(data + sizeof(VALUETYPE) * idx));
+		};
 	};
 
 
 	/**
-	 *
+	 * 
 	 */
-	class NAPAPI StructBufferFillPolicy : public BaseStructBufferFillPolicy
+	class NAPAPI UniformRandomFillPolicy : public BaseFillPolicy
 	{
-		RTTI_ENABLE(BaseStructBufferFillPolicy)
+		RTTI_ENABLE(BaseFillPolicy)
 	public:
-		virtual bool fill(const StructBufferDescriptor& descriptor, uint8* data, utility::ErrorState& errorState) = 0;
-	};
+		UniformRandomFillPolicy() = default;
 
-
-	/**
-	 * TODO: Expose bounds 
-	 */
-	class UniformRandomStructBufferFillPolicy : public StructBufferFillPolicy
-	{
-		RTTI_ENABLE(StructBufferFillPolicy)
-	public:
-		virtual bool fill(const StructBufferDescriptor& descriptor, uint8* data, utility::ErrorState& errorState) override;
-
-
+		virtual bool init(utility::ErrorState& errorState) override;
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// ValueBufferFillPolicies
 	//////////////////////////////////////////////////////////////////////////
-
 
 	/**
 	 *
