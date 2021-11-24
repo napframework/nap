@@ -4,7 +4,7 @@
 
 #pragma once
 
-// internal includes
+ // internal includes
 #include "tweeneasing.h"
 #include "tweenmode.h"
 
@@ -52,10 +52,10 @@ namespace nap
 		Signal<> KilledSignal;
 	protected:
 		// killed boolean
-		bool 	mKilled 	= false;
+		bool 	mKilled = false;
 
 		// complete boolean
-		bool 	mComplete 	= false;
+		bool 	mComplete = false;
 	};
 
 	/**
@@ -119,7 +119,7 @@ namespace nap
 		/**
 		 * @return current ease type
 		 */
-		ETweenEaseType getEase() const{ return mEasing; }
+		ETweenEaseType getEase() const { return mEasing; }
 
 		/**
 		 * @return current time in time
@@ -172,7 +172,7 @@ namespace nap
 		std::function<void(double)> mUpdateFunc;
 
 		// current time
-		float 			mTime 			= 0.0f;
+		float 			mTime = 0.0f;
 
 		// start value
 		T 				mStart;
@@ -187,26 +187,25 @@ namespace nap
 		float 			mDuration;
 
 		// tween mode
-		ETweenMode 		mMode 			= ETweenMode::NORMAL;
+		ETweenMode 		mMode = ETweenMode::NORMAL;
 
 		// ease type
-		ETweenEaseType 	mEasing 		= ETweenEaseType::LINEAR;
+		ETweenEaseType 	mEasing = ETweenEaseType::LINEAR;
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Declarations
 	//////////////////////////////////////////////////////////////////////////
-	using TweenFloat 	= Tween<float>;
-	using TweenDouble 	= Tween<double>;
-	using TweenVec2 	= Tween<glm::vec2>;
-	using TweenVec3 	= Tween<glm::vec3>;
+	using TweenFloat = Tween<float>;
+	using TweenDouble = Tween<double>;
+	using TweenVec2 = Tween<glm::vec2>;
+	using TweenVec3 = Tween<glm::vec3>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
-
 	template<typename T>
 	Tween<T>::Tween(T start, T end, float duration)
 		: TweenBase(), mStart(start), mEnd(end), mCurrentValue(start), mDuration(duration)
@@ -215,9 +214,9 @@ namespace nap
 		setMode(ETweenMode::NORMAL);
 
 		// when this tween is killed, update function doesn't do anything anymore
-		KilledSignal.connect([this]{
-			mUpdateFunc = [this](double deltaTime){};
-		});
+		KilledSignal.connect([this] {
+			mUpdateFunc = [this](double deltaTime) {};
+			});
 	}
 
 	template<typename T>
@@ -232,7 +231,7 @@ namespace nap
 		assert(duration >= 0.0f); // invalid duration
 
 		// when duration is bigger then 0, scale time accordingly to ensure smooth transition
-		if( duration > 0.0f )
+		if (duration > 0.0f)
 		{
 			float current_progress = mTime / mDuration;
 			mDuration = duration;
@@ -250,57 +249,80 @@ namespace nap
 	void Tween<T>::setMode(ETweenMode mode)
 	{
 		mMode = mode;
+
 		switch (mode)
 		{
-			default:
+		default:
+			nap::Logger::warn("Unknown tween mode, choosing NORMAL mode");
+		case NORMAL:
+		{
+			mUpdateFunc = [this](double deltaTime)
 			{
-				nap::Logger::warn("Unknown tween mode, choosing NORMAL mode");
-			}
-			case NORMAL:
-			{
-				mUpdateFunc = [this](double deltaTime)
+				if (!mComplete)
 				{
-				  if(!mComplete)
-				  {
-					  mTime += deltaTime;
+					mTime += deltaTime;
 
-					  if( mTime >= mDuration )
-					  {
-						  mTime = mDuration;
-						  mComplete = true;
-
-						  mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-
-						  UpdateSignal.trigger(mCurrentValue);
-						  CompleteSignal.trigger(mCurrentValue);
-					  }else
-					  {
-						  mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-						  UpdateSignal.trigger(mCurrentValue);
-					  }
-				  }
-				};
-				break;
-			}
-			case PING_PONG:
-			{
-				float direction = 1.0f;
-				mUpdateFunc = [this, direction](double deltaTime) mutable
-				{
-					mTime += deltaTime * direction;
-
-					if(mTime >= mDuration)
+					if (mTime >= mDuration)
 					{
-						mTime = mDuration - ( mTime - mDuration );
-						direction = -1.0f;
+						mTime = mDuration;
+						mComplete = true;
 
+						mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+
+						UpdateSignal.trigger(mCurrentValue);
+						CompleteSignal.trigger(mCurrentValue);
+					}
+					else
+					{
 						mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
 						UpdateSignal.trigger(mCurrentValue);
 					}
-					else if(mTime <= 0.0f)
+				}
+			};
+		}
+		break;
+		case PING_PONG:
+		{
+			float direction = 1.0f;
+			mUpdateFunc = [this, direction](double deltaTime) mutable
+			{
+				mTime += deltaTime * direction;
+
+				if (mTime >= mDuration)
+				{
+					mTime = mDuration - (mTime - mDuration);
+					direction = -1.0f;
+
+					mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					UpdateSignal.trigger(mCurrentValue);
+				}
+				else if (mTime <= 0.0f)
+				{
+					mTime = -mTime;
+					direction = 1.0f;
+
+					mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					UpdateSignal.trigger(mCurrentValue);
+				}
+				else
+				{
+					mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
+					UpdateSignal.trigger(mCurrentValue);
+				}
+			};
+		}
+		break;
+		case LOOP:
+		{
+			mUpdateFunc = [this](double deltaTime)
+			{
+				if (!mComplete)
+				{
+					mTime += deltaTime;
+
+					if (mTime >= mDuration)
 					{
-						mTime = -mTime;
-						direction = 1.0f;
+						mTime = mDuration - mTime;
 
 						mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
 						UpdateSignal.trigger(mCurrentValue);
@@ -310,69 +332,47 @@ namespace nap
 						mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
 						UpdateSignal.trigger(mCurrentValue);
 					}
-				};
-				break;
-			}
-			case LOOP:
+				}
+			};
+		}
+		break;
+		case REVERSE:
+		{
+			mUpdateFunc = [this](double deltaTime)
 			{
-				mUpdateFunc = [this](double deltaTime)
+				if (!mComplete)
 				{
-					if(!mComplete)
+					mTime += deltaTime;
+
+					if (mTime >= mDuration)
 					{
-						mTime += deltaTime;
+						mComplete = true;
+						mTime = mDuration;
 
-						if(mTime >= mDuration)
-						{
-							mTime = mDuration - mTime;
+						mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - (mTime / mDuration));
 
-							mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-							UpdateSignal.trigger(mCurrentValue);
-						}
-						else
-						{
-							mCurrentValue = mEase->evaluate(mStart, mEnd, mTime / mDuration);
-							UpdateSignal.trigger(mCurrentValue);
-						}
+						UpdateSignal.trigger(mCurrentValue);
+						CompleteSignal.trigger(mCurrentValue);
 					}
-				};
-				break;
-			}
-			case REVERSE:
-			{
-				mUpdateFunc = [this](double deltaTime)
-				{
-					if(!mComplete)
+					else
 					{
-						mTime += deltaTime;
-						if(mTime >= mDuration)
-						{
-							mComplete = true;
-						  	mTime = mDuration;
-
-							mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
-
-							UpdateSignal.trigger(mCurrentValue);
-						  	CompleteSignal.trigger(mCurrentValue);
-						}
-						else
-						{
-							mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - ( mTime / mDuration ));
-						  	UpdateSignal.trigger(mCurrentValue);
-						}
+						mCurrentValue = mEase->evaluate(mStart, mEnd, 1.0f - (mTime / mDuration));
+						UpdateSignal.trigger(mCurrentValue);
 					}
-				};
-				break;
-			}
+				}
+			};
+		}
+		break;
 		}
 	}
 
 	template<typename T>
 	void Tween<T>::restart()
 	{
-		mTime	 		= 0.0f;
-		mComplete 		= false;
-		mKilled 		= false;
-		mCurrentValue 	= mStart;
+		mTime = 0.0f;
+		mComplete = false;
+		mKilled = false;
+		mCurrentValue = mStart;
 	}
 
 
@@ -381,37 +381,37 @@ namespace nap
 	{
 		static std::unordered_map<ETweenEaseType, std::function<std::unique_ptr<TweenEaseBase<T>>()>> ease_constructors
 		{
-			{ETweenEaseType::LINEAR, 		[](){ return std::make_unique<TweenEaseLinear<T>>(); 		}},
-			{ETweenEaseType::CUBIC_INOUT, 	[](){ return std::make_unique<TweenEaseOutCubic<T>>(); 		}},
-			{ETweenEaseType::CUBIC_OUT, 	[](){ return std::make_unique<TweenEaseOutCubic<T>>(); 		}},
-			{ETweenEaseType::CUBIC_IN, 		[](){ return std::make_unique<TweenEaseInCubic<T>>(); 		}},
-			{ETweenEaseType::BACK_OUT, 		[](){ return std::make_unique<TweenEaseOutBack<T>>(); 		}},
-			{ETweenEaseType::BACK_INOUT, 	[](){ return std::make_unique<TweenEaseInOutBack<T>>(); 	}},
-			{ETweenEaseType::BACK_IN, 		[](){ return std::make_unique<TweenEaseInBack<T>>(); 		}},
-			{ETweenEaseType::BOUNCE_OUT, 	[](){ return std::make_unique<TweenEaseOutBounce<T>>(); 	}},
-			{ETweenEaseType::BOUNCE_INOUT, 	[](){ return std::make_unique<TweenEaseInOutBounce<T>>(); 	}},
-			{ETweenEaseType::BOUNCE_IN, 	[](){ return std::make_unique<TweenEaseInBounce<T>>(); 		}},
-			{ETweenEaseType::CIRC_OUT,	 	[](){ return std::make_unique<TweenEaseOutCirc<T>>(); 		}},
-			{ETweenEaseType::CIRC_INOUT, 	[](){ return std::make_unique<TweenEaseInOutCirc<T>>(); 	}},
-			{ETweenEaseType::CIRC_IN, 		[](){ return std::make_unique<TweenEaseInCirc<T>>(); 		}},
-			{ETweenEaseType::ELASTIC_OUT, 	[](){ return std::make_unique<TweenEaseOutElastic<T>>(); 	}},
-			{ETweenEaseType::ELASTIC_INOUT, [](){ return std::make_unique<TweenEaseInOutElastic<T>>(); 	}},
-			{ETweenEaseType::ELASTIC_IN, 	[](){ return std::make_unique<TweenEaseInElastic<T>>(); 	}},
-			{ETweenEaseType::EXPO_OUT, 		[](){ return std::make_unique<TweenEaseOutExpo<T>>(); 		}},
-			{ETweenEaseType::EXPO_INOUT, 	[](){ return std::make_unique<TweenEaseInOutExpo<T>>(); 	}},
-			{ETweenEaseType::EXPO_IN, 		[](){ return std::make_unique<TweenEaseInExpo<T>>(); 		}},
-			{ETweenEaseType::QUAD_OUT, 		[](){ return std::make_unique<TweenEaseOutQuad<T>>(); 		}},
-			{ETweenEaseType::QUAD_INOUT, 	[](){ return std::make_unique<TweenEaseInOutQuad<T>>(); 	}},
-			{ETweenEaseType::QUAD_IN, 		[](){ return std::make_unique<TweenEaseInQuad<T>>(); 		}},
-			{ETweenEaseType::QUART_OUT, 	[](){ return std::make_unique<TweenEaseOutQuart<T>>(); 		}},
-			{ETweenEaseType::QUART_INOUT, 	[](){ return std::make_unique<TweenEaseInOutQuart<T>>(); 	}},
-			{ETweenEaseType::QUART_IN, 		[](){ return std::make_unique<TweenEaseInQuart<T>>(); 		}},
-			{ETweenEaseType::QUINT_OUT, 	[](){ return std::make_unique<TweenEaseOutQuint<T>>(); 		}},
-			{ETweenEaseType::QUINT_INOUT, 	[](){ return std::make_unique<TweenEaseInOutQuint<T>>(); 	}},
-			{ETweenEaseType::QUINT_IN, 		[](){ return std::make_unique<TweenEaseInQuint<T>>(); 		}},
-			{ETweenEaseType::SINE_OUT, 		[](){ return std::make_unique<TweenEaseOutSine<T>>(); 		}},
-			{ETweenEaseType::SINE_INOUT, 	[](){ return std::make_unique<TweenEaseInOutSine<T>>(); 	}},
-			{ETweenEaseType::SINE_IN, 		[](){ return std::make_unique<TweenEaseInSine<T>>(); 		}}
+			{ETweenEaseType::LINEAR, 		[]() { return std::make_unique<TweenEaseLinear<T>>(); 		}},
+			{ETweenEaseType::CUBIC_INOUT, 	[]() { return std::make_unique<TweenEaseOutCubic<T>>(); 	}},
+			{ETweenEaseType::CUBIC_OUT, 	[]() { return std::make_unique<TweenEaseOutCubic<T>>(); 	}},
+			{ETweenEaseType::CUBIC_IN, 		[]() { return std::make_unique<TweenEaseInCubic<T>>(); 		}},
+			{ETweenEaseType::BACK_OUT, 		[]() { return std::make_unique<TweenEaseOutBack<T>>(); 		}},
+			{ETweenEaseType::BACK_INOUT, 	[]() { return std::make_unique<TweenEaseInOutBack<T>>(); 	}},
+			{ETweenEaseType::BACK_IN, 		[]() { return std::make_unique<TweenEaseInBack<T>>(); 		}},
+			{ETweenEaseType::BOUNCE_OUT, 	[]() { return std::make_unique<TweenEaseOutBounce<T>>(); 	}},
+			{ETweenEaseType::BOUNCE_INOUT, 	[]() { return std::make_unique<TweenEaseInOutBounce<T>>(); 	}},
+			{ETweenEaseType::BOUNCE_IN, 	[]() { return std::make_unique<TweenEaseInBounce<T>>(); 	}},
+			{ETweenEaseType::CIRC_OUT,	 	[]() { return std::make_unique<TweenEaseOutCirc<T>>(); 		}},
+			{ETweenEaseType::CIRC_INOUT, 	[]() { return std::make_unique<TweenEaseInOutCirc<T>>(); 	}},
+			{ETweenEaseType::CIRC_IN, 		[]() { return std::make_unique<TweenEaseInCirc<T>>(); 		}},
+			{ETweenEaseType::ELASTIC_OUT, 	[]() { return std::make_unique<TweenEaseOutElastic<T>>(); 	}},
+			{ETweenEaseType::ELASTIC_INOUT, []() { return std::make_unique<TweenEaseInOutElastic<T>>(); }},
+			{ETweenEaseType::ELASTIC_IN, 	[]() { return std::make_unique<TweenEaseInElastic<T>>(); 	}},
+			{ETweenEaseType::EXPO_OUT, 		[]() { return std::make_unique<TweenEaseOutExpo<T>>(); 		}},
+			{ETweenEaseType::EXPO_INOUT, 	[]() { return std::make_unique<TweenEaseInOutExpo<T>>(); 	}},
+			{ETweenEaseType::EXPO_IN, 		[]() { return std::make_unique<TweenEaseInExpo<T>>(); 		}},
+			{ETweenEaseType::QUAD_OUT, 		[]() { return std::make_unique<TweenEaseOutQuad<T>>(); 		}},
+			{ETweenEaseType::QUAD_INOUT, 	[]() { return std::make_unique<TweenEaseInOutQuad<T>>(); 	}},
+			{ETweenEaseType::QUAD_IN, 		[]() { return std::make_unique<TweenEaseInQuad<T>>(); 		}},
+			{ETweenEaseType::QUART_OUT, 	[]() { return std::make_unique<TweenEaseOutQuart<T>>(); 	}},
+			{ETweenEaseType::QUART_INOUT, 	[]() { return std::make_unique<TweenEaseInOutQuart<T>>(); 	}},
+			{ETweenEaseType::QUART_IN, 		[]() { return std::make_unique<TweenEaseInQuart<T>>(); 		}},
+			{ETweenEaseType::QUINT_OUT, 	[]() { return std::make_unique<TweenEaseOutQuint<T>>(); 	}},
+			{ETweenEaseType::QUINT_INOUT, 	[]() { return std::make_unique<TweenEaseInOutQuint<T>>(); 	}},
+			{ETweenEaseType::QUINT_IN, 		[]() { return std::make_unique<TweenEaseInQuint<T>>(); 		}},
+			{ETweenEaseType::SINE_OUT, 		[]() { return std::make_unique<TweenEaseOutSine<T>>(); 		}},
+			{ETweenEaseType::SINE_INOUT, 	[]() { return std::make_unique<TweenEaseInOutSine<T>>(); 	}},
+			{ETweenEaseType::SINE_IN, 		[]() { return std::make_unique<TweenEaseInSine<T>>(); 		}}
 		};
 
 		mEasing = easing;
@@ -421,4 +421,3 @@ namespace nap
 		mEase = constructor_it->second();
 	}
 }
-
