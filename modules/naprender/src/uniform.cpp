@@ -93,6 +93,19 @@ namespace nap
 	}
 
 
+	const Uniform* UniformStruct::findUniform(const std::string& name) const
+	{
+		auto pos = std::find_if(mUniforms.begin(), mUniforms.end(), [name](auto& uniform)
+			{
+				return uniform->mName == name;
+			});
+
+		if (pos == mUniforms.end())
+			return nullptr;
+		return (*pos).get();
+	}
+
+
 	void UniformStructArray::insertStruct(int index, UniformStruct& uniformStruct)
 	{
 		if (mStructs.size() <= index)

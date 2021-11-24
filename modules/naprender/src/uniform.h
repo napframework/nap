@@ -57,6 +57,12 @@ namespace nap
 		 */
 		Uniform* findUniform(const std::string& name);
 
+		/**
+		 * @param name the name of the uniform to find.
+		 * @return a uniform with the given name, nullptr if not found
+		 */
+		const Uniform* findUniform(const std::string& name) const;
+
 	public:
 		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
 	};

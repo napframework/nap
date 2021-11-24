@@ -280,10 +280,7 @@
                 "Count": 1000000
             },
             "Usage": "Static",
-            "FillPolicy": {
-                "Type": "nap::UniformRandomStructBufferFillPolicy",
-                "mID": "UniformRandomStructBufferFillPolicy_c80dc310"
-            }
+            "FillPolicy": "UniformRandomFillPolicy_1"
         },
         {
             "Type": "nap::GPUStructBuffer",
@@ -453,6 +450,218 @@
             "mID": "ParticleShader",
             "VertShader": "shaders/particle.vert",
             "FragShader": "shaders/particle.frag"
+        },
+        {
+            "Type": "nap::UniformRandomStructBufferFillPolicy",
+            "mID": "UniformRandomFillPolicy_1",
+            "LowerBound": {
+                "Type": "nap::UniformStruct",
+                "mID": "UniformStruct_ba26778b",
+                "Name": "particles",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_7ac6f70ba",
+                        "Name": "position",
+                        "Value": {
+                            "x": -10.0,
+                            "y": -10.0,
+                            "z": -10.0,
+                            "w": -10.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_a02e4adba",
+                        "Name": "velocity",
+                        "Value": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_0816be02a",
+                        "Name": "rotation",
+                        "Value": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_e7ee127aa",
+                        "Name": "color",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    }
+                ]
+            },
+            "UpperBound": {
+                "Type": "nap::UniformStruct",
+                "mID": "UniformStruct_a55f3edd",
+                "Name": "particles",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_7ac6f70bb",
+                        "Name": "position",
+                        "Value": {
+                            "x": 10.0,
+                            "y": 10.0,
+                            "z": 10.0,
+                            "w": 10.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_a02e4adbb",
+                        "Name": "velocity",
+                        "Value": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_e7ee127ab",
+                        "Name": "color",
+                        "Value": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_64b998b6",
+                        "Name": "rotation",
+                        "Value": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "Type": "nap::UniformRandomStructBufferFillPolicy",
+            "mID": "UniformRandomFillPolicy_2",
+            "LowerBound": {
+                "Type": "nap::UniformStruct",
+                "mID": "UniformStruct_dc241bfb",
+                "Name": "particles",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_efbee336",
+                        "Name": "position",
+                        "Value": {
+                            "x": -5.0,
+                            "y": -5.0,
+                            "z": -5.0,
+                            "w": -5.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_b5d5b40e",
+                        "Name": "velocity",
+                        "Value": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_c2d5da0c",
+                        "Name": "rotation",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_b1cedd62",
+                        "Name": "color",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    }
+                ]
+            },
+            "UpperBound": {
+                "Type": "nap::UniformStruct",
+                "mID": "UniformStruct_1203437e",
+                "Name": "particles",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_be825b5e",
+                        "Name": "position",
+                        "Value": {
+                            "x": 5.0,
+                            "y": 5.0,
+                            "z": 5.0,
+                            "w": 5.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_3eaeef70",
+                        "Name": "velocity",
+                        "Value": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_89f410c7",
+                        "Name": "rotation",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_c6e543c4",
+                        "Name": "color",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    }
+                ]
+            }
         }
     ]
 }

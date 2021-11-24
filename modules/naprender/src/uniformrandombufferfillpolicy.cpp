@@ -53,13 +53,32 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	////////////////////////////////////////////////////////////
+	// Static
+	////////////////////////////////////////////////////////////
+
+	static const std::vector<rtti::TypeInfo> sSupportedValueTypes =
+	{
+		RTTI_OF(int),
+		RTTI_OF(float),
+		RTTI_OF(glm::vec2),
+		RTTI_OF(glm::vec3),
+		RTTI_OF(glm::vec4),
+		RTTI_OF(glm::mat4)
+	};
+
+
+	////////////////////////////////////////////////////////////
+	// UniformRandomStructBufferFillPolicy
+	////////////////////////////////////////////////////////////
+
 	bool UniformRandomStructBufferFillPolicy::init(utility::ErrorState& errorState)
 	{
 		// int
-		registerFillPolicyFunction(RTTI_OF(int), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(int), [](const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, uint8* data)
 		{
-			const UniformInt* uniform_lowerbound_resolved = rtti_cast<const UniformInt>(lowerBoundUniform);
-			const UniformInt* uniform_upperbound_resolved = rtti_cast<const UniformInt>(upperBoundUniform);
+			const UniformInt* uniform_lowerbound_resolved = rtti_cast<const UniformInt>(referenceUniformA);
+			const UniformInt* uniform_upperbound_resolved = rtti_cast<const UniformInt>(referenceUniformB);
 
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
@@ -69,10 +88,10 @@ namespace nap
 		});
 
 		// float
-		registerFillPolicyFunction(RTTI_OF(float), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(float), [](const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, uint8* data)
 		{
-			const UniformFloat* uniform_lowerbound_resolved = rtti_cast<const UniformFloat>(lowerBoundUniform);
-			const UniformFloat* uniform_upperbound_resolved = rtti_cast<const UniformFloat>(upperBoundUniform);
+			const UniformFloat* uniform_lowerbound_resolved = rtti_cast<const UniformFloat>(referenceUniformA);
+			const UniformFloat* uniform_upperbound_resolved = rtti_cast<const UniformFloat>(referenceUniformB);
 
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
@@ -82,10 +101,10 @@ namespace nap
 		});
 
 		// vec2
-		registerFillPolicyFunction(RTTI_OF(glm::vec2), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::vec2), [](const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, uint8* data)
 		{
-			const UniformVec2* uniform_lowerbound_resolved = rtti_cast<const UniformVec2>(lowerBoundUniform);
-			const UniformVec2* uniform_upperbound_resolved = rtti_cast<const UniformVec2>(upperBoundUniform);
+			const UniformVec2* uniform_lowerbound_resolved = rtti_cast<const UniformVec2>(referenceUniformA);
+			const UniformVec2* uniform_upperbound_resolved = rtti_cast<const UniformVec2>(referenceUniformB);
 
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
@@ -95,10 +114,10 @@ namespace nap
 		});
 
 		// vec3
-		registerFillPolicyFunction(RTTI_OF(glm::vec3), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::vec3), [](const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, uint8* data)
 		{
-			const UniformVec3* uniform_lowerbound_resolved = rtti_cast<const UniformVec3>(lowerBoundUniform);
-			const UniformVec3* uniform_upperbound_resolved = rtti_cast<const UniformVec3>(upperBoundUniform);
+			const UniformVec3* uniform_lowerbound_resolved = rtti_cast<const UniformVec3>(referenceUniformA);
+			const UniformVec3* uniform_upperbound_resolved = rtti_cast<const UniformVec3>(referenceUniformB);
 
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
@@ -108,10 +127,10 @@ namespace nap
 		});
 
 		// vec4
-		registerFillPolicyFunction(RTTI_OF(glm::vec4), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::vec4), [](const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, uint8* data)
 		{
-			const UniformVec4* uniform_lowerbound_resolved = rtti_cast<const UniformVec4>(lowerBoundUniform);
-			const UniformVec4* uniform_upperbound_resolved = rtti_cast<const UniformVec4>(upperBoundUniform);
+			const UniformVec4* uniform_lowerbound_resolved = rtti_cast<const UniformVec4>(referenceUniformA);
+			const UniformVec4* uniform_upperbound_resolved = rtti_cast<const UniformVec4>(referenceUniformB);
 
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
@@ -121,10 +140,10 @@ namespace nap
 		});
 
 		// mat4
-		registerFillPolicyFunction(RTTI_OF(glm::mat4), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::mat4), [](const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, uint8* data)
 		{
-			const UniformMat4* uniform_lowerbound_resolved = rtti_cast<const UniformMat4>(lowerBoundUniform);
-			const UniformMat4* uniform_upperbound_resolved = rtti_cast<const UniformMat4>(upperBoundUniform);
+			const UniformMat4* uniform_lowerbound_resolved = rtti_cast<const UniformMat4>(referenceUniformA);
+			const UniformMat4* uniform_upperbound_resolved = rtti_cast<const UniformMat4>(referenceUniformB);
 
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
@@ -139,7 +158,18 @@ namespace nap
 
 	bool UniformRandomStructBufferFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
 	{
-		// TODO: Make exception when lower and upper bound are nullptr (?)
-		return BaseStructBufferFillPolicy::fill(descriptor, data, errorState);
+		// Verify the function map
+		for (const auto& type : sSupportedValueTypes)
+		{
+			if (errorState.check(mFillValueFunctionMap.find(type) == mFillValueFunctionMap.end(), utility::stringFormat("Missing fill function implementation for type '%s' in function map", type.get_name().to_string().c_str())))
+				return false;
+		}
+
+		// Fill the buffer
+		size_t element_size = 0;
+		for (size_t idx = 0; idx < descriptor->mCount; idx++)
+			element_size = fillFromUniformRecursive(descriptor->mElement.get(), mLowerBound.get(), mUpperBound.get(), data + element_size * idx);
+
+		return true;
 	}
 }
