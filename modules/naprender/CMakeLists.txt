@@ -161,7 +161,7 @@ if (WIN32)
     install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll DESTINATION thirdparty/FreeImage/bin)
 elseif(APPLE)
     install(FILES ${THIRDPARTY_DIR}/FreeImage/macos/x86_64/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/macos/x86_64/lib/libfreeimage-3.17.0.dylib DESTINATION thirdparty/FreeImage/lib)
+    install(FILES ${THIRDPARTY_DIR}/FreeImage/macos/x86_64/lib/libfreeimage-3.18.0.dylib DESTINATION thirdparty/FreeImage/lib)
     install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/macos/x86_64/license/
             DESTINATION thirdparty/FreeImage/license
             )
