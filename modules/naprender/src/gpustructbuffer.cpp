@@ -5,6 +5,7 @@
 // Local Includes
 #include "gpustructbuffer.h"
 #include "renderservice.h"
+#include "uniformutils.h"
 
 // External Includes
 #include <nap/core.h>
@@ -20,104 +21,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static void getUniformStructDepthRecursive(const UniformStruct& uniformStruct, int& max, int depth = 0)
-	{
-		max = math::max(max, depth);
-		for (const auto& uniform : uniformStruct.mUniforms)
-		{
-			rtti::TypeInfo uniform_type = uniform->get_type();
-
-			if (uniform_type.is_derived_from(RTTI_OF(UniformStructArray)))
-			{
-				UniformStructArray* uniform_resolved = rtti_cast<UniformStructArray>(uniform.get());
-				if (!uniform_resolved->mStructs.empty())
-					getUniformStructDepthRecursive(*uniform_resolved->mStructs[0].get(), max, depth+1);
-			}
-			else if (uniform_type.is_derived_from(RTTI_OF(UniformStruct)))
-			{
-				UniformStruct* uniform_resolved = rtti_cast<UniformStruct>(uniform.get());
-				getUniformStructDepthRecursive(*uniform_resolved, max, depth+1);
-			}
-		}
-	}
-
-
-	static int getUniformStructDepth(const UniformStruct& uniformStruct)
-	{
-		int max = 0;
-		getUniformStructDepthRecursive(uniformStruct, max);
-		return max;
-	}
-
-
-	static int getUniformStructSizeRecursive(const UniformStruct& uniformStruct)
-	{
-		int size = 0;
-		for (const auto& uniform : uniformStruct.mUniforms)
-		{
-			rtti::TypeInfo uniform_type = uniform->get_type();
-
-			if (uniform_type.is_derived_from(RTTI_OF(UniformStructArray)))
-			{
-				UniformStructArray* uniform_resolved = rtti_cast<UniformStructArray>(uniform.get());
-				if (!uniform_resolved->mStructs.empty())
-				{
-					int struct_element_size = getUniformStructSizeRecursive(*uniform_resolved->mStructs[0].get());
-					size += struct_element_size * uniform_resolved->mStructs.size();
-				}
-			}
-			else if (uniform_type.is_derived_from(RTTI_OF(UniformValueArray)))
-			{
-				UniformValueArray* uniform_resolved = rtti_cast<UniformValueArray>(uniform.get());
-
-				if (uniform_type == RTTI_OF(TypedUniformValueArray<int>))
-					size += sizeof(int) * uniform_resolved->getCount();
-
-				else if (uniform_type == RTTI_OF(TypedUniformValueArray<float>))
-					size += sizeof(float) * uniform_resolved->getCount();
-
-				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec2>))
-					size += sizeof(glm::vec2) * uniform_resolved->getCount();
-
-				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec3>))
-					size += sizeof(glm::vec3) * uniform_resolved->getCount();
-
-				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec4>))
-					size += sizeof(glm::vec4) * uniform_resolved->getCount();
-
-				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::mat4>))
-					size += sizeof(glm::mat4) * uniform_resolved->getCount();
-			}
-			else if (uniform_type.is_derived_from(RTTI_OF(UniformStruct)))
-			{
-				UniformStruct* uniform_resolved = rtti_cast<UniformStruct>(uniform.get());
-				size += getUniformStructSizeRecursive(*uniform_resolved);
-			}
-			else if (uniform_type.is_derived_from(RTTI_OF(UniformValue)))
-			{
-				if (uniform_type == RTTI_OF(TypedUniformValue<int>))
-					size += sizeof(int);
-
-				else if (uniform_type == RTTI_OF(TypedUniformValue<float>))
-					size += sizeof(float);
-
-				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec2>))
-					size += sizeof(glm::vec2);
-
-				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec3>))
-					size += sizeof(glm::vec3);
-
-				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec4>))
-					size += sizeof(glm::vec4);
-
-				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::mat4>))
-					size += sizeof(glm::mat4);
-			}
-		}
-		return size;
-	}
-
-
 	bool GPUStructBuffer::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mDescriptor.mCount >= 0, "Descriptor.Count must be non-zero and non-negative"))
@@ -129,16 +32,16 @@ namespace nap
 		UniformStruct* element_descriptor = mDescriptor.mElement.get();
 
 		// Verify maximum depth
-		int depth = getUniformStructDepth(*element_descriptor);
+		int depth = getShaderVariableStructDepth(*element_descriptor);
 		if (!errorState.check(depth == 0, "GPUStructBuffers with elements that exceed depth=1 are currently not supported"))
 			return false;
 
 		// Calculate element size in bytes
-		mElementSize = getUniformStructSizeRecursive(*element_descriptor);
+		mElementSize = getShaderVariableStructSizeRecursive(*element_descriptor);
 		size_t total_size = getSize();
 
 		// Create a staging buffer to upload
-			auto staging_buffer = std::make_unique<uint8[]>(total_size);
+		auto staging_buffer = std::make_unique<uint8[]>(total_size);
 		if (mFillPolicy != nullptr)
 		{
 			mFillPolicy->fill(&mDescriptor, staging_buffer.get(), errorState);

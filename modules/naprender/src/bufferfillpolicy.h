@@ -14,60 +14,69 @@
 
 namespace nap
 {
-	class Uniform;
+	// Forward declares
+	class UniformValue;
 
 	//////////////////////////////////////////////////////////////////////////
-	// StructBufferFillPolicies
+	// StructBufferFillPolicy
 	//////////////////////////////////////////////////////////////////////////
 
-	using FillPolicyFunction = std::function<void(const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)>;
+	using FillValueFunction = std::function<void(const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)>;
 
-	class NAPAPI BaseFillPolicy : public Resource
+	class NAPAPI BaseStructBufferFillPolicy : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		BaseFillPolicy() = default;
+		BaseStructBufferFillPolicy() = default;
+		virtual ~BaseStructBufferFillPolicy() = default;
 
-		virtual ~BaseFillPolicy() = default;
-
+		/**
+		 * 
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * 
+		 */
 		bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState);
 
 	protected:
-		virtual bool registerFillPolicyFunction(rtti::TypeInfo type, FillPolicyFunction fillFunction);
-		std::unordered_map<rtti::TypeInfo, FillPolicyFunction> mFillMap;
+		/**
+		 * 
+		 */
+		bool registerFillPolicyFunction(rtti::TypeInfo type, FillValueFunction fillValueFunction);
+		std::unordered_map<rtti::TypeInfo, FillValueFunction> mFillValueFunctionMap;
 
 	private:
-		int fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data);
+		size_t fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data);
 
-		template<typename UNIFORMTYPE, typename VALUETYPE>
-		void setValues(UNIFORMTYPE* lowerBoundUniform, UNIFORMTYPE* upperBoundUniform, int count, uint8* data)
+		template<typename T>
+		void setValues(const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, int count, uint8* data)
 		{
-			auto it = mFillMap.find(RTTI_OF(VALUETYPE));
-			assert(it != mFillMap.end());
+			auto it = mFillValueFunctionMap.find(RTTI_OF(T));
+			assert(it != mFillValueFunctionMap.end());
 
 			for (int idx = 0; idx < count; idx++)
-				it->second(lowerBoundUniform, upperBoundUniform, (uint8*)(data + sizeof(VALUETYPE) * idx));
+				it->second(uniform, lowerBoundUniform, upperBoundUniform, (uint8*)(data + sizeof(T) * idx));
 		};
 	};
 
 
 	/**
-	 * 
+	 *
 	 */
-	class NAPAPI UniformRandomFillPolicy : public BaseFillPolicy
+	class ConstantStructBufferFillPolicy : public BaseStructBufferFillPolicy
 	{
-		RTTI_ENABLE(BaseFillPolicy)
+		RTTI_ENABLE(BaseStructBufferFillPolicy)
 	public:
-		UniformRandomFillPolicy() = default;
+		ConstantStructBufferFillPolicy() = default;
 
 		virtual bool init(utility::ErrorState& errorState) override;
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// ValueBufferFillPolicies
+	// ValueBufferFillPolicy
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
@@ -76,6 +85,9 @@ namespace nap
 	class NAPAPI BaseValueBufferFillPolicy : public Resource
 	{
 		RTTI_ENABLE(Resource)
+	public:
+		BaseValueBufferFillPolicy() = default;
+		virtual ~BaseValueBufferFillPolicy() = default;
 	};
 
 
@@ -105,21 +117,6 @@ namespace nap
 	};
 
 
-	/**
-	 *
-	 */
-	template<typename T>
-	class UniformRandomValueBufferFillPolicy : public TypedValueBufferFillPolicy<T>
-	{
-		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
-	public:
-		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) override;
-
-		T mLowerBound = T();		///< Property 'LowerBound'
-		T mUpperBound = T();		///< Property 'UpperBound'
-	};
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// BaseValueBufferFillPolicy type definitions
 	//////////////////////////////////////////////////////////////////////////
@@ -130,18 +127,6 @@ namespace nap
 	using Vec3BufferFillPolicy = TypedValueBufferFillPolicy<glm::vec3>;
 	using Vec4BufferFillPolicy = TypedValueBufferFillPolicy<glm::vec4>;
 	using Mat4BufferFillPolicy = TypedValueBufferFillPolicy<glm::mat4>;
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// UniformRandomBufferFillPolicy type definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	using UniformRandomIntBufferFillPolicy = UniformRandomValueBufferFillPolicy<int>;
-	using UniformRandomFloatBufferFillPolicy = UniformRandomValueBufferFillPolicy<float>;
-	using UniformRandomVec2BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::vec2>;
-	using UniformRandomVec3BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::vec3>;
-	using UniformRandomVec4BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::vec4>;
-	using UniformRandomMat4BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -164,18 +149,6 @@ namespace nap
 	bool ConstantValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState)
 	{
 		stagingBuffer.resize(numElements, mConstant);
-		return true;
-	}
-
-
-	template<typename T>
-	bool UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState)
-	{
-		stagingBuffer.reserve(numElements);
-
-		for (size_t i = 0; i < numElements; i++)
-			stagingBuffer.emplace_back(math::random<T>(mLowerBound, mUpperBound));
-
 		return true;
 	}
 }

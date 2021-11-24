@@ -59,7 +59,7 @@ namespace nap
 		 */
 		int getElementSize() const					{ return mElementSize; };
 
-		ResourcePtr<BaseFillPolicy>				mFillPolicy = nullptr;					///< Property 'FillPolicy'
+		ResourcePtr<BaseStructBufferFillPolicy>	mFillPolicy = nullptr;					///< Property 'FillPolicy'
 		StructBufferDescriptor					mDescriptor;							///< Property 'Descriptor'
 		EBufferObjectType						mType = EBufferObjectType::Uniform;		///< Property 'BufferObjectType'
 

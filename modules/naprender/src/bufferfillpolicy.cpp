@@ -9,7 +9,8 @@
 // External Includes
 #include <nap/core.h>
 
-RTTI_DEFINE_BASE(nap::BaseFillPolicy)
+RTTI_DEFINE_BASE(nap::BaseStructBufferFillPolicy)
+
 RTTI_DEFINE_BASE(nap::BaseValueBufferFillPolicy)
 
 RTTI_DEFINE_BASE(nap::IntBufferFillPolicy)
@@ -18,14 +19,6 @@ RTTI_DEFINE_BASE(nap::Vec2BufferFillPolicy)
 RTTI_DEFINE_BASE(nap::Vec3BufferFillPolicy)
 RTTI_DEFINE_BASE(nap::Vec4BufferFillPolicy)
 RTTI_DEFINE_BASE(nap::Mat4BufferFillPolicy)
-
-
-//////////////////////////////////////////////////////////////////////////
-// UniformRandomBufferFillPolicy
-//////////////////////////////////////////////////////////////////////////
-
-RTTI_BEGIN_CLASS(nap::UniformRandomFillPolicy)
-RTTI_END_CLASS
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -64,87 +57,72 @@ RTTI_END_CLASS
 namespace nap
 {
 	////////////////////////////////////////////////////////////
-	// UniformRandomFillPolicy
+	// Static
 	////////////////////////////////////////////////////////////
 
-	bool UniformRandomFillPolicy::init(utility::ErrorState& errorState)
+	static const std::vector<rtti::TypeInfo> supportedValueTypes =
+	{
+		RTTI_OF(int),
+		RTTI_OF(float),
+		RTTI_OF(glm::vec2),
+		RTTI_OF(glm::vec3),
+		RTTI_OF(glm::vec4),
+		RTTI_OF(glm::mat4)
+	};
+
+
+	////////////////////////////////////////////////////////////
+	// ConstantStructBufferFillPolicy
+	////////////////////////////////////////////////////////////
+
+	bool ConstantStructBufferFillPolicy::init(utility::ErrorState& errorState)
 	{
 		// int
-		registerFillPolicyFunction(RTTI_OF(int), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(int), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
 		{
-			const UniformInt* uniform_lowerbound_resolved = rtti_cast<const UniformInt>(lowerBoundUniform);
-			const UniformInt* uniform_upperbound_resolved = rtti_cast<const UniformInt>(upperBoundUniform);
-
-			assert(uniform_lowerbound_resolved != nullptr);
-			assert(uniform_upperbound_resolved != nullptr);
-
-			int value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
-			std::memcpy(data, &value, sizeof(value));
+			const UniformInt* uniform_resolved = rtti_cast<const UniformInt>(uniform);
+			assert(uniform_resolved != nullptr);
+			std::memcpy(data, &uniform_resolved->mValue, sizeof(int));
 		});
 
 		// float
-		registerFillPolicyFunction(RTTI_OF(float), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(float), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
 		{
-			const UniformFloat* uniform_lowerbound_resolved = rtti_cast<const UniformFloat>(lowerBoundUniform);
-			const UniformFloat* uniform_upperbound_resolved = rtti_cast<const UniformFloat>(upperBoundUniform);
-
-			assert(uniform_lowerbound_resolved != nullptr);
-			assert(uniform_upperbound_resolved != nullptr);
-
-			float value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
-			std::memcpy(data, &value, sizeof(value));
+			const UniformFloat* uniform_resolved = rtti_cast<const UniformFloat>(uniform);
+			assert(uniform_resolved != nullptr);
+			std::memcpy(data, &uniform_resolved->mValue, sizeof(float));
 		});
 
 		// vec2
-		registerFillPolicyFunction(RTTI_OF(glm::vec2), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::vec2), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
 		{
-			const UniformVec2* uniform_lowerbound_resolved = rtti_cast<const UniformVec2>(lowerBoundUniform);
-			const UniformVec2* uniform_upperbound_resolved = rtti_cast<const UniformVec2>(upperBoundUniform);
-
-			assert(uniform_lowerbound_resolved != nullptr);
-			assert(uniform_upperbound_resolved != nullptr);
-
-			glm::vec2 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
-			std::memcpy(data, &value, sizeof(value));
+			const UniformVec2* uniform_resolved = rtti_cast<const UniformVec2>(uniform);
+			assert(uniform_resolved != nullptr);
+			std::memcpy(data, &uniform_resolved->mValue, sizeof(glm::vec2));
 		});
 
 		// vec3
-		registerFillPolicyFunction(RTTI_OF(glm::vec3), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::vec3), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
 		{
-			const UniformVec3* uniform_lowerbound_resolved = rtti_cast<const UniformVec3>(lowerBoundUniform);
-			const UniformVec3* uniform_upperbound_resolved = rtti_cast<const UniformVec3>(upperBoundUniform);
-
-			assert(uniform_lowerbound_resolved != nullptr);
-			assert(uniform_upperbound_resolved != nullptr);
-
-			glm::vec3 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
-			std::memcpy(data, &value, sizeof(value));
+			const UniformVec3* uniform_resolved = rtti_cast<const UniformVec3>(uniform);
+			assert(uniform_resolved != nullptr);
+			std::memcpy(data, &uniform_resolved->mValue, sizeof(glm::vec3));
 		});
 
 		// vec4
-		registerFillPolicyFunction(RTTI_OF(glm::vec4), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::vec4), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
 		{
-			const UniformVec4* uniform_lowerbound_resolved = rtti_cast<const UniformVec4>(lowerBoundUniform);
-			const UniformVec4* uniform_upperbound_resolved = rtti_cast<const UniformVec4>(upperBoundUniform);
-
-			assert(uniform_lowerbound_resolved != nullptr);
-			assert(uniform_upperbound_resolved != nullptr);
-
-			glm::vec4 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
-			std::memcpy(data, &value, sizeof(value));
+			const UniformVec4* uniform_resolved = rtti_cast<const UniformVec4>(uniform);
+			assert(uniform_resolved != nullptr);
+			std::memcpy(data, &uniform_resolved->mValue, sizeof(glm::vec4));
 		});
 
 		// mat4
-		registerFillPolicyFunction(RTTI_OF(glm::mat4), [](const Uniform* lowerBoundUniform, const Uniform* upperBoundUniform, uint8* data)
+		registerFillPolicyFunction(RTTI_OF(glm::mat4), [](const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, uint8* data)
 		{
-			const UniformMat4* uniform_lowerbound_resolved = rtti_cast<const UniformMat4>(lowerBoundUniform);
-			const UniformMat4* uniform_upperbound_resolved = rtti_cast<const UniformMat4>(upperBoundUniform);
-
-			assert(uniform_lowerbound_resolved != nullptr);
-			assert(uniform_upperbound_resolved != nullptr);
-
-			glm::mat4 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
-			std::memcpy(data, &value, sizeof(value));
+			const UniformMat4* uniform_resolved = rtti_cast<const UniformMat4>(uniform);
+			assert(uniform_resolved != nullptr);
+			std::memcpy(data, &uniform_resolved->mValue, sizeof(glm::mat4));
 		});
 
 		return true;
@@ -152,29 +130,29 @@ namespace nap
 
 
 	////////////////////////////////////////////////////////////
-	// BaseFillPolicy
+	// BaseStructBufferFillPolicy
 	////////////////////////////////////////////////////////////
 
-	bool BaseFillPolicy::init(utility::ErrorState& errorState)
+	bool BaseStructBufferFillPolicy::init(utility::ErrorState& errorState)
 	{
 		return true;
 	}
 
 
-	bool BaseFillPolicy::registerFillPolicyFunction(rtti::TypeInfo type, FillPolicyFunction fillFunction)
+	bool BaseStructBufferFillPolicy::registerFillPolicyFunction(rtti::TypeInfo type, FillValueFunction fillFunction)
 	{
-		auto it = mFillMap.find(type);
-		if (it != mFillMap.end())
+		auto it = mFillValueFunctionMap.find(type);
+		if (it != mFillValueFunctionMap.end())
 		{
 			assert(false);
 			return false;
 		}
-		mFillMap.emplace(type, fillFunction);
+		mFillValueFunctionMap.emplace(type, fillFunction);
 		return true;
 	}
 
 
-	int BaseFillPolicy::fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data)
+	size_t BaseStructBufferFillPolicy::fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data)
 	{
 		size_t size = 0;
 		for (const auto& uniform : uniformStruct->mUniforms)
@@ -197,32 +175,32 @@ namespace nap
 
 				if (uniform_type == RTTI_OF(TypedUniformValueArray<int>))
 				{
-					setValues<Uniform, int>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					setValues<int>(uniform_resolved, uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
 					size += sizeof(int) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<float>))
 				{
-					setValues<Uniform, float>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					setValues<float>(uniform_resolved, uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
 					size += sizeof(float) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec2>))
 				{
-					setValues<Uniform, glm::vec2>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					setValues<glm::vec2>(uniform_resolved, uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
 					size += sizeof(glm::vec2) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec3>))
 				{
-					setValues<Uniform, glm::vec3>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					setValues<glm::vec3>(uniform_resolved, uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
 					size += sizeof(glm::vec3) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::vec4>))
 				{
-					setValues<Uniform, glm::vec4>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					setValues<glm::vec4>(uniform_resolved, uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
 					size += sizeof(glm::vec4) * uniform_resolved->getCount();
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<glm::mat4>))
 				{
-					setValues<Uniform, glm::mat4>(uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
+					setValues<glm::mat4>(uniform_resolved, uniform_resolved, uniform_resolved, uniform_resolved->getCount(), data + size);
 					size += sizeof(glm::mat4) * uniform_resolved->getCount();
 				}
 				else
@@ -242,32 +220,32 @@ namespace nap
 
 				if (uniform_type == RTTI_OF(TypedUniformValue<int>))
 				{
-					setValues<Uniform, int>(uniform_resolved, uniform_resolved, 1, data + size);
+					setValues<int>(uniform_resolved, uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(int);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<float>))
 				{
-					setValues<Uniform, float>(uniform_resolved, uniform_resolved, 1, data + size);
+					setValues<float>(uniform_resolved, uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(float);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec2>))
 				{
-					setValues<Uniform, glm::vec2>(uniform_resolved, uniform_resolved, 1, data + size);
+					setValues<glm::vec2>(uniform_resolved, uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::vec2);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec3>))
 				{
-					setValues<Uniform, glm::vec3>(uniform_resolved, uniform_resolved, 1, data + size);
+					setValues<glm::vec3>(uniform_resolved, uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::vec3);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::vec4>))
 				{
-					setValues<Uniform, glm::vec4>(uniform_resolved, uniform_resolved, 1, data + size);
+					setValues<glm::vec4>(uniform_resolved, uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::vec4);
 				}
 				else if (uniform_type == RTTI_OF(TypedUniformValue<glm::mat4>))
 				{
-					setValues<Uniform, glm::mat4>(uniform_resolved, uniform_resolved, 1, data + size);
+					setValues<glm::mat4>(uniform_resolved, uniform_resolved, uniform_resolved, 1, data + size);
 					size += sizeof(glm::mat4);
 				}
 				else
@@ -280,8 +258,16 @@ namespace nap
 	}
 
 
-	bool BaseFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
+	bool BaseStructBufferFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
 	{
+		// Verify the function map
+		for (auto type : supportedValueTypes)
+		{
+			if (errorState.check(mFillValueFunctionMap.find(type) == mFillValueFunctionMap.end(), utility::stringFormat("Missing fill function implementation for type '%s' in function map", type.get_name().to_string().c_str())))
+				return false;
+		}
+
+		// Fill the buffer
 		size_t element_size = 0;
 		for (size_t i = 0; i < descriptor->mCount; i++)
 			fillFromUniformRecursive(descriptor->mElement.get(), data);
