@@ -60,7 +60,7 @@ namespace nap
 	// Static
 	////////////////////////////////////////////////////////////
 
-	static const std::vector<rtti::TypeInfo> supportedValueTypes =
+	static const std::vector<rtti::TypeInfo> sSupportedValueTypes =
 	{
 		RTTI_OF(int),
 		RTTI_OF(float),
@@ -132,12 +132,6 @@ namespace nap
 	////////////////////////////////////////////////////////////
 	// BaseStructBufferFillPolicy
 	////////////////////////////////////////////////////////////
-
-	bool BaseStructBufferFillPolicy::init(utility::ErrorState& errorState)
-	{
-		return true;
-	}
-
 
 	bool BaseStructBufferFillPolicy::registerFillPolicyFunction(rtti::TypeInfo type, FillValueFunction fillFunction)
 	{
@@ -261,7 +255,7 @@ namespace nap
 	bool BaseStructBufferFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
 	{
 		// Verify the function map
-		for (auto type : supportedValueTypes)
+		for (const auto& type : sSupportedValueTypes)
 		{
 			if (errorState.check(mFillValueFunctionMap.find(type) == mFillValueFunctionMap.end(), utility::stringFormat("Missing fill function implementation for type '%s' in function map", type.get_name().to_string().c_str())))
 				return false;

@@ -135,4 +135,11 @@ namespace nap
 
 		return true;
 	}
+
+
+	bool UniformRandomStructBufferFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
+	{
+		// TODO: Make exception when lower and upper bound are nullptr (?)
+		return BaseStructBufferFillPolicy::fill(descriptor, data, errorState);
+	}
 }

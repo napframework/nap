@@ -281,8 +281,8 @@
             },
             "Usage": "Static",
             "FillPolicy": {
-                "Type": "nap::UniformRandomFillPolicy",
-                "mID": "UniformRandomFillPolicy_c80dc310"
+                "Type": "nap::UniformRandomStructBufferFillPolicy",
+                "mID": "UniformRandomStructBufferFillPolicy_c80dc310"
             }
         },
         {

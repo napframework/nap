@@ -27,6 +27,8 @@ namespace nap
 
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		virtual bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState) override;
+
 		ResourcePtr<UniformStruct> mLowerBound;		///< Property 'LowerBound'
 		ResourcePtr<UniformStruct> mUpperBound;		///< Property 'UpperBound'
 	};

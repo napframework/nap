@@ -33,23 +33,22 @@ namespace nap
 		/**
 		 * 
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * 
-		 */
-		bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState);
+		virtual bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState);
 
 	protected:
 		/**
 		 * 
 		 */
 		bool registerFillPolicyFunction(rtti::TypeInfo type, FillValueFunction fillValueFunction);
+
+		/**
+		 * 
+		 */
+		size_t fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data);
+
 		std::unordered_map<rtti::TypeInfo, FillValueFunction> mFillValueFunctionMap;
 
 	private:
-		size_t fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data);
-
 		template<typename T>
 		void setValues(const UniformValue* uniform, const UniformValue* lowerBoundUniform, const UniformValue* upperBoundUniform, int count, uint8* data)
 		{
@@ -71,7 +70,7 @@ namespace nap
 	public:
 		ConstantStructBufferFillPolicy() = default;
 
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& errorState);
 	};
 
 
