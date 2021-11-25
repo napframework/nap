@@ -13,7 +13,7 @@
 namespace nap
 {
 	/**
-	* Internal data container to hide windows internals from the header.
+	* Internal data container to hide internals from the header.
 	*/
 	struct DirectoryWatcher::PImpl
 	{
@@ -33,14 +33,13 @@ namespace nap
 	/**
 	* Installs monitor: opens directory, creates event, starts directory scan.
 	*/
-	DirectoryWatcher::DirectoryWatcher()
+	DirectoryWatcher::DirectoryWatcher(const std::string& directory)
 	{
+		// Create implementation
         mPImpl = std::unique_ptr<PImpl, PImpl_deleter>(new PImpl);
-		char current_directory[MAX_PATH];
-		GetCurrentDirectory(MAX_PATH, current_directory);
 
 		// Open directory 
-		mPImpl->mDirectoryToMonitor = CreateFileA(current_directory, FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+		mPImpl->mDirectoryToMonitor = CreateFileA(directory.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
 		assert(mPImpl->mDirectoryToMonitor != INVALID_HANDLE_VALUE);
 
 		// Create event

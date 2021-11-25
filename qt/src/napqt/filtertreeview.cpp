@@ -31,20 +31,21 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 
 	mTreeView = treeview;
 	mTreeView->setParent(this);
+	mTreeView->setSortingEnabled(false);
 
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
 
-	mSortFilter.setFilterCaseSensitivity(Qt::CaseInsensitive);
-	mSortFilter.setFilterKeyColumn(-1); // Filter all columns
+	mProxyModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
+	mProxyModel.setFilterKeyColumn(-1); // Filter all columns
 
 	mLineEditFilter.setPlaceholderText("filter...");
 	mLineEditFilter.setClearButtonEnabled(true);
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
 	mLayout.addWidget(&mLineEditFilter);
 
-	mTreeView->setModel(&mSortFilter);
+	mTreeView->setModel(&mProxyModel);
 
 	mLayout.addWidget(mTreeView);
 
@@ -57,12 +58,12 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 
 void FilterTreeView::setModel(QAbstractItemModel* model)
 {
-	mSortFilter.setSourceModel(model);
+	mProxyModel.setSourceModel(model);
 }
 
 QStandardItemModel* FilterTreeView::getModel() const
 {
-	return dynamic_cast<QStandardItemModel*>(mSortFilter.sourceModel());
+	return dynamic_cast<QStandardItemModel*>(mProxyModel.sourceModel());
 }
 
 void FilterTreeView::selectAndReveal(QStandardItem* item)
@@ -70,18 +71,18 @@ void FilterTreeView::selectAndReveal(QStandardItem* item)
 	if (item == nullptr)
 		return;
 
-	QModelIndex idx = getFilterModel().mapFromSource(item->index());
+	QModelIndex idx = getProxyModel().mapFromSource(item->index());
 	if (!idx.isValid())
 	{
 		// Probably filtered out, add an exception and try again
-		mSortFilter.exemptSourceIndex(item->index());
-		idx = getFilterModel().mapFromSource(item->index());
+		mProxyModel.exemptSourceIndex(item->index());
+		idx = getProxyModel().mapFromSource(item->index());
 		if (!idx.isValid())
 			return;
 	}
 
 	// We are going to select an entire row
-	auto botRight = getFilterModel().index(idx.row(), getFilterModel().columnCount(idx.parent()) - 1, idx.parent());
+	auto botRight = getProxyModel().index(idx.row(), getProxyModel().columnCount(idx.parent()) - 1, idx.parent());
     getTreeView().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
     getTreeView().scrollTo(idx);
 }
@@ -107,14 +108,14 @@ QList<QModelIndex> FilterTreeView::getSelectedIndexes() const
 {
 	QList<QModelIndex> ret;
 	for (auto idx : getSelectionModel()->selectedRows())
-		ret.append(mSortFilter.mapToSource(idx));
+		ret.append(mProxyModel.mapToSource(idx));
 	return ret;
 }
 
 void FilterTreeView::onFilterChanged(const QString& text)
 {
-	mSortFilter.setFilterRegExp(text);
-	mSortFilter.clearExemptions();
+	mProxyModel.setFilterRegExp(text);
+	mProxyModel.clearExemptions();
 	mTreeView->expandAll();
 	setTopItemSelected();
 }
@@ -123,7 +124,7 @@ void FilterTreeView::onExpandSelected()
 {
 	for (auto& idx : getSelectedIndexes())
 	{
-		auto index = mSortFilter.mapFromSource(idx);
+		auto index = mProxyModel.mapFromSource(idx);
 		expandChildren(mTreeView, index, true);
 	}
 
@@ -133,7 +134,7 @@ void FilterTreeView::onCollapseSelected()
 {
 	for (auto& idx : getSelectedIndexes())
 	{
-		auto index = mSortFilter.mapFromSource(idx);
+		auto index = mProxyModel.mapFromSource(idx);
 		expandChildren(mTreeView, index, false);
 	}
 }
@@ -178,5 +179,18 @@ void FilterTreeView::setSelectedAndCurrent(QModelIndex index)
 QWidget& FilterTreeView::getCornerWidget()
 {
 	return mCornerWidget;
+}
+
+
+void nap::qt::FilterTreeView::enableSorting(LeafFilterProxyModel::SortingFunction sorter /*= nullptr*/)
+{
+	mProxyModel.setSorter(sorter);
+	mTreeView->setSortingEnabled(true);
+}
+
+
+void nap::qt::FilterTreeView::disableSorting()
+{
+	mTreeView->setSortingEnabled(false);
 }
 

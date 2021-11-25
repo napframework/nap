@@ -95,8 +95,7 @@ Most of the building blocks of NAP are grouped into modules with one exception: 
 
 This example from the helloworld demo shows how to:
 - Retrieve initialized services
-- Load a file that contains all the resources
-- Find the just loaded and initialized objects
+- Extract loaded content, including: the render window, camera, mesh etc.
 
 ~~~~~~~~~~~~~~~{.cpp}
 bool HelloWorldApp::init(utility::ErrorState& error)
@@ -106,11 +105,6 @@ bool HelloWorldApp::init(utility::ErrorState& error)
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
-
-		// Get resource manager and load
-		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("helloworld.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -129,7 +123,7 @@ bool HelloWorldApp::init(utility::ErrorState& error)
 The Resource Manager {#resourcemanager}
 =======================
 
-This [object](@ref nap::ResourceManager) is responsible for [loading](@ref nap::ResourceManager::loadFile) the JSON file that contains all the resources that are necessary for your application to run. The example above shows you how to do this. When loading a JSON file all the objects declared inside that file are created and initialized by the resource manager. We call these objects 'resources'. Every loaded resource is owned by the resource manager. This means that the lifetime of a resource is fully managed by the resource manager and not by the client (ie: you).
+This [object](@ref nap::ResourceManager) is responsible for [loading](@ref nap::ResourceManager::loadFile) the JSON file that contains all the resources that are necessary for your application to run. On startup, the [nap::AppRunner](@ref nap::AppRunner) calls [nap::ResourceManager::loadFile](@ref nap::ResourceManager::loadFile) for you, together with the data file linked to by the [project configuration](@ref nap::ProjectInfo). All the objects declared inside that file are created and initialized by the resource manager. We call these objects 'resources'. Every loaded resource is owned by the resource manager. This means that the lifetime of a resource is fully managed by the resource manager and not by the client (ie: you).
 
 Every resource has an identifier. In the example above we use various identifiers to [find](@ref nap::ResourceManager::findObject) specific resources in the application after load.
 

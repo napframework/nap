@@ -30,10 +30,8 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 		
-		// Get resource manager and load our app
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("vinyl.json", error))
-			return false;
         
 		// Extract loaded resources and listen to window resize events
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Viewport");

@@ -13,14 +13,12 @@
 
 namespace napkin
 {
-	static const QString sThemeFilename = "theme.json";
-	static const QString sThemeSubDirectory = "resources/themes";
-
-	static const QString sThemeCol_componentWidthOverrides = "componentWithOverrides";
-	static const QString sThemeCol_instanceProperty = "instanceProperty";
-	static const QString sThemeCol_overriddenInstanceProperty = "overriddenInstanceProperty";
-	static const QString sThemeCol_dimmedItem = "dimmedItem";
-
+	inline constexpr const char* themeFilename = "theme.json";
+	inline constexpr const char* themeSubDirectory = "resources/themes";
+	inline constexpr const char* themeColComponentWidthOverrides = "componentWithOverrides";
+	inline constexpr const char* themeColInstanceProperty = "instanceProperty";
+	inline constexpr const char* themeColOverriddenInstanceProperty = "overriddenInstanceProperty";
+	inline constexpr const char* themeColDimmedItem = "dimmedItem";
 
 	/**
 	 * Represents one theme

@@ -23,7 +23,7 @@ namespace nap
 		/**
 		 * Action base class
 		 */
-		class Action
+		class NAPAPI Action
 		{
 			RTTI_ENABLE()
 		public:
@@ -33,20 +33,13 @@ namespace nap
 			 * @return true of action is of type
 			 */
 			template<typename T>
-			bool isAction()
-			{
-				return this->get_type() == RTTI_OF(T);
-			}
+			bool isAction()								{ return this->get_type() == RTTI_OF(T); }
 
 			/**
 			 * @return pointer to derived class. Static cast so will crash when not of derived type, use isAction<T> to check before calling this method
 			 */
 			template<typename T>
-			T* getDerived()
-			{
-				assert(isAction<T>());
-				return static_cast<T*>(this);
-			}
+			T* getDerived()								{ assert(isAction<T>()); return static_cast<T*>(this); }
 		};
 
 		// shortcut to unique ptr of action class
@@ -59,36 +52,45 @@ namespace nap
 			return std::make_unique<T>(std::forward<Args>(args)...);
 		}
 
+
 		/**
 		 * None is an empty action
 		 * When there is currently no action in the GUI, its action is None
 		 */
-		class None : public Action { RTTI_ENABLE() };
+		class NAPAPI None : public Action
+		{
+			RTTI_ENABLE()
+		};
+
 
 		/**
 		 * NonePressed is an action that happens when mouse is pressed when no action is active inside
 		 * the sequencer window. This is to prevent unintended actions to happen when mouse is pressed and then
 		 * dragged into the sequencer window
 		 */
-		class NonePressed : public Action{ RTTI_ENABLE() };
+		class NAPAPI NonePressed : public Action
+		{
+			RTTI_ENABLE()
+		};
+
 
 		/**
 		 * TrackAction is the base class for any action that happens on a track
 		 * Every track action has a track id, which identifies the track that the action applies to
 		 */
-		class TrackAction : public Action
+		class NAPAPI TrackAction : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
 			explicit TrackAction(std::string trackID) : mTrackID(std::move(trackID)){}
-
 			std::string mTrackID;
 		};
+
 
 		/**
 		 * Action for dragging segments
 		 */
-		class DraggingSegment : public TrackAction
+		class NAPAPI DraggingSegment : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -104,10 +106,11 @@ namespace nap
 			double mNewDuration;
 		};
 
+
 		/**
 		 * Action for start dragging segments
 		 */
-		class StartDraggingSegment : public TrackAction
+		class NAPAPI StartDraggingSegment : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -123,11 +126,11 @@ namespace nap
 			double mStartDuration;
 		};
 
+
 		/**
 		 * Action for when inside insert segment popup
 		 */
-		class InsertingSegmentPopup :
-			public TrackAction
+		class NAPAPI InsertingSegmentPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -144,11 +147,11 @@ namespace nap
 			rttr::type mTrackType;
 		};
 
+
 		/**
 		 * Action for opening the popup to insert a segment into a track of a certain type
 		 */
-		class OpenInsertSegmentPopup :
-			public TrackAction
+		class NAPAPI OpenInsertSegmentPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -165,10 +168,12 @@ namespace nap
 			rttr::type mTrackType;
 		};
 
+
 		/**
 		 * Action when inside edit segment popup
 		 */
-		class EditingSegmentPopup : public TrackAction {
+		class NAPAPI EditingSegmentPopup : public TrackAction
+		{
 			RTTI_ENABLE(TrackAction)
 		public:
 			/**
@@ -184,10 +189,11 @@ namespace nap
 			rttr::type mSegmentType;
 		};
 
+
 		/**
 		 * Action when edit segment popup needs to be opened
 		 */
-		class OpenEditSegmentPopup : public TrackAction
+		class NAPAPI OpenEditSegmentPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -204,10 +210,11 @@ namespace nap
 			rttr::type mSegmentType;
 		};
 
+
 		/**
 		 * Action when hovering a segment
 		 */
-		class HoveringSegment : public TrackAction
+		class NAPAPI HoveringSegment : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -222,18 +229,20 @@ namespace nap
 			std::string mSegmentID;
 		};
 
+
 		/**
 		 * When hovering mouse over player scrub bar
 		 */
-		class HoveringPlayerTime : public Action
+		class NAPAPI HoveringPlayerTime : public Action
 		{
 			RTTI_ENABLE(Action)
 		};
 
+
 		/**
 		 * Action when dragging player controller
 		 */
-		class DraggingPlayerTime : public Action
+		class NAPAPI DraggingPlayerTime : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
@@ -249,21 +258,24 @@ namespace nap
 			bool mWasPaused;
 		};
 
+
 		/**
 		 * Action when a insert track popup needs to be opened
 		 */
-		class OpenInsertTrackPopup : public Action 
+		class NAPAPI OpenInsertTrackPopup : public Action
 		{ 
 			RTTI_ENABLE(Action) 
 		};
 
+
 		/**
 		 * Action when inside insert track popup
 		 */
-		class InsertingTrackPopup : public Action
+		class NAPAPI InsertingTrackPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		};
+
 
 		/**
 		 * Action when inside insert load popup
@@ -276,10 +288,11 @@ namespace nap
 			std::string mErrorString;
 		};
 
+
 		/**
 		 * Action when inside save as popup
 		 */
-		class SaveAsPopup : public Action
+		class NAPAPI SaveAsPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
@@ -287,46 +300,51 @@ namespace nap
 			std::string mErrorString;
 		};
 
+
 		/**
 		 * Action when hovering sequence duration handler
 		 */
-		class HoveringSequenceDuration : public Action
+		class NAPAPI HoveringSequenceDuration : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
 		};
+
 
 		/**
 		 * Action when dragging sequence duration handler
 		 */
-		class DraggingSequenceDuration : public Action
+		class NAPAPI DraggingSequenceDuration : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
 		};
+
 
 		/**
 		 * Action when open sequence duration popup needs to be opened
 		 */
-		class OpenSequenceDurationPopup : public Action
+		class NAPAPI OpenSequenceDurationPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
 		};
+
 
 		/**
 		 * Action when inside sequence duration popup
 		 */
-		class EditSequenceDurationPopup : public Action
+		class NAPAPI EditSequenceDurationPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
 		};
 
+
 		/**
 		 * Action when sequence marker popup needs to be openend
 		 */
-		class OpenEditSequenceMarkerPopup : public Action
+		class NAPAPI OpenEditSequenceMarkerPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
@@ -344,10 +362,11 @@ namespace nap
 			double mTime;
 		};
 
+
 		/**
 		 * Action when inside edit marker popup
 		 */
-		class EditingSequenceMarkerPopup : public Action
+		class NAPAPI EditingSequenceMarkerPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
@@ -365,10 +384,11 @@ namespace nap
 			double mTime;
 		};
 
+
 		/**
 		 * Action when insert marker popup needs to be opened
 		 */
-		class OpenInsertSequenceMarkerPopup : public Action
+		class NAPAPI OpenInsertSequenceMarkerPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
@@ -381,10 +401,11 @@ namespace nap
 			double mTime;
 		};
 
+
 		/**
 		 * Action when inside insert marker popup
 		 */
-		class InsertingSequenceMarkerPopup : public Action
+		class NAPAPI InsertingSequenceMarkerPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
@@ -400,10 +421,11 @@ namespace nap
 			std::string mMessage;
 		};
 
+
 		/**
 		 * Action when dragging marker
 		 */
-		class DragSequenceMarker : public Action
+		class NAPAPI DragSequenceMarker : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
@@ -416,11 +438,11 @@ namespace nap
 			std::string mID;
 		};
 
+
 		/**
 		 * Action when assigned a new output id to track
 		 */
-		class AssignOutputIDToTrack :
-			public TrackAction
+		class NAPAPI AssignOutputIDToTrack : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -436,19 +458,21 @@ namespace nap
 			
 		};
 
+
 		/**
 		 * Action that tells the gui to open help popup
 		 */
-		class OpenHelpPopup : public Action
+		class NAPAPI OpenHelpPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:
 		};
 
+
 		/**
 		 * Action that tells the gui its inside the help popup
 		 */
-		class ShowHelpPopup : public Action
+		class NAPAPI ShowHelpPopup : public Action
 		{
 			RTTI_ENABLE(Action)
 		public:

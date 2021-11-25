@@ -11,7 +11,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently hovering a curve control point
 		 */
-		class HoveringControlPoint : public TrackAction
+		class NAPAPI HoveringControlPoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -60,7 +60,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently hovering a tan point
 		 */
-		class HoveringTanPoint : public TrackAction
+		class NAPAPI HoveringTanPoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -77,7 +77,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently hovering a curve
 		 */
-		class HoveringCurve : public TrackAction
+		class NAPAPI HoveringCurve : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -97,7 +97,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI to open an insert curve point popup
 		 */
-		class OpenInsertCurvePointPopup : public TrackAction
+		class NAPAPI OpenInsertCurvePointPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -119,7 +119,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside an insert curve point popup
 		 */
-		class InsertingCurvePoint : public TrackAction
+		class NAPAPI InsertingCurvePoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -207,7 +207,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI to open a curve type popup
 		 */
-		class OpenCurveTypePopup : public TrackAction
+		class NAPAPI OpenCurveTypePopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -235,7 +235,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside a curve type popup
 		 */
-		class CurveTypePopup : public TrackAction
+		class NAPAPI CurveTypePopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -259,7 +259,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently dragging a tan point
 		 */
-		class DraggingTanPoint : public TrackAction
+		class NAPAPI DraggingTanPoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -286,7 +286,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we need to open a tan point edit popup
 		 */
-		class OpenEditTanPointPopup : public TrackAction
+		class NAPAPI OpenEditTanPointPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -314,7 +314,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside a tan point edit popup
 		 */
-		class EditingTanPointPopup : public TrackAction
+		class NAPAPI EditingTanPointPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -342,7 +342,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI to open an edit curve segment popup
 		 */
-		class OpenEditCurveSegmentPopup : public TrackAction
+		class NAPAPI OpenEditCurveSegmentPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -366,7 +366,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside an edit curve segment popup
 		 */
-		class EditingCurveSegment : public TrackAction
+		class NAPAPI EditingCurveSegment : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -392,8 +392,7 @@ namespace nap
 		 * @tparam T value type of curve
 		 */
 		template<typename T>
-		class OpenEditSegmentCurveValuePopup :
-			public TrackAction
+		class OpenEditSegmentCurveValuePopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -427,8 +426,7 @@ namespace nap
 		 * @tparam T value type of curve
 		 */
 		template<typename T>
-		class EditingSegmentCurveValue :
-			public TrackAction
+		class EditingSegmentCurveValue : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -458,8 +456,7 @@ namespace nap
 		 * @tparam T value type of the curved track
 		 */
 		template<typename T>
-		class ChangeMinMaxCurve :
-			public TrackAction
+		class ChangeMinMaxCurve : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -479,7 +476,7 @@ namespace nap
 		/**
 		 * A TrackAction that tells the GUI we're hovering a segment value
 		 */
-		class HoveringSegmentValue : public TrackAction
+		class NAPAPI HoveringSegmentValue : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -501,8 +498,7 @@ namespace nap
 		/**
 		 * A TrackAction that tells the GUI we're dragging a segment value
 		 */
-		class DraggingSegmentValue :
-			public TrackAction
+		class DraggingSegmentValue : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:

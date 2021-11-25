@@ -9,7 +9,7 @@
 
 namespace nap
 {
-	DirectoryWatcher::DirectoryWatcher() {}
+	DirectoryWatcher::DirectoryWatcher(const std::string& directory) {}
 
 	DirectoryWatcher::~DirectoryWatcher() {}
 
