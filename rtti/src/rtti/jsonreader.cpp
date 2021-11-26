@@ -231,6 +231,23 @@ namespace nap
 					if (!target_id.empty())
 						readState.mResult.mUnresolvedPointers.push_back(UnresolvedPointer(rootObject, readState.mCurrentRTTIPath, target_id));
 				}
+                else if (wrapped_type.is_enumeration())
+                {
+                    rtti::Variant extracted_enum_string = readBasicType(json_value);
+                    rtti::Enum enumeration = wrapped_type.get_enumeration();
+                    rtti::Variant enum_value = enumeration.name_to_value(extracted_enum_string.get_value<std::string>());
+
+                    if (!errorState.check(enum_value.is_valid(),
+                        "Failed to extract has type: %s, object: %s", readState.mCurrentRTTIPath.toString().c_str(),
+                        rootObject->mID.c_str()))
+                    {
+                        if (readState.mCurrentRTTIPath.toString() == "Type")
+                            errorState.fail("Type is a reserved keyword");
+                        return false;
+                    }
+
+                    property.set_value(compound, enum_value);
+                }
 				else
 				{
 					// Regular property; read the value and set the property
