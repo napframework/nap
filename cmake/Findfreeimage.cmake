@@ -16,7 +16,7 @@ elseif(APPLE)
             ${THIRDPARTY_DIR}/FreeImage/macos/x86_64
     )
     set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
-    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage-3.17.0.dylib)
+    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage-3.18.0.dylib)
 elseif(UNIX)
     find_path(
             FREEIMAGE_DIR
@@ -40,7 +40,7 @@ set_target_properties(FreeImage PROPERTIES
 mark_as_advanced(FREEIMAGE_INCLUDE_DIRS)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(freeimage REQUIRED_VARS FREEIMAGE_DIR)
+find_package_handle_standard_args(freeimage REQUIRED_VARS FREEIMAGE_DIR FREEIMAGE_LIBRARIES FREEIMAGE_INCLUDE_DIRS)
 
 # Copy the freeimage dynamic linked lib into the build directory
 macro(copy_freeimage_dll)

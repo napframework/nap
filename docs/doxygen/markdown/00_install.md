@@ -62,11 +62,11 @@ NAP $(NAP_VERSION_FULL) supports Ubuntu Linux 20.04 on x86-64 machines using GCC
 Follow these steps for a guided installation:
 1. Extract the release:
 ```
-tar jxvf NAP-0.4.0-Linux.tar.bz2
+tar jxvf NAP-0.4.5-Linux.tar.bz2
 ```
 2. Run the `check_build_environment` script to guide you through installing prerequisites, following the instructions:
 ```
-cd NAP-0.4.0-Linux
+cd NAP-0.4.5-Linux
 ./tools/check_build_environment
 ```
 3. If any changes are required re-run `check_build_environment` after those changes have been made to verify the final environment
@@ -105,7 +105,7 @@ All demonstration projects can be found within the demos folder within the relea
 
 1. Navigate to the helloworld demo
 ```
-cd NAP-0.4.0-Linux/demos/helloworld
+cd NAP-0.4.5-Linux/demos/helloworld
 ```
 2. Generate the Unix makefiles
 ```
