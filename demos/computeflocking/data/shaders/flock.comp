@@ -5,55 +5,71 @@
 
 layout(local_size_x = 8) in;
 
-// struct Particle
-// {
-// 	vec4 position;
-// 	vec4 velocity;
-// 	vec4 rotation;
-// 	vec4 color;
-// };
 
-// layout(std430) buffer TestParticleBuffer
-// {
-// 	Particle particles[1000];
-// };
-
-layout(std430) buffer PositionBuffer_In
+struct Boid
 {
-	vec4 inPositions[1000000];
+	vec4 position;
+	vec4 direction;
+	vec4 velocity;
+
+	vec4 avoidanceHeading;
+	vec4 flockHeading;
+	vec4 flockCenter;
+
+	vec3 padding;
+	int numFlockMates;
 };
 
-layout(std430) buffer PositionBuffer_Out 
-{
-	vec4 outPositions[1000000];
-};
 
-layout(std430) buffer VelocityBuffer 
-{
-	vec4 velocities[1000000];
-};
+// STORAGE
 
-layout(std430) buffer RotationBuffer 
+layout(std430) buffer BoidBuffer_In
 {
-	vec4 rotations[1000000];
-};
+	Boid boids[2000];
+} subo_in;
+
+layout(std430) buffer BoidBuffer_Out
+{
+	Boid boids[2000];
+} subo_out;
 
 layout(std430) buffer VertexBuffer 
 {
-	vec4 vertices[4000000];
+	vec4 vertices[8000];
 };
+
+
+// UNIFORM
 
 uniform UBO 
 {
-	float velocityTimeScale;
-	float velocityVariationScale;
-	float rotationSpeed;
-	float particleSize;
+	vec4 target;
 	float deltaTime;
 	float elapsedTime;
-	int particleCount;
-} ubo; 
+	float boidSize;
+	float viewRadius;
+	float avoidRadius;
+	float minSpeed;
+	float maxSpeed;
+	float maxSteerForce;
+	float targetWeight;
+	float alignmentWeight;
+	float cohesionWeight;
+	float separationWeight;
+	int numBoids;
+} ubo;
 
+
+// CONSTANTS
+
+const vec3 FORWARD = vec3(1.0, 0.0, 0.0);
+const vec4 QUAT_IDENTITY = vec4(0.0, 0.0, 0.0, 1.0);
+const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
+const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
+const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
+
+
+// UTILITIES
 
 mat4 translate(vec3 d)
 {
@@ -65,53 +81,122 @@ mat4 translate(vec3 d)
 	);
 }
 
-mat4 rotate(vec3 axis, float angle)
+
+mat4 rotation(vec3 src, vec3 dst)
 {
-	axis = normalize(axis);
-	float s = sin(angle);
-	float c = cos(angle);
-	float oc = 1.0 - c;
-	
-	return transpose(mat4(
-		oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-		oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-		oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-		0.0,                                0.0,                                0.0,                                1.0
-	));
+	vec3  v = cross(src, dst);
+	float c = dot(src, dst);
+	float k = 1.0f/(1.0f+c);
+
+	return mat4(
+		v.x*v.x*k + c,		v.y*v.x*k - v.z,	v.z*v.x*k + v.y,	0.0,
+		v.x*v.y*k + v.z,	v.y*v.y*k + c,		v.z*v.y*k - v.x,	0.0,
+		v.x*v.z*k - v.y,	v.y*v.z*k + v.x,	v.z*v.z*k + c,		0.0,
+		0.0,				0.0,				0.0,				1.0
+	);
 }
 
-float mod289(float x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec2 mod289(vec2 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec3 mod289(vec3 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec4 mod289(vec4 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 
-float rand(vec2 co) { return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
-float rand(vec2 co, float l) {return rand(vec2(rand(co), l));}
-
-float permute(float x) { return mod289(((x*34.0)+1.0)*x); }
-vec3 permute(vec3 x)   { return mod289(((x*34.0)+1.0)*x); }
-vec4 permute(vec4 x)   { return mod289(((x*34.0)+1.0)*x); }
-
-float taylorInvSqrt(float r) { return 1.79284291400159 - 0.85373472095314 * r; }
-vec4 taylorInvSqrt(vec4 r)   { return 1.79284291400159 - 0.85373472095314 * r; }
-
-float snoise(vec3 v);
-
-void main() 
+mat4 lookAt(vec3 from, vec3 to, vec3 upRef)
 {
-	// Read
-	vec4 pos = inPositions[gl_GlobalInvocationID.x];
-	vec4 vel = velocities[gl_GlobalInvocationID.x];
-	vec4 rot = rotations[gl_GlobalInvocationID.x];
+	vec3 forward = normalize(from - to);    
+	vec3 right = cross(forward, normalize(upRef));
+	//vec3 right = normalize(cross(forward, vec3(sin(roll.x), cos(roll.x), 0.0)));
+	vec3 up = cross(forward, right);
 
-	float dx = snoise(vel.xyz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
-	float dy = snoise(vel.zyx * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
-	float dz = snoise(vel.yxz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
+	return mat4(
+		right.x,	right.y,	right.z,	-dot(right, from),
+		up.x,		up.y,		up.z,		-dot(up, from),
+		forward.x,	forward.y,	forward.z,	-dot(forward, from),
+		0.0, 		0.0,		0.0,		1.0
+	);
+}
 
-	pos.xyz += vec3(dx, dy, dz) * ubo.deltaTime;
+
+vec3 clampMagnitude(vec3 v, float min, float max)
+{
+	if (length(v) > max)
+		return normalize(v) * max;
+	else if (length(v) < min)
+		return normalize(v) * min;
+
+	return v;
+}
+
+
+vec3 steerTowards(vec3 target, vec3 velocity, float maxSpeed)
+{
+	vec3 v = normalize(target) * maxSpeed - velocity;
+	return clampMagnitude(v, length(v), ubo.maxSteerForce);
+}
+
+
+// SHADER MAIN
+
+void main()
+{
+	uint id = gl_GlobalInvocationID.x;
+
+	// Read current boid
+	Boid b = subo_in.boids[id];
+
+	// Reset num flock mates
+	b.numFlockMates = 0;
+
+	// Update force variables
+	for (int idx = 0; idx < ubo.numBoids; idx++) 
+	{
+		if (id != idx) 
+		{
+			vec4 other_position = subo_in.boids[idx].position;
+			vec4 other_direction = normalize(subo_in.boids[idx].velocity);
+
+			vec4 offset = other_position - b.position;
+			float distance_squared = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
+
+			if (distance_squared < ubo.viewRadius * ubo.viewRadius) 
+			{
+				b.numFlockMates++;
+				b.flockHeading += other_direction;
+				b.flockCenter += other_position;
+
+				if (distance_squared < ubo.avoidRadius * ubo.avoidRadius)
+				{
+					b.avoidanceHeading -= offset / distance_squared;
+				}
+			}
+		}
+	}
+
+	// Calculate base acceleration
+	vec4 offset = ubo.target - b.position;
+	vec3 acceleration = steerTowards(offset.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.targetWeight;
+
+	// Calculate forces
+	if (b.numFlockMates != 0) 
+	{
+		vec4 average_flock_center = b.flockCenter / b.numFlockMates;
+		vec4 average_flock_heading = b.flockHeading / b.numFlockMates;
+		vec4 average_avoidance_heading = b.avoidanceHeading / b.numFlockMates;
+
+		vec3 alignment = steerTowards(average_flock_heading.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.alignmentWeight;
+		vec3 cohesion = steerTowards(average_flock_center.xyz - b.position.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.cohesionWeight;
+		vec3 seperation = steerTowards(average_avoidance_heading.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.separationWeight;
+
+		acceleration += alignment;
+		acceleration += cohesion;
+		acceleration += seperation;
+	}
+
+	// Write current boid
+	vec3 vel = b.velocity.xyz + acceleration * ubo.deltaTime;
+	b.velocity = vec4(clampMagnitude(vel, ubo.minSpeed, ubo.maxSpeed), 0.0);
+	b.position += b.velocity * ubo.deltaTime;
+
+	subo_out.boids[id] = b;
 
 	// Create the position vertices
-	float extent = ubo.particleSize * 0.5;
+	float extent = ubo.boidSize * 0.5;
 
 	// Get rectangle positions
 	vec4 edges[4];
@@ -122,105 +207,12 @@ void main()
 	edges[3] = vec4(extent,		extent, 	0.0, 1.0);
 
 	// Apply particle translation / rotation
-	mat4 translation = translate(pos.xyz);
-	mat4 rotation = rotate(rot.xyz, (rot.w + 1.0) * ubo.rotationSpeed * (ubo.elapsedTime + 1.0));
+	mat4 translation = translate(b.position.xyz);
+	mat4 rotation = rotation(FORWARD, normalize(b.velocity.xyz));
 
 	// Vertex storage buffer
 	for (int i=0; i<4; i++)
 	{
 		vertices[gl_GlobalInvocationID.x*4+i] = translation * rotation * edges[i];
 	}
-
-	// Write
-	outPositions[gl_GlobalInvocationID.x] = pos;
-}
-
-
-
-
-
-//
-// Description : Array and textureless GLSL 2D/3D/4D simplex 
-//               noise functions.
-//      Author : Ian McEwan, Ashima Arts.
-//  Maintainer : stegu
-//     Lastmod : 20110822 (ijm)
-//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.
-//               Distributed under the MIT License. See LICENSE file.
-//               https://github.com/ashima/webgl-noise
-//               https://github.com/stegu/webgl-noise
-// 
-
-float snoise(vec3 v)
-{ 
-	const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
-	const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
-
-	// First corner
-	vec3 i  = floor(v + dot(v, C.yyy) );
-	vec3 x0 =   v - i + dot(i, C.xxx) ;
-
-	// Other corners
-	vec3 g = step(x0.yzx, x0.xyz);
-	vec3 l = 1.0 - g;
-	vec3 i1 = min( g.xyz, l.zxy );
-	vec3 i2 = max( g.xyz, l.zxy );
-
-	// x0 = x0 - 0.0 + 0.0 * C.xxx;
-	// x1 = x0 - i1  + 1.0 * C.xxx;
-	// x2 = x0 - i2  + 2.0 * C.xxx;
-	// x3 = x0 - 1.0 + 3.0 * C.xxx;
-	vec3 x1 = x0 - i1 + C.xxx;
-	vec3 x2 = x0 - i2 + C.yyy;	// 2.0*C.x = 1/3 = C.y
-	vec3 x3 = x0 - D.yyy;		// -1.0+3.0*C.x = -0.5 = -D.y
-
-	// Permutations
-	i = mod289(i); 
-	vec4 p = permute( permute( permute( 
-		i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-		+ i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
-		+ i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
-
-	// Gradients: 7x7 points over a square, mapped onto an octahedron.
-	// The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)
-	float n_ = 0.142857142857; // 1.0/7.0
-	vec3  ns = n_ * D.wyz - D.xzx;
-
-	vec4 j = p - 49.0 * floor(p * ns.z * ns.z);  //  mod(p,7*7)
-
-	vec4 x_ = floor(j * ns.z);
-	vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)
-
-	vec4 x = x_ *ns.x + ns.yyyy;
-	vec4 y = y_ *ns.x + ns.yyyy;
-	vec4 h = 1.0 - abs(x) - abs(y);
-
-	vec4 b0 = vec4( x.xy, y.xy );
-	vec4 b1 = vec4( x.zw, y.zw );
-
-	//vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;
-	//vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;
-	vec4 s0 = floor(b0)*2.0 + 1.0;
-	vec4 s1 = floor(b1)*2.0 + 1.0;
-	vec4 sh = -step(h, vec4(0.0));
-
-	vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
-	vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
-
-	vec3 p0 = vec3(a0.xy,h.x);
-	vec3 p1 = vec3(a0.zw,h.y);
-	vec3 p2 = vec3(a1.xy,h.z);
-	vec3 p3 = vec3(a1.zw,h.w);
-
-	//Normalise gradients
-	vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-	p0 *= norm.x;
-	p1 *= norm.y;
-	p2 *= norm.z;
-	p3 *= norm.w;
-
-	// Mix final noise value
-	vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-	m = m * m;
-	return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3) ) );
 }

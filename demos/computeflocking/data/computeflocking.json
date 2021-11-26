@@ -1,159 +1,22 @@
 {
     "Objects": [
         {
-            "Type": "nap::ComputeInstance",
-            "mID": "ComputeInstance_A",
-            "ComputeMaterialInstance": {
-                "ComputeMaterial": "ComputeMaterial",
-                "Uniforms": [
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_afd17387",
-                        "Name": "VertexBuffer",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_72bff4b7",
-                                "Name": "vertices",
-                                "Buffer": "GPUVec4Buffer_Vertices"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_5151d271",
-                        "Name": "PositionBuffer_In",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_ef5fb1ae",
-                                "Name": "inPositions",
-                                "Buffer": "GPUVec4Buffer_Positions"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_61a34747",
-                        "Name": "PositionBuffer_Out",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_fb894cb7",
-                                "Name": "outPositions",
-                                "Buffer": "GPUVec4Buffer_Positions2"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_03a6c117",
-                        "Name": "VelocityBuffer",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_e8f73a04",
-                                "Name": "velocities",
-                                "Buffer": "GPUVec4Buffer_Velocities"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_ef8639ea",
-                        "Name": "RotationBuffer",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_534105bd",
-                                "Name": "rotations",
-                                "Buffer": "GPUVec4Buffer_Rotations"
-                            }
-                        ]
-                    }
-                ],
-                "Samplers": []
-            }
-        },
-        {
-            "Type": "nap::ComputeInstance",
-            "mID": "ComputeInstance_B",
-            "ComputeMaterialInstance": {
-                "ComputeMaterial": "ComputeMaterial",
-                "Uniforms": [
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_afd17387B",
-                        "Name": "VertexBuffer",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_72bff4b7B",
-                                "Name": "vertices",
-                                "Buffer": "GPUVec4Buffer_Vertices"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_5151d271B",
-                        "Name": "PositionBuffer_In",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_ef5fb1aeB",
-                                "Name": "inPositions",
-                                "Buffer": "GPUVec4Buffer_Positions2"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_61a34747B",
-                        "Name": "PositionBuffer_Out",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_fb894cb7B",
-                                "Name": "outPositions",
-                                "Buffer": "GPUVec4Buffer_Positions"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_03a6c117B",
-                        "Name": "VelocityBuffer",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_e8f73a04B",
-                                "Name": "velocities",
-                                "Buffer": "GPUVec4Buffer_Velocities"
-                            }
-                        ]
-                    },
-                    {
-                        "Type": "nap::UniformStruct",
-                        "mID": "UniformStruct_ef8639eaB",
-                        "Name": "RotationBuffer",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformVec4Buffer",
-                                "mID": "UniformVec4Buffer_534105bdB",
-                                "Name": "rotations",
-                                "Buffer": "GPUVec4Buffer_Rotations"
-                            }
-                        ]
-                    }
-                ],
-                "Samplers": []
-            }
-        },
-        {
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
+            "StorageUniforms": [
+                {
+                    "Type": "nap::StorageUniformStruct",
+                    "mID": "StorageUniformStruct_4b879541",
+                    "Name": "VertexBuffer",
+                    "StorageUniform": {
+                        "Type": "nap::StorageUniformVec4Buffer",
+                        "mID": "StorageUniformVec4Buffer_7c737b1a",
+                        "Name": "vertices",
+                        "Buffer": "GPUVec4Buffer_Vertices"
+                    }
+                }
+            ],
             "Samplers": [],
             "Shader": "ComputeShader"
         },
@@ -161,16 +24,6 @@
             "Type": "nap::ComputeShaderFromFile",
             "mID": "ComputeShader",
             "ComputeShader": "shaders/flock.comp"
-        },
-        {
-            "Type": "nap::ConstantVec4BufferInitStrategy",
-            "mID": "ZeroInitStrategy",
-            "Constant": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 0.0
-            }
         },
         {
             "Type": "nap::Entity",
@@ -214,11 +67,11 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": -0.5,
-                            "z": 3.5
+                            "y": 0.0,
+                            "z": 12.0
                         },
                         "Rotate": {
-                            "x": 50.0,
+                            "x": 0.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -256,6 +109,7 @@
                     "MaterialInstance": {
                         "Material": "RenderMaterial",
                         "Uniforms": [],
+                        "StorageUniforms": [],
                         "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -271,12 +125,18 @@
                             "y": 0.0
                         }
                     },
-                    "ComputeInstance": "ComputeInstance_A",
-                    "NumParticles": 1000000,
-                    "Size": 0.03999999910593033,
-                    "RotationSpeed": 0.5,
-                    "Velocity": 0.5,
-                    "VelocityVariation": 0.75
+                    "NumBoids": 2000,
+                    "Target": "TargetParameter",
+                    "BoidSize": "BoidSizeParameter",
+                    "ViewRadius": "ViewRadiusParameter",
+                    "AvoidRadius": "AvoidRadiusParameter",
+                    "MinSpeed": "MinSpeedParameter",
+                    "MaxSpeed": "MaxSpeedParameter",
+                    "MaxSteerForce": "MaxSteerForceParameter",
+                    "TargetWeight": "TargetWeightParameter",
+                    "AlignmentWeight": "AlignmentWeightParameter",
+                    "CohesionWeight": "CohesionWeightParameter",
+                    "SeparationWeight": "SeparationWeightParameter"
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -299,49 +159,297 @@
                         },
                         "UniformScale": 1.0
                     }
+                },
+                {
+                    "Type": "nap::ComputeComponent",
+                    "mID": "ComputeComponent_A",
+                    "ComputeMaterialInstance": {
+                        "ComputeMaterial": "ComputeMaterial",
+                        "Uniforms": [],
+                        "StorageUniforms": [
+                            {
+                                "Type": "nap::StorageUniformStruct",
+                                "mID": "StorageUniformStruct_fa361196",
+                                "Name": "BoidBuffer_In",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_ed632592",
+                                    "Name": "boids",
+                                    "Buffer": "GPUStructBuffer_Boids_A"
+                                }
+                            },
+                            {
+                                "Type": "nap::StorageUniformStruct",
+                                "mID": "StorageUniformStruct_444dc40a",
+                                "Name": "BoidBuffer_Out",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_b2aa64d8",
+                                    "Name": "boids",
+                                    "Buffer": "GPUStructBuffer_Boids_B"
+                                }
+                            }
+                        ],
+                        "Samplers": []
+                    }
+                },
+                {
+                    "Type": "nap::ComputeComponent",
+                    "mID": "ComputeComponent_B",
+                    "ComputeMaterialInstance": {
+                        "ComputeMaterial": "ComputeMaterial",
+                        "Uniforms": [],
+                        "StorageUniforms": [
+                            {
+                                "Type": "nap::StorageUniformStruct",
+                                "mID": "StorageUniformStruct_6d9ac22f",
+                                "Name": "BoidBuffer_In",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_9c63ead3",
+                                    "Name": "boids",
+                                    "Buffer": "GPUStructBuffer_Boids_B"
+                                }
+                            },
+                            {
+                                "Type": "nap::StorageUniformStruct",
+                                "mID": "StorageUniformStruct_e56c6153",
+                                "Name": "BoidBuffer_Out",
+                                "StorageUniform": {
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_07aa6b45",
+                                    "Name": "boids",
+                                    "Buffer": "GPUStructBuffer_Boids_A"
+                                }
+                            }
+                        ],
+                        "Samplers": []
+                    }
+                },
+                {
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "nap::RenderGnomonComponent_af441340",
+                    "Visible": true,
+                    "Gnomon": "GnomonMesh",
+                    "LineWidth": 1.0,
+                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
         },
         {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Positions",
-            "Count": 1000000,
+            "Type": "nap::GPUStructBuffer",
+            "mID": "GPUStructBuffer_Boids_A",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_54735a57",
+                    "Name": "boids",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_3c7c4709",
+                            "Name": "position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_b575babc",
+                            "Name": "direction",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_5e14de01",
+                            "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_07266880",
+                            "Name": "avoidanceHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_8f5acb1d",
+                            "Name": "flockHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_7ccb5b95",
+                            "Name": "flockCenter",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_dbc308e5",
+                            "Name": "padding",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformInt",
+                            "mID": "UniformInt_9fe73999",
+                            "Name": "numFlockMates",
+                            "Value": 0
+                        }
+                    ]
+                },
+                "Count": 2000
+            },
             "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "InitStrategy": "PositionBufferInitStrategy"
+            "FillPolicy": "BoidBufferFillPolicy"
         },
         {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Positions2",
-            "Count": 1000000,
+            "Type": "nap::GPUStructBuffer",
+            "mID": "GPUStructBuffer_Boids_B",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_54735a57b",
+                    "Name": "boids",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_3c7c4709b",
+                            "Name": "position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_b575babcb",
+                            "Name": "direction",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_5e14de01b",
+                            "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_07266880b",
+                            "Name": "avoidanceHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_8f5acb1db",
+                            "Name": "flockHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_02b54fb6",
+                            "Name": "flockCenter",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_fb252763",
+                            "Name": "padding",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformInt",
+                            "mID": "UniformInt_9fe73999b",
+                            "Name": "numFlockMates",
+                            "Value": 0
+                        }
+                    ]
+                },
+                "Count": 2000
+            },
             "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "InitStrategy": "ZeroInitStrategy"
-        },
-        {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Rotations",
-            "Count": 1000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "InitStrategy": "PlusMinusOneInitStrategy"
-        },
-        {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Velocities",
-            "Count": 1000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "InitStrategy": "PlusMinusOneInitStrategy"
+            "FillPolicy": ""
         },
         {
             "Type": "nap::GPUVec4Buffer",
             "mID": "GPUVec4Buffer_Vertices",
-            "Count": 4000000,
+            "Count": 8000,
             "Usage": "Static",
             "BufferObjectType": "Storage",
-            "InitStrategy": "ZeroInitStrategy"
+            "FillPolicy": ""
+        },
+        {
+            "Type": "nap::GnomonMesh",
+            "mID": "GnomonMesh",
+            "Size": 1.0,
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
         },
         {
             "Type": "nap::ImageFromFile",
@@ -361,6 +469,7 @@
             "Type": "nap::Material",
             "mID": "RenderMaterial",
             "Uniforms": [],
+            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2DArray",
@@ -379,7 +488,7 @@
                     ]
                 }
             ],
-            "Shader": "ParticleShader",
+            "Shader": "BoidShader",
             "VertexAttributeBindings": [
                 {
                     "MeshAttributeID": "Position",
@@ -396,6 +505,106 @@
             ],
             "BlendMode": "AlphaBlend",
             "DepthMode": "ReadWrite"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "FlockingParameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "TargetParameter",
+                    "Name": "Target",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BoidSizeParameter",
+                    "Name": "BoidSize",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ViewRadiusParameter",
+                    "Name": "ViewRadius",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "AvoidRadiusParameter",
+                    "Name": "AvoidRadius",
+                    "Value": 0.75,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MinSpeedParameter",
+                    "Name": "MinSpeed",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MaxSpeedParameter",
+                    "Name": "MaxSpeed",
+                    "Value": 3.0,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MaxSteerForceParameter",
+                    "Name": "MaxSteerForce",
+                    "Value": 5.0,
+                    "Minimum": 0.0,
+                    "Maximum": 8.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "TargetWeightParameter",
+                    "Name": "TargetWeight",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "AlignmentWeightParameter",
+                    "Name": "AlignmentWeight",
+                    "Value": 0.800000011920929,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "CohesionWeightParameter",
+                    "Name": "CohesionWeight",
+                    "Value": 0.6000000238418579,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SeparationWeightParameter",
+                    "Name": "SeparationWeight",
+                    "Value": 0.4000000059604645,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::RenderWindow",
@@ -439,40 +648,190 @@
         },
         {
             "Type": "nap::ShaderFromFile",
-            "mID": "ParticleShader",
-            "VertShader": "shaders/particle.vert",
-            "FragShader": "shaders/particle.frag"
+            "mID": "BoidShader",
+            "VertShader": "shaders/boid.vert",
+            "FragShader": "shaders/boid.frag"
         },
         {
-            "Type": "nap::UniformRandomVec4BufferInitStrategy",
-            "mID": "PlusMinusOneInitStrategy",
-            "Lowerbound": {
-                "x": -1.0,
-                "y": -1.0,
-                "z": -1.0,
-                "w": -1.0
+            "Type": "nap::UniformRandomStructBufferFillPolicy",
+            "mID": "BoidBufferFillPolicy",
+            "LowerBound": {
+                "Type": "nap::UniformStruct",
+                "mID": "UniformStruct_14303667",
+                "Name": "boids",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_c2e16690",
+                        "Name": "position",
+                        "Value": {
+                            "x": -4.0,
+                            "y": -4.0,
+                            "z": -4.0,
+                            "w": -4.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_dbab57ed",
+                        "Name": "direction",
+                        "Value": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_0c87b49b",
+                        "Name": "velocity",
+                        "Value": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_60d7be85",
+                        "Name": "avoidanceHeading",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_fca8f07a",
+                        "Name": "flockHeading",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_e897f1f5",
+                        "Name": "flockCenter",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec3",
+                        "mID": "UniformVec3_6431b48d",
+                        "Name": "padding",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformInt",
+                        "mID": "UniformInt_aed539d1",
+                        "Name": "numFlockMates",
+                        "Value": 0
+                    }
+                ]
             },
             "UpperBound": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0,
-                "w": 1.0
-            }
-        },
-        {
-            "Type": "nap::UniformRandomVec4BufferInitStrategy",
-            "mID": "PositionBufferInitStrategy",
-            "Lowerbound": {
-                "x": -10.0,
-                "y": -10.0,
-                "z": -10.0,
-                "w": -10.0
-            },
-            "UpperBound": {
-                "x": 10.0,
-                "y": 10.0,
-                "z": 10.0,
-                "w": 10.0
+                "Type": "nap::UniformStruct",
+                "mID": "UniformStruct_aeeef3a4",
+                "Name": "boids",
+                "Uniforms": [
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_0f4823bf",
+                        "Name": "position",
+                        "Value": {
+                            "x": 4.0,
+                            "y": 4.0,
+                            "z": 4.0,
+                            "w": 4.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_2a14a519",
+                        "Name": "direction",
+                        "Value": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_41c29be6",
+                        "Name": "velocity",
+                        "Value": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_edea2369",
+                        "Name": "avoidanceHeading",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_e2f694f9",
+                        "Name": "flockHeading",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec4",
+                        "mID": "UniformVec4_ffacda74",
+                        "Name": "flockCenter",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformVec3",
+                        "mID": "UniformVec3_9b317d4f",
+                        "Name": "padding",
+                        "Value": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        }
+                    },
+                    {
+                        "Type": "nap::UniformInt",
+                        "mID": "UniformInt_3b70a831",
+                        "Name": "numFlockMates",
+                        "Value": 0
+                    }
+                ]
             }
         }
     ]

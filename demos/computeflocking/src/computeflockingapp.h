@@ -15,7 +15,7 @@
 #include <app.h>
 #include <imguiservice.h>
 #include <renderservice.h>
-#include <computeinstance.h>
+#include <parametergui.h>
 
 namespace nap
 {
@@ -90,7 +90,6 @@ namespace nap
 		ObjectPtr<EntityInstance> mParticleEntity;						//< Entity that emits the particles
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 
-		std::vector<ObjectPtr<ComputeInstance>>	mComputeInstances;
-		uint mComputeInstanceIndex = 0;
+		std::unique_ptr<ParameterGUI> mParameterGUI;
 	};
 }

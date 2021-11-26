@@ -43,7 +43,11 @@ namespace nap
 		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 		mParticleEntity = scene->findEntity("ParticleVolumeEntity");
 
-		mComputeInstances = mResourceManager->getObjects<ComputeInstance>();
+		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
+		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
+
+		if (!error.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
+			return false;
 
 		mGuiService->selectWindow(mRenderWindow);
 
@@ -60,9 +64,7 @@ namespace nap
 	 */
 	void ComputeFlockingApp::update(double deltaTime)
 	{
-		// Update compute instance
 		auto& volume = mParticleEntity->getComponent<FlockingSystemComponentInstance>();
-		volume.mComputeInstance = mComputeInstances[mComputeInstanceIndex].get();
 
 		// Update input
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
@@ -82,10 +84,7 @@ namespace nap
 		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
-		ImGui::SliderFloat("Velocity Time Scale", &volume.mVelocityTimeScale, 0.0, 1.0f);
-		ImGui::SliderFloat("Velocity Variation Scale", &volume.mVelocityVariationScale, 0.0, 1.0f);
-		ImGui::SliderFloat("Rotation Speed", &volume.mRotationSpeed, 0.0, 5.0f);
-		ImGui::SliderFloat("Particle Size", &volume.mParticleSize, 0.0, 1.0f);
+		mParameterGUI->show(false);
 		ImGui::End();
 	}
 
@@ -134,9 +133,6 @@ namespace nap
 
 		// Proceed to next frame
 		mRenderService->endFrame();
-
-		// Update compute instance index
-		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
 	}
 
 

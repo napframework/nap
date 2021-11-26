@@ -83,7 +83,7 @@ namespace nap
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
 
-			int value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			int value = (uniform_lowerbound_resolved->mValue != uniform_upperbound_resolved->mValue) ? math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue) : uniform_lowerbound_resolved->mValue;
 			std::memcpy(data, &value, sizeof(int));
 		});
 
@@ -96,7 +96,7 @@ namespace nap
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
 
-			float value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			float value = (uniform_lowerbound_resolved->mValue != uniform_upperbound_resolved->mValue) ? math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue) : uniform_lowerbound_resolved->mValue;
 			std::memcpy(data, &value, sizeof(float));
 		});
 
@@ -109,7 +109,7 @@ namespace nap
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
 
-			glm::vec2 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			glm::vec2 value = (uniform_lowerbound_resolved->mValue != uniform_upperbound_resolved->mValue) ? math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue) : uniform_lowerbound_resolved->mValue;
 			std::memcpy(data, &value, sizeof(glm::vec2));
 		});
 
@@ -122,7 +122,7 @@ namespace nap
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
 
-			glm::vec3 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			glm::vec3 value = (uniform_lowerbound_resolved->mValue != uniform_upperbound_resolved->mValue) ? math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue) : uniform_lowerbound_resolved->mValue;
 			std::memcpy(data, &value, sizeof(glm::vec3));
 		});
 
@@ -135,7 +135,7 @@ namespace nap
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
 
-			glm::vec4 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			glm::vec4 value = (uniform_lowerbound_resolved->mValue != uniform_upperbound_resolved->mValue) ? math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue) : uniform_lowerbound_resolved->mValue;
 			std::memcpy(data, &value, sizeof(glm::vec4));
 		});
 
@@ -148,7 +148,7 @@ namespace nap
 			assert(uniform_lowerbound_resolved != nullptr);
 			assert(uniform_upperbound_resolved != nullptr);
 
-			glm::mat4 value = math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue);
+			glm::mat4 value = (uniform_lowerbound_resolved->mValue != uniform_upperbound_resolved->mValue) ? math::random(uniform_lowerbound_resolved->mValue, uniform_upperbound_resolved->mValue) : uniform_lowerbound_resolved->mValue;
 			std::memcpy(data, &value, sizeof(glm::mat4));
 		});
 

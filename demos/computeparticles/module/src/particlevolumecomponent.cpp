@@ -51,7 +51,6 @@ namespace nap
 		constexpr const char* vertices = "vertices";
 	}
 
-
 	namespace vertexid
 	{
 		constexpr const char* id = "Id";

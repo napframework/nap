@@ -1,0 +1,104 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "FlockingParameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "TargetParameter",
+                    "Name": "Target",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BoidSizeParameter",
+                    "Name": "BoidSize",
+                    "Value": 0.7519999742507935,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ViewRadiusParameter",
+                    "Name": "ViewRadius",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "AvoidRadiusParameter",
+                    "Name": "AvoidRadius",
+                    "Value": 0.8270000219345093,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MinSpeedParameter",
+                    "Name": "MinSpeed",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MaxSpeedParameter",
+                    "Name": "MaxSpeed",
+                    "Value": 6.304999828338623,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MaxSteerForceParameter",
+                    "Name": "MaxSteerForce",
+                    "Value": 2.6019999980926515,
+                    "Minimum": 0.0,
+                    "Maximum": 8.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "TargetWeightParameter",
+                    "Name": "TargetWeight",
+                    "Value": 0.871999979019165,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "AlignmentWeightParameter",
+                    "Name": "AlignmentWeight",
+                    "Value": 0.7540000081062317,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "CohesionWeightParameter",
+                    "Name": "CohesionWeight",
+                    "Value": 0.8870000243186951,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SeparationWeightParameter",
+                    "Name": "SeparationWeight",
+                    "Value": 0.2720000147819519,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
+        }
+    ]
+}

@@ -5,17 +5,47 @@
 #pragma once
 
 // External includes
-#include <component.h>
-#include <mesh.h>
+#include <computecomponent.h>
 #include <renderablemeshcomponent.h>
+#include <mesh.h>
 #include <nap/resourceptr.h>
-#include <computeinstance.h>
+#include <parameternumeric.h>
+#include <parametervec.h>
 
 namespace nap
 {
 	// Forward declares
 	class FlockingSystemComponentInstance;
-	class ParticleMesh;
+
+	/**
+	 * A particle mesh that is populated by the ParticleVolumeComponent
+	 */
+	class BoidMesh : public IMesh
+	{
+	public:
+		int	mNumBoids = 1024;
+
+		BoidMesh(Core& core);
+
+		/**
+		 * Initialize this particle mesh
+		 */
+		virtual bool init(utility::ErrorState& errorState);
+
+		/**
+		 * @return MeshInstance as created during init().
+		 */
+		virtual MeshInstance& getMeshInstance()	override { return *mMeshInstance; }
+
+		/**
+		 * @return MeshInstance as created during init().
+		 */
+		virtual const MeshInstance& getMeshInstance() const	override { return *mMeshInstance; }
+
+	private:
+		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;			///< The mesh instance to construct
+		nap::RenderService* mRenderService = nullptr;					///< Handle to the render service
+	};
 
 	/**
 	 * Component that emits a single set of particles.
@@ -31,13 +61,28 @@ namespace nap
 		DECLARE_COMPONENT(FlockingSystemComponent, FlockingSystemComponentInstance)
 
 	public:
-		ResourcePtr<ComputeInstance> mComputeInstance;		///< Property 'ComputeInstance':
+		/**
+		 * Returns the components this component depends upon.
+		 * @param components the various components this component depends upon.
+		 */
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
+		{
+			components.emplace_back(RTTI_OF(ComputeComponent));
+		}
 
-		float				mSize = 0.5f;					///< Default size of a particle
-		float				mVelocity = 0.5f;				///< How fast the particles move
-		float				mVelocityVariation;				///< Deviation from initial velocity
-		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
-		int					mNumParticles = 1024;			///< Number of particles 
+		ResourcePtr<ParameterVec3> mTargetParam;
+		ResourcePtr<ParameterFloat> mBoidSizeParam;				///< Default size of a boid
+		ResourcePtr<ParameterFloat> mViewRadiusParam;
+		ResourcePtr<ParameterFloat> mAvoidRadiusParam;
+		ResourcePtr<ParameterFloat> mMinSpeedParam;
+		ResourcePtr<ParameterFloat> mMaxSpeedParam;
+		ResourcePtr<ParameterFloat> mMaxSteerForceParam;
+		ResourcePtr<ParameterFloat> mTargetWeightParam;
+		ResourcePtr<ParameterFloat> mAlignmentWeightParam;
+		ResourcePtr<ParameterFloat> mCohesionWeightParam;
+		ResourcePtr<ParameterFloat> mSeparationWeightParam;
+
+		int mNumBoids;											///< Number of boids
 	};
 
 
@@ -66,16 +111,27 @@ namespace nap
 
 		bool compute(utility::ErrorState& errorState);
 
-		float mVelocityTimeScale = 0.15f;
-		float mVelocityVariationScale = 0.75f;
-		float mRotationSpeed = 1.0f;
-		float mParticleSize = 1.0f;
-
-		ComputeInstance* mComputeInstance = nullptr;
+		glm::vec4 mTarget;
+		float mBoidSize;
+		float mViewRadius;
+		float mAvoidRadius;
+		float mMinSpeed;
+		float mMaxSpeed;
+		float mMaxSteerForce;
+		float mTargetWeight;
+		float mAlignmentWeight;
+		float mCohesionWeight;
+		float mSeparationWeight;
+		int mNumBoids;
 
 	private:
-		RenderService*						mRenderService = nullptr;
-		std::unique_ptr<ParticleMesh>		mParticleMesh;
-		double								mElapsedTime = 0.0;
+		RenderService* mRenderService = nullptr;
+		std::unique_ptr<BoidMesh>					mBoidMesh;
+		double										mElapsedTime = 0.0;
+
+		std::vector<ComputeComponentInstance*>		mComputeInstances;					// Compute instances found in the entity
+		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	// The current compute instance
+		uint										mComputeInstanceIndex = 0;			// Current compute instance index
+		bool										mFirstUpdate = true;				// First update flag
 	};
 }
