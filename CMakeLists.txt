@@ -167,10 +167,6 @@ add_subdirectory(demos/artnetsend)
 add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/artnetreceive/module)
 
-# Unit tests
-# TODO temp disabled unit tests.. bad practice!
-# add_subdirectory(unittests)
-
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
     add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
