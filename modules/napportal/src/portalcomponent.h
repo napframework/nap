@@ -7,6 +7,7 @@
 // External Includes
 #include <component.h>
 #include <componentptr.h>
+#include <portalservice.h>
 #include <portalapicomponent.h>
 #include <websocketconnection.h>
 #include <apimessage.h>
@@ -45,13 +46,20 @@ namespace nap
 		PortalComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
 
 		/**
-		 * Initializes the portal component
+		 * Registers the portal component with the portal service
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		// Get the portal API component that can forward messages to this portal
+		/**
+		 * De-registers the portal component with the portal service
+		 */
+		virtual void onDestroy() override;
+
+		/**
+		 * Get the portal API component that can forward messages to this portal
+		 */
 		const ComponentInstancePtr<PortalAPIComponent>& getPortalAPIComponent()
 		{
 			return mPortalAPIComponent;
@@ -59,8 +67,6 @@ namespace nap
 
 		// The portal API component that can forward messages to this portal
 		ComponentInstancePtr<PortalAPIComponent> mPortalAPIComponent = { this, &PortalComponent::mPortalAPIComponent };
-
-	private:
 
 		/**
 		 * Called by the portal service when this component receives a portal request
@@ -73,5 +79,9 @@ namespace nap
 		 * @param messages the API messages containing the updated portal item values
 		 */
 		void processPortalUpdate(const std::vector<APIMessage*>& messages);
+
+	private:
+
+		PortalService* mService = nullptr;	///< Handle to the portal service.
 	};
 }

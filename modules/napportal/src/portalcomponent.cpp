@@ -27,7 +27,20 @@ namespace nap
 
 	bool PortalComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Register with the service
+		mService = getEntityInstance()->getCore()->getService<nap::PortalService>();
+		assert(mService != nullptr);
+		mService->registerPortalComponent(*this);
+
 		return true;
+	}
+
+
+	void PortalComponentInstance::onDestroy()
+	{
+		// De-register with the service
+		if (mService != nullptr)
+			mService->removePortalComponent(*this);
 	}
 
 
