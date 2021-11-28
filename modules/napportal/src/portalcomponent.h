@@ -51,6 +51,12 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		// Get the portal API component that can forward messages to this portal
+		const ComponentInstancePtr<PortalAPIComponent>& getPortalAPIComponent()
+		{
+			return mPortalAPIComponent;
+		};
+
 		// The portal API component that can forward messages to this portal
 		ComponentInstancePtr<PortalAPIComponent> mPortalAPIComponent = { this, &PortalComponent::mPortalAPIComponent };
 
