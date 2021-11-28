@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_napportal", "0.1.0")
+NAP_SERVICE_MODULE("mod_napportal", "0.1.0", "nap::PortalService")
