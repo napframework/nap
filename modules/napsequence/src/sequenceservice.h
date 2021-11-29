@@ -80,7 +80,7 @@ namespace nap
          * @param controllerType the controller type
          * @return true on successful registration
          */
-        bool registerControllerForTrackType(rtti::TypeInfo trackType, rtti::TypeInfo controllerType);
+        bool registerControllerTypeForTrackType(rtti::TypeInfo trackType, rtti::TypeInfo controllerType);
 
         /**
          * returns controller type info for give track type
@@ -92,9 +92,10 @@ namespace nap
         /**
          * registers a new controller factory function for controller type
          * @param controllerType the type of controller for which to register a new factory function
+         * @param factory factory method of controller type
          * @return true on success
          */
-        bool registerControllerFactoryFunc(rtti::TypeInfo controllerType, SequenceControllerFactoryFunc);
+        bool registerControllerFactoryFunc(rtti::TypeInfo controllerType, SequenceControllerFactoryFunc factory);
 
         /**
          * registers adapter factory method for specific track type

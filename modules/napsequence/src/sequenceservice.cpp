@@ -103,17 +103,17 @@ namespace nap
             return false;
 
         // register the same controller for different curved track types
-        if( !registerControllerForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)) ||
-            !registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)) ||
-            !registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)) ||
-            !registerControllerForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve)))
+        if(!registerControllerTypeForTrackType(RTTI_OF(SequenceTrackCurveFloat), RTTI_OF(SequenceControllerCurve)) ||
+           !registerControllerTypeForTrackType(RTTI_OF(SequenceTrackCurveVec2), RTTI_OF(SequenceControllerCurve)) ||
+           !registerControllerTypeForTrackType(RTTI_OF(SequenceTrackCurveVec3), RTTI_OF(SequenceControllerCurve)) ||
+           !registerControllerTypeForTrackType(RTTI_OF(SequenceTrackCurveVec4), RTTI_OF(SequenceControllerCurve)))
         {
             errorState.fail("Error registering curve controller types");
             return false;
         }
 
         // register the event controller type
-        if(!registerControllerForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent)))
+        if(!registerControllerTypeForTrackType(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceControllerEvent)))
         {
             errorState.fail("Error registering event controller type");
             return false;
@@ -326,7 +326,7 @@ namespace nap
     }
 
 
-    bool SequenceService::registerControllerForTrackType(rtti::TypeInfo trackType, rtti::TypeInfo controllerType)
+    bool SequenceService::registerControllerTypeForTrackType(rtti::TypeInfo trackType, rtti::TypeInfo controllerType)
     {
         assert(mControllerTypesTrackTypeMap.find(trackType)==mControllerTypesTrackTypeMap.end()); // duplicate entry
         return mControllerTypesTrackTypeMap.emplace(trackType, controllerType).second;

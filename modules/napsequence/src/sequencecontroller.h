@@ -47,11 +47,12 @@ namespace nap
         void changeTrackName(const std::string& trackID, const std::string& name);
 
 		/**
-		 * create an adapter for a specified object ( F.E. Parameters or Events ) for specified track
+		 * assign track to specific output, the SequencePlayer will create an adapter linking the track to output with
+		 * given id
 		 * @param trackID the track id that gets an assigned object
-		 * @param objectID the object that is assigned to the track and used to create the adapter
+		 * @param outputID the output id that is assigned to the track and used to create the adapter
 		 */
-		void assignNewObjectID(const std::string& trackID, const std::string& objectID);
+		void assignNewOutputID(const std::string& trackID, const std::string& outputID);
 
 		/**
 		 * deletes a track
@@ -93,17 +94,17 @@ namespace nap
 		virtual void deleteSegment(const std::string& trackID, const std::string& segmentID) = 0;
 
 		/**
-		 *
-		 * @param trackID
-		 * @return
+		 * returns const pointer to sequence track, null if not found
+		 * @param trackID id of track to find
+		 * @return const pointer to found SequenceTrack
 		 */
 		const SequenceTrack* getTrack(const std::string& trackID) const;
 
 		/**
-		 * returns const segment pointer to specific segment, nullptr when not found
+		 * returns const pointer to SequenceTrackSegment, nullptr when not found
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
-		 * @return const pointer to tracksegment, returns nullptr when not found
+		 * @return const pointer to SequenceTrackSegment, returns nullptr when not found
 		 */
 		const SequenceTrackSegment* getSegment(const std::string& trackID, const std::string& segmentID) const;
 	protected:
@@ -116,7 +117,7 @@ namespace nap
 		 * finds segment
 		 * @param trackID the trackID
 		 * @param segmentID the segmentID
-		 * @return raw pointer to tracksegment, returns nullptr when not found
+		 * @return raw pointer to SequenceTrackSegment, returns nullptr when not found
 		 */
 		SequenceTrackSegment* findSegment(const std::string& trackID, const std::string& segmentID);
 

@@ -452,9 +452,9 @@ namespace nap
 			 * @param outputID the output id
 			 */
 			AssignOutputIDToTrack(const std::string& trackID, std::string outputID)
-				: TrackAction(trackID), mObjectID(std::move(outputID)){}
+				: TrackAction(trackID), mOutputID(std::move(outputID)){}
 
-			std::string mObjectID;
+			std::string mOutputID;
 			
 		};
 
