@@ -97,11 +97,12 @@ macOS 10.15<br/>
 To generate a solution and compile the source code you need to have installed: 
 
 - Qt 5
-	- The precompiled package uses Qt 5.12.11 (LTS), although other versions are known to work.
-	- [x86_64](https://www.qt.io/download)
-		- Select **Downloads for open source users**.
+	- x86_64
+		- The precompiled package uses Qt 5.12.11 (LTS), although other versions are known to work.
+		- Go to [qt.io](https://www.qt.io/download) and select **Downloads for open source users**
+		- Download the Qt online installer
 		- During installation select **Custom installation** 
-		- Filter on the **LTS** category to download Qt 5.12.11 for your target platform
+		- Filter on the **LTS** category to download and install Qt 5.12.11 for your target platform
 	- ARM
 		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-armhf-pi4-raspbian_buster.tar.xz) Qt 5.12.11 for Raspberry Pi OS 10 *armhf*
 		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.12.11 for Ubuntu 20.04 *arm64*
