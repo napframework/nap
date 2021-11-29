@@ -69,11 +69,16 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 
 Currently, whether working with the packaged framework release or against the framework source, we support the following operating systems:
 
-- macOS Catalina (10.15)
-- Ubuntu Linux LTS (20.04)
-- Windows 10, Visual Studio 2019 (v142)
+- x86_64
+	- Windows 10, Visual Studio 2019 (v142)
+	- Ubuntu Linux LTS (v20.04)
+	- macOS Catalina (v10.15)
+- ARM
+	- Raspberry Pi OS (v10) *armhf*
+	- Ubuntu Linux LTS (v20.04) *arm64* (experimental)
 
 NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release. 
+
 When working against a binary package, follow the official [installation](https://www.napframework.com/doxygen/) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
 
 # Compilation
@@ -91,11 +96,15 @@ macOS 10.15<br/>
 
 To generate a solution and compile the source code you need to have installed: 
 
-- [Qt 5](https://www.qt.io/download)
+- Qt 5
 	- The precompiled package uses Qt 5.12.11 (LTS), although other versions are known to work.
-	- Select **Downloads for open source users**.
-	- During installation select **Custom installation** 
-	- Filter on the **LTS** category to download Qt 5.12.11
+	- [x86_64](https://www.qt.io/download)
+		- Select **Downloads for open source users**.
+		- During installation select **Custom installation** 
+		- Filter on the **LTS** category to download Qt 5.12.11 for your target platform
+	- ARM
+		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-armhf-pi4-raspbian_buster.tar.xz) Qt 5.12.11 for Raspberry Pi OS 10 *armhf*
+		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.12.11 for Ubuntu 20.04 *arm64*
 
 NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
 
@@ -115,9 +124,9 @@ Run:
 
 On success, run:
 
-`generate_solution.sh` to generate an `XCode project` (macOS Catalina/10.15 x86-64)<br>
-`generate_solution.bat` to generate a `Visual Studio Solution` (Windows 10 x86-64)<br>
-`generate_solution.sh` to generate `make files` (Ubuntu LTS Linux 20.04 x86-64)<br>
+`generate_solution.sh` to generate an `XCode project` (macOS)<br>
+`generate_solution.bat` to generate a `Visual Studio Solution` (Windows)<br>
+`generate_solution.sh` to generate `make files` (Linux)<br>
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
 
@@ -151,7 +160,7 @@ After packaging a new zip or folder is created, with the naming convention `NAP-
 
 **By default only headers and binaries are included; source code and debug symbols will be excluded.**
 
-## Package for Desktop OS
+## Package
 
 To package NAP run: `package.bat` (Windows) or `package.sh` (macOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
 ```
