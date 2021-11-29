@@ -52,8 +52,9 @@ namespace nap
 		auto* sequence_service = getCore().getService<SequenceService>();
 		assert(sequence_service!= nullptr);
 
-		if(!errorState.check(sequence_service->registerControllerForTrackType(RTTI_OF(SequenceTrackAudio), RTTI_OF(SequenceControllerAudio)),
-							  "Could not register controller for track type"))
+		if(!errorState.check(sequence_service->registerControllerTypeForTrackType(RTTI_OF(SequenceTrackAudio),
+                                                                                  RTTI_OF(SequenceControllerAudio)),
+                             "Could not register controller type for track type"))
 			return false;
 
 		if(!errorState.check(sequence_service->registerControllerFactoryFunc(RTTI_OF(SequenceControllerAudio),

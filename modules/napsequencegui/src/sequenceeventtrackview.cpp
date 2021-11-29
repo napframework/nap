@@ -647,7 +647,7 @@ namespace nap
 		auto& curve_controller = getEditor().getController<SequenceControllerEvent>();
 
 		// call function to controller
-		curve_controller.assignNewObjectID(action->mTrackID, action->mObjectID);
+        curve_controller.assignNewOutputID(action->mTrackID, action->mOutputID);
 
 		// action is done
 		mState.mAction = sequenceguiactions::createAction<None>();

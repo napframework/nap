@@ -6,13 +6,13 @@
             "Components": [
                 {
                     "Type": "nap::audio::SequencePlayerAudioOutputComponent",
-                    "mID": "nap::audio::SequencePlayerAudioOutputComponent_1a4a883a",
+                    "mID": "SequencePlayerAudioOutputComponent",
                     "Sequence Player Audio Output": "SequencePlayerAudioOutput"
                 },
                 {
                     "Type": "nap::audio::OutputComponent",
-                    "mID": "nap::audio::OutputComponent_2bd2b70a",
-                    "Input": "./nap::audio::SequencePlayerAudioOutputComponent_1a4a883a",
+                    "mID": "AudioOutputComponent",
+                    "Input": "./SequencePlayerAudioOutputComponent",
                     "Routing": [
                         0,
                         1
@@ -183,7 +183,7 @@
             ],
             "Clock": {
                 "Type": "nap::SequencePlayerAudioClock",
-                "mID": "SequencePlayerAudioClock_de214ac0"
+                "mID": "SequencePlayerAudioClock"
             }
         },
         {

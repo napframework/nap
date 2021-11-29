@@ -55,7 +55,6 @@ namespace nap
 
 	SequenceTrackSegment* SequenceController::findSegment(const std::string& trackID, const std::string& segmentID)
 	{
-		//
 		Sequence& sequence = mPlayer.getSequence();
 
 		for (auto& track : sequence.mTracks)
@@ -78,7 +77,6 @@ namespace nap
 
 	const SequenceTrack* SequenceController::getTrack(const std::string& trackID) const
 	{
-		//
 		const Sequence& sequence = mPlayer.getSequenceConst();
 
 		for (const auto& track : sequence.mTracks)
@@ -95,7 +93,6 @@ namespace nap
 
 	const SequenceTrackSegment* SequenceController::getSegment(const std::string& trackID, const std::string& segmentID) const
 	{
-		//
 		const Sequence& sequence = mPlayer.getSequenceConst();
 
 		for (const auto& track : sequence.mTracks)
@@ -133,13 +130,13 @@ namespace nap
 	}
 
 
-	void SequenceController::assignNewObjectID(const std::string& trackID, const std::string& objectID)
+	void SequenceController::assignNewOutputID(const std::string& trackID, const std::string& outputID)
 	{
-		performEditAction([this, trackID, objectID]()
+		performEditAction([this, trackID, outputID]()
 		{
 			SequenceTrack* track = findTrack(trackID);
 			assert(track != nullptr); // track not found
-            track->mAssignedOutputID = objectID;
+            track->mAssignedOutputID = outputID;
 
 			mPlayer.createAdapters();
 		});
@@ -150,7 +147,6 @@ namespace nap
 	{
 		performEditAction([this, deleteTrackID]()
 		{
-			//
 			Sequence& sequence = mPlayer.getSequence();
 
             mPlayer.destroyAdapters();
@@ -178,7 +174,6 @@ namespace nap
 	{
 		performEditAction([this, trackID]()
 		{
-			//
 			Sequence& sequence = mPlayer.getSequence();
 
 			int index = 0;
@@ -205,7 +200,6 @@ namespace nap
 	{
 		performEditAction([this, trackID]()
 		{
-			//
 			Sequence& sequence = mPlayer.getSequence();
 
 			int index = 0;

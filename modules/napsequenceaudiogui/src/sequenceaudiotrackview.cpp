@@ -551,7 +551,7 @@ namespace nap
 		auto& audio_controller = getEditor().getController<SequenceControllerAudio>();
 
 		// call function to controller
-		audio_controller.assignNewObjectID(action->mTrackID, action->mObjectID);
+        audio_controller.assignNewOutputID(action->mTrackID, action->mOutputID);
 
 		// action is done
 		mState.mAction = sequenceguiactions::createAction<None>();

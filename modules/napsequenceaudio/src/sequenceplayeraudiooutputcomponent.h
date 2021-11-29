@@ -56,9 +56,17 @@ namespace nap
 				: AudioComponentBaseInstance(entity, resource)
             {}
 
-			// Inherited from AudioComponentBaseInstance
+            /**
+             * Returns all available channels of output
+             * @return all available audio channels
+             */
 			int getChannelCount() const override { return mSequencePlayerAudioOutput->getChannelCount(); }
 
+            /**
+             * returns pointer to OutputPin of given channel, assert if out of bounds
+             * @param channel channel of OutputPin
+             * @return pointer to OutputPin
+             */
 			OutputPin* getOutputForChannel(int channel) override { return mSequencePlayerAudioOutput->getOutputForChannel(channel); }
 
             /**
