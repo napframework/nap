@@ -6,9 +6,12 @@
 
  // External Includes
 #include <entity.h>
+#include <apiutils.h>
+#include <apimessage.h>
 #include <nap/core.h>
+#include <nap/logger.h>
 
-// nap::PortalAPIComponent run time class definition
+// nap::PortalWebSocketComponent run time class definition
 RTTI_BEGIN_CLASS(nap::PortalWebSocketComponent)
 RTTI_PROPERTY("Verbose", &nap::PortalWebSocketComponent::mVerbose, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -52,5 +55,27 @@ namespace nap
 
 	void PortalWebSocketComponentInstance::onMessageReceived(const WebSocketMessageReceivedEvent& event)
 	{
+		nap::utility::ErrorState error;
+
+		// Check the WebSocket message format before extracting API messages
+		error.check(event.mMessage.getFin(), "WebSocket message is not finalized");
+		error.check(event.mMessage.getCode() == EWebSocketOPCode::Text, "WebSocket message does not contain text");
+		if (error.hasErrors())
+		{
+			if (mVerbose)
+				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
+			return;
+		}
+
+		// Extract API messages from WebSocket message
+		nap::rtti::Factory& factory = getEntityInstance()->getCore()->getResourceManager()->getFactory();
+		rtti::DeserializeResult result;
+		std::vector<APIMessage*> api_messages;
+		if (!extractMessages(event.mMessage.getPayload(), result, factory, api_messages, error))
+		{
+			if (mVerbose)
+				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
+			return;
+		}
 	}
 }
