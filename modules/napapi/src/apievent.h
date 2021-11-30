@@ -103,7 +103,7 @@ namespace nap
 		int getCount() const										{ return static_cast<int>(mArguments.size()); }
 
 		/**
-		 *	@return the arguments of this osc event
+		 *	@return the arguments of this api event
 		 */
 		const ArgumentConstIterator getArguments() const			{ return ArgumentConstIterator(mArguments); }
 
@@ -148,13 +148,13 @@ namespace nap
 
 		/**
 		 * Array [] subscript operator
-		 * @return the osc argument at index
+		 * @return the api argument at index
 		 */
 		APIArgument& operator[](std::size_t idx)					{ return *getArgument(static_cast<int>(idx)); }
 
 		/**
 		 * Array [] subscript operator
-		 * @return the osc argument at index
+		 * @return the api argument at index
 		 */
 		const APIArgument& operator[](std::size_t idx) const		{ return *getArgument(static_cast<int>(idx)); }
 
