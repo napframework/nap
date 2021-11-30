@@ -49,17 +49,33 @@ namespace nap
 	}
 
 
-	const nap::APIArgument* APIEvent::getArgument(int index) const
+	const APIArgument* APIEvent::getArgument(int index) const
 	{
 		assert(index < mArguments.size() && index >= 0);
 		return mArguments[index].get();
 	}
 
 
-	nap::APIArgument* APIEvent::getArgument(int index)
+	APIArgument* APIEvent::getArgument(int index)
 	{
 		assert(index < mArguments.size() && index >= 0);
 		return mArguments[index].get();
+	}
+
+
+	const APIArgument* APIEvent::getArgumentByName(std::string&& name) const
+	{
+		auto args = getArguments();
+		auto arg = std::find_if(args.begin(), args.end(), [&name](const APIArgument* arg) { return arg->getName() == name; });
+		return arg != args.end() ? *arg : nullptr;
+	}
+
+
+	APIArgument* APIEvent::getArgumentByName(std::string&& name)
+	{
+		auto args = getArguments();
+		auto arg = std::find_if(args.begin(), args.end(), [&name](const APIArgument* arg) { return arg->getName() == name; });
+		return arg != args.end() ? *arg : nullptr;
 	}
 
 

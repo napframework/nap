@@ -108,16 +108,28 @@ namespace nap
 		const ArgumentConstIterator getArguments() const			{ return ArgumentConstIterator(mArguments); }
 
 		/**
-		 * @return an argument based on the given index
-		 * @param index the index of the argument, will throw an exception when out of bounds
+		 * @param index the index of the argument
+		 * @return an argument based on the given index, throws an exception when out of bounds
 		 */
 		const APIArgument* getArgument(int index) const;
 
 		/**
-		 * @return an argument based on the given index
 		 * @param index the index of the argument
+		 * @return an argument based on the given index, throws an exception when out of bounds
 		 */
 		APIArgument* getArgument(int index);
+
+		/**
+		 * @param name the name of the argument
+		 * @return an argument based on the given name, returns nullptr if not found
+		 */
+		const APIArgument* getArgumentByName(std::string&& name) const;
+
+		/**
+		 * @param name the name of the argument
+		 * @return an argument based on the given name, returns nullptr if not found
+		 */
+		APIArgument* getArgumentByName(std::string&& name);
 
 		/**
 		 * If the api arguments and order of arguments matches the given api signature.
