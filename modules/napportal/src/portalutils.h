@@ -4,6 +4,10 @@
 
 #pragma once
 
+// External Includes
+#include <nap/core.h>
+#include <apievent.h>
+
 namespace nap
 {
 	/**
@@ -16,4 +20,6 @@ namespace nap
 		Update		= 2,	///< Update current values of portal items in a portal (bi-directional between client and server)
 		Invalid		= -1	///< Not recognized as a valid portal event type
 	};
+
+	bool isPortalEventHeader(const APIEventPtr& event, utility::ErrorState& error);
 }
