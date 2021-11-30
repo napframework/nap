@@ -8,17 +8,49 @@ namespace nap
 {
 	bool isPortalEventHeader(const APIEventPtr& event, utility::ErrorState& error)
 	{
-		if (!error.check(event->getName() == "portal_message", "portal event header name is not portal_message"))
+		bool name_valid = event->getName() == portal::eventHeaderName;
+		if (!error.check(name_valid, "portal event header name is not %s", portal::eventHeaderName))
 			return false;
 
-		APIArgument* portal_id = event->getArgumentByName("portal_id");
-		if (!error.check(portal_id && portal_id->isString(), "portal event header is missing the portal_id string argument"))
+		APIArgument* id_arg = event->getArgumentByName(portal::portalIDArgName);
+		APIArgument* type_arg = event->getArgumentByName(portal::eventTypeArgName);
+
+		bool id_valid = id_arg != nullptr && id_arg->isString();
+		bool type_valid = type_arg != nullptr && type_arg->isString();
+
+		if (!error.check(id_valid, "portal event header is missing the %s string argument", portal::portalIDArgName))
 			return false;
 
-		APIArgument* message_type = event->getArgumentByName("message_type");
-		if (!error.check(message_type && message_type->isString(), "portal event header is missing the message_type string argument"))
-			return false;
+		if (!error.check(type_valid, "portal event header is missing the %s string argument", portal::eventTypeArgName))
+			return false;                  
 
 		return true;
+	}
+
+
+	std::string getPortalID(const APIEventPtr& event)
+	{
+		APIArgument* arg = event->getArgumentByName(portal::portalIDArgName);
+		assert(arg != nullptr && arg->isString());
+		return arg->asString();
+	}
+
+
+	EPortalEventType getPortalEventType(const APIEventPtr& event)
+	{
+		APIArgument* arg = event->getArgumentByName(portal::eventTypeArgName);
+		assert(arg != nullptr && arg->isString());
+		std::string type = arg->asString();
+
+		if (type == portal::eventTypeRequest)
+			return EPortalEventType::Request;
+
+		if (type == portal::eventTypeResponse)
+			return EPortalEventType::Response;
+
+		if (type == portal::eventTypeUpdate)
+			return EPortalEventType::Update;
+
+		return EPortalEventType::Invalid;
 	}
 }
