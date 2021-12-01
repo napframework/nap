@@ -15,10 +15,10 @@ find_path(LIBMPG123_DIR source/src/libmpg123/mpg123.h.in
           )
 
 if(WIN32)
-    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/msvc/x86_64)
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/msvc/x86_64/lib)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIB_DIR}/libmpg123.lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dll)
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/msvc/x86_64)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/msvc/x86_64/include)
 elseif(APPLE)
     set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/macos/x86_64/lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dylib)

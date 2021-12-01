@@ -86,15 +86,10 @@ package_module()
 install(FILES ${THIRDPARTY_DIR}/mpg123/source/COPYING DESTINATION thirdparty/mpg123)
 install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
 if(WIN32)
-    file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/*.dll)
-    install(FILES ${MPG123_DYLIBS}
-            DESTINATION thirdparty/mpg123/bin)
-    file(GLOB MPG123_HEADERS ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/*.h)
-    install(FILES ${MPG123_HEADERS}
-            DESTINATION thirdparty/mpg123/include)
-    file(GLOB MPG123_LIBFILES ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/*.lib)
-    install(FILES ${MPG123_LIBFILES}
-            DESTINATION thirdparty/mpg123/lib)
+    file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/*.dll)
+    install(FILES ${MPG123_DYLIBS} DESTINATION thirdparty/mpg123/bin)
+    file(GLOB MPG123_LIBFILES ${LIBMPG123_LIB_DIR}/*.lib) 
+    install(FILES ${MPG123_LIBFILES} DESTINATION thirdparty/mpg123/lib)
 elseif(APPLE)
     # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -122,7 +117,9 @@ endif()
 
 # Package libsndfile into platform release
 install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/x86_64/COPYING DESTINATION thirdparty/libsndfile)
-install(DIRECTORY ${LIBSNDFILE_INCLUDE_DIR} DESTINATION thirdparty/libsndfile)
+install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
+              ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
+        DESTINATION thirdparty/libsndfile/include)
 if(WIN32)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
