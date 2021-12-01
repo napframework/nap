@@ -627,7 +627,11 @@ namespace nap
 
 		// Set the output
 		outDevice = valid_devices[selected_idx];
-		nap::Logger::info("Selected device: %d: %s | Queues: GRAPHICS=%d TRANSFER=%d COMPUTE=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex(), outDevice.getComputeQueueIndex());
+
+		std::string queue_msg = utility::stringFormat("Selected device: %d: %s | Queues: GRAPHICS=%d TRANSFER=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex());
+		queue_msg = (outDevice.getComputeQueueIndex() != -1) ? utility::stringFormat("%s COMPUTE=%d", outDevice.getComputeQueueIndex()) : queue_msg;
+		nap::Logger::info(queue_msg.c_str());
+
 		return true;
 	}
 
@@ -1597,24 +1601,20 @@ namespace nap
 		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
 		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
 
-		// If available, get a compatible compute queue that will process compute commands	
-		if (isComputeAvailable())
+		// If available, get a compatible compute queue that will process compute commands
+		if (isComputeAvailable() && mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
 		{
-			// Get compute queue
-			if (mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
-			{
-				// Acquire and create dedicate compute resources
-				if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getComputeQueueIndex(), mComputeCommandPool), "Failed to create Compute Command Pool"))
-					return false;
+			// Acquire and create dedicate compute resources
+			if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getComputeQueueIndex(), mComputeCommandPool), "Failed to create Compute Command Pool"))
+				return false;
 
-				// Get a compatible queue that will process commands, graphics / transfer needs to be supported
-				vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
-			}
-			else
-			{
-				mComputeQueue = mQueue;
-				mComputeCommandPool = mCommandPool;
-			}
+			// Get a compatible queue that will process commands, graphics / transfer needs to be supported
+			vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
+		}
+		else
+		{
+			mComputeQueue = mQueue;
+			mComputeCommandPool = mCommandPool;
 		}
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
@@ -1649,8 +1649,11 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
 				return false;
 
-			if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
-				return false;
+			if (mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
+			{
+				if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
+					return false;
+			}
 
 			frame.mQueueSubmitOps = { false, false, false };
 		}
