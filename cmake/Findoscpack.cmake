@@ -6,24 +6,27 @@ find_path(OSCPACK_DIR
           )
 
 if(WIN32)
-    set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/msvc/x86_64/Debug/oscpack.lib Ws2_32 winmm)
-    set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/msvc/x86_64/Release/oscpack.lib Ws2_32 winmm)
+    set(OSCPACK_LIBS_DIR ${OSCPACK_DIR}/msvc/x86_64/lib)
+    set(OSCPACK_LIBS_DEBUG ${OSCPACK_LIBS_DIR}/Debug/oscpack.lib Ws2_32 winmm)
+    set(OSCPACK_LIBS_RELEASE ${OSCPACK_LIBS_DIR}/Release/oscpack.lib Ws2_32 winmm)
+    set(OSCPACK_INCLUDE_DIRS ${OSCPACK_DIR}/msvc/x86_64/include/oscpack)
 elseif(APPLE)
-    set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/macos/x86_64/lib/Debug/liboscpack.1.1.0.dylib)
-    set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/macos/x86_64/lib/Release/liboscpack.1.1.0.dylib)
+    set(OSCPACK_LIBS_DIR ${OSCPACK_DIR}/macos/x86_64/lib)
+    set(OSCPACK_LIBS_DEBUG ${OSCPACK_LIBS_DIR}/Debug/liboscpack.1.1.0.dylib)
+    set(OSCPACK_LIBS_RELEASE ${OSCPACK_LIBS_DIR}/Release/liboscpack.1.1.0.dylib)
+    set(OSCPACK_INCLUDE_DIRS ${OSCPACK_DIR}/macos/x86_64/include/oscpack)
 elseif(ANDROID)
     set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/android/install/lib/Debug/${ANDROID_ABI}/liboscpack.so)
     set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/android/install/lib/Release/${ANDROID_ABI}/liboscpack.so)
 else()
-    set(OSCPACK_LIBS_DEBUG ${OSCPACK_DIR}/linux/${ARCH}/lib/liboscpack.so)
-    set(OSCPACK_LIBS_RELEASE ${OSCPACK_DIR}/linux/${ARCH}/lib/liboscpack.so)
+    set(OSCPACK_LIBS_DIR ${OSCPACK_DIR}/linux/${ARCH}/lib)
+    set(OSCPACK_LIBS_DEBUG ${OSCPACK_LIBS_DIR}/liboscpack.so)
+    set(OSCPACK_LIBS_RELEASE ${OSCPACK_LIBS_DIR}/liboscpack.so)
+    set(OSCPACK_INCLUDE_DIRS ${OSCPACK_DIR}/linux/${ARCH}/include/oscpack)
 endif()
-
-# include directory is universal
-set(OSCPACK_INCLUDE_DIRS ${OSCPACK_DIR}/source)
 
 mark_as_advanced(OSCPACK_INCLUDE_DIRS)
 
 # promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(oscpack REQUIRED_VARS OSCPACK_DIR)
+find_package_handle_standard_args(oscpack REQUIRED_VARS OSCPACK_DIR OSCPACK_LIBS_DIR OSCPACK_INCLUDE_DIRS)
