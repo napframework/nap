@@ -1,8 +1,9 @@
 # default oscpack directory
 find_path(OSCPACK_DIR
           NO_CMAKE_FIND_ROOT_PATH
-          NAMES source/osc/OscTypes.h
-          HINTS ${THIRDPARTY_DIR}/oscpack
+          NAMES osc/OscTypes.h
+          HINTS ${THIRDPARTY_DIR}/oscpack/msvc/x86_64/include/oscpack 
+                ${THIRDPARTY_DIR}/oscpack/macos/x86_64/include/oscpack
           )
 
 if(WIN32)
