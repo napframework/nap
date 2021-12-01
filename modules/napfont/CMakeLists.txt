@@ -54,7 +54,7 @@ install(FILES ${FREETYPE_LICENSE_FILES}
               ${THIRDPARTY_DIR}/freetype/source/README
   DESTINATION thirdparty/freetype)
 
-install(DIRECTORY ${THIRDPARTY_DIR}/freetype/source/include/ 
+install(DIRECTORY ${FREETYPE_INCLUDE_DIRS}/
         DESTINATION thirdparty/freetype/include
         FILES_MATCHING PATTERN "*.h")
 
