@@ -10,9 +10,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 if(NOT ANDROID)
-    find_path(PORTAUDIO_DIR source/include/portaudio.h
-              HINTS
-              ${THIRDPARTY_DIR}/portaudio
+    find_path(PORTAUDIO_DIR 
+              NAMES portaudio.h
+              HINTS ${THIRDPARTY_DIR}/portaudio/msvc/x86_64/include
+              ${THIRDPARTY_DIR}/portaudio/macos/x86_64/include
+              ${THIRDPARTY_DIR}/portaudio/linux/${ARCH}/include
               ${CMAKE_CURRENT_LIST_DIR}/../../portaudio
               )
 endif()

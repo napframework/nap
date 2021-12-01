@@ -8,9 +8,12 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-find_path(LIBMPG123_DIR source/src/libmpg123/mpg123.h.in
+find_path(LIBMPG123_DIR
+          NAMES mpg123.h
           HINTS
-          ${THIRDPARTY_DIR}/mpg123
+          ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/include
+          ${THIRDPARTY_DIR}/mpg123/macos/x86_64/include
+          ${THIRDPARTY_DIR}/mpg123/linux/${ARCH}/include
           ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
           )
 

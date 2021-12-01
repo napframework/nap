@@ -8,10 +8,12 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-find_path(LIBSNDFILE_DIR source/src/sndfile.h
-        HINTS
-        ${THIRDPARTY_DIR}/libsndfile
-        ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
+find_path(LIBSNDFILE_DIR 
+         NAMES sndfile.h 
+         HINTS ${THIRDPARTY_DIR}/libsndfile/msvc/x86_64/include
+               ${THIRDPARTY_DIR}/libsndfile/macos/x86_64/include
+               ${THIRDPARTY_DIR}/libsndfile/linux/${ARCH}/include
+               ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
         )
 
 if (WIN32)

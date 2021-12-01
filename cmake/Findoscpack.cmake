@@ -4,6 +4,7 @@ find_path(OSCPACK_DIR
           NAMES osc/OscTypes.h
           HINTS ${THIRDPARTY_DIR}/oscpack/msvc/x86_64/include/oscpack 
                 ${THIRDPARTY_DIR}/oscpack/macos/x86_64/include/oscpack
+                ${THIRDPARTY_DIR}/oscpack/linux/${ARCH}/include/oscpack
           )
 
 if(WIN32)
