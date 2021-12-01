@@ -103,7 +103,7 @@ namespace nap
 		int getCount() const										{ return static_cast<int>(mArguments.size()); }
 
 		/**
-		 *	@return the arguments of this api event
+		 * @return the arguments of this api event
 		 */
 		const ArgumentConstIterator getArguments() const			{ return ArgumentConstIterator(mArguments); }
 
