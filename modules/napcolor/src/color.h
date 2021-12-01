@@ -564,7 +564,7 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Type definitions for all supported memory (data) color types
+	// Declarations for all supported memory (data) color types
 	// These colors are used to point to color values in memory 
 	// These colors can't be serialized or used as a resource
 	//////////////////////////////////////////////////////////////////////////

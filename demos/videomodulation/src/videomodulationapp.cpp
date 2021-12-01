@@ -38,10 +38,8 @@ namespace nap
 		mVideoService = getCore().getService<VideoService>();
 		mGuiService = getCore().getService<IMGuiService>();
 
-		// Get the resource manager and load our scene / resources
+		// Get the resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("videomodulation.json", error))
-			return false;
 		
 		// Get important entities
 		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");

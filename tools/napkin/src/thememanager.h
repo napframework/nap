@@ -13,12 +13,12 @@
 
 namespace napkin
 {
-	inline constexpr char* themeFilename = "theme.json";
-	inline constexpr char* themeSubDirectory = "resources/themes";
-	inline constexpr char* themeColComponentWidthOverrides = "componentWithOverrides";
-	inline constexpr char* themeColInstanceProperty = "instanceProperty";
-	inline constexpr char* themeColOverriddenInstanceProperty = "overriddenInstanceProperty";
-	inline constexpr char* themeColDimmedItem = "dimmedItem";
+	inline constexpr const char* themeFilename = "theme.json";
+	inline constexpr const char* themeSubDirectory = "resources/themes";
+	inline constexpr const char* themeColComponentWidthOverrides = "componentWithOverrides";
+	inline constexpr const char* themeColInstanceProperty = "instanceProperty";
+	inline constexpr const char* themeColOverriddenInstanceProperty = "overriddenInstanceProperty";
+	inline constexpr const char* themeColDimmedItem = "dimmedItem";
 
 	/**
 	 * Represents one theme

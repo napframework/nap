@@ -13,7 +13,7 @@
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.
- * 
+ *
  * There are only a few macros important for the user of the RTTI system:
  * - RTTI_OF - This is a convenience macro used to get the underlying TypeInfo of the named type. Usage example: RTTI_OF(rtti::RTTIObject).
  * - RTTI_ENABLE - This macro must be used when you have a class that is part of an inheritance hierarchy. The argument to the macro is a comma-separated list of base classes (empty if the macro is being used in the base class itself).
@@ -79,7 +79,7 @@
  * - DerivedClass
  *		This class is part of an inheritance hierarchy and in this case inherits from BaseClass. Again, this means a RTTI_ENABLED macro is required in the class definition.
  *		Note that because this class derives from another RTTI class (BaseClass), the class it derives from must be specified as argument to the RTTI_ENABLE macro.
- *		The class has two constructors: the default constructor (which will be registered by default) and another constructor that we will have to register manually. 
+ *		The class has two constructors: the default constructor (which will be registered by default) and another constructor that we will have to register manually.
  *		GetValue is a function that we are going to expose as well.
  *
  * Note that the code in the header does not actually register these types with the RTTI system; the RTTI_ENABLED macro is only used to add some plumbing (virtual calls) to the class, not to do actual registration.
@@ -118,14 +118,14 @@
  *		void printProperties()
  *		{
  *			rtti::TypeInfo type = RTTI_OF(T); // Could also be rtti::TypeInfo::get<T>()
- *		
+ *
  *			std::cout << "Properties of " << type.get_name().data() << std::endl;
  *			for (const rtti::Property& property : type.get_properties())
  *			{
  *				std::cout << " -- " << property.get_name().data() << std::endl;
  *			}
  *		}
- *		
+ *
  *		printProperties<DataStruct>();
  */
 
@@ -259,7 +259,7 @@ namespace nap
 		/**
 		 * The BaseClassList helper is used to extract the base classes from RTTR and expose them to python automatically.
 		 * This is a complicated process. These are the points worth noting:
-		 * 1) The RTTR_ENABLE macro defines the template type *base_class_list*, which has variadic template args that specify the list of base classes. 
+		 * 1) The RTTR_ENABLE macro defines the template type *base_class_list*, which has variadic template args that specify the list of base classes.
 		 *    We want to use these variadic template args to pass them to python (the python py::class_ also has variadic template args for base classes fortunately).
 		 * 2) To do so, we specialize PythonClass with this RTTR base_class_list type. Through template argument deduction, we have the variadic template arg
 		 *    named BaseClasses for our use in PythonClass.
@@ -289,7 +289,7 @@ namespace nap
 		/**
 		 * isReturnTypeLValueReference is a helper to make decisions about ownership in Python. First, a bit of explanation about how ownership works in pybind:
 		 * For each function that you expose to pybind11 that has a return value, we have to tell pybind how to treat that return value. It will wrap the returned value
-		 * and pybind could for instance, copy or reference the value. Besides the decision to either copy the value or reference the value, it can also decide to 
+		 * and pybind could for instance, copy or reference the value. Besides the decision to either copy the value or reference the value, it can also decide to
 		 * take ownership of the value. For example, you could return a pointer, let pybind own the pointer and delete it at the end. Our default setting is that
 		 * pybind uses automatic_reference. This setting decides what to do with the return value based on it's type. (There is information in the docs but by inspecting
 		 * the code we've found it no to match the code exactly). In any case, the setting makes sure that when returning pointers, ownership is not taken. However,
@@ -379,7 +379,7 @@ namespace nap
 		});
 #else // NAP_ENABLE_PYTHON
 	#define RTTI_PROPERTY(Name, Member, Flags)																\
-        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));				
+        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
 #endif // NAP_ENABLE_PYTHON
 
 /**
@@ -421,7 +421,7 @@ namespace nap
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
 				cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
-			});		
+			});
 #else // NAP_ENABLE_PYTHON
 #define RTTI_FUNCTION(Name, Member)																				\
 			rtti_class_type.method(Name, Member);
@@ -447,7 +447,7 @@ namespace nap
  * That means the object is created with a new-expression and its lifetime lasts until it is destroyed using a delete-expression.
  * Call this after starting your class definition
  */
-#ifdef NAP_ENABLE_PYTHON		
+#ifdef NAP_ENABLE_PYTHON
 	#define RTTI_CONSTRUCTOR(...)																				\
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);								\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
@@ -456,18 +456,18 @@ namespace nap
 			});
 #else // NAP_ENABLE_PYTHON
 	#define RTTI_CONSTRUCTOR(...)																				\
-			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);				
+			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);
 #endif // NAP_ENABLE_PYTHON
 
  /**
  * Registers a value based constructor. This is exposed to the RTTI system and python
- * This constructor creates an instance of a class with automatic storage. 
+ * This constructor creates an instance of a class with automatic storage.
  * For this to work the object must be copy-constructible.
  * Use this constructor in conjunction with simple struct like objects or objects that carry a limited set of data
  * Objects with automatic storage duration are automatically destroyed when the variant is out of scope
  * Call this after starting your class definition
  */
-#ifdef NAP_ENABLE_PYTHON		
+#ifdef NAP_ENABLE_PYTHON
 #define RTTI_VALUE_CONSTRUCTOR(...)																				\
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);								\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
@@ -483,7 +483,7 @@ namespace nap
  * Signals the end of the class definition
  * Define this after having defined the various constructors, properties, functions etc.
  */
-#ifdef NAP_ENABLE_PYTHON		
+#ifdef NAP_ENABLE_PYTHON
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
 			python_module.registerTypeImportCallback(rtti_class_type_name,										\
@@ -519,7 +519,7 @@ namespace nap
  * Define this after having defined the various constructors, properties, functions etc.
  */
 #define RTTI_END_STRUCT																							\
-	RTTI_END_CLASS																								
+	RTTI_END_CLASS
 
 /**
  * Utility that defines the beginning of a class of @Type together with a default (no argument) constructor
@@ -570,9 +570,9 @@ namespace nap
 	}
 
 /**
- * Receives information about the inheritance graph of a class. 
+ * Receives information about the inheritance graph of a class.
  * When class B is derived from A -> A uses: RTTI_ENABLE(), B uses: RTTI_ENABLE(A)
- * When D is derived from B and C, D uses: RTTI_ENABLE(D,B)
+ * When D is derived from B and C, D uses: RTTI_ENABLE(B,C)
  */
 #define RTTI_ENABLE(...)																						\
 	RTTR_ENABLE(__VA_ARGS__)																					\
@@ -596,4 +596,4 @@ namespace nap
 // Legacy macros only used for backwards compatibility with the old RTTI system.
 #define RTTI_DEFINE_STRUCT(Type)																				\
 	RTTI_BEGIN_STRUCT(Type)																						\
-	RTTI_END_STRUCT																								
+	RTTI_END_STRUCT

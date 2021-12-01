@@ -32,10 +32,6 @@ namespace nap
 		// Fetch the resource manager
 		mResourceManager = getCore().getResourceManager();
 
-		// Convert our path and load resources from file
-		if (!mResourceManager->loadFile("artnetsend.json", error))
-			return false;
-
 		// Get the render window
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
 		if (!error.check(mRenderWindow != nullptr, "unable to find render window with name: %s", "Window"))
