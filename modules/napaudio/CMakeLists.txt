@@ -122,9 +122,7 @@ endif()
 
 # Package libsndfile into platform release
 install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/x86_64/COPYING DESTINATION thirdparty/libsndfile)
-install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
-              ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
-        DESTINATION thirdparty/libsndfile/include)
+install(DIRECTORY ${LIBSNDFILE_INCLUDE_DIR} DESTINATION thirdparty/libsndfile)
 if(WIN32)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
