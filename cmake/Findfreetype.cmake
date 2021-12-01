@@ -38,7 +38,7 @@ mark_as_advanced(FREETYPE_LIBS_DEBUG)
 mark_as_advanced(FREETYPE_LIBS_RELEASE)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(freetype REQUIRED_VARS FREETYPE_DIR)
+find_package_handle_standard_args(freetype REQUIRED_VARS FREETYPE_DIR FREETYPE_INCLUDE_DIRS FREETYPE_LIBS_DEBUG FREETYPE_LIBS_RELEASE)
 
 add_library(freetype SHARED IMPORTED)
 
