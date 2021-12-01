@@ -40,9 +40,10 @@ if(APPLE)
     set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
     list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
-endif()    
+elseif(UNIX)
     set(LINUX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/assimp/lib)
+endif()
 package_module()
 
 # Package information 3rd party database should go here
