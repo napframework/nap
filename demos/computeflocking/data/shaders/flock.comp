@@ -9,7 +9,6 @@ layout(local_size_x = 8) in;
 struct Boid
 {
 	vec4 position;
-	vec4 direction;
 	vec4 velocity;
 
 	vec4 avoidanceHeading;
@@ -20,6 +19,19 @@ struct Boid
 	int numFlockMates;
 };
 
+struct AABB
+{
+	vec3 position;
+	vec3 size;
+};
+
+struct CollisionData
+{
+	vec3 hit;
+	vec3 normal;
+	float minimum;
+	int collision;
+};
 
 // STORAGE
 
@@ -33,9 +45,9 @@ layout(std430) buffer BoidBuffer_Out
 	Boid boids[2000];
 } subo_out;
 
-layout(std430) buffer VertexBuffer 
+layout(std430) buffer MatrixBuffer
 {
-	vec4 vertices[8000];
+	mat4 transforms[2000];
 };
 
 
@@ -43,10 +55,9 @@ layout(std430) buffer VertexBuffer
 
 uniform UBO 
 {
-	vec4 target;
+	vec3 target;
 	float deltaTime;
 	float elapsedTime;
-	float boidSize;
 	float viewRadius;
 	float avoidRadius;
 	float minSpeed;
@@ -62,14 +73,65 @@ uniform UBO
 
 // CONSTANTS
 
-const vec3 FORWARD = vec3(1.0, 0.0, 0.0);
+const float EPSILON = 0.00001;
 const vec4 QUAT_IDENTITY = vec4(0.0, 0.0, 0.0, 1.0);
+const vec3 FORWARD_AXIS = vec3(0.0, 0.0, -1.0);
+const vec3 UP_AXIS = vec3(0.0, 1.0, 0.0);
 const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
 const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
 const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
 
 
 // UTILITIES
+
+CollisionData rayBox(vec3 orig, vec3 dir, AABB box)
+{
+	vec3 invdir = vec3(1.0, 1.0, 1.0) / dir;
+
+	// Calculate intersections with rectangle bounding axes
+	vec3 tmin = (box.position - orig) * invdir;
+	vec3 tmax = (box.position + box.size - orig) * invdir;
+
+	// Sort intersection distances
+	if (tmin.x > tmax.x) 
+	{
+		float temp = tmin.x;
+		tmin.x = tmax.x;
+		tmax.x = temp;
+	}
+
+	if (tmin.y > tmax.y)
+	{
+		float temp = tmin.y;
+		tmin.y = tmax.y;
+		tmax.y = temp;
+	}
+
+	CollisionData cd;
+
+	if ((tmin.x > tmax.y) || (tmin.y > tmax.x)) return cd;
+
+	// Distances to min and max bound collisions
+	float t_hit_max = min(tmax.x, tmax.y);
+	if (t_hit_max <= 0) return cd;
+
+	cd.minimum = max(tmin.x, tmin.y);
+	cd.hit = orig + (dir * cd.minimum);
+
+	// Calculate pushout normal
+	if (tmin.x > tmin.y) 
+	{
+		if (invdir.x < 0) cd.normal = vec3(1.0, 0.0, 0.0);
+		else cd.normal = vec3(-1.0, 0.0, 0.0);
+	}
+	else if (tmin.x < tmin.y) 
+	{
+		if (invdir.y < 0) cd.normal = vec3(0, 1.0, 0.0);
+		else cd.normal = vec3(0.0, -1.0, 0.0);
+	}
+	return cd;
+}
+
 
 mat4 translate(vec3 d)
 {
@@ -82,32 +144,26 @@ mat4 translate(vec3 d)
 }
 
 
-mat4 rotation(vec3 src, vec3 dst)
+mat4 lookAt(vec3 from, vec3 to)
 {
-	vec3  v = cross(src, dst);
-	float c = dot(src, dst);
-	float k = 1.0f/(1.0f+c);
+	vec3 forward = normalize(to - from);
+	vec3 up = UP_AXIS;
 
-	return mat4(
-		v.x*v.x*k + c,		v.y*v.x*k - v.z,	v.z*v.x*k + v.y,	0.0,
-		v.x*v.y*k + v.z,	v.y*v.y*k + c,		v.z*v.y*k - v.x,	0.0,
-		v.x*v.z*k - v.y,	v.y*v.z*k + v.x,	v.z*v.z*k + c,		0.0,
-		0.0,				0.0,				0.0,				1.0
-	);
-}
+	if(abs(forward.x) < EPSILON && abs(forward.z) < EPSILON)
+		up = (forward.y > 0.0) ? vec3(0.0, 0.0, -1.0) : vec3(0.0, 0.0, 1.0);
+	else
+		up = vec3(0.0, 1.0, 0.0);
 
-
-mat4 lookAt(vec3 from, vec3 to, vec3 upRef)
-{
-	vec3 forward = normalize(from - to);    
-	vec3 right = cross(forward, normalize(upRef));
 	//vec3 right = normalize(cross(forward, vec3(sin(roll.x), cos(roll.x), 0.0)));
-	vec3 up = cross(forward, right);
+	vec3 right = normalize(cross(up, forward));
+	
+	//forward = normalize(cross(right, up));
+	up = normalize(cross(forward, right));
 
 	return mat4(
-		right.x,	right.y,	right.z,	-dot(right, from),
-		up.x,		up.y,		up.z,		-dot(up, from),
-		forward.x,	forward.y,	forward.z,	-dot(forward, from),
+		right.x,	right.y,	right.z,	0.0,
+		up.x,		up.y,		up.z,		0.0,
+		forward.x,	forward.y,	forward.z,	0.0,
 		0.0, 		0.0,		0.0,		1.0
 	);
 }
@@ -169,7 +225,7 @@ void main()
 	}
 
 	// Calculate base acceleration
-	vec4 offset = ubo.target - b.position;
+	vec4 offset = vec4(ubo.target, 0.0) - b.position;
 	vec3 acceleration = steerTowards(offset.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.targetWeight;
 
 	// Calculate forces
@@ -189,30 +245,17 @@ void main()
 	}
 
 	// Write current boid
-	vec3 vel = b.velocity.xyz + acceleration * ubo.deltaTime;
-	b.velocity = vec4(clampMagnitude(vel, ubo.minSpeed, ubo.maxSpeed), 0.0);
+	vec3 vel = clampMagnitude(b.velocity.xyz + acceleration * ubo.deltaTime, ubo.minSpeed, ubo.maxSpeed);
+	b.velocity = mix(vec4(vel, 0.0), b.velocity, 0.5);
 	b.position += b.velocity * ubo.deltaTime;
 
 	subo_out.boids[id] = b;
 
-	// Create the position vertices
-	float extent = ubo.boidSize * 0.5;
-
-	// Get rectangle positions
-	vec4 edges[4];
-
-	edges[0] = vec4(-extent,	-extent, 	0.0, 1.0);
-	edges[1] = vec4(extent,		-extent, 	0.0, 1.0);
-	edges[2] = vec4(-extent,	extent, 	0.0, 1.0);
-	edges[3] = vec4(extent,		extent, 	0.0, 1.0);
-
+	// Calculate transformation matrices
 	// Apply particle translation / rotation
 	mat4 translation = translate(b.position.xyz);
-	mat4 rotation = rotation(FORWARD, normalize(b.velocity.xyz));
+	mat4 rotation = lookAt(FORWARD_AXIS, normalize(b.velocity.xyz));
 
-	// Vertex storage buffer
-	for (int i=0; i<4; i++)
-	{
-		vertices[gl_GlobalInvocationID.x*4+i] = translation * rotation * edges[i];
-	}
+	// Matrix storage buffer
+	transforms[id] = translation * rotation;
 }

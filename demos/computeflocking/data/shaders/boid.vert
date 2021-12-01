@@ -4,6 +4,7 @@
 
 #version 450 core
 
+// UNIFORM
 uniform nap
 {
 	mat4 projectionMatrix;
@@ -11,21 +12,45 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-in vec4	in_Position;
-in vec4	in_UV0;
-in int in_Id;
+uniform Vert_UBO
+{
+	float boidSize;
+};
 
-out vec4 pass_Uvs;
+// STORAGE
+layout(std430) buffer MatrixBuffer
+{
+	mat4 transforms[2000];
+};
+
+// Input Vertex Attributes
+in vec3 in_Position;
+in vec3 in_Normals;
+
+out vec3 pass_Position;
+out vec3 pass_Normals;
+out vec3 pass_Uv;
 out int pass_Id;
 
 void main(void)
 {
-	// Calculate position
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position.xyz, 1.0);
+	// Get transformation
+	mat4 trans = transforms[gl_InstanceIndex];
+	vec4 position = vec4(boidSize * in_Position, 1.0);
 
-	// Pass color and uv's 
-	pass_Uvs = in_UV0;
+	// Calculate position
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * trans * mvp.modelMatrix * position;
+
+	// calculate vertex world space position and set
+	pass_Position = vec3(trans * mvp.modelMatrix * position);
+
+	// calculate normal in world coordinates and pass along
+    mat3 normal_matrix = transpose(inverse(mat3(trans * mvp.modelMatrix)));
+	pass_Normals = normalize(normal_matrix * in_Normals);
+
+	// Pass uv's 
+	//pass_Uv = in_UV0;
 
 	// Pass element id
-	pass_Id = in_Id;
+	pass_Id = gl_InstanceIndex;
 }

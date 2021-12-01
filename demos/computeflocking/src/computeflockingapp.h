@@ -16,6 +16,7 @@
 #include <imguiservice.h>
 #include <renderservice.h>
 #include <parametergui.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -77,6 +78,16 @@ namespace nap
 		 *  Forwards the received input event to the input service
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
+
+		/**
+		 *	Caches the selected default preset
+		 */
+		void cacheSelectedPreset();
+
+		/**
+		 *	Reloads the selected default preset
+		 */
+		void reloadSelectedPreset();
 		
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
@@ -84,12 +95,19 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< IMGui service
+
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointers to the render window
 		ObjectPtr<EntityInstance> mDefaultInputRouter;					//< Routes input events to the input component
 		ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
-		ObjectPtr<EntityInstance> mParticleEntity;						//< Entity that emits the particles
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+		ObjectPtr<EntityInstance> mFlockingSystemEntity;				//< Entity that emits the particles
 
+		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		std::unique_ptr<ParameterGUI> mParameterGUI;
+
+		int mNumBoids;
+
+		std::string mSelectedPreset;
+		nap::Slot<> mCacheSelectedPresetSlot = { [&]() -> void { cacheSelectedPreset(); } };
+		nap::Slot<> mReloadSelectedPresetSlot = { [&]() -> void { reloadSelectedPreset(); } };
 	};
 }

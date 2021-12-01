@@ -1,0 +1,191 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "FlockingParameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BoidSizeParameter",
+                    "Name": "BoidSize",
+                    "Value": 0.3149999976158142,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ViewRadiusParameter",
+                    "Name": "ViewRadius",
+                    "Value": 0.41200000047683718,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "AvoidRadiusParameter",
+                    "Name": "AvoidRadius",
+                    "Value": 0.6650000214576721,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MinSpeedParameter",
+                    "Name": "MinSpeed",
+                    "Value": 1.7120000123977662,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MaxSpeedParameter",
+                    "Name": "MaxSpeed",
+                    "Value": 10.0,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MaxSteerForceParameter",
+                    "Name": "MaxSteerForce",
+                    "Value": 2.138000011444092,
+                    "Minimum": 0.0,
+                    "Maximum": 8.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "TargetWeightParameter",
+                    "Name": "TargetWeight",
+                    "Value": 0.48100000619888308,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "AlignmentWeightParameter",
+                    "Name": "AlignmentWeight",
+                    "Value": 0.20600000023841859,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "CohesionWeightParameter",
+                    "Name": "CohesionWeight",
+                    "Value": 0.6019999980926514,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SeparationWeightParameter",
+                    "Name": "SeparationWeight",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": [
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "RenderGroup",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "LightPositionParameter",
+                            "Name": "LightPosition",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 100.0
+                            },
+                            "Clamp": false,
+                            "Minimum": -10.0,
+                            "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "LightIntensityParameter",
+                            "Name": "LightIntensity",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "DiffuseColorParameter",
+                            "Name": "DiffuseColor",
+                            "Value": {
+                                "x": 0.5,
+                                "y": 0.5,
+                                "z": 0.6000000238418579
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "LightColorParameter",
+                            "Name": "LightColor",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec3",
+                            "mID": "SpecularColorParameter",
+                            "Name": "SpecularColor",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "Clamp": false,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "ShininessParameter",
+                            "Name": "Shininess",
+                            "Value": 0.75,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "AmbientIntensityParameter",
+                            "Name": "AmbientIntensity",
+                            "Value": 0.5249999761581421,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "DiffuseIntensityParameter",
+                            "Name": "DiffuseIntensity",
+                            "Value": 0.7599999904632568,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SpecularIntensityParameter",
+                            "Name": "SpecularIntensity",
+                            "Value": 0.31299999356269839,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
+                }
+            ]
+        }
+    ]
+}

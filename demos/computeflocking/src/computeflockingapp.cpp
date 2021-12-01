@@ -41,7 +41,12 @@ namespace nap
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity = scene->findEntity("CameraEntity");
 		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
-		mParticleEntity = scene->findEntity("ParticleVolumeEntity");
+		mFlockingSystemEntity = scene->findEntity("FlockingSystemEntity");
+
+		if (!error.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
+			return false;
+
+		mNumBoids = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().mNumBoids;
 
 		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
 		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
@@ -49,9 +54,38 @@ namespace nap
 		if (!error.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
 			return false;
 
+		// Reload the selected preset after hot-reloading 
+		mResourceManager->mPreResourcesLoadedSignal.connect(mCacheSelectedPresetSlot);
+		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSelectedPresetSlot);
+
+		// Load the first preset automatically
+		auto* parameter_service = getCore().getService<ParameterService>();
+		auto presets = parameter_service->getPresets(*mParameterGUI->mParameterGroup);
+		if (!parameter_service->getPresets(*mParameterGUI->mParameterGroup).empty())
+		{
+			if (!mParameterGUI->load(presets[0], error))
+				return false;
+		}
+
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
+	}
+
+
+	void ComputeFlockingApp::reloadSelectedPreset()
+	{
+		// Load the first preset automatically
+		auto* parameter_service = getCore().getService<ParameterService>();
+		utility::ErrorState error_state;
+		mParameterGUI->load(mSelectedPreset, error_state);
+	}
+
+
+	void ComputeFlockingApp::cacheSelectedPreset()
+	{
+		auto* parameter_service = getCore().getService<ParameterService>();
+		mSelectedPreset = parameter_service->getPresets(*mParameterGUI->mParameterGroup)[mParameterGUI->getSelectedPresetIndex()];
 	}
 
 
@@ -64,8 +98,6 @@ namespace nap
 	 */
 	void ComputeFlockingApp::update(double deltaTime)
 	{
-		auto& volume = mParticleEntity->getComponent<FlockingSystemComponentInstance>();
-
 		// Update input
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		{
@@ -83,7 +115,7 @@ namespace nap
 		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
+		ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
 		mParameterGUI->show(false);
 		ImGui::End();
 	}
@@ -104,8 +136,8 @@ namespace nap
 		if (mRenderService->beginComputeRecording())
 		{
 			utility::ErrorState error_state;
-			auto& volume = mParticleEntity->getComponent<FlockingSystemComponentInstance>();
-			volume.compute(error_state);
+			auto& comp = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
+			comp.compute(error_state);
 
 			mRenderService->endComputeRecording();
 		}
@@ -118,8 +150,7 @@ namespace nap
 			mRenderWindow->beginRendering();
 
 			// Render all available geometry
-			PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, frame_cam);
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
 			// Render GUI elements
 			mGuiService->draw();

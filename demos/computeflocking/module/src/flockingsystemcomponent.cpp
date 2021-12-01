@@ -20,7 +20,6 @@
 
 RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("NumBoids",					&nap::FlockingSystemComponent::mNumBoids,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Target",						&nap::FlockingSystemComponent::mTargetParam,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BoidSize",					&nap::FlockingSystemComponent::mBoidSizeParam,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ViewRadius",					&nap::FlockingSystemComponent::mViewRadiusParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AvoidRadius",				&nap::FlockingSystemComponent::mAvoidRadiusParam,			nap::rtti::EPropertyMetaData::Default)
@@ -31,6 +30,19 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("AlignmentWeight",			&nap::FlockingSystemComponent::mAlignmentWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CohesionWeight",				&nap::FlockingSystemComponent::mCohesionWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SeparationWeight",			&nap::FlockingSystemComponent::mSeparationWeightParam,		nap::rtti::EPropertyMetaData::Default)
+
+	RTTI_PROPERTY("LightPosition",				&nap::FlockingSystemComponent::mLightPositionParam,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LightIntensity",				&nap::FlockingSystemComponent::mLightIntensityParam,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DiffuseColor",				&nap::FlockingSystemComponent::mDiffuseColorParam,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LightColor",					&nap::FlockingSystemComponent::mLightColorParam,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SpecularColor",				&nap::FlockingSystemComponent::mSpecularColorParam,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Shininess",					&nap::FlockingSystemComponent::mShininessParam,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AmbientIntensity",			&nap::FlockingSystemComponent::mAmbientIntensityParam,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DiffuseIntensity",			&nap::FlockingSystemComponent::mDiffuseIntensityParam,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SpecularIntensity",			&nap::FlockingSystemComponent::mSpecularIntensityParam,		nap::rtti::EPropertyMetaData::Default)
+
+	RTTI_PROPERTY("PerspCameraComponent",		&nap::FlockingSystemComponent::mPerspCameraComponent,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("TargetTransformComponent",	&nap::FlockingSystemComponent::mTargetTransformComponent,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FlockingSystemComponentInstance)
@@ -43,14 +55,29 @@ namespace nap
 	// Constants
 	//////////////////////////////////////////////////////////////////////////
 
+
 	namespace uniform
 	{
 		constexpr const char* uboStruct = "UBO";
+		constexpr const char* boidSize = "boidSize";
+		constexpr const char* cameraLocation = "cameraLocation";
+		constexpr const char* lightPosition = "lightPosition";
+		constexpr const char* lightIntensity = "lightIntensity";
+		constexpr const char* diffuseColor = "diffuseColor";
+		constexpr const char* lightColor = "lightColor";
+		constexpr const char* specularIntensity = "specularIntensity";
+		constexpr const char* specularColor = "specularColor";
+		constexpr const char* shininess = "shininess";
+		constexpr const char* ambientIntensity = "ambientIntensity";
+		constexpr const char* diffuseIntensity = "diffuseIntensity";
+	}
 
+	namespace computeuniform
+	{
+		constexpr const char* uboStruct = "UBO";
 		constexpr const char* target = "target";
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
-		constexpr const char* boidSize = "boidSize";
 		constexpr const char* viewRadius = "viewRadius";
 		constexpr const char* avoidRadius = "avoidRadius";
 		constexpr const char* minSpeed = "minSpeed";
@@ -61,9 +88,8 @@ namespace nap
 		constexpr const char* cohesionWeight = "cohesionWeight";
 		constexpr const char* separationWeight = "separationWeight";
 		constexpr const char* numBoids = "numBoids";
-
-		constexpr const char* vertexBufferStruct = "VertexBuffer";
-		constexpr const char* vertices = "vertices";
+		constexpr const char* matrixBufferStruct = "MatrixBuffer";
+		constexpr const char* transforms = "transforms";
 	}
 
 	namespace vertexid
@@ -73,85 +99,11 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Static functions and data
-	//////////////////////////////////////////////////////////////////////////
-
-	// Default normalized plane uv's
-	static glm::vec4 plane_uvs[] =
-	{
-		{ 0.0f,	0.0f, 0.0f, 0.0f },
-		{ 1.0f,	0.0f, 0.0f, 0.0f },
-		{ 0.0f,	1.0f, 0.0f, 0.0f },
-		{ 1.0f,	1.0f, 0.0f, 0.0f },
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-	// BoidMesh
-	//////////////////////////////////////////////////////////////////////////
-
-	BoidMesh::BoidMesh(Core& core) : mRenderService(core.getService<RenderService>())
-	{ }
-
-	bool BoidMesh::init(utility::ErrorState& errorState)
-	{
-		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-
-		int num_vertices = mNumBoids * 4;
-		mMeshInstance->setNumVertices(num_vertices);
-		mMeshInstance->setUsage(EMeshDataUsage::Static);
-		mMeshInstance->setDrawMode(EDrawMode::Triangles);
-		mMeshInstance->setCullMode(ECullMode::None);
-
-		// Create the necessary attributes
-		Vec4VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::position);
-		Vec4VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getUVName(0));
-		IntVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<int>(vertexid::id);
-		MeshShape& shape = mMeshInstance->createShape();
-
-		// Reserve CPU memory for all the particle geometry necessary to create
-		// We want to draw the mesh as a set of triangles, 2 triangles per particle
-		shape.reserveIndices(mNumBoids);
-
-		// Build the mesh based on the amount of particles
-		std::vector<glm::vec4> zero_buffer(num_vertices);
-		position_attribute.setData(zero_buffer.data(), num_vertices);
-
-		uint cur_num_vertices = 0;
-		for (int i = 0; i < mNumBoids; i++)
-		{
-			uv_attribute.addData(plane_uvs, 4);
-
-			int id = (cur_num_vertices - cur_num_vertices % 4) / 4;
-			std::array<int, 4> id_array = { id, id, id, id };
-			id_attribute.addData(id_array.data(), 4);
-
-			// Indices for 2 triangles, 1 plane
-			unsigned int indices[] =
-			{
-				cur_num_vertices + 0,
-				cur_num_vertices + 1,
-				cur_num_vertices + 3,
-				cur_num_vertices + 0,
-				cur_num_vertices + 3,
-				cur_num_vertices + 2
-			};
-			shape.addIndices(indices, 6);
-			cur_num_vertices += 4;
-		}
-
-		// Initialize our instance
-		return mMeshInstance->init(errorState);
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
 	// FlockingSystemComponentInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	FlockingSystemComponentInstance::FlockingSystemComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableMeshComponentInstance(entity, resource),
-		mBoidMesh(std::make_unique<BoidMesh>(*entity.getCore())),
 		mRenderService(entity.getCore()->getService<RenderService>())
 	{ }
 
@@ -162,6 +114,9 @@ namespace nap
 		if (!errorState.check(getEntityInstance()->findComponent<ComputeComponentInstance>() != nullptr, "%s: missing ComputeComponent", mID.c_str()))
 			return false;
 
+		// Cache resource
+		mResource = getComponent<FlockingSystemComponent>();
+
 		// Collect compute instances
 		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
 		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
@@ -170,35 +125,8 @@ namespace nap
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
-		// Get resource
-		FlockingSystemComponent* resource = getComponent<FlockingSystemComponent>();
-
-		// Set params from resource
-		mTarget = glm::vec4(resource->mTargetParam->mValue, 0.0f);
-		mBoidSize = resource->mBoidSizeParam->mValue;
-		mViewRadius = resource->mViewRadiusParam->mValue;
-		mAvoidRadius = resource->mAvoidRadiusParam->mValue;
-		mMinSpeed = resource->mMinSpeedParam->mValue;
-		mMaxSpeed = resource->mMaxSpeedParam->mValue;
-		mMaxSteerForce = resource->mMaxSteerForceParam->mValue;
-		mTargetWeight = resource->mTargetWeightParam->mValue;
-		mAlignmentWeight = resource->mAlignmentWeightParam->mValue;
-		mCohesionWeight = resource->mCohesionWeightParam->mValue;
-		mSeparationWeight = resource->mSeparationWeightParam->mValue;
-		mNumBoids = resource->mNumBoids;
-
-		// Initialize particle mesh
-		mBoidMesh->mNumBoids = resource->mNumBoids;
-		if (!errorState.check(mBoidMesh->init(errorState), "Unable to create particle mesh"))
-			return false;
-
-		// Bind the particle mesh to the material and create a VAO
-		RenderableMesh renderableMesh = createRenderableMesh(*mBoidMesh, errorState);
-		if (!renderableMesh.isValid())
-			return false;
-
-		// Set the particle mesh to be used when drawing
-		setMesh(renderableMesh);
+		// Set non-parameter variables
+		mNumBoids = mResource->mNumBoids;
 
 		return true;
 	}
@@ -214,36 +142,57 @@ namespace nap
 			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 		}
 
-		// Update uniforms
+		// Update compute shader uniforms
 		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
-			FlockingSystemComponent* resource = getComponent<FlockingSystemComponent>();
-
-			ubo_struct->getOrCreateUniform<UniformVec4Instance>(uniform::target)->setValue(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::deltaTime)->setValue(static_cast<float>(deltaTime));
-
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(resource->mBoidSizeParam->mValue);
-
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::viewRadius)->setValue(mViewRadius);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::avoidRadius)->setValue(mAvoidRadius);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::minSpeed)->setValue(mMinSpeed);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::maxSpeed)->setValue(mMaxSpeed);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::maxSteerForce)->setValue(mMaxSteerForce);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::targetWeight)->setValue(mTargetWeight);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::alignmentWeight)->setValue(mAlignmentWeight);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::cohesionWeight)->setValue(mCohesionWeight);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::separationWeight)->setValue(mSeparationWeight);
-			ubo_struct->getOrCreateUniform<UniformIntInstance>(uniform::numBoids)->setValue(mNumBoids);
+			glm::vec4 target_position = mTargetTransformComponent->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(computeuniform::target)->setValue(target_position.xyz);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime)->setValue(static_cast<float>(deltaTime));
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius)->setValue(mResource->mViewRadiusParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius)->setValue(mResource->mAvoidRadiusParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed)->setValue(mResource->mMinSpeedParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSpeed)->setValue(mResource->mMaxSpeedParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSteerForce)->setValue(mResource->mMaxSteerForceParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::targetWeight)->setValue(mResource->mTargetWeightParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight)->setValue(mResource->mAlignmentWeightParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
 		}
+
+		// Update vertex shader uniforms
+		ubo_struct = getMaterialInstance().getOrCreateUniform("Vert_UBO");
+		if (ubo_struct != nullptr)
+		{
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
+		}
+
+		// Update fragment shader uniforms
+		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		if (ubo_struct != nullptr)
+		{
+			auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mResource->mLightPositionParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor)->setValue(mResource->mDiffuseColorParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::specularColor)->setValue(mResource->mSpecularColorParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::shininess)->setValue(mResource->mShininessParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::ambientIntensity)->setValue(mResource->mAmbientIntensityParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::diffuseIntensity)->setValue(mResource->mDiffuseIntensityParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity)->setValue(mResource->mSpecularIntensityParam->mValue);
+		}
+
 		mFirstUpdate = false;
 	}
 
 
 	bool FlockingSystemComponentInstance::compute(utility::ErrorState& errorState)
 	{
-		if (!mCurrentComputeInstance->compute(mBoidMesh->mNumBoids, errorState))
+		if (!mCurrentComputeInstance->compute(mNumBoids, errorState))
 			return false;
 
 		return true;
@@ -284,17 +233,7 @@ namespace nap
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertex_buffers = mRenderableMesh.getVertexBuffers();
 		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
-
-		// Find storage buffer uniform in the material instance resource, else the material resource
-		StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform(uniform::vertexBufferStruct);
-		if (vertex_struct == nullptr)
-			vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
-
-		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniform<StorageUniformVec4BufferInstance>(uniform::vertices);
-		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
-
-		std::vector<VkBuffer> vertex_buffers_override = { storage_buffer, vertex_buffers[1], vertex_buffers[2] };
-		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers_override.size(), vertex_buffers_override.data(), offsets.data());
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
@@ -314,12 +253,10 @@ namespace nap
 		// Draw meshes
 		MeshInstance& mesh_instance = getMeshInstance();
 		GPUMesh& mesh = mesh_instance.getGPUMesh();
-		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
-		{
-			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
-			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
-			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
-		}
+
+		const IndexBuffer& index_buffer = mesh.getIndexBuffer(0);
+		vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), mNumBoids, 0, 0, 0);
 
 		// Restore line width
 		vkCmdSetLineWidth(commandBuffer, 1.0f);

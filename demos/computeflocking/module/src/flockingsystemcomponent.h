@@ -11,41 +11,13 @@
 #include <nap/resourceptr.h>
 #include <parameternumeric.h>
 #include <parametervec.h>
+#include <componentptr.h>
+#include <perspcameracomponent.h>
 
 namespace nap
 {
 	// Forward declares
 	class FlockingSystemComponentInstance;
-
-	/**
-	 * A particle mesh that is populated by the ParticleVolumeComponent
-	 */
-	class BoidMesh : public IMesh
-	{
-	public:
-		int	mNumBoids = 1024;
-
-		BoidMesh(Core& core);
-
-		/**
-		 * Initialize this particle mesh
-		 */
-		virtual bool init(utility::ErrorState& errorState);
-
-		/**
-		 * @return MeshInstance as created during init().
-		 */
-		virtual MeshInstance& getMeshInstance()	override { return *mMeshInstance; }
-
-		/**
-		 * @return MeshInstance as created during init().
-		 */
-		virtual const MeshInstance& getMeshInstance() const	override { return *mMeshInstance; }
-
-	private:
-		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;			///< The mesh instance to construct
-		nap::RenderService* mRenderService = nullptr;					///< Handle to the render service
-	};
 
 	/**
 	 * Component that emits a single set of particles.
@@ -70,8 +42,10 @@ namespace nap
 			components.emplace_back(RTTI_OF(ComputeComponent));
 		}
 
-		ResourcePtr<ParameterVec3> mTargetParam;
-		ResourcePtr<ParameterFloat> mBoidSizeParam;				///< Default size of a boid
+		int mNumBoids;													///< Number of boids
+
+		//ResourcePtr<ParameterVec3> mTargetParam;
+		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Default size of a boid
 		ResourcePtr<ParameterFloat> mViewRadiusParam;
 		ResourcePtr<ParameterFloat> mAvoidRadiusParam;
 		ResourcePtr<ParameterFloat> mMinSpeedParam;
@@ -82,7 +56,18 @@ namespace nap
 		ResourcePtr<ParameterFloat> mCohesionWeightParam;
 		ResourcePtr<ParameterFloat> mSeparationWeightParam;
 
-		int mNumBoids;											///< Number of boids
+		ResourcePtr<ParameterVec3> mLightPositionParam;
+		ResourcePtr<ParameterFloat> mLightIntensityParam;
+		ResourcePtr<ParameterVec3> mDiffuseColorParam;
+		ResourcePtr<ParameterVec3> mLightColorParam;
+		ResourcePtr<ParameterVec3> mSpecularColorParam;
+		ResourcePtr<ParameterFloat> mShininessParam;
+		ResourcePtr<ParameterFloat> mAmbientIntensityParam;
+		ResourcePtr<ParameterFloat> mDiffuseIntensityParam;
+		ResourcePtr<ParameterFloat> mSpecularIntensityParam;
+
+		ComponentPtr<PerspCameraComponent>	mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
+		ComponentPtr<TransformComponent>	mTargetTransformComponent;	///< Property: "TargetTransformComponent" Camera that we're controlling
 	};
 
 
@@ -112,26 +97,19 @@ namespace nap
 		bool compute(utility::ErrorState& errorState);
 
 		glm::vec4 mTarget;
-		float mBoidSize;
-		float mViewRadius;
-		float mAvoidRadius;
-		float mMinSpeed;
-		float mMaxSpeed;
-		float mMaxSteerForce;
-		float mTargetWeight;
-		float mAlignmentWeight;
-		float mCohesionWeight;
-		float mSeparationWeight;
 		int mNumBoids;
 
 	private:
-		RenderService* mRenderService = nullptr;
-		std::unique_ptr<BoidMesh>					mBoidMesh;
+		FlockingSystemComponent*					mResource = nullptr;
+		RenderService*								mRenderService = nullptr;
 		double										mElapsedTime = 0.0;
 
 		std::vector<ComputeComponentInstance*>		mComputeInstances;					// Compute instances found in the entity
 		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	// The current compute instance
 		uint										mComputeInstanceIndex = 0;			// Current compute instance index
 		bool										mFirstUpdate = true;				// First update flag
+
+		ComponentInstancePtr<PerspCameraComponent> mPerspCameraComponent = { this, &FlockingSystemComponent::mPerspCameraComponent };
+		ComponentInstancePtr<TransformComponent> mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };
 	};
 }
