@@ -22,7 +22,7 @@ namespace nap
 			return false;
 
 		if (!error.check(type_valid, "portal event header is missing the %s string argument", portal::eventTypeArgName))
-			return false;                  
+			return false;
 
 		return true;
 	}
@@ -52,5 +52,13 @@ namespace nap
 			return EPortalEventType::Update;
 
 		return EPortalEventType::Invalid;
+	}
+
+
+	void setPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader)
+	{
+		outHeader.mID = event->getID();
+		outHeader.mPortalID = getPortalID(event);
+		outHeader.mType = getPortalEventType(event);
 	}
 }

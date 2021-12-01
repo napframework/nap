@@ -32,6 +32,16 @@ namespace nap
 	};
 
 	/**
+	 * Object containing all portal event header information
+	 */
+	struct PortalEventHeader
+	{
+		std::string mID;		///< Unique ID of the portal event
+		std::string mPortalID;	///< Unique ID of the sending / receiving portal
+		EPortalEventType mType;	///< Type of the portal event, determines the effect
+	};
+
+	/**
 	 * Checks whether the given API event passes as a valid portal event header
 	 * @param event the API event to validate as a valid portal event header
 	 * @param error contains error information when the event is not valid
@@ -52,4 +62,11 @@ namespace nap
 	 * @return the extracted portal event type
 	 */
 	EPortalEventType getPortalEventType(const APIEventPtr& event);
+
+	/**
+	 * Sets a portal event header from a valid portal event header API event
+	 * @param event the API event to extract the portal event information from
+	 * @param outHeader the portal event header to set the information on
+	 */
+	void setPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader);
 }
