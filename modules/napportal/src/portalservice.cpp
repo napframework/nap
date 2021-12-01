@@ -27,21 +27,30 @@ namespace nap
 	}
 
 
-	void PortalService::registerPortalComponent(PortalComponentInstance& portalComponent)
+	bool PortalService::sendEvent(PortalEventPtr event, utility::ErrorState& error)
 	{
-		std::lock_guard<std::mutex> lock(mPortalComponentMutex);
-		mPortalComponents.emplace_back(&portalComponent);
+		// Make sure components don't get pulled / updated while forwarding calls
+		std::lock_guard<std::mutex> lock(mComponentMutex);
+
+		return true;
 	}
 
 
-	void PortalService::removePortalComponent(PortalComponentInstance& portalComponent)
+	void PortalService::registerComponent(PortalComponentInstance& component)
 	{
-		std::lock_guard<std::mutex> lock(mPortalComponentMutex);
-		auto found_it = std::find_if(mPortalComponents.begin(), mPortalComponents.end(), [&](const auto& it)
+		std::lock_guard<std::mutex> lock(mComponentMutex);
+		mComponents.emplace_back(&component);
+	}
+
+
+	void PortalService::removeComponent(PortalComponentInstance& component)
+	{
+		std::lock_guard<std::mutex> lock(mComponentMutex);
+		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
 		{
-			return it == &portalComponent;
+			return it == &component;
 		});
-		assert(found_it != mPortalComponents.end());
-		mPortalComponents.erase(found_it);
+		assert(found_it != mComponents.end());
+		mComponents.erase(found_it);
 	}
 }

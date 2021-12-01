@@ -4,6 +4,9 @@
 
 #pragma once
 
+// Local Includes
+#include "portalevent.h"
+
 // External Includes
 #include <nap/service.h>
 #include <mutex>
@@ -12,14 +15,16 @@ namespace nap
 {
 	// Forward Declares
 	class PortalComponentInstance;
+	class PortalWebSocketComponentInstance;
 
 	/**
-	 * The portal service receives API WebSocket events from portal API components.
-	 * It then relays the incoming events to portal components, based on the message type and portal ID.
+	 * The portal service receives portal events from portal WebSocket components.
+	 * It then forwards the incoming events to portal components, based on the message type and portal ID.
 	 */
 	class NAPAPI PortalService : public Service
 	{
 		friend class PortalComponentInstance;
+		friend class PortalWebSocketComponentInstance;
 		RTTI_ENABLE(Service)
 
 	public:
@@ -30,28 +35,36 @@ namespace nap
 		PortalService(ServiceConfiguration* configuration);
 
 		/**
-		 * Destructor	
+		 * Destructor
 		 */
 		~PortalService() override;
 
 	private:
 
 		/**
-		 * Called by the portal component in order to register itself with the service.
-		 * @param portalComponent the component that wants to register itself.
+		 * Receives portal events from portal WebSocket components and forwards them to portal components.
+		 * @param event the portal event that is to be forwarded
+		 * @param error contains information in case forwarding fails
+		 * @return whether forwarding the event succeeded
 		 */
-		void registerPortalComponent(PortalComponentInstance& portalComponent);
+		bool sendEvent(PortalEventPtr event, utility::ErrorState& error);
+
+		/**
+		 * Called by the portal component in order to register itself with the service.
+		 * @param component the component that wants to register itself.
+		 */
+		void registerComponent(PortalComponentInstance& component);
 
 		/**
 		 * Called by the portal component to de-register itself with the service.
-		 * @param portalComponent the component to de-register.
+		 * @param component the component to de-register.
 		 */
-		void removePortalComponent(PortalComponentInstance& portalComponent);
+		void removeComponent(PortalComponentInstance& component);
 
 		// All the portal components currently available to the system
-		std::vector<PortalComponentInstance*> mPortalComponents;
+		std::vector<PortalComponentInstance*> mComponents;
 
 		// Mutex associated with portal component registration and iteration
-		std::mutex mPortalComponentMutex;
+		std::mutex mComponentMutex;
 	};
 }
