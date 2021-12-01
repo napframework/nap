@@ -67,13 +67,16 @@ namespace nap
 		if (numVertices == 0)
 			return true;
 
+		// Cache buffer size
+		mSize = elementSize * numVertices;
+
 		// Update buffers based on selected data usage type
 		switch (mUsage)
 		{
 		case EMeshDataUsage::DynamicWrite:
-			return setDataInternalDynamic(data, elementSize * numVertices, elementSize * reservedNumVertices, usage, error);
+			return setDataInternalDynamic(data, mSize, elementSize * reservedNumVertices, usage, error);
 		case EMeshDataUsage::Static:
-			return setDataInternalStatic(data, elementSize * numVertices, usage, error);
+			return setDataInternalStatic(data, mSize, usage, error);
 		default:
 			assert(false);
 			break;
@@ -85,6 +88,9 @@ namespace nap
 
 	bool GPUBuffer::setDataInternal(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error)
 	{
+		// Cache buffer size
+		mSize = size;
+
 		// Update buffers based on selected data usage type
 		switch (mUsage)
 		{
@@ -104,7 +110,6 @@ namespace nap
 	bool GPUBuffer::setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error)
 	{
 		// Calculate buffer byte size and fetch allocator
-		mSize = size;
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
 		// Make sure we haven't already uploaded or are attempting to upload data
