@@ -11,10 +11,12 @@ target_architecture(ARCH)
 
 if(NOT ANDROID)
     find_path(PORTAUDIO_DIR 
-              NAMES portaudio.h
-              HINTS ${THIRDPARTY_DIR}/portaudio/msvc/x86_64/include
-              ${THIRDPARTY_DIR}/portaudio/macos/x86_64/include
-              ${THIRDPARTY_DIR}/portaudio/linux/${ARCH}/include
+              NAMES 
+              msvc/x86_64/include/portaudio.h
+              macos/x86_64/include/portaudio.h
+              linux/${ARCH}/include/portaudio.h
+              HINTS 
+              ${THIRDPARTY_DIR}/portaudio
               ${CMAKE_CURRENT_LIST_DIR}/../../portaudio
               )
 endif()
@@ -51,7 +53,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set PORTAUDIO_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(portaudio REQUIRED_VARS PORTAUDIO_LIBRARIES PORTAUDIO_INCLUDE_DIR PORTAUDIO_DIR)
+find_package_handle_standard_args(portaudio REQUIRED_VARS PORTAUDIO_DIR PORTAUDIO_LIBRARIES PORTAUDIO_INCLUDE_DIR)
 
 
 add_library(portaudio SHARED IMPORTED)

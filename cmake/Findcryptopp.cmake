@@ -57,7 +57,7 @@ else()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(cryptopp REQUIRED_VARS CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DEBUG CRYPTOPP_LIB_RELEASE)
+find_package_handle_standard_args(cryptopp REQUIRED_VARS CRYPTOPP_DIR CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DEBUG CRYPTOPP_LIB_RELEASE)
  
 # Copy the cryptopp dynamic linked lib into the build directory
 macro(copy_cryptopp_dll)

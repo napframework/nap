@@ -9,11 +9,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(LIBSNDFILE_DIR 
-         NAMES sndfile.h 
-         HINTS ${THIRDPARTY_DIR}/libsndfile/msvc/x86_64/include
-               ${THIRDPARTY_DIR}/libsndfile/macos/x86_64/include
-               ${THIRDPARTY_DIR}/libsndfile/linux/${ARCH}/include
-               ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
+         NAMES 
+         msvc/x86_64/include/sndfile.h 
+         macos/x86_64/include/sndfile.h
+         linux/${ARCH}/include/sndfile.h
+         HINTS 
+         ${THIRDPARTY_DIR}/libsndfile
+         ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
         )
 
 if (WIN32)
@@ -42,7 +44,7 @@ endif ()
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBSNDFILE_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libsndfile REQUIRED_VARS LIBSNDFILE_LIBRARIES LIBSNDFILE_INCLUDE_DIR LIBSNDFILE_DIR)
+find_package_handle_standard_args(libsndfile REQUIRED_VARS LIBSNDFILE_DIR LIBSNDFILE_LIBRARIES LIBSNDFILE_INCLUDE_DIR)
 
 add_library(libsndfile SHARED IMPORTED)
 set_target_properties(libsndfile PROPERTIES

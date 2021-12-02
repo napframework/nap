@@ -9,11 +9,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(LIBMPG123_DIR
-          NAMES mpg123.h
+          NAMES 
+          msvc/x86_64/include/mpg123.h
+          macos/x86_64/include/mpg123.h
+          linux/${ARCH}/include/mpg123.h
           HINTS
-          ${THIRDPARTY_DIR}/mpg123/msvc/x86_64/include
-          ${THIRDPARTY_DIR}/mpg123/macos/x86_64/include
-          ${THIRDPARTY_DIR}/mpg123/linux/${ARCH}/include
+          ${THIRDPARTY_DIR}/mpg123
           ${CMAKE_CURRENT_LIST_DIR}/../../mpg123
           )
 
@@ -44,7 +45,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBMPG123_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libmpg123 REQUIRED_VARS LIBMPG123_LIBRARIES LIBMPG123_INCLUDE_DIR LIBMPG123_DIR)
+find_package_handle_standard_args(libmpg123 REQUIRED_VARS LIBMPG123_DIR LIBMPG123_LIBRARIES LIBMPG123_INCLUDE_DIR)
 
 add_library(libmpg123 SHARED IMPORTED)
 set_target_properties(libmpg123 PROPERTIES
