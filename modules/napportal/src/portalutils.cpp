@@ -84,4 +84,13 @@ namespace nap
 		outHeader.mID = event->getID();
 		return true;
 	}
+
+
+	APIEventPtr createPortalEventHeader(const PortalEventHeader& header)
+	{
+		APIEventPtr event = std::make_unique<APIEvent>(nap::portal::eventHeaderName, header.mID);
+		event->addArgument<APIString>(nap::portal::portalIDArgName, header.mPortalID);
+		event->addArgument<APIString>(nap::portal::eventTypeArgName, getPortalEventTypeString(header.mType));
+		return event;
+	}
 }

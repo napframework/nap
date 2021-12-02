@@ -50,4 +50,11 @@ namespace nap
 	 * @return whether the portal event header extraction succeeded
 	 */
 	bool extractPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader, utility::ErrorState& error);
+
+	/**
+	 * Creates an API event that functions as event header in a portal event
+	 * @param header the portal event header to be converted to API event
+	 * @return an API event that functions as event header in a portal event
+	 */
+	APIEventPtr createPortalEventHeader(const PortalEventHeader& header);
 }
