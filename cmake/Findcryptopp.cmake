@@ -1,6 +1,9 @@
 find_path(
     CRYPTOPP_DIR
-    NAMES msvc/x86_64/include/dll.h
+    NAMES 
+    msvc/x86_64/include/dll.h
+    macos/x86_64/include/cryptopp/dll.h
+    linux/${ARCH}/include/cryptopp/dll.h
     HINTS ${THIRDPARTY_DIR}/cryptopp
 )
 if(WIN32)

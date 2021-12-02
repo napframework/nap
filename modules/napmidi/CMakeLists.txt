@@ -39,17 +39,18 @@ endif()
 package_module()
 
 # Package rtmidi into platform release
-install(FILES ${THIRDPARTY_DIR}/rtmidi/linux/x86_64/README.md DESTINATION thirdparty/rtmidi)
-install(DIRECTORY ${THIRDPARTY_DIR}/rtmidi/linux/x86_64/include/rtmidi/ DESTINATION thirdparty/rtmidi/include)
+install(FILES ${RTMIDI_DIR}/linux/x86_64/README.md DESTINATION thirdparty/rtmidi)
+install(DIRECTORY ${RTMIDI_INCLUDE_DIR}/ DESTINATION thirdparty/rtmidi/include)
 if(MSVC)
-    file(GLOB RTMIDI_STATIC_LIBS ${THIRDPARTY_DIR}/rtmidi/msvc/x86_64/rtmidi*${CMAKE_STATIC_LIBRARY_SUFFIX})
+    file(GLOB RTMIDI_STATIC_LIBS ${RTMIDI_LIBRARY_DIR}/rtmidi*${CMAKE_STATIC_LIBRARY_SUFFIX})
     install(FILES ${RTMIDI_STATIC_LIBS}
             DESTINATION thirdparty/rtmidi/bin)
 elseif(APPLE)
-    install(FILES ${THIRDPARTY_DIR}/rtmidi/macos/x86_64/librtmidi.4.dylib
+    file(GLOB RTMIDI_DYLIBS ${RTMIDI_LIBRARY_DIR}/librtmidi*${CMAKE_SHARED_LIBRARY_SUFFIX})
+    install(FILES ${RTMIDI_DYLIBS}
             DESTINATION thirdparty/rtmidi/lib)
 elseif(UNIX)
-    file(GLOB RTMIDI_DYLIBS ${RTMIDI_DIR}/linux/${ARCH}/lib/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    file(GLOB RTMIDI_DYLIBS ${RTMIDI_LIBRARY_DIR}/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${RTMIDI_DYLIBS}
             DESTINATION thirdparty/rtmidi/lib)
 endif()
