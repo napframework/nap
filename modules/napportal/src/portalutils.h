@@ -18,6 +18,7 @@ namespace nap
 		inline constexpr const char* eventTypeRequest = "EPortalEventType::Request";	///< Value of the portal event type argument that maps to EPortalEventType::Request
 		inline constexpr const char* eventTypeResponse = "EPortalEventType::Response";	///< Value of the portal event type argument that maps to EPortalEventType::Response
 		inline constexpr const char* eventTypeUpdate = "EPortalEventType::Update";		///< Value of the portal event type argument that maps to EPortalEventType::Update
+		inline constexpr const char* eventTypeInvalid = "EPortalEventType::Invalid";	///< Value of the portal event type argument that maps to EPortalEventType::Invalid
 	}
 
 	/**
@@ -42,31 +43,11 @@ namespace nap
 	};
 
 	/**
-	 * Checks whether the given API event passes as a valid portal event header
-	 * @param event the API event to validate as a valid portal event header
-	 * @param error contains error information when the event is not valid
-	 * @return whether the event passes as a valid portal event header
+	 * Attempts to extract a portal event header from a portal event header API event
+	 * @param event the API event to extract the portal event header information from
+	 * @param outHeader the portal event header to write the information to
+	 * @param error contains information when the extraction fails
+	 * @return whether the portal event header extraction succeeded
 	 */
-	bool isPortalEventHeader(const APIEventPtr& event, utility::ErrorState& error);
-
-	/**
-	 * Retrieves the portal ID from a valid portal event header
-	 * @param event the API event to extract the portal ID from
-	 * @return the extracted portal ID
-	 */
-	std::string getPortalID(const APIEventPtr& event);
-
-	/**
-	 * Retrieves the portal event type from a valid portal event header
-	 * @param event the API event to extract the portal event type from
-	 * @return the extracted portal event type
-	 */
-	EPortalEventType getPortalEventType(const APIEventPtr& event);
-
-	/**
-	 * Sets a portal event header from a valid portal event header API event
-	 * @param event the API event to extract the portal event information from
-	 * @param outHeader the portal event header to set the information on
-	 */
-	void setPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader);
+	bool extractPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader, utility::ErrorState& error);
 }

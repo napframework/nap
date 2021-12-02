@@ -6,36 +6,6 @@
 
 namespace nap
 {
-	bool isPortalEventHeader(const APIEventPtr& event, utility::ErrorState& error)
-	{
-		bool name_valid = event->getName() == portal::eventHeaderName;
-		if (!error.check(name_valid, "portal event header name is not %s", portal::eventHeaderName))
-			return false;
-
-		APIArgument* id_arg = event->getArgumentByName(portal::portalIDArgName);
-		APIArgument* type_arg = event->getArgumentByName(portal::eventTypeArgName);
-
-		bool id_valid = id_arg != nullptr && id_arg->isString();
-		bool type_valid = type_arg != nullptr && type_arg->isString();
-
-		if (!error.check(id_valid, "portal event header is missing the %s string argument", portal::portalIDArgName))
-			return false;
-
-		if (!error.check(type_valid, "portal event header is missing the %s string argument", portal::eventTypeArgName))
-			return false;
-
-		return true;
-	}
-
-
-	std::string getPortalID(const APIEventPtr& event)
-	{
-		APIArgument* arg = event->getArgumentByName(portal::portalIDArgName);
-		assert(arg != nullptr && arg->isString());
-		return arg->asString();
-	}
-
-
 	std::string getPortalEventTypeString(const EPortalEventType& type)
 	{
 		switch (type)
@@ -55,7 +25,7 @@ namespace nap
 	}
 
 
-	EPortalEventType getPortalEventType(std::string&& type)
+	EPortalEventType getPortalEventType(const std::string& type)
 	{
 		if (type == portal::eventTypeRequest)
 			return EPortalEventType::Request;
@@ -70,29 +40,48 @@ namespace nap
 	}
 
 
-	EPortalEventType getPortalEventType(const APIEventPtr& event)
+	bool extractPortalID(const APIEventPtr& event, std::string& outID, utility::ErrorState& error)
 	{
+		// Check the portal id argument
+		APIArgument* arg = event->getArgumentByName(portal::portalIDArgName);
+		if (!error.check(arg != nullptr && arg->isString(), "portal event header is missing the %s string argument", portal::portalIDArgName))
+			return false;
+
+		outID = arg->asString();
+		return true;
+	}
+
+
+	bool extractPortalEventType(const APIEventPtr& event, EPortalEventType& outType, utility::ErrorState& error)
+	{
+		// Check the portal event type argument
 		APIArgument* arg = event->getArgumentByName(portal::eventTypeArgName);
-		assert(arg != nullptr && arg->isString());
-		std::string type = arg->asString();
+		if (!error.check(arg != nullptr && arg->isString(), "portal event header is missing the %s string argument", portal::eventTypeArgName))
+			return false;
 
-		if (type == portal::eventTypeRequest)
-			return EPortalEventType::Request;
+		// Ensure the portal event type is valid
+		std::string typeStr = arg->asString();
+		EPortalEventType type = getPortalEventType(typeStr);
+		if (!error.check(type != EPortalEventType::Invalid, "not a valid portal event type: %s", typeStr))
+			return false;
 
-		if (type == portal::eventTypeResponse)
-			return EPortalEventType::Response;
-
-		if (type == portal::eventTypeUpdate)
-			return EPortalEventType::Update;
-
-		return EPortalEventType::Invalid;
+		outType = type;
+		return true;
 	}
 
 
-	void setPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader)
+	bool extractPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader, utility::ErrorState& error)
 	{
+		if (!error.check(event->getName() == portal::eventHeaderName, "portal event header name is not %s", portal::eventHeaderName))
+			return false;
+
+		if (!extractPortalID(event, outHeader.mPortalID, error))
+			return false;
+
+		if (!extractPortalEventType(event, outHeader.mType, error))
+			return false;
+
 		outHeader.mID = event->getID();
-		outHeader.mPortalID = getPortalID(event);
-		outHeader.mType = getPortalEventType(event);
+		return true;
 	}
 }
