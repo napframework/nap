@@ -11,7 +11,7 @@
 
 // nap::PortalComponent run time class definition
 RTTI_BEGIN_CLASS(nap::PortalComponent)
-RTTI_PROPERTY("PortalAPIComponent", &nap::PortalComponent::mPortalAPIComponent, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("PortalWebSocketComponent", &nap::PortalComponent::mPortalWebSocketComponent, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::PortalComponentInstance run time class definition
@@ -24,34 +24,21 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	PortalComponentInstance::~PortalComponentInstance()
+	{
+		// De-register with the service
+		if (mService != nullptr)
+			mService->removeComponent(*this);
+	}
+
 
 	bool PortalComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Register with the service
 		mService = getEntityInstance()->getCore()->getService<nap::PortalService>();
 		assert(mService != nullptr);
-		mService->registerPortalComponent(*this);
+		mService->registerComponent(*this);
 
 		return true;
-	}
-
-
-	void PortalComponentInstance::onDestroy()
-	{
-		// De-register with the service
-		if (mService != nullptr)
-			mService->removePortalComponent(*this);
-	}
-
-
-	void PortalComponentInstance::processPortalRequest(const WebSocketConnection& connection)
-	{
-
-	}
-
-
-	void PortalComponentInstance::processPortalUpdate(const std::vector<APIMessage*>& messages)
-	{
-
 	}
 }

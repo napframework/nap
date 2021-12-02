@@ -4,13 +4,13 @@
 
 #pragma once
 
+// Local Includes
+#include "portalservice.h"
+#include "portalwebsocketcomponent.h"
+
 // External Includes
 #include <component.h>
 #include <componentptr.h>
-#include <portalservice.h>
-#include <portalapicomponent.h>
-#include <websocketconnection.h>
-#include <apimessage.h>
 
 namespace nap
 {
@@ -27,7 +27,7 @@ namespace nap
 
 	public:
 
-		ComponentPtr<PortalAPIComponent> mPortalAPIComponent;	///< Property: 'PortalAPIComponent' the portal API component that can forward messages to this portal
+		ComponentPtr<PortalWebSocketComponent> mPortalWebSocketComponent;	///< Property: 'PortalWebSocketComponent' the portal WebSocket component that can forward messages to this portal
 	};
 
 
@@ -43,42 +43,25 @@ namespace nap
 		/**
 		 * Constructor
 		 */
-		PortalComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource) { }
+		PortalComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource) { }
 
 		/**
-		 * Registers the portal component with the portal service
+		 * Destructor
+		 */
+		virtual ~PortalComponentInstance();
+
+		/**
+		 * Initializes the portal component instance
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * De-registers the portal component with the portal service
+		 * The portal WebSocket component that can forward messages to this portal
 		 */
-		virtual void onDestroy() override;
-
-		/**
-		 * Get the portal API component that can forward messages to this portal
-		 */
-		const ComponentInstancePtr<PortalAPIComponent>& getPortalAPIComponent()
-		{
-			return mPortalAPIComponent;
-		};
-
-		// The portal API component that can forward messages to this portal
-		ComponentInstancePtr<PortalAPIComponent> mPortalAPIComponent = { this, &PortalComponent::mPortalAPIComponent };
-
-		/**
-		 * Called by the portal service when this component receives a portal request
-		 * @param connection the connection that performed the portal request
-		 */
-		void processPortalRequest(const WebSocketConnection& connection);
-
-		/**
-		 * Called by the portal service when this component receives a portal update
-		 * @param messages the API messages containing the updated portal item values
-		 */
-		void processPortalUpdate(const std::vector<APIMessage*>& messages);
+		ComponentInstancePtr<PortalWebSocketComponent> mPortalWebSocketComponent = { this, &PortalComponent::mPortalWebSocketComponent };
 
 	private:
 
