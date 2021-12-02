@@ -59,9 +59,15 @@ endif()
 package_module()
 
 # Package libartnet into platform release
+# Install docs
 install(FILES ${THIRDPARTY_DIR}/libartnet/source/AUTHORS DESTINATION thirdparty/libartnet)
 install(FILES ${THIRDPARTY_DIR}/libartnet/source/COPYING DESTINATION thirdparty/libartnet)
 install(FILES ${THIRDPARTY_DIR}/libartnet/source/README DESTINATION thirdparty/libartnet)
+
+# install includes
+install(DIRECTORY ${ARTNET_INCLUDE_DIRS}/ DESTINATION thirdparty/libartnet/include)
+
+# install libraries
 if(ANDROID)
     install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin/${ANDROID_ABI})
 elseif(UNIX AND NOT APPLE)
@@ -70,7 +76,8 @@ elseif(UNIX AND NOT APPLE)
 else()
     install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
 endif()
-install(DIRECTORY ${ARTNET_DIR}/source/artnet DESTINATION thirdparty/libartnet/include)
+
+# set artnet install name macOS
 if(WIN32)
     install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION thirdparty/libartnet/bin)
 elseif(APPLE)
