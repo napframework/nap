@@ -36,6 +36,40 @@ namespace nap
 	}
 
 
+	std::string getPortalEventTypeString(const EPortalEventType& type)
+	{
+		switch (type)
+		{
+		case EPortalEventType::Request:
+			return nap::portal::eventTypeRequest;
+
+		case EPortalEventType::Response:
+			return nap::portal::eventTypeResponse;
+
+		case EPortalEventType::Update:
+			return nap::portal::eventTypeUpdate;
+
+		default:
+			return nap::portal::eventTypeInvalid;
+		}
+	}
+
+
+	EPortalEventType getPortalEventType(std::string&& type)
+	{
+		if (type == portal::eventTypeRequest)
+			return EPortalEventType::Request;
+
+		if (type == portal::eventTypeResponse)
+			return EPortalEventType::Response;
+
+		if (type == portal::eventTypeUpdate)
+			return EPortalEventType::Update;
+
+		return EPortalEventType::Invalid;
+	}
+
+
 	EPortalEventType getPortalEventType(const APIEventPtr& event)
 	{
 		APIArgument* arg = event->getArgumentByName(portal::eventTypeArgName);
