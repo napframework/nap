@@ -4,6 +4,7 @@
 # RTMIDI_INCLUDE_DIRS - The RTMIDI include directories
 # RTMIDI_LIBRARIES_DEBUG - The libraries needed to use RTMIDI in debug mode
 # RTMIDI_LIBRARIES_RELEASE - The libraries needed to use RTMIDI in release mode
+# RTMIDID_DIST_FILES - Files reqruied when rtmidi is distributed, for example: licenses
 
 find_path(RTMIDI_DIR 
           NAMES
@@ -32,7 +33,15 @@ else()
     set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_LIBRARY_DIR}/librtmidi.so)
 endif()
 
+set(RTMIDI_DIST_FILES ${RTMIDI_DIR}/source/README.md)
+
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set RTMIDI_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(rtmidi REQUIRED_VARS RTMIDI_DIR RTMIDI_LIBRARY_DIR RTMIDI_INCLUDE_DIR RTMIDI_LIBRARIES_RELEASE RTMIDI_LIBRARIES_DEBUG)
+find_package_handle_standard_args(rtmidi REQUIRED_VARS 
+    RTMIDI_DIR 
+    RTMIDI_LIBRARY_DIR
+    RTMIDI_INCLUDE_DIR 
+    RTMIDI_LIBRARIES_RELEASE 
+    RTMIDI_LIBRARIES_DEBUG 
+    RTMIDI_DIST_FILES)

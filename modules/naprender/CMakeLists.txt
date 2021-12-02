@@ -58,7 +58,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 # Add includes
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
-    ${FREEIMAGE_INCLUDE_DIRS}
+    ${FREEIMAGE_INCLUDE_DIR}
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}
     ${SPIRVCROSS_INCLUDE_DIR}
@@ -153,22 +153,15 @@ elseif(UNIX)
 endif()
 
 # FreeImage
+install(FILES ${FREEIMAGE_DIST_FILES} DESTINATION thirdparty/FreeImage/license)
+install(FILES ${FREEIMAGE_INCLUDE_DIR}/FreeImage.h DESTINATION thirdparty/FreeImage/include)
 if (WIN32)
-    file(GLOB FREEIMAGE_LICENSE_FILES ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/license*.txt)
-    install(FILES ${FREEIMAGE_LICENSE_FILES} DESTINATION thirdparty/FreeImage/license)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.h DESTINATION thirdparty/FreeImage/include)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.lib DESTINATION thirdparty/FreeImage/lib)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll DESTINATION thirdparty/FreeImage/bin)
+    install(FILES ${FREEIMAGE_LIBS_DIR}/FreeImage.lib DESTINATION thirdparty/FreeImage/lib)
+    install(FILES ${FREEIMAGE_LIBS_DIR}/FreeImage.dll DESTINATION thirdparty/FreeImage/bin)
 elseif(APPLE)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/macos/x86_64/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/macos/x86_64/lib/libfreeimage-3.18.0.dylib DESTINATION thirdparty/FreeImage/lib)
-    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/macos/x86_64/license/
-            DESTINATION thirdparty/FreeImage/license
-            )
+    file(GLOB FREEIMAGE_DYLIBS ${FREEIMAGE_LIBS_DIR}/*.dylib*)
+    install(FILES ${FREEIMAGE_DYLIBS} DESTINATION thirdparty/FreeImage/lib)
 elseif(UNIX)
-    file(GLOB FREEIMAGE_LICENSE_FILES ${THIRDPARTY_DIR}/FreeImage/linux/${ARCH}/license*.txt)
-    install(FILES ${FREEIMAGE_LICENSE_FILES} DESTINATION thirdparty/FreeImage/license)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/linux/${ARCH}/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
     file(GLOB FREEIMAGE_DYLIBS ${THIRDPARTY_DIR}/FreeImage/linux/${ARCH}/lib/*.so*)
     install(FILES ${FREEIMAGE_DYLIBS} DESTINATION thirdparty/FreeImage/lib)
 endif()

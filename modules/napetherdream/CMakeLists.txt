@@ -22,7 +22,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIR})
 
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -58,7 +58,7 @@ else()
     install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
 endif()
 # Package etherdreamlib headers
-install(DIRECTORY ${ETHERDREAM_INCLUDE_DIRS}/ DESTINATION thirdparty/etherdream/include)    
+install(DIRECTORY ${ETHERDREAM_INCLUDE_DIR}/ DESTINATION thirdparty/etherdream/include)    
 if(WIN32)
     # Package etherdream IMPLIB on Windows
     get_target_property(ETHERDREAM_IMPLIB etherdreamlib IMPORTED_IMPLIB_RELEASE)

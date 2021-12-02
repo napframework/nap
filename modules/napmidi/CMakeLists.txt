@@ -39,7 +39,7 @@ endif()
 package_module()
 
 # Package rtmidi into platform release
-install(FILES ${RTMIDI_DIR}/linux/x86_64/README.md DESTINATION thirdparty/rtmidi)
+install(FILES ${RTMIDI_DIST_FILES} DESTINATION thirdparty/rtmidi)
 install(DIRECTORY ${RTMIDI_INCLUDE_DIR}/ DESTINATION thirdparty/rtmidi/include)
 if(MSVC)
     file(GLOB RTMIDI_STATIC_LIBS ${RTMIDI_LIBRARY_DIR}/rtmidi*${CMAKE_STATIC_LIBRARY_SUFFIX})

@@ -4,6 +4,7 @@
 # LIBSNDFILE_INCLUDE_DIRS - The LIBSNDFILE include directories
 # LIBSNDFILE_LIBRARIES - The libraries needed to use LIBSNDFILE
 # LIBSNDFILE_DEFINITIONS - Compiler switches required for using LIBSNDFILE
+# LIBSNDFILE_DIST_FILES - Files required when package is distributed (Licenses etc.)
 
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
@@ -40,6 +41,7 @@ else ()
     set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/linux/${ARCH}/include)
 endif ()
 
+set(LIBSNDFILE_DIST_FILES ${LIBSNDFILE_DIR}/source/COPYING)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBSNDFILE_FOUND to TRUE

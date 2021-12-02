@@ -83,7 +83,7 @@ endif()
 package_module()
 
 # Package mpg123 into platform release
-install(FILES ${THIRDPARTY_DIR}/mpg123/source/COPYING DESTINATION thirdparty/mpg123)
+install(FILES ${LIBMPG123_DIST_FILES} DESTINATION thirdparty/mpg123)
 install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
 if(WIN32)
     file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/*.dll)
@@ -116,9 +116,8 @@ elseif(UNIX)
 endif()
 
 # Package libsndfile into platform release
-install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/x86_64/COPYING DESTINATION thirdparty/libsndfile)
-install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
-              ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
+install(FILES ${LIBSNDFILE_DIST_FILES} DESTINATION thirdparty/libsndfile)
+install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
         DESTINATION thirdparty/libsndfile/include)
 if(WIN32)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
@@ -138,7 +137,7 @@ elseif(UNIX)
 endif()
 
 # Package portaudio into platform release
-install(FILES ${THIRDPARTY_DIR}/portaudio/linux/x86_64/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(FILES ${PORTAUDIO_DIST_FILES} DESTINATION thirdparty/portaudio)
 install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
 if(WIN32)
     install(FILES ${PORTAUDIO_LIBRARIES}

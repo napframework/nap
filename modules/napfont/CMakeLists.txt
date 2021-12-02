@@ -23,7 +23,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC src ${FREETYPE_INCLUDE_DIR})
 
 # preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -49,26 +49,20 @@ endif()
 package_module()
 
 # Package freetype into platform release
-file(GLOB FREETYPE_LICENSE_FILES ${THIRDPARTY_DIR}/freetype/source/docs/*.txt)
-install(FILES ${FREETYPE_LICENSE_FILES} 
-              ${THIRDPARTY_DIR}/freetype/source/README
-  DESTINATION thirdparty/freetype)
+install(FILES ${FREETYPE_DIST_FILES} DESTINATION thirdparty/freetype)
 
-install(DIRECTORY ${FREETYPE_INCLUDE_DIRS}/
-        DESTINATION thirdparty/freetype/include
+install(DIRECTORY ${FREETYPE_INCLUDE_DIR}/ DESTINATION thirdparty/freetype/include
         FILES_MATCHING PATTERN "*.h")
 
 if(MSVC)
-    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/x86_64/Release/freetype.dll DESTINATION thirdparty/freetype/bin/release)
-    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/x86_64/Release/freetype.lib DESTINATION thirdparty/freetype/bin/release)
-    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/x86_64/Debug/freetyped.dll DESTINATION thirdparty/freetype/bin/debug)
-    install(FILES ${THIRDPARTY_DIR}/freetype/msvc/x86_64/Debug/freetyped.lib DESTINATION thirdparty/freetype/bin/debug)
+    install(FILES ${FREETYPE_LIBS_RELEASE} ${FREETYPE_DLL_RELEASE} DESTINATION thirdparty/freetype/bin/release)
+    install(FILES ${FREETYPE_LIBS_DEBUG} ${FREETYPE_DLL_DEBUG} DESTINATION thirdparty/freetype/bin/debug)
 elseif(APPLE)
-    file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/macos/x86_64/lib/libfreetype*${CMAKE_SHARED_LIBRARY_SUFFIX})
+    file(GLOB RTFREETYPE_LIBS ${FREETYPE_LIBS_DIR}/libfreetype*${CMAKE_SHARED_LIBRARY_SUFFIX})
     install(FILES ${RTFREETYPE_LIBS}
             DESTINATION thirdparty/freetype/lib)
 elseif(UNIX)
-    file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/linux/${ARCH}/lib/libfreetype${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    file(GLOB RTFREETYPE_LIBS ${FREETYPE_LIBS_DIR}/libfreetype${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${RTFREETYPE_LIBS}
             DESTINATION thirdparty/freetype/lib)
 endif()

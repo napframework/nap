@@ -34,6 +34,9 @@ else()
         endif()
     endif()
 endif()
+
+set(CRYPTOPP_DIST_FILES ${CRYPTOPP_DIR}/License.txt)
+
 mark_as_advanced(CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DIR)
 mark_as_advanced(CRYPTOPP_LIB_DEBUG CRYPTOPP_DLL_DEBUG)
 mark_as_advanced(CRYPTOPP_LIB_RELEASE CRYPTOPP_DLL_RELEASE)
@@ -60,7 +63,7 @@ else()
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(cryptopp REQUIRED_VARS CRYPTOPP_DIR CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DEBUG CRYPTOPP_LIB_RELEASE)
+find_package_handle_standard_args(cryptopp REQUIRED_VARS CRYPTOPP_DIR CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIB_DEBUG CRYPTOPP_LIB_RELEASE CRYPTOPP_DIST_FILES)
  
 # Copy the cryptopp dynamic linked lib into the build directory
 macro(copy_cryptopp_dll)

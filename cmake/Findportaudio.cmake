@@ -4,7 +4,7 @@
 # PORTAUDIO_INCLUDE_DIRS - The PORTAUDIO include directories
 # PORTAUDIO_LIBRARIES - The libraries needed to use PORTAUDIO
 # PORTAUDIO_DEFINITIONS - Compiler switches required for using PORTAUDIO
-
+# PORTAUDIO_DIST_FILES - Files required when distributing (installing) portaudio
 
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
@@ -26,11 +26,13 @@ if(WIN32)
     set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/msvc/x86_64/lib)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/portaudio_x64.lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll)
+    set(PORTAUDIO_DIST_FILES ${PORTAUDIO_DIR}/msvc/x86_64/LICENSE.txt)
 elseif(APPLE)
     set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/macos/x86_64/include)
     set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/macos/x86_64/lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.2.dylib)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
+    set(PORTAUDIO_DIST_FILES ${PORTAUDIO_DIR}/macos/x86_64/LICENSE.txt)
 elseif(ANDROID)
     set(PORTAUDIO_DIR ${THIRDPARTY_DIR}/portaudio_opensles)
     set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/android/lib/Release/${ANDROID_ABI})
@@ -47,6 +49,7 @@ else()
     set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.so)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
+    set(PORTAUDIO_DIST_FILES ${PORTAUDIO_DIR}/linux/${ARCH}/LICENSE.txt)
 endif()
 
 

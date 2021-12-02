@@ -4,6 +4,7 @@
 # LIBMPG123_INCLUDE_DIRS - The LIBMPG123 include directories
 # LIBMPG123_LIBRARIES - The libraries needed to use LIBMPG123
 # LIBMPG123_DEFINITIONS - Compiler switches required for using LIBMPG123
+# LIBMPG123_DIST_FILES - Files required when distributed (License etc.)
 
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
@@ -41,11 +42,12 @@ else()
     set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/include)
 endif()
 
+set(LIBMPG123_DIST_FILES ${THIRDPARTY_DIR}/mpg123/source/COPYING)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBMPG123_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libmpg123 REQUIRED_VARS LIBMPG123_DIR LIBMPG123_LIBRARIES LIBMPG123_INCLUDE_DIR)
+find_package_handle_standard_args(libmpg123 REQUIRED_VARS LIBMPG123_DIR LIBMPG123_LIBRARIES LIBMPG123_INCLUDE_DIR LIBMPG123_DIST_FILES)
 
 add_library(libmpg123 SHARED IMPORTED)
 set_target_properties(libmpg123 PROPERTIES
