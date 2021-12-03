@@ -72,7 +72,7 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 
 ## System Compatibility
 
-Currently, whether working with the packaged framework release or against the framework source, we support the following operating systems:
+Currently, whether working with the packaged framework release or against the framework source, we support the following architectures and operating systems:
 
 **x86**
 ```
