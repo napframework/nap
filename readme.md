@@ -7,6 +7,9 @@
 	*	[Documentation](#documentation)
 	*	[Gallery](#gallery)
 *	[Where to Start](#where-to-start)
+	* [System Compatibility](#system-compatibility)
+	* [Binary Packages](#binary-packages)
+	* [Raspberry Pi](#raspberry-pi)
 *	[Compilation](#compilation)
 	*	[Dependencies](#dependencies)
 	*	[Create the Solution](#create-the-solution)
@@ -67,19 +70,33 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 
 # Where to Start
 
+## System Compatibility
+
 Currently, whether working with the packaged framework release or against the framework source, we support the following operating systems:
 
-- x86_64
-	- Windows 10, Visual Studio 2019 (v142)
-	- Ubuntu Linux LTS (v20.04)
-	- macOS Catalina (v10.15)
-- ARM
-	- Raspberry Pi OS (v10) *armhf*
-	- Ubuntu Linux LTS (v20.04) *arm64* (experimental)
+**x86**
+```
+x86-64: Windows 10, Visual Studio 2019 (v142)
+x86-64: Ubuntu Linux LTS (v20.04)
+x86-64: macOS Catalina (v10.15)
+```
+**ARM**
+```
+armhf: Raspberry Pi OS (v10)
+arm64: Ubuntu Linux LTS (v20.04) *experimental*
+```
 
-NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and for most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release. 
+## Binary Packages
+
+NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and [github](https://github.com/napframework/nap/releases). For most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release, which is created from source. 
 
 When working against a binary package, follow the official [installation](https://www.napframework.com/doxygen/) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
+
+## Raspberry Pi
+
+Only the Raspberry Pi 4 is 'fully' supported. Targets that make use of the render engine will not run on older Raspberry Pi models because there is no support for Vulkan. Headless applications and services might work.
+
+We recommend using the `Debian` buster-backports repository to install the updated `mesa-vulkan-drivers` package. Unfortunately Raspberry Pi OS does not have a buster-backports repository so you will have to use the one from `Debian`. This step won't be necessary once Raspberry Pi OS (and our support) moves on to being based on Debian Bullseye (v11).
 
 # Compilation
 
