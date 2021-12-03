@@ -58,8 +58,18 @@ else()
         ${SOEM_DIR}/include/soem)
 endif()
 
+# SOEM Source Code Directory
+find_path(SOEM_SOURCE_DIR
+    NO_CMAKE_FIND_ROOT_PATH
+    NAMES LICENSE
+    HINTS ${THIRDPARTY_DIR}/soem/source
+)
+
+# SOEM License
+set(SOEM_DIST_FILES ${SOEM_SOURCE_DIR}/LICENSE)
+
 mark_as_advanced(SOEM_INCLUDE_DIRS)
 
 # promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(soem REQUIRED_VARS SOEM_DIR)
+find_package_handle_standard_args(soem REQUIRED_VARS SOEM_DIR SOEM_SOURCE_DIR)

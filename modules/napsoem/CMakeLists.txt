@@ -36,9 +36,8 @@ copy_module_json_to_bin()
 # Package into platform release
 package_module()
 
-# Install readme
-install(FILES ${THIRDPARTY_DIR}/soem/source/README.md DESTINATION thirdparty/soem)
-install(FILES ${THIRDPARTY_DIR}/soem/source/LICENSE DESTINATION thirdparty/soem)
+# Install license
+install(FILES ${SOEM_DIST_FILES} DESTINATION thirdparty/soem)
 
 # Install include
 install(DIRECTORY ${SOEM_DIR}/include DESTINATION thirdparty/soem)

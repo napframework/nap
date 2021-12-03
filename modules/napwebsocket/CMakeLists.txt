@@ -35,9 +35,5 @@ copy_module_json_to_bin()
 package_module()
 
 # Package websocket into platform release
-install(FILES ${THIRDPARTY_DIR}/websocketpp/readme.md
-              ${THIRDPARTY_DIR}/websocketpp/changelog.md
-
-        DESTINATION thirdparty/websocketpp
-        )
+install(FILES ${WEBSOCKETPP_DIST_FILES} DESTINATION thirdparty/websocketpp)
 install(DIRECTORY ${WEBSOCKETPP_INCLUDE_DIRS}/ DESTINATION thirdparty/websocketpp/include)
