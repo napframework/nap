@@ -61,7 +61,7 @@ elseif(APPLE)
     # Ensure our yoctopuce install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD
-                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libyocto.dylib ${YOCTO_DYLIB}
+                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libyocto.dylib ${YOCTO_LIBS_RELEASE}
                        COMMENT "Setting install name for yoctopuce")
 
     foreach(build_type Release Debug)
