@@ -162,7 +162,7 @@ elseif(UNIX)
 endif()
 
 # SDL2
-install(DIRECTORY ${SDL2_INCLUDE_DIR} DESTINATION thirdparty/SDL2)
+install(DIRECTORY ${SDL2_INCLUDE_DIR} DESTINATION thirdparty/SDL2/include)
 install(FILES ${SDL2_DIST_FILES} DESTINATION thirdparty/SDL2)
 if (WIN32)
     install(DIRECTORY ${SDL2_LIBS_DIR}/ DESTINATION thirdparty/SDL2/lib)
