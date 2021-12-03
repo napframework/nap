@@ -41,7 +41,7 @@ if(WIN32)
 elseif(APPLE)
     set(assimp_DIR ${THIRDPARTY_DIR}/assimp/macos/x86_64/lib/cmake/assimp-3.3)      
 elseif(UNIX)
-    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/linux/${AcdRCH}/lib/cmake/assimp-3.3)   
+    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/linux/${ARCH}/lib/cmake/assimp-3.3)   
 endif()
 find_package(assimp REQUIRED)
 

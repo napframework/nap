@@ -22,7 +22,7 @@ elseif(UNIX)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${VULKANSDK_ROOT_DIR}/vulkansdk/linux/${ARCH}
+        HINTS ${VULKANSDK_ROOT_DIR}/linux/${ARCH}
         )
 endif()
 
@@ -80,6 +80,7 @@ mark_as_advanced(VULKANSDK_INCLUDE_DIRS)
 mark_as_advanced(VULKANSDK_LIBS_DIR)
 mark_as_advanced(VULKANSDK_LIBS)
 mark_as_advanced(VULKANSDK_DIR)
+mark_as_advanced(VULKANSDK_ROOT_DIR)
 
 # Promote package for find
 include(FindPackageHandleStandardArgs)
