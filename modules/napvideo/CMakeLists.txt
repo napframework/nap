@@ -51,7 +51,7 @@ endif()
 package_module()
 
 # Package dependent into release --
-install(DIRECTORY ${FFMPEG_LICENSE_DIR} DESTINATION thirdparty/FFmpeg)
+install(DIRECTORY ${FFMPEG_LICENSE_DIR}/ DESTINATION thirdparty/FFmpeg)
 install(FILES ${FFMPEG_DIST_FILES} DESTINATION thirdparty/FFmpeg)
 install(DIRECTORY ${FFMPEG_DIR}/ DESTINATION thirdparty/FFmpeg)
 
