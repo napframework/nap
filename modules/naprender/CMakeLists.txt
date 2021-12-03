@@ -114,7 +114,8 @@ if(WIN32)
     copy_base_windows_graphics_dlls()
 
     # Copy over Assimp to build directory
-    copy_files_to_bin(${ASSIMP_ROOT_DIR}/bin/assimp-vc140-mt.dll)
+    file(GLOB ASSIMP_DLLS ${ASSIMP_ROOT_DIR}/bin/*.dll)
+    copy_files_to_bin(${ASSIMP_DLLS})
 endif()
 
 # Package into platform release
