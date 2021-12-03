@@ -41,10 +41,17 @@ else ()
     set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/linux/${ARCH}/include)
 endif ()
 
+find_path(LIBSNDFILE_SOURCE_DIR
+    NAMES COPYING
+    HINTS 
+    ${LIBSNDFILE_DIR}/source
+    )
+set(LIBSNDFILE_DIST_FILES ${LIBSNDFILE_SOURCE_DIR}/COPYING)
+
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBSNDFILE_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libsndfile REQUIRED_VARS LIBSNDFILE_DIR LIBSNDFILE_LIBRARIES LIBSNDFILE_INCLUDE_DIR)
+find_package_handle_standard_args(libsndfile REQUIRED_VARS LIBSNDFILE_DIR LIBSNDFILE_SOURCE_DIR LIBSNDFILE_LIB_DIR LIBSNDFILE_INCLUDE_DIR)
 
 add_library(libsndfile SHARED IMPORTED)
 set_target_properties(libsndfile PROPERTIES

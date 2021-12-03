@@ -58,9 +58,9 @@ if(WIN32)
 
     # Copy audio DLLs to project build directory
     set(FILES_TO_COPY
-        ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll
-        ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll
-        ${LIBMPG123_LIB_DIR}/libmpg123.dll
+        ${LIBSNDFILE_LIBS_RELEASE_DLL}
+        ${PORTAUDIO_LIBS_RELEASE_DLL}
+        ${LIBMPG123_LIBS_RELEASE_DLL}
         )
 
     copy_files_to_bin(${FILES_TO_COPY})
