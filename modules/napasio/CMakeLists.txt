@@ -32,7 +32,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PUBLIC ASI
 
 # additional definitions
 if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=0x0501)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC WIN32_LEAN_AND_MEAN)
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
