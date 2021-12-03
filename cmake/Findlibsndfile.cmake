@@ -41,8 +41,6 @@ else ()
     set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/linux/${ARCH}/include)
 endif ()
 
-set(LIBSNDFILE_DIST_FILES ${LIBSNDFILE_DIR}/source/COPYING)
-
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBSNDFILE_FOUND to TRUE
 # if all listed variables are TRUE

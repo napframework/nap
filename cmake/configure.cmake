@@ -110,7 +110,7 @@ endmacro()
 macro(copy_base_windows_graphics_dlls)
     # Copy over some window DLLs
     set(FILES_TO_COPY
-        ${THIRDPARTY_DIR}/sdl2/msvc/x86_64/lib/x64/SDL2.dll
+        ${THIRDPARTY_DIR}/sdl2/msvc/x86_64/lib/SDL2.dll
         )
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()

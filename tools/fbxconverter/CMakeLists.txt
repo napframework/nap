@@ -83,7 +83,7 @@ if (WIN32)
     install(FILES ${THIRDPARTY_DIR}/assimp/msvc/x86_64/bin/assimp-vc140-mt.dll
                   ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll
                   ${THIRDPARTY_DIR}/rttr/msvc/x86_64/bin/rttr_core.dll
-                  ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/x64/SDL2.dll
+                  ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/SDL2.dll
                   ${THIRDPARTY_DIR}/freetype/msvc/x86_64/lib/Release/freetype.dll
                   ${PYTHON_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
