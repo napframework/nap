@@ -94,7 +94,7 @@ When working against a binary package, follow the official [installation](https:
 
 ## Raspberry Pi
 
-Only the Raspberry Pi 4 is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration, using the `LLVMpipe` instead of the integrated `Mali GPU`. Headless applications and services should run on pretty much all models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4.
+Only the Raspberry Pi 4 is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration, using the `LLVMpipe` instead of the integrated `Mali GPU`. Headless applications and services should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4.
 
 We recommend using the `Debian` buster-backports repository to install the updated `mesa-vulkan-drivers` package. Unfortunately Raspberry Pi OS does not have a buster-backports repository so you will have to use the one from `Debian`. This step won't be necessary once Raspberry Pi OS (and our support) moves on to being based on Debian Bullseye (v11).
 
