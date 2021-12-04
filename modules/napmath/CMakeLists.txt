@@ -33,8 +33,8 @@ copy_module_json_to_bin()
 package_module()
 
 # Package GLM
-install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION thirdparty/glm)
-install(DIRECTORY ${THIRDPARTY_DIR}/glm/glm/ DESTINATION thirdparty/glm)
+install(FILES ${GLM_DIR}/copying.txt DESTINATION thirdparty/glm)
+install(DIRECTORY ${GLM_DIR}/glm/ DESTINATION thirdparty/glm)
 
 if (WIN32)
     # Install for fbxconverter

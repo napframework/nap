@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import json
 import os
+from platform import machine
 from subprocess import Popen
 import sys
 
@@ -163,11 +164,17 @@ def get_cmake_path():
         # Running against Source
         cmake_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
         if sys.platform.startswith('linux'):
-            cmake = os.path.join(cmake_root, 'linux', 'install', 'bin', 'cmake')
+            arch = machine()
+            if arch == 'x86_64':
+                cmake = os.path.join(cmake_root, 'linux', 'x86_64', 'bin', 'cmake')
+            elif arch == 'aarch64':
+                cmake = os.path.join(cmake_root, 'linux', 'arm64', 'bin', 'cmake')
+            else:
+                cmake = os.path.join(cmake_root, 'linux', 'armhf', 'bin', 'cmake')
         elif sys.platform == 'darwin':
-            cmake = os.path.join(cmake_root, 'osx', 'install', 'bin', 'cmake')
+            cmake = os.path.join(cmake_root, 'macos', 'x86_64', 'bin', 'cmake')
         else:
-            cmake = os.path.join(cmake_root, 'msvc', 'install', 'bin', 'cmake.exe')
+            cmake = os.path.join(cmake_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
 
 def get_full_project_module_requirements(framework_root, project_name, project_path):
     """Fetch deep module dependencies for a project"""

@@ -1,11 +1,21 @@
-find_path(WEBSOCKETPP_DIR 
+# Websocketpp Source Directory
+find_path(WEBSOCKETPP_ROOT_DIR
+    NAMES COPYING
+    HINTS ${THIRDPARTY_DIR}/websocketpp
+    )
+set(WEBSOCKETPP_DIST_FILES ${WEBSOCKETPP_ROOT_DIR}/COPYING)
+
+# Websocketpp dist directory, header only
+find_path(WEBSOCKETPP_DIR
           NAMES include/websocketpp/version.hpp
-          HINTS ${THIRDPARTY_DIR}/websocketpp/install
+          HINTS ${WEBSOCKETPP_ROOT_DIR}/install
           )
+set(WEBSOCKETPP_INCLUDE_DIR ${WEBSOCKETPP_DIR}/include)
 
 mark_as_advanced(WEBSOCKETPP_DIR)
-set(WEBSOCKETPP_INCLUDE_DIRS ${WEBSOCKETPP_DIR}/include)
+mark_as_advanced(WEBSOCKETPP_ROOT_DIR)
+mark_as_advanced(WEBSOCKETPP_INCLUDE_DIR)
 
 # promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(websocketpp REQUIRED_VARS WEBSOCKETPP_DIR)
+find_package_handle_standard_args(websocketpp REQUIRED_VARS WEBSOCKETPP_ROOT_DIR WEBSOCKETPP_DIR)
