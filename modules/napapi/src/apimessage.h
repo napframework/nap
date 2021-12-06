@@ -79,6 +79,8 @@ namespace nap
 		void copyArguments(APIEvent& apiEvent);
 	};
 
+	using APIMessagePtr = std::unique_ptr<nap::APIMessage>;
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
