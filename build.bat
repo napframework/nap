@@ -10,4 +10,4 @@ if not exist %THIRDPARTY_DIR% (
 
 set PYTHONPATH=
 set PYTHONHOME=
-%~dp0\..\thirdparty\python\msvc\python-embed-amd64\python %~dp0\build_tools\source_cli_build\build.py %*
+%~dp0\..\thirdparty\python\msvc\x86_64\python %~dp0\build_tools\source_cli_build\build.py %*

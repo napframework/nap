@@ -19,53 +19,73 @@
 if(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
     # in cache already
     set(FFMPEG_FOUND TRUE)
+
 else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
+    
+    # Find root based on archive that is distributed
+    find_path(FFMPEG_ROOT_DIR
+        NAMES ffmpeg-3.4.2.tar.xz
+        HINTS ${THIRDPARTY_DIR}/ffmpeg
+        )
+
+    # Distributed archive
+    set(FFMPEG_DIST_FILES ${FFMPEG_ROOT_DIR}/ffmpeg-3.4.2.tar.xz)
+
     if(APPLE)
+        set(FFMPEG_DIR ${FFMPEG_ROOT_DIR}/macos/x86_64)
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
-                  HINTS ${THIRDPARTY_DIR}/ffmpeg/osx/install/include
+                  HINTS ${FFMPEG_DIR}/include
                   )
     elseif(UNIX)
+        set(FFMPEG_DIR ${FFMPEG_ROOT_DIR}/linux/${ARCH})
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
-                  HINTS ${THIRDPARTY_DIR}/ffmpeg/linux/install/include
+                  HINTS ${FFMPEG_DIR}/include
                   )
     else()
+        set(FFMPEG_DIR ${FFMPEG_ROOT_DIR}/msvc/x86_64)
         find_path(FFMPEG_AVCODEC_INCLUDE_DIR
                   NAMES libavcodec/avcodec.h
-                  HINTS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/include
+                  HINTS ${FFMPEG_DIR}/include
                   )
     endif()
 
+    # Licenses
+    find_path(FFMPEG_LICENSE_DIR
+        NAMES LICENSE.md
+        PATHS ${FFMPEG_ROOT_DIR}/licenses
+        )
+
     find_library(FFMPEG_LIBAVCODEC
                  NAMES avcodec
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 PATHS ${FFMPEG_ROOT_DIR}/msvc/x86_64/bin
+                       ${FFMPEG_ROOT_DIR}/macos/x86_64/lib
+                       ${FFMPEG_ROOT_DIR}/linux/${ARCH}/lib
                  NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVFORMAT
                  NAMES avformat
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 PATHS ${FFMPEG_ROOT_DIR}/msvc/x86_64/bin
+                       ${FFMPEG_ROOT_DIR}/macos/x86_64/lib
+                       ${FFMPEG_ROOT_DIR}/linux/${ARCH}/lib
                  NO_DEFAULT_PATH
                  )
 
     find_library(FFMPEG_LIBAVUTIL
                  NAMES avutil
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib
+                 PATHS ${FFMPEG_ROOT_DIR}/msvc/x86_64/bin
+                       ${FFMPEG_ROOT_DIR}/macos/x86_64/lib
+                       ${FFMPEG_ROOT_DIR}/linux/${ARCH}/lib
                  NO_DEFAULT_PATH
                  )
 				 
     find_library(FFMPEG_SWRESAMPLE
                  NAMES swresample
-                 PATHS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin
-                       ${THIRDPARTY_DIR}/ffmpeg/osx/install/lib
-                       ${THIRDPARTY_DIR}/ffmpeg/linux/install/lib                 
+                 PATHS ${FFMPEG_ROOT_DIR}/msvc/x86_64/bin
+                       ${FFMPEG_ROOT_DIR}/macos/x86_64/lib
+                       ${FFMPEG_ROOT_DIR}/linux/${ARCH}/lib                 
                  NO_DEFAULT_PATH
                  )				 
 
@@ -97,4 +117,4 @@ else(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 endif(FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(FFmpeg REQUIRED_VARS FFMPEG_LIBRARIES)
+find_package_handle_standard_args(FFmpeg REQUIRED_VARS FFMPEG_LIBRARIES FFMPEG_DIST_FILES FFMPEG_LICENSE_DIR)

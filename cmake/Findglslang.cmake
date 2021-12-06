@@ -3,13 +3,7 @@ if(APPLE)
     find_path(
         GLSLANG_DIR
         NAMES include/glslang/Public/ShaderLang.h
-        HINTS ${THIRDPARTY_DIR}/glslang/osx/install
-        )
-
-    find_path(
-        GLSLANG_DIR
-        NAMES include/glslang/Public/ShaderLang.h
-        HINTS ${THIRDPARTY_DIR}/glslang/linux/install
+        HINTS ${THIRDPARTY_DIR}/glslang/macos/x86_64
         )
 
     # Static libs
@@ -45,7 +39,7 @@ elseif(UNIX)
     find_path(
         GLSLANG_DIR
         NAMES include/glslang/Public/ShaderLang.h
-        HINTS ${THIRDPARTY_DIR}/glslang/linux/install
+        HINTS ${THIRDPARTY_DIR}/glslang/linux/${ARCH}
         )
 
     # Static libs
@@ -81,7 +75,7 @@ elseif(WIN32)
     find_path(
         GLSLANG_DIR
         NAMES include/glslang/Public/ShaderLang.h
-        HINTS ${THIRDPARTY_DIR}/glslang/msvc/install
+        HINTS ${THIRDPARTY_DIR}/glslang/msvc/x86_64
         )
 
         # Static libs

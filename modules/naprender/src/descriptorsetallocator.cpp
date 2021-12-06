@@ -88,9 +88,9 @@ namespace nap
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &layout;
 
-		VkDescriptorSet descriptor_set = nullptr;
+		VkDescriptorSet descriptor_set = VK_NULL_HANDLE;
 		vkAllocateDescriptorSets(mDevice, &allocInfo, &descriptor_set);
-		assert(descriptor_set != nullptr);
+		assert(descriptor_set != VK_NULL_HANDLE);
 		free_descriptor_pool->mAllocatedDescriptorSets.push_back(descriptor_set);
 		return descriptor_set;
 	}

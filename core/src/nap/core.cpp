@@ -407,7 +407,7 @@ namespace nap
 #ifdef _WIN32
 		const std::string platformPrefix = "msvc";
 #elif defined(__APPLE__)
-		const std::string platformPrefix = "osx";
+		const std::string platformPrefix = "macos";
 #else // __unix__
 		const std::string platformPrefix = "linux";
 #endif
@@ -430,7 +430,7 @@ namespace nap
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
-			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "python-embed-amd64", "python36.zip"});
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "x86_64", "python36.zip"});
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #elif ANDROID
@@ -452,7 +452,7 @@ namespace nap
 		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
-			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, "install"});
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, sBuildArch});
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif

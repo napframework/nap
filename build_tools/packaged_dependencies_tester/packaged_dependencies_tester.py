@@ -9,6 +9,7 @@ import datetime
 import json
 from multiprocessing import cpu_count
 import os
+from platform import machine
 import re
 from subprocess import call, Popen, PIPE, check_output
 import shlex
@@ -21,6 +22,8 @@ import sys
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
 WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
+if sys.platform.startswith('linux') and not machine() == 'x86_64':
+    WAIT_SECONDS_FOR_PROCESS_HEALTH = 15
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -45,6 +48,8 @@ NAPKIN_SUCCESS_EXIT_CODE = 180
 
 # Seconds to wait for a Napkin load project and exit with expected exit code
 NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
+if sys.platform.startswith('linux') and not machine() == 'x86_64':
+    WAIT_SECONDS_FOR_PROCESS_HEALTH = 80
 
 # Build directory names
 LINUX_BUILD_DIR = 'build_dir'
@@ -54,9 +59,18 @@ MSVC_BUILD_DIR = 'msvc64'
 # List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
 # to these paths helps us identify libraries being source from strange locations, hand installed libs.
 # TODO Handle other architectures.. eventually
-LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', 
-                                   '/lib/x86_64-linux-gnu', 
-                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu/']
+LINUX_ACCEPTED_SYSTEM_LIB_PATHS = []
+if sys.platform.startswith('linux'):
+    arch = machine()
+    if arch == 'x86_64':
+        LINUX_ACCEPTED_SYSTEM_LIB_PATHS.extend(['/usr/lib/x86_64-linux-gnu/', 
+            '/lib/x86_64-linux-gnu', 
+            '/usr/lib/mesa-diverted/x86_64-linux-gnu/'])
+    elif arch == 'aarch64':
+        LINUX_ACCEPTED_SYSTEM_LIB_PATHS.append('/usr/lib/aarch64-linux-gnu/')
+    else:
+        LINUX_ACCEPTED_SYSTEM_LIB_PATHS.extend(['/usr/lib/arm-linux-gnueabihf/',
+            '/opt/vc/lib/'])
 
 # List of libraries we accept being sourced from the system paths defined above. Notes:
 # - These currently support Ubuntu 20.04/20.10 and are likely to require minor tweaks for new versions
@@ -70,8 +84,9 @@ LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/',
 LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'i965_dri',
     'iris_dri',
-    r'ld-[0-9]+\.[0-9]+',
+   r'ld-[0-9]+\.[0-9]+',
     'libFLAC',
+    'libICE',
     'libGL',
     'libGLX',
     'libGLX_mesa',
@@ -79,6 +94,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libGLdispatch',
     'libLLVM-[0-9]+',
     'libOpenCL',
+    'libSM',
     'libVkLayer_MESA_device_select',
     'libX11',
     'libX11-xcb',
@@ -89,10 +105,15 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libXext',
     'libXfixes',
     'libXi',
+    'libXinerama',
+    'libXrandr',
     'libXrender',
+    'libXss',
+    'libXtst',
     'libXxf86vm',
     'libaom',
     'libapparmor',
+    'libarmmem-v7l',
     'libasound',
     'libasound_module_pcm_a52',
     'libasound_module_pcm_jack',
@@ -105,24 +126,29 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libasound_module_rate_samplerate',
     'libasound_module_rate_speexrate',
     'libasyncns',
+    'libatomic',
     'libavcodec',
     'libavresample',
     'libavutil',
+    'libbcm_host',
     'libblkid',
     'libbrotlicommon',
     'libbrotlidec',
     'libbsd',
-    r'libc-[0-9]+\.[0-9]+',
+    'libbz2',
+   r'libc-[0-9]+\.[0-9]+',
     'libcairo',
     'libcairo-gobject',
+    'libcap',
     'libcodec2',
     'libcom_err',
+   r'libcroco-[0-9]+\.[0-9]+',
     'libcuda',
     'libdatrie',
     'libdav1d',
-    r'libdb-[0-9]+\.[0-9]+',
+   r'libdb-[0-9]+\.[0-9]+',
     'libdbus-1',
-    r'libdl-[0-9]+\.[0-9]+',
+   r'libdl-[0-9]+\.[0-9]+',
     'libdrm',
     'libdrm_amdgpu',
     'libdrm_intel',
@@ -137,40 +163,46 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libfribidi',
     'libgcc_s',
     'libgcrypt',
-    r'libgdk_pixbuf-[0-9]+\.[0-9]+',
-    r'libgio-[0-9]+\.[0-9]+',
+   r'libgdk_pixbuf-[0-9]+\.[0-9]+',
+   r'libgio-[0-9]+\.[0-9]+',
     'libglapi',
     'libglib-2.0',
-    r'libglib-[0-9]+\.[0-9]+',
-    r'libgmodule-[0-9]+\.[0-9]+',
-    r'libgobject-[0-9]+\.[0-9]+',
+   r'libglib-[0-9]+\.[0-9]+',
+   r'libgmodule-[0-9]+\.[0-9]+',
+   r'libgobject-[0-9]+\.[0-9]+',
     'libgomp',
     'libgpg-error',
     'libgraphite2',
     'libgsm',
     'libgssapi_krb5',
-    r'libgthread-[0-9]+\.[0-9]+',
+   r'libgthread-[0-9]+\.[0-9]+',
     'libharfbuzz',
     'libicudata',
+    'libicui18n',
     'libicuuc',
     'libjack',
+    'libjpeg',
     'libk5crypto',
     'libkeyutils',
     'libkrb5',
     'libkrb5support',
     'liblz4',
     'liblzma',
-    r'libm-[0-9]+\.[0-9]+',
+   r'libm-[0-9]+\.[0-9]+',
+    'libmd',
     'libmfx',
     'libmount',
     'libmp3lame',
-    r'libmvec-[0-9]+\.[0-9]+',
+    'libmmal_core',
+    'libmmal_util',
+    'libmmal_vc_client',
+   r'libmvec-[0-9]+\.[0-9]+',
     'libnsl',
-    r'libnsl-[0-9]+\.[0-9]+',
-    r'libnss_compat-[0-9]+\.[0-9]+',
-    r'libnss_files-[0-9]+\.[0-9]+',
+   r'libnsl-[0-9]+\.[0-9]+',
+   r'libnss_compat-[0-9]+\.[0-9]+',
+   r'libnss_files-[0-9]+\.[0-9]+',
     'libnss_nis',
-    r'libnss_nis-[0-9]+\.[0-9]+',
+   r'libnss_nis-[0-9]+\.[0-9]+',
     'libnuma',
     'libnvidia-cbl',
     'libnvidia-compiler',
@@ -183,21 +215,21 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libogg',
     'libopenjp2',
     'libopus',
-    r'libpango-[0-9]+\.[0-9]+',
-    r'libpangocairo-[0-9]+\.[0-9]+',
-    r'libpangoft2-[0-9]+\.[0-9]+',
+   r'libpango-[0-9]+\.[0-9]+',
+   r'libpangocairo-[0-9]+\.[0-9]+',
+   r'libpangoft2-[0-9]+\.[0-9]+',
     'libpciaccess',
     'libpcre',
     'libpcre2-8',
     'libpixman-1',
     'libpng16',
-    r'libpthread-[0-9]+\.[0-9]+',
+   r'libpthread-[0-9]+\.[0-9]+',
     'libpulse',
-    r'libpulsecommon-[0-9]+\.[0-9]+',
-    r'libpython[0-9]+\.[0-9]+m',
-    r'libresolv-[0-9]+\.[0-9]+',
+   r'libpulsecommon-[0-9]+\.[0-9]+',
+   r'libpython[0-9]+\.[0-9]+m',
+   r'libresolv-[0-9]+\.[0-9]+',
     'librsvg-2',
-    r'librt-[0-9]+\.[0-9]+',
+   r'librt-[0-9]+\.[0-9]+',
     'libsamplerate',
     'libselinux',
     'libsensors',
@@ -206,7 +238,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libsndfile',
     'libsoxr',
     'libspeex',
-    r'libstdc\+\+',
+   r'libstdc\+\+',
     'libswresample',
     'libsystemd',
     'libthai',
@@ -216,17 +248,22 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libtirpc',
     'libtwolame',
     'libudev',
-    r'libusb-[0-9]+\.[0-9]+',
-    r'libutil-[0-9]+\.[0-9]+',
+   r'libusb-[0-9]+\.[0-9]+',
+   r'libutil-[0-9]+\.[0-9]+',
     'libuuid',
     'libva',
     'libva-drm',
     'libva-x11',
+    'libvchiq_arm',
+    'libvcos',
+    'libvcsm',
     'libvdpau',
     'libvorbis',
     'libvorbisenc',
     'libvpx',
+    'libvulkan_broadcom',
     'libvulkan_intel',
+    'libvulkan_lvp',
     'libvulkan_radeon',
     'libwavpack',
     'libwayland-client',
@@ -239,11 +276,22 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxcb-dri2',
     'libxcb-dri3',
     'libxcb-glx',
+    'libxcb-icccm',
+    'libxcb-image',
+    'libxcb-keysyms',
     'libxcb-present',
     'libxcb-randr',
     'libxcb-render',
+    'libxcb-render-util',
+    'libxcb-shape',
     'libxcb-shm',
     'libxcb-sync',
+    'libxcb-util',
+    'libxcb-xinerama',
+    'libxcb-xkb',
+    'libxcb-xfixes',
+    'libxkbcommon',
+    'libxkbcommon-x11',
     'libxml2',
     'libxshmfence',
     'libxvidcore',
@@ -251,7 +299,9 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libz3',
     'libzstd',
     'libzvbi',
-    'nouveau_dri'
+    'nouveau_dri',
+    'sun4i-drm_dri',
+    'vc4_dri'
 ]
 
 # List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
