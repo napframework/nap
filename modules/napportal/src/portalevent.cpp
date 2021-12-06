@@ -15,25 +15,29 @@ namespace nap
 {
 	bool PortalEvent::toAPIMessageJSON(std::string& outJSON, utility::ErrorState& error)
 	{
-		std::vector<APIMessage> messages;
+		// Objects to write to JSON
 		nap::rtti::ObjectList objects;
 
 		// Add portal event header
 		APIEventPtr header_event = createPortalEventHeader(mHeader);
-		messages.emplace_back(*header_event);
-		objects.emplace_back(&messages.back());
+		APIMessagePtr header_message = std::make_unique<APIMessage>(*header_event);
+		objects.emplace_back(header_message.get());
 
 		// Add portal item events
+		std::vector<APIMessagePtr> messages;
 		for (APIEvent* event : getAPIEvents())
 		{
-			messages.emplace_back(*event);
-			objects.emplace_back(&messages.back());
+			APIMessagePtr message = std::make_unique<APIMessage>(*event);
+			objects.emplace_back(message.get());
+			messages.emplace_back(std::move(message));
 		}
 
+		// Write objects to JSON
 		rtti::JSONWriter writer;
 		if (!serializeObjects(objects, writer, error))
 			return false;
 
+		// Get result
 		outJSON = writer.GetJSON();
 		return true;
 	}
