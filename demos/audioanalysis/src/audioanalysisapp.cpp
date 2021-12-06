@@ -59,9 +59,8 @@ namespace nap
         levelMeter->setCenterFrequency(mAnalysisFrequency);
         levelMeter->setBandWidth(mAnalysisBand);
         levelMeter->setFilterGain(1.f);
-        
+
         // Resize the vector containing the results of the analysis
-        mPlotvalues.resize(512, 0);
 		return true;
 	}
 	
@@ -83,10 +82,15 @@ namespace nap
         assert(input);
         assert(player);
 
-		// Store new value in array
-		mPlotvalues[mTickIdx] = levelMeter->getLevel() * mAnalysisGain;	// save new value so it can be subtracted later
-		if (++mTickIdx == mPlotvalues.size())							// increment current sample index
-			mTickIdx = 0;
+		// Store new value in array at 60 hz, allows update to run independent from framerate
+		static const double d = 1.0 / 60.0;
+		if (mTimer.getElapsedTime() > d)
+		{
+			mPlotvalues[mTickIdx] = levelMeter->getLevel() * mAnalysisGain;	// save new value so it can be subtracted later
+			if (++mTickIdx == mPlotvalues.size())							// increment current sample index
+				mTickIdx = 0;
+			mTimer.reset();
+		}
 
 		// Draw some gui elements
 		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
@@ -120,7 +124,7 @@ namespace nap
                     break;
             }
         }
-        
+
         // Update the audio level meter analysis component
         levelMeter->setCenterFrequency(mAnalysisFrequency);
         levelMeter->setBandWidth(mAnalysisBand);
