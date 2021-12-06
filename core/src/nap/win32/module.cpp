@@ -98,7 +98,7 @@ namespace nap
 
 		if (!utility::fileExists(modulefile))
 		{
-			errorString = "File not found: " + modulefile;
+			errorString = "File not found";
 			return nullptr;
 		}
 
@@ -107,7 +107,14 @@ namespace nap
 
 		// If we failed to load the module, get the error string
 		if (result == nullptr)
-			errorString = getLastErrorStr();
+		{
+			// Normally we would return the last error code, but `getLastErrorStr` returns information that is easy to mis-interpret.
+			// For example: if a dependency of the dll can't can't be found it states that the entire module can't be found.
+			// However: we know the library exists and the issue is most likely related to a mis-configured dll search path.
+			// Therefore, instead of returning the last error code as a string we attempt to be a bit more verbose. 
+			// errorString = getLastErrorStr();
+			errorString += utility::stringFormat("Library can't be loaded, most likely due to missing or mis-configured DLL search paths or a compiler mis-match", modulefile.c_str());
+		}
 
 		// Remove temporarily added search paths
 		if (modInfo.getProjectInfo().isEditorMode())
