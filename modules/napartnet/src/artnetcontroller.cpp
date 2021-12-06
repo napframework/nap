@@ -187,12 +187,14 @@ namespace nap
 
 	void ArtNetController::poll()
 	{
-		if (mVerbose) { nap::Logger::info("issuing new poll request: %s", mID.c_str()); }
+		if (mVerbose)
+			nap::Logger::info("issuing new poll request: %s", mID.c_str());
 
 		// Actual artnet poll request
 		if (artnet_send_poll(mNode, NULL, ARTNET_TTM_DEFAULT) != 0)
 		{
-			if (mVerbose) { nap::Logger::warn("artnet poll request failed: %s", mID.c_str()); }
+			if (mVerbose)
+				nap::Logger::warn("artnet poll request failed: %s", mID.c_str());
 			return;
 		}
 
@@ -223,12 +225,14 @@ namespace nap
 			{
 				case 0:
 				{
-					if (mVerbose) { nap::Logger::warn("artnet network poll request timed out: %s", mID.c_str()); }
+					if (mVerbose)
+						nap::Logger::warn("artnet network poll request timed out: %s", mID.c_str());
 					break;
 				}
 				case -1:
 				{
-					if (mVerbose) { nap::Logger::warn("artnet network select error: %s", mID.c_str()); }
+					if (mVerbose)
+						nap::Logger::warn("artnet network select error: %s", mID.c_str());
 					break;
 				}
 				default:
@@ -238,7 +242,8 @@ namespace nap
 					// Leading to the assumption that actually reading a reply is handled internally in a thread safe way
 					// If this is not the case make sure to protect the read here to ensure the list is not whilst sending dmx data. 
 					// Sending is handled inside the artnet service
-					if (mVerbose) { nap::Logger::info("reading node information: %s", mID.c_str()); }
+					if (mVerbose)
+						nap::Logger::info("reading node information: %s", mID.c_str());
 					artnet_read(mNode, 0);
 					break;
 				}
@@ -287,7 +292,8 @@ namespace nap
 		while (true)
 		{
 			// Wait for a poll request
-			if (mVerbose) { nap::Logger::info("waiting for artnet poll request"); }
+			if (mVerbose)
+				nap::Logger::info("waiting for artnet poll request");
 			
 			// The conditional variable makes sure the poll only executes
 			// when the main thread tiggers a poll request

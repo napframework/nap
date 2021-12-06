@@ -48,23 +48,20 @@ endif()
 package_module()
 
 # Package yoctopuce into platform release
-# TODO Package yoctopuce into platform release if we can find it
-install(DIRECTORY ${THIRDPARTY_DIR}/yoctopuce/Sources/ 
-        DESTINATION thirdparty/yoctopuce/include
+install(FILES ${YOCTO_DIST_FILES} DESTINATION thirdparty/yoctopuce)
+install(DIRECTORY ${YOCTO_INCLUDE_DIR}/ DESTINATION thirdparty/yoctopuce/include
         FILES_MATCHING PATTERN "*.h")
+
 if(WIN32)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Release/yocto.dll DESTINATION thirdparty/yoctopuce/bin/release)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Release/yocto.lib DESTINATION thirdparty/yoctopuce/bin/release)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Debug/yocto.dll DESTINATION thirdparty/yoctopuce/bin/debug)
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/windows/x64/Debug/yocto.lib DESTINATION thirdparty/yoctopuce/bin/debug)
+    install(FILES ${YOCTO_LIBS_RELEASE} ${YOCTO_RELEASE_DLL} DESTINATION thirdparty/yoctopuce/bin/release)
+    install(FILES ${YOCTO_LIBS_DEBUG} ${YOCTO_DEBUG_DLL} DESTINATION thirdparty/yoctopuce/bin/debug)
 elseif(APPLE)
-    SET(YOCTO_DYLIB ${THIRDPARTY_DIR}/yoctopuce/Binaries/osx/libyocto.dylib)
-    install(FILES ${YOCTO_DYLIB} DESTINATION thirdparty/yoctopuce/bin)
+    install(FILES ${YOCTO_LIBS_RELEASE} DESTINATION thirdparty/yoctopuce/bin)
 
     # Ensure our yoctopuce install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD
-                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libyocto.dylib ${YOCTO_DYLIB}
+                       COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libyocto.dylib ${YOCTO_LIBS_RELEASE}
                        COMMENT "Setting install name for yoctopuce")
 
     foreach(build_type Release Debug)
@@ -76,5 +73,5 @@ elseif(APPLE)
                                       )")
     endforeach()    
 else()
-    install(FILES ${THIRDPARTY_DIR}/yoctopuce/Binaries/linux/64bits/libyocto.so.1.0.1 DESTINATION thirdparty/yoctopuce/bin)
+    install(FILES ${YOCTO_LIBS_RELEASE} DESTINATION thirdparty/yoctopuce/bin)
 endif()

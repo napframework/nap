@@ -4,28 +4,35 @@
 # PORTAUDIO_INCLUDE_DIRS - The PORTAUDIO include directories
 # PORTAUDIO_LIBRARIES - The libraries needed to use PORTAUDIO
 # PORTAUDIO_DEFINITIONS - Compiler switches required for using PORTAUDIO
-
+# PORTAUDIO_DIST_FILES - Files required when distributing (installing) portaudio
 
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
 if(NOT ANDROID)
-    find_path(PORTAUDIO_DIR include/portaudio.h
-              HINTS
+    find_path(PORTAUDIO_DIR 
+              NAMES 
+              msvc/x86_64/include/portaudio.h
+              macos/x86_64/include/portaudio.h
+              linux/${ARCH}/include/portaudio.h
+              HINTS 
               ${THIRDPARTY_DIR}/portaudio
               ${CMAKE_CURRENT_LIST_DIR}/../../portaudio
               )
-    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/include)
 endif()
 
 if(WIN32)
-    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/msvc64)
+    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/msvc/x86_64/include)
+    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/msvc/x86_64/lib)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIB_DIR}/portaudio_x64.lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll)
+    set(PORTAUDIO_DIST_FILES ${PORTAUDIO_DIR}/msvc/x86_64/LICENSE.txt)
 elseif(APPLE)
-    set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/osx/install/lib)
+    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/macos/x86_64/include)
+    set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/macos/x86_64/lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.2.dylib)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
+    set(PORTAUDIO_DIST_FILES ${PORTAUDIO_DIR}/macos/x86_64/LICENSE.txt)
 elseif(ANDROID)
     set(PORTAUDIO_DIR ${THIRDPARTY_DIR}/portaudio_opensles)
     set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/android/lib/Release/${ANDROID_ABI})
@@ -38,20 +45,18 @@ elseif(ANDROID)
               ${PORTAUDIO_DIR}/include
               )
 else()
-    if(${ARCH} STREQUAL "armv6")
-        set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/lib/arm)
-    else()
-        set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/lib/x86_64)
-    endif()
+    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/include)
+    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.so)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
+    set(PORTAUDIO_DIST_FILES ${PORTAUDIO_DIR}/linux/${ARCH}/LICENSE.txt)
 endif()
 
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set PORTAUDIO_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(portaudio REQUIRED_VARS PORTAUDIO_LIBRARIES PORTAUDIO_INCLUDE_DIR PORTAUDIO_DIR)
+find_package_handle_standard_args(portaudio REQUIRED_VARS PORTAUDIO_DIR PORTAUDIO_LIBRARIES PORTAUDIO_INCLUDE_DIR)
 
 
 add_library(portaudio SHARED IMPORTED)

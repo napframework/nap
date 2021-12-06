@@ -102,7 +102,7 @@ namespace nap
 	{
 		mRenderService->queueVulkanObjectDestructor([sampler = mVulkanSampler](RenderService& renderService)
 		{
-			if (sampler != nullptr)
+			if (sampler != VK_NULL_HANDLE)
 				vkDestroySampler(renderService.getDevice(), sampler, nullptr);
 		});
 	}

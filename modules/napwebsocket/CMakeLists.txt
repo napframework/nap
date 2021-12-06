@@ -24,7 +24,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src ${WEBSOCKETPP_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC src ${WEBSOCKETPP_INCLUDE_DIR})
 
 # preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PUBLIC _WEBSOCKETPP_CPP11_INTERNAL_)
@@ -35,9 +35,5 @@ copy_module_json_to_bin()
 package_module()
 
 # Package websocket into platform release
-install(FILES ${THIRDPARTY_DIR}/websocketpp/readme.md
-              ${THIRDPARTY_DIR}/websocketpp/changelog.md
-
-        DESTINATION thirdparty/websocketpp
-        )
-install(DIRECTORY ${WEBSOCKETPP_INCLUDE_DIRS}/ DESTINATION thirdparty/websocketpp/include)
+install(FILES ${WEBSOCKETPP_DIST_FILES} DESTINATION thirdparty/websocketpp)
+install(DIRECTORY ${WEBSOCKETPP_INCLUDE_DIR}/ DESTINATION thirdparty/websocketpp/include)

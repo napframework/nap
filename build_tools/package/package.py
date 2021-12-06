@@ -2,6 +2,7 @@
 import argparse
 import datetime
 import os
+from platform import machine
 from multiprocessing import cpu_count
 import shutil
 import stat
@@ -579,8 +580,11 @@ def build_package_basename(timestamp, label, cross_compile_target):
         sys.exit(ERROR_INVALID_VERSION)
     version = chunks[1].strip()
 
+    # Fetch architecture
+    arch = get_architecture()
+
     # Create filename, including timestamp or not as requested
-    package_filename = "NAP-%s-%s" % (version, platform_name)
+    package_filename = "NAP-%s-%s-%s" % (version, platform_name, arch)
     source_archive_basename = "NAP_SOURCE-%s" % version
     if not timestamp is None:
         package_filename += "-%s" % timestamp
@@ -589,6 +593,19 @@ def build_package_basename(timestamp, label, cross_compile_target):
         package_filename += "-%s" % label
         source_archive_basename += "-%s" % label
     return (package_filename, source_archive_basename)
+
+def get_architecture():
+    """Retrieve architecture identifier"""
+    v = 'x86_64'
+    if platform.startswith('linux'):
+        arch = machine()
+        if arch == 'x86_64':
+            v = arch
+        elif arch == 'aarch64':
+            v = 'arm64'
+        else:
+            v = 'armhf'
+    return v
 
 def verify_clean_git_repo():
     """Verify that the git repository has no local changes"""
@@ -755,11 +772,17 @@ def get_cmake_path():
     nap_root = get_nap_root()
     cmake_thirdparty_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
     if platform.startswith('linux'):
-        return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
+        arch = machine()
+        if arch == 'x86_64':
+            return os.path.join(cmake_thirdparty_root, 'linux', 'x86_64', 'bin', 'cmake')
+        elif arch == 'aarch64':
+            return os.path.join(cmake_thirdparty_root, 'linux', 'arm64', 'bin', 'cmake')
+        else:
+            return os.path.join(cmake_thirdparty_root, 'linux', 'armhf', 'bin', 'cmake')
     elif platform == 'darwin':
-        return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
+        return os.path.join(cmake_thirdparty_root, 'macos', 'x86_64', 'bin', 'cmake')
     else:
-        return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake.exe')
+        return os.path.join(cmake_thirdparty_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
