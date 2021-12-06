@@ -34,20 +34,16 @@ namespace nap
 		{
 			RTTI_ENABLE(Process)
 			
-			friend class NodeManager;
 			friend class InputPinBase;
 			friend class InputPin;
 			friend class OutputPin;
 			friend class MultiInputPin;
-			friend class NodePtrBase;
-		
+
 		public:
 			/**
 			 * @param manager: the node manager that this node will be registered to and processed by. The node receives it's buffersize and samplerate from the manager.
 			 */
 			Node(NodeManager& manager);
-			
-			virtual ~Node();
 			
 			/**
 			 * @return all this node's outputs
@@ -75,29 +71,15 @@ namespace nap
 			 */
 			SampleBuffer& getOutputBuffer(OutputPin& output);
 			
-			/**
-			 * @return true if the node is currently registered with a currently existing node manager.
-			 */
-			bool isRegisteredWithNodeManager() const { return mRegisteredWithNodeManager.load(); }
-		
 		private:
 			/*
 			 * Used by the node manager to notify the node that the buffer size has changed.
-			 * @param bufefrSize the new value
+			 * @param bufferSize the new value
 			 */
-			void setBufferSize(int bufferSize);
-			
-			/*
-			 * Used by the node manager to notify the node that the sample rate has changed.
-			 * @param sampleRate: the new value
-			 */
-			void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
-			
+			void setBufferSize(int bufferSize) override;
+
 			std::set<OutputPin*> mOutputs; // Used internally by the node to keep track of all its outputs.
 			std::set<InputPinBase*> mInputs; // Used internally by the node to keep track of all its inputs.
-			
-			// Set to true when the node has made itself known with the node manager. This registration is deferred to the audio thread so it has to be tracked by this boolean.
-			std::atomic<bool> mRegisteredWithNodeManager = { false };
 		};
 		
 		
