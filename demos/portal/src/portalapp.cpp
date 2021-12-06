@@ -24,14 +24,20 @@ namespace nap
 	bool PortalApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
-		mRenderService	= getCore().getService<nap::RenderService>();
-		mSceneService	= getCore().getService<nap::SceneService>();
-		mInputService	= getCore().getService<nap::InputService>();
-		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mRenderService		= getCore().getService<nap::RenderService>();
+		mSceneService		= getCore().getService<nap::SceneService>();
+		mInputService		= getCore().getService<nap::InputService>();
+		mGuiService			= getCore().getService<nap::IMGuiService>();
+		mParameterService	= getCore().getService<nap::ParameterService>();
 
 		// Get the resource manager
 		mResourceManager = getCore().getResourceManager();
 
+		// Get the parameter GUI
+		mParameterGUI = mResourceManager->findObject<ParameterGUI>("ParameterGUI");
+		if (!error.check(mParameterGUI != nullptr, "unable to find parameter GUI with name: %s", "ParameterGUI"))
+			return false;
+		   
 		// Get the render window
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
 		if (!error.check(mRenderWindow != nullptr, "unable to find render window with name: %s", "Window"))
@@ -55,6 +61,13 @@ namespace nap
 		// Use a default input router to forward input events (recursively) to all input components in the scene
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+
+		// Draw the parameter GUI
+		ImGui::SetNextWindowPos(ImVec2(32, 32), ImGuiCond_Once);
+		ImGui::SetNextWindowSize(ImVec2(640, 0), ImGuiCond_Once);
+		ImGui::Begin("Parameters");
+		mParameterGUI->show(false);
+		ImGui::End();
 	}
 
 

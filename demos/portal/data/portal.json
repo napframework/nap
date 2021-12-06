@@ -1,6 +1,69 @@
 {
     "Objects": [
         {
+            "Type": "nap::Entity",
+            "mID": "PortalEntity",
+            "Components": [
+                {
+                    "Type": "nap::PortalWebSocketComponent",
+                    "mID": "PortalWebSocketComponent",
+                    "Interface": "WebSocketServer",
+                    "Verbose": true
+                },
+                {
+                    "Type": "nap::PortalComponent",
+                    "mID": "PortalComponent",
+                    "PortalWebSocketComponent": "./PortalWebSocketComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "ParameterGroup"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "ParameterGroup",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "ParameterInt",
+                    "Name": "My Int Parameter",
+                    "Value": 500,
+                    "Minimum": -1000,
+                    "Maximum": 1000
+                },
+                {
+                    "Type": "nap::ParameterLong",
+                    "mID": "ParameterLong",
+                    "Name": "My Long Parameter",
+                    "Value": -2500,
+                    "Minimum": -5000,
+                    "Maximum": 10000
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ParameterFloat",
+                    "Name": "My Float Parameter",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterDouble",
+                    "mID": "ParameterDouble",
+                    "Name": "My Double Parameter",
+                    "Value": 0.25,
+                    "Minimum": -1.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Borderless": false,
@@ -25,7 +88,37 @@
         {
             "Type": "nap::Scene",
             "mID": "Scene",
-            "Entities": []
+            "Entities": [
+                {
+                    "Entity": "PortalEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::WebSocketServer",
+            "mID": "WebSocketServer",
+            "EndPoint": "WebSocketServerEndPoint"
+        },
+        {
+            "Type": "nap::WebSocketServerEndPoint",
+            "mID": "WebSocketServerEndPoint",
+            "AllowPortReuse": true,
+            "LogConnectionUpdates": true,
+            "Port": 2000,
+            "IPAddress": "",
+            "AccessMode": "Reserved",
+            "ConnectionLimit": 20,
+            "LibraryLogLevel": "Warning",
+            "AllowControlOrigin": "*",
+            "Clients": [
+                {
+                    "Type": "nap::WebSocketTicket",
+                    "mID": "WebSocketTicket",
+                    "UserName": "napuser",
+                    "Password": "letmein!"
+                }
+            ]
         }
     ]
 }
