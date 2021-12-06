@@ -6,7 +6,7 @@
 
 // Std includes
 #include <atomic>
-=
+
 // Nap includes
 #include <audio/utility/safeptr.h>
 
