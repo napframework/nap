@@ -26,8 +26,10 @@
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioAnalysisApp)
-	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
+
+static constexpr double plotDelta = 1.0 / 60.0;
 
 namespace nap 
 {
@@ -83,8 +85,7 @@ namespace nap
         assert(player);
 
 		// Store new value in array at 60 hz, allows update to run independent from framerate
-		static const double d = 1.0 / 60.0;
-		if (mTimer.getElapsedTime() > d)
+		if (mTimer.getElapsedTime() > plotDelta)
 		{
 			mPlotvalues[mTickIdx] = levelMeter->getLevel() * mAnalysisGain;	// save new value so it can be subtracted later
 			if (++mTickIdx == mPlotvalues.size())							// increment current sample index
