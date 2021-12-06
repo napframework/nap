@@ -7,8 +7,8 @@
         "mod_napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/libartnet/msvc/install/bin/Release",
-        "{ROOT}/../thirdparty/libartnet/msvc/install/bin/Debug",
+        "{ROOT}/../thirdparty/libartnet/msvc/x86_64/bin/Release",
+        "{ROOT}/../thirdparty/libartnet/msvc/x86_64/bin/Debug",
         "{ROOT}/thirdparty/libartnet/bin"
     ]
 }
