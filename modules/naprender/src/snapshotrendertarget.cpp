@@ -157,7 +157,7 @@ namespace nap
 		for (auto& frame_buffer : mFramebuffers)
 			vkDestroyFramebuffer(mRenderService->getDevice(), frame_buffer, nullptr);
 	
-		if (mRenderPass != nullptr)
+		if (mRenderPass != VK_NULL_HANDLE)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
 
 		destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());

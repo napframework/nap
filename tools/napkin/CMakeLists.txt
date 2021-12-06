@@ -35,6 +35,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
+if(${ARCH} STREQUAL "armhf")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -z muldefs")
+endif()
+
 # Create library from app for unittests
 set(NAPKIN_LIB ${PROJECT_NAME}_lib)
 add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
@@ -118,7 +122,7 @@ if(MSVC)
     copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
 
     # Python
-    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
     copy_files_to_target_file_dir(${PYTHON_DLLS})
 
     ########################################################################

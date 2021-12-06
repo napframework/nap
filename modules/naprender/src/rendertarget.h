@@ -165,8 +165,8 @@ namespace nap
 
 	private:
 		RenderService*			mRenderService;
-		VkFramebuffer			mFramebuffer = nullptr;
-		VkRenderPass			mRenderPass = nullptr;
+		VkFramebuffer			mFramebuffer = VK_NULL_HANDLE;
+		VkRenderPass			mRenderPass = VK_NULL_HANDLE;
 		VkSampleCountFlagBits	mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		ImageData				mDepthImage;
 		ImageData				mColorImage;

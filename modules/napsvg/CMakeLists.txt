@@ -12,6 +12,7 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
+# Get nanosvg
 find_package(nanosvg REQUIRED)
 
 # LIBRARY
@@ -42,8 +43,5 @@ endif()
 package_module()
 
 # Package nanosvg into platform release
-install(FILES ${THIRDPARTY_DIR}/nanosvg/LICENSE.txt
-              ${THIRDPARTY_DIR}/nanosvg/README.md
-        DESTINATION thirdparty/nanosvg
-        )
+install(FILES ${NANOSVG_DIR}/LICENSE.txt ${NANOSVG_DIR}/README.md DESTINATION thirdparty/nanosvg)
 install(DIRECTORY ${NANOSVG_INCLUDE_DIRS}/ DESTINATION thirdparty/nanosvg/include)

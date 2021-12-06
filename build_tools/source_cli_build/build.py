@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import os
-import subprocess
+from platform import machine
 from multiprocessing import cpu_count
+import shutil
+import subprocess
 from sys import platform
 import sys
-import shutil
 
 LINUX_BUILD_DIR = 'build'
 MACOS_BUILD_DIR = 'Xcode'
@@ -24,11 +25,17 @@ def get_cmake_path():
 
     cmake_thirdparty_root = os.path.join(os.pardir, THIRDPARTY, 'cmake')
     if platform.startswith('linux'):
-        return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
+        arch = machine()
+        if arch == 'x86_64':
+            return os.path.join(cmake_thirdparty_root, 'linux', 'x86_64', 'bin', 'cmake')
+        elif arch == 'aarch64':
+            return os.path.join(cmake_thirdparty_root, 'linux', 'arm64', 'bin', 'cmake')
+        else:
+            return os.path.join(cmake_thirdparty_root, 'linux', 'armhf', 'bin', 'cmake')
     elif platform == 'darwin':
-        return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
+        return os.path.join(cmake_thirdparty_root, 'macos', 'x86_64', 'bin', 'cmake')
     else:
-        return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake')
+        return os.path.join(cmake_thirdparty_root, 'msvc', 'x86_64', 'bin', 'cmake')
 
 def get_nap_root():
     """Get absolute path to NAP root"""

@@ -1,21 +1,28 @@
-# Find Vulkan directory
+# Find Vulkan Root directory
+find_path(VULKANSDK_ROOT_DIR
+    NO_DEFAULT_PATH
+    NAMES LICENSE.txt
+    HINTS ${THIRDPARTY_DIR}/vulkansdk
+    )
+
+# Find Vulkan SDK directory
 if(WIN32)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${THIRDPARTY_DIR}/vulkansdk/msvc
+        HINTS ${VULKANSDK_ROOT_DIR}/msvc/x86_64
         )
 elseif(APPLE)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${THIRDPARTY_DIR}/vulkansdk/osx
+        HINTS ${VULKANSDK_ROOT_DIR}/macos/x86_64
         )
 elseif(UNIX)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${THIRDPARTY_DIR}/vulkansdk/linux
+        HINTS ${VULKANSDK_ROOT_DIR}/linux/${ARCH}
         )
 endif()
 
@@ -66,9 +73,14 @@ elseif(UNIX)
             )
 endif()
 
+# Files to copy along with distribution
+set(VULKANSDK_DIST_FILES ${VULKANSDK_ROOT_DIR}/LICENSE.txt)
+
 mark_as_advanced(VULKANSDK_INCLUDE_DIRS)
 mark_as_advanced(VULKANSDK_LIBS_DIR)
 mark_as_advanced(VULKANSDK_LIBS)
+mark_as_advanced(VULKANSDK_DIR)
+mark_as_advanced(VULKANSDK_ROOT_DIR)
 
 # Promote package for find
 include(FindPackageHandleStandardArgs)

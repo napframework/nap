@@ -121,7 +121,7 @@ namespace nap
 
 		VkSampleCountFlagBits		mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkFormat					mFormat = VK_FORMAT_R8G8B8A8_UNORM;
-		VkRenderPass				mRenderPass = nullptr;
+		VkRenderPass				mRenderPass = VK_NULL_HANDLE;
 		ImageData					mDepthImage;
 		ImageData					mColorImage;
 

@@ -16,7 +16,8 @@ if(WIN32)
                        )
 elseif(UNIX)
     # Install artnet lib into packaged project
-    install(FILES $<TARGET_FILE:artnet> DESTINATION lib)
+    file(GLOB ARTNET_DYLIBS ${THIRDPARTY_DIR}/libartnet/bin/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${ARTNET_DYLIBS} DESTINATION lib)
 endif()
 
 # Install artnet license into packaged project

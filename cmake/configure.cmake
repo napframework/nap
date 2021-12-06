@@ -20,6 +20,7 @@ if(MSVC OR APPLE)
 
     add_compile_definitions(NAP_BUILD_CONF=${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
     add_compile_definitions(NAP_BUILD_TYPE=$<CONFIG>)
+    add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
 else()
     if(ANDROID)
         set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
@@ -45,6 +46,7 @@ else()
 
     add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
     add_compile_definitions(NAP_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+    add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
 endif()
 
 # Export all FBXs in directory to meshes using fbxconverter. Meshes are created in the same directory.
@@ -108,14 +110,14 @@ endmacro()
 macro(copy_base_windows_graphics_dlls)
     # Copy over some window DLLs
     set(FILES_TO_COPY
-        ${THIRDPARTY_DIR}/sdl2/msvc/lib/x64/SDL2.dll
+        ${THIRDPARTY_DIR}/sdl2/msvc/x86_64/lib/SDL2.dll
         )
     copy_files_to_bin(${FILES_TO_COPY})
 endmacro()
 
 # Copy Windows FFmpeg DLLs to project bin output
 macro(copy_windows_ffmpeg_dlls)
-    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/install/bin/*.dll)
+    file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/bin/*.dll)
     copy_files_to_bin(${FFMPEGDLLS})
 endmacro()
 
@@ -257,14 +259,14 @@ macro(find_python_in_thirdparty)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/${ANDROID_ABI}/python3.5m)
     elseif(UNIX)
         if(APPLE)
-            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/macos/x86_64)
         else()
-            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/install)
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/${ARCH})
         endif()
         set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/lib/libpython3.6m${CMAKE_SHARED_LIBRARY_SUFFIX})
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
     else()
-        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64)
+        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/msvc/x86_64)
         set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/libs/python36.lib)
         set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include)
     endif()
@@ -283,11 +285,11 @@ macro(project_json_to_cmake)
 
     # Parse our project.json and import it
     if(CMAKE_HOST_WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/x86_64/python.exe)
     elseif(CMAKE_HOST_APPLE)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/macos/x86_64/bin/python3)
     else()
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/${ARCH}/bin/python3)
     endif()
     if(NOT EXISTS ${PYTHON_BIN})
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
@@ -316,11 +318,11 @@ macro(module_json_to_cmake)
 
     # Parse our module.json and import it
     if(CMAKE_HOST_WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/x86_64/python.exe)
     elseif(CMAKE_HOST_APPLE)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/macos/x86_64/bin/python3)
     else()
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/${ARCH}/bin/python3)
     endif()
     if(NOT EXISTS ${PYTHON_BIN})
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
@@ -340,13 +342,13 @@ endmacro()
 macro(add_macos_rttr_rpath)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/xcode/install/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
+                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
                        )    
 endmacro()
 
 # Copy Windows Python DLLs to output directory
 function(copy_windows_python_dlls_to_bin)
-    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
     copy_files_to_bin(${PYTHON_DLLS})
 endfunction()
 
@@ -360,18 +362,14 @@ endfunction()
 macro(find_rttr)
     if(NOT TARGET RTTR::Core)
         if (WIN32)
-            if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc64/install/cmake")
-            else()
-                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc32/install/cmake")
-            endif()
+            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc/x86_64/cmake")
             find_package(RTTR CONFIG REQUIRED Core)
         elseif(APPLE)
             find_path(
                     RTTR_DIR
                     NAMES rttr-config.cmake
                     HINTS
-                    ${THIRDPARTY_DIR}/rttr/xcode/install/cmake
+                    ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
             )
             find_package(RTTR CONFIG REQUIRED Core)
         elseif(ANDROID)
@@ -397,8 +395,7 @@ macro(find_rttr)
                     RTTR_DIR
                     NAMES rttr-config.cmake
                     HINTS
-                    ${THIRDPARTY_DIR}/rttr/install/cmake
-                    ${THIRDPARTY_DIR}/rttr/linux/install/cmake
+                    ${THIRDPARTY_DIR}/rttr/linux/${ARCH}/cmake
             )
             find_package(RTTR CONFIG REQUIRED Core)
         endif()

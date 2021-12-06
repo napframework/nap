@@ -19,7 +19,7 @@ namespace nap
         // These three in order represent the three contexts: Source, Framework Release and 
         // Packaged App
         std::vector<std::string> paths({
-            "{ROOT}/../thirdparty/vulkansdk/osx/share/vulkan/icd.d/MoltenVK_icd.json",
+            "{ROOT}/../thirdparty/vulkansdk/macos/x86_64/share/vulkan/icd.d/MoltenVK_icd.json",
             "{ROOT}/thirdparty/vulkansdk/share/vulkan/icd.d/MoltenVK_icd.json",
             "{EXE_DIR}/lib/MoltenVK_icd.json"
         });
