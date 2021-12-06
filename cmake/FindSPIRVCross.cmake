@@ -2,7 +2,7 @@
 if(WIN32)
     find_path(SPIRVCROSS_DIR
           NAMES include/spirv_cross/spirv.h
-          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/msvc/install
+          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/msvc/x86_64
           )
 
     # Debug core lib
@@ -21,7 +21,7 @@ if(WIN32)
 elseif(APPLE)
     find_path(SPIRVCROSS_DIR
           NAMES include/spirv_cross/spirv.h
-          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/osx/install
+          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/macos/x86_64
           )
 
     # Release core lib
@@ -36,7 +36,7 @@ elseif(APPLE)
 elseif(UNIX)
     find_path(SPIRVCROSS_DIR
           NAMES include/spirv_cross/spirv.h
-          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/linux/install
+          HINTS ${THIRDPARTY_DIR}/SPIRV-cross/linux/${ARCH}
           )
 
     # Release core lib

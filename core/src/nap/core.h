@@ -30,6 +30,7 @@ inline constexpr char PROJECT_INFO_FILENAME[] = "project.json";
 #define STRINGIZE_VALUE_OF(x) STRINGIZE(x)
 inline constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
 inline constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_TYPE);
+inline constexpr char sBuildArch[] = STRINGIZE_VALUE_OF(NAP_BUILD_ARCH);
 
 namespace nap
 {

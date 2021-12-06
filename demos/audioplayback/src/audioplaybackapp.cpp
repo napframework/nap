@@ -50,14 +50,14 @@ namespace nap
         
         // Find the audio playback component and initialize parameters
         auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
-        mFadeInTime = playbackComponent->getFadeInTime();
-        mFadeOutTime = playbackComponent->getFadeOutTime();
+		mFadeInTime = playbackComponent->getFadeInTime() / 1000.0f;
+        mFadeOutTime = playbackComponent->getFadeOutTime() / 1000.0f;
         mPitch = playbackComponent->getPitch();
         mPanning = playbackComponent->getStereoPanning();
 		return true;
 	}
-	
-	
+
+
 	/**
 	 */
 	void AudioPlaybackApp::update(double deltaTime)
@@ -69,26 +69,35 @@ namespace nap
         if (!playbackComponent->isPlaying())
         {
             if (ImGui::Button("Play"))
-                playbackComponent->start(mStartPosition, mDuration);
+                playbackComponent->start(mStartPosition * 1000.0f, mDuration * 1000.0f);
         }
-        else {
+        else
+		{
             if (ImGui::Button("Stop"))
                 playbackComponent->stop();
         }
-        ImGui::SliderFloat("Start Position", &mStartPosition, 0, mBuffer->getSize() / (mBuffer->getSampleRate() / 1000.), "%.3f", 2);
-        ImGui::SliderFloat("Duration (0 is untill the end)", &mDuration, 0, 10000, "%.3f", 2);
-        ImGui::SliderFloat("Fade In", &mFadeInTime, 0, 2000, "%.3f", 2);
-        ImGui::SliderFloat("Fade Out", &mFadeOutTime, 0, 2000, "%.3f", 2);
-        ImGui::SliderFloat("Pitch", &mPitch, 0.5, 2, "%.3f", 1);
-        ImGui::SliderFloat("Panning", &mPanning, 0.f, 1.f, "%.3f", 1);
+
+		float length_seconds = mBuffer->getSize() / (mBuffer->getSampleRate() / 1000.0f) / 1000.0f;
+		ImGui::SliderFloat("Start Position (s)", &mStartPosition, 0, length_seconds, "%.3f", 2);
+		ImGui::SliderFloat("Duration (0 = until end)", &mDuration, 0, 10.0f, "%.3f", 2);
+		if (ImGui::SliderFloat("Fade In (s)", &mFadeInTime, 0, 2.0f, "%.3f", 2))
+		{
+			playbackComponent->setFadeInTime(mFadeInTime * 1000.0f);
+		}
+		if (ImGui::SliderFloat("Fade Out (s)", &mFadeOutTime, 0, 2.0f, "%.3f", 2))
+		{
+			playbackComponent->setFadeOutTime(mFadeOutTime * 1000.0f);
+		}
+		if (ImGui::SliderFloat("Pitch", &mPitch, 0.5, 2, "%.3f", 1))
+		{
+			playbackComponent->setPitch(mPitch);
+		}
+		if (ImGui::SliderFloat("Panning", &mPanning, 0.f, 1.f, "%.3f", 1))
+		{
+			playbackComponent->setStereoPanning(mPanning);
+		}
         ImGui::Text("Music: Hang by Breek (www.breek.me)");
 		ImGui::End();
-        
-        // Apply GUI parameters to audio playback component
-        playbackComponent->setFadeInTime(mFadeInTime);
-        playbackComponent->setFadeOutTime(mFadeOutTime);
-        playbackComponent->setPitch(mPitch);
-        playbackComponent->setStereoPanning(mPanning);
 	}
 
 	

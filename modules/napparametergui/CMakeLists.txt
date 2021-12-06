@@ -35,12 +35,15 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 copy_module_json_to_bin()
 
 # Package into platform release
+# A temporary ugly fix for inter-dependent modules and their RPATHs. NAP-225.
 if(APPLE)
-    # A temporary ugly fix for inter-dependent modules and their RPATHs on macOS. NAP-225.
     set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
     list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
-endif()    
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/assimp/lib)
+endif()
 package_module()
 
 # Package information 3rd party database should go here

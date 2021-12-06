@@ -267,10 +267,10 @@ namespace nap
 			 * Returns if the pipeline has been created and is set.
 			 * @return if the pipeline has been created and is set.
 			 */
-			bool isValid() const	{ return mPipeline != nullptr && mLayout != nullptr; }
+			bool isValid() const	{ return mPipeline != VK_NULL_HANDLE && mLayout != VK_NULL_HANDLE; }
 
-			VkPipeline				mPipeline = nullptr;	///< Handle to Vulkan pipeline
-			VkPipelineLayout		mLayout = nullptr;		///< Handle to Vulkan pipeline layout
+			VkPipeline				mPipeline = VK_NULL_HANDLE;		///< Handle to Vulkan pipeline
+			VkPipelineLayout		mLayout = VK_NULL_HANDLE;		///< Handle to Vulkan pipeline layout
 		};
 
 		/**
@@ -585,14 +585,14 @@ namespace nap
 		 * nap::beginRecording(RenderWindow&) and only valid until the recording operation is ended.
 		 * @return the command buffer that is being recorded.
 		 */
-		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != VK_NULL_HANDLE); return mCurrentCommandBuffer; }
 		
 		/**
 		 * Returns the window that is being rendered to, only valid between a
 		 * successfull call to: RenderService::beginRecording() and RenderService::endRecording().
 		 * @return the window currently being rendered to, nullptr if not set.
 		 */
-		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != nullptr); return mCurrentRenderWindow; }
+		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != VK_NULL_HANDLE); return mCurrentRenderWindow; }
 
 		/**
 		 * Returns the Vulkan runtime instance.

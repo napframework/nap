@@ -13,10 +13,12 @@ mark_as_advanced(GLM_INCLUDE_DIRS)
 
 if(GLM_INCLUDE_DIRS)
     set(GLM_FOUND TRUE)
+    set(GLM_DIR ${GLM_INCLUDE_DIRS})
 endif()
 
 mark_as_advanced(GLM_FOUND)
 mark_as_advanced(GLM_CXX_FLAGS)
+mark_as_advanced(GLM_DIR)
 
 if(GLM_FOUND)
     if(NOT GLM_FIND_QUIETLY)
