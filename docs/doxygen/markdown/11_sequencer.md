@@ -15,6 +15,8 @@ Sequencer {#sequencer}
   * [Create and use a SequenceTrackEvent](@ref using_event_track)
   * [Create and use a SequenceTrackCurve](@ref using_curve_track)
   * [Create and use a SequenceTrackAudio](@ref using_audio_track)
+  * [Inserting markers](@ref inserting_markers)
+  * [Renaming tracks](@ref renaming_tracks)
 
 <img src="content/sequencer-overview.png" alt="Sequencer Overview" style="width:100%;"/>
 
@@ -263,21 +265,54 @@ When playing back the sequence the event will be dispatched whenever the playbac
 
 Select the window that draws the [SequenceEditorGUI](@ref nap::SequenceEditorGUI). Select "Insert Track" and then click on "nap::SequenceTrackCurveFloat".
 
-<img src="content/sequencer-select-curve-1.png" alt="SequenceEventTrack step one" style="width:50%;"/>
+<img src="content/sequencer-select-curve-1.png" alt="SequenceCurveTrack step one" style="width:50%;"/>
 
 An empty [SequenceTrackCurve](@ref nap::SequenceTrackCurve) will appear. To make sure the drawn curve on the track gets routed to the embedded [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput) make sure to select the embedded output from the inspector.
 
-<img src="content/sequencer-select-curve-2.png" alt="SequenceEventTrack step two" style="width:50%;"/>
+<img src="content/sequencer-select-curve-2.png" alt="SequenceCurveTrack step two" style="width:50%;"/>
 
 To insert an event right-click somewhere in the track. A popup will appear asking you to insert a segment. Do so.
 
-<img src="content/sequencer-select-curve-3.png" alt="SequenceEventTrack step three" style="width:50%;"/>
+<img src="content/sequencer-select-curve-3.png" alt="SequenceCurveTrack step three" style="width:50%;"/>
 
-An [curve segment](@ref nap::SequenceTrackSegmentCurveFloat) is inserted into the track. You can extend it by dragging the handler of the segment or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event by dragging the segment value or right click on the segment value. You can also insert point on the curve. Move the mouse cursor somewhere on the curve, right click and select "Insert Point" in the appearing popup.
+An [curve segment](@ref nap::SequenceTrackSegmentCurveFloat) is inserted into the track. You can extend it by dragging the handler of the segment or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event by dragging the segment value or right click on the segment value. You can also insert point on the curve. Move the mouse cursor somewhere on the curve, right click and select "Insert Point" in the appearing popup. You can also change the curve type to "linear" in this popup.
 
-<img src="content/sequencer-select-curve-4.png" alt="SequenceEventTrack step four" style="width:50%;"/>
+<img src="content/sequencer-select-curve-4.png" alt="SequenceCurveTrack step four" style="width:50%;"/>
 
 When playing back the sequence the [ParameterFloat](@ref nap::ParameterFloat) linked from the embedded [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput) will get updated according to the value of the curved track at the current timestamp of the player.
 
 ## Create and use a SequenceTrackAudio{#using_audio_track}
 
+Select the window that draws the [SequenceEditorGUI](@ref nap::SequenceEditorGUI). Select "Insert Track" and then click on "nap::SequenceTrackAudio".
+
+<img src="content/sequencer-select-audio-1.png" alt="SequenceAudioTrack step one" style="width:50%;"/>
+
+An empty [SequenceTrackAudio](@ref nap::SequenceTrackAudio) will appear. To make sure audio being played on the track gets routed to the embedded [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput) select the embedded output from the inspector.
+
+<img src="content/sequencer-select-audio-2.png" alt="SequenceAudioTrack step two" style="width:50%;"/>
+
+To insert an AudioSegment right-click somewhere in the track. A popup will appear with a popup containing all found [AudioBufferResource](@ref nap::audio::AudioBufferResource)s. In this example we will insert an audio segment linked to an [AudioBufferResource](@ref nap::audio::AudioBufferResource) called "Test Audio". To add [AudioBufferResource](@ref nap::audio::AudioBufferResource)s to you project see the documentation about NAP's audio
+
+<img src="content/sequencer-select-audio-3.png" alt="SequenceAudioTrack step three" style="width:50%;"/>
+
+A [SequenceTrackSegmentAudio](@ref nap::SequenceTrackSegmentAudio) will appear on the audio track. When sequencer is playing the audio in the buffer of the segment will be routed to the [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput)
+
+<img src="content/sequencer-select-audio-4.png" alt="SequenceAudioTrack step four" style="width:50%;"/>
+
+Right clicking the audio segment will open up a popup enabling you to edit the start time of the segment on the track, the start time within the audio buffer or end time within the audio buffer. This can also be achieved by dragging on the left or right side of the audio segment.
+
+## Inserting markers{#inserting_markers}
+
+When you want to mark certain parts of your sequence you can insert markers by using the marker bar on top of the sequencer GUI. Right click somewhere inside the marker bar, a popup will appear, name the marker whatever you like and choose "Insert Marker".  
+
+<img src="content/sequencer-marker-1.png" alt="Marker step one" style="width:50%;"/>
+
+A marker will appear. You can move the marker by dragging it inside the marker bar or edit it by right clicking on the marker.
+
+<img src="content/sequencer-marker-2.png" alt="Marker step one" style="width:50%;"/>
+
+## Renaming tracks{#renaming_tracks}
+
+You can rename tracks by clicking on the track title in the inspector.
+
+<img src="content/sequencer-rename-tracks.png" alt="Rename tracks" style="width:50%;"/>
