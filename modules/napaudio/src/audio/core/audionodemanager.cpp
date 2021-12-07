@@ -16,7 +16,7 @@ namespace nap
 		NodeManager::~NodeManager()
 		{
 			// Tell the nodes that their node manager is outta here, so they won't try to unregister themselves in their dtors.
-			for (auto& node : mNodes)
+			for (auto& node : mProcesses)
 			{
 				node->mNodeManager = nullptr;
 				node->mRegisteredWithNodeManager.store(false);
@@ -130,8 +130,8 @@ namespace nap
 		void NodeManager::setInternalBufferSize(int size)
 		{
 			mInternalBufferSize = size;
-			for (auto& node : mNodes)
-				node->setBufferSize(size);
+			for (auto& process : mProcesses)
+				process->setBufferSize(size);
 		}
 		
 		
@@ -139,33 +139,33 @@ namespace nap
 		{
 			mSampleRate = sampleRate;
 			mSamplesPerMillisecond = sampleRate / 1000.;
-			for (auto& node : mNodes)
-				node->setSampleRate(sampleRate);
+			for (auto& process : mProcesses)
+				process->setSampleRate(sampleRate);
 		}
 		
 		
-		void NodeManager::registerNode(Node& node)
+		void NodeManager::registerProcess(Process& process)
 		{
-			node.setSampleRate(mSampleRate);
-			node.setBufferSize(mInternalBufferSize);
+			process.setSampleRate(mSampleRate);
+			process.setBufferSize(mInternalBufferSize);
 			auto oldSampleRate = mSampleRate;
 			auto oldBufferSize = mInternalBufferSize;
 			enqueueTask([&, oldSampleRate, oldBufferSize]() {
 				// In the extremely rare case the buffersize or the samplerate of the node manager have been changed in between the enqueueing of the task and its execution on the audio thread, we set them again.
 				// However we prefer not to, in order to avoid memory allocation on the audio thread.
 				if (oldSampleRate != mSampleRate)
-					node.setSampleRate(mSampleRate);
+					process.setSampleRate(mSampleRate);
 				if (oldBufferSize != mInternalBufferSize)
-					node.setBufferSize(mInternalBufferSize);
-				node.mRegisteredWithNodeManager.store(true);
-				mNodes.emplace(&node);
+					process.setBufferSize(mInternalBufferSize);
+			  process.mRegisteredWithNodeManager.store(true);
+				mProcesses.emplace(&process);
 			});
 		}
 		
 		
-		void NodeManager::unregisterNode(Node& node)
+		void NodeManager::unregisterProcess(Process& process)
 		{
-			mNodes.erase(&node);
+			mProcesses.erase(&process);
 		}
 		
 		
