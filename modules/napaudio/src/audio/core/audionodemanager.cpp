@@ -56,6 +56,9 @@ namespace nap
 				
 				mUpdateSignal(mSampleTime);
 			}
+
+			if (mInternalBufferOffset != framesPerBuffer)
+				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
 		}
 		
 		
@@ -92,6 +95,9 @@ namespace nap
 				
 				mUpdateSignal(mSampleTime);
 			}
+
+			if (mInternalBufferOffset != framesPerBuffer)
+				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
 		}
 
 
