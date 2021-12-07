@@ -6,8 +6,8 @@
         "mod_napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/yoctopuce/Binaries/windows/x64/Release",
-        "{ROOT}/../thirdparty/yoctopuce/Binaries/windows/x64/Debug",
+        "{ROOT}/../thirdparty/yoctopuce/msvc/x86_64/Release",
+        "{ROOT}/../thirdparty/yoctopuce/msvc/x86_64/Debug",
         "{ROOT}/thirdparty/yoctopuce/bin/release",
         "{ROOT}/thirdparty/yoctopuce/bin/debug"
     ]

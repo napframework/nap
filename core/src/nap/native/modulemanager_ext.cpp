@@ -104,7 +104,7 @@ namespace nap
 		{
 			auto resolved = utility::getAbsolutePath(moduleFile);
 			err.fail("Failed to load module '%s' (resolved as %s): %s",
-                moduleFile.c_str(), resolved.c_str(), loadModuleError.c_str());
+                utility::forceSeparator(moduleFile).c_str(), resolved.c_str(), loadModuleError.c_str());
 			return false;
 		}
 
