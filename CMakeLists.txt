@@ -130,7 +130,7 @@ add_subdirectory(test/render)
 # app targets, add your own app targets here!
 #add_subdirectory(apps/example)
 #add_subdirectory(apps/example/module)
-add_subdirectory(apps/napaudioapp)
+#add_subdirectory(apps/napaudioapp)
 #add_subdirectory(apps/rain)
 #add_subdirectory(apps/rain/module)
 add_subdirectory(apps/4dsound)
