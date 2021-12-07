@@ -44,10 +44,11 @@ namespace nap
 		/**
 		 * Receives portal events from portal WebSocket components and forwards them to portal components.
 		 * @param event the portal event that is to be forwarded
+		 * @param wsComponent the portal websocket component sending the event
 		 * @param error contains information in case forwarding fails
 		 * @return whether forwarding the event succeeded
 		 */
-		bool sendEvent(PortalEventPtr event, utility::ErrorState& error);
+		bool sendEvent(PortalEventPtr event, const PortalWebSocketComponentInstance& wsComponent, utility::ErrorState& error);
 
 		/**
 		 * Called by the portal component in order to register itself with the service.

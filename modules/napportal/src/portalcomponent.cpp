@@ -11,7 +11,8 @@
 
 // nap::PortalComponent run time class definition
 RTTI_BEGIN_CLASS(nap::PortalComponent)
-RTTI_PROPERTY("PortalWebSocketComponent", &nap::PortalComponent::mPortalWebSocketComponent, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("PortalWebSocketComponent", &nap::PortalComponent::mWebSocketComponent, nap::rtti::EPropertyMetaData::Required)
+RTTI_PROPERTY("Items", &nap::PortalComponent::mItems, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 // nap::PortalComponentInstance run time class definition
@@ -39,6 +40,17 @@ namespace nap
 		assert(mService != nullptr);
 		mService->registerComponent(*this);
 
+		// Copy over list of portal items
+		std::vector<ResourcePtr<PortalItem>>& items = getComponent<PortalComponent>()->mItems;
+		for (const auto& item : items)
+			mItems.emplace(std::make_pair(item->mID, item.get()));
+
+		return true;
+	}
+
+
+	bool PortalComponentInstance::processEvent(PortalEventPtr event, utility::ErrorState& error)
+	{
 		return true;
 	}
 }

@@ -5,6 +5,8 @@
 #pragma once
 
 // Local Includes
+#include "portalitem.h"
+#include "portalevent.h"
 #include "portalservice.h"
 #include "portalwebsocketcomponent.h"
 
@@ -27,7 +29,8 @@ namespace nap
 
 	public:
 
-		ComponentPtr<PortalWebSocketComponent> mPortalWebSocketComponent;	///< Property: 'PortalWebSocketComponent' the portal WebSocket component that can forward messages to this portal
+		ComponentPtr<PortalWebSocketComponent> mWebSocketComponent;		///< Property: 'PortalWebSocketComponent' the portal WebSocket component that can forward messages to this portal
+		std::vector<ResourcePtr<PortalItem>> mItems;					///< Property: 'Items' the portal items contained by this portal component
 	};
 
 
@@ -59,12 +62,21 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * Receives a portal event from the portal service to be processed
+		 * @param event the portal event that is to be processed
+		 * @param error contains information when processing fails
+		 * @return if the event was processed successfully
+		 */
+		bool processEvent(PortalEventPtr event, utility::ErrorState& error);
+
+		/**
 		 * The portal WebSocket component that can forward messages to this portal
 		 */
-		ComponentInstancePtr<PortalWebSocketComponent> mPortalWebSocketComponent = { this, &PortalComponent::mPortalWebSocketComponent };
+		ComponentInstancePtr<PortalWebSocketComponent> mWebSocketComponent = { this, &PortalComponent::mWebSocketComponent };
 
 	private:
 
-		PortalService* mService = nullptr;	///< Handle to the portal service.
+		PortalService* mService = nullptr;						///< Handle to the portal service.
+		std::unordered_map<std::string, PortalItem*> mItems;	///< The portal items contained by this portal component
 	};
 }

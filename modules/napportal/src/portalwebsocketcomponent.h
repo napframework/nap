@@ -54,7 +54,7 @@ namespace nap
 		virtual ~PortalWebSocketComponentInstance();
 
 		/**
-		 * Initialize the portal WebSocket component instance
+		 * Initializes the portal WebSocket component instance
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */

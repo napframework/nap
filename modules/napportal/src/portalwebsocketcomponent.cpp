@@ -106,7 +106,7 @@ namespace nap
 		}
 
 		// Send portal event to portal service
-		if (!mPortalService->sendEvent(std::move(portal_event), error))
+		if (!mPortalService->sendEvent(std::move(portal_event), *this, error))
 		{
 			if (mVerbose)
 				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());

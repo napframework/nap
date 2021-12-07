@@ -27,12 +27,25 @@ namespace nap
 	}
 
 
-	bool PortalService::sendEvent(PortalEventPtr event, utility::ErrorState& error)
+	bool PortalService::sendEvent(PortalEventPtr event, const PortalWebSocketComponentInstance& wsComponent, utility::ErrorState& error)
 	{
 		// Make sure components don't get pulled / updated while forwarding calls
 		std::lock_guard<std::mutex> lock(mComponentMutex);
 
-		return true;
+		// Iterate over all the portal components to find the target
+		for (const auto& comp : mComponents)
+		{
+			bool portalIdMatch = comp->getComponent()->mID == event->getPortalID();
+			bool wsCompMatch = comp->mWebSocketComponent == &wsComponent;
+			if (portalIdMatch && wsCompMatch)
+				return comp->processEvent(std::move(event), error);
+		}
+
+		// No portal component accepted the event
+		const char* serviceName = this->get_type().get_name().data();
+		const char* portalId = event->getPortalID().c_str();
+		const char* wsCompId = wsComponent.getComponent()->mID.c_str();
+		return error.check(false, "%s: No portal with ID \"%s\" accepts events from WebSocket component \"%s\"", serviceName, portalId, wsCompId);
 	}
 
 
