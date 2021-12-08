@@ -56,6 +56,11 @@ namespace nap
 		const EPortalEventType& getType() const		{ return mHeader.mType; }
 
 		/**
+		 * @return type of the portal event, determines the effect
+		 */
+		const WebSocketConnection& getConnection() const { return mConnection; }
+
+		/**
 		 * Converts the portal event to a JSON string of API messages used for sending over the WebSocket server.
 		 * @param outJSON the string that will contain the JSON after converting
 		 * @param error should hold the error message when conversion fails
