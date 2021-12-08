@@ -22,11 +22,17 @@ namespace nap
 	public:
 
 		/**
-		 * Processes an API event. Implementation differs per derived class
+		 * Processes an API event. Implementation differs per derived class.
 		 * @param event The event to be processed
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
 		 */
 		virtual bool processEvent(const APIEvent& event, utility::ErrorState& error) = 0;
+
+		/**
+		 * Gets the current state as an API event. Implementation differs per derived class.
+		 * @return the current state of the portal item as an API event
+		 */
+		virtual APIEventPtr getState() = 0;
 	};
 }
