@@ -70,6 +70,22 @@ namespace nap
 		bool processEvent(PortalEventPtr event, utility::ErrorState& error);
 
 		/**
+		 * Processes a request type portal event
+		 * @param event the portal event that is to be processed
+		 * @param error contains information when processing fails
+		 * @return if the event was processed successfully
+		 */
+		bool processRequestEvent(PortalEventPtr event, utility::ErrorState& error);
+
+		/**
+		 * Processes an update type portal event
+		 * @param event the portal event that is to be processed
+		 * @param error contains information when processing fails
+		 * @return if the event was processed successfully
+		 */
+		bool processUpdateEvent(PortalEventPtr event, utility::ErrorState& error);
+
+		/**
 		 * The portal WebSocket component that can forward messages to this portal
 		 */
 		ComponentInstancePtr<PortalWebSocketComponent> mWebSocketComponent = { this, &PortalComponent::mWebSocketComponent };
@@ -77,6 +93,7 @@ namespace nap
 	private:
 
 		PortalService* mService = nullptr;						///< Handle to the portal service.
-		std::unordered_map<std::string, PortalItem*> mItems;	///< The portal items contained by this portal component
+		std::vector<PortalItem*> mItems;						///< The portal items contained by this portal component as vector
+		std::unordered_map<std::string, PortalItem*> mItemMap;	///< The portal items contained by this portal component as unordered map
 	};
 }

@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "portalcomponent.h"
+#include "portalutils.h"
 
  // External Includes
 #include <entity.h>
@@ -40,16 +41,56 @@ namespace nap
 		assert(mService != nullptr);
 		mService->registerComponent(*this);
 
-		// Copy over list of portal items
+		// Store pointers to portal items
 		std::vector<ResourcePtr<PortalItem>>& items = getComponent<PortalComponent>()->mItems;
 		for (const auto& item : items)
-			mItems.emplace(std::make_pair(item->mID, item.get()));
+		{
+			mItems.emplace_back(item.get());
+			mItemMap.emplace(std::make_pair(item->mID, item.get()));
+		}
 
 		return true;
 	}
 
 
 	bool PortalComponentInstance::processEvent(PortalEventPtr event, utility::ErrorState& error)
+	{
+		switch (event->getType())
+		{
+		case EPortalEventType::Request:
+			return processRequestEvent(std::move(event), error);
+
+		case EPortalEventType::Update:
+			return processUpdateEvent(std::move(event), error);
+
+		case EPortalEventType::Response:
+			return error.check(false, "portal component does not handle events with type %s", portal::eventTypeResponse);
+
+		case EPortalEventType::Invalid:
+			return error.check(false, "portal component does not handle events with type %s", portal::eventTypeInvalid);
+
+		default:
+			assert(false);
+			return false;
+		}
+	}
+
+
+	bool PortalComponentInstance::processRequestEvent(PortalEventPtr event, utility::ErrorState& error)
+	{
+		// Create response event
+		PortalEventHeader res_header = { event->getID(), event->getPortalID(), EPortalEventType::Response };
+		PortalEventPtr response = std::make_unique<PortalEvent>(res_header, event->getConnection());
+
+		// Add portal item states
+		for (const auto& item : mItems)
+			response->addAPIEvent(item->getState());
+
+		return true;
+	}
+
+
+	bool PortalComponentInstance::processUpdateEvent(PortalEventPtr event, utility::ErrorState& error)
 	{
 		return true;
 	}
