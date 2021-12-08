@@ -119,6 +119,66 @@ RTTI_END_CLASS
 namespace nap
 {
 	/**
+	 * Returns absolute .ini renderservice file path
+	 * The .ini file is used to (re)-store settings in between sessions
+	 * @return .ini file name for given resource of type T
+	 */
+	static std::string getIniFilePath()
+	{
+		std::string path = utility::stringFormat("%s/%s%s", iniDirectory, 
+			utility::stripNamespace(RTTI_OF(nap::RenderService).get_name().to_string()).c_str(),
+			iniExtension);
+
+		return utility::getAbsolutePath(path);
+	}
+
+
+	/**
+	 * Writes the renderservice.ini file to disk
+	 * File is used to (re)-store render settings in between sessions.
+	 */
+	static bool writeIni(const std::vector<RenderWindow*>& windows, utility::ErrorState& error)
+	{
+		// Create window caches to write to disk
+		std::vector<std::unique_ptr<WindowCache>> caches;
+		nap::rtti::ObjectList resources;
+		caches.reserve(windows.size());
+		resources.reserve(windows.size());
+
+		for (const auto& window : windows)
+		{
+			auto new_cache = std::make_unique<WindowCache>(*window);
+			new_cache->mID = utility::stringFormat("%s_cache", window->mID.c_str());
+			resources.emplace_back(new_cache.get());
+			caches.emplace_back(std::move(new_cache));
+		}
+
+		// Serialize current set of parameters to json
+		rtti::JSONWriter writer;
+		if (!rtti::serializeObjects(resources, writer, error))
+			return false;
+
+		// Get ini file path relative to cwd
+		std::string path = getIniFilePath();
+		std::string dir = utility::getFileDir(path);
+		if (!utility::dirExists(dir))
+		{
+			if (!error.check(utility::makeDirs(dir), "unable to create directory : %s", path.c_str()))
+				return false;
+		}
+
+		// Open output file
+		std::ofstream output_stream(path, std::ios::binary | std::ios::out);
+		if (!error.check(output_stream.is_open() && output_stream.good(), "Failed to open %s for writing", path.c_str()))
+			return false;
+
+		// Write to disk
+		std::string json = writer.GetJSON();
+		output_stream.write(json.data(), json.size());
+		return true;
+	}
+
+	/**
 	 * @return VK physical device type
 	 */
 	static VkPhysicalDeviceType getPhysicalDeviceType(RenderServiceConfiguration::EPhysicalDeviceType devType)
@@ -1558,55 +1618,15 @@ namespace nap
 
 	void RenderService::preShutdown()
 	{
-	    if(isInitialized())
+	    if(isInitialized()) 
 		    waitDeviceIdle();
 
-		// Create window caches to write to disk
-		// Used to re-position and scale windows in between sessions
-		std::vector<std::unique_ptr<WindowCache>> caches;
-		nap::rtti::ObjectList resources;
-		caches.reserve(mWindows.size());
-		resources.reserve(mWindows.size());
-
-		for(const auto& window : mWindows)
+		utility::ErrorState error;
+		if (!writeIni(mWindows, error))
 		{
-			auto new_cache = std::make_unique<WindowCache>(*window);
-			new_cache->mID = utility::stringFormat("%s_cache", window->mID.c_str());
-			resources.emplace_back(new_cache.get());
-			caches.emplace_back(std::move(new_cache));
-		}
-
-		// Serialize current set of parameters to json
-		rtti::JSONWriter writer;
-		nap::utility::ErrorState error;
-		if (!rtti::serializeObjects(resources, writer, error))
-		{
+			error.fail("Unable to store render settings");
 			nap::Logger::warn(error.toString());
-			return;
 		}
-
-		// Make sure we can write to the directory
-		std::string path = utility::stringFormat("%s/ini/renderservice.ini",
-			getCore().getProjectInfo()->getDataDirectory().c_str());
-		std::string storage_dir = utility::getFileDir(path);
-		if (!utility::dirExists(storage_dir))
-		{
-			if (!error.check(utility::makeDirs(storage_dir), "unable to create directory : %s", path.c_str()))
-				return;
-		}
-
-		// Open output file
-		std::ofstream output_stream(path, std::ios::binary | std::ios::out);
-		if (!error.check(output_stream.is_open() && output_stream.good(), "Failed to open %s for writing", path.c_str()))
-		{
-			nap::Logger::warn(error.toString());
-			return;
-		}
-
-		// Write to disk
-		std::string json = writer.GetJSON();
-		output_stream.write(json.data(), json.size());
-		return;
 	}
 
 

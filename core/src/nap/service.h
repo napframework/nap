@@ -16,9 +16,15 @@
 
 namespace nap
 {
+
 	// Forward Declares
 	class Core;
 	class ServiceObjectGraphItem;
+
+	// Globals
+	inline constexpr char iniDirectory[]  = "ini";	///< .ini directory, holds files used to (re)-store module specific settings in between sessions
+	inline constexpr char iniExtension[] = ".ini";	///< .ini file extension, used to (re)-store module specific settings in between sessions
+
 
 	/**
 	 * Base class for all Service configurations. In the derived class you can supply parameters that can be used to initialize a service.
