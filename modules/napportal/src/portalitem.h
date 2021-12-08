@@ -7,18 +7,26 @@
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
+#include <apievent.h>
 
 namespace nap
 {
 	/**
-	 * Represents a single item (e.g. parameter, button, stream) in a NAP portal.
+	 * Represents a single item (e.g. slider, toggle, button) in a NAP portal.
+	 * Implementations are in derived classes, PortalItem only serves as a base class.
 	 */
 	class NAPAPI PortalItem : public Resource
 	{
 		RTTI_ENABLE(Resource)
+
 	public:
 
-		// Default destructor
-		virtual ~PortalItem();
+		/**
+		 * Processes an API event. Implementation differs per derived class
+		 * @param event The event to be processed
+		 * @param error contains information when processing fails
+		 * @return if the event was processed successfully
+		 */
+		virtual bool processEvent(const APIEvent& event, utility::ErrorState& error) = 0;
 	};
 }

@@ -4,14 +4,8 @@
 
 #include "portalitem.h"
 
- // nap::apisignature run time class definition 
-RTTI_BEGIN_CLASS(nap::PortalItem)
+ // nap::PortalItem run time class definition 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalItem)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
-
-
-namespace nap
-{
-	PortalItem::~PortalItem() { }
-}
