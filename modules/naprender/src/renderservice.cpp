@@ -32,6 +32,7 @@
 #include <mathutils.h>
 #include <rtti/jsonwriter.h>
 #include <rtti/jsonreader.h>
+#include <rtti/defaultlinkresolver.h>
 
 // Required to enbale high dpi rendering on windows
 #ifdef _WIN32
@@ -50,8 +51,6 @@ namespace nap
 		WindowCache() = default;
 		WindowCache(const nap::RenderWindow& window);
 
-		std::string mWindowID;						///< Property: 'WindowID' Unique window identifier
-		bool mFullscreen = false;					///< Property: 'Fullscreen' If the window is full-screen
 		glm::ivec2 mPosition = {};					///< Property: 'Position' Position of window
 		glm::ivec2 mSize = {};						///< Property: 'Size' Size of window
 	};
@@ -59,8 +58,7 @@ namespace nap
 	WindowCache::WindowCache(const nap::RenderWindow& window)
 	{
 		// Copy settings
-		mWindowID = window.mID;
-		mFullscreen = SDL::getFullscreen(window.getNativeWindow());
+		mID = window.mID;
 		mPosition = window.getPosition();
 		mSize = window.getSize();
 	}
@@ -110,8 +108,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::WindowCache)
-	RTTI_PROPERTY("Fullscreen", &nap::WindowCache::mFullscreen, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("WindowID", &nap::WindowCache::mWindowID, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Position", &nap::WindowCache::mPosition, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Size", &nap::WindowCache::mSize, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -134,7 +130,7 @@ namespace nap
 
 
 	/**
-	 * Writes the renderservice.ini file to disk
+	 * Writes the render service .ini file to disk
 	 * File is used to (re)-store render settings in between sessions.
 	 */
 	static bool writeIni(const std::vector<RenderWindow*>& windows, utility::ErrorState& error)
@@ -148,7 +144,6 @@ namespace nap
 		for (const auto& window : windows)
 		{
 			auto new_cache = std::make_unique<WindowCache>(*window);
-			new_cache->mID = utility::stringFormat("%s_cache", window->mID.c_str());
 			resources.emplace_back(new_cache.get());
 			caches.emplace_back(std::move(new_cache));
 		}
@@ -158,12 +153,12 @@ namespace nap
 		if (!rtti::serializeObjects(resources, writer, error))
 			return false;
 
-		// Get ini file path relative to cwd
+		// Get ini file path, create directory if it doesn't exist
 		std::string path = getIniFilePath();
 		std::string dir = utility::getFileDir(path);
 		if (!utility::dirExists(dir))
 		{
-			if (!error.check(utility::makeDirs(dir), "unable to create directory : %s", path.c_str()))
+			if (!error.check(utility::makeDirs(dir), "unable to create directory : %s", dir.c_str()))
 				return false;
 		}
 
@@ -177,6 +172,50 @@ namespace nap
 		output_stream.write(json.data(), json.size());
 		return true;
 	}
+
+
+	/**
+	 * Reads and applies the settings from the .ini file to the given window
+	 */
+	bool restoreFromIni(nap::Core& core, nap::RenderWindow& window, utility::ErrorState& error)
+	{
+		std::string path = getIniFilePath();
+		if (!utility::fileExists(path))
+			return true;
+
+		rtti::DeserializeResult result;
+		rtti::Factory& factory =  core.getResourceManager()->getFactory();
+
+		// Read file
+		if (!deserializeJSONFile(
+			path, rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::OnlyRawPointers,
+			factory, result, error))
+			return false;
+
+		// Resolve links
+		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, error))
+			return false;
+
+		// Apply
+		for (auto& item : result.mReadObjects)
+		{
+			// Ensure item mathes window to set
+			std::unique_ptr<WindowCache> cache_item = rtti_cast<WindowCache>(item);
+			if (cache_item == nullptr || cache_item->mID != window.mID)
+				continue;
+
+			// IDs don't match
+			if (cache_item->mID != window.mID)
+				continue;
+
+			// Apply
+			window.setSize(cache_item->mSize);
+			window.setPosition(cache_item->mPosition);
+		}
+		return true;
+	}
+
 
 	/**
 	 * @return VK physical device type
@@ -1049,6 +1088,14 @@ namespace nap
 
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
+		// Attempt to restore window settings from ini
+		utility::ErrorState restore_error;
+		if (!restoreFromIni(getCore(), window, restore_error))
+		{
+			restore_error.fail("Unable to restore window settings");
+			nap::Logger::warn(restore_error.toString());
+		}
+
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
 		return true;
@@ -1064,7 +1111,6 @@ namespace nap
 		assert(pos != mWindows.end());
 		windowRemoved.trigger(window);
 		mWindows.erase(pos);
-
 	}
 
 
@@ -1624,7 +1670,7 @@ namespace nap
 		utility::ErrorState error;
 		if (!writeIni(mWindows, error))
 		{
-			error.fail("Unable to store render settings");
+			error.fail("Unable to store window settings");
 			nap::Logger::warn(error.toString());
 		}
 	}
