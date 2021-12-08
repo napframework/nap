@@ -30,11 +30,60 @@
 #include <glslang/Public/ShaderLang.h>
 #include <nap/assert.h>
 #include <mathutils.h>
+#include <rtti/jsonwriter.h>
+#include <rtti/jsonreader.h>
 
 // Required to enbale high dpi rendering on windows
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+namespace nap
+{
+	/**
+	 * Temporary window settings that are saved and restored in between sessions
+	 */
+	class WindowCache final : public Resource
+	{
+		RTTI_ENABLE(nap::Resource)
+	public:
+		WindowCache() = default;
+		WindowCache(const nap::RenderWindow& window);
+
+		std::string mWindowID;						///< Property: 'WindowID' Unique window identifier
+		bool mFullscreen = false;					///< Property: 'Fullscreen' If the window is full-screen
+		glm::ivec2 mPosition = {};					///< Property: 'Position' Position of window
+		glm::ivec2 mSize = {};						///< Property: 'Size' Size of window
+	};
+
+	WindowCache::WindowCache(const nap::RenderWindow& window)
+	{
+		// Copy settings
+		mWindowID = window.mID;
+		mFullscreen = SDL::getFullscreen(window.getNativeWindow());
+		mPosition = window.getPosition();
+		mSize = window.getSize();
+	}
+
+
+	/**
+	 * Used by the render service to temporarily bind and destroy information.
+	 * This information is required by the render service (on initialization) to extract
+	 * all required Vulkan surface extensions and select a queue that can present images,
+	 * next to render and transfer functionality.
+	 */
+	struct DummyWindow
+	{
+		~DummyWindow()
+		{
+			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
+			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
+		}
+		SDL_Window*	mWindow = nullptr;
+		VkInstance	mInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	};
+}
 
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
@@ -60,42 +109,15 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::WindowCache)
+	RTTI_PROPERTY("Fullscreen", &nap::WindowCache::mFullscreen, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("WindowID", &nap::WindowCache::mWindowID, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Position", &nap::WindowCache::mPosition, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size", &nap::WindowCache::mSize, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// Dummy Window Wrapper
-	//////////////////////////////////////////////////////////////////////////
-	
-	/**
-	 * Used by the render service to temporarily bind and destroy information.
-	 * This information is required by the render service (on initialization) to extract
-	 * all required Vulkan surface extensions and select a queue that can present images,
-	 * next to render and transfer functionality.
-	 */
-	struct DummyWindow
-	{
-		~DummyWindow()
-		{
-			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
-			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
-		}
-		SDL_Window*	mWindow = nullptr;
-		VkInstance	mInstance = VK_NULL_HANDLE;
-		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Compatible physical device
-	//////////////////////////////////////////////////////////////////////////
-
-
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Static Methods
-	//////////////////////////////////////////////////////////////////////////
-
 	/**
 	 * @return VK physical device type
 	 */
@@ -1538,6 +1560,53 @@ namespace nap
 	{
 	    if(isInitialized())
 		    waitDeviceIdle();
+
+		// Create window caches to write to disk
+		// Used to re-position and scale windows in between sessions
+		std::vector<std::unique_ptr<WindowCache>> caches;
+		nap::rtti::ObjectList resources;
+		caches.reserve(mWindows.size());
+		resources.reserve(mWindows.size());
+
+		for(const auto& window : mWindows)
+		{
+			auto new_cache = std::make_unique<WindowCache>(*window);
+			new_cache->mID = utility::stringFormat("%s_cache", window->mID.c_str());
+			resources.emplace_back(new_cache.get());
+			caches.emplace_back(std::move(new_cache));
+		}
+
+		// Serialize current set of parameters to json
+		rtti::JSONWriter writer;
+		nap::utility::ErrorState error;
+		if (!rtti::serializeObjects(resources, writer, error))
+		{
+			nap::Logger::warn(error.toString());
+			return;
+		}
+
+		// Make sure we can write to the directory
+		std::string path = utility::stringFormat("%s/ini/renderservice.ini",
+			getCore().getProjectInfo()->getDataDirectory().c_str());
+		std::string storage_dir = utility::getFileDir(path);
+		if (!utility::dirExists(storage_dir))
+		{
+			if (!error.check(utility::makeDirs(storage_dir), "unable to create directory : %s", path.c_str()))
+				return;
+		}
+
+		// Open output file
+		std::ofstream output_stream(path, std::ios::binary | std::ios::out);
+		if (!error.check(output_stream.is_open() && output_stream.good(), "Failed to open %s for writing", path.c_str()))
+		{
+			nap::Logger::warn(error.toString());
+			return;
+		}
+
+		// Write to disk
+		std::string json = writer.GetJSON();
+		output_stream.write(json.data(), json.size());
+		return;
 	}
 
 
