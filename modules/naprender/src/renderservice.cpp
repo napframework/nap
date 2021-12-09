@@ -144,7 +144,7 @@ namespace nap
 
 		// Get ini file path, create directory if it doesn't exist
 		std::string dir = utility::getFileDir(path);
-		if (!error.check(utility::ensureDirExists(dir), "unable to write .ini file(s) to directory: %s", dir.c_str()))
+		if (!error.check(utility::ensureDirExists(dir), "unable to write %s file(s) to directory: %s", projectinfo::iniExtension, dir.c_str()))
 			return false;
 
 		// Open output file

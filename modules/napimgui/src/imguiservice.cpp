@@ -604,7 +604,7 @@ namespace nap
 		std::string dir = getCore().getProjectInfo()->getIniDir();
 		if (!utility::ensureDirExists(dir))
 		{
-			nap::Logger::warn("Unable to write .ini file(s) to directory: %s", dir.c_str());
+			nap::Logger::warn("Unable to write %s file(s) to directory: %s", projectinfo::iniExtension, dir.c_str());
 			return;
 		}
 
