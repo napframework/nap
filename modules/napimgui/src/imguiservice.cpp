@@ -600,10 +600,19 @@ namespace nap
 
 	void IMGuiService::preShutdown()
 	{
+		// Ensure ini directory exists
+		std::string dir = getCore().getProjectInfo()->getIniDir();
+		if (!utility::ensureDirExists(dir))
+		{
+			nap::Logger::warn("Unable to write .ini file(s) to directory: %s", dir.c_str());
+			return;
+		}
+
+		// Save imGUI .ini settings to disk, split by window
 		for (const auto& context : mContexts)
 		{
 			ImGui::SetCurrentContext(context.second->mContext);
-			ImGui::SaveIniSettingsToDisk(getIniFilePath().c_str());
+			ImGui::SaveIniSettingsToDisk(getIniFilePath(context.first->mID).c_str());
 		}
 	}
 
@@ -654,7 +663,7 @@ namespace nap
 			mStyle = createStyle(*getConfiguration<IMGuiServiceConfiguration>());
 
 			// Create context using font & style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath());
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
@@ -662,7 +671,7 @@ namespace nap
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath());
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
 		}
 
 		// Add context, set display index & push scale accordingly

@@ -21,11 +21,6 @@ namespace nap
 	class Core;
 	class ServiceObjectGraphItem;
 
-	// Globals
-	inline constexpr char iniDirectory[] = ".ini";	///< .ini directory, holds files used to (re)-store module specific settings in between sessions
-	inline constexpr char iniExtension[] = ".ini";	///< .ini file extension, used to (re)-store module specific settings in between sessions
-
-
 	/**
 	 * Base class for all Service configurations. In the derived class you can supply parameters that can be used to initialize a service.
 	 */
@@ -198,18 +193,21 @@ namespace nap
 		}
 
 		/**
-		 * Returns the .ini file name, including extension.
-		 * The .ini file is used to (re)-store settings in between sessions
-		 * @return .ini file name, including extension
-		 */
-		std::string getIniFileName() const;
-
-		/**
-		 * Returns the absolute path to a .ini file on disk.
+		 * Returns the (absolute) path to the .ini file associated with this service.
+		 * Note that this call does not create the .ini directory if it does not exist.
 		 * The .ini file is used to (re)-store settings in between sessions
 		 * @return absolute path to .ini file on disk
 		 */
 		std::string getIniFilePath() const;
+
+		/**
+		 * Returns the (absolute) path to the .ini file associated with this service.
+		 * Note that this call does not create the .ini directory if it does not exist.
+		 * The .ini file is used to (re)-store settings in between sessions
+		 * @param appendix additional name, attached to the end of the file-name
+		 * @return absolute path to the .ini file on disk
+		 */
+		std::string getIniFilePath(const std::string& appendix) const;
 
 	private:
 		// this variable will be set by the core when the service is added

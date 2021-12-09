@@ -144,11 +144,8 @@ namespace nap
 
 		// Get ini file path, create directory if it doesn't exist
 		std::string dir = utility::getFileDir(path);
-		if (!utility::dirExists(dir))
-		{
-			if (!error.check(utility::makeDirs(dir), "unable to create directory : %s", dir.c_str()))
-				return false;
-		}
+		if (!error.check(utility::ensureDirExists(dir), "unable to write .ini file(s) to directory: %s", dir.c_str()))
+			return false;
 
 		// Open output file
 		std::ofstream output_stream(path, std::ios::binary | std::ios::out);
@@ -1581,7 +1578,7 @@ namespace nap
 		nap::utility::ErrorState ini_error;
 		if (!loadIni(getIniFilePath(), getCore(), mCache, ini_error))
 		{
-			ini_error.fail("Unable to load %s file: %s", iniExtension, getIniFilePath().c_str());
+			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
 			nap::Logger::warn(errorState.toString());
 		}
 

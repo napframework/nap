@@ -12,9 +12,12 @@ namespace nap
 {
 	class ModuleManager;
 
+	// Globals
 	namespace projectinfo
 	{
-		inline constexpr const char* defaultDataDir = "data";	///< Default data directory
+		inline constexpr const char iniDirectory[] = ".ini";	///< .ini directory, holds files used to (re)-store module specific settings in between sessions
+		inline constexpr const char iniExtension[] = ".ini";	///< .ini file extension, used to (re)-store module specific settings in between sessions
+		inline constexpr const char dataDir[] = "data";			///< Default data directory
 	}
 
 	/**
@@ -108,6 +111,23 @@ namespace nap
 		 * @return Absolute path of this project's data directory
 		 */
 		std::string getDataDirectory() const;
+
+		/**
+		 * Returns the absolute path to this  project's .ini directory.
+		 * Note that it is not created if it does not exist.
+		 * The .ini directory contains files that are used to (re)-store settings in between sessions
+		 * @return Absolute path to this project's .ini directory
+		 */
+		std::string getIniDir() const;
+
+		/**
+		 * Returns an absolute .ini file path based on the given name.
+		 * Note that this call does not create the .ini directory if it does not exist.
+		 * The .ini file is used to (re)-store settings in between sessions
+		 * @param name name of the file
+		 * @return absolute path to the .ini file on disk
+		 */
+		std::string getIniFilePath(const std::string& name) const;
 
 		/**
 		 * Returns if a service configuration file has been provided.

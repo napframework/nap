@@ -61,9 +61,11 @@ namespace nap
 		{
 			DIR* dir;
 			struct dirent* ent;
-			if ((dir = opendir(directory)) == nullptr) return false;
+			if ((dir = opendir(directory)) == nullptr)
+				return false;
 
-			while ((ent = readdir(dir)) != nullptr) {
+			while ((ent = readdir(dir)) != nullptr)
+			{
 				if (!strcmp(ent->d_name, ".")) continue;
 				if (!strcmp(ent->d_name, "..")) continue;
 
@@ -124,9 +126,7 @@ namespace nap
 		std::string getFileExtension(const std::string &filename)
 		{
 			const size_t idx = filename.find_last_of('.');
-			if (idx == std::string::npos)
-				return "";
-			return filename.substr(idx + 1);
+			return idx == std::string::npos ? "" : filename.substr(idx + 1);
 		}
 
 
@@ -135,6 +135,7 @@ namespace nap
 		{
 			std::string name = file;
 			const size_t last_slash_idx = name.find_last_of("\\/");
+
 			if (last_slash_idx != std::string::npos)
 				name = name.erase(0, last_slash_idx + 1);
 			return name;
@@ -205,7 +206,6 @@ namespace nap
 			struct stat result;
 			if (stat(filename.c_str(), &result) != 0)
 				return false;
-
 			return (result.st_mode & S_IFMT) != 0;
 		}
 
@@ -229,6 +229,12 @@ namespace nap
 		}
 
 
+		bool ensureDirExists(const std::string& dirName)
+		{
+			return dirExists(dirName) ? true : makeDirs(dirName);
+		}
+
+
 		bool makeDirs(const std::string& directory)
 		{
 			std::string parent_dir = getFileDir(directory);
@@ -237,7 +243,6 @@ namespace nap
 				if (!makeDirs(parent_dir))
 					return false;
 			}
-
 			int err= 0;
 #if defined(_WIN32)
 			err = _mkdir(directory.c_str());
@@ -385,6 +390,5 @@ namespace nap
 		{
 			return replaceAllInstances(path, "/", path::separator);
 		}
-
 	}
 }

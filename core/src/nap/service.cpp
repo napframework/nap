@@ -56,18 +56,16 @@ namespace nap
 
 	std::string Service::getIniFilePath() const
 	{
-		return utility::stringFormat("%s/%s/%s",
-			getCore().getProjectInfo()->getProjectDir().c_str(),
-			iniDirectory, getIniFileName().c_str()
-		);
+		std::string file_name = utility::toLower(utility::stripNamespace(getTypeName()));
+		return getCore().getProjectInfo()->getIniFilePath(file_name);
 	}
 
 
-	std::string Service::getIniFileName() const
+	std::string Service::getIniFilePath(const std::string& appendix) const
 	{
-		return utility::stringFormat("%s%s",
+		std::string file_name = utility::stringFormat("%s_%s",
 			utility::toLower(utility::stripNamespace(getTypeName())).c_str(),
-			iniExtension
-		);
+			utility::toLower(appendix).c_str());
+		return getCore().getProjectInfo()->getIniFilePath(file_name);
 	}
 }
