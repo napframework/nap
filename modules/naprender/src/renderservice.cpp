@@ -1092,9 +1092,13 @@ namespace nap
 
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
+		// Attempt to restore cached settings
 		restoreWindow(window, mCache);
+
+		// Add and notify listeners
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
+
 		return true;
 	}
 
