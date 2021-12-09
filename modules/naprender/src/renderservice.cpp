@@ -115,25 +115,14 @@ RTTI_END_CLASS
 namespace nap
 {
 	/**
-	 * Returns absolute .ini renderservice file path
-	 * The .ini file is used to (re)-store settings in between sessions
-	 * @return .ini file name for given resource of type T
-	 */
-	static std::string getIniFilePath()
-	{
-		std::string path = utility::stringFormat("%s/%s%s", iniDirectory, 
-			utility::stripNamespace(RTTI_OF(nap::RenderService).get_name().to_string()).c_str(),
-			iniExtension);
-
-		return utility::getAbsolutePath(path);
-	}
-
-
-	/**
 	 * Writes the render service .ini file to disk
 	 * File is used to (re)-store render settings in between sessions.
+	 * @param path path to the .ini file on disk to write to
+	 * @param windows the set of render windows to store
+	 * @param error contains the error if the write operation fails
+	 * @return if the file is written
 	 */
-	static bool writeIni(const std::vector<RenderWindow*>& windows, utility::ErrorState& error)
+	static bool writeIni(const std::string& path, const std::vector<RenderWindow*>& windows, utility::ErrorState& error)
 	{
 		// Create window caches to write to disk
 		std::vector<std::unique_ptr<WindowCache>> caches;
@@ -154,7 +143,6 @@ namespace nap
 			return false;
 
 		// Get ini file path, create directory if it doesn't exist
-		std::string path = getIniFilePath();
 		std::string dir = utility::getFileDir(path);
 		if (!utility::dirExists(dir))
 		{
@@ -175,18 +163,23 @@ namespace nap
 
 
 	/**
-	 * Reads and applies the settings from the .ini file to the given window
+	 * Loads settings from the .ini file.
+	 * @param path path to the .ini file on disk
+	 * @param core core reference
+	 * @param cache object to store extracted resources
+	 * @param error contains the error if loading fails
+	 * @return if the file is read
 	 */
-	bool restoreFromIni(nap::Core& core, nap::RenderWindow& window, utility::ErrorState& error)
+	bool loadIni(const std::string& path, nap::Core& core, std::vector<std::unique_ptr<rtti::Object>>& cache, utility::ErrorState& error)
 	{
-		std::string path = getIniFilePath();
+		// Ensure file exists
+		cache.clear();
 		if (!utility::fileExists(path))
 			return true;
 
+		// Read file
 		rtti::DeserializeResult result;
 		rtti::Factory& factory =  core.getResourceManager()->getFactory();
-
-		// Read file
 		if (!deserializeJSONFile(
 			path, rtti::EPropertyValidationMode::DisallowMissingProperties,
 			rtti::EPointerPropertyMode::OnlyRawPointers,
@@ -197,23 +190,37 @@ namespace nap
 		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, error))
 			return false;
 
-		// Apply
+		// Move found items
+		cache.reserve(result.mReadObjects.size());
 		for (auto& item : result.mReadObjects)
 		{
-			// Ensure item mathes window to set
-			std::unique_ptr<WindowCache> cache_item = rtti_cast<WindowCache>(item);
-			if (cache_item == nullptr || cache_item->mID != window.mID)
-				continue;
-
-			// IDs don't match
-			if (cache_item->mID != window.mID)
-				continue;
-
-			// Apply
-			window.setSize(cache_item->mSize);
-			window.setPosition(cache_item->mPosition);
+			// Ensure it's a window cache
+			if (item->get_type().is_derived_from(RTTI_OF(WindowCache)))
+				cache.emplace_back(std::move(item));
 		}
 		return true;
+	}
+
+
+	/**
+	 * Applies settings loaded on initialization from .ini to given window
+	 * @param window window to restore
+	 * @param cache settings to apply
+	 */
+	void restoreWindow(nap::RenderWindow& window, const std::vector<std::unique_ptr<rtti::Object>>& cache)
+	{
+		for (const auto& object : cache)
+		{
+			if (!object->get_type().is_derived_from(RTTI_OF(WindowCache)))
+				continue;
+
+			const WindowCache* window_cache = static_cast<const WindowCache*>(object.get());
+			if(window.mID != window_cache->mID)
+				continue;
+
+			window.setPosition(window_cache->mPosition);
+			window.setSize(window_cache->mSize);
+		}
 	}
 
 
@@ -1088,14 +1095,7 @@ namespace nap
 
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
-		// Attempt to restore window settings from ini
-		utility::ErrorState restore_error;
-		if (!restoreFromIni(getCore(), window, restore_error))
-		{
-			restore_error.fail("Unable to restore window settings");
-			nap::Logger::warn(restore_error.toString());
-		}
-
+		restoreWindow(window, mCache);
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
 		return true;
@@ -1577,6 +1577,14 @@ namespace nap
 				return false;
 		}
 
+		// Try to load .ini file and extract saved settings, allowed to fail
+		nap::utility::ErrorState ini_error;
+		if (!loadIni(getIniFilePath(), getCore(), mCache, ini_error))
+		{
+			ini_error.fail("Unable to load %s file: %s", iniExtension, getIniFilePath().c_str());
+			nap::Logger::warn(errorState.toString());
+		}
+
 		mInitialized = true;
 		return true;
 	}
@@ -1668,7 +1676,7 @@ namespace nap
 		    waitDeviceIdle();
 
 		utility::ErrorState error;
-		if (!writeIni(mWindows, error))
+		if (!writeIni(this->getIniFilePath(), mWindows, error))
 		{
 			error.fail("Unable to store window settings");
 			nap::Logger::warn(error.toString());

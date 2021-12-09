@@ -1057,6 +1057,9 @@ namespace nap
 		bool									mShInitialized = false;
 		UniqueMaterialCache						mMaterials;
 		bool									mHeadless = false;
+
+		// Cache read from ini file, contains saved settings
+		std::vector<std::unique_ptr<rtti::Object>> mCache;
 	};
 } // nap
 
