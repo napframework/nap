@@ -7,7 +7,7 @@ add_define_to_interface_target(mod_napasio ASIO_STANDALONE)
 
 if(WIN32)
     # Define _WIN32_WINNT for ASIO
-    add_define_to_interface_target(mod_napasio _WIN32_WINNT=0x0501)
+    add_define_to_interface_target(mod_napasio WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0501)
 endif()
 
 # Install asio license into packaged project
