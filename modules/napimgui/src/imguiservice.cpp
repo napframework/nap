@@ -269,7 +269,7 @@ namespace nap
 	}
 
 
-	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration, ImFontAtlas& fontAtlas, const ImGuiStyle& style)
+	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration, ImFontAtlas& fontAtlas, const ImGuiStyle& style, const std::string& iniFile)
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
@@ -303,9 +303,15 @@ namespace nap
 		io.GetClipboardTextFn = getClipboardText;
 		io.ClipboardUserData = NULL;
 
-		// Set style and pop context
+		// Set style
 		ImGui::GetStyle() = style;
+
+		// Attempt to load .ini settings
+		ImGui::LoadIniSettingsFromDisk(iniFile.c_str());
+
+		// Pop context
 		ImGui::SetCurrentContext(cur_context);
+
 		return new_context;
 	}
 
@@ -592,6 +598,16 @@ namespace nap
 	}
 
 
+	void IMGuiService::preShutdown()
+	{
+		for (const auto& context : mContexts)
+		{
+			ImGui::SetCurrentContext(context.second->mContext);
+			ImGui::SaveIniSettingsToDisk(getIniFilePath().c_str());
+		}
+	}
+
+
 	void IMGuiService::shutdown()
 	{
 		if (mFontAtlas != nullptr)
@@ -638,7 +654,7 @@ namespace nap
 			mStyle = createStyle(*getConfiguration<IMGuiServiceConfiguration>());
 
 			// Create context using font & style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath());
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
@@ -646,7 +662,7 @@ namespace nap
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath());
 		}
 
 		// Add context, set display index & push scale accordingly
