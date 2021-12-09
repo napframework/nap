@@ -1591,35 +1591,31 @@ namespace nap
 			if (!object->get_type().is_derived_from(RTTI_OF(WindowCache)))
 				continue;
 
-			// Check if IDs match
-			const WindowCache* cache = static_cast<const WindowCache*>(object.get());
-			if (window.mID == cache->mID)
-				continue;
-
-			// Now we have the cache, find the display to position it on.
+			// Check if IDs match, if they do, find the display to position on
 			// The display name and index must match, subsequently: the cached coordinate must fit within display bounds
 			// Otherwise the configuration changed and we might position it somewhere unreachable.
 			// If that's the case we don't attempt to restore it at all
-			for (const auto& display : mDisplays)
+			const WindowCache* cache = static_cast<const WindowCache*>(object.get());
+			if (window.mID == cache->mID)
 			{
-				// Name match
-				if (cache->mDisplay != display.getName())
-					continue;
-
-				// Index match
-				if (cache->mIndex != display.getIndex())
-					continue;
-
-				// Check if coordinates are within display bounds
-				glm::ivec2 min, max;
-				SDL::getDisplayBounds(display.getIndex(), min, max);
-				if (cache->mPosition.x >= min.x && cache->mPosition.y >= min.y &&
-					cache->mPosition.x <  max.x && cache->mPosition.y <  max.y)
+				// Now we have the cache, find the display to position it on.
+				for (const auto& display : mDisplays)
 				{
-					window.setPosition(cache->mPosition);
-					window.setSize(cache->mSize);
+					// Name match
+					if (cache->mDisplay != display.getName() || cache->mIndex != display.getIndex())
+						continue;
+
+					// Check if coordinates are within display bounds
+					glm::ivec2 min, max;
+					SDL::getDisplayBounds(display.getIndex(), min, max);
+					if (cache->mPosition.x >= min.x && cache->mPosition.y >= min.y &&
+						cache->mPosition.x < max.x && cache->mPosition.y < max.y)
+					{
+						window.setPosition(cache->mPosition);
+						window.setSize(cache->mSize);
+					}
+					break;
 				}
-				break;
 			}
 		}
 	}
