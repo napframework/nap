@@ -474,7 +474,7 @@ namespace nap
 		 * Returns the display that currently contains the given window. 
 		 * @return display that contains the given window, nullptr if not found
 		 */
-		const Display* findDisplay(const nap::RenderWindow& window);
+		const Display* findDisplay(const nap::RenderWindow& window) const;
 
 		/**
 		 * @return all available displays
@@ -979,6 +979,30 @@ namespace nap
 		 * A device in idle state is forced to have completed all work, it is therefore safe to destroy pending resources.
 		 */
 		void waitDeviceIdle();
+
+		/**
+		 * Writes the render service .ini file to disk
+		 * The .ini file is used to (re)-store render settings in between sessions.
+		 * @param path path to file to write
+		 * @param error contains the error if the write operation fails
+		 * @return if write operation succeeded
+		 */
+		bool writeIni(const std::string& path, utility::ErrorState error);
+
+		/**
+		 * Loads settings from the .ini file.
+		 * The .ini file is used to (re)-store render settings in between sessions.
+		 * @param path path to file to load
+		 * @param error contains the error if the load operation fails.
+		 * @return if the file is read
+		 */
+		bool loadIni(const std::string& path, utility::ErrorState error);
+
+		/**
+		 * Attempts to restore window from a previous session.
+		 * @param window window to restore
+		 */
+		void restoreWindow(nap::RenderWindow& window);
 
 	private:
 		struct UniqueMaterial;

@@ -49,18 +49,21 @@ namespace nap
 		RTTI_ENABLE(nap::Resource)
 	public:
 		WindowCache() = default;
-		WindowCache(const nap::RenderWindow& window);
+		WindowCache(const nap::RenderWindow& window, const nap::Display& display);
 
 		glm::ivec2 mPosition = {};					///< Property: 'Position' Position of window
 		glm::ivec2 mSize = {};						///< Property: 'Size' Size of window
+		std::string mDisplay;						///< Property: 'Display' Name of the display associated with the window
+		int mIndex = 0;								///< Property: 'Index' Index of the display 
 	};
 
-	WindowCache::WindowCache(const nap::RenderWindow& window)
+	WindowCache::WindowCache(const nap::RenderWindow& window, const nap::Display& display)
 	{
-		// Copy settings
 		mID = window.mID;
 		mPosition = window.getPosition();
 		mSize = window.getSize();
+		mDisplay = display.getName();
+		mIndex = display.getIndex();
 	}
 
 
@@ -108,119 +111,14 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::WindowCache)
-	RTTI_PROPERTY("Position", &nap::WindowCache::mPosition, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Size", &nap::WindowCache::mSize, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Position",			&nap::WindowCache::mPosition,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size",				&nap::WindowCache::mSize,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Display",			&nap::WindowCache::mDisplay,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",				&nap::WindowCache::mIndex,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
 {
-	/**
-	 * Writes the render service .ini file to disk
-	 * File is used to (re)-store render settings in between sessions.
-	 * @param path path to the .ini file on disk to write to
-	 * @param windows the set of render windows to store
-	 * @param error contains the error if the write operation fails
-	 * @return if the file is written
-	 */
-	static bool writeIni(const std::string& path, const std::vector<RenderWindow*>& windows, utility::ErrorState& error)
-	{
-		// Create window caches to write to disk
-		std::vector<std::unique_ptr<WindowCache>> caches;
-		nap::rtti::ObjectList resources;
-		caches.reserve(windows.size());
-		resources.reserve(windows.size());
-
-		for (const auto& window : windows)
-		{
-			auto new_cache = std::make_unique<WindowCache>(*window);
-			resources.emplace_back(new_cache.get());
-			caches.emplace_back(std::move(new_cache));
-		}
-
-		// Serialize current set of parameters to json
-		rtti::JSONWriter writer;
-		if (!rtti::serializeObjects(resources, writer, error))
-			return false;
-
-		// Get ini file path, create directory if it doesn't exist
-		std::string dir = utility::getFileDir(path);
-		if (!error.check(utility::ensureDirExists(dir), "unable to write %s file(s) to directory: %s", projectinfo::iniExtension, dir.c_str()))
-			return false;
-
-		// Open output file
-		std::ofstream output_stream(path, std::ios::binary | std::ios::out);
-		if (!error.check(output_stream.is_open() && output_stream.good(), "Failed to open %s for writing", path.c_str()))
-			return false;
-
-		// Write to disk
-		std::string json = writer.GetJSON();
-		output_stream.write(json.data(), json.size());
-		return true;
-	}
-
-
-	/**
-	 * Loads settings from the .ini file.
-	 * @param path path to the .ini file on disk
-	 * @param core core reference
-	 * @param cache object to store extracted resources
-	 * @param error contains the error if loading fails
-	 * @return if the file is read
-	 */
-	bool loadIni(const std::string& path, nap::Core& core, std::vector<std::unique_ptr<rtti::Object>>& cache, utility::ErrorState& error)
-	{
-		// Ensure file exists
-		cache.clear();
-		if (!utility::fileExists(path))
-			return true;
-
-		// Read file
-		rtti::DeserializeResult result;
-		rtti::Factory& factory =  core.getResourceManager()->getFactory();
-		if (!deserializeJSONFile(
-			path, rtti::EPropertyValidationMode::DisallowMissingProperties,
-			rtti::EPointerPropertyMode::OnlyRawPointers,
-			factory, result, error))
-			return false;
-
-		// Resolve links
-		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, error))
-			return false;
-
-		// Move found items
-		cache.reserve(result.mReadObjects.size());
-		for (auto& item : result.mReadObjects)
-		{
-			// Ensure it's a window cache
-			if (item->get_type().is_derived_from(RTTI_OF(WindowCache)))
-				cache.emplace_back(std::move(item));
-		}
-		return true;
-	}
-
-
-	/**
-	 * Applies settings loaded on initialization from .ini to given window
-	 * @param window window to restore
-	 * @param cache settings to apply
-	 */
-	void restoreWindow(nap::RenderWindow& window, const std::vector<std::unique_ptr<rtti::Object>>& cache)
-	{
-		for (const auto& object : cache)
-		{
-			if (!object->get_type().is_derived_from(RTTI_OF(WindowCache)))
-				continue;
-
-			const WindowCache* window_cache = static_cast<const WindowCache*>(object.get());
-			if(window.mID != window_cache->mID)
-				continue;
-
-			window.setPosition(window_cache->mPosition);
-			window.setSize(window_cache->mSize);
-		}
-	}
-
-
 	/**
 	 * @return VK physical device type
 	 */
@@ -1093,7 +991,7 @@ namespace nap
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		// Attempt to restore cached settings
-		restoreWindow(window, mCache);
+		restoreWindow(window);
 
 		// Add and notify listeners
 		mWindows.emplace_back(&window);
@@ -1145,7 +1043,7 @@ namespace nap
 	}
 
 
-	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window)
+	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window) const
 	{
 		return findDisplay(SDL::getDisplayIndex(window.getNativeWindow()));
 	}
@@ -1580,7 +1478,7 @@ namespace nap
 
 		// Try to load .ini file and extract saved settings, allowed to fail
 		nap::utility::ErrorState ini_error;
-		if (!loadIni(getIniFilePath(), getCore(), mCache, ini_error))
+		if (!loadIni(getIniFilePath(), ini_error))
 		{
 			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
 			nap::Logger::warn(errorState.toString());
@@ -1608,6 +1506,123 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = true;
 	}
 
+
+	bool RenderService::writeIni(const std::string& path, utility::ErrorState error)
+	{
+		// Create window caches to write to disk
+		std::vector<std::unique_ptr<WindowCache>> caches;
+		nap::rtti::ObjectList resources;
+		caches.reserve(mWindows.size());
+		resources.reserve(mWindows.size());
+
+		for (const auto& window : mWindows)
+		{
+			// Find display that shows window
+			const auto* display = findDisplay(*window);
+			if (display == nullptr)
+				continue;
+
+			// Create cache
+			auto new_cache = std::make_unique<WindowCache>(*window, *display);
+			resources.emplace_back(new_cache.get());
+			caches.emplace_back(std::move(new_cache));
+		}
+
+		// Serialize current set of parameters to json
+		rtti::JSONWriter writer;
+		if (!rtti::serializeObjects(resources, writer, error))
+			return false;
+
+		// Get ini file path, create directory if it doesn't exist
+		std::string dir = utility::getFileDir(path);
+		if (!error.check(utility::ensureDirExists(dir), "unable to write %s file(s) to directory: %s", projectinfo::iniExtension, dir.c_str()))
+			return false;
+
+		// Open output file
+		std::ofstream output_stream(path, std::ios::binary | std::ios::out);
+		if (!error.check(output_stream.is_open() && output_stream.good(), "Failed to open %s for writing", path.c_str()))
+			return false;
+
+		// Write to disk
+		std::string json = writer.GetJSON();
+		output_stream.write(json.data(), json.size());
+		return true;
+	}
+
+
+	bool RenderService::loadIni(const std::string& path, utility::ErrorState error)
+	{
+		// Ensure file exists
+		mCache.clear();
+		if (!utility::fileExists(path))
+			return true;
+
+		// Read file
+		rtti::DeserializeResult result;
+		rtti::Factory& factory = getCore().getResourceManager()->getFactory();
+		if (!deserializeJSONFile(
+			path, rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::OnlyRawPointers,
+			factory, result, error))
+			return false;
+
+		// Resolve links
+		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, error))
+			return false;
+
+		// Move found items
+		mCache.reserve(result.mReadObjects.size());
+		for (auto& item : result.mReadObjects)
+		{
+			// Ensure it's a window cache
+			if (item->get_type().is_derived_from(RTTI_OF(WindowCache)))
+				mCache.emplace_back(std::move(item));
+		}
+		return true;
+	}
+
+
+	void RenderService::restoreWindow(nap::RenderWindow& window)
+	{
+		// Find cache associated with given window
+		for (const auto& object : mCache)
+		{
+			// Make sure it's a window cache object
+			if (!object->get_type().is_derived_from(RTTI_OF(WindowCache)))
+				continue;
+
+			// Check if IDs match
+			const WindowCache* cache = static_cast<const WindowCache*>(object.get());
+			if (window.mID == cache->mID)
+				continue;
+
+			// Now we have the cache, find the display to position it on.
+			// The display name and index must match, subsequently: the cached coordinate must fit within display bounds
+			// Otherwise the configuration changed and we might position it somewhere unreachable.
+			// If that's the case we don't attempt to restore it at all
+			for (const auto& display : mDisplays)
+			{
+				// Name match
+				if (cache->mDisplay != display.getName())
+					continue;
+
+				// Index match
+				if (cache->mIndex != display.getIndex())
+					continue;
+
+				// Check if coordinates are within display bounds
+				glm::ivec2 min, max;
+				SDL::getDisplayBounds(display.getIndex(), min, max);
+				if (cache->mPosition.x >= min.x && cache->mPosition.y >= min.y &&
+					cache->mPosition.x <  max.x && cache->mPosition.y <  max.y)
+				{
+					window.setPosition(cache->mPosition);
+					window.setSize(cache->mSize);
+				}
+				break;
+			}
+		}
+	}
 
 	void RenderService::waitForFence(int frameIndex)
 	{
@@ -1676,11 +1691,11 @@ namespace nap
 	    if(isInitialized()) 
 		    waitDeviceIdle();
 
-		utility::ErrorState error;
-		if (!writeIni(this->getIniFilePath(), mWindows, error))
+		utility::ErrorState write_error;
+		if (!writeIni(getIniFilePath(), write_error))
 		{
-			error.fail("Unable to store window settings");
-			nap::Logger::warn(error.toString());
+			write_error.fail("Unable to write: %s", getIniFilePath().c_str());
+			nap::Logger::warn(write_error.toString());
 		}
 	}
 
