@@ -27,7 +27,7 @@ namespace nap
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
 		 */
-		virtual bool processUpdateEvent(const APIEvent& event, utility::ErrorState& error) = 0;
+		virtual bool processUpdate(const APIEvent& event, utility::ErrorState& error) = 0;
 
 		/**
 		 * Gets the descriptor as an API event. Implementation differs per derived class.

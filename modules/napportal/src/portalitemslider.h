@@ -29,7 +29,7 @@ namespace nap
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
 		 */
-		virtual bool processUpdateEvent(const APIEvent& event, utility::ErrorState& error) override;
+		virtual bool processUpdate(const APIEvent& event, utility::ErrorState& error) override;
 
 		/**
 		 * @return the descriptor of the portal item as an API event
@@ -62,7 +62,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T, typename U>
-	bool PortalItemSlider<T, U>::processUpdateEvent(const APIEvent& event, utility::ErrorState& error)
+	bool PortalItemSlider<T, U>::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
 		return true;
 	}
