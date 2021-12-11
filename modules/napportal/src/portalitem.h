@@ -30,10 +30,10 @@ namespace nap
 		virtual bool processUpdateEvent(const APIEvent& event, utility::ErrorState& error) = 0;
 
 		/**
-		 * Gets the current state as an API event. Implementation differs per derived class.
-		 * @return the current state of the portal item as an API event
+		 * Gets the descriptor as an API event. Implementation differs per derived class.
+		 * @return the descriptor of the portal item as an API event
 		 */
-		virtual APIEventPtr getState() = 0;
+		virtual APIEventPtr getDescriptor() = 0;
 
 		/**
 		 * Gets the current value as an API event. Implementation differs per derived class.

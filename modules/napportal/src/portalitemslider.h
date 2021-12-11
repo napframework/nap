@@ -32,9 +32,9 @@ namespace nap
 		virtual bool processUpdateEvent(const APIEvent& event, utility::ErrorState& error) override;
 
 		/**
-		 * @return the current state of the portal item as an API event
+		 * @return the descriptor of the portal item as an API event
 		 */
-		virtual APIEventPtr getState() override;
+		virtual APIEventPtr getDescriptor() override;
 
 		/**
 		 * @return the current value of the portal item as an API event
@@ -68,14 +68,14 @@ namespace nap
 	}
 
 	template<typename T, typename U>
-	APIEventPtr PortalItemSlider<T, U>::getState()
+	APIEventPtr PortalItemSlider<T, U>::getDescriptor()
 	{
-		APIEventPtr state = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
-		state->addArgument<APIString>(nap::portal::itemTypeArgName, nap::portal::itemTypeSlider);
-		state->addArgument<U>(nap::portal::itemValueArgName, mParameter->mValue);
-		state->addArgument<U>(nap::portal::itemMinArgName, mParameter->mMinimum);
-		state->addArgument<U>(nap::portal::itemMaxArgName, mParameter->mMaximum);
-		return state;
+		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
+		event->addArgument<APIString>(nap::portal::itemTypeArgName, nap::portal::itemTypeSlider);
+		event->addArgument<U>(nap::portal::itemValueArgName, mParameter->mValue);
+		event->addArgument<U>(nap::portal::itemMinArgName, mParameter->mMinimum);
+		event->addArgument<U>(nap::portal::itemMaxArgName, mParameter->mMaximum);
+		return event;
 	}
 
 	template<typename T, typename U>
