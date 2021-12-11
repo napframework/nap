@@ -36,6 +36,11 @@ namespace nap
 		 */
 		virtual APIEventPtr getState() override;
 
+		/**
+		 * @return the current value of the portal item as an API event
+		 */
+		virtual APIEventPtr getValue() override;
+
 		ResourcePtr<T> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
 	};
 
@@ -71,6 +76,14 @@ namespace nap
 		state->addArgument<U>(nap::portal::itemMinArgName, mParameter->mMinimum);
 		state->addArgument<U>(nap::portal::itemMaxArgName, mParameter->mMaximum);
 		return state;
+	}
+
+	template<typename T, typename U>
+	APIEventPtr PortalItemSlider<T, U>::getValue()
+	{
+		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
+		event->addArgument<U>(nap::portal::itemValueArgName, mParameter->mValue);
+		return event;
 	}
 
 

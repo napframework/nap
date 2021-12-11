@@ -34,5 +34,11 @@ namespace nap
 		 * @return the current state of the portal item as an API event
 		 */
 		virtual APIEventPtr getState() = 0;
+
+		/**
+		 * Gets the current value as an API event. Implementation differs per derived class.
+		 * @return the current value of the portal item as an API event
+		 */
+		virtual APIEventPtr getValue() = 0;
 	};
 }
