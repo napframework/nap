@@ -16,7 +16,7 @@ namespace nap
 	/**
 	 * Represents an numeric slider in a NAP portal.
 	 */
-	template<typename T, typename U>
+	template<typename T>
 	class PortalItemSlider : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
@@ -41,7 +41,7 @@ namespace nap
 		 */
 		virtual APIEventPtr getValue() override;
 
-		ResourcePtr<T> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
+		ResourcePtr<ParameterNumeric<T>> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
 	};
 
 
@@ -49,40 +49,40 @@ namespace nap
 	// Portal Item Slider Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using PortalItemSliderFloat		= PortalItemSlider<ParameterFloat, APIFloat>;
-	using PortalItemSliderInt		= PortalItemSlider<ParameterInt, APIInt>;
-	using PortalItemSliderChar		= PortalItemSlider<ParameterChar, APIChar>;
-	using PortalItemSliderByte		= PortalItemSlider<ParameterByte, APIByte>;
-	using PortalItemSliderDouble	= PortalItemSlider<ParameterDouble, APIDouble>;
-	using PortalItemSliderLong		= PortalItemSlider<ParameterLong, APILong>;
+	using PortalItemSliderFloat		= PortalItemSlider<float>;
+	using PortalItemSliderInt		= PortalItemSlider<int>;
+	using PortalItemSliderChar		= PortalItemSlider<char>;
+	using PortalItemSliderByte		= PortalItemSlider<uint8_t>;
+	using PortalItemSliderDouble	= PortalItemSlider<double>;
+	using PortalItemSliderLong		= PortalItemSlider<int64_t>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T, typename U>
-	bool PortalItemSlider<T, U>::processUpdate(const APIEvent& event, utility::ErrorState& error)
+	template<typename T>
+	bool PortalItemSlider<T>::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
 		return true;
 	}
 
-	template<typename T, typename U>
-	APIEventPtr PortalItemSlider<T, U>::getDescriptor()
+	template<typename T>
+	APIEventPtr PortalItemSlider<T>::getDescriptor()
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, nap::portal::itemTypeSlider);
-		event->addArgument<U>(nap::portal::itemValueArgName, mParameter->mValue);
-		event->addArgument<U>(nap::portal::itemMinArgName, mParameter->mMinimum);
-		event->addArgument<U>(nap::portal::itemMaxArgName, mParameter->mMaximum);
+		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
+		event->addArgument<APIValue<T>>(nap::portal::itemMinArgName, mParameter->mMinimum);
+		event->addArgument<APIValue<T>>(nap::portal::itemMaxArgName, mParameter->mMaximum);
 		return event;
 	}
 
-	template<typename T, typename U>
-	APIEventPtr PortalItemSlider<T, U>::getValue()
+	template<typename T>
+	APIEventPtr PortalItemSlider<T>::getValue()
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
-		event->addArgument<U>(nap::portal::itemValueArgName, mParameter->mValue);
+		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
 		return event;
 	}
 
