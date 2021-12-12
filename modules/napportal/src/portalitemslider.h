@@ -64,6 +64,19 @@ namespace nap
 	template<typename T>
 	bool PortalItemSlider<T>::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
+		// Check for the portal item value argument
+		const APIArgument* arg = event.getArgumentByName(nap::portal::itemValueArgName);
+		if (!error.check(arg != nullptr, "%s: update event missing argument %s", mID, nap::portal::itemValueArgName))
+			return false;
+
+		// Check the portal item value type
+		const rtti::TypeInfo type = arg->getValueType();
+		if (!error.check(type == RTTI_OF(T), "%s: cannot process value type %s", mID, type.get_name()))
+			return false;
+
+		// Cast and set the value on the parameter
+		T value = static_cast<const APIValue<T>*>(&arg->getValue())->mValue;
+		mParameter->setValue(value);
 		return true;
 	}
 
