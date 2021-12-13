@@ -12,7 +12,6 @@
 
 // nap::PortalComponent run time class definition
 RTTI_BEGIN_CLASS(nap::PortalComponent)
-RTTI_PROPERTY("PortalWebSocketComponent", &nap::PortalComponent::mWebSocketComponent, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Items", &nap::PortalComponent::mItems, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 

@@ -8,7 +8,6 @@
 #include "portalitem.h"
 #include "portalevent.h"
 #include "portalservice.h"
-#include "portalwebsocketcomponent.h"
 
 // External Includes
 #include <component.h>
@@ -29,7 +28,6 @@ namespace nap
 
 	public:
 
-		ComponentPtr<PortalWebSocketComponent> mWebSocketComponent;		///< Property: 'PortalWebSocketComponent' the portal WebSocket component that can forward messages to this portal
 		std::vector<ResourcePtr<PortalItem>> mItems;					///< Property: 'Items' the portal items contained by this portal component
 	};
 
@@ -84,11 +82,6 @@ namespace nap
 		 * @return if the event was processed successfully
 		 */
 		bool processUpdate(PortalEventPtr event, utility::ErrorState& error);
-
-		/**
-		 * The portal WebSocket component that can forward messages to this portal
-		 */
-		ComponentInstancePtr<PortalWebSocketComponent> mWebSocketComponent = { this, &PortalComponent::mWebSocketComponent };
 
 	private:
 

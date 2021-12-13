@@ -13,7 +13,6 @@
                 {
                     "Type": "nap::PortalComponent",
                     "mID": "PortalComponent",
-                    "PortalWebSocketComponent": "./PortalWebSocketComponent",
                     "Items": [
                         {
                             "Type": "nap::PortalItemSliderInt",
