@@ -60,7 +60,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Receives a portal event from the portal service to be processed
+		 * Forwards a portal event to the proper method for processing
 		 * @param event the portal event that is to be processed
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
