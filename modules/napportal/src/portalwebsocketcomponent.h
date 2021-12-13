@@ -5,11 +5,12 @@
 #pragma once
 
 // Local Includes
-#include "portalservice.h"
+#include "portalcomponent.h"
 
 // External Includes
 #include <websocketcomponent.h>
 #include <websocketevent.h>
+#include <websocketserver.h>
 #include <nap/signalslot.h>
 
 namespace nap
@@ -19,7 +20,7 @@ namespace nap
 
 	/**
 	 * Resource part of the PortalWebSocketComponent.
-	 * Transforms each WebSocket event it receives into a portal event and passes it to the portal service when successful.
+	 * Transforms each WebSocket event it receives into a portal event and sends it to the target portal component when present in the same entity.
 	 */
 	class NAPAPI PortalWebSocketComponent : public WebSocketComponent
 	{
@@ -27,6 +28,13 @@ namespace nap
 		DECLARE_COMPONENT(PortalWebSocketComponent, PortalWebSocketComponentInstance)
 
 	public:
+		/**
+		* Retrieves portal components on initialization.
+		*/
+		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
+		{
+			components.push_back(RTTI_OF(PortalComponent));
+		}
 
 		bool mVerbose = true;	///< Property: 'Verbose' log WebSocket event to portal event conversion failures.
 	};
@@ -34,7 +42,7 @@ namespace nap
 
 	/*
 	 * Instance part of the PortalWebSocketComponent,
-	 * Transforms each WebSocket event it receives into a portal event and passes it to the portal service when successful.
+	 * Transforms each WebSocket event it receives into a portal event and sends it to the target portal component when present in the same entity.
 	 */
 	class NAPAPI PortalWebSocketComponentInstance : public WebSocketComponentInstance
 	{
@@ -62,18 +70,30 @@ namespace nap
 
 	private:
 
-		bool mVerbose = true;
-		PortalService* mPortalService = nullptr;
-
-		/**
-		 * Slot that is connected to the 'messageReceived' signal
-		 */
-		Slot<const WebSocketMessageReceivedEvent&> mMessageReceivedSlot = { this, &PortalWebSocketComponentInstance::onMessageReceived };
-
 		/**
 		 * Called when the slot above receives a new message
 		 * @param WebSocketMessageReceivedEvent the received WebSocket event
 		 */
 		void onMessageReceived(const WebSocketMessageReceivedEvent& event);
+
+		/**
+		 * Attempts to send the portal event to a portal component in the same entity
+		 * @param event the portal event to send to a portal component
+		 * @param error should hold the error message when sending fails
+		 * @return if the event was sent successfully
+		 */
+		bool sendEvent(PortalEventPtr event, utility::ErrorState& error); 
+
+		// WebSocket server that is selected as interface
+		WebSocketServer* mWebSocketServer = nullptr;
+
+		// Log WebSocket event to portal event conversion failures
+		bool mVerbose = true;
+
+		// Store pointers to portal components on init
+		std::vector<PortalComponentInstance*> mPortalComponents;
+
+		// Slot that is connected to the 'messageReceived' signal
+		Slot<const WebSocketMessageReceivedEvent&> mMessageReceivedSlot = { this, &PortalWebSocketComponentInstance::onMessageReceived };
 	};
 }

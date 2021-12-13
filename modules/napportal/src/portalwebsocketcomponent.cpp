@@ -41,12 +41,18 @@ namespace nap
 		if (!WebSocketComponentInstance::init(errorState))
 			return false;
 
+		// Ensure the interface is of type nap::WebSocketServer
+		if (!getInterface().get_type().is_derived_from<WebSocketServer>())
+			return errorState.check(false, "%s: expects Interface to be of type nap::WebSocketServer", getComponent()->mID.c_str());
+
+		// Store a pointer to the nap::WebSocketServer
+		mWebSocketServer = &getInterface().as<WebSocketServer>();
+
 		// Copy RTTI properties
 		mVerbose = getComponent<PortalWebSocketComponent>()->mVerbose;
 
-		// Find portal service
-		mPortalService = getEntityInstance()->getCore()->getService<PortalService>();
-		assert(mPortalService != nullptr);
+		// Store pointers to portal components
+		getEntityInstance()->getComponentsOfType<PortalComponentInstance>(mPortalComponents);
 
 		// Listen to message received events
 		messageReceived.connect(mMessageReceivedSlot);
@@ -105,12 +111,24 @@ namespace nap
 			portal_event->addAPIEvent(std::move(api_event));
 		}
 
-		// Send portal event to portal service
-		if (!mPortalService->sendEvent(std::move(portal_event), *this, error))
+		// Send portal event to portal components
+		if (!sendEvent(std::move(portal_event), error))
 		{
 			if (mVerbose)
 				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
 			return;
 		}
+	}
+
+
+	bool PortalWebSocketComponentInstance::sendEvent(PortalEventPtr event, utility::ErrorState& error)
+	{
+		// Iterate over all the portal components to find the target
+		for (const auto& portal : mPortalComponents)
+			if (portal->getComponent()->mID == event->getPortalID())
+				return portal->processEvent(std::move(event), error);
+
+		// No portal component accepted the event
+		return error.check(false, "%s: no portal component found with ID %s", getComponent()->mID.c_str(), event->getPortalID().c_str());
 	}
 }
