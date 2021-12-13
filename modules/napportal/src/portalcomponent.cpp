@@ -80,7 +80,7 @@ namespace nap
 	{
 		// Create response event
 		PortalEventHeader res_header = { event->getID(), event->getPortalID(), EPortalEventType::Response };
-		PortalEventPtr response = std::make_unique<PortalEvent>(res_header, event->getConnection());
+		PortalEventPtr response = std::make_unique<PortalEvent>(res_header);
 
 		// Add portal item descriptors
 		for (const auto& item : mItems)
