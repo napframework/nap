@@ -13,7 +13,29 @@
                 {
                     "Type": "nap::PortalComponent",
                     "mID": "PortalComponent",
-                    "PortalWebSocketComponent": "./PortalWebSocketComponent"
+                    "PortalWebSocketComponent": "./PortalWebSocketComponent",
+                    "Items": [
+                        {
+                            "Type": "nap::PortalItemSliderInt",
+                            "mID": "PortalItemSliderInt",
+                            "Parameter": "ParameterInt"
+                        },
+                        {
+                            "Type": "nap::PortalItemSliderLong",
+                            "mID": "PortalItemSliderLong",
+                            "Parameter": "ParameterLong"
+                        },
+                        {
+                            "Type": "nap::PortalItemSliderFloat",
+                            "mID": "PortalItemSliderFloat",
+                            "Parameter": "ParameterFloat"
+                        },
+                        {
+                            "Type": "nap::PortalItemSliderDouble",
+                            "mID": "PortalItemSliderDouble",
+                            "Parameter": "ParameterDouble"
+                        }
+                    ]
                 }
             ],
             "Children": []
