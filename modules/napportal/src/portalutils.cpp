@@ -62,7 +62,7 @@ namespace nap
 		// Ensure the portal event type is valid
 		std::string typeStr = arg->asString();
 		EPortalEventType type = getPortalEventType(typeStr);
-		if (!error.check(type != EPortalEventType::Invalid, "not a valid portal event type: %s", typeStr))
+		if (!error.check(type != EPortalEventType::Invalid, "not a valid portal event type: %s", typeStr.c_str()))
 			return false;
 
 		outType = type;

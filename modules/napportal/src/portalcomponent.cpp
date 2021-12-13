@@ -63,10 +63,10 @@ namespace nap
 			return processUpdate(std::move(event), error);
 
 		case EPortalEventType::Response:
-			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID, portal::eventTypeResponse);
+			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID.c_str(), portal::eventTypeResponse);
 
 		case EPortalEventType::Invalid:
-			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID, portal::eventTypeInvalid);
+			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID.c_str(), portal::eventTypeInvalid);
 
 		default:
 			assert(false);
@@ -99,7 +99,7 @@ namespace nap
 			if (mItemMap.count(portal_item_id))
 				mItemMap.at(portal_item_id)->processUpdate(*api_event, error);
 			else
-				error.fail("%s: does not contain portal item %s", getComponent()->mID, portal_item_id);
+				error.fail("%s: does not contain portal item %s", getComponent()->mID.c_str(), portal_item_id.c_str());
 		}
 
 		return !error.hasErrors();

@@ -66,12 +66,12 @@ namespace nap
 	{
 		// Check for the portal item value argument
 		const APIArgument* arg = event.getArgumentByName(nap::portal::itemValueArgName);
-		if (!error.check(arg != nullptr, "%s: update event missing argument %s", mID, nap::portal::itemValueArgName))
+		if (!error.check(arg != nullptr, "%s: update event missing argument %s", mID.c_str(), nap::portal::itemValueArgName))
 			return false;
 
 		// Check the portal item value type
 		const rtti::TypeInfo type = arg->getValueType();
-		if (!error.check(type == RTTI_OF(T), "%s: cannot process value type %s", mID, type.get_name()))
+		if (!error.check(type == RTTI_OF(T), "%s: cannot process value type %s", mID.c_str(), type.get_name().data()))
 			return false;
 
 		// Cast and set the value on the parameter
