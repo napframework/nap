@@ -35,10 +35,8 @@ namespace nap
 		/**
 		 * Default constructor
 		 * @param header the portal event header containing information about the objective of the event
-		 * @param connection the WebSocket connection used for sending the event
 		 */
-		PortalEvent(const PortalEventHeader& header, const WebSocketConnection& connection) :
-			mHeader(header), mConnection(connection) { }
+		PortalEvent(const PortalEventHeader& header) : mHeader(header) { }
 
 		/**
 		 * @return unique ID of the portal event
@@ -54,11 +52,6 @@ namespace nap
 		 * @return type of the portal event, determines the effect
 		 */
 		const EPortalEventType& getType() const		{ return mHeader.mType; }
-
-		/**
-		 * @return type of the portal event, determines the effect
-		 */
-		const WebSocketConnection& getConnection() const { return mConnection; }
 
 		/**
 		 * Converts the portal event to a JSON string of API messages used for sending over the WebSocket server.
@@ -111,7 +104,6 @@ namespace nap
 	private:
 
 		PortalEventHeader mHeader;				///< Object containing all portal event header information
-		WebSocketConnection mConnection;		///< The WebSocket connection used for sending this event
 		std::vector<APIEventPtr> mAPIEvents;	///< The API events that this portal event contains
 	};
 
