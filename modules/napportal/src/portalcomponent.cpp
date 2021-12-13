@@ -64,10 +64,10 @@ namespace nap
 			return processUpdateEvent(std::move(event), error);
 
 		case EPortalEventType::Response:
-			return error.check(false, "portal component does not handle events with type %s", portal::eventTypeResponse);
+			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID, portal::eventTypeResponse);
 
 		case EPortalEventType::Invalid:
-			return error.check(false, "portal component does not handle events with type %s", portal::eventTypeInvalid);
+			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID, portal::eventTypeInvalid);
 
 		default:
 			assert(false);
@@ -92,6 +92,17 @@ namespace nap
 
 	bool PortalComponentInstance::processUpdateEvent(PortalEventPtr event, utility::ErrorState& error)
 	{
-		return true;
+		// Try to pass each API event to a portal item
+		for (const auto& api_event : event->getAPIEvents())
+		{
+			// Don't stop when processing fails, just add an error
+			const std::string& portal_item_id = api_event->getID();
+			if (mItemMap.count(portal_item_id))
+				mItemMap.at(portal_item_id)->processUpdate(*api_event, error);
+			else
+				error.fail("%s: does not contain portal item %s", getComponent()->mID, portal_item_id);
+		}
+
+		return !error.hasErrors();
 	}
 }
