@@ -58,10 +58,10 @@ namespace nap
 		switch (event->getType())
 		{
 		case EPortalEventType::Request:
-			return processRequestEvent(std::move(event), error);
+			return processRequest(std::move(event), error);
 
 		case EPortalEventType::Update:
-			return processUpdateEvent(std::move(event), error);
+			return processUpdate(std::move(event), error);
 
 		case EPortalEventType::Response:
 			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID, portal::eventTypeResponse);
@@ -76,7 +76,7 @@ namespace nap
 	}
 
 
-	bool PortalComponentInstance::processRequestEvent(PortalEventPtr event, utility::ErrorState& error)
+	bool PortalComponentInstance::processRequest(PortalEventPtr event, utility::ErrorState& error)
 	{
 		// Create response event
 		PortalEventHeader res_header = { event->getID(), event->getPortalID(), EPortalEventType::Response };
@@ -90,7 +90,7 @@ namespace nap
 	}
 
 
-	bool PortalComponentInstance::processUpdateEvent(PortalEventPtr event, utility::ErrorState& error)
+	bool PortalComponentInstance::processUpdate(PortalEventPtr event, utility::ErrorState& error)
 	{
 		// Try to pass each API event to a portal item
 		for (const auto& api_event : event->getAPIEvents())

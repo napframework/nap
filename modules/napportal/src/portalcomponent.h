@@ -75,7 +75,7 @@ namespace nap
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
 		 */
-		bool processRequestEvent(PortalEventPtr event, utility::ErrorState& error);
+		bool processRequest(PortalEventPtr event, utility::ErrorState& error);
 
 		/**
 		 * Processes an update type portal event
@@ -83,7 +83,7 @@ namespace nap
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
 		 */
-		bool processUpdateEvent(PortalEventPtr event, utility::ErrorState& error);
+		bool processUpdate(PortalEventPtr event, utility::ErrorState& error);
 
 		/**
 		 * The portal WebSocket component that can forward messages to this portal
