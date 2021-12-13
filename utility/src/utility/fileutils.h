@@ -106,14 +106,25 @@ namespace nap
 		bool fileExists(const std::string& filename);
 
 		/**
-		 * Check if a folder exists or not
+		 * Check if a directory exists or not
+		 * @param dirName name of the directory to check for
+		 * @return if the directory exists
 		 */
 		bool dirExists(const std::string& dirName);
 
 		/**
-		 * Ensure the directory exists by making any intermediate directories
-		 * @param directory The directory to create
-		 * @return true on success, false if it failed
+		 * Makes sure the given directory exists,
+		 * attempts to create the directory if it does not exist, recursively
+		 * @param dirName name of the directory to check for
+		 * @return if directory exists
+		 */
+		bool ensureDirExists(const std::string& dirName);
+
+		/**
+		 * Attempts to create a directory with the given name, recursively.
+		 * Creation will fail if the path is invalid or the directory already exists.
+		 * @param directory path to the directory to create, absolute or relative.
+		 * @return If the directory has been created.
 		 */
 		bool makeDirs(const std::string& directory);
 

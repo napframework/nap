@@ -51,8 +51,10 @@ namespace nap
 		Uint32 options = SDL_WINDOW_VULKAN;
 		options = renderWindow.mResizable  ? options | SDL_WINDOW_RESIZABLE : options;
 		options = renderWindow.mBorderless ? options | SDL_WINDOW_BORDERLESS : options;
-		options = !renderWindow.mVisible ? options | SDL_WINDOW_HIDDEN : options;
 		options = allowHighDPI ? options | SDL_WINDOW_ALLOW_HIGHDPI : options;
+
+		// Always hide window until added and configured by render service
+		options = options | SDL_WINDOW_HIDDEN;
 
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
 			SDL_WINDOWPOS_CENTERED,
@@ -596,6 +598,10 @@ namespace nap
 
 		// We want to respond to resize events for this window
 		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
+
+		// Show if requestd
+		if (mVisible)
+			this->show();
 
 		return true;
 	}
