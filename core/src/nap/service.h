@@ -16,6 +16,7 @@
 
 namespace nap
 {
+
 	// Forward Declares
 	class Core;
 	class ServiceObjectGraphItem;
@@ -59,14 +60,19 @@ namespace nap
 		virtual ~Service();
 
 		/**
-		 *	@return the nap core this service belongs to
+		 * @return the nap core this service belongs to
 		 */
 		Core& getCore();
 
 		/**
-		 *	@return the type name of the service
+		 * @return the nap core this service belongs to
 		 */
-		const std::string getTypeName() const;
+		const Core& getCore() const;
+
+		/**
+		 * @return the type name of the service
+		 */
+		std::string getTypeName() const;
 
 		/**
 		 * Copy is not allowed
@@ -185,6 +191,23 @@ namespace nap
 		{
 			return rtti_cast<SERVICE_CONFIG>(mConfiguration);
 		}
+
+		/**
+		 * Returns the (absolute) path to the .ini file associated with this service.
+		 * Note that this call does not create the .ini directory if it does not exist.
+		 * The .ini file is used to (re)-store settings in between sessions
+		 * @return absolute path to .ini file on disk
+		 */
+		std::string getIniFilePath() const;
+
+		/**
+		 * Returns the (absolute) path to the .ini file associated with this service.
+		 * Note that this call does not create the .ini directory if it does not exist.
+		 * The .ini file is used to (re)-store settings in between sessions
+		 * @param appendix additional name, attached to the end of the file-name
+		 * @return absolute path to the .ini file on disk
+		 */
+		std::string getIniFilePath(const std::string& appendix) const;
 
 	private:
 		// this variable will be set by the core when the service is added

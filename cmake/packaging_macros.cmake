@@ -404,6 +404,7 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "*.mesh" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE
             PATTERN "*.plist" EXCLUDE
+            PATTERN "*.ini" EXCLUDE
             )
     install(FILES ${NAP_ROOT}/dist/cmake/native/project_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
 
