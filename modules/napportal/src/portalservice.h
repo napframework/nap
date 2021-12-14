@@ -6,6 +6,7 @@
 
 // External Includes
 #include <nap/service.h>
+#include <websocketservice.h>
 #include <mutex>
 
 namespace nap
@@ -29,9 +30,31 @@ namespace nap
 		PortalService(ServiceConfiguration* configuration);
 
 		/**
-		 * Destructor
+		 * @return the WebSocket service
 		 */
-		~PortalService() override;
+		WebSocketService& getWebSocketService();
+
+		/**
+		 * @return const ref to the WebSocket service
+		 */
+		const WebSocketService& getWebSocketService() const;
+
+	protected:
+		/**
+		 * Registers all objects that need a specific way of construction.
+		 * @param factory the factory to register the object creators with.
+		 */
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
+
+		/**
+		 * This service depends on the WebSocket service
+		 */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		 * Called after creation
+		 */
+		virtual void created() override;
 
 	private:
 
@@ -46,6 +69,9 @@ namespace nap
 		 * @param component the component to de-register.
 		 */
 		void removeComponent(PortalComponentInstance& component);
+
+		// Handle to the WebSocket service
+		WebSocketService* mWebSocketService = nullptr;
 
 		// All the portal components currently available to the system
 		std::vector<PortalComponentInstance*> mComponents;

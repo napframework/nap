@@ -5,6 +5,7 @@
 // Local Includes
 #include "portalservice.h"
 #include "portalcomponent.h"
+#include "portalwebsocketserver.h"
 
 // External Includes
 #include <nap/core.h>
@@ -22,8 +23,36 @@ namespace nap
 	}
 
 
-	PortalService::~PortalService()
+	nap::WebSocketService& PortalService::getWebSocketService()
 	{
+		assert(mWebSocketService != nullptr);
+		return *mWebSocketService;
+	}
+
+
+	const nap::WebSocketService& PortalService::getWebSocketService() const
+	{
+		assert(mWebSocketService != nullptr);
+		return *mWebSocketService;
+	}
+
+
+	void PortalService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<PortalWebSocketServerObjectCreator>(*this));
+	}
+
+
+	void PortalService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+		dependencies.emplace_back(RTTI_OF(WebSocketService));
+	}
+
+
+	void PortalService::created()
+	{
+		mWebSocketService = getCore().getService<WebSocketService>();
+		assert(mWebSocketService != nullptr);
 	}
 
 
