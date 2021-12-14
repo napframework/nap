@@ -64,12 +64,6 @@ namespace nap
 	}
 
 
-	void IWebSocketClient::onMessageReceived(const WebSocketMessage& msg)
-	{
-
-	}
-
-
 	void IWebSocketClient::connectionOpened()
 	{
 		mOpen = true;
