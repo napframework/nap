@@ -158,6 +158,6 @@ namespace nap
 		APIService* mAPIService = nullptr;	///< Handle to the api service.
 	};
 
-	// Object creator used for constructing the the api web-socket server
+	// Object creator used for constructing the api web-socket server
 	using APIWebSocketServerObjectCreator = rtti::ObjectCreator<APIWebSocketServer, APIWebSocketService>;
 }
