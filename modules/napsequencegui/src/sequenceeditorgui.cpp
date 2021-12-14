@@ -39,11 +39,13 @@ namespace nap
 
 	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
 	{
+		// Initialize base
 		if (!Resource::init(errorState))
 			return false;
 
+		// Create and initialize view
 		mView = std::make_unique<SequenceEditorGUIView>(mService, *mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
-		return true;
+		return mView->init(errorState);
 	}
 
 
@@ -93,33 +95,40 @@ namespace nap
 			// store the raw pointer
 			mViews.emplace(view_type, std::move(track_view));
 		}
+	}
 
-		// Create play icon
-		const auto& service_module = getService().getModule();
-		auto play_icon_path = utility::forceSeparator(service_module.findAsset(sequencegui::playIcon));
-		if (!play_icon_path.empty())
-		{
-			mPlayIcon = std::make_unique<ImageFromFile>(this->getService().getCore(), play_icon_path);
-			utility::ErrorState error;
-			if (!mPlayIcon->init(error))
-			{
-				nap::Logger::warn(error.toString());
-				mPlayIcon = nullptr;
-			}
-		}
 
-		// Create stop icon
-		auto stop_icon_path = utility::forceSeparator(service_module.findAsset(sequencegui::stopIcon));
-		if (!stop_icon_path.empty())
+	bool loadIcon(std::string&& name, nap::Service& service, std::unique_ptr<nap::ImageFromFile>& outImage, nap::utility::ErrorState& error)
+	{
+		// Find path to asset
+		const auto& module = service.getModule();
+		auto icon_path = module.findAsset(name);
+		if (!error.check(!icon_path.empty(), "%s: Unable to find: %s", module.getName().c_str(), name))
+			return false;
+
+		// Create icon
+		outImage = std::make_unique<ImageFromFile>(service.getCore(), icon_path);
+		if (!outImage->init(error))
 		{
-			mStopIcon = std::make_unique<ImageFromFile>(this->getService().getCore(), stop_icon_path);
-			utility::ErrorState error;
-			if (!mStopIcon->init(error))
-			{
-				nap::Logger::warn(error.toString());
-				mStopIcon = nullptr;
-			}
+			outImage.reset(nullptr);
+			return false;
 		}
+		return true;
+	}
+
+
+	bool SequenceEditorGUIView::init(utility::ErrorState error)
+	{
+		utility::ErrorState load_error;
+		const auto& module = getService().getModule();
+
+		if(!loadIcon(sequencegui::playIcon, getService(), mPlayIcon, load_error))
+			return false;
+
+		if(!loadIcon(sequencegui::stopIcon, getService(), mStopIcon, load_error))
+			return false;
+
+		return true;
 	}
 
 

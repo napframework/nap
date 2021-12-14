@@ -96,6 +96,13 @@ namespace nap
 		SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
 		/**
+		 * Attempts to load all the GUI resources, including icons.
+		 * @param error contains the error if initialization fails
+		 * @return if initialization succeeded
+		 */
+		bool init(utility::ErrorState error);
+
+		/**
 		 * shows the editor interface
 		 */
 		virtual void show();
