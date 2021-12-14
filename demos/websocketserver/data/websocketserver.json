@@ -16,7 +16,7 @@
             "Type": "nap::APIWebSocketServer",
             "mID": "WebSocketServer",
             "EndPoint": "WebSocketServerEndPoint",
-            "Mode": "Both",
+            "SendWebSocketEvents": true,
             "Verbose": true
         },
         {
