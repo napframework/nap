@@ -105,7 +105,7 @@ namespace nap
 		virtual void onConnectionFailed(int code, const std::string& reason) override;
 
 		// Called by web-socket client endpoint when a new message is received
-		virtual void onMessageReceived(const WebSocketMessage& msg) override;
+		virtual void onMessageReceived(const WebSocketMessage& message) override;
 
 	private:
 

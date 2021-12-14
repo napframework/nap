@@ -70,15 +70,15 @@ namespace nap
 	}
 
 
-	void APIWebSocketClient::onMessageReceived(const WebSocketMessage& msg)
+	void APIWebSocketClient::onMessageReceived(const WebSocketMessage& message)
 	{
 		// Add web-socket event
 		if (mSendWebSocketEvents)
-			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, msg));
+			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(mConnection, message));
 
 		// Ensure it's a finalized message
 		nap::utility::ErrorState error;
-		if (!error.check(msg.getFin(), "only finalized messages are accepted"))
+		if (!error.check(message.getFin(), "only finalized messages are accepted"))
 		{
 			if (mVerbose)
 				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
@@ -86,7 +86,7 @@ namespace nap
 		}
 
 		// Make sure we're dealing with text
-		if (!error.check(msg.getCode() == EWebSocketOPCode::Text, "not a text message"))
+		if (!error.check(message.getCode() == EWebSocketOPCode::Text, "not a text message"))
 		{
 			if (mVerbose)
 				nap::Logger::warn("%s: %s", mID.c_str(), error.toString().c_str());
@@ -97,7 +97,7 @@ namespace nap
 		auto& factory = mService->getCore().getResourceManager()->getFactory();
 		nap::rtti::DeserializeResult result;
 		std::vector<APIMessage*> messages;
-		if (!extractMessages(msg.getPayload(), result, factory, messages, error))
+		if (!extractMessages(message.getPayload(), result, factory, messages, error))
 		{
 			if (mVerbose)
 				nap::Logger::warn("%s: %s", this->mID.c_str(), error.toString().c_str());
