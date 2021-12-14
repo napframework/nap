@@ -23,6 +23,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// IWebSocketClient
+	//////////////////////////////////////////////////////////////////////////
 
 	IWebSocketClient::IWebSocketClient(WebSocketService& service) : WebSocketInterface(service)
 	{
@@ -35,9 +38,7 @@ namespace nap
 		if (!WebSocketInterface::init(errorState))
 			return false;
 
-		if (!mEndPoint->registerClient(*this, errorState))
-			return false;
-		return true;
+		return mEndPoint->registerClient(*this, errorState);
 	}
 
 
@@ -59,9 +60,7 @@ namespace nap
 		mEndPoint->unregisterClient(*this);
 
 		// Now connect again
-		if (!mEndPoint->registerClient(*this, error))
-			return false;
-		return true;
+		return mEndPoint->registerClient(*this, error);
 	}
 
 
@@ -98,16 +97,13 @@ namespace nap
 	}
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// WebSocketClient
+	//////////////////////////////////////////////////////////////////////////
+
 	WebSocketClient::WebSocketClient(WebSocketService& service) : IWebSocketClient(service)
 	{
-	}
 
-
-	bool WebSocketClient::init(utility::ErrorState& errorState)
-	{
-		if (!IWebSocketClient::init(errorState))
-			return false;
-		return true;
 	}
 
 
@@ -116,10 +112,7 @@ namespace nap
 		if (!error.check(isConnected(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
 			return false;
 
-		if (!mEndPoint->send(mConnection, message, code, error))
-			return false;
-
-		return true;
+		return mEndPoint->send(mConnection, message, code, error);
 	}
 
 
@@ -128,10 +121,7 @@ namespace nap
 		if (!error.check(isConnected(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
 			return false;
 
-		if (!mEndPoint->send(mConnection, payload, length, code, error))
-			return false;
-
-		return true;
+		return mEndPoint->send(mConnection, payload, length, code, error);
 	}
 
 
@@ -140,10 +130,7 @@ namespace nap
 		if (!error.check(isConnected(), "%s: client not connected to: %s", mID.c_str(), mURI.c_str()))
 			return false;
 
-		if (!mEndPoint->send(mConnection, message.getPayload(), message.getCode(), error))
-			return false;
-
-		return true;
+		return mEndPoint->send(mConnection, message.getPayload(), message.getCode(), error);
 	}
 
 
