@@ -11,21 +11,20 @@
 
 // external includes
 #include <nap/resource.h>
-#include <parameter.h>
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * Sequence holds all the information needed by the player to play a Sequence and link it to the right parameters
-	 */
-	class NAPAPI Sequence : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		std::vector<ResourcePtr<SequenceTrack>>		mTracks; ///< Property: 'Sequence Tracks' Vector holding resourceptrs to the SequenceTracks
-		std::vector<ResourcePtr<SequenceMarker>> 	mMarkers; ///< Property: 'Sequence Markers' Vector holding resourceptrs to the SequenceMarkers
-		double mDuration = 0; ///< Property: 'Duration' the duration of the sequence
-	};
+    /**
+     * Sequence holds all the information needed by the player to play a Sequence and link it to the right parameters
+     */
+    class NAPAPI Sequence : public Resource
+    {
+        RTTI_ENABLE(Resource)
+    public:
+        std::vector<ResourcePtr<SequenceTrack>> mTracks; ///< Property: 'Sequence Tracks' Vector holding resourceptrs to the SequenceTracks
+        std::vector<ResourcePtr<SequenceMarker>> mMarkers; ///< Property: 'Sequence Markers' Vector holding resourceptrs to the SequenceMarkers
+        double mDuration = 0; ///< Property: 'Duration' the duration of the sequence
+    };
 }

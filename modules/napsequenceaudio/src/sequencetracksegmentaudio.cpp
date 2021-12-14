@@ -5,6 +5,6 @@
 #include "sequencetracksegmentaudio.h"
 
 RTTI_BEGIN_CLASS(nap::SequenceTrackSegmentAudio)
-		RTTI_PROPERTY("BufferID", &nap::SequenceTrackSegmentAudio::mAudioBufferID, nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("Start Time In Segment", &nap::SequenceTrackSegmentAudio::mStartTimeInAudioSegment, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("BufferID", &nap::SequenceTrackSegmentAudio::mAudioBufferID, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Start Time In Segment", &nap::SequenceTrackSegmentAudio::mStartTimeInAudioSegment, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

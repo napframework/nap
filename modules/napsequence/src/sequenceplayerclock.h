@@ -14,109 +14,113 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	// forward declares
-	class SequenceService;
+    // forward declares
+    class SequenceService;
 
-	/**
-	 * The SequencePlayerClock is used by the sequence player to get its update calls
-	 * The idea behind this is that we can synchronize the SequencePlayer to any threads, external sources or clocks
-	 */
-	class NAPAPI SequencePlayerClock : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		// default constructor and deconstructor
-		SequencePlayerClock() = default;
-		~SequencePlayerClock() = default;
+    /**
+     * The SequencePlayerClock is used by the sequence player to get its update calls
+     * The idea behind this is that we can synchronize the SequencePlayer to any threads, external sources or clocks
+     */
+    class NAPAPI SequencePlayerClock : public Resource
+    {
+        RTTI_ENABLE(Resource)
+    public:
+        // default constructor and deconstructor
+        SequencePlayerClock() = default;
 
-		/**
-		 * Start needs to be overloaded. The update slot is the slot that needs to be called on update with a delta time
-		 * DeltaTime needs to be in seconds
-		 * @param updateSlot the update slot from the SequencePlayer that needs to be called
-		 */
-		virtual void start(Slot<double>& updateSlot) = 0;
+        ~SequencePlayerClock() = default;
 
-		/**
-		 * Called by the SequencePlayer when player is deconstructed
-		 */
-		virtual void stop() = 0;
-	protected:
-		// the slot
-		Slot<double> 		mSlot;
-	};
+        /**
+         * Start needs to be overloaded. The update slot is the slot that needs to be called on update with a delta time
+         * DeltaTime needs to be in seconds
+         * @param updateSlot the update slot from the SequencePlayer that needs to be called
+         */
+        virtual void start(Slot<double>& updateSlot) = 0;
 
-	/**
-	 * SequencePlayerStandardClock is being updated by the SequenceService on update, this means that the SequencePlayer
-	 * is being updated on the main thread
-	 */
-	class NAPAPI SequencePlayerStandardClock : public SequencePlayerClock
-	{
-		friend class SequenceService;
+        /**
+         * Called by the SequencePlayer when player is deconstructed
+         */
+        virtual void stop() = 0;
 
-		RTTI_ENABLE(SequencePlayerClock)
-	public:
-		/**
-		 * Constructor
-		 * @param service reference to sequence service
-		 */
-		SequencePlayerStandardClock(SequenceService& service);
+    protected:
+        // the slot
+        Slot<double> mSlot;
+    };
 
-		/**
-		 * Called by sequence player upon initialization
-		 * @param updateSlot the update slot from the SequencePlayer that needs to be called
-		 */
-		void start(Slot<double>& updateSlot) override;
+    /**
+     * SequencePlayerStandardClock is being updated by the SequenceService on update, this means that the SequencePlayer
+     * is being updated on the main thread
+     */
+    class NAPAPI SequencePlayerStandardClock : public SequencePlayerClock
+    {
+        friend class SequenceService;
 
-		/**
-		 * Called by the SequencePlayer when player is deconstructed
-		 */
-		void stop() override;
-	private:
-		/**
-		 * called from SequenceService
-		 * @param deltaTime
-		 */
-		void update(double deltaTime);
+    RTTI_ENABLE(SequencePlayerClock)
+    public:
+        /**
+         * Constructor
+         * @param service reference to sequence service
+         */
+        SequencePlayerStandardClock(SequenceService& service);
 
-		// reference to service
-		SequenceService& mService;
-	};
+        /**
+         * Called by sequence player upon initialization
+         * @param updateSlot the update slot from the SequencePlayer that needs to be called
+         */
+        void start(Slot<double>& updateSlot) override;
 
-	// factory method shortcut
-	using SequencePlayerStandClockObjectCreator = rtti::ObjectCreator<SequencePlayerStandardClock, SequenceService>;
+        /**
+         * Called by the SequencePlayer when player is deconstructed
+         */
+        void stop() override;
 
-	/**
-	 * The threaded clock can be used to let the SequencePlayer be updated by its own thread
-	 */
-	class NAPAPI SequencePlayerThreadedClock : public SequencePlayerClock
-	{
-		RTTI_ENABLE(SequencePlayerClock)
-	public:
-		/**
-		 * Called by sequence player upon initialization
-		 * @param updateSlot the update slot from the SequencePlayer that needs to be called
-		 */
-		void start(Slot<double>& updateSlot) override;
+    private:
+        /**
+         * called from SequenceService
+         * @param deltaTime
+         */
+        void update(double deltaTime);
 
-		/**
-		 * Called by the SequencePlayer when player is deconstructed
-		 */
-		void stop() override;
-	public:
-		// properties
-		float 				mFrequency = 1000.0f; ///< Property: 'Frequency' the update frequency in times per second (Hz)
-	private:
-		void onUpdate();
+        // reference to service
+        SequenceService& mService;
+    };
 
-		// the task
-		std::future<void>	mUpdateTask;
+    // factory method shortcut
+    using SequencePlayerStandClockObjectCreator = rtti::ObjectCreator<SequencePlayerStandardClock, SequenceService>;
 
-		// bool indicating if thread is running
-		std::atomic_bool   	mRunning = { false };
+    /**
+     * The threaded clock can be used to let the SequencePlayer be updated by its own thread
+     */
+    class NAPAPI SequencePlayerThreadedClock : public SequencePlayerClock
+    {
+    RTTI_ENABLE(SequencePlayerClock)
+    public:
+        /**
+         * Called by sequence player upon initialization
+         * @param updateSlot the update slot from the SequencePlayer that needs to be called
+         */
+        void start(Slot<double>& updateSlot) override;
 
-		// previous timestamp, used to calculate deltaTime
-		HighResTimeStamp	mBefore;
-	};
+        /**
+         * Called by the SequencePlayer when player is deconstructed
+         */
+        void stop() override;
+
+    public:
+        // properties
+        float mFrequency = 1000.0f; ///< Property: 'Frequency' the update frequency in times per second (Hz)
+    private:
+        void onUpdate();
+
+        // the task
+        std::future<void> mUpdateTask;
+
+        // bool indicating if thread is running
+        std::atomic_bool mRunning = {false};
+
+        // previous timestamp, used to calculate deltaTime
+        HighResTimeStamp mBefore;
+    };
 }

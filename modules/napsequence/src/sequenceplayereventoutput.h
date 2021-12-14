@@ -17,51 +17,52 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	// forward declares
-	class SequenceService;
+    // forward declares
+    class SequenceService;
 
-	/**
-	 * SequencePlayerEventOutput dispatches an event from the sequencer on the main thread.
-	 * The EventOutput receives its update call from the SequenceService
-	 */
-	class NAPAPI SequencePlayerEventOutput final : public SequencePlayerOutput
-	{
-		friend class SequencePlayerEventAdapter;
+    /**
+     * SequencePlayerEventOutput dispatches an event from the sequencer on the main thread.
+     * The EventOutput receives its update call from the SequenceService
+     */
+    class NAPAPI SequencePlayerEventOutput final : public SequencePlayerOutput
+    {
+        friend class SequencePlayerEventAdapter;
 
-		RTTI_ENABLE(SequencePlayerOutput);
-	public:
-		/**
-		 * Constructor
-		 * @param service reference to SequenceService
-		 */
-		explicit SequencePlayerEventOutput(SequenceService& service);
+        RTTI_ENABLE(SequencePlayerOutput);
+    public:
+        /**
+         * Constructor
+         * @param service reference to SequenceService
+         */
+        explicit SequencePlayerEventOutput(SequenceService& service);
 
-	public:
-		/**
-		 * Signal will be triggered from main thread
-		 */
-		nap::Signal<const SequenceEventBase&> mSignal;
-	protected:
-		/**
-		 * called from sequence service main thread
-		 * @param deltaTime time since last update
-		 */
-		void update(double deltaTime) override ;
+    public:
+        /**
+         * Signal will be triggered from main thread
+         */
+        nap::Signal<const SequenceEventBase&> mSignal;
+    protected:
+        /**
+         * called from sequence service main thread
+         * @param deltaTime time since last update
+         */
+        void update(double deltaTime) override;
 
-		/**
-		 * called from sequence player thread, adds event to queue.
-		 * @param event the event ptr that needs to be dispatched. Receiver takes ownership of the event
-		 */
-		void addEvent(SequenceEventPtr event);
-	private:
-		// the queue of events
-		std::queue<SequenceEventPtr> mEvents;
+        /**
+         * called from sequence player thread, adds event to queue.
+         * @param event the event ptr that needs to be dispatched. Receiver takes ownership of the event
+         */
+        void addEvent(SequenceEventPtr event);
 
-		// thread mutex
-		std::mutex mEventMutex;
-	};
+    private:
+        // the queue of events
+        std::queue<SequenceEventPtr> mEvents;
 
-	using SequencePlayerEventOutputObjectCreator = rtti::ObjectCreator<SequencePlayerEventOutput, SequenceService>;
+        // thread mutex
+        std::mutex mEventMutex;
+    };
+
+    using SequencePlayerEventOutputObjectCreator = rtti::ObjectCreator<SequencePlayerEventOutput, SequenceService>;
 }

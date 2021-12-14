@@ -14,17 +14,19 @@
 
 namespace nap
 {
-	/**
-	 * The SequenceTrackAudio track type.
-	 * A SequenceTrackAudio contains SequenceTrackSegmentAudio type segments
-	 */
-	class NAPAPI SequenceTrackAudio : public SequenceTrack
-	{
-		RTTI_ENABLE(SequenceTrack)
-	public:
-		/**
-		 * Deconstructor
-		 */
-         virtual ~SequenceTrackAudio() = default;
-	};
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The SequenceTrackAudio track type.
+     * A SequenceTrackAudio contains SequenceTrackSegmentAudio type segments
+     */
+    class NAPAPI SequenceTrackAudio : public SequenceTrack
+    {
+        RTTI_ENABLE(SequenceTrack)
+    public:
+        /**
+         * Deconstructor
+         */
+        virtual ~SequenceTrackAudio() = default;
+    };
 }

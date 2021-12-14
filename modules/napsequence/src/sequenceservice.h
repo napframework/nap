@@ -19,16 +19,21 @@ namespace nap
 
     // forward declares
     class SequenceController;
+
     class SequenceEditor;
+
     class SequencePlayerAdapter;
+
     class SequencePlayerStandardClock;
 
     // shortcuts
-    using SequenceControllerFactoryFunc 	= std::function<std::unique_ptr<SequenceController>(SequencePlayer&, SequenceEditor&)>;
-    using SequenceControllerFactoryMap 		= std::unordered_map<rtti::TypeInfo, SequenceControllerFactoryFunc>;
-    using DefaultSequenceTrackFactoryMap 	= std::unordered_map<rtti::TypeInfo, std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput*)>>;
-    using SequencePlayerAdapterFactoryFunc 	= std::function<std::unique_ptr<SequencePlayerAdapter>(const SequenceTrack&, SequencePlayerOutput&, const SequencePlayer&)>;
-    using SequencePlayerAdapterFactoryMap 	= std::unordered_map<rtti::TypeInfo, SequencePlayerAdapterFactoryFunc>;
+    using SequenceControllerFactoryFunc = std::function<std::unique_ptr<SequenceController>(SequencePlayer & , SequenceEditor & )>;
+    using SequenceControllerFactoryMap = std::unordered_map<rtti::TypeInfo, SequenceControllerFactoryFunc>;
+    using DefaultSequenceTrackFactoryMap = std::unordered_map<rtti::TypeInfo, std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput*)>>;
+    using SequencePlayerAdapterFactoryFunc = std::function<std::unique_ptr<SequencePlayerAdapter>(const SequenceTrack&,
+                                                                                                  SequencePlayerOutput&,
+                                                                                                  const SequencePlayer&)>;
+    using SequencePlayerAdapterFactoryMap = std::unordered_map<rtti::TypeInfo, SequencePlayerAdapterFactoryFunc>;
 
     /**
      * SequenceService is responsible for updating outputs and contains information about which controller, adapter is
@@ -41,7 +46,7 @@ namespace nap
     {
         friend class SequencePlayerOutput;
 
-    RTTI_ENABLE(Service)
+        RTTI_ENABLE(Service)
     public:
         /**
          * Constructor
@@ -72,7 +77,9 @@ namespace nap
          */
         Sequence* createDefaultSequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
                                         std::unordered_set<std::string>& objectIDs,
-                                        const std::vector<ResourcePtr<SequencePlayerOutput>>& outputs);
+                                        const std::vector<ResourcePtr<SequencePlayerOutput>>
+
+        & outputs);
 
         /**
          * Method that registers a certain controller type for a certain view type, this can be used by views to map controller types to view types
@@ -125,8 +132,7 @@ namespace nap
          * @return unique_ptr to controller
          */
         std::unique_ptr<SequenceController> invokeControllerFactory(rtti::TypeInfo controllerType,
-                                                                    SequencePlayer& player,
-                                                                    SequenceEditor& editor);
+                                                                    SequencePlayer& player, SequenceEditor& editor);
 
         /**
          * returns all registered controller types that have registered factory functions
@@ -140,7 +146,8 @@ namespace nap
          * @param baseID base id
          * @return unique id
          */
-        std::string generateUniqueID(std::unordered_set<std::string>& objectIDs, const std::string& baseID = "Generated");
+        std::string generateUniqueID(std::unordered_set<std::string>& objectIDs,
+                                     const std::string& baseID = "Generated");
 
         /**
          * registers a standard clock for updating
@@ -153,6 +160,7 @@ namespace nap
          * @param standardClock pointer to standard clock
          */
         void unregisterStandardClock(SequencePlayerStandardClock* standardClock);
+
     protected:
         /**
          * registers all objects that need a specific way of construction
@@ -172,6 +180,7 @@ namespace nap
          * @param deltaTime deltaTime
          */
         void update(double deltaTime) override;
+
     private:
         /**
          * registers an output

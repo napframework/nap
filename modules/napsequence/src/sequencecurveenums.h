@@ -6,18 +6,18 @@
 
 namespace nap
 {
-	namespace sequencecurveenums
-	{
-		enum ETanPointTypes
-		{
-			IN,
-			OUT
-		};
+    //////////////////////////////////////////////////////////////////////////
 
-		enum ESegmentValueTypes
-		{
-			BEGIN,
-			END
-		};
-	}
+    namespace sequencecurveenums
+    {
+        enum ETanPointTypes
+        {
+            IN, OUT
+        };
+
+        enum ESegmentValueTypes
+        {
+            BEGIN, END
+        };
+    }
 }

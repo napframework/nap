@@ -16,11 +16,11 @@
 
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::SequencePlayerAudioOutputComponent)
-        RTTI_PROPERTY("Sequence Player Audio Output", &nap::audio::SequencePlayerAudioOutputComponent::mSequencePlayerAudioOutput, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Sequence Player Audio Output", &nap::audio::SequencePlayerAudioOutputComponent::mSequencePlayerAudioOutput, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::SequencePlayerAudioOutputComponentInstance)
-        RTTI_CONSTRUCTOR(nap::EntityInstance &, nap::Component &)
+    RTTI_CONSTRUCTOR(nap::EntityInstance &, nap::Component &)
 RTTI_END_CLASS
 
 namespace nap
@@ -28,9 +28,9 @@ namespace nap
     namespace audio
     {
 
-        bool SequencePlayerAudioOutputComponentInstance::init(utility::ErrorState &errorState)
+        bool SequencePlayerAudioOutputComponentInstance::init(utility::ErrorState& errorState)
         {
-            auto *resource = getComponent<SequencePlayerAudioOutputComponent>();
+            auto* resource = getComponent<SequencePlayerAudioOutputComponent>();
             mSequencePlayerAudioOutput = resource->mSequencePlayerAudioOutput.get();
 
             return true;

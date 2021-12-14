@@ -9,13 +9,15 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
     /**
      * SequenceAudioGUIService is responsible for registering the appropriate factory functions for AudioTrack views
      * to SequenceGUIService
      */
     class NAPAPI SequenceAudioGUIService final : public Service
     {
-    RTTI_ENABLE(Service)
+        RTTI_ENABLE(Service)
     public:
         /**
          * Colors palette used by all sequencer audio gui
@@ -26,7 +28,7 @@ namespace nap
              * Initialize palette against SequenceGUIService color palette
              * @param palette ImGUI color palette
              */
-            void init(const SequenceGUIService::Colors &palette);
+            void init(const SequenceGUIService::Colors& palette);
 
             ImU32 mAudioSegmentBackground = 0; ///< Audio Segment Background Color
             ImU32 mAudioSegmentBackgroundHovering = 0; ///< Audio Segment Background Color when hovering
@@ -38,32 +40,36 @@ namespace nap
          * Constructor
          * @param configuration pointer to ServiceConfiguration
          */
-        SequenceAudioGUIService(ServiceConfiguration *configuration);
+        SequenceAudioGUIService(ServiceConfiguration* configuration);
 
         /**
          * Destructor
          */
         ~SequenceAudioGUIService() override;
 
+
         /**
          * Return colors of audio segments
          */
-        const SequenceAudioGUIService::Colors &getColors() const
-        { return mColors; }
+        const SequenceAudioGUIService::Colors& getColors() const
+        {
+            return mColors;
+        }
+
 
     protected:
         /**
          * registers all objects that need a specific way of construction
          * @param factory the factory to register the object creators with
          */
-        void registerObjectCreators(rtti::Factory &factory) override;
+        void registerObjectCreators(rtti::Factory& factory) override;
 
         /**
          * initializes service
          * @param errorState contains any errors
          * @return returns true on successful initialization
          */
-        bool init(nap::utility::ErrorState &errorState) override;
+        bool init(nap::utility::ErrorState& errorState) override;
 
         /**
          * Override this function to register service dependencies
@@ -72,7 +78,7 @@ namespace nap
          * SequenceAudioGUIService depends on SequenceGUIService and SequenceServiceAudio
          * @param dependencies rtti information of the services this service depends on
          */
-        virtual void getDependentServices(std::vector<rtti::TypeInfo> &dependencies);
+        virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
 
     private:
         SequenceAudioGUIService::Colors mColors;

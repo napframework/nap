@@ -15,49 +15,51 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * SequenceServiceAudio registers all necessary factory functions for mod_sequenceaudio to SequenceService
-	 */
-	class NAPAPI SequenceServiceAudio final : public Service
-	{
-		RTTI_ENABLE(Service)
-	public:
-		/**
-		 * Constructor
-		 */
-		SequenceServiceAudio(ServiceConfiguration* configuration);
+    /**
+     * SequenceServiceAudio registers all necessary factory functions for mod_sequenceaudio to SequenceService
+     */
+    class NAPAPI SequenceServiceAudio final : public Service
+    {
+        RTTI_ENABLE(Service)
+    public:
+        /**
+         * Constructor
+         */
+        SequenceServiceAudio(ServiceConfiguration* configuration);
 
-		/**
-		 * Deconstructor
-		 */
-		~SequenceServiceAudio() override;
-	protected:
-		/**
-		 * registers all objects that need a specific way of construction
-		 * @param factory the factory to register the object creators with
-		 */
-		void registerObjectCreators(rtti::Factory& factory) override;
+        /**
+         * Deconstructor
+         */
+        ~SequenceServiceAudio() override;
 
-		/**
-		 * initializes service
-		 * @param errorState contains any errors
-		 * @return returns true on successful initialization
-		 */
-		bool init(nap::utility::ErrorState& errorState) override;
+    protected:
+        /**
+         * registers all objects that need a specific way of construction
+         * @param factory the factory to register the object creators with
+         */
+        void registerObjectCreators(rtti::Factory& factory) override;
 
-		/**
-		 * updates any outputs and editors
-		 * @param deltaTime deltaTime
-		 */
-		void update(double deltaTime) override;
+        /**
+         * initializes service
+         * @param errorState contains any errors
+         * @return returns true on successful initialization
+         */
+        bool init(nap::utility::ErrorState& errorState) override;
 
-		/**
+        /**
+         * updates any outputs and editors
+         * @param deltaTime deltaTime
+         */
+        void update(double deltaTime) override;
+
+        /**
          * SequenceServiceAudio depends on the nap::audio::AudioService
          * @param dependencies the type of services this service depends on
          */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-	private:
-	};
+        virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+    private:
+    };
 }

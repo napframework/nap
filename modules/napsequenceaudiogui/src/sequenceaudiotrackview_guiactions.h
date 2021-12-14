@@ -13,7 +13,7 @@ namespace nap
          */
         class InsertingAudioSegmentPopup : public TrackAction
         {
-        RTTI_ENABLE(TrackAction)
+            RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
@@ -22,9 +22,9 @@ namespace nap
              * @param currentSelectedItem current selected item in popup combo box
              */
             InsertingAudioSegmentPopup(std::string trackID, double time, int currentSelectedItem)
-                    : TrackAction(std::move(trackID)), mTime(time), mCurrentItem(currentSelectedItem)
-            {}
-
+                    :TrackAction(std::move(trackID)), mTime(time), mCurrentItem(currentSelectedItem)
+            {
+            }
         public:
             double mTime = 0.0;
             int mCurrentItem = 0;
@@ -35,7 +35,7 @@ namespace nap
          */
         class OpenEditAudioSegmentPopup : public TrackAction
         {
-        RTTI_ENABLE(TrackAction)
+            RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
@@ -44,9 +44,9 @@ namespace nap
              * @param windowPos the window position the popup needs to get
              */
             OpenEditAudioSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos)
-                    : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mWindowPos(windowPos)
-            {}
-
+                    :TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mWindowPos(windowPos)
+            {
+            }
         public:
             std::string mSegmentID;
             ImVec2 mWindowPos;
@@ -57,7 +57,7 @@ namespace nap
          */
         class EditingAudioSegmentPopup : public TrackAction
         {
-        RTTI_ENABLE(TrackAction)
+            RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
@@ -66,9 +66,9 @@ namespace nap
              * @param windowPos the window position the popup needs to get
              */
             EditingAudioSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos)
-                    : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mWindowPos(windowPos)
-            {}
-
+                    :TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mWindowPos(windowPos)
+            {
+            }
         public:
             std::string mSegmentID;
             ImVec2 mWindowPos;
@@ -79,7 +79,7 @@ namespace nap
          */
         class HoveringLeftAudioSegmentHandler : public TrackAction
         {
-        RTTI_ENABLE(TrackAction)
+            RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
@@ -87,9 +87,9 @@ namespace nap
              * @param segmentID the segment id of the segment being edited
              */
             HoveringLeftAudioSegmentHandler(std::string trackID, std::string segmentID)
-                    : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
-            {}
-
+                    :TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
+            {
+            }
         public:
             std::string mSegmentID;
         };
@@ -99,7 +99,7 @@ namespace nap
          */
         class DraggingLeftAudioSegmentHandler : public TrackAction
         {
-        RTTI_ENABLE(TrackAction)
+            RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
@@ -107,9 +107,9 @@ namespace nap
              * @param segmentID the segment id of the segment being edited
              */
             DraggingLeftAudioSegmentHandler(std::string trackID, std::string segmentID)
-                    : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
-            {}
-
+                    :TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
+            {
+            }
         public:
             std::string mSegmentID;
         };
@@ -119,7 +119,7 @@ namespace nap
          */
         class HoveringRightAudioSegmentHandler : public TrackAction
         {
-        RTTI_ENABLE(TrackAction)
+            RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
@@ -127,9 +127,9 @@ namespace nap
              * @param segmentID the segment id of the segment being edited
              */
             HoveringRightAudioSegmentHandler(std::string trackID, std::string segmentID)
-                    : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
-            {}
-
+                    :TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
+            {
+            }
         public:
             std::string mSegmentID;
         };
@@ -139,7 +139,7 @@ namespace nap
          */
         class DraggingRightAudioSegmentHandler : public TrackAction
         {
-        RTTI_ENABLE(TrackAction)
+            RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
@@ -147,9 +147,9 @@ namespace nap
              * @param segmentID the segment id of the segment being edited
              */
             DraggingRightAudioSegmentHandler(std::string trackID, std::string segmentID)
-                    : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
-            {}
-
+                    :TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID))
+            {
+            }
         public:
             std::string mSegmentID;
         };

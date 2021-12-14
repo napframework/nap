@@ -8,6 +8,8 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
 	/**
 	* Base class for an event segment view
 	* This base class is used by the track view to draw and handle segment views of different event types

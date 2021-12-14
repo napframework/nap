@@ -23,6 +23,7 @@
 namespace nap
 {
     //////////////////////////////////////////////////////////////////////////
+
     // forward declares
     class SequenceService;
 
@@ -37,7 +38,7 @@ namespace nap
         friend class SequenceEditor;
         friend class SequenceController;
 
-    RTTI_ENABLE(Device)
+        RTTI_ENABLE(Device)
     public:
         /**
          * Constructor used by factory
@@ -149,10 +150,11 @@ namespace nap
          * @return returns current sequence filename, not thread-safe. Only call this from the main thread
          */
         const std::string& getSequenceFilename() const;
+
     public:
         // properties
-        std::string 			mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
-        bool 					mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
+        std::string mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
+        bool mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
         std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
         ResourcePtr<SequencePlayerClock> mClock;
     public:
@@ -222,10 +224,10 @@ namespace nap
         void tick(double deltaTime);
 
         // read objects from sequence
-        std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
+        std::vector<std::unique_ptr<rtti::Object>> mReadObjects;
 
         // read object ids from sequence
-        std::unordered_set<std::string>				mReadObjectIDs;
+        std::unordered_set<std::string> mReadObjectIDs;
     private:
         /**
          * creates adapters for all assigned adapter ids for tracks

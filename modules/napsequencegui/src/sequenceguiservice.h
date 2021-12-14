@@ -13,6 +13,8 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
 	// forward declares
 	class SequenceEventTrackSegmentViewBase;
 	class SequenceEventTrackView;

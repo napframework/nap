@@ -19,6 +19,8 @@ namespace nap
 {
     namespace audio
     {
+        //////////////////////////////////////////////////////////////////////////
+
         /**
          * The MultiSampleBufferPlayerNode plays back the sample from a MultiSampleBuffer.
          * They key difference between the MultiSampleBufferPlayerNode and the BufferPlayerNode is that the MultiSampleBufferPlayerNode
@@ -68,21 +70,27 @@ namespace nap
             /**
              * @return the playback speed as a fraction of the original speed of the audio material in the buffer.
              */
-            ControllerValue getSpeed() const { return mSpeed; }
+            ControllerValue getSpeed() const
+            {
+                return mSpeed;
+            }
 
             /**
              * @return the current playback position within the source buffer.
              */
-            DiscreteTimeValue getPosition() const { return mPosition; }
+            DiscreteTimeValue getPosition() const
+            {
+                return mPosition;
+            }
         private:
             // Inherited from Node
             void process() override;
 
-            std::atomic<bool> mPlaying          = {false}; // Indicates wether the node is currently playing.
-            std::atomic<int> mChannels          = {0}; // The amount of channels
-            std::atomic<double> mPosition       = {0}; // Current position of playback in samples within the source buffer.
+            std::atomic<bool> mPlaying = {false}; // Indicates wether the node is currently playing.
+            std::atomic<int> mChannels = {0}; // The amount of channels
+            std::atomic<double> mPosition = {0}; // Current position of playback in samples within the source buffer.
             std::atomic<ControllerValue> mSpeed = {1.f}; // Playback speed as a fraction of the original speed.
-            SafePtr<MultiSampleBuffer> mBuffer  = nullptr; // Pointer to the buffer with audio material being played back.
+            SafePtr<MultiSampleBuffer> mBuffer = nullptr; // Pointer to the buffer with audio material being played back.
 
             std::vector<std::unique_ptr<OutputPin>> mOwnedOutputPins;
         };

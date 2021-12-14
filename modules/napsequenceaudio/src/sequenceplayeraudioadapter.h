@@ -13,56 +13,58 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	// forward declares
-	class SequencePlayerAudioOutput;
+    // forward declares
+    class SequencePlayerAudioOutput;
 
-	/**
-	 * The SequencePlayerAudioAdapter is responsible for handling ticks from the sequence player and looking up which
-	 * audio buffer should be played by the audio output and when.
-	 */
-	class SequencePlayerAudioAdapter final : public SequencePlayerAdapter
-	{
-	public:
-		/**
-		 * Constructor
-		 * @param track reference to track
-		 * @param output reference to audio output
-		 * @param player reference to player
-		 */
-		SequencePlayerAudioAdapter(const SequenceTrack& track, SequencePlayerAudioOutput& output, const SequencePlayer& player);
+    /**
+     * The SequencePlayerAudioAdapter is responsible for handling ticks from the sequence player and looking up which
+     * audio buffer should be played by the audio output and when.
+     */
+    class SequencePlayerAudioAdapter final : public SequencePlayerAdapter
+    {
+    public:
+        /**
+         * Constructor
+         * @param track reference to track
+         * @param output reference to audio output
+         * @param player reference to player
+         */
+        SequencePlayerAudioAdapter(const SequenceTrack& track, SequencePlayerAudioOutput& output,
+                                   const SequencePlayer& player);
 
-		/**
-		 * called by sequence player
-		 * @param time the time in the sequence
-		 */
-		void tick(double time) override;
+        /**
+         * called by sequence player
+         * @param time the time in the sequence
+         */
+        void tick(double time) override;
 
-		/**
-		 * called before deconstruction of the adapter
-		 */
-		void destroy() override;
-	private:
-		// reference to track linked to adapter
-		const SequenceTrack& mTrack;
+        /**
+         * called before deconstruction of the adapter
+         */
+        void destroy() override;
 
-		// reference to output linked to adapter
-		SequencePlayerAudioOutput& 	mOutput;
+    private:
+        // reference to track linked to adapter
+        const SequenceTrack& mTrack;
 
-		// reference to player
-		const SequencePlayer& mPlayer;
+        // reference to output linked to adapter
+        SequencePlayerAudioOutput& mOutput;
 
-		// the current segment ID being player
-		std::string mCurrentStartedSegmentID;
+        // reference to player
+        const SequencePlayer& mPlayer;
 
-		// previous time in segment
-		double mPrevTimeInSegment = 0.0;
+        // the current segment ID being player
+        std::string mCurrentStartedSegmentID;
 
-		// previous time in sequence player, used to calculate delta time
-		double mPrevTime = 0.0;
+        // previous time in segment
+        double mPrevTimeInSegment = 0.0;
+
+        // previous time in sequence player, used to calculate delta time
+        double mPrevTime = 0.0;
 
         // when adapter is created, it checks wether player is using an AudioClock, if not this bool is set to true
         bool mDisabled = false;
-	};
+    };
 }
