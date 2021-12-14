@@ -9,15 +9,16 @@
 
 // External Includes
 #include <nap/logger.h>
-#include <apiutils.h>
 #include <nap/core.h>
-#include <websocketservice.h>
+#include <apimessage.h>
+#include <apiservice.h>
+#include <apiutils.h>
 
 // nap::websocketapiserver run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer)
 	RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
-	RTTI_PROPERTY("Mode",		&nap::APIWebSocketServer::mMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Verbose",	&nap::APIWebSocketServer::mVerbose, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SendWebSocketEvents",	&nap::APIWebSocketServer::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Verbose",				&nap::APIWebSocketServer::mVerbose,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,40 +34,28 @@ namespace nap
 	}
 
 
-	bool APIWebSocketServer::init(utility::ErrorState& errorState)
-	{
-		if (!IWebSocketServer::init(errorState))
-			return false;
-
-		mEndPoint->registerListener(*this);	
-		return true;
-	}
-
-
-	void APIWebSocketServer::onDestroy()
-	{
-		mEndPoint->unregisterListener(*this);
-	}
-
-
 	bool APIWebSocketServer::send(nap::APIEventPtr apiEvent, const WebSocketConnection& connection, utility::ErrorState& error)
 	{
+		// Convert event to json 
 		APIMessage msg(*apiEvent);
 		std::string json;
 		if (!msg.toJSON(json, error))
 			return false;
 
+		// Send message
 		return mEndPoint->send(connection, json, EWebSocketOPCode::Text, error);
 	}
 
 
 	bool APIWebSocketServer::broadcast(nap::APIEventPtr apiEvent, nap::utility::ErrorState& error)
 	{
+		// Convert event to json 
 		APIMessage msg(*apiEvent);
 		std::string json;
 		if (!msg.toJSON(json, error))
 			return false;
 
+		// Broadcast message
 		return mEndPoint->broadcast(json, EWebSocketOPCode::Text, error);
 	}
 
@@ -84,40 +73,10 @@ namespace nap
 
 	void APIWebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
-		// Add web-socket event, API events or both
-		switch(mMode)
-		{
-		case EWebSocketForwardMode::WebSocketEvent:
-		{
-			forwardWebSocketEvent(connection, message);
-			break;
-		}
-		case EWebSocketForwardMode::APIEvent:
-		{
-			forwardAPIEvents(connection, message);
-			break;
-		}
-		case EWebSocketForwardMode::Both:
-		{
-			forwardWebSocketEvent(connection, message);
-			forwardAPIEvents(connection, message);
-			break;
-		}
-		default:
-			break;
-		}
-	}
+		// Add web-socket event
+		if (mSendWebSocketEvents)
+			addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
 
-
-	void APIWebSocketServer::forwardWebSocketEvent(const WebSocketConnection& connection, const WebSocketMessage& message)
-	{
-		// Add event to queue for processing by web-socket service
-		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
-	}
-
-
-	void APIWebSocketServer::forwardAPIEvents(const WebSocketConnection& connection, const WebSocketMessage& message)
-	{
 		// Ensure it's a finalized message
 		nap::utility::ErrorState error;
 		if (!error.check(message.getFin(), "only finalized messages are accepted"))
@@ -152,6 +111,7 @@ namespace nap
 			if (!mAPIService->sendEvent(std::move(msg_event), &error))
 			{
 				sendErrorReply(connection, error);
+				return;
 			}
 		}
 	}
@@ -160,50 +120,23 @@ namespace nap
 	void APIWebSocketServer::onConnectionOpened(const WebSocketConnection& connection)
 	{
 		// Add web-socket event
-		switch (mMode)
-		{
-		case EWebSocketForwardMode::Both:
-		case EWebSocketForwardMode::WebSocketEvent:
-		{
+		if (mSendWebSocketEvents)
 			addEvent(std::make_unique<WebSocketConnectionOpenedEvent>(connection));
-			break;
-		}
-		default:
-			break;
-		}
 	}
 
 
 	void APIWebSocketServer::onConnectionClosed(const WebSocketConnection& connection, int code, const std::string& reason)
 	{
 		// Add web-socket event
-		switch (mMode)
-		{
-		case EWebSocketForwardMode::Both:
-		case EWebSocketForwardMode::WebSocketEvent:
-		{
+		if (mSendWebSocketEvents)
 			addEvent(std::make_unique<WebSocketConnectionClosedEvent>(connection, code, reason));
-			break;
-		}
-		default:
-			break;
-		}
 	}
 
 
 	void APIWebSocketServer::onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason)
 	{
 		// Add web-socket event
-		switch (mMode)
-		{
-		case EWebSocketForwardMode::Both:
-		case EWebSocketForwardMode::WebSocketEvent:
-		{
+		if (mSendWebSocketEvents)
 			addEvent(std::make_unique<WebSocketConnectionFailedEvent>(connection, code, reason));
-			break;
-		}
-		default:
-			break;
-		}
 	}
 }
