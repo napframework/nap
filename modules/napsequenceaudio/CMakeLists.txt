@@ -7,8 +7,6 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-# package find should go here
-
 # LIBRARY
 
 # compile shared lib as target

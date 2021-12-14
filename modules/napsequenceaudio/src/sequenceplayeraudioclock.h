@@ -30,6 +30,10 @@ namespace nap
          */
         SequencePlayerAudioClock(SequenceServiceAudio& service);
 
+        // make this class explicitly non-copyable
+        SequencePlayerAudioClock(const SequencePlayerAudioClock&) = delete;
+        SequencePlayerAudioClock& operator =(const SequencePlayerAudioClock&) = delete;
+
         /**
          * onDestroy calls stop disconnecting update slot from created SequencePlayerAudioClockProcess
          */
@@ -76,7 +80,6 @@ namespace nap
          * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on vector<unique_ptr>.
          */
         SequencePlayerAudioClockProcess(const SequencePlayerAudioClockProcess&) = delete;
-
         SequencePlayerAudioClockProcess& operator=(const SequencePlayerAudioClockProcess&) = delete;
 
         /**

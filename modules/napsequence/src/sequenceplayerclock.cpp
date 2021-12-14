@@ -5,8 +5,8 @@
 #include "sequenceplayerclock.h"
 #include "sequenceservice.h"
 
-RTTI_BEGIN_CLASS(nap::SequencePlayerThreadedClock)
-    RTTI_PROPERTY("Frequency", &nap::SequencePlayerThreadedClock::mFrequency, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SequencePlayerIndependentClock)
+    RTTI_PROPERTY("Frequency", &nap::SequencePlayerIndependentClock::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerStandardClock)
@@ -39,7 +39,7 @@ namespace nap
     }
 
 
-    void SequencePlayerThreadedClock::start(Slot<double>& updateSlot)
+    void SequencePlayerIndependentClock::start(Slot<double>& updateSlot)
     {
         mRunning.store(true);
         mSlot = updateSlot;
@@ -50,7 +50,7 @@ namespace nap
     }
 
 
-    void SequencePlayerThreadedClock::stop()
+    void SequencePlayerIndependentClock::stop()
     {
         // stop running thread
         mRunning.store(false);
@@ -61,7 +61,7 @@ namespace nap
     }
 
 
-    void SequencePlayerThreadedClock::onUpdate()
+    void SequencePlayerIndependentClock::onUpdate()
     {
         // Compute sleep time in microseconds
         float sleep_time_microf = 1000.0f/static_cast<float>(mFrequency);

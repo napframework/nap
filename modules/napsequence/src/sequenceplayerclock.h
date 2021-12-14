@@ -29,8 +29,11 @@ namespace nap
     public:
         // default constructor and deconstructor
         SequencePlayerClock() = default;
-
         ~SequencePlayerClock() = default;
+
+        // make this class explicitly non-copyable
+        SequencePlayerClock(const SequencePlayerClock&) = delete;
+        SequencePlayerClock& operator =(const SequencePlayerClock&) = delete;
 
         /**
          * Start needs to be overloaded. The update slot is the slot that needs to be called on update with a delta time
@@ -57,13 +60,17 @@ namespace nap
     {
         friend class SequenceService;
 
-    RTTI_ENABLE(SequencePlayerClock)
+        RTTI_ENABLE(SequencePlayerClock)
     public:
         /**
          * Constructor
          * @param service reference to sequence service
          */
         SequencePlayerStandardClock(SequenceService& service);
+
+        // make this class explicitly non-copyable
+        SequencePlayerStandardClock(const SequencePlayerStandardClock&) = delete;
+        SequencePlayerStandardClock& operator =(const SequencePlayerStandardClock&) = delete;
 
         /**
          * Called by sequence player upon initialization
@@ -91,12 +98,27 @@ namespace nap
     using SequencePlayerStandClockObjectCreator = rtti::ObjectCreator<SequencePlayerStandardClock, SequenceService>;
 
     /**
-     * The threaded clock can be used to let the SequencePlayer be updated by its own thread
+     * The SequencePlayerIndependentClock can be used to let the SequencePlayer be updated by a thread started by the
+     * SequencePlayerIndependentClock.
      */
-    class NAPAPI SequencePlayerThreadedClock : public SequencePlayerClock
+    class NAPAPI SequencePlayerIndependentClock : public SequencePlayerClock
     {
-    RTTI_ENABLE(SequencePlayerClock)
+        RTTI_ENABLE(SequencePlayerClock)
     public:
+        /**
+         * Constructor
+         */
+        SequencePlayerIndependentClock() = default;
+
+        /**
+         * Destructor
+         */
+        ~SequencePlayerIndependentClock() = default;
+
+        // make this class explicitly non-copyable
+        SequencePlayerIndependentClock(const SequencePlayerIndependentClock&) = delete;
+        SequencePlayerIndependentClock& operator =(const SequencePlayerIndependentClock&) = delete;
+
         /**
          * Called by sequence player upon initialization
          * @param updateSlot the update slot from the SequencePlayer that needs to be called

@@ -72,7 +72,9 @@ namespace nap
 
             if (buffer->getChannelCount()!=mChannels.load())
             {
-                nap::Logger::warn("cannot set buffer. expected %i channels but multisample buffer has %i", mChannels.load(), buffer->getChannelCount());
+                nap::Logger::warn("Cannot set buffer. Expected %i channels but MultiSampleBuffer has %i",
+                        mChannels.load(),
+                        buffer->getChannelCount());
             }
             mBuffer = std::move(buffer);
         }

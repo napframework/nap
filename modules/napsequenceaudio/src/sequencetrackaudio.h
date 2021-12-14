@@ -24,9 +24,5 @@ namespace nap
     {
         RTTI_ENABLE(SequenceTrack)
     public:
-        /**
-         * Deconstructor
-         */
-        virtual ~SequenceTrackAudio() = default;
     };
 }
