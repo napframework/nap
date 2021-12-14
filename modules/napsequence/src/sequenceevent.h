@@ -24,7 +24,6 @@ namespace nap
         {
         };
 
-
         /**
          * checks wether this event is of type T
          * @tparam T the event type
@@ -57,7 +56,7 @@ namespace nap
     template<typename T>
     class SequenceEvent : public SequenceEventBase
     {
-    RTTI_ENABLE(SequenceEventBase)
+        RTTI_ENABLE(SequenceEventBase)
     public:
         /**
          * Constructor

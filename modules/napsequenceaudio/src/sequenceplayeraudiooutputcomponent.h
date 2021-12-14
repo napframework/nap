@@ -41,8 +41,6 @@ namespace nap
             {
             }
 
-
-        public:
             ResourcePtr<SequencePlayerAudioOutput> mSequencePlayerAudioOutput; ///< Property: 'Sequence Player Audio Output' resource ptr to audio output of Sequencer
         };
 
@@ -95,6 +93,5 @@ namespace nap
             // raw pointer to sequence player audio output
             SequencePlayerAudioOutput* mSequencePlayerAudioOutput;
         };
-
     }
 }

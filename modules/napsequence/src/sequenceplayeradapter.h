@@ -41,7 +41,5 @@ namespace nap
          * called when sequence player is stopped and adapter needs to be destroyed
          */
         virtual void destroy() = 0;
-
-    private:
     };
 }

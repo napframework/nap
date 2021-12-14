@@ -72,7 +72,7 @@ namespace nap
      */
     class NAPAPI SequencePlayerAudioClockProcess final : public audio::Process
     {
-    RTTI_ENABLE(audio::Process)
+        RTTI_ENABLE(audio::Process)
     public:
         SequencePlayerAudioClockProcess(audio::NodeManager& nodeManager);
 
@@ -101,7 +101,6 @@ namespace nap
          */
         void disconnectUpdateSlot(Slot<double>& slot);
 
-    public:
         // Signals
         Signal<double> mUpdateSignal;
     protected:

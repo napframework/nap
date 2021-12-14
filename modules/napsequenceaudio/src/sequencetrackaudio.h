@@ -23,6 +23,5 @@ namespace nap
     class NAPAPI SequenceTrackAudio : public SequenceTrack
     {
         RTTI_ENABLE(SequenceTrack)
-    public:
     };
 }

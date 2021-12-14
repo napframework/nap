@@ -85,7 +85,6 @@ namespace nap
          */
         void handleRightHandlerDrag();
 
-    private:
         /**
          * cache of drawn waveforms
          */
@@ -141,8 +140,6 @@ namespace nap
             {
                 return mSequenceName;
             }
-
-
         private:
             std::string mSequenceName;
         };

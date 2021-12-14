@@ -27,6 +27,5 @@ namespace nap
 
         // start time in audio buffer
         double mStartTimeInAudioSegment = 0.0;
-    private:
     };
 }

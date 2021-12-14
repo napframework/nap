@@ -19,11 +19,8 @@ namespace nap
 
     // forward declares
     class SequenceController;
-
     class SequenceEditor;
-
     class SequencePlayerAdapter;
-
     class SequencePlayerStandardClock;
 
     // shortcuts
@@ -77,9 +74,7 @@ namespace nap
          */
         Sequence* createDefaultSequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
                                         std::unordered_set<std::string>& objectIDs,
-                                        const std::vector<ResourcePtr<SequencePlayerOutput>>
-
-        & outputs);
+                                        const std::vector<ResourcePtr<SequencePlayerOutput>>& outputs);
 
         /**
          * Method that registers a certain controller type for a certain view type, this can be used by views to map controller types to view types

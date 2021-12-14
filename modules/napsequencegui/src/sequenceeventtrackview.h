@@ -75,7 +75,6 @@ namespace nap
 		 * @return unique pointer to created action, cannot be nullptr
 		 */
 		virtual std::unique_ptr<sequenceguiactions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
-	protected:
 	};
 
 	/**
@@ -131,7 +130,6 @@ namespace nap
 		 * @return unique pointer to created action, cannot be nullptr
 		 */
 		std::unique_ptr<sequenceguiactions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) override;
-	protected:
 	};
 
 	/**

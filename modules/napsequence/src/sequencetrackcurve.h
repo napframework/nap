@@ -36,7 +36,7 @@ namespace nap
     template<typename T>
     class SequenceTrackCurve : public BaseSequenceTrackCurve
     {
-    RTTI_ENABLE(BaseSequenceTrackCurve)
+        RTTI_ENABLE(BaseSequenceTrackCurve)
     public:
         /**
          * initializes the curve segment and validates its data.

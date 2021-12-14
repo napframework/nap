@@ -83,8 +83,6 @@ namespace nap
          * @param type the track type
          */
         void insertTrack(rttr::type type) override;
-
-    private:
     };
 
 

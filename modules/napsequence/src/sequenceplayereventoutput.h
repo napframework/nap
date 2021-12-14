@@ -36,9 +36,8 @@ namespace nap
          * Constructor
          * @param service reference to SequenceService
          */
-        explicit SequencePlayerEventOutput(SequenceService& service);
+        SequencePlayerEventOutput(SequenceService& service);
 
-    public:
         /**
          * Signal will be triggered from main thread
          */

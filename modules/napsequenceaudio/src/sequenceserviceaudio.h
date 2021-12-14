@@ -59,7 +59,5 @@ namespace nap
          * @param dependencies the type of services this service depends on
          */
         virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-    private:
     };
 }

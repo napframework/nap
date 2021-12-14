@@ -43,7 +43,6 @@ namespace nap
          * @param curveAdapter ptr to parameter setter
          */
         void removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
-
     protected:
         /**
          * called from update loop sequence service main thread
@@ -53,8 +52,6 @@ namespace nap
 
         // vector holding registered parameter setters
         std::vector<SequencePlayerCurveAdapterBase*> mAdapters;
-    private:
-
     };
 
     using SequencePlayerCurveOutputObjectCreator = rtti::ObjectCreator<SequencePlayerCurveOutput, SequenceService>;

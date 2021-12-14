@@ -118,7 +118,6 @@ namespace nap
          */
         void changeMarkerMessage(const std::string& markerID, const std::string& markerMessage);
 
-    public:
         // properties
         ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
     private:

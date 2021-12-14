@@ -23,7 +23,6 @@ namespace nap
         friend class SequencePlayerEventAdapter;
 
         RTTI_ENABLE(SequenceTrackSegment)
-    public:
     private:
         /**
          * creates an SequenceEventPtr.

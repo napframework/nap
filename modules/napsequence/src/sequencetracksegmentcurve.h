@@ -18,7 +18,7 @@ namespace nap
     template<typename T>
     class SequenceTrackSegmentCurve : public SequenceTrackSegment
     {
-    RTTI_ENABLE(SequenceTrackSegment)
+        RTTI_ENABLE(SequenceTrackSegment)
     public:
         // properties
         std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;        ///< Property: 'Curves' vector holding curves
