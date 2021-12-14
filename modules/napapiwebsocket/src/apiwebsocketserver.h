@@ -123,8 +123,8 @@ namespace nap
 
 		/**
 		 * Broadcasts a message in the form of an api event to all connected clients
-		 * @param message the message to send
-		 * @param error contains the error if sending fails
+		 * @param apiEvent api event to broadcast as a text message to the clients
+		 * @param error contains the error if broadcasting fails
 		 * @return if message was broadcast successfully
 		 */
 		bool broadcast(nap::APIEventPtr apiEvent, nap::utility::ErrorState& error);
