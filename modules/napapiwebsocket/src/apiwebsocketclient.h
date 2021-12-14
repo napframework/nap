@@ -4,11 +4,8 @@
 
 #pragma once
 
-// Local Includes
-#include "apiwebsocketevent.h"
-#include "apiwebsocketutils.h"
-
 // External Includes
+#include <apievent.h>
 #include <websocketclient.h>
 
 namespace nap
@@ -93,30 +90,25 @@ namespace nap
 		 */
 		bool send(APIEventPtr apiEvent, utility::ErrorState& error);
 
-		/**
-		 * Tries to converts a web-socket (text) message into one or multiple individual nap api events.
-		 * The message should be the result of a previous query to a NAP server.
-		 * @param message the received web-socket (text) message that contains individual nap::APIMessage objects.
-		 * @param outEvents the result of the extraction process.
-		 * @param error contains the error if conversion fails
-		 * @return if conversion succeeded.
-		 */
-		bool convert(const WebSocketMessage& message, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error);
-
 		bool mSendWebSocketEvents = true;		///< Property: 'SendWebSocketEvents' send events to WebSocket service as well as API service
 		bool mVerbose = true;					///< Property: 'Verbose' log server message to api-event conversion failures.
 
 	protected:
+
 		// Called by web-socket client endpoint when the connection is opened
 		virtual void onConnectionOpened() override;
+
 		// Called by web-socket client endpoint when the connection is closed
 		virtual void onConnectionClosed(int code, const std::string& reason) override;
+
 		// Called by web-socket client endpoint when the connection failed to establish
 		virtual void onConnectionFailed(int code, const std::string& reason) override;
+
 		// Called by web-socket client endpoint when a new message is received
 		virtual void onMessageReceived(const WebSocketMessage& msg) override;
 
 	private:
+
 		APIService* mAPIService = nullptr;	///< Handle to the api service.
 	};
 
