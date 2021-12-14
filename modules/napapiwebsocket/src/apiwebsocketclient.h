@@ -70,13 +70,6 @@ namespace nap
 		APIWebSocketClient(APIWebSocketService& service);
 
 		/**
-		 * Initialize this object after de-serialization
-		 * @param errorState contains the error message when initialization fails.
-		 * @return if initialization succeeded.
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
 		 * Sends a message in the form of an API event to the server.
 		 * 
 		 * For example:

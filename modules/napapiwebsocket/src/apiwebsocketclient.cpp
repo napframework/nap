@@ -28,14 +28,7 @@ namespace nap
 		IWebSocketClient(service.getWebSocketService()),
 		mAPIService(&(service.getAPIService()))
 	{
-	}
 
-
-	bool APIWebSocketClient::init(utility::ErrorState& errorState)
-	{
-		if (!IWebSocketClient::init(errorState))
-			return false;
-		return true;
 	}
 
 
