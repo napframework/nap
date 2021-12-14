@@ -96,19 +96,22 @@ namespace nap
          */
         int getChannelCount() const;
 
-    public:
         // properties
+
+        //Resource pointers to AudioBuffers
+        std::vector<ResourcePtr<audio::AudioBufferResource>> mAudioBuffers; ///< Property: 'Audio Buffers' resource pointers to audio buffers
+
         /**
-         * When set to true the SequencePlayerAudioOutput will create the necessary output nodes to route audio
+         * When set to false the SequencePlayerAudioOutput will create the necessary output nodes to route audio
          * to the selected playback device by AudioService
          */
-        bool mCreateOutputNodes = true;
+        bool mManualRouting = false; ///< Property: 'Manual Routing' if output should directly output Audio to AudioDevice as selected in AudioService
 
         /**
          * Maximum output channels, the SequencePlayerAudioOutput cannot play AudioFiles with more then this amount of
          * channels
          */
-        int mMaxChannels = 8;
+        int mMaxChannels = 8; ///< Property: 'Max Channels' maximum number of audio channels should use
     protected:
         /**
          * inherited update function, called from sequence service
@@ -146,13 +149,6 @@ namespace nap
          */
         void unregisterAdapter(const SequencePlayerAudioAdapter* adapter);
 
-        /**
-         * Called when resources are done loading
-         */
-        Slot<> mPostResourcesLoadedSlot;
-
-        void onPostResourcesLoaded();
-
         // pointer to audio service
         audio::AudioService* mAudioService;
 
@@ -161,9 +157,6 @@ namespace nap
 
         // map of output nodes created and owned by SequencePlayerAudioOutput
         std::vector<audio::SafeOwner<audio::OutputNode>> mOutputNodes;
-
-        // object pointers to audio buffers
-        std::vector<rtti::ObjectPtr<audio::AudioBufferResource>> mAudioBuffers;
 
         // mix nodes created and owned by SequencePlayerAudioOutput
         std::vector<audio::SafeOwner<audio::MixNode>> mMixNodes;

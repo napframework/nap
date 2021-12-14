@@ -11,7 +11,8 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioOutput)
-    RTTI_PROPERTY("Create Output Nodes", &nap::SequencePlayerAudioOutput::mCreateOutputNodes, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Audio Buffers", &nap::SequencePlayerAudioOutput::mAudioBuffers, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Manual Routing", &nap::SequencePlayerAudioOutput::mManualRouting, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Max Channels", &nap::SequencePlayerAudioOutput::mMaxChannels, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -28,21 +29,10 @@ namespace nap
     bool SequencePlayerAudioOutput::init(utility::ErrorState& errorState)
     {
         /**
-         * We acquire all ObjectPtrs to AudioBuffers after resources have loaded because we know all AudioBuffer resources
-         * have been initialized at that point
-         */
-        auto* resource_manager = mService->getCore().getResourceManager();
-        mPostResourcesLoadedSlot = Slot<>([this]()
-        {
-            onPostResourcesLoaded();
-        });
-        resource_manager->mPostResourcesLoadedSignal.connect(mPostResourcesLoadedSlot);
-
-        /**
          * Get audio service and acquire audio node manager and create a mix node for each channel.
          * All buffer players created when registering an adapter to this output will connect their audio output to the created
          * mix nodes for each channel.
-         * When mCreateOutputNodes is true, the SequencePlayerAudioOutput will also create output nodes for each channel
+         * When mManualRouting is false, the SequencePlayerAudioOutput will also create output nodes for each channel
          * so audio played by SequencePlayer gets routed to the playback device selected by the AudioService.
          */
         mAudioService = mService->getCore().getService<AudioService>();
@@ -58,7 +48,7 @@ namespace nap
 
         // create output nodes
         std::vector<SafeOwner<OutputNode>> output_nodes;
-        if (mCreateOutputNodes)
+        if (!mManualRouting)
         {
             for (int i = 0; i<mMaxChannels; i++)
             {
@@ -169,47 +159,11 @@ namespace nap
     {
         mBufferPlayers.clear();
         mOutputNodes.clear();
-
-        auto* resource_manager = mService->getCore().getResourceManager();
-        if (resource_manager!=nullptr)
-            resource_manager->mPostResourcesLoadedSignal.disconnect(mPostResourcesLoadedSlot);
     }
 
 
     void SequencePlayerAudioOutput::update(double deltaTime)
     {
-    }
-
-
-    void SequencePlayerAudioOutput::onPostResourcesLoaded()
-    {
-        /**
-         * Acquire all loaded audio buffers
-         */
-        auto* resource_manager = mService->getCore().getResourceManager();
-        auto audio_buffers = resource_manager->getObjects<AudioBufferResource>();
-        nap::Logger::info(*this, "found %i audio buffers", audio_buffers.size());
-        mAudioBuffers = audio_buffers;
-
-        /**
-         * Ignore AudioBuffers that exceed max channels
-         */
-        auto audio_buffers_it = mAudioBuffers.begin();
-        while (audio_buffers_it!=mAudioBuffers.end())
-        {
-            if ((*audio_buffers_it)->getChannelCount()>mMaxChannels)
-            {
-                nap::Logger::warn(*this,
-                        "Ignoring audio buffer %s because it has %i channels and exceeds the %i channels used by this SequencePlayerAudioOutput",
-                        (*audio_buffers_it)->mID.c_str(), (*audio_buffers_it)->getChannelCount(), mMaxChannels);
-
-                audio_buffers_it = mAudioBuffers.erase(audio_buffers_it);
-            }
-            else
-            {
-                audio_buffers_it++;
-            }
-        }
     }
 
 
