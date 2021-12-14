@@ -21,9 +21,9 @@ namespace nap
 	 * With this client you can send nap api events in the form of a JSON formatted text message to a server. When the server issues
 	 * a reply the message can be interpreted as a nap api event and is, when accepted, forwarded to the API service.
 	 * This allows you to use the NAP API system to send and respond to server requests.
-	 * 
+	 *
 	 * A reply is accepted when your application exposes a signature (method) that matches the signature of
-	 * the received message. When accepted, the right callback in your application is automatically triggered by a 
+	 * the received message. When accepted, the right callback in your application is automatically triggered by a
 	 * nap::APIComponentInstance. Look at the documentation of the nap::APIComponentInstance and nap::APICallBack
 	 * for more information.
 	 *
@@ -43,13 +43,13 @@ namespace nap
 	 *		}
 	 *~~~~~
 	 * You can control what the client does when it a receives a connection update or message from the server.
-	 * By default messages are NOT converted into api events, only into web-socket events. 
-	 * By changing the 'Mode' to 'APIEvent' or 'Both' the client will try to convert every message from the server into an API event. 
-	 * The api event is forwarded to your application (if the system accepts it). When only 'APIEvent' is selected, 
+	 * By default messages are NOT converted into api events, only into web-socket events.
+	 * By changing the 'Mode' to 'APIEvent' or 'Both' the client will try to convert every message from the server into an API event.
+	 * The api event is forwarded to your application (if the system accepts it). When only 'APIEvent' is selected,
 	 * no web-socket events are created. When 'Both' is selected, the client will create both api and web-socket events.
 	 * If the message can't be converted into an api event only the web-socket event is forwarded.
 	 * To catch api-events use a nap::APIComponentInstance, to catch web-socket events use a nap::WebSocketComponent.
-	 * 
+	 *
 	 * NOTE: When the 'Mode' is set to 'APIEvent' NO connection updates (open, close and failed) are created.
 	 * When 'Verbose' is turned on the client will issue warnings if a message can't be converted into an api event.
 	 *
@@ -71,7 +71,7 @@ namespace nap
 
 		/**
 		 * Sends a message in the form of an API event to the server.
-		 * 
+		 *
 		 * For example:
 		 *~~~~~{.cpp}
 		 *		// Create request
@@ -103,8 +103,8 @@ namespace nap
 		 */
 		bool convert(const WebSocketMessage& message, std::vector<APIEventPtr>& outEvents, utility::ErrorState& error);
 
-		EWebSocketForwardMode mMode = EWebSocketForwardMode::WebSocketEvent;	///< Property: 'Mode' web-socket event translation and forward mode.
-		bool mVerbose = true;													///< Property: 'Verbose' log server message to api-event conversion failures.
+		bool mSendWebSocketEvents = true;		///< Property: 'SendWebSocketEvents' send events to WebSocket service as well as API service
+		bool mVerbose = true;					///< Property: 'Verbose' log server message to api-event conversion failures.
 
 	protected:
 		// Called by web-socket client endpoint when the connection is opened
