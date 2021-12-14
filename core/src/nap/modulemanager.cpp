@@ -44,7 +44,7 @@ namespace nap
 	}
 
 
-	const Module* ModuleManager::findModule(const std::string& moduleName)
+	const Module* ModuleManager::findModule(const std::string& moduleName) const
 	{
 		auto found_it = std::find_if(mModules.begin(), mModules.end(), [&](const auto& it) {
 			return it->mName == moduleName;
@@ -64,5 +64,11 @@ namespace nap
 		for (Module& module : mRequiredModules)
 			UnloadModule(module.mHandle);
 		*/
+	}
+
+
+	std::string Module::findAsset(const std::string& name) const
+	{
+		return utility::findFileInDirectories(name, this->getInformation().mDataSearchPaths);
 	}
 }

@@ -14,6 +14,7 @@
 #include <utility/fileutils.h>
 #include <iomanip>
 #include <utility>
+#include <nap/modulemanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
@@ -204,6 +205,11 @@ namespace nap
 			}
 			else
 			{
+				nap::SequenceGUIService& service = getService();
+				auto module = service.getCore().getModuleManager().findModule("mod_napsequencegui");
+				auto play_icon = utility::forceSeparator(module->findAsset("seq_play.png"));
+				auto stop_icon = utility::forceSeparator(module->findAsset("seq_stop.png"));
+
 				if (ImGui::Button("Play"))
 				{
 					sequence_player.setIsPlaying(true);

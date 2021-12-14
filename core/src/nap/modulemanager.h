@@ -59,10 +59,17 @@ namespace nap
 		const ModuleInfo& getInformation() const			{ assert(mInfo != nullptr); return *mInfo; }
 
 		/**
-		 * Returns type of service associated with this module, 
+		 * Attempts to find a (module specific) asset with the given name and extension.
+		 * The asset must reside in one of the locations declared by the 'nap::ModuleInfo::DataSearchPaths' property.
+		 * @return full path to the asset, empty string if not found
+		 */
+		std::string findAsset(const std::string& name) const;
+
+		/**
+		 * Returns type of service associated with this module,
 		 * @return type of service associated with this module, empty if module has no service.
 		 */
-		const rtti::TypeInfo getServiceType() const			{ return mService; }
+		const rtti::TypeInfo getServiceType() const { return mService; }
 
 	private:
 		std::string						mName;									///< The canonical name of the module
@@ -116,7 +123,7 @@ namespace nap
 		 * @param moduleName The name of the module to find
 		 * @return The object providing access to the Module, nullptr if not found.
 		 */
-		const Module* findModule(const std::string& moduleName);
+		const Module* findModule(const std::string& moduleName) const;
 
 	private:
 		/**

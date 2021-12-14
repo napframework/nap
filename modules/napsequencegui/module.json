@@ -6,5 +6,8 @@
         "mod_napsequence",
         "mod_naprender",
         "mod_napimgui"
+    ],
+    "DataSearchPaths": [
+        "{ROOT}/modules/{MODULE_NAME}/data"
     ]
 }

@@ -368,11 +368,11 @@ namespace nap
 		}
 
 
-		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs)
+		std::string findFileInDirectories(const std::string& file, const std::vector<std::string>& dirs)
         {
 			for (const auto& dir : dirs)
 			{
-				auto filepath = joinPath({dir.c_str(), basefilename.c_str()});
+				auto filepath = joinPath({dir.c_str(), file.c_str()});
 				if (utility::fileExists(filepath))
 					return filepath;
 			}
@@ -388,7 +388,11 @@ namespace nap
 
 		std::string forceSeparator(const std::string& path)
 		{
+#if defined(_WIN32)
 			return replaceAllInstances(path, "/", path::separator);
+#else
+			return replaceAllInstances(path, "\\", path::separator)
+#endif
 		}
 	}
 }
