@@ -4,7 +4,7 @@ Sequencer {#sequencer}
 * [Player, Editor & EditorGUI](@ref player_editor_gui) 
 * [Thread independent playback](@ref thread_independent_playback)
   * [Standard clock](@ref standard_clock)
-  * [Threaded clock](@ref threaded_clock)
+  * [Independent clock](@ref independent_clock)
   * [Audio clock](@ref audio_clock)
 * [Outputs & Adapters](@ref outputs_and_adapters)
   * [Examples](@ref outputs_and_adapters_examples)
@@ -100,10 +100,10 @@ The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that 
 }
 ```
 
-## Threaded Clock {#threaded_clock}
-The [SequencePlayerThreadedClock](@ref nap::SequencePlayerThreadedClock) launches its own thread. The thread's update cycle is dependent on the given frequency. Frequency is set in update calls per second (Hz).
+## Independent Clock {#independent_clock}
+The [SequencePlayerIndependentClock](@ref nap::SequencePlayerIndependentClock) launches its own thread. The thread's update cycle is dependent on the given frequency. Frequency is set in update calls per second (Hz).
 
-The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that uses a [SequencePlayerThreadedClock](@ref nap::SequencePlayerThreadedClock) for playback. The [SequencePlayerThreadedClock](@ref nap::SequencePlayerThreadedClock) will update the [SequencePlayer](@ref nap::SequencePlayer) 1000 times per second (1000 Hz).
+The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that uses a [SequencePlayerIndependentClock](@ref nap::SequencePlayerIndependentClock) for playback. The [SequencePlayerIndependentClock](@ref nap::SequencePlayerIndependentClock) will update the [SequencePlayer](@ref nap::SequencePlayer) 1000 times per second (1000 Hz).
 
 ```
 {
@@ -112,8 +112,8 @@ The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that 
     "Default Show": "Default Show.json",
     "Outputs": [],
     "Clock": {
-        "Type": "nap::SequencePlayerThreadedClock",
-        "mID": "SequencePlayerThreadedClock",
+        "Type": "nap::SequencePlayerIndependentClock",
+        "mID": "SequencePlayerIndependentClock",
         "Frequency" : 1000
     }
 }
@@ -195,7 +195,7 @@ track and extracts the value. It then passes the value to it's assigned [Sequenc
 
 When evaluating an [SequenceTrackAudio](@ref nap::SequenceTrackAudio) the [SequencePlayerAudioAdapter](@ref nap::SequencePlayerAudioAdapter) determines the player's position in samples of the buffer that is linked to by the [SequenceTrackSegmentAudio](@ref nap::SequenceTrackSegmentAudio) on the [SequenceTrackAudio](@ref nap::SequenceTrackAudio) and it's playback speed (pitch). The speed & position is then set on the [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput) which in turns plays or stops up the correct [MultiSampleBufferPlayerNode](@ref nap::audio::MultiSampleBufferPlayerNode) created for each found [AudioBufferResource](@ref nap::audio::AudioBufferResource).
 
-The [SequencePlayerAudioOutputComponent](@ref nap::audio::SequencePlayerAudioOutputComponent) can be used to route the audio to the playback device selected by the [AudioService](@ref nap::audio::AudioService). You can also let the [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput) create its own output nodes by setting [mCreateOutputNodes](@ref nap::SequencePlayerAudioOutput::mCreateOutputNodes) property to true.
+The [SequencePlayerAudioOutputComponent](@ref nap::audio::SequencePlayerAudioOutputComponent) by default routes its audio to the AudioService by creating its own [OutputNode](@ref nap::audio::OutputNode)s. To disable this and route the audio output to your own processing chain you can set its "Manual Routing" property to true and use [getOutputForChannel](@ref nap::SequencePlayerAudioOutput::getOutputForChannel) or the [SequencePlayerAudioOutputComponent](@ref nap::audio::SequencePlayerAudioOutputComponent).
 
 <img src="content/sequencer-audio.png" alt="Sequencer Audio" style="width:100%;"/>
 
@@ -230,8 +230,11 @@ To setup your [SequencePlayer](@ref nap::SequencePlayer) to use the following ex
         },
         {
             "Type": "nap::SequencePlayerAudioOutput",
-            "mID": "Audio Output",
-            "Create Output Nodes": true,
+            "mID": "SequencePlayerAudioOutput",
+            "Audio Buffers": [
+                "AudioFileResource"
+            ],
+            "Manual Routing": true,
             "Max Channels": 2
         }],
     "Clock": {
