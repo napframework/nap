@@ -39,6 +39,17 @@ namespace nap
     }
 
 
+    bool SequencePlayerIndependentClock::init(utility::ErrorState& errorState)
+    {
+        if(!errorState.check(mFrequency > 0.0f, "Frequency must be bigger then zero!"))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+
     void SequencePlayerIndependentClock::start(Slot<double>& updateSlot)
     {
         mRunning.store(true);
@@ -70,7 +81,7 @@ namespace nap
         while (mRunning.load())
         {
             // advance time
-            HighResTimeStamp now = HighResolutionClock::now();
+            SteadyTimeStamp now = SteadyClock ::now();
             double delta_time = std::chrono::duration<double>(now-mBefore).count();
             mBefore = now;
 

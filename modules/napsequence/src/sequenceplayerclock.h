@@ -120,6 +120,13 @@ namespace nap
         SequencePlayerIndependentClock& operator =(const SequencePlayerIndependentClock&) = delete;
 
         /**
+         * Initialization method
+         * @param errorState contains any errors
+         * @return true on success
+         */
+        bool init(utility::ErrorState& errorState) override;
+
+        /**
          * Called by sequence player upon initialization
          * @param updateSlot the update slot from the SequencePlayer that needs to be called
          */
@@ -130,7 +137,6 @@ namespace nap
          */
         void stop() override;
 
-    public:
         // properties
         float mFrequency = 1000.0f; ///< Property: 'Frequency' the update frequency in times per second (Hz)
     private:
@@ -143,6 +149,6 @@ namespace nap
         std::atomic_bool mRunning = {false};
 
         // previous timestamp, used to calculate deltaTime
-        HighResTimeStamp mBefore;
+        SteadyTimeStamp mBefore;
     };
 }
