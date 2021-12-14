@@ -4,21 +4,17 @@
 
 // local includes
 #include "sequenceeditorgui.h"
-#include "sequenceeditorguiclipboard.h"
-#include "sequenceeditorgui.h"
+#include "sequenceguiutils.h"
 
 // External Includes
 #include <entity.h>
-#include <imgui/imgui.h>
-#include <nap/logger.h>
-#include <utility/fileutils.h>
 #include <iomanip>
 #include <utility>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
-RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -1293,30 +1289,21 @@ namespace nap
 
 				double time = action->mTime;
 
-				int time_milseconds = (int)(time * 100.0) % 100;
-				int time_seconds = (int)(time) % 60;
-				int time_minutes = (int)(time) / 60;
+                std::vector time_array = convertTimeToMMSSMSArray(time);
 
 				bool edit_time = false;
 
 				ImGui::Separator();
 				ImGui::PushItemWidth(100.0f * mState.mScale);
 
-				int time_array[3] =
-					{
-						time_minutes,
-						time_seconds,
-						time_milseconds
-					};
-
 				edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
-				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
 
 				if (edit_time)
 				{
-					double new_time = (((double)time_array[2]) / 100.0) + (double)time_array[1] + ((double)time_array[0] * 60.0);
+					double new_time = convertMMSSMSArrayToTime(time_array);
 					action->mTime = new_time;
 					mEditor.changeMarkerTime(action->mID, new_time);
 				}
@@ -1447,22 +1434,13 @@ namespace nap
 			{
 				double duration = mEditor.mSequencePlayer->getDuration();
 
-				int time_milseconds = (int)(duration * 100.0) % 100;
-				int time_seconds = (int)(duration) % 60;
-				int time_minutes = (int)(duration) / 60;
+				std::vector<int> time_array = convertTimeToMMSSMSArray(duration);
 
 				bool edit_time = false;
 
 				ImGui::Separator();
 
 				ImGui::PushItemWidth(100.0f);
-
-				int time_array[3] =
-				{
-					time_minutes,
-					time_seconds,
-					time_milseconds
-				};
 
 				edit_time = ImGui::InputInt3("Duration (mm:ss:ms)", &time_array[0]);
 				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
@@ -1471,7 +1449,7 @@ namespace nap
 
 				if (edit_time)
 				{
-					double new_duration = (((double)time_array[2]) / 100.0) + (double)time_array[1] + ((double)time_array[0] * 60.0);
+					double new_duration = convertMMSSMSArrayToTime(time_array);
 					mEditor.changeSequenceDuration(new_duration);
 					mState.mDirty = true;
 				}

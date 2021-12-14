@@ -6,6 +6,7 @@
 #include "sequencecurvetrackview.h"
 #include "sequenceeditorgui.h"
 #include "sequenceplayercurveoutput.h"
+#include "sequenceguiutils.h"
 
 // nap includes
 #include <nap/logger.h>
@@ -930,7 +931,7 @@ namespace nap
 						mCurveCache.clear();
 
 						// remove delete object from clipboard
-						if( mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
+						if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
 						{
 							mState.mClipboard->removeObject(action->mSegmentID);
 						}
@@ -942,30 +943,21 @@ namespace nap
 						mState.mAction = createAction<None>();
 					}
 
-					int time_milseconds = (int) ( ( action->mStartTime + action->mDuration ) * 100.0 ) % 100;
-					int time_seconds = (int) ( action->mStartTime + action->mDuration ) % 60;
-					int time_minutes = (int) ( action->mStartTime + action->mDuration ) / 60;
+                    std::vector<int> time_array = convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
 
 					bool edit_time = false;
 
 					ImGui::Separator();
 					ImGui::PushItemWidth(100.0f * mState.mScale);
 
-					int time_array[3] =
-						{
-							time_minutes,
-							time_seconds,
-							time_milseconds
-						};
-
-					edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+					edit_time = ImGui::InputInt3("End time (mm:ss:ms)", &time_array[0]);
 					time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
 					time_array[1] = math::clamp<int>(time_array[1], 0, 59);
 					time_array[2] = math::clamp<int>(time_array[2], 0, 99);
 
 					if( edit_time )
 					{
-						double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
+						double new_time = convertMMSSMSArrayToTime(time_array);
 						double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, (float)(new_time - action->mStartTime));
 
 						// make the controller re-align start & end points of segments

@@ -10,12 +10,12 @@
 #include "sequenceaudioguiservice.h"
 
 // nap includes
-#include <nap/logger.h>
 #include <parametervec.h>
 #include <sequenceeditorgui.h>
 #include <sequencetracksegmentaudio.h>
 #include <sequencecontrolleraudio.h>
 #include <sequencetrackaudio.h>
+#include <sequenceguiutils.h>
 
 // external includes
 #include <iostream>
@@ -520,7 +520,7 @@ namespace nap
                     {
                         // create error message
                         std::stringstream error_message_stream;
-                        error_message_stream << "Error displaying audio buffer : " << segment_audio->mAudioBufferID;
+                        error_message_stream << "Error displaying audio buffer : " << segment_audio->mAudioBufferID << std::endl << "Missing source!" << std::endl;
 
                         // draw error
                         ImVec2 text_offset = {5*mState.mScale, 3*mState.mScale};
@@ -772,17 +772,10 @@ namespace nap
                 /**
                  * handle start time in track
                  */
-                int time_milseconds = (int) ((audio_segment->mStartTime)*100.0)%100;
-                int time_seconds = (int) (audio_segment->mStartTime)%60;
-                int time_minutes = (int) (audio_segment->mStartTime)/60;
-
-                bool edit_time;
+                std::vector<int> time_array = convertTimeToMMSSMSArray(audio_segment->mStartTime);
+                bool edit_time = false;
 
                 ImGui::PushItemWidth(100.0f*mState.mScale);
-
-                int time_array[3] = {
-                        time_minutes, time_seconds, time_milseconds
-                };
 
                 edit_time = ImGui::InputInt3("Start Time (mm:ss:ms)", &time_array[0]);
                 time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
@@ -793,7 +786,7 @@ namespace nap
 
                 if (edit_time)
                 {
-                    double new_time = (((double) time_array[2])/100.0f)+(double) time_array[1]+((double) time_array[0]*60.0);
+                    double new_time = convertMMSSMSArrayToTime(time_array);
                     audio_controller.segmentAudioStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
                     mState.mDirty = true;
                 }
@@ -801,15 +794,9 @@ namespace nap
                 /**
                  * handle start time in audio segment
                  */
-                time_milseconds = (int) (audio_segment->mStartTimeInAudioSegment*100.0)%100;
-                time_seconds = (int) audio_segment->mStartTimeInAudioSegment%60;
-                time_minutes = (int) audio_segment->mStartTimeInAudioSegment/60;
+                time_array = convertTimeToMMSSMSArray(audio_segment->mStartTimeInAudioSegment);
 
                 ImGui::PushItemWidth(100.0f*mState.mScale);
-
-                time_array[0] = time_minutes;
-                time_array[1] = time_seconds;
-                time_array[2] = time_milseconds;
 
                 edit_time = ImGui::InputInt3("Start Time in audio segment (mm:ss:ms)", &time_array[0]);
                 time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
@@ -820,7 +807,7 @@ namespace nap
 
                 if (edit_time)
                 {
-                    double new_time = (((double) time_array[2])/100.0)+(double) time_array[1]+((double) time_array[0]*60.0);
+                    double new_time = convertMMSSMSArrayToTime(time_array);
                     audio_controller.segmentAudioStartTimeInSegmentChange(action->mTrackID, action->mSegmentID, new_time);
                     mState.mDirty = true;
                 }
@@ -828,15 +815,9 @@ namespace nap
                 /**
                  * handle duration
                  */
-                time_milseconds = (int) ((audio_segment->mDuration)*100.0)%100;
-                time_seconds = (int) audio_segment->mDuration%60;
-                time_minutes = (int) audio_segment->mDuration/60;
+                time_array = convertTimeToMMSSMSArray(audio_segment->mDuration);
 
                 ImGui::PushItemWidth(100.0f*mState.mScale);
-
-                time_array[0] = time_minutes;
-                time_array[1] = time_seconds;
-                time_array[2] = time_milseconds;
 
                 edit_time = ImGui::InputInt3("Audio segment duration (mm:ss:ms)", &time_array[0]);
                 time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
@@ -847,7 +828,7 @@ namespace nap
 
                 if (edit_time)
                 {
-                    double new_time = (((double) time_array[2])/100.0)+(double) time_array[1]+((double) time_array[0]*60.0);
+                    double new_time = convertMMSSMSArrayToTime(time_array);
                     audio_controller.segmentAudioDurationChange(action->mTrackID, action->mSegmentID, new_time);
                     mState.mDirty = true;
                 }

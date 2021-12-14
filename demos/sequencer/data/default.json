@@ -177,7 +177,9 @@
                 {
                     "Type": "nap::SequencePlayerAudioOutput",
                     "mID": "SequencePlayerAudioOutput",
-                    "Audio Buffers": [],
+                    "Audio Buffers": [
+                        "AudioFileResource"
+                    ],
                     "Manual Routing": true,
                     "Max Channels": 2
                 }
