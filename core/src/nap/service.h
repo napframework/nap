@@ -19,6 +19,7 @@ namespace nap
 
 	// Forward Declares
 	class Core;
+	class Module;
 	class ServiceObjectGraphItem;
 
 	/**
@@ -73,6 +74,11 @@ namespace nap
 		 * @return the type name of the service
 		 */
 		std::string getTypeName() const;
+
+		/**
+		 * @return The module associated with this service
+		 */
+		const Module& getModule() const;
 
 		/**
 		 * Copy is not allowed

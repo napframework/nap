@@ -18,15 +18,20 @@
 #include <nap/resourceptr.h>
 #include <renderwindow.h>
 #include <rtti/objectptr.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequenceEditorGUIView;
 	class SequenceEditorView;
 	class SequenceTrackView;
+
+	namespace sequencegui
+	{
+		inline constexpr const char* playIcon = "seq_play.png";		///< sequence play icon
+		inline constexpr const char* stopIcon = "seq_stop.png";		///< sequence stop icon
+	}
 
 	/**
 	 * A GUI resource that can be instantiated to draw a GUI (view) for the sequence editor
@@ -201,6 +206,7 @@ namespace nap
 		  * @param action the handler function
 		  */
 		 void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
+
 	protected:
 		// reference to editor
 		SequenceEditor& mEditor;
@@ -224,5 +230,8 @@ namespace nap
 
 		// reference to service
 		SequenceGUIService& mService;
+
+		std::unique_ptr<nap::ImageFromFile> mPlayIcon = nullptr;
+		std::unique_ptr<nap::ImageFromFile> mStopIcon = nullptr;
 	};
 }

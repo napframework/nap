@@ -125,6 +125,20 @@ namespace nap
 		 */
 		const Module* findModule(const std::string& moduleName) const;
 
+		/**
+		 * Find the module associated with the given service
+		 * @param serviceType The type of the service associated with the module
+		 * @return The object providing access to the Module, nullptr if not found.
+		 */
+		const Module* findModule(const nap::rtti::TypeInfo& serviceType) const;
+
+		/**
+		 * Find the module associated with the given service of type T.
+		 * @return The object providing access to the Module, nullptr if not found.
+		 */
+		template<typename T>
+		const Module* findModule() const	{ return findModule(RTTI_OF(T)); }
+
 	private:
 		/**
 		 * Loads a module into the current context.

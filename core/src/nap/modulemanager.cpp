@@ -53,6 +53,15 @@ namespace nap
 	}
 
 
+	const Module* ModuleManager::findModule(const nap::rtti::TypeInfo& serviceType) const
+	{
+		auto found_it = std::find_if(mModules.begin(), mModules.end(), [&](const auto& it) {
+			return it->getServiceType() == serviceType;
+			});
+		return found_it == mModules.end() ? nullptr : (*found_it).get();
+	}
+
+
 	ModuleManager::~ModuleManager()
 	{
 		/*  Commented out for now because unloading modules can cause crashes in RTTR; during shutdown it will try

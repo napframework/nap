@@ -8,6 +8,6 @@
         "mod_napimgui"
     ],
     "DataSearchPaths": [
-        "{ROOT}/modules/{MODULE_NAME}/data"
+        "{ROOT}/modules/napsequencegui/data"
     ]
 }

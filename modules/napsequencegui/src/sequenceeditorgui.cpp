@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <utility>
 #include <nap/modulemanager.h>
+#include <nap/logger.h>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
 RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
@@ -90,6 +92,33 @@ namespace nap
 
 			// store the raw pointer
 			mViews.emplace(view_type, std::move(track_view));
+		}
+
+		// Create play icon
+		const auto& service_module = getService().getModule();
+		auto play_icon_path = utility::forceSeparator(service_module.findAsset(sequencegui::playIcon));
+		if (!play_icon_path.empty())
+		{
+			mPlayIcon = std::make_unique<ImageFromFile>(this->getService().getCore(), play_icon_path);
+			utility::ErrorState error;
+			if (!mPlayIcon->init(error))
+			{
+				nap::Logger::warn(error.toString());
+				mPlayIcon = nullptr;
+			}
+		}
+
+		// Create stop icon
+		auto stop_icon_path = utility::forceSeparator(service_module.findAsset(sequencegui::stopIcon));
+		if (!stop_icon_path.empty())
+		{
+			mStopIcon = std::make_unique<ImageFromFile>(this->getService().getCore(), stop_icon_path);
+			utility::ErrorState error;
+			if (!mStopIcon->init(error))
+			{
+				nap::Logger::warn(error.toString());
+				mStopIcon = nullptr;
+			}
 		}
 	}
 
@@ -198,19 +227,14 @@ namespace nap
 
 			if (sequence_player.getIsPlaying())
 			{
-				if (ImGui::Button("Stop"))
+				if (ImGui::ImageButton(*mStopIcon, ImGui::GetItemRectSize()))
 				{
 					sequence_player.setIsPlaying(false);
 				}
 			}
 			else
 			{
-				nap::SequenceGUIService& service = getService();
-				auto module = service.getCore().getModuleManager().findModule("mod_napsequencegui");
-				auto play_icon = utility::forceSeparator(module->findAsset("seq_play.png"));
-				auto stop_icon = utility::forceSeparator(module->findAsset("seq_stop.png"));
-
-				if (ImGui::Button("Play"))
+				if (ImGui::ImageButton(*mPlayIcon, ImGui::GetItemRectSize()))
 				{
 					sequence_player.setIsPlaying(true);
 				}

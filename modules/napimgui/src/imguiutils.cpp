@@ -20,6 +20,14 @@ namespace ImGui
 	}
 
 
+	bool ImageButton(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 /*= ImVec2(0, 0)*/, const ImVec2& uv1 /*= ImVec2(1, 1)*/, int frame_padding /*= -1*/, const ImVec4& bg_col /*= ImVec4(0, 0, 0, 0)*/, const ImVec4& tint_col /*= ImVec4(1, 1, 1, 1)*/)
+	{
+		nap::Core& core = texture.getRenderService().getCore();
+		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
+		return ImGui::ImageButton(gui_service->getTextureHandle(texture), size, uv0, uv1, frame_padding, bg_col, tint_col);
+	}
+
+
 	ImTextureID GetTextureHandle(nap::Texture2D& texture)
 	{
 		nap::Core& core = texture.getRenderService().getCore();

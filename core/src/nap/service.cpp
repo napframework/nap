@@ -10,6 +10,7 @@
 
 // External Includes
 #include <utility/stringutils.h>
+#include <nap/module.h>
 
 RTTI_DEFINE_BASE(nap::ServiceConfiguration)
 
@@ -67,5 +68,13 @@ namespace nap
 			utility::toLower(utility::stripNamespace(getTypeName())).c_str(),
 			utility::toLower(appendix).c_str());
 		return getCore().getProjectInfo()->getIniFilePath(file_name);
+	}
+
+
+	const Module& Service::getModule() const
+	{
+		auto module = getCore().getModuleManager().findModule(this->get_type());
+		assert(module != nullptr);
+		return *module;
 	}
 }

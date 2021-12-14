@@ -22,13 +22,26 @@ namespace ImGui
 	/**
 	 * Displays a NAP 2D texture as an IMGUI image
 	 * @param texture the texture to display in IMGUI
-	 * @param size display size of the texture in pixels
+	 * @param size display size of the texture 
 	 * @param uv0 the min uv coordinates, defaults to lower left corner
 	 * @param uv1 the max uv coordinates, defaults to upper right corner
 	 * @param tint_col used to tint the displayed texture
 	 * @param border_col of the border of the image
 	 */
 	void IMGUI_API Image(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 1), const ImVec2& uv1 = ImVec2(1, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+
+	/**
+	 * Displays a NAP 2D texture as an IMGUI image button
+	 * @param texture image to apply to the button
+	 * @param size display size of the button
+	 * @param uv0 the min uv coordinates, defaults to lower left corner
+	 * @param uv1 the max uv coordinates, defaults to upper right corner
+	 * @param frame_padding image frame padding
+	 * @param bg_col button background color
+	 * @param tint_col button tint color
+	 */
+	bool IMGUI_API ImageButton(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+
 
 	/**
 	 * Return ImTextureID, can be used when drawing textures in a window drawlist
