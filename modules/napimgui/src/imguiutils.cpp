@@ -12,19 +12,26 @@
 
 namespace ImGui
 {
-	void Image(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 /*= ImVec2(0, 0)*/, const ImVec2& uv1 /*= ImVec2(1, 1)*/, const ImVec4& tint_col /*= ImVec4(1, 1, 1, 1)*/, const ImVec4& border_col /*= ImVec4(0, 0, 0, 0)*/)
+	void Image(nap::Texture2D& texture, const ImVec2& size, const ImVec4& tint_col, const ImVec4& border_col)
 	{
 		nap::Core& core = texture.getRenderService().getCore();
 		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
-		ImGui::Image(gui_service->getTextureHandle(texture), size, uv0, uv1, tint_col, border_col);
+		ImGui::Image(gui_service->getTextureHandle(texture), size, { 0,1 }, { 1,0 }, tint_col, border_col);
 	}
 
 
-	bool ImageButton(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 /*= ImVec2(0, 0)*/, const ImVec2& uv1 /*= ImVec2(1, 1)*/, int frame_padding /*= -1*/, const ImVec4& bg_col /*= ImVec4(0, 0, 0, 0)*/, const ImVec4& tint_col /*= ImVec4(1, 1, 1, 1)*/)
+	bool IMGUI_API ImageButton(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 /*= ImVec2(0, 1)*/, const ImVec2& uv1 /*= ImVec2(1, 0)*/, int frame_padding /*= -1*/, const ImVec4& bg_col /*= ImVec4(0, 0, 0, 0)*/, const ImVec4& tint_col /*= ImVec4(1, 1, 1, 1)*/)
 	{
 		nap::Core& core = texture.getRenderService().getCore();
 		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
 		return ImGui::ImageButton(gui_service->getTextureHandle(texture), size, uv0, uv1, frame_padding, bg_col, tint_col);
+	}
+
+
+	bool ImageButton(nap::Texture2D& texture, int frame_padding , const ImVec4& bg_col , const ImVec4& tint_col)
+	{
+		float size = ImGui::GetFontSize();
+		return ImageButton(texture, { size, size }, { 0,1 }, { 1,0 }, frame_padding, bg_col, tint_col);
 	}
 
 

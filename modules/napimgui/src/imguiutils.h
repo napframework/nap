@@ -39,9 +39,20 @@ namespace ImGui
 	 * @param frame_padding image frame padding
 	 * @param bg_col button background color
 	 * @param tint_col button tint color
+	 * @return if the button is pressed
 	 */
 	bool IMGUI_API ImageButton(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 1), const ImVec2& uv1 = ImVec2(1, 0), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
+	/**
+	 * Displays a NAP 2D texture as a squared IMGUI image button where
+	 * the width and height of the button is the active font size
+	 * @param texture image to apply to the button
+	 * @param frame_padding image frame padding
+	 * @param bg_color button backgound color
+	 * @param tint_col button tint color
+	 * @return if the button is pressed
+	 */
+	bool IMGUI_API ImageButton(nap::Texture2D& texture, int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
 	 * Return ImTextureID, can be used when drawing textures in a window drawlist

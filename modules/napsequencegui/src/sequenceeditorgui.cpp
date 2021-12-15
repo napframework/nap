@@ -249,65 +249,73 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetScrollY());
 
-			if (ImGui::ImageButton(*mSaveIcon, {16, 16}))
+			if (ImGui::ImageButton(*mSaveIcon))
 			{
 				mEditor.save(mEditor.mSequencePlayer->mSequenceFileName);
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Save sequence");
 
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton(*mSaveAsIcon, {16, 16}))
+			if (ImGui::ImageButton(*mSaveAsIcon))
 			{
 				ImGui::OpenPopup("Save As");
 				mState.mAction = createAction<SaveAsPopup>();
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Save sequence as ...");
 
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton(*mLoadIcon, {16, 16}))
+			if (ImGui::ImageButton(*mLoadIcon))
 			{
 				ImGui::OpenPopup("Load");
 				mState.mAction = createAction<LoadPopup>();
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Load sequence");
 
 			ImGui::SameLine();
 
 			if (sequence_player.getIsPlaying())
 			{
-				if (ImGui::ImageButton(*mStopIcon, { 16, 16 }))
+				if (ImGui::ImageButton(*mStopIcon))
 				{
 					sequence_player.setIsPlaying(false);
 				}
+				if (ImGui::IsItemHovered()) ImGui::SetTooltip("Stop playback");
 			}
 			else
 			{
-				if (ImGui::ImageButton(*mPlayIcon, { 16, 16 }))
+				if (ImGui::ImageButton(*mPlayIcon))
 				{
 					sequence_player.setIsPlaying(true);
 				}
+				if (ImGui::IsItemHovered()) ImGui::SetTooltip("Start playback");
 			}
 
 			ImGui::SameLine();
 			if (sequence_player.getIsPaused())
 			{
-				if (ImGui::ImageButton(*mUnpauseIcon, {16, 16}))
+				if (ImGui::ImageButton(*mUnpauseIcon))
 				{
 					sequence_player.setIsPaused(false);
 				}
+				if (ImGui::IsItemHovered()) ImGui::SetTooltip("Un-Pause playback...");
 			}
 			else
 			{
-				if (ImGui::ImageButton(*mPauseIcon, {16, 16}))
+				if (ImGui::ImageButton(*mPauseIcon))
 				{
 					sequence_player.setIsPaused(true);
 				}
+				if (ImGui::IsItemHovered()) ImGui::SetTooltip("Pause playback");
 			}
 
 			ImGui::SameLine();
-			if (ImGui::ImageButton(*mReplayIcon, {16, 16}))
+			if (ImGui::ImageButton(*mReplayIcon))
 			{
 				sequence_player.setPlayerTime(0.0);
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Move marker to beginning");
 
 			ImGui::SameLine();
 			bool isLooping = sequence_player.getIsLooping();
@@ -340,10 +348,11 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if (ImGui::ImageButton(*mHelpIcon, {16, 16}))
+			if (ImGui::ImageButton(*mHelpIcon))
 			{
 				mState.mAction = createAction<OpenHelpPopup>();
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Show Help");
 
 			ImGui::Spacing();
 			ImGui::Separator();
@@ -498,7 +507,7 @@ namespace nap
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			if (ImGui::ImageButton(*mPlusIcon, {16, 16}))
+			if (ImGui::ImageButton(*mPlusIcon))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}

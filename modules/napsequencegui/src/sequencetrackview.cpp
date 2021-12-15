@@ -122,20 +122,24 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-			if (ImGui::ImageButton(*mView.mUpIcon, { 8, 8 }))
+			float btn_scale = 8.0f * mState.mScale;
+			if (ImGui::ImageButton(*mView.mUpIcon, { btn_scale, btn_scale}))
 			{
 				move_track_up = true;
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Move track up");
 			ImGui::SameLine();
-			if (ImGui::ImageButton(*mView.mDownIcon, { 8, 8 }))
+			if (ImGui::ImageButton(*mView.mDownIcon, {btn_scale, btn_scale}))
 			{
 				move_track_down = true;
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Move track down");
 			ImGui::SameLine();
-			if (ImGui::ImageButton(*mView.mCancelIcon, {8, 8}))
+			if (ImGui::ImageButton(*mView.mCancelIcon, {btn_scale, btn_scale}))
 			{
 				delete_track = true;
 			}
+			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Delete track");
 
 			// pop scale
 			ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
