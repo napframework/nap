@@ -373,6 +373,6 @@ namespace nap
 		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 
 		// Icons
-		std::vector<std::unique_ptr<ImageFromFile>> mIcons;
+		std::unordered_map<std::string, std::unique_ptr<ImageFromFile>> mIcons;
 	};
 }

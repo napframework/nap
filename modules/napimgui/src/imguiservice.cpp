@@ -614,7 +614,7 @@ namespace nap
 				mIcons.clear();
 				return false;
 			}
-			mIcons.emplace_back(std::move(new_icon));
+			mIcons.emplace(std::make_pair(icon_name, std::move(new_icon)));
 		}
 
 		return true;
