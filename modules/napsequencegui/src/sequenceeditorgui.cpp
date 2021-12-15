@@ -128,6 +128,45 @@ namespace nap
 		if(!loadIcon(sequencegui::stopIcon, getService(), mStopIcon, load_error))
 			return false;
 
+		if (!loadIcon(sequencegui::rewindIcon, getService(), mReplayIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::cancelIcon, getService(), mCancelIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::upIcon, getService(), mUpIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::downIcon, getService(), mDownIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::pauseIcon, getService(), mPauseIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::unpauseIcon, getService(), mUnpauseIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::plusIcon, getService(), mPlusIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::minusIcon, getService(), mMinusIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::saveIcon, getService(), mSaveIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::saveAsIcon, getService(), mSaveAsIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::loadIcon, getService(), mLoadIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::helpIcon, getService(), mHelpIcon, load_error))
+			return false;
+
+		if (!loadIcon(sequencegui::deleteIcon, getService(), mDeleteIcon, load_error))
+			return false;
+
 		return true;
 	}
 
@@ -210,15 +249,14 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetScrollY());
 
-			//
-			if (ImGui::Button("Save"))
+			if (ImGui::ImageButton(*mSaveIcon, {16, 16}))
 			{
 				mEditor.save(mEditor.mSequencePlayer->mSequenceFileName);
 			}
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Save As"))
+			if (ImGui::ImageButton(*mSaveAsIcon, {16, 16}))
 			{
 				ImGui::OpenPopup("Save As");
 				mState.mAction = createAction<SaveAsPopup>();
@@ -226,7 +264,7 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Load"))
+			if (ImGui::ImageButton(*mLoadIcon, {16, 16}))
 			{
 				ImGui::OpenPopup("Load");
 				mState.mAction = createAction<LoadPopup>();
@@ -236,14 +274,14 @@ namespace nap
 
 			if (sequence_player.getIsPlaying())
 			{
-				if (ImGui::ImageButton(*mStopIcon, ImGui::GetItemRectSize()))
+				if (ImGui::ImageButton(*mStopIcon, { 16, 16 }))
 				{
 					sequence_player.setIsPlaying(false);
 				}
 			}
 			else
 			{
-				if (ImGui::ImageButton(*mPlayIcon, ImGui::GetItemRectSize()))
+				if (ImGui::ImageButton(*mPlayIcon, { 16, 16 }))
 				{
 					sequence_player.setIsPlaying(true);
 				}
@@ -252,21 +290,21 @@ namespace nap
 			ImGui::SameLine();
 			if (sequence_player.getIsPaused())
 			{
-				if (ImGui::Button("Unpause"))
+				if (ImGui::ImageButton(*mUnpauseIcon, {16, 16}))
 				{
 					sequence_player.setIsPaused(false);
 				}
 			}
 			else
 			{
-				if (ImGui::Button("Pause"))
+				if (ImGui::ImageButton(*mPauseIcon, {16, 16}))
 				{
 					sequence_player.setIsPaused(true);
 				}
 			}
 
 			ImGui::SameLine();
-			if (ImGui::Button("Rewind"))
+			if (ImGui::ImageButton(*mReplayIcon, {16, 16}))
 			{
 				sequence_player.setPlayerTime(0.0);
 			}
@@ -302,7 +340,7 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if(ImGui::Button("Help"))
+			if (ImGui::ImageButton(*mHelpIcon, {16, 16}))
 			{
 				mState.mAction = createAction<OpenHelpPopup>();
 			}
@@ -460,10 +498,12 @@ namespace nap
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			if (ImGui::Button("Insert New Track"))
+			if (ImGui::ImageButton(*mPlusIcon, {16, 16}))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
+			ImGui::Text("Add Track");
 
 			// handle actions
 			for (auto& it : mViews)

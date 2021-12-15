@@ -10,6 +10,7 @@
 // External Includes
 #include <imgui/imgui.h>
 #include <iomanip>
+#include <imguiutils.h>
 
 using namespace nap::SequenceGUIActions;
 
@@ -121,26 +122,19 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-
-			// when we delete a track, we don't immediately call the controller because we are iterating track atm
-			if (ImGui::SmallButton("Delete"))
-			{
-				delete_track = true;
-			}
-
-			// show up & down buttons
-			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-
-			if(ImGui::SmallButton("Up"))
+			if (ImGui::ImageButton(*mView.mUpIcon, { 8, 8 }))
 			{
 				move_track_up = true;
 			}
 			ImGui::SameLine();
-			if(ImGui::SmallButton("Down"))
+			if (ImGui::ImageButton(*mView.mDownIcon, { 8, 8 }))
 			{
 				move_track_down = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::ImageButton(*mView.mCancelIcon, {8, 8}))
+			{
+				delete_track = true;
 			}
 
 			// pop scale
