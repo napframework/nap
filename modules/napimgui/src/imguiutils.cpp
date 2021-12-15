@@ -12,11 +12,11 @@
 
 namespace ImGui
 {
-	void Image(nap::Texture2D& texture, const ImVec2& size, const ImVec4& tint_col, const ImVec4& border_col)
+	void Image(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
 	{
 		nap::Core& core = texture.getRenderService().getCore();
 		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
-		ImGui::Image(gui_service->getTextureHandle(texture), size, { 0,1 }, { 1,0 }, tint_col, border_col);
+		ImGui::Image(gui_service->getTextureHandle(texture), size, uv0, uv1, tint_col, border_col);
 	}
 
 
