@@ -1939,11 +1939,14 @@ namespace nap
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
+
+			for (BaseGPUBuffer* buffer : frame.mBufferDownloads)
+				buffer->download(commandBuffer);
 		});
 	}
 
 
-	void RenderService::updateTextureDownloads()
+	void RenderService::updateDownloads()
 	{
 		// Here we check if any pending texture downloads are ready. We always know for sure that textures
 		// for the current frame are ready (if this function is called after wait for fence). So we could just
@@ -1961,6 +1964,19 @@ namespace nap
 					texture->notifyDownloadReady(frame_index);
 
 				frame.mTextureDownloads.clear();
+			}
+		}
+
+		// Repeat for buffers
+		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
+		{
+			Frame& frame = mFramesInFlight[frame_index];
+			if (!frame.mBufferDownloads.empty() && vkGetFenceStatus(mDevice, frame.mFence) == VK_SUCCESS)
+			{
+				for (BaseGPUBuffer* buffer : frame.mBufferDownloads)
+					buffer->notifyDownloadReady(frame_index);
+
+				frame.mBufferDownloads.clear();
 			}
 		}
 	}
@@ -1992,12 +2008,12 @@ namespace nap
 		// by other VkQueueSubmits, are free to use.
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
 		
-		// We call updateTextureDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
+		// We call updateDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
 		// status which could still not be signaled at that point, causing the notify not to be called. If we then wait for
-		// the fence anyway, we missed the opportunity to notify textures that downloads were ready. Because we reset the fence
+		// the fence anyway, we missed the opportunity to notify textures/buffers that downloads were ready. Because we reset the fence
 		// next, we could delay the notification for a full frame cycle. So this call is purposely put inbetween the wait and reset
 		// of the fence.
-		updateTextureDownloads();
+		updateDownloads();
 
 		// Release the DescriptorSets that were used for this frame index. This ensures that the DescriptorSets
 		// can be re-allocated as part of this frame's rendering.
@@ -2258,6 +2274,15 @@ namespace nap
 	void RenderService::requestBufferUpload(BaseGPUBuffer& buffer)
 	{
 		mBuffersToUpload.insert(&buffer);
+	}
+
+
+	void RenderService::requestBufferDownload(BaseGPUBuffer& buffer)
+	{
+		// We push a buffer download specifically for this frame. When the fence for that frame is signaled,
+		// we know the download has been processed by the GPU, and we can send the buffer a notification that
+		// transfer has completed.
+		mFramesInFlight[mCurrentFrameIndex].mBufferDownloads.push_back(&buffer);
 	}
 
 

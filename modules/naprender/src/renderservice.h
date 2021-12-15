@@ -1006,6 +1006,12 @@ namespace nap
 		void requestBufferUpload(BaseGPUBuffer& buffer);
 
 		/**
+		 * Request a Vulkan buffer transfer, from GPU buffer to staging buffer.
+		 * @param buffer the buffer to download data into.
+		 */
+		void requestBufferDownload(BaseGPUBuffer& buffer);
+
+		/**
 		 * Deletes all buffer upload requests.
 		 * Called when the GPU buffer is destroyed.
 		 * @param buffer the buffer to remove pending upload commands for.
@@ -1030,10 +1036,10 @@ namespace nap
 		void uploadData();
 
 		/**
-		 * Checks if any pending texture downloads are ready.
-		 * Textures for which the download has completed are notified.
+		 * Checks if any pending texture  and buffer downloads are ready.
+		 * Textures and buffers for which the download has completed are notified.
 		 */
-		void updateTextureDownloads();
+		void updateDownloads();
 		
 		/**
 		 * Called by the render engine at the appropriate time to delete all queued Vulkan resources.
@@ -1075,6 +1081,7 @@ namespace nap
 		{
 			VkFence								mFence;								///< CPU sync primitive
 			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
+			std::vector<BaseGPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
 			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
 			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window.

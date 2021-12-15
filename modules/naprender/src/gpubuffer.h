@@ -37,6 +37,7 @@ namespace nap
 	{
 		Static,				///< Mesh data is uploaded only once from the CPU to the GPU
 		DynamicWrite,		///< Mesh data is updated more than once from the CPU to the GPU
+		DynamicRead			///< Mesh data is uploaded only once from the CPU to the GPU, and frequently read from GPU to CPU
 	};
 
 
@@ -50,15 +51,26 @@ namespace nap
 		// Default destructor
 		virtual ~BaseGPUBuffer() = default;
 
+		/*
+		 * Returns the vulkan buffer
+		 */
+		virtual VkBuffer getBuffer() const = 0;
+
+	private:
 		/**
-		 * 
+		 * Called by the render service when data can be uploaded
 		 */
 		virtual void upload(VkCommandBuffer commandBuffer) = 0;
 
-		/*
-		 *
+		/**
+		 * Called by the render service when data can be downloaded
 		 */
-		virtual VkBuffer getBuffer() const = 0;
+		virtual void download(VkCommandBuffer commandBuffer) = 0;
+
+		/**
+		 * Called by the render service when download is ready
+		 */
+		virtual void notifyDownloadReady(int frameIndex) = 0;
 	};
 
 
@@ -124,6 +136,12 @@ namespace nap
 		 */
 		bool init(utility::ErrorState& errorState) override;
 
+		/**
+		* Starts a transfer of buffer data from GPU to CPU. Use this overload to pass your own copy function. This is a non blocking call.
+		* @param copyFunction the copy function to call when the buffer data is available for download.
+		*/
+		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
+
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property 'Usage' How the buffer is used, static, updated frequently etc.
 
 	protected:
@@ -143,11 +161,17 @@ namespace nap
 
 		RenderService*			mRenderService = nullptr;			///< Handle to the render service
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
-		BufferData				mStagingBuffer;						///< Staging buffer, used when uploading static mesh geometry
+		std::vector<BufferData>	mStagingBuffers;					///< Staging buffers, used when uploading or downloading data
 		uint32					mSize = 0;							///< Current used buffer size in bytes
-		int						mCurrentBufferIndex = 0;			///< Current render buffer index
+
+		int						mCurrentRenderBufferIndex = 0;		///< Current render buffer index
+		int						mCurrentStagingBufferIndex = 0;		///< Current staging buffer index
+		std::vector<int>		mDownloadStagingBufferIndices;		///< Staging buffer indices associated with a frameindex
 
 	private:
+		using BufferReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
+		std::vector<BufferReadCallback>	mReadCallbacks;				///< Number of callbacks based on number of frames in flight
+
 		// Called when usage = static
 		bool setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error);
 		
@@ -157,6 +181,12 @@ namespace nap
 		// Uploads data from the staging buffer into GPU buffer. Automatically called by the render service at the appropriate time.
 		// Only occurs when 'usage' = 'static'. Dynamic data shares GPU / CPU memory and is updated immediately.
 		virtual void upload(VkCommandBuffer commandBuffer) override;
+
+		// Downloads data from GPU buffer to staging buffer
+		virtual void download(VkCommandBuffer commandBuffer) override;
+
+		// Called by the render service when download is ready
+		virtual void notifyDownloadReady(int frameIndex) override;
 	};
 
 }

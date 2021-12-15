@@ -125,16 +125,16 @@ namespace nap
 	}
 
 
-	static int getNumStagingBuffers(int inMaxFramesInFlight, ETextureUsage textureUsage)
+	static int getNumStagingBuffers(int maxFramesInFlight, ETextureUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
 			case ETextureUsage::DynamicWrite:
-				return inMaxFramesInFlight + 1;
+				return maxFramesInFlight + 1;
 			case ETextureUsage::Static:
 				return 1;
 			case ETextureUsage::DynamicRead:
-				return inMaxFramesInFlight;
+				return maxFramesInFlight;
 			default:
 				assert(false);
 		}
