@@ -50,6 +50,45 @@ static VkSampler                gSampler = VK_NULL_HANDLE;
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+	// Icons
+	//////////////////////////////////////////////////////////////////////////
+
+	static const std::vector<std::string>& getIcons()
+	{
+		const static std::vector<std::string> map =
+		{
+			icon::save,		icon::saveAs,	icon::cancel,
+			icon::remove,	icon::file,		icon::help,
+			icon::settings,	icon::verify,	icon::reload
+		};
+		return map;
+	}
+
+
+	std::unique_ptr<nap::ImageFromFile> icon::load(const std::string& fileName, bool generateLODs, nap::Core& core, const Module& module, nap::utility::ErrorState& error)
+	{
+		// Find path to asset
+		auto icon_path = module.findAsset(fileName);
+		if (!error.check(!icon_path.empty(), "%s: Unable to find icon %s", module.getName().c_str(), fileName.c_str()))
+			return false;
+
+		// Create icon
+		auto new_icon = std::make_unique<ImageFromFile>(core, icon_path);
+		new_icon->mGenerateLods = generateLODs;
+		if (!new_icon->init(error))
+			new_icon.reset(nullptr);
+
+		return new_icon;
+	}
+
+
+	std::unique_ptr<nap::ImageFromFile> icon::load(const std::string& fileName, bool generateLODs, nap::Service& service, nap::utility::ErrorState& error)
+	{
+		return icon::load(fileName, generateLODs, service.getCore(), service.getModule(), error);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Static / Local methods
 	//////////////////////////////////////////////////////////////////////////
 
@@ -564,6 +603,20 @@ namespace nap
 		// Global GUI & DPI scale
 		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
 
+		// Load all the default icons
+		bool icons_loaded = true;
+		const auto& default_icons = getIcons();
+		for (const auto& icon_name : default_icons)
+		{
+			auto new_icon = icon::load(icon_name, true, *this, error);
+			if (new_icon == nullptr)
+			{
+				mIcons.clear();
+				return false;
+			}
+			mIcons.emplace_back(std::move(new_icon));
+		}
+
 		return true;
 	}
 
@@ -630,6 +683,9 @@ namespace nap
 
 		// Destroy imgui contexts
 		mContexts.clear();
+
+		// Destroy icons
+		mIcons.clear();
 	}
 
 

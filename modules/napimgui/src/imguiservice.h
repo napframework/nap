@@ -16,6 +16,8 @@
 #include <descriptorsetallocator.h>
 #include <nap/signalslot.h>
 #include <color.h>
+#include <imagefromfile.h>
+#include <nap/modulemanager.h>
 
 // ImGUI forward declares
 struct ImGuiContext;
@@ -62,6 +64,47 @@ namespace nap
 		IMGuiColorPalette mColors;								///< Property: 'Colors' Gui colors
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
+
+
+	namespace icon
+	{
+		/**
+		 * All available (default) icons: managed by the IMGuiService and guaranteed to exist.
+		 * Use these names as identifier to look up a specific icon inside a module or application.
+		 */
+		inline constexpr const char* save		= "save.png";
+		inline constexpr const char* saveAs		= "save_as.png";
+		inline constexpr const char* cancel		= "cancel.png";
+		inline constexpr const char* remove		= "remove.png";
+		inline constexpr const char* file		= "file.png";
+		inline constexpr const char* help		= "help.png";
+		inline constexpr const char* settings	= "settings.png";
+		inline constexpr const char* verify		= "verify.png";
+		inline constexpr const char* reload		= "reload.png";
+		inline constexpr const char* folder		= "folder.png";
+
+		/**
+		 * Loads an icon from disk that can be drawn.
+		 * The system looks for the icon in the data search paths of the module.
+		 * @param fileName the name of the icon, including extension
+		 * @param generateLODs if LODs are generated for this image
+		 * @param module the module that points to the icon
+		 * @param error contains the error message if the load operations fails
+		 * @return the icon loaded from disk as a Texture, nullptr if the icon could not be loaded
+		 */
+		NAPAPI std::unique_ptr<ImageFromFile> load(const std::string& fileName, bool generateLODs, nap::Core& core, const Module& module, nap::utility::ErrorState& error);
+
+		/**
+		 * Loads an icon from disk that can be drawn.
+		 * The system looks for the icon in the data search paths of the module associated with the service
+		 * @param fileName the name of the icon, including extension
+		 * @param generateLODs if LODs are generated for this image
+		 * @param service the service that points to the icon
+		 * @param error contains the error message if the load operations fails
+		 * @return the icon loaded from disk as a Texture, nullptr if the icon could not be loaded
+		 */
+		NAPAPI std::unique_ptr<ImageFromFile> load(const std::string& fileName, bool generateLODs, nap::Service& service, nap::utility::ErrorState& error);
+	}
 
 
 	/**
@@ -328,5 +371,8 @@ namespace nap
 		IMGuiServiceConfiguration* mConfiguration = nullptr;
 		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
 		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
+
+		// Icons
+		std::vector<std::unique_ptr<ImageFromFile>> mIcons;
 	};
 }

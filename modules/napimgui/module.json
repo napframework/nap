@@ -5,5 +5,9 @@
         "mod_naprender",
         "mod_napsdlinput"
     ],
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": [],
+     "DataSearchPaths": [
+        "{ROOT}/modules/napimgui/data",
+        "{ROOT}/modules/{MODULE_NAME}/data"
+    ]
 }
