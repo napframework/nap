@@ -154,6 +154,11 @@ if(WIN32)
         )
 endif()
 
+# Install module data into packaged project
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION modules/${MODULE_NAME} CONFIGURATIONS Release)
+endif()
+
 # On macOS & Linux install module into packaged project
 if (NOT WIN32)
     install(FILES $<TARGET_FILE:${PROJECT_NAME}> DESTINATION lib CONFIGURATIONS Release)
