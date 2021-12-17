@@ -348,10 +348,24 @@ namespace nap
 		return found_service == mServices.end() ? nullptr : (*found_service).get();
 	}
 
+
 	nap::Service* Core::getService(const std::string& type)
 	{
 		rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(type.c_str());
 		return getService(stype);
+	}
+
+
+	const nap::Service* Core::getService(const rtti::TypeInfo& type) const
+	{
+		// Find service of type
+		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
+			{
+				return rtti::isTypeMatch(service->get_type(), type, rtti::ETypeCheck::EXACT_MATCH);
+			});
+
+		// Check if found
+		return found_service == mServices.end() ? nullptr : (*found_service).get();
 	}
 
 

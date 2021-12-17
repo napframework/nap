@@ -223,7 +223,7 @@ namespace nap
 		 * ~~~~~
 		 * @return Vulkan texture handle, used to display a texture in ImGUI
 		 */
-		ImTextureID getTextureHandle(nap::Texture2D& texture);
+		ImTextureID getTextureHandle(const nap::Texture2D& texture) const;
 
 		/**
 		 * Returns an icon with the given name and extension.
@@ -362,7 +362,7 @@ namespace nap
 		void pushScale(GUIContext& context, const Display& display);
 
 		RenderService* mRenderService = nullptr;
-		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;

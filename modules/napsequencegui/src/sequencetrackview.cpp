@@ -124,7 +124,7 @@ namespace nap
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 			float btn_scale = 8.0f * mState.mScale;
 			auto& gui = mService.getGui();
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up).getTexture(), { btn_scale, btn_scale}))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), { btn_scale, btn_scale}))
 			{
 				move_track_up = true;
 			}

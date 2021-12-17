@@ -46,7 +46,7 @@ namespace nap
 	}
 
 
-	ImTextureID Icon::getTextureHandle()
+	ImTextureID Icon::getTextureHandle() const
 	{
 		return mGuiService.getTextureHandle(mImage);
 	}

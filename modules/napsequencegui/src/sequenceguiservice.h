@@ -183,6 +183,11 @@ namespace nap
 		nap::IMGuiService& getGui();
 
 		/**
+		 * @return gui service
+		 */
+		const nap::IMGuiService& getGui() const;
+
+		/**
 		 * Returns the sequencer GUI color palette 
 		 * @return sequencer GUI color palette
 		 */

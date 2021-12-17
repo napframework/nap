@@ -538,7 +538,7 @@ namespace nap
 	}
 
 
-	ImTextureID IMGuiService::getTextureHandle(nap::Texture2D& texture)
+	ImTextureID IMGuiService::getTextureHandle(const nap::Texture2D& texture) const
 	{
 		// Check if the texture has been requested before
 		auto it = mDescriptors.find(&texture);

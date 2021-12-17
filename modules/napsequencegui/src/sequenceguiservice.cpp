@@ -305,6 +305,13 @@ namespace nap
 	}
 
 
+	const nap::IMGuiService& SequenceGUIService::getGui() const
+	{
+		assert(mGuiService != nullptr);
+		return *mGuiService;
+	}
+
+
 	void SequenceGUIService::Colors::init(const IMGuiColorPalette& palette)
 	{
 		mHigh = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor));

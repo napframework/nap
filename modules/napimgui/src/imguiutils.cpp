@@ -12,23 +12,23 @@
 
 namespace ImGui
 {
-	void Image(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+	void Image(const nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
 	{
-		nap::Core& core = texture.getRenderService().getCore();
-		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
+		const nap::Core& core = texture.getRenderService().getCore();
+		const nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
 		ImGui::Image(gui_service->getTextureHandle(texture), size, uv0, uv1, tint_col, border_col);
 	}
 
 
-	bool ImageButton(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+	bool ImageButton(const nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
 	{
 		auto& core = texture.getRenderService().getCore();
-		nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
+		const nap::IMGuiService* gui_service = core.getService<nap::IMGuiService>();
 		return ImGui::ImageButton(gui_service->getTextureHandle(texture), size, uv0, uv1, frame_padding, bg_col, tint_col);
 	}
 
 
-	bool ImageButton(nap::Icon& icon, const char* text, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+	bool ImageButton(const nap::Icon& icon, const char* text, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
 	{
 		float height = ImGui::GetFontSize();
 		float width = (height / static_cast<float>(icon.getTexture().getHeight())) * static_cast<float>(icon.getTexture().getWidth());
@@ -36,7 +36,7 @@ namespace ImGui
 	}
 
 
-	bool ImageButton(nap::Icon& icon, const ImVec2& size, const char* text/*=nullptr*/, int frame_padding /*= -1*/, const ImVec4& bg_col /*= ImVec4(0, 0, 0, 0)*/, const ImVec4& tint_col /*= ImVec4(1, 1, 1, 1)*/)
+	bool ImageButton(const nap::Icon& icon, const ImVec2& size, const char* text/*=nullptr*/, int frame_padding /*= -1*/, const ImVec4& bg_col /*= ImVec4(0, 0, 0, 0)*/, const ImVec4& tint_col /*= ImVec4(1, 1, 1, 1)*/)
 	{
 		bool clicked = ImGui::ImageButton(icon.getTextureHandle(), size, { 0, 1 }, { 1, 0 }, frame_padding, bg_col, tint_col);
 		if (ImGui::IsItemHovered())

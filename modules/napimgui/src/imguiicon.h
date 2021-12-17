@@ -59,7 +59,7 @@ namespace nap
 		/**
 		 * @return 2DTexture that can be rendered
 		 */
-		nap::Texture2D& getTexture()						{ return mImage; }
+		const nap::Texture2D& getTexture() const			{ return mImage; }
 
 		/**
 		 * @return the GUI Service
@@ -70,7 +70,7 @@ namespace nap
 		 * Returns the GUI texture handle of this icon.
 		 * @return the GUI texture handle
 		 */
-		ImTextureID getTextureHandle();
+		ImTextureID getTextureHandle() const;
 
 		std::string mImagePath;								///< Property: 'ImagePath' path to the image on disk
 

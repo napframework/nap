@@ -29,7 +29,7 @@ namespace ImGui
 	 * @param tint_col used to tint the displayed texture
 	 * @param border_col of the border of the image
 	 */
-	void IMGUI_API Image(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 1), const ImVec2& uv1 = ImVec2(1, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+	void IMGUI_API Image(const nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 1), const ImVec2& uv1 = ImVec2(1, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
 
 	/**
 	 * Displays a NAP 2D texture as an IMGUI image button
@@ -42,7 +42,7 @@ namespace ImGui
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
-	bool IMGUI_API ImageButton(nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 1), const ImVec2& uv1 = ImVec2(1, 0), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool IMGUI_API ImageButton(const nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 1), const ImVec2& uv1 = ImVec2(1, 0), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
 	 * Displays a NAP Icon as a squared IMGUI image button where
@@ -61,7 +61,7 @@ namespace ImGui
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
-	bool IMGUI_API ImageButton(nap::Icon& icon, const char* text=nullptr, int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool IMGUI_API ImageButton(const nap::Icon& icon, const char* text=nullptr, int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
 	 * Displays a NAP Icon as a squared IMGUI image of a certain size.
@@ -80,7 +80,7 @@ namespace ImGui
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
-	bool IMGUI_API ImageButton(nap::Icon& icon, const ImVec2& size, const char* text=nullptr, int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool IMGUI_API ImageButton(const nap::Icon& icon, const ImVec2& size, const char* text=nullptr, int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
 	 * Return ImTextureID, can be used when drawing textures in a window drawlist
