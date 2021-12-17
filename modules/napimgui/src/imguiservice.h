@@ -10,15 +10,12 @@
 
 // External includes
 #include <nap/service.h>
-#include <utility/dllexport.h>
 #include <renderwindow.h>
 #include <inputevent.h>
 #include <nap/resourceptr.h>
 #include <descriptorsetallocator.h>
 #include <nap/signalslot.h>
 #include <color.h>
-#include <imagefromfile.h>
-#include <nap/modulemanager.h>
 
 // ImGUI forward declares
 struct ImGuiContext;
