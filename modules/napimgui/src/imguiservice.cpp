@@ -19,8 +19,8 @@
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
 #include <materialcommon.h>
-#include <descriptorsetallocator.h>
 #include <sdlhelpers.h>
+#include <nap/modulemanager.h>
 
 RTTI_BEGIN_STRUCT(nap::IMGuiColorPalette)
 	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiColorPalette::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
