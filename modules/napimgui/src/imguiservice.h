@@ -31,11 +31,6 @@ namespace nap
 	class GuiWindow;
 	class IMGuiService;
 
-	namespace gui
-	{
-		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
-	}
-
 	/**
 	 * All available (default) icons: managed by the IMGuiService and guaranteed to exist.
 	 * Use these names as identifier to look up a specific icon inside a module or application.
@@ -65,7 +60,16 @@ namespace nap
 
 
 	/**
-	 * Configurable palette of ImGUI colors
+	 * GUI globals
+	 */
+	namespace gui
+	{
+		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+	}
+
+
+	/**
+	 * Configurable palette of GUI colors
 	 */
 	struct NAPAPI IMGuiColorPalette
 	{
@@ -80,7 +84,7 @@ namespace nap
 
 
 	/**
-	 * ImGUI configuration options
+	 * GUI configuration options
 	 */
 	class NAPAPI IMGuiServiceConfiguration : public ServiceConfiguration
 	{
@@ -103,41 +107,6 @@ namespace nap
 	 * 
 	 * Only call selectWindow() on application update, not when rendering the GUI to screen.
 	 * The service automatically creates a new GUI frame before application update.
-	 *
-	 * MyApp::update(double deltaTime):
-	 * ~~~~~{.cpp}
-	 *	mGuiService->selectWindow(mRenderWindowOne);
-	 *	ImGui::Begin("GUI Window One");
-	 *	...
-	 *	ImGui::End();
-	 *
-	 *	mGuiService->selectWindow(mRenderWindowTwo);
-	 *	ImGui::Begin("GUI Window Two");
-	 *	...
-	 *	ImGui::End();
-	 * ~~~~~
-	 *
-	 * MyApp::render()
-	 * ~~~~~{.cpp}
-	 *	mRenderService->beginFrame();
-	 *	if (mRenderService->beginRecording(*mRenderWindowOne))
-	 *	{
-	 *		mRenderWindowOne->beginRendering();
-	 *		mGuiService->draw();
-	 *		mRenderWindowOne->endRendering();
-	 *		mRenderService->endRecording();
-	 *	}
-	 *
-	 *	// Draw gui window 2
-	 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
-	 *	{
-	 *		mRenderWindowTwo->beginRendering();
-	 *		mGuiService->draw();
-	 *		mRenderWindowTwo->endRendering();
-	 *		mRenderService->endRecording();
-	 *	}
-	 *	mRenderService->endFrame();
-	 * ~~~~~
 	 */
 	class NAPAPI IMGuiService : public Service
 	{
