@@ -31,6 +31,22 @@ namespace nap
 	using SequenceEventTrackPasteFunc 				= std::function<void(SequenceEventTrackView&, const std::string&, const SequenceTrackSegmentEventBase&, double)>;
 	using SequenceEventTrackEditFunc 				= std::function<void(SequenceEventTrackView&)>;
 
+	namespace icon
+	{
+		namespace sequencer
+		{
+			inline constexpr const char* play		= "seq_play.png";
+			inline constexpr const char* stop		= "seq_stop.png";
+			inline constexpr const char* rewind		= "seq_replay.png";
+			inline constexpr const char* up			= "seq_up-arrow.png";
+			inline constexpr const char* down		= "seq_down-arrow.png";
+			inline constexpr const char* pause		= "seq_pause.png";
+			inline constexpr const char* unpause	= "seq_unpause.png";
+			inline constexpr const char* plus		= "seq_plus.png";
+			inline constexpr const char* minus		= "seq_minus.png";
+		}
+	}
+
 	/**
 	 * The SequenceGUIService is responsible for registering track, segment & popup views and supplying the GUI the
 	 * necessary factory methods to dynamically create the views and handlers for all registered types.

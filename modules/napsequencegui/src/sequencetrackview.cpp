@@ -123,19 +123,20 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
 			float btn_scale = 8.0f * mState.mScale;
-			if (ImGui::ImageButton(*mView.mUpIcon, { btn_scale, btn_scale}))
+			auto& gui = mService.getGui();
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up).getTexture(), { btn_scale, btn_scale}))
 			{
 				move_track_up = true;
 			}
 			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Move track up");
 			ImGui::SameLine();
-			if (ImGui::ImageButton(*mView.mDownIcon, {btn_scale, btn_scale}))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), {btn_scale, btn_scale}))
 			{
 				move_track_down = true;
 			}
 			if (ImGui::IsItemHovered()) ImGui::SetTooltip("Move track down");
 			ImGui::SameLine();
-			if (ImGui::ImageButton(*mView.mCancelIcon, {btn_scale, btn_scale}))
+			if (ImGui::ImageButton(gui.getIcon(icon::cancel), {btn_scale, btn_scale}))
 			{
 				delete_track = true;
 			}

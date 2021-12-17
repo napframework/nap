@@ -53,38 +53,28 @@ namespace nap
 	// Icons
 	//////////////////////////////////////////////////////////////////////////
 
-	static const std::vector<std::string>& getIcons()
+	namespace icon
 	{
-		const static std::vector<std::string> map =
+		static const std::vector<std::string>& getDefaults()
 		{
-			icon::save,		icon::saveAs,	icon::cancel,
-			icon::remove,	icon::file,		icon::help,
-			icon::settings,	icon::verify,	icon::reload
-		};
-		return map;
-	}
-
-
-	std::unique_ptr<nap::ImageFromFile> icon::load(const std::string& fileName, bool generateLODs, nap::Core& core, const Module& module, nap::utility::ErrorState& error)
-	{
-		// Find path to asset
-		auto icon_path = module.findAsset(fileName);
-		if (!error.check(!icon_path.empty(), "%s: Unable to find icon %s", module.getName().c_str(), fileName.c_str()))
-			return false;
-
-		// Create icon
-		auto new_icon = std::make_unique<ImageFromFile>(core, icon_path);
-		new_icon->mGenerateLods = generateLODs;
-		if (!new_icon->init(error))
-			new_icon.reset(nullptr);
-
-		return new_icon;
-	}
-
-
-	std::unique_ptr<nap::ImageFromFile> icon::load(const std::string& fileName, bool generateLODs, nap::Service& service, nap::utility::ErrorState& error)
-	{
-		return icon::load(fileName, generateLODs, service.getCore(), service.getModule(), error);
+			const static std::vector<std::string> map =
+			{
+				icon::save,
+				icon::saveAs,
+				icon::cancel,
+				icon::remove,
+				icon::file,
+				icon::help,
+				icon::settings,
+				icon::ok,
+				icon::reload,
+				icon::load,
+				icon::info,
+				icon::warning,
+				icon::error
+			};
+			return map;
+		}
 	}
 
 
@@ -397,8 +387,7 @@ namespace nap
 
 	IMGuiService::IMGuiService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{}
 
 
 	void IMGuiService::draw()
@@ -579,6 +568,33 @@ namespace nap
 	}
 
 
+	nap::Icon& IMGuiService::getIcon(std::string&& name)
+	{
+		return *mIcons[name];
+	}
+
+
+	bool IMGuiService::loadIcon(const std::string& name, const nap::Module& module, utility::ErrorState& error)
+	{
+		// Find path to asset
+		auto icon_path = module.findAsset(name);
+		if (!error.check(!icon_path.empty(), "%s: Unable to find icon %s", module.getName().c_str(), name.c_str()))
+			return false;
+
+		// Create and initialize icon
+		auto new_icon = std::make_unique<Icon>(*this, icon_path);
+		if (!new_icon->init(error))
+			return false;
+
+		// Add icon, issue warning if the icon is not unique
+		auto ret = mIcons.emplace(std::make_pair(name, std::move(new_icon)));
+		if (!error.check(ret.second, "Icon duplication, %s already found in: %s",
+			name.c_str(), utility::forceSeparator(ret.first->second->getPath()).c_str()))
+			return false;
+		return true;
+	}
+
+
 	const nap::IMGuiColorPalette& IMGuiService::getColors() const
 	{
 		assert(mConfiguration != nullptr);
@@ -603,20 +619,14 @@ namespace nap
 		// Global GUI & DPI scale
 		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
 
-		// Load all the default icons
+		// Load all the default icons, bail if any of them fails to load
 		bool icons_loaded = true;
-		const auto& default_icons = getIcons();
+		const auto& default_icons = icon::getDefaults();
 		for (const auto& icon_name : default_icons)
 		{
-			auto new_icon = icon::load(icon_name, true, *this, error);
-			if (new_icon == nullptr)
-			{
-				mIcons.clear();
+			if (!loadIcon(icon_name, getModule(), error))
 				return false;
-			}
-			mIcons.emplace(std::make_pair(icon_name, std::move(new_icon)));
 		}
-
 		return true;
 	}
 
@@ -686,6 +696,12 @@ namespace nap
 
 		// Destroy icons
 		mIcons.clear();
+	}
+
+
+	void IMGuiService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<IconObjectCreator>(*this));
 	}
 
 

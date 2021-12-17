@@ -27,25 +27,6 @@ namespace nap
 	class SequenceEditorView;
 	class SequenceTrackView;
 
-	namespace sequencegui
-	{
-		inline constexpr const char* playIcon = "play.png";	
-		inline constexpr const char* stopIcon = "stop.png";	
-		inline constexpr const char* rewindIcon = "replay.png";
-		inline constexpr const char* upIcon = "up-arrow.png";
-		inline constexpr const char* downIcon = "down-arrow.png";
-		inline constexpr const char* pauseIcon = "pause.png";
-		inline constexpr const char* unpauseIcon = "unpause.png";
-		inline constexpr const char* cancelIcon = "cancel.png";
-		inline constexpr const char* plusIcon = "plus.png";
-		inline constexpr const char* minusIcon = "minus.png";
-		inline constexpr const char* saveIcon = "save.png";
-		inline constexpr const char* saveAsIcon = "save_as.png";
-		inline constexpr const char* loadIcon = "load.png";
-		inline constexpr const char* helpIcon = "help.png";
-		inline constexpr const char* deleteIcon = "delete.png";
-	}
-
 	/**
 	 * A GUI resource that can be instantiated to draw a GUI (view) for the sequence editor
 	 */
@@ -109,35 +90,11 @@ namespace nap
 		SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
 		/**
-		 * Attempts to load all the GUI resources, including icons.
-		 * @param error contains the error if initialization fails
-		 * @return if initialization succeeded
-		 */
-		bool init(utility::ErrorState error);
-
-		/**
 		 * shows the editor interface
 		 */
 		virtual void show();
 
-		SequenceGUIService& getService(){ return mService; }
-
-		// Icons
-		std::unique_ptr<nap::ImageFromFile> mPlayIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mStopIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mReplayIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mCancelIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mUpIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mDownIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mPauseIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mUnpauseIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mPlusIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mMinusIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mSaveIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mSaveAsIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mLoadIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mHelpIcon = nullptr;
-		std::unique_ptr<nap::ImageFromFile> mDeleteIcon = nullptr;
+		SequenceGUIService& getService()	{ return mService; }
 
 	protected:
 		/**

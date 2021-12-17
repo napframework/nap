@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "imgui/imgui.h"
+#include "imguiicon.h"
 
 // External includes
 #include <nap/service.h>
@@ -24,16 +25,44 @@ struct ImGuiContext;
 
 namespace nap
 {
-	namespace gui
-	{
-		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
-	}
-
 	// Forward Declares
 	class RenderService;
 	class Display;
 	class GuiWindow;
 	class IMGuiService;
+
+	namespace gui
+	{
+		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+	}
+
+	/**
+	 * All available (default) icons: managed by the IMGuiService and guaranteed to exist.
+	 * Use these names as identifier to look up a specific icon inside a module or application.
+	 * 
+	 * To consider: If this method of identification causes naming conflicts in the future,
+	 * consider introducing explicit icon classes or coupling icons to modules instead.
+	 * This will increase binary size but prevents name clashes if a module loads 
+	 * icons with duplicate names, which currently is not allowed.
+	 */
+	namespace icon
+	{
+		inline constexpr const char* save		= "save.png";
+		inline constexpr const char* saveAs		= "save_as.png";
+		inline constexpr const char* cancel		= "cancel.png";
+		inline constexpr const char* ok			= "ok.png";
+		inline constexpr const char* remove		= "remove.png";
+		inline constexpr const char* file		= "file.png";
+		inline constexpr const char* help		= "help.png";
+		inline constexpr const char* settings	= "settings.png";
+		inline constexpr const char* reload		= "reload.png";
+		inline constexpr const char* folder		= "folder.png";
+		inline constexpr const char* load		= "load.png";
+		inline constexpr const char* info		= "info.png";
+		inline constexpr const char* warning	= "warning.png";
+		inline constexpr const char* error		= "error.png";
+	}
+
 
 	/**
 	 * Configurable palette of ImGUI colors
@@ -64,47 +93,6 @@ namespace nap
 		IMGuiColorPalette mColors;								///< Property: 'Colors' Gui colors
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
-
-
-	namespace icon
-	{
-		/**
-		 * All available (default) icons: managed by the IMGuiService and guaranteed to exist.
-		 * Use these names as identifier to look up a specific icon inside a module or application.
-		 */
-		inline constexpr const char* save		= "save.png";
-		inline constexpr const char* saveAs		= "save_as.png";
-		inline constexpr const char* cancel		= "cancel.png";
-		inline constexpr const char* remove		= "remove.png";
-		inline constexpr const char* file		= "file.png";
-		inline constexpr const char* help		= "help.png";
-		inline constexpr const char* settings	= "settings.png";
-		inline constexpr const char* verify		= "verify.png";
-		inline constexpr const char* reload		= "reload.png";
-		inline constexpr const char* folder		= "folder.png";
-
-		/**
-		 * Loads an icon from disk that can be drawn.
-		 * The system looks for the icon in the data search paths of the module.
-		 * @param fileName the name of the icon, including extension
-		 * @param generateLODs if LODs are generated for this image
-		 * @param module the module that points to the icon
-		 * @param error contains the error message if the load operations fails
-		 * @return the icon loaded from disk as a Texture, nullptr if the icon could not be loaded
-		 */
-		NAPAPI std::unique_ptr<ImageFromFile> load(const std::string& fileName, bool generateLODs, nap::Core& core, const Module& module, nap::utility::ErrorState& error);
-
-		/**
-		 * Loads an icon from disk that can be drawn.
-		 * The system looks for the icon in the data search paths of the module associated with the service
-		 * @param fileName the name of the icon, including extension
-		 * @param generateLODs if LODs are generated for this image
-		 * @param service the service that points to the icon
-		 * @param error contains the error message if the load operations fails
-		 * @return the icon loaded from disk as a Texture, nullptr if the icon could not be loaded
-		 */
-		NAPAPI std::unique_ptr<ImageFromFile> load(const std::string& fileName, bool generateLODs, nap::Service& service, nap::utility::ErrorState& error);
-	}
 
 
 	/**
@@ -268,6 +256,45 @@ namespace nap
 		 */
 		ImTextureID getTextureHandle(nap::Texture2D& texture);
 
+		/**
+		 * Returns an icon with the given name and extension.
+		 * Note that the icon must exist. Only ask for icons with their 
+		 * names explicitly declared in code, for example: 'icon::save'
+		 * ~~~~~{.cpp}
+		 *	if (ImGui::ImageButton(gui_service.getIcon(icon::ok)))
+		 *	{
+		 *		...
+		 *	}
+		 * ~~~~~
+		 * @param name the name, including extension, of the icon to load
+		 * @return icon with the given name
+		 */
+		nap::Icon& getIcon(std::string&& name);
+
+		/**
+		 * Create and add an icon to the default set of icons.
+		 * The system looks for the icon in the data search paths of the module.
+		 * On success call getIcon() to retrieve and draw the icon.
+		 * 
+		 * Call this function on initialization of your service and make sure your icon names are unique.
+		 * Duplicates are not allowed!
+		 * 
+		 * ~~~~~{.cpp}
+		 *	const auto& icon_names = icon::sequencer::get();
+		 *	for (const auto& icon_name : icon_names)
+		 *	{
+		 *		if (!mGuiService->loadIcon(icon_name, this->getModule(), errorState))
+		 *			return false;
+		 *	}
+		 * ~~~~~
+		 * 
+		 * @param name the name of the icon, including extension
+		 * @param module the module that points to the icon
+		 * @param error contains the error message if the load operations fails
+         * @return if the icon is loaded and added to system defaults
+         */
+		bool loadIcon(const std::string& name, const nap::Module& module, utility::ErrorState& error);
+
 	protected:
 		/**
 		 * Initializes the IMGui library. This will also create all associated gui devices objects
@@ -303,6 +330,9 @@ namespace nap
 		 *	Deletes all GUI related resources
 		 */
 		virtual void shutdown() override;
+
+	protected:
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
 		/**
@@ -373,6 +403,6 @@ namespace nap
 		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 
 		// Icons
-		std::unordered_map<std::string, std::unique_ptr<ImageFromFile>> mIcons;
+		std::unordered_map<std::string, std::unique_ptr<Icon>> mIcons;
 	};
 }
