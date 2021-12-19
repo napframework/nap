@@ -58,14 +58,12 @@ namespace nap
 
 	void PortalService::registerComponent(PortalComponentInstance& component)
 	{
-		std::lock_guard<std::mutex> lock(mComponentMutex);
 		mComponents.emplace_back(&component);
 	}
 
 
 	void PortalService::removeComponent(PortalComponentInstance& component)
 	{
-		std::lock_guard<std::mutex> lock(mComponentMutex);
 		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
 		{
 			return it == &component;

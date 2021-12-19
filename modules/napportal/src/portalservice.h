@@ -75,8 +75,5 @@ namespace nap
 
 		// All the portal components currently available to the system
 		std::vector<PortalComponentInstance*> mComponents;
-
-		// Mutex associated with portal component registration and iteration
-		std::mutex mComponentMutex;
 	};
 }
