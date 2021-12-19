@@ -4,6 +4,9 @@
 
 #pragma once
 
+// Local Includes
+#include "portalevent.h"
+
 // External Includes
 #include <nap/service.h>
 #include <websocketservice.h>
@@ -58,7 +61,22 @@ namespace nap
 		 */
 		virtual void created() override;
 
+		/**
+		 * Processes all received portal events from all registered portal WebSocket servers.
+		 * The events are forwarded to all the registered portal components.
+		 * This function is called automatically by the application loop.
+		 * @param deltaTime time in between calls in seconds.
+		 */
+		virtual void update(double deltaTime) override;
+
 	private:
+
+		/**
+		 * Porwards a consumed portal event to the appropriate portal component if available
+		 * @param event the portal event to forward to a portal component
+		 * @param server the server that sent the portal event
+		 */
+		void processEvent(PortalEvent& event, PortalWebSocketServer& server);
 
 		/**
 		 * Called by the portal WebSocket server in order to register itself with the service.

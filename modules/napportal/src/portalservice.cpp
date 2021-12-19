@@ -6,6 +6,7 @@
 #include "portalservice.h"
 #include "portalcomponent.h"
 #include "portalwebsocketserver.h"
+#include "portalutils.h"
 
 // External Includes
 #include <nap/core.h>
@@ -53,6 +54,51 @@ namespace nap
 	{
 		mWebSocketService = getCore().getService<WebSocketService>();
 		assert(mWebSocketService != nullptr);
+	}
+
+
+	void PortalService::update(double deltaTime)
+	{
+		std::queue<PortalEventPtr> events;
+		for (const auto& server : mServers)
+		{
+			server->consumePortalEvents(events);
+			while (!(events.empty()))
+			{
+				processEvent(*events.front(), *server);
+				events.pop();
+			}
+		}
+	}
+
+
+	void PortalService::processEvent(PortalEvent& event, PortalWebSocketServer& server)
+	{
+		// Check if the portal ID exists
+		const std::string& portal_id = event.getPortalID();
+		if (mComponents.count(portal_id) == 0)
+			return;
+
+		// Check if the portal component listens to the server
+		const auto& portal = mComponents.at(portal_id);
+		if (&portal->getServer() != &server)
+			return;
+
+		// Process event with proper method in portal component
+		switch (event.getType())
+		{
+		case EPortalEventType::Request:
+			portal->processRequest(event);
+			break;
+
+		case EPortalEventType::Update:
+			portal->processUpdate(event);
+			break;
+
+		default:
+			nap::Logger::error("Cannot process events with type %s", getPortalEventTypeString(event.getType()).c_str());
+			break;
+		}
 	}
 
 
