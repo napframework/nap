@@ -391,7 +391,7 @@ namespace nap
 #if defined(_WIN32)
 			return replaceAllInstances(path, "/", path::separator);
 #else
-			return replaceAllInstances(path, "\\", path::separator)
+			return replaceAllInstances(path, "\\", path::separator);
 #endif
 		}
 	}
