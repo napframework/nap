@@ -85,20 +85,25 @@ namespace nap
 			return;
 
 		// Process event with proper method in portal component
+		utility::ErrorState error;
 		switch (event.getType())
 		{
 		case EPortalEventType::Request:
-			portal->processRequest(event);
+			portal->processRequest(event, error);
 			break;
 
 		case EPortalEventType::Update:
-			portal->processUpdate(event);
+			portal->processUpdate(event, error);
 			break;
 
 		default:
-			nap::Logger::error("Cannot process events with type %s", getPortalEventTypeString(event.getType()).c_str());
+			error.fail("Cannot process events with type %s", getPortalEventTypeString(event.getType()).c_str());
 			break;
 		}
+
+		// Log any errors that occured
+		if (error.hasErrors())
+			nap::Logger::error(error.toString().c_str());
 	}
 
 
