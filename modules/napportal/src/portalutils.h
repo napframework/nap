@@ -48,6 +48,13 @@ namespace nap
 	};
 
 	/**
+	 * Converts a portal event type to a string representation
+	 * @param type the portal event type to convert to a string
+	 * @return A string representing the provided portal event type
+	 */
+	std::string getPortalEventTypeString(const EPortalEventType& type);
+
+	/**
 	 * Attempts to extract a portal event header from a portal event header API event
 	 * @param event the API event to extract the portal event header information from
 	 * @param outHeader the portal event header to write the information to
