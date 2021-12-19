@@ -51,11 +51,11 @@ namespace nap
 	}
 
 
-	bool PortalWebSocketServer::send(PortalEvent event, const WebSocketConnection& connection, utility::ErrorState& error)
+	bool PortalWebSocketServer::send(PortalEventPtr event, const WebSocketConnection& connection, utility::ErrorState& error)
 	{
 		// Convert event to json
 		std::string json;
-		if (!event.toAPIMessageJSON(json, error))
+		if (!event->toAPIMessageJSON(json, error))
 			return false;
 
 		// Send message
@@ -63,11 +63,11 @@ namespace nap
 	}
 
 
-	bool PortalWebSocketServer::broadcast(PortalEvent event, utility::ErrorState& error)
+	bool PortalWebSocketServer::broadcast(PortalEventPtr event, utility::ErrorState& error)
 	{
 		// Convert event to json
 		std::string json;
-		if (!event.toAPIMessageJSON(json, error))
+		if (!event->toAPIMessageJSON(json, error))
 			return false;
 
 		// Broadcast message

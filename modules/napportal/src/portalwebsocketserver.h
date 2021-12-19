@@ -51,7 +51,7 @@ namespace nap
 		 * @param error contains the error if sending fails
 		 * @return if the message was sent successfully
 		 */
-		bool send(PortalEvent event, const WebSocketConnection& connection, utility::ErrorState& error);
+		bool send(PortalEventPtr event, const WebSocketConnection& connection, utility::ErrorState& error);
 
 		/**
 		 * Broadcasts a portal event to all connected clients.
@@ -59,7 +59,7 @@ namespace nap
 		 * @param error contains the error if broadcasting fails
 		 * @return if the message was broadcast successfully
 		 */
-		bool broadcast(PortalEvent event, utility::ErrorState& error);
+		bool broadcast(PortalEventPtr event, utility::ErrorState& error);
 
 		bool mSendWebSocketEvents = true;		///< Property: 'SendWebSocketEvents' send events to WebSocket service as well as portal service
 		bool mVerbose = true;					///< Property: 'Verbose' log server message to portal event conversion failures.
