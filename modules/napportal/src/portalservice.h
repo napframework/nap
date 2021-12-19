@@ -91,6 +91,6 @@ namespace nap
 		std::vector<PortalWebSocketServer*> mServers;
 
 		// All the portal components currently available to the system
-		std::vector<PortalComponentInstance*> mComponents;
+		std::unordered_map<std::string, PortalComponentInstance*> mComponents;
 	};
 }

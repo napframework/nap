@@ -75,17 +75,16 @@ namespace nap
 
 	void PortalService::registerComponent(PortalComponentInstance& component)
 	{
-		mComponents.emplace_back(&component);
+		const std::string& id = component.getComponent()->mID;
+		assert(mComponents.count(id) == 0);
+		mComponents.emplace(std::make_pair(id, &component));
 	}
 
 
 	void PortalService::removeComponent(PortalComponentInstance& component)
 	{
-		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
-		{
-			return it == &component;
-		});
-		assert(found_it != mComponents.end());
-		mComponents.erase(found_it);
+		const std::string& id = component.getComponent()->mID;
+		assert(mComponents.count(id) == 1);
+		mComponents.erase(id);
 	}
 }
