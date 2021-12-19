@@ -12,6 +12,7 @@
 // External Includes
 #include <component.h>
 #include <componentptr.h>
+#include <nap/resourceptr.h>
 
 namespace nap
 {
@@ -28,7 +29,8 @@ namespace nap
 
 	public:
 
-		std::vector<ResourcePtr<PortalItem>> mItems;					///< Property: 'Items' the portal items contained by this portal component
+		ResourcePtr<PortalWebSocketServer> mServer;		///< Property: "Server" the portal WebSocket server this component listens to for events
+		std::vector<ResourcePtr<PortalItem>> mItems;	///< Property: 'Items' the portal items contained by this portal component
 	};
 
 
@@ -83,9 +85,20 @@ namespace nap
 		 */
 		bool processUpdate(PortalEventPtr event, utility::ErrorState& error);
 
+		/**
+		 * @return the client or server this component receives events from.
+		 */
+		const PortalWebSocketServer& getServer() const { return *mServer; }
+
+		/**
+		 * @return the client or server this component receives events from.
+		 */
+		PortalWebSocketServer& getServer() { return *mServer; }
+
 	private:
 
-		PortalService* mService = nullptr;						///< Handle to the portal service.
+		PortalService* mService = nullptr;						///< Handle to the portal service
+		PortalWebSocketServer* mServer = nullptr;				///< Handle to the portal WebSocket server
 		std::vector<PortalItem*> mItems;						///< The portal items contained by this portal component as vector
 		std::unordered_map<std::string, PortalItem*> mItemMap;	///< The portal items contained by this portal component as unordered map
 	};

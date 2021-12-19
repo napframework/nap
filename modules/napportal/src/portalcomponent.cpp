@@ -12,6 +12,7 @@
 
 // nap::PortalComponent run time class definition
 RTTI_BEGIN_CLASS(nap::PortalComponent)
+RTTI_PROPERTY("Server", &nap::PortalComponent::mServer, nap::rtti::EPropertyMetaData::Required)
 RTTI_PROPERTY("Items", &nap::PortalComponent::mItems, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
@@ -39,6 +40,9 @@ namespace nap
 		mService = getEntityInstance()->getCore()->getService<nap::PortalService>();
 		assert(mService != nullptr);
 		mService->registerComponent(*this);
+
+		// Store pointer to portal WebSocket server
+		mServer = getComponent<PortalComponent>()->mServer.get();
 
 		// Store pointers to portal items
 		std::vector<ResourcePtr<PortalItem>>& items = getComponent<PortalComponent>()->mItems;
