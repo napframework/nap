@@ -33,6 +33,18 @@ namespace nap
 		PortalWebSocketServer(PortalService& service);
 
 		/**
+		 * Registers the portal WebSocket server with the portal service.
+		 * @param errorState contains the error if initialization fails.
+		 * @return if initialization succeeded.
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Unregisters the portal WebSocket server with the portal service.
+		 */
+		virtual void onDestroy() override;
+
+		/**
 		 * Sends a portal event to a client.
 		 * @param event the portal event to send to the client
 		 * @param connection the client connection handle
@@ -84,6 +96,9 @@ namespace nap
 
 		// Mutex associated with setting / getting portal events
 		std::mutex mPortalEventMutex;
+
+		// Handle to the portal service
+		PortalService* mService;
 	};
 
 	// Object creator used for constructing the portal WebSocket server

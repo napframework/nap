@@ -56,6 +56,23 @@ namespace nap
 	}
 
 
+	void PortalService::registerServer(PortalWebSocketServer& server)
+	{
+		mServers.emplace_back(&server);
+	}
+	 
+
+	void PortalService::removeServer(PortalWebSocketServer& server)
+	{
+		auto found_it = std::find_if(mServers.begin(), mServers.end(), [&](const auto& it)
+		{
+			return it == &server;
+		});
+		assert(found_it != mServers.end());
+		mServers.erase(found_it);
+	}
+
+
 	void PortalService::registerComponent(PortalComponentInstance& component)
 	{
 		mComponents.emplace_back(&component);

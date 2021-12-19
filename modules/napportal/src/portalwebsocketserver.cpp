@@ -27,9 +27,27 @@ RTTI_END_CLASS
 namespace nap
 {
 	PortalWebSocketServer::PortalWebSocketServer(PortalService& service) :
-		IWebSocketServer(service.getWebSocketService())
+		IWebSocketServer(service.getWebSocketService()),
+		mService(&service)
 	{
 
+	}
+
+
+	bool PortalWebSocketServer::init(utility::ErrorState& errorState)
+	{
+		if (!IWebSocketServer::init(errorState))
+			return false;
+
+		mService->registerServer(*this);
+		return true;
+	}
+
+
+	void PortalWebSocketServer::onDestroy()
+	{
+		IWebSocketServer::onDestroy();
+		mService->removeServer(*this);
 	}
 
 

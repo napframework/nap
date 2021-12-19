@@ -12,6 +12,7 @@
 namespace nap
 {
 	// Forward Declares
+	class PortalWebSocketServer;
 	class PortalComponentInstance;
 
 	/**
@@ -19,6 +20,7 @@ namespace nap
 	 */
 	class NAPAPI PortalService : public Service
 	{
+		friend class PortalWebSocketServer;
 		friend class PortalComponentInstance;
 		RTTI_ENABLE(Service)
 
@@ -59,6 +61,18 @@ namespace nap
 	private:
 
 		/**
+		 * Called by the portal WebSocket server in order to register itself with the service.
+		 * @param server the server that wants to register itself.
+		 */
+		void registerServer(PortalWebSocketServer& server);
+
+		/**
+		 * Called by the portal WebSocket server to de-register itself with the service.
+		 * @param server the server to de-register.
+		 */
+		void removeServer(PortalWebSocketServer& server);
+
+		/**
 		 * Called by the portal component in order to register itself with the service.
 		 * @param component the component that wants to register itself.
 		 */
@@ -72,6 +86,9 @@ namespace nap
 
 		// Handle to the WebSocket service
 		WebSocketService* mWebSocketService = nullptr;
+
+		// All the portal WebSocket servers currently available to the system
+		std::vector<PortalWebSocketServer*> mServers;
 
 		// All the portal components currently available to the system
 		std::vector<PortalComponentInstance*> mComponents;
