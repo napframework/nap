@@ -56,29 +56,6 @@ namespace nap
 	}
 
 
-	bool PortalComponentInstance::processEvent(PortalEventPtr event, utility::ErrorState& error)
-	{
-		switch (event->getType())
-		{
-		case EPortalEventType::Request:
-			return processRequest(std::move(event), error);
-
-		case EPortalEventType::Update:
-			return processUpdate(std::move(event), error);
-
-		case EPortalEventType::Response:
-			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID.c_str(), portal::eventTypeResponse);
-
-		case EPortalEventType::Invalid:
-			return error.check(false, "%s: does not handle events with type %s", getComponent()->mID.c_str(), portal::eventTypeInvalid);
-
-		default:
-			assert(false);
-			return false;
-		}
-	}
-
-
 	bool PortalComponentInstance::processRequest(PortalEventPtr event, utility::ErrorState& error)
 	{
 		// Create response event
