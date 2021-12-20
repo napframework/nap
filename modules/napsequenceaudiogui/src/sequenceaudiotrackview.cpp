@@ -16,6 +16,7 @@
 #include <sequencecontrolleraudio.h>
 #include <sequencetrackaudio.h>
 #include <sequenceguiutils.h>
+#include <imguiutils.h>
 
 // external includes
 #include <iostream>
@@ -857,7 +858,8 @@ namespace nap
                 /**
                  * Handle delete
                  */
-                if (ImGui::Button("Delete"))
+				auto& gui = mService.getGui();
+                if (ImGui::ImageButton(gui.getIcon(icon::remove), "Delete"))
                 {
                     audio_controller.deleteSegment(action->mTrackID, action->mSegmentID);
                     mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
@@ -868,7 +870,8 @@ namespace nap
                 /**
                  * Handle exit
                  */
-                if (ImGui::Button("Done"))
+				ImGui::SameLine();
+                if (ImGui::ImageButton(gui.getIcon(icon::ok), "Done"))
                 {
                     mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
                     ImGui::CloseCurrentPopup();

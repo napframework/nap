@@ -71,7 +71,11 @@ namespace nap
 				icon::load,
 				icon::info,
 				icon::warning,
-				icon::error
+				icon::error,
+				icon::copy,
+				icon::paste,
+				icon::insert,
+				icon::edit
 			};
 			return map;
 		}

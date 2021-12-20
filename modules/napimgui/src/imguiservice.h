@@ -53,6 +53,10 @@ namespace nap
 		inline constexpr const char* info		= "info.png";
 		inline constexpr const char* warning	= "warning.png";
 		inline constexpr const char* error		= "error.png";
+		inline constexpr const char* copy		= "copy.png";
+		inline constexpr const char* paste		= "paste.png";
+		inline constexpr const char* insert		= "insert.png";
+		inline constexpr const char* edit		= "edit.png";
 	}
 
 

@@ -11,6 +11,7 @@
 
 #include <nap/logger.h>
 #include <iostream>
+#include <imguiutils.h>
 
 namespace nap
 {
@@ -220,8 +221,10 @@ namespace nap
 				auto& event_map = mService.getRegisteredSegmentEventTypes();
 				for(auto& type : event_map)
 				{
-					std::string buttonString = "Insert " + type.get_name().to_string();
-					if( ImGui::Button(buttonString.c_str()))
+					std::string type_str = utility::stripNamespace(type.get_name().to_string());
+					std::string btn_str = "Insert " + type_str;
+					ImGui::PushID(type_str.c_str());
+					if( ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_str.c_str()))
 					{
 						auto it = mSegmentViews.find(type);
 						assert(it!=mSegmentViews.end()); // type not found
@@ -230,12 +233,15 @@ namespace nap
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
 					}
+					ImGui::SameLine();
+					ImGui::Text(type_str.c_str());
+					ImGui::PopID();
 				}
 
 				// handle paste if event segment is in clipboard
 				if( mState.mClipboard->isClipboard<EventSegmentClipboard>())
 				{
-					if( ImGui::Button("Paste") )
+					if( ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
 					{
 						// call appropriate paste method
 						pasteEventsFromClipboard(action->mTrackID, action->mTime);
@@ -244,9 +250,10 @@ namespace nap
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
 					}
+					ImGui::SameLine();
 				}
 
-				if (ImGui::Button("Cancel"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
