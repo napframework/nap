@@ -5,14 +5,9 @@
             "mID": "PortalEntity",
             "Components": [
                 {
-                    "Type": "nap::PortalWebSocketComponent",
-                    "mID": "PortalWebSocketComponent",
-                    "Interface": "WebSocketServer",
-                    "Verbose": true
-                },
-                {
                     "Type": "nap::PortalComponent",
                     "mID": "PortalComponent",
+                    "Server": "PortalWebSocketServer",
                     "Items": [
                         {
                             "Type": "nap::PortalItemSliderInt",
@@ -85,6 +80,13 @@
             "Groups": []
         },
         {
+            "Type": "nap::PortalWebSocketServer",
+            "mID": "PortalWebSocketServer",
+            "EndPoint": "WebSocketServerEndPoint",
+            "SendWebSocketEvents": true,
+            "Verbose": true
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Borderless": false,
@@ -115,11 +117,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::WebSocketServer",
-            "mID": "WebSocketServer",
-            "EndPoint": "WebSocketServerEndPoint"
         },
         {
             "Type": "nap::WebSocketServerEndPoint",
