@@ -9,24 +9,24 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerOutput)
 RTTI_END_CLASS
 
-namespace  nap
+namespace nap
 {
-	SequencePlayerOutput::SequencePlayerOutput(SequenceService& service)
-		: mService(&service)
-	{
-	}
+    SequencePlayerOutput::SequencePlayerOutput(SequenceService& service)
+            : mService(&service)
+    {
+    }
 
 
-	bool SequencePlayerOutput::init(utility::ErrorState& errorState)
-	{
-		mService->registerOutput(*this);
+    bool SequencePlayerOutput::init(utility::ErrorState& errorState)
+    {
+        mService->registerOutput(*this);
 
-		return true;
-	}
+        return true;
+    }
 
 
-	void SequencePlayerOutput::onDestroy()
-	{
-		mService->removeOutput(*this);
-	}
+    void SequencePlayerOutput::onDestroy()
+    {
+        mService->removeOutput(*this);
+    }
 }

@@ -13,6 +13,8 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
 	// forward declares
 	class SequenceEventTrackSegmentViewBase;
 	class SequenceEventTrackView;
@@ -171,7 +173,6 @@ namespace nap
 		 * @return sequencer GUI color palette
 		 */
 		const Colors& getColors() const { return mColors; }
-
 	protected:
 		/**
 		 * registers all objects that need a specific way of construction

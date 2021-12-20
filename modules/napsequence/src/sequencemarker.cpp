@@ -10,7 +10,7 @@ RTTI_DEFINE_BASE(nap::SequenceMarker)
 
 // Define sequence events
 RTTI_BEGIN_CLASS(nap::SequenceMarker)
-	RTTI_PROPERTY("Message", &nap::SequenceMarker::mMessage, nap::rtti::EPropertyMetaData::Default);
-	RTTI_PROPERTY("Time", &nap::SequenceMarker::mTime, nap::rtti::EPropertyMetaData::Default);
+    RTTI_PROPERTY("Message", &nap::SequenceMarker::mMessage, nap::rtti::EPropertyMetaData::Default);
+    RTTI_PROPERTY("Time", &nap::SequenceMarker::mTime, nap::rtti::EPropertyMetaData::Default);
 RTTI_END_CLASS
 

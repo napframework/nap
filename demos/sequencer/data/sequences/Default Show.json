@@ -5,6 +5,22 @@
             "mID": "Generated_3",
             "Sequence Tracks": [
                 {
+                    "Type": "nap::SequenceTrackAudio",
+                    "mID": "Generated_10",
+                    "Segments": [
+                        {
+                            "Type": "nap::SequenceTrackSegmentAudio",
+                            "mID": "Generated_11",
+                            "Start Time": 0.882755889557302,
+                            "Duration": 136.71832275390626,
+                            "BufferID": "AudioFileResource",
+                            "Start Time In Segment": 0.0059645287692546848
+                        }
+                    ],
+                    "Output ID": "SequencePlayerAudioOutput",
+                    "Name": "AudioTrack"
+                },
+                {
                     "Type": "nap::SequenceTrackEvent",
                     "mID": "Generated_47",
                     "Segments": [
@@ -34,7 +50,8 @@
                             }
                         }
                     ],
-                    "Output ID": "SequencePlayerEventOutput"
+                    "Output ID": "SequencePlayerEventOutput",
+                    "Name": "Event Track"
                 },
                 {
                     "Type": "nap::SequenceTrackCurveFloat",
@@ -54,6 +71,7 @@
                         }
                     ],
                     "Output ID": "Float Output",
+                    "Name": "Float Track",
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -79,6 +97,7 @@
                         }
                     ],
                     "Output ID": "Vec3 Output",
+                    "Name": "Vec3 Track",
                     "Minimum": {
                         "x": 0.0,
                         "y": 0.0,
@@ -110,6 +129,7 @@
                         }
                     ],
                     "Output ID": "Vec2 Output",
+                    "Name": "Vec2 Track",
                     "Minimum": {
                         "x": 0.0,
                         "y": 0.0
@@ -149,6 +169,7 @@
                         }
                     ],
                     "Output ID": "Int Output",
+                    "Name": "Float to Int Parameter",
                     "Minimum": 0.0,
                     "Maximum": 20.0
                 }
@@ -161,7 +182,7 @@
                     "Time": 7.259999862653786
                 }
             ],
-            "Duration": 10.000015258789065
+            "Duration": 272.25734639167788
         },
         {
             "Type": "nap::math::FloatFCurve",

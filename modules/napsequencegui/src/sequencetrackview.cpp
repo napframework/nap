@@ -11,7 +11,7 @@
 #include <imgui/imgui.h>
 #include <iomanip>
 
-using namespace nap::SequenceGUIActions;
+using namespace nap::sequenceguiactions;
 
 namespace nap
 {
@@ -79,10 +79,13 @@ namespace nap
 		// draw inspector window
 		float offset = 5.0f * mState.mScale;
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
-                                        { mState.mInspectorWidth , mState.mTrackHeight + offset }, // size
-                                        false, // no border
-                                        ImGuiWindowFlags_NoMove)) // window flags
+                                { mState.mInspectorWidth , mState.mTrackHeight + offset }, // size
+                                false, // no border
+                                ImGuiWindowFlags_NoMove)) // window flags
 		{
+            // push track id
+            ImGui::PushID(track.mID.c_str());
+
 			// obtain drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -104,23 +107,46 @@ namespace nap
 				mService.getColors().mFro3
 			);
 
-			//
-			inspector_cursor_pos = ImGui::GetCursorPos();
-			inspector_cursor_pos.x += offset;
-			inspector_cursor_pos.y += offset;
-			ImGui::SetCursorPos(inspector_cursor_pos);
+            /**
+             * Helper function for offsetting inspector
+             */
+            static std::function<ImVec2(float)> offset_inspector = [](float offset)
+            {
+                ImVec2 inspector_cursor_pos = ImGui::GetCursorPos();
+                inspector_cursor_pos.x += offset;
+                inspector_cursor_pos.y += offset;
+                ImGui::SetCursorPos(inspector_cursor_pos);
+
+                return inspector_cursor_pos;
+            };
+
+			// offset inspector cursor
+			inspector_cursor_pos = offset_inspector(offset);
 
 			// scale down everything
 			float global_scale = 0.25f;
 			ImGui::GetStyle().ScaleAllSizes(global_scale);
 
-			//
+            // show name label
+            std::string name_copy = track.mName;
+            name_copy.resize(32);
+            ImGui::PushID("name_label");
+            if(ImGui::InputText("", &name_copy[0], 32))
+            {
+                mState.mAction = createAction<ChangeTrackName>(track.mID, name_copy);
+            }
+            ImGui::PopID();
+
+            // offset inspector cursor
+            inspector_cursor_pos = offset_inspector(offset);
+
+			// show inspector content
 			showInspectorContent(track);
 
-			// delete track button
 			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
+
+            // offset inspector cursor
+            inspector_cursor_pos = offset_inspector(offset);
 
 			// when we delete a track, we don't immediately call the controller because we are iterating track atm
 			if (ImGui::SmallButton("Delete"))
@@ -130,8 +156,9 @@ namespace nap
 
 			// show up & down buttons
 			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
+
+            // offset inspector cursor
+            inspector_cursor_pos = offset_inspector(offset);
 
 			if(ImGui::SmallButton("Up"))
 			{
@@ -145,42 +172,28 @@ namespace nap
 
 			// pop scale
 			ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
+
+            // pop id
+            ImGui::PopID();
 		}
 		ImGui::EndChild();
 
 		ImGui::SetCursorPos(cursor_pos);
 
+        /**
+         * Create necessary action handled by GUI after it's done drawing
+         */
 		if (delete_track)
-		{
-			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
-			assert(controller!= nullptr); // controller not found
-			if(controller!= nullptr)
-			{
-				controller->deleteTrack(track.mID);
-				mState.mDirty = true;
-			}
-		}
-
+        {
+            mState.mAction = createAction<DeleteTrack>(track.mID);
+        }
 		if(move_track_up)
 		{
-			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
-			assert(controller!= nullptr); // controller not found
-			if(controller!= nullptr)
-			{
-				controller->moveTrackUp(track.mID);
-				mState.mDirty = true;
-			}
+            mState.mAction = createAction<MoveTrackUp>(track.mID);
 		}
-
 		if(move_track_down)
 		{
-			auto* controller = getEditor().getControllerWithTrackType(track.get_type());
-			assert(controller!= nullptr); // controller not found
-			if(controller!= nullptr)
-			{
-				controller->moveTrackDown(track.mID);
-				mState.mDirty = true;
-			}
+            mState.mAction = createAction<MoveTrackDown>(track.mID);
 		}
 	}
 

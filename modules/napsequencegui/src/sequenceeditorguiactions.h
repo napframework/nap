@@ -18,7 +18,7 @@ namespace nap
 	 * Types of possible interactions with GUI
 	 * Used by the gui state to handle mouse input / popups / actions
 	 */
-	namespace SequenceGUIActions
+	namespace sequenceguiactions
 	{
 		/**
 		 * Action base class
@@ -64,8 +64,8 @@ namespace nap
 
 
 		/**
-		 * None pressed is an action that happens when mouse is pressed when no action is active inside
-		 * the sequencer window. This is to prevent un-intented actions to happen when mouse is pressed and then
+		 * NonePressed is an action that happens when mouse is pressed when no action is active inside
+		 * the sequencer window. This is to prevent unintended actions to happen when mouse is pressed and then
 		 * dragged into the sequencer window
 		 */
 		class NAPAPI NonePressed : public Action
@@ -452,9 +452,9 @@ namespace nap
 			 * @param outputID the output id
 			 */
 			AssignOutputIDToTrack(const std::string& trackID, std::string outputID)
-				: TrackAction(trackID), mObjectID(std::move(outputID)){}
+				: TrackAction(trackID), mOutputID(std::move(outputID)){}
 
-			std::string mObjectID;
+			std::string mOutputID;
 			
 		};
 
@@ -477,5 +477,79 @@ namespace nap
 			RTTI_ENABLE(Action)
 		public:
 		};
+
+        /**
+         * Action that tells the gui to change horizontal resolution
+         */
+        class ChangeHorizontalResolution: public Action
+        {
+            RTTI_ENABLE(Action)
+        public:
+            /**
+             * Constructor
+             * @param newResolution the new horizontal resolution
+             */
+            ChangeHorizontalResolution(float newResolution) : mHorizontalResolution(newResolution){}
+
+            float mHorizontalResolution;
+        };
+
+        /**
+         * Action that tells the gui to change vertical resolution
+         */
+        class ChangeVerticalResolution: public Action
+        {
+        RTTI_ENABLE(Action)
+        public:
+            /**
+             * Constructor
+             * @param newResolution the new vertical resolution
+             */
+            ChangeVerticalResolution(float newResolution) : mVerticalResolution(newResolution){}
+
+            float mVerticalResolution;
+        };
+
+        /**
+         * Action that tells the gui to delete the track with specified track id
+         */
+        class DeleteTrack : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            DeleteTrack(const std::string& id) : TrackAction(id){}
+        };
+
+        /**
+         * Action that tells the gui to move the track with specified track id up in hierarchy
+         */
+        class MoveTrackUp : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            MoveTrackUp(const std::string& id) : TrackAction(id){}
+        };
+
+        /**
+         * Action that tells the gui to move the track with specified track id down in hierarchy
+         */
+        class MoveTrackDown : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            MoveTrackDown(const std::string& id) : TrackAction(id){}
+        };
+
+        /**
+         * Action that tells the gui to change the name of a track
+         */
+        class ChangeTrackName : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            ChangeTrackName(const std::string& id, const std::string& newName) : TrackAction(id), mNewTrackName(newName){}
+
+            std::string mNewTrackName;
+        };
 	}
 }
