@@ -39,6 +39,14 @@ namespace nap
 		PortalEvent(const PortalEventHeader& header) : mHeader(header) { }
 
 		/**
+		 * Construct portal event with websocket connection
+		 * @param header the portal event header containing information about the objective of the event
+		 * @param connection the WebSocket connection used for sending the event
+		 */
+		PortalEvent(const PortalEventHeader& header, const WebSocketConnection& connection) :
+			mHeader(header), mConnection(std::make_unique<WebSocketConnection>(connection)) { }
+
+		/**
 		 * @return unique ID of the portal event
 		 */
 		const std::string& getID() const			{ return mHeader.mID; }
@@ -52,6 +60,16 @@ namespace nap
 		 * @return type of the portal event, determines the effect
 		 */
 		const EPortalEventType& getType() const		{ return mHeader.mType; }
+
+		/**
+		 * @return whether the portal event contains a WebSocket connection
+		 */
+		bool hasConnection() const { return mConnection.get() != nullptr; }
+
+		/**
+		 * @return retrieves the WebSocket connection used for sending the event
+		 */
+		const WebSocketConnection& getConnection() const { return *mConnection; }
 
 		/**
 		 * Converts the portal event to a JSON string of API messages used for sending over the WebSocket server.
@@ -103,8 +121,9 @@ namespace nap
 
 	private:
 
-		PortalEventHeader mHeader;				///< Object containing all portal event header information
-		std::vector<APIEventPtr> mAPIEvents;	///< The API events that this portal event contains
+		PortalEventHeader mHeader;						///< Object containing all portal event header information
+		WebSocketConnectionPtr mConnection = nullptr;	///< The WebSocket connection used for sending this event
+		std::vector<APIEventPtr> mAPIEvents;			///< The API events that this portal event contains
 	};
 
 	using PortalEventPtr = std::unique_ptr<PortalEvent>;
