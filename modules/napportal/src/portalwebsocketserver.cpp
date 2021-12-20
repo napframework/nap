@@ -145,7 +145,7 @@ namespace nap
 		}
 
 		// Create portal event
-		PortalEventPtr portal_event = std::make_unique<PortalEvent>(header);
+		PortalEventPtr portal_event = std::make_unique<PortalEvent>(header, connection);
 
 		// Add API events that relate to portal items
 		for (APIMessage* message : messages)
