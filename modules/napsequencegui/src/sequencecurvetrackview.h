@@ -66,7 +66,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
+		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, sequencecurveenums::ESegmentValueTypes segmentType, ImDrawList* drawList);
 	
 		/**
 		 * draws segment handler
@@ -121,14 +121,14 @@ namespace nap
 		 */
 		template<typename T>
 		void drawTanHandler(const SequenceTrack &track,
-							const SequenceTrackSegment &segment,
-							std::ostringstream &stringStream,
-							float segmentWidth,
-							const math::FCurvePoint<float, float> &curvePoint,
-							const ImVec2 &circlePoint, int controlPointIndex,
-							int curveIndex,
-							SequenceCurveEnums::ETanPointTypes type,
-							ImDrawList* drawList);
+                            const SequenceTrackSegment &segment,
+                            std::ostringstream &stringStream,
+                            float segmentWidth,
+                            const math::FCurvePoint<float, float> &curvePoint,
+                            const ImVec2 &circlePoint, int controlPointIndex,
+                            int curveIndex,
+                            sequencecurveenums::ETanPointTypes type,
+                            ImDrawList* drawList);
 	
 		/**
 		 * handles insert segment popup
@@ -284,7 +284,7 @@ namespace nap
 	// Curve Clipboards
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIClipboards
+	namespace sequenceguiclipboard
 	{
 		/**
 		 * CurveSegmentClipboard contains serialized curve segments

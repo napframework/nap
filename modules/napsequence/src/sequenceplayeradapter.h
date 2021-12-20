@@ -12,34 +12,34 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// forward declares
-	class SequencePlayerOutput;
-	class SequencePlayerAdapter;
-	class SequencePlayer;
+    //////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
-	 * Typically, a SequencePlayerAdapter is responsible for doing something with a track while the player is playing
-	 */
-	class NAPAPI SequencePlayerAdapter
-	{
-	public:
-		/**
-		 * Constructor
-		 */
-		SequencePlayerAdapter() = default;
+    // forward declares
+    class SequencePlayerOutput;
+    class SequencePlayerAdapter;
+    class SequencePlayer;
 
-		/**
-		 * called from sequence player thread
-		 * @param time time in sequence player
-		 */
-		virtual void tick(double time) = 0;
+    /**
+     * A SequencePlayerAdapter can be created by the SequencePlayer and syncs with the player thread
+     * Typically, a SequencePlayerAdapter is responsible for doing something with a track while the player is playing
+     */
+    class NAPAPI SequencePlayerAdapter
+    {
+    public:
+        /**
+         * Constructor
+         */
+        SequencePlayerAdapter() = default;
 
-		/**
-		 * called when sequence player is stopped and adapter needs to be destroyed
-		 */
-		virtual void destroy() = 0;
-	private:
-	};
+        /**
+         * called from sequence player thread
+         * @param time time in sequence player
+         */
+        virtual void tick(double time) = 0;
+
+        /**
+         * called when sequence player is stopped and adapter needs to be destroyed
+         */
+        virtual void destroy() = 0;
+    };
 }

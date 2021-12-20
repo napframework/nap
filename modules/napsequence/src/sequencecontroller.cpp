@@ -13,235 +13,237 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	void SequenceController::updateTracks()
-	{
-		double longest_track_duration = 0.0;
-		for (auto& track : mPlayer.mSequence->mTracks)
-		{
-			double track_duration = 0.0;
-			double longest_segment = 0.0;
-
-			for (const auto& segment : track->mSegments)
-			{
-				if (segment->mStartTime + segment->mDuration > longest_segment)
-				{
-					longest_segment = segment->mStartTime + segment->mDuration;
-					track_duration = longest_segment;
-				}
-			}
-
-			if (track_duration > longest_track_duration)
-			{
-				longest_track_duration = track_duration;
-			}
-		}
-
-		mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
-	}
+    void SequenceController::changeTrackName(const std::string &trackID, const std::string &name)
+    {
+        performEditAction([this, trackID, name]()
+                          {
+                              SequenceTrack *track = findTrack(trackID);
+                              assert(track != nullptr); // track not found
+                              track->mName = name;
+                          });
+    }
 
 
-	SequenceTrackSegment* SequenceController::findSegment(const std::string& trackID, const std::string& segmentID)
-	{
-		//
-		Sequence& sequence = mPlayer.getSequence();
+    void SequenceController::updateTracks()
+    {
+        double longest_track_duration = 0.0;
+        for (auto &track : mPlayer.mSequence->mTracks)
+        {
+            double track_duration = 0.0;
+            double longest_segment = 0.0;
 
-		for (auto& track : sequence.mTracks)
-		{
-			if (track->mID == trackID)
-			{
-				for (auto& segment : track->mSegments)
-				{
-					if (segment->mID == segmentID)
-					{
-						return segment.get();
-					}
-				}
-			}
-		}
+            for (const auto &segment : track->mSegments)
+            {
+                if (segment->mStartTime + segment->mDuration > longest_segment)
+                {
+                    longest_segment = segment->mStartTime + segment->mDuration;
+                    track_duration = longest_segment;
+                }
+            }
 
-		return nullptr;
-	}
+            if (track_duration > longest_track_duration)
+            {
+                longest_track_duration = track_duration;
+            }
+        }
 
-
-	const SequenceTrack* SequenceController::getTrack(const std::string& trackID) const
-	{
-		//
-		const Sequence& sequence = mPlayer.getSequenceConst();
-
-		for (const auto& track : sequence.mTracks)
-		{
-			if (track->mID == trackID)
-			{
-				return track.get();
-			}
-		}
-
-		return nullptr;
-	}
+        mPlayer.mSequence->mDuration = math::max<double>(longest_track_duration, mPlayer.mSequence->mDuration);
+    }
 
 
-	const SequenceTrackSegment* SequenceController::getSegment(const std::string& trackID, const std::string& segmentID) const
-	{
-		//
-		const Sequence& sequence = mPlayer.getSequenceConst();
+    SequenceTrackSegment *SequenceController::findSegment(const std::string &trackID, const std::string &segmentID)
+    {
+        Sequence &sequence = mPlayer.getSequence();
 
-		for (const auto& track : sequence.mTracks)
-		{
-			if (track->mID == trackID)
-			{
-				for (auto& segment : track->mSegments)
-				{
-					if (segment->mID == segmentID)
-					{
-						return segment.get();
-					}
-				}
-			}
-		}
+        for (auto &track : sequence.mTracks)
+        {
+            if (track->mID == trackID)
+            {
+                for (auto &segment : track->mSegments)
+                {
+                    if (segment->mID == segmentID)
+                    {
+                        return segment.get();
+                    }
+                }
+            }
+        }
 
-		return nullptr;
-	}
-
-
-	SequenceTrack* SequenceController::findTrack(const std::string& trackID)
-	{
-		//
-		Sequence& sequence = mPlayer.getSequence();
-
-		for (auto& track : sequence.mTracks)
-		{
-			if (track->mID == trackID)
-			{
-				return track.get();
-			}
-		}
-
-		return nullptr;
-	}
+        return nullptr;
+    }
 
 
-	void SequenceController::assignNewObjectID(const std::string& trackID, const std::string& objectID)
-	{
-		performEditAction([this, trackID, objectID]()
-		{
-			SequenceTrack* track = findTrack(trackID);
-			assert(track != nullptr); // track not found
+    const SequenceTrack *SequenceController::getTrack(const std::string &trackID) const
+    {
+        const Sequence &sequence = mPlayer.getSequenceConst();
 
-			if (track != nullptr)
-			{
-				track->mAssignedOutputID = objectID;
-			}
+        for (const auto &track : sequence.mTracks)
+        {
+            if (track->mID == trackID)
+            {
+                return track.get();
+            }
+        }
 
-			mPlayer.createAdapters();
-		});
-	}
-
-
-	void SequenceController::deleteTrack(const std::string& deleteTrackID)
-	{
-		performEditAction([this, deleteTrackID]()
-		{
-			//
-			Sequence& sequence = mPlayer.getSequence();
-
-			int index = 0;
-			for (const auto& track : sequence.mTracks)
-			{
-				if (track->mID == deleteTrackID)
-				{
-					if (mPlayer.mAdapters.find(track->mID) != mPlayer.mAdapters.end())
-					{
-						mPlayer.mAdapters.erase(track->mID);
-					}
-
-					sequence.mTracks.erase(sequence.mTracks.begin() + index);
-
-					deleteObjectFromSequencePlayer(deleteTrackID);
-
-					break;
-				}
-				index++;
-			}
-		});
-	}
+        return nullptr;
+    }
 
 
-	void SequenceController::moveTrackUp(const std::string& trackID)
-	{
-		performEditAction([this, trackID]()
-		{
-			//
-			Sequence& sequence = mPlayer.getSequence();
+    const SequenceTrackSegment *
+    SequenceController::getSegment(const std::string &trackID, const std::string &segmentID) const
+    {
+        const Sequence &sequence = mPlayer.getSequenceConst();
 
-			int index = 0;
-			for (const auto& track : sequence.mTracks)
-			{
-				if (track->mID == trackID)
-				{
-					if( index > 0 )
-					{
-						auto track_to_move = sequence.mTracks[index];
-						sequence.mTracks.erase(sequence.mTracks.begin() + index);
-						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index - 1 ), track_to_move);
-					}
+        for (const auto &track : sequence.mTracks)
+        {
+            if (track->mID == trackID)
+            {
+                for (auto &segment : track->mSegments)
+                {
+                    if (segment->mID == segmentID)
+                    {
+                        return segment.get();
+                    }
+                }
+            }
+        }
 
-					break;
-				}
-				index++;
-			}
-		});
-	}
+        return nullptr;
+    }
 
 
-	void SequenceController::moveTrackDown(const std::string& trackID)
-	{
-		performEditAction([this, trackID]()
-		{
-			//
-			Sequence& sequence = mPlayer.getSequence();
+    SequenceTrack *SequenceController::findTrack(const std::string &trackID)
+    {
+        Sequence &sequence = mPlayer.getSequence();
 
-			int index = 0;
-			for (const auto& track : sequence.mTracks)
-			{
-				if (track->mID == trackID)
-				{
-					if( index < sequence.mTracks.size() - 1 )
-					{
-						auto track_to_move = sequence.mTracks[index];
-						sequence.mTracks.erase(sequence.mTracks.begin() + index);
-						sequence.mTracks.emplace(sequence.mTracks.begin() + ( index + 1 ), track_to_move);
-					}
+        for (auto &track : sequence.mTracks)
+        {
+            if (track->mID == trackID)
+            {
+                return track.get();
+            }
+        }
 
-					break;
-				}
-				index++;
-			}
-		});
-	}
+        return nullptr;
+    }
 
 
-	void SequenceController::deleteObjectFromSequencePlayer(const std::string& id)
-	{
-		if (mPlayer.mReadObjectIDs.find(id) != mPlayer.mReadObjectIDs.end())
-		{
-			mPlayer.mReadObjectIDs.erase(id);
-		}
+    void SequenceController::assignNewOutputID(const std::string &trackID, const std::string &outputID)
+    {
+        performEditAction([this, trackID, outputID]()
+                          {
+                              SequenceTrack *track = findTrack(trackID);
+                              assert(track != nullptr); // track not found
+                              track->mAssignedOutputID = outputID;
 
-		for (int i = 0; i < mPlayer.mReadObjects.size(); i++)
-		{
-			if (mPlayer.mReadObjects[i]->mID == id)
-			{
-				mPlayer.mReadObjects.erase(mPlayer.mReadObjects.begin() + i);
-				break;
-			}
-		}
-	}
+                              mPlayer.createAdapters();
+                          });
+    }
 
 
-	void SequenceController::performEditAction(std::function<void()> action)
-	{
-		mEditor.performEdit(std::move(action));
-	}
+    void SequenceController::deleteTrack(const std::string &deleteTrackID)
+    {
+        performEditAction([this, deleteTrackID]()
+                          {
+                              Sequence &sequence = mPlayer.getSequence();
+
+                              mPlayer.destroyAdapters();
+
+                              int index = 0;
+                              for (const auto &track : sequence.mTracks)
+                              {
+                                  if (track->mID == deleteTrackID)
+                                  {
+                                      sequence.mTracks.erase(sequence.mTracks.begin() + index);
+
+                                      deleteObjectFromSequencePlayer(deleteTrackID);
+
+                                      break;
+                                  }
+                                  index++;
+                              }
+
+                              mPlayer.createAdapters();
+                          });
+    }
+
+
+    void SequenceController::moveTrackUp(const std::string &trackID)
+    {
+        performEditAction([this, trackID]()
+                          {
+                              Sequence &sequence = mPlayer.getSequence();
+
+                              int index = 0;
+                              for (const auto &track : sequence.mTracks)
+                              {
+                                  if (track->mID == trackID)
+                                  {
+                                      if (index > 0)
+                                      {
+                                          auto track_to_move = sequence.mTracks[index];
+                                          sequence.mTracks.erase(sequence.mTracks.begin() + index);
+                                          sequence.mTracks.emplace(sequence.mTracks.begin() + (index - 1),
+                                                                   track_to_move);
+                                      }
+
+                                      break;
+                                  }
+                                  index++;
+                              }
+                          });
+    }
+
+
+    void SequenceController::moveTrackDown(const std::string &trackID)
+    {
+        performEditAction([this, trackID]()
+                          {
+                              Sequence &sequence = mPlayer.getSequence();
+
+                              int index = 0;
+                              for (const auto &track : sequence.mTracks)
+                              {
+                                  if (track->mID == trackID)
+                                  {
+                                      if (index < sequence.mTracks.size() - 1)
+                                      {
+                                          auto track_to_move = sequence.mTracks[index];
+                                          sequence.mTracks.erase(sequence.mTracks.begin() + index);
+                                          sequence.mTracks.emplace(sequence.mTracks.begin() + (index + 1),
+                                                                   track_to_move);
+                                      }
+
+                                      break;
+                                  }
+                                  index++;
+                              }
+                          });
+    }
+
+
+    void SequenceController::deleteObjectFromSequencePlayer(const std::string &id)
+    {
+        if (mPlayer.mReadObjectIDs.find(id) != mPlayer.mReadObjectIDs.end())
+        {
+            mPlayer.mReadObjectIDs.erase(id);
+        }
+
+        for (int i = 0; i < mPlayer.mReadObjects.size(); i++)
+        {
+            if (mPlayer.mReadObjects[i]->mID == id)
+            {
+                mPlayer.mReadObjects.erase(mPlayer.mReadObjects.begin() + i);
+                break;
+            }
+        }
+    }
+
+
+    void SequenceController::performEditAction(std::function<void()> action)
+    {
+        mEditor.performEdit(std::move(action));
+    }
 }
