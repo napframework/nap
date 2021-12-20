@@ -62,7 +62,7 @@ namespace nap
 				icon::save,
 				icon::saveAs,
 				icon::cancel,
-				icon::remove,
+				icon::del,
 				icon::file,
 				icon::help,
 				icon::settings,
@@ -75,7 +75,10 @@ namespace nap
 				icon::copy,
 				icon::paste,
 				icon::insert,
-				icon::edit
+				icon::edit,
+				icon::remove,
+				icon::add,
+				icon::change
 			};
 			return map;
 		}

@@ -1220,7 +1220,7 @@ namespace nap
 
 				ImGui::SameLine();
 				auto& gui = mService.getGui();
-				if (ImGui::ImageButton(gui.getIcon(icon::ok), "Done"))
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1325,14 +1325,14 @@ namespace nap
 				}
 
 				auto& gui = mService.getGui();
-				if(ImGui::ImageButton(gui.getIcon(icon::remove), "Delete"))
+				if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete"))
 				{
 					mEditor.deleteMarker(action->mID);
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::ImageButton(gui.getIcon(icon::ok), "Done"))
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1468,7 +1468,7 @@ namespace nap
 				ImGui::Separator();
 
 				auto& gui = mService.getGui();
-				if (ImGui::ImageButton(gui.getIcon(icon::ok), "Done"))
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();

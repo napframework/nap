@@ -162,7 +162,7 @@ namespace nap
 				move_track_down = true;
 			}
 			ImGui::SameLine();
-			if (ImGui::ImageButton(gui.getIcon(icon::remove), { btn_scale, btn_scale }, "Delete track"))
+			if (ImGui::ImageButton(gui.getIcon(icon::del), { btn_scale, btn_scale }, "Delete track"))
 			{
 				delete_track = true;
 			}

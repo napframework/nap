@@ -703,7 +703,7 @@ namespace nap
 
                         bool valid_selection = action->mCurrentItem<audio_buffers.size();
 
-                        if (ImGui::Button("Insert"))
+                        if (ImGui::ImageButton(mService.getGui().getIcon(icon::insert)))
                         {
                             if (valid_selection)
                             {
@@ -711,7 +711,6 @@ namespace nap
                                 mState.mAction = createAction<None>();
                                 mState.mDirty = true;
                             }
-
                             ImGui::CloseCurrentPopup();
                         }
                     }
@@ -725,7 +724,8 @@ namespace nap
                     ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh), "No audio output assigned!");
                 }
 
-                if (ImGui::Button("Cancel"))
+				ImGui::SameLine();
+                if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
                 {
                     ImGui::CloseCurrentPopup();
                     mState.mAction = createAction<None>();
@@ -859,7 +859,7 @@ namespace nap
                  * Handle delete
                  */
 				auto& gui = mService.getGui();
-                if (ImGui::ImageButton(gui.getIcon(icon::remove), "Delete"))
+                if (ImGui::ImageButton(gui.getIcon(icon::del)))
                 {
                     audio_controller.deleteSegment(action->mTrackID, action->mSegmentID);
                     mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
@@ -871,7 +871,7 @@ namespace nap
                  * Handle exit
                  */
 				ImGui::SameLine();
-                if (ImGui::ImageButton(gui.getIcon(icon::ok), "Done"))
+                if (ImGui::ImageButton(gui.getIcon(icon::ok)))
                 {
                     mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
                     ImGui::CloseCurrentPopup();

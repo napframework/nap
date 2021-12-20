@@ -4,14 +4,15 @@
 
 #pragma once
 
-#include <utility>
-
 #include "sequencetrackview.h"
 #include "sequencecontrollerevent.h"
 #include "sequencetracksegment.h"
 #include "sequenceeditorguiclipboard.h"
 #include "sequenceeventtrackview_guiactions.h"
 #include "sequenceguiutils.h"
+
+#include <utility>
+#include <imguiutils.h>
 
 namespace nap
 {
@@ -308,8 +309,7 @@ namespace nap
 					action->mStartTime = time;
 					mState.mDirty = true;
 				}
-
-				if (ImGui::Button("Done"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
 				{
 					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
 					event_controller.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
@@ -317,8 +317,8 @@ namespace nap
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
                     ImGui::CloseCurrentPopup();
 				}
-
-				if (ImGui::Button("Cancel"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();

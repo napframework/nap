@@ -43,7 +43,7 @@ namespace nap
 		inline constexpr const char* saveAs		= "save_as.png";
 		inline constexpr const char* cancel		= "cancel.png";
 		inline constexpr const char* ok			= "ok.png";
-		inline constexpr const char* remove		= "remove.png";
+		inline constexpr const char* del		= "delete.png";
 		inline constexpr const char* file		= "file.png";
 		inline constexpr const char* help		= "help.png";
 		inline constexpr const char* settings	= "settings.png";
@@ -57,6 +57,9 @@ namespace nap
 		inline constexpr const char* paste		= "paste.png";
 		inline constexpr const char* insert		= "insert.png";
 		inline constexpr const char* edit		= "edit.png";
+		inline constexpr const char* remove		= "remove.png";
+		inline constexpr const char* add		= "add.png";
+		inline constexpr const char* change		= "change.png";
 	}
 
 
