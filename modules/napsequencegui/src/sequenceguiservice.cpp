@@ -44,9 +44,7 @@ namespace nap
 					icon::sequencer::up,
 					icon::sequencer::down,
 					icon::sequencer::pause,
-					icon::sequencer::unpause,
-					icon::sequencer::plus,
-					icon::sequencer::minus
+					icon::sequencer::unpause
 				};
 				return map;
 			}

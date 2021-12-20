@@ -430,7 +430,7 @@ namespace nap
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::plus)))
+			if (ImGui::ImageButton(gui.getIcon(icon::add)))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}

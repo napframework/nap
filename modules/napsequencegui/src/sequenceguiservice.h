@@ -44,8 +44,6 @@ namespace nap
 			inline constexpr const char* down		= "seq_down-arrow.png";
 			inline constexpr const char* pause		= "seq_pause.png";
 			inline constexpr const char* unpause	= "seq_unpause.png";
-			inline constexpr const char* plus		= "seq_plus.png";
-			inline constexpr const char* minus		= "seq_minus.png";
 		}
 	}
 
