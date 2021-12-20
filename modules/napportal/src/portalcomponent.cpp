@@ -56,31 +56,36 @@ namespace nap
 	}
 
 
-	bool PortalComponentInstance::processRequest(PortalEventPtr event, utility::ErrorState& error)
+	bool PortalComponentInstance::processRequest(PortalEvent& event, utility::ErrorState& error)
 	{
+		// Check if the portal event has a WebSocket connection
+		if (!error.check(event.hasConnection(), "%s: event is missing connection for repsonse", getComponent()->mID.c_str()))
+			return false;
+
 		// Create response event
-		PortalEventHeader res_header = { event->getID(), event->getPortalID(), EPortalEventType::Response };
+		PortalEventHeader res_header = { event.getID(), event.getPortalID(), EPortalEventType::Response };
 		PortalEventPtr response = std::make_unique<PortalEvent>(res_header);
 
 		// Add portal item descriptors
 		for (const auto& item : mItems)
 			response->addAPIEvent(item->getDescriptor());
 
-		return true;
+		// Send the response to the requesting client
+		return mServer->send(std::move(response), event.getConnection(), error);
 	}
 
 
-	bool PortalComponentInstance::processUpdate(PortalEventPtr event, utility::ErrorState& error)
+	bool PortalComponentInstance::processUpdate(PortalEvent& event, utility::ErrorState& error)
 	{
 		// Try to pass each API event to a portal item
-		for (const auto& api_event : event->getAPIEvents())
+		for (const auto& api_event : event.getAPIEvents())
 		{
-			// Don't stop when processing fails, just add an error
+			// Continue with the next item when processing fails
 			const std::string& portal_item_id = api_event->getID();
-			if (mItemMap.count(portal_item_id))
-				mItemMap.at(portal_item_id)->processUpdate(*api_event, error);
-			else
-				error.fail("%s: does not contain portal item %s", getComponent()->mID.c_str(), portal_item_id.c_str());
+			if (!error.check(mItemMap.count(portal_item_id) == 1, "%s: does not contain portal item %s", getComponent()->mID.c_str(), portal_item_id.c_str()))
+				continue;
+
+			mItemMap.at(portal_item_id)->processUpdate(*api_event, error);
 		}
 
 		return !error.hasErrors();

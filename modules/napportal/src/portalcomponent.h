@@ -8,6 +8,7 @@
 #include "portalitem.h"
 #include "portalevent.h"
 #include "portalservice.h"
+#include "portalwebsocketserver.h"
 
 // External Includes
 #include <component.h>
@@ -67,7 +68,7 @@ namespace nap
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
 		 */
-		bool processRequest(PortalEventPtr event, utility::ErrorState& error);
+		bool processRequest(PortalEvent& event, utility::ErrorState& error);
 
 		/**
 		 * Processes an update type portal event
@@ -75,7 +76,7 @@ namespace nap
 		 * @param error contains information when processing fails
 		 * @return if the event was processed successfully
 		 */
-		bool processUpdate(PortalEventPtr event, utility::ErrorState& error);
+		bool processUpdate(PortalEvent& event, utility::ErrorState& error);
 
 		/**
 		 * @return the client or server this component receives events from.
