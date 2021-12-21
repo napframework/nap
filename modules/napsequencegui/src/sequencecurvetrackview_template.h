@@ -66,7 +66,7 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+				if (ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
 				{
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 					ImGui::CloseCurrentPopup();
@@ -124,7 +124,7 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+				if (ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
 				{
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 
