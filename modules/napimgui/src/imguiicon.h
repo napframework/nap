@@ -23,7 +23,7 @@ namespace nap
 	 */
 	class NAPAPI Icon : public Resource
 	{
-		RTTI_ENABLE()
+		RTTI_ENABLE(Resource)
 	public:
 		/**
 		 * Creates the icon. 
