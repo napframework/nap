@@ -56,12 +56,13 @@ namespace ImGui
 	 * ~~~~~
 	 * @param icon icon to apply to the button
 	 * @param text optional overlay text, when null icon name is shown
+	 * @param tooltip_offset offset tooltip needs to have in x and y axis
 	 * @param frame_padding image frame padding
 	 * @param bg_color button backgound color
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
-	bool IMGUI_API ImageButton(const nap::Icon& icon, const char* text=nullptr, int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool IMGUI_API ImageButton(const nap::Icon& icon, const char* text=nullptr, const ImVec2& tooltip_offset = ImVec2(10, 10), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
 	 * Displays a NAP Icon as a squared IMGUI image of a certain size.
@@ -75,12 +76,13 @@ namespace ImGui
 	 * @param icon icon to apply to the button
 	 * @param size size of the icon
 	 * @param text optional overlay text, when null icon name is shown
+	 * @param tooltip_offset offset tooltip in x and y
 	 * @param frame_padding image frame padding
 	 * @param bg_color button backgound color
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
-	bool IMGUI_API ImageButton(const nap::Icon& icon, const ImVec2& size, const char* text=nullptr, int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool IMGUI_API ImageButton(const nap::Icon& icon, const ImVec2& size, const char* text=nullptr, const ImVec2& tooltip_offset = ImVec2(10, 10), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
 	 * Return ImTextureID, can be used when drawing textures in a window drawlist
