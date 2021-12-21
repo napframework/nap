@@ -6,7 +6,7 @@
         "mod_napapp"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/SDL2/msvc/lib/x64",
+        "{ROOT}/../thirdparty/SDL2/msvc/x86_64/lib",
         "{ROOT}/thirdparty/SDL2/lib"
     ]
 }

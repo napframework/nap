@@ -66,6 +66,12 @@ endif()
 if(APPLE)
     # Add mpg123 RPATH to built app
     macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/mpg123/lib)
+
+	# Add portaudio RPATH to built app
+    macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/portaudio/lib)
+
+    # Add libsndfile RPATH to built app
+    macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/libsndfile/lib)
 endif()
 
 # Install thirdparty licenses into packaged project

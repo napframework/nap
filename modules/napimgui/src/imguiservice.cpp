@@ -269,7 +269,7 @@ namespace nap
 	}
 
 
-	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration, ImFontAtlas& fontAtlas, const ImGuiStyle& style)
+	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration, ImFontAtlas& fontAtlas, const ImGuiStyle& style, const std::string& iniFile)
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
@@ -303,9 +303,15 @@ namespace nap
 		io.GetClipboardTextFn = getClipboardText;
 		io.ClipboardUserData = NULL;
 
-		// Set style and pop context
+		// Set style
 		ImGui::GetStyle() = style;
+
+		// Attempt to load .ini settings
+		ImGui::LoadIniSettingsFromDisk(iniFile.c_str());
+
+		// Pop context
 		ImGui::SetCurrentContext(cur_context);
+
 		return new_context;
 	}
 
@@ -592,6 +598,25 @@ namespace nap
 	}
 
 
+	void IMGuiService::preShutdown()
+	{
+		// Ensure ini directory exists
+		std::string dir = getCore().getProjectInfo()->getIniDir();
+		if (!utility::ensureDirExists(dir))
+		{
+			nap::Logger::warn("Unable to write %s file(s) to directory: %s", projectinfo::iniExtension, dir.c_str());
+			return;
+		}
+
+		// Save imGUI .ini settings to disk, split by window
+		for (const auto& context : mContexts)
+		{
+			ImGui::SetCurrentContext(context.second->mContext);
+			ImGui::SaveIniSettingsToDisk(getIniFilePath(context.first->mID).c_str());
+		}
+	}
+
+
 	void IMGuiService::shutdown()
 	{
 		if (mFontAtlas != nullptr)
@@ -638,7 +663,7 @@ namespace nap
 			mStyle = createStyle(*getConfiguration<IMGuiServiceConfiguration>());
 
 			// Create context using font & style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
@@ -646,7 +671,7 @@ namespace nap
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
 		}
 
 		// Add context, set display index & push scale accordingly

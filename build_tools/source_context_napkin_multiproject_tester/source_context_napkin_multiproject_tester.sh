@@ -10,9 +10,19 @@ if [ ! -d $thirdparty ]; then
 fi
 
 if [ "$(uname)" == "Darwin" ]; then
-    python="$thirdparty/python/osx/install/bin/python3"
+    python="$thirdparty/python/macos/x86_64/bin/python3"
 else
-    python="$thirdparty/python/linux/install/bin/python3"
+    case "$(arch)" in
+    "x86_64")
+        python="$thirdparty/python/linux/x86_64/bin/python3"
+        ;;
+    "aarch64")
+        python="$thirdparty/python/linux/arm64/bin/python3"
+        ;;
+    *)
+        python="$thirdparty/python/linux/armhf/bin/python3"
+        ;;
+    esac
 fi
 
 unset PYTHONHOME

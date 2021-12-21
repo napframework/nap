@@ -71,7 +71,13 @@ cd NAP-0.4.5-Linux
 ```
 3. If any changes are required re-run `check_build_environment` after those changes have been made to verify the final environment
 
-_Manual Dependency Installation_
+_Raspberry Pi_
+
+Only the Raspberry Pi 4 is 'fully' supported. Applications that make use of the render engine will not run on older Raspberry Pi models because there is no Vulkan support. Headless applications and services might work.
+
+We recommend using the `Debian` buster-backports repository to install the updated `mesa-vulkan-drivers` package. Unfortunately Raspberry Pi OS does not have a buster-backports repository so you will have to use the one from `Debian`. This step won't be necessary once Raspberry Pi OS (and our support) moves on to being based on Debian Bullseye (v11).
+
+ _Manual Dependency Installation_
 
 Alternatively you can follow the steps below to install the dependencies, however we still recommend running `check_build_environment` afterwards to verify your build environment.
 

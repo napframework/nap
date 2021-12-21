@@ -11,38 +11,40 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayerEventOutput::SequencePlayerEventOutput(SequenceService& service)
-		: SequencePlayerOutput(service){}
+    SequencePlayerEventOutput::SequencePlayerEventOutput(SequenceService& service)
+            :SequencePlayerOutput(service)
+    {
+    }
 
 
-	void SequencePlayerEventOutput::update(double deltaTime)
-	{
-		std::queue<SequenceEventPtr> events;
-		{
-			std::lock_guard<std::mutex> lock(mEventMutex);
+    void SequencePlayerEventOutput::update(double deltaTime)
+    {
+        std::queue<SequenceEventPtr> events;
+        {
+            std::lock_guard<std::mutex> lock(mEventMutex);
 
-			// Swap events
-			events.swap(mEvents);
+            // Swap events
+            events.swap(mEvents);
 
-			// Clear current queue
-			std::queue<SequenceEventPtr> empty_queue;
-			mEvents.swap(empty_queue);
-		}
+            // Clear current queue
+            std::queue<SequenceEventPtr> empty_queue;
+            mEvents.swap(empty_queue);
+        }
 
-		// Keep forwarding events until the queue runs out
-		while (!(events.empty()))
-		{
-			SequenceEventBase& sequence_event = *(events.front());
-			mSignal.trigger(sequence_event);
+        // Keep forwarding events until the queue runs out
+        while (!(events.empty()))
+        {
+            SequenceEventBase& sequence_event = *(events.front());
+            mSignal.trigger(sequence_event);
 
-			events.pop();
-		}
-	}
+            events.pop();
+        }
+    }
 
 
-	void SequencePlayerEventOutput::addEvent(SequenceEventPtr event)
-	{
-		std::lock_guard<std::mutex> lock(mEventMutex);
-		mEvents.emplace(std::move(event));
-	}
+    void SequencePlayerEventOutput::addEvent(SequenceEventPtr event)
+    {
+        std::lock_guard<std::mutex> lock(mEventMutex);
+        mEvents.emplace(std::move(event));
+    }
 }

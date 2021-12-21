@@ -5,7 +5,7 @@
 
 namespace nap
 {
-	using namespace SequenceGUIClipboards;
+	using namespace sequenceguiclipboard;
 
 	Clipboard::Clipboard(const rttr::type& trackType)
 		: mTrackType(trackType)

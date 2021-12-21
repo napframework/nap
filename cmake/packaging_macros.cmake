@@ -157,12 +157,12 @@ endmacro()
 macro(package_python)
     if(WIN32)
         # Install main framework
-        install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/
+        install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/x86_64/
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
 
         # Install framework for Napkin
-        install(FILES ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python36.zip
+        install(FILES ${THIRDPARTY_DIR}/python/msvc/x86_64/python36.zip
                 DESTINATION tools/napkin/
                 CONFIGURATIONS Release)
 
@@ -177,9 +177,9 @@ macro(package_python)
                 )
     elseif(UNIX)
         if(APPLE)
-            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/osx/install)
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/macos/x86_64)
         else()
-            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/install)
+            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/${ARCH})
         endif()
 
         # Install dylib        
@@ -219,12 +219,19 @@ endmacro()
 macro(package_qt)
     set(QT_FRAMEWORKS Core Gui Widgets OpenGL)
 
-    # Install licenses.  This link is a little tenuous but seems to work for Win64
-    # TODO Fail if we don't find sufficient licenses (which happens pre Qt 5.10)
-    install(DIRECTORY ${QT_DIR}/../../Licenses/
-            DESTINATION thirdparty/Qt/licenses
-            CONFIGURATIONS Release
-            )
+    # Install licenses. Prefer license from Qt official download if available,
+    # falling back to licenses in thirdparty for eg. Linux ARM.
+    if(EXISTS ${QT_DIR}/../../Licenses/)
+        install(DIRECTORY ${QT_DIR}/../../Licenses/
+                DESTINATION thirdparty/Qt/licenses
+                CONFIGURATIONS Release
+                )
+    else()
+        install(DIRECTORY ${THIRDPARTY_DIR}/qt/licenses/
+                DESTINATION thirdparty/Qt/licenses
+                CONFIGURATIONS Release
+                )
+    endif()
     if(WIN32)
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
@@ -326,7 +333,7 @@ macro(package_qt)
         # Allow Qt platform plugin to find Qt frameworks in thirdparty
         install(CODE "execute_process(COMMAND patchelf
                                               --set-rpath
-                                              \$ORIGIN/../../../thirdparty/Qt/lib
+                                              \$ORIGIN/../../../thirdparty/Qt/lib:\$ORIGIN/../../lib
                                               ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqxcb.so
                                       ERROR_QUIET
                                       RESULT_VARIABLE EXIT_CODE)
@@ -339,19 +346,19 @@ endmacro()
 # Package CMake into release
 macro(package_cmake)
     if(APPLE)
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/osx/install/
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/macos/x86_64/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 USE_SOURCE_PERMISSIONS
                 )    
     elseif(UNIX)
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/install/
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/${ARCH}/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 USE_SOURCE_PERMISSIONS
                 )    
     else()
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/install/
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/x86_64/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 )    
@@ -397,6 +404,7 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "*.mesh" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE
             PATTERN "*.plist" EXCLUDE
+            PATTERN "*.ini" EXCLUDE
             )
     install(FILES ${NAP_ROOT}/dist/cmake/native/project_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
 
@@ -585,11 +593,11 @@ endmacro()
 # PATH_PREFIX: The path (and sub paths) to remove
 macro(macos_remove_rpaths_from_object_at_install_time FILEPATH PATH_PREFIX CONFIGURATION)
     if(CMAKE_HOST_WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/python.exe)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/msvc/x86_64/python.exe)
     elseif(CMAKE_HOST_APPLE)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/osx/install/bin/python3)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/macos/x86_64/bin/python3)
     else()
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/install/bin/python3)
+        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/linux/${ARCH}/bin/python3)
     endif()
     if(NOT EXISTS ${PYTHON_BIN})
         message(FATAL_ERROR \"Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?\")

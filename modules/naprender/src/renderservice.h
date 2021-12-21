@@ -290,10 +290,10 @@ namespace nap
 			 * Returns if the pipeline has been created and is set.
 			 * @return if the pipeline has been created and is set.
 			 */
-			bool isValid() const	{ return mPipeline != nullptr && mLayout != nullptr; }
+			bool isValid() const	{ return mPipeline != VK_NULL_HANDLE && mLayout != VK_NULL_HANDLE; }
 
-			VkPipeline				mPipeline = nullptr;	///< Handle to Vulkan pipeline
-			VkPipelineLayout		mLayout = nullptr;		///< Handle to Vulkan pipeline layout
+			VkPipeline				mPipeline = VK_NULL_HANDLE;		///< Handle to Vulkan pipeline
+			VkPipelineLayout		mLayout = VK_NULL_HANDLE;		///< Handle to Vulkan pipeline layout
 		};
 
 		/**
@@ -501,7 +501,7 @@ namespace nap
 		 * Returns the display that currently contains the given window. 
 		 * @return display that contains the given window, nullptr if not found
 		 */
-		const Display* findDisplay(const nap::RenderWindow& window);
+		const Display* findDisplay(const nap::RenderWindow& window) const;
 
 		/**
 		 * @return all available displays
@@ -621,14 +621,14 @@ namespace nap
 		 * nap::beginRecording(RenderWindow&) and only valid until the recording operation is ended.
 		 * @return the command buffer that is being recorded.
 		 */
-		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != VK_NULL_HANDLE); return mCurrentCommandBuffer; }
 		
 		/**
 		 * Returns the window that is being rendered to, only valid between a
 		 * successfull call to: RenderService::beginRecording() and RenderService::endRecording().
 		 * @return the window currently being rendered to, nullptr if not set.
 		 */
-		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != nullptr); return mCurrentRenderWindow; }
+		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != VK_NULL_HANDLE); return mCurrentRenderWindow; }
 
 		/**
 		 * Returns the Vulkan runtime instance.
@@ -1053,6 +1053,30 @@ namespace nap
 		 */
 		void waitDeviceIdle();
 
+		/**
+		 * Writes the render service .ini file to disk
+		 * The .ini file is used to (re)-store render settings in between sessions.
+		 * @param path path to file to write
+		 * @param error contains the error if the write operation fails
+		 * @return if write operation succeeded
+		 */
+		bool writeIni(const std::string& path, utility::ErrorState error);
+
+		/**
+		 * Loads settings from the .ini file.
+		 * The .ini file is used to (re)-store render settings in between sessions.
+		 * @param path path to file to load
+		 * @param error contains the error if the load operation fails.
+		 * @return if the file is read
+		 */
+		bool loadIni(const std::string& path, utility::ErrorState error);
+
+		/**
+		 * Attempts to restore window from a previous session.
+		 * @param window window to restore
+		 */
+		void restoreWindow(nap::RenderWindow& window);
+
 	private:
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
@@ -1155,5 +1179,8 @@ namespace nap
 		bool									mShInitialized = false;
 		UniqueMaterialCache						mMaterials;
 		bool									mHeadless = false;
+
+		// Cache read from ini file, contains saved settings
+		std::vector<std::unique_ptr<rtti::Object>> mCache;
 	};
 } // nap

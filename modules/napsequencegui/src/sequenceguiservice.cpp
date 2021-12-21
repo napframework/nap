@@ -98,23 +98,25 @@ namespace nap
                         "Error registering track view"))
 			return false;
 
-		if(!registerTrackViewFactory(RTTI_OF(SequenceCurveTrackView), 	[](	SequenceGUIService& service,
-                                                                                        SequenceEditorGUIView& editorGuiView,
-                                                                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
-                                                                                        {
-                                                                                                return std::make_unique<SequenceCurveTrackView>(service, editorGuiView, state);
-                                                                                        }))
+		if(!registerTrackViewFactory(RTTI_OF(SequenceCurveTrackView),
+                                     [](SequenceGUIService& service,
+                                        SequenceEditorGUIView& editorGuiView,
+                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
+                                        {
+                                            return std::make_unique<SequenceCurveTrackView>(service, editorGuiView, state);
+                                        }))
 		{
 			errorState.fail("Error registering track view factory function");
 			return false;
 		}
 
-		if(!registerTrackViewFactory(RTTI_OF(SequenceEventTrackView), 	[](	SequenceGUIService& service,
-                                                                                        SequenceEditorGUIView& editorGuiView,
-                                                                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
-                                                                                {
-                                                                                        return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
-                                                                                }))
+		if(!registerTrackViewFactory(RTTI_OF(SequenceEventTrackView),
+                                     [](SequenceGUIService& service,
+                                        SequenceEditorGUIView& editorGuiView,
+                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
+                                        {
+                                            return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
+                                        }))
 		{
 			errorState.fail("Error registering track view factory function");
 			return false;
@@ -167,13 +169,13 @@ namespace nap
 		mEventSegmentViewFactoryMap.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), []()->std::unique_ptr<SequenceEventTrackSegmentViewBase>{ return std::make_unique<SequenceEventTrackSegmentView<T>>(); });
 
 		// register popup action handler
-		auto event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
+		auto event_it = mEditEventHandlerMap.find(RTTI_OF(sequenceguiactions::OpenEditEventSegmentPopup<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
+		mEditEventHandlerMap.emplace(RTTI_OF(sequenceguiactions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
-		event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
+		event_it = mEditEventHandlerMap.find(RTTI_OF(sequenceguiactions::EditingEventSegment<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
+		mEditEventHandlerMap.emplace(RTTI_OF(sequenceguiactions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
 		// register paste handler
 		auto& handler_paste_events = mPasteEventMap;
@@ -229,7 +231,7 @@ namespace nap
 		std::vector<rtti::TypeInfo> track_types;
 		for(const auto& it : mTrackViewTypeMap)
 		{
-                  track_types.emplace_back(it.first);
+            track_types.emplace_back(it.first);
 		}
 		return track_types;
 	}
@@ -240,7 +242,7 @@ namespace nap
 		std::vector<rtti::TypeInfo> event_actions;
 		for(const auto& it : mEditEventHandlerMap)
 		{
-                  event_actions.emplace_back(it.first);
+            event_actions.emplace_back(it.first);
 		}
 		return event_actions;
 	}
@@ -249,7 +251,7 @@ namespace nap
 	void SequenceGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 	    dependencies.emplace_back(RTTI_OF(SequenceService));
-            dependencies.emplace_back(RTTI_OF(IMGuiService));
+        dependencies.emplace_back(RTTI_OF(IMGuiService));
 	}
 
 

@@ -252,6 +252,11 @@ namespace nap
 		virtual void postUpdate(double deltaTime) override;
 
 		/**
+		 * Saves all gui .ini files
+		 */
+		virtual void preShutdown() override;
+
+		/**
 		 *	Deletes all GUI related resources
 		 */
 		virtual void shutdown() override;

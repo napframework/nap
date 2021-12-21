@@ -17,6 +17,7 @@ module_json_to_cmake()
 
 set(FFMPEG_FIND_QUIETLY TRUE)
 find_package(FFmpeg REQUIRED)
+set(FFMPEG_DIR ${FFMPEG_INCLUDE_DIR}/..)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
@@ -45,24 +46,16 @@ if(APPLE)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
     set(LINUX_EXTRA_RPATH ../../../../thirdparty/FFmpeg/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
 endif()
 package_module()
 
 # Package dependent into release --
+install(DIRECTORY ${FFMPEG_LICENSE_DIR}/ DESTINATION thirdparty/FFmpeg)
+install(FILES ${FFMPEG_DIST_FILES} DESTINATION thirdparty/FFmpeg)
+install(DIRECTORY ${FFMPEG_DIR}/ DESTINATION thirdparty/FFmpeg)
 
-# FFmpeg
-# Licenses
-install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/licenses/ DESTINATION thirdparty/FFmpeg)
-# Source, as required by their license
-install(FILES ${THIRDPARTY_DIR}/ffmpeg/ffmpeg-3.4.2.tar.xz DESTINATION thirdparty/FFmpeg)
-if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/msvc/install/ DESTINATION thirdparty/FFmpeg
-            PATTERN "osx" EXCLUDE
-            PATTERN "linux" EXCLUDE)
-elseif(APPLE)
-    # Install FFmpeg into release
-    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/osx/install/ DESTINATION thirdparty/FFmpeg)
-
+if(APPLE)
     # Add RPATH for FFmpeg to packaged module on macOS
     foreach(build_type Release Debug)
         # Errors are ignored as duplicate RPATHs are possible
@@ -74,9 +67,6 @@ elseif(APPLE)
                                       )")
     endforeach()
 elseif(UNIX)
-    # Install FFmpeg into release
-    install(DIRECTORY ${THIRDPARTY_DIR}/ffmpeg/linux/install/ DESTINATION thirdparty/FFmpeg)
-
     # Let our installed FFmpeg libs find each other
     install(CODE "file(GLOB FFMPEG_DYLIBS ${CMAKE_INSTALL_PREFIX}/thirdparty/FFmpeg/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
                   foreach(FFMPEG_DYLIB \${FFMPEG_DYLIBS})

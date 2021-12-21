@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+from platform import machine
 from subprocess import call
 from sys import platform
 import sys
@@ -35,11 +36,17 @@ def get_cmake_path():
     """Fetch the path to the CMake binary"""
     nap_root = get_nap_root()
     if platform.startswith('linux'):
-        cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'linux', 'install', 'bin', 'cmake')
+        arch = machine()
+        if arch == 'x86_64':
+            cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
+        elif arch == 'aarch64':
+            cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'linux', 'arm64', 'bin', 'cmake')
+        else:
+            cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'linux', 'armhf', 'bin', 'cmake')
     elif platform == 'darwin':
-        cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'osx', 'install', 'bin', 'cmake')   
+        cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'macos', 'x86_64', 'bin', 'cmake')   
     else:
-        cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'msvc', 'install', 'bin', 'cmake')
+        cmake_path = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake', 'msvc', 'x86_64', 'bin', 'cmake')
     return cmake_path
     
 def get_nap_root():

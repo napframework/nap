@@ -25,14 +25,14 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src ${ASIO_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC src ${ASIO_INCLUDE_DIR})
 
 # preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY PUBLIC ASIO_STANDALONE)
 
 # additional definitions
 if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PUBLIC _WIN32_WINNT=0x0501)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0501)
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
@@ -42,5 +42,5 @@ copy_module_json_to_bin()
 package_module()
 
 # Package asio into platform release
-install(FILES ${THIRDPARTY_DIR}/asio/LICENSE_1_0.txt DESTINATION thirdparty/asio)
-install(DIRECTORY ${ASIO_INCLUDE_DIRS}/ DESTINATION thirdparty/asio/include)
+install(FILES ${ASIO_DIST_FILES} DESTINATION thirdparty/asio)
+install(DIRECTORY ${ASIO_INCLUDE_DIR} DESTINATION thirdparty/asio)

@@ -9,19 +9,19 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * SequenceMarker can be used to mark certain positions in the sequencer
-	 * This can be a useful tool for the user to maintain an overview within created sequences
-	 */
-	class NAPAPI SequenceMarker : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		~SequenceMarker() override = default;
+    /**
+     * SequenceMarker can be used to mark certain positions in the sequencer
+     * This can be a useful tool for the user to maintain an overview within created sequences
+     */
+    class NAPAPI SequenceMarker : public Resource
+    {
+        RTTI_ENABLE(Resource)
+    public:
+        ~SequenceMarker() override = default;
 
-		std::string mMessage; ///< Property: 'Message' message in marker
-		double 		mTime;  ///< Property: 'Time' time in seconds of marker in sequence
-	};
+        std::string mMessage; ///< Property: 'Message' message in marker
+        double mTime;  ///< Property: 'Time' time in seconds of marker in sequence
+    };
 }
