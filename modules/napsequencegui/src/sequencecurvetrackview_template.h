@@ -5,6 +5,7 @@
 #pragma once
 
 #include "sequencecurvetrackview_guiactions.h"
+#include <imguiutils.h>
 
 namespace nap
 {
