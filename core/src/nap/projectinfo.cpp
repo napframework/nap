@@ -28,6 +28,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::ModuleInfo)
 	RTTI_PROPERTY("RequiredModules", &nap::ModuleInfo::mRequiredModules, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("WindowsDllSearchPaths", &nap::ModuleInfo::mLibSearchPaths, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DataSearchPaths", &nap::ModuleInfo::mDataSearchPaths, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap

@@ -11,7 +11,7 @@
                         {
                             "Type": "nap::SequenceTrackSegmentAudio",
                             "mID": "Generated_11",
-                            "Start Time": 0.882755889557302,
+                            "Start Time": 0.0,
                             "Duration": 136.71832275390626,
                             "BufferID": "AudioFileResource",
                             "Start Time In Segment": 0.0059645287692546848
@@ -179,7 +179,7 @@
                     "Type": "nap::SequenceMarker",
                     "mID": "Generated_9",
                     "Message": "hello world!",
-                    "Time": 7.259999862653786
+                    "Time": 28.240001094714985
                 }
             ],
             "Duration": 272.25734639167788

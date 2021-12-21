@@ -19,8 +19,8 @@
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
 #include <materialcommon.h>
-#include <descriptorsetallocator.h>
 #include <sdlhelpers.h>
+#include <nap/modulemanager.h>
 
 RTTI_BEGIN_STRUCT(nap::IMGuiColorPalette)
 	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiColorPalette::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
@@ -49,6 +49,42 @@ static VkSampler                gSampler = VK_NULL_HANDLE;
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Icons
+	//////////////////////////////////////////////////////////////////////////
+
+	namespace icon
+	{
+		static const std::vector<std::string>& getDefaults()
+		{
+			const static std::vector<std::string> map =
+			{
+				icon::save,
+				icon::saveAs,
+				icon::cancel,
+				icon::del,
+				icon::file,
+				icon::help,
+				icon::settings,
+				icon::ok,
+				icon::reload,
+				icon::load,
+				icon::info,
+				icon::warning,
+				icon::error,
+				icon::copy,
+				icon::paste,
+				icon::insert,
+				icon::edit,
+				icon::remove,
+				icon::add,
+				icon::change
+			};
+			return map;
+		}
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Static / Local methods
 	//////////////////////////////////////////////////////////////////////////
@@ -358,8 +394,7 @@ namespace nap
 
 	IMGuiService::IMGuiService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{}
 
 
 	void IMGuiService::draw()
@@ -510,7 +545,7 @@ namespace nap
 	}
 
 
-	ImTextureID IMGuiService::getTextureHandle(nap::Texture2D& texture)
+	ImTextureID IMGuiService::getTextureHandle(const nap::Texture2D& texture) const
 	{
 		// Check if the texture has been requested before
 		auto it = mDescriptors.find(&texture);
@@ -540,6 +575,33 @@ namespace nap
 	}
 
 
+	nap::Icon& IMGuiService::getIcon(std::string&& name)
+	{
+		return *mIcons[name];
+	}
+
+
+	bool IMGuiService::loadIcon(const std::string& name, const nap::Module& module, utility::ErrorState& error)
+	{
+		// Find path to asset
+		auto icon_path = module.findAsset(name);
+		if (!error.check(!icon_path.empty(), "%s: Unable to find icon %s", module.getName().c_str(), name.c_str()))
+			return false;
+
+		// Create and initialize icon
+		auto new_icon = std::make_unique<Icon>(*this, icon_path);
+		if (!new_icon->init(error))
+			return false;
+
+		// Add icon, issue warning if the icon is not unique
+		auto ret = mIcons.emplace(std::make_pair(name, std::move(new_icon)));
+		if (!error.check(ret.second, "Icon duplication, %s already found in: %s",
+			name.c_str(), utility::forceSeparator(ret.first->second->getPath()).c_str()))
+			return false;
+		return true;
+	}
+
+
 	const nap::IMGuiColorPalette& IMGuiService::getColors() const
 	{
 		assert(mConfiguration != nullptr);
@@ -564,6 +626,14 @@ namespace nap
 		// Global GUI & DPI scale
 		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
 
+		// Load all the default icons, bail if any of them fails to load
+		bool icons_loaded = true;
+		const auto& default_icons = icon::getDefaults();
+		for (const auto& icon_name : default_icons)
+		{
+			if (!loadIcon(icon_name, getModule(), error))
+				return false;
+		}
 		return true;
 	}
 
@@ -630,6 +700,15 @@ namespace nap
 
 		// Destroy imgui contexts
 		mContexts.clear();
+
+		// Destroy icons
+		mIcons.clear();
+	}
+
+
+	void IMGuiService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<IconObjectCreator>(*this));
 	}
 
 

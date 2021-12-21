@@ -189,6 +189,7 @@ namespace nap
 	public:
 		std::vector<std::string> mRequiredModules;		///< Property: 'RequiredModules' names of modules this module depends on
 		std::vector<std::string> mLibSearchPaths;		///< Property: 'WindowsDllSearchPaths' additional windows dll search paths
+		std::vector<std::string> mDataSearchPaths;		///< Property: 'DataSearchPaths' additional module data search paths
 
 		/**
 		 * @return The absolute file path this ModuleInfo was loaded from

@@ -157,6 +157,11 @@ namespace nap
 		RenderService& getRenderService()					{ return *mRenderService; }
 
 		/**
+		 * @return render service
+		 */
+		const RenderService& getRenderService() const		{ return *mRenderService; }
+
+		/**
 		 * Starts a transfer of texture data from GPU to CPU. 
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
