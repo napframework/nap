@@ -75,7 +75,7 @@ namespace nap
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
-	private:
+	protected:
 		RenderService*						mRenderService = nullptr;
 		ComputeMaterialInstance				mComputeMaterialInstance;
 	};

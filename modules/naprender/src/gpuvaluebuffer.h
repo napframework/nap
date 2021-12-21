@@ -38,6 +38,11 @@ namespace nap
 		 */
 		virtual uint32 getSize() const = 0;
 
+		/**
+		 * @return the number of buffer values
+		 */
+		virtual uint32 getCount() const = 0;
+
 		EBufferObjectType mType = EBufferObjectType::Uniform;	///< Property 'BufferObjectType'
 	};
 
@@ -82,6 +87,13 @@ namespace nap
 
 			mElementSize = sizeof(T);
 
+			uint32 buffer_size = mCount * mElementSize;
+			VkBufferUsageFlagBits buffer_usage = static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType));
+
+			// If usage is DynamicRead, allocate only
+			if (mUsage == EMeshDataUsage::DynamicRead)
+				return allocateInternal(buffer_size, buffer_usage, errorState);
+
 			std::vector<T> staging_buffer;
 			if (mBufferFillPolicy != nullptr)
 				mBufferFillPolicy->fill(mCount, staging_buffer, errorState);
@@ -89,7 +101,7 @@ namespace nap
 				staging_buffer.resize(mCount, {});
 
 			// Prepare staging buffer upload
-			return setDataInternal(staging_buffer.data(), staging_buffer.size() * mElementSize, static_cast<VkBufferUsageFlagBits>(getBufferUsage(mType)), errorState);
+			return setDataInternal(staging_buffer.data(), buffer_size, buffer_size, buffer_usage, errorState);
 		}
 
 		/**
@@ -109,6 +121,11 @@ namespace nap
 		 * @return the size of the buffer in bytes
 		 */
 		virtual uint32 getSize() const override { return mCount * mElementSize; };
+
+		/**
+		 * @return the number of buffer values
+		 */
+		virtual uint32 getCount() const override { return mCount; }
 
 		ResourcePtr<TypedValueBufferFillPolicy<T>>			mBufferFillPolicy = nullptr;	///< Property 'FillPolicy'
 		uint32												mCount = 0;						///< Property 'Count'

@@ -323,22 +323,23 @@ namespace nap
 		//
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
-		// called, which moves the index one place ahead. 
+		// called, which moves the index one place ahead.
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+
+		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
+		VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ?
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT :
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
+		VmaMemoryUsage memory_usage = mUsage == ETextureUsage::DynamicRead ?
+			VMA_MEMORY_USAGE_GPU_TO_CPU :
+			VMA_MEMORY_USAGE_CPU_TO_GPU;
+
 		mStagingBuffers.resize(getNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
 			BufferData& staging_buffer = mStagingBuffers[index];
-
-			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-			VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ? 
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT : 
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-			VmaMemoryUsage memory_usage = mUsage == ETextureUsage::DynamicRead ? 
-				VMA_MEMORY_USAGE_GPU_TO_CPU : 
-				VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 			// Create staging buffer
 			if (!createBuffer(vulkan_allocator, mImageSizeInBytes, buffer_usage, memory_usage, 0, staging_buffer, errorState))
@@ -400,7 +401,7 @@ namespace nap
 		if (!init(descriptor, generateMipMaps, clearMode, requiredFlags, errorState))
 			return false;
 
-		memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
+		std::memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
 		return true;
 	}
 

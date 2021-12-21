@@ -199,14 +199,19 @@ namespace nap
 				}
 				else
 				{
-					assert(false);
+					errorState.fail("Data type of shader variable %s is not supported", uniform_declaration->mName.c_str());
+					return false;
 				}
 
 				if (instance_value_buffer == nullptr)
 					return false;
 
-				if (!errorState.check(resource == nullptr || value_buffer_resource->getCount() == value_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
-					return false;
+				// If the storage uniform was created from a resource, ensure its element count matches the one in the shader declaration
+				if (value_buffer_resource != nullptr && value_buffer_resource->hasBuffer())
+				{
+					if (!errorState.check(value_buffer_resource->getCount() == value_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+						return false;
+				}
 
 				mStorageUniforms.emplace_back(std::move(instance_value_buffer));
 			}

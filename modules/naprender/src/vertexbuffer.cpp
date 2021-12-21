@@ -113,6 +113,6 @@ namespace nap
 	// Uploads the data block to the GPU
 	bool VertexBuffer::setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error)
 	{
-		return setDataInternal(data, mVertexSize, numVertices, reservedNumVertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,  error);
+		return setDataInternal(data, mVertexSize, numVertices, reservedNumVertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, error);
 	}
 }

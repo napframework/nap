@@ -290,7 +290,8 @@ namespace nap
 				}
 				else
 				{
-					assert(false);
+					errorState.fail("Data type of shader variable %s is not supported", uniform_declaration->mName.c_str());
+					return false;
 				}
 
 				if (instance_value_array == nullptr)
@@ -347,7 +348,8 @@ namespace nap
 				}
 				else
 				{
-					assert(false);
+					errorState.fail("Data type of shader variable %s is not supported", uniform_declaration->mName.c_str());
+					return false;
 				}
 
 				if (value_instance == nullptr)

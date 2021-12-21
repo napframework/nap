@@ -38,26 +38,33 @@ namespace nap
 
 		// Calculate element size in bytes
 		mElementSize = getShaderVariableStructSizeRecursive(*element_descriptor);
-		size_t total_size = getSize();
+
+		size_t buffer_size = getSize();
+		VkBufferUsageFlagBits buffer_usage = static_cast<VkBufferUsageFlagBits>(getBufferUsage(EBufferObjectType::Storage));
+
+		// If usage is DynamicRead, skip buffer fill and upload
+		if (mUsage == EMeshDataUsage::DynamicRead)
+			return allocateInternal(buffer_size, buffer_usage, errorState);
 
 		// Create a staging buffer to upload
-		auto staging_buffer = std::make_unique<uint8[]>(total_size);
+		auto staging_buffer = std::make_unique<uint8[]>(buffer_size);
 		if (mFillPolicy != nullptr)
 		{
 			mFillPolicy->fill(&mDescriptor, staging_buffer.get(), errorState);
 		}
 		else
 		{
-			std::memset(staging_buffer.get(), 0, total_size);
+			std::memset(staging_buffer.get(), 0, buffer_size);
 		}
 
 		// Prepare staging buffer upload
-		return setDataInternal(staging_buffer.get(), total_size, static_cast<VkBufferUsageFlagBits>(getBufferUsage(EBufferObjectType::Storage)), errorState);
+		return setDataInternal(staging_buffer.get(), buffer_size, buffer_size, buffer_usage, errorState);
 	}
 
 
 	bool GPUStructBuffer::setData(void* data, size_t size, utility::ErrorState& error)
 	{
-		return setDataInternal(data, size, static_cast<VkBufferUsageFlagBits>(getBufferUsage(EBufferObjectType::Storage)), error);
+		VkBufferUsageFlagBits buffer_usage = static_cast<VkBufferUsageFlagBits>(getBufferUsage(EBufferObjectType::Storage));
+		return setDataInternal(data, size, size, buffer_usage, error);
 	}
 }

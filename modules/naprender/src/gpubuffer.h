@@ -36,8 +36,8 @@ namespace nap
 	enum class EMeshDataUsage
 	{
 		Static,				///< Mesh data is uploaded only once from the CPU to the GPU
-		DynamicWrite,		///< Mesh data is updated more than once from the CPU to the GPU
-		DynamicRead			///< Mesh data is uploaded only once from the CPU to the GPU, and frequently read from GPU to CPU
+		DynamicRead,		///< Mesh data is uploaded only once from the CPU to the GPU, and frequently read from GPU to CPU
+		DynamicWrite		///< Mesh data is updated more than once from the CPU to the GPU
 	};
 
 
@@ -145,8 +145,19 @@ namespace nap
 		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property 'Usage' How the buffer is used, static, updated frequently etc.
 
 	protected:
+
 		/**
-		 * Updates GPU buffer content, called by derived classes.
+		 * Allocates buffers, called by derived classes
+		 */
+		bool allocateInternal(size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+
+		/**
+		 * Allocates buffers, called by derived classes
+		 */
+		bool allocateInternal(int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+
+		/**
+		 * Allocates and updates GPU buffer content, called by derived classes.
 		 * @param data pointer to the data to upload.
 		 * @param elementSize size in bytes of the element to upload
 		 * @param numVertices the number of vertices to upload, data should be: numVertices * elementSize.
@@ -155,9 +166,9 @@ namespace nap
 		 * @param error contains error when data could not be set.
 		 * @return if the data was set
 		 */
-		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
 
-		bool setDataInternal(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
 
 		RenderService*			mRenderService = nullptr;			///< Handle to the render service
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
@@ -172,11 +183,14 @@ namespace nap
 		using BufferReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 		std::vector<BufferReadCallback>	mReadCallbacks;				///< Number of callbacks based on number of frames in flight
 
+		// Called when usage = dynamicread
+		bool setDataInternalDynamicRead(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+
 		// Called when usage = static
-		bool setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
 		
 		// Called when usage = dynamic write
-		bool setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& error);
+		bool setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
 
 		// Uploads data from the staging buffer into GPU buffer. Automatically called by the render service at the appropriate time.
 		// Only occurs when 'usage' = 'static'. Dynamic data shares GPU / CPU memory and is updated immediately.

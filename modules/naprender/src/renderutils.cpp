@@ -198,7 +198,18 @@ namespace nap
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.usage = memoryUsage;
 		allocInfo.flags = allocationFlags;
-        allocInfo.requiredFlags = memoryUsage == VMA_MEMORY_USAGE_CPU_TO_GPU ? VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : 0;
+
+		switch (memoryUsage)
+		{
+		case VMA_MEMORY_USAGE_CPU_TO_GPU:
+			allocInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+			break;
+		case VMA_MEMORY_USAGE_GPU_TO_CPU:
+			allocInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+			break;
+		default:
+			allocInfo.requiredFlags = 0;
+		}
 
 		// Create buffer
 		VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &outBuffer.mBuffer, &outBuffer.mAllocation, &outBuffer.mAllocationInfo);
@@ -215,7 +226,7 @@ namespace nap
 	}
 
 
-	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer)
+	bool uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer)
 	{
 		void* mapped_memory;
 		if (vmaMapMemory(allocator, buffer.mAllocation, &mapped_memory) != VK_SUCCESS)

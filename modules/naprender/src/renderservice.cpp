@@ -629,7 +629,7 @@ namespace nap
 		outDevice = valid_devices[selected_idx];
 
 		std::string queue_msg = utility::stringFormat("Selected device: %d: %s | Queues: GRAPHICS=%d TRANSFER=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex());
-		queue_msg = (outDevice.getComputeQueueIndex() != -1) ? utility::stringFormat("%s COMPUTE=%d", outDevice.getComputeQueueIndex()) : queue_msg;
+		queue_msg = (outDevice.getComputeQueueIndex() != -1) ? utility::stringFormat("%s COMPUTE=%d", queue_msg.c_str(), outDevice.getComputeQueueIndex()) : queue_msg;
 		nap::Logger::info(queue_msg.c_str());
 
 		return true;
@@ -1547,10 +1547,8 @@ namespace nap
 		// Get the required queue flags
 		VkQueueFlags req_queue_flags = getQueueFlags(render_config->mQueueFamilies);
 
-		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute.
-		// Not exposed in RenderServiceConfiguration for now as setting this to false requires some buffers to use a potentially slower concurrent sharingmode.
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
 		bool req_unified_queue = true;
-
 		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_flags, req_unified_queue, mPhysicalDevice, errorState))
 			return false;
 
@@ -1649,11 +1647,8 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
 				return false;
 
-			if (mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
-			{
-				if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
-					return false;
-			}
+			if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
+				return false;
 
 			frame.mQueueSubmitOps = { false, false, false };
 		}
@@ -2132,7 +2127,7 @@ namespace nap
 
 		// Reset command buffer for current frame
 		VkCommandBuffer compute_command_buffer = mFramesInFlight[mCurrentFrameIndex].mComputeCommandBuffer;
-		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
+ 		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
 			return false;
 
 		// Begin command buffe

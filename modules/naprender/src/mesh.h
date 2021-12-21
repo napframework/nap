@@ -233,10 +233,10 @@ namespace nap
 		VertexAttribute<T>* findAttribute(const std::string& id);
 
 		/**
-		* Finds vertex attribute.
-		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
-		* @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
-		*/
+		 * Finds vertex attribute.
+		 * @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
+		 */
 		template<typename T>
 		const VertexAttribute<T>* findAttribute(const std::string& id) const;
 
@@ -249,12 +249,20 @@ namespace nap
 		VertexAttribute<T>& getAttribute(const std::string& id);
 
 		/**
-		* Gets vertex attribute.
-		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
-		* @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
-		*/
+		 * Gets vertex attribute.
+		 * @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
+		 */
 		template<typename T>
 		const VertexAttribute<T>& getAttribute(const std::string& id) const;
+
+		/**
+		 * Gets vertex attribute index.
+		 * @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		 * @return Vertex attribute index. If not found or in case there is a type mismatch, the function asserts.
+		 */
+		template<typename T>
+		int getAttributeIndex(const std::string& id) const;
 
 		/**
 		 * Gets a vertex attribute or creates it if it does not exist. In case the attribute did exist, but with a different type, the function asserts.
@@ -495,11 +503,13 @@ namespace nap
 	const VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id) const
 	{
 		for (auto& attribute : mProperties.mAttributes)
+		{
 			if (attribute->mAttributeID == id)
 			{
 				assert(attribute->get_type().is_derived_from(RTTI_OF(VertexAttribute<T>)));
 				return static_cast<VertexAttribute<T>*>(attribute.get());
 			}
+		}
 		return nullptr;
 	}
 
@@ -517,6 +527,20 @@ namespace nap
 		const VertexAttribute<T>* attribute = findAttribute<T>(id);
 		assert(attribute != nullptr);
 		return *attribute;
+	}
+
+	template<typename T>
+	int nap::MeshInstance::getAttributeIndex(const std::string& id) const
+	{
+		int index = 0;
+		for (auto& attribute : mProperties.mAttributes)
+		{
+			if (attribute->mAttributeID == id)
+				return index;
+			++index;
+		}
+		assert(false);
+		return -1;
 	}
 
 	template<typename T>
