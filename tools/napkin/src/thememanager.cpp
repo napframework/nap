@@ -83,7 +83,7 @@ bool Theme::loadTheme()
 		mStylesheetFilePath = QFileInfo(mFilePath).absolutePath() + "/" + style_el->value.GetString();
 		if (!QFileInfo(mStylesheetFilePath).exists())
 		{
-			nap::Logger::error("Missing 'stylesheet' %s, %s",
+			nap::Logger::warn("Missing 'stylesheet' %s, %s",
 				style_el->value.GetString(), mFilePath.toStdString().c_str());
 		}
 	}
