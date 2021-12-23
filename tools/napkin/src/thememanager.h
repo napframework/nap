@@ -40,17 +40,20 @@ namespace napkin
 
 
 	/**
+	 * Fonts Globals
+	 */
+	namespace font
+	{
+		inline constexpr const char* directory = "resources/fonts";
+		inline constexpr const char* extension = "*.ttf";
+	}
+
+
+	/**
 	 * Represents one theme
 	 */
 	class Theme
 	{
-		// Font family name and associated font files to load
-		struct FontFamily
-		{
-			QString mName = "";
-			QList<QString> mFiles;
-		};
-
 	public:
 		Theme(const QString& filename);
 		Theme(const Theme&) = delete;
@@ -63,7 +66,7 @@ namespace napkin
 		QColor getLogColor(const nap::LogLevel& lvl) const;
 		QColor getColor(const QString& key) const;
 		const QMap<QString, QColor>& getColors() const;
-		const QMap<QString, FontFamily>& getFonts() const;
+		const QMap<QString, QString>& getFonts() const;
 
 	private:
 		bool loadTheme();
@@ -74,7 +77,7 @@ namespace napkin
 		QString mName;
 		QMap<int, QColor> mLogColors;
 		QMap<QString, QColor> mColors;
-		QMap<QString, FontFamily> mFonts;
+		QMap<QString, QString> mFonts;
 	};
 
 	/**
@@ -119,6 +122,11 @@ namespace napkin
          * @return The directory containing the themes
          */
 		const QString getThemeDir() const;
+
+		/**
+		 * @return The directory that contains all the font files
+		 */
+		const QString getFontDir() const;
 
 		/**
 		 * @return The color for the log level in the current theme

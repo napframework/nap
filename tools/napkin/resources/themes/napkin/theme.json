@@ -30,27 +30,8 @@
     "dimmedItem": "#5D5E73"
   },
   "fonts":
-  [
-    {
-      "id":"font1",
-      "name": "Nunito Sans, sans-serif",
-      "files":
-      [
-        ":/fonts/NunitoSans-ExtraBold.ttf",
-        ":/fonts/NunitoSans-Regular.ttf",
-        ":/fonts/NunitoSans-SemiBold.ttf"
-      ]
-    },
-    {
-      "id":"font2",
-      "name": "Montserrat",
-      "files":
-      [
-        ":/fonts/Montserrat-ExtraBold.ttf",
-        ":/fonts/Montserrat-Light.ttf",
-        ":/fonts/Montserrat-Medium.ttf",
-        ":/fonts/Montserrat-SemiBold.ttf"
-      ]
-    }
-  ]
+  {
+    "font1": "Nunito Sans, sans-serif",
+    "font2": "Montserrat"
+  }
 }
