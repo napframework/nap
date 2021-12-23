@@ -103,9 +103,10 @@ bool Theme::loadTheme()
 		for (const auto logLevel : nap::Logger::getLevels())
 		{
 			const auto& levelName = logLevel->name();
-			if (logColors.FindMember(levelName.c_str()) != logColors.end())
+			auto log_color_it = logColors.FindMember(levelName.c_str());
+			if (log_color_it != logColors.MemberEnd())
 			{
-				auto colname = logColors[levelName.c_str()].GetString();
+				auto colname = log_color_it->value.GetString();
 				QColor col(QString::fromStdString(colname));
 				mLogColors.insert(logLevel->level(), col);
 			}
