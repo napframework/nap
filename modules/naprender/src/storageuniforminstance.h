@@ -301,6 +301,11 @@ namespace nap
 		const TypedGPUValueBuffer<T>& getTypedValueBuffer() const			{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
+		 * @return buffer
+		 */
+		TypedGPUValueBuffer<T>& getTypedValueBuffer()						{ assert(mBuffer != nullptr); return *mBuffer; }
+
+		/**
 		 * @return value buffer
 		 */
 		virtual const GPUValueBuffer& getValueBuffer() const override		{ assert(mBuffer != nullptr); return *mBuffer; }
@@ -370,7 +375,7 @@ namespace nap
 	template<class T>
 	void nap::TypedStorageUniformValueBufferInstance<T>::setValueBuffer(TypedGPUValueBuffer<T>& buffer)
 	{
-		assert(buffer.mSize == mDeclaration->mSize);
+		assert(buffer.getSize() == mDeclaration->mSize);
 		mBuffer = &buffer;
 		raiseChanged();
 	}

@@ -9,7 +9,8 @@
 #include <nap/numeric.h>
 
 // Local Includes
-#include "bufferfillpolicy.h"
+#include "structbufferfillpolicy.h"
+#include "valuebufferfillpolicy.h"
 
 namespace nap
 {

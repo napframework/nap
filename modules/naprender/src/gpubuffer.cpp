@@ -9,11 +9,12 @@
 
 // External Includes
 #include "vulkan/vulkan.h"
+#include "renderservice.h"
+#include "nap/logger.h"
+
 #include <nap/core.h>
 #include <assert.h>
 #include <string.h>
-#include "renderservice.h"
-#include "nap/logger.h"
 
 RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
 	RTTI_ENUM_VALUE(nap::EMeshDataUsage::Static,		"Static"),
@@ -23,6 +24,7 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
 RTTI_END_CLASS
+
 
 namespace nap
 {
@@ -385,6 +387,13 @@ namespace nap
 		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = copyFunction;
 		mRenderService->requestBufferDownload(*this);
+	}
+
+
+	void GPUBuffer::clearDownloads()
+	{
+		for (auto& callback : mReadCallbacks)
+			callback = BufferReadCallback();
 	}
 
 

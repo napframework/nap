@@ -7,6 +7,7 @@
 // Local Includes
 #include "gpubuffer.h"
 #include "uniform.h"
+#include "structbufferfillpolicy.h"
 
 // External Includes
 #include <nap/resourceptr.h>
@@ -59,9 +60,9 @@ namespace nap
 		 */
 		int getElementSize() const					{ return mElementSize; };
 
-		ResourcePtr<BaseStructBufferFillPolicy>	mFillPolicy = nullptr;					///< Property 'FillPolicy'
-		StructBufferDescriptor					mDescriptor;							///< Property 'Descriptor'
-		EBufferObjectType						mType = EBufferObjectType::Uniform;		///< Property 'BufferObjectType'
+		ResourcePtr<BaseStructBufferFillPolicy>		mFillPolicy = nullptr;					///< Property 'FillPolicy'
+		StructBufferDescriptor						mDescriptor;							///< Property 'Descriptor'
+		EBufferObjectType							mType = EBufferObjectType::Uniform;		///< Property 'BufferObjectType'
 
 	private:
 		int	mElementSize = -1;

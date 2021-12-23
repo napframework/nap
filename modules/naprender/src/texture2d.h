@@ -184,14 +184,19 @@ namespace nap
 		void upload(VkCommandBuffer commandBuffer);
 
 		/**
-		 * Called by the render service when download is ready
-		 */
-		void notifyDownloadReady(int frameIndex);		
-
-		/**
 		 * Downloads texture data
 		 */
 		void download(VkCommandBuffer commandBuffer);
+
+		/**
+		 * Called by the render service when download is ready
+		 */
+		void notifyDownloadReady(int frameIndex);
+
+		/**
+		 * Clears queued texture downloads
+		 */
+		void clearDownloads();
         
         // Hide resource init explicitly
         using Resource::init;

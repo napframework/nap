@@ -1926,6 +1926,23 @@ namespace nap
 	}
 
 
+	void RenderService::postResourcesLoaded()
+	{
+		// Clear remaining texture and buffer downloads
+		for (auto& frame : mFramesInFlight)
+		{
+			for (auto& texture : frame.mTextureDownloads)
+				texture->clearDownloads();
+
+			for (auto& buffer : frame.mBufferDownloads)
+				buffer->clearDownloads();
+
+			frame.mTextureDownloads.clear();
+			frame.mBufferDownloads.clear();
+		}
+	}
+
+
 	// Shut down renderer
 	void RenderService::shutdown()
 	{
@@ -2414,20 +2431,28 @@ namespace nap
 	}
 
 
-	void RenderService::removeBufferRequests(BaseGPUBuffer& buffer)
+	void RenderService::removeBufferRequests(GPUBuffer& buffer)
 	{
 		// When buffers are destroyed, we also need to remove any pending upload requests
 		mBuffersToUpload.erase(&buffer);
+
+		for (Frame& frame : mFramesInFlight)
+		{
+			frame.mBufferDownloads.erase(std::remove_if(frame.mBufferDownloads.begin(), frame.mBufferDownloads.end(), [&buffer](BaseGPUBuffer* existingBuffer)
+			{
+				return existingBuffer == &buffer;
+			}), frame.mBufferDownloads.end());
+		}
 	}
 
 
-	void RenderService::requestBufferUpload(BaseGPUBuffer& buffer)
+	void RenderService::requestBufferUpload(GPUBuffer& buffer)
 	{
 		mBuffersToUpload.insert(&buffer);
 	}
 
 
-	void RenderService::requestBufferDownload(BaseGPUBuffer& buffer)
+	void RenderService::requestBufferDownload(GPUBuffer& buffer)
 	{
 		// We push a buffer download specifically for this frame. When the fence for that frame is signaled,
 		// we know the download has been processed by the GPU, and we can send the buffer a notification that

@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "bufferfillpolicy.h"
+#include "structbufferfillpolicy.h"
 #include "uniform.h"
 
 // External Includes
@@ -11,49 +11,7 @@
 
 RTTI_DEFINE_BASE(nap::BaseStructBufferFillPolicy)
 
-RTTI_DEFINE_BASE(nap::BaseValueBufferFillPolicy)
-
-RTTI_DEFINE_BASE(nap::IntBufferFillPolicy)
-RTTI_DEFINE_BASE(nap::FloatBufferFillPolicy)
-RTTI_DEFINE_BASE(nap::Vec2BufferFillPolicy)
-RTTI_DEFINE_BASE(nap::Vec3BufferFillPolicy)
-RTTI_DEFINE_BASE(nap::Vec4BufferFillPolicy)
-RTTI_DEFINE_BASE(nap::Mat4BufferFillPolicy)
-
-
-//////////////////////////////////////////////////////////////////////////
-// ConstantBufferFillPolicy
-//////////////////////////////////////////////////////////////////////////
-
 RTTI_BEGIN_CLASS(nap::ConstantStructBufferFillPolicy)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ConstantIntBufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantIntBufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ConstantFloatBufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantFloatBufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ConstantIntBufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantIntBufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ConstantVec2BufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantVec2BufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ConstantVec3BufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantVec3BufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ConstantVec4BufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantVec4BufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::ConstantMat4BufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantMat4BufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 

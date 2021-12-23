@@ -7,7 +7,7 @@
 #include "structbufferdescriptor.h"
 #include "uniform.h"
 
-RTTI_BEGIN_CLASS(nap::StructBufferDescriptor)
+RTTI_BEGIN_STRUCT(nap::StructBufferDescriptor)
 	RTTI_PROPERTY("Element", &nap::StructBufferDescriptor::mElement, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Count", &nap::StructBufferDescriptor::mCount, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_STRUCT

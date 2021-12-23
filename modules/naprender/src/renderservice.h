@@ -951,6 +951,11 @@ namespace nap
 		virtual void preResourcesLoaded() override;
 
 		/**
+		 * Invoked when the resource manager is about to load resources.
+		 */
+		virtual void postResourcesLoaded() override;
+
+		/**
 		 * Process all received window events.
 		 * @param deltaTime time in seconds in between frames.
 		 */
@@ -1003,20 +1008,20 @@ namespace nap
 		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
 		 * @param buffer the buffer to upload to the GPU.
 		 */
-		void requestBufferUpload(BaseGPUBuffer& buffer);
+		void requestBufferUpload(GPUBuffer& buffer);
 
 		/**
 		 * Request a Vulkan buffer transfer, from GPU buffer to staging buffer.
 		 * @param buffer the buffer to download data into.
 		 */
-		void requestBufferDownload(BaseGPUBuffer& buffer);
+		void requestBufferDownload(GPUBuffer& buffer);
 
 		/**
 		 * Deletes all buffer upload requests.
 		 * Called when the GPU buffer is destroyed.
 		 * @param buffer the buffer to remove pending upload commands for.
 		 */
-		void removeBufferRequests(BaseGPUBuffer& buffer);
+		void removeBufferRequests(GPUBuffer& buffer);
 
 		/**
 		 * Transfers all previously queued data to the GPU.
@@ -1105,7 +1110,7 @@ namespace nap
 		{
 			VkFence								mFence;								///< CPU sync primitive
 			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
-			std::vector<BaseGPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
+			std::vector<GPUBuffer*>				mBufferDownloads;					///< All buffers currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
 			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
 			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window.

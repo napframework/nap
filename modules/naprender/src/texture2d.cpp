@@ -624,6 +624,13 @@ namespace nap
 	}
 
 
+	void Texture2D::clearDownloads()
+	{
+		for (auto& callback : mReadCallbacks)
+			callback = TextureReadCallback();
+	}
+
+
 	void Texture2D::notifyDownloadReady(int frameIndex)
 	{
 		// Update the staging buffer using the Bitmap contents

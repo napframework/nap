@@ -181,7 +181,6 @@ namespace nap
 
 	private:
 		using BufferReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
-		std::vector<BufferReadCallback>	mReadCallbacks;				///< Number of callbacks based on number of frames in flight
 
 		// Called when usage = dynamicread
 		bool setDataInternalDynamicRead(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
@@ -201,6 +200,11 @@ namespace nap
 
 		// Called by the render service when download is ready
 		virtual void notifyDownloadReady(int frameIndex) override;
+
+		// Clears queued texture downloads
+		void clearDownloads();
+
+		std::vector<BufferReadCallback>	mReadCallbacks;				///< Number of callbacks based on number of frames in flight
 	};
 
 }

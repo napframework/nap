@@ -17,9 +17,8 @@ namespace nap
 	*/
 	struct NAPAPI StructBufferDescriptor
 	{
-		RTTI_ENABLE()
 	public:
-		ResourcePtr<UniformStruct> mElement = nullptr;					///<
-		uint mCount = 1;												///<
+		ResourcePtr<UniformStruct> mElement;
+		uint mCount = 1;
 	};
 }
