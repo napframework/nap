@@ -127,7 +127,7 @@ namespace nap
 			return false;
 
 		mBitmapHandle = fi_bitmap;
-
+		return true;
 	}
 
 
@@ -148,6 +148,7 @@ namespace nap
 			return false;
 
 		mBitmapHandle = fi_bitmap;
+		return true;
 	}
 
 
