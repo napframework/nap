@@ -81,8 +81,17 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-
 		ThemeManager();
+
+		/**
+         * @return The directory containing the themes
+         */
+		static QString getThemeDir();
+
+		/**
+		 * @return The directory that contains all the font files
+		 */
+		static QString getFontDir();
 
         /**
          * @return A list of available theme names
@@ -105,16 +114,6 @@ namespace napkin
          * @return The currently set theme
          */
 		const Theme* getCurrentTheme() const;
-
-        /**
-         * @return The directory containing the themes
-         */
-		const QString getThemeDir() const;
-
-		/**
-		 * @return The directory that contains all the font files
-		 */
-		const QString getFontDir() const;
 
 		/**
 		 * @return The color for the log level in the current theme

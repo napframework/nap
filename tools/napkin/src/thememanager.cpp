@@ -27,15 +27,18 @@ Theme::Theme(const QString& filename) :
 	mValid = loadTheme();
 }
 
+
 bool Theme::isValid() const
 {
 	return mValid;
 }
 
+
 const QString& Theme::getStylesheetFilePath() const
 {
 	return mStylesheetFilePath;
 }
+
 
 bool Theme::loadTheme()
 {
@@ -52,24 +55,37 @@ bool Theme::loadTheme()
 		return false;
 	}
 
-	// Get preset name
-	if (!doc.HasMember("name"))
+	// Enure preset name element is present
+	mName.clear();
+	auto name_el = doc.FindMember("name");
+	if (name_el == doc.MemberEnd())
 	{
-		nap::Logger::error("Theme %s has no name", mFilePath.toStdString().c_str());
+		nap::Logger::error("Missing 'name' element in: %s",
+			mFilePath.toStdString().c_str());
 		return false;
 	}
-	mName = QString::fromStdString(doc["name"].GetString());
+
+	// Make sure name is not empty
+	mName = QString::fromStdString(name_el->value.GetString());
+	if (mName.isEmpty())
+	{
+		nap::Logger::error("Empty 'name' element in: %s",
+			mFilePath.toStdString().c_str());
+		return false;
+	}
 
 	// Get preset stylesheet
-	if (doc.HasMember("stylesheet"))
+	mStylesheetFilePath.clear();
+	auto style_el = doc.FindMember("stylesheet");
+	if (style_el != doc.MemberEnd())
 	{
 		// Stylesheet is relative to style json file
-		mStylesheetFilePath = QFileInfo(mFilePath).absolutePath() + "/" + doc["stylesheet"].GetString();
-	}
-	else
-	{
-		nap::Logger::warn("Missing 'stylesheet' element in '%s'",
-			mFilePath.toStdString().c_str());
+		mStylesheetFilePath = QFileInfo(mFilePath).absolutePath() + "/" + style_el->value.GetString();
+		if (!QFileInfo(mStylesheetFilePath).exists())
+		{
+			nap::Logger::error("Missing 'stylesheet' %s, %s",
+				style_el->value.GetString(), mFilePath.toStdString().c_str());
+		}
 	}
 
 	// load log colors
@@ -134,6 +150,7 @@ bool Theme::loadTheme()
 	return true;
 }
 
+
 QColor Theme::getLogColor(const nap::LogLevel& lvl) const
 {
 	if (mLogColors.contains(lvl.level()))
@@ -142,6 +159,7 @@ QColor Theme::getLogColor(const nap::LogLevel& lvl) const
 	std::cout << "warning: unable to find color for log level: " << lvl.name().c_str() << std::endl;
 	return QColor(0,0,0);
 }
+
 
 QColor Theme::getColor(const QString& key) const
 {
@@ -152,15 +170,18 @@ QColor Theme::getColor(const QString& key) const
 	return {};
 }
 
+
 const QMap<QString, QColor>& Theme::getColors() const
 {
 	return mColors;
 }
 
+
 const QMap<QString, QString>& Theme::getFonts() const
 {
 	return mFonts;
 }
+
 
 bool napkin::Theme::reload()
 {
@@ -223,18 +244,27 @@ const Theme* ThemeManager::getCurrentTheme() const
 	return mCurrentTheme;
 }
 
+
 const std::vector<std::unique_ptr<Theme>>& ThemeManager::getAvailableThemes()
 {
 	if (mThemes.empty())
+	{
 		loadThemes();
-
+	}
 	return mThemes;
 }
 
-const QString ThemeManager::getThemeDir() const
+
+QString ThemeManager::getThemeDir()
 {
 	// TODO: This probably needs to be configurable
 	return QString("%1/%2").arg(QCoreApplication::applicationDirPath(), theme::directory);
+}
+
+
+QString ThemeManager::getFontDir()
+{
+	return QString("%1/%2").arg(QCoreApplication::applicationDirPath(), font::directory);
 }
 
 
@@ -312,7 +342,7 @@ void ThemeManager::onFileChanged(const QString& path)
 		}
 		else
 		{
-			nap::Logger::warn("Failed to load: %s", path.toStdString().c_str());
+			nap::Logger::error("Failed to load: %s", path.toStdString().c_str());
 		}
 		return;
 	}
@@ -338,7 +368,6 @@ void ThemeManager::loadFonts()
 		}
 	}
 }
-
 
 
 void ThemeManager::watchThemeDir()
@@ -386,14 +415,10 @@ QColor ThemeManager::getLogColor(const nap::LogLevel& lvl) const
 	return {};
 }
 
+
 QColor ThemeManager::getColor(const QString& key) const
 {
 	if (mCurrentTheme)
 		return mCurrentTheme->getColor(key);
 	return {};
-}
-
-const QString ThemeManager::getFontDir() const
-{
-	return QString("%1/%2").arg(QCoreApplication::applicationDirPath(), font::directory);
 }
