@@ -14,7 +14,8 @@
   "colors": 
   {
     "highlight": "#C86969",
-    "background": "#2D2E42",
+    "background1": "#2D2E42",
+    "background2": "#3C3d4D",
     "dark": "#111426",
     "front1": "#52546A",
     "front2": "#5D5E73",
