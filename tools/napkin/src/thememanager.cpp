@@ -21,22 +21,20 @@
 using namespace napkin;
 
 
-Theme::Theme(const QString& filename) : mFilename(filename)
+Theme::Theme(const QString& filename) :
+	mFilePath(filename)
 {
-	loadTheme();
+	mValid = loadTheme();
 }
 
 bool Theme::isValid() const
 {
-	if (!QFileInfo::exists(mFilename))
-		return false;
-
-	return true;
+	return mValid;
 }
 
-const QString& Theme::getStylesheetFilename() const
+const QString& Theme::getStylesheetFilePath() const
 {
-	return mStylesheetFilename;
+	return mStylesheetFilePath;
 }
 
 bool Theme::loadTheme()
@@ -44,54 +42,62 @@ bool Theme::loadTheme()
 	rapidjson::Document doc;
 	std::string data;
 	nap::utility::ErrorState err;
-	nap::utility::readFileToString(mFilename.toStdString(), data, err);
+	nap::utility::readFileToString(mFilePath.toStdString(), data, err);
 	rapidjson::ParseResult ok = doc.Parse(data.c_str());
 	if (!ok)
 	{
-		nap::Logger::error("JSON Parse error in %s: %s, offset: %d", mFilename.toStdString().c_str(),
-						   rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+		nap::Logger::error("JSON Parse error in %s: %s, offset: %d",
+			mFilePath.toStdString().c_str(), 
+			rapidjson::GetParseError_En(ok.Code()), ok.Offset());
 		return false;
 	}
 
-	// get stylesheet
+	// Get preset name
+	if (!doc.HasMember("name"))
+	{
+		nap::Logger::error("Theme %s has no name", mFilePath.toStdString().c_str());
+		return false;
+	}
 	mName = QString::fromStdString(doc["name"].GetString());
+
+	// Get preset stylesheet
 	if (doc.HasMember("stylesheet"))
 	{
 		// Stylesheet is relative to style json file
-		mStylesheetFilename = QFileInfo(mFilename).absolutePath() + "/" + doc["stylesheet"].GetString();
+		mStylesheetFilePath = QFileInfo(mFilePath).absolutePath() + "/" + doc["stylesheet"].GetString();
+	}
+	else
+	{
+		nap::Logger::warn("Missing 'stylesheet' element in '%s'",
+			mFilePath.toStdString().c_str());
 	}
 
 	// load log colors
 	mLogColors.clear();
 	auto itLogCols = doc.FindMember("logColors");
-	if (itLogCols == doc.MemberEnd())
+	if (itLogCols != doc.MemberEnd())
 	{
-		nap::Logger::error("Missing 'logColors' element in '%s'", mFilename.toStdString().c_str());
-		return false;
+		auto logColors = itLogCols->value.GetObject();
+		for (const auto logLevel : nap::Logger::getLevels())
+		{
+			const auto& levelName = logLevel->name();
+			if (logColors.FindMember(levelName.c_str()) != logColors.end())
+			{
+				auto colname = logColors[levelName.c_str()].GetString();
+				QColor col(QString::fromStdString(colname));
+				mLogColors.insert(logLevel->level(), col);
+			}
+			else
+			{
+				nap::Logger::warn("Missing log level: '%s' in '%s'",
+					levelName.c_str(), mFilePath.toStdString().c_str());
+			}
+		}
 	}
-	auto logColors = itLogCols->value.GetObject();
-	for (const auto logLevel : nap::Logger::getLevels())
+	else
 	{
-		const auto& levelName = logLevel->name();
-		auto colname = logColors[levelName.c_str()].GetString();
-		QColor col(QString::fromStdString(colname));
-		mLogColors.insert(logLevel->level(), col);
-	}
-
-	// load custom colors
-	mColors.clear();
-	auto itCols = doc.FindMember("colors");
-	if (itCols == doc.MemberEnd())
-	{
-		nap::Logger::error("Missing 'colors' element in '%s'", mFilename.toStdString().c_str());
-		return false;
-	}
-	auto colors = itCols->value.GetObject();
-	for (const auto& color : colors)
-	{
-		auto key = QString::fromStdString(color.name.GetString());
-		QColor col(QString::fromStdString(color.value.GetString()));
-		mColors.insert(key, col);
+		nap::Logger::warn("Missing 'logColors' element in '%s'",
+			mFilePath.toStdString().c_str());
 	}
 
 	// Load custom fonts
@@ -108,6 +114,23 @@ bool Theme::loadTheme()
 		}
 	}
 
+	// load custom colors
+	mColors.clear();
+	auto itCols = doc.FindMember("colors");
+	if (itCols != doc.MemberEnd())
+	{
+		auto colors = itCols->value.GetObject();
+		for (const auto& color : colors)
+		{
+			auto key = QString::fromStdString(color.name.GetString());
+			QColor col(QString::fromStdString(color.value.GetString()));
+			mColors.insert(key, col);
+		}
+	}
+	else
+	{
+		nap::Logger::warn("Missing 'colors' element in '%s'", mFilePath.toStdString().c_str());
+	}
 	return true;
 }
 
@@ -139,6 +162,12 @@ const QMap<QString, QString>& Theme::getFonts() const
 	return mFonts;
 }
 
+bool napkin::Theme::reload()
+{
+	return mValid = loadTheme();
+}
+
+
 ThemeManager::ThemeManager()
 {
 	connect(&mFileWatcher, &QFileSystemWatcher::directoryChanged, this, &ThemeManager::onFileChanged);
@@ -146,7 +175,7 @@ ThemeManager::ThemeManager()
 }
 
 
-void ThemeManager::setTheme(const Theme* theme)
+void ThemeManager::setTheme(Theme* theme)
 {
 	mCurrentTheme = theme;
 	applyTheme();
@@ -158,27 +187,36 @@ void ThemeManager::setTheme(const Theme* theme)
 	themeChanged(mCurrentTheme);
 }
 
+
 void ThemeManager::setTheme(const QString& name)
 {
-	if (name.isEmpty())
+	Theme* new_theme = findTheme(name);
+	if (new_theme == nullptr)
 	{
-		nap::Logger::error("No theme set");
+		nap::Logger::warn("Unable to find theme with name: %s", name.toStdString().c_str());
+		return;
 	}
-	else
-	{
-		nap::Logger::fine("Setting theme: %s", name.toStdString().c_str());
-	}
-	setTheme(getTheme(name));
+	setTheme(new_theme);
 }
 
 
-const Theme* ThemeManager::getTheme(const QString& name)
+const Theme* ThemeManager::findTheme(const QString& name) const
 {
 	for (const auto& theme : mThemes)
 		if (theme->getName() == name)
 			return theme.get();
 	return nullptr;
 }
+
+
+Theme* ThemeManager::findTheme(const QString& name)
+{
+	for (const auto& theme : mThemes)
+		if (theme->getName() == name)
+			return theme.get();
+	return nullptr;
+}
+
 
 const Theme* ThemeManager::getCurrentTheme() const
 {
@@ -203,15 +241,14 @@ const QString ThemeManager::getThemeDir() const
 void ThemeManager::applyTheme()
 {
 	auto app = AppContext::get().getQApplication();
-
-	if (!mCurrentTheme || !QFileInfo::exists(mCurrentTheme->getStylesheetFilename()))
+	if (!mCurrentTheme || !QFileInfo::exists(mCurrentTheme->getStylesheetFilePath()))
 	{
 		app->setStyleSheet(nullptr);
 		QApplication::setStyle(QStyleFactory::create("Fusion"));
 		return;
 	}
 
-	auto stylesheetFile = mCurrentTheme->getStylesheetFilename();
+	auto stylesheetFile = mCurrentTheme->getStylesheetFilePath();
 	QFile file(stylesheetFile);
 	if (!file.open(QFile::ReadOnly | QFile::Text))
 	{
@@ -243,9 +280,9 @@ void ThemeManager::applyTheme()
 
 	// Start watching for file changes (style and theme)
 	mWatchedFilenames.clear();
-	mWatchedFilenames << QFileInfo(mCurrentTheme->getFilename()).absolutePath();
+	mWatchedFilenames << QFileInfo(mCurrentTheme->getFilePath()).absolutePath();
 	mWatchedFilenames << stylesheetFile;
-	mWatchedFilenames << mCurrentTheme->getFilename();
+	mWatchedFilenames << mCurrentTheme->getFilePath();
 	watchThemeFiles();
 
 	QApplication::setStyle(QStyleFactory::create("Fusion"));
@@ -265,13 +302,26 @@ void ThemeManager::watchThemeFiles()
 
 void ThemeManager::onFileChanged(const QString& path)
 {
-	auto theme_filename = getCurrentTheme()->getStylesheetFilename();
-	if (QFileInfo(path).filePath() == theme_filename)
+	QString changed_file = QFileInfo(path).filePath();
+	if (changed_file == getCurrentTheme()->getFilePath())
 	{
-		nap::Logger::info("Reloading: %s", path.toStdString().c_str());
+		nap::Logger::info("Reloading theme: %s", path.toStdString().c_str());
+		if (mCurrentTheme->reload())
+		{
+			applyTheme();
+		}
+		else
+		{
+			nap::Logger::warn("Failed to load: %s", path.toStdString().c_str());
+		}
+		return;
+	}
+
+	if (changed_file == getCurrentTheme()->getStylesheetFilePath())
+	{
+		nap::Logger::info("Reloading style: %s", path.toStdString().c_str());
 		applyTheme();
 	}
-	watchThemeFiles();
 }
 
 
@@ -313,17 +363,19 @@ void ThemeManager::loadThemes()
 		auto theme = std::make_unique<Theme>(filename);
 
 		// Check for duplicated
-		const auto existingTheme = getTheme(theme->getName());
+		const auto existingTheme = findTheme(theme->getName());
 		if (existingTheme != nullptr)
 		{
 			nap::Logger::error("Duplicate theme name '%s' while loading '%s', original: '%s'",
 							   theme->getName().toStdString().c_str(), filename.toStdString().c_str(),
-							   existingTheme->getFilename().toStdString().c_str());
+							   existingTheme->getFilePath().toStdString().c_str());
 			continue;
 		}
 
 		if (theme->isValid())
+		{
 			mThemes.emplace_back(std::move(theme));
+		}
 	}
 }
 

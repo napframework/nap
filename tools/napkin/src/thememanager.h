@@ -23,14 +23,6 @@ namespace napkin
 
 		namespace color
 		{
-			inline constexpr const char* highlight					= "highlight";
-			inline constexpr const char* background1				= "background1";
-			inline constexpr const char* background2				= "background2";
-			inline constexpr const char* dark						= "dark";
-			inline constexpr const char* front0						= "front0";
-			inline constexpr const char* front1						= "front1";
-			inline constexpr const char* front2						= "front2";
-			inline constexpr const char* front3						= "front3";
 			inline constexpr const char* componentoverride			= "componentWithOverrides";
 			inline constexpr const char* instanceProperty			= "instanceProperty";
 			inline constexpr const char* overriddenInstanceProperty = "overriddenInstanceProperty";
@@ -59,25 +51,27 @@ namespace napkin
 		Theme(const Theme&) = delete;
 		Theme& operator=(const Theme&) = delete;
 
-		const QString& getFilename() const { return mFilename; }
-		const QString& getStylesheetFilename() const;
+		const QString& getFilePath() const { return mFilePath; }
+		const QString& getStylesheetFilePath() const;
 		bool isValid() const;
 		const QString& getName() const { return mName; }
 		QColor getLogColor(const nap::LogLevel& lvl) const;
 		QColor getColor(const QString& key) const;
 		const QMap<QString, QColor>& getColors() const;
 		const QMap<QString, QString>& getFonts() const;
+		bool reload();
 
 	private:
 		bool loadTheme();
 
 		bool mIsValid = false;
-		QString mStylesheetFilename;
-		const QString mFilename;
+		QString mStylesheetFilePath;
+		const QString mFilePath;
 		QString mName;
 		QMap<int, QColor> mLogColors;
 		QMap<QString, QColor> mColors;
 		QMap<QString, QString> mFonts;
+		bool mValid = false;
 	};
 
 	/**
@@ -95,12 +89,6 @@ namespace napkin
          */
 		const std::vector<std::unique_ptr<Theme>>& getAvailableThemes();
 
-        /**
-         * Set apply the specified theme by name.
-         * @param theme The name of the theme
-         */
-		void setTheme(const Theme* theme);
-
 		/**
 		 * @param name the name of the theme
 		 */
@@ -111,10 +99,10 @@ namespace napkin
 		 * @param name the name of the theme to be found
 		 * @return the theme with the given name or nullptr if no theme with that name could be found
 		 */
-		const Theme* getTheme(const QString& name);
+		const Theme* findTheme(const QString& name) const;
 
         /**
-         * @return The name of the currently set theme
+         * @return The currently set theme
          */
 		const Theme* getCurrentTheme() const;
 
@@ -153,6 +141,19 @@ namespace napkin
 	private:
 
 		/**
+         * Set apply the specified theme by name.
+         * @param theme The name of the theme
+         */
+		void setTheme(Theme* theme);
+
+		/**
+		 * Find the theme with the given name
+		 * @param name the name of the theme to be found
+		 * @return the theme with the given name or nullptr if no theme with that name could be found
+		 */
+		Theme* findTheme(const QString& name);
+
+		/**
 		 * Load all themes from the theme directory
 		 */
 		void loadThemes();
@@ -178,7 +179,7 @@ namespace napkin
 		 */
 		void watchThemeFiles();
 
-		const Theme* mCurrentTheme = nullptr;			///< The currently set theme
+		Theme* mCurrentTheme = nullptr;					///< The currently set theme
 		QFileSystemWatcher mFileWatcher;				///< Watch the theme file and reload if it has changed
 		QSet<QString> mLoadedFonts;						///< All fonts that are loaded
 		std::vector<std::unique_ptr<Theme>> mThemes;	///< All currently loaded themes
