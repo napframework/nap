@@ -24,7 +24,13 @@ using namespace napkin;
 Theme::Theme(const QString& filename) :
 	mFilePath(filename)
 {
-	mValid = loadTheme();
+	reload();
+}
+
+
+bool napkin::Theme::reload()
+{
+	return mValid = loadTheme();
 }
 
 
@@ -180,12 +186,6 @@ const QMap<QString, QColor>& Theme::getColors() const
 const QMap<QString, QString>& Theme::getFonts() const
 {
 	return mFonts;
-}
-
-
-bool napkin::Theme::reload()
-{
-	return mValid = loadTheme();
 }
 
 

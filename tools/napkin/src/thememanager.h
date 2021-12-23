@@ -13,6 +13,8 @@
 
 namespace napkin
 {
+	class ThemeManager;
+
 	/**
 	 * Theme Globals
 	 */
@@ -46,22 +48,61 @@ namespace napkin
 	 */
 	class Theme
 	{
+		friend class ThemeManager;
 	public:
 		Theme(const QString& filename);
 		Theme(const Theme&) = delete;
 		Theme& operator=(const Theme&) = delete;
 
+		/**
+		 * @return absolute path to theme file
+		 */
 		const QString& getFilePath() const { return mFilePath; }
+
+		/**
+		 * @return absolute path to style sheet
+		 */
 		const QString& getStylesheetFilePath() const;
+
+		/**
+		 * @return if the theme loaded
+		 */
 		bool isValid() const;
+
+		/**
+		 * @return theme name
+		 */
 		const QString& getName() const { return mName; }
+
+		/**
+		 * @return log color for the given level
+		 */
 		QColor getLogColor(const nap::LogLevel& lvl) const;
+
+		/**
+		 * @return specific color associated with given key
+		 */
 		QColor getColor(const QString& key) const;
+
+		/**
+		 * @return all color replacement ids
+		 */
 		const QMap<QString, QColor>& getColors() const;
+
+		/**
+		 * @return all font replacement ids
+		 */
 		const QMap<QString, QString>& getFonts() const;
-		bool reload();
 
 	private:
+		/**
+		 * Attempts to reload the theme
+		 */
+		bool reload();
+
+		/**
+		 * Loads the theme
+		 */
 		bool loadTheme();
 
 		bool mIsValid = false;
@@ -73,6 +114,7 @@ namespace napkin
 		QMap<QString, QString> mFonts;
 		bool mValid = false;
 	};
+
 
 	/**
 	 * Keep track of and allow changing the visual style of the application.
