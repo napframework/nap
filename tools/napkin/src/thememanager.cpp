@@ -55,7 +55,6 @@ bool Theme::loadTheme()
 
 	// get stylesheet
 	mName = QString::fromStdString(doc["name"].GetString());
-
 	if (doc.HasMember("stylesheet"))
 	{
 		// Stylesheet is relative to style json file
@@ -88,11 +87,31 @@ bool Theme::loadTheme()
 		return false;
 	}
 	auto colors = itCols->value.GetObject();
-	for (const auto& colpair : colors)
+	for (const auto& color : colors)
 	{
-		auto key = QString::fromStdString(colpair.name.GetString());
-		QColor col(QString::fromStdString(colpair.value.GetString()));
+		auto key = QString::fromStdString(color.name.GetString());
+		QColor col(QString::fromStdString(color.value.GetString()));
 		mColors.insert(key, col);
+	}
+
+	// Load custom fonts
+	mFonts.clear();
+	auto itFonts = doc.FindMember("fonts");
+	if (itFonts != doc.MemberEnd())
+	{
+		assert(itFonts->value.IsArray());
+		auto fonts = itFonts->value.GetArray();
+		for (const auto& font : fonts)
+		{
+			FontFamily new_family;
+			new_family.mName = font["name"].GetString();
+			for (const auto& file : font["files"].GetArray())
+			{
+				new_family.mFiles.append(file.GetString());
+			}
+
+			mFonts.insert(font["id"].GetString(), std::move(new_family));
+		}
 	}
 
 	return true;
@@ -121,6 +140,11 @@ const QMap<QString, QColor>& Theme::getColors() const
 	return mColors;
 }
 
+const QMap<QString, Theme::FontFamily>& Theme::getFonts() const
+{
+	return mFonts;
+}
+
 ThemeManager::ThemeManager()
 {
 	connect(&mFileWatcher, &QFileSystemWatcher::directoryChanged, this, &ThemeManager::onFileChanged);
@@ -130,7 +154,6 @@ ThemeManager::ThemeManager()
 
 void ThemeManager::setTheme(const Theme* theme)
 {
-	loadFonts();
 	mCurrentTheme = theme;
 	applyTheme();
 	QString themeName = "";
@@ -193,6 +216,9 @@ void ThemeManager::applyTheme()
 		return;
 	}
 
+	// Ensure fonts are loaded
+	loadFonts();
+
 	auto stylesheetFile = mCurrentTheme->getStylesheetFilename();
 	QFile file(stylesheetFile);
 	if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -214,7 +240,17 @@ void ThemeManager::applyTheme()
 		styleSheet.replace(key, color);
 	}
 
-	// Start watching for file changes
+	// Replace fonts from theme
+	const auto& theme_fonts = mCurrentTheme->getFonts();
+	for (auto it = theme_fonts.begin(); it != theme_fonts.end(); it++)
+	{
+		QString key = "@" + it.key();
+		QString font_name = it.value().mName;
+		styleSheet.replace(key, font_name);
+	}
+
+
+	// Start watching for file changes (style and theme)
 	mWatchedFilenames.clear();
 	mWatchedFilenames << QFileInfo(mCurrentTheme->getFilename()).absolutePath();
 	mWatchedFilenames << stylesheetFile;
@@ -224,6 +260,7 @@ void ThemeManager::applyTheme()
 	QApplication::setStyle(QStyleFactory::create("Fusion"));
 	app->setStyleSheet(styleSheet);
 }
+
 
 void ThemeManager::watchThemeFiles()
 {
@@ -246,28 +283,27 @@ void ThemeManager::onFileChanged(const QString& path)
 	watchThemeFiles();
 }
 
+
 void ThemeManager::loadFonts()
 {
-	if (mFontsLoaded)
-		return;
-
-	// TODO: Move this to the theme
-	QStringList fonts;
-	fonts << QRC_FONTS_MONTSERRAT_EXTRABOLD;
-	fonts << QRC_FONTS_MONTSERRAT_LIGHT;
-	fonts << QRC_FONTS_MONTSERRAT_MEDIUM;
-	fonts << QRC_FONTS_MONTSERRAT_SEMIBOLD;
-	fonts << QRC_FONTS_NUNITOSANS_EXTRABOLD;
-	fonts << QRC_FONTS_NUNITOSANS_REGULAR;
-
+	// Get fonts associated with theme and load the ones that are new
+	const auto& fonts = mCurrentTheme->getFonts();
 	for (const auto& font : fonts)
 	{
-		if (QFontDatabase::addApplicationFont(font) < 0)
-			nap::Logger::warn("Failed to load font: '%s'", font.toStdString().c_str());
+		for (const auto& font_file : font.mFiles)
+		{
+			if (!mLoadedFonts.contains(font_file))
+			{
+				if (QFontDatabase::addApplicationFont(font_file) < 0)
+				{
+					nap::Logger::warn("Failed to load font: '%s'", font_file.toStdString().c_str());
+				}
+			}
+		}
 	}
-
-	mFontsLoaded = true;
 }
+
+
 
 void ThemeManager::watchThemeDir()
 {

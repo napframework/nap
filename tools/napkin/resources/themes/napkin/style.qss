@@ -5,7 +5,7 @@ QMainWindow
 
 QWidget
 {
-    font-family: "Nunito Sans", sans-serif;
+    font-family: "@font1";
     font-size: 14px;
     selection-background-color:@front3;
     selection-color: @dark1;
@@ -56,7 +56,7 @@ QGroupBox:title {
 QDockWidget {
     color: @front4;
     border: 1px solid @header;
-    font-family: "Montserrat";
+    font-family: "@font2";
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
     /*padding: 10px;*/
@@ -133,7 +133,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 }
 
 QPushButton, QToolButton {
-    font-family: "Nunito Sans SemiBold";
+    font-family: "@font1";
     color: @dark1;
     background: @front2;
     border-radius: 2px;

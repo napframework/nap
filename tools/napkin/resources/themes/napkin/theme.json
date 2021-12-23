@@ -1,15 +1,14 @@
 {
   "name": "Napkin",
   "stylesheet": "style.qss",
-  "logColors": {
+  "logColors": 
+  {
     "fine": "#73748e",
     "debug": "#8B8CA0",
     "info": "#b0b2cb",
     "warn": "#b9918d",
     "error": "#C86969",
     "fatal": "#ff4456"
-  },
-  "fonts": {
   },
   "colors": 
   {
@@ -29,5 +28,29 @@
     "instanceProperty": "#2D2E42",
     "overriddenInstanceProperty": "#3c3d4d",
     "dimmedItem": "#5D5E73"
-  }
+  },
+  "fonts":
+  [
+    {
+      "id":"font1",
+      "name": "Nunito Sans, sans-serif",
+      "files":
+      [
+        ":/fonts/NunitoSans-ExtraBold.ttf",
+        ":/fonts/NunitoSans-Regular.ttf",
+        ":/fonts/NunitoSans-SemiBold.ttf"
+      ]
+    },
+    {
+      "id":"font2",
+      "name": "Montserrat",
+      "files":
+      [
+        ":/fonts/Montserrat-ExtraBold.ttf",
+        ":/fonts/Montserrat-Light.ttf",
+        ":/fonts/Montserrat-Medium.ttf",
+        ":/fonts/Montserrat-SemiBold.ttf"
+      ]
+    }
+  ]
 }

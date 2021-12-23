@@ -44,6 +44,13 @@ namespace napkin
 	 */
 	class Theme
 	{
+		// Font family name and associated font files to load
+		struct FontFamily
+		{
+			QString mName = "";
+			QList<QString> mFiles;
+		};
+
 	public:
 		Theme(const QString& filename);
 		Theme(const Theme&) = delete;
@@ -56,6 +63,7 @@ namespace napkin
 		QColor getLogColor(const nap::LogLevel& lvl) const;
 		QColor getColor(const QString& key) const;
 		const QMap<QString, QColor>& getColors() const;
+		const QMap<QString, FontFamily>& getFonts() const;
 
 	private:
 		bool loadTheme();
@@ -66,6 +74,7 @@ namespace napkin
 		QString mName;
 		QMap<int, QColor> mLogColors;
 		QMap<QString, QColor> mColors;
+		QMap<QString, FontFamily> mFonts;
 	};
 
 	/**
@@ -161,10 +170,10 @@ namespace napkin
 		 */
 		void watchThemeFiles();
 
-		const Theme* mCurrentTheme = nullptr; ///< The currently set theme
-		QFileSystemWatcher mFileWatcher; ///< Watch the theme file and reload if it has changed
-		bool mFontsLoaded = false; ///< keep track of loaded fonts
-		std::vector<std::unique_ptr<Theme>> mThemes; ///< All currently loaded themes
-		QSet<QString> mWatchedFilenames; ///< Keep track of the files we're watching
+		const Theme* mCurrentTheme = nullptr;			///< The currently set theme
+		QFileSystemWatcher mFileWatcher;				///< Watch the theme file and reload if it has changed
+		QSet<QString> mLoadedFonts;						///< All fonts that are loaded
+		std::vector<std::unique_ptr<Theme>> mThemes;	///< All currently loaded themes
+		QSet<QString> mWatchedFilenames;				///< Keep track of the files we're watching
 	};
 };
