@@ -24,8 +24,10 @@ namespace napkin
 		namespace color
 		{
 			inline constexpr const char* highlight					= "highlight";
-			inline constexpr const char* background					= "background";
+			inline constexpr const char* background1				= "background1";
+			inline constexpr const char* background2				= "background2";
 			inline constexpr const char* dark						= "dark";
+			inline constexpr const char* front0						= "front0";
 			inline constexpr const char* front1						= "front1";
 			inline constexpr const char* front2						= "front2";
 			inline constexpr const char* front3						= "front3";
@@ -53,6 +55,8 @@ namespace napkin
 		const QString& getName() const { return mName; }
 		QColor getLogColor(const nap::LogLevel& lvl) const;
 		QColor getColor(const QString& key) const;
+		const QMap<QString, QColor>& getColors() const;
+
 	private:
 		bool loadTheme();
 

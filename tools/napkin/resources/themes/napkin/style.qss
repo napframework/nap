@@ -8,7 +8,7 @@ QWidget
     font-family: "Nunito Sans", sans-serif;
     font-size: 14px;
     selection-background-color:@front3;
-    selection-color: @dark;
+    selection-color: @dark1;
     border: none;
 }
 
@@ -17,7 +17,7 @@ QMenuBar {
 }
 
 QMenu {
-    background-color: #343544;
+    background-color: @front0;
     color: @front3;
 }
 
@@ -31,13 +31,13 @@ QDialog, QLabel {
 QAbstractScrollArea {
     color: @front3;
     background: @background1;
-    alternate-background-color: #303144;
+    alternate-background-color: @front0;
     border: 0;
 }
 
 QHeaderView:section {
     color: @front2;
-    background-color: #252638;
+    background-color: @header;
     border: 0;
     padding-left: 4px;
 }
@@ -45,17 +45,17 @@ QHeaderView:section {
 QGroupBox {
     border: 0;
     margin-top: 22px;
-    background-color: #999;
+    background-color: @front3;
 }
 
 QGroupBox:title {
-    color: #444;
-    background-color: #999;
+    color: @dark2;
+    background-color: @front3;
 }
 
 QDockWidget {
-    color: #b0b2cb;
-    border: 1px solid #444;
+    color: @front4;
+    border: 1px solid @header;
     font-family: "Montserrat";
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
@@ -95,24 +95,24 @@ QLineEdit {
     border-radius: 0px;
     padding-left: 3px;
     padding-right: 10px;
-    background: #171b33;
+    background: @dark2;
     color: @front3;
 }
 
 QLineEdit:focus {
     color: @front3;
-    background: @dark;
+    background: @dark1;
 }
 
 QScrollBar:horizontal,
 QScrollBar:vertical {
     border-radius: 0px;
-    background: #252638;
+    background: @header;
 }
 
 QScrollBar::handle:horizontal,
 QScrollBar::handle:vertical {
-    background: #343544;
+    background: @front0;
     border-radius: 0px;
 }
 QScrollBar::handle:horizontal:hover,
@@ -134,7 +134,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 
 QPushButton, QToolButton {
     font-family: "Nunito Sans SemiBold";
-    color: @dark;
+    color: @dark1;
     background: @front2;
     border-radius: 2px;
     margin: 2px;
@@ -146,12 +146,12 @@ QPushButton:hover {
     background: @front3;
 }
 QPushButton:pressed {
-    background: @dark;
+    background: @dark1;
     color: @front3;
 }
 QPushButton:!enabled {
-    background-color: #171b33;
-    color: @dark;
+    background-color: @dark2;
+    color: @dark1;
 }
 
 QTabBar {
@@ -160,19 +160,19 @@ QTabBar {
 
 QTabBar:tab {
     padding: 2px 6px 2px 6px;
-    color: #b0b2cb;
+    color: @front4;
     background: @front2;
     border: 0;
 }
 
 QTabBar:tab::!selected {
     color: @front3;
-    background: #45465a;
+    background: @front0;
 }
 
 QStatusBar {
-    color: #AAA;
-    background: #555;
+    color: @front3;
+    background: @status;
 }
 
 QGraphicsView {

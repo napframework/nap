@@ -116,6 +116,11 @@ QColor Theme::getColor(const QString& key) const
 	return {};
 }
 
+const QMap<QString, QColor>& Theme::getColors() const
+{
+	return mColors;
+}
+
 ThemeManager::ThemeManager()
 {
 	connect(&mFileWatcher, &QFileSystemWatcher::directoryChanged, this, &ThemeManager::onFileChanged);
@@ -167,7 +172,6 @@ const std::vector<std::unique_ptr<Theme>>& ThemeManager::getAvailableThemes()
 {
 	if (mThemes.empty())
 		loadThemes();
-
 	return mThemes;
 }
 
@@ -176,6 +180,7 @@ const QString ThemeManager::getThemeDir() const
 	// TODO: This probably needs to be configurable
 	return QString("%1/%2").arg(QCoreApplication::applicationDirPath(), theme::directory);
 }
+
 
 void ThemeManager::applyTheme()
 {
@@ -197,14 +202,23 @@ void ThemeManager::applyTheme()
 	}
 
 	QTextStream in(&file);
-	auto styleSheet = in.readAll();
+	QString styleSheet = in.readAll();
 	file.close();
+
+	// Replace colors from theme
+	const auto& theme_colors = mCurrentTheme->getColors();
+	for (auto it = theme_colors.begin(); it != theme_colors.end(); it++)
+	{
+		QString key = "@" + it.key();
+		QString color = it.value().name();
+		styleSheet.replace(key, color);
+	}
 
 	// Start watching for file changes
 	mWatchedFilenames.clear();
+	mWatchedFilenames << QFileInfo(mCurrentTheme->getFilename()).absolutePath();
 	mWatchedFilenames << stylesheetFile;
 	mWatchedFilenames << mCurrentTheme->getFilename();
-	mWatchedFilenames << QFileInfo(mCurrentTheme->getFilename()).absolutePath();
 	watchThemeFiles();
 
 	QApplication::setStyle(QStyleFactory::create("Fusion"));
@@ -215,6 +229,7 @@ void ThemeManager::watchThemeFiles()
 {
 	for (const auto& filename : mWatchedFilenames)
 	{
+		std::string path = filename.toStdString();
 		mFileWatcher.addPath(filename);
 	}
 }
@@ -223,13 +238,11 @@ void ThemeManager::watchThemeFiles()
 void ThemeManager::onFileChanged(const QString& path)
 {
 	auto theme_filename = getCurrentTheme()->getStylesheetFilename();
-
 	if (QFileInfo(path).filePath() == theme_filename)
 	{
 		nap::Logger::info("Reloading: %s", path.toStdString().c_str());
 		applyTheme();
 	}
-
 	watchThemeFiles();
 }
 
@@ -300,4 +313,3 @@ QColor ThemeManager::getColor(const QString& key) const
 		return mCurrentTheme->getColor(key);
 	return {};
 }
-
