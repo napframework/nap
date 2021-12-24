@@ -30,6 +30,7 @@ namespace nap
 		DECLARE_COMPONENT(ComputeComponent, ComputeComponentInstance)
 	public:
 		ComputeMaterialInstanceResource		mComputeMaterialInstanceResource;	///< Property 'ComputeMaterialInstance' The compute material instance resource
+		uint								mInvocations = 1;
 	};
 
 	/**
@@ -52,18 +53,16 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Update
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**
-		 * Syncs the graphics queue with this compute shader.
-		 * The vertex shader input stage of the current frame will not be executed until the compute shader stage is finished.
-		 * Useful when compute shaders modify resources that are read by graphics shaders.
+		 * Compute
 		 * @param numInvocations the number of compute shader invocations
 		 * @return if the compute work was submitted to the compute queue successfully.
 		 */
-		virtual bool compute(uint numInvocations, utility::ErrorState& errorState);
+		virtual void compute(uint numInvocations);
+
+		/**
+		 * 
+		 */
+		virtual void compute()											{ compute(mInvocations); }
 
 		/**
 		 * @return current material used when drawing the mesh.
@@ -75,8 +74,19 @@ namespace nap
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
+		/**
+		 * 
+		 */
+		void setInvocations(uint numInvocations)						{ mInvocations = numInvocations; }
+
+		/**
+		 * 
+		 */
+		uint getInvocations() const										{ return mInvocations; }
+
 	protected:
 		RenderService*						mRenderService = nullptr;
 		ComputeMaterialInstance				mComputeMaterialInstance;
+		uint								mInvocations = 1;
 	};
 }

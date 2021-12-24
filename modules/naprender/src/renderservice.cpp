@@ -6,6 +6,7 @@
 #include "renderservice.h"
 #include "renderablemeshcomponent.h"
 #include "rendercomponent.h"
+#include "computecomponent.h"
 #include "renderwindow.h"
 #include "transformcomponent.h"
 #include "cameracomponent.h"
@@ -1442,6 +1443,25 @@ namespace nap
 				continue;
 			}
 			comp->draw(renderTarget, mCurrentCommandBuffer, view_matrix, projection_matrix);
+		}
+	}
+
+
+	void RenderService::computeObjects(const std::vector<ComputeComponentInstance*>& components_to_compute)
+	{
+		assert(isComputeAvailable());
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
+
+		VkMemoryBarrier barrier;
+		barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		barrier.pNext = VK_NULL_HANDLE;
+
+		for (auto* comp : components_to_compute)
+		{
+			comp->compute();
+			vkCmdPipelineBarrier(mCurrentCommandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 		}
 	}
 

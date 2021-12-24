@@ -12,7 +12,8 @@
 
 // nap::ComputeComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ComputeComponent)
-	RTTI_PROPERTY("ComputeMaterialInstance", &nap::ComputeComponent::mComputeMaterialInstanceResource, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComputeMaterialInstance",	&nap::ComputeComponent::mComputeMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Invocations",				&nap::ComputeComponent::mInvocations,						nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::ComputeComponentInstance run time class definition 
@@ -42,20 +43,17 @@ namespace nap
 		if (!errorState.check(mComputeMaterialInstance.init(*mRenderService, resource->mComputeMaterialInstanceResource, errorState), utility::stringFormat("%s: Failed to initialize ComputeMaterialInstance", mID.c_str())))
 			return false;
 
+		mInvocations = resource->mInvocations;
+
 		return true;
 	}
 
 
-	void ComputeComponentInstance::update(double deltaTime)
-	{
-
-	}
-
-
-	bool ComputeComponentInstance::compute(uint numInvocations, utility::ErrorState& errorState)
+	void ComputeComponentInstance::compute(uint numInvocations)
 	{
 		// Fetch and bind pipeline
-		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, errorState);
+		utility::ErrorState error_state;
+		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, error_state);
 		vkCmdBindPipeline(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
 
 		VkDescriptorSet descriptor_set = mComputeMaterialInstance.update();
@@ -66,7 +64,5 @@ namespace nap
 		// Dispatch compute work with a single group dimension
 		uint group_count_x = math::ceil(numInvocations / getLocalWorkGroupSize().x);
 		vkCmdDispatch(mRenderService->getCurrentCommandBuffer(), group_count_x, 1, 1);
-
-		return true;
 	}
 } 

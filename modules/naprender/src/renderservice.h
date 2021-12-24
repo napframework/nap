@@ -31,6 +31,7 @@ namespace nap
 	class IMesh;
 	class MaterialInstance;
 	class ComputeMaterialInstance;
+	class ComputeComponentInstance;
 	class Texture2D;
 	class BaseGPUBuffer;
 
@@ -454,6 +455,11 @@ namespace nap
 		* @param sortFunction The function used to sort the components to render
 		*/
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+
+		/**
+		 * 
+		 */
+		void computeObjects(const std::vector<ComputeComponentInstance*>& comps);
 
 		/**
 		 * Add a new window as target to the render engine.
