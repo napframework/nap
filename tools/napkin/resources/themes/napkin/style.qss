@@ -17,7 +17,7 @@ QMenuBar {
 }
 
 QMenu {
-    background-color: @front0;
+    background-color: @front1;
     color: @front3;
 }
 
@@ -31,7 +31,7 @@ QDialog, QLabel {
 QAbstractScrollArea {
     color: @front3;
     background: @background1;
-    alternate-background-color: @front0;
+    alternate-background-color: @front1;
     border: 0;
 }
 
@@ -112,7 +112,7 @@ QScrollBar:vertical {
 
 QScrollBar::handle:horizontal,
 QScrollBar::handle:vertical {
-    background: @front0;
+    background: @front1;
     border-radius: 0px;
 }
 QScrollBar::handle:horizontal:hover,
@@ -167,7 +167,7 @@ QTabBar:tab {
 
 QTabBar:tab::!selected {
     color: @front3;
-    background: @front0;
+    background: @front1;
 }
 
 QStatusBar {
