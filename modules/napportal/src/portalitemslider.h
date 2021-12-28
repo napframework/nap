@@ -73,12 +73,11 @@ namespace nap
 	// Portal Item Slider Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using PortalItemSliderFloat		= PortalItemSlider<float>;
-	using PortalItemSliderInt		= PortalItemSlider<int>;
-	using PortalItemSliderChar		= PortalItemSlider<char>;
 	using PortalItemSliderByte		= PortalItemSlider<uint8_t>;
-	using PortalItemSliderDouble	= PortalItemSlider<double>;
+	using PortalItemSliderInt		= PortalItemSlider<int>;
 	using PortalItemSliderLong		= PortalItemSlider<int64_t>;
+	using PortalItemSliderFloat		= PortalItemSlider<float>;
+	using PortalItemSliderDouble	= PortalItemSlider<double>;
 
 
 	//////////////////////////////////////////////////////////////////////////
