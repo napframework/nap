@@ -1,7 +1,8 @@
 {
   "name": "Napkin",
   "stylesheet": "style.qss",
-  "logColors": {
+  "logColors": 
+  {
     "fine": "#73748e",
     "debug": "#8B8CA0",
     "info": "#b0b2cb",
@@ -9,12 +10,27 @@
     "error": "#C86969",
     "fatal": "#ff4456"
   },
-  "fonts": {
-  },
-  "colors": {
+  "colors": 
+  {
+    "highlight": "#C86969",
+    "background1": "#2D2E42",
+    "background2": "#3C3d4D",
+    "dark1": "#111426",
+    "dark2": "#171b33",
+    "front1": "#343544",
+    "front2": "#5D5E73",
+    "front3": "#8B8CA0",
+    "front4": "#B0B2CB",
+    "header": "#252638",
+    "status": "#444",
     "componentWithOverrides": "#3c3d4d",
     "instanceProperty": "#2D2E42",
     "overriddenInstanceProperty": "#3c3d4d",
     "dimmedItem": "#5D5E73"
+  },
+  "fonts":
+  {
+    "font1": "Nunito Sans, sans-serif",
+    "font2": "Montserrat"
   }
 }

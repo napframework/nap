@@ -6,10 +6,10 @@
 
 // Local Includes
 #include "imgui/imgui.h"
+#include "imguiicon.h"
 
 // External includes
 #include <nap/service.h>
-#include <utility/dllexport.h>
 #include <renderwindow.h>
 #include <inputevent.h>
 #include <nap/resourceptr.h>
@@ -22,11 +22,6 @@ struct ImGuiContext;
 
 namespace nap
 {
-	namespace gui
-	{
-		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
-	}
-
 	// Forward Declares
 	class RenderService;
 	class Display;
@@ -34,7 +29,51 @@ namespace nap
 	class IMGuiService;
 
 	/**
-	 * Configurable palette of ImGUI colors
+	 * All available (default) icons: managed by the IMGuiService and guaranteed to exist.
+	 * Use these names as identifier to look up a specific icon inside a module or application.
+	 * 
+	 * To consider: If this method of identification causes naming conflicts in the future,
+	 * consider introducing explicit icon classes or coupling icons to modules instead.
+	 * This will increase binary size but prevents name clashes if a module loads 
+	 * icons with duplicate names, which currently is not allowed.
+	 */
+	namespace icon
+	{
+		inline constexpr const char* save		= "save.png";
+		inline constexpr const char* saveAs		= "save_as.png";
+		inline constexpr const char* cancel		= "cancel.png";
+		inline constexpr const char* ok			= "ok.png";
+		inline constexpr const char* del		= "delete.png";
+		inline constexpr const char* file		= "file.png";
+		inline constexpr const char* help		= "help.png";
+		inline constexpr const char* settings	= "settings.png";
+		inline constexpr const char* reload		= "reload.png";
+		inline constexpr const char* folder		= "folder.png";
+		inline constexpr const char* load		= "load.png";
+		inline constexpr const char* info		= "info.png";
+		inline constexpr const char* warning	= "warning.png";
+		inline constexpr const char* error		= "error.png";
+		inline constexpr const char* copy		= "copy.png";
+		inline constexpr const char* paste		= "paste.png";
+		inline constexpr const char* insert		= "insert.png";
+		inline constexpr const char* edit		= "edit.png";
+		inline constexpr const char* remove		= "remove.png";
+		inline constexpr const char* add		= "add.png";
+		inline constexpr const char* change		= "change.png";
+	}
+
+
+	/**
+	 * GUI globals
+	 */
+	namespace gui
+	{
+		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+	}
+
+
+	/**
+	 * Configurable palette of GUI colors
 	 */
 	struct NAPAPI IMGuiColorPalette
 	{
@@ -49,7 +88,7 @@ namespace nap
 
 
 	/**
-	 * ImGUI configuration options
+	 * GUI configuration options
 	 */
 	class NAPAPI IMGuiServiceConfiguration : public ServiceConfiguration
 	{
@@ -72,41 +111,6 @@ namespace nap
 	 * 
 	 * Only call selectWindow() on application update, not when rendering the GUI to screen.
 	 * The service automatically creates a new GUI frame before application update.
-	 *
-	 * MyApp::update(double deltaTime):
-	 * ~~~~~{.cpp}
-	 *	mGuiService->selectWindow(mRenderWindowOne);
-	 *	ImGui::Begin("GUI Window One");
-	 *	...
-	 *	ImGui::End();
-	 *
-	 *	mGuiService->selectWindow(mRenderWindowTwo);
-	 *	ImGui::Begin("GUI Window Two");
-	 *	...
-	 *	ImGui::End();
-	 * ~~~~~
-	 *
-	 * MyApp::render()
-	 * ~~~~~{.cpp}
-	 *	mRenderService->beginFrame();
-	 *	if (mRenderService->beginRecording(*mRenderWindowOne))
-	 *	{
-	 *		mRenderWindowOne->beginRendering();
-	 *		mGuiService->draw();
-	 *		mRenderWindowOne->endRendering();
-	 *		mRenderService->endRecording();
-	 *	}
-	 *
-	 *	// Draw gui window 2
-	 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
-	 *	{
-	 *		mRenderWindowTwo->beginRendering();
-	 *		mGuiService->draw();
-	 *		mRenderWindowTwo->endRendering();
-	 *		mRenderService->endRecording();
-	 *	}
-	 *	mRenderService->endFrame();
-	 * ~~~~~
 	 */
 	class NAPAPI IMGuiService : public Service
 	{
@@ -223,7 +227,46 @@ namespace nap
 		 * ~~~~~
 		 * @return Vulkan texture handle, used to display a texture in ImGUI
 		 */
-		ImTextureID getTextureHandle(nap::Texture2D& texture);
+		ImTextureID getTextureHandle(const nap::Texture2D& texture) const;
+
+		/**
+		 * Returns an icon with the given name and extension.
+		 * Note that the icon must exist. Only ask for icons with their 
+		 * names explicitly declared in code, for example: 'icon::save'
+		 * ~~~~~{.cpp}
+		 *	if (ImGui::ImageButton(gui_service.getIcon(icon::ok)))
+		 *	{
+		 *		...
+		 *	}
+		 * ~~~~~
+		 * @param name the name, including extension, of the icon to load
+		 * @return icon with the given name
+		 */
+		nap::Icon& getIcon(std::string&& name);
+
+		/**
+		 * Create and add an icon to the default set of icons.
+		 * The system looks for the icon in the data search paths of the module.
+		 * On success call getIcon() to retrieve and draw the icon.
+		 * 
+		 * Call this function on initialization of your service and make sure your icon names are unique.
+		 * Duplicates are not allowed!
+		 * 
+		 * ~~~~~{.cpp}
+		 *	const auto& icon_names = icon::sequencer::get();
+		 *	for (const auto& icon_name : icon_names)
+		 *	{
+		 *		if (!mGuiService->loadIcon(icon_name, this->getModule(), errorState))
+		 *			return false;
+		 *	}
+		 * ~~~~~
+		 * 
+		 * @param name the name of the icon, including extension
+		 * @param module the module that points to the icon
+		 * @param error contains the error message if the load operations fails
+         * @return if the icon is loaded and added to system defaults
+         */
+		bool loadIcon(const std::string& name, const nap::Module& module, utility::ErrorState& error);
 
 	protected:
 		/**
@@ -252,9 +295,17 @@ namespace nap
 		virtual void postUpdate(double deltaTime) override;
 
 		/**
+		 * Saves all gui .ini files
+		 */
+		virtual void preShutdown() override;
+
+		/**
 		 *	Deletes all GUI related resources
 		 */
 		virtual void shutdown() override;
+
+	protected:
+		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
 		/**
@@ -315,7 +366,7 @@ namespace nap
 		void pushScale(GUIContext& context, const Display& display);
 
 		RenderService* mRenderService = nullptr;
-		std::unordered_map<Texture2D*, VkDescriptorSet> mDescriptors;
+		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
@@ -323,5 +374,8 @@ namespace nap
 		IMGuiServiceConfiguration* mConfiguration = nullptr;
 		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
 		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
+
+		// Icons
+		std::unordered_map<std::string, std::unique_ptr<Icon>> mIcons;
 	};
 }

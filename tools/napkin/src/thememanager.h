@@ -13,39 +13,108 @@
 
 namespace napkin
 {
-	inline constexpr const char* themeFilename = "theme.json";
-	inline constexpr const char* themeSubDirectory = "resources/themes";
-	inline constexpr const char* themeColComponentWidthOverrides = "componentWithOverrides";
-	inline constexpr const char* themeColInstanceProperty = "instanceProperty";
-	inline constexpr const char* themeColOverriddenInstanceProperty = "overriddenInstanceProperty";
-	inline constexpr const char* themeColDimmedItem = "dimmedItem";
+	class ThemeManager;
+
+	/**
+	 * Theme Globals
+	 */
+	namespace theme
+	{
+		inline constexpr const char* filename = "theme.json";
+		inline constexpr const char* directory = "resources/themes";
+
+		namespace color
+		{
+			inline constexpr const char* componentoverride			= "componentWithOverrides";
+			inline constexpr const char* instanceProperty			= "instanceProperty";
+			inline constexpr const char* overriddenInstanceProperty = "overriddenInstanceProperty";
+			inline constexpr const char* dimmedItem					= "dimmedItem";
+		}
+	}
+
+
+	/**
+	 * Fonts Globals
+	 */
+	namespace font
+	{
+		inline constexpr const char* directory = "resources/fonts";
+		inline constexpr const char* extension = "*.ttf";
+	}
+
 
 	/**
 	 * Represents one theme
 	 */
 	class Theme
 	{
+		friend class ThemeManager;
 	public:
 		Theme(const QString& filename);
 		Theme(const Theme&) = delete;
 		Theme& operator=(const Theme&) = delete;
 
-		const QString& getFilename() const { return mFilename; }
-		const QString& getStylesheetFilename() const;
+		/**
+		 * @return absolute path to theme file
+		 */
+		const QString& getFilePath() const { return mFilePath; }
+
+		/**
+		 * @return absolute path to style sheet
+		 */
+		const QString& getStylesheetFilePath() const;
+
+		/**
+		 * @return if the theme loaded
+		 */
 		bool isValid() const;
+
+		/**
+		 * @return theme name
+		 */
 		const QString& getName() const { return mName; }
+
+		/**
+		 * @return log color for the given level
+		 */
 		QColor getLogColor(const nap::LogLevel& lvl) const;
+
+		/**
+		 * @return specific color associated with given key
+		 */
 		QColor getColor(const QString& key) const;
+
+		/**
+		 * @return all color replacement ids
+		 */
+		const QMap<QString, QColor>& getColors() const;
+
+		/**
+		 * @return all font replacement ids
+		 */
+		const QMap<QString, QString>& getFonts() const;
+
 	private:
+		/**
+		 * Attempts to reload the theme
+		 */
+		bool reload();
+
+		/**
+		 * Loads the theme
+		 */
 		bool loadTheme();
 
 		bool mIsValid = false;
-		QString mStylesheetFilename;
-		const QString mFilename;
+		QString mStylesheetFilePath;
+		const QString mFilePath;
 		QString mName;
 		QMap<int, QColor> mLogColors;
 		QMap<QString, QColor> mColors;
+		QMap<QString, QString> mFonts;
+		bool mValid = false;
 	};
+
 
 	/**
 	 * Keep track of and allow changing the visual style of the application.
@@ -54,19 +123,22 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-
 		ThemeManager();
+
+		/**
+         * @return The directory containing the themes
+         */
+		static QString getThemeDir();
+
+		/**
+		 * @return The directory that contains all the font files
+		 */
+		static QString getFontDir();
 
         /**
          * @return A list of available theme names
          */
 		const std::vector<std::unique_ptr<Theme>>& getAvailableThemes();
-
-        /**
-         * Set apply the specified theme by name.
-         * @param theme The name of the theme
-         */
-		void setTheme(const Theme* theme);
 
 		/**
 		 * @param name the name of the theme
@@ -78,17 +150,12 @@ namespace napkin
 		 * @param name the name of the theme to be found
 		 * @return the theme with the given name or nullptr if no theme with that name could be found
 		 */
-		const Theme* getTheme(const QString& name);
+		const Theme* findTheme(const QString& name) const;
 
         /**
-         * @return The name of the currently set theme
+         * @return The currently set theme
          */
 		const Theme* getCurrentTheme() const;
-
-        /**
-         * @return The directory containing the themes
-         */
-		const QString getThemeDir() const;
 
 		/**
 		 * @return The color for the log level in the current theme
@@ -113,6 +180,19 @@ namespace napkin
         void themeChanged(const Theme* theme);
 
 	private:
+
+		/**
+         * Set apply the specified theme by name.
+         * @param theme The name of the theme
+         */
+		void setTheme(Theme* theme);
+
+		/**
+		 * Find the theme with the given name
+		 * @param name the name of the theme to be found
+		 * @return the theme with the given name or nullptr if no theme with that name could be found
+		 */
+		Theme* findTheme(const QString& name);
 
 		/**
 		 * Load all themes from the theme directory
@@ -140,10 +220,10 @@ namespace napkin
 		 */
 		void watchThemeFiles();
 
-		const Theme* mCurrentTheme = nullptr; ///< The currently set theme
-		QFileSystemWatcher mFileWatcher; ///< Watch the theme file and reload if it has changed
-		bool mFontsLoaded = false; ///< keep track of loaded fonts
-		std::vector<std::unique_ptr<Theme>> mThemes; ///< All currently loaded themes
-		QSet<QString> mWatchedFilenames; ///< Keep track of the files we're watching
+		Theme* mCurrentTheme = nullptr;					///< The currently set theme
+		QFileSystemWatcher mFileWatcher;				///< Watch the theme file and reload if it has changed
+		QSet<QString> mLoadedFonts;						///< All fonts that are loaded
+		std::vector<std::unique_ptr<Theme>> mThemes;	///< All currently loaded themes
+		QSet<QString> mWatchedFilenames;				///< Keep track of the files we're watching
 	};
 };

@@ -404,6 +404,7 @@ macro(package_project_into_release DEST_DIR)
             PATTERN "*.mesh" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE
             PATTERN "*.plist" EXCLUDE
+            PATTERN "*.ini" EXCLUDE
             )
     install(FILES ${NAP_ROOT}/dist/cmake/native/project_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
 
@@ -451,6 +452,11 @@ macro(package_module)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dist/cmake/ DESTINATION modules/${PROJECT_NAME}/)
     endif()
 
+    # If the module has an extra data directory package it
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION modules/${PROJECT_NAME})
+    endif()
+
     # Package library
     if (WIN32)
         install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION modules/${PROJECT_NAME}/lib/$<CONFIG>
@@ -476,7 +482,7 @@ macro(package_module)
     else()
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME ${PROJECT_NAME}.json)
     endif()
-   
+
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we 
     # install the target above due to ordering of install_name_tool calling)
     set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")

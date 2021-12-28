@@ -15,13 +15,17 @@
 
 namespace nap
 {
-	/**
-	 * Event track, holds a collection of SequenceTrackSegmentEvents
-	 */
-	class NAPAPI SequenceTrackEvent : public SequenceTrack
-	{
-		RTTI_ENABLE(SequenceTrack)
-	public:
-         virtual ~SequenceTrackEvent(){};
-	};
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Event track, holds a collection of SequenceTrackSegmentEvents
+     */
+    class NAPAPI SequenceTrackEvent : public SequenceTrack
+    {
+        RTTI_ENABLE(SequenceTrack)
+    public:
+        virtual ~SequenceTrackEvent()
+        {
+        };
+    };
 }

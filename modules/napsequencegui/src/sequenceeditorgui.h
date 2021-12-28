@@ -18,11 +18,10 @@
 #include <nap/resourceptr.h>
 #include <renderwindow.h>
 #include <rtti/objectptr.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequenceEditorGUIView;
 	class SequenceEditorView;
@@ -58,7 +57,6 @@ namespace nap
 		 */
 		SequenceGUIService& getService()	{ return mService; }
 
-	public:
 		// properties
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
@@ -95,7 +93,8 @@ namespace nap
 		 */
 		virtual void show();
 
-		SequenceGUIService& getService(){ return mService; }
+		SequenceGUIService& getService()	{ return mService; }
+
 	protected:
 		/**
 		 * Draws the tracks of the sequence
@@ -175,16 +174,6 @@ namespace nap
 		 */
 		void handleInsertMarkerPopup();
 
-		/**
-		 * handle no action, when mouse is pressed, ignore any following actions in sequencer window
-		 */
-		void handleNone();
-
-		/**
-		 * when mouse is released, switch back to None action
-		 */
-		 void handleNonePressed();
-
 		 /**
 		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
 		  */
@@ -201,7 +190,10 @@ namespace nap
 		  * @param action the handler function
 		  */
 		 void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
+
 	protected:
+        void registerActionHandlers();
+
 		// reference to editor
 		SequenceEditor& mEditor;
 

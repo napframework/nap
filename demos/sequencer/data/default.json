@@ -1,6 +1,27 @@
 {
     "Objects": [
         {
+            "Type": "nap::Entity",
+            "mID": "AudioEntity",
+            "Components": [
+                {
+                    "Type": "nap::audio::SequencePlayerAudioOutputComponent",
+                    "mID": "SequencePlayerAudioOutputComponent",
+                    "Sequence Player Audio Output": "SequencePlayerAudioOutput"
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "mID": "AudioOutputComponent",
+                    "Input": "./SequencePlayerAudioOutputComponent",
+                    "Routing": [
+                        0,
+                        1
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": false,
@@ -101,7 +122,12 @@
         {
             "Type": "nap::Scene",
             "mID": "Scene",
-            "Entities": []
+            "Entities": [
+                {
+                    "Entity": "AudioEntity",
+                    "InstanceProperties": []
+                }
+            ]
         },
         {
             "Type": "nap::SequenceEditor",
@@ -147,9 +173,26 @@
                     "mID": "Int Output",
                     "Parameter": "Int",
                     "Use Main Thread": true
+                },
+                {
+                    "Type": "nap::SequencePlayerAudioOutput",
+                    "mID": "SequencePlayerAudioOutput",
+                    "Audio Buffers": [
+                        "AudioFileResource"
+                    ],
+                    "Manual Routing": true,
+                    "Max Channels": 2
                 }
             ],
-            "Frequency": 1000.0
+            "Clock": {
+                "Type": "nap::SequencePlayerAudioClock",
+                "mID": "SequencePlayerAudioClock"
+            }
+        },
+        {
+            "Type": "nap::audio::AudioFileResource",
+            "mID": "AudioFileResource",
+            "AudioFilePath": "hang.mp3"
         }
     ]
 }
