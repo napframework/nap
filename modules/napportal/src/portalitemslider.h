@@ -128,7 +128,7 @@ namespace nap
 	APIEventPtr PortalItemSlider<T>::getDescriptor()
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
-		event->addArgument<APIString>(nap::portal::itemTypeArgName, nap::portal::itemTypeSlider);
+		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
 		event->addArgument<APIValue<T>>(nap::portal::itemMinArgName, mParameter->mMinimum);
 		event->addArgument<APIValue<T>>(nap::portal::itemMaxArgName, mParameter->mMaximum);

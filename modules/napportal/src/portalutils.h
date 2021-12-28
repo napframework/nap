@@ -19,11 +19,10 @@ namespace nap
 		inline constexpr const char* eventTypeResponse = "EPortalEventType::Response";	///< Value of the portal event type argument that maps to EPortalEventType::Response
 		inline constexpr const char* eventTypeUpdate = "EPortalEventType::Update";		///< Value of the portal event type argument that maps to EPortalEventType::Update
 		inline constexpr const char* eventTypeInvalid = "EPortalEventType::Invalid";	///< Value of the portal event type argument that maps to EPortalEventType::Invalid
-		inline constexpr const char* itemTypeArgName = "item_type";						///< Name of the argument containing the portal item type in the portal item message
-		inline constexpr const char* itemTypeSlider = "nap::PortalItemSlider";			///< Value of the portal item type that correspond with nap::PortalItemSlider 
-		inline constexpr const char* itemValueArgName = "item_value";					///< Name of the argument containing the portal item value in the portal item message
-		inline constexpr const char* itemMinArgName = "item_min";						///< Name of the argument containing the minimum portal item value in the portal item message
-		inline constexpr const char* itemMaxArgName = "item_max";						///< Name of the argument containing the maximum portal item value in the portal item message
+		inline constexpr const char* itemTypeArgName = "portal_item_type";				///< Name of the argument containing the portal item type in the portal item message
+		inline constexpr const char* itemValueArgName = "portal_item_value";			///< Name of the argument containing the portal item value in the portal item message
+		inline constexpr const char* itemMinArgName = "portal_item_min";				///< Name of the argument containing the minimum portal item value in the portal item message
+		inline constexpr const char* itemMaxArgName = "portal_item_max";				///< Name of the argument containing the maximum portal item value in the portal item message
 	}
 
 	/**
