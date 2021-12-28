@@ -108,18 +108,13 @@ namespace nap
 	}
 
 
-	void nap::PortalComponentInstance::onItemUpdate(const APIEvent& event)
+	void nap::PortalComponentInstance::onItemUpdate(const PortalItem& item)
 	{
-		// Create a copy of the API event to send with the portal event
-		APIEventPtr event_copy = std::make_unique<APIEvent>(event.getName(), event.getID());
-		for (const auto& argument : event.getArguments())
-			event_copy->addArgument(*argument);
-
 		// Create the portal event for the portal item update
 		const std::string& portal_id = getComponent()->mID;
-		PortalEventHeader portal_header = { event.getID(), portal_id, EPortalEventType::Update };
+		PortalEventHeader portal_header = { item.mID, portal_id, EPortalEventType::Update };
 		PortalEventPtr portal_event = std::make_unique<PortalEvent>(portal_header);
-		portal_event->addAPIEvent(std::move(event_copy));
+		portal_event->addAPIEvent(std::move(item.getValue()));
 
 		// Broadcast update to connected clients
 		utility::ErrorState error;

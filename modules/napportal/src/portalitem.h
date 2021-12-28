@@ -34,17 +34,17 @@ namespace nap
 		 * Gets the descriptor as an API event. Implementation differs per derived class.
 		 * @return the descriptor of the portal item as an API event
 		 */
-		virtual APIEventPtr getDescriptor() = 0;
+		virtual APIEventPtr getDescriptor() const = 0;
 
 		/**
 		 * Gets the current value as an API event. Implementation differs per derived class.
 		 * @return the current value of the portal item as an API event
 		 */
-		virtual APIEventPtr getValue() = 0;
+		virtual APIEventPtr getValue() const = 0;
 
 		/**
 		 * Occurs when the portal item signals connected clients of an update
 		 */
-		Signal<const APIEvent&> updateSignal;
+		Signal<const PortalItem&> updateSignal;
 	};
 }

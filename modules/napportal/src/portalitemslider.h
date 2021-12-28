@@ -47,12 +47,12 @@ namespace nap
 		/**
 		 * @return the descriptor of the portal item as an API event
 		 */
-		virtual APIEventPtr getDescriptor() override;
+		virtual APIEventPtr getDescriptor() const override;
 
 		/**
 		 * @return the current value of the portal item as an API event
 		 */
-		virtual APIEventPtr getValue() override;
+		virtual APIEventPtr getValue() const override;
 
 		/**
 		 * Called when the parameter value changes, sends the update as an API event
@@ -111,8 +111,7 @@ namespace nap
 			return;
 
 		mRetainedValue = value;
-		APIEventPtr event = getValue();
-		updateSignal(*event);
+		updateSignal(*this);
 	}
 
 	template<typename T>
@@ -136,7 +135,7 @@ namespace nap
 	}
 
 	template<typename T>
-	APIEventPtr PortalItemSlider<T>::getDescriptor()
+	APIEventPtr PortalItemSlider<T>::getDescriptor() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
@@ -147,7 +146,7 @@ namespace nap
 	}
 
 	template<typename T>
-	APIEventPtr PortalItemSlider<T>::getValue()
+	APIEventPtr PortalItemSlider<T>::getValue() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);

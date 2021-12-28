@@ -94,7 +94,7 @@ namespace nap
 		 * Called when a portal item sends an update event
 		 * @param event the update sent by the portal item
 		 */
-		virtual void onItemUpdate(const APIEvent& event);
+		virtual void onItemUpdate(const PortalItem& item);
 
 		PortalService* mService = nullptr;						///< Handle to the portal service
 		PortalWebSocketServer* mServer = nullptr;				///< Handle to the portal WebSocket server
@@ -104,6 +104,6 @@ namespace nap
 		/**
 		* Slot which is called when a portal item sends an update event
 		*/
-		Slot<const APIEvent&> mItemUpdateSlot = { this, &PortalComponentInstance::onItemUpdate };
+		Slot<const PortalItem&> mItemUpdateSlot = { this, &PortalComponentInstance::onItemUpdate };
 	};
 }
