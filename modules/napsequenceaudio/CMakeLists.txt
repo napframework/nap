@@ -44,7 +44,6 @@ elseif(UNIX)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/libsndfile/lib)
 endif()
-package_module()
 
 # Package into platform release
 package_module()
