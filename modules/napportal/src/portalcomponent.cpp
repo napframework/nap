@@ -82,6 +82,10 @@ namespace nap
 
 	bool PortalComponentInstance::processUpdate(PortalEvent& event, utility::ErrorState& error)
 	{
+		// Create a new portal event to notify other clients of the update
+		PortalEventHeader portal_header = { event.getID(), event.getPortalID(), EPortalEventType::Update };
+		PortalEventPtr portal_event = std::make_unique<PortalEvent>(portal_header);
+
 		// Try to pass each API event to a portal item
 		for (const auto& api_event : event.getAPIEvents())
 		{
@@ -90,9 +94,16 @@ namespace nap
 			if (!error.check(mItemMap.count(portal_item_id) == 1, "%s: does not contain portal item %s", getComponent()->mID.c_str(), portal_item_id.c_str()))
 				continue;
 
-			mItemMap.at(portal_item_id)->processUpdate(*api_event, error);
+			// Update the item and add value to portal event if successful
+			const auto& item = mItemMap.at(portal_item_id);
+			if (item->processUpdate(*api_event, error))
+				portal_event->addAPIEvent(item->getValue());
 		}
 
+		// Broadcast update to connected clients
+		mServer->broadcast(std::move(portal_event), error);
+
+		// Done, check if we had errors
 		return !error.hasErrors();
 	}
 
