@@ -33,16 +33,15 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 copy_module_json_to_bin()
 
 # Package into platform release
+
+# Package into platform release
 if(APPLE)
-	# A temporary ugly fix for inter-dependent modules and their RPATHs on macOS. NAP-225.
-    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/mpg123/lib)
-    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/portaudio/lib)
+	# A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/portaudio/lib)
     list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/libsndfile/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
 elseif(UNIX)
-    set(LINUX_EXTRA_RPATH ../../../../thirdparty/mpg123/lib)
-    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
-    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/libsndfile/lib)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
 endif()
 
 # Package into platform release
