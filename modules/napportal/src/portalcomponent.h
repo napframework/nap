@@ -52,10 +52,10 @@ namespace nap
 
 		/**
 		 * Initializes the portal component instance. Connect to portal item updates.
-		 * @param errorState should hold the error message when initialization fails
+		 * @param error should hold the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& error) override;
 
 		/**
 		 * Called when the portal is destroyed. Disconnect from portal item updates.

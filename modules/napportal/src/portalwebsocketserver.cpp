@@ -14,7 +14,7 @@
 #include <apimessage.h>
 #include <apiutils.h>
 
-// nap::websocketapiserver run time class definition 
+// nap::websocketapiserver run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalWebSocketServer)
 	RTTI_CONSTRUCTOR(nap::PortalService&)
 	RTTI_PROPERTY("SendWebSocketEvents",	&nap::PortalWebSocketServer::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default)
@@ -34,9 +34,9 @@ namespace nap
 	}
 
 
-	bool PortalWebSocketServer::init(utility::ErrorState& errorState)
+	bool PortalWebSocketServer::init(utility::ErrorState& error)
 	{
-		if (!IWebSocketServer::init(errorState))
+		if (!IWebSocketServer::init(error))
 			return false;
 
 		mService->registerServer(*this);

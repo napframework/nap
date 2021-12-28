@@ -26,10 +26,10 @@ namespace nap
 
 		/**
 		 * Subscribes to the parameter changed signal
-		 * @param errorState contains the error message when initialization fails
+		 * @param error contains the error message when initialization fails
 		 * @return if initialization succeeded.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& error) override;
 
 		/**
 		 * Unsubscribes from the parameter changed signal
@@ -86,7 +86,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool PortalItemSlider<T>::init(utility::ErrorState& errorState)
+	bool PortalItemSlider<T>::init(utility::ErrorState& error)
 	{
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;

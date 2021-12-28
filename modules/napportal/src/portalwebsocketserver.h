@@ -34,10 +34,10 @@ namespace nap
 
 		/**
 		 * Registers the portal WebSocket server with the portal service.
-		 * @param errorState contains the error if initialization fails.
+		 * @param error contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+		virtual bool init(utility::ErrorState& error) override;
 
 		/**
 		 * Unregisters the portal WebSocket server with the portal service.

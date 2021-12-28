@@ -26,7 +26,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool PortalComponentInstance::init(utility::ErrorState& errorState)
+	bool PortalComponentInstance::init(utility::ErrorState& error)
 	{
 		// Register with the service
 		mService = getEntityInstance()->getCore()->getService<nap::PortalService>();
@@ -54,7 +54,7 @@ namespace nap
 		// De-register with the service
 		if (mService != nullptr)
 			mService->removeComponent(*this);
-		
+
 		// Disconnect from portal item updates
 		for (const auto& item : mItems)
 			item->updateSignal.disconnect(mItemUpdateSlot);
