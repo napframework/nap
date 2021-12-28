@@ -10,6 +10,7 @@
 
 // External Includes
 #include <parameternumeric.h>
+#include <nap/signalslot.h>
 
 namespace nap
 {
@@ -22,6 +23,18 @@ namespace nap
 		RTTI_ENABLE(PortalItem)
 
 	public:
+
+		/**
+		 * Subscribes to the parameter changed signal
+		 * @param errorState contains the error message when initialization fails
+		 * @return if initialization succeeded.
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Unsubscribes from the parameter changed signal
+		 */
+		virtual void onDestroy() override;
 
 		/**
 		 * Processes an update type API event.
@@ -40,6 +53,17 @@ namespace nap
 		 * @return the current value of the portal item as an API event
 		 */
 		virtual APIEventPtr getValue() override;
+
+		/**
+		 * Called when the parameter value changes, sends the update as an API event
+		 * @param value the updated value of the parameter
+		 */
+		virtual void onParameterUpdate(T value);
+
+		/**
+		* Slot which is called when the parameter value changes
+		*/
+		Slot<T> mParameterUpdateSlot = { this, &PortalItemSlider::onParameterUpdate };
 
 		ResourcePtr<ParameterNumeric<T>> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
 	};
@@ -60,6 +84,26 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	bool PortalItemSlider<T>::init(utility::ErrorState& errorState)
+	{
+		mParameter->valueChanged.connect(mParameterUpdateSlot);
+		return true;
+	}
+
+	template<typename T>
+	void PortalItemSlider<T>::onDestroy()
+	{
+		mParameter->valueChanged.disconnect(mParameterUpdateSlot);
+	}
+
+	template<typename T>
+	void PortalItemSlider<T>::onParameterUpdate(T value)
+	{
+		APIEventPtr event = getValue();
+		updateSignal(*event);
+	}
 
 	template<typename T>
 	bool PortalItemSlider<T>::processUpdate(const APIEvent& event, utility::ErrorState& error)
