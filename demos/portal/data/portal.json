@@ -28,6 +28,11 @@
                             "Type": "nap::PortalItemSliderDouble",
                             "mID": "PortalItemSliderDouble",
                             "Parameter": "ParameterDouble"
+                        },
+                        {
+                            "Type": "nap::PortalItemSliderByte",
+                            "mID": "PortalItemSliderByte",
+                            "Parameter": "ParameterByte"
                         }
                     ]
                 }
@@ -75,6 +80,14 @@
                     "Value": 0.25,
                     "Minimum": -1.0,
                     "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterByte",
+                    "mID": "ParameterByte",
+                    "Name": "My Byte Parameter",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 255
                 }
             ],
             "Groups": []
