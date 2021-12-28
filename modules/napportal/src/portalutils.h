@@ -15,10 +15,6 @@ namespace nap
 		inline constexpr const char* eventHeaderName = "portal_event_header";			///< Name of the portal event header
 		inline constexpr const char* portalIDArgName = "portal_id";						///< Name of the argument containing the portal ID in the portal event header
 		inline constexpr const char* eventTypeArgName = "portal_event_type";			///< Name of the argument containing the portal event type in the portal event header
-		inline constexpr const char* eventTypeRequest = "EPortalEventType::Request";	///< Value of the portal event type argument that maps to EPortalEventType::Request
-		inline constexpr const char* eventTypeResponse = "EPortalEventType::Response";	///< Value of the portal event type argument that maps to EPortalEventType::Response
-		inline constexpr const char* eventTypeUpdate = "EPortalEventType::Update";		///< Value of the portal event type argument that maps to EPortalEventType::Update
-		inline constexpr const char* eventTypeInvalid = "EPortalEventType::Invalid";	///< Value of the portal event type argument that maps to EPortalEventType::Invalid
 		inline constexpr const char* itemTypeArgName = "portal_item_type";				///< Name of the argument containing the portal item type in the portal item message
 		inline constexpr const char* itemValueArgName = "portal_item_value";			///< Name of the argument containing the portal item value in the portal item message
 		inline constexpr const char* itemMinArgName = "portal_item_min";				///< Name of the argument containing the minimum portal item value in the portal item message

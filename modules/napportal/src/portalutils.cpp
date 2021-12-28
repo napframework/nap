@@ -2,41 +2,33 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
 #include "portalutils.h"
+
+// External includes
+#include <rtti/typeinfo.h>
+
+RTTI_BEGIN_ENUM(nap::EPortalEventType)
+	RTTI_ENUM_VALUE(nap::EPortalEventType::Request, "Request"),
+	RTTI_ENUM_VALUE(nap::EPortalEventType::Response, "Response"),
+	RTTI_ENUM_VALUE(nap::EPortalEventType::Update, "Update"),
+	RTTI_ENUM_VALUE(nap::EPortalEventType::Invalid, "Invalid")
+RTTI_END_ENUM
 
 namespace nap
 {
 	std::string getPortalEventTypeString(const EPortalEventType& type)
 	{
-		switch (type)
-		{
-		case EPortalEventType::Request:
-			return nap::portal::eventTypeRequest;
-
-		case EPortalEventType::Response:
-			return nap::portal::eventTypeResponse;
-
-		case EPortalEventType::Update:
-			return nap::portal::eventTypeUpdate;
-
-		default:
-			return nap::portal::eventTypeInvalid;
-		}
+		rtti::TypeInfo enum_type = RTTI_OF(EPortalEventType);
+		return enum_type.get_enumeration().value_to_name(type).to_string();
 	}
 
 
 	EPortalEventType getPortalEventType(const std::string& type)
 	{
-		if (type == portal::eventTypeRequest)
-			return EPortalEventType::Request;
-
-		if (type == portal::eventTypeResponse)
-			return EPortalEventType::Response;
-
-		if (type == portal::eventTypeUpdate)
-			return EPortalEventType::Update;
-
-		return EPortalEventType::Invalid;
+		rtti::TypeInfo enum_type = RTTI_OF(EPortalEventType);
+		rtti::Variant var = enum_type.get_enumeration().name_to_value(type.data());
+		return var.is_valid() ? var.get_value<EPortalEventType>() : EPortalEventType::Invalid;
 	}
 
 
