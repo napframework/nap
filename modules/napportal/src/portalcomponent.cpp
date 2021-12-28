@@ -26,14 +26,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	PortalComponentInstance::~PortalComponentInstance()
-	{
-		// De-register with the service
-		if (mService != nullptr)
-			mService->removeComponent(*this);
-	}
-
-
 	bool PortalComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Register with the service
@@ -50,9 +42,22 @@ namespace nap
 		{
 			mItems.emplace_back(item.get());
 			mItemMap.emplace(std::make_pair(item->mID, item.get()));
+			item->updateSignal.connect(mItemUpdateSlot);
 		}
 
 		return true;
+	}
+
+
+	void PortalComponentInstance::onDestroy()
+	{
+		// De-register with the service
+		if (mService != nullptr)
+			mService->removeComponent(*this);
+		
+		// Disconnect from portal item updates
+		for (const auto& item : mItems)
+			item->updateSignal.disconnect(mItemUpdateSlot);
 	}
 
 
@@ -89,5 +94,26 @@ namespace nap
 		}
 
 		return !error.hasErrors();
+	}
+
+
+	void nap::PortalComponentInstance::onItemUpdate(const APIEvent& event)
+	{
+		// Create a copy of the API event to send with the portal event
+		APIEventPtr api_event = std::make_unique<APIEvent>(event.getName(), event.getID());
+		for (const auto& argument : event.getArguments())
+			api_event->addArgument(*argument);
+
+		// Create the portal event for the portal item update
+		const std::string& event_id = event.getID();
+		const std::string& portal_id = getComponent()->mID;
+		PortalEventHeader header = { event_id, portal_id, EPortalEventType::Update };
+		PortalEventPtr portal_event = std::make_unique<PortalEvent>(header);
+		portal_event->addAPIEvent(std::move(api_event));
+
+		// Broadcast update to connected clients
+		utility::ErrorState error;
+		if (!mServer->broadcast(std::move(portal_event), error))
+			nap::Logger::error("%s: failed to broadcast portal item update: %s", error.toString().c_str());
 	}
 }

@@ -51,16 +51,16 @@ namespace nap
 			ComponentInstance(entity, resource) { }
 
 		/**
-		 * Destructor
-		 */
-		virtual ~PortalComponentInstance();
-
-		/**
-		 * Initializes the portal component instance
+		 * Initializes the portal component instance. Connect to portal item updates.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Called when the portal is destroyed. Disconnect from portal item updates.
+		 */
+		virtual void onDestroy() override;
 
 		/**
 		 * Processes a request type portal event
@@ -90,9 +90,20 @@ namespace nap
 
 	private:
 
+		/**
+		 * Called when a portal item sends an update event
+		 * @param event the update sent by the portal item
+		 */
+		virtual void onItemUpdate(const APIEvent& event);
+
 		PortalService* mService = nullptr;						///< Handle to the portal service
 		PortalWebSocketServer* mServer = nullptr;				///< Handle to the portal WebSocket server
 		std::vector<PortalItem*> mItems;						///< The portal items contained by this portal component as vector
 		std::unordered_map<std::string, PortalItem*> mItemMap;	///< The portal items contained by this portal component as unordered map
+
+		/**
+		* Slot which is called when a portal item sends an update event
+		*/
+		Slot<const APIEvent&> mItemUpdateSlot = { this, &PortalComponentInstance::onItemUpdate };
 	};
 }

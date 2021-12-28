@@ -7,6 +7,7 @@
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
+#include <nap/signalslot.h>
 #include <apievent.h>
 
 namespace nap
@@ -40,5 +41,10 @@ namespace nap
 		 * @return the current value of the portal item as an API event
 		 */
 		virtual APIEventPtr getValue() = 0;
+
+		/**
+		 * Occurs when the portal item signals connected clients of an update
+		 */
+		Signal<const APIEvent&> updateSignal;
 	};
 }
