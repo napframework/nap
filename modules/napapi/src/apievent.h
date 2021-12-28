@@ -91,13 +91,6 @@ namespace nap
 		APIArgument* addArgument(const std::string& name, Args&&... args);
 
 		/**
-		 * Adds an api argument to this event as a copy of the given api argument.
-		 * @param argument the api argument to copy and add.
-		 * @return the added api argument.
-		 */
-		APIArgument* addArgument(const APIArgument& argument);
-
-		/**
 		 * Adds an api argument to this event based on the given api value.
 		 * @param value the api value to add as an argument.
 		 * @return the added value as api argument.

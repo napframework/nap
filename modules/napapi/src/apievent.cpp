@@ -5,9 +5,6 @@
 // Local Includes
 #include "apievent.h"
 
-// External Includes
-#include <rtti/rttiutilities.h>
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIEvent)
 	RTTI_CONSTRUCTOR(const std::string&)
 	RTTI_CONSTRUCTOR(const std::string&, const std::string&)
@@ -41,23 +38,6 @@ namespace nap
 		mID(std::move(id))
 	{
 
-	}
-
-	APIArgument* APIEvent::addArgument(const APIArgument& argument)
-	{
-		// Create copy of API value using RTTR
-		const APIBaseValue& value = argument.getValue();
-		rtti::Variant variant = value.get_type().create();
-		assert(variant.is_valid());
-
-		// Wrap result in unique ptr
-		std::unique_ptr<APIBaseValue> copy(variant.get_value<APIBaseValue*>());
-
-		// Copy all properties as we know they contain the same ones
-		rtti::copyObject(value, *copy);
-
-		// Add API value as argument
-		return addArgument(std::move(copy));
 	}
 
 	APIArgument* APIEvent::addArgument(std::unique_ptr<APIBaseValue> value)
