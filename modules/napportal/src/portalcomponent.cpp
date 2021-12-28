@@ -85,7 +85,7 @@ namespace nap
 		// Try to pass each API event to a portal item
 		for (const auto& api_event : event.getAPIEvents())
 		{
-			// Continue with the next item when processing fails
+			// Continue with the next item when not found
 			const std::string& portal_item_id = api_event->getID();
 			if (!error.check(mItemMap.count(portal_item_id) == 1, "%s: does not contain portal item %s", getComponent()->mID.c_str(), portal_item_id.c_str()))
 				continue;
@@ -100,20 +100,19 @@ namespace nap
 	void nap::PortalComponentInstance::onItemUpdate(const APIEvent& event)
 	{
 		// Create a copy of the API event to send with the portal event
-		APIEventPtr api_event = std::make_unique<APIEvent>(event.getName(), event.getID());
+		APIEventPtr event_copy = std::make_unique<APIEvent>(event.getName(), event.getID());
 		for (const auto& argument : event.getArguments())
-			api_event->addArgument(*argument);
+			event_copy->addArgument(*argument);
 
 		// Create the portal event for the portal item update
-		const std::string& event_id = event.getID();
 		const std::string& portal_id = getComponent()->mID;
-		PortalEventHeader header = { event_id, portal_id, EPortalEventType::Update };
-		PortalEventPtr portal_event = std::make_unique<PortalEvent>(header);
-		portal_event->addAPIEvent(std::move(api_event));
+		PortalEventHeader portal_header = { event.getID(), portal_id, EPortalEventType::Update };
+		PortalEventPtr portal_event = std::make_unique<PortalEvent>(portal_header);
+		portal_event->addAPIEvent(std::move(event_copy));
 
 		// Broadcast update to connected clients
 		utility::ErrorState error;
 		if (!mServer->broadcast(std::move(portal_event), error))
-			nap::Logger::error("%s: failed to broadcast portal item update: %s", error.toString().c_str());
+			nap::Logger::error("%s: failed to broadcast portal item update: %s", portal_id, error.toString().c_str());
 	}
 }
