@@ -66,6 +66,10 @@ namespace nap
 		Slot<T> mParameterUpdateSlot = { this, &PortalItemSlider::onParameterUpdate };
 
 		ResourcePtr<ParameterNumeric<T>> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
+
+	private:
+
+		T mRetainedValue;								///< Retained value to check if the parameter has been updated externally
 	};
 
 
@@ -87,6 +91,7 @@ namespace nap
 	template<typename T>
 	bool PortalItemSlider<T>::init(utility::ErrorState& error)
 	{
+		mRetainedValue = mParameter->mValue;
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
@@ -100,6 +105,12 @@ namespace nap
 	template<typename T>
 	void PortalItemSlider<T>::onParameterUpdate(T value)
 	{
+		// No need to update if retained value stays the same,
+		// e.g. when we changed the parameter from a client update
+		if (mRetainedValue == value)
+			return;
+
+		mRetainedValue = value;
 		APIEventPtr event = getValue();
 		updateSignal(*event);
 	}
@@ -119,6 +130,7 @@ namespace nap
 
 		// Cast and set the value on the parameter
 		T value = static_cast<const APIValue<T>*>(&arg->getValue())->mValue;
+		mRetainedValue = value;
 		mParameter->setValue(value);
 		return true;
 	}
