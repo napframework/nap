@@ -126,7 +126,12 @@ namespace nap
 	bool GPUBuffer::allocateInternal(size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState)
 	{
 		// Persistent storage
-		if (mUsage == EMeshDataUsage::Static || mUsage == EMeshDataUsage::DynamicRead)
+		if (mUsage == EMeshDataUsage::DynamicWrite)
+		{
+			mSize = size;
+			return true;
+		}
+		else
 		{
 			// Calculate buffer byte size and fetch allocator
 			VmaAllocator allocator = mRenderService->getVulkanAllocator();
@@ -163,6 +168,10 @@ namespace nap
 				}
 			}
 
+			// Update buffer size
+			if (!mStagingBuffers.empty())
+				mSize = size;
+
 			// Device buffer memory usage
 			VkBufferUsageFlags gpu_buffer_usage = mUsage == EMeshDataUsage::DynamicRead ?
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
@@ -174,9 +183,6 @@ namespace nap
 				errorState.fail("Unable to create render buffer");
 				return false;
 			}
-
-			// Cache buffer size
-			mSize = size;
 		}
 		return true;
 	}
@@ -212,7 +218,7 @@ namespace nap
 
 		// Allocate the buffers if necessary
 		assert(!mRenderBuffers.empty());
-		if (mUsage != EMeshDataUsage::DynamicWrite && mRenderBuffers[0].mBuffer == VK_NULL_HANDLE)
+		if (mRenderBuffers[0].mBuffer == VK_NULL_HANDLE)
 		{
 			if (!allocateInternal(size, usage, errorState))
 				return false;
@@ -222,9 +228,9 @@ namespace nap
 		switch (mUsage)
 		{
 		case EMeshDataUsage::DynamicWrite:
-			return setDataInternalDynamic(data, size, reservedSize, usage, errorState);
+			return setDataInternalDynamic(data, mSize, reservedSize, usage, errorState);
 		case EMeshDataUsage::Static:
-			return setDataInternalStatic(data, size, usage, errorState);
+			return setDataInternalStatic(data, mSize, usage, errorState);
 		default:
 			assert(false);
 			break;
@@ -293,12 +299,12 @@ namespace nap
 			}
 		}
 
+		// Cache buffer size
+		mSize = size;
+
 		// Upload directly into buffer, use exact data size
 		if (!errorState.check(uploadToBuffer(allocator, size, data, buffer_data), "Buffer upload failed"))
 			return false;
-
-		// Cache buffer size
-		mSize = size;
 
 		bufferChanged();
 		return true;
@@ -345,18 +351,13 @@ namespace nap
 		mDownloadStagingBufferIndices[mRenderService->getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
-		VkBufferCopy region = {};
-		region.srcOffset = 0;
-		region.dstOffset = 0;
-		region.size = staging_buffer.mAllocationInfo.size;
-
 		VkPipelineStageFlags stage_flags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 
 		// Set memory barriers
 		memoryBarrier(commandBuffer, staging_buffer.mBuffer, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, stage_flags, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
 		// Copy to staging buffer
-		copyBuffer(commandBuffer, mRenderBuffers[0].mBuffer, staging_buffer.mBuffer, staging_buffer.mAllocationInfo.size);
+		copyBuffer(commandBuffer, mRenderBuffers[0].mBuffer, staging_buffer.mBuffer, mSize);
 
 		// Complete execution dependency
 		memoryBarrier(commandBuffer, staging_buffer.mBuffer, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, stage_flags);
