@@ -201,20 +201,20 @@ namespace nap
 
 	bool MonthlyCalendarItem::active(SystemTimeStamp timeStamp)
 	{
+		// Get sample (lookup) date
 		DateTime cur_dt(timeStamp);
 		int cur_year = cur_dt.getYear();
 		int cur_mont = static_cast<int>(cur_dt.getMonth());
+		SystemTimeStamp lookup_time = createTimestamp(cur_year, cur_mont, mDay, mTime.mHour, mTime.mMinute);
 
-		// Get current sample date and time
-		SystemTimeStamp sample_date = createTimestamp(cur_year, cur_mont, mDay, 0, 0);
+		// If timestamp is ahead of start (lookup) time, we can sample directly
+		if (timeStamp >= lookup_time)
+		{
+			SystemTimeStamp end_time = lookup_time + mDuration.toMinutes();
+			return timeStamp < end_time;
+		}
 
-		// First check if it falls in the current month window	
-		SystemTimeStamp sta_time = sample_date + mTime.toMinutes();
-		SystemTimeStamp end_time = sta_time + mDuration.toMinutes();
-		if (timeStamp >= sta_time && timeStamp < end_time)
-			return true;
-
-		// Because it's cyclic we have to check if
+		// Otherwise we need to check 
 		// the current time falls within previous month window
 		int prev_mont = cur_mont - 1;
 		int prev_year = cur_year;
@@ -225,12 +225,11 @@ namespace nap
 		}
 
 		// Previous month sample date
-		sample_date = createTimestamp(prev_year, prev_mont, mDay, 0, 0);
+		lookup_time = createTimestamp(prev_year, prev_mont, mDay, mTime.mHour, mTime.mMinute);
 
 		// Check if it falls in the previous month window
-		sta_time = sample_date + mTime.toMinutes();
-		end_time = sta_time + mDuration.toMinutes();
-		if (timeStamp >= sta_time && timeStamp < end_time)
+		SystemTimeStamp end_time = lookup_time + mDuration.toMinutes();
+		if (timeStamp >= lookup_time && timeStamp < end_time)
 			return true;
 
 		return false;
