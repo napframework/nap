@@ -20,7 +20,7 @@ namespace nap
 	 * Represents an numeric slider in a NAP portal.
 	 */
 	template<typename T>
-	class PortalItemSlider : public PortalItem
+	class PortalItemNumeric : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
 
@@ -65,7 +65,7 @@ namespace nap
 		/**
 		* Slot which is called when the parameter value changes
 		*/
-		Slot<T> mParameterUpdateSlot = { this, &PortalItemSlider::onParameterUpdate };
+		Slot<T> mParameterUpdateSlot = { this, &PortalItemNumeric::onParameterUpdate };
 
 		ResourcePtr<ParameterNumeric<T>> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
 
@@ -79,11 +79,11 @@ namespace nap
 	// Portal Item Slider Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using PortalItemSliderByte		= PortalItemSlider<uint8_t>;
-	using PortalItemSliderInt		= PortalItemSlider<int>;
-	using PortalItemSliderLong		= PortalItemSlider<int64_t>;
-	using PortalItemSliderFloat		= PortalItemSlider<float>;
-	using PortalItemSliderDouble	= PortalItemSlider<double>;
+	using PortalItemSliderByte		= PortalItemNumeric<uint8_t>;
+	using PortalItemSliderInt		= PortalItemNumeric<int>;
+	using PortalItemSliderLong		= PortalItemNumeric<int64_t>;
+	using PortalItemSliderFloat		= PortalItemNumeric<float>;
+	using PortalItemSliderDouble	= PortalItemNumeric<double>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool PortalItemSlider<T>::init(utility::ErrorState& error)
+	bool PortalItemNumeric<T>::init(utility::ErrorState& error)
 	{
 		mRetainedValue = mParameter->mValue;
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
@@ -99,13 +99,13 @@ namespace nap
 	}
 
 	template<typename T>
-	void PortalItemSlider<T>::onDestroy()
+	void PortalItemNumeric<T>::onDestroy()
 	{
 		mParameter->valueChanged.disconnect(mParameterUpdateSlot);
 	}
 
 	template<typename T>
-	void PortalItemSlider<T>::onParameterUpdate(T value)
+	void PortalItemNumeric<T>::onParameterUpdate(T value)
 	{
 		// No need to update if retained value stays the same,
 		// e.g. when we changed the parameter from a client update
@@ -117,7 +117,7 @@ namespace nap
 	}
 
 	template<typename T>
-	bool PortalItemSlider<T>::processUpdate(const APIEvent& event, utility::ErrorState& error)
+	bool PortalItemNumeric<T>::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
 		// Check for the portal item value argument
 		const APIArgument* arg = event.getArgumentByName(nap::portal::itemValueArgName);
@@ -137,7 +137,7 @@ namespace nap
 	}
 
 	template<typename T>
-	APIEventPtr PortalItemSlider<T>::getDescriptor() const
+	APIEventPtr PortalItemNumeric<T>::getDescriptor() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
@@ -148,7 +148,7 @@ namespace nap
 	}
 
 	template<typename T>
-	APIEventPtr PortalItemSlider<T>::getValue() const
+	APIEventPtr PortalItemNumeric<T>::getValue() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
