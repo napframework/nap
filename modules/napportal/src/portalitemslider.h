@@ -9,6 +9,8 @@
 #include "portalutils.h"
 
 // External Includes
+#include <apivalue.h>
+#include <apievent.h>
 #include <parameternumeric.h>
 #include <nap/signalslot.h>
 
