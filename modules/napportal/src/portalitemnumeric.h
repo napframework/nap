@@ -17,7 +17,7 @@
 namespace nap
 {
 	/**
-	 * Represents an numeric slider in a NAP portal.
+	 * Represents any numeric item in a NAP portal.
 	 */
 	template<typename T>
 	class PortalItemNumeric : public PortalItem
@@ -76,7 +76,7 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Portal Item Slider Type Definitions
+	// Portal Item Numeric Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
 	using PortalItemSliderByte		= PortalItemNumeric<uint8_t>;
@@ -158,9 +158,9 @@ namespace nap
 
 
 	/**
-	 * Helper macro that can be used to define the RTTI for a portal item slider type
+	 * Helper macro that can be used to define the RTTI for a portal item numeric type
 	 */
-	#define DEFINE_PORTAL_ITEM_SLIDER(Type)																			\
+	#define DEFINE_PORTAL_ITEM_NUMERIC(Type)																			\
 		RTTI_BEGIN_CLASS(Type)																						\
 			RTTI_PROPERTY("Parameter",	&Type::mParameter,		nap::rtti::EPropertyMetaData::Required)				\
 		RTTI_END_CLASS

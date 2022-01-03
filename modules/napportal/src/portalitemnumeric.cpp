@@ -4,10 +4,10 @@
 
 #include "portalitemnumeric.h"
 
-DEFINE_PORTAL_ITEM_SLIDER(nap::PortalItemSliderByte)
-DEFINE_PORTAL_ITEM_SLIDER(nap::PortalItemSliderInt)
-DEFINE_PORTAL_ITEM_SLIDER(nap::PortalItemSliderLong)
-DEFINE_PORTAL_ITEM_SLIDER(nap::PortalItemSliderFloat)
-DEFINE_PORTAL_ITEM_SLIDER(nap::PortalItemSliderDouble)
+DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemSliderByte)
+DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemSliderInt)
+DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemSliderLong)
+DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemSliderFloat)
+DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemSliderDouble)
 
 //////////////////////////////////////////////////////////////////////////
