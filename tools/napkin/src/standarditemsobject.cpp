@@ -134,7 +134,7 @@ QVariant ObjectItem::data(int role) const
 	{
 		if (isPointer())
 		{
-			return AppContext::get().getThemeManager().getColor(themeColDimmedItem);
+			return AppContext::get().getThemeManager().getColor(theme::color::dimmedItem);
 		}
 	}
 	return QStandardItem::data(role);
@@ -461,7 +461,7 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEnti
 		: ObjectItem(&comp, false), mRootEntity(rootEntity)
 {
 	assert(&mRootEntity);
-	mOverrideColor = AppContext::get().getThemeManager().getColor(themeColComponentWidthOverrides);
+	mOverrideColor = AppContext::get().getThemeManager().getColor(theme::color::componentoverride);
 }
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
