@@ -53,16 +53,17 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Compute
-		 * @param numInvocations the number of compute shader invocations
-		 * @return if the compute work was submitted to the compute queue successfully.
+		 * Called by the renderservice, calls onCompute() with the number of invocations set in this instance
+		 * @param commandBuffer active command buffer
 		 */
-		virtual void compute(uint numInvocations);
+		void compute(VkCommandBuffer commandBuffer);
 
 		/**
-		 * 
+		 * Called by the renderservice, calls onCompute() with the given number of invocations
+		 * @param commandBuffer active command buffer
+		 * @param numInvocations the number of compute shader invocations
 		 */
-		virtual void compute()											{ compute(mInvocations); }
+		void compute(VkCommandBuffer commandBuffer, uint numInvocations);
 
 		/**
 		 * @return current material used when drawing the mesh.
@@ -75,16 +76,25 @@ namespace nap
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 
 		/**
-		 * 
+		 * Sets the number of compute shader invocations for this instance
+		 * @param numInvocations the number of compute shader invocations
 		 */
 		void setInvocations(uint numInvocations)						{ mInvocations = numInvocations; }
 
 		/**
-		 * 
+		 * Returns the number of compute shader invocations for this instance
 		 */
 		uint getInvocations() const										{ return mInvocations; }
 
 	protected:
+
+		/**
+		 * Dispatches the compute shader using the given command buffer, number of invocations and the bound computematerialinstance
+		 * @param commandBuffer active command buffer
+		 * @param numInvocations the number of compute shader invocations
+		 */
+		virtual void onCompute(VkCommandBuffer commandBuffer, uint numInvocations);
+
 		RenderService*						mRenderService = nullptr;
 		ComputeMaterialInstance				mComputeMaterialInstance;
 		uint								mInvocations = 1;

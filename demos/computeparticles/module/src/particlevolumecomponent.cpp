@@ -158,10 +158,14 @@ namespace nap
 
 		// Get resource
 		ParticleVolumeComponent* resource = getComponent<ParticleVolumeComponent>();
+
 		mParticleSize = resource->mSize;
 		mVelocityTimeScale = resource->mVelocity;
 		mVelocityVariationScale = resource->mVelocityVariation;
 		mRotationSpeed = resource->mRotationSpeed;
+
+		for (auto& comp : mComputeInstances)
+			comp->setInvocations(resource->mNumParticles);
 
 		// Initialize particle mesh
 		mParticleMesh->mNumParticles = resource->mNumParticles;
@@ -205,12 +209,9 @@ namespace nap
 	}
 
 
-	bool ParticleVolumeComponentInstance::compute(utility::ErrorState& errorState)
+	void ParticleVolumeComponentInstance::compute()
 	{
-		if (!mCurrentComputeInstance->compute(mParticleMesh->mNumParticles, errorState))
-			return false;
-
-		return true;
+		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 
 

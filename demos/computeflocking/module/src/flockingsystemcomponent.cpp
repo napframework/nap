@@ -128,6 +128,9 @@ namespace nap
 		// Set non-parameter variables
 		mNumBoids = mResource->mNumBoids;
 
+		for (auto& comp : mComputeInstances)
+			comp->setInvocations(mNumBoids);
+
 		return true;
 	}
 
@@ -190,12 +193,9 @@ namespace nap
 	}
 
 
-	bool FlockingSystemComponentInstance::compute(utility::ErrorState& errorState)
+	void FlockingSystemComponentInstance::compute()
 	{
-		if (!mCurrentComputeInstance->compute(mNumBoids, errorState))
-			return false;
-
-		return true;
+		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 
 

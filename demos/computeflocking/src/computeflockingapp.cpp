@@ -135,10 +135,7 @@ namespace nap
 		// Begin recording compute commands
 		if (mRenderService->beginComputeRecording())
 		{
-			utility::ErrorState error_state;
-			auto& comp = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
-			comp.compute(error_state);
-
+			mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().compute();
 			mRenderService->endComputeRecording();
 		}
 

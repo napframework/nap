@@ -1460,7 +1460,7 @@ namespace nap
 
 		for (auto* comp : components_to_compute)
 		{
-			comp->compute();
+			comp->compute(mCurrentCommandBuffer);
 			vkCmdPipelineBarrier(mCurrentCommandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 		}
 	}
@@ -2185,6 +2185,7 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = false;
 		mIsRenderingFrame = true;
 
+		// Reset queue submit operation flags for the current frame
 		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = { false, false, false };
 
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
@@ -2217,12 +2218,15 @@ namespace nap
 
 	void RenderService::endFrame()
 	{
+		// Acquire current frame
+		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
+
 		// Get the current frame fence status
-		VkResult result = vkGetFenceStatus(mDevice, mFramesInFlight[mCurrentFrameIndex].mFence);
+		VkResult result = vkGetFenceStatus(mDevice, frame.mFence);
 		assert(result == VK_SUCCESS);
 
 		// We reset the fences at the end of the frame to make sure that multiple waits on the same fence (using WaitForFence) complete correctly.
-		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
+		vkResetFences(mDevice, 1, &frame.mFence);
 
 		// Push any texture downloads on the command buffer
 		downloadData();
@@ -2230,7 +2234,7 @@ namespace nap
 		// We must reset the registered wait semaphores here in case no rendering has taken place in the current frame
 		// (e.g. due to a recreation of the swapchain). This can be achieved by explicitly waiting for each in vkQueueSubmit()
 		// We must do it this way as vkWaitSemaphores() is not supported until VK Version 1.2
-		if (!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering)
+		if (!frame.mQueueSubmitOps.mRendering)
 		{
 			VkPipelineStageFlags wait_flags[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 
@@ -2240,12 +2244,15 @@ namespace nap
 			submit_info.waitSemaphoreCount = 1;
 			submit_info.pWaitDstStageMask = wait_flags;
 
-			vkQueueSubmit(mQueue, 1, &submit_info, mFramesInFlight[mCurrentFrameIndex].mFence);
+			vkQueueSubmit(mQueue, 1, &submit_info, frame.mFence);
 		}
 
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
-		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
+		else
+		{
+			vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, frame.mFence);
+		}
 		
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % getMaxFramesInFlight();
 		mIsRenderingFrame = false;

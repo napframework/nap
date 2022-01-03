@@ -102,7 +102,7 @@ namespace nap
 		if (mRenderService->beginComputeRecording())
 		{
 			utility::ErrorState error_state;
-			mParticleEntity->getComponent<ParticleVolumeComponentInstance>().compute(error_state);
+			mParticleEntity->getComponent<ParticleVolumeComponentInstance>().compute();
 
 			mRenderService->endComputeRecording();
 		}

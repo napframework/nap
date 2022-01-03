@@ -49,20 +49,32 @@ namespace nap
 	}
 
 
-	void ComputeComponentInstance::compute(uint numInvocations)
+	void ComputeComponentInstance::compute(VkCommandBuffer commandBuffer)
+	{
+		onCompute(commandBuffer, mInvocations);
+	}
+
+
+	void ComputeComponentInstance::compute(VkCommandBuffer commandBuffer, uint numInvocations)
+	{
+		onCompute(commandBuffer, numInvocations);
+	}
+
+
+	void ComputeComponentInstance::onCompute(VkCommandBuffer commandBuffer, uint numInvocations)
 	{
 		// Fetch and bind pipeline
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, error_state);
-		vkCmdBindPipeline(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
 
 		VkDescriptorSet descriptor_set = mComputeMaterialInstance.update();
 
 		// Bind shader descriptors
-		vkCmdBindDescriptorSets(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
 		uint group_count_x = math::ceil(numInvocations / getLocalWorkGroupSize().x);
-		vkCmdDispatch(mRenderService->getCurrentCommandBuffer(), group_count_x, 1, 1);
+		vkCmdDispatch(commandBuffer, group_count_x, 1, 1);
 	}
 } 

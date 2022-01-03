@@ -94,7 +94,7 @@ namespace nap
 
 		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
-		bool compute(utility::ErrorState& errorState);
+		void compute();
 
 		glm::vec4 mTarget;
 		int mNumBoids;

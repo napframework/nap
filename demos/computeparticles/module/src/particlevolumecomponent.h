@@ -108,7 +108,7 @@ namespace nap
 		/**
 		 * 
 		 */
-		bool compute(utility::ErrorState& errorState);
+		void compute();
 
 		float mVelocityTimeScale = 0.15f;
 		float mVelocityVariationScale = 0.75f;

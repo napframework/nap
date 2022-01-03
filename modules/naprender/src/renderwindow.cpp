@@ -808,7 +808,8 @@ namespace nap
 		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame] };
 		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-		if (mRenderService->isComputeAvailable())
+		nap::RenderService::Frame& frame = mRenderService->mFramesInFlight[current_frame];
+		if (mRenderService->isComputeAvailable() && frame.mQueueSubmitOps.mCompute)
 		{
 			wait_semaphores.push_back(mRenderService->mComputeFinishedSemaphores[current_frame]);
 			wait_stages.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
@@ -824,20 +825,20 @@ namespace nap
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
 		std::vector<VkSemaphore> signalSemaphores = { mRenderFinishedSemaphores[current_frame] };
-		if (mRenderService->isComputeAvailable())
-			signalSemaphores.push_back(mRenderFinishedSemaphoresCompute[current_frame]);
 
+		// If compute work was submitted in this frame, also make sure to signal the separate render finished semaphores for compute queues
+		if (mRenderService->isComputeAvailable() && frame.mQueueSubmitOps.mCompute)
+		{
+			signalSemaphores.push_back(mRenderFinishedSemaphoresCompute[current_frame]);
+			mRenderService->pushComputeDependency(mRenderFinishedSemaphoresCompute[current_frame]);
+		}
 		submit_info.signalSemaphoreCount = signalSemaphores.size();
 		submit_info.pSignalSemaphores = signalSemaphores.data();
-
-		// Push a compute dependency
-		if (mRenderService->isComputeAvailable())
-			mRenderService->pushComputeDependency(mRenderFinishedSemaphoresCompute[current_frame]);
 		
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
-		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps.mRendering = true;
+		frame.mQueueSubmitOps.mRendering = true;
 
 		// Create present information
 		VkPresentInfoKHR present_info = {};
