@@ -78,12 +78,6 @@ namespace nap
 			showIntParameter(*byte_parameter);
 		});
 
-		registerParameterEditor(RTTI_OF(ParameterChar), [](Parameter& parameter)
-		{
-			ParameterChar* char_parameter = rtti_cast<ParameterChar>(&parameter);
-			showIntParameter(*char_parameter);
-		});
-
 		registerParameterEditor(RTTI_OF(ParameterBool), [](Parameter& parameter)
 		{
 			ParameterBool* bool_parameter = rtti_cast<ParameterBool>(&parameter);

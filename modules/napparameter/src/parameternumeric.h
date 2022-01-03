@@ -37,7 +37,7 @@ namespace nap
 		void setValue(T value);
 
 		/**
-		 * Sets the min/max range of this parameter to the specified values. 
+		 * Sets the min/max range of this parameter to the specified values.
 		 * If the current value is outside of the specified range, it will be clamped.
 		 *
 		 * @param minimum The minimum value for this parameter
@@ -60,7 +60,6 @@ namespace nap
 
 	using ParameterFloat	= ParameterNumeric<float>;
 	using ParameterInt		= ParameterNumeric<int>;
-	using ParameterChar		= ParameterNumeric<char>;
 	using ParameterByte		= ParameterNumeric<uint8_t>;
 	using ParameterDouble	= ParameterNumeric<double>;
 	using ParameterLong		= ParameterNumeric<int64_t>;
