@@ -12,13 +12,13 @@
 
 // nap::PortalComponent run time class definition
 RTTI_BEGIN_CLASS(nap::PortalComponent)
-RTTI_PROPERTY("Server", &nap::PortalComponent::mServer, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("Items", &nap::PortalComponent::mItems, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Server", &nap::PortalComponent::mServer, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Items", &nap::PortalComponent::mItems, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 // nap::PortalComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalComponentInstance)
-RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
