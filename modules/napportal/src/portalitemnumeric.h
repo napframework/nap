@@ -154,14 +154,12 @@ namespace nap
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
 		return event;
 	}
-
-
-
-	/**
-	 * Helper macro that can be used to define the RTTI for a portal item numeric type
-	 */
-	#define DEFINE_PORTAL_ITEM_NUMERIC(Type)																			\
-		RTTI_BEGIN_CLASS(Type)																						\
-			RTTI_PROPERTY("Parameter",	&Type::mParameter,		nap::rtti::EPropertyMetaData::Required)				\
-		RTTI_END_CLASS
 }
+
+/**
+ * Helper macro that can be used to define the RTTI for a portal item numeric type
+ */
+#define DEFINE_PORTAL_ITEM_NUMERIC(Type)														\
+	RTTI_BEGIN_CLASS(Type)																		\
+		RTTI_PROPERTY("Parameter",	&Type::mParameter,	nap::rtti::EPropertyMetaData::Required)	\
+	RTTI_END_CLASS
