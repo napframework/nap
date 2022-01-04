@@ -33,6 +33,16 @@
                             "Type": "nap::PortalItemSliderByte",
                             "mID": "PortalItemSliderByte",
                             "Parameter": "ParameterByte"
+                        },
+                        {
+                            "Type": "nap::PortalItemToggle",
+                            "mID": "PortalItemToggle",
+                            "Parameter": "ParameterBool"
+                        },
+                        {
+                            "Type": "nap::PortalItemTextField",
+                            "mID": "PortalItemTextField",
+                            "Parameter": "ParameterString"
                         }
                     ]
                 }
@@ -88,6 +98,19 @@
                     "Value": 0,
                     "Minimum": 0,
                     "Maximum": 255
+                },
+                {
+                    "Type": "nap::ParameterBool",
+                    "mID": "ParameterBool",
+                    "Name": "My Bool Parameter",
+                    "Value": false
+                },
+                {
+                    "Type": "nap::ParameterString",
+                    "mID": "ParameterString",
+                    "Name": "My String Parameter",
+                    "Value": "test 123",
+                    "Size": 256
                 }
             ],
             "Groups": []
