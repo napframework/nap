@@ -112,7 +112,7 @@ namespace nap
 				if (type == rtti::TypeInfo::get<bool>())
 					return mWriter.Bool(value.to_bool());
 				else if (type == rtti::TypeInfo::get<char>())
-					return mWriter.Bool(value.to_bool());
+					return mWriter.Int(value.to_int8());
 				else if (type == rtti::TypeInfo::get<int8_t>())
 					return mWriter.Int(value.to_int8());
 				else if (type == rtti::TypeInfo::get<int16_t>())
