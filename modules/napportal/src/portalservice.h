@@ -102,6 +102,13 @@ namespace nap
 		 */
 		void removeComponent(PortalComponentInstance& component);
 
+		/**
+		 * Finds a registered portal component instance by portal component id
+		 * @param id the portal component id of the portal component instance to find
+		 * @return a pointer to the registered portal component instance or nullptr if not found
+		 */
+		PortalComponentInstance* findComponentById(const std::string& id);
+
 		// Handle to the WebSocket service
 		WebSocketService* mWebSocketService = nullptr;
 
@@ -109,6 +116,6 @@ namespace nap
 		std::vector<PortalWebSocketServer*> mServers;
 
 		// All the portal components currently available to the system
-		std::unordered_map<std::string, PortalComponentInstance*> mComponents;
+		std::vector<PortalComponentInstance*> mComponents;
 	};
 }

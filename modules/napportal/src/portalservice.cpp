@@ -74,14 +74,9 @@ namespace nap
 
 	void PortalService::processEvent(PortalEvent& event, PortalWebSocketServer& server)
 	{
-		// Check if the portal ID exists
-		const std::string& portal_id = event.getPortalID();
-		if (mComponents.count(portal_id) == 0)
-			return;
-
-		// Check if the portal component listens to the server
-		const auto& portal = mComponents.at(portal_id);
-		if (&portal->getServer() != &server)
+		// Check if the portal component is registered and listens to the server
+		PortalComponentInstance* portal = findComponentById(event.getPortalID());
+		if (portal == nullptr || &portal->getServer() != &server)
 			return;
 
 		// Process event with proper method in portal component
@@ -126,16 +121,27 @@ namespace nap
 
 	void PortalService::registerComponent(PortalComponentInstance& component)
 	{
-		const std::string& id = component.getComponent()->mID;
-		assert(mComponents.count(id) == 0);
-		mComponents.emplace(std::make_pair(id, &component));
+		mComponents.emplace_back(&component);
 	}
 
 
 	void PortalService::removeComponent(PortalComponentInstance& component)
 	{
-		const std::string& id = component.getComponent()->mID;
-		assert(mComponents.count(id) == 1);
-		mComponents.erase(id);
+		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
+		{
+			return it == &component;
+		});
+		assert(found_it != mComponents.end());
+		mComponents.erase(found_it);
+	}
+
+
+	PortalComponentInstance* PortalService::findComponentById(const std::string& id)
+	{
+		auto found_it = std::find_if(mComponents.begin(), mComponents.end(), [&](const auto& it)
+		{
+			return it->getComponent()->mID == id;
+		});
+		return found_it == mComponents.end() ? nullptr : *found_it;
 	}
 }
