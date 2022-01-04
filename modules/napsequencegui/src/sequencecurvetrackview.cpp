@@ -594,6 +594,17 @@ namespace nap
 					mCurveCache.clear();
 				}
 				ImGui::SameLine();
+                if (ImGui::Button("Stepped"))
+                {
+                    auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+                    curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Stepped, action->mCurveIndex);
+                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+                    ImGui::CloseCurrentPopup();
+                    mState.mAction = createAction<None>();
+                    mCurveCache.clear();
+                }
+                ImGui::SameLine();
 				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
