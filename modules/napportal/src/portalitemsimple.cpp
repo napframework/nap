@@ -5,5 +5,6 @@
 #include "portalitemsimple.h"
 
 DEFINE_PORTAL_ITEM_SIMPLE(nap::PortalItemToggle)
+DEFINE_PORTAL_ITEM_SIMPLE(nap::PortalItemTextField)
 
 //////////////////////////////////////////////////////////////////////////
