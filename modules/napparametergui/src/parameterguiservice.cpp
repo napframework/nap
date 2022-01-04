@@ -10,6 +10,7 @@
 #include <parameternumeric.h>
 #include <parametervec.h>
 #include <parametersimple.h>
+#include <parameterstring.h>
 #include <parameterenum.h>
 #include <parametercolor.h>
 #include <parameterquat.h>
@@ -85,6 +86,15 @@ namespace nap
 			bool value = bool_parameter->mValue;
 			if (ImGui::Checkbox(bool_parameter->getDisplayName().c_str(), &value))
 				bool_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterString), [](Parameter& parameter)
+		{
+			ParameterString* string_parameter = rtti_cast<ParameterString>(&parameter);
+
+			std::string value = std::string(string_parameter->mValue.data(), string_parameter->mValue.capacity());
+			if (ImGui::InputText(string_parameter->getDisplayName().c_str(), &value[0], string_parameter->mSize))
+				string_parameter->setValue(value);
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterRGBColorFloat), [](Parameter& parameter)
