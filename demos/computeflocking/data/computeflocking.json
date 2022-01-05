@@ -340,7 +340,8 @@
                             }
                         ],
                         "Samplers": []
-                    }
+                    },
+                    "Invocations": 1
                 },
                 {
                     "Type": "nap::ComputeComponent",
@@ -373,7 +374,8 @@
                             }
                         ],
                         "Samplers": []
-                    }
+                    },
+                    "Invocations": 1
                 }
             ],
             "Children": []
@@ -908,7 +910,7 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": true,
+            "SampleShading": false,
             "Title": "ComputeParticlesDemo",
             "Width": 1280,
             "Height": 720,

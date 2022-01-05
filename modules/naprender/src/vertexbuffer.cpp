@@ -12,13 +12,14 @@
 #include <assert.h>
 
 RTTI_BEGIN_ENUM(nap::EVertexBufferFormat)
-	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::R8_SINT,				"R8_SINT"),
-	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::R32_SINT,				"R32_SINT"),
-	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::R32_SFLOAT,			"R32_SFLOAT"),
-	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::R64_SFLOAT,			"R64_SFLOAT"),
-	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::R32G32_SFLOAT,		"R32G32_SFLOAT"),
-	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::R32G32B32_SFLOAT,		"R32G32B32_SFLOAT"),
-	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::R32G32B32A32_SFLOAT,	"R32G32B32A32_SFLOAT")
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Byte,		"Byte"),
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Int,		"Int"),
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Float,	"Float"),
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Double,	"Double"),
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Vec2,		"Vec2"),
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Vec3,		"Vec3"),
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Vec4,		"Vec4"),
+	RTTI_ENUM_VALUE(nap::EVertexBufferFormat::Unknown,	"Unknown")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBuffer)
@@ -33,17 +34,22 @@ namespace nap
 	// Utility functions
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Returns the vulkan format for the given vertex buffer format
+	 * @param format requested format
+	 * @return vulkan format
+	 */
 	VkFormat getVulkanFormat(EVertexBufferFormat format)
 	{
 		static std::unordered_map<EVertexBufferFormat, VkFormat> format_map =
 		{
-			{ EVertexBufferFormat::R8_SINT,				VK_FORMAT_R8_SINT },
-			{ EVertexBufferFormat::R32_SINT,			VK_FORMAT_R32_SINT },
-			{ EVertexBufferFormat::R32_SFLOAT,			VK_FORMAT_R32_SFLOAT },
-			{ EVertexBufferFormat::R64_SFLOAT,			VK_FORMAT_R64_SFLOAT },
-			{ EVertexBufferFormat::R32G32_SFLOAT,		VK_FORMAT_R32G32_SFLOAT },
-			{ EVertexBufferFormat::R32G32B32_SFLOAT,	VK_FORMAT_R32G32B32_SFLOAT },
-			{ EVertexBufferFormat::R32G32B32A32_SFLOAT,	VK_FORMAT_R32G32B32A32_SFLOAT },
+			{ EVertexBufferFormat::Byte,	VK_FORMAT_R8_SINT },
+			{ EVertexBufferFormat::Int,		VK_FORMAT_R32_SINT },
+			{ EVertexBufferFormat::Float,	VK_FORMAT_R32_SFLOAT },
+			{ EVertexBufferFormat::Double,	VK_FORMAT_R64_SFLOAT },
+			{ EVertexBufferFormat::Vec2,	VK_FORMAT_R32G32_SFLOAT },
+			{ EVertexBufferFormat::Vec3,	VK_FORMAT_R32G32B32_SFLOAT },
+			{ EVertexBufferFormat::Vec4,	VK_FORMAT_R32G32B32A32_SFLOAT },
 		};
 
 		const auto it = format_map.find(format);
@@ -54,7 +60,11 @@ namespace nap
 		return VK_FORMAT_UNDEFINED;
 	}
 
-
+	/**
+	 * Returns the size in bytes, for a single element, of the given format.
+	 * @param format requested format
+	 * @return size in bytes, for a single element, of the given format. -1 if unsupported.
+	 */
 	int getVertexElementSize(VkFormat format)
 	{
 		switch (format)
@@ -88,22 +98,21 @@ namespace nap
 
 
 	VertexBuffer::VertexBuffer(Core& core, VkFormat format, EMeshDataUsage usage) :
-		GPUBuffer(core, usage), mFormat(format), mBufferFormat(EVertexBufferFormat::UNKNOWN)
+		GPUBuffer(core, usage), mFormat(format), mBufferFormat(EVertexBufferFormat::Unknown)
 	{ }
 
 
 	bool VertexBuffer::init(utility::ErrorState& errorState)
 	{
-		// Set vulkan format if the vertex buffer format was set in the resource
-		if (mBufferFormat != EVertexBufferFormat::UNKNOWN)
+		// Set vulkan format if the vertex buffer was constructed in json
+		if (mBufferFormat != EVertexBufferFormat::Unknown)
 		{
 			mFormat = getVulkanFormat(mBufferFormat);
 			if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "Undefined vulkan format"))
 				return false;
 		}
 
-		mVertexSize = getVertexElementSize(mFormat);
-		if (!errorState.check(mVertexSize > 0, "Unsupported Vulkan Format"))
+		if (!errorState.check(getVertexElementSize(mFormat) > 0, "Unsupported Vulkan Format"))
 			return false;
 
 		return GPUBuffer::init(errorState);
@@ -113,6 +122,6 @@ namespace nap
 	// Uploads the data block to the GPU
 	bool VertexBuffer::setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error)
 	{
-		return setDataInternal(data, mVertexSize, numVertices, reservedNumVertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, error);
+		return setDataInternal(data, getVertexElementSize(mFormat), numVertices, reservedNumVertices, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, error);
 	}
 }

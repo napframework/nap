@@ -184,7 +184,8 @@
                             }
                         ],
                         "Samplers": []
-                    }
+                    },
+                    "Invocations": 1
                 },
                 {
                     "Type": "nap::ComputeComponent",
@@ -217,7 +218,8 @@
                             }
                         ],
                         "Samplers": []
-                    }
+                    },
+                    "Invocations": 1
                 }
             ],
             "Children": []
@@ -662,6 +664,12 @@
                     }
                 ]
             }
+        },
+        {
+            "Type": "nap::VertexBuffer",
+            "mID": "VertexBuffer",
+            "Usage": "Static",
+            "Format": "Vec4"
         }
     ]
 }

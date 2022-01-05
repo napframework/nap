@@ -48,9 +48,8 @@ namespace nap
 		if (type == EBufferObjectType::Uniform)
 			return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-		// Storage buffers may be used as vertex attribute buffers on device memory
 		else if (type == EBufferObjectType::Storage)
-			return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
 		assert(false);
 		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;

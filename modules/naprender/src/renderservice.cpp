@@ -492,7 +492,7 @@ namespace nap
 	/**
 	 * Finds all queue families for a given VkPhysicalDevice
 	 */
-	bool getQueueFamilyProperties(int device_index, VkPhysicalDevice physical_device, std::vector<VkQueueFamilyProperties>& queue_family_properties)
+	static bool getQueueFamilyProperties(int device_index, VkPhysicalDevice physical_device, std::vector<VkQueueFamilyProperties>& queue_family_properties)
 	{
 		// Find the number queues this device supports
 		uint32 queue_family_count(0);
@@ -514,7 +514,7 @@ namespace nap
 	 * Selects a queue family index that supports the desired capabilities.
 	 * Returns false if no valid queue family index was found.
 	 */
-	bool selectQueueFamilyIndex(VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, const std::vector<VkQueueFamilyProperties> queue_families, const std::vector<int>& search_mask, int& queue_family_index)
+	static bool selectQueueFamilyIndex(VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, const std::vector<VkQueueFamilyProperties> queue_families, const std::vector<int>& search_mask, int& queue_family_index)
 	{
 		// We want to make sure that we have a queue that supports the required flags
 		for (uint32 index = 0; index < static_cast<uint32>(queue_families.size()); ++index)
@@ -965,12 +965,12 @@ namespace nap
 		for (auto& kvp : shader.getAttributes())
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
-			bindingDescriptions.push_back({ shader_attribute_binding, (uint32)getVertexElementSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
+			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
 			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
 
 			shader_attribute_binding++;
 		}
-
+		
 		VkShaderModule vert_shader_module = shader.getVertexModule();
 		VkShaderModule frag_shader_module = shader.getFragmentModule();
 

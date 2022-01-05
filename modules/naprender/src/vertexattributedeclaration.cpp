@@ -8,9 +8,10 @@
 namespace nap
 {
 	// Constructor
-	VertexAttributeDeclaration::VertexAttributeDeclaration(const std::string& name, int location, VkFormat format) :
+	VertexAttributeDeclaration::VertexAttributeDeclaration(const std::string& name, int location, int elementSize, VkFormat format) :
 		mName(name),
 		mLocation(location),
+		mElementSize(elementSize),
 		mFormat(format)
 	{
 	}

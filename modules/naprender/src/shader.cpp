@@ -750,7 +750,8 @@ namespace nap
 				return false;
 
 			nap::uint32 location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
-			mShaderAttributes[stage_input.name] = std::make_unique<VertexAttributeDeclaration>(stage_input.name, location, format);
+			int element_size_bytes = input_type.width / 4;
+			mShaderAttributes[stage_input.name] = std::make_unique<VertexAttributeDeclaration>(stage_input.name, location, element_size_bytes, format);
 		}
 
 		// Extract fragment shader uniforms

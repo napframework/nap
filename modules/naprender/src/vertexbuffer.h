@@ -18,29 +18,15 @@ namespace nap
 	 */
 	enum class EVertexBufferFormat : int
 	{
-		R8_SINT					= 0,
-		R32_SINT				= 1,
-		R32_SFLOAT				= 2,
-		R64_SFLOAT				= 4,
-		R32G32_SFLOAT			= 5,
-		R32G32B32_SFLOAT		= 6,
-		R32G32B32A32_SFLOAT		= 7,
-		UNKNOWN					= -1
+		Byte					= 0,
+		Int						= 1,
+		Float					= 2,
+		Double					= 4,
+		Vec2					= 5,
+		Vec3					= 6,
+		Vec4					= 7,
+		Unknown					= -1
 	};
-
-	/**
-	 * Returns the vulkan format for the given vertex buffer format
-	 * @param format requested format
-	 * @return vulkan format
-	 */
-	VkFormat getVulkanBufferFormat(EVertexBufferFormat format);
-
-	/**
-	 * Returns the size in bytes, for a single element, of the given format.
-	 * @param format requested format
-	 * @return size in bytes, for a single element, of the given format. -1 if unsupported.
-	 */
-	int getVertexElementSize(VkFormat format);
 
 	/**
 	 * A list of vertices on the GPU that represent a specific attribute of the geometry, for example:
@@ -91,10 +77,9 @@ namespace nap
 		 */
 		bool init(utility::ErrorState& errorState);
 
-		EVertexBufferFormat mBufferFormat = EVertexBufferFormat::UNKNOWN;	///< Property
+		EVertexBufferFormat mBufferFormat = EVertexBufferFormat::Unknown;	///< Property 'BufferFormat' 
 
 	private:
 		VkFormat		mFormat = VK_FORMAT_UNDEFINED;						///< vulkan buffer format, defines element size in bytes
-		int				mVertexSize			= -1;							// how the buffer is used at runtime.
 	};
 }
