@@ -143,7 +143,11 @@ namespace napkin
 			else if (type == TypeInfo::get<char>())
 			{
 				if (!variant.toString().isEmpty())
-					return static_cast<int8_t>(variant.toString().data()[0].toLatin1());
+				{
+					int8_t v = (int8_t)(variant.toString().data()[0].toLatin1());
+					if (v >= 0)
+						return v;
+				}
 				*ok = false;
 				return 0;
 			}
