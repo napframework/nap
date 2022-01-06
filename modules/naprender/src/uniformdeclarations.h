@@ -5,17 +5,19 @@
 #pragma once
 
 // External Includes
+#include <nap/numeric.h>
 #include <string>
 #include <vector>
 #include "vulkan/vulkan_core.h"
 #include "rtti/typeinfo.h"
+#include "gpubuffer.h"
 
 namespace nap
 {
 	/**
 	 * All available shader uniform types
 	 */
-	enum class EUniformValueType : uint8_t
+	enum class EUniformValueType : uint8
 	{
 		Unknown = 0,		///< unknown or invalid shader uniform
 		Float = 1,			///< float
@@ -28,48 +30,6 @@ namespace nap
 		Mat3 = 8,			///< 3x3 float matrix
 		Mat4 = 9			///< 4x4 float matrix
 	};
-
-
-	/**
-	 * Supported buffer types
-	 */
-	enum class EBufferObjectType : uint8_t
-	{
-		Uniform = 0,		///< device readonly
-		Storage = 1			///< device read/write
-	};
-
-
-	/**
-	 * Returns the vulkan buffer usage flags for a given buffer type
-	 */
-	static VkBufferUsageFlags getBufferUsage(EBufferObjectType type)
-	{
-		if (type == EBufferObjectType::Uniform)
-			return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-		else if (type == EBufferObjectType::Storage)
-			return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-
-		assert(false);
-		return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-	}
-
-
-	/**
-	 * Returns the vulkan descriptor type for a given buffer object type
-	 */
-	static VkDescriptorType getDescriptorType(nap::EBufferObjectType type)
-	{
-		if (type == nap::EBufferObjectType::Uniform)
-			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-
-		else if (type == nap::EBufferObjectType::Storage)
-			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-
-		assert(false);
-		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	}
 
 
 	/**
@@ -108,7 +68,7 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformDeclaration)
 	public:
-		UniformStructDeclaration(const std::string& name, EBufferObjectType type, int offset, int size);
+		UniformStructDeclaration(const std::string& name, EDescriptorType descriptorType, int offset, int size);
 		virtual ~UniformStructDeclaration() override;
 
 		UniformStructDeclaration(UniformStructDeclaration&& inRHS);
@@ -123,7 +83,7 @@ namespace nap
 		 */
 		const UniformDeclaration* findMember(const std::string& name) const;
 		std::vector<std::unique_ptr<UniformDeclaration>> mMembers;				///< All shader declarations associated with struct
-		EBufferObjectType mBufferObjectType;									///< Usage: uniform, storage
+		EDescriptorType mDescriptorType;										///< e.g. Uniform or Storage
 	};
 
 
@@ -174,7 +134,7 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformStructDeclaration)
 	public:
-		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EBufferObjectType type, int size);
+		UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EDescriptorType descriptorType, int size);
 
 		UniformBufferObjectDeclaration(UniformBufferObjectDeclaration&& inRHS);
 		UniformBufferObjectDeclaration& operator=(UniformBufferObjectDeclaration&& inRHS);

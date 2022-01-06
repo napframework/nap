@@ -33,7 +33,7 @@ namespace nap
 	 * allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory 
 	 * and are therefore slower to draw. Keep this in mind when selecting the appropriate data use.
 	 */
-	enum class EMeshDataUsage
+	enum class EMeshDataUsage : uint
 	{
 		Static,				///< Mesh data is uploaded only once from the CPU to the GPU
 		DynamicRead,		///< Mesh data is uploaded only once from the CPU to the GPU, and frequently read from GPU to CPU
@@ -42,35 +42,14 @@ namespace nap
 
 
 	/**
-	 * Base GPU Buffer
+	 * Flag that determines the type of shader resource.
+	 * TODO: elaborate
 	 */
-	class NAPAPI BaseGPUBuffer
+	enum class EDescriptorType : uint
 	{
-		friend class RenderService;
-	public:
-		// Default destructor
-		virtual ~BaseGPUBuffer() = default;
-
-		/*
-		 * Returns the vulkan buffer
-		 */
-		virtual VkBuffer getBuffer() const = 0;
-
-	private:
-		/**
-		 * Called by the render service when data can be uploaded
-		 */
-		virtual void upload(VkCommandBuffer commandBuffer) = 0;
-
-		/**
-		 * Called by the render service when data can be downloaded
-		 */
-		virtual void download(VkCommandBuffer commandBuffer) = 0;
-
-		/**
-		 * Called by the render service when download is ready
-		 */
-		virtual void notifyDownloadReady(int frameIndex) = 0;
+		None,				///< none
+		Uniform,			///< specifies a uniform buffer descriptor. device readonly
+		Storage				///< specifies a storage buffer descriptor. device read/write
 	};
 
 
@@ -85,7 +64,7 @@ namespace nap
 	 * allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory
 	 * and are therefore slower to draw.
 	 */
-	class NAPAPI GPUBuffer : public Resource, public BaseGPUBuffer
+	class NAPAPI GPUBuffer : public Resource
 	{
 		friend class RenderService;
 		RTTI_ENABLE(Resource)
@@ -119,12 +98,12 @@ namespace nap
 		/**
 		 * @return handle to the Vulkan buffer.
 		 */
-		virtual VkBuffer getBuffer() const override;
+		virtual VkBuffer getBuffer() const;
 
 		/**
 		 * @return handle to the buffer data.
 		 */
-		const BufferData& getBufferData() const;
+		virtual const BufferData& getBufferData() const;
 
 		/**
 		 * Called right after the buffer on the GPU has been updated.
@@ -132,7 +111,7 @@ namespace nap
 		nap::Signal<> bufferChanged;
 
 		/**
-		 * 
+		 * Initialize the buffer
 		 */
 		bool init(utility::ErrorState& errorState) override;
 
@@ -142,38 +121,61 @@ namespace nap
 		*/
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
-		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property 'Usage' How the buffer is used, static, updated frequently etc.
+		EMeshDataUsage			mUsage = EMeshDataUsage::Static;			///< Property 'Usage' How the buffer is used, static, updated frequently etc.
+		EDescriptorType			mDescriptorType = EDescriptorType::None;	///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
+		bool					mVertexShaderAccess = true;					///< Property 'VertexShaderAccess'
+		bool					mComputeShaderAccess = false;				///< Property 'ComputeShaderAccess'
 
 	protected:
 
 		/**
 		 * Allocates buffers, called by derived classes
+		 * @param size size in bytes of the buffer to allocate
+		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
+		 * @param errorState contains error when data could not be set.
+		 * @return if the data was set
 		 */
-		bool allocateInternal(size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+		bool allocateInternal(size_t size, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
 
 		/**
 		 * Allocates buffers, called by derived classes
+		 * @param elementSize size in bytes of a single element
+		 * @param numVertices the number of vertices to allocate, data should be: numVertices * elementSize.
+		 * @param reservedNumVertices needs to be >= numVertices, allows the buffer to allocate more memory than required
+		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
+		 * @param errorState contains error when data could not be set.
+		 * @return if the data was set
 		 */
-		bool allocateInternal(int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+		bool allocateInternal(int elementSize, size_t numVertices, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
 
 		/**
 		 * Allocates and updates GPU buffer content, called by derived classes.
 		 * @param data pointer to the data to upload.
 		 * @param elementSize size in bytes of the element to upload
 		 * @param numVertices the number of vertices to upload, data should be: numVertices * elementSize.
-		 * @param reservedNumVertices needs to be >= numVertices, allows the buffer to allocate more memory then required
-		 * @param usage how the data is used at runtime
-		 * @param error contains error when data could not be set.
+		 * @param reservedNumVertices needs to be >= numVertices, allows the buffer to allocate more memory than required
+		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
+		 * @param errorState contains error when data could not be set.
 		 * @return if the data was set
 		 */
-		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
 
-		bool setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+		/**
+		 * Allocates and updates GPU buffer content, called by derived classes.
+		 * @param data pointer to the data to upload.
+		 * @param size size in bytes of the data to upload
+		 * @param reservedSize allows the buffer to allocate more memory than required, needs to be >= size
+		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
+		 * @param errorState contains error when data could not be set.
+		 * @return if the data was set
+		 */
+		bool setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
 
 		RenderService*			mRenderService = nullptr;			///< Handle to the render service
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
 		std::vector<BufferData>	mStagingBuffers;					///< Staging buffers, used when uploading or downloading data
 		uint32					mSize = 0;							///< Current used buffer size in bytes
+		VkBufferUsageFlags		mUsageFlags = 0;					///< Buffer usage flags
 
 		int						mCurrentRenderBufferIndex = 0;		///< Current render buffer index
 		int						mCurrentStagingBufferIndex = 0;		///< Current staging buffer index
@@ -182,24 +184,21 @@ namespace nap
 	private:
 		using BufferReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
-		// Called when usage = dynamicread
-		bool setDataInternalDynamicRead(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
-
 		// Called when usage = static
-		bool setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+		bool setDataInternalStatic(void* data, size_t size, utility::ErrorState& errorState);
 		
 		// Called when usage = dynamic write
-		bool setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& errorState);
+		bool setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
 
 		// Uploads data from the staging buffer into GPU buffer. Automatically called by the render service at the appropriate time.
 		// Only occurs when 'usage' = 'static'. Dynamic data shares GPU / CPU memory and is updated immediately.
-		virtual void upload(VkCommandBuffer commandBuffer) override;
+		void upload(VkCommandBuffer commandBuffer);
 
 		// Downloads data from GPU buffer to staging buffer
-		virtual void download(VkCommandBuffer commandBuffer) override;
+		void download(VkCommandBuffer commandBuffer);
 
 		// Called by the render service when download is ready
-		virtual void notifyDownloadReady(int frameIndex) override;
+		void notifyDownloadReady(int frameIndex);
 
 		// Clears queued texture downloads
 		void clearDownloads();

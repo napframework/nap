@@ -26,8 +26,8 @@ namespace nap
 			GPUBuffer(core)
 		{ }
 
-		GPUStructBuffer(Core& core, EBufferObjectType type, EMeshDataUsage usage) :
-			GPUBuffer(core, usage), mType(type)
+		GPUStructBuffer(Core& core, EMeshDataUsage usage) :
+			GPUBuffer(core, usage)
 		{ }
 
 		/**
@@ -60,9 +60,8 @@ namespace nap
 		 */
 		int getElementSize() const					{ return mElementSize; };
 
-		ResourcePtr<BaseStructBufferFillPolicy>		mFillPolicy = nullptr;					///< Property 'FillPolicy'
-		StructBufferDescriptor						mDescriptor;							///< Property 'Descriptor'
-		EBufferObjectType							mType = EBufferObjectType::Uniform;		///< Property 'BufferObjectType'
+		ResourcePtr<BaseStructBufferFillPolicy>		mFillPolicy = nullptr;							///< Property 'FillPolicy'
+		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor'
 
 	private:
 		int	mElementSize = -1;

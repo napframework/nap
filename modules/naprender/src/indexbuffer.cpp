@@ -12,33 +12,29 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IndexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Count", &nap::IndexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::IndexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DescriptorType", &nap::IndexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ComputeShaderAccess", &nap::IndexBuffer::mComputeShaderAccess, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::IndexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// IndexBuffer
-	//////////////////////////////////////////////////////////////////////////
-
-	IndexBuffer::IndexBuffer(Core& core) :
-		GPUBuffer(core)
-	{ }
-
-
-	IndexBuffer::IndexBuffer(Core& core, EMeshDataUsage usage) :
-		GPUBuffer(core, usage)
-	{ }
-
-
 	bool IndexBuffer::init(utility::ErrorState& errorState)
 	{
-		return GPUBuffer::init(errorState);
+		mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		if (!IntVertexBuffer::init(errorState))
+		{
+			errorState.fail("Failed to initialize index buffer");
+			return false;
+		}
+		return true;
 	}
+
 
 	bool IndexBuffer::setData(const std::vector<uint32>& indices, utility::ErrorState& error)
 	{
-		mCount = indices.size();
-		return setDataInternal((void*)indices.data(), sizeof(nap::uint32), indices.size(), indices.capacity(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, error);
+		return setDataInternal((void*)indices.data(), sizeof(nap::uint32), indices.size(), indices.capacity(), mUsageFlags, error);
 	}
 }

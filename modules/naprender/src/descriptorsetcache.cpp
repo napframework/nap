@@ -69,7 +69,7 @@ namespace nap
 
 			BufferData buffer;
 			utility::ErrorState error_state;
-			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, getBufferUsage(ubo_declaration.mBufferObjectType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
+			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, getBufferUsage(ubo_declaration.mDescriptorType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
 			assert(success);
 
 			descriptor_set.mBuffers.push_back(buffer);
@@ -84,7 +84,7 @@ namespace nap
 			ubo_descriptor.dstSet = descriptor_set.mSet;
 			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
 			ubo_descriptor.dstArrayElement = 0;
-			ubo_descriptor.descriptorType = getDescriptorType(ubo_declaration.mBufferObjectType);
+			ubo_descriptor.descriptorType = getVulkanDescriptorType(ubo_declaration.mDescriptorType);
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 		}

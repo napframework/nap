@@ -2110,7 +2110,7 @@ namespace nap
 				texture->upload(commandBuffer);
 			mTexturesToUpload.clear();
 
-			for (BaseGPUBuffer* buffer : mBuffersToUpload)
+			for (GPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
 			mBuffersToUpload.clear();
 		});
@@ -2127,7 +2127,7 @@ namespace nap
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
 
-			for (BaseGPUBuffer* buffer : frame.mBufferDownloads)
+			for (GPUBuffer* buffer : frame.mBufferDownloads)
 				buffer->download(commandBuffer);
 		});
 	}
@@ -2160,7 +2160,7 @@ namespace nap
 			Frame& frame = mFramesInFlight[frame_index];
 			if (!frame.mBufferDownloads.empty() && vkGetFenceStatus(mDevice, frame.mFence) == VK_SUCCESS)
 			{
-				for (BaseGPUBuffer* buffer : frame.mBufferDownloads)
+				for (GPUBuffer* buffer : frame.mBufferDownloads)
 					buffer->notifyDownloadReady(frame_index);
 
 				frame.mBufferDownloads.clear();
@@ -2465,7 +2465,7 @@ namespace nap
 
 		for (Frame& frame : mFramesInFlight)
 		{
-			frame.mBufferDownloads.erase(std::remove_if(frame.mBufferDownloads.begin(), frame.mBufferDownloads.end(), [&buffer](BaseGPUBuffer* existingBuffer)
+			frame.mBufferDownloads.erase(std::remove_if(frame.mBufferDownloads.begin(), frame.mBufferDownloads.end(), [&buffer](GPUBuffer* existingBuffer)
 			{
 				return existingBuffer == &buffer;
 			}), frame.mBufferDownloads.end());

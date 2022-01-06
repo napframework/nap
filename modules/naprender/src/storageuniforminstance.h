@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "storageuniform.h"
-#include "gpuvaluebuffer.h"
+#include "vertexbuffer.h"
 #include "gpustructbuffer.h"
 
 // External Includes
@@ -245,7 +245,7 @@ namespace nap
 		/**
 		 * @return value buffer
 		 */
-		virtual const GPUValueBuffer& getValueBuffer() const = 0;
+		virtual const VertexBuffer& getValueBuffer() const = 0;
 
 		/**
 		 * @return if the value buffer is set
@@ -293,22 +293,22 @@ namespace nap
 		  * Binds a new buffer to the uniform instance
 		  * @param buffer new buffer to bind
 		  */
-		void setValueBuffer(TypedGPUValueBuffer<T>& buffer);
+		void setValueBuffer(TypedVertexBuffer<T>& buffer);
 
 		/**
 		 * @return buffer
 		 */
-		const TypedGPUValueBuffer<T>& getTypedValueBuffer() const			{ assert(mBuffer != nullptr); return *mBuffer; }
+		const TypedVertexBuffer<T>& getTypedValueBuffer() const			{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return buffer
 		 */
-		TypedGPUValueBuffer<T>& getTypedValueBuffer()						{ assert(mBuffer != nullptr); return *mBuffer; }
+		TypedVertexBuffer<T>& getTypedValueBuffer()						{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual const GPUValueBuffer& getValueBuffer() const override		{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual const VertexBuffer& getValueBuffer() const override		{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return if the value buffer is set
@@ -316,7 +316,7 @@ namespace nap
 		virtual bool hasBuffer() const override								{ return mBuffer != nullptr; }
 
 	private:
-		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer;
+		rtti::ObjectPtr<TypedVertexBuffer<T>> mBuffer;
 	};
 
 
@@ -373,7 +373,7 @@ namespace nap
 	}
 
 	template<class T>
-	void nap::TypedStorageUniformValueBufferInstance<T>::setValueBuffer(TypedGPUValueBuffer<T>& buffer)
+	void nap::TypedStorageUniformValueBufferInstance<T>::setValueBuffer(TypedVertexBuffer<T>& buffer)
 	{
 		assert(buffer.getSize() == mDeclaration->mSize);
 		mBuffer = &buffer;

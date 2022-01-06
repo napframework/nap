@@ -16,17 +16,17 @@ struct Particle
 
 layout(std430) buffer ParticleBuffer_In
 {
-	Particle particles[1000000];
+	Particle particles[100000];
 } subo_in;
 
 layout(std430) buffer ParticleBuffer_Out
 {
-	Particle particles[1000000];
+	Particle particles[100000];
 } subo_out;
 
 layout(std430) buffer VertexBuffer 
 {
-	vec4 vertices[4000000];
+	vec4 vertices[400000];
 };
 
 uniform UBO 

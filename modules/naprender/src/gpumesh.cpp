@@ -4,25 +4,18 @@
 
 #include "gpumesh.h"
 #include "renderservice.h"
-#include <assert.h>
+#include <nap/assert.h>
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// GPUMesh
+	//////////////////////////////////////////////////////////////////////////
+
 	GPUMesh::GPUMesh(RenderService& renderService, EMeshDataUsage inUsage) :
 		mRenderService(&renderService),
 		mUsage(inUsage)
 	{ }
-
-
-	void GPUMesh::addVertexBuffer(const std::string& id, VkFormat format)
-	{
-		std::unique_ptr<VertexBuffer> vertex_buffer = std::make_unique<VertexBuffer>(mRenderService->getCore(), format, mUsage);
-
-		utility::ErrorState error_state;
-		vertex_buffer->init(error_state);
-
-		mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer)));
-	}
 
 
 	const VertexBuffer* GPUMesh::findVertexBuffer(const std::string& id) const
@@ -46,12 +39,8 @@ namespace nap
 	{
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
-		
+
 		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage);
-
-		utility::ErrorState error_state;
-		index_buffer->init(error_state);
-
 		mIndexBuffers.emplace_back(std::move(index_buffer));
 		return *mIndexBuffers.back();
 	}
@@ -59,7 +48,7 @@ namespace nap
 
 	const IndexBuffer& GPUMesh::getIndexBuffer(int index) const
 	{
+		assert(index < mIndexBuffers.size());
 		return *mIndexBuffers[index];
 	}
-
 }

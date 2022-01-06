@@ -15,6 +15,9 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUStructBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Descriptor", &nap::GPUStructBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Usage", &nap::GPUStructBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DescriptorType", &nap::GPUStructBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VertexShaderAccess", &nap::GPUStructBuffer::mVertexShaderAccess, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ComputeShaderAccess", &nap::GPUStructBuffer::mComputeShaderAccess, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUStructBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -38,33 +41,44 @@ namespace nap
 
 		// Calculate element size in bytes
 		mElementSize = getShaderVariableStructSizeRecursive(*element_descriptor);
-
 		size_t buffer_size = getSize();
-		VkBufferUsageFlagBits buffer_usage = static_cast<VkBufferUsageFlagBits>(getBufferUsage(EBufferObjectType::Storage));
 
-		// If usage is DynamicRead, skip buffer fill and upload
-		if (mUsage == EMeshDataUsage::DynamicRead)
-			return allocateInternal(buffer_size, buffer_usage, errorState);
+		// Allocate buffer memory
+		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
+			return false;
 
-		// Create a staging buffer to upload
-		auto staging_buffer = std::make_unique<uint8[]>(buffer_size);
+		// Upload data when a buffer fill policy is available
 		if (mFillPolicy != nullptr)
 		{
-			mFillPolicy->fill(&mDescriptor, staging_buffer.get(), errorState);
+			if (mUsage != EMeshDataUsage::DynamicRead)
+			{
+				// Create a staging buffer to upload
+				auto staging_buffer = std::make_unique<uint8[]>(buffer_size);
+
+				if (!mFillPolicy->fill(&mDescriptor, staging_buffer.get(), errorState))
+					return false;
+
+				// Prepare staging buffer upload
+				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
+					return false;
+			}
+			else
+			{
+				// Warn user that buffers cannot be filled when their usage is set to DynamicRead
+				nap::Logger::warn(utility::stringFormat("%s: The configured fill policy was ignored as the buffer usage is DynamicRead", mID.c_str()).c_str());
+			}
 		}
 		else
 		{
-			std::memset(staging_buffer.get(), 0, buffer_size);
+			// TODO: Implement optional Clear
+			//std::memset(staging_buffer.get(), 0, buffer_size);
 		}
-
-		// Prepare staging buffer upload
-		return setDataInternal(staging_buffer.get(), buffer_size, buffer_size, buffer_usage, errorState);
+		return true;
 	}
 
 
 	bool GPUStructBuffer::setData(void* data, size_t size, utility::ErrorState& error)
 	{
-		VkBufferUsageFlagBits buffer_usage = static_cast<VkBufferUsageFlagBits>(getBufferUsage(EBufferObjectType::Storage));
-		return setDataInternal(data, size, size, buffer_usage, error);
+		return setDataInternal(data, size, size, mUsageFlags, error);
 	}
 }

@@ -33,7 +33,6 @@ namespace nap
 	class ComputeMaterialInstance;
 	class ComputeComponentInstance;
 	class Texture2D;
-	class BaseGPUBuffer;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
@@ -1095,7 +1094,7 @@ namespace nap
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
-		using BufferSet = std::unordered_set<BaseGPUBuffer*>;
+		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 

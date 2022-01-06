@@ -376,7 +376,7 @@ namespace nap
 			hbo_descriptor.dstSet = nullptr;
 			hbo_descriptor.dstBinding = declaration.mBinding;
 			hbo_descriptor.dstArrayElement = 0;
-			hbo_descriptor.descriptorType = getDescriptorType(declaration.mBufferObjectType);
+			hbo_descriptor.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 			hbo_descriptor.descriptorCount = 1;	// TODO: Expand this to support arrays at some point (see: samplers)
 			hbo_descriptor.pBufferInfo = mStorageDescriptors.data() + ssboIndex;
 		}
@@ -600,7 +600,7 @@ namespace nap
 			}
 
 			// Verify buffer object type
-			if (!errorState.check(ubo_declaration.mBufferObjectType == EBufferObjectType::Uniform, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str())))
+			if (!errorState.check(ubo_declaration.mDescriptorType == EDescriptorType::Uniform, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", ubo_declaration.mName.c_str())))
 				return false;
 
 			// Pass 2: gather leaf uniform instances for a single ubo
@@ -630,7 +630,7 @@ namespace nap
 			}
 
 			// Verify buffer object type
-			if (!errorState.check(subo_declaration.mBufferObjectType == EBufferObjectType::Storage, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", subo_declaration.mName.c_str())))
+			if (!errorState.check(subo_declaration.mDescriptorType == EDescriptorType::Storage, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", subo_declaration.mName.c_str())))
 				return false;
 
 			// Pass 2: gather handles

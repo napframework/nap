@@ -54,10 +54,11 @@ namespace nap
 
 		/**
 		 * Creates and adds a new vertex buffer to the mesh.
+		 * The new buffer has yet to be initialized before it can be updated. This can be checked with isInitialized().
 		 * @param id name of the vertex buffer to create and add.
-		 * @param format vertex buffer format.
 		 */
-		void addVertexBuffer(const std::string& id, VkFormat format);
+		template<typename ELEMENTTYPE>
+		VertexBuffer& addVertexBuffer(const std::string& id);
 
 		/**
 		 * Finds a vertex buffer with the given name.
@@ -74,14 +75,16 @@ namespace nap
 
 		/**
 		 * Creates an index buffer if one does not exist, returns the existing buffer otherwise.
+		 * If the buffer was created, it has yet to be initialized before it can be updated. This can be checked with isInitialized().
 		 * @param index value of the index buffer to get or create.
 		 * @return an already existing or new index buffer.
 		 */
 		IndexBuffer& getOrCreateIndexBuffer(int index);
 
 		/**
-		 * @param index lookup value of the index buffer to get.
-		 * @return The index buffer if one is created, if no index buffer exists, null is returned.
+		 * Returns an index buffer at the specified index, asserts if not present.
+		 * @param index value of the index buffer to get.
+		 * @return an index buffer.
 		 */
 		const IndexBuffer& getIndexBuffer(int index) const;
 
@@ -92,4 +95,17 @@ namespace nap
 		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;						///< Index buffers
 		EMeshDataUsage								mUsage = EMeshDataUsage::Static;	///< By default a gpu mesh is static.
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename ELEMENTTYPE>
+	VertexBuffer& GPUMesh::addVertexBuffer(const std::string& id)
+	{
+		std::unique_ptr<TypedVertexBuffer<ELEMENTTYPE>> vertex_buffer = std::make_unique<TypedVertexBuffer<ELEMENTTYPE>>(mRenderService->getCore(), mUsage);
+		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
+		return *it->second;
+	}
 }

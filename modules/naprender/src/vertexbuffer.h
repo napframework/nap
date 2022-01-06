@@ -6,80 +6,230 @@
 
 // Local Includes
 #include "gpubuffer.h"
+#include "uniformdeclarations.h"
 #include "vulkan/vulkan_core.h"
+#include "mathutils.h"
+#include "valuebufferfillpolicy.h"
+#include "formatutils.h"
 
 // External Includes
+#include <nap/resourceptr.h>
+#include <nap/logger.h>
 #include <stdint.h>
+#include <glm/glm.hpp>
 
 namespace nap
 {
 	/**
-	 * Vertex Buffer Format
-	 */
-	enum class EVertexBufferFormat : int
-	{
-		Byte					= 0,
-		Int						= 1,
-		Float					= 2,
-		Double					= 4,
-		Vec2					= 5,
-		Vec3					= 6,
-		Vec4					= 7,
-		Unknown					= -1
-	};
-
-	/**
-	 * A list of vertices on the GPU that represent a specific attribute of the geometry, for example:
-	 * position, uv0, uv1, color0, color1, normals etc.
 	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
 	 */
 	class NAPAPI VertexBuffer : public GPUBuffer
 	{
 		RTTI_ENABLE(GPUBuffer)
 	public:
+		VertexBuffer(Core& core) :
+			GPUBuffer(core)
+		{ }
+
+		VertexBuffer(Core& core, EMeshDataUsage usage) :
+			GPUBuffer(core, usage)
+		{ }
+
+		/**
+		 * @return the size of the buffer in bytes
+		 */
+		virtual uint32 getSize() const = 0;
+
+		/**
+		 * @return the size of a single vertex element
+		 */
+		virtual uint32 getElementSize() const = 0;
+
+		/**
+		 * @return the number of buffer values
+		 */
+		virtual uint32 getCount() const = 0;
+
+		/**
+		 * @return the buffer format
+		 */
+		virtual VkFormat getFormat() const = 0;
+
+		/**
+		 * Returns whether this buffer is initialized
+		 */
+		virtual bool isInitialized() const = 0;
+
+		/**
+		 * Uploads data to the GPU based on the settings provided.
+		 * This function automatically allocates GPU memory if required.
+		 * @param data pointer to the block of data that needs to be uploaded.
+		 * @param numVertices the number of vertices
+		 * @param reservedNumVertices the number of vertices to reserve
+		 * @param error contains the error if upload operation failed
+		 * @return if upload succeeded
+		 */
+		virtual bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error) = 0;
+
+		uint32 mCount = 0;						///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
+		bool mClear = true;						///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
+	};
+
+
+	/**
+	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
+	 */
+	template<typename T>
+	class NAPAPI TypedVertexBuffer : public VertexBuffer
+	{
+		RTTI_ENABLE(VertexBuffer)
+	public:
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed. 
 		 * The format defines the vertex element size in bytes.
-		 * @param core the nap core
+		 * @param renderService the render engine
 		 */
-		VertexBuffer(Core& core);
+		TypedVertexBuffer(Core& core) :
+			VertexBuffer(core)
+		{ }
 
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
 		 * The format defines the vertex element size in bytes.
-		 * @param core the nap core
-		 * @param format buffer format, defines element size in bytes
+		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
 		 */
-		VertexBuffer(Core& core, VkFormat format, EMeshDataUsage usage);
+		TypedVertexBuffer(Core& core, EMeshDataUsage usage) :
+			VertexBuffer(core, usage)
+		{ }
 
 		/**
-		 * @return vulkan buffer format
+		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
+		 * If a fill policy is available, the buffer will also be uploaded to immediately.
 		 */
-		VkFormat getFormat() const { return mFormat; }
+		virtual bool init(utility::ErrorState& errorState) override
+		{
+			if (!VertexBuffer::init(errorState))
+				return false;
+
+			if (!errorState.check(mCount != 0, "Failed to initialize vertex buffer. Cannot allocate a buffer with zero elements."))
+				return false;
+			
+			uint32 buffer_size = mCount * sizeof(T);
+
+			// Ensure a buffer cannot be marked as both index and vertex
+			if (!(mUsageFlags & VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
+				mUsageFlags |= ((mVertexShaderAccess) ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : 0);
+
+			// Allocate buffer memory
+			if (!allocateInternal(buffer_size, mUsageFlags, errorState))
+				return false;
+
+			// Upload data when a buffer fill policy is available
+			if (mBufferFillPolicy != nullptr)
+			{
+				if (mUsage != EMeshDataUsage::DynamicRead)
+				{
+					std::vector<T> staging_buffer;
+					mBufferFillPolicy->fill(mCount, staging_buffer, errorState);
+
+					// Prepare staging buffer upload
+					if (!setDataInternal(staging_buffer.data(), buffer_size, buffer_size, mUsageFlags, errorState))
+						return false;
+				}
+				else
+				{
+					// Warn user that buffers cannot be filled when their usage is set to DynamicRead
+					nap::Logger::warn(utility::stringFormat("%s: The configured fill policy was ignored as the buffer usage is DynamicRead", mID.c_str()).c_str());
+				}
+			}
+
+			// Optionally clear
+			else if (mClear)
+			{
+				// TODO: Implement buffer clear operations (exactly like textures)
+			}
+
+			mInitialized = true;
+			return true;
+		}
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
 		 * This function automatically allocates GPU memory if required. 
-		 * Ensure reservedNumVertices >= numVertices. Capacity is calculated based on reservedNumVertices.
 		 * @param data pointer to the block of data that needs to be uploaded.
-		 * @param numVertices number of vertices represented by data.
-		 * @param reservedNumVertices used to calculate final buffer size, needs to be >= numVertices
+		 * @param the size of the data in bytes
 		 * @param error contains the error if upload operation failed
 		 * @return if upload succeeded
 		 */
-		bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error);
+		bool setData(void* data, size_t size, utility::ErrorState& error)
+		{
+			return setDataInternal(data, size, mUsageFlags, error);
+		}
 
 		/**
-		 * 
+		 * Uploads data to the GPU based on the settings provided.
+		 * This function automatically allocates GPU memory if required.
+		 * @param data pointer to the block of data that needs to be uploaded.
+		 * @param numVertices the number of vertices
+		 * @param reservedNumVertices the number of vertices to reserve
+		 * @param error contains the error if upload operation failed
+		 * @return if upload succeeded
 		 */
-		bool init(utility::ErrorState& errorState);
+		virtual bool setData(void* data, size_t numVertices, size_t reservedNumVertices, utility::ErrorState& error) override
+		{
+			return setDataInternal(data, sizeof(T), numVertices, reservedNumVertices, mUsageFlags, error);
+		}
 
-		EVertexBufferFormat mBufferFormat = EVertexBufferFormat::Unknown;	///< Property 'BufferFormat' 
+		/**
+		 * @return the size of the buffer in bytes
+		 */
+		virtual uint32 getSize() const override { return mCount * sizeof(T); };
+
+		/**
+		 * @return the size of a single vertex element
+		 */
+		virtual uint32 getElementSize() const override { return sizeof(T); };
+
+		/**
+		 * @return the number of buffer values
+		 */
+		virtual uint32 getCount() const override { return mCount; }
+
+		/**
+		 * @return the buffer format
+		 */
+		virtual VkFormat getFormat() const override
+		{
+			return getVertexBufferFormat<T>();
+		}
+
+		/**
+		 * Returns whether this buffer is initialized
+		 */
+		virtual bool isInitialized() const { return mInitialized; };
+
+		ResourcePtr<TypedValueBufferFillPolicy<T>>			mBufferFillPolicy = nullptr;	///< Property 'FillPolicy'
 
 	private:
-		VkFormat		mFormat = VK_FORMAT_UNDEFINED;						///< vulkan buffer format, defines element size in bytes
+		bool mInitialized = false;
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// GPU buffer type definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	using IntVertexBuffer = TypedVertexBuffer<int>;
+	using FloatVertexBuffer = TypedVertexBuffer<float>;
+	using Vec2VertexBuffer = TypedVertexBuffer<glm::vec2>;
+	using Vec3VertexBuffer = TypedVertexBuffer<glm::vec3>;
+	using Vec4VertexBuffer = TypedVertexBuffer<glm::vec4>;
+
+	// TODO:
+	// ByteVertexBuffer -> support ByteVertexAttribute
+	// DoubleVertexBuffer -> support DoubleVertexAttribute
+	// Mat4VertexBuffer
 }

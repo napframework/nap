@@ -22,6 +22,12 @@ RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
 	RTTI_ENUM_VALUE(nap::EMeshDataUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
 
+RTTI_BEGIN_ENUM(nap::EDescriptorType)
+	RTTI_ENUM_VALUE(nap::EDescriptorType::None,			"None"),
+	RTTI_ENUM_VALUE(nap::EDescriptorType::Uniform,		"Uniform"),
+	RTTI_ENUM_VALUE(nap::EDescriptorType::Storage,		"Storage")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
 RTTI_END_CLASS
 
@@ -113,17 +119,20 @@ namespace nap
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
+		// Compose usage flags from buffer configuration
+		mUsageFlags |= getBufferUsage(mDescriptorType);
+
 		return true;
 	}
 
 
-	bool GPUBuffer::allocateInternal(int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& errorState)
+	bool GPUBuffer::allocateInternal(int elementSize, size_t numVertices, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
-		return allocateInternal(elementSize * numVertices, usage, errorState);
+		return allocateInternal(elementSize * numVertices, deviceUsage, errorState);
 	}
 
 
-	bool GPUBuffer::allocateInternal(size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState)
+	bool GPUBuffer::allocateInternal(size_t size, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
 		// Persistent storage
 		if (mUsage == EMeshDataUsage::DynamicWrite)
@@ -177,8 +186,11 @@ namespace nap
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
+			// Make sure the transfer bits are not set in advance as these are determined from the mesh data usage property
+			deviceUsage &= ~(VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
 			// Now create the GPU buffer to transfer data to, create buffer information
-			if (!createBuffer(allocator, size, usage | gpu_buffer_usage, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
+			if (!createBuffer(allocator, size, deviceUsage | gpu_buffer_usage, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
 			{
 				errorState.fail("Unable to create render buffer");
 				return false;
@@ -200,7 +212,7 @@ namespace nap
 	}
 
 	
-	bool GPUBuffer::setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlagBits usage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlags usage, utility::ErrorState& errorState)
 	{
 		// Skip if the size of the buffer to upload is zero
 		if (numVertices == 0)
@@ -210,27 +222,23 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
 		// Ensure the buffer isn't DynamicRead
 		if (!errorState.check(mUsage != EMeshDataUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
 			return false;
 
-		// Allocate the buffers if necessary
+		// Ensure the buffers are allocated
 		assert(!mRenderBuffers.empty());
-		if (mRenderBuffers[0].mBuffer == VK_NULL_HANDLE)
-		{
-			if (!allocateInternal(size, usage, errorState))
-				return false;
-		}
+		assert(mRenderBuffers[0].mBuffer != VK_NULL_HANDLE);
 
 		// Update buffers based on selected data usage type
 		switch (mUsage)
 		{
 		case EMeshDataUsage::DynamicWrite:
-			return setDataInternalDynamic(data, mSize, reservedSize, usage, errorState);
+			return setDataInternalDynamic(data, mSize, reservedSize, deviceUsage, errorState);
 		case EMeshDataUsage::Static:
-			return setDataInternalStatic(data, mSize, usage, errorState);
+			return setDataInternalStatic(data, mSize, errorState);
 		default:
 			assert(false);
 			break;
@@ -240,7 +248,7 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternalStatic(void* data, size_t size, VkBufferUsageFlagBits usage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalStatic(void* data, size_t size, utility::ErrorState& errorState)
 	{
 		// When usage is static, the staging buffer is released after the upload
 		if (mStagingBuffers[0].mBuffer == VK_NULL_HANDLE)
@@ -269,7 +277,7 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlagBits usage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
 		// For each update of data, we cycle through the buffers
 		mCurrentRenderBufferIndex = (mCurrentRenderBufferIndex + 1) % mRenderBuffers.size();
@@ -292,7 +300,7 @@ namespace nap
 			}
 
 			// Create new buffer
-			if (!createBuffer(allocator, reservedSize, usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
+			if (!createBuffer(allocator, reservedSize, deviceUsage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
 			{
 				errorState.fail("Render buffer error");
 				return false;

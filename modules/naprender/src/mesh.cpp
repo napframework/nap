@@ -54,7 +54,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Mesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Properties",		&nap::Mesh::mProperties,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Properties",		&nap::Mesh::mProperties,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMesh)
@@ -89,7 +89,38 @@ namespace nap
 	{
 		mGPUMesh = std::make_unique<GPUMesh>(mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
-			mGPUMesh->addVertexBuffer(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
+		{
+			VertexBuffer* buffer = nullptr;
+
+			//if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<uint8>))
+			//	buffer = &mGPUMesh->addVertexBuffer<uint8>(mesh_attribute->mAttributeID);
+
+			if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<int>))
+				buffer = &mGPUMesh->addVertexBuffer<int>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<float>))
+				buffer = &mGPUMesh->addVertexBuffer<float>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<glm::vec2>))
+				buffer = &mGPUMesh->addVertexBuffer<glm::vec2>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<glm::vec3>))
+				buffer = &mGPUMesh->addVertexBuffer<glm::vec3>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<glm::vec4>))
+				buffer = &mGPUMesh->addVertexBuffer<glm::vec4>(mesh_attribute->mAttributeID);
+
+			else
+			{
+				errorState.fail("Unsupported vertex buffer type");
+				return false;
+			}
+
+			// Initialize the added vertex attribute buffer
+			buffer->mCount = mesh_attribute->getCount();
+			if (!buffer->init(errorState))
+				return false;
+		}
 
 		return update(errorState);
 	}
@@ -167,6 +198,12 @@ namespace nap
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
 			IndexBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
+			if (!index_buffer.isInitialized())
+			{
+				index_buffer.mCount = mProperties.mShapes[shapeIndex].getNumIndices();
+				if (!index_buffer.init(errorState))
+					return false;
+			}
 			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices(), errorState))
 				return false;
 		}
@@ -176,13 +213,13 @@ namespace nap
 
 	bool MeshInstance::update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState)
 	{
-		VertexBuffer& gpu_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
+		VertexBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
 		if (!errorState.check(attribute.getCount() == mProperties.mNumVertices,
 			"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", attribute.mAttributeID.c_str(), attribute.getCount(), mProperties.mNumVertices))
 		{
 			return false;
 		}
-		return gpu_buffer.setData(attribute.getRawData(), attribute.getCount(), attribute.getCapacity(), errorState);
+		return vertex_attr_buffer.setData(attribute.getRawData(), attribute.getCount(), attribute.getCapacity(), errorState);
 	}
 
 

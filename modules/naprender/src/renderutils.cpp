@@ -187,6 +187,9 @@ namespace nap
 
 	bool createBuffer(VmaAllocator allocator, uint32 size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags allocationFlags, BufferData& outBuffer, utility::ErrorState& error)
 	{
+		if (!error.check(size != 0, "Unable to create buffer of size zero"))
+			return false;
+
 		// Create buffer information 
 		VkBufferCreateInfo bufferInfo = {};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

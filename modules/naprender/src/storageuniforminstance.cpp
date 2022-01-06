@@ -162,6 +162,19 @@ namespace nap
 				std::unique_ptr<StorageUniformStructBufferInstance> struct_buffer_instance;
 				struct_buffer_instance = createShaderVariableValueInstance<StorageUniformStructBufferInstance, StorageUniformStructBuffer>(resource, *struct_buffer_declaration, errorState);
 
+				if (struct_buffer_instance == nullptr)
+					return false;
+
+				// If the storage uniform was created from a resource, ensure its element count matches the one in the shader declaration and ensure the descriptortype is storage
+				if (struct_buffer_instance != nullptr && struct_buffer_instance->hasBuffer())
+				{
+					if (!errorState.check(struct_buffer_instance->getStructBuffer().getCount() == struct_buffer_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+						return false;
+
+					if (!errorState.check(struct_buffer_instance->getStructBuffer().mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform."))
+						return false;
+				}
+
 				mStorageUniforms.emplace_back(std::move(struct_buffer_instance));
 			}
 			else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
@@ -206,10 +219,13 @@ namespace nap
 				if (instance_value_buffer == nullptr)
 					return false;
 
-				// If the storage uniform was created from a resource, ensure its element count matches the one in the shader declaration
+				// If the storage uniform was created from a resource, ensure its element count matches the one in the shader declaration and ensure the descriptortype is storage
 				if (value_buffer_resource != nullptr && value_buffer_resource->hasBuffer())
 				{
 					if (!errorState.check(value_buffer_resource->getCount() == value_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+						return false;
+
+					if (!errorState.check(value_buffer_resource->getBuffer()->mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform."))
 						return false;
 				}
 

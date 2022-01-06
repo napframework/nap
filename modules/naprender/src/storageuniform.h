@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "uniformdeclarations.h"
-#include "gpuvaluebuffer.h"
+#include "vertexbuffer.h"
 #include "gpustructbuffer.h"
 
 // External Includes
@@ -75,6 +75,11 @@ namespace nap
 	class NAPAPI StorageUniformValueBuffer : public StorageUniformBuffer
 	{
 		RTTI_ENABLE(StorageUniformBuffer)
+	public:
+		/**
+		 * @return a pointer to the buffer, nullptr if not set
+		 */
+		virtual const VertexBuffer* getBuffer() const = 0;
 	};
 
 
@@ -96,9 +101,17 @@ namespace nap
 		 */
 		virtual size_t getSize() const override { return mBuffer->getSize(); }
 
+		/**
+		 * @return Whether a buffer is set
+		 */
 		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
 
-		rtti::ObjectPtr<TypedGPUValueBuffer<T>> mBuffer = nullptr;	/// Property 'Buffer'
+		/**
+		 * @return a pointer to the buffer, nullptr if not set
+		 */
+		virtual const VertexBuffer* getBuffer() const override { return mBuffer.get(); }
+
+		rtti::ObjectPtr<TypedVertexBuffer<T>> mBuffer = nullptr;	/// Property 'Buffer'
 	};
 
 
@@ -123,6 +136,11 @@ namespace nap
 		 * @return if the buffer is set
 		 */
 		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
+
+		/**
+		 * @return a pointer to the buffer, nullptr if not set
+		 */
+		virtual const GPUStructBuffer* getBuffer() const { return mBuffer.get(); };
 
 		rtti::ObjectPtr<GPUStructBuffer> mBuffer = nullptr;
 	};

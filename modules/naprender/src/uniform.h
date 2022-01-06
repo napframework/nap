@@ -2,7 +2,7 @@
 
 // Local Includes
 #include "uniformdeclarations.h"
-#include "gpuvaluebuffer.h"
+#include "vertexbuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>

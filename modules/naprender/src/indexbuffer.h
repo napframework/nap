@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "gpubuffer.h"
+#include "vertexbuffer.h"
 
 // External Includes
 #include <vector>
@@ -18,9 +18,9 @@ namespace nap
 	 * Index buffer, controls how triangles are formed when rendered.
 	 * For more information on GPU buffers in general see: nap::GPUBuffer
 	 */
-	class NAPAPI IndexBuffer : public GPUBuffer
+	class NAPAPI IndexBuffer : public IntVertexBuffer
 	{
-		RTTI_ENABLE(GPUBuffer)
+		RTTI_ENABLE(IntVertexBuffer)
 	public:
 		/**
 		 * Every index buffer needs to have access to the render engine.
@@ -28,7 +28,9 @@ namespace nap
 		 * and in which memory space it is placed.
 		 * @param core the nap core
 		 */
-		IndexBuffer(Core& core);
+		IndexBuffer(Core& core) :
+			IntVertexBuffer(core)
+		{ }
 
 		/**
 		 * Every index buffer needs to have access to the render engine.
@@ -37,17 +39,14 @@ namespace nap
 		 * @param core the nap core
 		 * @param usage how the buffer is used at runtime.
 		 */
-		IndexBuffer(Core& core, EMeshDataUsage usage);
+		IndexBuffer(Core& core, EMeshDataUsage usage) :
+			IntVertexBuffer(core, usage)
+		{ }
 
 		/**
-		 * 
+		 * Initialize this IndexBuffer
 		 */
-		bool init(utility::ErrorState& errorState);
-
-		/**
-		 * @return the number of indices specified in this buffer
-		 */
-		std::size_t getCount() const							{ return mCount; }
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Uploads index data to the GPU buffer.
@@ -56,8 +55,5 @@ namespace nap
 		 * @return if index data has been set correctly.
 		 */
 		bool setData(const std::vector<uint32>& indices, utility::ErrorState& error);
-
-	private:
-		size_t		mCount = 0;			///< number of indices used to construct the triangles
 	};
 }

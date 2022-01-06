@@ -8,6 +8,7 @@
 #include "uniforminstance.h"
 #include "storageuniforminstance.h"
 #include "uniformdeclarations.h"
+#include "gpubuffer.h"
 
 namespace nap
 {
@@ -52,7 +53,7 @@ namespace nap
 		UniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
-			assert(declaration.mBufferObjectType == EBufferObjectType::Uniform);
+			assert(declaration.mDescriptorType == EDescriptorType::Uniform);
 		}
 
 		const UniformBufferObjectDeclaration*	mDeclaration;
@@ -68,7 +69,7 @@ namespace nap
 		StorageUniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
-			assert(declaration.mBufferObjectType == EBufferObjectType::Storage);
+			assert(declaration.mDescriptorType == EDescriptorType::Storage);
 		}
 
 		const UniformBufferObjectDeclaration*		mDeclaration;

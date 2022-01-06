@@ -6,11 +6,6 @@
 #include "uniformdeclarations.h"
 #include "uniform.h"
 
-RTTI_BEGIN_ENUM(nap::EBufferObjectType)
-	RTTI_ENUM_VALUE(nap::EBufferObjectType::Uniform, "Uniform"),
-	RTTI_ENUM_VALUE(nap::EBufferObjectType::Storage, "Storage")
-RTTI_END_ENUM
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformDeclaration)
 RTTI_END_CLASS
 
@@ -50,9 +45,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 
-	UniformStructDeclaration::UniformStructDeclaration(const std::string& name, EBufferObjectType type, int offset, int size) :
+	UniformStructDeclaration::UniformStructDeclaration(const std::string& name, EDescriptorType descriptorType, int offset, int size) :
 		UniformDeclaration(name, offset, size),
-		mBufferObjectType(type)
+		mDescriptorType(descriptorType)
 	{
 	}
 
@@ -75,7 +70,7 @@ namespace nap
 	UniformStructDeclaration::UniformStructDeclaration(UniformStructDeclaration&& inRHS) :
 		UniformDeclaration(std::move(inRHS)),
 		mMembers(std::move(inRHS.mMembers)),
-		mBufferObjectType(std::move(inRHS.mBufferObjectType))
+		mDescriptorType(std::move(inRHS.mDescriptorType))
 	{
 	}
 
@@ -83,7 +78,7 @@ namespace nap
 	UniformStructDeclaration& UniformStructDeclaration::operator=(UniformStructDeclaration&& inRHS)
 	{
 		mMembers = std::move(inRHS.mMembers);
-		mBufferObjectType = std::move(inRHS.mBufferObjectType);
+		mDescriptorType = std::move(inRHS.mDescriptorType);
 		UniformDeclaration::operator=(inRHS);
 		return *this;
 	}
@@ -116,8 +111,8 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EBufferObjectType type, int size) :
-		UniformStructDeclaration(name, type, 0, size),
+	UniformBufferObjectDeclaration::UniformBufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, nap::EDescriptorType descriptorType, int size) :
+		UniformStructDeclaration(name, descriptorType, 0, size),
 		mBinding(binding),
 		mStage(inStage)
 	{

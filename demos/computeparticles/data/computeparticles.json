@@ -125,7 +125,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumParticles": 1000000,
+                    "NumParticles": 100000,
                     "Size": 0.03999999910593033,
                     "RotationSpeed": 0.5,
                     "Velocity": 0.5,
@@ -279,9 +279,12 @@
                         }
                     ]
                 },
-                "Count": 1000000
+                "Count": 100000
             },
             "Usage": "Static",
+            "DescriptorType": "Storage",
+            "VertexShaderAccess": false,
+            "ComputeShaderAccess": true,
             "FillPolicy": "UniformRandomFillPolicy_1"
         },
         {
@@ -339,17 +342,12 @@
                         }
                     ]
                 },
-                "Count": 1000000
+                "Count": 100000
             },
             "Usage": "Static",
-            "FillPolicy": ""
-        },
-        {
-            "Type": "nap::GPUVec4Buffer",
-            "mID": "GPUVec4Buffer_Vertices",
-            "Count": 4000000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
+            "DescriptorType": "Storage",
+            "VertexShaderAccess": false,
+            "ComputeShaderAccess": true,
             "FillPolicy": ""
         },
         {
@@ -666,10 +664,14 @@
             }
         },
         {
-            "Type": "nap::VertexBuffer",
-            "mID": "VertexBuffer",
+            "Type": "nap::Vec4VertexBuffer",
+            "mID": "GPUVec4Buffer_Vertices",
+            "Count": 400000,
             "Usage": "Static",
-            "Format": "Vec4"
+            "DescriptorType": "Storage",
+            "VertexShaderAccess": true,
+            "ComputeShaderAccess": true,
+            "FillPolicy": ""
         }
     ]
 }

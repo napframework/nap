@@ -6,6 +6,8 @@
 #include "shader.h"
 #include "material.h"
 #include "renderservice.h"
+#include "gpubuffer.h"
+#include "formatutils.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -447,7 +449,7 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 }
 
 
-static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::EBufferObjectType boType, nap::utility::ErrorState& errorState)
+static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::EDescriptorType descriptorType, nap::utility::ErrorState& errorState)
 {
 	assert(type.basetype == spirv_cross::SPIRType::Struct);
 
@@ -474,15 +476,15 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 				size_t stride = compiler.type_struct_member_array_stride(type, index);
 				size_t struct_size = compiler.get_declared_struct_size(member_type);
 
-				if (boType == nap::EBufferObjectType::Storage)
+				if (descriptorType == nap::EDescriptorType::Storage)
 				{
 					std::unique_ptr<nap::UniformStructBufferDeclaration> buffer_declaration = std::make_unique<nap::UniformStructBufferDeclaration>(name, absoluteOffset, member_size, stride, num_elements);
-					std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
+					std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
 					buffer_declaration->mElement = std::move(struct_declaration);
 
 					parentStruct.mMembers.emplace_back(std::move(buffer_declaration));
 				}
-				else if (boType == nap::EBufferObjectType::Uniform)
+				else if (descriptorType == nap::EDescriptorType::Uniform)
 				{
 					std::unique_ptr<nap::UniformStructArrayDeclaration> array_declaration = std::make_unique<nap::UniformStructArrayDeclaration>(name, absoluteOffset, member_size);
 
@@ -490,8 +492,8 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 					{
 						std::string array_path = nap::utility::stringFormat("%s[%d]", full_path.c_str(), array_index);
 
-						std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
-						if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, boType, errorState))
+						std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
+						if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, descriptorType, errorState))
 							return false;
 
 						array_declaration->mElements.emplace_back(std::move(struct_declaration));
@@ -518,8 +520,8 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 			{
 				size_t struct_size = compiler.get_declared_struct_size(member_type);
 
-				std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mBufferObjectType, absoluteOffset, struct_size);
-				if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, boType, errorState))
+				std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
+				if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, descriptorType, errorState))
 					return false;
 
 				parentStruct.mMembers.emplace_back(std::move(struct_declaration));
@@ -552,9 +554,9 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Uniform, struct_size);
+		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Uniform, struct_size);
 
-		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, nap::EBufferObjectType::Uniform, errorState))
+		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Uniform, errorState))
 			return false;
 
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
@@ -568,9 +570,9 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EBufferObjectType::Storage, struct_size);
+		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Storage, struct_size);
 
-		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EBufferObjectType::Storage, errorState))
+		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Storage, errorState))
 			return false;
 
 		suboDeclarations.emplace_back(std::move(storage_buffer_object));
@@ -648,7 +650,7 @@ namespace nap
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.pImmutableSamplers = nullptr;
 			uboLayoutBinding.stageFlags = declaration.mStage;
-			uboLayoutBinding.descriptorType = getDescriptorType(declaration.mBufferObjectType);
+			uboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
@@ -660,7 +662,7 @@ namespace nap
 			suboLayoutBinding.descriptorCount = 1;
 			suboLayoutBinding.pImmutableSamplers = nullptr;
 			suboLayoutBinding.stageFlags = declaration.mStage;
-			suboLayoutBinding.descriptorType = getDescriptorType(declaration.mBufferObjectType);
+			suboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
 			descriptor_set_layouts.push_back(suboLayoutBinding);
 		}
@@ -750,7 +752,7 @@ namespace nap
 				return false;
 
 			nap::uint32 location = vertex_shader_compiler.get_decoration(stage_input.id, spv::DecorationLocation);
-			int element_size_bytes = input_type.width / 4;
+			int element_size_bytes = (input_type.width/8) * input_type.vecsize * input_type.columns;
 			mShaderAttributes[stage_input.name] = std::make_unique<VertexAttributeDeclaration>(stage_input.name, location, element_size_bytes, format);
 		}
 
