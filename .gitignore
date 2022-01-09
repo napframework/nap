@@ -10,6 +10,7 @@ xcode/*
 codeblocks/*
 cmake-build-debug/*
 core/Debug/
+.vscode/
 vs/
 modules/napof/Debug/
 modules/napof/Release/
