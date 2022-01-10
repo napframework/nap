@@ -40,7 +40,7 @@ namespace nap
 		 * @param usage how the buffer is used at runtime.
 		 */
 		IndexBuffer(Core& core, EMeshDataUsage usage) :
-			IntVertexBuffer(core, usage)
+			IntVertexBuffer(core, usage, false)
 		{ }
 
 		/**

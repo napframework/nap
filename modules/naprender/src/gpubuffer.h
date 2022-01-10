@@ -106,25 +106,29 @@ namespace nap
 		virtual const BufferData& getBufferData() const;
 
 		/**
+		 * Initialize the buffer
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Implemented by derived classes
+		 * @return whether this buffer is initialized
+		 */
+		virtual bool isInitialized() const = 0;
+
+		/**
+		 * Starts a transfer of buffer data from GPU to CPU. Use this overload to pass your own copy function. This is a non blocking call.
+		 * @param copyFunction the copy function to call when the buffer data is available for download.
+		 */
+		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
+
+		/**
 		 * Called right after the buffer on the GPU has been updated.
 		 */
 		nap::Signal<> bufferChanged;
 
-		/**
-		 * Initialize the buffer
-		 */
-		bool init(utility::ErrorState& errorState) override;
-
-		/**
-		* Starts a transfer of buffer data from GPU to CPU. Use this overload to pass your own copy function. This is a non blocking call.
-		* @param copyFunction the copy function to call when the buffer data is available for download.
-		*/
-		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
-
-		EMeshDataUsage			mUsage = EMeshDataUsage::Static;			///< Property 'Usage' How the buffer is used, static, updated frequently etc.
-		EDescriptorType			mDescriptorType = EDescriptorType::None;	///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
-		bool					mVertexShaderAccess = true;					///< Property 'VertexShaderAccess'
-		bool					mComputeShaderAccess = false;				///< Property 'ComputeShaderAccess'
+		EMeshDataUsage			mUsage = EMeshDataUsage::Static;				///< Property 'Usage' How the buffer is used, static, updated frequently etc.
+		EDescriptorType			mDescriptorType = EDescriptorType::None;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
 
 	protected:
 
@@ -175,7 +179,6 @@ namespace nap
 		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
 		std::vector<BufferData>	mStagingBuffers;					///< Staging buffers, used when uploading or downloading data
 		uint32					mSize = 0;							///< Current used buffer size in bytes
-		VkBufferUsageFlags		mUsageFlags = 0;					///< Buffer usage flags
 
 		int						mCurrentRenderBufferIndex = 0;		///< Current render buffer index
 		int						mCurrentStagingBufferIndex = 0;		///< Current staging buffer index
@@ -205,5 +208,4 @@ namespace nap
 
 		std::vector<BufferReadCallback>	mReadCallbacks;				///< Number of callbacks based on number of frames in flight
 	};
-
 }

@@ -17,9 +17,9 @@
 namespace nap
 {
 	/**
-	* Returns the size in bytes, for a single element, of the given format.
-	* @param format requested format
-	* @return size in bytes, for a single element, of the given format. -1 if unsupported.
+	* Returns the vulkan format associated with ELEMENTTYPE
+	* @tparam ELEMENTTYPE the requested element type
+	* @return the VkFormat associated with the specified element type, otherwise VK_FORMAT_UNDEFINED
 	*/
 	template<typename ELEMENTTYPE>
 	static VkFormat getVertexBufferFormat()
@@ -54,19 +54,19 @@ namespace nap
 		else if (descriptorType == EDescriptorType::Storage)
 			return VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
-		else return 0;
+		return 0;
 	}
 
 
 	/**
-	 * Returns the vulkan descriptor type for a given buffer object type
+	 * Returns the vulkan descriptor type for a given buffer object type, VK_DESCRIPTOR_TYPE_MAX_ENUM if descriptorType is 'None' 
 	 */
-	static VkDescriptorType getVulkanDescriptorType(EDescriptorType descriptorType)
+	static VkDescriptorType getVulkanDescriptorType(nap::EDescriptorType descriptorType)
 	{
-		if (descriptorType == EDescriptorType::Uniform)
+		if (descriptorType == nap::EDescriptorType::Uniform)
 			return VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-		else if (descriptorType == EDescriptorType::Storage)
+		else if (descriptorType == nap::EDescriptorType::Storage)
 			return VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
 		NAP_ASSERT_MSG(false, "Unsupported descriptor type");

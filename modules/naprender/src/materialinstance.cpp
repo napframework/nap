@@ -251,9 +251,9 @@ namespace nap
 	void BaseMaterialInstance::onStorageUniformChanged(int storageBufferIndex, StorageUniformInstance& storageUniformInstance)
 	{
 		// Update the buffer info structure stored in the buffer info handles
+		VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[storageBufferIndex];
 		if (storageUniformInstance.get_type().is_derived_from(RTTI_OF(StorageUniformValueBufferInstance)))
 		{
-			VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[storageBufferIndex];
 			if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformIntBufferInstance))
 			{
 				StorageUniformIntBufferInstance* instance = (StorageUniformIntBufferInstance*)(&storageUniformInstance);
@@ -284,6 +284,15 @@ namespace nap
 				StorageUniformMat4BufferInstance* instance = (StorageUniformMat4BufferInstance*)(&storageUniformInstance);
 				buffer_info.buffer = instance->getValueBuffer().getBuffer();
 			}
+		}
+		else if (storageUniformInstance.get_type().is_derived_from(RTTI_OF(StorageUniformStructBufferInstance)))
+		{
+			StorageUniformStructBufferInstance* instance = (StorageUniformStructBufferInstance*)(&storageUniformInstance);
+			buffer_info.buffer = instance->getStructBuffer().getBuffer();
+		}
+		else
+		{
+			NAP_ASSERT_MSG(false, "Unsupported storage uniform type");
 		}
 	}
 
@@ -376,8 +385,8 @@ namespace nap
 			hbo_descriptor.dstSet = nullptr;
 			hbo_descriptor.dstBinding = declaration.mBinding;
 			hbo_descriptor.dstArrayElement = 0;
-			hbo_descriptor.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
-			hbo_descriptor.descriptorCount = 1;	// TODO: Expand this to support arrays at some point (see: samplers)
+			hbo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			hbo_descriptor.descriptorCount = 1;	// TODO: Extend to support multiple SSBO (see: samplers)
 			hbo_descriptor.pBufferInfo = mStorageDescriptors.data() + ssboIndex;
 		}
 		return true;
@@ -404,7 +413,6 @@ namespace nap
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 			num_sampler_images += declaration.mNumArrayElements;
 
-		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
 		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
 		mSamplerWriteDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
 
@@ -661,7 +669,7 @@ namespace nap
 	}
 
 
-	VkDescriptorSet BaseMaterialInstance::update()
+	const DescriptorSet& BaseMaterialInstance::update()
 	{
 		// The UBO contains pointers to all leaf uniform instances. These can be either defines in the material or the 
 		// material instance, depending on whether it's overridden. If new overrides were created between update calls,
@@ -703,7 +711,7 @@ namespace nap
 		updateStorageUniforms(descriptor_set);
 		updateSamplers(descriptor_set);
 
-		return descriptor_set.mSet;
+		return descriptor_set;
 	}
 
 

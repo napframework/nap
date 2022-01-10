@@ -119,9 +119,6 @@ namespace nap
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
-		// Compose usage flags from buffer configuration
-		mUsageFlags |= getBufferUsage(mDescriptorType);
-
 		return true;
 	}
 
@@ -182,7 +179,7 @@ namespace nap
 				mSize = size;
 
 			// Device buffer memory usage
-			VkBufferUsageFlags gpu_buffer_usage = mUsage == EMeshDataUsage::DynamicRead ?
+			VkBufferUsageFlags transfer_usage = mUsage == EMeshDataUsage::DynamicRead ?
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
@@ -190,7 +187,7 @@ namespace nap
 			deviceUsage &= ~(VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
 			// Now create the GPU buffer to transfer data to, create buffer information
-			if (!createBuffer(allocator, size, deviceUsage | gpu_buffer_usage, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
+			if (!createBuffer(allocator, size, deviceUsage | transfer_usage, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
 			{
 				errorState.fail("Unable to create render buffer");
 				return false;

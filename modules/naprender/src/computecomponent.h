@@ -95,6 +95,11 @@ namespace nap
 		 */
 		virtual void onCompute(VkCommandBuffer commandBuffer, uint numInvocations);
 
+		/**
+		 * Inserts memory barriers 
+		 */
+		void insertBarriers(VkCommandBuffer commandBuffer, const std::vector<BufferData>& resources);
+
 		RenderService*						mRenderService = nullptr;
 		ComputeMaterialInstance				mComputeMaterialInstance;
 		uint								mInvocations = 1;

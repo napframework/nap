@@ -16,8 +16,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUStructBuffer)
 	RTTI_PROPERTY("Descriptor", &nap::GPUStructBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Usage", &nap::GPUStructBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUStructBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VertexShaderAccess", &nap::GPUStructBuffer::mVertexShaderAccess, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ComputeShaderAccess", &nap::GPUStructBuffer::mComputeShaderAccess, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUStructBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -43,6 +41,9 @@ namespace nap
 		mElementSize = getShaderVariableStructSizeRecursive(*element_descriptor);
 		size_t buffer_size = getSize();
 
+		// Compose usage flags from buffer configuration
+		mUsageFlags = getBufferUsage(mDescriptorType);
+
 		// Allocate buffer memory
 		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
 			return false;
@@ -59,7 +60,7 @@ namespace nap
 					return false;
 
 				// Prepare staging buffer upload
-				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
+				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, 0, errorState))
 					return false;
 			}
 			else
@@ -73,6 +74,8 @@ namespace nap
 			// TODO: Implement optional Clear
 			//std::memset(staging_buffer.get(), 0, buffer_size);
 		}
+
+		mInitialized = true;
 		return true;
 	}
 

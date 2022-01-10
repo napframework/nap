@@ -60,10 +60,20 @@ namespace nap
 		 */
 		int getElementSize() const					{ return mElementSize; };
 
+		/**
+		 * @return whether this buffer is initialized
+		 */
+		virtual bool isInitialized() const override { return mInitialized; };
+
 		ResourcePtr<BaseStructBufferFillPolicy>		mFillPolicy = nullptr;							///< Property 'FillPolicy'
 		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor'
 
+	protected:
+		// Usage flags that are shared over host (staging) and device (gpu) buffers
+		VkBufferUsageFlags mUsageFlags = 0;
+
 	private:
+		bool mInitialized = false;
 		int	mElementSize = -1;
 	};
 }

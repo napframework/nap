@@ -24,6 +24,29 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static functions
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Transition image to a new layout using an existing image barrier.
+	 */
+	static void memoryBarrier(VkCommandBuffer commandBuffer, VkBuffer buffer, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage)
+	{
+		VkMemoryBarrier barrier;
+		barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		barrier.srcAccessMask = srcAccessMask;
+		barrier.dstAccessMask = dstAccessMask;
+		barrier.pNext = VK_NULL_HANDLE;
+
+		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 1, &barrier, 0, nullptr, 0, nullptr);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ComputeComponentInstance
+	//////////////////////////////////////////////////////////////////////////
+
 	ComputeComponentInstance::ComputeComponentInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource),
 		mRenderService(entity.getCore()->getService<RenderService>())
@@ -68,13 +91,47 @@ namespace nap
 		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(mComputeMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
 
-		VkDescriptorSet descriptor_set = mComputeMaterialInstance.update();
+		const DescriptorSet& descriptor_set = mComputeMaterialInstance.update();
 
 		// Bind shader descriptors
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
 		uint group_count_x = math::ceil(numInvocations / getLocalWorkGroupSize().x);
 		vkCmdDispatch(commandBuffer, group_count_x, 1, 1);
+
+		// Insert memory barriers if required
+		insertBarriers(commandBuffer, descriptor_set.mBuffers);
+	}
+
+
+	void ComputeComponentInstance::insertBarriers(VkCommandBuffer commandBuffer, const std::vector<BufferData>& resources)
+	{
+		for (const BufferData& resource : resources)
+		{
+			// Check if the resource is marked to be written to in the compute stage
+			if (resource.mUsage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+			{
+				// We must set a memory barrier to prevent access to the resource before it is finished being written to
+				VkAccessFlags dst_access = 0;
+				VkPipelineStageFlags dst_stage = 0;
+
+				// The resource may be consumed as a vertex attribute buffer
+				if (resource.mUsage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+				{
+					dst_access |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+					dst_stage |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+				}
+
+				// The resource may be consumed as an index buffer
+				if (resource.mUsage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+				{
+					dst_access |= VK_ACCESS_INDEX_READ_BIT;
+					dst_stage |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+				}
+
+				memoryBarrier(commandBuffer, resource.mBuffer, VK_ACCESS_SHADER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, dst_stage);
+			}
+		}
 	}
 } 

@@ -15,7 +15,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IndexBuffer)
 	RTTI_PROPERTY("Count", &nap::IndexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::IndexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::IndexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ComputeShaderAccess", &nap::IndexBuffer::mComputeShaderAccess, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FillPolicy", &nap::IndexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

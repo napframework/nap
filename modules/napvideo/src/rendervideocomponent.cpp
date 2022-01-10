@@ -191,7 +191,7 @@ namespace nap
 		mViewMatrixUniform->setValue(viewMatrix);
 
 		// Get valid descriptor set
-		VkDescriptorSet descriptor_set = mMaterialInstance.update();
+		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
@@ -201,7 +201,7 @@ namespace nap
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind buffers and draw
 		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();

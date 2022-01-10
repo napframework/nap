@@ -218,6 +218,8 @@ namespace nap
 		VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &outBuffer.mBuffer, &outBuffer.mAllocation, &outBuffer.mAllocationInfo);
 		if (!error.check(result == VK_SUCCESS, "Unable to create buffer, allocation failed"))
 			return false;
+
+		outBuffer.mUsage = bufferUsage;
 		return true;
 	}
 

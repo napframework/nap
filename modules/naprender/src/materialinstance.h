@@ -121,7 +121,6 @@ namespace nap
 		virtual const BaseMaterialInstanceResource* getResource() const = 0;
 
 		/**
-		 * TODO: Currently keeping for backwards compatibility. The new update(std::vector<VkDescriptorSet>& outDescriptorSets) is recommended.
 		 * This needs to be called before each draw. It will push the current uniform and sampler data into memory
 		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets
 		 * before the Vulkan draw call is issued.
@@ -133,7 +132,7 @@ namespace nap
 		 *
 		 * @return Descriptor to be used in vkCmdBindDescriptorSets.
 		 */
-		virtual VkDescriptorSet update();
+		virtual const DescriptorSet& update();
 		
 	protected:
 		friend class RenderableMesh;	// For responding to pipeline state events

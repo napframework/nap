@@ -1452,17 +1452,8 @@ namespace nap
 		assert(isComputeAvailable());
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
 
-		VkMemoryBarrier barrier;
-		barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-		barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		barrier.pNext = VK_NULL_HANDLE;
-
 		for (auto* comp : components_to_compute)
-		{
 			comp->compute(mCurrentCommandBuffer);
-			vkCmdPipelineBarrier(mCurrentCommandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 0, nullptr);
-		}
 	}
 
 
@@ -1700,18 +1691,6 @@ namespace nap
 			frame.mQueueSubmitOps = { false, false, false };
 		}
 
-		// Initialize semaphore wait list
-		mComputeWaitSemaphoreLists.resize(getMaxFramesInFlight());
-		mComputeFinishedSemaphores.resize(getMaxFramesInFlight());
-
-		VkSemaphoreCreateInfo semaphore_info = {};
-		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		for (int frame_index = 0; frame_index < mFramesInFlight.size(); frame_index++)
-		{
-			if (!errorState.check(vkCreateSemaphore(mDevice, &semaphore_info, nullptr, &mComputeFinishedSemaphores[frame_index]) == VK_SUCCESS, "Failed to create sync objects"))
-				return false;
-		}
-
 		// Try to load .ini file and extract saved settings, allowed to fail
 		nap::utility::ErrorState ini_error;
 		if (!loadIni(getIniFilePath(), ini_error))
@@ -1863,12 +1842,6 @@ namespace nap
 	}
 
 
-	void RenderService::pushComputeDependency(VkSemaphore waitSemaphore)
-	{
-		mComputeWaitSemaphoreLists[mCurrentFrameIndex].push_back(waitSemaphore);
-	}
-
-
 	Material* RenderService::getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error)
 	{
 		// Ensure it's a shader
@@ -1992,11 +1965,6 @@ namespace nap
 				vkFreeCommandBuffers(mDevice, mComputeCommandPool, 1, &frame.mComputeCommandBuffer);
 
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
-		}
-
-		for (auto semaphore : mComputeFinishedSemaphores)
-		{
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
 		}
 
 		mFramesInFlight.clear();
@@ -2231,28 +2199,9 @@ namespace nap
 		// Push any texture downloads on the command buffer
 		downloadData();
 
-		// We must reset the registered wait semaphores here in case no rendering has taken place in the current frame
-		// (e.g. due to a recreation of the swapchain). This can be achieved by explicitly waiting for each in vkQueueSubmit()
-		// We must do it this way as vkWaitSemaphores() is not supported until VK Version 1.2
-		if (!frame.mQueueSubmitOps.mRendering)
-		{
-			VkPipelineStageFlags wait_flags[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
-
-			VkSubmitInfo submit_info = {};
-			submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submit_info.pWaitSemaphores = &mComputeFinishedSemaphores[mCurrentFrameIndex];
-			submit_info.waitSemaphoreCount = 1;
-			submit_info.pWaitDstStageMask = wait_flags;
-
-			vkQueueSubmit(mQueue, 1, &submit_info, frame.mFence);
-		}
-
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
-		else
-		{
-			vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, frame.mFence);
-		}
+		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, frame.mFence);
 		
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % getMaxFramesInFlight();
 		mIsRenderingFrame = false;
@@ -2323,6 +2272,8 @@ namespace nap
 	bool RenderService::beginComputeRecording()
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
+		NAP_ASSERT_MSG(!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering || !mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering,
+			"Recording compute commands after (headless) rendering within a single frame is not allowed.");
 
 		// Reset command buffer for current frame
 		VkCommandBuffer compute_command_buffer = mFramesInFlight[mCurrentFrameIndex].mComputeCommandBuffer;
@@ -2358,23 +2309,10 @@ namespace nap
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
 
-		VkSemaphore signal_semaphores[] = { mComputeFinishedSemaphores[mCurrentFrameIndex] };
-		submit_info.pSignalSemaphores = signal_semaphores;
-		submit_info.signalSemaphoreCount = 1;
-
-		std::vector<VkPipelineStageFlags> wait_flags;
-		wait_flags.resize(mComputeWaitSemaphoreLists[mCurrentFrameIndex].size(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
-
-		submit_info.pWaitSemaphores = mComputeWaitSemaphoreLists[mCurrentFrameIndex].data();
-		submit_info.pWaitDstStageMask = wait_flags.data();
-		submit_info.waitSemaphoreCount = mComputeWaitSemaphoreLists[mCurrentFrameIndex].size();
-
 		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, NULL);
  		assert(result == VK_SUCCESS);
 
 		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mCompute = true;
-		mComputeWaitSemaphoreLists[mCurrentFrameIndex].clear();
-
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 

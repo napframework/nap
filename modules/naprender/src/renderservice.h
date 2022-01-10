@@ -278,8 +278,6 @@ namespace nap
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
-		using SemaphoreWaitList = std::vector<SemaphoreWaitInfo>;
-		using SemaphoreList = std::vector<VkSemaphore>;
 		
 		/**
 		 * Binds a pipeline and pipeline layout together.
@@ -412,8 +410,40 @@ namespace nap
 		 */
 		void endRecording();
 
+		/**
+		 * Starts a compute operation. Call this when you want to start recording general purpose computate operations to the compute queue.
+		 * Always call RenderService::endComputeRecording() afterwards, on success.
+		 * Must be called before any (headless) rendering has been recorded in the current frame.
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginComputeRecording())
+		 *		{
+		 *			...
+		 *			mRenderService->endComputeRecording();
+		 *		}
+		 *		...
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 * @return if the compute record operation started successfully.
+		 */
 		bool beginComputeRecording();
 
+		/**
+		 * Ends a compute operation, submits the recorded compute command buffer to the compute queue.
+		 * Always call this function after a successful call to nap::RenderService::beginComputeRecording().
+		 * 
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginComputeRecording(*mRenderWindow))
+		 *		{
+		 *			...
+		 *			mRenderService->endComputeRecording();
+		 *		}
+		 *		...
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 */
 		void endComputeRecording();
 
 		/**
@@ -921,12 +951,6 @@ namespace nap
 		 */
 		void waitForFence(int frameIndex);
 
-		/**
-		 * Pushes a semaphore - pipelineflags pair onto the wait list for the current of next frame to be rendered.
-		 * This combination will create a synchronization condition for the next queue submission.
-		 */
-		void pushComputeDependency(VkSemaphore waitSemaphore);
-
 	protected:
 		/**
 		 * Register dependencies, render module depends on scene
@@ -1157,9 +1181,6 @@ namespace nap
 		int										mCurrentFrameIndex = 0;
 		std::vector<Frame>						mFramesInFlight;
 		RenderWindow*							mCurrentRenderWindow = nullptr;
-
-		std::vector<SemaphoreList>				mComputeWaitSemaphoreLists;
-		std::vector<VkSemaphore>				mComputeFinishedSemaphores;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;

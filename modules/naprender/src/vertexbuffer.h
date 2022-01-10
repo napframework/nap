@@ -31,8 +31,8 @@ namespace nap
 			GPUBuffer(core)
 		{ }
 
-		VertexBuffer(Core& core, EMeshDataUsage usage) :
-			GPUBuffer(core, usage)
+		VertexBuffer(Core& core, EMeshDataUsage usage, bool vertexAttribute) :
+			GPUBuffer(core, usage), mIsVertexAttribute(vertexAttribute)
 		{ }
 
 		/**
@@ -56,11 +56,6 @@ namespace nap
 		virtual VkFormat getFormat() const = 0;
 
 		/**
-		 * Returns whether this buffer is initialized
-		 */
-		virtual bool isInitialized() const = 0;
-
-		/**
 		 * Uploads data to the GPU based on the settings provided.
 		 * This function automatically allocates GPU memory if required.
 		 * @param data pointer to the block of data that needs to be uploaded.
@@ -73,6 +68,11 @@ namespace nap
 
 		uint32 mCount = 0;						///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
 		bool mClear = true;						///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
+		bool mIsVertexAttribute = true;			///< Property 'VertexAttribute' Whether this buffer will be bound as a vertex attribute
+
+	protected:
+		// Usage flags that are shared over host (staging) and device (gpu) buffers
+		VkBufferUsageFlags mUsageFlags = 0;
 	};
 
 
@@ -86,8 +86,6 @@ namespace nap
 	public:
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
-		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed. 
-		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
 		 */
 		TypedVertexBuffer(Core& core) :
@@ -101,8 +99,8 @@ namespace nap
 		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
 		 */
-		TypedVertexBuffer(Core& core, EMeshDataUsage usage) :
-			VertexBuffer(core, usage)
+		TypedVertexBuffer(Core& core, EMeshDataUsage usage, bool vertexAttribute) :
+			VertexBuffer(core, usage, vertexAttribute)
 		{ }
 
 		/**
@@ -119,9 +117,12 @@ namespace nap
 			
 			uint32 buffer_size = mCount * sizeof(T);
 
+			// Compose usage flags from buffer configuration
+			mUsageFlags |= getBufferUsage(mDescriptorType);
+
 			// Ensure a buffer cannot be marked as both index and vertex
 			if (!(mUsageFlags & VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
-				mUsageFlags |= ((mVertexShaderAccess) ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : 0);
+				mUsageFlags |= (mIsVertexAttribute) ? VK_BUFFER_USAGE_VERTEX_BUFFER_BIT : 0;
 
 			// Allocate buffer memory
 			if (!allocateInternal(buffer_size, mUsageFlags, errorState))
@@ -186,32 +187,29 @@ namespace nap
 		/**
 		 * @return the size of the buffer in bytes
 		 */
-		virtual uint32 getSize() const override { return mCount * sizeof(T); };
+		virtual uint32 getSize() const override						{ return mCount * sizeof(T); };
 
 		/**
 		 * @return the size of a single vertex element
 		 */
-		virtual uint32 getElementSize() const override { return sizeof(T); };
+		virtual uint32 getElementSize() const override				{ return sizeof(T); };
 
 		/**
 		 * @return the number of buffer values
 		 */
-		virtual uint32 getCount() const override { return mCount; }
+		virtual uint32 getCount() const override					{ return mCount; }
 
 		/**
 		 * @return the buffer format
 		 */
-		virtual VkFormat getFormat() const override
-		{
-			return getVertexBufferFormat<T>();
-		}
+		virtual VkFormat getFormat() const override					{ return getVertexBufferFormat<T>(); }
 
 		/**
-		 * Returns whether this buffer is initialized
+		 * @return whether this buffer is initialized
 		 */
-		virtual bool isInitialized() const { return mInitialized; };
+		virtual bool isInitialized() const override					{ return mInitialized; };
 
-		ResourcePtr<TypedValueBufferFillPolicy<T>>			mBufferFillPolicy = nullptr;	///< Property 'FillPolicy'
+		ResourcePtr<TypedValueBufferFillPolicy<T>>					mBufferFillPolicy = nullptr;	///< Property 'FillPolicy'
 
 	private:
 		bool mInitialized = false;

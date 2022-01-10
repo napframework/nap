@@ -34,7 +34,7 @@ namespace nap
 
 	/**
 	 * Vulkan Buffer Structure
-	 * Binds a buffer, memory allocation and allocation information together.
+	 * Binds a buffer, usage information, memory allocation and allocation information together.
 	 */
 	struct NAPAPI BufferData
 	{
@@ -45,11 +45,12 @@ namespace nap
 		 * Releases the buffer, resetting all the handles to null.
 		 * Does not delete it.
 		 */
-		void				release();
+		void					release();
 
-		VmaAllocation		mAllocation = VK_NULL_HANDLE;					///< Vulkan memory allocation handle
-		VmaAllocationInfo	mAllocationInfo;								///< Vulkan allocation information
-		VkBuffer			mBuffer = VK_NULL_HANDLE;						///< Vulkan buffer
+		VmaAllocation			mAllocation = VK_NULL_HANDLE;				///< Vulkan memory allocation handle
+		VmaAllocationInfo		mAllocationInfo;							///< Vulkan allocation information
+		VkBufferUsageFlags		mUsage = 0;									///< Usage flags
+		VkBuffer				mBuffer = VK_NULL_HANDLE;					///< Vulkan buffer
 	};
 
 

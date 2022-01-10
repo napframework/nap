@@ -325,10 +325,10 @@ namespace nap
 			mGlyphUniform->setTexture(render_glyph->getTexture());
 
 			// Get new descriptor set that contains the updated settings and bind pipeline
-			VkDescriptorSet descriptor_set = mMaterialInstance.update();
+			const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 			// Bind descriptor set
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 			// Draw geometry
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);

@@ -805,46 +805,31 @@ namespace nap
 
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
-		std::vector<VkSemaphore> wait_semaphores = { mImageAvailableSemaphores[current_frame] };
-		std::vector<VkPipelineStageFlags> wait_stages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-		nap::RenderService::Frame& frame = mRenderService->mFramesInFlight[current_frame];
-		if (mRenderService->isComputeAvailable() && frame.mQueueSubmitOps.mCompute)
-		{
-			wait_semaphores.push_back(mRenderService->mComputeFinishedSemaphores[current_frame]);
-			wait_stages.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
-		}
-
-		submit_info.waitSemaphoreCount = wait_semaphores.size();
-		submit_info.pWaitSemaphores = wait_semaphores.data();
-		submit_info.pWaitDstStageMask = wait_stages.data();
-
+		VkSemaphore wait_semaphores[] = { mImageAvailableSemaphores[current_frame] };
+		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submit_info.waitSemaphoreCount = 1;
+		submit_info.pWaitSemaphores = wait_semaphores;
+		submit_info.pWaitDstStageMask = wait_stages;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
-		std::vector<VkSemaphore> signalSemaphores = { mRenderFinishedSemaphores[current_frame] };
+		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
 
-		// If compute work was submitted in this frame, also make sure to signal the separate render finished semaphores for compute queues
-		if (mRenderService->isComputeAvailable() && frame.mQueueSubmitOps.mCompute)
-		{
-			signalSemaphores.push_back(mRenderFinishedSemaphoresCompute[current_frame]);
-			mRenderService->pushComputeDependency(mRenderFinishedSemaphoresCompute[current_frame]);
-		}
-		submit_info.signalSemaphoreCount = signalSemaphores.size();
-		submit_info.pSignalSemaphores = signalSemaphores.data();
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores = signalSemaphores;
 		
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
-		frame.mQueueSubmitOps.mRendering = true;
+		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps.mRendering = true;
 
 		// Create present information
 		VkPresentInfoKHR present_info = {};
 		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		present_info.waitSemaphoreCount = 1;
-		present_info.pWaitSemaphores = signalSemaphores.data();
+		present_info.pWaitSemaphores = signalSemaphores;
 
 		// Add swap chain
 		VkSwapchainKHR swap_chains[] = { mSwapchain };
