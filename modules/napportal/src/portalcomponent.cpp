@@ -119,6 +119,6 @@ namespace nap
 		// Broadcast update to connected clients
 		utility::ErrorState error;
 		if (!mServer->broadcast(std::move(portal_event), error))
-			nap::Logger::error("%s: failed to broadcast portal item update: %s", portal_id, error.toString().c_str());
+			nap::Logger::error("%s: failed to broadcast portal item update: %s", portal_id.c_str(), error.toString().c_str());
 	}
 }
