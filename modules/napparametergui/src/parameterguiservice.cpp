@@ -103,9 +103,12 @@ namespace nap
 			buffer[copy_size] = '\0';
 
 			// Draw multiline text input when the string has a line break character
-			if (std::strchr(buffer, '\r\n') != nullptr || std::strchr(buffer, '\n') != nullptr
+			bool is_multiline = std::strchr(buffer, '\r\n') != nullptr || std::strchr(buffer, '\n') != nullptr;
+			bool has_changed = is_multiline
 				? ImGui::InputTextMultiline(string_parameter->getDisplayName().c_str(), buffer, buffer_size, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10))
-				: ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size))
+				: ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size);
+
+			if (has_changed)
 				string_parameter->setValue(std::string(buffer));
 		});
 
