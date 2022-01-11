@@ -43,6 +43,11 @@
                             "Type": "nap::PortalItemTextField",
                             "mID": "PortalItemTextField",
                             "Parameter": "ParameterString"
+                        },
+                        {
+                            "Type": "nap::PortalItemTextArea",
+                            "mID": "PortalItemTextArea",
+                            "Parameter": "ParameterString2"
                         }
                     ]
                 }
@@ -109,8 +114,13 @@
                     "Type": "nap::ParameterString",
                     "mID": "ParameterString",
                     "Name": "My String Parameter",
-                    "Value": "test 123",
-                    "Size": 256
+                    "Value": "Hallo wereld"
+                },
+                {
+                    "Type": "nap::ParameterString",
+                    "mID": "ParameterString2",
+                    "Name": "My String Parameter 2",
+                    "Value": "Hallo zonnestelsel"
                 }
             ],
             "Groups": []

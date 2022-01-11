@@ -81,6 +81,10 @@ namespace nap
 
 	using PortalItemToggle = PortalItemSimple<bool>;
 	using PortalItemTextField = PortalItemSimple<std::string>;
+	class PortalItemTextArea : public PortalItemSimple<std::string>
+	{
+		RTTI_ENABLE(PortalItemSimple<std::string>)
+	};
 
 
 	//////////////////////////////////////////////////////////////////////////

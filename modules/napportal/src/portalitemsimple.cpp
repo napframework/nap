@@ -7,4 +7,7 @@
 DEFINE_PORTAL_ITEM_SIMPLE(nap::PortalItemToggle)
 DEFINE_PORTAL_ITEM_SIMPLE(nap::PortalItemTextField)
 
+RTTI_BEGIN_CLASS(nap::PortalItemTextArea)
+RTTI_END_CLASS
+
 //////////////////////////////////////////////////////////////////////////
