@@ -102,7 +102,10 @@ namespace nap
 			// Add null terminator
 			buffer[copy_size] = '\0';
 
-			if (ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size))
+			// Draw multiline text input when the string has a line break character
+			if (std::strchr(buffer, '\r\n') != nullptr || std::strchr(buffer, '\n') != nullptr
+				? ImGui::InputTextMultiline(string_parameter->getDisplayName().c_str(), buffer, buffer_size, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10))
+				: ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size))
 				string_parameter->setValue(std::string(buffer));
 		});
 
