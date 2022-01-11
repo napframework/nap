@@ -114,13 +114,13 @@
                     "Type": "nap::ParameterString",
                     "mID": "ParameterString",
                     "Name": "My String Parameter",
-                    "Value": "Hallo wereld"
+                    "Value": "Hello world"
                 },
                 {
                     "Type": "nap::ParameterString",
                     "mID": "ParameterString2",
                     "Name": "My String Parameter 2",
-                    "Value": "Hallo zonnestelsel"
+                    "Value": "Hello world,\r\n\r\nIt's a nice day for some NAP development!"
                 }
             ],
             "Groups": []
