@@ -21,27 +21,98 @@ namespace nap
 	{
 	}
 
-
     bool WiringPiService::init(nap::utility::ErrorState& errorState)
     {
-        wiringPiSetup () ;
-        pinMode (0, OUTPUT) ;
+        mRun.store(true);
+        mUpdateTask = std::async(std::launch::async, [this]
+        {
+            wiringPiSetupGpio() ;
 
-        digitalWrite (0, HIGH) ; delay (500) ;
-        digitalWrite (0,  LOW) ; delay (500) ;
+            thread();
+        });
 
         return true;
+    }
+
+    void WiringPiService::shutdown()
+    {
+        mRun.store(false);
+        if (mUpdateTask.valid())
+        {
+            mUpdateTask.wait();
+        }
     }
     
     
     void WiringPiService::registerObjectCreators(rtti::Factory& factory)
     {
-
     }
 
 
-    void WiringPiService::update(double deltaTime)
+    void WiringPiService::setPwmMode(wiringpi::EPWMMode mode)
     {
+        mQueue.enqueue([this, mode]()
+        {
+            pwmSetMode(mode);
+        });
+    }
+
+
+    void WiringPiService::setPinMode(int pin, wiringpi::EPinMode mode)
+    {
+        mQueue.enqueue([this, pin, mode]()
+        {
+            pinMode(pin, (int) mode);
+        });
+    }
+
+
+    void WiringPiService::setPwmFreq(int pin, int freq)
+    {
+        mQueue.enqueue([this, pin, freq]()
+        {
+            pwmToneWrite(pin, freq);
+        });
+    }
+
+
+    wiringpi::EPinValue WiringPiService::getDigitalRead(int pin)
+    {
+        std::lock_guard<std::mutex> l(mMutex);
+        return static_cast<wiringpi::EPinValue>(digitalRead(pin));
+    }
+
+
+    void WiringPiService::setDigitalWrite(int pin, wiringpi::EPinValue value)
+    {
+        mQueue.enqueue([this, pin, value]()
+        {
+            digitalWrite(pin, (int) value);
+        });
+    }
+
+
+    void WiringPiService::setPwmValue(int pin, int value)
+    {
+        mQueue.enqueue([this, pin, value]()
+        {
+
+            pwmWrite(pin, value);
+        });
+    }
+
+
+    void WiringPiService::thread()
+    {
+        while(mRun.load())
+        {
+            std::function<void()> action;
+            while(mQueue.try_dequeue(action))
+            {
+                std::lock_guard<std::mutex> l(mMutex);
+                action();
+            }
+        }
     }
 
 }

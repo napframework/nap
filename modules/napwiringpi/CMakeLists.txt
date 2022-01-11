@@ -4,14 +4,15 @@ project(mod_napwiringpi)
 
 find_package(wiringpi REQUIRED)
 
-file(GLOB_RECURSE sources src/*.cpp src/*.h)
+# add all cpp files to SOURCES
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 set(INCLUDES src ${WIRINGPI_INCLUDE_DIR})
 
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-add_library(${PROJECT_NAME} SHARED ${sources})
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 
 # Remove lib prefix on Unix libraries
@@ -19,7 +20,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
 
-target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${WIRINGPI_LIBRARIES_DEBUG} optimized ${WIRINGPI_LIBRARIES_RELEASE} )
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} debug ${WIRINGPI_LIBRARIES_DEBUG} optimized ${WIRINGPI_LIBRARIES_RELEASE})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 

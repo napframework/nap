@@ -6,12 +6,14 @@
 
 // Std includes
 #include <set>
+#include <future>
 
 // Nap includes
 #include <nap/service.h>
 #include <concurrentqueue.h>
 
-namespace nap {
+namespace nap
+{
     class NAPAPI WiringPiService : public nap::Service
     {
         RTTI_ENABLE(nap::Service)
@@ -21,12 +23,31 @@ namespace nap {
         
         // Initialization
         bool init(nap::utility::ErrorState& errorState) override;
+
+        void setPinMode(int pin, wiringpi::EPinMode mode);
+
+        void setPwmMode(wiringpi::EPWMMode mode);
+
+        void setPwmValue(int pin, int value);
+
+        void setPwmFreq(int pin, int freq);
+
+        wiringpi::EPinValue getDigitalRead(int pin);
+
+        void setDigitalWrite(int pin, wiringpi::EPinValue value);
     protected:
         void registerObjectCreators(rtti::Factory& factory) override final;
 
-        void update(double deltaTime) override;
-
+        void shutdown() override;
     private:
+        void thread();
+
+        std::mutex mMutex;
+        moodycamel::ConcurrentQueue<std::function<void()>> mQueue;
+
+        std::future<void> mUpdateTask;
+
+        std::atomic_bool mRun;
     };
         
 }
