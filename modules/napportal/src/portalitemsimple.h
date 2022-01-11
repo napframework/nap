@@ -17,7 +17,7 @@
 namespace nap
 {
 	/**
-	 * Represents any numeric item in a NAP portal.
+	 * Represents any simple item in a NAP portal.
 	 */
 	template<typename T>
 	class PortalItemSimple : public PortalItem
@@ -76,7 +76,7 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Portal Item Numeric Type Definitions
+	// Portal Item Simple Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
 	using PortalItemToggle = PortalItemSimple<bool>;
