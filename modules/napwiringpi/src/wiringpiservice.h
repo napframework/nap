@@ -12,10 +12,15 @@
 #include <nap/service.h>
 #include <concurrentqueue.h>
 
+// Internal Includes
+#include "wiringpienums.h"
+
 namespace nap
 {
     class NAPAPI WiringPiService : public nap::Service
     {
+        friend class WiringPiGPIOPin;
+
         RTTI_ENABLE(nap::Service)
 
     public:
@@ -24,9 +29,13 @@ namespace nap
         // Initialization
         bool init(nap::utility::ErrorState& errorState) override;
 
-        void setPinMode(int pin, wiringpi::EPinMode mode);
-
         void setPwmMode(wiringpi::EPWMMode mode);
+    protected:
+        void registerObjectCreators(rtti::Factory& factory) override final;
+
+        void shutdown() override;
+    private:
+        void setPinMode(int pin, wiringpi::EPinMode mode);
 
         void setPwmValue(int pin, int value);
 
@@ -35,11 +44,7 @@ namespace nap
         wiringpi::EPinValue getDigitalRead(int pin);
 
         void setDigitalWrite(int pin, wiringpi::EPinValue value);
-    protected:
-        void registerObjectCreators(rtti::Factory& factory) override final;
 
-        void shutdown() override;
-    private:
         void thread();
 
         std::mutex mMutex;

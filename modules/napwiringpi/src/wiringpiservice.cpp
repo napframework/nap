@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "wiringpiservice.h"
+#include "wiringpigpiopin.h"
 
 // Third party includes
 #include <wiringPi.h>
@@ -46,6 +47,7 @@ namespace nap
     
     void WiringPiService::registerObjectCreators(rtti::Factory& factory)
     {
+        factory.addObjectCreator(std::make_unique<WiringPiGPIOPinObjectCreator>(*this));
     }
 
 
