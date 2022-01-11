@@ -10,7 +10,6 @@
 #include <parameternumeric.h>
 #include <parametervec.h>
 #include <parametersimple.h>
-#include <parameterstring.h>
 #include <parameterenum.h>
 #include <parametercolor.h>
 #include <parameterquat.h>
@@ -92,9 +91,19 @@ namespace nap
 		{
 			ParameterString* string_parameter = rtti_cast<ParameterString>(&parameter);
 
-			std::string value = std::string(string_parameter->mValue.data(), string_parameter->mValue.capacity());
-			if (ImGui::InputText(string_parameter->getDisplayName().c_str(), &value[0], string_parameter->mSize))
-				string_parameter->setValue(value);
+			static char buffer[1024];
+			const size_t buffer_size = sizeof(buffer) / sizeof(*buffer);
+			const size_t string_length = string_parameter->mValue.length();
+			const size_t copy_size = std::min(string_length, buffer_size - 1);
+
+			// Copy string excluding null terminator
+			std::memcpy(buffer, string_parameter->mValue.data(), sizeof(char) * copy_size);
+
+			// Add null terminator
+			buffer[copy_size] = '\0';
+
+			if (ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size))
+				string_parameter->setValue(std::string(buffer));
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterRGBColorFloat), [](Parameter& parameter)
