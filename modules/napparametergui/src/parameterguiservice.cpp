@@ -91,7 +91,7 @@ namespace nap
 		{
 			ParameterString* string_parameter = rtti_cast<ParameterString>(&parameter);
 
-			static char buffer[1024];
+			char buffer[1024];
 			const size_t buffer_size = sizeof(buffer) / sizeof(*buffer);
 			const size_t string_length = string_parameter->mValue.length();
 			const size_t copy_size = std::min(string_length, buffer_size - 1);
