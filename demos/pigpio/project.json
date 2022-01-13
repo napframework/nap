@@ -1,0 +1,16 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "PiGPIO",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "mod_napapp",
+        "mod_napscene",
+        "mod_napcameracontrol",
+        "mod_napparametergui",
+        "mod_nappigpio"
+    ],
+    "Data": "data/default.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

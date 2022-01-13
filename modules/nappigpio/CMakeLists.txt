@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.18.4)
 
-project(mod_napwiringpi)
+# check for appropriate architecture
+if(NOT ${ARCH} MATCHES "armhf")
+    return()
+endif()
+
+project(mod_nappigpio)
 
 find_package(wiringpi REQUIRED)
 
@@ -34,7 +39,7 @@ endif()
 
 package_module()
 
-# Package rtmidi into platform release
+# Package wiringpi into platform release
 install(FILES ${WIRINGPI_DIST_FILES} DESTINATION thirdparty/wiringpi)
 install(DIRECTORY ${WIRINGPI_INCLUDE_DIR}/ DESTINATION thirdparty/wiringpi/include)
 

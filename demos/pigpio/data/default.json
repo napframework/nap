@@ -1,0 +1,42 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Example Window",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type" : "nap::pigpio::PiGPIOPin",
+            "mID"  : "GPIOPinPWM",
+            "Pin"  : 18,
+            "Mode" : "PWM Output"
+        },
+        {
+            "Type" : "nap::pigpio::PiGPIOPin",
+            "mID"  : "GPIOPinDigital",
+            "Pin"  : 15,
+            "Mode" : "Output"
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+            ]
+        }
+    ]
+}
