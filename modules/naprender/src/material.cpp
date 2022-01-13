@@ -97,8 +97,8 @@ namespace nap
 	bool BaseMaterial::rebuild(const BaseShader& shader, utility::ErrorState& errorState)
 	{
 		// Uniforms
-		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
-		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
+		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
 
@@ -108,8 +108,8 @@ namespace nap
 		}
 
 		// Storage uniforms
-		const std::vector<UniformBufferObjectDeclaration>& subo_declarations = shader.getSUBODeclarations();
-		for (const UniformBufferObjectDeclaration& subo_declaration : subo_declarations)
+		const std::vector<BufferObjectDeclaration>& subo_declarations = shader.getSUBODeclarations();
+		for (const BufferObjectDeclaration& subo_declaration : subo_declarations)
 		{
 			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(mStorageUniforms, subo_declaration));
 

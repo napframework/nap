@@ -5,9 +5,9 @@
 #pragma once
 
 // Local Includes
-#include "uniformdeclarations.h"
-#include "vertexbuffer.h"
-#include "gpustructbuffer.h"
+#include "shadervariabledeclarations.h"
+#include "valuegpubuffer.h"
+#include "structgpubuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -79,7 +79,7 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const VertexBuffer* getBuffer() const = 0;
+		virtual const ValueGPUBuffer* getBuffer() const = 0;
 	};
 
 
@@ -109,9 +109,9 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const VertexBuffer* getBuffer() const override { return mBuffer.get(); }
+		virtual const ValueGPUBuffer* getBuffer() const override { return mBuffer.get(); }
 
-		rtti::ObjectPtr<TypedVertexBuffer<T>> mBuffer = nullptr;	/// Property 'Buffer'
+		rtti::ObjectPtr<TypedValueGPUBuffer<T>> mBuffer = nullptr;	/// Property 'Buffer'
 	};
 
 
@@ -140,9 +140,9 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const GPUStructBuffer* getBuffer() const { return mBuffer.get(); };
+		virtual const StructGPUBuffer* getBuffer() const { return mBuffer.get(); };
 
-		rtti::ObjectPtr<GPUStructBuffer> mBuffer = nullptr;
+		rtti::ObjectPtr<StructGPUBuffer> mBuffer = nullptr;
 	};
 
 
@@ -166,6 +166,7 @@ namespace nap
 	// Storage uniform value buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
+	using StorageUniformUIntBuffer = TypedStorageUniformValueBuffer<uint>;
 	using StorageUniformIntBuffer = TypedStorageUniformValueBuffer<int>;
 	using StorageUniformFloatBuffer = TypedStorageUniformValueBuffer<float>;
 	using StorageUniformVec2Buffer = TypedStorageUniformValueBuffer<glm::vec2>;

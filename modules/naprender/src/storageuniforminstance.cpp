@@ -17,28 +17,32 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStructBufferInstance)
 	RTTI_CONSTRUCTOR(const nap::ShaderVariableStructBufferDeclaration&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformUIntBufferInstance)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformIntBufferInstance)
-	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformFloatBufferInstance)
-	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformVec2BufferInstance)
-	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformVec3BufferInstance)
-	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformVec4BufferInstance)
-	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformMat4BufferInstance)
-	RTTI_CONSTRUCTOR(const nap::UniformValueArrayDeclaration&)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
 RTTI_END_CLASS
 
 
@@ -78,7 +82,12 @@ namespace nap
 		{
 			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&declaration);
 
-			if (value_array_declaration->mElementType == EShaderVariableValueType::Int)
+			if (value_array_declaration->mElementType == EShaderVariableValueType::UInt)
+			{
+				std::unique_ptr<StorageUniformUIntBufferInstance> buffer_instance = std::make_unique<StorageUniformUIntBufferInstance>(*value_array_declaration);
+				return std::move(buffer_instance);
+			}
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::Int)
 			{
 				std::unique_ptr<StorageUniformIntBufferInstance> buffer_instance = std::make_unique<StorageUniformIntBufferInstance>(*value_array_declaration);
 				return std::move(buffer_instance);
@@ -112,14 +121,12 @@ namespace nap
 		else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 		{
 			//const ShaderVariableStructDeclaration* struct_declaration = rtti_cast<const ShaderVariableStructDeclaration>(&declaration);
-			// Individual structs not (yet) supported
-			assert(false);
+			NAP_ASSERT_MSG(false, "Individual structs not supported for storage uniforms");
 		}
-		else if(declaration_type == RTTI_OF(ShaderVariableValueDeclaration))
+		else if (declaration_type == RTTI_OF(ShaderVariableValueDeclaration))
 		{
 			//const ShaderVariableValueDeclaration* value_declaration = rtti_cast<const ShaderVariableValueDeclaration>(&declaration);
-			// Individual values not (yet) supported
-			assert(false);
+			NAP_ASSERT_MSG(false, "Individual values not supported for storage uniforms");
 		}
 		else
 		{
@@ -168,10 +175,10 @@ namespace nap
 				// If the storage uniform was created from a resource, ensure its element count matches the one in the shader declaration and ensure the descriptortype is storage
 				if (struct_buffer_instance != nullptr && struct_buffer_instance->hasBuffer())
 				{
-					if (!errorState.check(struct_buffer_instance->getStructBuffer().getCount() == struct_buffer_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
+					if (!errorState.check(struct_buffer_instance->getBuffer().getCount() == struct_buffer_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
 						return false;
 
-					if (!errorState.check(struct_buffer_instance->getStructBuffer().mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform."))
+					if (!errorState.check(struct_buffer_instance->getBuffer().mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform."))
 						return false;
 				}
 
@@ -186,7 +193,11 @@ namespace nap
 				if (!errorState.check(resource == nullptr || value_buffer_resource != nullptr, "Type mismatch between shader type and json type"))
 					return false;
 
-				if (value_declaration->mElementType == EShaderVariableValueType::Int)
+				if (value_declaration->mElementType == EShaderVariableValueType::UInt)
+				{
+					instance_value_buffer = createShaderVariableValueInstance<StorageUniformUIntBufferInstance, StorageUniformUIntBuffer>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mElementType == EShaderVariableValueType::Int)
 				{
 					instance_value_buffer = createShaderVariableValueInstance<StorageUniformIntBufferInstance, StorageUniformIntBuffer>(resource, *value_declaration, errorState);
 				}

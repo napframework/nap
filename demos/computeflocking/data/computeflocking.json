@@ -38,7 +38,7 @@
                         "Type": "nap::StorageUniformMat4Buffer",
                         "mID": "StorageUniformMat4Buffer_f7b7e737",
                         "Name": "transforms",
-                        "Buffer": "GPUMat4Buffer_BoidTransforms"
+                        "Buffer": "Mat4GPUBuffer_BoidTransforms"
                     }
                 }
             ],
@@ -245,7 +245,7 @@
                                     "Type": "nap::StorageUniformMat4Buffer",
                                     "mID": "StorageUniformMat4Buffer_068bfa9c",
                                     "Name": "transforms",
-                                    "Buffer": "GPUMat4Buffer_BoidTransforms"
+                                    "Buffer": "Mat4GPUBuffer_BoidTransforms"
                                 }
                             }
                         ],
@@ -324,7 +324,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_ed632592",
                                     "Name": "boids",
-                                    "Buffer": "GPUStructBuffer_Boids_A"
+                                    "Buffer": "StructGPUBuffer_Boids_A"
                                 }
                             },
                             {
@@ -335,7 +335,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_b2aa64d8",
                                     "Name": "boids",
-                                    "Buffer": "GPUStructBuffer_Boids_B"
+                                    "Buffer": "StructGPUBuffer_Boids_B"
                                 }
                             }
                         ],
@@ -358,7 +358,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_9c63ead3",
                                     "Name": "boids",
-                                    "Buffer": "GPUStructBuffer_Boids_B"
+                                    "Buffer": "StructGPUBuffer_Boids_B"
                                 }
                             },
                             {
@@ -369,7 +369,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_07aa6b45",
                                     "Name": "boids",
-                                    "Buffer": "GPUStructBuffer_Boids_A"
+                                    "Buffer": "StructGPUBuffer_Boids_A"
                                 }
                             }
                         ],
@@ -461,188 +461,6 @@
             "Children": []
         },
         {
-            "Type": "nap::GPUMat4Buffer",
-            "mID": "GPUMat4Buffer_BoidTransforms",
-            "Count": 2000,
-            "Usage": "Static",
-            "BufferObjectType": "Storage",
-            "FillPolicy": ""
-        },
-        {
-            "Type": "nap::GPUStructBuffer",
-            "mID": "GPUStructBuffer_Boids_A",
-            "Descriptor": {
-                "Element": {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_54735a57",
-                    "Name": "boids",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_3c7c4709",
-                            "Name": "position",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_5e14de01",
-                            "Name": "velocity",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_07266880",
-                            "Name": "avoidanceHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_8f5acb1d",
-                            "Name": "flockHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_7ccb5b95",
-                            "Name": "flockCenter",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_dbc308e5",
-                            "Name": "padding",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformInt",
-                            "mID": "UniformInt_9fe73999",
-                            "Name": "numFlockMates",
-                            "Value": 0
-                        }
-                    ]
-                },
-                "Count": 2000
-            },
-            "Usage": "Static",
-            "FillPolicy": "BoidBufferFillPolicy"
-        },
-        {
-            "Type": "nap::GPUStructBuffer",
-            "mID": "GPUStructBuffer_Boids_B",
-            "Descriptor": {
-                "Element": {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_54735a57b",
-                    "Name": "boids",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_3c7c4709b",
-                            "Name": "position",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_5e14de01b",
-                            "Name": "velocity",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_07266880b",
-                            "Name": "avoidanceHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_8f5acb1db",
-                            "Name": "flockHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_02b54fb6",
-                            "Name": "flockCenter",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_fb252763",
-                            "Name": "padding",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformInt",
-                            "mID": "UniformInt_9fe73999b",
-                            "Name": "numFlockMates",
-                            "Value": 0
-                        }
-                    ]
-                },
-                "Count": 2000
-            },
-            "Usage": "Static",
-            "FillPolicy": ""
-        },
-        {
             "Type": "nap::GnomonMesh",
             "mID": "GnomonMesh",
             "Size": 1.0,
@@ -651,6 +469,14 @@
                 "y": 0.0,
                 "z": 0.0
             }
+        },
+        {
+            "Type": "nap::Mat4GPUBuffer",
+            "mID": "Mat4GPUBuffer_BoidTransforms",
+            "Count": 2000,
+            "Usage": "Static",
+            "DescriptorType": "Storage",
+            "FillPolicy": ""
         },
         {
             "Type": "nap::Material",
@@ -923,7 +749,7 @@
                     1.0
                 ]
             },
-            "Samples": "Four",
+            "Samples": "Two",
             "AdditionalSwapImages": 1
         },
         {
@@ -975,6 +801,182 @@
                     1.0
                 ]
             }
+        },
+        {
+            "Type": "nap::StructGPUBuffer",
+            "mID": "StructGPUBuffer_Boids_A",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_54735a57",
+                    "Name": "boids",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_3c7c4709",
+                            "Name": "position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_5e14de01",
+                            "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_07266880",
+                            "Name": "avoidanceHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_8f5acb1d",
+                            "Name": "flockHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_7ccb5b95",
+                            "Name": "flockCenter",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_dbc308e5",
+                            "Name": "padding",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformInt",
+                            "mID": "UniformInt_9fe73999",
+                            "Name": "numFlockMates",
+                            "Value": 0
+                        }
+                    ]
+                },
+                "Count": 2000
+            },
+            "Usage": "Static",
+            "DescriptorType": "Storage",
+            "FillPolicy": "BoidBufferFillPolicy"
+        },
+        {
+            "Type": "nap::StructGPUBuffer",
+            "mID": "StructGPUBuffer_Boids_B",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_54735a57b",
+                    "Name": "boids",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_3c7c4709b",
+                            "Name": "position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_5e14de01b",
+                            "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_07266880b",
+                            "Name": "avoidanceHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_8f5acb1db",
+                            "Name": "flockHeading",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_02b54fb6",
+                            "Name": "flockCenter",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_fb252763",
+                            "Name": "padding",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformInt",
+                            "mID": "UniformInt_9fe73999b",
+                            "Name": "numFlockMates",
+                            "Value": 0
+                        }
+                    ]
+                },
+                "Count": 2000
+            },
+            "Usage": "Static",
+            "DescriptorType": "Storage",
+            "FillPolicy": ""
         },
         {
             "Type": "nap::UniformRandomStructBufferFillPolicy",

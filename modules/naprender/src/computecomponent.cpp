@@ -109,7 +109,7 @@ namespace nap
 	{
 		for (const BufferData& resource : resources)
 		{
-			// Check if the resource is marked to be written to in the compute stage
+			// Check if the resource is marked to be written to (in any stage)
 			if (resource.mUsage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
 			{
 				// We must set a memory barrier to prevent access to the resource before it is finished being written to
@@ -130,6 +130,10 @@ namespace nap
 					dst_stage |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 				}
 
+				// We assume the resource is read
+				dst_access = (dst_access == 0) ? VK_ACCESS_SHADER_READ_BIT : dst_access;
+
+				// Insert a memory barrier for this resource
 				memoryBarrier(commandBuffer, resource.mBuffer, VK_ACCESS_SHADER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, dst_stage);
 			}
 		}

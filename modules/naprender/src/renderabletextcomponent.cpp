@@ -6,7 +6,7 @@
 #include "renderabletextcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
-#include "indexbuffer.h"
+#include "valuegpubuffer.h"
 #include "fontshader.h"
 
 // External Includes
@@ -109,7 +109,7 @@ namespace nap
 		mPlane.mColumns = 1;
 		mPlane.mPosition = { 0.5f, 0.5f };
 		mPlane.mSize = { 1.0f, 1.0f };
-		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mUsage = EMemoryUsage::Static;
 		mPlane.mCullMode = ECullMode::Back;
 		if (!mPlane.setup(errorState))
 			return false;

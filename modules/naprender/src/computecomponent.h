@@ -96,7 +96,9 @@ namespace nap
 		virtual void onCompute(VkCommandBuffer commandBuffer, uint numInvocations);
 
 		/**
-		 * Inserts memory barriers 
+		 * Inserts memory barriers based on usage properties of the bufferdata. Only does so for storage buffers
+		 * which are, outside color and depth attachments in render passes, the only resources that can currently be written to.
+		 * Makes the assumption that the data will be read in a subsequent render pass in the current frame.
 		 */
 		void insertBarriers(VkCommandBuffer commandBuffer, const std::vector<BufferData>& resources);
 

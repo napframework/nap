@@ -22,7 +22,7 @@ namespace nap
 	* @return the VkFormat associated with the specified element type, otherwise VK_FORMAT_UNDEFINED
 	*/
 	template<typename ELEMENTTYPE>
-	static VkFormat getVertexBufferFormat()
+	static VkFormat getGPUBufferFormat()
 	{
 		static const std::map<rtti::TypeInfo, VkFormat> format_table =
 		{

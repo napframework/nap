@@ -168,7 +168,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_2f2aafc2",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles_A"
+                                    "Buffer": "StructGPUBuffer_Particles_A"
                                 }
                             },
                             {
@@ -179,7 +179,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_80e8d81c",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles_B"
+                                    "Buffer": "StructGPUBuffer_Particles_B"
                                 }
                             }
                         ],
@@ -202,7 +202,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_b40f779b",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles_B"
+                                    "Buffer": "StructGPUBuffer_Particles_B"
                                 }
                             },
                             {
@@ -213,7 +213,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_00e07917",
                                     "Name": "particles",
-                                    "Buffer": "GPUStructBuffer_Particles_A"
+                                    "Buffer": "StructGPUBuffer_Particles_A"
                                 }
                             }
                         ],
@@ -225,8 +225,8 @@
             "Children": []
         },
         {
-            "Type": "nap::GPUStructBuffer",
-            "mID": "GPUStructBuffer_Particles_A",
+            "Type": "nap::StructGPUBuffer",
+            "mID": "StructGPUBuffer_Particles_A",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -286,8 +286,8 @@
             "FillPolicy": "UniformRandomFillPolicy_1"
         },
         {
-            "Type": "nap::GPUStructBuffer",
-            "mID": "GPUStructBuffer_Particles_B",
+            "Type": "nap::StructGPUBuffer",
+            "mID": "StructGPUBuffer_Particles_B",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",

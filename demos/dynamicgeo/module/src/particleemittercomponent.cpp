@@ -79,7 +79,7 @@ namespace nap
 
 			// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
 			mMeshInstance->setNumVertices(0);
-			mMeshInstance->setUsage(EMeshDataUsage::DynamicWrite);
+			mMeshInstance->setUsage(EMemoryUsage::DynamicWrite);
 			mMeshInstance->reserveVertices(1000);
 			mMeshInstance->setDrawMode(EDrawMode::Triangles);
 			mMeshInstance->setCullMode(ECullMode::None);

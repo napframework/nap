@@ -70,8 +70,8 @@ namespace nap
 		SamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
-		UniformStructInstance& createUniformRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-		StorageUniformStructInstance& createStorageUniformRootStruct(const UniformStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
+		UniformStructInstance& createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		StorageUniformStructInstance& createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
 		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:

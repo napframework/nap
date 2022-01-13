@@ -6,7 +6,7 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "renderservice.h"
-#include "uniformdeclarations.h"
+#include "shadervariabledeclarations.h"
 #include "materialcommon.h"
 
 namespace nap
@@ -65,7 +65,7 @@ namespace nap
 		for (int ubo_index = 0; ubo_index < uniformBufferObjects.size(); ++ubo_index)
 		{
 			const UniformBufferObject& ubo = uniformBufferObjects[ubo_index];
-			const UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
+			const BufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
 
 			BufferData buffer;
 			utility::ErrorState error_state;

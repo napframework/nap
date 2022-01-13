@@ -8,7 +8,7 @@
 #include "rendertarget.h"
 #include "vertexattributedeclaration.h"
 #include "samplerdeclaration.h"
-#include "uniformdeclarations.h"
+#include "shadervariabledeclarations.h"
 #include "uniform.h"
 
 // External Includes
@@ -40,12 +40,12 @@ namespace nap
 		/**
 		 * @return all UniformBufferObject declarations.
 		 */
-		const std::vector<UniformBufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
 
 		/**
 		 * @return all Storage UniformBufferObject declarations.
 		 */
-		const std::vector<UniformBufferObjectDeclaration>& getSUBODeclarations() const { return mSUBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getSUBODeclarations() const { return mSUBODeclarations; }
 
 		/**
 		 * @return shader display name
@@ -60,8 +60,8 @@ namespace nap
 	protected:
 		RenderService* mRenderService = nullptr;													///< Handle to render engine
 		std::string											mDisplayName;							///< Filename of shader used as display name
-		UBODeclarationList									mUBODeclarations;						///< All uniform buffer object declarations
-		UBODeclarationList									mSUBODeclarations;						///< All storage uniform buffer object declarations
+		BufferObjectDeclarationList							mUBODeclarations;						///< All uniform buffer object declarations
+		BufferObjectDeclarationList							mSUBODeclarations;						///< All storage uniform buffer object declarations
 		SamplerDeclarations									mSamplerDeclarations;					///< All sampler declarations
 		VkDescriptorSetLayout								mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 

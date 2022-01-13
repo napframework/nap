@@ -195,7 +195,6 @@ namespace nap
 			{
 				mRenderWindow->toggleFullscreen();
 			}
-
 		}
 		mInputService->addEvent(std::move(inputEvent));
 	}

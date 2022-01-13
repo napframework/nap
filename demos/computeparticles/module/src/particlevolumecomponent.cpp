@@ -85,7 +85,7 @@ namespace nap
 
 		int num_vertices = mNumParticles * 4;
 		mMeshInstance->setNumVertices(num_vertices);
-		mMeshInstance->setUsage(EMeshDataUsage::Static);
+		mMeshInstance->setUsage(EMemoryUsage::Static);
 		mMeshInstance->setDrawMode(EDrawMode::Triangles);
 		mMeshInstance->setCullMode(ECullMode::None);
 

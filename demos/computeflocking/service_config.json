@@ -60,7 +60,7 @@
             "Type": "nap::RenderServiceConfiguration",
             "mID": "RenderServiceConfiguration_b2b35c14-a11e-425a-b503-030f26f63e5b",
             "Headless": false,
-            "PreferredGPU": "Discrete",
+            "PreferredGPU": "Integrated",
             "RequiredQueues": {
                 "Graphics": true,
                 "Compute": true,
@@ -73,6 +73,7 @@
             "VulkanMajor": 1,
             "VulkanMinor": 0,
             "EnableHighDPI": true,
+            "EnableRobustBufferAccess": false,
             "ShowLayers": false,
             "ShowExtensions": false,
             "AnisotropicSamples": 8

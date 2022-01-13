@@ -8,7 +8,7 @@
 #include "renderglobals.h"
 #include "material.h"
 #include "renderservice.h"
-#include "indexbuffer.h"
+#include "valuegpubuffer.h"
 #include "renderglobals.h"
 
 // External Includes

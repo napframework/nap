@@ -33,11 +33,11 @@ namespace nap
 	 * allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory 
 	 * and are therefore slower to draw. Keep this in mind when selecting the appropriate data use.
 	 */
-	enum class EMeshDataUsage : uint
+	enum class EMemoryUsage : uint
 	{
-		Static,				///< Mesh data is uploaded only once from the CPU to the GPU
-		DynamicRead,		///< Mesh data is uploaded only once from the CPU to the GPU, and frequently read from GPU to CPU
-		DynamicWrite		///< Mesh data is updated more than once from the CPU to the GPU
+		Static,				///< Buffer data is uploaded only once from the CPU to the GPU
+		DynamicRead,		///< Buffer data is uploaded only once from the CPU to the GPU, and frequently read from GPU to CPU
+		DynamicWrite		///< Buffer data is updated more than once from the CPU to the GPU
 	};
 
 
@@ -47,9 +47,9 @@ namespace nap
 	 */
 	enum class EDescriptorType : uint
 	{
-		None,				///< none
-		Uniform,			///< specifies a uniform buffer descriptor. device readonly
-		Storage				///< specifies a storage buffer descriptor. device read/write
+		None,				///< None
+		Uniform,			///< Specifies a uniform buffer descriptor. device readonly
+		Storage				///< Specifies a storage buffer descriptor. device read/write
 	};
 
 
@@ -69,7 +69,6 @@ namespace nap
 		friend class RenderService;
 		RTTI_ENABLE(Resource)
 	public:
-
 		/**
 		 * Every buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once 
@@ -85,7 +84,7 @@ namespace nap
 		 * @param core the nap core
 		 * @param usage how the buffer is used at runtime.
 		 */
-		GPUBuffer(Core& core, EMeshDataUsage usage);
+		GPUBuffer(Core& core, EMemoryUsage usage);
 
 		virtual ~GPUBuffer();
 
@@ -111,6 +110,21 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * @return the number of buffer elements
+		 */
+		virtual uint32 getCount() const = 0;
+
+		/**
+		 * @return the size of the buffer in bytes
+		 */
+		virtual size_t getSize() const = 0;
+
+		/**
+		 * @return the element size in bytes
+		 */
+		virtual uint32 getElementSize() const = 0;
+
+		/**
 		 * Implemented by derived classes
 		 * @return whether this buffer is initialized
 		 */
@@ -127,7 +141,7 @@ namespace nap
 		 */
 		nap::Signal<> bufferChanged;
 
-		EMeshDataUsage			mUsage = EMeshDataUsage::Static;				///< Property 'Usage' How the buffer is used, static, updated frequently etc.
+		EMemoryUsage			mUsage = EMemoryUsage::Static;					///< Property 'Usage' How the buffer is used, static, updated frequently etc.
 		EDescriptorType			mDescriptorType = EDescriptorType::None;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
 
 	protected:
@@ -142,29 +156,6 @@ namespace nap
 		bool allocateInternal(size_t size, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
 
 		/**
-		 * Allocates buffers, called by derived classes
-		 * @param elementSize size in bytes of a single element
-		 * @param numVertices the number of vertices to allocate, data should be: numVertices * elementSize.
-		 * @param reservedNumVertices needs to be >= numVertices, allows the buffer to allocate more memory than required
-		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
-		 * @param errorState contains error when data could not be set.
-		 * @return if the data was set
-		 */
-		bool allocateInternal(int elementSize, size_t numVertices, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
-
-		/**
-		 * Allocates and updates GPU buffer content, called by derived classes.
-		 * @param data pointer to the data to upload.
-		 * @param elementSize size in bytes of the element to upload
-		 * @param numVertices the number of vertices to upload, data should be: numVertices * elementSize.
-		 * @param reservedNumVertices needs to be >= numVertices, allows the buffer to allocate more memory than required
-		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
-		 * @param errorState contains error when data could not be set.
-		 * @return if the data was set
-		 */
-		bool setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
-
-		/**
 		 * Allocates and updates GPU buffer content, called by derived classes.
 		 * @param data pointer to the data to upload.
 		 * @param size size in bytes of the data to upload
@@ -175,14 +166,14 @@ namespace nap
 		 */
 		bool setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
 
-		RenderService*			mRenderService = nullptr;			///< Handle to the render service
-		std::vector<BufferData>	mRenderBuffers;						///< Render accessible buffers
-		std::vector<BufferData>	mStagingBuffers;					///< Staging buffers, used when uploading or downloading data
-		uint32					mSize = 0;							///< Current used buffer size in bytes
+		RenderService*				mRenderService = nullptr;					///< Handle to the render service
+		std::vector<BufferData>		mRenderBuffers;								///< Render accessible buffers
+		std::vector<BufferData>		mStagingBuffers;							///< Staging buffers, used when uploading or downloading data
+		uint32						mSize = 0;									///< Current used buffer size in bytes
 
-		int						mCurrentRenderBufferIndex = 0;		///< Current render buffer index
-		int						mCurrentStagingBufferIndex = 0;		///< Current staging buffer index
-		std::vector<int>		mDownloadStagingBufferIndices;		///< Staging buffer indices associated with a frameindex
+		int							mCurrentRenderBufferIndex = 0;				///< Current render buffer index
+		int							mCurrentStagingBufferIndex = 0;				///< Current staging buffer index
+		std::vector<int>			mDownloadStagingBufferIndices;				///< Staging buffer indices associated with a frameindex
 
 	private:
 		using BufferReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
@@ -206,6 +197,6 @@ namespace nap
 		// Clears queued texture downloads
 		void clearDownloads();
 
-		std::vector<BufferReadCallback>	mReadCallbacks;				///< Number of callbacks based on number of frames in flight
+		std::vector<BufferReadCallback>	mReadCallbacks;							///< Number of callbacks based on number of frames in flight
 	};
 }

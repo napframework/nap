@@ -42,7 +42,7 @@ namespace nap
 		mMeshInstance = std::move(mesh_instance);
 		mMeshInstance->setCullMode(ECullMode::Back);
 		mMeshInstance->setDrawMode(EDrawMode::Triangles);
-		mMeshInstance->setUsage(EMeshDataUsage::Static);
+		mMeshInstance->setUsage(EMemoryUsage::Static);
 
 		// Get position
 		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::position);

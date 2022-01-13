@@ -161,9 +161,9 @@ namespace nap
 			return existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const UniformStructDeclaration* declaration = nullptr;
-		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = getBaseMaterial()->getBaseShader()->getUBODeclarations();
-		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
+		const ShaderVariableStructDeclaration* declaration = nullptr;
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = getBaseMaterial()->getBaseShader()->getUBODeclarations();
+		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			if (ubo_declaration.mName == name)
 			{
@@ -187,9 +187,9 @@ namespace nap
 			return existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const UniformStructDeclaration* declaration = nullptr;
-		const std::vector<UniformBufferObjectDeclaration>& subo_declarations = getBaseMaterial()->getBaseShader()->getSUBODeclarations();
-		for (const UniformBufferObjectDeclaration& subo_declaration : subo_declarations)
+		const ShaderVariableStructDeclaration* declaration = nullptr;
+		const std::vector<BufferObjectDeclaration>& subo_declarations = getBaseMaterial()->getBaseShader()->getSUBODeclarations();
+		for (const BufferObjectDeclaration& subo_declaration : subo_declarations)
 		{
 			if (subo_declaration.mName == name)
 			{
@@ -257,38 +257,38 @@ namespace nap
 			if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformIntBufferInstance))
 			{
 				StorageUniformIntBufferInstance* instance = (StorageUniformIntBufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
 			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformFloatBufferInstance))
 			{
 				StorageUniformFloatBufferInstance* instance = (StorageUniformFloatBufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
 			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformVec2BufferInstance))
 			{
 				StorageUniformVec2BufferInstance* instance = (StorageUniformVec2BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
 			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformVec3BufferInstance))
 			{
 				StorageUniformVec3BufferInstance* instance = (StorageUniformVec3BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
 			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformVec4BufferInstance))
 			{
 				StorageUniformVec4BufferInstance* instance = (StorageUniformVec4BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
 			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformMat4BufferInstance))
 			{
 				StorageUniformMat4BufferInstance* instance = (StorageUniformMat4BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getValueBuffer().getBuffer();
+				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
 		}
 		else if (storageUniformInstance.get_type().is_derived_from(RTTI_OF(StorageUniformStructBufferInstance)))
 		{
 			StorageUniformStructBufferInstance* instance = (StorageUniformStructBufferInstance*)(&storageUniformInstance);
-			buffer_info.buffer = instance->getStructBuffer().getBuffer();
+			buffer_info.buffer = instance->getBuffer().getBuffer();
 		}
 		else
 		{
@@ -334,7 +334,7 @@ namespace nap
 					if (!errorState.check(override_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 						return false;
 
-					buffer_handle = override_buffer_uniform->getStructBuffer().getBuffer();
+					buffer_handle = override_buffer_uniform->getBuffer().getBuffer();
 					ssbo.mStorageUniforms.push_back(override_buffer_uniform);
 					override_buffer_uniform->setStructBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 				}
@@ -343,7 +343,7 @@ namespace nap
 					if (!errorState.check(base_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 						return false;
 
-					buffer_handle = base_buffer_uniform->getStructBuffer().getBuffer();
+					buffer_handle = base_buffer_uniform->getBuffer().getBuffer();
 					ssbo.mStorageUniforms.push_back(base_buffer_uniform);
 					base_buffer_uniform->setStructBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 				}
@@ -358,7 +358,7 @@ namespace nap
 					if (!errorState.check(override_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 						return false;
 
-					buffer_handle = override_buffer_uniform->getValueBuffer().getBuffer();
+					buffer_handle = override_buffer_uniform->getBuffer().getBuffer();
 					ssbo.mStorageUniforms.push_back(override_buffer_uniform);
 					override_buffer_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 				}
@@ -367,7 +367,7 @@ namespace nap
 					if (!errorState.check(base_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 						return false;
 
-					buffer_handle = base_buffer_uniform->getValueBuffer().getBuffer();
+					buffer_handle = base_buffer_uniform->getBuffer().getBuffer();
 					ssbo.mStorageUniforms.push_back(base_buffer_uniform);
 					base_buffer_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 				}
@@ -378,7 +378,7 @@ namespace nap
 			buffer_info.offset = 0;
 			buffer_info.range = VK_WHOLE_SIZE;
 
-			const UniformBufferObjectDeclaration& declaration = *ssbo.mDeclaration;
+			const BufferObjectDeclaration& declaration = *ssbo.mDeclaration;
 
 			VkWriteDescriptorSet& hbo_descriptor = mStorageWriteDescriptorSets.emplace_back();
 			hbo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -593,8 +593,8 @@ namespace nap
 		//    elements can point to either Material or MaterialInstance instance uniforms, depending on whether the property was overridden.
 		//    Notice that this also means that this structure should be rebuild when a 'new' override is made at runtime. This is handled in
 		//    update() by rebuilding the UBO when a new uniform is created.
-		const std::vector<UniformBufferObjectDeclaration>& ubo_declarations = shader->getUBODeclarations();
-		for (const UniformBufferObjectDeclaration& ubo_declaration : ubo_declarations)
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader->getUBODeclarations();
+		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(getResource()->mUniforms, ubo_declaration));
 
@@ -619,12 +619,12 @@ namespace nap
 		}
 
 		// SSBO
-		const std::vector<UniformBufferObjectDeclaration>& subo_declarations = shader->getSUBODeclarations();
+		const std::vector<BufferObjectDeclaration>& subo_declarations = shader->getSUBODeclarations();
 		mStorageDescriptors.resize(subo_declarations.size());
 		mStorageWriteDescriptorSets.reserve(subo_declarations.size()); // We reserve to ensure that pointers remain consistent during the iteration
 
 		uint ssbo_index = 0;
-		for (const UniformBufferObjectDeclaration& subo_declaration : subo_declarations)
+		for (const BufferObjectDeclaration& subo_declaration : subo_declarations)
 		{
 			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(getResource()->mStorageUniforms, subo_declaration));
 

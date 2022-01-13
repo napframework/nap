@@ -7,7 +7,7 @@
 #include <vector>
 #include "uniforminstance.h"
 #include "storageuniforminstance.h"
-#include "uniformdeclarations.h"
+#include "shadervariabledeclarations.h"
 #include "gpubuffer.h"
 
 namespace nap
@@ -50,13 +50,13 @@ namespace nap
 	public:
 		using UniformList = std::vector<const UniformLeafInstance*>;
 
-		UniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
+		UniformBufferObject(const BufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
 			assert(declaration.mDescriptorType == EDescriptorType::Uniform);
 		}
 
-		const UniformBufferObjectDeclaration*	mDeclaration;
+		const BufferObjectDeclaration*	mDeclaration;
 		UniformList								mUniforms;
 	};
 
@@ -66,13 +66,13 @@ namespace nap
 	public:
 		using StorageUniformList = std::vector<const StorageUniformBufferInstance*>;
 
-		StorageUniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
+		StorageUniformBufferObject(const BufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
 			assert(declaration.mDescriptorType == EDescriptorType::Storage);
 		}
 
-		const UniformBufferObjectDeclaration*		mDeclaration;
+		const BufferObjectDeclaration*		mDeclaration;
 		StorageUniformList							mStorageUniforms;
 	};
 }

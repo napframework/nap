@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "gpustructbuffer.h"
+#include "structgpubuffer.h"
 #include "renderservice.h"
 #include "uniformutils.h"
 
@@ -11,18 +11,18 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUStructBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Descriptor", &nap::GPUStructBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Usage", &nap::GPUStructBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::GPUStructBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUStructBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Descriptor", &nap::StructGPUBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Usage", &nap::StructGPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DescriptorType", &nap::StructGPUBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::StructGPUBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
 namespace nap
 {
-	bool GPUStructBuffer::init(utility::ErrorState& errorState)
+	bool StructGPUBuffer::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mDescriptor.mCount >= 0, "Descriptor.Count must be non-zero and non-negative"))
 			return false;
@@ -33,12 +33,12 @@ namespace nap
 		UniformStruct* element_descriptor = mDescriptor.mElement.get();
 
 		// Verify maximum depth
-		int depth = getShaderVariableStructDepth(*element_descriptor);
+		int depth = getUniformStructDepth(*element_descriptor);
 		if (!errorState.check(depth == 0, "GPUStructBuffers with elements that exceed depth=1 are currently not supported"))
 			return false;
 
 		// Calculate element size in bytes
-		mElementSize = getShaderVariableStructSizeRecursive(*element_descriptor);
+		mElementSize = getUniformStructSizeRecursive(*element_descriptor);
 		size_t buffer_size = getSize();
 
 		// Compose usage flags from buffer configuration
@@ -51,7 +51,7 @@ namespace nap
 		// Upload data when a buffer fill policy is available
 		if (mFillPolicy != nullptr)
 		{
-			if (mUsage != EMeshDataUsage::DynamicRead)
+			if (mUsage != EMemoryUsage::DynamicRead)
 			{
 				// Create a staging buffer to upload
 				auto staging_buffer = std::make_unique<uint8[]>(buffer_size);
@@ -80,7 +80,7 @@ namespace nap
 	}
 
 
-	bool GPUStructBuffer::setData(void* data, size_t size, utility::ErrorState& error)
+	bool StructGPUBuffer::setData(void* data, size_t size, utility::ErrorState& error)
 	{
 		return setDataInternal(data, size, size, mUsageFlags, error);
 	}

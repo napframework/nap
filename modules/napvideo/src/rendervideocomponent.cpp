@@ -88,7 +88,7 @@ namespace nap
 		mPlane.mSize = glm::vec2(1.0f, 1.0f);
 		mPlane.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 		mPlane.mCullMode = ECullMode::Back;
-		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mUsage = EMemoryUsage::Static;
 		mPlane.mColumns = 1;
 		mPlane.mRows = 1;
 

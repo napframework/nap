@@ -1,8 +1,8 @@
 #pragma once
 
 // Local Includes
-#include "uniformdeclarations.h"
-#include "vertexbuffer.h"
+#include "shadervariabledeclarations.h"
+#include "valuegpubuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -183,13 +183,13 @@ namespace nap
 
 
 	/**
-	 * Find a shader uniform based on the given shader uniform declaration.
+	 * Find a shader uniform based on the given shader variable declaration.
 	 * @param members uniforms of type nap::Uniform to search through.
 	 * @param declaration uniform declaration to match
 	 * @return uniform that matches with the given shader declaration, nullptr if not found.
 	 */
 	template<class T>
-	const Uniform* findUniformStructMember(const std::vector<T>& members, const UniformDeclaration& declaration)
+	const Uniform* findUniformStructMember(const std::vector<T>& members, const ShaderVariableDeclaration& declaration)
 	{
 		for (auto& member : members)
 			if (member->mName == declaration.mName)
@@ -202,6 +202,7 @@ namespace nap
 	// Uniform value type definitions
 	//////////////////////////////////////////////////////////////////////////
 	
+	using UniformUInt						= TypedUniformValue<uint>;
 	using UniformInt						= TypedUniformValue<int>;
 	using UniformFloat						= TypedUniformValue<float>;
 	using UniformVec2						= TypedUniformValue<glm::vec2>;
@@ -214,35 +215,11 @@ namespace nap
 	// Uniform value array type definitions
 	//////////////////////////////////////////////////////////////////////////
 
+	using UniformUIntArray					= TypedUniformValueArray<uint>;
 	using UniformIntArray					= TypedUniformValueArray<int>;
 	using UniformFloatArray					= TypedUniformValueArray<float>;
 	using UniformVec2Array					= TypedUniformValueArray<glm::vec2>;
 	using UniformVec3Array					= TypedUniformValueArray<glm::vec3>;
 	using UniformVec4Array					= TypedUniformValueArray<glm::vec4>;
 	using UniformMat4Array					= TypedUniformValueArray<glm::mat4>;
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Uniform type aliases
-	//////////////////////////////////////////////////////////////////////////
-
-	using ShaderVariableResource			= Uniform;
-	using ShaderVariableStructResource		= UniformStruct;
-	using ShaderVariableStructArrayResource = UniformStructArray;
-	using ShaderVariableValueResource		= UniformValue;
-	using ShaderVariableValueArrayResource	= UniformValueArray;
-
-	using ShaderVariableIntResource			= TypedUniformValue<int>;
-	using ShaderVariableFloatResource		= TypedUniformValue<float>;
-	using ShaderVariableVec2Resource		= TypedUniformValue<glm::vec2>;
-	using ShaderVariableVec3Resource		= TypedUniformValue<glm::vec3>;
-	using ShaderVariableVec4Resource		= TypedUniformValue<glm::vec4>;
-	using ShaderVariableMat4Resource		= TypedUniformValue<glm::mat4>;
-
-	using ShaderVariableIntArrayResource	= TypedUniformValueArray<int>;
-	using ShaderVariableFloatArrayResource	= TypedUniformValueArray<float>;
-	using ShaderVariableVec2ArrayResource	= TypedUniformValueArray<glm::vec2>;
-	using ShaderVariableVec3ArrayResource	= TypedUniformValueArray<glm::vec3>;
-	using ShaderVariableVec4ArrayResource	= TypedUniformValueArray<glm::vec4>;
-	using ShaderVariableMat4ArrayResource	= TypedUniformValueArray<glm::mat4>;
 }

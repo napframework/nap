@@ -9,10 +9,10 @@
 
 namespace nap
 {
-	static void getShaderVariableStructDepthRecursive(const UniformStruct& shaderVariableStruct, int& outMax, int depth = 0)
+	static void getUniformStructDepthRecursive(const UniformStruct& uniformStruct, int& outMax, int depth = 0)
 	{
 		outMax = math::max(outMax, depth);
-		for (const auto& uniform : shaderVariableStruct.mUniforms)
+		for (const auto& uniform : uniformStruct.mUniforms)
 		{
 			rtti::TypeInfo uniform_type = uniform->get_type();
 
@@ -20,29 +20,29 @@ namespace nap
 			{
 				UniformStructArray* uniform_resolved = rtti_cast<UniformStructArray>(uniform.get());
 				if (!uniform_resolved->mStructs.empty())
-					getShaderVariableStructDepthRecursive(*uniform_resolved->mStructs[0].get(), outMax, depth + 1);
+					getUniformStructDepthRecursive(*uniform_resolved->mStructs[0].get(), outMax, depth + 1);
 			}
 			else if (uniform_type.is_derived_from(RTTI_OF(UniformStruct)))
 			{
 				UniformStruct* uniform_resolved = rtti_cast<UniformStruct>(uniform.get());
-				getShaderVariableStructDepthRecursive(*uniform_resolved, outMax, depth + 1);
+				getUniformStructDepthRecursive(*uniform_resolved, outMax, depth + 1);
 			}
 		}
 	}
 
 
-	int NAPAPI getShaderVariableStructDepth(const UniformStruct& shaderVariableStruct)
+	int NAPAPI getUniformStructDepth(const UniformStruct& uniformStruct)
 	{
 		int max = 0;
-		getShaderVariableStructDepthRecursive(shaderVariableStruct, max);
+		getUniformStructDepthRecursive(uniformStruct, max);
 		return max;
 	}
 
 
-	size_t NAPAPI getShaderVariableStructSizeRecursive(const UniformStruct& shaderVariableStruct)
+	size_t NAPAPI getUniformStructSizeRecursive(const UniformStruct& uniformStruct)
 	{
 		size_t size = 0;
-		for (const auto& uniform : shaderVariableStruct.mUniforms)
+		for (const auto& uniform : uniformStruct.mUniforms)
 		{
 			rtti::TypeInfo uniform_type = uniform->get_type();
 
@@ -51,7 +51,7 @@ namespace nap
 				UniformStructArray* uniform_resolved = rtti_cast<UniformStructArray>(uniform.get());
 				if (!uniform_resolved->mStructs.empty())
 				{
-					size_t struct_element_size = getShaderVariableStructSizeRecursive(*uniform_resolved->mStructs[0].get());
+					size_t struct_element_size = getUniformStructSizeRecursive(*uniform_resolved->mStructs[0].get());
 					size += struct_element_size * uniform_resolved->mStructs.size();
 				}
 			}
@@ -80,7 +80,7 @@ namespace nap
 			else if (uniform_type.is_derived_from(RTTI_OF(UniformStruct)))
 			{
 				UniformStruct* uniform_resolved = rtti_cast<UniformStruct>(uniform.get());
-				size += getShaderVariableStructSizeRecursive(*uniform_resolved);
+				size += getUniformStructSizeRecursive(*uniform_resolved);
 			}
 			else if (uniform_type.is_derived_from(RTTI_OF(UniformValue)))
 			{

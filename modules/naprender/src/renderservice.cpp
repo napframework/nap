@@ -13,7 +13,7 @@
 #include "renderglobals.h"
 #include "mesh.h"
 #include "depthsorter.h"
-#include "vertexbuffer.h"
+#include "valuegpubuffer.h"
 #include "texture2d.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
@@ -652,7 +652,7 @@ namespace nap
 		// Set the output
 		outDevice = valid_devices[selected_idx];
 
-		std::string queue_msg = utility::stringFormat("Selected device: %d: %s | Queues: GRAPHICS=%d TRANSFER=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex());
+		std::string queue_msg = utility::stringFormat("Selected device: %d: %s | QueueIndex: GRAPHICS=%d TRANSFER=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex());
 		queue_msg = (outDevice.getComputeQueueIndex() != -1) ? utility::stringFormat("%s COMPUTE=%d", queue_msg.c_str(), outDevice.getComputeQueueIndex()) : queue_msg;
 		nap::Logger::info(queue_msg.c_str());
 
@@ -1316,7 +1316,7 @@ namespace nap
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName().c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
-			const VertexBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
+			const ValueGPUBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return RenderableMesh();
 

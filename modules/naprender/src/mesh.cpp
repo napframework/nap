@@ -6,8 +6,7 @@
 #include "mesh.h"
 #include "meshutils.h"
 #include "renderservice.h"
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
+#include "valuegpubuffer.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>
@@ -90,24 +89,24 @@ namespace nap
 		mGPUMesh = std::make_unique<GPUMesh>(mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			VertexBuffer* buffer = nullptr;
+			ValueGPUBuffer* buffer = nullptr;
 
-			//if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<uint8>))
-			//	buffer = &mGPUMesh->addVertexBuffer<uint8>(mesh_attribute->mAttributeID);
+			if (mesh_attribute->get_type() == RTTI_OF(UIntVertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<uint>(mesh_attribute->mAttributeID);
 
-			if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<int>))
+			if (mesh_attribute->get_type() == RTTI_OF(IntVertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<int>(mesh_attribute->mAttributeID);
 
-			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<float>))
+			else if (mesh_attribute->get_type() == RTTI_OF(FloatVertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<float>(mesh_attribute->mAttributeID);
 
-			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<glm::vec2>))
+			else if (mesh_attribute->get_type() == RTTI_OF(Vec2VertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<glm::vec2>(mesh_attribute->mAttributeID);
 
-			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<glm::vec3>))
+			else if (mesh_attribute->get_type() == RTTI_OF(Vec3VertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<glm::vec3>(mesh_attribute->mAttributeID);
 
-			else if (mesh_attribute->get_type() == RTTI_OF(VertexAttribute<glm::vec4>))
+			else if (mesh_attribute->get_type() == RTTI_OF(Vec4VertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<glm::vec4>(mesh_attribute->mAttributeID);
 
 			else
@@ -173,7 +172,7 @@ namespace nap
 	bool MeshInstance::update(utility::ErrorState& errorState)
 	{
 		// Assert when trying to update a mesh that is static and already initialized
-		NAP_ASSERT_MSG(!mInitialized || mProperties.mUsage == EMeshDataUsage::DynamicWrite, 
+		NAP_ASSERT_MSG(!mInitialized || mProperties.mUsage == EMemoryUsage::DynamicWrite, 
 			"trying to update previously allocated mesh without usage set to: 'DynamicWrite'");
 
 		// Check for mismatches in sizes
@@ -189,7 +188,7 @@ namespace nap
 		// Synchronize mesh attributes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			VertexBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
+			ValueGPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
 			if (!vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity(), errorState))
 				return false;
 		}
@@ -197,14 +196,14 @@ namespace nap
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			IndexBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
+			ValueGPUBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
 			if (!index_buffer.isInitialized())
 			{
 				index_buffer.mCount = mProperties.mShapes[shapeIndex].getNumIndices();
 				if (!index_buffer.init(errorState))
 					return false;
 			}
-			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices(), errorState))
+			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices().data(), mProperties.mShapes[shapeIndex].getNumIndices(), mProperties.mShapes[shapeIndex].getNumIndices(), errorState))
 				return false;
 		}
 		return true;
@@ -213,7 +212,7 @@ namespace nap
 
 	bool MeshInstance::update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState)
 	{
-		VertexBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
+		ValueGPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
 		if (!errorState.check(attribute.getCount() == mProperties.mNumVertices,
 			"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", attribute.mAttributeID.c_str(), attribute.getCount(), mProperties.mNumVertices))
 		{

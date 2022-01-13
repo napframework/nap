@@ -6,8 +6,8 @@
 
 // Local Includes
 #include "storageuniform.h"
-#include "vertexbuffer.h"
-#include "gpustructbuffer.h"
+#include "valuegpubuffer.h"
+#include "structgpubuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -181,7 +181,7 @@ namespace nap
 		 * Binds a new buffer to the uniform instance
 		 * @param buffer new buffer to bind
 		 */
-		void setStructBuffer(GPUStructBuffer& buffer)
+		void setBuffer(StructGPUBuffer& buffer)
 		{
 			assert(buffer.getSize() == mDeclaration->mSize);
 			mBuffer = &buffer;
@@ -196,7 +196,7 @@ namespace nap
 		/**
 		 * @return value buffer
 		 */
-		virtual const GPUStructBuffer& getStructBuffer() const				{ assert(mBuffer != nullptr); return *mBuffer; };
+		virtual const StructGPUBuffer& getBuffer() const					{ assert(mBuffer != nullptr); return *mBuffer; };
 
 		/**
 		 * @return if the value buffer is set
@@ -216,7 +216,7 @@ namespace nap
 
 	private:
 		const ShaderVariableStructBufferDeclaration* mDeclaration;
-		rtti::ObjectPtr<GPUStructBuffer> mBuffer;
+		rtti::ObjectPtr<StructGPUBuffer> mBuffer;
 
 		mutable StorageUniformStructBufferChangedCallback mStructBufferChangedCallback;
 	};
@@ -245,7 +245,7 @@ namespace nap
 		/**
 		 * @return value buffer
 		 */
-		virtual const VertexBuffer& getValueBuffer() const = 0;
+		virtual const ValueGPUBuffer& getBuffer() const = 0;
 
 		/**
 		 * @return if the value buffer is set
@@ -293,22 +293,22 @@ namespace nap
 		  * Binds a new buffer to the uniform instance
 		  * @param buffer new buffer to bind
 		  */
-		void setValueBuffer(TypedVertexBuffer<T>& buffer);
+		void setBuffer(TypedValueGPUBuffer<T>& buffer);
 
 		/**
 		 * @return buffer
 		 */
-		const TypedVertexBuffer<T>& getTypedValueBuffer() const			{ assert(mBuffer != nullptr); return *mBuffer; }
+		const TypedValueGPUBuffer<T>& getTypedValueBuffer() const			{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return buffer
 		 */
-		TypedVertexBuffer<T>& getTypedValueBuffer()						{ assert(mBuffer != nullptr); return *mBuffer; }
+		TypedValueGPUBuffer<T>& getTypedBuffer()							{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual const VertexBuffer& getValueBuffer() const override		{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual const ValueGPUBuffer& getBuffer() const override			{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return if the value buffer is set
@@ -316,7 +316,7 @@ namespace nap
 		virtual bool hasBuffer() const override								{ return mBuffer != nullptr; }
 
 	private:
-		rtti::ObjectPtr<TypedVertexBuffer<T>> mBuffer;
+		rtti::ObjectPtr<TypedValueGPUBuffer<T>> mBuffer;
 	};
 
 
@@ -324,6 +324,7 @@ namespace nap
 	// Type definitions for all supported storage uniform value buffer instance types
 	//////////////////////////////////////////////////////////////////////////
 
+	using StorageUniformUIntBufferInstance	= TypedStorageUniformValueBufferInstance<uint>;
 	using StorageUniformIntBufferInstance	= TypedStorageUniformValueBufferInstance<int>;
 	using StorageUniformFloatBufferInstance	= TypedStorageUniformValueBufferInstance<float>;
 	using StorageUniformVec2BufferInstance	= TypedStorageUniformValueBufferInstance<glm::vec2>;
@@ -373,7 +374,7 @@ namespace nap
 	}
 
 	template<class T>
-	void nap::TypedStorageUniformValueBufferInstance<T>::setValueBuffer(TypedVertexBuffer<T>& buffer)
+	void nap::TypedStorageUniformValueBufferInstance<T>::setBuffer(TypedValueGPUBuffer<T>& buffer)
 	{
 		assert(buffer.getSize() == mDeclaration->mSize);
 		mBuffer = &buffer;

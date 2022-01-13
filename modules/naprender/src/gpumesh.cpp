@@ -12,13 +12,13 @@ namespace nap
 	// GPUMesh
 	//////////////////////////////////////////////////////////////////////////
 
-	GPUMesh::GPUMesh(RenderService& renderService, EMeshDataUsage inUsage) :
+	GPUMesh::GPUMesh(RenderService& renderService, EMemoryUsage inUsage) :
 		mRenderService(&renderService),
 		mUsage(inUsage)
 	{ }
 
 
-	const VertexBuffer* GPUMesh::findVertexBuffer(const std::string& id) const
+	const ValueGPUBuffer* GPUMesh::findVertexBuffer(const std::string& id) const
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		if (attribute != mAttributes.end())
@@ -27,7 +27,7 @@ namespace nap
 	}
 
 
-	VertexBuffer& GPUMesh::getVertexBuffer(const std::string& id)
+	ValueGPUBuffer& GPUMesh::getVertexBuffer(const std::string& id)
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		assert(attribute != mAttributes.end());
@@ -40,7 +40,7 @@ namespace nap
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
 
-		std::unique_ptr<IndexBuffer> index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage);
+		auto index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage);
 		mIndexBuffers.emplace_back(std::move(index_buffer));
 		return *mIndexBuffers.back();
 	}

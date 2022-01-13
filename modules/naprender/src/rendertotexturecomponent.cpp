@@ -6,7 +6,7 @@
 #include "rendertotexturecomponent.h"
 #include "rendertarget.h"
 #include "renderservice.h"
-#include "indexbuffer.h"
+#include "valuegpubuffer.h"
 #include "renderglobals.h"
 #include "uniforminstance.h"
 #include "renderglobals.h"
@@ -82,7 +82,7 @@ namespace nap
 		// The model matrix is computed on draw and used to scale the model to fit target bounds.
 		mPlane.mSize = glm::vec2(1.0f, 1.0f);
 		mPlane.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mUsage = EMemoryUsage::Static;
 		mPlane.mCullMode = ECullMode::Back;
 		mPlane.mColumns = 1;
 		mPlane.mRows = 1;

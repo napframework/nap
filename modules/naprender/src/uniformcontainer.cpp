@@ -26,7 +26,7 @@ namespace nap
 	}
 
 
-	nap::StorageUniformStructInstance* UniformContainer::findStorageUniform(const std::string& name)
+	StorageUniformStructInstance* UniformContainer::findStorageUniform(const std::string& name)
 	{
 		for (auto& instance : mStorageUniformRootStructs)
 			if (instance->getDeclaration().mName == name)
@@ -51,7 +51,7 @@ namespace nap
 	}
 
 
-	UniformStructInstance& UniformContainer::createUniformRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
+	UniformStructInstance& UniformContainer::createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
 	{
 		std::unique_ptr<UniformStructInstance> instance = std::make_unique<UniformStructInstance>(declaration, uniformCreatedCallback);
 		UniformStructInstance* result = instance.get();
@@ -60,7 +60,7 @@ namespace nap
 	}
 
 
-	StorageUniformStructInstance& UniformContainer::createStorageUniformRootStruct(const UniformStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback)
+	StorageUniformStructInstance& UniformContainer::createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback)
 	{
 		std::unique_ptr<StorageUniformStructInstance> instance = std::make_unique<StorageUniformStructInstance>(declaration, uniformChangedCallback);
 		StorageUniformStructInstance* result = instance.get();

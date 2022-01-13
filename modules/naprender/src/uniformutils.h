@@ -15,10 +15,10 @@ namespace nap
 	/**
 	 * Returns the total size of the shader variable
 	 */
-	size_t NAPAPI getShaderVariableStructSizeRecursive(const UniformStruct& shaderVariableStruct);
+	size_t NAPAPI getUniformStructSizeRecursive(const UniformStruct& uniforStruct);
 
 	/**
 	 * Returns the maximum depth of the shader variable
 	 */
-	int NAPAPI getShaderVariableStructDepth(const UniformStruct& shaderVariableStruct);
+	int NAPAPI getUniformStructDepth(const UniformStruct& uniform);
 }

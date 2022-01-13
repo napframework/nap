@@ -22,6 +22,10 @@ RTTI_BEGIN_CLASS(nap::StorageUniformStructBuffer)
 	RTTI_PROPERTY("Buffer", &nap::StorageUniformStructBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::StorageUniformUIntBuffer)
+	RTTI_PROPERTY("Buffer", &nap::StorageUniformUIntBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::StorageUniformIntBuffer)
 	RTTI_PROPERTY("Buffer", &nap::StorageUniformIntBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

@@ -16,10 +16,10 @@
 #include <assert.h>
 #include <string.h>
 
-RTTI_BEGIN_ENUM(nap::EMeshDataUsage)
-	RTTI_ENUM_VALUE(nap::EMeshDataUsage::Static,		"Static"),
-	RTTI_ENUM_VALUE(nap::EMeshDataUsage::DynamicRead,	"DynamicRead"),
-	RTTI_ENUM_VALUE(nap::EMeshDataUsage::DynamicWrite,	"DynamicWrite")
+RTTI_BEGIN_ENUM(nap::EMemoryUsage)
+	RTTI_ENUM_VALUE(nap::EMemoryUsage::Static,			"Static"),
+	RTTI_ENUM_VALUE(nap::EMemoryUsage::DynamicRead,		"DynamicRead"),
+	RTTI_ENUM_VALUE(nap::EMemoryUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
 
 RTTI_BEGIN_ENUM(nap::EDescriptorType)
@@ -38,20 +38,20 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	static int getInitialNumStagingBuffers(int maxFramesInFlight, EMeshDataUsage meshUsage)
+	static int getInitialNumStagingBuffers(int maxFramesInFlight, EMemoryUsage meshUsage)
 	{
 		switch (meshUsage)
 		{
 			// When DynamicWrite, we upload into render buffers directly using mapped pointers and require no staging buffers 
-		case EMeshDataUsage::DynamicWrite:
+		case EMemoryUsage::DynamicWrite:
 			return 0;
 
 			// When Static, create one staging buffer for the initial upload after which it is destroyed
-		case EMeshDataUsage::Static:
+		case EMemoryUsage::Static:
 			return 1;
 
 			// When DynamicRead, create one staging buffer for each frame in flight
-		case EMeshDataUsage::DynamicRead:
+		case EMemoryUsage::DynamicRead:
 			return maxFramesInFlight;
 
 		default:
@@ -96,7 +96,7 @@ namespace nap
 	{}
 
 
-	GPUBuffer::GPUBuffer(Core& core, EMeshDataUsage usage) :
+	GPUBuffer::GPUBuffer(Core& core, EMemoryUsage usage) :
 		mRenderService(core.getService<RenderService>()), mUsage(usage)
 	{}
 
@@ -107,13 +107,13 @@ namespace nap
 			return false;
 
 		// Scale render buffers based on number of frames in flight when not static.
-		mRenderBuffers.resize(mUsage == EMeshDataUsage::Static || mUsage == EMeshDataUsage::DynamicRead ? 1 : mRenderService->getMaxFramesInFlight() + 1);
+		mRenderBuffers.resize(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead ? 1 : mRenderService->getMaxFramesInFlight() + 1);
 
 		// Create appropriate number of staging buffers
 		mStagingBuffers.resize(getInitialNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
 
 		// Ensure there are enough read callbacks based on max number of frames in flight
-		if (mUsage == EMeshDataUsage::DynamicRead)
+		if (mUsage == EMemoryUsage::DynamicRead)
 		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
@@ -123,16 +123,10 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::allocateInternal(int elementSize, size_t numVertices, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
-	{
-		return allocateInternal(elementSize * numVertices, deviceUsage, errorState);
-	}
-
-
 	bool GPUBuffer::allocateInternal(size_t size, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
 		// Persistent storage
-		if (mUsage == EMeshDataUsage::DynamicWrite)
+		if (mUsage == EMemoryUsage::DynamicWrite)
 		{
 			mSize = size;
 			return true;
@@ -155,12 +149,12 @@ namespace nap
 			}
 
 			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-			VkBufferUsageFlags buffer_usage = mUsage == EMeshDataUsage::DynamicRead ?
+			VkBufferUsageFlags buffer_usage = mUsage == EMemoryUsage::DynamicRead ?
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT :
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-			VmaMemoryUsage memory_usage = mUsage == EMeshDataUsage::DynamicRead ?
+			VmaMemoryUsage memory_usage = mUsage == EMemoryUsage::DynamicRead ?
 				VMA_MEMORY_USAGE_GPU_TO_CPU :
 				VMA_MEMORY_USAGE_CPU_TO_GPU;
 
@@ -179,7 +173,7 @@ namespace nap
 				mSize = size;
 
 			// Device buffer memory usage
-			VkBufferUsageFlags transfer_usage = mUsage == EMeshDataUsage::DynamicRead ?
+			VkBufferUsageFlags transfer_usage = mUsage == EMemoryUsage::DynamicRead ?
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
 				VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
@@ -208,33 +202,26 @@ namespace nap
 		return mRenderBuffers[mCurrentRenderBufferIndex];
 	}
 
-	
-	bool GPUBuffer::setDataInternal(void* data, int elementSize, size_t numVertices, size_t reservedNumVertices, VkBufferUsageFlags usage, utility::ErrorState& errorState)
-	{
-		// Skip if the size of the buffer to upload is zero
-		if (numVertices == 0)
-			return true;
-
-		return setDataInternal(data, elementSize * numVertices, elementSize * reservedNumVertices, usage, errorState);
-	}
-
 
 	bool GPUBuffer::setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
-		// Ensure the buffer isn't DynamicRead
-		if (!errorState.check(mUsage != EMeshDataUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
-			return false;
+		// Ensure the sizes are valid
+		assert(size <= reservedSize || size > 0);
 
 		// Ensure the buffers are allocated
 		assert(!mRenderBuffers.empty());
 		assert(mRenderBuffers[0].mBuffer != VK_NULL_HANDLE);
 
+		// Ensure the buffer isn't DynamicRead
+		if (!errorState.check(mUsage != EMemoryUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
+			return false;
+
 		// Update buffers based on selected data usage type
 		switch (mUsage)
 		{
-		case EMeshDataUsage::DynamicWrite:
+		case EMemoryUsage::DynamicWrite:
 			return setDataInternalDynamic(data, mSize, reservedSize, deviceUsage, errorState);
-		case EMeshDataUsage::Static:
+		case EMemoryUsage::Static:
 			return setDataInternalStatic(data, mSize, errorState);
 		default:
 			assert(false);
@@ -321,7 +308,7 @@ namespace nap
 		// Ensure we're dealing with an empty buffer, size of 1 that is used static.
 		assert(mStagingBuffers.size() > 0 && mStagingBuffers[0].mBuffer != VK_NULL_HANDLE);
 		assert(mRenderBuffers.size() == 1);
-		assert(mUsage == EMeshDataUsage::Static || mUsage == EMeshDataUsage::DynamicRead);
+		assert(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead);
 		
 		// Copy staging buffer to GPU
 		VkBufferCopy copyRegion = {};
@@ -331,7 +318,7 @@ namespace nap
 		// Queue destruction of staging buffer if usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
 		// Explicitly release the buffer, so it's not deleted twice
-		if (mUsage == EMeshDataUsage::Static)
+		if (mUsage == EMemoryUsage::Static)
 		{
 			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService & renderService)
 			{
@@ -349,7 +336,7 @@ namespace nap
 
 	void GPUBuffer::download(VkCommandBuffer commandBuffer)
 	{
-		assert(mUsage == EMeshDataUsage::DynamicRead);
+		assert(mUsage == EMemoryUsage::DynamicRead);
 		BufferData& staging_buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 
 		// Store the staging buffer index associated with the download in the current frame for lookup later

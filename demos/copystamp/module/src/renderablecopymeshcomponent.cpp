@@ -161,10 +161,10 @@ namespace nap
 	{
 		// Get material to render with and descriptors for material
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
-		VkDescriptorSet descriptor_set = mat_instance.update();
+		const DescriptorSet& descriptor_set = mat_instance.update();
 
 		// Bind descriptor set for next draw call
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertexBuffers = renderableMesh.getVertexBuffers();
@@ -178,7 +178,7 @@ namespace nap
 		// Draw individual shapes inside mesh
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			const ValueGPUBuffer& index_buffer = mesh.getIndexBuffer(index);
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}

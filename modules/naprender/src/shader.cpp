@@ -391,33 +391,33 @@ static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, co
 }
 
 
-static nap::EUniformValueType getUniformValueType(spirv_cross::SPIRType type)
+static nap::EShaderVariableValueType getShaderVariableValueType(spirv_cross::SPIRType type)
 {
 	switch (type.basetype)
 	{
 	case spirv_cross::SPIRType::Int:
-		return nap::EUniformValueType::Int;
+		return nap::EShaderVariableValueType::Int;
 	case spirv_cross::SPIRType::UInt:
-		return nap::EUniformValueType::UInt;
+		return nap::EShaderVariableValueType::UInt;
 	case spirv_cross::SPIRType::Float:
 		if (type.vecsize == 1 && type.columns == 1)
-			return nap::EUniformValueType::Float;
+			return nap::EShaderVariableValueType::Float;
 		else if (type.vecsize == 2 && type.columns == 1)
-			return nap::EUniformValueType::Vec2;
+			return nap::EShaderVariableValueType::Vec2;
 		else if (type.vecsize == 3 && type.columns == 1)
-			return nap::EUniformValueType::Vec3;
+			return nap::EShaderVariableValueType::Vec3;
 		else if (type.vecsize == 4 && type.columns == 1)
-			return nap::EUniformValueType::Vec4;
+			return nap::EShaderVariableValueType::Vec4;
 		else if (type.vecsize == 2 && type.columns == 2)
-			return nap::EUniformValueType::Mat2;
+			return nap::EShaderVariableValueType::Mat2;
 		else if (type.vecsize == 3 && type.columns == 3)
-			return nap::EUniformValueType::Mat3;
+			return nap::EShaderVariableValueType::Mat3;
 		else if (type.vecsize == 4 && type.columns == 4)
-			return nap::EUniformValueType::Mat4;
+			return nap::EShaderVariableValueType::Mat4;
 		else
-			return nap::EUniformValueType::Unknown;
+			return nap::EShaderVariableValueType::Unknown;
 	default:
-		return nap::EUniformValueType::Unknown;
+		return nap::EShaderVariableValueType::Unknown;
 	}
 }
 
@@ -428,8 +428,8 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 	{
 	case spirv_cross::SPIRType::Int:
 		return VK_FORMAT_R32_SINT;
-	case spirv_cross::SPIRType::SByte:
-		return VK_FORMAT_R8_SINT;
+	case spirv_cross::SPIRType::UInt:
+		return VK_FORMAT_R32_UINT;
 	case spirv_cross::SPIRType::Float:
 		if (type.vecsize == 1 && type.columns == 1)
 			return VK_FORMAT_R32_SFLOAT;
@@ -449,7 +449,7 @@ static VkFormat getFormatFromType(spirv_cross::SPIRType type)
 }
 
 
-static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::EDescriptorType descriptorType, nap::utility::ErrorState& errorState)
+static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& parentStruct, spirv_cross::Compiler& compiler, const spirv_cross::SPIRType& type, int parentOffset, const std::string& path, nap::EDescriptorType descriptorType, nap::utility::ErrorState& errorState)
 {
 	assert(type.basetype == spirv_cross::SPIRType::Struct);
 
@@ -478,22 +478,22 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 
 				if (descriptorType == nap::EDescriptorType::Storage)
 				{
-					std::unique_ptr<nap::UniformStructBufferDeclaration> buffer_declaration = std::make_unique<nap::UniformStructBufferDeclaration>(name, absoluteOffset, member_size, stride, num_elements);
-					std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
+					std::unique_ptr<nap::ShaderVariableStructBufferDeclaration> buffer_declaration = std::make_unique<nap::ShaderVariableStructBufferDeclaration>(name, absoluteOffset, member_size, stride, num_elements);
+					std::unique_ptr<nap::ShaderVariableStructDeclaration> struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
 					buffer_declaration->mElement = std::move(struct_declaration);
 
 					parentStruct.mMembers.emplace_back(std::move(buffer_declaration));
 				}
 				else if (descriptorType == nap::EDescriptorType::Uniform)
 				{
-					std::unique_ptr<nap::UniformStructArrayDeclaration> array_declaration = std::make_unique<nap::UniformStructArrayDeclaration>(name, absoluteOffset, member_size);
+					std::unique_ptr<nap::ShaderVariableStructArrayDeclaration> array_declaration = std::make_unique<nap::ShaderVariableStructArrayDeclaration>(name, absoluteOffset, member_size);
 
 					for (int array_index = 0; array_index < num_elements; ++array_index)
 					{
 						std::string array_path = nap::utility::stringFormat("%s[%d]", full_path.c_str(), array_index);
 
-						std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
-						if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, descriptorType, errorState))
+						std::unique_ptr<nap::ShaderVariableStructDeclaration> struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
+						if (!addShaderVariablesRecursive(*struct_declaration, compiler, member_type, absoluteOffset, array_path, descriptorType, errorState))
 							return false;
 
 						array_declaration->mElements.emplace_back(std::move(struct_declaration));
@@ -506,11 +506,11 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 			{
 				size_t stride = compiler.type_struct_member_array_stride(type, index);
 
-				nap::EUniformValueType element_type = getUniformValueType(member_type);
-				if (!errorState.check(element_type != nap::EUniformValueType::Unknown, "Encountered unknown uniform type"))
+				nap::EShaderVariableValueType element_type = getShaderVariableValueType(member_type);
+				if (!errorState.check(element_type != nap::EShaderVariableValueType::Unknown, "Encountered unknown uniform type"))
 					return false;
 
-				std::unique_ptr<nap::UniformValueArrayDeclaration> array_declaration = std::make_unique<nap::UniformValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
+				std::unique_ptr<nap::ShaderVariableValueArrayDeclaration> array_declaration = std::make_unique<nap::ShaderVariableValueArrayDeclaration>(name, absoluteOffset, member_size, stride, element_type, num_elements);
 				parentStruct.mMembers.emplace_back(std::move(array_declaration));
 			}
 		}
@@ -520,19 +520,19 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 			{
 				size_t struct_size = compiler.get_declared_struct_size(member_type);
 
-				std::unique_ptr<nap::UniformStructDeclaration> struct_declaration = std::make_unique<nap::UniformStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
-				if (!addUniformsRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, descriptorType, errorState))
+				std::unique_ptr<nap::ShaderVariableStructDeclaration> struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
+				if (!addShaderVariablesRecursive(*struct_declaration, compiler, member_type, absoluteOffset, name, descriptorType, errorState))
 					return false;
 
 				parentStruct.mMembers.emplace_back(std::move(struct_declaration));
 			}
 			else
 			{
-				nap::EUniformValueType value_type = getUniformValueType(member_type);
-				if (!errorState.check(value_type != nap::EUniformValueType::Unknown, "Encountered unknown uniform type"))
+				nap::EShaderVariableValueType value_type = getShaderVariableValueType(member_type);
+				if (!errorState.check(value_type != nap::EShaderVariableValueType::Unknown, "Encountered unknown uniform type"))
 					return false;
 
-				std::unique_ptr<nap::UniformValueDeclaration> value_declaration = std::make_unique<nap::UniformValueDeclaration>(name, absoluteOffset, member_size, value_type);
+				std::unique_ptr<nap::ShaderVariableValueDeclaration> value_declaration = std::make_unique<nap::ShaderVariableValueDeclaration>(name, absoluteOffset, member_size, value_type);
 				parentStruct.mMembers.emplace_back(std::move(value_declaration));
 			}
 		}
@@ -542,7 +542,7 @@ static bool addUniformsRecursive(nap::UniformStructDeclaration& parentStruct, sp
 }
 
 
-static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::UBODeclarationList& uboDeclarations, nap::UBODeclarationList& suboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
+static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::BufferObjectDeclarationList& uboDeclarations, nap::BufferObjectDeclarationList& suboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
@@ -554,9 +554,9 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-		nap::UniformBufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Uniform, struct_size);
+		nap::BufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Uniform, struct_size);
 
-		if (!addUniformsRecursive(uniform_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Uniform, errorState))
+		if (!addShaderVariablesRecursive(uniform_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Uniform, errorState))
 			return false;
 
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
@@ -570,9 +570,9 @@ static bool parseUniforms(spirv_cross::Compiler& compiler, VkShaderStageFlagBits
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
-		nap::UniformBufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Storage, struct_size);
+		nap::BufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Storage, struct_size);
 
-		if (!addUniformsRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Storage, errorState))
+		if (!addShaderVariablesRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Storage, errorState))
 			return false;
 
 		suboDeclarations.emplace_back(std::move(storage_buffer_object));
@@ -643,7 +643,7 @@ namespace nap
 	bool BaseShader::initLayout(VkDevice device, nap::utility::ErrorState& errorState)
 	{
 		std::vector<VkDescriptorSetLayoutBinding> descriptor_set_layouts;
-		for (const UniformBufferObjectDeclaration& declaration : mUBODeclarations)
+		for (const BufferObjectDeclaration& declaration : mUBODeclarations)
 		{
 			VkDescriptorSetLayoutBinding uboLayoutBinding = {};
 			uboLayoutBinding.binding = declaration.mBinding;
@@ -655,7 +655,7 @@ namespace nap
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
-		for (const UniformBufferObjectDeclaration& declaration : mSUBODeclarations)
+		for (const BufferObjectDeclaration& declaration : mSUBODeclarations)
 		{
 			VkDescriptorSetLayoutBinding suboLayoutBinding = {};
 			suboLayoutBinding.binding = declaration.mBinding;
@@ -741,7 +741,7 @@ namespace nap
 
 		// Extract vertex shader uniforms & inputs
 		spirv_cross::Compiler vertex_shader_compiler(vertex_shader_spirv.data(), vertex_shader_spirv.size());
-		if (!parseUniforms(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		for (const spirv_cross::Resource& stage_input : vertex_shader_compiler.get_shader_resources().stage_inputs)
@@ -758,7 +758,7 @@ namespace nap
 
 		// Extract fragment shader uniforms
 		spirv_cross::Compiler fragment_shader_compiler(fragment_shader_spirv.data(), fragment_shader_spirv.size());
-		if (!parseUniforms(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		return initLayout(device, errorState);
@@ -817,9 +817,9 @@ namespace nap
 		if (!errorState.check(mComputeModule != nullptr, "Unable to load compute shader module"))
 			return false;
 
-		// Extract shader uniforms & inputs
+		// Extract shader variables
 		spirv_cross::Compiler comp_shader_compiler(comp_shader_spirv.data(), comp_shader_spirv.size());
-		if (!parseUniforms(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations,mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		// Store local workgroup size

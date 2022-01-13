@@ -5,8 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
+#include "valuegpubuffer.h"
 
 // External Includes
 #include <memory>
@@ -43,7 +42,7 @@ namespace nap
 		 * @param renderService render backend.
 		 * @param usage how the mesh data is used at runtime.
 		 */
-		GPUMesh(RenderService& renderService, EMeshDataUsage usage);
+		GPUMesh(RenderService& renderService, EMemoryUsage usage);
 
 		// Default destructor
 		virtual ~GPUMesh() = default;
@@ -58,20 +57,20 @@ namespace nap
 		 * @param id name of the vertex buffer to create and add.
 		 */
 		template<typename ELEMENTTYPE>
-		VertexBuffer& addVertexBuffer(const std::string& id);
+		ValueGPUBuffer& addVertexBuffer(const std::string& id);
 
 		/**
 		 * Finds a vertex buffer with the given name.
 		 * @param id name of the vertex buffer
 		 * @return reference to the vertex buffer if found, nullptr otherwise.
 		 */
-		const VertexBuffer* findVertexBuffer(const std::string& id) const;
+		const ValueGPUBuffer* findVertexBuffer(const std::string& id) const;
 
 		/**
 		 * Returns a vertex buffer with the given name, asserts if not present.
 		 * @param id name of the vertex buffer to get.
 		 */
-		VertexBuffer& getVertexBuffer(const std::string& id);
+		ValueGPUBuffer& getVertexBuffer(const std::string& id);
 
 		/**
 		 * Creates an index buffer if one does not exist, returns the existing buffer otherwise.
@@ -89,11 +88,12 @@ namespace nap
 		const IndexBuffer& getIndexBuffer(int index) const;
 
 	private:
-		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexBuffer>>;
-		RenderService*								mRenderService;						///< Link to the render engine
-		AttributeMap								mAttributes;						///< Map from vertex attribute ID to buffer
-		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;						///< Index buffers
-		EMeshDataUsage								mUsage = EMeshDataUsage::Static;	///< By default a gpu mesh is static.
+		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<ValueGPUBuffer>>;
+
+		RenderService*									mRenderService;					///< Link to the render engine
+		AttributeMap									mAttributes;					///< Map from vertex attribute ID to buffer
+		std::vector<std::unique_ptr<IndexBuffer>>		mIndexBuffers;					///< Index buffers
+		EMemoryUsage									mUsage = EMemoryUsage::Static;	///< By default a gpu mesh is static.
 	};
 
 
@@ -102,9 +102,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename ELEMENTTYPE>
-	VertexBuffer& GPUMesh::addVertexBuffer(const std::string& id)
+	ValueGPUBuffer& GPUMesh::addVertexBuffer(const std::string& id)
 	{
-		std::unique_ptr<TypedVertexBuffer<ELEMENTTYPE>> vertex_buffer = std::make_unique<TypedVertexBuffer<ELEMENTTYPE>>(mRenderService->getCore(), mUsage, true);
+		auto vertex_buffer = std::make_unique<TypedValuePropertyGPUBuffer<ELEMENTTYPE, EValueGPUBufferProperty::Vertex>>(mRenderService->getCore(), mUsage);
 		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
 		return *it->second;
 	}
