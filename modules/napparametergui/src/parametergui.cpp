@@ -6,6 +6,8 @@
 #include <rtti/rttiutilities.h>
 #include <nap/core.h>
 #include <imgui/imgui.h>
+#include <imguiutils.h>
+#include <imguiservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterGUI)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -17,7 +19,8 @@ namespace nap
 {
 	ParameterGUI::ParameterGUI(nap::Core& core) : 
 		mParameterService(*core.getService<ParameterService>()),
-		mParameterGUIService(*core.getService<ParameterGUIService>())
+		mParameterGUIService(*core.getService<ParameterGUIService>()),
+		mGUIService(*core.getService<IMGuiService>())
 	{ }
 
 
@@ -37,7 +40,7 @@ namespace nap
 
 			if (!mPresets.empty())
 			{
-				if (ImGui::Button("OK"))
+				if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 				{
 					utility::ErrorState errorState;
 					if (mParameterService.loadPreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
@@ -50,7 +53,7 @@ namespace nap
 					if (ImGui::BeginPopupModal("Failed to load preset"))
 					{
 						ImGui::Text(errorState.toString().c_str());
-						if (ImGui::Button("OK"))
+						if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 						{
 							ImGui::CloseCurrentPopup();
 						}
@@ -61,7 +64,7 @@ namespace nap
 				ImGui::SameLine();
 			}
 
-			if (ImGui::Button("Cancel"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::cancel)))
 			{
 				restorePresetState();
 				ImGui::CloseCurrentPopup();
@@ -81,7 +84,7 @@ namespace nap
 			static char name[256] = { 0 };
 			ImGui::InputText("Name", name, 256);
 
-			if (ImGui::Button("OK") && strlen(name) != 0)
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)) && strlen(name) != 0)
 			{
 				outNewFilename = std::string(name, strlen(name));
 				outNewFilename += ".json";
@@ -91,7 +94,7 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Cancel"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::cancel)))
 				ImGui::CloseCurrentPopup();
 
 			ImGui::EndPopup();
@@ -125,7 +128,7 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("OK"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 			{
 				if (mSelectedPresetIndex != -1)
 				{
@@ -156,7 +159,7 @@ namespace nap
 					if (ImGui::BeginPopupModal("Failed to save preset"))
 					{
 						ImGui::Text(errorState.toString().c_str());
-						if (ImGui::Button("OK"))
+						if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 							ImGui::CloseCurrentPopup();
 						ImGui::EndPopup();
 					}
@@ -164,7 +167,7 @@ namespace nap
 			}
 
 			ImGui::SameLine();
-			if (ImGui::Button("Cancel"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::cancel)))
 			{
 				restorePresetState();
 				ImGui::CloseCurrentPopup();
@@ -229,7 +232,7 @@ namespace nap
 		bool has_preset = mSelectedPresetIndex >= 0 && mSelectedPresetIndex < mPresets.size();
 		ImGui::Text(has_preset ? mPresets[mSelectedPresetIndex].data() : "<No preset>");
 
-		if (ImGui::Button("Save"))
+		if (ImGui::ImageButton(mGUIService.getIcon(icon::save)))
 		{
 			if (has_preset)
 			{
@@ -240,7 +243,7 @@ namespace nap
 				if (ImGui::BeginPopupModal("Failed to save preset"))
 				{
 					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
+					if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 						ImGui::CloseCurrentPopup();
 					ImGui::EndPopup();
 				}
@@ -254,7 +257,7 @@ namespace nap
 		}
 
 		ImGui::SameLine();
-		if (ImGui::Button("Save As"))
+		if (ImGui::ImageButton(mGUIService.getIcon(icon::saveAs)))
 		{
 			ImGui::OpenPopup("Save As");
 			savePresetState();
@@ -262,7 +265,7 @@ namespace nap
 		}
 
 		ImGui::SameLine();
-		if (ImGui::Button("Load"))
+		if (ImGui::ImageButton(mGUIService.getIcon(icon::load)))
 		{
 			ImGui::OpenPopup("Load");
 			savePresetState();

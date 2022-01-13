@@ -5,6 +5,7 @@
 #pragma once
 
 #include "sequencecurvetrackview_guiactions.h"
+#include <imguiutils.h>
 
 namespace nap
 {
@@ -66,10 +67,9 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::Button("Done"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
 				{
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-
 					ImGui::CloseCurrentPopup();
 				}
 
@@ -125,7 +125,7 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::Button("Done"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
 				{
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 
@@ -1018,13 +1018,15 @@ namespace nap
 				// update any segments that could be changed
 				updateSegmentsInClipboard(trackId);
 
-				// copy curve points
+				// copy curve points & curve type
 				for (int c = 0; c < curve_segment->mCurves.size(); c++)
 				{
 					for (int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
 					{
 						curve_controller->insertCurvePoint(trackId, new_segment->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
 					}
+
+                    curve_controller->changeCurveType(trackId, new_segment->mID, curve_segment->mCurveTypes[c], c);
 				}
 
 				// change all curvepoints to match the copied clipboard curve segment
@@ -1098,13 +1100,15 @@ namespace nap
 			// change duration
 			curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
 
-			// copy curve points
+			// copy curve points & curve type
 			for(int c = 0; c < curve_segment->mCurves.size(); c++)
 			{
 				for(int i = 1; i < curve_segment->mCurves[c]->mPoints.size() - 1; i++)
 				{
 					curve_controller.insertCurvePoint(trackId, target_segment_upcast->mID, curve_segment->mCurves[c]->mPoints[i].mPos.mTime, c);
 				}
+
+				curve_controller.changeCurveType(trackId, target_segment_upcast->mID, curve_segment->mCurveTypes[c], c);
 			}
 
 			// change all curvepoints to match the copied clipboard curve segment

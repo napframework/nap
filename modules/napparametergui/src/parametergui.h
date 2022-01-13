@@ -13,6 +13,8 @@
 
 namespace nap
 {
+	class IMGuiService;
+
 	/**
 	 * Shows an ImGUI window that can be used to edit/load/save parameters of a specific group. 
 	 * The GUI is created by (recursively) traversing the parameters in a group and 
@@ -108,6 +110,7 @@ namespace nap
 	private:
 		ParameterService&							mParameterService;					///< The parameter service
 		ParameterGUIService&						mParameterGUIService;				///< The parameter GUI service
+		IMGuiService&								mGUIService;						///< The GUI service
 		ParameterService::PresetFileList			mPresets;							///< The presets for the currently selected ParameterGroup
 		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterGroup. Used to restore the state if the user cancels creation of a new preset.
 		int											mSelectedPresetIndex = -1;			///< The currently selected preset's index

@@ -10,6 +10,9 @@
 #include <entity.h>
 #include <iomanip>
 #include <utility>
+#include <nap/modulemanager.h>
+#include <nap/logger.h>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
     RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
@@ -26,15 +29,16 @@ using namespace nap::sequenceguiclipboard;
 namespace nap
 {
 	SequenceEditorGUI::SequenceEditorGUI(SequenceGUIService& service) : mService(service)
-	{
-	}
+	{ }
 
 
 	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
 	{
+		// Initialize base
 		if (!Resource::init(errorState))
 			return false;
 
+		// Create and initialize view
 		mView = std::make_unique<SequenceEditorGUIView>(mService, *mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
 		return true;
 	}
@@ -153,40 +157,37 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetScrollY());
 
-			//
-			if (ImGui::Button("Save"))
+			IMGuiService& gui = mService.getGui();
+			if (ImGui::ImageButton(gui.getIcon(icon::save), "Save sequence"))
 			{
 				mEditor.save(mEditor.mSequencePlayer->mSequenceFileName);
 			}
 
 			ImGui::SameLine();
-
-			if (ImGui::Button("Save As"))
+			if (ImGui::ImageButton(gui.getIcon(icon::saveAs), "Save sequence as ..."))
 			{
 				ImGui::OpenPopup("Save As");
 				mState.mAction = createAction<SaveAsPopup>();
 			}
 
 			ImGui::SameLine();
-
-			if (ImGui::Button("Load"))
+			if (ImGui::ImageButton(gui.getIcon(icon::load), "Load sequence"))
 			{
 				ImGui::OpenPopup("Load");
 				mState.mAction = createAction<LoadPopup>();
 			}
 
 			ImGui::SameLine();
-
 			if (sequence_player.getIsPlaying())
 			{
-				if (ImGui::Button("Stop"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::stop), "Stop playback"))
 				{
 					sequence_player.setIsPlaying(false);
 				}
 			}
 			else
 			{
-				if (ImGui::Button("Play"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::play), "Start playback"))
 				{
 					sequence_player.setIsPlaying(true);
 				}
@@ -195,21 +196,22 @@ namespace nap
 			ImGui::SameLine();
 			if (sequence_player.getIsPaused())
 			{
-				if (ImGui::Button("Unpause"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::unpause), "Un-Pause playback"))
 				{
 					sequence_player.setIsPaused(false);
 				}
 			}
 			else
 			{
-				if (ImGui::Button("Pause"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::pause), "Pause playback"))
 				{
+					sequence_player.setIsPaused(true);
 					sequence_player.setIsPaused(true);
 				}
 			}
 
 			ImGui::SameLine();
-			if (ImGui::Button("Rewind"))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::rewind), "Move marker to beginning"))
 			{
 				sequence_player.setPlayerTime(0.0);
 			}
@@ -247,7 +249,7 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if(ImGui::Button("Help"))
+			if (ImGui::ImageButton(gui.getIcon(icon::help)))
 			{
 				mState.mAction = createAction<OpenHelpPopup>();
 			}
@@ -428,10 +430,12 @@ namespace nap
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			if (ImGui::Button("Insert New Track"))
+			if (ImGui::ImageButton(gui.getIcon(icon::add)))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
+			ImGui::Text("Add Track");
 
 			// handle actions
 			for (auto& it : mViews)
@@ -1036,7 +1040,8 @@ namespace nap
 					shows);
 
 				utility::ErrorState error_state;
-				if (ImGui::Button("Load"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok), "load"))
 				{
 					if (mEditor.mSequencePlayer->load(utility::getFileName(show_files[load_action->mSelectedShowIndex]),
 													  error_state))
@@ -1053,7 +1058,7 @@ namespace nap
 				}
 
 				ImGui::SameLine();
-				if (ImGui::Button("Cancel"))
+				if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1062,7 +1067,7 @@ namespace nap
 				if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
 					ImGui::Text(load_action->mErrorString.c_str());
-					if (ImGui::Button("OK"))
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 					{
 						mState.mDirty = true;
 						mState.mAction = createAction<LoadPopup>();
@@ -1071,7 +1076,6 @@ namespace nap
 
 					ImGui::EndPopup();
 				}
-
 				ImGui::EndPopup();
 			}
 		}
@@ -1133,7 +1137,8 @@ namespace nap
 					static char name[256] = { 0 };
 					ImGui::InputText("Name", name, 256);
 
-					if (ImGui::Button("OK") && strlen(name) != 0)
+					auto& gui = mService.getGui();
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)) && strlen(name) != 0)
 					{
 						new_show_filename = std::string(name, strlen(name));
 						new_show_filename += ".json";
@@ -1143,8 +1148,7 @@ namespace nap
 					}
 
 					ImGui::SameLine();
-
-					if (ImGui::Button("Cancel"))
+					if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 						ImGui::CloseCurrentPopup();
 
 					ImGui::EndPopup();
@@ -1174,7 +1178,9 @@ namespace nap
 					utility::ErrorState error_state;
 					ImGui::Text(("Are you sure you want to overwrite " +
 						shows[save_as_action->mSelectedShowIndex] + " ?").c_str());
-					if (ImGui::Button("OK"))
+
+					auto& gui = mService.getGui();
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 					{
 						if (mEditor.mSequencePlayer->save(
 							utility::getFileName(shows[save_as_action->mSelectedShowIndex]), error_state))
@@ -1192,7 +1198,7 @@ namespace nap
 					}
 
 					ImGui::SameLine();
-					if (ImGui::Button("Cancel"))
+					if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 					{
 						ImGui::CloseCurrentPopup();
 					}
@@ -1202,7 +1208,8 @@ namespace nap
 				if (ImGui::BeginPopupModal("Error"))
 				{
 					ImGui::Text(save_as_action->mErrorString.c_str());
-					if (ImGui::Button("OK"))
+					auto& gui = mService.getGui();
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 					{
 						mState.mDirty = true;
 						ImGui::CloseCurrentPopup();
@@ -1212,8 +1219,8 @@ namespace nap
 				}
 
 				ImGui::SameLine();
-
-				if (ImGui::Button("Done"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1254,7 +1261,8 @@ namespace nap
 					}
 				}
 
-				if (ImGui::Button("Cancel"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1316,15 +1324,15 @@ namespace nap
 					mEditor.changeMarkerMessage(action->mID, action->mMessage);
 				}
 
-				if(ImGui::Button("Delete") )
+				auto& gui = mService.getGui();
+				if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete"))
 				{
 					mEditor.deleteMarker(action->mID);
-
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::Button("Done"))
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1347,7 +1355,7 @@ namespace nap
 		{
 			auto* action = mState.mAction->getDerived<OpenInsertSequenceMarkerPopup>();
 
-			mState.mAction = createAction<InsertingSequenceMarkerPopup>(action->mTime, "hello world!");
+			mState.mAction = createAction<InsertingSequenceMarkerPopup>(action->mTime, "your message");
 			ImGui::OpenPopup("Insert Sequence Marker");
 		}
 
@@ -1364,15 +1372,16 @@ namespace nap
 					action->mMessage = std::string(buffer);
 				}
 
-				if (ImGui::Button("Insert Marker"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok), "Insert Marker"))
 				{
 					mEditor.insertMarker(action->mTime, action->mMessage);
-
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::Button("Cancel"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1458,7 +1467,8 @@ namespace nap
 
 				ImGui::Separator();
 
-				if (ImGui::Button("Done"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1517,7 +1527,7 @@ namespace nap
 				ImGui::Separator();
 				ImGui::Spacing();
 
-				if (ImGui::Button("Exit"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
