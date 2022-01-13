@@ -186,6 +186,7 @@
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
                         "Uniforms": [],
+                        "StorageUniforms": [],
                         "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -239,6 +240,7 @@
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
                         "Uniforms": [],
+                        "StorageUniforms": [],
                         "Samplers": [
                             {
                                 "Type": "nap::Sampler2D",
@@ -306,6 +308,7 @@
                     "MaterialInstance": {
                         "Material": "WorldMaterial",
                         "Uniforms": [],
+                        "StorageUniforms": [],
                         "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -385,6 +388,7 @@
             "Type": "nap::Material",
             "mID": "PlaneMaterial",
             "Uniforms": [],
+            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",
@@ -436,6 +440,7 @@
                     ]
                 }
             ],
+            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",

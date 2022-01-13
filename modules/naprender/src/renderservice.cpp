@@ -2078,6 +2078,10 @@ namespace nap
 				texture->upload(commandBuffer);
 			mTexturesToUpload.clear();
 
+			for (GPUBuffer* buffer : mBuffersToClear)
+				buffer->clear(commandBuffer);
+			mBuffersToClear.clear();
+
 			for (GPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
 			mBuffersToUpload.clear();
@@ -2377,12 +2381,16 @@ namespace nap
 
 	void RenderService::requestTextureClear(Texture2D& texture)
 	{
+		// Erase the buffer from the upload queue if it was requested before in the current frame
+		mTexturesToUpload.erase(&texture);
 		mTexturesToClear.insert(&texture);
 	}
 
 
 	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
+		// Erase the buffer from the clear queue if it was requested before in the current frame
+		mTexturesToClear.erase(&texture);
 		mTexturesToUpload.insert(&texture);
 	}
 
@@ -2399,6 +2407,7 @@ namespace nap
 	void RenderService::removeBufferRequests(GPUBuffer& buffer)
 	{
 		// When buffers are destroyed, we also need to remove any pending upload requests
+		mBuffersToClear.erase(&buffer);
 		mBuffersToUpload.erase(&buffer);
 
 		for (Frame& frame : mFramesInFlight)
@@ -2411,8 +2420,18 @@ namespace nap
 	}
 
 
+	void RenderService::requestBufferClear(GPUBuffer& buffer)
+	{
+		// Erase the buffer from the upload queue if it was requested before in the current frame
+		mBuffersToUpload.erase(&buffer);
+		mBuffersToClear.insert(&buffer);
+	}
+
+
 	void RenderService::requestBufferUpload(GPUBuffer& buffer)
 	{
+		// Erase the buffer from the clear queue if it was requested before in the current frame
+		mBuffersToClear.erase(&buffer);
 		mBuffersToUpload.insert(&buffer);
 	}
 

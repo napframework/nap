@@ -125,6 +125,11 @@ namespace nap
 		virtual uint32 getElementSize() const = 0;
 
 		/**
+		 * @return the buffer usage flags
+		 */
+		virtual VkBufferUsageFlags getBufferUsageFlags() const = 0;
+
+		/**
 		 * Implemented by derived classes
 		 * @return whether this buffer is initialized
 		 */
@@ -143,6 +148,7 @@ namespace nap
 
 		EMemoryUsage			mUsage = EMemoryUsage::Static;					///< Property 'Usage' How the buffer is used, static, updated frequently etc.
 		EDescriptorType			mDescriptorType = EDescriptorType::None;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
+		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 
 	protected:
 
@@ -165,6 +171,11 @@ namespace nap
 		 * @return if the data was set
 		 */
 		bool setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
+
+		/**
+		 * Helper function that calls requestBufferClear() in RenderService for derived classes
+		 */
+		void requestClear();
 
 		RenderService*				mRenderService = nullptr;					///< Handle to the render service
 		std::vector<BufferData>		mRenderBuffers;								///< Render accessible buffers
@@ -190,6 +201,9 @@ namespace nap
 
 		// Downloads data from GPU buffer to staging buffer
 		void download(VkCommandBuffer commandBuffer);
+	
+		// Clears the buffer to zero
+		void clear(VkCommandBuffer commandBuffer);
 
 		// Called by the render service when download is ready
 		void notifyDownloadReady(int frameIndex);

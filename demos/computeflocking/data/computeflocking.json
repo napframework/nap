@@ -476,7 +476,8 @@
             "Count": 2000,
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "FillPolicy": ""
+            "FillPolicy": "",
+            "Clear": false
         },
         {
             "Type": "nap::Material",
@@ -749,7 +750,7 @@
                     1.0
                 ]
             },
-            "Samples": "Two",
+            "Samples": "Four",
             "AdditionalSwapImages": 1
         },
         {
@@ -888,7 +889,8 @@
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "FillPolicy": "BoidBufferFillPolicy"
+            "FillPolicy": "BoidBufferFillPolicy",
+            "Clear": false
         },
         {
             "Type": "nap::StructGPUBuffer",
@@ -976,7 +978,8 @@
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "FillPolicy": ""
+            "FillPolicy": "",
+            "Clear": false
         },
         {
             "Type": "nap::UniformRandomStructBufferFillPolicy",

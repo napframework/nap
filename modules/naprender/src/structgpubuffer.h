@@ -38,22 +38,27 @@ namespace nap
 		/**
 		 * @return the number of elements in the buffer
 		 */
-		virtual uint32 getCount() const override		{ return mDescriptor.mCount; };
+		virtual uint32 getCount() const override						{ return mDescriptor.mCount; };
 
 		/**
 		 * @return the size of the buffer in bytes
 		 */
-		virtual size_t getSize() const override			{ return mDescriptor.mCount * mElementSize; };
+		virtual size_t getSize() const override							{ return mDescriptor.mCount * mElementSize; };
 
 		/**
 		 * @return the element size in bytes
 		 */
-		virtual uint32 getElementSize() const override	{ return mElementSize; };
+		virtual uint32 getElementSize() const override					{ return mElementSize; };
+
+		/**
+		 * @return the buffer usage flags
+		 */
+		virtual VkBufferUsageFlags getBufferUsageFlags() const override { return mUsageFlags; }
 
 		/**
 		 * @return whether this buffer is initialized
 		 */
-		virtual bool isInitialized() const override		{ return mInitialized; };
+		virtual bool isInitialized() const override						{ return mInitialized; };
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
