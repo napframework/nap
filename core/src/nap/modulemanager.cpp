@@ -44,11 +44,20 @@ namespace nap
 	}
 
 
-	const Module* ModuleManager::findModule(const std::string& moduleName)
+	const Module* ModuleManager::findModule(const std::string& moduleName) const
 	{
 		auto found_it = std::find_if(mModules.begin(), mModules.end(), [&](const auto& it) {
 			return it->mName == moduleName;
 		});
+		return found_it == mModules.end() ? nullptr : (*found_it).get();
+	}
+
+
+	const Module* ModuleManager::findModule(const nap::rtti::TypeInfo& serviceType) const
+	{
+		auto found_it = std::find_if(mModules.begin(), mModules.end(), [&](const auto& it) {
+			return it->getServiceType() == serviceType;
+			});
 		return found_it == mModules.end() ? nullptr : (*found_it).get();
 	}
 
@@ -64,5 +73,11 @@ namespace nap
 		for (Module& module : mRequiredModules)
 			UnloadModule(module.mHandle);
 		*/
+	}
+
+
+	std::string Module::findAsset(const std::string& name) const
+	{
+		return utility::findFileInDirectories(name, this->getInformation().mDataSearchPaths);
 	}
 }

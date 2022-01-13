@@ -220,6 +220,13 @@ namespace nap
 		Service* getService(const rtti::TypeInfo& type);
 
 		/**
+		 * Find a service of a given type.
+		 * @param type the type of service to get
+		 * @return found service, nullptr if not found.
+		 */
+		const Service* getService(const rtti::TypeInfo& type) const;
+
+		/**
 		 * Searches for a service based on given type name, names need to match exactly.
 		 * @return an already registered service based on its type name, nullptr if not found
 		 * @param type the type of the service as a string
@@ -228,10 +235,27 @@ namespace nap
 
 		/**
 		 * Searches for a service of type T, returns a nullptr if not found.
+		 * 
+		 * ~~~~~{.cpp}
+		 *	RenderService* renderer = getCore().getService<nap::RenderService>();
+		 *	...
+		 * ~~~~~
 		 * @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
 		T* getService();
+
+		/**
+		 * Searches for a service of type T, returns a nullptr if not found.
+		 * 
+		 * ~~~~~{.cpp}
+		 *	const RenderService* renderer = getCore().getService<nap::RenderService>();
+		 *	...
+		 * ~~~~~
+		 * @return a service of type T, returns nullptr if that service can't be found
+		 */
+		template <typename T>
+		const T* getService() const;
 
 		/**
 		 * Returns the extension associated with this instance of core as T. 
@@ -439,8 +463,17 @@ namespace nap
 template <typename T>
 T* nap::Core::getService()
 {
-	Service* new_service = getService(RTTI_OF(T));
-	return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
+	return static_cast<T*>(getService(RTTI_OF(T)));
+}
+
+
+/**
+ * Searches for a service of type T in the services and returns it, returns nullptr if none found
+ */
+template <typename T>
+const T* nap::Core::getService() const
+{
+	return static_cast<const T*>(getService(RTTI_OF(T)));
 }
 
 

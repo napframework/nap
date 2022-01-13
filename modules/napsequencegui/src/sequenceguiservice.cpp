@@ -26,12 +26,46 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Icons
+	//////////////////////////////////////////////////////////////////////////
+
+	namespace icon
+	{
+		namespace sequencer
+		{
+			static const std::vector<std::string>& get()
+			{
+				const static std::vector<std::string> map =
+				{
+					icon::sequencer::play,
+					icon::sequencer::stop,
+					icon::sequencer::rewind,
+					icon::sequencer::up,
+					icon::sequencer::down,
+					icon::sequencer::pause,
+					icon::sequencer::unpause
+				};
+				return map;
+			}
+		}
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Object Creators
+	//////////////////////////////////////////////////////////////////////////
+
 	static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceGUIService*)>& getObjectCreators()
 	{
 		static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceGUIService * service)> vector;
 		return vector;
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// SequenceGUIService
+	//////////////////////////////////////////////////////////////////////////
 
 	bool SequenceGUIService::registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceGUIService* service))
 	{
@@ -64,6 +98,14 @@ namespace nap
 		// Get gui service and colors
 		mGuiService = getCore().getService<IMGuiService>();
 		mColors.init(mGuiService->getColors());
+
+		// Load all icons
+		const auto& icon_names = icon::sequencer::get();
+		for (const auto& icon_name : icon_names)
+		{
+			if (!mGuiService->loadIcon(icon_name, this->getModule(), errorState))
+				return false;
+		}
 
 		// Register all views
 		if(!errorState.check(registerEventView<std::string>(), "Error registering event view"))

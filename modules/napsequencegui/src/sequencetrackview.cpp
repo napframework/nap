@@ -10,6 +10,7 @@
 // External Includes
 #include <imgui/imgui.h>
 #include <iomanip>
+#include <imguiutils.h>
 
 using namespace nap::sequenceguiactions;
 
@@ -145,29 +146,25 @@ namespace nap
 
 			ImGui::Spacing();
 
-            // offset inspector cursor
-            inspector_cursor_pos = offset_inspector(offset);
-
-			// when we delete a track, we don't immediately call the controller because we are iterating track atm
-			if (ImGui::SmallButton("Delete"))
-			{
-				delete_track = true;
-			}
-
-			// show up & down buttons
+			// delete track button
 			ImGui::Spacing();
-
-            // offset inspector cursor
-            inspector_cursor_pos = offset_inspector(offset);
-
-			if(ImGui::SmallButton("Up"))
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
+			float btn_scale = 12.0f * mState.mScale;
+			auto& gui = mService.getGui();
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), { btn_scale, btn_scale }, "Move track up"))
 			{
 				move_track_up = true;
 			}
 			ImGui::SameLine();
-			if(ImGui::SmallButton("Down"))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), { btn_scale, btn_scale }, "Move track down"))
 			{
 				move_track_down = true;
+			}
+			ImGui::SameLine();
+			if (ImGui::ImageButton(gui.getIcon(icon::del), { btn_scale, btn_scale }, "Delete track"))
+			{
+				delete_track = true;
 			}
 
 			// pop scale
