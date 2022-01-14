@@ -32,13 +32,13 @@ namespace nap
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
 
-        mGpioPinPwm = mResourceManager->findObject<pipins::GpioPin>("GPIOPinPWM");
+        mGpioPinPwm = mResourceManager->findObject<pipins::GpioPin>("GpioPinPwm");
         if (!error.check(mGpioPinPwm != nullptr, "unable to find gpio pwm pin with name: %s", "GpioPinPwm"))
             return false;
 
         mGpioPinPwm->setPwmValue(mPwmValue);
 
-        mGpioPin = mResourceManager->findObject<pipins::GpioPin>("GPIOPin");
+        mGpioPin = mResourceManager->findObject<pipins::GpioPin>("GpioPin");
         if (!error.check(mGpioPin != nullptr, "unable to find gpio digital pin with name: %s", "GpioPin"))
             return false;
 
