@@ -1,5 +1,5 @@
 // Local Includes
-#include "pigpioapp.h"
+#include "pipinsapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -8,8 +8,8 @@
 #include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
 
-namespace nap 
-{    
+namespace nap
+{
     bool CoreApp::init(utility::ErrorState& error)
     {
 		// Retrieve services
@@ -17,7 +17,7 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
-        mPiGPIOService  = getCore().getService<nap::pigpio::PiGPIOService>();
+        mGpioService    = getCore().getService<nap::pipins::GpioService>();
 
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
@@ -32,17 +32,17 @@ namespace nap
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
 
-        mGPIOPinPWM = mResourceManager->findObject<pigpio::PiGPIOPin>("GPIOPinPWM");
-        if (!error.check(mGPIOPinPWM != nullptr, "unable to find gpio pwm pin with name: %s", "GPIOPinPWM"))
+        mGpioPinPwm = mResourceManager->findObject<pipins::GpioPin>("GPIOPinPWM");
+        if (!error.check(mGpioPinPwm != nullptr, "unable to find gpio pwm pin with name: %s", "GpioPinPwm"))
             return false;
 
-        mGPIOPinPWM->setPwmValue(mPwmValue);
+        mGpioPinPwm->setPwmValue(mPwmValue);
 
-        mGPIOPinDigital = mResourceManager->findObject<pigpio::PiGPIOPin>("GPIOPinDigital");
-        if (!error.check(mGPIOPinDigital != nullptr, "unable to find gpio digital pin with name: %s", "GPIOPinDigital"))
+        mGpioPin = mResourceManager->findObject<pipins::GpioPin>("GPIOPin");
+        if (!error.check(mGpioPin != nullptr, "unable to find gpio digital pin with name: %s", "GpioPin"))
             return false;
 
-        mGPIOPinDigital->setDigitalWrite(mBlink ? pigpio::EPinValue::HIGH : pigpio::EPinValue::LOW);
+        mGpioPin->setDigitalWrite(mBlink ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
 
 		// All done!
         return true;
@@ -95,13 +95,6 @@ namespace nap
 
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 				mRenderWindow->toggleFullscreen();
-
-            if(press_event->mKey == nap::EKeyCode::KEY_SPACE)
-            {
-               // mPiGPIOService->setDigitalWrite(15, mLedOn ? wiringpi::EPinValue::HIGH : wiringpi::EPinValue::LOW);
-
-                //nap::Logger::info("value is now %i", mPiGPIOService->getDigitalRead(15));
-            }
 		}
 		mInputService->addEvent(std::move(inputEvent));
     }
@@ -124,12 +117,12 @@ namespace nap
 
         if(ImGui::SliderInt("PWM Value", &mPwmValue, 0, 1024))
         {
-            mGPIOPinPWM->setPwmValue(mPwmValue);
+            mGpioPinPwm->setPwmValue(mPwmValue);
         }
 
         if(ImGui::Checkbox("Blink", &mBlink))
         {
-            mGPIOPinDigital->setDigitalWrite(mBlink ? pigpio::EPinValue::HIGH : pigpio::LOW);
+            mGpioPin->setDigitalWrite(mBlink ? pipins::EPinValue::HIGH : pipins::LOW);
         }
 
         ImGui::End();

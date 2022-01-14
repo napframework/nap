@@ -13,20 +13,20 @@
 #include <renderwindow.h>
 #include <entity.h>
 #include <app.h>
-#include <pigpiopin.h>
+#include <gpiopin.h>
 
-namespace nap 
+namespace nap
 {
 	using namespace rtti;
 
     /**
      * Example application, called from within the main loop.
-	 * 
+	 *
 	 * Use this app as a template for other apps that are created directly in 'source'.
 	 * This example links to and uses it's own custom module: 'mod_example'.
 	 * More information and documentation can be found at: https://www.napframework.com/doxygen/
      */
-    class CoreApp : public App 
+    class CoreApp : public App
 	{
     public:
 		/**
@@ -76,14 +76,14 @@ namespace nap
 		SceneService*				mSceneService = nullptr;		///< Manages all the objects in the scene
 		InputService*				mInputService = nullptr;		///< Input service for processing input
 		IMGuiService*				mGuiService = nullptr;			///< Manages GUI related update / draw calls
-        pigpio::PiGPIOService*      mPiGPIOService = nullptr;
-		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window	
+        pipins::GpioService*        mGpioService = nullptr;
+		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		///< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mGnomonEntity = nullptr;		///< Pointer to the entity that can render the gnomon
 
-        ObjectPtr<pigpio::PiGPIOPin> mGPIOPinPWM = nullptr;
-        ObjectPtr<pigpio::PiGPIOPin> mGPIOPinDigital = nullptr;
+        ObjectPtr<pipins::GpioPin>  mGpioPinPwm = nullptr;
+        ObjectPtr<pipins::GpioPin>  mGpioPin = nullptr;
 
 
         bool    mBlink = false;

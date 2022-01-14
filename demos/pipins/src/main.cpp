@@ -1,7 +1,7 @@
 // main.cpp : Defines the entry point for the console application.
 //
 // Local Includes
-#include "pigpioapp.h"
+#include "pipinsapp.h"
 
 // Nap includes
 #include <apprunner.h>

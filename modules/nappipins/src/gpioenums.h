@@ -3,7 +3,7 @@
 namespace nap
 {
 
-namespace pigpio
+namespace pipins
 {
     enum EPUDMode
     {

@@ -1,14 +1,14 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "PiGPIO",
+    "Title": "PiPins",
     "Version": "1.0.0",
     "RequiredModules": [
         "mod_napapp",
         "mod_napscene",
         "mod_napcameracontrol",
         "mod_napparametergui",
-        "mod_nappigpio"
+        "mod_nappipins"
     ],
     "Data": "data/default.json",
     "ServiceConfig": "",

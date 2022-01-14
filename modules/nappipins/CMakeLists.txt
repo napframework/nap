@@ -5,7 +5,7 @@ if(NOT ${ARCH} MATCHES "armhf")
     return()
 endif()
 
-project(mod_nappigpio)
+project(mod_nappipins)
 
 find_package(wiringpi REQUIRED)
 
@@ -42,9 +42,4 @@ package_module()
 # Package wiringpi into platform release
 install(FILES ${WIRINGPI_DIST_FILES} DESTINATION thirdparty/wiringpi)
 install(DIRECTORY ${WIRINGPI_INCLUDE_DIR}/ DESTINATION thirdparty/wiringpi/include)
-
-if(UNIX)
-    file(GLOB WIRINGPI_DYLIBS ${WIRINGPI_LIBRARY_DIR}/libwiringpi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    install(FILES ${WIRINGPI_DYLIBS}
-            DESTINATION thirdparty/wiringpi/lib)
-endif()
+install(DIRECTORY ${WIRINGPI_LIBRARY_DIR}/ DESTINATION thirdparty/wiringpi/lib)

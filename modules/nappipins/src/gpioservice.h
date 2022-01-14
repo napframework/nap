@@ -13,18 +13,28 @@
 #include <concurrentqueue.h>
 
 // Internal Includes
-#include "pigpioenums.h"
+#include "gpioenums.h"
 
 namespace nap
 {
 
-namespace pigpio
+namespace pipins
 {
-    class PiGPIOPin;
+    // forward declares
+    class GpioPin;
 
-    class NAPAPI PiGPIOService : public nap::Service
+    /**
+     * GpioService starts a new thread from which calls to WiringPI API methods can be made via the GpioPin resource.
+     * Write calls will always be asynchronous and not block the calling thread. Read calls are synchronous and perform
+     * a mutex lock to ensure thread-safety.
+     * The GpioService uses "wiringPiSetupGpio()" which means the service uses the Broadcom GPIO pin numbers directly
+     * with no re-mapping.
+     * See https://pinout.xyz/ to help with mapping.
+     * The GpioService wraps the core functionality of wiringPi, see : http://wiringpi.com/reference/
+     */
+    class NAPAPI GpioService : public nap::Service
     {
-        friend class PiGPIOPin;
+        friend class GpioPin;
 
         RTTI_ENABLE(nap::Service)
     public:
@@ -32,7 +42,7 @@ namespace pigpio
          * Constructor
          * @param configuration service configuration
          */
-        PiGPIOService(ServiceConfiguration* configuration);
+        GpioService(ServiceConfiguration* configuration);
 
         // Initialization
         bool init(nap::utility::ErrorState& errorState) override;
@@ -70,17 +80,17 @@ namespace pigpio
 
     private:
         /**
-         * Registers a PiGPIOPin resource and checks if one is not already declared
+         * Registers a GpioPin resource and checks if one is not already declared
          * @param pin const pointer to PiGPIOPin resource
          * @param errorState errorState to write error in
          * @return true on success
          */
-        bool registerPin(const PiGPIOPin* pin, utility::ErrorState& errorState);
+        bool registerPin(const GpioPin* pin, utility::ErrorState& errorState);
 
         /**
-         * Removes a registered PiGPIO pin resource
+         * Removes a registered GpioPin resource
          */
-        void removePin(const PiGPIOPin* pin);
+        void removePin(const GpioPin* pin);
 
         /**
          * Writes the value HIGH or LOW (1 or 0) to the given pin which must have been previously set as an output.
@@ -149,15 +159,15 @@ namespace pigpio
         // queue can of actions that will be handled on thread
         moodycamel::ConcurrentQueue<std::function<void()>> mQueue;
 
-        // the task
+        // the task running the thread
         std::future<void> mUpdateTask;
 
         // boolean set to false to make pigpio thread stop running
         std::atomic_bool mRun;
 
         // map of registered pins with pin number as key value
-        std::unordered_map<int, const PiGPIOPin*> mPins;
+        std::unordered_map<int, const GpioPin*> mPins;
     };
-} // end namespace pigpio
+} // end namespace pipins
 
 } // end namespace nap

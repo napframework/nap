@@ -5,7 +5,7 @@
 #pragma once
 
 // Internal Includes
-#include "pigpioservice.h"
+#include "gpioservice.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -13,17 +13,27 @@
 namespace nap
 {
 
-namespace pigpio
+namespace pipins
 {
-    class NAPAPI PiGPIOPin : public Resource
+    /**
+     * GpioPin can be used to read or write to a GPIO pin on the Raspberry PI. You can set the pin number by setting
+     * the "Pin" property and set its mode by setting the "Mode" property.
+     * The GpioService uses "wiringPiSetupGpio()" which means the service uses the Broadcom GPIO pin numbers directly
+     * with no re-mapping.
+     * Write calls will always be asynchronous and not block the calling thread. Read calls are synchronous and perform
+     * a mutex lock to ensure thread-safety.
+     * See https://pinout.xyz/ to help with mapping.
+     * The PiGPIOPin wraps the core functionality of wiringPi, see : http://wiringpi.com/reference/
+     */
+    class NAPAPI GpioPin : public Resource
     {
     RTTI_ENABLE(Resource)
     public:
         /**
          * Constructor
-         * @param service reference to PiGPIOService
+         * @param service reference to GpioService
          */
-        PiGPIOPin(PiGPIOService& service);
+        GpioPin(GpioService& service);
 
         // Initialization
         bool init(utility::ErrorState& errorState) override;
@@ -83,14 +93,14 @@ namespace pigpio
         void setAnalogWrite(int value);
 
         // properties
-        int mPin = 0;
-        EPinMode mMode = EPinMode::OUTPUT;
+        int mPin = 0; ///< Property: 'Pin' the Pin number
+        EPinMode mMode = EPinMode::OUTPUT; ///< Property: 'Mode' Pin mode
     private:
-        PiGPIOService& mService;
+        GpioService& mService;
     };
 
-    using PiGPIOPinObjectCreator = rtti::ObjectCreator<PiGPIOPin, PiGPIOService>;
-}
+    using GpioPinObjectCreator = rtti::ObjectCreator<GpioPin, GpioService>;
+} // end namespace pipins
 
-}
+} // end namespace nap
 

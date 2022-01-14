@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_SERVICE_MODULE("mod_nappigpio", "0.2.0", "nap::pigpio::PiGPIOService")
+NAP_SERVICE_MODULE("mod_nappipins", "0.2.0", "nap::pipins::GpioService")

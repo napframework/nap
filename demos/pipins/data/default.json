@@ -21,14 +21,14 @@
             "AdditionalSwapImages": 1
         },
         {
-            "Type" : "nap::pigpio::PiGPIOPin",
-            "mID"  : "GPIOPinPWM",
+            "Type" : "nap::pipins::GpioPin",
+            "mID"  : "GpioPinPwm",
             "Pin"  : 18,
             "Mode" : "PWM Output"
         },
         {
-            "Type" : "nap::pigpio::PiGPIOPin",
-            "mID"  : "GPIOPinDigital",
+            "Type" : "nap::pipins::GpioPin",
+            "mID"  : "GpioPin",
             "Pin"  : 15,
             "Mode" : "Output"
         },

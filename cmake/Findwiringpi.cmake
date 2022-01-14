@@ -1,5 +1,10 @@
 # - Try to find WiringPi
 
+# check for appropriate architecture
+if(NOT ${ARCH} MATCHES "armhf")
+    return()
+endif()
+
 find_path(WIRINGPI_DIR
           NAMES
           linux/${ARCH}/include/wiringPi.h
@@ -8,12 +13,10 @@ find_path(WIRINGPI_DIR
           ${CMAKE_CURRENT_LIST_DIR}/../../wiringpi
           )
 
-if(UNIX)
-    set(WIRINGPI_INCLUDE_DIR ${WIRINGPI_DIR}/linux/${ARCH}/include)
-    set(WIRINGPI_LIBRARY_DIR ${WIRINGPI_DIR}/linux/${ARCH}/lib)
-    set(WIRINGPI_LIBRARIES_RELEASE ${WIRINGPI_LIBRARY_DIR}/libwiringPi.so)
-    set(WIRINGPI_LIBRARIES_DEBUG ${WIRINGPI_LIBRARY_DIR}/libwiringPi.so)
-endif()
+set(WIRINGPI_INCLUDE_DIR ${WIRINGPI_DIR}/linux/${ARCH}/include)
+set(WIRINGPI_LIBRARY_DIR ${WIRINGPI_DIR}/linux/${ARCH}/lib)
+set(WIRINGPI_LIBRARIES_RELEASE ${WIRINGPI_LIBRARY_DIR}/libwiringPi.so)
+set(WIRINGPI_LIBRARIES_DEBUG ${WIRINGPI_LIBRARY_DIR}/libwiringPi.so)
 
 set(WIRINGPI_DIST_FILES ${WIRINGPI_DIR}/source/README.md)
 

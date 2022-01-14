@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "pigpioservice.h"
-#include "pigpiopin.h"
+#include "gpioservice.h"
+#include "gpiopin.h"
 
 // Third party includes
 #include <wiringPi.h>
@@ -11,21 +11,21 @@
 #include <nap/logger.h>
 #include <utility/stringutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::pigpio::PiGPIOService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::pipins::GpioService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
-using namespace nap::pigpio;
+using namespace nap::pipins;
 
 namespace nap
 {
-    PiGPIOService::PiGPIOService(ServiceConfiguration* configuration) :
+    GpioService::GpioService(ServiceConfiguration* configuration) :
 		Service(configuration)
 	{
 	}
 
 
-    bool PiGPIOService::init(nap::utility::ErrorState& errorState)
+    bool GpioService::init(nap::utility::ErrorState& errorState)
     {
         mRun.store(true);
         mUpdateTask = std::async(std::launch::async, [this]
@@ -39,7 +39,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::setPwmRange(int range)
+    void GpioService::setPwmRange(int range)
     {
         mQueue.enqueue([range]()
         {
@@ -48,7 +48,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::setPwmMode(EPWMMode mode)
+    void GpioService::setPwmMode(EPWMMode mode)
     {
         mQueue.enqueue([mode]()
         {
@@ -57,7 +57,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::setPwmClock(int divisor)
+    void GpioService::setPwmClock(int divisor)
     {
         mQueue.enqueue([divisor]()
         {
@@ -66,7 +66,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::shutdown()
+    void GpioService::shutdown()
     {
         mRun.store(false);
         if (mUpdateTask.valid())
@@ -76,13 +76,13 @@ namespace nap
     }
 
 
-    void PiGPIOService::registerObjectCreators(rtti::Factory& factory)
+    void GpioService::registerObjectCreators(rtti::Factory& factory)
     {
-        factory.addObjectCreator(std::make_unique<PiGPIOPinObjectCreator>(*this));
+        factory.addObjectCreator(std::make_unique<GpioPinObjectCreator>(*this));
     }
 
 
-    bool PiGPIOService::registerPin(const PiGPIOPin* pin, utility::ErrorState& errorState)
+    bool GpioService::registerPin(const GpioPin* pin, utility::ErrorState& errorState)
     {
         auto it = mPins.find(pin->mPin);
         if(it != mPins.end())
@@ -96,7 +96,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::removePin(const PiGPIOPin* pin)
+    void GpioService::removePin(const GpioPin* pin)
     {
         auto it = mPins.find(pin->mPin);
         assert(it != mPins.end());
@@ -104,7 +104,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::setDigitalWrite(int pin, EPinValue value)
+    void GpioService::setDigitalWrite(int pin, EPinValue value)
     {
         mQueue.enqueue([pin, value]()
         {
@@ -113,7 +113,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::setAnalogWrite(int pin, int value)
+    void GpioService::setAnalogWrite(int pin, int value)
     {
         mQueue.enqueue([pin, value]()
         {
@@ -122,7 +122,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::setPinMode(int pin, EPinMode mode)
+    void GpioService::setPinMode(int pin, EPinMode mode)
     {
         mQueue.enqueue([pin, mode]()
         {
@@ -131,7 +131,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::setPullUpDnControl(int pin, int pud)
+    void GpioService::setPullUpDnControl(int pin, int pud)
     {
         mQueue.enqueue([pin, pud]()
         {
@@ -140,21 +140,21 @@ namespace nap
     }
 
 
-    EPinValue PiGPIOService::getDigitalRead(int pin)
+    EPinValue GpioService::getDigitalRead(int pin)
     {
         std::lock_guard<std::mutex> l(mMutex);
         return static_cast<EPinValue>(digitalRead(pin));
     }
 
 
-    int PiGPIOService::getAnalogRead(int pin)
+    int GpioService::getAnalogRead(int pin)
     {
         std::lock_guard<std::mutex> l(mMutex);
         return analogRead(pin);
     }
 
 
-    void PiGPIOService::setPwmValue(int pin, int value)
+    void GpioService::setPwmValue(int pin, int value)
     {
         mQueue.enqueue([pin, value]()
         {
@@ -163,7 +163,7 @@ namespace nap
     }
 
 
-    void PiGPIOService::thread()
+    void GpioService::thread()
     {
         while(mRun.load())
         {
