@@ -8,7 +8,9 @@
         "mod_napscene",
         "mod_napcameracontrol",
         "mod_napparametergui",
-        "mod_nappipins"
+        "mod_nappipins",
+		"mod_napsequence",
+		"mod_napsequencegui"
     ],
     "Data": "data/default.json",
     "ServiceConfig": "",

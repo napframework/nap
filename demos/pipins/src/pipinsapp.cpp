@@ -23,9 +23,14 @@ namespace nap
         mResourceManager = getCore().getResourceManager();
 
 		// Get the render window
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
-		if (!error.check(mRenderWindow != nullptr, "unable to find render window with name: %s", "Window"))
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("ParameterWindow");
+		if (!error.check(mRenderWindow != nullptr, "unable to find parameter window with name: %s", "ParameterWindow"))
 			return false;
+
+        // Get the sequencer window
+        mSequencerWindow = mResourceManager->findObject<nap::RenderWindow>("SequencerWindow");
+        if (!error.check(mSequencerWindow != nullptr, "unable to find sequencer window with name: %s", "SequencerWindow"))
+            return false;
 
 		// Get the scene that contains our entities and components
 		mScene = mResourceManager->findObject<Scene>("Scene");
@@ -36,13 +41,32 @@ namespace nap
         if (!error.check(mGpioPinPwm != nullptr, "unable to find gpio pwm pin with name: %s", "GpioPinPwm"))
             return false;
 
-        mGpioPinPwm->setPwmValue(mPwmValue);
-
         mGpioPin = mResourceManager->findObject<pipins::GpioPin>("GpioPin");
         if (!error.check(mGpioPin != nullptr, "unable to find gpio digital pin with name: %s", "GpioPin"))
             return false;
 
-        mGpioPin->setDigitalWrite(mBlink ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
+        mParameterPwm = mResourceManager->findObject<ParameterInt>("PulseWidthParameter");
+        if (!error.check(mParameterPwm != nullptr, "unable to find parameter with name: %s", "PulseWidthParameter"))
+            return false;
+
+        mParameterBlink = mResourceManager->findObject<ParameterFloat>("BlinkParameter");
+        if (!error.check(mParameterBlink != nullptr, "unable to find parameter with name: %s", "BlinkParameter"))
+            return false;
+
+        mSequencerEditorGUI = mResourceManager->findObject<SequenceEditorGUI>("SequenceEditorGUI");
+        if (!error.check(mSequencerEditorGUI != nullptr, "unable to find SequenceEditorGUI with name: %s", "SequenceEditorGUI"))
+            return false;
+
+        mGpioService->setPwmRange(1024);
+        mParameterPwm->valueChanged.connect([this](const int &value)
+        {
+            mGpioPinPwm->setPwmValue(value);
+        });
+
+        mParameterBlink->valueChanged.connect([this](const float &value)
+        {
+            mGpioPin->setDigitalWrite(value > 0 ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
+        });
 
 		// All done!
         return true;
@@ -63,8 +87,7 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			// Draw GUI elements
-			mGuiService->draw();
+            mGuiService->draw();
 
 			// Stop render pass
 			mRenderWindow->endRendering();
@@ -72,6 +95,21 @@ namespace nap
 			// End recording
 			mRenderService->endRecording();
 		}
+
+        // Begin recording the render commands for the main render window
+        if (mRenderService->beginRecording(*mSequencerWindow))
+        {
+            // Begin render pass
+            mSequencerWindow->beginRendering();
+
+            mGuiService->draw();
+
+            // Stop render pass
+            mSequencerWindow->endRendering();
+
+            // End recording
+            mRenderService->endRecording();
+        }
 
 		// Proceed to next frame
 		mRenderService->endFrame();
@@ -113,18 +151,25 @@ namespace nap
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
 
+        mGuiService->selectWindow(mRenderWindow.get());
+
         ImGui::Begin("GPIO");
 
-        if(ImGui::SliderInt("PWM Value", &mPwmValue, 0, 1024))
+        int pwm = mParameterPwm->mValue;
+        if(ImGui::SliderInt("PWM Value", &pwm, 0, 1024))
         {
-            mGpioPinPwm->setPwmValue(mPwmValue);
+            mParameterPwm->setValue(pwm);
         }
 
-        if(ImGui::Checkbox("Blink", &mBlink))
+        bool blink = mParameterBlink->mValue > 0;
+        if(ImGui::Checkbox("Blink", &blink))
         {
-            mGpioPin->setDigitalWrite(mBlink ? pipins::EPinValue::HIGH : pipins::LOW);
+            mParameterBlink->setValue(blink ? 1 : 0);
         }
 
         ImGui::End();
+
+        mGuiService->selectWindow(mSequencerWindow.get());
+        mSequencerEditorGUI->show();
     }
 }

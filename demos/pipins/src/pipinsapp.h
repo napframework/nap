@@ -14,6 +14,8 @@
 #include <entity.h>
 #include <app.h>
 #include <gpiopin.h>
+#include <parameternumeric.h>
+#include <sequenceeditorgui.h>
 
 namespace nap
 {
@@ -78,15 +80,15 @@ namespace nap
 		IMGuiService*				mGuiService = nullptr;			///< Manages GUI related update / draw calls
         pipins::GpioService*        mGpioService = nullptr;
 		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window
+        ObjectPtr<RenderWindow>		mSequencerWindow;					///< Pointer to the sequencer window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		///< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mGnomonEntity = nullptr;		///< Pointer to the entity that can render the gnomon
 
-        ObjectPtr<pipins::GpioPin>  mGpioPinPwm = nullptr;
-        ObjectPtr<pipins::GpioPin>  mGpioPin = nullptr;
-
-
-        bool    mBlink = false;
-        int     mPwmValue = 512;
+        ResourcePtr<pipins::GpioPin>  mGpioPinPwm = nullptr;
+        ResourcePtr<pipins::GpioPin>  mGpioPin = nullptr;
+        ResourcePtr<ParameterInt>     mParameterPwm = nullptr;
+        ResourcePtr<ParameterFloat>     mParameterBlink = nullptr;
+        ResourcePtr<SequenceEditorGUI>    mSequencerEditorGUI = nullptr;
 	};
 }

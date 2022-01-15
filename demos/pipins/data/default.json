@@ -2,12 +2,12 @@
     "Objects": [
         {
             "Type": "nap::RenderWindow",
-            "mID": "Window",
+            "mID": "ParameterWindow",
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": true,
-            "Title": "Example Window",
+            "SampleShading": false,
+            "Title": "Parameter Window",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
@@ -17,7 +17,7 @@
                 "z": 0.0,
                 "w": 1.0
             },
-            "Samples": "Four",
+            "Samples": "One",
             "AdditionalSwapImages": 1
         },
         {
@@ -29,9 +29,83 @@
         {
             "Type" : "nap::pipins::GpioPin",
             "mID"  : "GpioPin",
-            "Pin"  : 15,
+            "Pin"  : 25,
             "Mode" : "Output"
         },
+		{
+			"Type": "nap::RenderWindow",
+			"mID": "SequencerWindow",
+			"Borderless": false,
+			"Resizable": true,
+			"Visible": true,
+			"SampleShading": false,
+			"Title": "Sequencer",
+			"Width": 1280,
+			"Height": 720,
+			"Mode": "Immediate",
+			"ClearColor": {
+				"Values": [
+					0.06700000166893006,
+					0.07800000160932541,
+					0.14900000393390656,
+					1.0
+				]
+			},
+			"Samples": "One",
+			"AdditionalSwapImages": 1
+		},
+		{
+			"Type": "nap::SequenceEditor",
+			"mID": "SequenceEditor",
+			"Sequence Player": "SequencePlayer"
+		},
+		{
+			"Type": "nap::SequenceEditorGUI",
+			"mID": "SequenceEditorGUI",
+			"Sequence Editor": "SequenceEditor",
+			"Render Window": "SequencerWindow",
+			"Draw Full Window": true
+		},
+		{
+			"Type": "nap::SequencePlayer",
+			"mID": "SequencePlayer",
+			"Default Show": "Default Show.json",
+			"Outputs": [
+				{
+					"Type": "nap::SequencePlayerCurveOutput",
+					"mID": "PulseWidthOutput",
+					"Parameter": "PulseWidthParameter",
+					"Use Main Thread": false
+				},
+				{
+					"Type": "nap::SequencePlayerCurveOutput",
+					"mID": "BlinkOutput",
+					"Parameter": "BlinkParameter",
+					"Use Main Thread": false
+				}
+			],
+			"Clock": {
+				"Type": "nap::SequencePlayerIndependentClock",
+				"mID": "SequencePlayerIndependentClock",
+				"Frequency" : 500
+			}
+		},
+		{
+			"Type": "nap::ParameterInt",
+			"mID": "PulseWidthParameter",
+			"Name": "PulseWidthParameter",
+			"Value": 0,
+			"Minimum": 0,
+			"Maximum": 1024
+		},
+		{
+			"Type": "nap::ParameterFloat",
+			"mID": "BlinkParameter",
+			"Name": "BlinkParameter",
+			"Value": 0,
+			"Minimum": 0,
+			"Maximum": 1
+		},
         {
             "Type": "nap::Scene",
             "mID": "Scene",
