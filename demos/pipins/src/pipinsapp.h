@@ -80,6 +80,12 @@ namespace nap
          */
         void drawGui();
 
+        /**
+         * Callback hookup to onPostResourcesLoaded signal of the resource manager
+         * Hooks up parameters to GPIO pins and starts SequencePlayer
+         */
+        void onPostResourcesLoaded();
+
         ResourceManager*			mResourceManager = nullptr;		///< Manages all the loaded data
 		RenderService*				mRenderService = nullptr;		///< Render Service that handles render calls
 		InputService*				mInputService = nullptr;		///< Input service for processing input

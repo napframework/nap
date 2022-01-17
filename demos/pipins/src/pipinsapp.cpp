@@ -64,20 +64,9 @@ namespace nap
         if (!error.check(mSequencePlayer != nullptr, "unable to find SequencePlayer with name: %s", "SequencePlayer"))
             return false;
 
-        // hook up pins to parameter callbacks
-        mParameterPwm->valueChanged.connect([this](const int &value)
-        {
-            mGpioPinPwm->setPwmValue(value);
-        });
-        mParameterBlink->valueChanged.connect([this](const float &value)
-        {
-            mGpioPinBlink->setDigitalWrite(value > 0 ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
-        });
-
-        // fire up the sequence player and let it loop
-        mSequencePlayer->setIsPaused(false);
-        mSequencePlayer->setIsPlaying(true);
-        mSequencePlayer->setIsLooping(true);
+        // when resources get loaded, hook up callbacks to correct parameters and gpio pins
+        mResourceManager->mPostResourcesLoadedSignal.connect([this](){ onPostResourcesLoaded(); });
+        onPostResourcesLoaded();
 
 		// All done!
         return true;
@@ -198,5 +187,23 @@ namespace nap
         {
             mSequenceEditorGUI->show();
         }
+    }
+
+    void CoreApp::onPostResourcesLoaded()
+    {
+        // hook up pins to parameter callbacks
+        mParameterPwm->valueChanged.connect([this](const int &value)
+        {
+            mGpioPinPwm->setPwmValue(value);
+        });
+        mParameterBlink->valueChanged.connect([this](const float &value)
+        {
+            mGpioPinBlink->setDigitalWrite(value > 0 ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
+        });
+
+        // fire up the sequence player and let it loop
+        mSequencePlayer->setIsPaused(false);
+        mSequencePlayer->setIsPlaying(true);
+        mSequencePlayer->setIsLooping(true);
     }
 }

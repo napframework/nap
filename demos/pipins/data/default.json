@@ -9,7 +9,7 @@
         {
             "Type" : "nap::pipins::GpioPin",
             "mID"  : "GpioPinBlink",
-            "Pin"  : 16,
+            "Pin"  : 23,
             "Mode" : "Output"
         },
 		{

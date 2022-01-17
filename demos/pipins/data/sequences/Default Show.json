@@ -74,16 +74,64 @@
                 },
                 {
                     "Position": {
-                        "Time": 1.0,
+                        "Time": 0.2519978880882263,
                         "Value": 1.0
                     },
                     "InTangent": {
-                        "Time": -0.4000000059604645,
+                        "Time": -0.10000000149011612,
                         "Value": 0.0
                     },
                     "OutTangent": {
-                        "Time": 0.4000000059604645,
+                        "Time": 0.10000000149011612,
                         "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.5019959211349487,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.7699937224388123,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Bezier",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 1.0,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.12999999523162843,
+                        "Value": 0.21666666865348817
+                    },
+                    "OutTangent": {
+                        "Time": 0.12999999523162843,
+                        "Value": -0.21666666865348817
                     },
                     "InterpolationType": "Bezier",
                     "AlignedTangents": true
@@ -112,8 +160,72 @@
                 },
                 {
                     "Position": {
-                        "Time": 0.5679011940956116,
+                        "Time": 0.17600001394748689,
                         "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Stepped",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.3400000035762787,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Stepped",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.5039012432098389,
+                        "Value": 1.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Stepped",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.6600000262260437,
+                        "Value": 0.0
+                    },
+                    "InTangent": {
+                        "Time": -0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "OutTangent": {
+                        "Time": 0.10000000149011612,
+                        "Value": 0.0
+                    },
+                    "InterpolationType": "Stepped",
+                    "AlignedTangents": true
+                },
+                {
+                    "Position": {
+                        "Time": 0.8340001702308655,
+                        "Value": 0.9722221493721008
                     },
                     "InTangent": {
                         "Time": -0.10000000149011612,
