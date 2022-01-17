@@ -10,11 +10,13 @@
 
 namespace nap
 {
+    static bool drawControls = true;
+    static bool drawSequencer = true;
+
     bool CoreApp::init(utility::ErrorState& error)
     {
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
-		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
         mGpioService    = getCore().getService<nap::pipins::GpioService>();
@@ -23,50 +25,59 @@ namespace nap
         mResourceManager = getCore().getResourceManager();
 
 		// Get the render window
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("ParameterWindow");
-		if (!error.check(mRenderWindow != nullptr, "unable to find parameter window with name: %s", "ParameterWindow"))
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
+		if (!error.check(mRenderWindow != nullptr, "unable to find window with name: %s", "Window"))
 			return false;
-
-        // Get the sequencer window
-        mSequencerWindow = mResourceManager->findObject<nap::RenderWindow>("SequencerWindow");
-        if (!error.check(mSequencerWindow != nullptr, "unable to find sequencer window with name: %s", "SequencerWindow"))
-            return false;
 
 		// Get the scene that contains our entities and components
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
 
+        // Get GPIO pin controlling pulse width
         mGpioPinPwm = mResourceManager->findObject<pipins::GpioPin>("GpioPinPwm");
         if (!error.check(mGpioPinPwm != nullptr, "unable to find gpio pwm pin with name: %s", "GpioPinPwm"))
             return false;
 
-        mGpioPin = mResourceManager->findObject<pipins::GpioPin>("GpioPin");
-        if (!error.check(mGpioPin != nullptr, "unable to find gpio digital pin with name: %s", "GpioPin"))
+        // Get GPIO pin blink
+        mGpioPinBlink = mResourceManager->findObject<pipins::GpioPin>("GpioPinBlink");
+        if (!error.check(mGpioPinBlink != nullptr, "unable to find gpio blink pin with name: %s", "GpioPinBlink"))
             return false;
 
+        // Get parameter controlling pulse width
         mParameterPwm = mResourceManager->findObject<ParameterInt>("PulseWidthParameter");
         if (!error.check(mParameterPwm != nullptr, "unable to find parameter with name: %s", "PulseWidthParameter"))
             return false;
 
+        // Get parameter controlling blink
         mParameterBlink = mResourceManager->findObject<ParameterFloat>("BlinkParameter");
         if (!error.check(mParameterBlink != nullptr, "unable to find parameter with name: %s", "BlinkParameter"))
             return false;
 
-        mSequencerEditorGUI = mResourceManager->findObject<SequenceEditorGUI>("SequenceEditorGUI");
-        if (!error.check(mSequencerEditorGUI != nullptr, "unable to find SequenceEditorGUI with name: %s", "SequenceEditorGUI"))
+        // Get SequenceEditor gui
+        mSequenceEditorGUI = mResourceManager->findObject<SequenceEditorGUI>("SequenceEditorGUI");
+        if (!error.check(mSequenceEditorGUI != nullptr, "unable to find SequenceEditorGUI with name: %s", "SequenceEditorGUI"))
             return false;
 
-        mGpioService->setPwmRange(1024);
+        // Get SequencePlayer
+        mSequencePlayer = mResourceManager->findObject<SequencePlayer>("SequencePlayer");
+        if (!error.check(mSequencePlayer != nullptr, "unable to find SequencePlayer with name: %s", "SequencePlayer"))
+            return false;
+
+        // hook up pins to parameter callbacks
         mParameterPwm->valueChanged.connect([this](const int &value)
         {
             mGpioPinPwm->setPwmValue(value);
         });
-
         mParameterBlink->valueChanged.connect([this](const float &value)
         {
-            mGpioPin->setDigitalWrite(value > 0 ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
+            mGpioPinBlink->setDigitalWrite(value > 0 ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
         });
+
+        // fire up the sequence player and let it loop
+        mSequencePlayer->setIsPaused(false);
+        mSequencePlayer->setIsPlaying(true);
+        mSequencePlayer->setIsLooping(true);
 
 		// All done!
         return true;
@@ -95,21 +106,6 @@ namespace nap
 			// End recording
 			mRenderService->endRecording();
 		}
-
-        // Begin recording the render commands for the main render window
-        if (mRenderService->beginRecording(*mSequencerWindow))
-        {
-            // Begin render pass
-            mSequencerWindow->beginRendering();
-
-            mGuiService->draw();
-
-            // Stop render pass
-            mSequencerWindow->endRendering();
-
-            // End recording
-            mRenderService->endRecording();
-        }
 
 		// Proceed to next frame
 		mRenderService->endFrame();
@@ -151,25 +147,56 @@ namespace nap
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
 
+        drawGui();
+    }
+
+
+    void CoreApp::drawGui()
+    {
         mGuiService->selectWindow(mRenderWindow.get());
 
-        ImGui::Begin("GPIO");
-
-        int pwm = mParameterPwm->mValue;
-        if(ImGui::SliderInt("PWM Value", &pwm, 0, 1024))
+        if (ImGui::BeginMainMenuBar())
         {
-            mParameterPwm->setValue(pwm);
+            if (ImGui::BeginMenu("Windows"))
+            {
+                ImGui::MenuItem("Controls", nullptr, &drawControls);
+                ImGui::MenuItem("Sequencer", nullptr, &drawSequencer);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
         }
 
-        bool blink = mParameterBlink->mValue > 0;
-        if(ImGui::Checkbox("Blink", &blink))
+        if(drawControls)
         {
-            mParameterBlink->setValue(blink ? 1 : 0);
+            ImGui::Begin("Controls");
+
+            ImGui::Text(getCurrentDateTime().toString().c_str());
+            RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+            ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+            if(ImGui::CollapsingHeader("GPIO"))
+            {
+                int pwm = mParameterPwm->mValue;
+                if(ImGui::SliderInt("PWM Value", &pwm, 0, 1024))
+                {
+                    if(!mSequencePlayer->getIsPlaying())
+                        mParameterPwm->setValue(pwm);
+                }
+
+                bool blink = mParameterBlink->mValue > 0;
+                if(ImGui::Checkbox("Blink", &blink))
+                {
+                    if(!mSequencePlayer->getIsPlaying())
+                        mParameterBlink->setValue(blink ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
+                }
+            }
+
+            ImGui::End();
         }
 
-        ImGui::End();
-
-        mGuiService->selectWindow(mSequencerWindow.get());
-        mSequencerEditorGUI->show();
+        if(drawSequencer)
+        {
+            mSequenceEditorGUI->show();
+        }
     }
 }

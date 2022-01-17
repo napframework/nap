@@ -22,11 +22,13 @@ namespace nap
 	using namespace rtti;
 
     /**
-     * Example application, called from within the main loop.
+     * Raspberry PI GPIO example application
 	 *
-	 * Use this app as a template for other apps that are created directly in 'source'.
-	 * This example links to and uses it's own custom module: 'mod_example'.
-	 * More information and documentation can be found at: https://www.napframework.com/doxygen/
+	 * This application is an example of how to use the GPIO of the raspberry pi using mod_nappipins in conjunction
+     * with a SequencePlayer
+     * This application controls pulse width modulation on one GPIO pin and uses another pin as a simple on/off blink
+     * example. See the in "default.json" declared GPIO pin numbers.
+     * Run the example as sudo, since using PWM_OUTPUT mode on GPIO pin requires root access.
      */
     class CoreApp : public App
 	{
@@ -73,22 +75,28 @@ namespace nap
         int shutdown() override;
 
     private:
+        /**
+         * Draws application GUI
+         */
+        void drawGui();
+
         ResourceManager*			mResourceManager = nullptr;		///< Manages all the loaded data
 		RenderService*				mRenderService = nullptr;		///< Render Service that handles render calls
-		SceneService*				mSceneService = nullptr;		///< Manages all the objects in the scene
 		InputService*				mInputService = nullptr;		///< Input service for processing input
 		IMGuiService*				mGuiService = nullptr;			///< Manages GUI related update / draw calls
-        pipins::GpioService*        mGpioService = nullptr;
+        pipins::GpioService*        mGpioService = nullptr;         ///< Manages GPIO related calls
 		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window
-        ObjectPtr<RenderWindow>		mSequencerWindow;					///< Pointer to the sequencer window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		///< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mGnomonEntity = nullptr;		///< Pointer to the entity that can render the gnomon
 
-        ResourcePtr<pipins::GpioPin>  mGpioPinPwm = nullptr;
-        ResourcePtr<pipins::GpioPin>  mGpioPin = nullptr;
-        ResourcePtr<ParameterInt>     mParameterPwm = nullptr;
-        ResourcePtr<ParameterFloat>     mParameterBlink = nullptr;
-        ResourcePtr<SequenceEditorGUI>    mSequencerEditorGUI = nullptr;
+        ResourcePtr<pipins::GpioPin>    mGpioPinPwm = nullptr;      ///< Pointer to GPIO pin controlling pulse width
+        ResourcePtr<pipins::GpioPin>    mGpioPinBlink = nullptr;    ///< Pointer to GPIO pin for digitalWrite calls
+        ResourcePtr<ParameterInt>       mParameterPwm = nullptr;    ///< Pointer to parameter being animated by GUI and Sequencer controlling pulse width
+        ResourcePtr<ParameterFloat>     mParameterBlink = nullptr;  ///< Pointer to parameter being animated by GUI and Sequencer controlling blink
+        ResourcePtr<SequenceEditorGUI>  mSequenceEditorGUI = nullptr; ///< Pointer to the gui of the Sequencer
+        ResourcePtr<SequencePlayer>     mSequencePlayer = nullptr; ///< Pointer to SequencePlayer
+
+        RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	///< GUI text highlight color
 	};
 }

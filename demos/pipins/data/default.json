@@ -1,26 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::RenderWindow",
-            "mID": "ParameterWindow",
-            "Borderless": false,
-            "Resizable": true,
-            "Visible": true,
-            "SampleShading": false,
-            "Title": "Parameter Window",
-            "Width": 1280,
-            "Height": 720,
-            "Mode": "Immediate",
-            "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
-            },
-            "Samples": "One",
-            "AdditionalSwapImages": 1
-        },
-        {
             "Type" : "nap::pipins::GpioPin",
             "mID"  : "GpioPinPwm",
             "Pin"  : 18,
@@ -28,18 +8,18 @@
         },
         {
             "Type" : "nap::pipins::GpioPin",
-            "mID"  : "GpioPin",
-            "Pin"  : 25,
+            "mID"  : "GpioPinBlink",
+            "Pin"  : 16,
             "Mode" : "Output"
         },
 		{
 			"Type": "nap::RenderWindow",
-			"mID": "SequencerWindow",
+			"mID": "Window",
 			"Borderless": false,
 			"Resizable": true,
 			"Visible": true,
 			"SampleShading": false,
-			"Title": "Sequencer",
+			"Title": "Pipins",
 			"Width": 1280,
 			"Height": 720,
 			"Mode": "Immediate",
@@ -63,8 +43,8 @@
 			"Type": "nap::SequenceEditorGUI",
 			"mID": "SequenceEditorGUI",
 			"Sequence Editor": "SequenceEditor",
-			"Render Window": "SequencerWindow",
-			"Draw Full Window": true
+			"Render Window": "Window",
+			"Draw Full Window": false
 		},
 		{
 			"Type": "nap::SequencePlayer",
