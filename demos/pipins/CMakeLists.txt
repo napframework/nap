@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18.4)
 
-# check for appropriate architecture
-if(NOT ${ARCH} MATCHES "armhf")
+# check for appropriate os
+if(NOT RASPBIAN)
     return()
 endif()
 

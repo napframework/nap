@@ -58,3 +58,13 @@ macro(ensure_patchelf_installed)
     endif()
 endmacro()
 
+# Check existence of bcm_host.h header file to see if we're building on Raspbian os
+macro(check_raspbian_os RASPBIAN)
+    if(${ARCH} MATCHES "armhf")
+        MESSAGE(VERBOSE "Looking for bcm_host.h")
+        INCLUDE(CheckIncludeFiles)
+        CHECK_INCLUDE_FILES("/usr/include/bcm_host.h" RASPBIAN)
+    endif()
+endmacro()
+
+

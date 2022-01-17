@@ -104,9 +104,12 @@ if(WIN32 AND NOT ANDROID)
     endif()
 endif()
 
-# Ensure we have patchelf on Linux, preventing silent failures
 if(UNIX AND NOT APPLE)
+    # Ensure we have patchelf on Linux, preventing silent failures
     ensure_patchelf_installed()
+
+    # Check if we're building on raspbian
+    check_raspbian_os(RASPBIAN)
 endif()
 
 # store project directory
