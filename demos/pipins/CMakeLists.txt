@@ -10,16 +10,16 @@ project(pipins)
 # add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
-file(GLOB SHADERS data/shaders/*.frag data/shaders/*.vert)
+file(GLOB SEQUENCES data/sequences/*.json)
 file(GLOB DATA data/*)
 
 # Create IDE groups
 source_group("headers" FILES ${HEADERS})
 source_group("sources" FILES ${SOURCES})
-source_group("shaders" FILES ${SHADERS})
+source_group("sequences" FILES ${SEQUENCES})
 
 # add executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SEQUENCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Apps)
