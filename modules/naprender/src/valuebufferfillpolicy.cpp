@@ -18,6 +18,10 @@ RTTI_DEFINE_BASE(nap::Vec3BufferFillPolicy)
 RTTI_DEFINE_BASE(nap::Vec4BufferFillPolicy)
 RTTI_DEFINE_BASE(nap::Mat4BufferFillPolicy)
 
+RTTI_BEGIN_CLASS(nap::ConstantUIntBufferFillPolicy)
+	RTTI_PROPERTY("Constant", &nap::ConstantUIntBufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::ConstantIntBufferFillPolicy)
 	RTTI_PROPERTY("Constant", &nap::ConstantIntBufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

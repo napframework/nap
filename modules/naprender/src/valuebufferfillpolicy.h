@@ -14,7 +14,7 @@
 namespace nap
 {
 	/**
-	 * Base class
+	 * Base class of TypedValueBufferFillPolicy
 	 */
 	class NAPAPI BaseValueBufferFillPolicy : public Resource
 	{
@@ -26,14 +26,22 @@ namespace nap
 
 
 	/**
-	 *
+	 * Base class of a fill policy implementation (e.g. ConstantValueBufferFillPolicy<T>) of a specific value type T
 	 */
 	template<typename T>
 	class NAPAPI TypedValueBufferFillPolicy : public BaseValueBufferFillPolicy
 	{
 		RTTI_ENABLE(BaseValueBufferFillPolicy)
 	public:
-		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) = 0;
+		/**
+		 * 
+		 */
+		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const = 0;
+
+		/**
+		 * 
+		 */
+		virtual void fill(uint numElements, uint8* data) const = 0;
 	};
 
 
@@ -45,7 +53,18 @@ namespace nap
 	{
 		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
 	public:
-		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) override;
+		/**
+		 * @tparam the element type 
+		 * @param numElements the number of elements to set
+		 * @param stagingBuffer an empty stagingBuffer to be resized and set
+		 * @param errorState
+		 */
+		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const override;
+
+		/**
+		 * 
+		 */
+		virtual void fill(uint numElements, uint8* data) const override;
 
 		T mConstant = T();			///< Property 'Constant'
 	};
@@ -55,6 +74,7 @@ namespace nap
 	// BaseValueBufferFillPolicy type definitions
 	//////////////////////////////////////////////////////////////////////////
 
+	using UIntBufferFillPolicy = TypedValueBufferFillPolicy<uint>;
 	using IntBufferFillPolicy = TypedValueBufferFillPolicy<int>;
 	using FloatBufferFillPolicy = TypedValueBufferFillPolicy<float>;
 	using Vec2BufferFillPolicy = TypedValueBufferFillPolicy<glm::vec2>;
@@ -67,6 +87,7 @@ namespace nap
 	// ConstantBufferFillPolicy type definitions
 	//////////////////////////////////////////////////////////////////////////
 
+	using ConstantUIntBufferFillPolicy = ConstantValueBufferFillPolicy<uint>;
 	using ConstantIntBufferFillPolicy = ConstantValueBufferFillPolicy<int>;
 	using ConstantFloatBufferFillPolicy = ConstantValueBufferFillPolicy<float>;
 	using ConstantVec2BufferFillPolicy = ConstantValueBufferFillPolicy<glm::vec2>;
@@ -80,9 +101,19 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool ConstantValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState)
+	bool ConstantValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const
 	{
 		stagingBuffer.resize(numElements, mConstant);
 		return true;
+	}
+
+	template<typename T>
+	void ConstantValueBufferFillPolicy<T>::fill(uint numElements, uint8* data) const 
+	{
+		for (uint i = 0; i < numElements; i++)
+		{
+			std::memcpy(data, &mConstant, sizeof(T));
+			data += sizeof(T);
+		}
 	}
 }

@@ -225,6 +225,107 @@
             "Children": []
         },
         {
+            "Type": "nap::ImageFromFile",
+            "mID": "ParticleOne",
+            "Usage": "Static",
+            "ImagePath": "texture_one.jpg",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ParticleTwo",
+            "Usage": "Static",
+            "ImagePath": "texture_two.png",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ParticleMaterial",
+            "Uniforms": [],
+            "StorageUniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2DArray",
+                    "mID": "UniformTexture2DArray_be091041",
+                    "Name": "texture_input",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Textures": [
+                        "ParticleOne",
+                        "ParticleTwo"
+                    ]
+                }
+            ],
+            "Shader": "ParticleShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Id",
+                    "ShaderAttributeID": "in_Id"
+                }
+            ],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "ReadWrite"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "ComputeParticlesDemo",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.06700000166893006,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "CameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DefaultInputRouterEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "ParticleVolumeEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "ParticleShader",
+            "VertShader": "shaders/particle.vert",
+            "FragShader": "shaders/particle.frag"
+        },
+        {
             "Type": "nap::StructGPUBuffer",
             "mID": "StructGPUBuffer_Particles_A",
             "Descriptor": {
@@ -345,107 +446,6 @@
             "Usage": "Static",
             "DescriptorType": "Storage",
             "FillPolicy": ""
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "ParticleOne",
-            "Usage": "Static",
-            "ImagePath": "texture_one.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "ParticleTwo",
-            "Usage": "Static",
-            "ImagePath": "texture_two.png",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "ParticleMaterial",
-            "Uniforms": [],
-            "StorageUniforms": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2DArray",
-                    "mID": "UniformTexture2DArray_be091041",
-                    "Name": "texture_input",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Textures": [
-                        "ParticleOne",
-                        "ParticleTwo"
-                    ]
-                }
-            ],
-            "Shader": "ParticleShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Id",
-                    "ShaderAttributeID": "in_Id"
-                }
-            ],
-            "BlendMode": "AlphaBlend",
-            "DepthMode": "ReadWrite"
-        },
-        {
-            "Type": "nap::RenderWindow",
-            "mID": "Window0",
-            "Borderless": false,
-            "Resizable": true,
-            "Visible": true,
-            "SampleShading": true,
-            "Title": "ComputeParticlesDemo",
-            "Width": 1280,
-            "Height": 720,
-            "Mode": "Immediate",
-            "ClearColor": {
-                "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
-                    1.0
-                ]
-            },
-            "Samples": "Four",
-            "AdditionalSwapImages": 1
-        },
-        {
-            "Type": "nap::Scene",
-            "mID": "Scene",
-            "Entities": [
-                {
-                    "Entity": "CameraEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "DefaultInputRouterEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "ParticleVolumeEntity",
-                    "InstanceProperties": []
-                }
-            ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "ParticleShader",
-            "VertShader": "shaders/particle.vert",
-            "FragShader": "shaders/particle.frag"
         },
         {
             "Type": "nap::UniformRandomStructBufferFillPolicy",
@@ -665,8 +665,8 @@
             "Count": 400000,
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "VertexAttribute": true,
-            "FillPolicy": ""
+            "FillPolicy": "",
+            "Clear": false
         }
     ]
 }

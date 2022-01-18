@@ -25,6 +25,8 @@ namespace nap
 
 	/**
 	 * Shader storage uniform resource base class.
+	 * Unlike standard uniforms, storage uniforms store a reference to the data as opposed to the data itself. This allows
+	 * for any compute shader to read from and write to the same data storage.
 	 */
 	class NAPAPI StorageUniform : public Resource
 	{

@@ -315,6 +315,23 @@ namespace nap
 		copyRegion.size = mSize;
 		vkCmdCopyBuffer(commandBuffer, mStagingBuffers[0].mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
 
+		// Determine dest access flags for memory barrier
+		VkBufferUsageFlags usage = getBufferUsageFlags();
+		VkAccessFlags dst_access = 0;
+		
+		dst_access |= (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) ? VK_ACCESS_INDEX_READ_BIT : 0;
+		dst_access |= (usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) ? VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT : 0;
+		dst_access |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_ACCESS_UNIFORM_READ_BIT : 0;
+
+		// As gpu buffers can be bound to a descriptorset for any shader stage, and we do not store information about the pipeline stages in which they will be used,
+		// we assume the earliest possible pipeline stage for the buffer to be used - VERTEX and COMPUTE.
+		VkPipelineStageFlags dst_stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dst_stage |= (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT || usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) ? VK_PIPELINE_STAGE_VERTEX_INPUT_BIT : 0;
+		dst_stage |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_PIPELINE_STAGE_VERTEX_SHADER_BIT : 0;
+
+		// Memory barrier
+		memoryBarrier(commandBuffer, mRenderBuffers[0].mBuffer, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage);
+
 		// Queue destruction of staging buffer if usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
 		// Explicitly release the buffer, so it's not deleted twice
@@ -351,8 +368,34 @@ namespace nap
 		// Copy to staging buffer
 		copyBuffer(commandBuffer, mRenderBuffers[0].mBuffer, staging_buffer.mBuffer, mSize);
 
-		// Complete execution dependency
-		memoryBarrier(commandBuffer, staging_buffer.mBuffer, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, stage_flags);
+		// Downloads always happen at the end of a frame. Therefore, we do not need to place an additional barrier for an execution dependency
+		// We can just wait for the rendering finished semaphore
+	}
+
+
+	void GPUBuffer::clear(VkCommandBuffer commandBuffer)
+	{
+		// Ensure the render buffers are created
+		assert(mRenderBuffers.size() > 0);
+
+		// Clear buffer command - this command is treated as a TRANSFER operation, therefore we can use the same synchronization method as in upload()
+		vkCmdFillBuffer(commandBuffer, mRenderBuffers[0].mBuffer, 0, VK_WHOLE_SIZE, 0);
+
+		// Determine dest access flags for memory barrier
+		VkBufferUsageFlags usage = getBufferUsageFlags();
+		VkAccessFlags dst_access = 0;
+		dst_access |= (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) ? VK_ACCESS_INDEX_READ_BIT : 0;
+		dst_access |= (usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) ? VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT : 0;
+		dst_access |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_ACCESS_UNIFORM_READ_BIT : 0;
+
+		// As gpu buffers can be bound to a descriptorset for any shader stage, and we do not store information about the pipeline stages in which they will be used,
+		// we assume the earliest possible pipeline stage for the buffer to be used - VERTEX and COMPUTE.
+		VkPipelineStageFlags dst_stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		dst_stage |= (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT || usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) ? VK_PIPELINE_STAGE_VERTEX_INPUT_BIT : 0;
+		dst_stage |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_PIPELINE_STAGE_VERTEX_SHADER_BIT : 0;
+
+		// Memory barrier
+		memoryBarrier(commandBuffer, mRenderBuffers[0].mBuffer, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage);
 	}
 
 
@@ -387,6 +430,12 @@ namespace nap
 	{
 		for (auto& callback : mReadCallbacks)
 			callback = BufferReadCallback();
+	}
+
+
+	void GPUBuffer::requestClear()
+	{
+		mRenderService->requestBufferClear(*this);
 	}
 
 

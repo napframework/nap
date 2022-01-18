@@ -11,6 +11,7 @@
 // Local Includes
 #include "mathutils.h"
 #include "structbufferdescriptor.h"
+#include "valuebufferfillpolicy.h"
 
 namespace nap
 {
@@ -18,58 +19,94 @@ namespace nap
 	class UniformValue;
 
 	//////////////////////////////////////////////////////////////////////////
-	// StructBufferFillPolicy
+	// ShaderVariableFillPolicyEntry
 	//////////////////////////////////////////////////////////////////////////
 
-	using FillValueFunction = std::function<void(const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, uint8* data)>;
-
-	class NAPAPI BaseStructBufferFillPolicy : public Resource
+	/**
+	 * Base class of TypedShaderVariableFillPolicyEntry<T> 
+	 * Binds a shader variable name to a value fill policy
+	 */
+	class BaseShaderVariableFillPolicyEntry : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		BaseStructBufferFillPolicy() = default;
-		virtual ~BaseStructBufferFillPolicy() = default;
+		BaseShaderVariableFillPolicyEntry() = default;
+		virtual ~BaseShaderVariableFillPolicyEntry() = default;
+		std::string mName;																			///< Property 'Name':
+	};
+
+	/**
+	 * Binds a shader variable name to a value fill policy
+	 */
+	template<typename T>
+	class TypedShaderVariableFillPolicyEntry : public BaseShaderVariableFillPolicyEntry
+	{
+		RTTI_ENABLE(BaseShaderVariableFillPolicyEntry)
+	public:
+		rtti::ObjectPtr<TypedValueBufferFillPolicy<T>> mValueFillPolicy;							///< Property 'ValueFillPolicy':
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// StructBufferFillPolicy
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * 
+	 */
+	class NAPAPI StructBufferFillPolicy : public Resource
+	{
+		RTTI_ENABLE(Resource)
+	public:
+		StructBufferFillPolicy() = default;
+		virtual ~StructBufferFillPolicy() = default;
 
 		/**
-		 * 
+		 * Fills an allocated buffer using the specified struct buffer descriptor
 		 */
 		virtual bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState);
 
-	protected:
-		/**
-		 * 
-		 */
-		bool registerFillPolicyFunction(rtti::TypeInfo type, FillValueFunction fillValueFunction);
-
-		/**
-		 * 
-		 */
-		size_t fillFromUniformRecursive(const UniformStruct* uniformStruct, const UniformStruct* referenceUniformStructA, const UniformStruct* referenceUniformStructB, uint8* data);
-
-		std::unordered_map<rtti::TypeInfo, FillValueFunction> mFillValueFunctionMap;
+		std::vector<rtti::ObjectPtr<BaseShaderVariableFillPolicyEntry>> mVariableFillPolicies;		///< Property 'VariableFillPolicies':
 
 	private:
+		/**
+		 * 
+		 */
+		bool fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data, size_t& outElementSize, utility::ErrorState& errorState);
+
+		/**
+		 * 
+		 */
 		template<typename T>
-		void setValues(const UniformValue* uniform, const UniformValue* referenceUniformA, const UniformValue* referenceUniformB, int count, uint8* data)
+		const TypedValueBufferFillPolicy<T>* findPolicy(const std::string& name)
 		{
-			auto it = mFillValueFunctionMap.find(RTTI_OF(T));
-			assert(it != mFillValueFunctionMap.end());
+			for (const auto& fp : mVariableFillPolicies)
+			{
+				if (fp->mName == name)
+				{
+					const TypedValueBufferFillPolicy<T>* resolved = rtti_cast<TypedValueBufferFillPolicy<T>>(fp.get());
+					if (resolved != nullptr)
+						return resolved;
 
-			for (int idx = 0; idx < count; idx++)
-				it->second(uniform, referenceUniformA, referenceUniformB, (uint8*)(data + sizeof(T) * idx));
-		};
+					// Names match but types do not
+					assert(false); 
+					return nullptr;
+				}
+			}
+			return nullptr;
+		}
 	};
 
 
-	/**
-	 *
-	 */
-	class ConstantStructBufferFillPolicy : public BaseStructBufferFillPolicy
-	{
-		RTTI_ENABLE(BaseStructBufferFillPolicy)
-	public:
-		ConstantStructBufferFillPolicy() = default;
+	//////////////////////////////////////////////////////////////////////////
+	// TypedShaderVariableFillPolicyEntry type definitions
+	//////////////////////////////////////////////////////////////////////////
 
-		virtual bool init(utility::ErrorState& errorState);
-	};
+	using UIntFillPolicyEntry = TypedShaderVariableFillPolicyEntry<uint>;
+	using IntFillPolicyEntry = TypedShaderVariableFillPolicyEntry<int>;
+	using FloatFillPolicyEntry = TypedShaderVariableFillPolicyEntry<float>;
+	using Vec2FillPolicyEntry = TypedShaderVariableFillPolicyEntry<glm::vec2>;
+	using Vec3FillPolicyEntry = TypedShaderVariableFillPolicyEntry<glm::vec3>;
+	using Vec4FillPolicyEntry = TypedShaderVariableFillPolicyEntry<glm::vec4>;
+	using Mat4FillPolicyEntry = TypedShaderVariableFillPolicyEntry<glm::mat4>;
 }

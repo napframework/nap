@@ -17,6 +17,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructGPUBuffer)
 	RTTI_PROPERTY("Usage", &nap::StructGPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::StructGPUBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FillPolicy", &nap::StructGPUBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear", &nap::StructGPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -55,7 +56,6 @@ namespace nap
 			{
 				// Create a staging buffer to upload
 				auto staging_buffer = std::make_unique<uint8[]>(buffer_size);
-
 				if (!mFillPolicy->fill(&mDescriptor, staging_buffer.get(), errorState))
 					return false;
 
@@ -69,11 +69,10 @@ namespace nap
 				nap::Logger::warn(utility::stringFormat("%s: The configured fill policy was ignored as the buffer usage is DynamicRead", mID.c_str()).c_str());
 			}
 		}
-		else
-		{
-			// TODO: Implement optional Clear
-			//std::memset(staging_buffer.get(), 0, buffer_size);
-		}
+
+		// Optionally clear - does not count as an upload
+		else if (mClear)
+			GPUBuffer::requestClear();
 
 		mInitialized = true;
 		return true;

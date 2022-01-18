@@ -1034,6 +1034,12 @@ namespace nap
 		void requestTextureDownload(Texture2D& texture);
 
 		/**
+		 * Request a buffer clear
+		 * @param buffer the buffer to clear.
+		 */
+		void requestBufferClear(GPUBuffer& buffer);
+
+		/**
 		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
 		 * @param buffer the buffer to upload to the GPU.
 		 */
@@ -1065,7 +1071,7 @@ namespace nap
 		void downloadData();
 		
 		/**
-		 * Called by transferdata(), uploads all texture and buffer data to the GPU.
+		 * Called by transferdata(), uploads all texture and buffer data to the GPU. Also performs requested clear operations.
 		 */
 		void uploadData();
 
@@ -1176,6 +1182,7 @@ namespace nap
 		std::unique_ptr<Texture2D>				mEmptyTexture;
 		TextureSet								mTexturesToClear;
 		TextureSet								mTexturesToUpload;
+		BufferSet								mBuffersToClear;
 		BufferSet								mBuffersToUpload;
 
 		int										mCurrentFrameIndex = 0;

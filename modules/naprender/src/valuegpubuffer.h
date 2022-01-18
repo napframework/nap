@@ -74,7 +74,6 @@ namespace nap
 		virtual VkFormat getFormat() const = 0;
 
 		uint32											mCount = 0;						///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
-		bool											mClear = true;					///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 	};
 
 
@@ -148,9 +147,7 @@ namespace nap
 
 			// Optionally clear - does not count as an upload
 			else if (mClear)
-			{
-				// TODO: Implement buffer clear operations (exactly like textures)
-			}
+				GPUBuffer::requestClear();
 
 			mInitialized = true;
 			return true;
@@ -198,27 +195,32 @@ namespace nap
 		/**
 		 * @return the number of buffer values
 		 */
-		virtual uint32 getCount() const override					{ return mCount; }
+		virtual uint32 getCount() const override						{ return mCount; }
 
 		/**
 		 * @return the size of the buffer in bytes
 		 */
-		virtual size_t getSize() const override						{ return mCount * sizeof(T); };
+		virtual size_t getSize() const override							{ return mCount * sizeof(T); };
 
 		/**
 		 * @return the size of a single vertex element
 		 */
-		virtual uint32 getElementSize() const override				{ return sizeof(T); };
+		virtual uint32 getElementSize() const override					{ return sizeof(T); };
 
 		/**
 		 * @return the buffer format
 		 */
-		virtual VkFormat getFormat() const override					{ return getGPUBufferFormat<T>(); }
+		virtual VkFormat getFormat() const override						{ return getGPUBufferFormat<T>(); }
+
+		/**
+		 * @return the buffer usage flags
+		 */
+		virtual VkBufferUsageFlags getBufferUsageFlags() const override { return mUsageFlags; }
 
 		/**
 		 * @return whether this buffer is initialized
 		 */
-		virtual bool isInitialized() const override					{ return mInitialized; };
+		virtual bool isInitialized() const override						{ return mInitialized; };
 
 		ResourcePtr<TypedValueBufferFillPolicy<T>>		mBufferFillPolicy = nullptr;	///< Property 'FillPolicy'
 

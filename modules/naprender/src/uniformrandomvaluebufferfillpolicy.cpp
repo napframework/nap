@@ -9,6 +9,11 @@
 // External Includes
 #include <nap/core.h>
 
+RTTI_BEGIN_CLASS(nap::UniformRandomUIntBufferFillPolicy)
+	RTTI_PROPERTY("LowerBound", &nap::UniformRandomUIntBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::UniformRandomUIntBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::UniformRandomIntBufferFillPolicy)
 	RTTI_PROPERTY("LowerBound", &nap::UniformRandomIntBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("UpperBound", &nap::UniformRandomIntBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
