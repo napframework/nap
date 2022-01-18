@@ -163,7 +163,7 @@ namespace nap
 				ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<ShaderVariableStructBufferDeclaration>(uniform_declaration.get());
 
 				const StorageUniformStructBuffer* struct_buffer_resource = rtti_cast<const StorageUniformStructBuffer>(resource);
-				if (!errorState.check(resource == nullptr || struct_buffer_resource->getSize() == struct_buffer_declaration->mSize, "Mismatch between total buffer size in shader and json."))
+				if (!errorState.check(resource == nullptr || struct_buffer_resource->getSize() == struct_buffer_declaration->mSize, "Mismatch between total buffer size in shader and json. Please refer to the alignment requirements for shader resources in Section 15.6.4 of the Vulkan specification"))
 					return false;
 
 				std::unique_ptr<StorageUniformStructBufferInstance> struct_buffer_instance;
@@ -178,7 +178,7 @@ namespace nap
 					if (!errorState.check(struct_buffer_instance->getBuffer().getCount() == struct_buffer_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
 						return false;
 
-					if (!errorState.check(struct_buffer_instance->getBuffer().mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform."))
+					if (!errorState.check(struct_buffer_instance->getBuffer().mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform"))
 						return false;
 				}
 
