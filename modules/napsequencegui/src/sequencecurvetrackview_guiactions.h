@@ -186,7 +186,7 @@ namespace nap
 			 * @param controlPointIndex the control point index
 			 * @param curveIndex the curve index
 			 * @param value the new value of the curve point
-			 * @param time the new time of the curve point
+			 * @param time the new time of the curve point, time is in percentage. F.E. 0.5 is half of segment duration
 			 * @param minimum minimum value of the curve point
 			 * @param maximum maximum value of the curve point
 			 */
