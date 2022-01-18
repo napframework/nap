@@ -131,11 +131,12 @@ namespace nap
 			{
 				if (mUsage != EMemoryUsage::DynamicRead)
 				{
-					std::vector<T> staging_buffer;
-					mBufferFillPolicy->fill(mCount, staging_buffer, errorState);
+					// Create a staging buffer to upload
+					auto staging_buffer = std::make_unique<T[]>(mCount);
+					mBufferFillPolicy->fill(mCount, staging_buffer.get());
 
 					// Prepare staging buffer upload
-					if (!setDataInternal(staging_buffer.data(), buffer_size, buffer_size, mUsageFlags, errorState))
+					if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
 						return false;
 				}
 				else
@@ -195,7 +196,7 @@ namespace nap
 		/**
 		 * @return the number of buffer values
 		 */
-		virtual uint32 getCount() const override						{ return mCount; }
+		virtual uint getCount() const override							{ return mCount; }
 
 		/**
 		 * @return the size of the buffer in bytes
@@ -205,7 +206,7 @@ namespace nap
 		/**
 		 * @return the size of a single vertex element
 		 */
-		virtual uint32 getElementSize() const override					{ return sizeof(T); };
+		virtual uint getElementSize() const override					{ return sizeof(T); };
 
 		/**
 		 * @return the buffer format

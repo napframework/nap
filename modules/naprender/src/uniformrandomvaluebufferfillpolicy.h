@@ -14,11 +14,8 @@
 
 namespace nap
 {
-	// Forward declares
-	class Uniform;
-
 	/**
-	 *
+	 * 
 	 */
 	template<typename T>
 	class UniformRandomValueBufferFillPolicy : public TypedValueBufferFillPolicy<T>
@@ -26,14 +23,9 @@ namespace nap
 		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
 	public:
 		/**
-		 * 
-		 */
-		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const override = 0;
-
-		/**
 		 *
 		 */
-		virtual void fill(uint numElements, uint8* data) const override = 0;
+		virtual void fill(uint numElements, T* data) const override;
 
 		T mLowerBound = T();						///< Property 'LowerBound'
 		T mUpperBound = T();						///< Property 'UpperBound'
@@ -58,22 +50,12 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const
-	{
-		stagingBuffer.reserve(numElements);
-		for (uint idx = 0; idx < numElements; idx++)
-			stagingBuffer.emplace_back(math::random(mLowerBound, mUpperBound));
-		
-		return true;
-	}
-
-	template<typename T>
-	void UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, uint8* data) const
+	void UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, T* data) const
 	{
 		for (uint i = 0; i < numElements; i++)
 		{
-			std::memcpy(data, math::random(&mLowerBound, &mUpperBound), sizeof(T));
-			data += sizeof(T);
+			*data = math::random(mLowerBound, mUpperBound);
+			++data;
 		}
 	}
 }

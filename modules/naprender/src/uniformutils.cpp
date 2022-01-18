@@ -9,6 +9,9 @@
 
 namespace nap
 {
+	/**
+	 * Helper function for getUniformStructDepth()
+	 */
 	static void getUniformStructDepthRecursive(const UniformStruct& uniformStruct, int& outMax, int depth = 0)
 	{
 		outMax = math::max(outMax, depth);
@@ -59,7 +62,10 @@ namespace nap
 			{
 				UniformValueArray* uniform_resolved = rtti_cast<UniformValueArray>(uniform.get());
 
-				if (uniform_type == RTTI_OF(TypedUniformValueArray<int>))
+				if (uniform_type == RTTI_OF(TypedUniformValueArray<uint>))
+					size += sizeof(uint) * uniform_resolved->getCount();
+
+				else if (uniform_type == RTTI_OF(TypedUniformValueArray<int>))
 					size += sizeof(int) * uniform_resolved->getCount();
 
 				else if (uniform_type == RTTI_OF(TypedUniformValueArray<float>))
@@ -84,7 +90,10 @@ namespace nap
 			}
 			else if (uniform_type.is_derived_from(RTTI_OF(UniformValue)))
 			{
-				if (uniform_type == RTTI_OF(TypedUniformValue<int>))
+				if (uniform_type == RTTI_OF(TypedUniformValue<uint>))
+					size += sizeof(uint);
+
+				else if (uniform_type == RTTI_OF(TypedUniformValue<int>))
 					size += sizeof(int);
 
 				else if (uniform_type == RTTI_OF(TypedUniformValue<float>))

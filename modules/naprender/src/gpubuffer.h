@@ -112,7 +112,7 @@ namespace nap
 		/**
 		 * @return the number of buffer elements
 		 */
-		virtual uint32 getCount() const = 0;
+		virtual uint getCount() const = 0;
 
 		/**
 		 * @return the size of the buffer in bytes
@@ -122,7 +122,7 @@ namespace nap
 		/**
 		 * @return the element size in bytes
 		 */
-		virtual uint32 getElementSize() const = 0;
+		virtual uint getElementSize() const = 0;
 
 		/**
 		 * @return the buffer usage flags

@@ -38,7 +38,7 @@ namespace nap
 		/**
 		 * @return the number of elements in the buffer
 		 */
-		virtual uint32 getCount() const override						{ return mDescriptor.mCount; };
+		virtual uint getCount() const override							{ return mDescriptor.mCount; };
 
 		/**
 		 * @return the size of the buffer in bytes
@@ -48,7 +48,7 @@ namespace nap
 		/**
 		 * @return the element size in bytes
 		 */
-		virtual uint32 getElementSize() const override					{ return mElementSize; };
+		virtual uint getElementSize() const override					{ return mElementSize; };
 
 		/**
 		 * @return the buffer usage flags
@@ -78,7 +78,7 @@ namespace nap
 		bool mInitialized = false;
 
 		// Cached element size
-		uint32 mElementSize = 0;
+		uint mElementSize = 0;
 
 		// Usage flags that are shared over host (staging) and device (gpu) buffers
 		VkBufferUsageFlags mUsageFlags = 0;

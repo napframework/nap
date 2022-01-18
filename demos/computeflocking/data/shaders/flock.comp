@@ -5,6 +5,20 @@
 
 layout(local_size_x = 8) in;
 
+// struct AABB
+// {
+// 	vec3 position;
+// 	vec3 size;
+// };
+
+// struct CollisionData
+// {
+// 	vec4 hit;
+// 	vec4 normal;
+// 	float minimum;
+// 	int collision;
+// 	vec2 padding;
+// };
 
 struct Boid
 {
@@ -19,19 +33,6 @@ struct Boid
 	int numFlockMates;
 };
 
-struct AABB
-{
-	vec3 position;
-	vec3 size;
-};
-
-struct CollisionData
-{
-	vec3 hit;
-	vec3 normal;
-	float minimum;
-	int collision;
-};
 
 // STORAGE
 
@@ -84,53 +85,53 @@ const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
 
 // UTILITIES
 
-CollisionData rayBox(vec3 orig, vec3 dir, AABB box)
-{
-	vec3 invdir = vec3(1.0, 1.0, 1.0) / dir;
+// CollisionData rayBox(vec3 orig, vec3 dir, AABB box)
+// {
+// 	vec3 invdir = vec3(1.0, 1.0, 1.0) / dir;
 
-	// Calculate intersections with rectangle bounding axes
-	vec3 tmin = (box.position - orig) * invdir;
-	vec3 tmax = (box.position + box.size - orig) * invdir;
+// 	// Calculate intersections with rectangle bounding axes
+// 	vec3 tmin = (box.position - orig) * invdir;
+// 	vec3 tmax = (box.position + box.size - orig) * invdir;
 
-	// Sort intersection distances
-	if (tmin.x > tmax.x) 
-	{
-		float temp = tmin.x;
-		tmin.x = tmax.x;
-		tmax.x = temp;
-	}
+// 	// Sort intersection distances
+// 	if (tmin.x > tmax.x) 
+// 	{
+// 		float temp = tmin.x;
+// 		tmin.x = tmax.x;
+// 		tmax.x = temp;
+// 	}
 
-	if (tmin.y > tmax.y)
-	{
-		float temp = tmin.y;
-		tmin.y = tmax.y;
-		tmax.y = temp;
-	}
+// 	if (tmin.y > tmax.y)
+// 	{
+// 		float temp = tmin.y;
+// 		tmin.y = tmax.y;
+// 		tmax.y = temp;
+// 	}
 
-	CollisionData cd;
+// 	CollisionData cd;
 
-	if ((tmin.x > tmax.y) || (tmin.y > tmax.x)) return cd;
+// 	if ((tmin.x > tmax.y) || (tmin.y > tmax.x)) return cd;
 
-	// Distances to min and max bound collisions
-	float t_hit_max = min(tmax.x, tmax.y);
-	if (t_hit_max <= 0) return cd;
+// 	// Distances to min and max bound collisions
+// 	float t_hit_max = min(tmax.x, tmax.y);
+// 	if (t_hit_max <= 0) return cd;
 
-	cd.minimum = max(tmin.x, tmin.y);
-	cd.hit = orig + (dir * cd.minimum);
+// 	cd.minimum = max(tmin.x, tmin.y);
+// 	cd.hit = orig + (dir * cd.minimum);
 
-	// Calculate pushout normal
-	if (tmin.x > tmin.y) 
-	{
-		if (invdir.x < 0) cd.normal = vec3(1.0, 0.0, 0.0);
-		else cd.normal = vec3(-1.0, 0.0, 0.0);
-	}
-	else if (tmin.x < tmin.y) 
-	{
-		if (invdir.y < 0) cd.normal = vec3(0, 1.0, 0.0);
-		else cd.normal = vec3(0.0, -1.0, 0.0);
-	}
-	return cd;
-}
+// 	// Calculate pushout normal
+// 	if (tmin.x > tmin.y) 
+// 	{
+// 		if (invdir.x < 0) cd.normal = vec3(1.0, 0.0, 0.0);
+// 		else cd.normal = vec3(-1.0, 0.0, 0.0);
+// 	}
+// 	else if (tmin.x < tmin.y) 
+// 	{
+// 		if (invdir.y < 0) cd.normal = vec3(0, 1.0, 0.0);
+// 		else cd.normal = vec3(0.0, -1.0, 0.0);
+// 	}
+// 	return cd;
+// }
 
 
 mat4 translate(vec3 d)

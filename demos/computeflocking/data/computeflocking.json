@@ -806,7 +806,50 @@
         {
             "Type": "nap::StructBufferFillPolicy",
             "mID": "StructBufferFillPolicy_0d793d6f",
-            "ValueFillPolicies": []
+            "VariableFillPolicies": [
+                {
+                    "Type": "nap::Vec4FillPolicyEntry",
+                    "mID": "Vec4FillPolicyEntry_a67b85e9",
+                    "Name": "position",
+                    "ValueFillPolicy": {
+                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
+                        "mID": "UniformRandomVec4BufferFillPolicy_09cb7c41",
+                        "LowerBound": {
+                            "x": -4.0,
+                            "y": -4.0,
+                            "z": -4.0,
+                            "w": -4.0
+                        },
+                        "UpperBound": {
+                            "x": 4.0,
+                            "y": 4.0,
+                            "z": 4.0,
+                            "w": 4.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::Vec4FillPolicyEntry",
+                    "mID": "Vec4FillPolicyEntry_f3d6f238",
+                    "Name": "velocity",
+                    "ValueFillPolicy": {
+                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
+                        "mID": "UniformRandomVec4BufferFillPolicy_6e735ad8",
+                        "LowerBound": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        },
+                        "UpperBound": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    }
+                }
+            ]
         },
         {
             "Type": "nap::StructGPUBuffer",
@@ -894,7 +937,7 @@
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "FillPolicy": "",
+            "FillPolicy": "StructBufferFillPolicy_0d793d6f",
             "Clear": false
         },
         {

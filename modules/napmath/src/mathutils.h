@@ -6,6 +6,7 @@
 
 // External Includes
 #include <glm/glm.hpp>
+#include <nap/numeric.h>
 #include <limits>
 #include <utility/dllexport.h>
 #include <algorithm>
@@ -424,6 +425,9 @@ namespace nap
 
 		template<>
 		NAPAPI void smooth(glm::vec4& currentValue, const glm::vec4& targetValue, glm::vec4& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
+
+		template<>
+		NAPAPI uint random(uint min, uint max);
 
 		template<>
 		NAPAPI int random(int min, int max);

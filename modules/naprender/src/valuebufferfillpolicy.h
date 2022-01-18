@@ -36,17 +36,12 @@ namespace nap
 		/**
 		 * 
 		 */
-		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const = 0;
-
-		/**
-		 * 
-		 */
-		virtual void fill(uint numElements, uint8* data) const = 0;
+		virtual void fill(uint numElements, T* data) const = 0;
 	};
 
 
 	/**
-	 *
+	 * Fill policy for constants. Fills buffer with a specified constant.
 	 */
 	template<typename T>
 	class ConstantValueBufferFillPolicy : public TypedValueBufferFillPolicy<T>
@@ -54,17 +49,11 @@ namespace nap
 		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
 	public:
 		/**
-		 * @tparam the element type 
+		 * @tparam the element type
 		 * @param numElements the number of elements to set
-		 * @param stagingBuffer an empty stagingBuffer to be resized and set
-		 * @param errorState
+		 * @param data
 		 */
-		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const override;
-
-		/**
-		 * 
-		 */
-		virtual void fill(uint numElements, uint8* data) const override;
+		virtual void fill(uint numElements, T* data) const override;
 
 		T mConstant = T();			///< Property 'Constant'
 	};
@@ -101,19 +90,12 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool ConstantValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const
-	{
-		stagingBuffer.resize(numElements, mConstant);
-		return true;
-	}
-
-	template<typename T>
-	void ConstantValueBufferFillPolicy<T>::fill(uint numElements, uint8* data) const 
+	void ConstantValueBufferFillPolicy<T>::fill(uint numElements, T* data) const 
 	{
 		for (uint i = 0; i < numElements; i++)
 		{
-			std::memcpy(data, &mConstant, sizeof(T));
-			data += sizeof(T);
+			*data = mConstant;
+			++data;
 		}
 	}
 }

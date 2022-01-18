@@ -2161,7 +2161,7 @@ namespace nap
 		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = { false, false, false };
 
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
-		// that the fence belongs to, and all resources re1ferenced from it, are available for (re)use.
+		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
 		// Notice that there are multiple other VkQueueSubmits that are performed by RenderWindow(s), and headless 
 		// rendering. All those submits do not trigger a fence. They are all part of the same frame, so when the frame
 		// fence has been signaled, we can be assured that all resources for the entire frame, including resources used 

@@ -31,15 +31,8 @@ namespace nap
 		if (!GPUBuffer::init(errorState))
 			return false;
 
-		UniformStruct* element_descriptor = mDescriptor.mElement.get();
-
-		// Verify maximum depth
-		int depth = getUniformStructDepth(*element_descriptor);
-		if (!errorState.check(depth == 0, "GPUStructBuffers with elements that exceed depth=1 are currently not supported"))
-			return false;
-
 		// Calculate element size in bytes
-		mElementSize = getUniformStructSizeRecursive(*element_descriptor);
+		mElementSize = getUniformStructSizeRecursive(*mDescriptor.mElement);
 		size_t buffer_size = getSize();
 
 		// Compose usage flags from buffer configuration
@@ -72,7 +65,9 @@ namespace nap
 
 		// Optionally clear - does not count as an upload
 		else if (mClear)
+		{
 			GPUBuffer::requestClear();
+		}
 
 		mInitialized = true;
 		return true;

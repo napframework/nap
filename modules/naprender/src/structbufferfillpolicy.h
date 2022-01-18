@@ -84,9 +84,9 @@ namespace nap
 			{
 				if (fp->mName == name)
 				{
-					const TypedValueBufferFillPolicy<T>* resolved = rtti_cast<TypedValueBufferFillPolicy<T>>(fp.get());
+					const auto* resolved = rtti_cast<const TypedShaderVariableFillPolicyEntry<T>>(fp.get());
 					if (resolved != nullptr)
-						return resolved;
+						return resolved->mValueFillPolicy.get();
 
 					// Names match but types do not
 					assert(false); 

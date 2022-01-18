@@ -309,6 +309,12 @@ namespace nap
 			return ss.str();
 		}
 
+		template<>
+		uint random(uint min, uint max)
+		{
+			return static_cast<uint>(randomInt(min, max));
+		}
+
 
 		template<>
 		int random(int min, int max)
