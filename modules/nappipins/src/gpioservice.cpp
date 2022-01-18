@@ -7,9 +7,11 @@
 
 // Third party includes
 #include <wiringPi.h>
-
 #include <nap/logger.h>
 #include <utility/stringutils.h>
+
+// External includes
+#include <stdlib.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::pipins::GpioService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -27,11 +29,29 @@ namespace nap
 
     bool GpioService::init(nap::utility::ErrorState& errorState)
     {
+        // set environment variables so wiring pi setup returns an exit code, see following Gordon's comment
+        /**
+         * Note: wiringPi version 1 returned an error code if these functions failed for whatever reason.
+         * Version 2 returns always returns zero. After discussions and inspection of many programs written by users of
+         * wiringPi and observing that many people don’t bother checking the return code, I took the stance that should
+         * one of the wiringPi setup functions fail, then it would be considered a fatal program fault and the program
+         * execution will be terminated at that point with an error message printed on the terminal.
+         * If you want to restore the v1 behaviour, then you need to set the environment variable: WIRINGPI_CODES (to
+         * any value, it just needs to exist)
+         */
+        setenv("WIRINGPI_CODES", "1", 1);
+
+        /**
+         * This initialises wiringPi and assumes that the calling program is going to be using the broadcom pin numbering scheme.
+         */
+        int exit_code = wiringPiSetupGpio();
+        if(!errorState.check(exit_code==0, "wiringPiSetup failed with exit code %i", exit_code))
+            return false;
+
+        // start thread
         mRun.store(true);
         mUpdateTask = std::async(std::launch::async, [this]
         {
-            wiringPiSetupGpio();
-
             thread();
         });
 
