@@ -56,7 +56,6 @@ namespace nap
 			{
 				// Create a staging buffer to upload
 				auto staging_buffer = std::make_unique<uint8[]>(buffer_size);
-
 				if (!mFillPolicy->fill(&mDescriptor, staging_buffer.get(), errorState))
 					return false;
 

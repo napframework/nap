@@ -70,7 +70,7 @@ namespace nap
 		 */
 		bool setData(void* data, size_t size, utility::ErrorState& error);
 
-		ResourcePtr<BaseStructBufferFillPolicy>		mFillPolicy = nullptr;							///< Property 'FillPolicy'
+		ResourcePtr<StructBufferFillPolicy>			mFillPolicy = nullptr;							///< Property 'FillPolicy'
 		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor'
 
 	private:

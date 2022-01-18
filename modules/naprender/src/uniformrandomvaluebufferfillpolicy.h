@@ -18,24 +18,6 @@ namespace nap
 	class Uniform;
 
 	/**
-	 * 
-	 */
-	class NAPAPI UniformRandomStructBufferFillPolicy : public BaseStructBufferFillPolicy
-	{
-		RTTI_ENABLE(BaseStructBufferFillPolicy)
-	public:
-		UniformRandomStructBufferFillPolicy() = default;
-
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		virtual bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState) override;
-
-		ResourcePtr<UniformStruct> mLowerBound;		///< Property 'LowerBound'
-		ResourcePtr<UniformStruct> mUpperBound;		///< Property 'UpperBound'
-	};
-
-
-	/**
 	 *
 	 */
 	template<typename T>
@@ -43,7 +25,15 @@ namespace nap
 	{
 		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
 	public:
-		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) override;
+		/**
+		 * 
+		 */
+		virtual bool fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const override = 0;
+
+		/**
+		 *
+		 */
+		virtual void fill(uint numElements, uint8* data) const override = 0;
 
 		T mLowerBound = T();						///< Property 'LowerBound'
 		T mUpperBound = T();						///< Property 'UpperBound'
@@ -54,6 +44,7 @@ namespace nap
 	// UniformRandomBufferFillPolicy type definitions
 	//////////////////////////////////////////////////////////////////////////
 
+	using UniformRandomUIntBufferFillPolicy = UniformRandomValueBufferFillPolicy<uint>;
 	using UniformRandomIntBufferFillPolicy = UniformRandomValueBufferFillPolicy<int>;
 	using UniformRandomFloatBufferFillPolicy = UniformRandomValueBufferFillPolicy<float>;
 	using UniformRandomVec2BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::vec2>;
@@ -67,12 +58,22 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState)
+	bool UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, std::vector<T>& stagingBuffer, utility::ErrorState& errorState) const
 	{
 		stagingBuffer.reserve(numElements);
 		for (uint idx = 0; idx < numElements; idx++)
 			stagingBuffer.emplace_back(math::random(mLowerBound, mUpperBound));
 		
 		return true;
+	}
+
+	template<typename T>
+	void UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, uint8* data) const
+	{
+		for (uint i = 0; i < numElements; i++)
+		{
+			std::memcpy(data, math::random(&mLowerBound, &mUpperBound), sizeof(T));
+			data += sizeof(T);
+		}
 	}
 }
