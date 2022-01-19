@@ -22,16 +22,16 @@
 #include <sdlhelpers.h>
 #include <nap/modulemanager.h>
 
-RTTI_BEGIN_STRUCT(nap::IMGuiColorPalette)
-	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DarkColor",			&nap::IMGuiColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor1",		&nap::IMGuiColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor2",		&nap::IMGuiColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor3",		&nap::IMGuiColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor4",		&nap::IMGuiColorPalette::mFront4Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor1",	&nap::IMGuiColorPalette::mHighlightColor1,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor2",	&nap::IMGuiColorPalette::mHighlightColor2,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightColor3",	&nap::IMGuiColorPalette::mHighlightColor3,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
+	RTTI_PROPERTY("BackgroundColor",	&nap::gui::ColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DarkColor",			&nap::gui::ColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor1",		&nap::gui::ColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor2",		&nap::gui::ColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor3",		&nap::gui::ColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor4",		&nap::gui::ColorPalette::mFront4Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor1",	&nap::gui::ColorPalette::mHighlightColor1,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor2",	&nap::gui::ColorPalette::mHighlightColor2,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor3",	&nap::gui::ColorPalette::mHighlightColor3,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
@@ -290,12 +290,12 @@ namespace nap
 		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
+		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
@@ -608,7 +608,7 @@ namespace nap
 	}
 
 
-	const nap::IMGuiColorPalette& IMGuiService::getColors() const
+	const nap::gui::ColorPalette& IMGuiService::getColors() const
 	{
 		assert(mConfiguration != nullptr);
 		return mConfiguration->mColors;

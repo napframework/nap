@@ -348,7 +348,7 @@ namespace nap
 				// does it contain this segment ?
 				if( curve_segment_clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					ImVec4 red = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
+					ImVec4 red = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh1);
 					red.w = 0.25f;
 					drawList->AddRectFilled
 					(

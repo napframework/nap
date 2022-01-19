@@ -579,7 +579,7 @@ namespace nap
                 // draw text
                 const ImVec2 text_offset = { 2.0f * mState.mScale, -10.0f * mState.mScale };
 				draw_list->AddText({ player_time_rect_bottom_right.x + text_offset.x, player_time_rect_center.y + text_offset.y }, // position
-                                   mService.getColors().mHigh, // color
+                                   mService.getColors().mHigh1, // color
                                    marker->mMessage.c_str()); // text
 
                 // no action and are we hovering the hit action ?
@@ -702,7 +702,7 @@ namespace nap
 			};
 
             // draw box
-			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().mHigh);
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().mHigh1);
 
             // define consts
             const float timestamp_line_height           = 18.0f * mState.mScale;
@@ -910,7 +910,7 @@ namespace nap
 			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y }, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
-				drawlist->AddLine(line_begin, line_end, mService.getColors().mHigh, line_thickness);
+				drawlist->AddLine(line_begin, line_end, mService.getColors().mHigh1, line_thickness);
 			}
 			ImGui::EndChild();
 
@@ -1509,7 +1509,7 @@ namespace nap
 			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
                 const float width = 200.0f * mState.mScale;
-				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
+				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh1);
 				ImGui::Text("Select & drag :"); ImGui::SameLine(width);
 				ImGui::TextColored(red_color, "Left mouse button"); 
 				ImGui::Text("Select & open edit popup :"); ImGui::SameLine(width);

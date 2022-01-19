@@ -129,7 +129,7 @@ namespace nap
             inspector_cursor_pos.y += offset;
             ImGui::SetCursorPos(inspector_cursor_pos);
 
-            ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh), "No AudioClock used by player!\nAudioSegments will not play!");
+            ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh1), "No AudioClock used by player!\nAudioSegments will not play!");
 
         }
         ImGui::PopItemWidth();
@@ -347,7 +347,7 @@ namespace nap
                 ImGui::BeginTooltip();
                 ImGui::Text("Clip start :");
                 ImGui::SameLine();
-                ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh), formatTimeString(segment->mStartTime).c_str());
+                ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh1), formatTimeString(segment->mStartTime).c_str());
                 ImGui::EndTooltip();
             }
 
@@ -510,7 +510,7 @@ namespace nap
                                     // draw points of curve
                                     draw_list->AddPolyline(&*waveform.begin(), // points array
                                             waveform.size(), // size of points array
-                                            mService.getColors().mHigh, // color
+                                            mService.getColors().mHigh1, // color
                                             false, // closed
                                             2.0f*mState.mScale); // thickness
                                 }
@@ -526,7 +526,7 @@ namespace nap
                         // draw error
                         ImVec2 text_offset = {5*mState.mScale, 3*mState.mScale};
                         ImVec2 text_position = {trackTopLeft.x+segment_x+text_offset.x, trackTopLeft.y+text_offset.y};
-                        draw_list->AddText(text_position, mService.getColors().mHigh, error_message_stream.str().c_str());
+                        draw_list->AddText(text_position, mService.getColors().mHigh1, error_message_stream.str().c_str());
                     }
 
                     float line_thickness = (hovering_left_handler || dragging_left_handler) ? 3.0f*mState.mScale : 1.0f*mState.mScale;
@@ -549,7 +549,7 @@ namespace nap
                 // draw error
                 ImVec2 text_offset = {5*mState.mScale, 3*mState.mScale};
                 ImVec2 text_position = {trackTopLeft.x+segment_x+text_offset.x, trackTopLeft.y+text_offset.y};
-                draw_list->AddText(text_position, mService.getColors().mHigh, error_message_stream.str().c_str());
+                draw_list->AddText(text_position, mService.getColors().mHigh1, error_message_stream.str().c_str());
             }
 
             //
@@ -716,12 +716,12 @@ namespace nap
                     }
                     else
                     {
-                        ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh), "No audio buffers found!");
+                        ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh1), "No audio buffers found!");
                     }
                 }
                 else
                 {
-                    ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh), "No audio output assigned!");
+                    ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh1), "No audio output assigned!");
                 }
 
 				ImGui::SameLine();

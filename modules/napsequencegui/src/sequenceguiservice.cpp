@@ -304,9 +304,11 @@ namespace nap
 	}
 
 
-	void SequenceGUIService::Colors::init(const IMGuiColorPalette& palette)
+	void SequenceGUIService::Colors::init(const gui::ColorPalette& palette)
 	{
-		mHigh = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor));
+		mHigh1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor1));
+		mHigh2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor2));
+		mHigh3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor3));
 		mDark = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mDarkColor));
 		mFro3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
 		mFro2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
