@@ -916,14 +916,14 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_dbc308e5",
+                            "Type": "nap::UniformIntArray",
+                            "mID": "UniformIntArray_0e9bf54b",
                             "Name": "padding",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            }
+                            "Values": [
+                                0,
+                                0,
+                                0
+                            ]
                         },
                         {
                             "Type": "nap::UniformInt",
@@ -1005,14 +1005,14 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_fb252763",
+                            "Type": "nap::UniformIntArray",
+                            "mID": "UniformIntArray_e1bc732c",
                             "Name": "padding",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            }
+                            "Values": [
+                                0,
+                                0,
+                                0
+                            ]
                         },
                         {
                             "Type": "nap::UniformInt",

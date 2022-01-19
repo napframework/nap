@@ -26,7 +26,40 @@ namespace nap
 	/**
 	 * Shader storage uniform resource base class.
 	 * Unlike standard uniforms, storage uniforms store a reference to the data as opposed to the data itself. This allows
-	 * for any compute shader to read from and write to the same data storage.
+	 * for any compute shader to read from and write to the same data storage. Storage uniforms currently always refer to
+	 * a single nap::GPUBuffer, whether this is simple a `nap::ValueGPUBuffer` or a more complex `nap::StructGPUBuffer`.
+	 *
+	 * A single vec4 array can be addressed as a `nap::Vec4GPUValueBuffer`:
+	 *~~~~~{.comp}
+	 *	layout(std430) buffer ExampleComputeBuffer
+	 *	{
+	 *		vec4 positions[100000];
+	 *	};
+	 *~~~~~
+	 *
+	 * If you intend to pack some data types together, you can do so with a `nap::StructGPUBuffer`:
+	 *~~~~~{.comp}
+	 *	struct Item
+	 *	{
+	 *		vec4 position;
+	 *		vec4 normal;
+	 *	};
+	 * 
+	 * 	layout(std430) buffer ExampleComputeBuffer
+	 *	{
+	 *		Item items[100000];
+	 *	};
+	 *~~~~~
+	 *
+	 * Declaring multiple shader variables outside of a struct is currently not supported:
+	 *~~~~~{.comp}
+	 *	// ERROR
+	 *	layout(std430) buffer ExampleComputeBuffer
+	 *	{
+	 *		vec4 vertices[100000];
+	 *		vec4 normal [100000];
+	 *	};
+	 *~~~~~
 	 */
 	class NAPAPI StorageUniform : public Resource
 	{

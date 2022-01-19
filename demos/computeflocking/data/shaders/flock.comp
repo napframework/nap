@@ -29,7 +29,10 @@ struct Boid
 	vec4 flockHeading;
 	vec4 flockCenter;
 
-	vec3 padding;
+	// Padding member
+	int padding[3];
+
+	// Maintain 16 byte-alignment
 	int numFlockMates;
 };
 
@@ -170,6 +173,18 @@ mat4 lookAt(vec3 from, vec3 to)
 }
 
 
+bool isZero(vec3 v)
+{
+	float valid = 1.0;
+
+	valid *= step(-EPSILON, v.x) * (1.0 - step(EPSILON, v.x));
+	valid *= step(-EPSILON, v.y) * (1.0 - step(EPSILON, v.y));
+	valid *= step(-EPSILON, v.z) * (1.0 - step(EPSILON, v.z));
+
+	return bool(valid);
+}
+
+
 vec3 clampMagnitude(vec3 v, float min, float max)
 {
 	if (length(v) > max)
@@ -181,9 +196,12 @@ vec3 clampMagnitude(vec3 v, float min, float max)
 }
 
 
-vec3 steerTowards(vec3 target, vec3 velocity, float maxSpeed)
+vec3 steerTowards(vec3 targetDir, vec3 velocity, float maxSpeed)
 {
-	vec3 v = normalize(target) * maxSpeed - velocity;
+	if (isZero(targetDir))
+		return velocity;
+
+	vec3 v = normalize(targetDir) * maxSpeed - velocity;
 	return clampMagnitude(v, length(v), ubo.maxSteerForce);
 }
 
@@ -219,6 +237,7 @@ void main()
 
 				if (distance_squared < ubo.avoidRadius * ubo.avoidRadius)
 				{
+					// Note that this value can be (0.0, 0.0, 0.0)
 					b.avoidanceHeading -= offset / distance_squared;
 				}
 			}
@@ -230,7 +249,7 @@ void main()
 	vec3 acceleration = steerTowards(offset.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.targetWeight;
 
 	// Calculate forces
-	if (b.numFlockMates != 0) 
+	if (b.numFlockMates > 0) 
 	{
 		vec4 average_flock_center = b.flockCenter / b.numFlockMates;
 		vec4 average_flock_heading = b.flockHeading / b.numFlockMates;

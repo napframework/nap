@@ -30,10 +30,6 @@ RTTI_BEGIN_CLASS(nap::ConstantFloatBufferFillPolicy)
 	RTTI_PROPERTY("Constant", &nap::ConstantFloatBufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::ConstantIntBufferFillPolicy)
-	RTTI_PROPERTY("Constant", &nap::ConstantIntBufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
 RTTI_BEGIN_CLASS(nap::ConstantVec2BufferFillPolicy)
 	RTTI_PROPERTY("Constant", &nap::ConstantVec2BufferFillPolicy::mConstant, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
