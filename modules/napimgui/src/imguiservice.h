@@ -78,12 +78,14 @@ namespace nap
 	struct NAPAPI IMGuiColorPalette
 	{
 		IMGuiColorPalette() = default;
-		RGBColor8 mHighlightColor = { 0xC8, 0x69, 0x69 };		///< Property: 'HighlightColor' Gui highlight color
-		RGBColor8 mBackgroundColor = { 0x2D, 0x2E, 0x42 };		///< Property: 'BackgroundColor' Gui background color
-		RGBColor8 mDarkColor = { 0x11, 0x14, 0x26 };			///< Property: 'DarkColor' Gui dark color
-		RGBColor8 mFront1Color = { 0x52, 0x54, 0x6A };			///< Property: 'FrontColor1' Gui front color 1
-		RGBColor8 mFront2Color = { 0x5D, 0x5E, 0x73 };			///< Property: 'FrontColor2' Gui front color 2
-		RGBColor8 mFront3Color = { 0x8B, 0x8C, 0xA0 };			///< Property: 'FrontColor3' Gui front color 3
+		RGBColor8 mBackgroundColor = { 0x2D, 0x2D, 0x2D };		///< Property: 'BackgroundColor' Gui background color
+		RGBColor8 mDarkColor = { 0x00, 0x00, 0x00 };			///< Property: 'DarkColor' Gui dark color
+		RGBColor8 mFront1Color = { 0x8D, 0x8B, 0x84 };			///< Property: 'FrontColor1' Gui front color 1
+		RGBColor8 mFront2Color = { 0xCD, 0xCD, 0xC3 };			///< Property: 'FrontColor2' Gui front color 2
+		RGBColor8 mFront3Color = { 0xFF, 0xFF, 0xFF };			///< Property: 'FrontColor3' Gui front color 3
+		RGBColor8 mHighlightColor1 = { 0xFF, 0x50, 0x50 };		///< Property: 'HighlightColor1' Gui highlight color 1
+		RGBColor8 mHighlightColor2 = { 0xD6, 0xFF, 0xA3 };		///< Property: 'HighlightColor2' Gui highlight color 2
+		RGBColor8 mHighlightColor3 = { 0xFF, 0xEA, 0x30 };		///< Property: 'HighlightColor3' Gui highlight color 2
 	};
 
 
@@ -95,7 +97,7 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		float mFontSize = 17.0f;								///< Property: 'FontSize' Gui font size
+		float mFontSize = 18.0f;								///< Property: 'FontSize' Gui font size
 		float mScale = 1.0f;									///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
 		std::string mFontFile = "";								///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
 		IMGuiColorPalette mColors;								///< Property: 'Colors' Gui colors

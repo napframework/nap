@@ -23,12 +23,14 @@
 #include <nap/modulemanager.h>
 
 RTTI_BEGIN_STRUCT(nap::IMGuiColorPalette)
-	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiColorPalette::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DarkColor",			&nap::IMGuiColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor1",		&nap::IMGuiColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor2",		&nap::IMGuiColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor3",		&nap::IMGuiColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor1",	&nap::IMGuiColorPalette::mHighlightColor1,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor2",	&nap::IMGuiColorPalette::mHighlightColor2,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor3",	&nap::IMGuiColorPalette::mHighlightColor3,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
@@ -226,7 +228,7 @@ namespace nap
 		ImVec4 IMGUI_NAPFRO1(config.mColors.mFront1Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO2(config.mColors.mFront2Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO3(config.mColors.mFront3Color, 1.0f);
-		ImVec4 IMGUI_NAPHIGH(config.mColors.mHighlightColor, 1.0f);
+		ImVec4 IMGUI_NAPHIGH(config.mColors.mHighlightColor1, 1.0f);
 
 		// Create style
 		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
