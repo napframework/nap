@@ -368,7 +368,7 @@ namespace nap
 		}
 		else
 		{
-			new_atlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+			new_atlas->AddFontFromMemoryCompressedTTF(manropeMediumData, manropeMediumSize, font_size, &font_config);
 		}
 		return new_atlas;
 	}
