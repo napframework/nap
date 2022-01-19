@@ -259,13 +259,13 @@ namespace nap
 			mModelUniform->setValue(object_loc);
 
 			// Update our descriptor set
-			VkDescriptorSet descriptor_set = mMaterialInstance.update();
+			const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 			// Bind pipeline
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 			// Bind descriptor set for next draw call
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 			// Bind vertex buffers
 			const std::vector<VkBuffer>& vertexBuffers = mSphereMesh.getVertexBuffers();

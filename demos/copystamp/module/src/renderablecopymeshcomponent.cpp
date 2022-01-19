@@ -10,7 +10,6 @@
 #include <nap/core.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
-#include <indexbuffer.h>
 #include <renderglobals.h>
 
 // nap::renderablecopymeshcomponent run time class definition 
