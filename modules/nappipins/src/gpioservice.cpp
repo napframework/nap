@@ -12,6 +12,7 @@
 
 // External includes
 #include <stdlib.h>
+#include <unistd.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::pipins::GpioService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -29,6 +30,10 @@ namespace nap
 
     bool GpioService::init(nap::utility::ErrorState& errorState)
     {
+        // we need the application to be run as root
+        if(!errorState.check(!getuid(), "You are not running as root! GpioService needs root access. Try running as root or sudo..."))
+            return false;
+
         // set environment variables so wiring pi setup returns an exit code, see following Gordon's comment
         /**
          * Note: wiringPi version 1 returned an error code if these functions failed for whatever reason.
