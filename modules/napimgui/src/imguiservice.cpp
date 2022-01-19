@@ -28,6 +28,7 @@ RTTI_BEGIN_STRUCT(nap::IMGuiColorPalette)
 	RTTI_PROPERTY("FrontColor1",		&nap::IMGuiColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor2",		&nap::IMGuiColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor3",		&nap::IMGuiColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor4",		&nap::IMGuiColorPalette::mFront4Color,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("HighlightColor1",	&nap::IMGuiColorPalette::mHighlightColor1,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("HighlightColor2",	&nap::IMGuiColorPalette::mHighlightColor2,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("HighlightColor3",	&nap::IMGuiColorPalette::mHighlightColor3,	nap::rtti::EPropertyMetaData::Default)
@@ -228,6 +229,7 @@ namespace nap
 		ImVec4 IMGUI_NAPFRO1(config.mColors.mFront1Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO2(config.mColors.mFront2Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO3(config.mColors.mFront3Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO4(config.mColors.mFront4Color, 1.0f);
 		ImVec4 IMGUI_NAPHIG1(config.mColors.mHighlightColor1, 1.0f);
 		ImVec4 IMGUI_NAPHIG2(config.mColors.mHighlightColor2, 1.0f);
 		ImVec4 IMGUI_NAPHIG3(config.mColors.mHighlightColor3, 1.0f);
@@ -253,7 +255,7 @@ namespace nap
         style->WindowTitleAlign = { 0.5f, 0.5f };
 		style->PopupBorderSize = 0.0f;
 
-		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
 		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
@@ -264,28 +266,28 @@ namespace nap
 		style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
@@ -293,15 +295,15 @@ namespace nap
 		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
 		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
 

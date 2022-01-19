@@ -25,7 +25,7 @@ void main()
 {
 	// Use texture alpha to blend between two colors
 	float alpha = texture(inWorldTexture, passUVs.xy).a;
-	vec3 world_color = mix(vec3(0.784, 0.411, 0.411), vec3(0.176, 0.180, 0.258), alpha);
+	vec3 world_color = mix(vec3(1.0, 0.313, 0.313), vec3(0.176, 0.176, 0.176), alpha);
 
 	// Calculate mesh to camera angle for halo effect
 	vec3 cam_normal = normalize(ubo.inCameraPosition - passPosition);
@@ -38,7 +38,7 @@ void main()
 	cam_surface_dot = pow(cam_surface_dot, 5.0);
 
 	// Mix in the halo
-	world_color = mix(world_color, vec3(0.545, 0.549, 0.627), cam_surface_dot);
+	world_color = mix(world_color, vec3(1.0, 1.0, 1.0), cam_surface_dot);
 
 	// Set fragment color output
 	out_Color =  vec4(world_color,1.0);
