@@ -269,10 +269,10 @@ namespace nap
 		{
 			// Compose usage flags from buffer configuration
 			if (PROPERTY == EValueGPUBufferProperty::Index)
-				mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+                            TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
 			else if (PROPERTY == EValueGPUBufferProperty::Vertex)
-				mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+                            TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
 			if (!TypedValueGPUBuffer<T>::init(errorState))
 				return false;

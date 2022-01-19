@@ -382,7 +382,7 @@ namespace nap
 
 			VkWriteDescriptorSet& hbo_descriptor = mStorageWriteDescriptorSets.emplace_back();
 			hbo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			hbo_descriptor.dstSet = nullptr;
+			hbo_descriptor.dstSet = VK_NULL_HANDLE;
 			hbo_descriptor.dstBinding = declaration.mBinding;
 			hbo_descriptor.dstArrayElement = 0;
 			hbo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;

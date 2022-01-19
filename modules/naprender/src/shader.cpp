@@ -219,7 +219,7 @@ static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, V
 
 	VkShaderModule shaderModule;
 	if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-		return nullptr;
+		return VK_NULL_HANDLE;
 	return shaderModule;
 }
 
@@ -634,7 +634,7 @@ namespace nap
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout](RenderService& renderService)
 		{
-			if (descriptorSetLayout != nullptr)
+			if (descriptorSetLayout != VK_NULL_HANDLE)
 				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
 		});
 	}
@@ -703,10 +703,10 @@ namespace nap
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService->queueVulkanObjectDestructor([vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
 		{
-			if (vertexModule != nullptr)
+			if (vertexModule != VK_NULL_HANDLE)
 				vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
 
-			if (fragmentModule != nullptr)
+			if (fragmentModule != VK_NULL_HANDLE)
 				vkDestroyShaderModule(renderService.getDevice(), fragmentModule, nullptr);
 		});
 	}
@@ -731,12 +731,12 @@ namespace nap
 
 		// Create vertex shader module
 		mVertexModule = createShaderModule(vertex_shader_spirv, device);
-		if (!errorState.check(mVertexModule != nullptr, "Unable to load vertex shader module"))
+		if (!errorState.check(mVertexModule != VK_NULL_HANDLE, "Unable to load vertex shader module"))
 			return false;
 
 		// Create fragment shader module
 		mFragmentModule = createShaderModule(fragment_shader_spirv, device);
-		if (!errorState.check(mFragmentModule != nullptr, "Unable to load fragment shader module"))
+		if (!errorState.check(mFragmentModule != VK_NULL_HANDLE, "Unable to load fragment shader module"))
 			return false;
 
 		// Extract vertex shader uniforms & inputs
@@ -780,7 +780,7 @@ namespace nap
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService->queueVulkanObjectDestructor([compModule = mComputeModule](RenderService& renderService)
 		{
-			if (compModule != nullptr)
+			if (compModule != VK_NULL_HANDLE)
 				vkDestroyShaderModule(renderService.getDevice(), compModule, nullptr);
 		});
 	}
@@ -814,7 +814,7 @@ namespace nap
 
 		// Create compute shader module
 		mComputeModule = createShaderModule(comp_shader_spirv, device);
-		if (!errorState.check(mComputeModule != nullptr, "Unable to load compute shader module"))
+		if (!errorState.check(mComputeModule != VK_NULL_HANDLE, "Unable to load compute shader module"))
 			return false;
 
 		// Extract shader variables

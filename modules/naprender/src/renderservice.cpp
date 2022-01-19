@@ -1117,7 +1117,7 @@ namespace nap
 		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 		pipeline_info.basePipelineIndex = -1;
 
-		if (vkCreateComputePipelines(device, nullptr, 1, &pipeline_info, nullptr, &outComputePipeline) != VK_SUCCESS)
+		if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &outComputePipeline) != VK_SUCCESS)
 		{
 			nap::Logger::info("Could not create compute pipeline");
 			return false;
