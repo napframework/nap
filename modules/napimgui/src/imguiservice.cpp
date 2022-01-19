@@ -228,7 +228,9 @@ namespace nap
 		ImVec4 IMGUI_NAPFRO1(config.mColors.mFront1Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO2(config.mColors.mFront2Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO3(config.mColors.mFront3Color, 1.0f);
-		ImVec4 IMGUI_NAPHIGH(config.mColors.mHighlightColor1, 1.0f);
+		ImVec4 IMGUI_NAPHIG1(config.mColors.mHighlightColor1, 1.0f);
+		ImVec4 IMGUI_NAPHIG2(config.mColors.mHighlightColor2, 1.0f);
+		ImVec4 IMGUI_NAPHIG3(config.mColors.mHighlightColor3, 1.0f);
 
 		// Create style
 		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
@@ -290,9 +292,9 @@ namespace nap
 		style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
 		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
@@ -301,7 +303,7 @@ namespace nap
 		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
-		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
 
 		return style;
 	}

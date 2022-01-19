@@ -97,13 +97,13 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		float mFontSize = 18.0f;								///< Property: 'FontSize' Gui font size
+		float mFontSize = 17.0f;								///< Property: 'FontSize' Gui font size
 		float mScale = 1.0f;									///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
 		std::string mFontFile = "";								///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
 		IMGuiColorPalette mColors;								///< Property: 'Colors' Gui colors
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
-
+	 
 
 	/**
 	 * This service manages the global ImGui state.
