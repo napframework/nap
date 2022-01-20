@@ -1,0 +1,38 @@
+{
+  "name": "Dark",
+  "stylesheet": "style.qss",
+  "logColors": 
+  {
+    "fine": "#8D8B84",
+    "debug": "#8D8B84",
+    "info": "#AEACA4",
+    "warn": "#FFFFFF",
+    "error": "#C86969",
+    "fatal": "#C86969"
+  },
+  "colors": 
+  {
+    "highlight1": "#FF5050",
+    "highlight2": "#D6FFA3",
+    "highlight3": "#FFEA30",
+    "background1": "#2D2D2D",
+    "background2": "#262626",
+    "dark1": "#000000",
+    "dark2": "#0f100f",
+    "front1": "#8D8B84",
+    "front2": "#AEACA4",
+    "front3": "#CDCDC3",
+    "front4": "#FFFFFF",
+    "header": "#222222",
+    "status": "#444",
+    "componentWithOverrides": "#FF5050",
+    "instanceProperty": "#2D2D2D",
+    "overriddenInstanceProperty": "#FF5050",
+    "dimmedItem": "#8D8B84"
+  },
+  "fonts":
+  {
+    "font1": "Manrope",
+    "font2": "Manrope"
+  }
+}

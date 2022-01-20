@@ -297,8 +297,8 @@ namespace nap
 		style->ItemSpacing = ImVec2(12, 6);
 		style->ItemInnerSpacing = ImVec2(8, 6);
 		style->IndentSpacing = 25.0f;
-		style->ScrollbarSize = 12.0f;
-		style->ScrollbarRounding = 7.0f;
+		style->ScrollbarSize = 13.0f;
+		style->ScrollbarRounding = 0.0f;
 		style->GrabMinSize = 5.0f;
 		style->GrabRounding = 0.0f;
 		style->WindowBorderSize = 0.0f;
@@ -322,9 +322,9 @@ namespace nap
 		style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
