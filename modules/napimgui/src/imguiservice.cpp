@@ -108,7 +108,7 @@ namespace nap
 			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
 			{
 				{EColorScheme::Light, {
-					{ 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF }, { 0xA7, 0xA7, 0x9E },
+					{ 0xCD, 0xCD, 0xC3 }, { 0xF5, 0xF5, 0xF3 }, { 0xA7, 0xA7, 0x9E },
 					{ 0xEC, 0xFF, 0xD3 }, { 0x8D, 0x8B, 0x84 }, { 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
 					{ 0xFF, 0x50, 0x50 }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xA8, 0x00 }}
 				},
@@ -274,8 +274,8 @@ namespace nap
 	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette)
 	{
 		// Get ImGUI colors
-		ImVec4 IMGUI_NAPDARK(palette.mDarkColor, 1.0f);
 		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
+		ImVec4 IMGUI_NAPDARK(palette.mDarkColor, 0.66f);
 		ImVec4 IMGUI_NAPMODA(palette.mDarkColor, 0.85f);
 		ImVec4 IMGUI_NAPMENU(palette.mMenuColor, 0.66f);
 		ImVec4 IMGUI_NAPFRO1(palette.mFront1Color, 1.0f);
@@ -332,9 +332,6 @@ namespace nap
 		style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
@@ -351,7 +348,7 @@ namespace nap
 		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
