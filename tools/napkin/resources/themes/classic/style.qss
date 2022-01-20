@@ -13,12 +13,12 @@ QWidget
 }
 
 QMenuBar {
-    color: @front4;
+    color: @front3;
 }
 
 QMenu {
     background-color: @dark2;
-    color: @front4;
+    color: @front3;
 }
 
 QDialog, QLabel {
@@ -181,5 +181,22 @@ QStatusBar {
 
 QGraphicsView {
     background: @front2;
+}
+
+QComboBox {
+    background: @dark1;
+    color: @front3;
+}
+
+QComboBox:on  {
+    color: @front4;
+}
+
+QComboBox:off  {
+    color: @front3;
+}
+
+QComboBox QAbstractItemView {
+    background: @dark1;
 }
 

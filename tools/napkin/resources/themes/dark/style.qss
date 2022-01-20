@@ -102,10 +102,10 @@ QLineEdit {
     padding-right: 10px;
     background: @dark2;
     color: @front3;
+    selection-background-color: @front3;
 }
 
 QLineEdit:focus {
-    color: @front4;
     background: @dark1;
 }
 
@@ -113,6 +113,7 @@ QScrollBar:horizontal,
 QScrollBar:vertical {
     border-radius: 0px;
     background: @header;
+    width: 7px;
 }
 
 QScrollBar::handle:horizontal,
@@ -139,7 +140,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 
 QPushButton, QToolButton {
     color: @dark1;
-    background: @front2;
+    background: @front1;
     border-radius: 2px;
     margin: 2px;
     border: 0;
@@ -147,12 +148,14 @@ QPushButton, QToolButton {
 }
 
 QPushButton:hover {
-    background: @front3;
+    background: @highlight1;
 }
+
 QPushButton:pressed {
-    background: @dark1;
-    color: @front3;
+    background: @front3;
+    color: @front4;
 }
+
 QPushButton:!enabled {
     background-color: @dark2;
     color: @dark1;
@@ -183,3 +186,20 @@ QGraphicsView {
     background: @front2;
 }
 
+QComboBox {
+    background: @front3;
+    color: @dark1;
+}
+
+QComboBox:on  {
+    color: @dark1;
+}
+
+QComboBox:off  {
+    color: @dark2;
+}
+
+QComboBox QAbstractItemView {
+    background: @front3;
+    color: @dark1;
+}
