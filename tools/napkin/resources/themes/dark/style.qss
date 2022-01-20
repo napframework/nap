@@ -27,7 +27,7 @@ QMenu {
 }
 
 QDialog, QLabel {
-    color: @front3;
+    color: @front1;
     background-color: @background2;
     margin-right: 0.2em
 
@@ -107,7 +107,7 @@ QLineEdit {
     padding-right: 10px;
     background: @dark2;
     color: @front3;
-    selection-background-color: @front3;
+    selection-background-color: @front1;
     selection-color: @dark1;
 }
 
@@ -208,4 +208,11 @@ QComboBox:off  {
 QComboBox QAbstractItemView {
     background: @front3;
     color: @dark1;
+}
+
+QSpinBox {
+    background: @dark1;
+    selection-background-color: @front1;
+    selection-color: @dark1;
+    color:@front3;
 }
