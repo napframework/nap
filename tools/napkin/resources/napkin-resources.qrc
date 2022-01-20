@@ -51,13 +51,6 @@
 		<file>icons/module.png</file>
 		<file>icons/app-play.png</file>
 		<file>icons/app-stop.png</file>
-		<file>fonts/Montserrat-ExtraBold.ttf</file>
-		<file>fonts/Montserrat-Light.ttf</file>
-		<file>fonts/Montserrat-Medium.ttf</file>
-		<file>fonts/Montserrat-SemiBold.ttf</file>
-		<file>fonts/NunitoSans-ExtraBold.ttf</file>
-		<file>fonts/NunitoSans-Regular.ttf</file>
-		<file>fonts/NunitoSans-SemiBold.ttf</file>
 		<file>icons/color_wheel.png</file>
 	</qresource>
 </RCC>

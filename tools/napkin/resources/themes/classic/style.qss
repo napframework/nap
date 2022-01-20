@@ -6,19 +6,19 @@ QMainWindow
 QWidget
 {
     font-family: "@font1";
-    font-size: 14px;
+    font-size: 13px;
     selection-background-color:@front3;
     selection-color: @dark1;
     border: none;
 }
 
 QMenuBar {
-    color: @front3;
+    color: @front4;
 }
 
 QMenu {
-    background-color: @front1;
-    color: @front3;
+    background-color: @dark2;
+    color: @front4;
 }
 
 QDialog, QLabel {
@@ -42,6 +42,11 @@ QHeaderView:section {
     padding-left: 4px;
 }
 
+QTreeView::item {
+    padding-top: 2.5px;
+    padding-bottom: 2.5px;
+}
+
 QGroupBox {
     border: 0;
     margin-top: 22px;
@@ -56,7 +61,7 @@ QGroupBox:title {
 QDockWidget {
     color: @front4;
     border: 1px solid @header;
-    font-family: "@font2";
+    font-size: 15px;
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
     /*padding: 10px;*/
@@ -100,7 +105,7 @@ QLineEdit {
 }
 
 QLineEdit:focus {
-    color: @front3;
+    color: @front4;
     background: @dark1;
 }
 
@@ -133,7 +138,6 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 }
 
 QPushButton, QToolButton {
-    font-family: "@font1";
     color: @dark1;
     background: @front2;
     border-radius: 2px;
