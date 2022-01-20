@@ -27,7 +27,7 @@ QMenu {
 }
 
 QDialog, QLabel {
-    color: @front3;
+    color: @front1;
     background-color: @background2;
     margin-right: 0.2em
 
@@ -118,7 +118,7 @@ QLineEdit:focus {
 QScrollBar:horizontal,
 QScrollBar:vertical {
     border-radius: 0px;
-    background: @header;
+    background: @dark1;
     width: 7px;
 }
 

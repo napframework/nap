@@ -189,20 +189,20 @@ QGraphicsView {
 }
 
 QComboBox {
-    background: @dark1;
-    color: @front3;
+    background: @front3;
+    color: @dark1;
 }
 
 QComboBox:on  {
-    color: @front4;
+    color: @dark1;
 }
 
 QComboBox:off  {
-    color: @front3;
+    color: @dark2;
 }
 
 QComboBox QAbstractItemView {
-    background: @dark1;
+    background: @front3;
 }
 
 QSpinBox {
