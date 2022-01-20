@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18.4)
 
-# check for appropriate os
-if(NOT RASPBIAN)
+# check for appropriate platform
+if(NOT RASPBERRY)
     return()
 endif()
 

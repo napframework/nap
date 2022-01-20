@@ -1,7 +1,7 @@
 # - Try to find WiringPi
 
-# check for appropriate os
-if(NOT RASPBIAN)
+# check for appropriate platform
+if(NOT RASPBERRY)
     return()
 endif()
 
