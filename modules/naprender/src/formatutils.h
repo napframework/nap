@@ -26,7 +26,7 @@ namespace nap
 	{
 		static const std::map<rtti::TypeInfo, VkFormat> format_table =
 		{
-			{RTTI_OF(uint8),		VkFormat::VK_FORMAT_R8_SINT},
+			{RTTI_OF(uint),			VkFormat::VK_FORMAT_R32_UINT},
 			{RTTI_OF(int),			VkFormat::VK_FORMAT_R32_SINT},
 			{RTTI_OF(float),		VkFormat::VK_FORMAT_R32_SFLOAT},
 			{RTTI_OF(glm::vec2),	VkFormat::VK_FORMAT_R32G32_SFLOAT},

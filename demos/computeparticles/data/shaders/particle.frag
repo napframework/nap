@@ -5,7 +5,7 @@
 #version 450 core
 
 in vec4 pass_Uvs;
-flat in int pass_Id;
+flat in uint pass_Id;
 
 out vec4 out_Color;
 
@@ -15,7 +15,7 @@ void main(void)
 {	
 	// This is a hack to ensure this demo works on linux with the mesa opengl drivers
 	// Otherwise: OpenGL ERROR: sampler arrays indexed with non-constant expressions are forbidden in GLSL 1.30 and later
-	int tex_id = int(pass_Id+0.1) % 2;
+	uint tex_id = uint(pass_Id+0.1) % 2;
 
 	vec4 tex_color = texture(texture_input[tex_id], pass_Uvs.xy);
 	if (tex_color.a == 0.0)

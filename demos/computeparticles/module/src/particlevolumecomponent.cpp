@@ -92,7 +92,7 @@ namespace nap
 		// Create the necessary attributes
 		Vec4VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::position);
 		Vec4VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getUVName(0));
-		IntVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<int>(vertexid::id);
+		UIntVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<uint>(vertexid::id);
 		MeshShape& shape = mMeshInstance->createShape();
 
 		// Reserve CPU memory for all the particle geometry necessary to create
@@ -108,12 +108,12 @@ namespace nap
 		{
 			uv_attribute.addData(plane_uvs, 4);
 
-			int id = (cur_num_vertices - cur_num_vertices % 4)/4;
-			std::array<int, 4> id_array = { id, id, id, id };
+			uint id = (cur_num_vertices - cur_num_vertices % 4)/4;
+			std::array<uint, 4> id_array = { id, id, id, id };
 			id_attribute.addData(id_array.data(), 4);
 
 			// Indices for 2 triangles, 1 plane
-			unsigned int indices[] =
+			uint indices[] =
 			{
 				cur_num_vertices + 0,
 				cur_num_vertices + 1,

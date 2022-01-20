@@ -13,10 +13,10 @@ uniform nap
 
 in vec4	in_Position;
 in vec4	in_UV0;
-in int in_Id;
+in uint in_Id;
 
 out vec4 pass_Uvs;
-out int pass_Id;
+out uint pass_Id;
 
 void main(void)
 {

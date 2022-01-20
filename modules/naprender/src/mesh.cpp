@@ -94,7 +94,7 @@ namespace nap
 			if (mesh_attribute->get_type() == RTTI_OF(UIntVertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<uint>(mesh_attribute->mAttributeID);
 
-			if (mesh_attribute->get_type() == RTTI_OF(IntVertexAttribute))
+			else if (mesh_attribute->get_type() == RTTI_OF(IntVertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<int>(mesh_attribute->mAttributeID);
 
 			else if (mesh_attribute->get_type() == RTTI_OF(FloatVertexAttribute))
