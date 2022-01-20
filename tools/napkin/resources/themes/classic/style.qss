@@ -16,6 +16,11 @@ QMenuBar {
     color: @front3;
 }
 
+QMenuBar::item:selected {
+    color: @dark1;
+    background: @front3;
+}
+
 QMenu {
     background-color: @dark2;
     color: @front3;
@@ -163,7 +168,7 @@ QTabBar {
 }
 
 QTabBar:tab {
-    padding: 2px 6px 2px 6px;
+    padding: 2px 12px 2px 12px;
     color: @front4;
     background: @front2;
     border: 0;
