@@ -33,6 +33,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
 	RTTI_PROPERTY("BackgroundColor",	&nap::gui::ColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DarkColor",			&nap::gui::ColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MenuColor",			&nap::gui::ColorPalette::mMenuColor,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor1",		&nap::gui::ColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor2",		&nap::gui::ColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FrontColor3",		&nap::gui::ColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
@@ -107,24 +108,24 @@ namespace nap
 			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
 			{
 				{EColorScheme::Light, {
-					{ 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
-					{ 0xa7, 0xa7, 0x9e }, { 0x8D, 0x8B, 0x84 }, { 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
+					{ 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF }, { 0xA7, 0xA7, 0x9E },
+					{ 0xEC, 0xFF, 0xD3 }, { 0x8D, 0x8B, 0x84 }, { 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
 					{ 0xFF, 0x50, 0x50 }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xA8, 0x00 }}
 				},
 				{EColorScheme::Dark, {
-					{ 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
+					{ 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 }, { 0x8D, 0x8B, 0x84 },
 					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
 					{ 0xFF, 0x50, 0x50 }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xEA, 0x30 }}
 				},
 				{EColorScheme::HyperDark, {
-					{ 0x00, 0x00, 0x00 }, { 0x2D, 0x2D, 0x2D },
+					{ 0x00, 0x00, 0x00 }, { 0x2D, 0x2D, 0x2D }, { 0x8D, 0x8B, 0x84 },
 					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
 					{ 0xFF, 0x34, 0x7D }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }}
 				},
 				{EColorScheme::Classic, {
-					{ 0x2D, 0x2E, 0x42 }, { 0x11, 0x14, 0x26 },
+					{ 0x2D, 0x2E, 0x42 }, { 0x11, 0x14, 0x26 }, { 0x52, 0x54, 0x6A },
 					{ 0x52, 0x54, 0x6A }, { 0x5D, 0x5E, 0x73 }, { 0x8B, 0x8C, 0xA0 }, { 0xDE, 0xDF, 0xEC },
-					{ 0xFF, 0x34, 0x7D }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }}
+					{ 0xC8, 0x69, 0x69 }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }}
 				},
 			};
 
@@ -276,6 +277,7 @@ namespace nap
 		ImVec4 IMGUI_NAPDARK(palette.mDarkColor, 1.0f);
 		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
 		ImVec4 IMGUI_NAPMODA(palette.mDarkColor, 0.85f);
+		ImVec4 IMGUI_NAPMENU(palette.mMenuColor, 0.66f);
 		ImVec4 IMGUI_NAPFRO1(palette.mFront1Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO2(palette.mFront2Color, 1.0f);
 		ImVec4 IMGUI_NAPFRO3(palette.mFront3Color, 1.0f);
@@ -315,10 +317,10 @@ namespace nap
 		style->Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
+		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO4;
