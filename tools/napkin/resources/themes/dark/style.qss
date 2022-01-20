@@ -27,7 +27,7 @@ QMenu {
 }
 
 QDialog, QLabel {
-    color: @front1;
+    color: @front3;
     background-color: @background2;
     margin-right: 0.2em
 
@@ -154,7 +154,7 @@ QPushButton, QToolButton {
 }
 
 QPushButton:hover {
-    background: @highlight1;
+    background: @front3;
 }
 
 QPushButton:pressed {
