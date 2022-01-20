@@ -25,7 +25,7 @@ namespace nap
 {
 	bool StructGPUBuffer::init(utility::ErrorState& errorState)
 	{
-		if (!errorState.check(mDescriptor.mCount >= 0, "Descriptor.Count must be non-zero and non-negative"))
+		if (!errorState.check(mDescriptor.mCount >= 0, "Struct buffer descriptor's 'Count' property must be non-zero and non-negative"))
 			return false;
 
 		if (!GPUBuffer::init(errorState))

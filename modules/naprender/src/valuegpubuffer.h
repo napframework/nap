@@ -51,16 +51,6 @@ namespace nap
 		 * Uploads data to the GPU based on the settings provided.
 		 * This function automatically allocates GPU memory if required.
 		 * @param data pointer to the block of data that needs to be uploaded.
-		 * @param the size of the data in bytes
-		 * @param errorState contains the error if upload operation failed
-		 * @return if upload succeeded
-		 */
-		virtual bool setData(void* data, size_t size, utility::ErrorState& errorState) = 0;
-
-		/**
-		 * Uploads data to the GPU based on the settings provided.
-		 * This function automatically allocates GPU memory if required.
-		 * @param data pointer to the block of data that needs to be uploaded.
 		 * @param elementCount the number of elements
 		 * @param reservedElementCount the number of elements to reserve
 		 * @param errorState contains the error if upload operation failed
@@ -113,7 +103,7 @@ namespace nap
 			if (!ValueGPUBuffer::init(errorState))
 				return false;
 
-			if (!errorState.check(mCount != 0, "Failed to initialize vertex buffer. Cannot allocate a buffer with zero elements."))
+			if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
 				return false;
 
 			// Compose usage flags from buffer configuration
@@ -156,19 +146,6 @@ namespace nap
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
-		 * This function automatically allocates GPU memory if required. 
-		 * @param data pointer to the block of data that needs to be uploaded.
-		 * @param the size of the data in bytes
-		 * @param errorState contains the error if upload operation failed
-		 * @return if upload succeeded
-		 */
-		virtual bool setData(void* data, size_t size, utility::ErrorState& errorState) override
-		{
-			return setDataInternal(data, size, size, mUsageFlags, errorState);
-		}
-
-		/**
-		 * Uploads data to the GPU based on the settings provided.
 		 * This function automatically allocates GPU memory if required.
 		 * @param data pointer to the block of data that needs to be uploaded.
 		 * @param elementCount the number of elements
@@ -178,7 +155,12 @@ namespace nap
 		 */
 		virtual bool setData(void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) override
 		{
-			return setDataInternal(data, sizeof(T) * elementCount, sizeof(T) * reservedElementCount, mUsageFlags, errorState);
+			if (!setDataInternal(data, sizeof(T) * elementCount, sizeof(T) * reservedElementCount, mUsageFlags, errorState))
+				return false;
+
+			// Update count
+			mCount = elementCount;
+			return true;
 		}
 
 		/**
@@ -190,7 +172,12 @@ namespace nap
 		 */
 		bool setData(const std::vector<T>& data, utility::ErrorState& errorState)
 		{
-			return setDataInternal(data.data(), data.size() * sizeof(T), data.capacity() * sizeof(T), mUsageFlags, errorState);
+			if (!setDataInternal(data.data(), data.size() * sizeof(T), data.capacity() * sizeof(T), mUsageFlags, errorState))
+				return false;
+
+			// Update count
+			mCount = data.size();
+			return true;
 		}
 
 		/**

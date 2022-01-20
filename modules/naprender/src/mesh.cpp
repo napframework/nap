@@ -157,6 +157,7 @@ namespace nap
 
 	void MeshInstance::reserveVertices(size_t numVertices)
 	{
+		NAP_ASSERT_MSG(!mProperties.mAttributes.empty(), "No attributes available to reserve");
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mesh_attribute->reserve(numVertices);
 	}
@@ -203,7 +204,7 @@ namespace nap
 				if (!index_buffer.init(errorState))
 					return false;
 			}
-			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices().data(), mProperties.mShapes[shapeIndex].getNumIndices(), mProperties.mShapes[shapeIndex].getNumIndices(), errorState))
+			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices().data(), mProperties.mShapes[shapeIndex].getNumIndices(), mProperties.mShapes[shapeIndex].mIndices.capacity(), errorState))
 				return false;
 		}
 		return true;

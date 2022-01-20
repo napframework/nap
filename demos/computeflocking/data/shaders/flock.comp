@@ -158,10 +158,7 @@ mat4 lookAt(vec3 from, vec3 to)
 	else
 		up = vec3(0.0, 1.0, 0.0);
 
-	//vec3 right = normalize(cross(forward, vec3(sin(roll.x), cos(roll.x), 0.0)));
 	vec3 right = normalize(cross(up, forward));
-	
-	//forward = normalize(cross(right, up));
 	up = normalize(cross(forward, right));
 
 	return mat4(

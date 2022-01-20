@@ -116,7 +116,7 @@ namespace nap
 		 * Sets the internal values based on the contained type
 		 * @param values: the values that will be copied over
 		 */
-		void setData(const std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
+		void setData(const std::vector<ELEMENTTYPE>& values)	{ setData(&(values.front()), values.size()); }
 
 		/**
 		 * Sets the entire vertex attribute buffer.
@@ -125,6 +125,9 @@ namespace nap
 		 */
 		void setData(const ELEMENTTYPE* elements, int numElements);
 
+		/**
+		 * @return the VK_FORMAT of this vertex attribute
+		 */
 		virtual VkFormat getFormat() const override;
 
 		/**

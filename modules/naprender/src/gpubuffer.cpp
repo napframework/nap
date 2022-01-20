@@ -208,10 +208,6 @@ namespace nap
 		// Ensure the sizes are valid
 		assert(size <= reservedSize || size > 0);
 
-		// Ensure the buffers are allocated
-		assert(!mRenderBuffers.empty());
-		assert(mRenderBuffers[0].mBuffer != VK_NULL_HANDLE);
-
 		// Ensure the buffer isn't DynamicRead
 		if (!errorState.check(mUsage != EMemoryUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
 			return false;
@@ -220,9 +216,9 @@ namespace nap
 		switch (mUsage)
 		{
 		case EMemoryUsage::DynamicWrite:
-			return setDataInternalDynamic(data, mSize, reservedSize, deviceUsage, errorState);
+			return setDataInternalDynamic(data, size, reservedSize, deviceUsage, errorState);
 		case EMemoryUsage::Static:
-			return setDataInternalStatic(data, mSize, errorState);
+			return setDataInternalStatic(data, size, errorState);
 		default:
 			assert(false);
 			break;
@@ -234,6 +230,10 @@ namespace nap
 
 	bool GPUBuffer::setDataInternalStatic(void* data, size_t size, utility::ErrorState& errorState)
 	{
+		// Ensure the buffers are allocated
+		assert(!mRenderBuffers.empty());
+		assert(mRenderBuffers[0].mBuffer != VK_NULL_HANDLE);
+
 		// When usage is static, the staging buffer is released after the upload
 		if (mStagingBuffers[0].mBuffer == VK_NULL_HANDLE)
 		{
