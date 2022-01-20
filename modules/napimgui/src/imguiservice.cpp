@@ -22,6 +22,14 @@
 #include <sdlhelpers.h>
 #include <nap/modulemanager.h>
 
+RTTI_BEGIN_ENUM(nap::gui::EColorScheme)
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Light,		"Light"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Dark,		"Dark"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::HyperDark,	"HyperDark"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Classic,	"Classic"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Custom,		"Custom")
+RTTI_END_ENUM
+
 RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
 	RTTI_PROPERTY("BackgroundColor",	&nap::gui::ColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DarkColor",			&nap::gui::ColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
@@ -37,8 +45,9 @@ RTTI_END_STRUCT
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,		nap::rtti::EPropertyMetaData::Default, nap::rtti::EPropertyFileType::Font)
-	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mColors,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,		nap::rtti::EPropertyMetaData::Default,nap::rtti::EPropertyFileType::Font)
+	RTTI_PROPERTY("ColorScheme",		&nap::IMGuiServiceConfiguration::mColorScheme,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mCustomColors,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
@@ -84,6 +93,32 @@ namespace nap
 				icon::change
 			};
 			return map;
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// GUI
+	//////////////////////////////////////////////////////////////////////////
+
+	namespace gui
+	{
+		static const ColorPalette& getPalette(EColorScheme colorScheme, const gui::ColorPalette& customPalette)
+		{
+			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
+			{
+				{EColorScheme::Dark, {
+					{ 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
+					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
+					{ 0xFF, 0x50, 0x50 }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xEA, 0x30 }}
+				}
+			};
+
+			// Add custom scheme if not present
+			scheme_map.emplace(std::make_pair(EColorScheme::Custom, customPalette));
+			
+			// Return color palette
+			assert(scheme_map.find(colorScheme) != scheme_map.end());
+			return scheme_map[colorScheme];
 		}
 	}
 
@@ -220,19 +255,19 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<ImGuiStyle> createStyle(const IMGuiServiceConfiguration& config)
+	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette)
 	{
 		// Get ImGUI colors
-		ImVec4 IMGUI_NAPDARK(config.mColors.mDarkColor, 1.0f);
-		ImVec4 IMGUI_NAPBACK(config.mColors.mBackgroundColor, 0.94f);
-		ImVec4 IMGUI_NAPMODA(config.mColors.mDarkColor, 0.85f);
-		ImVec4 IMGUI_NAPFRO1(config.mColors.mFront1Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO2(config.mColors.mFront2Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO3(config.mColors.mFront3Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO4(config.mColors.mFront4Color, 1.0f);
-		ImVec4 IMGUI_NAPHIG1(config.mColors.mHighlightColor1, 1.0f);
-		ImVec4 IMGUI_NAPHIG2(config.mColors.mHighlightColor2, 1.0f);
-		ImVec4 IMGUI_NAPHIG3(config.mColors.mHighlightColor3, 1.0f);
+		ImVec4 IMGUI_NAPDARK(palette.mDarkColor, 1.0f);
+		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
+		ImVec4 IMGUI_NAPMODA(palette.mDarkColor, 0.85f);
+		ImVec4 IMGUI_NAPFRO1(palette.mFront1Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO2(palette.mFront2Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO3(palette.mFront3Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO4(palette.mFront4Color, 1.0f);
+		ImVec4 IMGUI_NAPHIG1(palette.mHighlightColor1, 1.0f);
+		ImVec4 IMGUI_NAPHIG2(palette.mHighlightColor2, 1.0f);
+		ImVec4 IMGUI_NAPHIG3(palette.mHighlightColor3, 1.0f);
 
 		// Create style
 		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
@@ -610,8 +645,8 @@ namespace nap
 
 	const nap::gui::ColorPalette& IMGuiService::getColors() const
 	{
-		assert(mConfiguration != nullptr);
-		return mConfiguration->mColors;
+		assert(mColorPalette != nullptr);
+		return *mColorPalette;
 	}
 
 
@@ -640,6 +675,10 @@ namespace nap
 			if (!loadIcon(icon_name, getModule(), error))
 				return false;
 		}
+
+		// Get palette associated with scheme
+		mColorPalette = &getPalette(mConfiguration->mColorScheme, mConfiguration->mCustomColors);
+
 		return true;
 	}
 
@@ -745,7 +784,7 @@ namespace nap
 			mFontAtlas = createFontAtlas(font_size, font_file);
 
 			// Create style
-			mStyle = createStyle(*getConfiguration<IMGuiServiceConfiguration>());
+			mStyle = createStyle(getColors());
 
 			// Create context using font & style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));

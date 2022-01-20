@@ -76,8 +76,8 @@ namespace nap
 			Light		= 0,		///< Lighter color scheme
 			Dark		= 1,		///< Darker color scheme (default)
 			HyperDark	= 2,		///< High contrast dark color scheme
-			Classic		= 3,		///< Classic color scheme 
-			Default		= Dark		///< Default = Dark color scheme
+			Classic		= 3,		///< Classic color scheme
+			Custom		= 4			///< Custom color scheme
 		};
 
 		/**
@@ -107,10 +107,11 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 
 	public:
-		float mFontSize = 17.0f;								///< Property: 'FontSize' Gui font size
-		float mScale = 1.0f;									///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
-		std::string mFontFile = "";								///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
-		gui::ColorPalette mColors;								///< Property: 'Colors' Gui colors
+		float mFontSize = 17.0f;										///< Property: 'FontSize' Gui font size
+		float mScale = 1.0f;											///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
+		std::string mFontFile = "";										///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
+		gui::EColorScheme mColorScheme = gui::EColorScheme::Dark;		///< Property: 'ColorScheme' The color scheme to use (dark, light, custom etc.)
+		gui::ColorPalette mCustomColors;								///< Property: 'Colors' Gui color overrides if scheme is set to custom
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
 	 
@@ -386,6 +387,9 @@ namespace nap
 		IMGuiServiceConfiguration* mConfiguration = nullptr;
 		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
 		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
+
+		// Color palette
+		const gui::ColorPalette* mColorPalette = nullptr;
 
 		// Icons
 		std::unordered_map<std::string, std::unique_ptr<Icon>> mIcons;
