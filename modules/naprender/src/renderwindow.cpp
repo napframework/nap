@@ -517,9 +517,6 @@ namespace nap
 		for (VkSemaphore semaphore : mRenderFinishedSemaphores)
 			vkDestroySemaphore(mDevice, semaphore, nullptr);
 
-		for (VkSemaphore semaphore : mRenderFinishedSemaphoresCompute)
-			vkDestroySemaphore(mDevice, semaphore, nullptr);
-
 		// Destroy window surface
 		if (mSurface != VK_NULL_HANDLE)
 		{
@@ -594,15 +591,6 @@ namespace nap
 		// Create frame / GPU synchronization objects
 		if (!createSyncObjects(mDevice, mImageAvailableSemaphores, mRenderFinishedSemaphores, mRenderService->getMaxFramesInFlight(), errorState))
 			return false;
-
-		VkSemaphoreCreateInfo semaphoreInfo = {};
-		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		mRenderFinishedSemaphoresCompute.resize(mRenderService->getMaxFramesInFlight());
-		for (size_t i = 0; i < mRenderService->getMaxFramesInFlight(); i++)
-		{
-			if (!errorState.check(vkCreateSemaphore(mRenderService->getDevice(), &semaphoreInfo, nullptr, &mRenderFinishedSemaphoresCompute[i]) == VK_SUCCESS, "Failed to create sync objects"))
-				return false;
-		}
 
 		// Add window to render service
 		if (!mRenderService->addWindow(*this, errorState))

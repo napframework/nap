@@ -285,7 +285,7 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": true,
+            "SampleShading": false,
             "Title": "ComputeParticlesDemo",
             "Width": 1280,
             "Height": 720,

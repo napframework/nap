@@ -286,7 +286,6 @@ namespace nap
 		std::vector<VkCommandBuffer>	mCommandBuffers;
 		std::vector<VkSemaphore>		mImageAvailableSemaphores;
 		std::vector<VkSemaphore>		mRenderFinishedSemaphores;
-		std::vector<VkSemaphore>		mRenderFinishedSemaphoresCompute;
 		std::vector<int>				mImagesInFlight;
 		VkPresentModeKHR				mPresentationMode = VK_PRESENT_MODE_MAILBOX_KHR;
 		ImageData						mDepthImage;
