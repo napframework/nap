@@ -264,7 +264,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumBoids": 2000,
+                    "NumBoids": 1000,
                     "BoidSize": "BoidSizeParameter",
                     "ViewRadius": "ViewRadiusParameter",
                     "AvoidRadius": "AvoidRadiusParameter",
@@ -473,7 +473,7 @@
         {
             "Type": "nap::Mat4GPUBuffer",
             "mID": "Mat4GPUBuffer_BoidTransforms",
-            "Count": 2000,
+            "Count": 1000,
             "Usage": "Static",
             "DescriptorType": "Storage",
             "FillPolicy": "",
@@ -933,7 +933,7 @@
                         }
                     ]
                 },
-                "Count": 2000
+                "Count": 1000
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
@@ -1022,7 +1022,7 @@
                         }
                     ]
                 },
-                "Count": 2000
+                "Count": 1000
             },
             "Usage": "Static",
             "DescriptorType": "Storage",

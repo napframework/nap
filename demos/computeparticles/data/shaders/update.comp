@@ -98,7 +98,7 @@ void main()
 	subo_out.particles[gl_GlobalInvocationID.x] = p;
 
 	// Create the position vertices
-	float extent = ubo.particleSize * 0.5;
+	float extent = ubo.particleSize * 0.25;
 
 	// Get rectangle positions
 	vec4 edges[4];

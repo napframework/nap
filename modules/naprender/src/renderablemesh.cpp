@@ -83,6 +83,28 @@ namespace nap
 	}
 
 
+	int RenderableMesh::getVertexBufferBindingIndex(std::string meshVertexAttributeID) const
+	{
+		GPUMesh& gpu_mesh = mMesh->getMeshInstance().getGPUMesh();
+		const Material& material = mMaterialInstance->getMaterial();
+
+		int binding = 0;
+		for (auto& kvp : material.getShader().getAttributes())
+		{
+			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
+			assert(material_binding != nullptr);
+
+			// Override the position mesh attribute
+			if (material_binding->mMeshAttributeID == meshVertexAttributeID)
+				return binding;
+
+			++binding;
+		}
+		assert(false);
+		return -1;
+	}
+
+
 	bool RenderableMesh::operator==(const RenderableMesh& rhs) const
 	{
 		return mMaterialInstance == rhs.mMaterialInstance && mMesh == rhs.mMesh;

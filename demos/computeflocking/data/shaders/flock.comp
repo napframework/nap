@@ -41,17 +41,17 @@ struct Boid
 
 layout(std430) buffer BoidBuffer_In
 {
-	Boid boids[2000];
+	Boid boids[1000];
 } subo_in;
 
 layout(std430) buffer BoidBuffer_Out
 {
-	Boid boids[2000];
+	Boid boids[1000];
 } subo_out;
 
 layout(std430) buffer MatrixBuffer
 {
-	mat4 transforms[2000];
+	mat4 transforms[1000];
 };
 
 

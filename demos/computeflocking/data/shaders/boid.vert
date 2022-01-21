@@ -20,7 +20,7 @@ uniform Vert_UBO
 // STORAGE
 layout(std430) buffer MatrixBuffer
 {
-	mat4 transforms[2000];
+	mat4 transforms[1000];
 };
 
 // Input Vertex Attributes
@@ -29,7 +29,7 @@ in vec3 in_Normals;
 
 out vec3 pass_Position;
 out vec3 pass_Normals;
-out vec3 pass_Uv;
+//out vec3 pass_Uv;
 out int pass_Id;
 
 void main(void)

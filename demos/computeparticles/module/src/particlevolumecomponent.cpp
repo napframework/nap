@@ -245,21 +245,26 @@ namespace nap
 
 		// Bind shader descriptors
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
-
-		// Bind vertex buffers
-		const std::vector<VkBuffer>& vertex_buffers = mRenderableMesh.getVertexBuffers();
-		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
 		
 		// Find storage buffer uniform in the material instance resource, else the material resource
 		StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform(uniform::vertexBufferStruct);
 		if (vertex_struct == nullptr)
 			vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
 
+		// Get storage buffer handle
 		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniform<StorageUniformVec4BufferInstance>(uniform::vertices);
 		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
 
-		std::vector<VkBuffer> vertex_buffers_override = { storage_buffer, vertex_buffers[1], vertex_buffers[2] };
-		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers_override.size(), vertex_buffers_override.data(), offsets.data());
+		// Override position vertex attribute buffer with storage buffer
+		std::vector<VkBuffer> vertex_buffers = mRenderableMesh.getVertexBuffers();
+		int position_attr_binding_idx = mRenderableMesh.getVertexBufferBindingIndex(vertexid::position);
+		vertex_buffers[position_attr_binding_idx] = storage_buffer;
+
+		// Get offsets
+		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+
+		// Bind buffers
+		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
@@ -277,11 +282,11 @@ namespace nap
 		vkCmdSetLineWidth(commandBuffer, mLineWidth);
 
 		// Draw meshes
-		MeshInstance& mesh_instance = getMeshInstance();
-		GPUMesh& mesh = mesh_instance.getGPUMesh();
+		const MeshInstance& mesh_instance = getMeshInstance();
+		const GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(index);
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}

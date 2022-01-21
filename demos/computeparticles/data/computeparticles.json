@@ -126,10 +126,10 @@
                         }
                     },
                     "NumParticles": 100000,
-                    "Size": 0.03999999910593033,
-                    "RotationSpeed": 0.5,
-                    "Velocity": 0.5,
-                    "VelocityVariation": 0.75
+                    "Size": 0.1,
+                    "RotationSpeed": 5.0,
+                    "Velocity": 0.75,
+                    "VelocityVariation": 0.85
                 },
                 {
                     "Type": "nap::TransformComponent",
