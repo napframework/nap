@@ -67,7 +67,10 @@ namespace nap
 		const std::vector<VkBuffer>& getVertexBuffers();
 		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const			{ return mVertexBufferOffsets; }
 
-		int RenderableMesh::getVertexBufferBindingIndex(std::string meshVertexAttributeID) const;
+		/**
+		 * 
+		 */
+		int getVertexBufferBindingIndex(std::string meshVertexAttributeID) const;
 
 	protected:
 		/**
