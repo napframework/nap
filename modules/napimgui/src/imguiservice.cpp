@@ -108,7 +108,7 @@ namespace nap
 			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
 			{
 				{EColorScheme::Light, {
-					{ 0xCD, 0xCD, 0xC3 }, { 0xF5, 0xF5, 0xF3 }, { 0xA7, 0xA7, 0x9E },
+					{ 0xCD, 0xCD, 0xC3 }, { 0xF5, 0xF5, 0xF3 }, { 0xa4, 0xa3, 0x9b },
 					{ 0xEC, 0xFF, 0xD3 }, { 0x8D, 0x8B, 0x84 }, { 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
 					{ 0xFF, 0x50, 0x50 }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xA8, 0x00 }}
 				},
@@ -323,7 +323,7 @@ namespace nap
 		style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;

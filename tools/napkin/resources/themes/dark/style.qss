@@ -118,7 +118,7 @@ QLineEdit:focus {
 QScrollBar:horizontal,
 QScrollBar:vertical {
     border-radius: 0px;
-    background: @dark1;
+    background: @dark2;
     width: 7px;
 }
 
@@ -129,7 +129,7 @@ QScrollBar::handle:vertical {
 }
 QScrollBar::handle:horizontal:hover,
 QScrollBar::handle:vertical:hover {
-    background: @front2;
+    background: @front3;
     border-radius: 0px;
 }
 

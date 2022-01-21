@@ -41,7 +41,7 @@ QAbstractScrollArea {
 }
 
 QHeaderView:section {
-    color: @front2;
+    color: @front3;
     background-color: @header;
     border: 0;
     padding-left: 4px;
@@ -118,7 +118,7 @@ QLineEdit:focus {
 QScrollBar:horizontal,
 QScrollBar:vertical {
     border-radius: 0px;
-    background: @dark1;
+    background: @dark2;
     width: 7px;
 }
 
@@ -154,12 +154,12 @@ QPushButton, QToolButton {
 }
 
 QPushButton:hover {
-    background: @front1;
+    background: @highlight1;
     color: @front3;
 }
 
 QPushButton:pressed {
-    background: @front3;
+    background: @highlight1;
     color: @dark1;
 }
 
