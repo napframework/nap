@@ -306,11 +306,12 @@ namespace nap
 		style->ChildRounding = 0.0f;
         style->WindowTitleAlign = { 0.5f, 0.5f };
 		style->PopupBorderSize = 0.0f;
+		style->TabRounding = 0.0f;
 
 		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
-		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
+		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
 		style->Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
@@ -339,9 +340,9 @@ namespace nap
 		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
