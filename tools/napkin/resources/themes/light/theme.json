@@ -3,32 +3,32 @@
   "stylesheet": "style.qss",
   "logColors": 
   {
-    "fine": "#73748e",
-    "debug": "#8B8CA0",
-    "info": "#b0b2cb",
-    "warn": "#b9918d",
-    "error": "#C86969",
-    "fatal": "#ff4456"
+    "fine": "#8D8B84",
+    "debug": "#8D8B84",
+    "info": "#2D2D2D",
+    "warn": "#FFA800",
+    "error": "#FF5050",
+    "fatal": "#FF5050"
   },
   "colors": 
   {
-    "highlight1": "#C86969",
+    "highlight1": "#FF5050",
     "highlight2": "#D6FFA3",
-    "highlight3": "#FFEA30",
-    "background1": "#2D2E42",
-    "background2": "#3C3d4D",
-    "dark1": "#111426",
-    "dark2": "#171b33",
-    "front1": "#52546A",
-    "front2": "#5D5E73",
-    "front3": "#8B8CA0",
-    "front4": "#DEDFEC",
-    "header": "#252638",
+    "highlight3": "#FFA800",
+    "background1": "#CDCDC3",
+    "background2": "#A7A79E",
+    "dark1": "#F5F5F3",
+    "dark2": "#F5F5F3",
+    "front1": "#ECFFD3",
+    "front2": "#8D8B84",
+    "front3": "#2D2D2D",
+    "front4": "#000000",
+    "header": "#A7A79E",
     "status": "#444",
-    "componentWithOverrides": "#3C3D4D",
-    "instanceProperty": "#2D2E42",
-    "overriddenInstanceProperty": "#3C3D4D",
-    "dimmedItem": "#5D5E73"
+    "componentWithOverrides": "#FF5050",
+    "instanceProperty": "#CDCDC3",
+    "overriddenInstanceProperty": "#FF5050",
+    "dimmedItem": "#8D8B84"
   },
   "fonts":
   {
@@ -36,3 +36,4 @@
     "font2": "Manrope"
   }
 }
+

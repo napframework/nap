@@ -7,18 +7,23 @@ QWidget
 {
     font-family: "@font1";
     font-size: 13px;
-    selection-background-color:@front3;
-    selection-color: @dark1;
+    selection-background-color:@highlight1;
+    selection-color: @front4;
     border: none;
 }
 
 QMenuBar {
-    color: @front4;
+    color: @front3;
+}
+
+QMenuBar::item:selected {
+    color: @dark1;
+    background: @highlight1;
 }
 
 QMenu {
     background-color: @dark2;
-    color: @front4;
+    color: @front3;
 }
 
 QDialog, QLabel {
@@ -64,7 +69,7 @@ QDockWidget {
     font-size: 15px;
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
-    /*padding: 10px;*/
+    background: @front1;
 }
 
 QDockWidget::close-button,QDockWidget::float-button{
@@ -89,7 +94,7 @@ QDockWidget::float-button{
 
 QDockWidget::title {
     text-align: left;
-    background: @front2;
+    background: @front1;
     padding: 4px;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
@@ -102,27 +107,29 @@ QLineEdit {
     padding-right: 10px;
     background: @dark2;
     color: @front3;
+    selection-background-color: @front2;
+    selection-color: @dark1;
 }
 
 QLineEdit:focus {
-    color: @front4;
     background: @dark1;
 }
 
 QScrollBar:horizontal,
 QScrollBar:vertical {
     border-radius: 0px;
-    background: @header;
+    background: @dark1;
+    width: 7px;
 }
 
 QScrollBar::handle:horizontal,
 QScrollBar::handle:vertical {
-    background: @front1;
+    background: @front2;
     border-radius: 0px;
 }
 QScrollBar::handle:horizontal:hover,
 QScrollBar::handle:vertical:hover {
-    background: @front2;
+    background: @front3;
     border-radius: 0px;
 }
 
@@ -147,12 +154,15 @@ QPushButton, QToolButton {
 }
 
 QPushButton:hover {
-    background: @front3;
-}
-QPushButton:pressed {
-    background: @dark1;
+    background: @front1;
     color: @front3;
 }
+
+QPushButton:pressed {
+    background: @front3;
+    color: @dark1;
+}
+
 QPushButton:!enabled {
     background-color: @dark2;
     color: @dark1;
@@ -163,9 +173,9 @@ QTabBar {
 }
 
 QTabBar:tab {
-    padding: 2px 6px 2px 6px;
+    padding: 2px 12px 2px 12px;
     color: @front4;
-    background: @front2;
+    background: @highlight1;
     border: 0;
 }
 
@@ -183,3 +193,27 @@ QGraphicsView {
     background: @front2;
 }
 
+QComboBox {
+    background: @dark1;
+    color: @front3;
+}
+
+QComboBox:on  {
+    color: @front3;
+}
+
+QComboBox:off  {
+    color: @front3;
+}
+
+QComboBox QAbstractItemView {
+    background: @dark1;
+    color: @front3;
+}
+
+QSpinBox {
+    background: @dark1;
+    selection-background-color: @front2;
+    selection-color: @dark1;
+    color:@front3;
+}
