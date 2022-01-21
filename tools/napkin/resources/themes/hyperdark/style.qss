@@ -124,7 +124,7 @@ QScrollBar:vertical {
 
 QScrollBar::handle:horizontal,
 QScrollBar::handle:vertical {
-    background: @front2;
+    background: @front1;
     border-radius: 0px;
 }
 QScrollBar::handle:horizontal:hover,
@@ -158,7 +158,7 @@ QPushButton:hover {
 }
 
 QPushButton:pressed {
-    background: @highlight1;
+    background: @front1;
     color: @front4;
 }
 
