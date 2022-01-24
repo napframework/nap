@@ -135,9 +135,7 @@ namespace nap
 
 		// Display some extra info
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"Play the sequence to animate the parameters");
+		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "Play the sequence to animate the parameters");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 

@@ -69,8 +69,7 @@ namespace nap
         ImGui::Begin("Python demo");
 
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		if (ImGui::CollapsingHeader("Controls"))
@@ -104,7 +103,7 @@ namespace nap
 
 			ImGui::Text("The PythonScript returns: ");
 			ImGui::SameLine();
-			ImGui::TextColored(clr, utility::stringFormat("%f", returnValue).c_str());
+			ImGui::TextColored(mGuiService->getColors().mHighlightColor2, utility::stringFormat("%f", returnValue).c_str());
 		}
         ImGui::End();
 

@@ -74,8 +74,12 @@ namespace nap
 		// Add some GUI elements
 		ImGui::Begin("Information");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, utility::stringFormat("License: %s", mLicenseValid ? "valid" : "invalid").c_str());
+		if (mLicenseValid) {
+			ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "License: valid");
+		}
+		else {
+			ImGui::TextColored(mGuiService->getColors().mHighlightColor1, "License: invalid");
+		}
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		if (ImGui::CollapsingHeader("License"))
 		{

@@ -109,6 +109,5 @@ namespace nap
 		ResourcePtr<ParameterFloat> mLineSizeParam = nullptr;			//< Parameter that controls line size
 		ResourcePtr<ParameterVec2> mLinePositionParam = nullptr;		//< Parameter that controls the line position
 		ResourcePtr<ParameterGUI> mParameterGUI = nullptr;				//< Draws the parameters to screen
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }
