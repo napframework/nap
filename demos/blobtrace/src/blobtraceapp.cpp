@@ -123,11 +123,11 @@ namespace nap
 
 			// Set color 2
 			auto* clr_two_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
-			clr_two_uniform->setValue(theme.mBackgroundColor.convert<RGBColorFloat>());
+			clr_two_uniform->setValue({0.125f, 0.125f, 0.125f});
 
 			// Set edge color
 			auto* clr_edge_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("colorEdge");
-			clr_edge_uniform->setValue(theme.mFront4Color.convert<RGBColorFloat>());
+			clr_edge_uniform->setValue({1.0f, 1.0f, 1.0f});
 		}
 
 		// Increment time based on velocity
