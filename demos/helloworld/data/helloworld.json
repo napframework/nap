@@ -116,7 +116,7 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
                     "Visible": true,
-                    "Text": "Welcome to NAP",
+                    "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
