@@ -54,6 +54,9 @@ namespace nap
 		// Get entity that holds the camera
 		mCameraEntity = scene->findEntity("CameraEntity");
 
+		// Set back buffer color
+		mRenderWindow->setClearColor({ mGuiService->getColors().mDarkColor.convert<RGBColorFloat>(), 1.0f });
+
 		return true;
 	}
 	
@@ -70,8 +73,7 @@ namespace nap
 		// Add some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "'f'=fullscreen, 'esc'=quit");
+		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "'f'=fullscreen, 'esc'=quit");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 	
 		// Color manipulation
@@ -104,10 +106,7 @@ namespace nap
 	 * But since we only have 2 objects it's easy enough to just specify them individually
 	 */
 	void VinylApp::render()
-	{
-		// Set back buffer color
-		mRenderWindow->setClearColor({ 0.0705f, 0.49f, 0.5647f, 1.0f });
-		
+	{		
 		// Get vinyl meshes
 		std::vector<nap::RenderableComponentInstance*> vinyl_meshes;
 		for (const nap::EntityInstance* e : mModelEntity->getChildren())
@@ -221,10 +220,18 @@ namespace nap
 		// Get size
 		glm::ivec2 window_size = { mRenderWindow->getWidthPixels(), mRenderWindow->getHeightPixels()} ;
 		
-		// Now update background texture
+		// Now update background plane location
 		nap::TransformComponentInstance& xform_comp = mBackgroundEntity->getComponent<nap::TransformComponentInstance>();
 		xform_comp.setScale(glm::vec3(window_size.x, window_size.y, 1.0f));
 		xform_comp.setTranslate(glm::vec3(float(window_size.x) / 2.0f, float(window_size.y) / 2.0f, -900.0f));
+
+		// Set colors for plane gradient
+		auto& render_comp = mBackgroundEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto* ubo = render_comp.getMaterialInstance().getOrCreateUniform("UBO");
+		auto* color_one = ubo->getOrCreateUniform<UniformVec3Instance>("colorOne");
+		auto* color_two = ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
+		color_one->setValue(mGuiService->getColors().mFront4Color.convert<RGBColorFloat>());
+		color_two->setValue(mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>());
 	}
 	
 	

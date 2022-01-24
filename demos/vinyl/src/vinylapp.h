@@ -115,9 +115,6 @@ namespace nap
 
 		// Color of the vinyl record
 		nap::RGBColorFloat			mRecordColor = nap::RGBColorFloat(0.07f, 0.07f, 0.07f);
-		
-		// GUI
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 
 		// Screenshot
 		ObjectPtr<Snapshot> mSnapshot = nullptr;						//< Takes screenshot

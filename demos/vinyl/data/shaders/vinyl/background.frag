@@ -11,15 +11,14 @@ out vec4 out_Color;
 uniform UBO
 {
 	uniform float intensity;
+	uniform vec3 colorOne;
+	uniform vec3 colorTwo;
 } ubo;
-
-// Samplers
-uniform sampler2D	backgroundTexture;
 
 void main(void)
 {
 	// Get color from texture
-	vec3 color = texture(backgroundTexture, pass_Uvs.xy).rgb;
+	vec3 color = mix(ubo.colorOne, ubo.colorTwo, pass_Uvs.y);
 
 	// Set output color
 	out_Color = vec4(color * ubo.intensity, 1.0);
