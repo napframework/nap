@@ -21,14 +21,14 @@ uniform UBO
 in vec3 pass_Position;
 in vec3 pass_Normals;
 //in vec3 pass_Uv;
-flat in int pass_Id;
+flat in uint pass_Id;
 
 out vec4 out_Color;
 
 
 void main(void)
 {
-	int boid_id = int(pass_Id+0.1) % 2;
+	uint boid_id = uint(pass_Id+0.1) % 2;
 	vec3 boid_color = vec3(float(boid_id+1)*0.5, 0.0, 0.0);
 
 	// Surface to camera normal     

@@ -36,7 +36,7 @@ in vec3 in_Normals;
 out vec3 pass_Position;
 out vec3 pass_Normals;
 //out vec3 pass_Uv;
-out int pass_Id;
+out uint pass_Id;
 
 
 // Rotate vector v with quaterion q

@@ -961,8 +961,8 @@
                             ]
                         },
                         {
-                            "Type": "nap::UniformInt",
-                            "mID": "UniformInt_9fe73999",
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_7fb5fd14",
                             "Name": "numFlockMates",
                             "Value": 0
                         }
@@ -1061,8 +1061,8 @@
                             ]
                         },
                         {
-                            "Type": "nap::UniformInt",
-                            "mID": "UniformInt_9fe73999b",
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_dde288a6",
                             "Name": "numFlockMates",
                             "Value": 0
                         }
@@ -1073,7 +1073,7 @@
             "Usage": "Static",
             "DescriptorType": "Storage",
             "FillPolicy": "",
-            "Clear": false
+            "Clear": true
         },
         {
             "Type": "nap::StructGPUBuffer",
@@ -1113,7 +1113,7 @@
             "Usage": "Static",
             "DescriptorType": "Storage",
             "FillPolicy": "",
-            "Clear": false
+            "Clear": true
         }
     ]
 }

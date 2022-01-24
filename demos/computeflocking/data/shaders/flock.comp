@@ -19,7 +19,7 @@ struct Boid
 	int padding[3];
 
 	// Maintain 16 byte-alignment
-	int numFlockMates;
+	uint numFlockMates;
 };
 
 struct BoidTransform
@@ -133,6 +133,16 @@ bool isZero(vec3 v)
 }
 
 
+// Returns a zero vector instead of nan if v cannot be normalized, otherwise normalizes v
+vec3 safeNormalize(vec3 v)
+{
+	if (!isZero(v))
+		return normalize(v);
+	else
+		return vec3(0.0);
+}
+
+
 // Clamps the magnitude of v between min and max
 vec3 clampMagnitude(vec3 v, float min, float max)
 {
@@ -145,13 +155,10 @@ vec3 clampMagnitude(vec3 v, float min, float max)
 }
 
 
-// Cheap linear interpolation
+// Returns a steering vector towards targetDir
 vec3 steerTowards(vec3 targetDir, vec3 velocity, float maxSpeed)
 {
-	if (isZero(targetDir))
-		return velocity;
-
-	vec3 v = normalize(targetDir) * maxSpeed - velocity;
+	vec3 v = !isZero(targetDir) ? normalize(targetDir) * maxSpeed - velocity : velocity;
 	return clampMagnitude(v, length(v), ubo.maxSteerForce);
 }
 
@@ -164,30 +171,34 @@ void main()
 	// Read current boid
 	Boid b = subo_in.boids[id];
 
-	// Reset num flock mates
+	// Reset boid
+	b.avoidanceHeading = vec4(0.0);
+	b.flockHeading = vec4(0.0);
+	b.flockCenter = vec4(0.0);
 	b.numFlockMates = 0;
 
 	// Update force variables
 	for (int idx = 0; idx < ubo.numBoids; idx++) 
 	{
-		if (id != idx) 
+		if (idx != id)
 		{
-			vec4 other_position = subo_in.boids[idx].position;
-			vec4 other_direction = normalize(subo_in.boids[idx].velocity);
+			vec4 other_pos = subo_in.boids[idx].position;
+			vec4 other_dir = subo_in.boids[idx].velocity;
+			other_dir = vec4(safeNormalize(other_dir.xyz), 1.0);
 
-			vec4 offset = other_position - b.position;
-			float l1 = dot(offset.xyz, offset.xyz);
+			vec3 offset = other_pos.xyz - b.position.xyz;
+			float l1 = dot(offset, offset);
 
 			if (l1 < ubo.viewRadius * ubo.viewRadius) 
 			{
 				b.numFlockMates++;
-				b.flockHeading += other_direction;
-				b.flockCenter += other_position;
+				b.flockHeading += other_dir;
+				b.flockCenter += other_pos;
 
 				if (l1 < ubo.avoidRadius * ubo.avoidRadius)
 				{
 					// Note that this can be a zero vector
-					b.avoidanceHeading -= offset / l1;
+					b.avoidanceHeading -= vec4(offset, 1.0) / l1;
 				}
 			}
 		}
@@ -198,7 +209,7 @@ void main()
 	vec3 acceleration = steerTowards(offset.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.targetWeight;
 
 	// Calculate forces
-	if (b.numFlockMates > 0) 
+	if (b.numFlockMates > 0) 	
 	{
 		vec4 average_flock_center = b.flockCenter / b.numFlockMates;
 		vec4 average_flock_heading = b.flockHeading / b.numFlockMates;
@@ -213,14 +224,13 @@ void main()
 		acceleration += seperation;
 	}
 
-	// Write current boid
+	// Calculate velocity
 	vec3 vel = clampMagnitude(b.velocity.xyz + acceleration * ubo.deltaTime, ubo.minSpeed, ubo.maxSpeed);
-	
-	if (!isZero(vel))
-		b.velocity = mix(vec4(vel, 0.0), b.velocity, 0.5);
 
-	b.direction = vec4(steerTowards(b.direction.xyz, b.velocity.xyz, 0.005), 0.0);
-	b.position += b.velocity * ubo.deltaTime;
+	// Write current boid
+	b.velocity.xyz = mix(vel, b.velocity.xyz, 0.5);
+	b.direction.xyz = steerTowards(b.direction.xyz, b.velocity.xyz, 0.005);
+	b.position.xyz += b.velocity.xyz * ubo.deltaTime;
 
 	subo_out.boids[id] = b;
 

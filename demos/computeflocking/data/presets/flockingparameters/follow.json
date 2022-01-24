@@ -16,7 +16,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "ViewRadiusParameter",
                     "Name": "ViewRadius",
-                    "Value": 0.5879999995231628,
+                    "Value": 1.3480000495910645,
                     "Minimum": 0.0,
                     "Maximum": 2.0
                 },
@@ -24,7 +24,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "AvoidRadiusParameter",
                     "Name": "AvoidRadius",
-                    "Value": 0.3499999940395355,
+                    "Value": 1.1030000448226929,
                     "Minimum": 0.0,
                     "Maximum": 2.0
                 },
@@ -40,7 +40,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "MaxSpeedParameter",
                     "Name": "MaxSpeed",
-                    "Value": 3.0,
+                    "Value": 3.946000099182129,
                     "Minimum": 0.0,
                     "Maximum": 10.0
                 },
@@ -48,7 +48,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "MaxSteerForceParameter",
                     "Name": "MaxSteerForce",
-                    "Value": 2.138000011444092,
+                    "Value": 2.2160000801086427,
                     "Minimum": 0.0,
                     "Maximum": 8.0
                 },
@@ -56,7 +56,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "TargetWeightParameter",
                     "Name": "TargetWeight",
-                    "Value": 0.949999988079071,
+                    "Value": 0.328000009059906,
                     "Minimum": 0.0,
                     "Maximum": 2.0
                 },
@@ -64,7 +64,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "AlignmentWeightParameter",
                     "Name": "AlignmentWeight",
-                    "Value": 0.8209999799728394,
+                    "Value": 0.04699999839067459,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -72,7 +72,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "CohesionWeightParameter",
                     "Name": "CohesionWeight",
-                    "Value": 0.656000018119812,
+                    "Value": 0.2669999897480011,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -80,7 +80,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "SeparationWeightParameter",
                     "Name": "SeparationWeight",
-                    "Value": 0.8169999718666077,
+                    "Value": 0.6940000057220459,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 }
