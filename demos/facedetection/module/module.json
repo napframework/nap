@@ -4,7 +4,8 @@
     "RequiredModules": [
         "mod_naprender",
         "mod_napopencv",
-        "mod_napcameracontrol"
+        "mod_napcameracontrol",
+        "mod_napimgui"
     ],
     "WindowsDllSearchPaths": []
 }
