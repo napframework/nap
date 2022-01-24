@@ -15,6 +15,13 @@ RTTI_BEGIN_ENUM(nap::EPortalEventType)
 	RTTI_ENUM_VALUE(nap::EPortalEventType::Invalid, "Invalid")
 RTTI_END_ENUM
 
+RTTI_BEGIN_ENUM(nap::EPortalItemButtonEvent)
+	RTTI_ENUM_VALUE(nap::EPortalItemButtonEvent::Click, "Click"),
+	RTTI_ENUM_VALUE(nap::EPortalItemButtonEvent::Press, "Press"),
+	RTTI_ENUM_VALUE(nap::EPortalItemButtonEvent::Release, "Release"),
+	RTTI_ENUM_VALUE(nap::EPortalItemButtonEvent::Invalid, "Invalid")
+RTTI_END_ENUM
+
 namespace nap
 {
 	std::string getPortalEventTypeString(const EPortalEventType& type)
@@ -29,6 +36,21 @@ namespace nap
 		rtti::TypeInfo enum_type = RTTI_OF(EPortalEventType);
 		rtti::Variant var = enum_type.get_enumeration().name_to_value(type.data());
 		return var.is_valid() ? var.get_value<EPortalEventType>() : EPortalEventType::Invalid;
+	}
+
+
+	std::string getPortalItemButtonEventString(const EPortalItemButtonEvent& event)
+	{
+		rtti::TypeInfo enum_type = RTTI_OF(EPortalItemButtonEvent);
+		return enum_type.get_enumeration().value_to_name(event).to_string();
+	}
+
+
+	EPortalItemButtonEvent getPortalItemButtonEvent(const std::string& event)
+	{
+		rtti::TypeInfo enum_type = RTTI_OF(EPortalItemButtonEvent);
+		rtti::Variant var = enum_type.get_enumeration().name_to_value(event.data());
+		return var.is_valid() ? var.get_value<EPortalItemButtonEvent>() : EPortalItemButtonEvent::Invalid;
 	}
 
 

@@ -48,6 +48,11 @@
                             "Type": "nap::PortalItemTextArea",
                             "mID": "PortalItemTextArea",
                             "Parameter": "ParameterString2"
+                        },
+                        {
+                            "Type": "nap::PortalItemButton",
+                            "mID": "PortalItemButton",
+                            "Parameter": "ParameterButton"
                         }
                     ]
                 }
