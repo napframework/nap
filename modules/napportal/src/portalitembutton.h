@@ -75,8 +75,11 @@ namespace nap
 		 */
 		virtual APIEventPtr getDescriptor() const override
 		{
+			// Send an "Invalid" event value with the descriptor, so the client can deduce the argument type
+			std::string value = getPortalItemButtonEventString(EPortalItemButtonEvent::Invalid);
 			APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 			event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
+			event->addArgument<APIString>(nap::portal::itemValueArgName, value);
 			return event;
 		};
 
