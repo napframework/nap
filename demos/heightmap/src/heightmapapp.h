@@ -106,11 +106,11 @@ namespace nap
 		float	mNormalOpacity = 0.3;								//< Opacity of the normals
 		float	mNormalLength = 0.5;								//< Length of the normals on screen
 		bool	mBlendNormals = true;								//< If the normal visualization is blended
-		RGBColorFloat mNormalColor = { 1.000f, 1.000f, 1.000f };	//< Color of the normal
-		RGBColorFloat mValleyColor = { 0.176f, 0.180f, 0.258f };	//< Color of the valley
-		RGBColorFloat mPeakColor =	 { 0.784f, 0.411f, 0.411f };	//< Color of the peak
-		RGBColorFloat mHaloColor =	 { 0.545f, 0.549f, 0.627f };	//< Color of the halo
-		RGBColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69};		//< GUI text highlight color
+		RGBColorFloat mNormalColor;									//< Color of the normal
+		RGBColorFloat mValleyColor;									//< Color of the valley
+		RGBColorFloat mPeakColor;									//< Color of the peak
+		RGBColorFloat mHaloColor;									//< Color of the halo
+		RGBAColorFloat mClearColor;									//< Window clear color
 
 		// Value Smoother
 		math::FloatSmoothOperator mBlendSmoother = { 1.0f, 0.5f };	//< smooths blend value over time to target value

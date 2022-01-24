@@ -51,6 +51,15 @@ namespace nap
 		// Select gui window
 		mGuiService->selectWindow(mRenderWindow);
 
+		// Sample initial colors from palette
+		mNormalColor = mGuiService->getColors().mFront4Color.convert<RGBColorFloat>();
+		mValleyColor = mGuiService->getColors().mDarkColor.convert<RGBColorFloat>();
+		mPeakColor = mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>();
+		mHaloColor = mGuiService->getColors().mFront2Color.convert<RGBColorFloat>();
+
+		// Set clear color
+		mRenderWindow->setClearColor({ mGuiService->getColors().mDarkColor.convert<RGBColorFloat>(), 1.0f});
+
 		return true;
 	}
 	
@@ -231,8 +240,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBColorFloat clr = mTextHighlightColor.convert<RGBColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		if (ImGui::CollapsingHeader("Blending"))
