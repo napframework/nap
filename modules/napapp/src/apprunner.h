@@ -152,7 +152,10 @@ namespace nap
 
 #ifdef NAP_ENABLE_PYTHON
 		if (!mCore.initializePython(error))
+		{
+			mCore.shutdownServices();
 			return false;
+		}
 #endif
 		// Change current working directory to directory that contains the data file
 		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
@@ -160,16 +163,22 @@ namespace nap
 		nap::Logger::info("Current working directory: % s", data_dir.c_str());
 
 		// Ensure project data is available
-		if(!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
+		if (!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
 			mCore.getProjectInfo()->getProjectDir().c_str()))
+		{
+			mCore.shutdownServices();
 			return false;
+		}
 
 		// Load project data
 		std::string data_file = utility::getFileName(mCore.getProjectInfo()->getDataFile());
 		nap::Logger::info("Loading data: %s", data_file.c_str());
 		if (!error.check(mCore.getResourceManager()->loadFile(data_file, error),
 			"Failed to load data: %s", data_file.c_str()))
+		{
+			mCore.shutdownServices();
 			return false;
+		}
 
 		// Watch the data directory
 		mCore.getResourceManager()->watchDirectory(data_dir);
