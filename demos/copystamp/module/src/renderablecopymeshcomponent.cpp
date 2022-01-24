@@ -253,7 +253,7 @@ namespace nap
 			for (const auto& vertex : vertices)
 			{
 				// Pick random color for mesh and push to GPU
-				glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
+				glm::vec3 color = mColors[math::random<int>(0, max_rand_color)];
 				mColorUniform->setValue(color);
 
 				// Calculate model matrix

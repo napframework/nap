@@ -91,13 +91,13 @@ namespace nap
 		auto halo = ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor");
 
 		const auto& theme = mGuiService->getColors();
-		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>().toVec3());
-		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>().toVec3());
-		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>().toVec3());
+		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
+		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>());
+		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>());
 
 		// Set text color
 		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
-		text_comp.setColor(theme.mFront4Color.convert<RGBColorFloat>().toVec3());
+		text_comp.setColor(theme.mFront4Color.convert<RGBColorFloat>());
 
 		// Add some gui elements
 		ImGui::Begin("Controls");

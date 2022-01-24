@@ -428,6 +428,12 @@ namespace nap
 		 * @return the color as a vec3 (float)
 		 */
 		glm::vec3 toVec3() const;
+
+		/**
+		 * vec3 conversion function
+		 * @return the color as a vec3 (float)
+		 */
+		operator glm::vec3()													{ return toVec3(); }
 	};
 
 
@@ -513,6 +519,12 @@ namespace nap
 		 *	@return the color as a vec4 (float)
 		 */
 		glm::vec4 toVec4() const;
+
+		/**
+		 * vec4 conversion function
+		 * @return the color as a vec4 (float)
+		 */
+		operator glm::vec4()													{ return toVec4(); }
 	};
 
 	/**

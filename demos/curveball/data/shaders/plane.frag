@@ -12,14 +12,14 @@ in vec3 passPosition;					//< frag world space position
 out vec4 out_Color;
 
 // constants
-const vec3  colorOne  = vec3( 0.545, 0.549, 0.627);
-const vec3  colorTwo  = vec3(0.176,0.180,0.258);
 const float maxOffset = 0.5; 
 
 // Uniform inputs
 uniform UBO
 {
 	uniform float animationValue;
+	uniform vec3  colorOne;
+	uniform vec3  colorTwo;
 } ubo;
 
 // Maps a value from min, max to outmin and outmax
@@ -43,7 +43,7 @@ void main()
 
 	// Now mix the two colors based on that
 	float color_mix = fit(dist, mix_value,mix_value+0.005, 0.0,1.0);
-	vec3 fcolor = mix(colorOne, colorTwo, color_mix);
+	vec3 fcolor = mix(ubo.colorOne, ubo.colorTwo, color_mix);
 
 	// Construct alpha value based on distance to center, creates a nice circle
 	float alpha = fit(dist, maxOffset-0.005,maxOffset, 1.0,0.0);

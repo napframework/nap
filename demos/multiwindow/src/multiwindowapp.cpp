@@ -119,9 +119,9 @@ namespace nap
 		auto halo = ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor");
 
 		const auto& theme = mGuiService->getColors();
-		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>().toVec3());
-		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>().toVec3());
-		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>().toVec3());
+		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
+		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>());
+		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>());
 
 		// Update the gui for all windows
 		updateGUI();
