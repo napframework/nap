@@ -70,6 +70,7 @@ macro(check_raspbian_os RASPBERRY)
         # otherwise, check previous location of bcm_host.h on older Raspbian OS's
         if(NOT RASPBERRY)
             CHECK_INCLUDE_FILES("/opt/vc/include/bcm_host.h" RASPBERRY)
+        endif()
     endif()
 endmacro()
 
