@@ -32,13 +32,13 @@
             "StorageUniforms": [
                 {
                     "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_74ad0e4f",
-                    "Name": "MatrixBuffer",
+                    "mID": "StorageUniformStruct_a4e6c464",
+                    "Name": "TransformBuffer",
                     "StorageUniform": {
-                        "Type": "nap::StorageUniformMat4Buffer",
-                        "mID": "StorageUniformMat4Buffer_f7b7e737",
+                        "Type": "nap::StorageUniformStructBuffer",
+                        "mID": "StorageUniformStructBuffer_a2cf8f2a",
                         "Name": "transforms",
-                        "Buffer": "Mat4GPUBuffer_BoidTransforms"
+                        "Buffer": "StructGPUBuffer_Transforms"
                     }
                 }
             ],
@@ -239,13 +239,13 @@
                         "StorageUniforms": [
                             {
                                 "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_b8ee1069",
-                                "Name": "MatrixBuffer",
+                                "mID": "StorageUniformStruct_21496d61",
+                                "Name": "TransformBuffer",
                                 "StorageUniform": {
-                                    "Type": "nap::StorageUniformMat4Buffer",
-                                    "mID": "StorageUniformMat4Buffer_068bfa9c",
+                                    "Type": "nap::StorageUniformStructBuffer",
+                                    "mID": "StorageUniformStructBuffer_8960d2e2",
                                     "Name": "transforms",
-                                    "Buffer": "Mat4GPUBuffer_BoidTransforms"
+                                    "Buffer": "StructGPUBuffer_Transforms"
                                 }
                             }
                         ],
@@ -471,15 +471,6 @@
             }
         },
         {
-            "Type": "nap::Mat4GPUBuffer",
-            "mID": "Mat4GPUBuffer_BoidTransforms",
-            "Count": 1000,
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "",
-            "Clear": false
-        },
-        {
             "Type": "nap::Material",
             "mID": "BoidTargetPointMaterial",
             "Uniforms": [
@@ -529,7 +520,19 @@
             "Type": "nap::Material",
             "mID": "RenderMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "StorageUniforms": [
+                {
+                    "Type": "nap::StorageUniformStruct",
+                    "mID": "StorageUniformStruct_b5f04729",
+                    "Name": "TransformBuffer",
+                    "StorageUniform": {
+                        "Type": "nap::StorageUniformStructBuffer",
+                        "mID": "StorageUniformStructBuffer_44aae9ca",
+                        "Name": "transforms",
+                        "Buffer": "StructGPUBuffer_Transforms"
+                    }
+                }
+            ],
             "Samplers": [],
             "Shader": "BoidShader",
             "VertexAttributeBindings": [],
@@ -1062,6 +1065,46 @@
                             "mID": "UniformInt_9fe73999b",
                             "Name": "numFlockMates",
                             "Value": 0
+                        }
+                    ]
+                },
+                "Count": 1000
+            },
+            "Usage": "Static",
+            "DescriptorType": "Storage",
+            "FillPolicy": "",
+            "Clear": false
+        },
+        {
+            "Type": "nap::StructGPUBuffer",
+            "mID": "StructGPUBuffer_Transforms",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_686e8d24",
+                    "Name": "TransformBuffer",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_60c73dba",
+                            "Name": "translation",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_ef2a956b",
+                            "Name": "rotation",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
                         }
                     ]
                 },

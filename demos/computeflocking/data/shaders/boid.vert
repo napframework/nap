@@ -4,6 +4,12 @@
 
 #version 450 core
 
+struct BoidTransform
+{
+	vec4 translation;
+	vec4 rotation;
+};
+
 // UNIFORM
 uniform nap
 {
@@ -18,9 +24,9 @@ uniform Vert_UBO
 };
 
 // STORAGE
-layout(std430) buffer MatrixBuffer
+layout(std430) buffer TransformBuffer
 {
-	mat4 transforms[1000];
+	BoidTransform transforms[1000];
 };
 
 // Input Vertex Attributes
@@ -32,23 +38,33 @@ out vec3 pass_Normals;
 //out vec3 pass_Uv;
 out int pass_Id;
 
+
+// Rotate vector v with quaterion q
+vec3 rotate(vec3 v, vec4 q)
+{
+	float l1 = dot(q.xyz, q.xyz);
+	return v * (q.w * q.w - l1) + q.xyz * (dot(v, q.xyz) * 2.0) + cross(q.xyz, v) * (q.w * 2.0);
+}
+
+
 void main(void)
 {
 	// Get transformation
-	mat4 trans = transforms[gl_InstanceIndex];
+	BoidTransform bt = transforms[gl_InstanceIndex];
 	vec4 position = vec4(boidSize * in_Position, 1.0);
+	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, bt.rotation) + bt.translation.xyz, 1.0);
 
 	// Calculate position
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * trans * mvp.modelMatrix * position;
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
 
-	// calculate vertex world space position and set
-	pass_Position = vec3(trans * mvp.modelMatrix * position);
+	// Calculate vertex world space position and set
+	pass_Position = world_position.xyz;
 
-	// calculate normal in world coordinates and pass along
-    mat3 normal_matrix = transpose(inverse(mat3(trans * mvp.modelMatrix)));
-	pass_Normals = normalize(normal_matrix * in_Normals);
+	// Calculate normal in world coordinates and pass along
+	vec4 normal = vec4(in_Normals, 0.0);
+	pass_Normals = normalize(rotate((mvp.modelMatrix * normal).xyz, bt.rotation));
 
-	// Pass uv's 
+	// Pass uv's a
 	//pass_Uv = in_UV0;
 
 	// Pass element id

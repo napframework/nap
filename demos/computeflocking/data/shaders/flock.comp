@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
-layout(local_size_x = 8) in;
+layout(local_size_x = 32) in;
 
 struct Boid
 {
@@ -22,9 +22,14 @@ struct Boid
 	int numFlockMates;
 };
 
+struct BoidTransform
+{
+	vec4 translation;
+	vec4 rotation;
+};
+
 
 // STORAGE
-
 layout(std430) buffer BoidBuffer_In
 {
 	Boid boids[1000];
@@ -35,14 +40,13 @@ layout(std430) buffer BoidBuffer_Out
 	Boid boids[1000];
 } subo_out;
 
-layout(std430) buffer MatrixBuffer
+layout(std430) buffer TransformBuffer
 {
-	mat4 transforms[1000];
+	BoidTransform transforms[1000];
 };
 
 
 // UNIFORM
-
 uniform UBO 
 {
 	vec3 target;
@@ -62,49 +66,61 @@ uniform UBO
 
 
 // CONSTANTS
-
+const float PI = 3.141592;
 const float EPSILON = 0.00001;
 const vec4 QUAT_IDENTITY = vec4(0.0, 0.0, 0.0, 1.0);
-const vec3 FORWARD_AXIS = vec3(0.0, 0.0, -1.0);
-const vec3 UP_AXIS = vec3(0.0, 1.0, 0.0);
-const vec3 X_AXIS = vec3(1.0, 0.0, 0.0);
-const vec3 Y_AXIS = vec3(0.0, 1.0, 0.0);
-const vec3 Z_AXIS = vec3(0.0, 0.0, 1.0);
+const vec3 FORWARD_AXIS = vec3(0.0, 0.0, 1.0);
 
 
-mat4 translate(vec3 d)
+// Returns a quaterion describing a rotation of angle radians over the specified axis
+// Ported from glm::axis
+vec4 angleAxisQuat(float angle, vec3 axis)
 {
-	return mat4(
-		1.0, 0.0, 0.0, 0.0,
-		0.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		d.x, d.y, d.z, 1.0
+	float s = sin(angle*0.5);
+	return vec4(
+		axis.x * s,
+		axis.y * s,
+		axis.z * s,
+		cos(angle * 0.5)
 	);
 }
 
 
-mat4 lookAt(vec3 from, vec3 to)
+// Returns a quaternion describing a rotation from orig to dest
+// Ported from glm::rotation
+vec4 rotationQuat(vec3 orig, vec3 dest)
 {
-	vec3 forward = normalize(to - from);
-	vec3 up = UP_AXIS;
+	float cos_theta = dot(orig, dest);
+	vec3 rot_axis;
 
-	if(abs(forward.x) < EPSILON && abs(forward.z) < EPSILON)
-		up = (forward.y > 0.0) ? vec3(0.0, 0.0, -1.0) : vec3(0.0, 0.0, 1.0);
-	else
-		up = vec3(0.0, 1.0, 0.0);
+	if (cos_theta >= 1.0-EPSILON)
+		return QUAT_IDENTITY;
 
-	vec3 right = normalize(cross(up, forward));
-	up = normalize(cross(forward, right));
+	if (cos_theta < -1.0+EPSILON)
+	{
+		rot_axis = cross(vec3(0.0, 0.0, 1.0), orig);
+		if (dot(rot_axis, rot_axis) < EPSILON)
+			rot_axis = cross(vec3(1.0, 0.0, 0.0), orig);
 
-	return mat4(
-		right.x,	right.y,	right.z,	0.0,
-		up.x,		up.y,		up.z,		0.0,
-		forward.x,	forward.y,	forward.z,	0.0,
-		0.0, 		0.0,		0.0,		1.0
+		rot_axis = normalize(rot_axis);
+		return angleAxisQuat(PI, rot_axis);
+	}
+
+	rot_axis = cross(orig, dest);
+
+	float s = sqrt((1.0 + cos_theta) * 2.0);
+	float inv = 1.0/s;
+
+	return vec4(
+		rot_axis.x * inv,
+		rot_axis.y * inv,
+		rot_axis.z * inv,
+		s * 0.5
 	);
 }
 
 
+// Returns true if v is a zer-vector, otherwise false
 bool isZero(vec3 v)
 {
 	float valid = 1.0;
@@ -117,6 +133,7 @@ bool isZero(vec3 v)
 }
 
 
+// Clamps the magnitude of v between min and max
 vec3 clampMagnitude(vec3 v, float min, float max)
 {
 	if (length(v) > max)
@@ -128,6 +145,7 @@ vec3 clampMagnitude(vec3 v, float min, float max)
 }
 
 
+// Cheap linear interpolation
 vec3 steerTowards(vec3 targetDir, vec3 velocity, float maxSpeed)
 {
 	if (isZero(targetDir))
@@ -139,7 +157,6 @@ vec3 steerTowards(vec3 targetDir, vec3 velocity, float maxSpeed)
 
 
 // SHADER MAIN
-
 void main()
 {
 	uint id = gl_GlobalInvocationID.x;
@@ -159,18 +176,18 @@ void main()
 			vec4 other_direction = normalize(subo_in.boids[idx].velocity);
 
 			vec4 offset = other_position - b.position;
-			float distance_squared = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
+			float l1 = dot(offset.xyz, offset.xyz);
 
-			if (distance_squared < ubo.viewRadius * ubo.viewRadius) 
+			if (l1 < ubo.viewRadius * ubo.viewRadius) 
 			{
 				b.numFlockMates++;
 				b.flockHeading += other_direction;
 				b.flockCenter += other_position;
 
-				if (distance_squared < ubo.avoidRadius * ubo.avoidRadius)
+				if (l1 < ubo.avoidRadius * ubo.avoidRadius)
 				{
-					// Note that this value can be (0.0, 0.0, 0.0)
-					b.avoidanceHeading -= offset / distance_squared;
+					// Note that this can be a zero vector
+					b.avoidanceHeading -= offset / l1;
 				}
 			}
 		}
@@ -198,17 +215,22 @@ void main()
 
 	// Write current boid
 	vec3 vel = clampMagnitude(b.velocity.xyz + acceleration * ubo.deltaTime, ubo.minSpeed, ubo.maxSpeed);
-	b.velocity = mix(vec4(vel, 0.0), b.velocity, 0.5);
-	b.direction = vec4(steerTowards(b.direction.xyz, b.velocity.xyz, ubo.maxSteerForce), 0.0);
+	
+	if (!isZero(vel))
+		b.velocity = mix(vec4(vel, 0.0), b.velocity, 0.5);
+
+	b.direction = vec4(steerTowards(b.direction.xyz, b.velocity.xyz, 0.005), 0.0);
 	b.position += b.velocity * ubo.deltaTime;
 
 	subo_out.boids[id] = b;
 
-	// Calculate transformation matrices
-	// Apply particle translation / rotation
-	mat4 translation = translate(b.position.xyz);
-	mat4 rotation = lookAt(FORWARD_AXIS, normalize(b.direction.xyz));
+	// Create boid transform
+	BoidTransform bt;
+	bt.translation = b.position;
 
-	// Matrix storage buffer
-	transforms[id] = translation * rotation;
+	// Calculate quaternion describing a rotation from the forward direction to the current direction
+	bt.rotation = rotationQuat(FORWARD_AXIS, normalize(b.direction.xyz));
+
+	// Set boid transform
+	transforms[id] = bt;
 }

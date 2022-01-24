@@ -163,7 +163,8 @@ namespace nap
 				ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<ShaderVariableStructBufferDeclaration>(uniform_declaration.get());
 
 				const StorageUniformStructBuffer* struct_buffer_resource = rtti_cast<const StorageUniformStructBuffer>(resource);
-				if (!errorState.check(resource == nullptr || struct_buffer_resource->getSize() == struct_buffer_declaration->mSize, "Mismatch between total buffer size in shader and json. Please refer to the alignment requirements for shader resources in Section 15.6.4 of the Vulkan specification"))
+				if (!errorState.check(resource == nullptr || struct_buffer_resource->getSize() == struct_buffer_declaration->mSize,
+					utility::stringFormat("Mismatch between total buffer size in shader and json for storage uniform '%s'. Please refer to the alignment requirements for shader resources in Section 15.6.4 of the Vulkan specification", uniform_declaration->mName.c_str())))
 					return false;
 
 				std::unique_ptr<StorageUniformStructBufferInstance> struct_buffer_instance;
