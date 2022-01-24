@@ -81,25 +81,35 @@ namespace nap
 
 		// Find the camera location uniform in the material of the sphere
 		nap::RenderableMeshComponentInstance& sphere_mesh = mSphereEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* uniform_instance =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		UniformVec3Instance* cam_loc_uniform = uniform_instance->getOrCreateUniform<UniformVec3Instance>("inCameraPosition");
+		auto* ubo =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		auto* cam_loc_uniform = ubo->getOrCreateUniform<UniformVec3Instance>("inCameraPosition");
 
 		// Set it to the current camera location
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform->setValue(global_pos);
 
+		// Set color
+		auto* ball_color = ubo->getOrCreateUniform<UniformVec3Instance>("ballColor");
+		ball_color->setValue(mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>());
+
 		// Find the animation uniform in the material of the plane.
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		uniform_instance = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		ubo = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 
 		/// Set intensity in shader
-		UniformFloatInstance* animator_intensity_uniform = uniform_instance->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
+		auto* animator_intensity_uniform = ubo->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
 		animator_intensity_uniform->setValue(mAnimationIntensity);
 
 		// Set animation position in shader
-		UniformVec2Instance* animator_pos_uniform = uniform_instance->getOrCreateUniform<nap::UniformVec2Instance>("animationPos");
+		auto* animator_pos_uniform = ubo->getOrCreateUniform<nap::UniformVec2Instance>("animationPos");
 		animator_pos_uniform->setValue(mAnimationPos);
+
+		// Set plane colors
+		auto* color_one = ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne");
+		auto* color_two = ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo");
+		color_one->setValue(mGuiService->getColors().mFront4Color.convert<RGBColorFloat>());
+		color_two->setValue(mGuiService->getColors().mDarkColor.convert<RGBColorFloat>());
 
 		// draw the GUI
 		if( ImGui::Begin("Tween") )
@@ -108,7 +118,8 @@ namespace nap
 			ImGui::Text(getCurrentDateTime().toString().c_str());
 			RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 			ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-			ImGui::Text("Click on the screen to create a tween and move the sphere to that location");
+			ImGui::TextColored(mGuiService->getColors().mHighlightColor2,
+				"Click somewhere in the window to move the sphere to that location");
 
 			// change duration of the tween
 			if( ImGui::InputFloat("Duration", &mTweenDuration) )
