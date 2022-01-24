@@ -161,7 +161,7 @@ namespace nap
 
             ImGui::Text(getCurrentDateTime().toString().c_str());
             RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-            ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+            ImGui::TextColored(clr, utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
             if(ImGui::CollapsingHeader("GPIO"))
             {
