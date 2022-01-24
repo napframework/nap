@@ -77,19 +77,28 @@ namespace nap
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform
 		// Once we have the uniform we can set it to the camera world space location
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		nap::UniformVec3Instance* cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
 
-		// Get camera world space position and set
+		// Get camera world space position and set in shader
 		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform->setValue(global_pos);
 
+		// Set colors in shader
+		auto color_one = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorOne");
+		auto color_two = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorTwo");
+		auto halo = ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor");
+
+		const auto& theme = mGuiService->getColors();
+		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>().toVec3());
+		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>().toVec3());
+		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>().toVec3());
+
 		// Add some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(theme.mHighlightColor2.convert<RGBColorFloat>(), "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Display world texture in GUI

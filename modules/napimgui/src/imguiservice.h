@@ -106,12 +106,13 @@ namespace nap
 	class NAPAPI IMGuiServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
-
 	public:
-		float mFontSize = 17.0f;										///< Property: 'FontSize' Gui font size
+		gui::EColorScheme mColorScheme = gui::EColorScheme::Dark;		///< Property: 'Color Scheme' The color scheme to use (dark, light, custom etc.)
+		float mFontSize = 17.0f;										///< Property: 'Font Size' Gui font size
 		float mScale = 1.0f;											///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
 		std::string mFontFile = "";										///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
-		gui::EColorScheme mColorScheme = gui::EColorScheme::Dark;		///< Property: 'ColorScheme' The color scheme to use (dark, light, custom etc.)
+		glm::ivec2 mFontOversampling = { 5, 3 };						///< Property: 'FontSampling' Horizontal and vertical font oversampling, higher values result in sharper text in exchange for more memory.
+		float mFontSpacing = 0.25f;										///< Property: 'FontSpacing' Extra horizontal spacing (in pixels) between glyphs.
 		gui::ColorPalette mCustomColors;								///< Property: 'Colors' Gui color overrides if scheme is set to custom
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};

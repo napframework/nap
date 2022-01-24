@@ -44,11 +44,13 @@ RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
-	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,		nap::rtti::EPropertyMetaData::Default,nap::rtti::EPropertyFileType::Font)
-	RTTI_PROPERTY("ColorScheme",		&nap::IMGuiServiceConfiguration::mColorScheme,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mCustomColors,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ColorScheme", &nap::IMGuiServiceConfiguration::mColorScheme,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default,nap::rtti::EPropertyFileType::Font)
+	RTTI_PROPERTY("FontSampling",		&nap::IMGuiServiceConfiguration::mFontOversampling, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontSpacing",		&nap::IMGuiServiceConfiguration::mFontSpacing,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mCustomColors,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
@@ -408,13 +410,14 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<ImFontAtlas> createFontAtlas(float fontSize, const char* fontFile = nullptr)
+	static std::unique_ptr<ImFontAtlas> createFontAtlas(float fontSize, const glm::ivec2& fontSampling, float fontSpacing, const char* fontFile = nullptr)
 	{
 		// Create font atlas
 		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
 		ImFontConfig font_config;
-		font_config.OversampleH = 3;
-		font_config.OversampleV = 1;
+		font_config.OversampleH = fontSampling.x;
+		font_config.OversampleV = fontSampling.y;
+		font_config.GlyphExtraSpacing.x = fontSpacing;
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
 		float font_size = math::floor(fontSize);
@@ -796,7 +799,7 @@ namespace nap
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
 			float font_size = mConfiguration->mFontSize * mDPIScale * mGuiScale;
-			mFontAtlas = createFontAtlas(font_size, font_file);
+			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
 			mStyle = createStyle(getColors());
