@@ -109,6 +109,20 @@ namespace nap
 		TransformComponentInstance& plane_xform_two = mPlaneTwoEntity->getComponent<TransformComponentInstance>();
 		positionPlane(*mRenderWindowThree, plane_xform_two);
 
+		// Find uniform buffer that holds the sphere colors
+		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+
+		// Set sphere colors (for all windows)
+		auto color_one = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorOne");
+		auto color_two = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorTwo");
+		auto halo = ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor");
+
+		const auto& theme = mGuiService->getColors();
+		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>().toVec3());
+		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>().toVec3());
+		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>().toVec3());
+
 		// Update the gui for all windows
 		updateGUI();
 	}
@@ -126,8 +140,8 @@ namespace nap
 	{
 		// Find the camera uniform we need to set for both render passes that contain a sphere
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* frag_ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
 
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -317,10 +331,13 @@ namespace nap
 		// Select window 1
 		mGuiService->selectWindow(mRenderWindowOne);
 
+		// Theme
+		const auto& theme = mGuiService->getColors();
+
 		// Draw some GUI elements and show used textures
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		RGBColorFloat clr = theme.mHighlightColor2.convert<RGBColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		if (ImGui::CollapsingHeader("Used Textures 1"))

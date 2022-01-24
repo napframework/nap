@@ -8,7 +8,6 @@
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
-in vec4 passColor;						//< frag color
 
 // uniform buffer inputs
 uniform UBO
