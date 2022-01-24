@@ -446,6 +446,14 @@ namespace nap
 			Color<T, 4>({ red, green, blue, alpha }) { }
 
 		/**
+		 * Constructor that creates an RGBA color based on the given RGB color and alpha value.
+		 * @param rgb the RGB color
+		 * @param alpha the alpha value
+		 */
+		RGBAColor(const RGBColor<T>& rgb, T alpha) :
+			Color<T, 4>({rgb[0], rgb[1], rgb[2], alpha}) { }
+
+		/**
 		 *	Default constructor
 		 */
 		RGBAColor() : Color<T, 4>()												{ }
