@@ -13,6 +13,7 @@
 #include <imguiservice.h>
 #include <parameterservice.h>
 #include <parametergui.h>
+#include <parameterbutton.h>
 #include <scene.h>
 #include <app.h>
 
@@ -80,5 +81,6 @@ namespace nap
 		ResourcePtr<ParameterGUI>	mParameterGUI = nullptr;		///< Draws the parameters to screen
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;		///< Pointer to the render window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
+		ObjectPtr<ParameterButton>	mButton = nullptr;				///< Pointer to GUI button
 	};
 }

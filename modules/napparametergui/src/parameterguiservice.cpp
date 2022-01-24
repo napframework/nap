@@ -13,6 +13,7 @@
 #include <parameterenum.h>
 #include <parametercolor.h>
 #include <parameterquat.h>
+#include <parameterbutton.h>
 #include <imgui/imgui.h>
 #include <parameterservice.h>
 
@@ -240,6 +241,19 @@ namespace nap
 			{
 				enum_parameter->setValue(value);
 			}
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterButton), [](Parameter& parameter)
+		{
+			ParameterButton* button_parameter = rtti_cast<ParameterButton>(&parameter);
+
+			ImGui::Button(button_parameter->getDisplayName().c_str());
+			bool button_pressed = ImGui::IsItemActive();
+			if (button_parameter->isPressed() != button_pressed)
+				button_parameter->setPressed(button_pressed);
+
+			if (ImGui::IsItemClicked())
+				button_parameter->click();
 		});
 	}
 

@@ -48,6 +48,15 @@ namespace nap
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
 			return false;
 
+		// Get button from the GUI and connect to its signals
+		mButton = mResourceManager->findObject<nap::ParameterButton>("ParameterButton");
+		if (!error.check(mButton != nullptr, "unable to find button with name: %s", "Button"))
+			return false;
+
+		mButton->click.connect([]() { nap::Logger::info("Button was clicked"); });
+		mButton->press.connect([]() { nap::Logger::info("Button was pressed"); });
+		mButton->release.connect([]() { nap::Logger::info("Button was released"); });
+
 		// All done!
 		return true;
 	}

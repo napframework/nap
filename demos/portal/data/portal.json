@@ -121,6 +121,11 @@
                     "mID": "ParameterString2",
                     "Name": "My String Parameter 2",
                     "Value": "Hello world,\r\n\r\nIt's a nice day for some NAP development!"
+                },
+                {
+                    "Type": "nap::ParameterButton",
+                    "mID": "ParameterButton",
+                    "Name": "My Button Parameter"
                 }
             ],
             "Groups": []
