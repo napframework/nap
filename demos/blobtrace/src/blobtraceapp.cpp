@@ -78,47 +78,56 @@ namespace nap
 
 		// Get vertex shader uniform buffer object
 		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
-		UniformStructInstance* vert_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOVert");
+		auto* vert_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOVert");
 		if (vert_ubo != nullptr)
 		{
 			// Set mouse pos in vert shader
-			UniformVec3Instance* blob_uniform = vert_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
-			if (blob_uniform != nullptr)
-				blob_uniform->setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
+			auto* blob_uniform = vert_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
+			blob_uniform->setValue(mUVSmoother.update(mMouseUvPosition, deltaTime));
 
 			// Set time in vert shader
-			UniformFloatInstance* time_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
-			if(time_uniform != nullptr)
-				time_uniform->setValue(mTime);
+			auto* time_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
+			time_uniform->setValue(mTime);
 
 			// Set velocity in vert shader
-			UniformFloatInstance* vel_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
-			if (vel_uniform != nullptr)
-				vel_uniform->setValue(vel);
+			auto* vel_uniform = vert_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
+			vel_uniform->setValue(vel);
 		}
 
+		// Colors
+		const auto& theme = mGuiService->getColors();
+
 		// Get fragment shader uniform buffer object
-		UniformStructInstance* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");
+		auto* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");
 		if (frag_ubo != nullptr)
 		{
 			// Set mouse position in frag shader
-			UniformVec3Instance* mou_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inMousePosition");
-			if(mou_uniform != nullptr)
-				mou_uniform->setValue(mMouseUvPosition);
+			auto* mou_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inMousePosition");
+			mou_uniform->setValue(mMouseUvPosition);
 
 			// Set blob position in frag shader
-			UniformVec3Instance* blob_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
-				blob_uniform->setValue(mUVSmoother.getValue());
+			auto* blob_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("inBlobPosition");
+			blob_uniform->setValue(mUVSmoother.getValue());
 
 			// Set velocity in frag shader
-			UniformFloatInstance* vel_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
-			if (vel_uniform != nullptr)
-				vel_uniform->setValue(vel);
+			auto* vel_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inVelocity");
+			vel_uniform->setValue(vel);
 
 			// Set time in frag shader
-			UniformFloatInstance* time_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
-			if (time_uniform != nullptr)
-				time_uniform->setValue(mTime);
+			auto* time_uniform = frag_ubo->getOrCreateUniform<UniformFloatInstance>("inTime");
+			time_uniform->setValue(mTime);
+
+			// Set color 1
+			auto* clr_one_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("colorOne");
+			clr_one_uniform->setValue(theme.mHighlightColor1.convert<RGBColorFloat>().toVec3());
+
+			// Set color 2
+			auto* clr_two_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
+			clr_two_uniform->setValue(theme.mBackgroundColor.convert<RGBColorFloat>().toVec3());
+
+			// Set edge color
+			auto* clr_edge_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("colorEdge");
+			clr_edge_uniform->setValue(theme.mFront1Color.convert<RGBColorFloat>().toVec3());
 		}
 
 		// Increment time based on velocity
@@ -127,7 +136,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(mTextHighlightColor, "Move mouse over canvas to position blob\nLeft mouse button to rotate camera\nRight mouse button to zoom");
+		ImGui::TextColored(theme.mHighlightColor2, "Move mouse over canvas to position blob\nLeft mouse button to rotate camera\nRight mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}

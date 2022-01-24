@@ -44,7 +44,9 @@ namespace nap
 
 
 	RenderableCopyMeshComponentInstance::RenderableCopyMeshComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableComponentInstance(entity, resource), mRenderService(entity.getCore()->getService<RenderService>())
+		RenderableComponentInstance(entity, resource),
+		mRenderService(entity.getCore()->getService<RenderService>()),
+		mGuiService(entity.getCore()->getService<IMGuiService>())
 	{ }
 
 
@@ -123,9 +125,11 @@ namespace nap
 		mRotationSpeed = resource->mRotationSpeed;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
-		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
-		mColors.emplace_back(RGBColor8(0x8B, 0x8C, 0xA0).convert<RGBColorFloat>());
-		mColors.emplace_back(RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getColors().mBackgroundColor.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getColors().mFront1Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getColors().mFront2Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getColors().mFront3Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>());
 
 		// We do a bit of caching here, to ensure we can draw the same mesh, at different positions, using the same pipeline in order.
 		// If we randomly select a mesh for every vertex on draw we switch between pipelines too often, which is heavy for the GPU.

@@ -102,7 +102,7 @@ namespace nap
 		// Add some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(theme.mHighlightColor2.convert<RGBColorFloat>(), "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(theme.mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Display world texture in GUI

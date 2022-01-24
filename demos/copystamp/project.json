@@ -6,8 +6,7 @@
     "RequiredModules": [
         "mod_copystamp",
         "mod_napapp",
-        "mod_napcameracontrol",
-        "mod_napimgui"
+        "mod_napcameracontrol"
     ],
     "Data": "data/copystamp.json",
     "ServiceConfig": "",
