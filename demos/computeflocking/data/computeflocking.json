@@ -848,6 +848,27 @@
                             "w": 1.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::Vec4FillPolicyEntry",
+                    "mID": "Vec4FillPolicyEntry_545b921a",
+                    "Name": "direction",
+                    "ValueFillPolicy": {
+                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
+                        "mID": "UniformRandomVec4BufferFillPolicy_6fdd6ffe",
+                        "LowerBound": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        },
+                        "UpperBound": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    }
                 }
             ]
         },
@@ -875,6 +896,17 @@
                             "Type": "nap::UniformVec4",
                             "mID": "UniformVec4_5e14de01",
                             "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_f907266f",
+                            "Name": "direction",
                             "Value": {
                                 "x": 0.0,
                                 "y": 0.0,
@@ -964,6 +996,17 @@
                             "Type": "nap::UniformVec4",
                             "mID": "UniformVec4_5e14de01b",
                             "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_81e1bee3",
+                            "Name": "direction",
                             "Value": {
                                 "x": 0.0,
                                 "y": 0.0,
