@@ -116,13 +116,13 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
                     "Visible": true,
-                    "Text": "Hi There! Welcome to NAP",
+                    "Text": "Welcome to NAP",
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
-                            0.8587999939918518,
-                            0.8587999939918518,
-                            0.8587999939918518
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     },
                     "Location": {
@@ -231,7 +231,7 @@
             "Properties": {
                 "Size": 32
             },
-            "Font": "fonts/Montserrat-Light.otf"
+            "Font": "fonts/Manrope-Light.otf"
         },
         {
             "Type": "nap::ImageFromFile",
@@ -294,9 +294,9 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06599999964237213,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             },
