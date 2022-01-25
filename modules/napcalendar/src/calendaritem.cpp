@@ -63,6 +63,20 @@ namespace nap
 	}
 
 
+	std::string nap::CalendarItem::Time::toString() const
+	{
+		std::string str;
+		if (mHour < 10)
+			str.append("0");
+		str.append(std::to_string(mHour));
+		str.append(":");
+		if (mMinute < 10)
+			str.append("0");
+		str.append(std::to_string(mMinute));
+		return str;
+	}
+
+
 	bool nap::CalendarItem::Point::valid() const
 	{
 		return mTime.mHour >= 0 && mTime.mHour < 24 &&
