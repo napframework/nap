@@ -43,9 +43,5 @@ namespace nap
 		virtual APIEventPtr getValue() const override;
 
 		ResourcePtr<ParameterButton> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
-
-	private:
-
-		EPortalItemButtonEvent mLastEvent;			///< The last event that was triggered by this portal item button
 	};
 }

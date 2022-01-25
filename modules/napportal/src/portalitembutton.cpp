@@ -32,23 +32,17 @@ namespace nap
 		switch (button_event)
 		{
 		case EPortalItemButtonEvent::Press:
-			if (!mParameter->isPressed())
-			{
-				mLastEvent = EPortalItemButtonEvent::Press;
-				mParameter->setPressed(true);
-			}
+			mParameter->setPressed(true);
 			return true;
+
 		case EPortalItemButtonEvent::Release:
-			if (mParameter->isPressed())
-			{
-				mLastEvent = EPortalItemButtonEvent::Release;
-				mParameter->setPressed(false);
-			}
+			mParameter->setPressed(false);
 			return true;
+
 		case EPortalItemButtonEvent::Click:
-			mLastEvent = EPortalItemButtonEvent::Click;
 			mParameter->click();
 			return true;
+
 		default:
 			return error.check(false, "%s: received invalid portal item button event \"%s\"", mID.c_str(), value.c_str());
 		}
@@ -68,8 +62,10 @@ namespace nap
 
 	APIEventPtr PortalItemButton::getValue() const
 	{
+		// Send an "Invalid" event value, because clients shouln't be interested in button events
+		std::string value = getPortalItemButtonEventString(EPortalItemButtonEvent::Invalid);
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
-		event->addArgument<APIString>(nap::portal::itemValueArgName, getPortalItemButtonEventString(mLastEvent));
+		event->addArgument<APIString>(nap::portal::itemValueArgName, value);
 		return event;
 	}
 }
