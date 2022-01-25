@@ -48,10 +48,7 @@ namespace nap
 		/**
 		 * @return whether the button is currenty pressed
 		 */
-		const bool& isPressed() const
-		{
-			return mPressed;
-		}
+		const bool& isPressed() const { return mPressed; }
 
 	public:
 		Signal<>	click;		///< Signal that's raised when the button is clicked
