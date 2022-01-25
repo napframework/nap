@@ -47,7 +47,7 @@
                         {
                             "Type": "nap::PortalItemTextArea",
                             "mID": "PortalItemTextArea",
-                            "Parameter": "ParameterString2"
+                            "Parameter": "ParameterMultilineString"
                         },
                         {
                             "Type": "nap::PortalItemButton",
@@ -123,8 +123,8 @@
                 },
                 {
                     "Type": "nap::ParameterString",
-                    "mID": "ParameterString2",
-                    "Name": "My String Parameter 2",
+                    "mID": "ParameterMultilineString",
+                    "Name": "My Multiline String Parameter",
                     "Value": "Hello world,\r\n\r\nIt's a nice day for some NAP development!"
                 },
                 {
