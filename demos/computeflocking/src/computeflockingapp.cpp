@@ -8,9 +8,11 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
+#include <orthocameracomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <flockingsystemcomponent.h>
+#include <renderbloomcomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeFlockingApp)
 RTTI_CONSTRUCTOR(nap::Core&)
@@ -21,7 +23,7 @@ namespace nap
 	/**
 	* Initialize all the resources and store the objects we need later on
 	*/
-	bool ComputeFlockingApp::init(utility::ErrorState& error)
+	bool ComputeFlockingApp::init(utility::ErrorState& errorState)
 	{
 		// Create render service
 		mRenderService = getCore().getService<RenderService>();
@@ -31,27 +33,55 @@ namespace nap
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile(getCore().getProjectInfo()->getDataFile(), error))
+		if (!mResourceManager->loadFile(getCore().getProjectInfo()->getDataFile(), errorState))
 		{
-			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
+			Logger::fatal("Unable to deserialize resources: \n %s", errorState.toString().c_str());
 			return false;
 		}
 
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity = scene->findEntity("CameraEntity");
+		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 		mFlockingSystemEntity = scene->findEntity("FlockingSystemEntity");
+		mForegroundEntity = scene->findEntity("ForegroundEntity");
 
-		if (!error.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
+		if (!errorState.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
 			return false;
+
+		// Create render texture
+		mRenderTexture = mResourceManager->findObject<RenderTexture2D>("ColorRT");
+		if (mRenderTexture == nullptr)
+		{
+			errorState.fail("%s: Missing nap::RenderTexture2D 'ColorRT'", mRenderTexture->mID.c_str());
+			return false;
+		}
+
+		// Create render target
+		mRenderTarget = mResourceManager->createObject<RenderTarget>();
+		mRenderTarget->mColorTexture = mRenderTexture;
+		mRenderTarget->mRequestedSamples = mRenderWindow->mRequestedSamples;
+		mRenderTarget->mClearColor = mRenderWindow->mClearColor;
+		mRenderTarget->mSampleShading = mRenderWindow->mSampleShading;
+		if (!mRenderTarget->init(errorState))
+		{
+			errorState.fail("%s: Failed to initialize internal render target", mRenderTarget->mID.c_str());
+			return false;
+		}
+
+		RenderableMeshComponentInstance& foreground_comp = mForegroundEntity->getComponent<RenderableMeshComponentInstance>();
+		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(foreground_comp.getMaterialInstance().findSampler("colorTextures"));
+
+		RenderBloomComponentInstance& bloom_comp = mForegroundEntity->getComponent<RenderBloomComponentInstance>();
+		sampler_instance->setTexture(1, bloom_comp.getOutputTexture());
 
 		mNumBoids = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().mNumBoids;
 
 		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
 		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
 
-		if (!error.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
+		if (!errorState.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
 			return false;
 
 		// Reload the selected preset after hot-reloading 
@@ -63,7 +93,7 @@ namespace nap
 		auto presets = parameter_service->getPresets(*mParameterGUI->mParameterGroup);
 		if (!parameter_service->getPresets(*mParameterGUI->mParameterGroup).empty())
 		{
-			if (!mParameterGUI->load(presets[0], error))
+			if (!mParameterGUI->load(presets[0], errorState))
 				return false;
 		}
 
@@ -139,6 +169,32 @@ namespace nap
 			mRenderService->endComputeRecording();
 		}
 
+		// Exclude components from rendering
+		RenderableMeshComponentInstance& foreground_comp = mForegroundEntity->getComponent<RenderableMeshComponentInstance>();
+		foreground_comp.setVisible(false);
+
+		RenderBloomComponentInstance& bloom_comp = mForegroundEntity->getComponent<RenderBloomComponentInstance>();
+		bloom_comp.setVisible(false);
+		
+		// Headless
+		if (mRenderService->beginHeadlessRecording())
+		{
+			// Offscreen color pass -> Render all available geometry to ColorRT
+			mRenderTarget->beginRendering();
+			mRenderService->renderObjects(*mRenderTarget, mCameraEntity->getComponent<PerspCameraComponentInstance>());	
+			mRenderTarget->endRendering();
+
+			// Offscreen bloom pass -> Use ColorRT as input texture
+			bloom_comp.setVisible(true);
+			bloom_comp.draw();
+			bloom_comp.setVisible(false);
+
+			mRenderService->endHeadlessRecording();
+		}
+
+		// Include again
+		foreground_comp.setVisible(true);
+
 		// Begin recording the render commands for the main render window
 		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
@@ -146,8 +202,8 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			// Render all available geometry
-			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<PerspCameraComponentInstance>());
+			// Render plane -> foreground_comp has ColorRT as sampler
+			mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { &foreground_comp });
 
 			// Render GUI elements
 			mGuiService->draw();

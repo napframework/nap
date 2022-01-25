@@ -382,6 +382,139 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "ForegroundEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderForeground",
+                    "Visible": true,
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Material": "MixMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_eb6a29f0",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_7f5a4867",
+                                        "Name": "mixValue",
+                                        "Value": 0.5
+                                    }
+                                ]
+                            }
+                        ],
+                        "StorageUniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2DArray",
+                                "mID": "Sampler2DArray_0e60adc3",
+                                "Name": "colorTextures",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "Textures": [
+                                    "ColorRT",
+                                    "DummyRT"
+                                ]
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_f20cac36",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderBloomComponent",
+                    "mID": "RenderBloom",
+                    "Visible": true,
+                    "InputTexture": "ColorRT"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "OrthoCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "nap::OrthoCameraComponent_5d2f21e9",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 1.0,
+                        "TopPlane": 1.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_df119f14",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": -1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "WorldEntity",
             "Components": [
                 {
@@ -512,6 +645,68 @@
             "StorageUniforms": [],
             "Samplers": [],
             "Shader": "ConstantShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ColorTextureMaterial",
+            "Uniforms": [],
+            "StorageUniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2D",
+                    "mID": "Sampler2D_8a347620",
+                    "Name": "colorTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Texture": "ColorRT"
+                }
+            ],
+            "Shader": "ColorTextureShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                }
+            ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "MixMaterial",
+            "Uniforms": [],
+            "StorageUniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2DArray",
+                    "mID": "Sampler2DArray_38dadfa2",
+                    "Name": "colorTextures",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Textures": [
+                        "ColorRT",
+                        "DummyRT"
+                    ]
+                }
+            ],
+            "Shader": "MixShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -735,6 +930,67 @@
             ]
         },
         {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Usage": "Static",
+            "CullMode": "None",
+            "PolygonMode": "Fill",
+            "Size": {
+                "x": 1280.0,
+                "y": 720.0
+            },
+            "Position": {
+                "x": 640.0,
+                "y": 360.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Rows": 1,
+            "Columns": 1
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "ColorRT",
+            "Usage": "Static",
+            "Fill": false,
+            "Width": 1280,
+            "Height": 720,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "DummyRT",
+            "Usage": "Static",
+            "Fill": false,
+            "Width": 16,
+            "Height": 16,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Borderless": false,
@@ -779,6 +1035,14 @@
                 {
                     "Entity": "WorldEntity",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "ForegroundEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "OrthoCameraEntity",
+                    "InstanceProperties": []
                 }
             ]
         },
@@ -787,6 +1051,18 @@
             "mID": "BoidShader",
             "VertShader": "shaders/boid.vert",
             "FragShader": "shaders/boid.frag"
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "ColorTextureShader",
+            "VertShader": "shaders/texture.vert",
+            "FragShader": "shaders/texture.frag"
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "MixShader",
+            "VertShader": "shaders/mix.vert",
+            "FragShader": "shaders/mix.frag"
         },
         {
             "Type": "nap::SphereMesh",

@@ -57,7 +57,7 @@ namespace nap
 		/**
 		 *	Initialize all the services and app specific data structures
 		 */
-		bool init(utility::ErrorState& error) override;
+		bool init(utility::ErrorState& errorState) override;
 		
 		/**
 		 *	Update is called before render, performs all the app logic
@@ -99,7 +99,12 @@ namespace nap
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointers to the render window
 		ObjectPtr<EntityInstance> mDefaultInputRouter;					//< Routes input events to the input component
 		ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
+		ObjectPtr<EntityInstance> mOrthoCameraEntity;					//< Entity that holds the ortho camera
 		ObjectPtr<EntityInstance> mFlockingSystemEntity;				//< Entity that emits the particles
+		ObjectPtr<EntityInstance> mForegroundEntity;
+
+		rtti::ObjectPtr<RenderTarget> mRenderTarget;
+		rtti::ObjectPtr<RenderTexture2D> mRenderTexture;
 
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		std::unique_ptr<ParameterGUI> mParameterGUI;

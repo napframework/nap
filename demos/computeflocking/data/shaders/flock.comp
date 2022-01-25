@@ -73,7 +73,7 @@ const vec3 FORWARD_AXIS = vec3(0.0, 0.0, 1.0);
 
 
 // Returns a quaterion describing a rotation of angle radians over the specified axis
-// Ported from glm::axis
+// Ported from glm::angleAxis
 vec4 angleAxisQuat(float angle, vec3 axis)
 {
 	float s = sin(angle*0.5);
