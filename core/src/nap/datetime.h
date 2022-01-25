@@ -197,9 +197,15 @@ namespace nap
 		DateTime(const SystemTimeStamp& timeStamp);
 
 		/**
-		*	Default destructor, the timestamp will be
+		* Default destructor, the timestamp will be
 		*/
 		~DateTime() = default;
+
+		bool operator<(const DateTime& other) const { return this->mTimeStamp < other.mTimeStamp; }
+		bool operator==(const DateTime& other) const { return this->mTimeStamp == other.mTimeStamp; }
+		bool operator!=(const DateTime& other) const { return this->mTimeStamp != other.mTimeStamp; }
+		bool operator<=(const DateTime& other) const { return this->mTimeStamp <= other.mTimeStamp; }
+		bool operator>=(const DateTime& other) const { return this->mTimeStamp >= other.mTimeStamp; }
 
 		/**
 		* @return the year associated with the time stamp
