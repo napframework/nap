@@ -77,6 +77,14 @@ namespace nap
 	}
 
 
+	void nap::CalendarItem::Time::setFromString(std::string str)
+	{
+		assert(str.length() == 5);
+		mHour = std::stoi(str.substr(0, 2));
+		mMinute = std::stoi(str.substr(3, 2));
+	}
+
+
 	bool nap::CalendarItem::Point::valid() const
 	{
 		return mTime.mHour >= 0 && mTime.mHour < 24 &&

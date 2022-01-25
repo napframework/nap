@@ -32,10 +32,11 @@ namespace nap
 		{
 			Time() = default;
 			Time(int hour, int minute);
-			uint mHour = 0;						///< Property: 'Hour' (0-23)
-			uint mMinute = 0;					///< Property: 'Minute' (0-59)
-			nap::Minutes toMinutes() const;		///< Convert into minutes
-			std::string toString() const;		///< Convert into string "hh:mm"
+			uint mHour = 0;							///< Property: 'Hour' (0-23)
+			uint mMinute = 0;						///< Property: 'Minute' (0-59)
+			nap::Minutes toMinutes() const;			///< Convert into minutes
+			std::string toString() const;			///< Convert into string representation "hh:mm"
+			void setFromString(std::string str);	///< Set the time from a string representation
 		};
 
 		/**
