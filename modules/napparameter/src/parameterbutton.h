@@ -39,11 +39,10 @@ namespace nap
 		 */
 		void setPressed(const bool& pressed)
 		{
-			if (mPressed != pressed)
-			{
-				mPressed = pressed;
-				mPressed ? press() : release();
-			}
+			if (mPressed == pressed)
+				return;
+			mPressed = pressed;
+			mPressed ? press() : release();
 		}
 
 		/**

@@ -246,11 +246,13 @@ namespace nap
 		registerParameterEditor(RTTI_OF(ParameterButton), [](Parameter& parameter)
 		{
 			ParameterButton* button_parameter = rtti_cast<ParameterButton>(&parameter);
-
 			ImGui::Button(button_parameter->getDisplayName().c_str());
-			bool button_pressed = ImGui::IsItemActive();
-			if (button_parameter->isPressed() != button_pressed)
-				button_parameter->setPressed(button_pressed);
+
+			if (ImGui::IsItemActivated())
+				button_parameter->setPressed(true);
+
+			if (ImGui::IsItemDeactivated())
+				button_parameter->setPressed(false);
 
 			if (ImGui::IsItemClicked())
 				button_parameter->click();
