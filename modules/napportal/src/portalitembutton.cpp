@@ -4,6 +4,10 @@
 
  // Local Includes
 #include "portalitembutton.h"
+#include "portalutils.h"
+
+// External Includes
+#include <apivalue.h>
 
 RTTI_BEGIN_CLASS(nap::PortalItemButton)
 	RTTI_PROPERTY("Parameter", &nap::PortalItemButton::mParameter, nap::rtti::EPropertyMetaData::Required)

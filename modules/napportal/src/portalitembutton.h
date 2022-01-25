@@ -6,10 +6,8 @@
 
  // Local Includes
 #include "portalitem.h"
-#include "portalutils.h"
 
 // External Includes
-#include <apivalue.h>
 #include <apievent.h>
 #include <parameterbutton.h>
 
