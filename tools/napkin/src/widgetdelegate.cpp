@@ -14,6 +14,7 @@
 #include <QPainter>
 #include <color.h>
 #include <napqt/colorpicker.h>
+#include <QCheckBox>
 
 using namespace napkin;
 
@@ -133,7 +134,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		// Create and draw color picker icon
 		painter->setBrush(QBrush(background_color));
-		painter->setPen(QPen(option.palette.color(option.palette.Dark), 1.5f) );
+		painter->setPen(QPen(option.palette.color(option.palette.Text), 1.5f) );
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->drawEllipse(rect_btn);
 	}
@@ -145,16 +146,25 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		QStyledItemDelegate::paint(painter, viewop, index);
 
 		// Get icon size
-		QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height() + 5,
 			option.rect.top(),
 			option.rect.height(),
 			option.rect.height());
 
 		// Draw checkbox
-		QStyleOptionButton styleOption;
-		styleOption.rect = rect_btn;
-		styleOption.state |= index.data(Qt::DisplayRole).toBool() ? QStyle::State_On : QStyle::State_Off;
-		QApplication::style()->drawControl(QStyle::CE_CheckBox, &styleOption, painter);
+		QStyleOptionButton button_style;
+		button_style.palette = option.palette;
+
+		QColor frame_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::dark1);
+		QColor icon_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::front4);
+		button_style.palette.setBrush(QPalette::Background, frame_color);
+		button_style.palette.setBrush(QPalette::Base, frame_color);
+		button_style.palette.setBrush(QPalette::Highlight, frame_color);
+		button_style.palette.setBrush(QPalette::Text, icon_color);
+
+		button_style.rect = rect_btn;
+		button_style.state |= index.data(Qt::DisplayRole).toBool() ? QStyle::State_On : QStyle::State_Off;
+		QApplication::style()->drawControl(QStyle::CE_CheckBox, &button_style, painter);
 	}
 	else if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 	{
@@ -206,7 +216,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 
 			// Get icon size
 			QRect toggle_rect = QRect(
-				option.rect.right() - option.rect.height(),
+				option.rect.right() - option.rect.height() + 5,
 				option.rect.top(),
 				option.rect.height(),
 				option.rect.height());

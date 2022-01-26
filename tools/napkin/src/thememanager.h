@@ -25,6 +25,17 @@ namespace napkin
 
 		namespace color
 		{
+			inline constexpr const char* dark1						= "dark1";
+			inline constexpr const char* dark2						= "dark2";
+			inline constexpr const char* background1				= "background1";
+			inline constexpr const char* background2				= "background2";
+			inline constexpr const char* highlight1					= "highlight1";
+			inline constexpr const char* highlight2					= "highlight2";
+			inline constexpr const char* highlight3					= "highlight3";
+			inline constexpr const char* front1						= "front1";
+			inline constexpr const char* front2						= "front2";
+			inline constexpr const char* front3						= "front3";
+			inline constexpr const char* front4						= "front4";
 			inline constexpr const char* componentoverride			= "componentWithOverrides";
 			inline constexpr const char* instanceProperty			= "instanceProperty";
 			inline constexpr const char* overriddenInstanceProperty = "overriddenInstanceProperty";
