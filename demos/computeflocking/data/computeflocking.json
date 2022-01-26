@@ -266,6 +266,8 @@
                     },
                     "NumBoids": 1000,
                     "BoidSize": "BoidSizeParameter",
+                    "FresnelScale": "FresnelScaleParameter",
+                    "FresnelPower": "FresnelPowerParameter",
                     "ViewRadius": "ViewRadiusParameter",
                     "AvoidRadius": "AvoidRadiusParameter",
                     "MinSpeed": "MinSpeedParameter",
@@ -466,7 +468,8 @@
                     "Type": "nap::RenderBloomComponent",
                     "mID": "RenderBloom",
                     "Visible": true,
-                    "InputTexture": "ColorRT"
+                    "InputTexture": "ColorRT",
+                    "PassCount": 4
                 }
             ],
             "Children": []
@@ -923,6 +926,22 @@
                             "Value": 0.25,
                             "Minimum": 0.0,
                             "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FresnelScaleParameter",
+                            "Name": "FresnelScale",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FresnelPowerParameter",
+                            "Name": "FresnelPower",
+                            "Value": 2.0,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
                         }
                     ],
                     "Groups": []
@@ -936,12 +955,12 @@
             "CullMode": "None",
             "PolygonMode": "Fill",
             "Size": {
-                "x": 1280.0,
-                "y": 720.0
+                "x": 1920.0,
+                "y": 1080.0
             },
             "Position": {
-                "x": 640.0,
-                "y": 360.0
+                "x": 960.0,
+                "y": 540.0
             },
             "Color": {
                 "Values": [
@@ -959,8 +978,8 @@
             "mID": "ColorRT",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -996,10 +1015,10 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": false,
+            "SampleShading": true,
             "Title": "ComputeFlockingDemo",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [

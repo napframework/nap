@@ -5,6 +5,7 @@ uniform sampler2D colorTexture;
 in vec2 pass_UVs[3];
 out vec4 out_Color;
 
+// Sampler must be configured with filter VK_FILTER_LINEAR
 vec4 blur(sampler2D tx) 
 {
 	vec4 col = vec4(0.0);

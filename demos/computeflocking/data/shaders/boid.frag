@@ -20,16 +20,24 @@ uniform UBO
 
 in vec3 pass_Position;
 in vec3 pass_Normals;
-//in vec3 pass_Uv;
+in float pass_Fresnel;
 flat in uint pass_Id;
 
 out vec4 out_Color;
 
+// Source: http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+vec3 hsv2rgb(vec3 c)
+{
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
 
 void main(void)
 {
-	uint boid_id = uint(pass_Id+0.1) % 2;
-	vec3 boid_color = vec3(float(boid_id+1)*0.5, 0.0, 0.0);
+	vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.8);
+	vec3 boid_color = hsv2rgb(boid_hsv);
 
 	// Surface to camera normal     
     vec3 surface_to_cam_n = normalize(ubo.cameraLocation - pass_Position);
@@ -60,14 +68,17 @@ void main(void)
 	specula_v = specula_v + (specula_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.specularIntensity);
 
     // Compute final diffuse and specular color values
-    vec3 diffuse_color = ubo.diffuseColor  * ubo.lightColor * diffuse_v;
-    vec3 specula_color = ubo.specularColor * specula_v;
+    //vec3 diffuse_color = ubo.diffuseColor  * ubo.lightColor * diffuse_v;
+    vec3 diffuse_color = boid_color  * ubo.lightColor * diffuse_v;
+    vec3 specular_color = ubo.specularColor * specula_v;
 
     // Get ambient color
 	vec3 ambient_color = ubo.diffuseColor.rgb * ubo.ambientIntensity;
 
+    // Compute composite color value
+    vec3 comp_color = diffuse_color + specular_color + ambient_color;
+    comp_color = clamp(comp_color, vec3(0.0), vec3(1.0));
+
     // Compute final color value
-    vec3 out_color = diffuse_color + specula_color + ambient_color;
-    out_color = clamp(out_color, vec3(0.0, 0.0, 0.0), vec3(1.0, 1.0, 1.0));
-    out_Color = vec4(out_color, 1.0); 
+    out_Color = vec4(mix(comp_color, vec3(1.0), pass_Fresnel), 1.0); 
 }

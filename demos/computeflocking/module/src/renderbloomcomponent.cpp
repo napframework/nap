@@ -22,6 +22,7 @@
 // nap::RenderBloomComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderBloomComponent)
 	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PassCount",					&nap::RenderBloomComponent::mPassCount,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::RenderBloomComponentInstance run time class definition 
@@ -66,65 +67,37 @@ namespace nap
 		RenderBloomComponent* resource = getComponent<RenderBloomComponent>();
 		mResolvedInputTexture = resource->mInputTexture.get();
 
-		// Create half render textures
-		for (uint i = 0; i < mHalfTexture.size(); i++)
+		// Initialize double-buffered bloom render targets
+		for (int pass_idx = 0; pass_idx < resource->mPassCount; pass_idx++)
 		{
-			mHalfTexture[i] = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTexture2D>();
-			mHalfTexture[i]->mWidth = resource->mInputTexture->getWidth() / 2;
-			mHalfTexture[i]->mHeight = resource->mInputTexture->getHeight() / 2;
-			mHalfTexture[i]->mFill = resource->mInputTexture->mFill;
-			mHalfTexture[i]->mFormat = resource->mInputTexture->mFormat;
-			mHalfTexture[i]->mUsage = ETextureUsage::Static;
-			if (!mHalfTexture[i]->init(errorState))
-			{
-				errorState.fail("%s: Failed to initialize internal render texture", mHalfTexture[i]->mID.c_str());
-				return false;
-			}
-		}
+			DoubleBufferedRenderTarget& bloom_target = mBloomRTs.emplace_back();
 
-		// Create quart render textures
-		for (uint i = 0; i < mQuartTexture.size(); i++)
-		{
-			mQuartTexture[i] = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTexture2D>();
-			mQuartTexture[i]->mWidth = resource->mInputTexture->getWidth() / 4;
-			mQuartTexture[i]->mHeight = resource->mInputTexture->getHeight() / 4;
-			mQuartTexture[i]->mFill = resource->mInputTexture->mFill;
-			mQuartTexture[i]->mFormat = resource->mInputTexture->mFormat;
-			mQuartTexture[i]->mUsage = ETextureUsage::Static;
-			if (!mQuartTexture[i]->init(errorState))
+			for (int target_idx = 0; target_idx < 2; target_idx++)
 			{
-				errorState.fail("%s: Failed to initialize internal render texture", mQuartTexture[i]->mID.c_str());
-				return false;
-			}
-		}
+				auto tex = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTexture2D>();
+				tex->mWidth = resource->mInputTexture->getWidth() / math::power<int>(2, pass_idx+1);
+				tex->mHeight = resource->mInputTexture->getHeight() / math::power<int>(2, pass_idx+1);
+				tex->mFill = resource->mInputTexture->mFill;
+				tex->mFormat = resource->mInputTexture->mFormat;
+				tex->mUsage = ETextureUsage::Static;
+				if (!tex->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize internal render texture", tex->mID.c_str());
+					return false;
+				}
 
-		// Create half render targets
-		for (uint i = 0; i < mHalfTargets.size(); i++)
-		{
-			mHalfTargets[i] = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTarget>();
-			mHalfTargets[i]->mColorTexture = mHalfTexture[i];
-			mHalfTargets[i]->mClearColor = resource->mInputTexture->mClearColor;
-			mHalfTargets[i]->mSampleShading = false;
-			mHalfTargets[i]->mRequestedSamples = ERasterizationSamples::One;
-			if (!mHalfTargets[i]->init(errorState))
-			{
-				errorState.fail("%s: Failed to initialize internal render target", mHalfTargets[i]->mID.c_str());
-				return false;
-			}
-		}
+				auto target = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTarget>();
+				target->mColorTexture = tex;
+				target->mClearColor = resource->mInputTexture->mClearColor;
+				target->mSampleShading = false;
+				target->mRequestedSamples = ERasterizationSamples::One;
+				if (!target->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize internal render target", target->mID.c_str());
+					return false;
+				}
 
-		// Create quart render targets
-		for (uint i = 0; i < mQuartTargets.size(); i++)
-		{
-			mQuartTargets[i] = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTarget>();
-			mQuartTargets[i]->mColorTexture = mQuartTexture[i];
-			mQuartTargets[i]->mClearColor = resource->mInputTexture->mClearColor;
-			mQuartTargets[i]->mSampleShading = false;
-			mQuartTargets[i]->mRequestedSamples = ERasterizationSamples::One;
-			if (!mQuartTargets[i]->init(errorState))
-			{
-				errorState.fail("%s: Failed to initialize internal render target", mQuartTargets[i]->mID.c_str());
-				return false;
+				bloom_target[target_idx] = target;
 			}
 		}
 
@@ -207,44 +180,35 @@ namespace nap
 	void RenderBloomComponentInstance::draw()
 	{
 		VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
-		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)mHalfTargets[0]->getBufferSize().x, 0.0f, (float)mHalfTargets[0]->getBufferSize().y);
 		glm::mat4 identity_matrix = glm::mat4();
 
-		// Horizontal
-		mColorTextureSampler->setTexture(*mResolvedInputTexture);
-		mDirectionUniform->setValue({ 1.0f, 0.0f });
-		mTextureSizeUniform->setValue(mHalfTexture[0]->getSize());
+		// Set first input texture
+		RenderTexture2D* input_texture = mResolvedInputTexture;
 
-		mHalfTargets[0]->beginRendering();
-		onDraw(*mHalfTargets[0], command_buffer, identity_matrix, proj_matrix);
-		mHalfTargets[0]->endRendering();
+		for (auto& bloom_target : mBloomRTs)
+		{
+			glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)bloom_target[0]->getBufferSize().x, 0.0f, (float)bloom_target[0]->getBufferSize().y);
 
-		// Vertical
-		mColorTextureSampler->setTexture(*mHalfTargets[0]->mColorTexture);
-		mDirectionUniform->setValue({ 0.0f, 1.0f });
+			// Horizontal
+			mColorTextureSampler->setTexture(*input_texture);
+			mDirectionUniform->setValue({ 1.0f, 0.0f });
+			mTextureSizeUniform->setValue(bloom_target[0]->mColorTexture->getSize());
 
-		mHalfTargets[1]->beginRendering();
-		onDraw(*mHalfTargets[1], command_buffer, identity_matrix, proj_matrix);
-		mHalfTargets[1]->endRendering();
+			bloom_target[0]->beginRendering();
+			onDraw(*bloom_target[0], command_buffer, identity_matrix, proj_matrix);
+			bloom_target[0]->endRendering();
 
-		// Horizontal
-		mColorTextureSampler->setTexture(*mHalfTargets[1]->mColorTexture);
-		mDirectionUniform->setValue({ 1.0f, 0.0f });
-		mTextureSizeUniform->setValue(mQuartTexture[0]->getSize());
+			// Vertical
+			mColorTextureSampler->setTexture(*bloom_target[0]->mColorTexture);
+			mDirectionUniform->setValue({ 0.0f, 1.0f });
 
-		proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)mHalfTargets[0]->getBufferSize().x, 0.0f, (float)mHalfTargets[0]->getBufferSize().y);
+			bloom_target[1]->beginRendering();
+			onDraw(*bloom_target[1], command_buffer, identity_matrix, proj_matrix);
+			bloom_target[1]->endRendering();
 
-		mQuartTargets[0]->beginRendering();
-		onDraw(*mQuartTargets[0], command_buffer, identity_matrix, proj_matrix);
-		mQuartTargets[0]->endRendering();
-
-		// Vertical
-		mColorTextureSampler->setTexture(*mQuartTargets[0]->mColorTexture);
-		mDirectionUniform->setValue({ 0.0f, 1.0f });
-
-		mQuartTargets[1]->beginRendering();
-		onDraw(*mQuartTargets[1], command_buffer, identity_matrix, proj_matrix);
-		mQuartTargets[1]->endRendering();
+			// Set output texture of current pass to input texture of subsequent pass
+			input_texture = bloom_target[1]->mColorTexture.get();
+		}
 	}
 
 

@@ -21,6 +21,7 @@ namespace nap
 		DECLARE_COMPONENT(RenderBloomComponent, RenderBloomComponentInstance)
 	public:
 		ResourcePtr<RenderTexture2D>	mInputTexture = nullptr;							///< Property: 'InputTexture' the input color texture
+		uint							mPassCount = 1;
 	};
 
 
@@ -48,8 +49,7 @@ namespace nap
 		/**
 		 * 
 		 */
-		Texture2D& getOutputTexture() { return *mQuartTargets[1]->mColorTexture; }	
-		//Texture2D& getOutputTexture() { return *mBloomRenderTarget.mColorTexture; }
+		Texture2D& getOutputTexture() { return *mBloomRTs.back()[1]->mColorTexture; }
 
 	protected:
 		/**
@@ -63,14 +63,12 @@ namespace nap
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
+		using DoubleBufferedRenderTarget = std::array<rtti::ObjectPtr<RenderTarget>, 2>;
+
 		RenderService*				mRenderService = nullptr;			///< Render service
 		RenderTexture2D*			mResolvedInputTexture = nullptr;	///<
-
-		std::array<rtti::ObjectPtr<RenderTarget>, 2> mHalfTargets;		///< Internally managed render targets
-		std::array<rtti::ObjectPtr<RenderTarget>, 2> mQuartTargets;		///< Internally managed render targets
-
-		std::array<rtti::ObjectPtr<RenderTexture2D>, 2> mHalfTexture;	///<
-		std::array<rtti::ObjectPtr<RenderTexture2D>, 2> mQuartTexture;	///<
+		
+		std::vector<DoubleBufferedRenderTarget> mBloomRTs;				///< Internally managed render targets
 
 		MaterialInstanceResource	mMaterialInstanceResource;			///< Instance of the material, used to override uniforms for this instance
 		MaterialInstance			mMaterialInstance;					///< The MaterialInstance as created from the resource.
@@ -79,7 +77,6 @@ namespace nap
 		nap::PlaneMesh				mPlane;								///< Plane used for rendering the effect onto
 
 		glm::mat4x4					mModelMatrix;						///< Plane model matrix
-		bool						mDirty = true;						///< If the model matrix needs to be recomputed
 
 		UniformMat4Instance*		mModelMatrixUniform = nullptr;		///< Name of the model matrix uniform in the shader
 		UniformMat4Instance*		mProjectMatrixUniform = nullptr;	///< Name of the projection matrix uniform in the shader

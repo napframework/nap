@@ -46,6 +46,9 @@ namespace nap
 
 		//ResourcePtr<ParameterVec3> mTargetParam;
 		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Default size of a boid
+		ResourcePtr<ParameterFloat> mFresnelScaleParam;
+		ResourcePtr<ParameterFloat> mFresnelPowerParam;
+
 		ResourcePtr<ParameterFloat> mViewRadiusParam;
 		ResourcePtr<ParameterFloat> mAvoidRadiusParam;
 		ResourcePtr<ParameterFloat> mMinSpeedParam;

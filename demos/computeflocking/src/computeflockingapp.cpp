@@ -13,6 +13,7 @@
 #include <imgui/imgui.h>
 #include <flockingsystemcomponent.h>
 #include <renderbloomcomponent.h>
+#include <glm/ext.hpp>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeFlockingApp)
 RTTI_CONSTRUCTOR(nap::Core&)
@@ -70,11 +71,21 @@ namespace nap
 			return false;
 		}
 
+		// Get foreground component responsible for rendering a screen texture
 		RenderableMeshComponentInstance& foreground_comp = mForegroundEntity->getComponent<RenderableMeshComponentInstance>();
+
+		// Get the bloom component responsible for producing a bloom texture
+		RenderBloomComponentInstance& bloom_comp = mForegroundEntity->getComponent<RenderBloomComponentInstance>();
+
+		// Get the sampler instance for compositing bloom and color
 		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(foreground_comp.getMaterialInstance().findSampler("colorTextures"));
 
-		RenderBloomComponentInstance& bloom_comp = mForegroundEntity->getComponent<RenderBloomComponentInstance>();
+		// Set the output texture of the render blzoom component to the last index of the 
 		sampler_instance->setTexture(1, bloom_comp.getOutputTexture());
+
+		auto* ubo_struct = foreground_comp.getMaterialInstance().findUniform("UBO");
+		mBloomValueUniform = ubo_struct->findUniform<UniformFloatInstance>("mixValue");
+		mBloomValue = mBloomValueUniform->getValue();
 
 		mNumBoids = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().mNumBoids;
 
@@ -146,8 +157,12 @@ namespace nap
 		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
+		ImGui::SliderFloat("Bloom", &mBloomValue, 0.0f, 1.0f);
 		mParameterGUI->show(false);
 		ImGui::End();
+
+		// Update uniforms
+		mBloomValueUniform->setValue(mBloomValue);
 	}
 
 

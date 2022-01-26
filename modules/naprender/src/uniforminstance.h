@@ -245,12 +245,17 @@ namespace nap
 		 * @param value new uniform value
 		 */
 		void setValue(T value)								{ mValue = value; }
+
+		/**
+		 * Returns the uniform value
+		 */
+		const T& getValue() const							{ return mValue; }
 		
 		/**
 		 * Update instance from resource, data is not pushed immediately. 
 		 * @param resource the resource to copy the value from
 		 */
-		void set(const TypedUniformValue<T>& resource)		{ mValue = resource.mValue; 	}
+		void set(const TypedUniformValue<T>& resource)		{ mValue = resource.mValue; }
 
 		/**
 		 * Pushes the data to the 'Shader'.

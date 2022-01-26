@@ -20,7 +20,10 @@ uniform nap
 
 uniform Vert_UBO
 {
+	vec3 cameraLocation;
 	float boidSize;
+	float fresnelScale;
+	float fresnelPower;
 };
 
 // STORAGE
@@ -35,7 +38,8 @@ in vec3 in_Normals;
 
 out vec3 pass_Position;
 out vec3 pass_Normals;
-//out vec3 pass_Uv;
+
+out float pass_Fresnel;
 out uint pass_Id;
 
 
@@ -62,10 +66,11 @@ void main(void)
 
 	// Calculate normal in world coordinates and pass along
 	vec4 normal = vec4(in_Normals, 0.0);
-	pass_Normals = normalize(rotate((mvp.modelMatrix * normal).xyz, bt.rotation));
+	vec3 world_normal = normalize(rotate((mvp.modelMatrix * normal).xyz, bt.rotation));
+	pass_Normals = world_normal;
 
-	// Pass uv's a
-	//pass_Uv = in_UV0;
+	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);
+	pass_Fresnel = fresnelScale * pow(1.0 + dot(eye_to_surface, world_normal), fresnelPower);
 
 	// Pass element id
 	pass_Id = gl_InstanceIndex;

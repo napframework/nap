@@ -21,6 +21,8 @@
 RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("NumBoids",					&nap::FlockingSystemComponent::mNumBoids,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BoidSize",					&nap::FlockingSystemComponent::mBoidSizeParam,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FresnelScale",				&nap::FlockingSystemComponent::mFresnelScaleParam,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FresnelPower",				&nap::FlockingSystemComponent::mFresnelPowerParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ViewRadius",					&nap::FlockingSystemComponent::mViewRadiusParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AvoidRadius",				&nap::FlockingSystemComponent::mAvoidRadiusParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MinSpeed",					&nap::FlockingSystemComponent::mMinSpeedParam,				nap::rtti::EPropertyMetaData::Default)
@@ -59,6 +61,7 @@ namespace nap
 	namespace uniform
 	{
 		constexpr const char* uboStruct = "UBO";
+		constexpr const char* vertUboStruct = "Vert_UBO";
 		constexpr const char* boidSize = "boidSize";
 		constexpr const char* cameraLocation = "cameraLocation";
 		constexpr const char* lightPosition = "lightPosition";
@@ -70,6 +73,8 @@ namespace nap
 		constexpr const char* shininess = "shininess";
 		constexpr const char* ambientIntensity = "ambientIntensity";
 		constexpr const char* diffuseIntensity = "diffuseIntensity";
+		constexpr const char* fresnelScale = "fresnelScale";
+		constexpr const char* fresnelPower = "fresnelPower";
 	}
 
 	namespace computeuniform
@@ -165,18 +170,22 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
 		}
 
+		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
+
 		// Update vertex shader uniforms
-		ubo_struct = getMaterialInstance().getOrCreateUniform("Vert_UBO");
+		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelScale)->setValue(mResource->mFresnelScaleParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower)->setValue(mResource->mFresnelPowerParam->mValue);
 		}
 
 		// Update fragment shader uniforms
 		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
-			auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mResource->mLightPositionParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);

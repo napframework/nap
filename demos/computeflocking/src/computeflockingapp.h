@@ -52,13 +52,13 @@ namespace nap
 	{
 		RTTI_ENABLE(App)
 	public:
-		ComputeFlockingApp(nap::Core& core) : App(core)				{ }
-		
+		ComputeFlockingApp(nap::Core& core) : App(core) { }
+
 		/**
 		 *	Initialize all the services and app specific data structures
 		 */
 		bool init(utility::ErrorState& errorState) override;
-		
+
 		/**
 		 *	Update is called before render, performs all the app logic
 		 */
@@ -73,7 +73,7 @@ namespace nap
 		 *	Forwards the received window event to the render service
 		 */
 		void windowMessageReceived(WindowEventPtr windowEvent) override;
-		
+
 		/**
 		 *  Forwards the received input event to the input service
 		 */
@@ -88,7 +88,7 @@ namespace nap
 		 *	Reloads the selected default preset
 		 */
 		void reloadSelectedPreset();
-		
+
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
@@ -110,6 +110,9 @@ namespace nap
 		std::unique_ptr<ParameterGUI> mParameterGUI;
 
 		int mNumBoids;
+
+		UniformFloatInstance* mBloomValueUniform = nullptr;
+		float mBloomValue = 0.25f;
 
 		std::string mSelectedPreset;
 		nap::Slot<> mCacheSelectedPresetSlot = { [&]() -> void { cacheSelectedPreset(); } };

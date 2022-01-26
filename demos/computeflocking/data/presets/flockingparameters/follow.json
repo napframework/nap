@@ -83,6 +83,22 @@
                     "Value": 0.6940000057220459,
                     "Minimum": 0.0,
                     "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "FresnelScaleParameter",
+                    "Name": "FresnelScale",
+                    "Value": 2.4670000076293947,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "FresnelPowerParameter",
+                    "Name": "FresnelPower",
+                    "Value": 2.7950000762939455,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
                 }
             ],
             "Groups": [
