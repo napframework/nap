@@ -23,7 +23,7 @@ void MainWindow::bindSignals()
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
-	connect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
+	connect(ctx, &AppContext::progressChanged, this, &MainWindow::onBlockingProgress);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
@@ -39,7 +39,7 @@ void MainWindow::unbindSignals()
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
-	disconnect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
+	disconnect(ctx, &AppContext::progressChanged, this, &MainWindow::onBlockingProgress);
 }
 
 
@@ -186,7 +186,6 @@ void MainWindow::updateWindowTitle()
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
-
 	addDocks();
 	addMenu();
 	bindSignals();
@@ -257,36 +256,23 @@ void MainWindow::onLog(nap::LogMessage msg)
 
 void MainWindow::onBlockingProgress(float fraction, const QString& message)
 {
-	const int scale = 100;
-	if (fraction >= 1)
+	if (mProgressDialog == nullptr)
 	{
-		// Done
-		if (mProgressDialog)
-			mProgressDialog.reset();
-	}
-	else
-	{
-		// In progress
-		if (!mProgressDialog)
-		{
-			mProgressDialog = std::make_unique<QProgressDialog>(message, "Cancel", 0, 0, this);
-            mProgressDialog->setWindowTitle("Working...");
-			mProgressDialog->setCancelButton(nullptr);
-		}
-
-		if (fraction > 0)
-		{
-			mProgressDialog->setRange(0, scale);
-			mProgressDialog->setValue((int) fraction * scale);
-		}
-		else
-		{
-			mProgressDialog->setRange(0, 0);
-			mProgressDialog->setValue(0);
-		}
+		mProgressDialog = std::make_unique<QProgressDialog>(this);
+		mProgressDialog->setAutoReset(true);
+		mProgressDialog->setAutoClose(true);
+		mProgressDialog->setRange(0, 100);
+		mProgressDialog->setWindowTitle("Working...");
+		mProgressDialog->setCancelButton(nullptr);
+		mProgressDialog->setModal(Qt::WindowModal);
 		mProgressDialog->show();
+		QApplication::processEvents();
 	}
-	QApplication::processEvents();
+
+	// Set message and value
+	if (!message.isEmpty())
+		mProgressDialog->setLabelText(message);
+	mProgressDialog->setValue(static_cast<int>(fraction * 100.0f));
 }
 
 void MainWindow::showError(nap::LogMessage msg)

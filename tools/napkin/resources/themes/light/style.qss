@@ -217,3 +217,14 @@ QSpinBox {
     selection-color: @dark1;
     color:@front3;
 }
+
+QProgressBar {
+    text-align: center;
+    color: @front4;
+    background-color: @front2;
+}
+
+QProgressBar::chunk {
+    background-color: @front1;
+    width: 20px;
+}
