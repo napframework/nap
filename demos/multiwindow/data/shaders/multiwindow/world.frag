@@ -12,9 +12,9 @@ in vec3 passPosition;					//< frag world space position
 // uniform buffer inputs
 uniform UBO
 {
-	uniform vec3 inCameraPosition;		//< Camera World Space Position
-	uniform vec3 inColorOne;			//< Mix Color One
-	uniform vec3 inColorTwo;			//< Mix Color Two
+	uniform vec3 cameraPosition;		//< Camera World Space Position
+	uniform vec3 colorOne;				//< Mix Color One
+	uniform vec3 colorTwo;				//< Mix Color Two
 	uniform vec3 haloColor;				//< Halo Color
 } ubo;
 
@@ -28,10 +28,10 @@ void main()
 {
 	// Use texture alpha to blend between two colors
 	float alpha = texture(inWorldTexture, passUVs.xy).r;
-	vec3 world_color = mix(ubo.inColorOne, ubo.inColorTwo, alpha);
+	vec3 world_color = mix(ubo.colorOne, ubo.colorTwo, alpha);
 
 	// Calculate mesh to camera angle for halo effect
-	vec3 cam_normal = normalize(ubo.inCameraPosition - passPosition);
+	vec3 cam_normal = normalize(ubo.cameraPosition - passPosition);
 
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value

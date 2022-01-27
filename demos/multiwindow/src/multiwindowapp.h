@@ -105,5 +105,9 @@ namespace nap
 		ObjectPtr<ImageFromFile>	mWorldTexture = nullptr;			//< Pointer to the world texture
 
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
+
+		RGBColorFloat mColorOne;										//< First sphere blend color
+		RGBColorFloat mColorTwo;										//< Second sphere blend color
+		RGBColorFloat mHaloColor;										//< Sphere halo color
 	};
 }

@@ -17,7 +17,7 @@ QMenuBar {
 }
 
 QMenuBar::item:selected {
-    color: @dark1;
+    color: @front4;
     background: @highlight1;
 }
 

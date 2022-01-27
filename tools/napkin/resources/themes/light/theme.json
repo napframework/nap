@@ -12,7 +12,7 @@
   },
   "colors": 
   {
-    "highlight1": "#FF5050",
+    "highlight1": "#5968FD",
     "highlight2": "#D6FFA3",
     "highlight3": "#FFA800",
     "background1": "#CDCDC3",
@@ -25,7 +25,7 @@
     "front4": "#000000",
     "header": "#A7A79E",
     "status": "#444",
-    "instancePropertyOverride": "#5968fd",
+    "instancePropertyOverride": "#5968FD",
     "dimmedItem": "#8D8B84"
   },
   "fonts":
@@ -34,4 +34,3 @@
     "font2": "Manrope"
   }
 }
-

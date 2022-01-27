@@ -55,10 +55,10 @@ namespace nap
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
 
 		// Sample default color values from loaded color palette
-		mColorOne = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
-		mColorTwo = mGuiService->getPalette().mBackgroundColor.convert<RGBColorFloat>();
+		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mColorOne = { mColorTwo[0] * 0.9f, mColorTwo[1] * 0.9f, mColorTwo[2] };
 		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
-		mTextColor = mHaloColor;
+		mTextColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
 
 		return true;
 	}

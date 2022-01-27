@@ -7,12 +7,12 @@
     "debug": "#8D8B84",
     "info": "#AEACA4",
     "warn": "#FFEA30",
-    "error": "#C86969",
-    "fatal": "#C86969"
+    "error": "#FF5050",
+    "fatal": "#FF5050"
   },
   "colors": 
   {
-    "highlight1": "#FF5050",
+    "highlight1": "#5968FD",
     "highlight2": "#D6FFA3",
     "highlight3": "#FFEA30",
     "background1": "#2D2D2D",

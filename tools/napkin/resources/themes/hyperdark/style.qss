@@ -17,13 +17,13 @@ QMenuBar {
 }
 
 QMenuBar::item:selected {
-    color: @dark1;
+    color: @front4;
     background: @highlight1;
 }
 
 QMenu {
-    background-color: @dark2;
-    color: @front4;
+    background-color: @front4;
+    color: @dark1;
 }
 
 QDialog, QLabel {

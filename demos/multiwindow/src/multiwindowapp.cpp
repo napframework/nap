@@ -71,6 +71,12 @@ namespace nap
 		mPlaneTwoEntity = scene->findEntity("PlaneTwo");
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
+
+		// Sample default color values from loaded color palette
+		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mColorOne = { mColorTwo[0] * 0.9f, mColorTwo[1] * 0.9f, mColorTwo[2] };
+		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+
 		return true;
 	}
 	
@@ -114,14 +120,9 @@ namespace nap
 		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 
 		// Set sphere colors (for all windows)
-		auto color_one = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorOne");
-		auto color_two = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorTwo");
-		auto halo = ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor");
-
-		const auto& theme = mGuiService->getPalette();
-		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
-		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>());
-		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>());
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
 
 		// Update the gui for all windows
 		updateGUI();
@@ -141,7 +142,7 @@ namespace nap
 		// Find the camera uniform we need to set for both render passes that contain a sphere
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraPosition");
 
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -340,6 +341,12 @@ namespace nap
 		RGBColorFloat clr = theme.mHighlightColor2.convert<RGBColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ImGui::ColorEdit3("Color One", mColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
+			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
+		}
 		if (ImGui::CollapsingHeader("Used Textures 1"))
 		{
 			float col_width = ImGui::GetColumnWidth();
