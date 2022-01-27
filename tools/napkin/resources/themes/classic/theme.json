@@ -25,9 +25,7 @@
     "front4": "#DEDFEC",
     "header": "#252638",
     "status": "#444",
-    "componentWithOverrides": "#3C3D4D",
-    "instanceProperty": "#2D2E42",
-    "overriddenInstanceProperty": "#3C3D4D",
+    "instancePropertyOverride": "#C86969",
     "dimmedItem": "#5D5E73"
   },
   "fonts":

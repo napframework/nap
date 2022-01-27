@@ -7,7 +7,7 @@ QWidget
 {
     font-family: "@font1";
     font-size: 13px;
-    selection-background-color:@front2;
+    selection-background-color:@front3;
     selection-color: @dark1;
     border: none;
 }
@@ -189,20 +189,20 @@ QGraphicsView {
 }
 
 QComboBox {
-    background: @front3;
-    color: @dark1;
+    background: @dark1;
+    color: @front4;
 }
 
 QComboBox:on  {
-    color: @dark1;
+    color: @front4;
 }
 
 QComboBox:off  {
-    color: @dark2;
+    color: @front3;
 }
 
 QComboBox QAbstractItemView {
-    background: @front3;
+    background: @dark1;
 }
 
 QSpinBox {

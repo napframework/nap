@@ -36,9 +36,7 @@ namespace napkin
 			inline constexpr const char* front2						= "front2";
 			inline constexpr const char* front3						= "front3";
 			inline constexpr const char* front4						= "front4";
-			inline constexpr const char* componentoverride			= "componentWithOverrides";
-			inline constexpr const char* instanceProperty			= "instanceProperty";
-			inline constexpr const char* overriddenInstanceProperty = "overriddenInstanceProperty";
+			inline constexpr const char* instancePropertyOverride	= "instancePropertyOverride";
 			inline constexpr const char* dimmedItem					= "dimmedItem";
 		}
 	}
