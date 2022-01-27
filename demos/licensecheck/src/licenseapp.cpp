@@ -75,10 +75,10 @@ namespace nap
 		ImGui::Begin("Information");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		if (mLicenseValid) {
-			ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "License: valid");
+			ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "License: valid");
 		}
 		else {
-			ImGui::TextColored(mGuiService->getColors().mHighlightColor1, "License: invalid");
+			ImGui::TextColored(mGuiService->getPalette().mHighlightColor1, "License: invalid");
 		}
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		if (ImGui::CollapsingHeader("License"))

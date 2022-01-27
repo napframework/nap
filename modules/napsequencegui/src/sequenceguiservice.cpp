@@ -97,7 +97,7 @@ namespace nap
 	{
 		// Get gui service and colors
 		mGuiService = getCore().getService<IMGuiService>();
-		mColors.init(mGuiService->getColors());
+		mColors.init(mGuiService->getPalette());
 
 		// Load all icons
 		const auto& icon_names = icon::sequencer::get();

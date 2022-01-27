@@ -78,7 +78,7 @@ namespace nap
 		// Setup some gui elements to be drawn later
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 
@@ -93,7 +93,7 @@ namespace nap
 		cam_loc_uniform->setValue(global_pos);
 
 		// Set sphere color
-		const auto& theme = mGuiService->getColors();
+		const auto& theme = mGuiService->getPalette();
 		auto* sphere_color = ubo->getOrCreateUniform<UniformVec3Instance>("ballColor");
 		sphere_color->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
 

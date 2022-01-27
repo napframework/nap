@@ -79,7 +79,7 @@ namespace nap
 
 		// Select GUI window
 		mGuiService->selectWindow(mRenderWindow);
-		const auto& theme = mGuiService->getColors();
+		const auto& theme = mGuiService->getPalette();
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");

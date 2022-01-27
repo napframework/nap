@@ -95,7 +95,7 @@ namespace nap
 		}
 
 		// Colors
-		const auto& theme = mGuiService->getColors();
+		const auto& theme = mGuiService->getPalette();
 
 		// Get fragment shader uniform buffer object
 		auto* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");

@@ -52,13 +52,13 @@ namespace nap
 		mGuiService->selectWindow(mRenderWindow);
 
 		// Sample initial colors from palette
-		mNormalColor = mGuiService->getColors().mFront4Color.convert<RGBColorFloat>();
-		mValleyColor = mGuiService->getColors().mBackgroundColor.convert<RGBColorFloat>();
-		mPeakColor = mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>();
-		mHaloColor = mGuiService->getColors().mFront2Color.convert<RGBColorFloat>();
+		mNormalColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+		mValleyColor = mGuiService->getPalette().mBackgroundColor.convert<RGBColorFloat>();
+		mPeakColor = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mHaloColor = mGuiService->getPalette().mFront2Color.convert<RGBColorFloat>();
 
 		// Set clear color
-		mRenderWindow->setClearColor({ mGuiService->getColors().mDarkColor.convert<RGBColorFloat>(), 1.0f});
+		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f});
 
 		return true;
 	}
@@ -240,7 +240,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		if (ImGui::CollapsingHeader("Blending"))
@@ -271,7 +271,7 @@ namespace nap
 	void HeightmapApp::pushColor(RGBColorFloat& color, MaterialInstance& material, const std::string& uboName, const std::string& uniformName)
 	{
 		UniformStructInstance* frag_ubo = material.getOrCreateUniform(uboName);
-		frag_ubo->getOrCreateUniform<UniformVec3Instance>(uniformName)->setValue(color.toVec3());
+		frag_ubo->getOrCreateUniform<UniformVec3Instance>(uniformName)->setValue(color);
 	}
 
 }

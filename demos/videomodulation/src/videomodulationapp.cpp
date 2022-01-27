@@ -61,8 +61,8 @@ namespace nap
 		mCurrentMesh = mesh_selector.getIndex();
 
 		// Sample theme colors for background
-		mColorOne = mGuiService->getColors().mDarkColor.convert<RGBColorFloat>();
-		mColorTwo = mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>();
+		mColorOne = mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>();
+		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
 
 		// Start video playback
 		mVideoPlayer->play();
@@ -102,7 +102,7 @@ namespace nap
 
 		// Push colors
 		ubo = displaceme_material.getOrCreateUniform("UBO");
-		ubo->getOrCreateUniform<UniformVec3Instance>("colorOne")->setValue(mGuiService->getColors().mFront1Color.convert<RGBColorFloat>());
+		ubo->getOrCreateUniform<UniformVec3Instance>("colorOne")->setValue(mGuiService->getPalette().mFront1Color.convert<RGBColorFloat>());
 		ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo")->setValue(mColorTwo.toVec3());
 		ubo->getOrCreateUniform<UniformVec3Instance>("colorThr")->setValue(mColorOne.toVec3());
 	}

@@ -118,7 +118,7 @@ namespace nap
 		auto color_two = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorTwo");
 		auto halo = ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor");
 
-		const auto& theme = mGuiService->getColors();
+		const auto& theme = mGuiService->getPalette();
 		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
 		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>());
 		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>());
@@ -332,7 +332,7 @@ namespace nap
 		mGuiService->selectWindow(mRenderWindowOne);
 
 		// Theme
-		const auto& theme = mGuiService->getColors();
+		const auto& theme = mGuiService->getPalette();
 
 		// Draw some GUI elements and show used textures
 		ImGui::Begin("Controls");

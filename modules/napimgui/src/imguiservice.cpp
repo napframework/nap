@@ -105,7 +105,7 @@ namespace nap
 
 	namespace gui
 	{
-		static const ColorPalette& getPalette(EColorScheme colorScheme, const gui::ColorPalette& customPalette)
+		static const ColorPalette& getColorPalette(EColorScheme colorScheme, const gui::ColorPalette& customPalette)
 		{
 			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
 			{
@@ -661,7 +661,7 @@ namespace nap
 	}
 
 
-	const nap::gui::ColorPalette& IMGuiService::getColors() const
+	const nap::gui::ColorPalette& IMGuiService::getPalette() const
 	{
 		assert(mColorPalette != nullptr);
 		return *mColorPalette;
@@ -695,7 +695,7 @@ namespace nap
 		}
 
 		// Get palette associated with scheme
-		mColorPalette = &getPalette(mConfiguration->mColorScheme, mConfiguration->mCustomColors);
+		mColorPalette = &getColorPalette(mConfiguration->mColorScheme, mConfiguration->mCustomColors);
 
 		return true;
 	}
@@ -802,7 +802,7 @@ namespace nap
 			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
-			mStyle = createStyle(getColors());
+			mStyle = createStyle(getPalette());
 
 			// Create context using font & style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));

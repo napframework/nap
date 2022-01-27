@@ -117,8 +117,8 @@ namespace nap
 		ImGui::Begin("Controls");
 
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(mGuiService->getColors().mHighlightColor1, "Hold LMB to spray paint on object");
-		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "Hold space + LMB to rotate, RMB to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor1, "Hold LMB to spray paint on object");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Hold space + LMB to rotate, RMB to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Mesh Selection

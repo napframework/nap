@@ -125,11 +125,11 @@ namespace nap
 		mRotationSpeed = resource->mRotationSpeed;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
-		mColors.emplace_back(mGuiService->getColors().mBackgroundColor.convert<RGBColorFloat>());
-		mColors.emplace_back(mGuiService->getColors().mFront1Color.convert<RGBColorFloat>());
-		mColors.emplace_back(mGuiService->getColors().mFront2Color.convert<RGBColorFloat>());
-		mColors.emplace_back(mGuiService->getColors().mFront3Color.convert<RGBColorFloat>());
-		mColors.emplace_back(mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mBackgroundColor.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mFront1Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mFront2Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mFront3Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 
 		// We do a bit of caching here, to ensure we can draw the same mesh, at different positions, using the same pipeline in order.
 		// If we randomly select a mesh for every vertex on draw we switch between pipelines too often, which is heavy for the GPU.

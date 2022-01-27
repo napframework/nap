@@ -54,6 +54,12 @@ namespace nap
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
 
+		// Sample default color values from loaded color palette
+		mColorOne = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mColorTwo = mGuiService->getPalette().mBackgroundColor.convert<RGBColorFloat>();
+		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+		mTextColor = mHaloColor;
+
 		return true;
 	}
 	
@@ -73,7 +79,32 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Update the camera location in the world shader for the halo effect
+		// Setup GUI
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		// Colors
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ImGui::ColorEdit3("Color One", mColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
+			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
+			ImGui::ColorEdit3("Text Color", mTextColor.getData());
+		}
+
+		// Display world texture in GUI
+		if (ImGui::CollapsingHeader("Textures"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
+			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
+			ImGui::Text("Word Texture");
+		}
+		ImGui::End();
+
+		// push camera location to the world shader for the halo effect
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform
 		// Once we have the uniform we can set it to the camera world space location
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
@@ -85,35 +116,14 @@ namespace nap
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform->setValue(global_pos);
 
-		// Set colors in sphere shader
-		auto color_one = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorOne");
-		auto color_two = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorTwo");
-		auto halo = ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor");
+		// Now push colors to shader
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorOne")->setValue(mColorOne);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorTwo")->setValue(mColorTwo);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
 
-		const auto& theme = mGuiService->getColors();
-		color_one->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
-		color_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>());
-		halo->setValue(theme.mFront4Color.convert<RGBColorFloat>());
-
-		// Set text color
+		// Push text color
 		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
-		text_comp.setColor(theme.mFront4Color.convert<RGBColorFloat>());
-
-		// Add some gui elements
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(theme.mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
-		// Display world texture in GUI
-		if (ImGui::CollapsingHeader("Textures"))
-		{
-			float col_width = ImGui::GetColumnWidth();
-			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
-			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
-			ImGui::Text("Word Texture");
-		}
-		ImGui::End();
+		text_comp.setColor(mHaloColor);
 	}
 
 	

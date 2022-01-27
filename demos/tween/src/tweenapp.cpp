@@ -91,7 +91,7 @@ namespace nap
 
 		// Set color
 		auto* ball_color = ubo->getOrCreateUniform<UniformVec3Instance>("ballColor");
-		ball_color->setValue(mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>());
+		ball_color->setValue(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 
 		// Find the animation uniform in the material of the plane.
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
@@ -108,8 +108,8 @@ namespace nap
 		// Set plane colors
 		auto* color_one = ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne");
 		auto* color_two = ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo");
-		color_one->setValue(mGuiService->getColors().mFront4Color.convert<RGBColorFloat>());
-		color_two->setValue(mGuiService->getColors().mDarkColor.convert<RGBColorFloat>());
+		color_one->setValue(mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>());
+		color_two->setValue(mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>());
 
 		// draw the GUI
 		if( ImGui::Begin("Tween") )
@@ -118,7 +118,7 @@ namespace nap
 			ImGui::Text(getCurrentDateTime().toString().c_str());
 			RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
 			ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-			ImGui::TextColored(mGuiService->getColors().mHighlightColor2,
+			ImGui::TextColored(mGuiService->getPalette().mHighlightColor2,
 				"Click somewhere in the window to move the sphere to that location");
 
 			// change duration of the tween

@@ -55,7 +55,7 @@ namespace nap
 		mCameraEntity = scene->findEntity("CameraEntity");
 
 		// Set back buffer color
-		mRenderWindow->setClearColor({ mGuiService->getColors().mDarkColor.convert<RGBColorFloat>(), 1.0f });
+		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 
 		return true;
 	}
@@ -73,7 +73,7 @@ namespace nap
 		// Add some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(mGuiService->getColors().mHighlightColor2, "'f'=fullscreen, 'esc'=quit");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "'f'=fullscreen, 'esc'=quit");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 	
 		// Color manipulation
@@ -230,8 +230,8 @@ namespace nap
 		auto* ubo = render_comp.getMaterialInstance().getOrCreateUniform("UBO");
 		auto* color_one = ubo->getOrCreateUniform<UniformVec3Instance>("colorOne");
 		auto* color_two = ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
-		color_one->setValue(mGuiService->getColors().mFront4Color.convert<RGBColorFloat>());
-		color_two->setValue(mGuiService->getColors().mHighlightColor1.convert<RGBColorFloat>());
+		color_one->setValue(mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>());
+		color_two->setValue(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 	}
 	
 	

@@ -81,21 +81,21 @@ namespace nap
 		};
 
 		/**
-		 * Configurable palette of GUI colors
+		 * Configurable palette of GUI colors.
 		 */
 		struct NAPAPI ColorPalette
 		{
 			ColorPalette() = default;
-			RGBColor8 mBackgroundColor = { 0x2D, 0x2D, 0x2D };		///< Property: 'BackgroundColor' Gui background color
+			RGBColor8 mBackgroundColor = { 0x2D, 0x2D, 0x2D };		///< Property: 'BackgroundColor' Gui window background color
 			RGBColor8 mDarkColor = { 0x00, 0x00, 0x00 };			///< Property: 'DarkColor' Gui dark color
 			RGBColor8 mMenuColor = { 0x8D, 0x8B, 0x84 };			///< Property: 'MenuColor' Gui menu color
-			RGBColor8 mFront1Color = { 0x8D, 0x8B, 0x84 };			///< Property: 'FrontColor1' Gui front color 1
-			RGBColor8 mFront2Color = { 0xAE, 0xAC, 0xA4 };			///< Property: 'FrontColor2' Gui front color 3
-			RGBColor8 mFront3Color = { 0xCD, 0xCD, 0xC3 };			///< Property: 'FrontColor3' Gui front color 2
-			RGBColor8 mFront4Color = { 0xFF, 0xFF, 0xFF };			///< Property: 'FrontColor4' Gui front color 3 (text)
-			RGBColor8 mHighlightColor1 = { 0xFF, 0x50, 0x50 };		///< Property: 'HighlightColor1' Gui highlight color 1
-			RGBColor8 mHighlightColor2 = { 0xD6, 0xFF, 0xA3 };		///< Property: 'HighlightColor2' Gui highlight color 2
-			RGBColor8 mHighlightColor3 = { 0xFF, 0xEA, 0x30 };		///< Property: 'HighlightColor3' Gui highlight color 2
+			RGBColor8 mFront1Color = { 0x8D, 0x8B, 0x84 };			///< Property: 'FrontColor1' Gui gradient color 1
+			RGBColor8 mFront2Color = { 0xAE, 0xAC, 0xA4 };			///< Property: 'FrontColor2' Gui gradient color 2
+			RGBColor8 mFront3Color = { 0xCD, 0xCD, 0xC3 };			///< Property: 'FrontColor3' Gui gradient color 3
+			RGBColor8 mFront4Color = { 0xFF, 0xFF, 0xFF };			///< Property: 'FrontColor4' Gui gradient color 4 (text)
+			RGBColor8 mHighlightColor1 = { 0xFF, 0x50, 0x50 };		///< Property: 'HighlightColor1' Special highlight color 1
+			RGBColor8 mHighlightColor2 = { 0xD6, 0xFF, 0xA3 };		///< Property: 'HighlightColor2' Special highlight color 2
+			RGBColor8 mHighlightColor3 = { 0xFF, 0xEA, 0x30 };		///< Property: 'HighlightColor3' Special highlight color 2
 		};
 	}
 
@@ -211,7 +211,7 @@ namespace nap
 		 * Returns the GUI color palette.
 		 * @return the GUI color palette.
 		 */
-		const gui::ColorPalette& getColors() const;
+		const gui::ColorPalette& getPalette() const;
 
 		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.

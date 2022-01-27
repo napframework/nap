@@ -132,9 +132,9 @@ namespace nap
 			return false;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
-		mColors.emplace_back(mGUIService->getColors().mFront1Color.convert<RGBColorFloat>());
-		mColors.emplace_back(mGUIService->getColors().mFront2Color.convert<RGBColorFloat>());
-		mColors.emplace_back(mGUIService->getColors().mHighlightColor1.convert<RGBColorFloat>());
+		mColors.emplace_back(mGUIService->getPalette().mFront1Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGUIService->getPalette().mFront2Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGUIService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 			
 		return true;
 	}
