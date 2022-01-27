@@ -109,21 +109,21 @@ namespace nap
 		// Once we have the uniform we can set it to the camera world space location
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraPosition");
 
 		// Get camera world space position and set in sphere shader
 		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform->setValue(global_pos);
 
-		// Now push colors to shader
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorOne")->setValue(mColorOne);
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("inColorTwo")->setValue(mColorTwo);
+		// Now push sphere colors
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
 		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
 
 		// Push text color
 		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
-		text_comp.setColor(mHaloColor);
+		text_comp.setColor(mTextColor);
 	}
 
 	
