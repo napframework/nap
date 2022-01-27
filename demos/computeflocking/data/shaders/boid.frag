@@ -6,6 +6,7 @@
 
 uniform UBO
 {
+	vec3		boidColor;					// 
 	vec3		cameraLocation;				// World Space location of the camera
 	vec3		lightPosition;				//
 	float		lightIntensity;				//
@@ -16,6 +17,7 @@ uniform UBO
 	float		shininess;					// Specular angle shininess
 	float		ambientIntensity;			// Ambient of ambient light
 	float		diffuseIntensity;			// Diffuse scaling factor
+	uint 		randomColor;				// Random color flag
 } ubo;
 
 in vec3 pass_Position;
@@ -36,8 +38,15 @@ vec3 hsv2rgb(vec3 c)
 
 void main(void)
 {
-	vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.8);
-	vec3 boid_color = hsv2rgb(boid_hsv);
+	// Theme color
+	vec3 boid_color = ubo.boidColor;
+
+	// Rainbow
+	if (ubo.randomColor > 0)
+	{
+		vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
+		boid_color = hsv2rgb(boid_hsv);
+	}
 
 	// Surface to camera normal     
     vec3 surface_to_cam_n = normalize(ubo.cameraLocation - pass_Position);
@@ -69,7 +78,7 @@ void main(void)
 
     // Compute final diffuse and specular color values
     //vec3 diffuse_color = ubo.diffuseColor  * ubo.lightColor * diffuse_v;
-    vec3 diffuse_color = boid_color  * ubo.lightColor * diffuse_v;
+    vec3 diffuse_color = boid_color * ubo.lightColor * diffuse_v;
     vec3 specular_color = ubo.specularColor * specula_v;
 
     // Get ambient color

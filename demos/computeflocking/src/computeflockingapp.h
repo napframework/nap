@@ -6,6 +6,8 @@
 
 // External Includes
 #include <renderablemeshcomponent.h>
+#include <renderbloomcomponent.h>
+#include <rendertotexturecomponent.h>
 #include <renderwindow.h>
 #include <nap/resourcemanager.h>
 #include <sceneservice.h>
@@ -16,12 +18,11 @@
 #include <imguiservice.h>
 #include <renderservice.h>
 #include <parametergui.h>
+#include <parameternumeric.h>
 #include <nap/signalslot.h>
 
 namespace nap
 {
-	using namespace rtti;
-
 	/**
 	* Demo application that is called from within the main loop
 	*
@@ -89,6 +90,11 @@ namespace nap
 		 */
 		void reloadSelectedPreset();
 
+		/**
+		 * Collects required resources 
+		 */
+		bool reload(utility::ErrorState& errorState);
+
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
@@ -96,26 +102,42 @@ namespace nap
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< IMGui service
 
-		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointers to the render window
-		ObjectPtr<EntityInstance> mDefaultInputRouter;					//< Routes input events to the input component
-		ObjectPtr<EntityInstance> mCameraEntity;						//< Entity that holds the camera
-		ObjectPtr<EntityInstance> mOrthoCameraEntity;					//< Entity that holds the ortho camera
-		ObjectPtr<EntityInstance> mFlockingSystemEntity;				//< Entity that emits the particles
-		ObjectPtr<EntityInstance> mForegroundEntity;
+		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Pointers to the render window
+		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
+		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mOrthoCameraEntity;				//< Entity that holds the ortho camera
+
+		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity;
+		rtti::ObjectPtr<EntityInstance> mRenderEntity;
+		rtti::ObjectPtr<EntityInstance> mWorldEntity;
 
 		rtti::ObjectPtr<RenderTarget> mRenderTarget;
-		rtti::ObjectPtr<RenderTexture2D> mRenderTexture;
 
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		std::unique_ptr<ParameterGUI> mParameterGUI;
 
 		int mNumBoids;
 
-		UniformFloatInstance* mBloomValueUniform = nullptr;
-		float mBloomValue = 0.25f;
+		// RenderContrast uniforms
+		ParameterFloat* mContrastParam = nullptr;
+		UniformFloatInstance* mContrastUniform = nullptr;
+
+		ParameterFloat* mBrightnessParam = nullptr;
+		UniformFloatInstance* mBrightnessUniform = nullptr;
+
+		ParameterFloat* mSaturationParam = nullptr;
+		UniformFloatInstance* mSaturationUniform = nullptr;
+
+		// RenderComposite uniforms
+		ParameterFloat* mBlendParam = nullptr;
+		UniformFloatInstance* mBlendUniform = nullptr;
 
 		std::string mSelectedPreset;
 		nap::Slot<> mCacheSelectedPresetSlot = { [&]() -> void { cacheSelectedPreset(); } };
 		nap::Slot<> mReloadSelectedPresetSlot = { [&]() -> void { reloadSelectedPreset(); } };
+
+		RenderBloomComponentInstance*		mBloomComponent = nullptr;
+		RenderToTextureComponentInstance*	mContrastComponent = nullptr;
+		RenderToTextureComponentInstance*	mCompositeComponent = nullptr;
 	};
 }

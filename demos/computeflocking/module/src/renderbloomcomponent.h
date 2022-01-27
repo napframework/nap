@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "rendertotexturecomponent.h"
+#include "blurshader.h"
 
 namespace nap
 {
@@ -21,7 +22,8 @@ namespace nap
 		DECLARE_COMPONENT(RenderBloomComponent, RenderBloomComponentInstance)
 	public:
 		ResourcePtr<RenderTexture2D>	mInputTexture = nullptr;							///< Property: 'InputTexture' the input color texture
-		uint							mPassCount = 1;
+		EBlurSamples					mKernel = EBlurSamples::X5;							///< Property: 'Kernel' the blur kernel
+		uint							mPassCount = 1;										///< Property: 'PassCount' the number of combined horizontal/vertical passes
 	};
 
 

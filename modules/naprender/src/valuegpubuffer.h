@@ -24,7 +24,7 @@ namespace nap
 	 * A value buffer property
 	 * Used exclusively used as a template argument for vertex buffer type definitions
 	 */
-	enum EValueGPUBufferProperty : uint32
+	enum EValueGPUBufferProperty : uint
 	{
 		Generic = 0,		///< Generic value buffer, flags can be set by user
 		Vertex = 1,			///< Vertex buffer, enables binding this buffer as a vertex attribute

@@ -2,7 +2,7 @@
     "Objects": [
         {
             "Type": "nap::BoxMesh",
-            "mID": "BoxMesh_Bounds",
+            "mID": "BoxMeshBounds",
             "Usage": "Static",
             "CullMode": "Front",
             "PolygonMode": "Line",
@@ -26,6 +26,10 @@
             }
         },
         {
+            "Type": "nap::ColorAdjustmentShader",
+            "mID": "ColorAdjustmentShader"
+        },
+        {
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
@@ -38,7 +42,7 @@
                         "Type": "nap::StorageUniformStructBuffer",
                         "mID": "StorageUniformStructBuffer_a2cf8f2a",
                         "Name": "transforms",
-                        "Buffer": "StructGPUBuffer_Transforms"
+                        "Buffer": "TransformBuffer"
                     }
                 }
             ],
@@ -245,7 +249,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_8960d2e2",
                                     "Name": "transforms",
-                                    "Buffer": "StructGPUBuffer_Transforms"
+                                    "Buffer": "TransformBuffer"
                                 }
                             }
                         ],
@@ -265,6 +269,8 @@
                         }
                     },
                     "NumBoids": 1000,
+                    "BoidColor": "BoidColorParameter",
+                    "RandomColor": "RandomColorParameter",
                     "BoidSize": "BoidSizeParameter",
                     "FresnelScale": "FresnelScaleParameter",
                     "FresnelPower": "FresnelPowerParameter",
@@ -286,7 +292,7 @@
                     "AmbientIntensity": "AmbientIntensityParameter",
                     "DiffuseIntensity": "DiffuseIntensityParameter",
                     "SpecularIntensity": "SpecularIntensityParameter",
-                    "PerspCameraComponent": "../CameraEntity/PerspectiveCamera",
+                    "PerspCameraComponent": "../../CameraEntity/PerspectiveCamera",
                     "TargetTransformComponent": "../BoidTargetEntity/ChildTransformEntity/BoidTargetTransform"
                 },
                 {
@@ -326,7 +332,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_ed632592",
                                     "Name": "boids",
-                                    "Buffer": "StructGPUBuffer_Boids_A"
+                                    "Buffer": "BoidBufferA"
                                 }
                             },
                             {
@@ -337,7 +343,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_b2aa64d8",
                                     "Name": "boids",
-                                    "Buffer": "StructGPUBuffer_Boids_B"
+                                    "Buffer": "BoidBufferB"
                                 }
                             }
                         ],
@@ -360,7 +366,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_9c63ead3",
                                     "Name": "boids",
-                                    "Buffer": "StructGPUBuffer_Boids_B"
+                                    "Buffer": "BoidBufferB"
                                 }
                             },
                             {
@@ -371,105 +377,13 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_07aa6b45",
                                     "Name": "boids",
-                                    "Buffer": "StructGPUBuffer_Boids_A"
+                                    "Buffer": "BoidBufferA"
                                 }
                             }
                         ],
                         "Samplers": []
                     },
                     "Invocations": 1
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "ForegroundEntity",
-            "Components": [
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderForeground",
-                    "Visible": true,
-                    "Mesh": "PlaneMesh",
-                    "MaterialInstance": {
-                        "Material": "MixMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_eb6a29f0",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_7f5a4867",
-                                        "Name": "mixValue",
-                                        "Value": 0.5
-                                    }
-                                ]
-                            }
-                        ],
-                        "StorageUniforms": [],
-                        "Samplers": [
-                            {
-                                "Type": "nap::Sampler2DArray",
-                                "mID": "Sampler2DArray_0e60adc3",
-                                "Name": "colorTextures",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MaxLodLevel": 1000,
-                                "AnisotropicSamples": "Default",
-                                "Textures": [
-                                    "ColorRT",
-                                    "DummyRT"
-                                ]
-                            }
-                        ],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_f20cac36",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 1.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderBloomComponent",
-                    "mID": "RenderBloom",
-                    "Visible": true,
-                    "InputTexture": "ColorRT",
-                    "PassCount": 4
                 }
             ],
             "Children": []
@@ -487,7 +401,7 @@
                         "RightPlane": 1.0,
                         "TopPlane": 1.0,
                         "BottomPlane": 0.0,
-                        "NearClippingPlane": 1.0,
+                        "NearClippingPlane": 0.0,
                         "FarClippingPlane": 1000.0
                     }
                 },
@@ -508,9 +422,163 @@
                         "Scale": {
                             "x": 1.0,
                             "y": 1.0,
-                            "z": -1.0
+                            "z": 1.0
                         },
                         "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "RenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_f20cac36",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderBloomComponent",
+                    "mID": "RenderBloom",
+                    "Visible": true,
+                    "PassCount": 3,
+                    "Kernel": "5x5",
+                    "InputTexture": "ColorTexture_Contrast"
+                },
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "RenderContrast",
+                    "Visible": true,
+                    "OutputTexture": "ColorTexture_Contrast",
+                    "MaterialInstance": {
+                        "Material": "ContrastMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_ada46fb0",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_2a3ce578",
+                                        "Name": "brightness",
+                                        "Value": 0.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_865c113e",
+                                        "Name": "contrast",
+                                        "Value": 0.10000000149011612
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_d96e9df8",
+                                        "Name": "saturation",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "StorageUniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "Sampler2D_d7e164c9",
+                                "Name": "colorTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "Texture": "ColorTexture"
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Samples": "One",
+                    "ClearColor": {
+                        "Values": [
+                            17,
+                            19,
+                            37,
+                            255
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "RenderComposite",
+                    "Visible": true,
+                    "OutputTexture": "ColorTexture_Final",
+                    "MaterialInstance": {
+                        "Material": "CompositeMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_e0d96372",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_5a1d06e5",
+                                        "Name": "blend",
+                                        "Value": 0.5
+                                    }
+                                ]
+                            }
+                        ],
+                        "StorageUniforms": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2DArray",
+                                "mID": "Sampler2DArray_8c99bedb",
+                                "Name": "colorTextures",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "Textures": [
+                                    "ColorTexture",
+                                    "DummyRT"
+                                ]
+                            }
+                        ],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Samples": "One",
+                    "ClearColor": {
+                        "Values": [
+                            17,
+                            19,
+                            37,
+                            255
+                        ]
                     }
                 }
             ],
@@ -554,7 +622,7 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundsComponent",
                     "Visible": true,
-                    "Mesh": "BoxMesh_Bounds",
+                    "Mesh": "BoxMeshBounds",
                     "MaterialInstance": {
                         "Material": "BoundsMaterial",
                         "Uniforms": [
@@ -572,6 +640,12 @@
                                             "y": 0.25,
                                             "z": 0.25
                                         }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_d884840b",
+                                        "Name": "alpha",
+                                        "Value": 1.0
                                     }
                                 ]
                             }
@@ -594,7 +668,10 @@
                     }
                 }
             ],
-            "Children": []
+            "Children": [
+                "FlockingSystemEntity",
+                "BoidTargetEntity"
+            ]
         },
         {
             "Type": "nap::GnomonMesh",
@@ -669,7 +746,7 @@
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
                     "AnisotropicSamples": "Default",
-                    "Texture": "ColorRT"
+                    "Texture": "ColorTexture"
                 }
             ],
             "Shader": "ColorTextureShader",
@@ -688,7 +765,7 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "MixMaterial",
+            "mID": "CompositeMaterial",
             "Uniforms": [],
             "StorageUniforms": [],
             "Samplers": [
@@ -704,12 +781,57 @@
                     "MaxLodLevel": 1000,
                     "AnisotropicSamples": "Default",
                     "Textures": [
-                        "ColorRT",
+                        "ColorTexture",
                         "DummyRT"
                     ]
                 }
             ],
-            "Shader": "MixShader",
+            "Shader": "CompositeShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ContrastMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_a71198c6",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_3bd65545",
+                            "Name": "brightness",
+                            "Value": 0.0
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_e6d29db6",
+                            "Name": "contrast",
+                            "Value": 0.10000000149011612
+                        }
+                    ]
+                }
+            ],
+            "StorageUniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2D",
+                    "mID": "Sampler2D_6d730852",
+                    "Name": "colorTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Texture": "ColorTexture_Contrast"
+                }
+            ],
+            "Shader": "ColorAdjustmentShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -727,7 +849,7 @@
                         "Type": "nap::StorageUniformStructBuffer",
                         "mID": "StorageUniformStructBuffer_44aae9ca",
                         "Name": "transforms",
-                        "Buffer": "StructGPUBuffer_Transforms"
+                        "Buffer": "TransformBuffer"
                     }
                 }
             ],
@@ -836,6 +958,60 @@
                     "mID": "RenderGroup",
                     "Parameters": [
                         {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "BoidColorParameter",
+                            "Name": "BoidColor",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "DiffuseColorParameter",
+                            "Name": "DiffuseColor",
+                            "Value": {
+                                "Values": [
+                                    0.5,
+                                    0.5,
+                                    0.5
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "LightColorParameter",
+                            "Name": "LightColor",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "SpecularColorParameter",
+                            "Name": "SpecularColor",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "RandomColorParameter",
+                            "Name": "RandomColor",
+                            "Value": false
+                        },
+                        {
                             "Type": "nap::ParameterVec3",
                             "mID": "LightPositionParameter",
                             "Name": "LightPosition",
@@ -853,45 +1029,6 @@
                             "mID": "LightIntensityParameter",
                             "Name": "LightIntensity",
                             "Value": 1.0,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        },
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "DiffuseColorParameter",
-                            "Name": "DiffuseColor",
-                            "Value": {
-                                "x": 0.5,
-                                "y": 0.5,
-                                "z": 0.5
-                            },
-                            "Clamp": false,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        },
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "LightColorParameter",
-                            "Name": "LightColor",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            },
-                            "Clamp": false,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        },
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "SpecularColorParameter",
-                            "Name": "SpecularColor",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            },
-                            "Clamp": false,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -942,6 +1079,38 @@
                             "Value": 2.0,
                             "Minimum": 0.0,
                             "Maximum": 4.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "BloomBlendParameter",
+                            "Name": "BloomBlend",
+                            "Value": 0.4000000059604645,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "ContrastParameter",
+                            "Name": "Contrast",
+                            "Value": 0.25,
+                            "Minimum": -1.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "BrightnessParameter",
+                            "Name": "Brightness",
+                            "Value": 0.0,
+                            "Minimum": -1.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SaturationParameter",
+                            "Name": "Saturation",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 5.0
                         }
                     ],
                     "Groups": []
@@ -949,33 +1118,23 @@
             ]
         },
         {
-            "Type": "nap::PlaneMesh",
-            "mID": "PlaneMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Fill",
-            "Size": {
-                "x": 1920.0,
-                "y": 1080.0
-            },
-            "Position": {
-                "x": 960.0,
-                "y": 540.0
-            },
-            "Color": {
+            "Type": "nap::RenderTarget",
+            "mID": "ColorTarget",
+            "ColorTexture": "ColorTexture",
+            "SampleShading": true,
+            "Samples": "Four",
+            "ClearColor": {
                 "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
+                    0.06666667014360428,
+                    0.07450980693101883,
+                    0.14509804546833039,
                     1.0
                 ]
-            },
-            "Rows": 1,
-            "Columns": 1
+            }
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "ColorRT",
+            "mID": "ColorTexture",
             "Usage": "Static",
             "Fill": false,
             "Width": 1920,
@@ -984,10 +1143,46 @@
             "ColorSpace": "Linear",
             "ClearColor": {
                 "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
+                    0.06666667014360428,
+                    0.07450980693101883,
+                    0.14509804546833039,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "ColorTexture_Contrast",
+            "Usage": "Static",
+            "Fill": false,
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.06666667014360428,
+                    0.07450980693101883,
+                    0.14509804546833039,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "ColorTexture_Final",
+            "Usage": "Static",
+            "Fill": false,
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.06666667014360428,
+                    0.07450980693101883,
+                    0.14509804546833039,
+                    1.0
                 ]
             }
         },
@@ -1011,24 +1206,24 @@
         },
         {
             "Type": "nap::RenderWindow",
-            "mID": "Window0",
+            "mID": "RenderWindow",
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": true,
+            "SampleShading": false,
             "Title": "ComputeFlockingDemo",
             "Width": 1920,
             "Height": 1080,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.06666667014360428,
+                    0.07450980693101883,
+                    0.14509804546833039,
                     1.0
                 ]
             },
-            "Samples": "Four",
+            "Samples": "One",
             "AdditionalSwapImages": 1
         },
         {
@@ -1044,19 +1239,11 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "FlockingSystemEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "BoidTargetEntity",
-                    "InstanceProperties": []
-                },
-                {
                     "Entity": "WorldEntity",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "ForegroundEntity",
+                    "Entity": "RenderEntity",
                     "InstanceProperties": []
                 },
                 {
@@ -1079,9 +1266,9 @@
         },
         {
             "Type": "nap::ShaderFromFile",
-            "mID": "MixShader",
-            "VertShader": "shaders/mix.vert",
-            "FragShader": "shaders/mix.frag"
+            "mID": "CompositeShader",
+            "VertShader": "shaders/composite.vert",
+            "FragShader": "shaders/composite.frag"
         },
         {
             "Type": "nap::SphereMesh",
@@ -1095,7 +1282,7 @@
             "Color": {
                 "Values": [
                     1.0,
-                    0.0,
+                    0.20000000298023225,
                     0.0,
                     1.0
                 ]
@@ -1103,7 +1290,7 @@
         },
         {
             "Type": "nap::StructBufferFillPolicy",
-            "mID": "StructBufferFillPolicy_0d793d6f",
+            "mID": "BoidBufferFillPolicy",
             "VariableFillPolicies": [
                 {
                     "Type": "nap::Vec4FillPolicyEntry",
@@ -1172,7 +1359,7 @@
         },
         {
             "Type": "nap::StructGPUBuffer",
-            "mID": "StructGPUBuffer_Boids_A",
+            "mID": "BoidBufferA",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -1267,12 +1454,12 @@
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "FillPolicy": "StructBufferFillPolicy_0d793d6f",
+            "FillPolicy": "BoidBufferFillPolicy",
             "Clear": false
         },
         {
             "Type": "nap::StructGPUBuffer",
-            "mID": "StructGPUBuffer_Boids_B",
+            "mID": "BoidBufferB",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -1372,7 +1559,7 @@
         },
         {
             "Type": "nap::StructGPUBuffer",
-            "mID": "StructGPUBuffer_Transforms",
+            "mID": "TransformBuffer",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",

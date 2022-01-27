@@ -12,7 +12,6 @@
 #include <scene.h>
 #include <imgui/imgui.h>
 #include <flockingsystemcomponent.h>
-#include <renderbloomcomponent.h>
 #include <glm/ext.hpp>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeFlockingApp)
@@ -40,59 +39,8 @@ namespace nap
 			return false;
 		}
 
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
-		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window0");
-		mCameraEntity = scene->findEntity("CameraEntity");
-		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
-		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
-		mFlockingSystemEntity = scene->findEntity("FlockingSystemEntity");
-		mForegroundEntity = scene->findEntity("ForegroundEntity");
-
-		if (!errorState.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
-			return false;
-
-		// Create render texture
-		mRenderTexture = mResourceManager->findObject<RenderTexture2D>("ColorRT");
-		if (mRenderTexture == nullptr)
-		{
-			errorState.fail("%s: Missing nap::RenderTexture2D 'ColorRT'", mRenderTexture->mID.c_str());
-			return false;
-		}
-
-		// Create render target
-		mRenderTarget = mResourceManager->createObject<RenderTarget>();
-		mRenderTarget->mColorTexture = mRenderTexture;
-		mRenderTarget->mRequestedSamples = mRenderWindow->mRequestedSamples;
-		mRenderTarget->mClearColor = mRenderWindow->mClearColor;
-		mRenderTarget->mSampleShading = mRenderWindow->mSampleShading;
-		if (!mRenderTarget->init(errorState))
-		{
-			errorState.fail("%s: Failed to initialize internal render target", mRenderTarget->mID.c_str());
-			return false;
-		}
-
-		// Get foreground component responsible for rendering a screen texture
-		RenderableMeshComponentInstance& foreground_comp = mForegroundEntity->getComponent<RenderableMeshComponentInstance>();
-
-		// Get the bloom component responsible for producing a bloom texture
-		RenderBloomComponentInstance& bloom_comp = mForegroundEntity->getComponent<RenderBloomComponentInstance>();
-
-		// Get the sampler instance for compositing bloom and color
-		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(foreground_comp.getMaterialInstance().findSampler("colorTextures"));
-
-		// Set the output texture of the render blzoom component to the last index of the 
-		sampler_instance->setTexture(1, bloom_comp.getOutputTexture());
-
-		auto* ubo_struct = foreground_comp.getMaterialInstance().findUniform("UBO");
-		mBloomValueUniform = ubo_struct->findUniform<UniformFloatInstance>("mixValue");
-		mBloomValue = mBloomValueUniform->getValue();
-
-		mNumBoids = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().mNumBoids;
-
-		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
-		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
-
-		if (!errorState.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
+		// Gather resources
+		if (!reload(errorState))
 			return false;
 
 		// Reload the selected preset after hot-reloading 
@@ -114,11 +62,97 @@ namespace nap
 	}
 
 
+	bool ComputeFlockingApp::reload(utility::ErrorState& errorState)
+	{
+		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		mRenderWindow = mResourceManager->findObject<RenderWindow>("RenderWindow");
+		mCameraEntity = scene->findEntity("CameraEntity");
+		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
+		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
+
+		mWorldEntity = scene->findEntity("WorldEntity");
+		if (!errorState.check(mWorldEntity != nullptr, "Missing WorldEntity"))
+			return false;
+
+		mRenderEntity = scene->findEntity("RenderEntity");
+		if (!errorState.check(mRenderEntity != nullptr, "Missing RenderEntity"))
+			return false;
+
+		mFlockingSystemEntity = scene->findEntity("FlockingSystemEntity");
+		if (!errorState.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
+			return false;
+
+		// Get render target
+		mRenderTarget = mResourceManager->findObject<RenderTarget>("ColorTarget");
+		if (!errorState.check(mRenderTarget != nullptr, "Missing resource nap::RenderTarget with id 'ColorTarget'"))
+			return false;
+
+		mContrastComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("RenderContrast");
+		if (!errorState.check(mContrastComponent != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderContrast'"))
+			return false;
+
+		// Get composite component responsible for rendering final texture
+		mCompositeComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("RenderComposite");
+		if (!errorState.check(mCompositeComponent != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderComposite'"))
+			return false;
+
+		// Get the bloom component responsible for producing a bloom texture
+		mBloomComponent = &mRenderEntity->getComponent<RenderBloomComponentInstance>();
+		if (!errorState.check(mBloomComponent != nullptr, "Missing component nap::RenderBloomComponent with id 'RenderBloom'"))
+			return false;
+
+		// Get the sampler instance for compositing bloom and color
+		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(mCompositeComponent->getMaterialInstance().findSampler("colorTextures"));
+
+		// Set the output texture of the render bloom component
+		sampler_instance->setTexture(1, mBloomComponent->getOutputTexture());
+
+		// Find uniforms
+		UniformStructInstance* ubo_struct = mContrastComponent->getMaterialInstance().findUniform("UBO");
+		mContrastUniform = ubo_struct->findUniform<UniformFloatInstance>("contrast");
+		mBrightnessUniform = ubo_struct->findUniform<UniformFloatInstance>("brightness");
+		mSaturationUniform = ubo_struct->findUniform<UniformFloatInstance>("saturation");
+
+		ubo_struct = mCompositeComponent->getMaterialInstance().findUniform("UBO");
+		mBlendUniform = ubo_struct->findUniform<UniformFloatInstance>("blend");
+
+		// Cache boid count
+		mNumBoids = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().mNumBoids;
+
+		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
+		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
+
+		if (!errorState.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
+			return false;
+
+		mContrastParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("ContrastParameter").get());
+		if (!errorState.check(mContrastParam != nullptr, "Missing float parameter 'ContrastParameter'"))
+			return false;
+
+		mBrightnessParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("BrightnessParameter").get());
+		if (!errorState.check(mBrightnessParam != nullptr, "Missing float parameter 'BrightnessParameter'"))
+			return false;
+
+		mSaturationParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("SaturationParameter").get());
+		if (!errorState.check(mSaturationParam != nullptr, "Missing float parameter 'SaturationParameter'"))
+			return false;
+
+		mBlendParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("BloomBlendParameter").get());
+		if (!errorState.check(mBlendParam != nullptr, "Missing float parameter 'BloomBlendParameter'"))
+			return false;
+
+		return true;
+	}
+
+
 	void ComputeFlockingApp::reloadSelectedPreset()
 	{
+		utility::ErrorState error_state;
+		if (!reload(error_state))
+			assert(false);
+
 		// Load the first preset automatically
 		auto* parameter_service = getCore().getService<ParameterService>();
-		utility::ErrorState error_state;
 		mParameterGUI->load(mSelectedPreset, error_state);
 	}
 
@@ -157,12 +191,14 @@ namespace nap
 		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
-		ImGui::SliderFloat("Bloom", &mBloomValue, 0.0f, 1.0f);
 		mParameterGUI->show(false);
 		ImGui::End();
 
 		// Update uniforms
-		mBloomValueUniform->setValue(mBloomValue);
+		mContrastUniform->setValue(mContrastParam->mValue);
+		mBrightnessUniform->setValue(mBrightnessParam->mValue);
+		mSaturationUniform->setValue(mSaturationParam->mValue);
+		mBlendUniform->setValue(mBlendParam->mValue);
 	}
 
 
@@ -183,32 +219,26 @@ namespace nap
 			mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().compute();
 			mRenderService->endComputeRecording();
 		}
-
-		// Exclude components from rendering
-		RenderableMeshComponentInstance& foreground_comp = mForegroundEntity->getComponent<RenderableMeshComponentInstance>();
-		foreground_comp.setVisible(false);
-
-		RenderBloomComponentInstance& bloom_comp = mForegroundEntity->getComponent<RenderBloomComponentInstance>();
-		bloom_comp.setVisible(false);
 		
 		// Headless
 		if (mRenderService->beginHeadlessRecording())
 		{
-			// Offscreen color pass -> Render all available geometry to ColorRT
+			std::vector<RenderableComponentInstance*> render_comps;
+			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
+
+			// Offscreen color pass -> Render all available geometry to ColorTexture
 			mRenderTarget->beginRendering();
-			mRenderService->renderObjects(*mRenderTarget, mCameraEntity->getComponent<PerspCameraComponentInstance>());	
+			mRenderService->renderObjects(*mRenderTarget, mCameraEntity->getComponent<PerspCameraComponentInstance>(), render_comps);	
 			mRenderTarget->endRendering();
 
-			// Offscreen bloom pass -> Use ColorRT as input texture
-			bloom_comp.setVisible(true);
-			bloom_comp.draw();
-			bloom_comp.setVisible(false);
+			// Offscreen contrast pass -> Use ColorTexture as input, ColorTexture_Contrast as output
+			mContrastComponent->draw();
+
+			// Offscreen bloom pass -> Use ColorTexture as input, OutputTexture (internal) as output
+			mBloomComponent->draw();
 
 			mRenderService->endHeadlessRecording();
 		}
-
-		// Include again
-		foreground_comp.setVisible(true);
 
 		// Begin recording the render commands for the main render window
 		// This prepares a command buffer and starts a render pass
@@ -217,8 +247,8 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			// Render plane -> foreground_comp has ColorRT as sampler
-			mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { &foreground_comp });
+			// Render composite component
+			mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { mCompositeComponent });
 
 			// Render GUI elements
 			mGuiService->draw();

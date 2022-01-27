@@ -11,6 +11,7 @@
 #include <nap/resourceptr.h>
 #include <parameternumeric.h>
 #include <parametervec.h>
+#include <parametercolor.h>
 #include <componentptr.h>
 #include <perspcameracomponent.h>
 
@@ -44,7 +45,8 @@ namespace nap
 
 		int mNumBoids;													///< Number of boids
 
-		//ResourcePtr<ParameterVec3> mTargetParam;
+		ResourcePtr<ParameterRGBColorFloat> mBoidColorParam;			///< Default color of a boid
+		ResourcePtr<ParameterBool> mRandomColorParam;					///< Enable random colors
 		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Default size of a boid
 		ResourcePtr<ParameterFloat> mFresnelScaleParam;
 		ResourcePtr<ParameterFloat> mFresnelPowerParam;
@@ -61,9 +63,9 @@ namespace nap
 
 		ResourcePtr<ParameterVec3> mLightPositionParam;
 		ResourcePtr<ParameterFloat> mLightIntensityParam;
-		ResourcePtr<ParameterVec3> mDiffuseColorParam;
-		ResourcePtr<ParameterVec3> mLightColorParam;
-		ResourcePtr<ParameterVec3> mSpecularColorParam;
+		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorParam;
+		ResourcePtr<ParameterRGBColorFloat> mLightColorParam;
+		ResourcePtr<ParameterRGBColorFloat> mSpecularColorParam;
 		ResourcePtr<ParameterFloat> mShininessParam;
 		ResourcePtr<ParameterFloat> mAmbientIntensityParam;
 		ResourcePtr<ParameterFloat> mDiffuseIntensityParam;

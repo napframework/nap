@@ -6,7 +6,8 @@
 
 uniform UBO
 {
-	float mixValue;
+	float blend;
+	//float exposure;
 } ubo;
 
 in vec3 pass_UV;
@@ -20,6 +21,12 @@ void main(void)
 	vec4 col0 = texture(colorTextures[0], pass_UV.xy);
 	vec4 col1 = texture(colorTextures[1], pass_UV.xy);
 
+	// Tone mapping
+	// vec4 hdr = col0 + col1;
+	// vec3 tone_mapped = vec3(1.0) - exp(-hdr.rgb * ubo.exposure);
+	// out_Color = vec4(tone_mapped, 1.0);
+
 	// Blend
-	out_Color = col0 * (1.0 - ubo.mixValue) + col1 * ubo.mixValue;
+	vec3 color = col0.rgb * (1.0 - ubo.blend) + col1.rgb * ubo.blend;
+	out_Color = vec4(color, 1.0);
 }

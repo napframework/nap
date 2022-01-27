@@ -83,22 +83,6 @@
                     "Value": 0.6940000057220459,
                     "Minimum": 0.0,
                     "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "FresnelScaleParameter",
-                    "Name": "FresnelScale",
-                    "Value": 2.4670000076293947,
-                    "Minimum": 0.0,
-                    "Maximum": 4.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "FresnelPowerParameter",
-                    "Name": "FresnelPower",
-                    "Value": 2.7950000762939455,
-                    "Minimum": 0.0,
-                    "Maximum": 4.0
                 }
             ],
             "Groups": [
@@ -106,6 +90,60 @@
                     "Type": "nap::ParameterGroup",
                     "mID": "RenderGroup",
                     "Parameters": [
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "BoidColorParameter",
+                            "Name": "BoidColor",
+                            "Value": {
+                                "Values": [
+                                    0.370266318321228,
+                                    0.36265429854393008,
+                                    0.8159722089767456
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "DiffuseColorParameter",
+                            "Name": "DiffuseColor",
+                            "Value": {
+                                "Values": [
+                                    0.0,
+                                    0.0017044544219970704,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "LightColorParameter",
+                            "Name": "LightColor",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "SpecularColorParameter",
+                            "Name": "SpecularColor",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "RandomColorParameter",
+                            "Name": "RandomColor",
+                            "Value": false
+                        },
                         {
                             "Type": "nap::ParameterVec3",
                             "mID": "LightPositionParameter",
@@ -124,45 +162,6 @@
                             "mID": "LightIntensityParameter",
                             "Name": "LightIntensity",
                             "Value": 1.0,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        },
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "DiffuseColorParameter",
-                            "Name": "DiffuseColor",
-                            "Value": {
-                                "x": 0.5,
-                                "y": 0.5,
-                                "z": 0.6000000238418579
-                            },
-                            "Clamp": false,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        },
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "LightColorParameter",
-                            "Name": "LightColor",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            },
-                            "Clamp": false,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        },
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "SpecularColorParameter",
-                            "Name": "SpecularColor",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            },
-                            "Clamp": false,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -197,6 +196,54 @@
                             "Value": 0.31299999356269839,
                             "Minimum": 0.0,
                             "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FresnelScaleParameter",
+                            "Name": "FresnelScale",
+                            "Value": 0.8539999723434448,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FresnelPowerParameter",
+                            "Name": "FresnelPower",
+                            "Value": 2.4130001068115236,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "BloomBlendParameter",
+                            "Name": "BloomBlend",
+                            "Value": 0.5139999985694885,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "ContrastParameter",
+                            "Name": "Contrast",
+                            "Value": 0.13099999725818635,
+                            "Minimum": -1.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "BrightnessParameter",
+                            "Name": "Brightness",
+                            "Value": 0.0,
+                            "Minimum": -1.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SaturationParameter",
+                            "Name": "Saturation",
+                            "Value": 1.350000023841858,
+                            "Minimum": 0.0,
+                            "Maximum": 5.0
                         }
                     ],
                     "Groups": []

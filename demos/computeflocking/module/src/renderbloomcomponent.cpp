@@ -21,8 +21,9 @@
 
 // nap::RenderBloomComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderBloomComponent)
-	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PassCount",					&nap::RenderBloomComponent::mPassCount,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Kernel",						&nap::RenderBloomComponent::mKernel,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::RenderBloomComponentInstance run time class definition 
@@ -105,7 +106,19 @@ namespace nap
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
 
 		// Create material
-		Material* blur_material = mRenderService->getOrCreateMaterial<BlurShader>(errorState);
+		Material* blur_material = nullptr;
+		switch (resource->mKernel)
+		{
+		case EBlurSamples::X5:
+			blur_material = mRenderService->getOrCreateMaterial<Blur5x5Shader>(errorState);
+			break;
+		case EBlurSamples::X9:
+			blur_material = mRenderService->getOrCreateMaterial<Blur9x9Shader>(errorState);
+			break;
+		default:
+			errorState.fail("Unsupported blur shader");
+			return false;
+		}
 		if (!errorState.check(blur_material != nullptr, "%s: unable to get or create blur material", resource->mID.c_str()))
 			return false;
 

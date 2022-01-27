@@ -24,16 +24,17 @@ namespace nap
 		inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
 		inline constexpr const char* brightness = "brightness";					///<
 		inline constexpr const char* contrast = "contrast";						///<
+		inline constexpr const char* saturation = "saturation";					///<
 	}
 
 	/**
 	 * Shader that applies a contrast and brightness filter to a texture
 	 */
-	class NAPAPI ContrastShader : public Shader
+	class NAPAPI ColorAdjustmentShader : public Shader
 	{
 		RTTI_ENABLE(Shader)
 	public:
-		ContrastShader(Core& core);
+		ColorAdjustmentShader(Core& core);
 
 		/**
 		 * Cross compiles the font GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.

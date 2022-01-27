@@ -289,7 +289,7 @@ namespace nap
 				{
 					instance_value_array = createUniformValueInstance<UniformUIntArrayInstance, UniformUIntArray>(resource, *value_declaration, errorState);
 				}
-				if (value_declaration->mElementType == EShaderVariableValueType::Int)
+				else if (value_declaration->mElementType == EShaderVariableValueType::Int)
 				{
 					instance_value_array = createUniformValueInstance<UniformIntArrayInstance, UniformIntArray>(resource, *value_declaration, errorState);
 				}
@@ -351,7 +351,7 @@ namespace nap
 				{
 					value_instance = createUniformValueInstance<UniformUIntInstance, UniformUInt>(resource, *value_declaration, errorState);
 				}
-				if (value_declaration->mType == EShaderVariableValueType::Int)
+				else if (value_declaration->mType == EShaderVariableValueType::Int)
 				{
 					value_instance = createUniformValueInstance<UniformIntInstance, UniformInt>(resource, *value_declaration, errorState);
 				}
