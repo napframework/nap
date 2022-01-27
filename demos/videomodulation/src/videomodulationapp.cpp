@@ -62,7 +62,7 @@ namespace nap
 
 		// Sample theme colors for background
 		mColorOne = mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>();
-		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mColorTwo = mGuiService->getPalette().mHighlightColor4.convert<RGBColorFloat>();
 
 		// Start video playback
 		mVideoPlayer->play();
