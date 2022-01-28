@@ -536,7 +536,9 @@ namespace nap
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             // draw marker background
-			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().mDark);
+			draw_list->AddRectFilled(window_top_left,
+				{ window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() },
+				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]));
 
             // draw markers
 			for(const auto& marker : sequence.mMarkers)
