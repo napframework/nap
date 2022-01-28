@@ -19,7 +19,7 @@ namespace nap
 {
 	/**
 	 * Utility class that runs a nap::BaseApp until BaseApp::quit() is called or
-	 * AppRunner::stop(). The APP template argumentshould be derived from
+	 * AppRunner::stop(). The APP template argument should be derived from
 	 * nap::BaseApp, HANDLER should be of type nap::BaseAppEventHandler()
 	 *
 	 * When creating an AppRunner with those two template arguments the app is created
