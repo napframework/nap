@@ -307,9 +307,9 @@ namespace nap
 
 			float top_size			= 70.0f * mState.mScale; // area of markers and player controller combined
 			float offset			= 10.0f * mState.mScale;
-			float clip_start_y		= ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
-			float end_clip_y 		= ImGui::GetWindowHeight() - offset;	// bottom scrollbar overlaps clipping area
-			float end_clip_x		= ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
+			float clip_start_y		= ImGui::GetWindowPos().y + ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
+			float end_clip_y 		= ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - offset;    // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
 
 			// timeline window properties
 			ImVec2 timeline_window_pos =
