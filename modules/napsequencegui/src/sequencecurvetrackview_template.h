@@ -34,23 +34,6 @@ namespace nap
 				auto* action = mState.mAction->getDerived<sequenceguiactions::CurvePointActionPopup<T>>();
 				int curveIndex = action->mCurveIndex;
 
-				if (ImGui::Button("Delete"))
-				{
-					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-					curve_controller.deleteCurvePoint(
-						action->mTrackID,
-						action->mSegmentID,
-						action->mControlPointIndex,
-						action->mCurveIndex);
-					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-					mCurveCache.clear();
-
-					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-					mState.mDirty = true;
-
-					ImGui::CloseCurrentPopup();
-				}
-
 				float value = action->mValue * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) + action->mMinimum[curveIndex];
 				if (ImGui::InputFloat("value", &value))
 				{
@@ -70,6 +53,24 @@ namespace nap
 				if (ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
 				{
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(nap::icon::remove)))
+				{
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.deleteCurvePoint(
+						action->mTrackID,
+						action->mSegmentID,
+						action->mControlPointIndex,
+						action->mCurveIndex);
+					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+					mCurveCache.clear();
+
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+					mState.mDirty = true;
+
 					ImGui::CloseCurrentPopup();
 				}
 
