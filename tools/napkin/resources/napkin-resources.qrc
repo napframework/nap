@@ -24,5 +24,6 @@
 		<file>icons/color_wheel.png</file>
 		<file>icons/icon_close_nap.png</file>
 		<file>icons/icon_restore_nap.png</file>
+		<file>icons/link.png</file>
 	</qresource>
 </RCC>
