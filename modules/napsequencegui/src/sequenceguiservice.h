@@ -77,6 +77,7 @@ namespace nap
 			ImU32 mHigh1 = 0;		///< First highlight color
 			ImU32 mHigh2 = 0;		///< Second highlight color
 			ImU32 mHigh3 = 0;		///< Third highlight color
+			ImU32 mHigh4 = 0;		///< Fourth highlight color
 			ImU32 mDark = 0;		///< Dark background Color
 			ImU32 mBack = 0;		///< Background color
 			ImU32 mFro1 = 0;		///< Darker Foreground

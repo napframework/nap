@@ -314,7 +314,7 @@ namespace nap
 		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
-		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
 		style->Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
 		style->Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;

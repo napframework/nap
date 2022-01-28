@@ -758,7 +758,7 @@ namespace nap
 				drawList->AddCircleFilled
 				(
 					circle_point, 4.0f * mState.mScale,
-					hovered ? mService.getColors().mFro3 : mService.getColors().mFro2
+					hovered ? mService.getColors().mFro4 : mService.getColors().mFro2
 				);
 
 				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
@@ -952,10 +952,10 @@ namespace nap
 			}
 
 			// draw line
-			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? mService.getColors().mFro3 : mService.getColors().mFro1, 1.0f * mState.mScale);
+			drawList->AddLine(circlePoint, tan_point, tan_point_hovered ? mService.getColors().mFro4 : mService.getColors().mFro1, 1.0f * mState.mScale);
 
 			// draw handler
-			drawList->AddCircleFilled(tan_point, 3.0f * mState.mScale, tan_point_hovered ? mService.getColors().mFro3 : mService.getColors().mFro1);
+			drawList->AddCircleFilled(tan_point, 3.0f * mState.mScale, tan_point_hovered ? mService.getColors().mFro4 : mService.getColors().mFro1);
 		}
 	}
 

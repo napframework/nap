@@ -101,11 +101,12 @@ namespace nap
 				{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
 				mService.getColors().mDark
 			);
+
 			draw_list->AddRect
 			(
 				window_pos,
-				{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
-				mService.getColors().mFro3
+				{ window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
+				mService.getColors().mFro1
 			);
 
             /**
@@ -234,7 +235,7 @@ namespace nap
 			draw_list->AddRect(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				mService.getColors().mFro3); // color
+				mService.getColors().mFro1); // color
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
@@ -251,16 +252,12 @@ namespace nap
 				if (pos.x > 0.0f )
 				{
 					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, mService.getColors().mBack);
-
 					if(pos.x > mState.mWindowPos.x + mState.mScroll.x + mState.mWindowSize.x)
-					{
 						break;
-					}
 				}
 			}
 
 			mState.mMouseCursorTime = (mState.mMousePos.x - trackTopLeft.x) / mState.mStepSize;
-
 			showTrackContent(track, trackTopLeft);
 
 			// pop id
