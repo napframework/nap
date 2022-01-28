@@ -150,19 +150,18 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-			float btn_scale = 12.0f * mState.mScale;
 			auto& gui = mService.getGui();
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), { btn_scale, btn_scale }, "Move track up"))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), "Move track up"))
 			{
 				move_track_up = true;
 			}
 			ImGui::SameLine();
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), { btn_scale, btn_scale }, "Move track down"))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
 			{
 				move_track_down = true;
 			}
 			ImGui::SameLine();
-			if (ImGui::ImageButton(gui.getIcon(icon::del), { btn_scale, btn_scale }, "Delete track"))
+			if (ImGui::ImageButton(gui.getIcon(icon::del), "Delete track"))
 			{
 				delete_track = true;
 			}
