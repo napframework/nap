@@ -54,7 +54,7 @@ namespace nap
 		// Sample initial colors from palette
 		mNormalColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
 		mValleyColor = mGuiService->getPalette().mBackgroundColor.convert<RGBColorFloat>();
-		mPeakColor = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mPeakColor = mGuiService->getPalette().mHighlightColor4.convert<RGBColorFloat>();
 		mHaloColor = mGuiService->getPalette().mFront2Color.convert<RGBColorFloat>();
 
 		// Set clear color
