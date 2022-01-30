@@ -144,7 +144,7 @@ namespace nap
 		 * @param error explains why the license is not valid
 		 * @return if this app has a valid license
 		 */
-		bool validateLicense(const nap::PublicKey& publicKey, nap::SigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error);
+		bool validateLicense(const nap::PublicKey& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error);
 
 		/**
 		 * Validates the user provided license using a public RSA key.
@@ -164,7 +164,7 @@ namespace nap
 		 * @param error explains why the license is not valid
 		 * @return if this app has a valid license
 		 */
-		bool validateLicense(const std::string& publicKey, nap::SigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error);
+		bool validateLicense(const std::string& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error);
 
 		/**
 		 * Returns if the user provided a license. Does not mean it is valid.

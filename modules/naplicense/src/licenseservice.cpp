@@ -51,33 +51,33 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<CryptoPP::PK_Verifier> createVerifier(const std::string& publicKey, nap::SigningScheme signingScheme)
+	static std::unique_ptr<CryptoPP::PK_Verifier> createVerifier(const std::string& publicKey, nap::ESigningScheme signingScheme)
 	{
 		CryptoPP::StringSource pub_file(publicKey.c_str(), true, new CryptoPP::HexDecoder);
 		std::unique_ptr<CryptoPP::PK_Verifier> verifier;
 		switch (signingScheme)
 		{
-		case nap::SigningScheme::RSASS_PKCS1v15_SHA1:
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA1:
 		{
 			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
 			return verifier;
 		}
-		case nap::SigningScheme::RSASS_PKCS1v15_SHA224:
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA224:
 		{
 			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
 			return verifier;
 		}
-		case nap::SigningScheme::RSASS_PKCS1v15_SHA256:
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA256:
 		{
 			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
 			return verifier;
 		}
-		case nap::SigningScheme::RSASS_PKCS1v15_SHA384:
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA384:
 		{
 			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
 			return verifier;
 		}
-		case nap::SigningScheme::RSASS_PKCS1v15_SHA512:
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA512:
 		{
 			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
 			return verifier;
@@ -92,7 +92,7 @@ namespace nap
 	}
 
 
-	static bool rsaVerifyFile(const std::string& publicKey, nap::SigningScheme signingScheme, const std::string& licenseFile, const std::string& signatureFile)
+	static bool rsaVerifyFile(const std::string& publicKey, nap::ESigningScheme signingScheme, const std::string& licenseFile, const std::string& signatureFile)
 	{
 		try
 		{
@@ -150,23 +150,23 @@ namespace nap
 
 	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		return validateLicense(publicKey.getKey(), nap::SigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
+		return validateLicense(publicKey.getKey(), nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
 	}
 
 
 	bool LicenseService::validateLicense(const std::string& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		return validateLicense(publicKey, nap::SigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
+		return validateLicense(publicKey, nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
 	}
 
 
-	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, nap::SigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
+	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
 		return validateLicense(publicKey.getKey(), signingScheme, outInformation, error);
 	}
 
 
-	bool LicenseService::validateLicense(const std::string& publicKey, nap::SigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
+	bool LicenseService::validateLicense(const std::string& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
 		// Ensure the user provided a license
 		if (!error.check(hasLicense(), "No .%s file found in: %s", licenseExtension, mDirectory.c_str()))

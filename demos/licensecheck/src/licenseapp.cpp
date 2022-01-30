@@ -44,7 +44,7 @@ namespace nap
 		//   licensegenerator -f John -l Doe -m john@doe.com -a licensedemo -t example -k keys/licensedemo.private -s RSASS_PKCS1v15_SHA512 -o license
 
 		// Validate license using application public key
-		if (!mLicenseService->validateLicense(ApplicationPublicKey, nap::SigningScheme::RSASS_PKCS1v15_SHA512, mLicenseInfo, mLicenseError))
+		if (!mLicenseService->validateLicense(ApplicationPublicKey, nap::ESigningScheme::RSASS_PKCS1v15_SHA512, mLicenseInfo, mLicenseError))
 			mLicenseValid = false;
 
 		// Extract loaded resources
