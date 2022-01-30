@@ -38,7 +38,7 @@ public:
 			ValueArg<std::string>			date					("d",  "date", "Expiry date, format: day/month/year -> 30/12/2025", false, "", "expiry_date");
 			ValueArg<std::string>			tag						("t",  "tag", "Additional information", false, "", "tag");
 			ValueArg<std::string>			uuid					("u",  "uuid", "Generate unique user id", false, "", "uuid");
-			ValueArg<std::string>			signing_scheme			("s",  "signing_scheme", "Signing scheme", false, "", "signing_scheme");
+			ValueArg<std::string>			signing_scheme			("s",  "signing_scheme", "Signing scheme: RSASS_PKCS1v15_SHA1, RSASS_PKCS1v15_SHA224, RSASS_PKCS1v15_SHA256, RSASS_PKCS1v15_SHA384, RSASS_PKCS1v15_SHA512", false, "", "signing_scheme");
 
 			command.add(output_directory);
 			command.add(private_key);

@@ -24,8 +24,10 @@ using SystemTimeStamp = std::chrono::time_point<SystemClock>;
 constexpr const char* licenceToken = "LICENSE@";
 constexpr const char* licenseExtension = "license";
 constexpr const char* keyExtension = "key";
-constexpr char * const supportedSigningSchemes[] = {
-	"RSASS_PKCS1v15_SHA1",
+constexpr const char* defaultSigningSceme = "RSASS_PKCS1v15_SHA1";
+constexpr const char* supportedSigningSchemes[] =
+{
+	defaultSigningSceme,
 	"RSASS_PKCS1v15_SHA224",
 	"RSASS_PKCS1v15_SHA256",
 	"RSASS_PKCS1v15_SHA384",
@@ -83,20 +85,21 @@ static bool isNumber(const std::string& s)
  * @param privFilename path to private key, used to sign the license
  * @param signingScheme the signing scheme
  */
-static PK_Signer* getSigner(const std::string& privFilename, const std::string& signingScheme)
+static std::unique_ptr<PK_Signer> createSigner(const std::string& privFilename, const std::string& signingScheme)
 {
 	FileSource privFile(privFilename.c_str(), true, new HexDecoder);
-	PK_Signer* signer = nullptr;
+	std::unique_ptr<PK_Signer> signer;
+
 	if (signingScheme == "RSASS_PKCS1v15_SHA1")
-		signer = new RSASS<PKCS1v15, SHA1>::Signer(privFile);
+		signer.reset(new RSASS<PKCS1v15, SHA1>::Signer(privFile));
 	else if (signingScheme == "RSASS_PKCS1v15_SHA224")
-		signer = new RSASS<PKCS1v15, SHA224>::Signer(privFile);
+		signer.reset(new RSASS<PKCS1v15, SHA224>::Signer(privFile));
 	else if (signingScheme == "RSASS_PKCS1v15_SHA256")
-		signer = new RSASS<PKCS1v15, SHA256>::Signer(privFile);
+		signer.reset(new RSASS<PKCS1v15, SHA256>::Signer(privFile));
 	else if (signingScheme == "RSASS_PKCS1v15_SHA384")
-		signer = new RSASS<PKCS1v15, SHA384>::Signer(privFile);
+		signer.reset(new RSASS<PKCS1v15, SHA384>::Signer(privFile));
 	else if (signingScheme == "RSASS_PKCS1v15_SHA512")
-		signer = new RSASS<PKCS1v15, SHA512>::Signer(privFile);
+		signer.reset(new RSASS<PKCS1v15, SHA512>::Signer(privFile));
 
 	return signer;
 }
@@ -114,10 +117,10 @@ static bool signLicense(const std::string& privFilename, const std::string& sign
 {
 	try
 	{
-		std::unique_ptr<PK_Signer> signer = std::unique_ptr<PK_Signer>(getSigner(privFilename, signingScheme));
+		std::unique_ptr<PK_Signer> signer = createSigner(privFilename, signingScheme);
 		if (!signer)
 		{
-			// Someone forgot to update getSigner(). This is undesirable.
+			// Someone forgot to update createSigner(). This is undesirable.
 			std::cerr << "Signing scheme not fully implemented: " << signingScheme << std::endl << "Unable to create license" << std::endl;
 			return false;
 		}
@@ -243,15 +246,13 @@ int main(int argc, char* argv[])
 		return -1;
 
 	// Set signing scheme
-	std::string signingScheme;
+	std::string signingScheme = defaultSigningSceme;
 	if (!commandLine.mSignScheme.empty())
 	{
 		signingScheme = commandLine.mSignScheme;
 		if (!validateSigningScheme(signingScheme))
 			return -1;
 	}
-	else
-		signingScheme = "RSASS_PKCS1v15_SHA1";
 
 	// Create license content
 	std::ostringstream lic_content;

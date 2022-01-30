@@ -51,22 +51,44 @@ namespace nap
 	}
 
 
-	static CryptoPP::PK_Verifier* getVerifier(const std::string& publicKey, nap::SigningScheme signingScheme)
+	static std::unique_ptr<CryptoPP::PK_Verifier> createVerifier(const std::string& publicKey, nap::SigningScheme signingScheme)
 	{
 		CryptoPP::StringSource pub_file(publicKey.c_str(), true, new CryptoPP::HexDecoder);
-		CryptoPP::PK_Verifier* verifier = nullptr;
-		if (signingScheme == nap::SigningScheme::RSASS_PKCS1v15_SHA1)
-			verifier = new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file);
-		else if (signingScheme == nap::SigningScheme::RSASS_PKCS1v15_SHA224)
-			verifier = new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file);
-		else if (signingScheme == nap::SigningScheme::RSASS_PKCS1v15_SHA256)
-			verifier = new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file);
-		else if (signingScheme == nap::SigningScheme::RSASS_PKCS1v15_SHA384)
-			verifier = new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file);
-		else if (signingScheme == nap::SigningScheme::RSASS_PKCS1v15_SHA512)
-			verifier = new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file);
+		std::unique_ptr<CryptoPP::PK_Verifier> verifier;
+		switch (signingScheme)
+		{
+		case nap::SigningScheme::RSASS_PKCS1v15_SHA1:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::SigningScheme::RSASS_PKCS1v15_SHA224:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::SigningScheme::RSASS_PKCS1v15_SHA256:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::SigningScheme::RSASS_PKCS1v15_SHA384:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::SigningScheme::RSASS_PKCS1v15_SHA512:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
+			return verifier;
+		}
+		default:
+		{
+			assert(false);
+		}
+		}
 
-		return verifier;
+		return nullptr;
 	}
 
 
@@ -75,7 +97,7 @@ namespace nap
 		try
 		{
 			// Load public key
-			std::unique_ptr<CryptoPP::PK_Verifier> verifier = std::unique_ptr<CryptoPP::PK_Verifier>(getVerifier(publicKey, signingScheme));
+			std::unique_ptr<CryptoPP::PK_Verifier> verifier = createVerifier(publicKey, signingScheme);
 
 			// Load license signature file and ensure byte length matches
 			CryptoPP::FileSource signature_file(signatureFile.c_str(), true, new CryptoPP::HexDecoder);
