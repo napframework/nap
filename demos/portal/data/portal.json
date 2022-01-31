@@ -53,11 +53,92 @@
                             "Type": "nap::PortalItemButton",
                             "mID": "PortalItemButton",
                             "Parameter": "ParameterButton"
+                        },
+                        {
+                            "Type": "nap::PortalItemOperationalCalendar",
+                            "mID": "PortalItemOperationalCalendar",
+                            "Name": "My Operational Calendar",
+                            "Calendar": "OperationalCalendar"
                         }
                     ]
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::OperationalCalendar",
+            "mID": "OperationalCalendar",
+            "AllowLoadFailure": true,
+            "Monday": {
+                "Time": {
+                    "Hour": 9,
+                    "Minute": 0
+                },
+                "Duration": {
+                    "Hour": 0,
+                    "Minute": 15
+                }
+            },
+            "Tuesday": {
+                "Time": {
+                    "Hour": 10,
+                    "Minute": 0
+                },
+                "Duration": {
+                    "Hour": 0,
+                    "Minute": 30
+                }
+            },
+            "Wednesday": {
+                "Time": {
+                    "Hour": 11,
+                    "Minute": 0
+                },
+                "Duration": {
+                    "Hour": 0,
+                    "Minute": 45
+                }
+            },
+            "Thursday": {
+                "Time": {
+                    "Hour": 12,
+                    "Minute": 0
+                },
+                "Duration": {
+                    "Hour": 1,
+                    "Minute": 0
+                }
+            },
+            "Friday": {
+                "Time": {
+                    "Hour": 13,
+                    "Minute": 0
+                },
+                "Duration": {
+                    "Hour": 1,
+                    "Minute": 15
+                }
+            },
+            "Saturday": {
+                "Time": {
+                    "Hour": 14,
+                    "Minute": 0
+                },
+                "Duration": {
+                    "Hour": 1,
+                    "Minute": 30
+                }
+            },
+            "Sunday": {
+                "Time": {
+                    "Hour": 15,
+                    "Minute": 0
+                },
+                "Duration": {
+                    "Hour": 1,
+                    "Minute": 45
+                }
+            }
         },
         {
             "Type": "nap::ParameterGUI",
