@@ -51,6 +51,15 @@ namespace nap
 	{ }
 
 
+	CalendarItem::Time::Time(std::string timeString)
+	{
+		size_t colonPos = timeString.find(":");
+		assert(colonPos != std::string::npos);
+		mHour = std::stoi(timeString.substr(0, colonPos));
+		mMinute = std::stoi(timeString.substr(colonPos + 1, timeString.length() - colonPos - 1));
+	}
+
+
 	nap::CalendarItem::Point::Point(Time time, Time duration) :
 		mTime(std::move(time)), 
 		mDuration(std::move(duration))
@@ -74,15 +83,6 @@ namespace nap
 			str.append("0");
 		str.append(std::to_string(mMinute));
 		return str;
-	}
-
-
-	void nap::CalendarItem::Time::setFromString(std::string str)
-	{
-		size_t colonPos = str.find(":");
-		assert(colonPos != std::string::npos);
-		mHour = std::stoi(str.substr(0, colonPos));
-		mMinute = std::stoi(str.substr(colonPos + 1, str.length() - colonPos - 1));
 	}
 
 
