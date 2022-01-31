@@ -146,13 +146,6 @@ void MainWindow::addMenu()
 	auto optionsMenu = new QMenu("Options", menuBar());
 	{
 		optionsMenu->addMenu(&mThemeMenu);
-		optionsMenu->addAction("Save settings as...", [this]() {
-			auto filename = QFileDialog::getSaveFileName(this, "Save Settings", QString(), "Settings file (*.ini)");
-			if (filename.isEmpty())
-				return;
-			if (!QFile::copy(QSettings().fileName(), filename))
-				nap::Logger::error("Failed to save settings to file: %s", filename.toStdString().c_str());
-		});
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
 }
