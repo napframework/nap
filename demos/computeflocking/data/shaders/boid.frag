@@ -6,10 +6,9 @@
 
 uniform UBO
 {
-	vec3		boidColor;					// 
 	vec3		cameraLocation;				// World Space location of the camera
-	vec3		lightPosition;				//
-	float		lightIntensity;				//
+	vec3		lightPosition;				// Light position
+	float		lightIntensity;				// Light intensity
 	vec3		diffuseColor;				// Color or the mesh
 	vec3		lightColor;					// Color of the light
 	float		specularIntensity;			// Amount of added specular
@@ -39,7 +38,7 @@ vec3 hsv2rgb(vec3 c)
 void main(void)
 {
 	// Theme color
-	vec3 boid_color = ubo.boidColor;
+	vec3 boid_color = ubo.diffuseColor;
 
 	// Rainbow
 	if (ubo.randomColor > 0)
@@ -77,12 +76,11 @@ void main(void)
 	specula_v = specula_v + (specula_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.specularIntensity);
 
     // Compute final diffuse and specular color values
-    //vec3 diffuse_color = ubo.diffuseColor  * ubo.lightColor * diffuse_v;
     vec3 diffuse_color = boid_color * ubo.lightColor * diffuse_v;
     vec3 specular_color = ubo.specularColor * specula_v;
 
     // Get ambient color
-	vec3 ambient_color = ubo.diffuseColor.rgb * ubo.ambientIntensity;
+	vec3 ambient_color = boid_color * ubo.ambientIntensity;
 
     // Compute composite color value
     vec3 comp_color = diffuse_color + specular_color + ambient_color;

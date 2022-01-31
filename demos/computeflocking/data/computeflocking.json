@@ -2,6 +2,31 @@
     "Objects": [
         {
             "Type": "nap::BoxMesh",
+            "mID": "BoxMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::BoxMesh",
             "mID": "BoxMeshBounds",
             "Usage": "Static",
             "CullMode": "Front",
@@ -236,7 +261,7 @@
                     "Type": "nap::FlockingSystemComponent",
                     "mID": "FlockingSystemComponent",
                     "Visible": true,
-                    "Mesh": "MeshFromFile_Capsule",
+                    "Mesh": "CapsuleMesh",
                     "MaterialInstance": {
                         "Material": "RenderMaterial",
                         "Uniforms": [],
@@ -269,7 +294,6 @@
                         }
                     },
                     "NumBoids": 1000,
-                    "BoidColor": "BoidColorParameter",
                     "RandomColor": "RandomColorParameter",
                     "BoidSize": "BoidSizeParameter",
                     "FresnelScale": "FresnelScaleParameter",
@@ -861,7 +885,7 @@
         },
         {
             "Type": "nap::MeshFromFile",
-            "mID": "MeshFromFile_Capsule",
+            "mID": "CapsuleMesh",
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
@@ -957,18 +981,6 @@
                     "Type": "nap::ParameterGroup",
                     "mID": "RenderGroup",
                     "Parameters": [
-                        {
-                            "Type": "nap::ParameterRGBColorFloat",
-                            "mID": "BoidColorParameter",
-                            "Name": "BoidColor",
-                            "Value": {
-                                "Values": [
-                                    1.0,
-                                    1.0,
-                                    1.0
-                                ]
-                            }
-                        },
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "DiffuseColorParameter",
@@ -1137,8 +1149,8 @@
             "mID": "ColorTexture",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1920,
-            "Height": 1080,
+            "Width": 1280,
+            "Height": 720,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1155,8 +1167,8 @@
             "mID": "ColorTexture_Contrast",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1920,
-            "Height": 1080,
+            "Width": 1280,
+            "Height": 720,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1173,8 +1185,8 @@
             "mID": "ColorTexture_Final",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1920,
-            "Height": 1080,
+            "Width": 1280,
+            "Height": 720,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1212,8 +1224,8 @@
             "Visible": true,
             "SampleShading": false,
             "Title": "ComputeFlockingDemo",
-            "Width": 1920,
-            "Height": 1080,
+            "Width": 1280,
+            "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
@@ -1333,27 +1345,6 @@
                             "w": 1.0
                         }
                     }
-                },
-                {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_545b921a",
-                    "Name": "direction",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_6fdd6ffe",
-                        "LowerBound": {
-                            "x": -1.0,
-                            "y": -1.0,
-                            "z": -1.0,
-                            "w": -1.0
-                        },
-                        "UpperBound": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0,
-                            "w": 1.0
-                        }
-                    }
                 }
             ]
         },
@@ -1433,8 +1424,8 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformIntArray",
-                            "mID": "UniformIntArray_0e9bf54b",
+                            "Type": "nap::UniformUIntArray",
+                            "mID": "UniformUIntArray_0775cdb8",
                             "Name": "padding",
                             "Values": [
                                 0,
@@ -1533,8 +1524,8 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformIntArray",
-                            "mID": "UniformIntArray_e1bc732c",
+                            "Type": "nap::UniformUIntArray",
+                            "mID": "UniformUIntArray_6cb90972",
                             "Name": "padding",
                             "Values": [
                                 0,

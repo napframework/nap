@@ -16,6 +16,11 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseShaderVariableFillPolicyEntry)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::UIntFillPolicyEntry)
+	RTTI_PROPERTY("Name", &nap::UIntFillPolicyEntry::mName, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("ValueFillPolicy", &nap::UIntFillPolicyEntry::mValueFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::IntFillPolicyEntry)
 	RTTI_PROPERTY("Name", &nap::IntFillPolicyEntry::mName, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("ValueFillPolicy", &nap::IntFillPolicyEntry::mValueFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
@@ -84,7 +89,6 @@ namespace nap
 			if (uniform_type.is_derived_from(RTTI_OF(UniformStructArray)))
 			{
 				const UniformStructArray* uniform_resolved = rtti_cast<const UniformStructArray>(uniform.get());
-
 				if (!uniform_resolved->mStructs.empty())
 				{
 					for (int struct_idx = 0; struct_idx < uniformStruct->mUniforms.size(); struct_idx++)

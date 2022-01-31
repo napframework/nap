@@ -16,7 +16,7 @@ struct Boid
 	vec4 flockCenter;
 
 	// Padding member
-	int padding[3];
+	uint padding[3];
 
 	// Maintain 16 byte-alignment
 	uint numFlockMates;
@@ -40,6 +40,7 @@ layout(std430) buffer BoidBuffer_Out
 	Boid boids[1000];
 } subo_out;
 
+// Bound to vertex shader 'boids.vert'
 layout(std430) buffer TransformBuffer
 {
 	BoidTransform transforms[1000];
@@ -66,61 +67,60 @@ uniform UBO
 
 
 // CONSTANTS
-const float PI = 3.141592;
-const float EPSILON = 0.00001;
-const vec4 QUAT_IDENTITY = vec4(0.0, 0.0, 0.0, 1.0);
-const vec3 FORWARD_AXIS = vec3(0.0, 0.0, 1.0);
+const float PI 				= 3.141592;
+const float EPSILON 		= 0.00001;
+const vec4 QUAT_IDENTITY 	= vec4(0.0, 0.0, 0.0, 1.0);
+const vec3 FORWARD 			= vec3(0.0, 0.0, 1.0);
+const vec3 UP 				= vec3(0.0, 1.0, 0.0);
+const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
 
 
-// Returns a quaterion describing a rotation of angle radians over the specified axis
-// Ported from glm::angleAxis
-vec4 angleAxisQuat(float angle, vec3 axis)
+// Multiply two quaternions -> qa * qb
+vec4 mulQuat(vec4 qa, vec4 qb)
+{ 
+	return normalize(vec4(
+		qb.xyz * qa.w + qa.xyz * qb.w + cross(qa.xyz, qb.xyz),
+		qa.w * qb.w - dot(qa.xyz, qb.xyz)
+	));
+}
+
+
+// Inverse 
+vec4 invertQuat(vec4 q) 
+{ 
+	return vec4(-q.x, -q.y, -q.z, q.w); 
+} 
+
+
+// Rotate vector v with quaterion q
+vec3 rotate(vec3 v, vec4 q)
 {
-	float s = sin(angle*0.5);
-	return vec4(
-		axis.x * s,
-		axis.y * s,
-		axis.z * s,
-		cos(angle * 0.5)
-	);
+	float l1 = dot(q.xyz, q.xyz);
+	return v * (q.w * q.w - l1) + q.xyz * (dot(v, q.xyz) * 2.0) + cross(q.xyz, v) * (q.w * 2.0);
 }
 
 
 // Returns a quaternion describing a rotation from orig to dest
-// Ported from glm::rotation
 vec4 rotationQuat(vec3 orig, vec3 dest)
 {
 	float cos_theta = dot(orig, dest);
-	vec3 rot_axis;
-
 	if (cos_theta >= 1.0-EPSILON)
 		return QUAT_IDENTITY;
 
-	if (cos_theta < -1.0+EPSILON)
-	{
-		rot_axis = cross(vec3(0.0, 0.0, 1.0), orig);
-		if (dot(rot_axis, rot_axis) < EPSILON)
-			rot_axis = cross(vec3(1.0, 0.0, 0.0), orig);
-
-		rot_axis = normalize(rot_axis);
-		return angleAxisQuat(PI, rot_axis);
-	}
-
-	rot_axis = cross(orig, dest);
-
-	float s = sqrt((1.0 + cos_theta) * 2.0);
-	float inv = 1.0/s;
+	vec3 rot_axis = cross(orig, dest);
+	float s = sqrt((1.0+cos_theta)*2.0);
+	float invs = 1.0 / s;
 
 	return vec4(
-		rot_axis.x * inv,
-		rot_axis.y * inv,
-		rot_axis.z * inv,
+		rot_axis.x * invs,
+		rot_axis.y * invs,
+		rot_axis.z * invs,
 		s * 0.5
 	);
 }
 
 
-// Returns true if v is a zer-vector, otherwise false
+// Returns true if v is a zero-vector, otherwise false
 bool isZero(vec3 v)
 {
 	float valid = 1.0;
@@ -136,10 +136,7 @@ bool isZero(vec3 v)
 // Returns a zero vector instead of nan if v cannot be normalized, otherwise normalizes v
 vec3 safeNormalize(vec3 v)
 {
-	if (!isZero(v))
-		return normalize(v);
-	else
-		return vec3(0.0);
+	return !isZero(v) ? normalize(v) : vec3(0.0);
 }
 
 
@@ -229,17 +226,18 @@ void main()
 
 	// Write current boid
 	b.velocity.xyz = mix(vel, b.velocity.xyz, 0.5);
-	b.direction.xyz = steerTowards(b.direction.xyz, b.velocity.xyz, 0.005);
+	b.direction.xyz = normalize(steerTowards(b.direction.xyz, b.velocity.xyz, 0.005));
 	b.position.xyz += b.velocity.xyz * ubo.deltaTime;
-
-	subo_out.boids[id] = b;
 
 	// Create boid transform
 	BoidTransform bt;
 	bt.translation = b.position;
 
 	// Calculate quaternion describing a rotation from the forward direction to the current direction
-	bt.rotation = rotationQuat(FORWARD_AXIS, normalize(b.direction.xyz));
+	bt.rotation = rotationQuat(FORWARD, b.direction.xyz);
+
+	// Set boid
+	subo_out.boids[id] = b;
 
 	// Set boid transform
 	transforms[id] = bt;

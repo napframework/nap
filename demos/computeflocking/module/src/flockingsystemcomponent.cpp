@@ -20,7 +20,6 @@
 
 RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("NumBoids",					&nap::FlockingSystemComponent::mNumBoids,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BoidColor",					&nap::FlockingSystemComponent::mBoidColorParam,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RandomColor",				&nap::FlockingSystemComponent::mRandomColorParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BoidSize",					&nap::FlockingSystemComponent::mBoidSizeParam,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FresnelScale",				&nap::FlockingSystemComponent::mFresnelScaleParam,			nap::rtti::EPropertyMetaData::Default)
@@ -65,7 +64,6 @@ namespace nap
 		constexpr const char* uboStruct = "UBO";
 		constexpr const char* vertUboStruct = "Vert_UBO";
 		constexpr const char* randomColor = "randomColor";
-		constexpr const char* boidColor = "boidColor";
 		constexpr const char* boidSize = "boidSize";
 		constexpr const char* cameraLocation = "cameraLocation";
 		constexpr const char* lightPosition = "lightPosition";
@@ -190,7 +188,6 @@ namespace nap
 		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::boidColor)->setValue(mResource->mBoidColorParam->mValue.toVec3());
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor)->setValue(mResource->mRandomColorParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mResource->mLightPositionParam->mValue);

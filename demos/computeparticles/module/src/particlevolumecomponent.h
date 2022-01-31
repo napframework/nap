@@ -110,6 +110,11 @@ namespace nap
 		 */
 		void compute();
 
+		/**
+		 * 
+		 */
+		int getNumParticles() const					{ return mParticleMesh->mNumParticles; }
+
 		float mVelocityTimeScale = 0.15f;
 		float mVelocityVariationScale = 0.75f;
 		float mRotationSpeed = 1.0f;

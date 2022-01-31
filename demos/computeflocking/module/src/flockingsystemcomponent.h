@@ -45,7 +45,6 @@ namespace nap
 
 		int mNumBoids;													///< Number of boids
 
-		ResourcePtr<ParameterRGBColorFloat> mBoidColorParam;			///< Default color of a boid
 		ResourcePtr<ParameterBool> mRandomColorParam;					///< Enable random colors
 		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Default size of a boid
 		ResourcePtr<ParameterFloat> mFresnelScaleParam;

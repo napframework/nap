@@ -92,18 +92,6 @@
                     "Parameters": [
                         {
                             "Type": "nap::ParameterRGBColorFloat",
-                            "mID": "BoidColorParameter",
-                            "Name": "BoidColor",
-                            "Value": {
-                                "Values": [
-                                    0.370266318321228,
-                                    0.36265429854393008,
-                                    0.8159722089767456
-                                ]
-                            }
-                        },
-                        {
-                            "Type": "nap::ParameterRGBColorFloat",
                             "mID": "DiffuseColorParameter",
                             "Name": "DiffuseColor",
                             "Value": {
