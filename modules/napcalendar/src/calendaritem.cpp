@@ -79,9 +79,10 @@ namespace nap
 
 	void nap::CalendarItem::Time::setFromString(std::string str)
 	{
-		assert(str.length() == 5);
-		mHour = std::stoi(str.substr(0, 2));
-		mMinute = std::stoi(str.substr(3, 2));
+		size_t colonPos = str.find(":");
+		assert(colonPos != std::string::npos);
+		mHour = std::stoi(str.substr(0, colonPos));
+		mMinute = std::stoi(str.substr(colonPos + 1, str.length() - colonPos - 1));
 	}
 
 
