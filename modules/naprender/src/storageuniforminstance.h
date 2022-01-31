@@ -199,6 +199,11 @@ namespace nap
 		virtual const StructGPUBuffer& getBuffer() const					{ assert(mBuffer != nullptr); return *mBuffer; };
 
 		/**
+		 * @return value buffer
+		 */
+		virtual StructGPUBuffer& getBuffer()							{ assert(mBuffer != nullptr); return *mBuffer; };
+
+		/**
 		 * @return if the value buffer is set
 		 */
 		virtual bool hasBuffer() const										{ return mBuffer != nullptr; }
@@ -246,6 +251,11 @@ namespace nap
 		 * @return value buffer
 		 */
 		virtual const ValueGPUBuffer& getBuffer() const = 0;
+
+		/**
+		 * @return value buffer
+		 */
+		virtual ValueGPUBuffer& getBuffer() = 0;
 
 		/**
 		 * @return if the value buffer is set
@@ -309,6 +319,11 @@ namespace nap
 		 * @return value buffer
 		 */
 		virtual const ValueGPUBuffer& getBuffer() const override			{ assert(mBuffer != nullptr); return *mBuffer; }
+
+		/**
+		 * @return value buffer
+		 */
+		virtual ValueGPUBuffer& getBuffer() override						{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return if the value buffer is set

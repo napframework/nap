@@ -4,10 +4,11 @@
 
 #version 450 core
 
+// STORAGE
 struct BoidTransform
 {
 	vec4 translation;
-	vec4 rotation;
+	vec4 orientation;
 };
 
 // UNIFORM
@@ -27,7 +28,7 @@ uniform Vert_UBO
 };
 
 // STORAGE
-layout(std430) buffer TransformBuffer
+layout(std430) buffer SSBO
 {
 	BoidTransform transforms[1000];
 };
@@ -56,7 +57,7 @@ void main(void)
 	// Get transformation
 	BoidTransform bt = transforms[gl_InstanceIndex];
 	vec4 position = vec4(boidSize * in_Position, 1.0);
-	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, bt.rotation) + bt.translation.xyz, 1.0);
+	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, bt.orientation) + bt.translation.xyz, 1.0);
 
 	// Calculate position
     gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
@@ -66,7 +67,7 @@ void main(void)
 
 	// Calculate normal in world coordinates and pass along
 	vec4 normal = vec4(in_Normals, 0.0);
-	vec3 world_normal = normalize(rotate((mvp.modelMatrix * normal).xyz, bt.rotation));
+	vec3 world_normal = normalize(rotate((mvp.modelMatrix * normal).xyz, bt.orientation));
 	pass_Normals = world_normal;
 
 	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);

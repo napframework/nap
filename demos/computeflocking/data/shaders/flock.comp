@@ -9,7 +9,7 @@ struct Boid
 {
 	vec4 position;
 	vec4 velocity;
-	vec4 direction;
+	vec4 orientation;
 
 	vec4 avoidanceHeading;
 	vec4 flockHeading;
@@ -25,7 +25,7 @@ struct Boid
 struct BoidTransform
 {
 	vec4 translation;
-	vec4 rotation;
+	vec4 orientation;
 };
 
 
@@ -83,13 +83,6 @@ vec4 mulQuat(vec4 qa, vec4 qb)
 		qa.w * qb.w - dot(qa.xyz, qb.xyz)
 	));
 }
-
-
-// Inverse 
-vec4 invertQuat(vec4 q) 
-{ 
-	return vec4(-q.x, -q.y, -q.z, q.w); 
-} 
 
 
 // Rotate vector v with quaterion q
@@ -226,19 +219,23 @@ void main()
 
 	// Write current boid
 	b.velocity.xyz = mix(vel, b.velocity.xyz, 0.5);
-	b.direction.xyz = normalize(steerTowards(b.direction.xyz, b.velocity.xyz, 0.005));
 	b.position.xyz += b.velocity.xyz * ubo.deltaTime;
 
-	// Create boid transform
-	BoidTransform bt;
-	bt.translation = b.position;
+	vec3 dir_orig = rotate(FORWARD, b.orientation);
+	vec3 dir_dest = normalize(steerTowards(dir_orig, b.velocity.xyz, 0.05));
+	vec4 q_delta = rotationQuat(dir_orig, dir_dest);
 
 	// Calculate quaternion describing a rotation from the forward direction to the current direction
-	bt.rotation = rotationQuat(FORWARD, b.direction.xyz);
+	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Set boid
 	subo_out.boids[id] = b;
 
-	// Set boid transform
+	// Create boid transform
+	BoidTransform bt;
+	bt.translation = b.position;
+	bt.orientation = b.orientation;
+
+	// Write boid transform
 	transforms[id] = bt;
 }
