@@ -13,6 +13,8 @@ CONTENT_DIR = "/content"
 OUTPUT_DIR = "/../html"
 SEARCH_TARGET = OUTPUT_DIR + "/search/search.css"
 SEARCH_SOURCE = "/css/search.css"
+FONT_FILE_SOURCE = "/css/Manrope-Regular.ttf"
+FONT_FILE_TARGET = OUTPUT_DIR + "/Manrope-Regular.ttf"
 
 # errors
 ERROR_INVALID_NAP_VERSION = 2
@@ -74,6 +76,7 @@ def copyContent():
 		print("unable to copy content, are you running as admin? %s" % error)
 
 
+# copy search window
 def copySearch():
 	source = getWorkingDir() + SEARCH_SOURCE
 	target = getWorkingDir() + SEARCH_TARGET
@@ -83,6 +86,15 @@ def copySearch():
 	except Exception as error:
 		print("unable to copy search stylesheet, are you running as admin? %s" % error)
 
+# copy font
+def copyFont():
+    source = getWorkingDir() + FONT_FILE_SOURCE
+    target = getWorkingDir() + FONT_FILE_TARGET
+    print("copy: %s -> %s" % (source, target))
+    try:
+        shutil.copyfile(source, target)
+    except Exception as error:
+        print("unable to copy font, are you running as admin? %s" % error)
 
 def populateNAPVersionToEnvVars():
     """Populate NAP framework version from cmake/version.cmake to environment variables NAP_VERSION_FULL and NAP_VERSION_MAJOR"""
@@ -126,6 +138,9 @@ if __name__ == '__main__':
 
     # copy search
     copySearch()
+
+    # copy font
+    copyFont()
 
 
 

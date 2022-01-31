@@ -1,22 +1,26 @@
  /* The standard CSS for doxygen 1.8.4 */
-@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,200,200italic,400italic);
-@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,greek-ext,greek,latin-ext);
+
+@font-face {
+    font-family: 'manrope';
+    src: url('Manrope-Regular.ttf') format('truetype');
+}
+
 body{
-	background-color: #2D2E42;
+	background-color: #2D2D2D;
 	margin: 0;
 	font-size: 12pt;
 }
 
 #top
 {
-	border-top: 5px solid #c86969;
+	border-top: 5px solid #FFFFFF;
 }
 
 body, table, div, p, dl,
 table.directory, #nav-tree,#nav-tree .label {
-	font-family:  'Nunito Sans', sans-serif;
-	color: #8B8CA0;
-	font-size: 1rem;
+	font-family:  'manrope', sans-serif;
+	color: #CDCDC3;
+	letter-spacing: 0.02em;
 }
 
 .textblock {
@@ -39,64 +43,73 @@ pre.fragment, div.line,
 .memTemplItemLeft, .memTemplItemRight, .memTemplParams,
 .memname,
 .params .paramdir {
-	font-family:  'Nunito Sans', sans-serif;
+	font-family:  'manrope', sans-serif;
 }
 
 .arrow, #navrow4 a{
-	color:#5D5E73;
+	color:#FFFFFF;
 }
 
 .memtitle {
-	font-family:  'Montserrat', sans-serif;
-	background-color: #2D2E42;
-	color: #8B8CA0;
-	font-weight: bold;
+	font-family:'manrope', sans-serif;
+	background-color: #8D8B84;
+	color: #FFFFFF;
+	font-weight: lighter;
+	border-top-right-radius: 0px;
+	border-top-left-radius: 0px;
+	font-size: 1rem;
 }
 
 #projectname,#projectbrief,
 h1, h2, h3 {
-	font-family: 'Montserrat', sans-serif;
+	font-family: 'manrope', sans-serif;
 	margin: 1.75em 0 .2em 0;
 	font-weight: 300;
 }
-#projectname {color:#C86969; font-weight:900;}
-#projectbrief{color:#C86969;}
-h1,h2,h3{color: #C86969;}
+#projectname {color:#FFFFFF; font-weight:900;}
+#projectbrief{color:#FFFFFF;}
+
+h1,h2,h3, h4{
+	color: #FFFFFF;
+		letter-spacing: 0.066em;
+}
+
 /* @group Heading Levels */
 .title {
-	color: #C86969;
-	letter-spacing: 0.00em;
+	color: #FFFFFF;
 	font-size: 1rem;
 	line-height: 0.1rem;
 	font-weight: 500;
+	font-size: 1.1rem;
 	margin: 10px 2px;
-	font-family: 'Montserrat', sans-serif;
+	font-family: 'manrope', sans-serif;
 }
+
 h1, h1.groupheader {
 	font-weight: 200;
-  color: #C86969;
-  letter-spacing: 0.00em;
+  color: #FFFFFF;
   font-size: 1.5rem;
   line-height: 1.7rem;
 }
+
 h2, h2.groupheader {
 	font-weight: 300;
-  color: #C86969;
-  letter-spacing: 0.00em;
+  color: #FFFFFF;
   font-size: 1.2rem;
   line-height: 2.3rem;
-  letter-spacing: 0.01em;
 	border-bottom: none;
 	margin: 0.75em 0 .2em 0;
 	padding: 0px;
 	width: 100%;
 }
+
 h3.groupheader {
 	font-weight: 200;
 	font-size: 2.0rem;
 	line-height: 2.1rem;
 	color: #000;
 }
+
 h1, h2, h3, h4, h5, h6 {
 	/*-webkit-transition: text-shadow:none;// 0.5s linear;
 	-moz-transition: text-shadow:none;// 0.5s linear;
@@ -106,9 +119,11 @@ h1, h2, h3, h4, h5, h6 {
 	//margin-right: 15px;
 	//margin: 42px 0px 20px 0px;*/
 }
+
 h1.glow, h2.glow, h3.glow, h4.glow, h5.glow, h6.glow {
 	text-shadow:none;//: 0 0 15px cyan;
 }
+
 dt {
 	font-weight: bold;
 }
@@ -143,7 +158,7 @@ h3.version {
   text-align: center;
 }
 div.qindex, div.navtab{
-	background-color: #2D2E42;
+	background-color: #2D2D2D;
 	border: none
 	text-align: center;
 }
@@ -154,52 +169,63 @@ div.qindex, div.navpath {
 div.navtab {
 	margin-right: 15px;
 }
+
 /* @group Link Styling */
 a {
-	color: #8B8CA0;
-	text-decoration: none;
+	color: #AEACA4;
 }
-a:hover {
-	text-decoration: underline;
-}
-.contents a, .contents a:visited {
-	color: #8B8CA0;
-	text-decoration: underline;
-}
-a.qindex, a.qindex:visited  {
-	color: #8B8CA0;
-}
-a.qindexHL {
-	background-color: #9CAFD4;
-	color: #c86969;
-	border: none;
-}
-.contents a.qindexHL:visited {
-	color: #8B8CA0;
-}
-	a.el{
-	color: #8B8CA0;
+
+a.el{
+	color: #AEACA4;
 	text-decoration: underline;
 	font-weight: 300;
+	text-decoration-style: dotted;
 }
+
+a.contents, .contents a:visited {
+	color: #AEACA4;
+}
+
+a.qindex, a.qindex:visited  {
+	color: #AEACA4;
+}
+
+a.qindexHL {
+	color: #AEACA4;
+	border: none;
+}
+
+.contents a.qindexHL:visited {
+	color: #AEACA;
+}
+
 a.elRef {
 }
+
 a.code, a.code:visited {
-	color: #8B8CA0;
+	color: #AEACA4;
 	font-weight: bold;
-	text-decoration: none;
-}
-a.codeRef, a.codeRef:visited {
-	color: #8B8CA0;
 	text-decoration: underline;
+	text-decoration-style: dotted;
 }
+
+a.codeRef, a.codeRef:visited {
+	color: #AEACA4;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+}
+
+a.el:hover, a.code:hover, a.codeRef.hover{
+	color: #FFFFFF;
+}
+
 /* @end */
 dl.el {
 	margin-left: -1cm;
 }
 pre.fragment {
   border: none;
-  background-color: #111426;
+  background-color: #000000;
   padding: 4px 6px;
   margin: 4px 8px 4px 2px;
   overflow: auto;
@@ -212,7 +238,7 @@ div.fragment {
 	margin: 15px 0px;
 	border: none;
 	border-radius: 3px;
-	background-color: #111426;
+	background-color: #1c1c1d;
 ;
 }
 div.line {
@@ -228,6 +254,7 @@ div.line {
 	padding-left: 53px;
 	padding-bottom: 0px;
 	margin: 0px;
+	color: #FFFFFF;
 	-webkit-transition-property: background-color, box-shadow;
 	-webkit-transition-duration: 0.5s;
 	-moz-transition-property: background-color, box-shadow;
@@ -248,19 +275,19 @@ span.lineno {
 	padding-right: 4px;
 	text-align: right;
 	border-right: none;
-	background-color: #2D2E42;
+	background-color: #2D2D2D;
   white-space: pre;
 }
 span.lineno a {
-	background-color:  #2D2E42;
+	background-color:  #2D2D2D;
 }
 span.lineno a:hover {
-	background-color: #2D2E42;
+	background-color: #2D2D2D;
 }
 div.ah {
-	background-color: #52546A;
+	background-color: #FFFFFF;
 	font-weight: lighter;
-	color: #111426;/*white*/
+	color: #000000;/*white*/
 	margin-bottom: 3px;
 	margin-top: 3px;
 	padding: 0.2em;
@@ -336,38 +363,38 @@ img.footer {
 }
 /* @group Code colorization */
 span.keyword {
-	color: #5D5E73;
+	color: #CDCDC3;
 }
 span.keywordtype {
-	color: #5D5E73;
+	color: #CDCDC3;
 }
 span.keywordflow {
-	color: #5D5E73;
+	color: #CDCDC3;
 	font-weight: bold;
 }
 span.comment {
-	color: #5D5E73
+	color: #8D8B84
 }
 span.preprocessor {
-	color: #8B8CA0
+	color: #8D8B84
 }
 span.stringliteral {
-	color: #8B8CA0
+	color: #D6FFA3
 }
 span.charliteral {
-	color: #8B8CA0
+	color: #D6FFA3
 }
 span.vhdldigit {
-	color: #8B8CA0
+	color: #D6FFA3
 }
 span.vhdlchar {
-	color: #8B8CA0
+	color: #D6FFA3
 }
 span.vhdlkeyword {
-	color: #8B8CA0
+	color: #D6FFA3
 }
 span.vhdllogic {
-	color: #8B8CA0
+	color: #D6FFA3
 }
 blockquote {
   background-color: #F7F8FB;
@@ -437,14 +464,14 @@ table.memberdecls {
 .mdescLeft, .mdescRight,
 .memItemLeft, .memItemRight,
 .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
-	background-color: #2D2E42;
+	background-color: #2D2D2D;
 	border: none;
 	margin: 4px;
 	padding: 0px 0 0 8px;
 }
 .mdescLeft, .mdescRight {
 	padding: 0px 8px 4px 8px;
-	color: #5D5E73;
+	color: #8D8B84;
 	font-style: italic;
 	font-size: .9rem;
 }
@@ -509,11 +536,9 @@ table.memberdecls {
 	font-weight: normal;
   margin-left: 0px;
 }
-.memname a.el{
-font-weight: normal;
-}
 .memname td {
 	vertical-align: bottom;
+	color: #FFFFFF;
 }
 .memproto, dl.reflist dt {
 	margin-top: 1.0em;
@@ -524,17 +549,16 @@ font-weight: normal;
   font-weight: normal;
   text-shadow:none;
   background-image:none;
-  background-color: #52546A;
+  background-color: #2D2D2D;
   /* opera specific markup */
   box-shadow:  none;
   /* firefox specific markup */
 }
 .memdoc, dl.reflist dd {
 	border:  none;
-  padding: 6px;
   border-top-width: 0;
   background-image: none;
-  background-color: #2D2E42;
+  background-color: #2D2D2D;
   /* opera specific markup */
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
@@ -562,7 +586,7 @@ dl.reflist dd {
 	white-space: nowrap;
 }
 .paramname {
-	color: #8B8CA0;
+	color: #CDCDC3;
 	white-space: nowrap;
 }
 .paramname em {
@@ -581,13 +605,13 @@ dl.reflist dd {
   	font-style: italic;
   	font-weight: normal;
   	text-shadow:none;
-	background-color: #8B8CA0;
+	background-color: #CDCDC3;
 	display: inline;
 	margin: 0 16px 0 0;
 	padding-left: 4px;
 	padding-right: 6px;
-	background-color: #111426;
-	color: #8B8CA0;
+	background-color: #2D2D2D;
+	color: #CDCDC3;
 }
 .params .paramtype {
   font-style: italic;
@@ -614,7 +638,7 @@ span.mlabels {
 span.mlabel {
   background-color:#5D5E73; /*grey*/
 	text-shadow:none;
-	color: #111426;/*blue*/
+	color: #000000;/*blue*/
 	margin-right: 4px;
 	padding: 2px 3px;
 	border-radius: 0px;
@@ -659,7 +683,7 @@ div.directory {
 }
 .directory tr.even {
 	padding-left: 6px;
-	background-color: #2D2E42;
+	background-color: #2D2D2D;
 }
 .directory img {
 	vertical-align: -30%;
@@ -717,7 +741,7 @@ table.doxtable th {
 table.fieldtable {
   /*width: 100%;*/
   margin-bottom: 10px;
-  border: 1px solid #8B8CA0;
+  border: 1px solid #CDCDC3;
   border-spacing: 0px;
   -moz-border-radius: 0px;
   -webkit-border-radius: 0px;
@@ -731,15 +755,15 @@ table.fieldtable {
 }
 .fieldtable td.fieldtype, .fieldtable td.fieldname {
   white-space: nowrap;
-  border-right: 1px solid #8B8CA0;
-  border-bottom: 1px solid #8B8CA0;
+  border-right: 1px solid #CDCDC3;
+  border-bottom: 1px solid #CDCDC3;
   vertical-align: top;
 }
 .fieldtable td.fieldname {
   padding-top: 3px;
 }
 .fieldtable td.fielddoc {
-  border-bottom: 1px solid #8B8CA0;
+  border-bottom: 1px solid #CDCDC3;
   /*width: 100%;*/
 }
 .fieldtable td.fielddoc p:first-child {
@@ -757,14 +781,14 @@ table.fieldtable {
   background-color:#52546A;
   font-size: 1.05rem;
 	font-weight:normal;
-  color: #111426;
+  color: #000000;
   padding-bottom: 4px;
   padding-top: 5px;
   text-align:left;
   -moz-border-radius:0;
   -webkit-border-radius:0px;
   border-radius: 0px;
-  border-bottom: 1px solid #8B8CA0;
+  border-bottom: 1px solid #CDCDC3;
 }
 .tabsearch {
 	top: 0px;
@@ -824,7 +848,7 @@ table.fieldtable {
   background-image:none;
   background-repeat:no-repeat;
   background-position:right;
-  color:#8B8CA0;
+  color:#CDCDC3;
   font-size: 8pt;
 }
 div.summary
@@ -859,7 +883,7 @@ div.header
 div.headertitle
 {
 	padding: 5px 5px 5px 10px;
-	background-color: #111426;
+	background-color: #8D8B84;
 }
 dl
 {
@@ -902,7 +926,7 @@ dl.deprecated
 }
 dl.deprecated dt a.el
 {
-	font-family: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
+	color: #FF5050;
 }
 dl.todo
 {
@@ -959,7 +983,7 @@ dl.section dd {
 }
 #projectnumber
 {
-	font-family:  'Montserrat', sans-serif;
+	font-family:  'manrope', sans-serif;
 	margin: -20px;
 	padding: 0px;
 }
@@ -1014,7 +1038,7 @@ div.toc {
 }
 div.toc li {
   background: url("bdwn.png") no-repeat scroll 0 5px transparent;
-  font-family: 10px/1.2 'Nunito Sans', sans-serif;
+  font-family: 10px/1.2 'manrope', sans-serif;
   margin-top: 5px;
   padding-left: 10px;
   padding-top: 2px;
@@ -1044,7 +1068,7 @@ div.toc li.level4 {
 }
 .inherit_header {
   font-weight: bold;
-  color: #8B8CA0;
+  color: #CDCDC3;
   cursor: pointer;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -1105,7 +1129,7 @@ tr.heading h2 {
 }
 .tablist a {
 	background-image: none;
-	color: #8B8CA0;
+	color: #CDCDC3;
 	text-shadow:none;
 }
 .tablist a:hover {
@@ -1137,12 +1161,12 @@ tr.heading h2 {
 }
 .navpath li.navelem a {
 	background-image: none;
-	color: #8B8CA0;
+	color: #CDCDC3;
 	text-shadow:none;/*: none;*/
 }
 .navpath li.navelem a:hover {
 	background-image: none;
-	color: #8B8CA0;
+	color: #CDCDC3;
 	text-decoration: underline;
 	text-shadow:none;/*: none;*/
 }
@@ -1157,8 +1181,8 @@ font-size: .8rem;
 height: 1rem;
 width: 1rem;
 display: inline-block;
-background-color: #2D2E42;
-color: #C86969;
+background-color: #2D2D2D;
+color: #FFFFFF;
 text-align: center;
 border-radius: 0px;
 margin-left: 2px;
@@ -1166,34 +1190,37 @@ margin-right: 2px;
 }
 /* navtree */
 #nav-tree {
-background-color: #2D2E42;
+background-color: #2D2D2D;
 background-image: none;
 font-size: 1rem;
 padding-left: 0.9em
 }
 #nav-tree .selected {
 background-image: none;
-	background-color:#52546A;
+	background-color:#2958FF;
 	text-shadow:none;
-	color: #C86969;
+	color: #FFFFFF;
+}
+#nav-tree a{
+	color:#CDCDC3;
 }
 #nav-tree a:hover{
-	text-decoration: underline;
+	color: #FFFFFF;
 }
 #nav-tree .selected a{
-	color: #8B8CA0;
+	color: #FFFFFF;
 }
 #nav-tree .label{
 	font-size: 1.0rem;
 }
 .ui-resizable-e{
 	background-image: none;
-	background-color: #52546A;
+	background-color: #262626;
 }
 
 ::-webkit-scrollbar {
     width: 17px;
-    background-color: #2D2E42;
+    background-color: #2D2D2D;
 }
  
 ::-webkit-scrollbar-track {
@@ -1203,7 +1230,7 @@ background-image: none;
  
 ::-webkit-scrollbar-thumb {
     border-radius: 0px;
-    background-color: #8B8CA0
+    background-color: #CDCDC3
 }
 
 .sm-dox  
@@ -1220,33 +1247,32 @@ background-image: none;
 .sm-dox a:hover,
 .sm-dox a:active,
 .sm-dox a.highlighted {
-	font-family: 'Nunito Sans', sans-serif;
-    color: #8B8CA0;
-    outline: 0;
-    text-shadow: none;
-    font-weight: bold;
-    font-size: 1.0em;
-   	background-image: none;
-    background: none;
-    background-color: #2D2E42;
+	font-family: 'manrope', sans-serif;
+  color: #CDCDC3;
+  outline: 0;
+  text-shadow: none;
+  font-weight: lighter;
+  font-size: 1.1em;
+  background-image: none;
+  background: none;
+  background-color: #2D2D2D;
 }
 
-.sm-dox a:hover
-{
-	text-decoration: underline;
+.sm-dox a:hover {
+	color: #FFFFFF;
 }
 
 .sm-dox ul {
     background-image: none;
     text-shadow: none;
-    background-color: #111426;
-    border: 2px solid #8B8CA0;
+    background-color: #000000;
+    border: 2px solid #CDCDC3;
 }
 
 a.SRScope {
     display: block;
     color: #fff; 
-    font-family: 20pt 'Nunito Sans', sans-serif;
+    font-family: 20pt 'manrope', sans-serif;
     text-decoration: none;
     outline: none;
 }
@@ -1257,11 +1283,11 @@ a.SRScope {
 .sm-dox ul a:active,
 .sm-dox ul a.highlighted 
 {
-	font-family: 'Nunito Sans', sans-serif;
+	font-family: 'manrope', sans-serif;
     background-image: none;
     text-shadow: none;
-    background-color: #111426;
-    color: #8B8CA0;
+    background-color: #000000;
+    color: #CDCDC3;
     font-size: 0.8em;
 }
 
@@ -1282,25 +1308,25 @@ a.SRScope {
 
 .sm-dox ul a span.sub-arrow 
 {
-    border-color: transparent transparent transparent #8B8CA0;
+    border-color: transparent transparent transparent #CDCDC3;
 }
 
 .sm-dox ul a:hover span.sub-arrow 
 {
-        border-color: transparent transparent transparent  #8B8CA0;
+        border-color: transparent transparent transparent  #CDCDC3;
 }
 
 .sm-dox a span.sub-arrow,
 .sm-dox a:hover span.sub-arrow
 {
-        border-color: #8B8CA0 transparent transparent transparent;
+        border-color: #CDCDC3 transparent transparent transparent;
 }
 
 #MSearchField 
 {
     display: block;
     height: 19px;
-    background-color: #8B8CA0;
+    background-color: #CDCDC3;
     background-image: none;
     width: 115px;
     margin-left: 20px;
@@ -1308,15 +1334,15 @@ a.SRScope {
     padding-right: 4px;	
     outline: none;
     font-weight: normal;
-    color: #111426;
-    font-family:  'Nunito Sans', sans-serif;
+    color: #000000;
+    font-family:  'manrope', sans-serif;
     -webkit-border-radius: 0px;
    	vertical-align: middle;
 }
 
 #MSearchBox .right {
     background: none;
-    background-color: #8B8CA0;
+    background-color: #CDCDC3;
     height: 19px;
     width: 19px;
 }
@@ -1327,7 +1353,7 @@ a.SRScope {
 
 #MSearchBox .left {
     background: none;
-    background-color: #8B8CA0;
+    background-color: #CDCDC3;
     height: 19px;
     width: 0px;
 }
@@ -1348,10 +1374,10 @@ a.SRScope {
     display: none;
     position: absolute;
     left: 0; top: 0;
-    border: 2px solid #8B8CA0;
+    border: 2px solid #CDCDC3;
     z-index:10000;
-    background-color: #111426;
-    font-family: 'Nunito Sans', sans-serif;
+    background-color: #000000;
+    font-family: 'manrope', sans-serif;
     color: #fff;
 }
 
@@ -1361,13 +1387,13 @@ a.SRScope {
 }
 
 table.markdownTable td, table.markdownTable th {
-	border: 1px solid #8B8CA0;
+	border: 1px solid #CDCDC3;
 	padding: 3px 7px 2px;
 }
 
 th.markdownTableHeadLeft, th.markdownTableHeadRight, th.markdownTableHeadCenter, th.markdownTableHeadNone {
 	background-color: #52546A;
-	color: #111426;
+	color: #000000;
 	font-weight: normal;
 }
 
@@ -1379,7 +1405,7 @@ svg .graph polygon {
     fill: transparent;
 }
 svg .node polygon {
-    fill: #8b8ca0;
+    fill: #CDCDC3;
     stroke: #52546a;
     stroke-width: 1px;
 }
@@ -1392,12 +1418,13 @@ svg .graph .edge path {
     stroke: #52546a;
 }
 svg .graph .node text {
-    fill: #111426;
+    fill: #000000;
 }
 svg .graph .edge text {
-    fill: #8b8ca0;
+    fill: #CDCDC3;
 }
 div.contents code {
-    font-size: 0.9rem;
-    color: #c68787;
+    font-size: 1.05rem;
+    color: #FF347D;
+    font-family: manrope;
 }
