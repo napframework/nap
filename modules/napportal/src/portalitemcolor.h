@@ -180,6 +180,7 @@ namespace nap
 		// parameter will trigger an update signal
 		T color;
 		color.setData(values.data());
+		mRetainedValue = color;
 		mParameter->setValue(color);
 		return true;
 	}
