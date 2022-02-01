@@ -196,6 +196,12 @@ a.qindex, a.qindex:visited  {
 	color: #AEACA4;
 }
 
+a.qindex:hover {
+	color: #FFFFFF;
+	text-decoration-style: dotted;
+	text-decoration: none;
+}
+
 a.qindexHL {
 	color: #AEACA4;
 	border: none;
@@ -292,7 +298,7 @@ span.lineno a:hover {
 }
 div.ah {
 	background-color: #FFFFFF;
-	font-weight: lighter;
+	font-weight: light;
 	color: #000000;/*white*/
 	margin-bottom: 3px;
 	margin-top: 3px;
@@ -653,8 +659,8 @@ span.mlabel {
 /* these are for tree view when not used as main index */
 div.directory {
   margin: 10px 0px;
-  border-top: 1px solid #A8B8D9;
-  border-bottom: 1px solid #A8B8D9;
+  border-top: 1px solid #2D2D2D;
+  border-bottom: 1px solid #2D2D2D;
   width: 100%;
 }
 .directory table {
@@ -974,6 +980,7 @@ dl.section dd {
 	margin: 0px;
 	padding: 0px 0px;
 	float:left;
+	letter-spacing: 0.1rem;
 }
 #projectbrief
 {
