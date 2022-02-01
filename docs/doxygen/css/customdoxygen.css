@@ -177,19 +177,29 @@ div.navtab {
 }
 
 /* @group Link Styling */
-a {
-	color: #AEACA4;
-}
-
-a.el{
+a, a:visited {
 	color: #AEACA4;
 	text-decoration: underline;
-	font-weight: 300;
+	font-weight: normal;
 	text-decoration-style: dotted;
 }
 
-a.contents, .contents a:visited {
+a.el, a.el:visited {
 	color: #AEACA4;
+	text-decoration: underline;
+	font-weight: normal;
+	text-decoration-style: dotted;
+}
+
+.contents a:visited {
+	color: #AEACA4;
+}
+
+.contents a:hover {
+	color: #FFFFFF;
+	text-decoration: underline;
+	font-weight: normal;
+	text-decoration-style: dotted;
 }
 
 a.qindex, a.qindex:visited  {
@@ -216,19 +226,29 @@ a.elRef {
 
 a.code, a.code:visited {
 	color: #AEACA4;
-	font-weight: bold;
-	text-decoration: underline;
+	font-weight: normal;
+	text-decoration: none;
 	text-decoration-style: dotted;
 }
 
 a.codeRef, a.codeRef:visited {
 	color: #AEACA4;
-	text-decoration: underline;
+	font-weight: normal;
+	text-decoration: none;
 	text-decoration-style: dotted;
 }
 
-a.el:hover, a.code:hover, a.codeRef.hover{
+a.el:hover, a.code:hover, a.codeRef:hover {
 	color: #FFFFFF;
+}
+
+a.code:hover, a.codeRef:hover {
+	text-decoration: none;
+}
+
+a.line, a.line:visited {
+	color: #FFFFFF;
+	text-decoration: none;
 }
 
 /* @end */
@@ -749,7 +769,7 @@ table.doxtable th {
 table.fieldtable {
   /*width: 100%;*/
   margin-bottom: 10px;
-  border: 1px solid #CDCDC3;
+  border: 1px solid #8D8B84;
   border-spacing: 0px;
   -moz-border-radius: 0px;
   -webkit-border-radius: 0px;
@@ -763,15 +783,15 @@ table.fieldtable {
 }
 .fieldtable td.fieldtype, .fieldtable td.fieldname {
   white-space: nowrap;
-  border-right: 1px solid #CDCDC3;
-  border-bottom: 1px solid #CDCDC3;
+  border-right: 1px solid #8D8B84;
+  border-bottom: 1px solid #8D8B84;
   vertical-align: top;
 }
 .fieldtable td.fieldname {
   padding-top: 3px;
 }
 .fieldtable td.fielddoc {
-  border-bottom: 1px solid #CDCDC3;
+  border-bottom: 1px solid #8D8B84;
   /*width: 100%;*/
 }
 .fieldtable td.fielddoc p:first-child {
@@ -786,17 +806,17 @@ table.fieldtable {
 .fieldtable th {
   background-image:none;
   background-repeat:repeat-x;
-  background-color:#262626;
+  background-color:#1c1c1d;
   font-size: 1.05rem;
 	font-weight:normal;
-  color: #8D8B84;
+  color: #FFFFFF;
   padding-bottom: 4px;
   padding-top: 5px;
   text-align:left;
   -moz-border-radius:0;
   -webkit-border-radius:0px;
   border-radius: 0px;
-  border-bottom: 1px solid #CDCDC3;
+  border-bottom: 1px solid #8D8B84;
 }
 .tabsearch {
 	top: 0px;
@@ -1243,6 +1263,15 @@ background-image: none;
     background-color: #FFFFFF
 }
 
+.scroller {
+  width: 0.5em;
+  height: 0.5em;
+  overflow-y: scroll;
+  scrollbar-color: rebeccapurple green;
+  scrollbar-width: thin;
+}
+
+
 .sm-dox  
 {     
 	background-image: none;     
@@ -1397,13 +1426,13 @@ a.SRScope {
 }
 
 table.markdownTable td, table.markdownTable th {
-	border: 1px solid #CDCDC3;
+	border: 1px solid #8D8B84;
 	padding: 3px 7px 2px;
 }
 
 th.markdownTableHeadLeft, th.markdownTableHeadRight, th.markdownTableHeadCenter, th.markdownTableHeadNone {
-	background-color: #52546A;
-	color: #000000;
+	background-color: #1c1c1d;
+	color: #FFFFFF;
 	font-weight: normal;
 }
 
