@@ -57,7 +57,10 @@ namespace napkin
 			if (type == TypeInfo::get<bool>())
 				outValue.setValue(value.to_bool());
 			else if (type == TypeInfo::get<char>())
-				outValue.setValue(value.to_int8());
+			{
+				std::string str = value.to_string();
+				outValue.setValue(str.empty() ? QChar(0) : QChar(str[0]));
+			}
 			else if (type == TypeInfo::get<int8_t>())
 				outValue.setValue(value.to_int8());
 			else if (type == TypeInfo::get<int16_t>())
@@ -120,8 +123,6 @@ namespace napkin
 		{
 			if (type == TypeInfo::get<bool>())
 				return variant.toBool();
-			else if (type == TypeInfo::get<char>())
-				return variant.toInt(ok);
 			else if (type == TypeInfo::get<int8_t>())
 				return variant.toInt(ok);
 			else if (type == TypeInfo::get<int16_t>())
@@ -142,6 +143,13 @@ namespace napkin
 				return variant.toFloat(ok);
 			else if (type == TypeInfo::get<double>())
 				return variant.toReal(ok);
+			else if (type == TypeInfo::get<char>())
+			{
+				if (!variant.toString().isEmpty())
+					return variant.toString().toStdString()[0];
+				*ok = false;
+				return QChar(0).toLatin1();
+			}
 		}
 		else if (type.is_enumeration())
 		{
