@@ -4,9 +4,9 @@
 
 #include "portalitemcolor.h"
 
-DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemRGBColor8)
-DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemRGBAColor8)
-DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemRGBColorFloat)
-DEFINE_PORTAL_ITEM_NUMERIC(nap::PortalItemRGBAColorFloat)
+DEFINE_PORTAL_ITEM_COLOR(nap::PortalItemRGBColor8)
+DEFINE_PORTAL_ITEM_COLOR(nap::PortalItemRGBAColor8)
+DEFINE_PORTAL_ITEM_COLOR(nap::PortalItemRGBColorFloat)
+DEFINE_PORTAL_ITEM_COLOR(nap::PortalItemRGBAColorFloat)
 
 //////////////////////////////////////////////////////////////////////////
