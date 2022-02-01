@@ -22,13 +22,6 @@ struct Boid
 	uint numFlockMates;
 };
 
-struct BoidTransform
-{
-	vec4 translation;
-	vec4 orientation;
-};
-
-
 // STORAGE
 layout(std430) buffer BoidBuffer_In
 {
@@ -39,12 +32,6 @@ layout(std430) buffer BoidBuffer_Out
 {
 	Boid boids[1000];
 } subo_out;
-
-// Bound to vertex shader 'boids.vert'
-layout(std430) buffer TransformBuffer
-{
-	BoidTransform transforms[1000];
-};
 
 
 // UNIFORM
@@ -230,12 +217,4 @@ void main()
 
 	// Set boid
 	subo_out.boids[id] = b;
-
-	// Create boid transform
-	BoidTransform bt;
-	bt.translation = b.position;
-	bt.orientation = b.orientation;
-
-	// Write boid transform
-	transforms[id] = bt;
 }

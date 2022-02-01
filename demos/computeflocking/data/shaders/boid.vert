@@ -4,11 +4,21 @@
 
 #version 450 core
 
-// STORAGE
-struct BoidTransform
+struct Boid
 {
-	vec4 translation;
+	vec4 position;
+	vec4 velocity;
 	vec4 orientation;
+
+	vec4 avoidanceHeading;
+	vec4 flockHeading;
+	vec4 flockCenter;
+
+	// Padding member
+	uint padding[3];
+
+	// Maintain 16 byte-alignment
+	uint numFlockMates;
 };
 
 // UNIFORM
@@ -30,7 +40,7 @@ uniform Vert_UBO
 // STORAGE
 layout(std430) buffer SSBO
 {
-	BoidTransform transforms[1000];
+	Boid boids[1000];
 };
 
 // Input Vertex Attributes
@@ -40,7 +50,9 @@ in vec3 in_Normals;
 out vec3 pass_Position;
 out vec3 pass_Normals;
 
+out float pass_Speed;
 out float pass_Fresnel;
+out float pass_Mates;
 out uint pass_Id;
 
 
@@ -55,9 +67,9 @@ vec3 rotate(vec3 v, vec4 q)
 void main(void)
 {
 	// Get transformation
-	BoidTransform bt = transforms[gl_InstanceIndex];
+	Boid b = boids[gl_InstanceIndex];
 	vec4 position = vec4(boidSize * in_Position, 1.0);
-	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, bt.orientation) + bt.translation.xyz, 1.0);
+	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, b.orientation) + b.position.xyz, 1.0);
 
 	// Calculate position
     gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
@@ -67,11 +79,14 @@ void main(void)
 
 	// Calculate normal in world coordinates and pass along
 	vec4 normal = vec4(in_Normals, 0.0);
-	vec3 world_normal = normalize(rotate((mvp.modelMatrix * normal).xyz, bt.orientation));
+	vec3 world_normal = normalize(rotate((mvp.modelMatrix * normal).xyz, b.orientation));
 	pass_Normals = world_normal;
 
 	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);
 	pass_Fresnel = fresnelScale * pow(1.0 + dot(eye_to_surface, world_normal), fresnelPower);
+
+	pass_Speed = length(b.velocity.xyz);
+	pass_Mates = b.numFlockMates/float(boids.length());
 
 	// Pass element id
 	pass_Id = gl_InstanceIndex;

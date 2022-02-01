@@ -97,7 +97,7 @@ namespace nap
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
-		uint group_count_x = math::ceil(numInvocations / getLocalWorkGroupSize().x);
+		uint group_count_x = (numInvocations / getLocalWorkGroupSize().x) + 1;
 		vkCmdDispatch(commandBuffer, group_count_x, 1, 1);
 
 		// Insert memory barriers if required
@@ -130,9 +130,9 @@ namespace nap
 					dst_stage |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 				}
 
-				// We assume the resource is read in the vertex shader
+				// We assume the resource is read in the vertex and fragment shader
 				dst_access = (dst_access == 0) ? VK_ACCESS_SHADER_READ_BIT : dst_access;
-				dst_stage = (dst_stage == 0) ? VK_PIPELINE_STAGE_VERTEX_SHADER_BIT : dst_stage;
+				dst_stage = (dst_stage == 0) ? VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT : dst_stage;
 
 				// Insert a memory barrier for this resource
 				memoryBarrier(commandBuffer, resource.mBuffer, VK_ACCESS_SHADER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, dst_stage);

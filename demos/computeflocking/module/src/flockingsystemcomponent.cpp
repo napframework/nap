@@ -184,6 +184,15 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower)->setValue(mResource->mFresnelPowerParam->mValue);
 		}
 
+		// Update vertex shader storage uniforms
+		auto* ssbo_struct = getMaterialInstance().findStorageUniform("SSBO");
+		auto* compute_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform("BoidBuffer_Out");
+		if (ssbo_struct != nullptr && compute_struct != nullptr)
+		{
+			auto& storage_buffer = compute_struct->findStorageUniform<StorageUniformStructBufferInstance>("boids")->getBuffer();
+			ssbo_struct->findStorageUniform<StorageUniformStructBufferInstance>("boids")->setBuffer(storage_buffer);
+		}
+
 		// Update fragment shader uniforms
 		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)

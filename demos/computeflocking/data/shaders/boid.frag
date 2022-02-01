@@ -21,7 +21,10 @@ uniform UBO
 
 in vec3 pass_Position;
 in vec3 pass_Normals;
+
+in float pass_Speed;
 in float pass_Fresnel;
+in float pass_Mates;
 flat in uint pass_Id;
 
 out vec4 out_Color;
@@ -41,18 +44,16 @@ void main(void)
 	vec3 boid_color = ubo.diffuseColor;
 
 	// Rainbow
-	if (ubo.randomColor > 0)
+	if (true/*ubo.randomColor > 0*/)
 	{
 		vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
-		boid_color = hsv2rgb(boid_hsv);
+		//boid_color = hsv2rgb(boid_hsv);
+		boid_color = mix(boid_color, hsv2rgb(boid_hsv), pow(pass_Mates, 1.3)*50.0);
 	}
 
 	// Surface to camera normal     
     vec3 surface_to_cam_n = normalize(ubo.cameraLocation - pass_Position);
     vec3 surface_n = normalize(pass_Normals);
-    
-    float diffuse_v = 0.0;
-    float specula_v = 0.0;
 
 	// Calculate the vector from this pixels surface to the light source
 	vec3 surface_to_light = ubo.lightPosition - pass_Position;
@@ -69,11 +70,14 @@ void main(void)
 		specula_coefficient = pow(max(dot(surface_n, halfway), 0.0), ubo.shininess);
 	}
 
+	float diffuse_v = 0.0;
+    float specula_v = 0.0;
+
 	// Compute final diffuse contribution
-	diffuse_v = diffuse_v + (diffuse_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.diffuseIntensity);
+	diffuse_v += diffuse_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.diffuseIntensity;
 
 	// Compute final specual contribution
-	specula_v = specula_v + (specula_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.specularIntensity);
+	specula_v += specula_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.specularIntensity;
 
     // Compute final diffuse and specular color values
     vec3 diffuse_color = boid_color * ubo.lightColor * diffuse_v;
