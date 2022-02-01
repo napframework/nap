@@ -969,7 +969,6 @@ dl.section dd {
 #projectlogo img
 {
 	border:0px none;
-	width: 55px;
 	height: 48px;
 	margin-left: 1em;
 	margin-right: 0em;
@@ -981,6 +980,7 @@ dl.section dd {
 	padding: 0px 0px;
 	float:left;
 	letter-spacing: 0.1rem;
+	visibility: hidden;
 }
 #projectbrief
 {
