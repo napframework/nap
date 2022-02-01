@@ -1178,7 +1178,7 @@ div.toc li.level4 {
 }
 .navpath ul {
 	background-image: none;
-	background-color: #52546A;
+	background-color: #262626;
 	border: none;
 }
 .navpath li {
@@ -1320,19 +1320,18 @@ a.SRScope {
 .sm-dox ul a:hover,
 .sm-dox ul a:focus,
 .sm-dox ul a:active,
-.sm-dox ul a.highlighted 
-{
+.sm-dox ul a.highlighted {
 	font-family: 'manrope', sans-serif;
-    background-image: none;
-    text-shadow: none;
-    background-color: #0f100f;
-    color: #CDCDC3;
-    font-size: 0.8em;
+  background-image: none;
+  text-shadow: none;
+  background-color: #0f100f;
+  color: #CDCDC3;
 }
 
 .sm-dox ul a:hover
 {
-	text-decoration: underline;
+	text-decoration: none;
+	color: #FFFFFF;
 }
 
 #side-nav 
