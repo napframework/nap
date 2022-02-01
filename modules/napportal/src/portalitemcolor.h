@@ -72,12 +72,12 @@ namespace nap
 	private:
 
 		/**
-		 * @return the times of the linked operarional calendar as a vector of strings
+		 * @return the values of the color channels as a vector of the channel data type
 		 */
 		const std::vector<U> getColorValues() const;
 
 		/**
-		 * Sets the times of the linked operarional calendar from a vector of strings
+		 * Sets the values of the color channels from a vector of the channel data type
 		 */
 		bool setColorValues(const std::vector<U>& values, utility::ErrorState& error);
 
@@ -171,11 +171,16 @@ namespace nap
 	template<typename T, typename U>
 	bool PortalItemColor<T, U>::setColorValues(const std::vector<U>& values, utility::ErrorState& error)
 	{
+		// Ensure we have enough channels
 		int channels = mParameter->mValue.getNumberOfChannels();
 		if (!error.check(values.size() == channels, "%s: expected %i color channels, received %i", mID.c_str(), channels, values.size()))
 			return false;
 
-		mParameter->mValue.setData(values.data());
+		// Update the color trough setValue so the
+		// parameter will trigger an update signal
+		T color;
+		color.setData(values.data());
+		mParameter->setValue(color);
 		return true;
 	}
 }
@@ -183,7 +188,7 @@ namespace nap
 /**
  * Helper macro that can be used to define the RTTI for a portal item numeric type
  */
-#define DEFINE_PORTAL_ITEM_COLOR(Type)														\
+#define DEFINE_PORTAL_ITEM_COLOR(Type)															\
 	RTTI_BEGIN_CLASS(Type)																		\
 		RTTI_PROPERTY("Parameter",	&Type::mParameter,	nap::rtti::EPropertyMetaData::Required)	\
 	RTTI_END_CLASS
