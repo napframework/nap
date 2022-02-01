@@ -59,6 +59,26 @@
                             "mID": "PortalItemOperationalCalendar",
                             "Name": "My Operational Calendar",
                             "Calendar": "OperationalCalendar"
+                        },
+                        {
+                            "Type": "nap::PortalItemRGBColor8",
+                            "mID": "PortalItemRGBColor8",
+                            "Parameter": "ParameterRGBColor8"
+                        },
+                        {
+                            "Type": "nap::PortalItemRGBAColor8",
+                            "mID": "PortalItemRGBAColor8",
+                            "Parameter": "ParameterRGBAColor8"
+                        },
+                        {
+                            "Type": "nap::PortalItemRGBColorFloat",
+                            "mID": "PortalItemRGBColorFloat",
+                            "Parameter": "ParameterRGBColorFloat"
+                        },
+                        {
+                            "Type": "nap::PortalItemRGBAColorFloat",
+                            "mID": "PortalItemRGBAColorFloat",
+                            "Parameter": "ParameterRGBAColorFloat"
                         }
                     ]
                 }
@@ -212,6 +232,56 @@
                     "Type": "nap::ParameterButton",
                     "mID": "ParameterButton",
                     "Name": "My Button Parameter"
+                },
+                {
+                    "Type": "nap::ParameterRGBColor8",
+                    "mID": "ParameterRGBColor8",
+                    "Name": "My RGB8 Color Parameter",
+                    "Value": {
+                        "Values": [
+                            128,
+                            255,
+                            0
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterRGBAColor8",
+                    "mID": "ParameterRGBAColor8",
+                    "Name": "My RGBA8 Color Parameter",
+                    "Value": {
+                        "Values": [
+                            128,
+                            0,
+                            255,
+                            128
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "ParameterRGBColorFloat",
+                    "Name": "My RGBFloat Color Parameter",
+                    "Value": {
+                        "Values": [
+                            0.3843137323856354,
+                            1.0,
+                            0.4470588266849518
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterRGBAColorFloat",
+                    "mID": "ParameterRGBAColorFloat",
+                    "Name": "My RGBAFloat Color Parameter",
+                    "Value": {
+                        "Values": [
+                            1.0,
+                            0.4588235318660736,
+                            0.9450980424880981,
+                            1.0
+                        ]
+                    }
                 }
             ],
             "Groups": []
