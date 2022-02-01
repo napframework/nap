@@ -1409,16 +1409,16 @@ svg .graph polygon {
 }
 svg .node polygon {
     fill: #CDCDC3;
-    stroke: #52546a;
+    stroke: #8D8B84;
     stroke-width: 1px;
 }
 svg .graph .edge polygon{
-    fill: #52546a;
-    stroke: #52546a;
+    fill: #8D8B84;
+    stroke: #8D8B84;
 } 
 svg .graph .edge path {
     fill: none;
-    stroke: #52546a;
+    stroke: #8D8B84;
 }
 svg .graph .node text {
     fill: #000000;

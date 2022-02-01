@@ -86,6 +86,7 @@ def copySearch():
 	except Exception as error:
 		print("unable to copy search stylesheet, are you running as admin? %s" % error)
 
+
 # copy font
 def copyFont():
     source = getWorkingDir() + FONT_FILE_SOURCE
@@ -95,6 +96,7 @@ def copyFont():
         shutil.copyfile(source, target)
     except Exception as error:
         print("unable to copy font, are you running as admin? %s" % error)
+
 
 def populateNAPVersionToEnvVars():
     """Populate NAP framework version from cmake/version.cmake to environment variables NAP_VERSION_FULL and NAP_VERSION_MAJOR"""
