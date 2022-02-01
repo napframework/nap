@@ -60,53 +60,58 @@ pre.fragment, div.line,
 	font-size: 1rem;
 }
 
+tr.heading h2,
+tr.heading h1,
+tr.heading h3,
+tr.heading h4 {
+	font-family: 'manrope', sans-serif;
+	font-weight: 300;
+	margin: 1.75em 0 .2em 0;
+}
+
 #projectname,#projectbrief,
-h1, h2, h3 {
+h1, h1.groupheader, 
+h2, h2.groupheader, 
+h3, h3.groupheader,
+h4, h4.groupheader {
 	font-family: 'manrope', sans-serif;
 	margin: 1.75em 0 .2em 0;
-	font-weight: 300;
+	font-weight: 200;
 }
 #projectname {color:#FFFFFF; font-weight:900;}
 #projectbrief{color:#FFFFFF;}
 
 h1,h2,h3, h4{
 	color: #FFFFFF;
-		letter-spacing: 0.066em;
+	letter-spacing: 0.066em;
 }
 
 /* @group Heading Levels */
 .title {
 	color: #FFFFFF;
-	font-size: 1rem;
-	line-height: 0.1rem;
 	font-weight: 500;
-	font-size: 1.1rem;
+	font-size: 1.5rem;
 	margin: 10px 2px;
+	letter-spacing: 0.066em;
 	font-family: 'manrope', sans-serif;
 }
 
 h1, h1.groupheader {
-	font-weight: 200;
   color: #FFFFFF;
   font-size: 1.5rem;
-  line-height: 1.7rem;
+  margin: 1.75em 0 .2em 0;
 }
 
 h2, h2.groupheader {
-	font-weight: 300;
   color: #FFFFFF;
-  font-size: 1.2rem;
-  line-height: 2.3rem;
+  font-size: 1.15rem;
 	border-bottom: none;
-	margin: 0.75em 0 .2em 0;
 	padding: 0px;
 	width: 100%;
 }
 
 h3.groupheader {
-	font-weight: 200;
-	font-size: 2.0rem;
-	line-height: 2.1rem;
+	font-size: 1.0rem;
 	color: #000;
 }
 
@@ -125,7 +130,8 @@ h1.glow, h2.glow, h3.glow, h4.glow, h5.glow, h6.glow {
 }
 
 dt {
-	font-weight: bold;
+	color: #AEACA4;
+	font-weight: lighter;
 }
 div.multicol {
 	-moz-column-gap: 1em;
@@ -484,10 +490,8 @@ table.memberdecls {
 .memItemLeft, .memTemplItemLeft {
   white-space: nowrap;
 }
-.memItemLeft{padding-top:6px;}
+.memItemLeft{padding-top:0.2em;}
 .memItemRight, .memTemplItemRight {
-	padding-top:6px;
-	padding-bottom:6px;
 	width: 100%;
 }
 .memTemplParams {
@@ -519,7 +523,6 @@ table.memberdecls {
 .memitem {
 	border: none;
 	padding: 0;
-	margin-bottom: 2.5em;
 	margin-right: 5px;
   	-webkit-transition: box-shadow 0.5s linear;
   	-moz-transition: box-shadow 0.5s linear;
@@ -538,10 +541,9 @@ table.memberdecls {
 }
 .memname td {
 	vertical-align: bottom;
-	color: #FFFFFF;
+	color: #CDCDC3;
 }
 .memproto, dl.reflist dt {
-	margin-top: 1.0em;
 	border: none;
 	border-radius: 0;
   padding: 6px;
@@ -549,7 +551,7 @@ table.memberdecls {
   font-weight: normal;
   text-shadow:none;
   background-image:none;
-  background-color: #2D2D2D;
+  background-color: #262626;
   /* opera specific markup */
   box-shadow:  none;
   /* firefox specific markup */
@@ -611,7 +613,7 @@ dl.reflist dd {
 	padding-left: 4px;
 	padding-right: 6px;
 	background-color: #2D2D2D;
-	color: #CDCDC3;
+	color: #FFFFFF;
 }
 .params .paramtype {
   font-style: italic;
@@ -636,9 +638,9 @@ span.mlabels {
   margin-left: 8px;
 }
 span.mlabel {
-  background-color:#5D5E73; /*grey*/
+  background-color:#2D2D2D; /*grey*/
 	text-shadow:none;
-	color: #000000;/*blue*/
+	color: #8D8B84;/*blue*/
 	margin-right: 4px;
 	padding: 2px 3px;
 	border-radius: 0px;
@@ -778,10 +780,10 @@ table.fieldtable {
 .fieldtable th {
   background-image:none;
   background-repeat:repeat-x;
-  background-color:#52546A;
+  background-color:#262626;
   font-size: 1.05rem;
 	font-weight:normal;
-  color: #000000;
+  color: #8D8B84;
   padding-bottom: 4px;
   padding-top: 5px;
   text-align:left;
@@ -883,7 +885,7 @@ div.header
 div.headertitle
 {
 	padding: 5px 5px 5px 10px;
-	background-color: #8D8B84;
+	background-color: #2D2D2D;
 }
 dl
 {
@@ -1083,10 +1085,6 @@ div.toc li.level4 {
 .inherit {
   display: none;
 }
-tr.heading h2 {
-  margin-top: 42px;
-  margin-bottom: 20px;
-}
 @media print
 {
   #top { display: none; }
@@ -1219,8 +1217,9 @@ background-image: none;
 }
 
 ::-webkit-scrollbar {
-    width: 17px;
-    background-color: #2D2D2D;
+    width: 0.5em;
+    height: 0.5em;
+   	background-color: #0f100f;
 }
  
 ::-webkit-scrollbar-track {
@@ -1230,7 +1229,11 @@ background-image: none;
  
 ::-webkit-scrollbar-thumb {
     border-radius: 0px;
-    background-color: #CDCDC3
+    background-color: #AEACA4
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #FFFFFF
 }
 
 .sm-dox  
@@ -1376,7 +1379,7 @@ a.SRScope {
     left: 0; top: 0;
     border: 2px solid #CDCDC3;
     z-index:10000;
-    background-color: #000000;
+    background-color: #0f100f;
     font-family: 'manrope', sans-serif;
     color: #fff;
 }
