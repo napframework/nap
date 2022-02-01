@@ -108,7 +108,7 @@ namespace nap
 	template<typename T>
 	void PortalItemSimple<T>::onParameterUpdate(T value)
 	{
-		// No need to update if retained value stays the same,
+		// No need to send update if retained value stays the same,
 		// e.g. when we changed the parameter from a client update
 		if (mRetainedValue == value)
 			return;
