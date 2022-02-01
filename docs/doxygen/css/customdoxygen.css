@@ -54,7 +54,7 @@ pre.fragment, div.line,
 	font-family:'manrope', sans-serif;
 	background-color: #8D8B84;
 	color: #FFFFFF;
-	font-weight: lighter;
+	font-weight: normal;
 	border-top-right-radius: 0px;
 	border-top-left-radius: 0px;
 	font-size: 1rem;
@@ -131,7 +131,7 @@ h1.glow, h2.glow, h3.glow, h4.glow, h5.glow, h6.glow {
 
 dt {
 	color: #AEACA4;
-	font-weight: lighter;
+	font-weight: normal;
 }
 div.multicol {
 	-moz-column-gap: 1em;
@@ -968,8 +968,7 @@ dl.section dd {
 }
 #projectlogo img
 {
-	border:0px none;
-	height: 48px;
+	border: 0px none;
 	margin-left: 1em;
 	margin-right: 0em;
 }
@@ -1088,6 +1087,7 @@ div.toc li.level4 {
 }
 .inherit_header td {
   padding: 6px 0px 2px 5px;
+  font-weight: normal;
 }
 .inherit {
   display: none;
@@ -1261,7 +1261,7 @@ background-image: none;
   color: #CDCDC3;
   outline: 0;
   text-shadow: none;
-  font-weight: lighter;
+  font-weight: normal;
   font-size: 1.1em;
   background-image: none;
   background: none;
@@ -1275,7 +1275,7 @@ background-image: none;
 .sm-dox ul {
     background-image: none;
     text-shadow: none;
-    background-color: #000000;
+    background-color: #0f100f;
     border: 2px solid #CDCDC3;
 }
 
@@ -1296,7 +1296,7 @@ a.SRScope {
 	font-family: 'manrope', sans-serif;
     background-image: none;
     text-shadow: none;
-    background-color: #000000;
+    background-color: #0f100f;
     color: #CDCDC3;
     font-size: 0.8em;
 }
