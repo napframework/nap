@@ -6,21 +6,21 @@
 
 uniform UBO
 {
-	float blend;
+	uniform vec3 color;
+	uniform float alpha;
 } ubo;
 
-in vec3 pass_UV;
+in vec3 pass_Uvs;
 
 out vec4 out_Color;
 
-uniform sampler2D colorTextures[2];
+uniform sampler2D colorTexture;
 
 void main(void)
 {
-	vec4 col0 = texture(colorTextures[0], pass_UV.xy);
-	vec4 col1 = texture(colorTextures[1], pass_UV.xy);
+	// Sample colorTexture
+	vec4 texture_color = texture(colorTexture, pass_Uvs.xy);
 
-	// Blend
-	vec3 color = mix(col0.rgb, col1.rgb, ubo.blend);
-	out_Color = vec4(color, 1.0);
+	// Set output color
+	out_Color = vec4(texture_color.rgb * ubo.color, texture_color.a * ubo.alpha); 
 }

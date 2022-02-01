@@ -9,6 +9,10 @@
 
 namespace nap
 {
+	// Forward declares
+	class Core;
+	class RenderService;
+
 	/**
 	 * Hard coded shader to display the nap::GnomonMesh
 	 */
@@ -24,5 +28,8 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		RenderService* mRenderService = nullptr;
 	};
 }

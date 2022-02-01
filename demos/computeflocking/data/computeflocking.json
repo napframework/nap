@@ -1260,12 +1260,6 @@
         },
         {
             "Type": "nap::ShaderFromFile",
-            "mID": "ColorTextureShader",
-            "VertShader": "shaders/texture.vert",
-            "FragShader": "shaders/texture.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
             "mID": "CompositeShader",
             "VertShader": "shaders/composite.vert",
             "FragShader": "shaders/composite.frag"
@@ -1550,6 +1544,10 @@
             "DescriptorType": "Storage",
             "FillPolicy": "",
             "Clear": true
+        },
+        {
+            "Type": "nap::TextureShader",
+            "mID": "ColorTextureShader"
         }
     ]
 }

@@ -11,7 +11,7 @@ namespace nap
 {
 	// Forward declares
 	class Core;
-	class Material;
+	class RenderService;
 
 	// Video shader sampler names 
 	namespace uniform
@@ -40,5 +40,8 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		RenderService* mRenderService = nullptr;
 	};
 }

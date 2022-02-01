@@ -3,15 +3,14 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #version 450 core
-
-in vec3 pass_Uvs;
+uniform UBO
+{
+	uniform vec3 color;
+	uniform float alpha;
+} ubo;
 
 out vec4 out_Color;
-
-uniform sampler2D colorTexture;
-
-void main(void)
+void main() 
 {
-	// Set output color
-	out_Color = texture(colorTexture, pass_Uvs.xy);
+	out_Color = vec4(ubo.color, ubo.alpha);
 }

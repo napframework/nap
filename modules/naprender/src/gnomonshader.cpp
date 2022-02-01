@@ -4,65 +4,58 @@
 
 // Local Includes
 #include "gnomonshader.h"
+#include "renderservice.h"
 
 // External Includes
 #include <nap/core.h>
+#include <renderservice.h>
 
 // nap::gnomonshader run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GnomonShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
+
 //////////////////////////////////////////////////////////////////////////
-// Gnomon Vertex Shader
+// GnomonShader path literals
 //////////////////////////////////////////////////////////////////////////
 
-static const char gnomonVertShader[] = R"glslang(
-#version 450 core
-uniform nap
-{
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
-} mvp;
-
-in vec3	in_Position;
-in vec4 in_Color0;
-out vec3 pass_Color;
-
-void main(void)
-{
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
-	pass_Color = in_Color0.rgb;
-}
-)glslang";
+static inline char* gnomonVert = "shaders/gnomon.vert";
+static inline char* gnomonFrag = "shaders/gnomon.frag";
 
 
 //////////////////////////////////////////////////////////////////////////
-// Gnomon Fragment Shader
+// GnomonShader
 //////////////////////////////////////////////////////////////////////////
-
-static const char gnomonFragShader[] = R"glslang(
-#version 450 core
-in vec3 pass_Color;
-out vec4 out_Color;
-void main() 
-{
-    out_Color = vec4(pass_Color, 1.0);
-}
-)glslang";
-
 
 namespace nap
 {
-	GnomonShader::GnomonShader(Core& core) : Shader(core)
-	{ }
+	GnomonShader::GnomonShader(Core& core) : Shader(core),
+		mRenderService(core.getService<RenderService>()) { }
 
 
 	bool GnomonShader::init(utility::ErrorState& errorState)
 	{
-		auto vert_size = sizeof(gnomonVertShader) - 1;
-		auto frag_size = sizeof(gnomonFragShader) - 1;
-		return load("GnomonShader", gnomonVertShader, vert_size, gnomonFragShader, frag_size, errorState);
+		std::string vertex_shader_path = mRenderService->getModule().findAsset(gnomonVert);
+		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find gnomon vertex shader %s", mRenderService->getModule().getName().c_str(), vertex_shader_path.c_str()))
+			return false;
+
+		std::string fragment_shader_path = mRenderService->getModule().findAsset(gnomonFrag);
+		if (!errorState.check(!fragment_shader_path.empty(), "%s: Unable to find gnomon fragment shader %s", mRenderService->getModule().getName().c_str(), fragment_shader_path.c_str()))
+			return false;
+
+		// Read vert shader file
+		std::string vert_source;
+		if (!errorState.check(utility::readFileToString(vertex_shader_path, vert_source, errorState), "Unable to read gnomon vertex shader file"))
+			return false;
+
+		// Read frag shader file
+		std::string frag_source;
+		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read gnomon fragment shader file"))
+			return false;
+
+		// Compile shader
+		std::string shader_name = utility::getFileNameWithoutExtension(gnomonVert);
+		return this->load(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 }

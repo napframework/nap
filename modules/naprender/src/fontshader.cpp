@@ -7,74 +7,54 @@
 
 // External includes
 #include <nap/core.h>
+#include <renderservice.h>
 
-// nap::VideoShader run time class definition 
+// nap::FontShader run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FontShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
+
 //////////////////////////////////////////////////////////////////////////
-// Font Vertex Shader
+// FontShader path literals
 //////////////////////////////////////////////////////////////////////////
 
-static const char fontVertShader[] = R"glslang(
-#version 450 core
-uniform nap
-{
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
-} mvp;
-
-in vec3	in_Position;
-in vec3 in_UV0;
-out vec3 passUVs;
-
-void main(void)
-{
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
-	passUVs = in_UV0;
-}
-)glslang";
+static inline char* fontVert = "shaders/font.vert";
+static inline char* fontFrag = "shaders/font.frag";
 
 
 //////////////////////////////////////////////////////////////////////////
-// Font Fragment Shader
-//////////////////////////////////////////////////////////////////////////
-
-static const char fontFragShader[] = R"glslang(
-#version 450 core
-in vec3 passUVs;
-uniform sampler2D glyph;
-
-uniform UBO
-{
-	uniform vec3 textColor;
-} ubo;
-
-out vec4 out_Color;
-void main() 
-{
-	float alpha = texture(glyph, passUVs.xy).r;
-    out_Color = vec4(ubo.textColor, alpha);
-}
-)glslang";
-
-
-//////////////////////////////////////////////////////////////////////////
-// VideoShader
+// FontShader
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
-	FontShader::FontShader(Core& core) : Shader(core) { }
+	FontShader::FontShader(Core& core) : Shader(core),
+		mRenderService(core.getService<RenderService>()) { }
 
 
 	bool FontShader::init(utility::ErrorState& errorState)
 	{
-		// Number of characters = number of bytes minus null termination character of string literal.
-		auto vert_size = sizeof(fontVertShader) - 1;
-		auto frag_size = sizeof(fontFragShader) - 1;
-		return load("FontShader", fontVertShader, vert_size, fontFragShader, frag_size, errorState);
+		std::string vertex_shader_path = mRenderService->getModule().findAsset(fontVert);
+		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find font vertex shader %s", mRenderService->getModule().getName().c_str(), vertex_shader_path.c_str()))
+			return false;
+
+		std::string fragment_shader_path = mRenderService->getModule().findAsset(fontFrag);
+		if (!errorState.check(!fragment_shader_path.empty(), "%s: Unable to find font fragment shader %s", mRenderService->getModule().getName().c_str(), fragment_shader_path.c_str()))
+			return false;
+
+		// Read vert shader file
+		std::string vert_source;
+		if (!errorState.check(utility::readFileToString(vertex_shader_path, vert_source, errorState), "Unable to read font vertex shader file"))
+			return false;
+
+		// Read frag shader file
+		std::string frag_source;
+		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read font fragment shader file"))
+			return false;
+
+		// Compile shader
+		std::string shader_name = utility::getFileNameWithoutExtension(fontVert);
+		return this->load(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 }

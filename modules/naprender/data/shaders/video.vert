@@ -3,7 +3,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #version 450 core
-
 uniform nap
 {
 	mat4 projectionMatrix;
@@ -11,21 +10,12 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-in vec4	in_Position;
-in vec4	in_UV0;
-in uint in_Id;
-
-out vec4 pass_Uvs;
-out uint pass_Id;
+in vec3	in_Position;
+in vec3	in_UV0;
+out vec3 pass_Uvs;
 
 void main(void)
 {
-	// Calculate position
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position.xyz, 1.0);
-
-	// Pass color and uv's 
+	gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 	pass_Uvs = in_UV0;
-
-	// Pass texture id
-	pass_Id = in_Id%2;
 }

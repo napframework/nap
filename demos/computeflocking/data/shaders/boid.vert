@@ -72,7 +72,7 @@ void main(void)
 	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, b.orientation) + b.position.xyz, 1.0);
 
 	// Calculate position
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
+	gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
 
 	// Calculate vertex world space position and set
 	pass_Position = world_position.xyz;

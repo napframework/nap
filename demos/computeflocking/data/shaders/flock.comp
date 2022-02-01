@@ -143,9 +143,10 @@ vec3 steerTowards(vec3 targetDir, vec3 velocity, float maxSpeed)
 // SHADER MAIN
 void main()
 {
+	// Fetch global compute shader invocation ID
 	uint id = gl_GlobalInvocationID.x;
 
-	// Read current boid
+	// Read boid from input buffer - use the invocation ID as an index into our storage buffer
 	Boid b = subo_in.boids[id];
 
 	// Reset boid
@@ -181,12 +182,16 @@ void main()
 		}
 	}
 
-	// Calculate base acceleration
+	// Calculate base acceleration determined by a moving global target position
 	vec4 offset = vec4(ubo.target, 0.0) - b.position;
 	vec3 acceleration = steerTowards(offset.xyz, b.velocity.xyz, ubo.maxSpeed) * ubo.targetWeight;
 
-	// Calculate forces
-	if (b.numFlockMates > 0) 	
+	// Calculate individual forces (direction and magnitude)
+	// 'alignment' indicates a force pushing towards the average heading of the flock
+	// 'cohesion' indicates a force pushing towards the center of the flock
+	// 'separation' indicates a force steering away from flock mates within an avoidance radius
+
+	if (b.numFlockMates > 0)
 	{
 		vec4 average_flock_center = b.flockCenter / b.numFlockMates;
 		vec4 average_flock_heading = b.flockHeading / b.numFlockMates;
@@ -208,13 +213,14 @@ void main()
 	b.velocity.xyz = mix(vel, b.velocity.xyz, 0.5);
 	b.position.xyz += b.velocity.xyz * ubo.deltaTime;
 
+	// Get a quaternion describing the boid's delta rotation
 	vec3 dir_orig = rotate(FORWARD, b.orientation);
 	vec3 dir_dest = normalize(steerTowards(dir_orig, b.velocity.xyz, 0.05));
 	vec4 q_delta = rotationQuat(dir_orig, dir_dest);
 
-	// Calculate quaternion describing a rotation from the forward direction to the current direction
+	// Compose a new orientation from last frame's quat and the delta
 	b.orientation = mulQuat(q_delta, b.orientation);
 
-	// Set boid
+	// Write boid to output buffer
 	subo_out.boids[id] = b;
 }

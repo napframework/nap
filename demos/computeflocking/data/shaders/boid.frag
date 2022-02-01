@@ -29,6 +29,7 @@ flat in uint pass_Id;
 
 out vec4 out_Color;
 
+// Converts HSV color vector 'c' to an RGB color
 // Source: http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
 vec3 hsv2rgb(vec3 c)
 {
@@ -52,8 +53,8 @@ void main(void)
 	}
 
 	// Surface to camera normal     
-    vec3 surface_to_cam_n = normalize(ubo.cameraLocation - pass_Position);
-    vec3 surface_n = normalize(pass_Normals);
+	vec3 surface_to_cam_n = normalize(ubo.cameraLocation - pass_Position);
+	vec3 surface_n = normalize(pass_Normals);
 
 	// Calculate the vector from this pixels surface to the light source
 	vec3 surface_to_light = ubo.lightPosition - pass_Position;
@@ -71,7 +72,7 @@ void main(void)
 	}
 
 	float diffuse_v = 0.0;
-    float specula_v = 0.0;
+	float specula_v = 0.0;
 
 	// Compute final diffuse contribution
 	diffuse_v += diffuse_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.diffuseIntensity;
@@ -79,17 +80,17 @@ void main(void)
 	// Compute final specual contribution
 	specula_v += specula_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.specularIntensity;
 
-    // Compute final diffuse and specular color values
-    vec3 diffuse_color = boid_color * ubo.lightColor * diffuse_v;
-    vec3 specular_color = ubo.specularColor * specula_v;
+	// Compute final diffuse and specular color values
+	vec3 diffuse_color = boid_color * ubo.lightColor * diffuse_v;
+	vec3 specular_color = ubo.specularColor * specula_v;
 
-    // Get ambient color
+	// Get ambient color
 	vec3 ambient_color = boid_color * ubo.ambientIntensity;
 
-    // Compute composite color value
-    vec3 comp_color = diffuse_color + specular_color + ambient_color;
-    comp_color = clamp(comp_color, vec3(0.0), vec3(1.0));
+	// Compute composite color value
+	vec3 comp_color = diffuse_color + specular_color + ambient_color;
+	comp_color = clamp(comp_color, vec3(0.0), vec3(1.0));
 
-    // Compute final color value
-    out_Color = vec4(mix(comp_color, vec3(1.0), pass_Fresnel), 1.0); 
+	// Compute final color value
+	out_Color = vec4(mix(comp_color, vec3(1.0), pass_Fresnel), 1.0); 
 }

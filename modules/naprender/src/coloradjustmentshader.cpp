@@ -34,22 +34,22 @@ namespace nap
 
 	bool ColorAdjustmentShader::init(utility::ErrorState& errorState)
 	{
-		std::string vertshader_path = mRenderService->getModule().findAsset(vertexShader);
-		if (!errorState.check(!vertshader_path.empty(), "%s: Unable to find blur vertex shader %s", mRenderService->getModule().getName().c_str(), vertshader_path.c_str()))
+		std::string vertex_shader_path = mRenderService->getModule().findAsset(vertexShader);
+		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find coloradjustment vertex shader %s", mRenderService->getModule().getName().c_str(), vertex_shader_path.c_str()))
 			return false;
 
-		std::string fragshader_path = mRenderService->getModule().findAsset(fragmentShader);
-		if (!errorState.check(!vertshader_path.empty(), "%s: Unable to find blur vertex shader %s", mRenderService->getModule().getName().c_str(), fragshader_path.c_str()))
+		std::string fragment_shader_path = mRenderService->getModule().findAsset(fragmentShader);
+		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find coloradjustment fragment shader %s", mRenderService->getModule().getName().c_str(), fragment_shader_path.c_str()))
 			return false;
 
 		// Read vert shader file
 		std::string vert_source;
-		if (!errorState.check(utility::readFileToString(vertshader_path, vert_source, errorState), "Unable to read blur vertex shader file"))
+		if (!errorState.check(utility::readFileToString(vertex_shader_path, vert_source, errorState), "Unable to read coloradjustment vertex shader file"))
 			return false;
 
 		// Read frag shader file
 		std::string frag_source;
-		if (!errorState.check(utility::readFileToString(fragshader_path, frag_source, errorState), "Unable to read blur fragment shader file"))
+		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read coloradjustment fragment shader file"))
 			return false;
 
 		// Compile shader

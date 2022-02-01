@@ -3,52 +3,20 @@
 
 // External includes
 #include <nap/core.h>
+#include <renderservice.h>
 
-// nap::VideoShader run time class definition 
+// nap::ConstantShader run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ConstantShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-//////////////////////////////////////////////////////////////////////////
-// Constant Vertex Shader
-//////////////////////////////////////////////////////////////////////////
-
-static const char constantVertShader[] = R"glslang(
-#version 450 core
-uniform nap
-{
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
-} mvp;
-
-in vec3	in_Position;
-
-void main(void)
-{
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
-}
-)glslang";
-
 
 //////////////////////////////////////////////////////////////////////////
-// Constant Fragment Shader
+// FontShader path literals
 //////////////////////////////////////////////////////////////////////////
 
-static const char constantFragShader[] = R"glslang(
-#version 450 core
-uniform UBO
-{
-	uniform vec3 color;
-	uniform float alpha;
-} ubo;
-
-out vec4 out_Color;
-void main() 
-{
-    out_Color = vec4(ubo.color, ubo.alpha);
-}
-)glslang";
+static inline char* constantVert = "shaders/constant.vert";
+static inline char* constantFrag = "shaders/constant.frag";
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,14 +25,32 @@ void main()
 
 namespace nap
 {
-	ConstantShader::ConstantShader(Core& core) : Shader(core) { }
+	ConstantShader::ConstantShader(Core& core) : Shader(core),
+		mRenderService(core.getService<RenderService>()) { }
 
 
 	bool ConstantShader::init(utility::ErrorState& errorState)
 	{
-		// Number of characters = number of bytes minus null termination character of string literal.
-		auto vert_size = sizeof(constantVertShader) - 1;
-		auto frag_size = sizeof(constantFragShader) - 1;
-		return load("ConstantShader", constantVertShader, vert_size, constantFragShader, frag_size, errorState);
+		std::string vertex_shader_path = mRenderService->getModule().findAsset(constantVert);
+		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find constant vertex shader %s", mRenderService->getModule().getName().c_str(), vertex_shader_path.c_str()))
+			return false;
+
+		std::string fragment_shader_path = mRenderService->getModule().findAsset(constantFrag);
+		if (!errorState.check(!fragment_shader_path.empty(), "%s: Unable to find constant fragment shader %s", mRenderService->getModule().getName().c_str(), fragment_shader_path.c_str()))
+			return false;
+
+		// Read vert shader file
+		std::string vert_source;
+		if (!errorState.check(utility::readFileToString(vertex_shader_path, vert_source, errorState), "Unable to read constant vertex shader file"))
+			return false;
+
+		// Read frag shader file
+		std::string frag_source;
+		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read constant fragment shader file"))
+			return false;
+
+		// Compile shader
+		std::string shader_name = utility::getFileNameWithoutExtension(constantVert);
+		return this->load(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 }

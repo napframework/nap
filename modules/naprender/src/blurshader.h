@@ -11,7 +11,6 @@ namespace nap
 {
 	// Forward declares
 	class Core;
-	class Material;
 
 	/**
 	 * Supported blur kernels
@@ -33,8 +32,8 @@ namespace nap
 		}
 
 		inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
-		inline constexpr const char* textureSize = "textureSize";				///<
-		inline constexpr const char* direction = "direction";					///<
+		inline constexpr const char* textureSize = "textureSize";				///< Size of the texture
+		inline constexpr const char* direction = "direction";					///< Direction of the blur e.g. {1.0, 0.0} for horizontal, {0.0, 1.0} for vertical 
 	}
 
 	/**
@@ -56,28 +55,28 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override
 		{
-			std::string vertshader_path = (KERNEL == EBlurSamples::X5) ?
+			std::string vertex_shader_path = (KERNEL == EBlurSamples::X5) ?
 				mRenderService->getModule().findAsset(blurVert) :
 				mRenderService->getModule().findAsset(blur9Vert);
 
-			if (!errorState.check(!vertshader_path.empty(), "%s: Unable to find blur vertex shader %s", mRenderService->getModule().getName().c_str(), vertshader_path.c_str()))
+			if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find blur vertex shader %s", mRenderService->getModule().getName().c_str(), vertex_shader_path.c_str()))
 				return false;
 
-			std::string fragshader_path = (KERNEL == EBlurSamples::X5) ? 
+			std::string fragment_shader_path = (KERNEL == EBlurSamples::X5) ? 
 				mRenderService->getModule().findAsset(blurFrag) :
 				mRenderService->getModule().findAsset(blur9Frag);
 
-			if (!errorState.check(!fragshader_path.empty(), "%s: Unable to find blur vertex shader %s", mRenderService->getModule().getName().c_str(), fragshader_path.c_str()))
+			if (!errorState.check(!fragment_shader_path.empty(), "%s: Unable to find blur fragment shader %s", mRenderService->getModule().getName().c_str(), fragment_shader_path.c_str()))
 				return false;
 
 			// Read vert shader file
 			std::string vert_source;
-			if (!errorState.check(utility::readFileToString(vertshader_path, vert_source, errorState), "Unable to read blur vertex shader file"))
+			if (!errorState.check(utility::readFileToString(vertex_shader_path, vert_source, errorState), "Unable to read blur vertex shader file"))
 				return false;
 
 			// Read frag shader file
 			std::string frag_source;
-			if (!errorState.check(utility::readFileToString(fragshader_path, frag_source, errorState), "Unable to read blur fragment shader file"))
+			if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read blur fragment shader file"))
 				return false;
 
 			// Compile shader

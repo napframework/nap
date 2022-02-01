@@ -14,6 +14,11 @@ namespace nap
 	{
 		namespace constant
 		{	
+			namespace sampler
+			{
+				inline constexpr const char* colorTexture = "colorTexture";		///< Name of the color texture sampler
+			}
+
 			inline constexpr const char* color			= "color";		///< color value (0-1)
 			inline constexpr const char* alpha			= "alpha";		///< alpha value (0-1)
 			inline constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
@@ -23,11 +28,11 @@ namespace nap
 	/**
 	 * Constant shader. Renders an object using a color and alpha value.
 	 */
-	class NAPAPI ConstantShader : public Shader
+	class NAPAPI TextureShader : public Shader
 	{
 		RTTI_ENABLE(Shader)
 	public:
-		ConstantShader(Core& core);
+		TextureShader(Core& core);
 
 		/**
 		 * Cross compiles the constant GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.

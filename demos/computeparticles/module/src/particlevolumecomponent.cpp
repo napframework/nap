@@ -284,12 +284,10 @@ namespace nap
 		// Draw meshes
 		const MeshInstance& mesh_instance = getMeshInstance();
 		const GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
-		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
-		{
-			const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(index);
-			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
-			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
-		}
+		const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
+
+		vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 
 		// Restore line width
 		vkCmdSetLineWidth(commandBuffer, 1.0f);
