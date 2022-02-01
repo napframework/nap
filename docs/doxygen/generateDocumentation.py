@@ -15,6 +15,8 @@ SEARCH_TARGET = OUTPUT_DIR + "/search/search.css"
 SEARCH_SOURCE = "/css/search.css"
 FONT_FILE_SOURCE = "/css/Manrope-Regular.ttf"
 FONT_FILE_TARGET = OUTPUT_DIR + "/Manrope-Regular.ttf"
+MONO_FONT_FILE_SOURCE = "/css/SpaceMono-Regular.ttf"
+MONO_FONT_FILE_TARGET = OUTPUT_DIR + "/SpaceMono-Regular.ttf"
 
 # errors
 ERROR_INVALID_NAP_VERSION = 2
@@ -88,12 +90,12 @@ def copySearch():
 
 
 # copy font
-def copyFont():
-    source = getWorkingDir() + FONT_FILE_SOURCE
-    target = getWorkingDir() + FONT_FILE_TARGET
-    print("copy: %s -> %s" % (source, target))
+def copyFont(source, target):
+    font_source = getWorkingDir() + source
+    font_target = getWorkingDir() + target
+    print("copy: %s -> %s" % (font_source, font_target))
     try:
-        shutil.copyfile(source, target)
+        shutil.copyfile(font_source, font_target)
     except Exception as error:
         print("unable to copy font, are you running as admin? %s" % error)
 
@@ -141,8 +143,9 @@ if __name__ == '__main__':
     # copy search
     copySearch()
 
-    # copy font
-    copyFont()
+    # copy fonts
+    copyFont(FONT_FILE_SOURCE, FONT_FILE_TARGET)
+    copyFont(MONO_FONT_FILE_SOURCE, MONO_FONT_FILE_TARGET)
 
 
 

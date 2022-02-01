@@ -5,6 +5,11 @@
     src: url('Manrope-Regular.ttf') format('truetype');
 }
 
+@font-face {
+	font-family: 'spacemono';
+	src: url('SpaceMono-Regular.ttf') format('truetype');
+}
+
 body{
 	background-color: #2D2D2D;
 	margin: 0;
@@ -297,7 +302,8 @@ div.line {
 	-o-transition-duration: 0.5s;
 	transition-property: background-color, box-shadow;
 	transition-duration: 0.5s;
-	font-family: 'Consolas', monospace, sans-serif;
+	font-family: 'spacemono;', monospace, sans-serif;
+	font-size: 1em;
 }
 div.line.glow {
 	background-color: blue;
