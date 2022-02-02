@@ -6,8 +6,8 @@
 }
 
 @font-face {
-	font-family: 'spacemono';
-	src: url('SpaceMono-Regular.ttf') format('truetype');
+	font-family: 'inconsolata';
+	src: url('Inconsolata-Medium.ttf') format('truetype');
 }
 
 body{
@@ -302,7 +302,7 @@ div.line {
 	-o-transition-duration: 0.5s;
 	transition-property: background-color, box-shadow;
 	transition-duration: 0.5s;
-	font-family: 'spacemono', sans-serif, monospace;
+	font-family: 'inconsolata', sans-serif, monospace;
 	font-size: 1em;
 }
 div.line.glow {

@@ -15,8 +15,8 @@ SEARCH_TARGET = OUTPUT_DIR + "/search/search.css"
 SEARCH_SOURCE = "/css/search.css"
 FONT_FILE_SOURCE = "/css/Manrope-Regular.ttf"
 FONT_FILE_TARGET = OUTPUT_DIR + "/Manrope-Regular.ttf"
-MONO_FONT_FILE_SOURCE = "/css/SpaceMono-Regular.ttf"
-MONO_FONT_FILE_TARGET = OUTPUT_DIR + "/SpaceMono-Regular.ttf"
+MONO_FONT_FILE_SOURCE = "/css/Inconsolata-Medium.ttf"
+MONO_FONT_FILE_TARGET = OUTPUT_DIR + "/Inconsolata-Medium.ttf"
 
 # errors
 ERROR_INVALID_NAP_VERSION = 2
