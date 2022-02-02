@@ -6,16 +6,15 @@
 
 uniform UBO
 {
-	float contrast;
-	float brightness;
-	float saturation;
+	float contrast;		// Contrast adjustment [-1.0, 1.0]
+	float brightness;	// Brightness adjustment [-x, x]
+	float saturation;	// Saturation adjustment [0.0, x]
 } ubo;
 
-in vec3 pass_UV;
-
-out vec4 out_Color;
-
 uniform sampler2D colorTexture;
+
+in vec3 pass_UV;
+out vec4 out_Color;
 
 // @param color: input color
 // @param value: [-1, 1] where negative reduces contrast and positive increases it

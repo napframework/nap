@@ -28,7 +28,25 @@ namespace nap
 
 
 	/**
-	 * Renders to a texture
+	 * Pre- or post-processing effect that blurs the input texture at a downsampled resolution into internally managed
+	 * rendertargets.
+	 *
+	 * This component manages its own render target and plane to render to.
+	 * The plane is automatically scaled to fit the bounds of the render target.
+	 * 
+	 * The output texture is not exposed as an RTTI property as it is created on init() based on the specified pass count.
+	 * Each blur 'pass' actually combines two passes; horizontal and vertical. The gaussian sampling kernel size can be
+	 * specified with the 'Kernel' property.
+	 * Each subsequent pass performs a horizontal and vertical blur at half the resolution of the former, with the being at
+	 * half the resolution of the input texture.
+	 * 
+	 * Access to the output texture is possible with the getOutputTexture() getter.
+	 *
+	 * Simply declare the component in json and call RenderBloomComponentInstance::draw() in the render part of your
+	 * application, in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
+	 *
+	 * This component uses the default naprender blur shader and automatically sets its shader variables based on this
+	 * component's properties configuration. 
 	 */
 	class NAPAPI RenderBloomComponentInstance : public  RenderableComponentInstance
 	{
@@ -37,19 +55,27 @@ namespace nap
 		RenderBloomComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		 * Initialize RenderToTextureComponentInstance based on the RenderToTextureComponent resource
+		 * Initialize RenderBloomComponentInstance based on the RenderBloomComponent resource
 		 * @param errorState should hold the error message when initialization fails
-		 * @return if the rendertotexturecomponentInstance initialized successfully
+		 * @return if the RenderBloomComponentInstance initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * 
+		 * Renders the effect to the output texture, without having to define a render target or mesh.
+		 * Call this in your application render() call inbetween nap::RenderService::beginHeadlessRecording()
+		 * and nap::RenderService::endHeadlessRecording().
+		 * Do not call this function outside of a headless recording pass i.e. when rendering to a window.
+		 * The result is rendered into a dynamically created output texture, which is accessible through
+		 * RenderBloomComponentInstance::getOutputTexture()
+		 * Alternatively, you can use the render service to render this component, see onDraw()
 		 */
 		void draw();
 
 		/**
-		 * 
+		 * Returns the output texture with the bloom effect applied.
+		 * The size of this texture equals { input_width/2^PassCount, input_height/2^PassCount }
+		 * @return the bloom texture created from the specified input texture
 		 */
 		Texture2D& getOutputTexture() { return *mBloomRTs.back()[1]->mColorTexture; }
 
@@ -68,7 +94,7 @@ namespace nap
 		using DoubleBufferedRenderTarget = std::array<rtti::ObjectPtr<RenderTarget>, 2>;
 
 		RenderService*				mRenderService = nullptr;			///< Render service
-		RenderTexture2D*			mResolvedInputTexture = nullptr;	///<
+		RenderTexture2D*			mInputTexture = nullptr;			///< Reference to the input texture
 		
 		std::vector<DoubleBufferedRenderTarget> mBloomRTs;				///< Internally managed render targets
 
@@ -83,11 +109,11 @@ namespace nap
 		UniformMat4Instance*		mModelMatrixUniform = nullptr;		///< Name of the model matrix uniform in the shader
 		UniformMat4Instance*		mProjectMatrixUniform = nullptr;	///< Name of the projection matrix uniform in the shader
 		UniformMat4Instance*		mViewMatrixUniform = nullptr;		///< View matrix uniform
-		UniformStructInstance*		mMVPStruct = nullptr;				///< model view projection struct
+		UniformStructInstance*		mMVPStruct = nullptr;				///< Model View Projection struct
 
-		Sampler2DInstance*			mColorTextureSampler = nullptr;
-		UniformVec2Instance*		mDirectionUniform = nullptr;
-		UniformVec2Instance*		mTextureSizeUniform = nullptr;
+		Sampler2DInstance*			mColorTextureSampler = nullptr;		///< Sampler instance for color textures in the blur material
+		UniformVec2Instance*		mDirectionUniform = nullptr;		///< Direction uniform of the blur material
+		UniformVec2Instance*		mTextureSizeUniform = nullptr;		///< Texture size uniform of the blur material
 
 		/**
 		 * Checks if the uniform is available on the source material and creates it if so

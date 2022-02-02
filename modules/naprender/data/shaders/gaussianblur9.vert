@@ -9,9 +9,8 @@ uniform nap
 
 uniform UBO
 {
-	vec2 textureSize;
-	vec2 direction;
-	vec2 scaleBias;
+	vec2 textureSize;	// The size of 'colorTexture', used to pre-calculate sampling coordinates in vertex shader
+	vec2 direction;		// The sampling direction
 } ubo;
 
 in vec3 in_Position;

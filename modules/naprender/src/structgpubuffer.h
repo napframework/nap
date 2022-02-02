@@ -18,7 +18,7 @@ namespace nap
 	/**
 	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
 	 */
-	class NAPAPI StructGPUBuffer : public GPUBuffer
+	class NAPAPI StructGPUBuffer final : public GPUBuffer
 	{
 		RTTI_ENABLE(GPUBuffer)
 	public:

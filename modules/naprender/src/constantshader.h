@@ -22,6 +22,16 @@ namespace nap
 
 	/**
 	 * Constant shader. Renders an object using a color and alpha value.
+	 * 
+	 * The constant shader exposes the following shader variables:
+	 *
+	 * ~~~~{.frag}
+	 *		uniform UBO
+	 *		{
+	 *			vec3 color;
+	 *			float alpha;
+	 *		};
+	 * ~~~~
 	 */
 	class NAPAPI ConstantShader : public Shader
 	{

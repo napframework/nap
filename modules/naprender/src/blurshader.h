@@ -37,7 +37,23 @@ namespace nap
 	}
 
 	/**
-	 * Shader that blurs a texture in one direction
+	 * Gaussian blur shader that samples a Texture2D in a specified direction. For a full gaussian blur,
+	 * call this shader twice, setting up a material that samples horizontally (direction = {1.0, 0.0}) and
+	 * vertically (direction = {0.0, 1.0}).
+	 *
+	 * The gaussianblur shader exposes the following shader variables:
+	 * 
+	 * ~~~~~{.vert}
+	 *		uniform UBO
+	 *		{
+	 *			vec2 textureSize;	// The size of 'colorTexture', used to pre-calculate sampling coordinates in vertex shader
+	 *			vec2 direction;		// The sampling direction
+	 *		} ubo;
+	 * ~~~~
+	 *
+	 * ~~~~{.frag}
+	 *		uniform sampler2D colorTexture;	// The input color texture to sample from
+	 * ~~~~
 	 */
 	template <EBlurSamples KERNEL>
 	class NAPAPI BlurShader : public Shader

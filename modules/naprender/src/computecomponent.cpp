@@ -29,7 +29,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Transition image to a new layout using an existing image barrier.
+	 * Sets a pipeline barrier
 	 */
 	static void memoryBarrier(VkCommandBuffer commandBuffer, VkBuffer buffer, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage)
 	{

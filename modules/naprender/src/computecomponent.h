@@ -18,11 +18,19 @@ namespace nap
 	class ComputeComponentInstance;
 
 	/**
-	 * Compute Component
-	 * This is a work in progress. To-do's:
-	 * - Improve abstraction/interface
-	 * - Decide how this instance should be created/used (instance, resource, component?)
-	 * - Finish documentation
+	 * Resource part of Compute Component
+	 * 
+	 * The compute component represents a general-purpose computation that mutates one or more buffers.
+	 * Internally, a ComputeComponentInstance manages a ComputeMaterialInstance and can caches the desired invocation count
+	 * for repeated use.
+	 *
+	 * ComputeComponentInstance::compute() dispatches the compute shader with the given compute command buffer.
+	 * Multiple compute calls may be stacked and are implicitly synchronized by the resource usage and access types bound
+	 * to the compute material's descriptor sets.
+	 *
+	 * This component can only be used when 'Compute' is available and enabled in the RenderService, otherwise
+	 * initialization fails. To enable Compute, make sure 'Compute' is marked under the 'RequiredQueues' in the
+	 * RenderServiceConfiguration.
 	 */
 	class NAPAPI ComputeComponent : public Component
 	{
@@ -30,19 +38,29 @@ namespace nap
 		DECLARE_COMPONENT(ComputeComponent, ComputeComponentInstance)
 	public:
 		ComputeMaterialInstanceResource		mComputeMaterialInstanceResource;	///< Property 'ComputeMaterialInstance' The compute material instance resource
-		uint								mInvocations = 1;
+		uint								mInvocations = 1;					///< Property 'Invocations' The number of compute shader invocations per dispatch
 	};
 
+
 	/**
-	 * Compute Component Instance
+	 * Instance part of Compute Component
+	 *
+	 * The compute component represents a general-purpose computation that mutates one or more buffers.
+	 * Internally, a ComputeComponentInstance manages a ComputeMaterialInstance and can caches the desired invocation count
+	 * for repeated use.
+	 *
+	 * ComputeComponentInstance::compute() dispatches the compute shader with the given compute command buffer.
+	 * Multiple compute calls may be stacked and are implicitly synchronized by the resource usage and access types bound
+	 * to the compute material's descriptor sets.
+	 *
+	 * This component can only be used when 'Compute' is available and enabled in the RenderService, otherwise
+	 * initialization fails. To enable Compute, make sure 'Compute' is marked under the 'RequiredQueues' in the
+	 * RenderServiceConfiguration.
 	 */
 	class NAPAPI ComputeComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		/**
-		 * Constructor
-		 */
 		ComputeComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
@@ -71,7 +89,7 @@ namespace nap
 		ComputeMaterialInstance& getComputeMaterialInstance() 			{ return mComputeMaterialInstance; }
 
 		/**
-		 * Returns the local workgroup size
+		 * @return the local workgroup size
 		 */
 		glm::u32vec3 getLocalWorkGroupSize() const						{ return mComputeMaterialInstance.getComputeMaterial().getShader().getLocalWorkGroupSize(); }
 

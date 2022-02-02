@@ -23,15 +23,17 @@ namespace nap
 	class Core;
 
 	/**
-	 * Flag that determines how the mesh data is used at runtime.
-	 * A static mesh is uploaded from the CPU to the GPU exactly once. 
+	 * Flag that determines how GPU data, typically nap::GPUBuffer, is used at runtime. Regards the type of data access
+	 * between host (CPU) and device (GPU).
+	 * 
+	 * For instance, a 'Static' buffer (i.e. containing a mesh) is uploaded from the CPU to the GPU exactly once.
 	 * This allows the system to remove unused buffers after the upload is complete. 
-	 * If there is the need to update a mesh more frequently, even once after upload, 
+	 * If there is the need to update a buffer more frequently, even once after upload, 
 	 * it is required the usage is set to 'DynamicWrite'.
 	 * 
-	 * Note that static meshes are often placed in a different cache on the GPU, not accessible by the CPU, which
-	 * allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory 
-	 * and are therefore slower to draw. Keep this in mind when selecting the appropriate data use.
+	 * Note that static data is often placed in a different cache on the GPU, not accessible by the CPU, which
+	 * allows for faster drawing times. 'DynamicWrite' buffers are uploaded into shared CPU / GPU memory 
+	 * and are therefore slower to access. Keep this in mind when selecting the appropriate memory usage.
 	 */
 	enum class EMemoryUsage : uint
 	{
@@ -42,8 +44,12 @@ namespace nap
 
 
 	/**
-	 * Flag that determines the type of shader resource.
-	 * TODO: elaborate
+	 * Flag that determines the descriptor type of a shader resource. Regards the type of data access on the device (GPU) 
+	 * inside a shader program.
+	 * Uniform buffers are typically small blocks of data that are updated very frequently from CPU to GPU (each frame),
+	 * but immutable in a shader program.
+	 * Storage buffers are typically large blocks of data that are bound/unbound to an SSBO and frequently read and written
+	 * in a compute shader program.
 	 */
 	enum class EDescriptorType : uint
 	{
@@ -60,9 +66,9 @@ namespace nap
 	 * requires more resources and is 'generally' slower to draw, depending of the memory layout of the underlying hardware.
 	 * It is not allowed to update a static buffer after the initial upload!
 	 *
-	 * Note that static meshes are often placed in a different cache on the GPU, not accessible by the CPU, which
-	 * allows for faster drawing times. 'DynamicWrite' meshes are uploaded into shared CPU / GPU memory
-	 * and are therefore slower to draw.
+	 * Note that static data is often placed in a different cache on the GPU, not accessible by the CPU, which
+	 * allows for faster drawing times. 'DynamicWrite' buffers are uploaded into shared CPU / GPU memory
+	 * and are therefore slower to access. Keep this in mind when selecting the appropriate memory usage.
 	 */
 	class NAPAPI GPUBuffer : public Resource
 	{

@@ -25,6 +25,17 @@ namespace nap
 
 	/**
 	 * Shader that renders glyphs. Used by the nap::RenderableTextComponent
+	 *
+	 * The font shader exposes the following shader variables:
+	 *
+	 * ~~~~{.frag}
+	 *		uniform UBO
+	 *		{
+	 *			uniform vec3 textColor;
+	 *		};
+	 *
+	 *		uniform sampler2D glyph;
+	 * ~~~~
 	 */
 	class NAPAPI FontShader : public Shader
 	{

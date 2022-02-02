@@ -28,7 +28,20 @@ namespace nap
 	}
 
 	/**
-	 * Shader that applies a contrast and brightness filter to a texture
+	 * Shader that applies a contrast, brightness and saturation filter to a texture.
+	 *
+	 * The coloradjustment shader exposes the following shader variables:
+	 *
+	 * ~~~~{.frag}
+	 *		uniform UBO
+	 *		{
+	 *			float contrast;		// Contrast adjustment [-1.0, 1.0]
+	 *			float brightness;	// Brightness adjustment [-x, x]
+	 *			float saturation;	// Saturation adjustment [0.0, x]
+	 *		};
+	 *
+	 *		uniform sampler2D colorTexture;
+	 * ~~~~
 	 */
 	class NAPAPI ColorAdjustmentShader : public Shader
 	{

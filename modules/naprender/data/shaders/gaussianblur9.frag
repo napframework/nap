@@ -1,6 +1,6 @@
 #version 450
 
-uniform sampler2D colorTexture;
+uniform sampler2D colorTexture;		// The input color texture to sample from
 
 in vec2 pass_UVs[5];
 out vec4 out_Color;

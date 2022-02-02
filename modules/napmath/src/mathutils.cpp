@@ -38,6 +38,13 @@ namespace nap
 		}
 
 
+		static int randomUInt(uint min, uint max)
+		{
+			std::uniform_int_distribution<uint> m_distribution(min, max);
+			return m_distribution(getGenerator());
+		}
+
+
 		static int randomInt(int min, int max)
 		{
 			std::uniform_int_distribution<int> m_distribution(min, max);
@@ -312,7 +319,7 @@ namespace nap
 		template<>
 		uint random(uint min, uint max)
 		{
-			return static_cast<uint>(randomInt(min, max));
+			return randomUInt(min, max);
 		}
 
 

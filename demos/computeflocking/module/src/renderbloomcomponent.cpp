@@ -66,7 +66,13 @@ namespace nap
 
 		// Get resource
 		RenderBloomComponent* resource = getComponent<RenderBloomComponent>();
-		mResolvedInputTexture = resource->mInputTexture.get();
+
+		// Verify pass count
+		if (!errorState.check(resource->mPassCount > 0, "Property 'PassCount' must be higher than zero"))
+			return false;
+
+		// Get reference to input texture
+		mInputTexture = resource->mInputTexture.get();
 
 		// Initialize double-buffered bloom render targets
 		for (int pass_idx = 0; pass_idx < resource->mPassCount; pass_idx++)
@@ -196,7 +202,7 @@ namespace nap
 		glm::mat4 identity_matrix = glm::mat4();
 
 		// Set first input texture
-		RenderTexture2D* input_texture = mResolvedInputTexture;
+		RenderTexture2D* input_texture = mInputTexture;
 
 		for (auto& bloom_target : mBloomRTs)
 		{

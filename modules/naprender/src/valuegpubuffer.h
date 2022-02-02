@@ -21,8 +21,8 @@
 namespace nap
 {
 	/**
-	 * A value buffer property
-	 * Used exclusively used as a template argument for vertex buffer type definitions
+	 * A value buffer property for nap::TypedValuePropertyGPUBuffer
+	 * Used exclusively used as a template argument for index and vertex buffer type definitions
 	 */
 	enum EValueGPUBufferProperty : uint
 	{
@@ -33,7 +33,9 @@ namespace nap
 
 
 	/**
-	 * GPU buffer base class for storing primitive type elements
+	 * Base class for all types of GPU value buffers.
+	 * Supported values for child classes such as TypedValueGPUBuffer<T> must be primitives that can be mapped to 
+	 * VkFormat. This is enforced by the requirement to implement getFormat().
 	 */
 	class NAPAPI ValueGPUBuffer : public GPUBuffer
 	{
@@ -68,7 +70,15 @@ namespace nap
 
 
 	/**
-	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
+	 * Typed class for GPU value buffers.
+	 *
+	 * Allocates all required host (staging) and device buffers based on the specified properties.
+	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
+	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
+	 * priority over the latter.
+	 * 
+	 * Supported types are primitive types that can be mapped to VkFormat.
+	 * @tparam T primitive value data type
 	 */
 	template<typename T>
 	class NAPAPI TypedValueGPUBuffer : public ValueGPUBuffer
@@ -76,7 +86,7 @@ namespace nap
 		RTTI_ENABLE(ValueGPUBuffer)
 	public:
 		/**
-		 * Every vertex buffer needs to have access to the render engine.
+		 * Every value buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		TypedValueGPUBuffer(Core& core) :
@@ -84,7 +94,7 @@ namespace nap
 		{ }
 
 		/**
-		 * Every vertex buffer needs to have access to the render engine.
+		 * Every value buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
@@ -95,8 +105,10 @@ namespace nap
 		{ }
 
 		/**
-		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
-		 * If a fill policy is available, the buffer will also be uploaded to immediately.
+		 * Initialize this buffer. This will allocate all required staging and device buffers based on the specified properties.
+		 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
+		 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has priority
+		 * over the latter.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override
 		{
@@ -222,15 +234,29 @@ namespace nap
 
 
 	/**
-	 * Definitive GPU value buffer defined by a property
+	 * Definitive typed class for GPU value buffers.
+	 *
+	 * Allocates all required host (staging) and device buffers based on the specified properties.
+	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
+	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
+	 * priority over the latter.
+	 *
+	 * In addition to nap::TypedValueGPUBuffer, this class distinguishes specialized purpose vertex and index buffers
+	 * from general purpose value buffers. Internally, some flags are stored that help the driver identify and optimize
+	 * buffers that have a specific purpose in a rendering operation. They also play a role in synchronization of compute
+	 * and graphics operations.
+	 *
+	 * Supported types are primitive types that can be mapped to VkFormat.
+	 * @tparam T primitive value data type
+	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
 	template<typename T, EValueGPUBufferProperty PROPERTY>
-	class NAPAPI TypedValuePropertyGPUBuffer : public TypedValueGPUBuffer<T>
+	class NAPAPI TypedValuePropertyGPUBuffer final : public TypedValueGPUBuffer<T>
 	{
 		RTTI_ENABLE(TypedValueGPUBuffer<T>)
 	public:
 		/**
-		 * Every vertex buffer needs to have access to the render engine.
+		 * Every value buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		TypedValuePropertyGPUBuffer(Core& core) :
@@ -238,7 +264,7 @@ namespace nap
 		{ }
 
 		/**
-		 * Every vertex buffer needs to have access to the render engine.
+		 * Every value buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
@@ -255,11 +281,15 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override
 		{
 			// Compose usage flags from buffer configuration
-			if (PROPERTY == EValueGPUBufferProperty::Index)
-                            TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-
-			else if (PROPERTY == EValueGPUBufferProperty::Vertex)
-                            TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			switch (PROPERTY)
+			{
+			case EValueGPUBufferProperty::Index:
+				TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+				break;
+			case EValueGPUBufferProperty::Vertex:
+				TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+				break;
+			}
 
 			if (!TypedValueGPUBuffer<T>::init(errorState))
 				return false;
@@ -280,13 +310,13 @@ namespace nap
 	using Vec3GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Generic>;
 	using Vec4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Generic>;
 	using Mat4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::mat4,	EValueGPUBufferProperty::Generic>;
-								  											
+
 	using UIntVertexBuffer		= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Vertex>;
 	using IntVertexBuffer		= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Vertex>;
 	using FloatVertexBuffer		= TypedValuePropertyGPUBuffer<float,		EValueGPUBufferProperty::Vertex>;
 	using Vec2VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec2,	EValueGPUBufferProperty::Vertex>;
 	using Vec3VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Vertex>;
 	using Vec4VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Vertex>;
-								  											
+
 	using IndexBuffer			= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Index>;
 }

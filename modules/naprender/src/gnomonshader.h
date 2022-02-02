@@ -14,7 +14,7 @@ namespace nap
 	class RenderService;
 
 	/**
-	 * Hard coded shader to display the nap::GnomonMesh
+	 * Hard coded shader to display the nap::GnomonMesh. Exposes no shader variables.
 	 */
 	class NAPAPI GnomonShader : public Shader
 	{
