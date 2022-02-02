@@ -19,6 +19,7 @@ namespace nap
 		inline constexpr const char* itemValueArgName = "portal_item_value";			///< Name of the argument containing the portal item value in the portal item message
 		inline constexpr const char* itemMinArgName = "portal_item_min";				///< Name of the argument containing the minimum portal item value in the portal item message
 		inline constexpr const char* itemMaxArgName = "portal_item_max";				///< Name of the argument containing the maximum portal item value in the portal item message
+		inline constexpr const char* itemClampArgName = "portal_item_clamp";			///< Name of the argument containing the clamp value in the portal item message
 	}
 
 	/**

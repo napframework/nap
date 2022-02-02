@@ -79,6 +79,26 @@
                             "Type": "nap::PortalItemRGBAColorFloat",
                             "mID": "PortalItemRGBAColorFloat",
                             "Parameter": "ParameterRGBAColorFloat"
+                        },
+                        {
+                            "Type": "nap::PortalItemVec2",
+                            "mID": "PortalItemVec2",
+                            "Parameter": "ParameterVec2"
+                        },
+                        {
+                            "Type": "nap::PortalItemVec3",
+                            "mID": "PortalItemVec3",
+                            "Parameter": "ParameterVec3"
+                        },
+                        {
+                            "Type": "nap::PortalItemIVec2",
+                            "mID": "PortalItemIVec2",
+                            "Parameter": "ParameterIVec2"
+                        },
+                        {
+                            "Type": "nap::PortalItemIVec3",
+                            "mID": "PortalItemIVec3",
+                            "Parameter": "ParameterIVec3"
                         }
                     ]
                 }
@@ -282,6 +302,56 @@
                             1.0
                         ]
                     }
+                },
+                {
+                    "Type": "nap::ParameterVec2",
+                    "mID": "ParameterVec2",
+                    "Name": "My Vec2 Parameter",
+                    "Value": {
+                        "x": 0.25,
+                        "y": 0.75
+                    },
+                    "Clamp": false,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "ParameterVec3",
+                    "Name": "My Vec3 Parameter",
+                    "Value": {
+                        "x": 0.10000000149011612,
+                        "y": 0.20000000298023225,
+                        "z": 0.30000001192092898
+                    },
+                    "Clamp": true,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterIVec2",
+                    "mID": "ParameterIVec2",
+                    "Name": "My IVec2 Parameter",
+                    "Value": {
+                        "x": 64,
+                        "y": 128
+                    },
+                    "Clamp": true,
+                    "Minimum": 0,
+                    "Maximum": 255
+                },
+                {
+                    "Type": "nap::ParameterIVec3",
+                    "mID": "ParameterIVec3",
+                    "Name": "My IVec3 Parameter",
+                    "Value": {
+                        "x": 8,
+                        "y": 16,
+                        "z": 24
+                    },
+                    "Clamp": false,
+                    "Minimum": -128,
+                    "Maximum": 128
                 }
             ],
             "Groups": []
