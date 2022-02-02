@@ -14,11 +14,8 @@ body{
 	background-color: #2D2D2D;
 	margin: 0;
 	font-size: 12pt;
-}
-
-#top
-{
-	border-top: 0.5em solid #1c1c1d;
+	max-width: 75em;
+	margin: auto;
 }
 
 body, table, div, p, dl,
@@ -28,12 +25,10 @@ table.directory, #nav-tree,#nav-tree .label {
 	letter-spacing: 0.02em;
 }
 
-.textblock {
-	max-width: 75em;
-}
-
-.memdoc {
-	max-width: 75em;
+table.classindex {
+	white-space: normal;
+	margin: 0;
+	margin-top: 1em;
 }
 
 border-bottom: 6px solid #525369;
@@ -95,7 +90,7 @@ h1,h2,h3, h4{
 .title {
 	color: #FFFFFF;
 	font-weight: 500;
-	font-size: 2.0rem;
+	font-size: 1.75rem;
 	margin: 10px 2px;
 	letter-spacing: 0.066em;
 	font-family: 'manrope', sans-serif;
@@ -173,10 +168,20 @@ div.qindex, div.navtab{
 	border: none
 	text-align: center;
 }
+
 div.qindex, div.navpath {
-	width: 100%;
-	line-height: 140%;
+	width: initial;
+	text-align: left;
 }
+
+div.qindex {
+		margin-top: 1em;
+}
+
+div.navpath {
+	display: none;
+}
+
 div.navtab {
 	margin-right: 15px;
 }
@@ -209,6 +214,7 @@ a.el, a.el:visited {
 
 a.qindex, a.qindex:visited  {
 	color: #AEACA4;
+	text-decoration: none;
 }
 
 a.qindex:hover {
@@ -264,11 +270,14 @@ pre.fragment {
   border: none;
   background-color: #000000;
   padding: 4px 6px;
-  margin: 4px 8px 4px 2px;
+  margin: 4px 8px 4px 0px;
   overflow: auto;
   word-wrap: break-word;
   font-size:  10pt;
   line-height: 125%;
+  font-family: 'inconsolata', sans-serif;
+  background-color: #0f100f;
+  color: #FFFFFF;
 }
 div.fragment {
 	padding: 6px 10px;
@@ -353,6 +362,7 @@ div.contents {
 	margin-top: 10px;
 	margin-left: 12px;
 	margin-right: 8px;
+	border-top: 3px solid #2958FF;
 }
 td.indexkey {
 	background-color: #EBEFF6;
@@ -835,7 +845,7 @@ table.fieldtable {
 }
 .navpath ul
 {
-	font-size: 11px;
+	font-size: 12px;
 	background-image:url('tab_b.png');
 	background-repeat:repeat-x;
 	background-position: 0 -5px;
@@ -892,6 +902,7 @@ div.summary
 	padding-right: 5px;
 	width: 50%;
 	text-align: right;
+	display: none;
 }
 div.summary a
 {
@@ -912,11 +923,12 @@ div.header
 	background-image: none;
 	background-color: #f8f8f8;
 	margin:  0px;
-	border: none;
+	border-bottom: none;
 }
+
 div.headertitle
 {
-	padding: 5px 5px 5px 10px;
+	padding: 0px 5px 5px 10px;
 	background-color: #2D2D2D;
 }
 dl
@@ -1046,6 +1058,9 @@ dl.section dd {
 div.zoom
 {
 	border: 1px solid #90A5CE;
+}
+div.textblock {
+	margin-top: 1em;
 }
 dl.citelist {
   margin-bottom:50px;
@@ -1184,7 +1199,7 @@ div.toc li.level4 {
 }
 .navpath ul {
 	background-image: none;
-	background-color: #262626;
+	background-color: #2D2D2D;
 	border: none;
 }
 .navpath li {
@@ -1194,11 +1209,12 @@ div.toc li.level4 {
 	background-image: none;
 	color: #CDCDC3;
 	text-shadow:none;/*: none;*/
+	text-decoration: underline;
+	text-decoration-style: dotted;
 }
 .navpath li.navelem a:hover {
 	background-image: none;
-	color: #CDCDC3;
-	text-decoration: underline;
+	color: #FFFFFF;
 	text-shadow:none;/*: none;*/
 }
 .icona {
@@ -1427,7 +1443,7 @@ a.SRScope {
 
 .image
 {
-	text-align: left;
+	text-align: center;
 }
 
 table.markdownTable td, table.markdownTable th {

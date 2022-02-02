@@ -1,4 +1,4 @@
-Napkin {#napkin}
+Editor {#napkin}
 =======================
 *	[What Is Napkin](@ref what_is_napkin)
 *	[Launching Napkin](@ref launching_napkin)

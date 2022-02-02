@@ -1,4 +1,4 @@
-Install {#install}
+Installation {#install}
 =======================
 
 *	[Overview](@ref build_env_overview)
