@@ -19,7 +19,7 @@ namespace nap
 	/**
 	 * Represents any vector item in a NAP portal.
 	 */
-	template<typename T, typename U>
+	template<typename T>
 	class PortalItemVec : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
@@ -74,12 +74,12 @@ namespace nap
 		/**
 		 * @return the values of the linked vector parameter as a vector of the basic data type
 		 */
-		const std::vector<U> getVectorValues() const;
+		const std::vector<typename T::value_type> getVectorValues() const;
 
 		/**
 		 * Sets the values of the linked vector parameter from a vector of the basic data type
 		 */
-		bool setVectorValues(const std::vector<U>& values, utility::ErrorState& error);
+		bool setVectorValues(const std::vector<typename T::value_type>& values, utility::ErrorState& error);
 
 		T mRetainedValue;								///< Retained value to check if the parameter has been updated externally
 	};
@@ -89,32 +89,32 @@ namespace nap
 	// Portal Item Numeric Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using PortalItemVec2		= PortalItemVec<glm::vec2, float>;
-	using PortalItemVec3		= PortalItemVec<glm::vec3, float>;
-	using PortalItemIVec2		= PortalItemVec<glm::ivec2, int>;
-	using PortalItemIVec3		= PortalItemVec<glm::ivec3, int>;
+	using PortalItemVec2		= PortalItemVec<glm::vec2>;
+	using PortalItemVec3		= PortalItemVec<glm::vec3>;
+	using PortalItemIVec2		= PortalItemVec<glm::ivec2>;
+	using PortalItemIVec3		= PortalItemVec<glm::ivec3>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T, typename U>
-	bool PortalItemVec<T, U>::init(utility::ErrorState& error)
+	template<typename T>
+	bool PortalItemVec<T>::init(utility::ErrorState& error)
 	{
 		mRetainedValue = mParameter->mValue;
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
 
-	template<typename T, typename U>
-	void PortalItemVec<T, U>::onDestroy()
+	template<typename T>
+	void PortalItemVec<T>::onDestroy()
 	{
 		mParameter->valueChanged.disconnect(mParameterUpdateSlot);
 	}
 
-	template<typename T, typename U>
-	void PortalItemVec<T, U>::onParameterUpdate(T value)
+	template<typename T>
+	void PortalItemVec<T>::onParameterUpdate(T value)
 	{
 		// No need to send update if retained value stays the same,
 		// e.g. when we changed the parameter from a client update
@@ -125,8 +125,8 @@ namespace nap
 		updateSignal(*this);
 	}
 
-	template<typename T, typename U>
-	bool PortalItemVec<T, U>::processUpdate(const APIEvent& event, utility::ErrorState& error)
+	template<typename T>
+	bool PortalItemVec<T>::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
 		// Check for the portal item value argument
 		const APIArgument* arg = event.getArgumentByName(nap::portal::itemValueArgName);
@@ -138,44 +138,44 @@ namespace nap
 			return false;
 
 		// Cast the argument to an array of the basic data type
-		const std::vector<U>* values = arg->asArray<U>();
-		if (!error.check(values != nullptr, "%s: expected array of %s for value argument, not %s", mID.c_str(), RTTI_OF(U).get_name().data(), arg->getValueType().get_name().data()))
+		const std::vector<typename T::value_type>* values = arg->asArray<typename T::value_type>();
+		if (!error.check(values != nullptr, "%s: expected array of %s for value argument, not %s", mID.c_str(), RTTI_OF(typename T::value_type).get_name().data(), arg->getValueType().get_name().data()))
 			return false;
 
 		return setVectorValues(*values, error);
 	}
 
-	template<typename T, typename U>
-	APIEventPtr PortalItemVec<T, U>::getDescriptor() const
+	template<typename T>
+	APIEventPtr PortalItemVec<T>::getDescriptor() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
-		event->addArgument<APIValue<std::vector<U>>>(nap::portal::itemValueArgName, getVectorValues());
-		event->addArgument<APIValue<U>>(nap::portal::itemMinArgName, mParameter->mMinimum);
-		event->addArgument<APIValue<U>>(nap::portal::itemMaxArgName, mParameter->mMaximum);
+		event->addArgument<APIValue<std::vector<typename T::value_type>>>(nap::portal::itemValueArgName, getVectorValues());
+		event->addArgument<APIValue<typename T::value_type>>(nap::portal::itemMinArgName, mParameter->mMinimum);
+		event->addArgument<APIValue<typename T::value_type>>(nap::portal::itemMaxArgName, mParameter->mMaximum);
 		event->addArgument<APIBool>(nap::portal::itemClampArgName, mParameter->mClamp);
 		return event;
 	}
 
-	template<typename T, typename U>
-	APIEventPtr PortalItemVec<T, U>::getValue() const
+	template<typename T>
+	APIEventPtr PortalItemVec<T>::getValue() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
-		event->addArgument<APIValue<std::vector<U>>>(nap::portal::itemValueArgName, getVectorValues());
+		event->addArgument<APIValue<std::vector<typename T::value_type>>>(nap::portal::itemValueArgName, getVectorValues());
 		return event;
 	}
 
-	template<typename T, typename U>
-	const std::vector<U> PortalItemVec<T, U>::getVectorValues() const
+	template<typename T>
+	const std::vector<typename T::value_type> PortalItemVec<T>::getVectorValues() const
 	{
 		size_t length = mParameter->mValue.length();
-		std::vector<U> values(length);
-		std::memcpy(values.data(), &mParameter->mValue, sizeof(U) * length);
+		std::vector<typename T::value_type> values(length);
+		std::memcpy(values.data(), &mParameter->mValue, sizeof(typename T::value_type) * length);
 		return values;
 	}
 
-	template<typename T, typename U>
-	bool PortalItemVec<T, U>::setVectorValues(const std::vector<U>& values, utility::ErrorState& error)
+	template<typename T>
+	bool PortalItemVec<T>::setVectorValues(const std::vector<typename T::value_type>& values, utility::ErrorState& error)
 	{
 		// Ensure we have enough data
 		size_t length = mParameter->mValue.length();
@@ -185,7 +185,7 @@ namespace nap
 		// Update the vector trough setValue so the
 		// parameter will trigger an update signal
 		T new_value;
-		std::memcpy(&new_value, values.data(), sizeof(U) * length);
+		std::memcpy(&new_value, values.data(), sizeof(typename T::value_type) * length);
 		mRetainedValue = new_value;
 		mParameter->setValue(new_value);
 		return true;
