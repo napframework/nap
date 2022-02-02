@@ -194,6 +194,12 @@ a, a:visited {
 	text-decoration-style: dotted;
 }
 
+a:hover {
+	color: #FFFFFF;
+	text-decoration: underline;
+	text-decoration-style: dotted;
+}
+
 a.el, a.el:visited {
 	color: #AEACA4;
 	text-decoration: underline;
@@ -276,7 +282,7 @@ pre.fragment {
   font-size:  10pt;
   line-height: 125%;
   font-family: 'inconsolata', sans-serif;
-  background-color: #0f100f;
+  background-color: #1c1c1d;
   color: #FFFFFF;
 }
 div.fragment {
