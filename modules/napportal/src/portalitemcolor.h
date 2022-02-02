@@ -19,7 +19,7 @@ namespace nap
 	/**
 	 * Represents any color item in a NAP portal.
 	 */
-	template<typename T, typename U>
+	template<typename T>
 	class PortalItemColor : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
@@ -74,12 +74,12 @@ namespace nap
 		/**
 		 * @return the values of the color channels as a vector of the channel data type
 		 */
-		const std::vector<U> getColorValues() const;
+		const std::vector<typename T::value_type> getColorValues() const;
 
 		/**
 		 * Sets the values of the color channels from a vector of the channel data type
 		 */
-		bool setColorValues(const std::vector<U>& values, utility::ErrorState& error);
+		bool setColorValues(const std::vector<typename T::value_type>& values, utility::ErrorState& error);
 
 		T mRetainedValue;								///< Retained value to check if the parameter has been updated externally
 	};
@@ -89,32 +89,32 @@ namespace nap
 	// Portal Item Color Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using PortalItemRGBColor8 = PortalItemColor<RGBColor8, uint8>;
-	using PortalItemRGBAColor8 = PortalItemColor<RGBAColor8, uint8>;
-	using PortalItemRGBColorFloat	= PortalItemColor<RGBColorFloat, float>;
-	using PortalItemRGBAColorFloat	= PortalItemColor<RGBAColorFloat, float>;
+	using PortalItemRGBColor8 = PortalItemColor<RGBColor8>;
+	using PortalItemRGBAColor8 = PortalItemColor<RGBAColor8>;
+	using PortalItemRGBColorFloat	= PortalItemColor<RGBColorFloat>;
+	using PortalItemRGBAColorFloat	= PortalItemColor<RGBAColorFloat>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T, typename U>
-	bool PortalItemColor<T, U>::init(utility::ErrorState& error)
+	template<typename T>
+	bool PortalItemColor<T>::init(utility::ErrorState& error)
 	{
 		mRetainedValue = mParameter->mValue;
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
 
-	template<typename T, typename U>
-	void PortalItemColor<T, U>::onDestroy()
+	template<typename T>
+	void PortalItemColor<T>::onDestroy()
 	{
 		mParameter->valueChanged.disconnect(mParameterUpdateSlot);
 	}
 
-	template<typename T, typename U>
-	void PortalItemColor<T, U>::onParameterUpdate(T value)
+	template<typename T>
+	void PortalItemColor<T>::onParameterUpdate(T value)
 	{
 		// No need to send update if retained value stays the same,
 		// e.g. when we changed the parameter from a client update
@@ -125,8 +125,8 @@ namespace nap
 		updateSignal(*this);
 	}
 
-	template<typename T, typename U>
-	bool PortalItemColor<T, U>::processUpdate(const APIEvent& event, utility::ErrorState& error)
+	template<typename T>
+	bool PortalItemColor<T>::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
 		// Check for the portal item value argument
 		const APIArgument* arg = event.getArgumentByName(nap::portal::itemValueArgName);
@@ -138,38 +138,38 @@ namespace nap
 			return false;
 
 		// Cast the argument to an array of the channel value type
-		const std::vector<U>* values = arg->asArray<U>();
-		if (!error.check(values != nullptr, "%s: expected array of %s for value argument, not %s", mID.c_str(), RTTI_OF(U).get_name().data(), arg->getValueType().get_name().data()))
+		const std::vector<typename T::value_type>* values = arg->asArray<typename T::value_type>();
+		if (!error.check(values != nullptr, "%s: expected array of %s for value argument, not %s", mID.c_str(), RTTI_OF(typename T::value_type).get_name().data(), arg->getValueType().get_name().data()))
 			return false;
 
 		return setColorValues(*values, error);
 	}
 
-	template<typename T, typename U>
-	APIEventPtr PortalItemColor<T, U>::getDescriptor() const
+	template<typename T>
+	APIEventPtr PortalItemColor<T>::getDescriptor() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
-		event->addArgument<APIValue<std::vector<U>>>(nap::portal::itemValueArgName, getColorValues());
+		event->addArgument<APIValue<std::vector<typename T::value_type>>>(nap::portal::itemValueArgName, getColorValues());
 		return event;
 	}
 
-	template<typename T, typename U>
-	APIEventPtr PortalItemColor<T, U>::getValue() const
+	template<typename T>
+	APIEventPtr PortalItemColor<T>::getValue() const
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
-		event->addArgument<APIValue<std::vector<U>>>(nap::portal::itemValueArgName, getColorValues());
+		event->addArgument<APIValue<std::vector<typename T::value_type>>>(nap::portal::itemValueArgName, getColorValues());
 		return event;
 	}
 
-	template<typename T, typename U>
-	const std::vector<U> PortalItemColor<T, U>::getColorValues() const
+	template<typename T>
+	const std::vector<typename T::value_type> PortalItemColor<T>::getColorValues() const
 	{
-		return std::vector<U>(mParameter->mValue.getValues().begin(), mParameter->mValue.getValues().end());
+		return std::vector<typename T::value_type>(mParameter->mValue.getValues().begin(), mParameter->mValue.getValues().end());
 	}
 
-	template<typename T, typename U>
-	bool PortalItemColor<T, U>::setColorValues(const std::vector<U>& values, utility::ErrorState& error)
+	template<typename T>
+	bool PortalItemColor<T>::setColorValues(const std::vector<typename T::value_type>& values, utility::ErrorState& error)
 	{
 		// Ensure we have enough channels
 		int channels = mParameter->mValue.getNumberOfChannels();

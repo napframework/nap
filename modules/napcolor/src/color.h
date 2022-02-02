@@ -208,6 +208,8 @@ namespace nap
 	class Color : public BaseColor
 	{
 	public:
+		typedef T value_type;
+
 		/**
 		* Constructor that simply creates a 0 initialized color
 		*/
