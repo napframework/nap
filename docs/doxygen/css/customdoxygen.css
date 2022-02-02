@@ -14,7 +14,7 @@ body{
 	background-color: #2D2D2D;
 	margin: 0;
 	font-size: 12pt;
-	max-width: 75em;
+	max-width: 1024px;
 	margin: auto;
 }
 
@@ -28,7 +28,6 @@ table.directory, #nav-tree,#nav-tree .label {
 table.classindex {
 	white-space: normal;
 	margin: 0;
-	margin-top: 1em;
 }
 
 border-bottom: 6px solid #525369;
@@ -163,7 +162,7 @@ h3.version {
   font-size: 90%;
   text-align: center;
 }
-div.qindex, div.navtab{
+div.qindex, div.navtab {
 	background-color: #2D2D2D;
 	border: none
 	text-align: center;
@@ -175,7 +174,7 @@ div.qindex, div.navpath {
 }
 
 div.qindex {
-		margin-top: 1em;
+		font-size: 1.15rem;
 }
 
 div.navpath {
@@ -218,9 +217,30 @@ a.el, a.el:visited {
 	text-decoration-style: dotted;
 }
 
-a.qindex, a.qindex:visited  {
-	color: #AEACA4;
+.directory a.el {
+	color: #CDCDC3;
+	text-decoration-style: dotted;
 	text-decoration: none;
+}
+
+.directory a.el:hover {
+	color: #FFFFFF;
+}
+
+table.classindex a.el {
+	text-decoration: none;
+	color: #CDCDC3
+}
+
+table.classindex a.el:hover {
+	color: #FFFFFF
+}
+
+
+a.qindex, a.qindex:visited  {
+	color: #CDCDC3;
+	text-decoration: none;
+	font-weight: normal;
 }
 
 a.qindex:hover {
@@ -238,9 +258,6 @@ a.qindexHL {
 	color: #AEACA;
 }
 
-a.elRef {
-}
-
 a.code, a.code:visited {
 	color: #AEACA4;
 	font-weight: normal;
@@ -253,10 +270,6 @@ a.codeRef, a.codeRef:visited {
 	font-weight: normal;
 	text-decoration: none;
 	text-decoration-style: dotted;
-}
-
-a.el:hover, a.code:hover, a.codeRef:hover {
-	color: #FFFFFF;
 }
 
 a.code:hover, a.codeRef:hover {
@@ -342,7 +355,7 @@ div.ah {
 	font-weight: light;
 	color: #000000;/*white*/
 	margin-bottom: 3px;
-	margin-top: 3px;
+	margin-top: 1.75em;
 	padding: 0.2em;
 	border: none;
 	border-radius: 0.0em;
@@ -368,7 +381,6 @@ div.contents {
 	margin-top: 10px;
 	margin-left: 12px;
 	margin-right: 8px;
-	border-top: 3px solid #2958FF;
 }
 td.indexkey {
 	background-color: #EBEFF6;
@@ -401,7 +413,6 @@ div.center {
   margin-top: 0px;
   margin-bottom: 0px;
   padding: 0px;
-  max-width: 75em;
 }
 div.center img {
 	border: none;
@@ -410,6 +421,12 @@ address.footer {
 	text-align: right;
 	padding-right: 12px;
 }
+
+address.footer a {
+	text-decoration: none;
+	color: #8D8B84;
+}
+
 img.footer {
 	border: 0px;
 	vertical-align: middle;
@@ -705,19 +722,30 @@ div.directory {
   border-bottom: 1px solid #2D2D2D;
   width: 100%;
 }
+
 .directory table {
   border-collapse:collapse;
+  font-size: 1.15rem;
 }
+
+.classindex td {
+	white-space: nowrap;
+}
+
 .directory td {
   margin: 0px;
   padding: 0px;
 	vertical-align: top;
 }
+
 .directory td.entry {
   white-space: nowrap;
-  padding-right: 6px;
-	padding-top: 3px;
+  padding-right: 0px;
+	padding-top: 0px;
+	position: relative;
+	left: -16px;
 }
+
 .directory td.entry a {
   outline:none;
 }
@@ -743,6 +771,7 @@ div.directory {
   width: 100%;
   text-align: right;
   font-size: 9pt;
+  display: none;
 }
 .directory .levels span {
   cursor: pointer;
@@ -759,7 +788,6 @@ div.dynheader {
 	-ms-user-select: none;
 	user-select: none;
 	text-align: center;
-	max-width: 75em;
 	margin-top: 2em;
 	margin-bottom: 1em;
 	opacity: 0.5;
@@ -934,7 +962,7 @@ div.header
 
 div.headertitle
 {
-	padding: 0px 5px 5px 10px;
+	padding: 0px 0px 0px 10px;
 	background-color: #2D2D2D;
 }
 dl
@@ -1139,6 +1167,11 @@ div.toc li.level4 {
 .inherit {
   display: none;
 }
+
+#top {
+	margin-bottom: 1.75rem;
+}
+
 @media print
 {
   #top { display: none; }
@@ -1319,7 +1352,7 @@ background-image: none;
   outline: 0;
   text-shadow: none;
   font-weight: normal;
-  font-size: 1.1em;
+  font-size: 1.15rem;
   background-image: none;
   background: none;
   background-color: #2D2D2D;
@@ -1490,7 +1523,7 @@ svg .graph .edge text {
     fill: #CDCDC3;
 }
 div.contents code {
-    font-size: 1.05rem;
+    font-size: 1.0rem;
     color: #FF347D;
     font-family: manrope;
 }
