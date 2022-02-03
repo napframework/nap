@@ -1377,6 +1377,10 @@ a.SRScope {
     outline: none;
 }
 
+.sm-dox li {
+	margin-left: 3px;
+}
+
 .sm-dox ul a,
 .sm-dox ul a:hover,
 .sm-dox ul a:focus,

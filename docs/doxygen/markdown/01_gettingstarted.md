@@ -50,7 +50,9 @@ After creation your new project is located at `projects/newproject`. This direct
 Add a Module {#add_module}
 =======================
 
-The `RequiredModules` field tells the build system which modules to include for your project. The most important module is `mod_newproject`. This is your custom application module, located inside the `module` directory of your project. By default the application module links to `mod_naprender`, `mod_napscene` and `mod_napparameter`. This means your application (and custom module) can make use of all the building blocks exposed by those modules. What's missing here is audio functionality, we can link in audio by adding `mod_napaudio` to the list of `RequiredModules`:
+The `RequiredModules` field tells the build system which modules to include for your project. The most important module is `mod_newproject`. This is your custom application module, located inside the `module` directory of your project. By default this module links to `mod_naprender`, `mod_napscene` and `mod_napparameter`. This means your application (and application module) can use of all the building blocks exposed by those modules. What's missing here is audio functionality. We can link in audio by adding `mod_napaudio` to the list of `RequiredModules` of the application module. 
+
+Open `module.json` inside the `module` directory and add `mod_napaudio` to `RequiredModules`:
 
 ```
 {
@@ -65,6 +67,7 @@ The `RequiredModules` field tells the build system which modules to include for 
     "WindowsDllSearchPaths": []
 }
 ```
+If you add `mod_napaudio` as a `RequiredModule` to your application, instead of your `application module`, you won't have access to the resources of that module in your own module. It is therefore recommended to always link to other modules from your application module, not the application directly.
 
 Compile and Run {#compile_run}
 ================

@@ -1,4 +1,4 @@
-Creating Resources {#resources}
+Resource Management {#resources}
 =======================
 
 *	[Overview](@ref overview)

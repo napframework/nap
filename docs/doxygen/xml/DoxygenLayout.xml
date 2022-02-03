@@ -15,7 +15,7 @@
       <tab type="hierarchy" visible="no" title="" intro=""/>
       <tab type="classmembers" visible="no" title="" intro=""/>
     </tab>
-    <tab type="user" url="classes.html" title="Types"/>
+    <tab type="user" url="classes.html" title="Classes"/>
     <tab type="files" visible="no" title="">
       <tab type="filelist" visible="yes" title="" intro=""/>
       <tab type="globals" visible="yes" title="" intro=""/>
