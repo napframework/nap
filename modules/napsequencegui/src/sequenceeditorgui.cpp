@@ -1334,6 +1334,7 @@ namespace nap
 					ImGui::CloseCurrentPopup();
 				}
 
+				ImGui::SameLine();
 				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
