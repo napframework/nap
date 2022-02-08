@@ -33,6 +33,7 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("AlignmentWeight",			&nap::FlockingSystemComponent::mAlignmentWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CohesionWeight",				&nap::FlockingSystemComponent::mCohesionWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SeparationWeight",			&nap::FlockingSystemComponent::mSeparationWeightParam,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BoundsExtent",				&nap::FlockingSystemComponent::mBoundsExtentParam,			nap::rtti::EPropertyMetaData::Default)
 
 	RTTI_PROPERTY("LightPosition",				&nap::FlockingSystemComponent::mLightPositionParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LightIntensity",				&nap::FlockingSystemComponent::mLightIntensityParam,		nap::rtti::EPropertyMetaData::Default)
@@ -97,6 +98,7 @@ namespace nap
 		constexpr const char* numBoids = "numBoids";
 		constexpr const char* matrixBufferStruct = "MatrixBuffer";
 		constexpr const char* transforms = "transforms";
+		constexpr const char* boundsExtent = "boundsExtent";
 	}
 
 	namespace vertexid
@@ -169,6 +171,7 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight)->setValue(mResource->mAlignmentWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsExtent)->setValue(mResource->mBoundsExtentParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
 		}
 
@@ -189,8 +192,8 @@ namespace nap
 		auto* compute_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform("BoidBuffer_Out");
 		if (ssbo_struct != nullptr && compute_struct != nullptr)
 		{
-			auto& storage_buffer = compute_struct->findStorageUniform<StorageUniformStructBufferInstance>("boids")->getBuffer();
-			ssbo_struct->findStorageUniform<StorageUniformStructBufferInstance>("boids")->setBuffer(storage_buffer);
+			auto& storage_buffer = compute_struct->findStorageUniformBuffer<StorageUniformStructBufferInstance>("boids")->getBuffer();
+			ssbo_struct->findStorageUniformBuffer<StorageUniformStructBufferInstance>("boids")->setBuffer(storage_buffer);
 		}
 
 		// Update fragment shader uniforms

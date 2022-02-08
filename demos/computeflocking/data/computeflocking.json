@@ -260,7 +260,7 @@
                                 "Name": "SSBO",
                                 "StorageUniform": {
                                     "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_99ef40f5",
+                                    "mID": "StorageUniformStructBuffer_fd82a185",
                                     "Name": "boids",
                                     "Buffer": "BoidBufferA"
                                 }
@@ -295,6 +295,7 @@
                     "AlignmentWeight": "AlignmentWeightParameter",
                     "CohesionWeight": "CohesionWeightParameter",
                     "SeparationWeight": "SeparationWeightParameter",
+                    "BoundsExtent": "BoundsExtentParameter",
                     "LightPosition": "LightPositionParameter",
                     "LightIntensity": "LightIntensityParameter",
                     "DiffuseColor": "DiffuseColorParameter",
@@ -342,18 +343,18 @@
                                 "Name": "BoidBuffer_In",
                                 "StorageUniform": {
                                     "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_ed632592",
+                                    "mID": "StorageUniformStructBuffer_5b39dd7e",
                                     "Name": "boids",
                                     "Buffer": "BoidBufferA"
                                 }
                             },
                             {
                                 "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_444dc40a",
+                                "mID": "StorageUniformStruct_65e2035d",
                                 "Name": "BoidBuffer_Out",
                                 "StorageUniform": {
                                     "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_b2aa64d8",
+                                    "mID": "StorageUniformStructBuffer_9d11e61f",
                                     "Name": "boids",
                                     "Buffer": "BoidBufferB"
                                 }
@@ -372,22 +373,22 @@
                         "StorageUniforms": [
                             {
                                 "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_6d9ac22f",
+                                "mID": "StorageUniformStruct_ac1f1177",
                                 "Name": "BoidBuffer_In",
                                 "StorageUniform": {
                                     "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_9c63ead3",
+                                    "mID": "StorageUniformStructBuffer_0f16b598",
                                     "Name": "boids",
                                     "Buffer": "BoidBufferB"
                                 }
                             },
                             {
                                 "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_e56c6153",
+                                "mID": "StorageUniformStruct_89f0acee",
                                 "Name": "BoidBuffer_Out",
                                 "StorageUniform": {
                                     "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_07aa6b45",
+                                    "mID": "StorageUniformStructBuffer_2707750c",
                                     "Name": "boids",
                                     "Buffer": "BoidBufferA"
                                 }
@@ -852,19 +853,7 @@
             "Type": "nap::Material",
             "mID": "RenderMaterial",
             "Uniforms": [],
-            "StorageUniforms": [
-                {
-                    "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_b5f04729",
-                    "Name": "SSBO",
-                    "StorageUniform": {
-                        "Type": "nap::StorageUniformStructBuffer",
-                        "mID": "StorageUniformStructBuffer_0d42a3c0",
-                        "Name": "boids",
-                        "Buffer": "BoidBufferA"
-                    }
-                }
-            ],
+            "StorageUniforms": [],
             "Samplers": [],
             "Shader": "BoidShader",
             "VertexAttributeBindings": [],
@@ -962,6 +951,14 @@
                     "Value": 0.4000000059604645,
                     "Minimum": 0.0,
                     "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BoundsExtentParameter",
+                    "Name": "BoundsExtent",
+                    "Value": 10.0,
+                    "Minimum": 1.0,
+                    "Maximum": 20.0
                 }
             ],
             "Groups": [
@@ -1426,7 +1423,6 @@
                             "Name": "padding",
                             "Values": [
                                 0,
-                                0,
                                 0
                             ]
                         },
@@ -1434,6 +1430,12 @@
                             "Type": "nap::UniformUInt",
                             "mID": "UniformUInt_7fb5fd14",
                             "Name": "numFlockMates",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_6d7d0394",
+                            "Name": "spatialIndex",
                             "Value": 0
                         }
                     ]
@@ -1526,7 +1528,6 @@
                             "Name": "padding",
                             "Values": [
                                 0,
-                                0,
                                 0
                             ]
                         },
@@ -1534,6 +1535,12 @@
                             "Type": "nap::UniformUInt",
                             "mID": "UniformUInt_dde288a6",
                             "Name": "numFlockMates",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_f5091449",
+                            "Name": "spatialIndex",
                             "Value": 0
                         }
                     ]
@@ -1548,6 +1555,15 @@
         {
             "Type": "nap::TextureShader",
             "mID": "ColorTextureShader"
+        },
+        {
+            "Type": "nap::UIntGPUBuffer",
+            "mID": "GridBuffer",
+            "Count": 1000,
+            "Usage": "Static",
+            "DescriptorType": "Storage",
+            "FillPolicy": "",
+            "Clear": true
         }
     ]
 }

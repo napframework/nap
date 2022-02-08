@@ -43,35 +43,36 @@ namespace nap
 			components.emplace_back(RTTI_OF(ComputeComponent));
 		}
 
-		int mNumBoids;													///< Number of boids
+		int mNumBoids;													///< Property: "NumBoids" The number of boids
 
-		ResourcePtr<ParameterBool> mRandomColorParam;					///< Enable random colors
-		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Default size of a boid
-		ResourcePtr<ParameterFloat> mFresnelScaleParam;
-		ResourcePtr<ParameterFloat> mFresnelPowerParam;
+		ResourcePtr<ParameterBool> mRandomColorParam;					///< Property: "RandomColorParam" Enable random colors
+		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Property: "BoidSizeParam" Default size of a boid
+		ResourcePtr<ParameterFloat> mFresnelScaleParam;					///< Property: "" 
+		ResourcePtr<ParameterFloat> mFresnelPowerParam;					///< Property: "" 
 
-		ResourcePtr<ParameterFloat> mViewRadiusParam;
-		ResourcePtr<ParameterFloat> mAvoidRadiusParam;
-		ResourcePtr<ParameterFloat> mMinSpeedParam;
-		ResourcePtr<ParameterFloat> mMaxSpeedParam;
-		ResourcePtr<ParameterFloat> mMaxSteerForceParam;
-		ResourcePtr<ParameterFloat> mTargetWeightParam;
-		ResourcePtr<ParameterFloat> mAlignmentWeightParam;
-		ResourcePtr<ParameterFloat> mCohesionWeightParam;
-		ResourcePtr<ParameterFloat> mSeparationWeightParam;
+		ResourcePtr<ParameterFloat> mViewRadiusParam;					///< Property: "" 
+		ResourcePtr<ParameterFloat> mAvoidRadiusParam;					///< Property: "" 
+		ResourcePtr<ParameterFloat> mMinSpeedParam;						///< Property: "" 
+		ResourcePtr<ParameterFloat> mMaxSpeedParam;						///< Property: "" 
+		ResourcePtr<ParameterFloat> mMaxSteerForceParam;				///< Property: "" 
+		ResourcePtr<ParameterFloat> mTargetWeightParam;					///< Property: "" 
+		ResourcePtr<ParameterFloat> mAlignmentWeightParam;				///< Property: "" 
+		ResourcePtr<ParameterFloat> mCohesionWeightParam;				///< Property: "" 
+		ResourcePtr<ParameterFloat> mSeparationWeightParam;				///< Property: "" 
+		ResourcePtr<ParameterFloat> mBoundsExtentParam;					///< Property: "" 
 
-		ResourcePtr<ParameterVec3> mLightPositionParam;
-		ResourcePtr<ParameterFloat> mLightIntensityParam;
-		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorParam;
-		ResourcePtr<ParameterRGBColorFloat> mLightColorParam;
-		ResourcePtr<ParameterRGBColorFloat> mSpecularColorParam;
-		ResourcePtr<ParameterFloat> mShininessParam;
-		ResourcePtr<ParameterFloat> mAmbientIntensityParam;
-		ResourcePtr<ParameterFloat> mDiffuseIntensityParam;
-		ResourcePtr<ParameterFloat> mSpecularIntensityParam;
+		ResourcePtr<ParameterVec3> mLightPositionParam;					///< Property: "" 
+		ResourcePtr<ParameterFloat> mLightIntensityParam;				///< Property: "" 
+		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorParam;			///< Property: "" 
+		ResourcePtr<ParameterRGBColorFloat> mLightColorParam;			///< Property: "" 
+		ResourcePtr<ParameterRGBColorFloat> mSpecularColorParam;		///< Property: "" 
+		ResourcePtr<ParameterFloat> mShininessParam;					///< Property: "" 
+		ResourcePtr<ParameterFloat> mAmbientIntensityParam;				///< Property: "" 
+		ResourcePtr<ParameterFloat> mDiffuseIntensityParam;				///< Property: "" 
+		ResourcePtr<ParameterFloat> mSpecularIntensityParam;			///< Property: "" 
 
-		ComponentPtr<PerspCameraComponent>	mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
-		ComponentPtr<TransformComponent>	mTargetTransformComponent;	///< Property: "TargetTransformComponent" Camera that we're controlling
+		ComponentPtr<PerspCameraComponent> mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
+		ComponentPtr<TransformComponent> mTargetTransformComponent;		///< Property: "TargetTransformComponent" Camera that we're controlling
 	};
 
 
@@ -113,7 +114,7 @@ namespace nap
 		uint										mComputeInstanceIndex = 0;			// Current compute instance index
 		bool										mFirstUpdate = true;				// First update flag
 
-		ComponentInstancePtr<PerspCameraComponent> mPerspCameraComponent = { this, &FlockingSystemComponent::mPerspCameraComponent };
-		ComponentInstancePtr<TransformComponent> mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };
+		ComponentInstancePtr<PerspCameraComponent>	mPerspCameraComponent = { this, &FlockingSystemComponent::mPerspCameraComponent };
+		ComponentInstancePtr<TransformComponent>	mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };
 	};
 }
