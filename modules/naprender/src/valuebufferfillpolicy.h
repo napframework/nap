@@ -14,7 +14,14 @@
 namespace nap
 {
 	/**
-	 * Base class of TypedValueBufferFillPolicy
+	 * Base class of fill policies for value buffers.
+	 *
+	 * Fill policies are initialization utilities that can help fill large blocks of preallocated memory. The fill function
+	 * assigns a contiguous block of data based on the specified arguments.
+	 * 
+	 * Fill policies can be bound to another resource's property (i.e. ValueGPUBuffer) in configuration. Typically, an object
+	 * will first check if a policy is available, and if so, use it to fill an internal buffer. Any object accepting a fill
+	 * policy is free implement the way fill() is used in their own way however.
 	 */
 	class NAPAPI BaseValueBufferFillPolicy : public Resource
 	{
@@ -26,7 +33,15 @@ namespace nap
 
 
 	/**
-	 * Base class of a fill policy implementation (e.g. ConstantValueBufferFillPolicy<T>) of a specific value type T
+	 * Base class of a fill policy implementation (e.g. ConstantValueBufferFillPolicy<T>) of a specific value type T.
+	 * Inherit from this class in you intend to implement your own value fill policy.
+	 *
+	 * Fill policies are initialization utilities that can help fill large blocks of preallocated memory. The fill function
+	 * assigns a contiguous block of data based on the specified arguments.
+	 *
+	 * Fill policies can be bound to another resource's property (i.e. ValueGPUBuffer) in configuration. Typically, an object
+	 * will first check if a policy is available, and if so, use it to fill an internal buffer. Any object accepting a fill
+	 * policy is free to implement the way fill() is used in their own way however.
 	 */
 	template<typename T>
 	class NAPAPI TypedValueBufferFillPolicy : public BaseValueBufferFillPolicy
@@ -34,14 +49,23 @@ namespace nap
 		RTTI_ENABLE(BaseValueBufferFillPolicy)
 	public:
 		/**
-		 * 
+		 * Fills the preallocated data
+		 * @param numElements the number of elements to fill
+		 * @param data pointer to the preallocated data
 		 */
 		virtual void fill(uint numElements, T* data) const = 0;
 	};
 
 
 	/**
-	 * Fill policy for constants. Fills buffer with a specified constant.
+	 * Typed fill policy for constant values. Fills buffer with a specified constant.
+	 *
+	 * Fill policies are initialization utilities that can help fill large blocks of preallocated memory. The fill function
+	 * assigns a contiguous block of data based on the specified arguments.
+	 *
+	 * Fill policies can be bound to another resource's property (i.e. ValueGPUBuffer) in configuration. Typically, an object
+	 * will first check if a policy is available, and if so, use it to fill an internal buffer. Any object accepting a fill
+	 * policy is free to implement the way fill() is used in their own way however.
 	 */
 	template<typename T>
 	class ConstantValueBufferFillPolicy : public TypedValueBufferFillPolicy<T>
@@ -49,9 +73,9 @@ namespace nap
 		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
 	public:
 		/**
-		 * @tparam the element type
-		 * @param numElements the number of elements to set
-		 * @param data
+		 * Fills the preallocated data
+		 * @param numElements the number of elements to fill
+		 * @param data pointer to the preallocated data
 		 */
 		virtual void fill(uint numElements, T* data) const override;
 

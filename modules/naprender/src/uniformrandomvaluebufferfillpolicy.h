@@ -15,7 +15,15 @@
 namespace nap
 {
 	/**
-	 * 
+	 * Typed fill policy for uniform random values. Fills buffer with random values between the specified lower bound
+	 * and upper bound.
+	 *
+	 * Fill policies are initialization utilities that can help fill large blocks of preallocated memory. The fill function
+	 * assigns a contiguous block of data based on the specified arguments.
+	 *
+	 * Fill policies can be bound to another resource's property (i.e. ValueGPUBuffer) in configuration. Typically, an object
+	 * will first check if a policy is available, and if so, use it to fill an internal buffer. Any object accepting a fill
+	 * policy is free to implement the way fill() is used in their own way however.
 	 */
 	template<typename T>
 	class UniformRandomValueBufferFillPolicy : public TypedValueBufferFillPolicy<T>
@@ -23,12 +31,14 @@ namespace nap
 		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
 	public:
 		/**
-		 *
+		 * Fills the preallocated data
+		 * @param numElements the number of elements to fill
+		 * @param data pointer to the preallocated data
 		 */
 		virtual void fill(uint numElements, T* data) const override;
 
-		T mLowerBound = T();						///< Property 'LowerBound'
-		T mUpperBound = T();						///< Property 'UpperBound'
+		T mLowerBound = T();						///< Property 'LowerBound' The lower bound of the uniform random sample
+		T mUpperBound = T();						///< Property 'UpperBound' The upper bound of the uniform random sample
 	};
 
 

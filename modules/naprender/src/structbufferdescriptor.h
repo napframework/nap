@@ -13,12 +13,16 @@ namespace nap
 	class UniformStruct;
 
 	/**
-	* StorageBufferDescriptor
-	*/
+	 * StructBufferDescriptor describes the layout of a struct buffer. Combines the layout of a single element with a total
+	 * element count.
+	 * 
+	 * This resource is used by StructGPUBuffer to denote the buffer layout, allocate the right amount of memory, and
+	 * possibly store information on how fill the buffer accordingly.
+	 */
 	struct NAPAPI StructBufferDescriptor
 	{
 	public:
-		ResourcePtr<UniformStruct> mElement;
-		uint mCount = 1;
+		ResourcePtr<UniformStruct> mElement;		///< Property 'Element': The layout of a single struct buffer element
+		uint mCount = 1;							///< Property 'Count': The number of elements the buffer consists of
 	};
 }

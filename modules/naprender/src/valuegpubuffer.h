@@ -222,7 +222,7 @@ namespace nap
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
 
-		ResourcePtr<TypedValueBufferFillPolicy<T>>		mBufferFillPolicy = nullptr;	///< Property 'FillPolicy'
+		ResourcePtr<TypedValueBufferFillPolicy<T>>		mBufferFillPolicy = nullptr;	///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
 
 	protected:
 		// Whether the buffer was successfully initialized

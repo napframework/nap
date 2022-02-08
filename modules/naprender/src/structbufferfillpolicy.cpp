@@ -13,7 +13,7 @@ RTTI_BEGIN_CLASS(nap::StructBufferFillPolicy)
 	RTTI_PROPERTY("VariableFillPolicies", &nap::StructBufferFillPolicy::mVariableFillPolicies, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseShaderVariableFillPolicyEntry)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseValueFillPolicyEntry)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UIntFillPolicyEntry)

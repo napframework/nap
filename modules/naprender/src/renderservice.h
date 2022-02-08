@@ -54,7 +54,7 @@ namespace nap
 			Integrated = 1,	///< Integrated graphics card
 			Discrete = 2,	///< Discrete (dedicated) graphics card
 			Virtual = 3,	///< Virtual graphics card
-			CPU = 4		///< CPU as graphics card
+			CPU = 4			///< CPU as graphics card
 		};
 
 		/**
@@ -487,7 +487,9 @@ namespace nap
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
-		 * 
+		 * Calls onCompute() on a specific set of compute component instances, in the order specified.
+		 *
+		 * @param comps the compute components to call onCompute
 		 */
 		void computeObjects(const std::vector<ComputeComponentInstance*>& comps);
 
@@ -566,7 +568,7 @@ namespace nap
 		/**
 		 * Returns a Vulkan pipeline for the given render target, mesh and material combination.
 		 * Internally pipelines are cached, a new pipeline is created when a new combination is encountered.
-		 * Because of this initial frames are slower to render, until all combinations are cached and returned from the pool.
+		 * Because of this, initial frames are slower to render, until all combinations are cached and returned from the pool.
 		 * Pipeline creation is considered to be a heavy operation, take this into account when designing your application.
 		 *
 		 * Use this function inside nap::RenderableComponentInstance::onDraw() to find the right pipeline before rendering.
@@ -584,7 +586,18 @@ namespace nap
 		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);
 
 		/**
-		 * Returns a Vulkan compute pipeline for the given render target, mesh and material combination.
+		 * Returns a Vulkan compute pipeline for the given compute material.
+		 * Internally pipelines are cached, a new compute pipeline is created when a new compute material is encountered.
+		 * Because of this, initial frames are slower to render, until all compute materials are cached and returned from the pool.
+		 * Pipeline creation is considered to be a heavy operation, take this into account when designing your application.
+		 *
+		 * Use this function inside nap::ComputeComponentInstance::onCompute() to find the right pipeline before dispatching
+		 * a compute shader.
+		 * ~~~~~{.cpp}
+		 *		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(compute_material_instance, error_state);
+		 *		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
+		 * ~~~~~
+		 * 
 		 * @param computeMaterialInstance the compute material instance
 		 * @param errorState contains the error if the pipeline can't be created
 		 * @return new or cached compute pipeline.
@@ -825,13 +838,15 @@ namespace nap
 		VkQueue getComputeQueue() const												{ return mComputeQueue; }
 
 		/**
-		 * Returns true of compute is available, else returns false
+		 * Returns true if compute is available and enabled in the render service
+		 * configuration, else returns false.
+		 * @return if compute functionality is available.
 		 */
 		bool isComputeAvailable() const												{ return mPhysicalDevice.getComputeQueueIndex() >= 0; }
 
 		/**
 		 * Returns an empty texture that is available on the GPU for temporary biding or storage.
-		 * @return empty texture that is available on the GPU
+		 * @return empty texture that is available on the GPU.
 		 */
 		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }
 

@@ -16,7 +16,22 @@
 namespace nap
 {
 	/**
-	 * For more information on buffers on the GPU, refer to: nap::GPUBuffer
+	 * GPU Buffer for storing (nested) data structures.
+	 *
+	 * Allocates all required host (staging) and device buffers based on the specified properties.
+	 *
+	 * The layout of the struct buffer is defined by a StructBufferDescriptor. This descriptor is used to denote the 
+	 * buffer layout, allocate the right amount of memory, and possibly store information on how fill the buffer
+	 * accordingly. As the size of the buffer is determined by the descriptor, it is important that it matches the
+	 * declaration of the shader variable it is bound to. Initialization of (storage) uniforms may fail otherwise.
+	 * 
+	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
+	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
+	 * priority over the latter.
+	 *
+	 * Supported types are primitive types that can be mapped to VkFormat.
+	 * @tparam T primitive value data type
+	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
 	class NAPAPI StructGPUBuffer final : public GPUBuffer
 	{
@@ -31,7 +46,8 @@ namespace nap
 		{ }
 
 		/**
-		 * Init
+		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
+		 * If a fill policy is available, the buffer will also be uploaded to immediately.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -70,8 +86,8 @@ namespace nap
 		 */
 		bool setData(void* data, size_t size, utility::ErrorState& error);
 
-		ResourcePtr<StructBufferFillPolicy>			mFillPolicy = nullptr;							///< Property 'FillPolicy'
-		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor'
+		ResourcePtr<StructBufferFillPolicy>			mFillPolicy = nullptr;							///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor' The descriptor that defines the buffer layout
 
 	private:
 		// Whether the buffer was successfully initialized
