@@ -8,6 +8,7 @@
 #include <commands.h>
 #include <napqt/filterpopup.h>
 #include <napqt/qtutils.h>
+#include <napkin-resources.h>
 
 using namespace napkin;
 
@@ -73,6 +74,9 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 
 void napkin::ResourceModel::populate()
 {
+	mObjectsItem.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_RTTIOBJECT));
+	mEntitiesItem.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ENTITY));
+
 	auto doc = AppContext::get().getDocument();
 	assert(doc != nullptr);
 	for (nap::rtti::Object* ob : topLevelObjects(doc->getObjectPointers()))
@@ -95,7 +99,6 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 	{
 		auto entityItem = new EntityItem(*rtti_cast<nap::Entity>(&ob));
 		mEntitiesItem.appendRow({entityItem, typeItem});
-
 		return entityItem;
 	}
 

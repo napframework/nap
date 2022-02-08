@@ -14,7 +14,6 @@ using namespace napkin;
 
 GroupItem::GroupItem(const QString& name, GroupItem::GroupType t) : QStandardItem(name), mType(t)
 {
-	setIcon(t == GroupItem::GroupType::Entities ? QIcon(QRC_ICONS_ENTITY) : QIcon(QRC_ICONS_RTTIOBJECT));
 	setEditable(false);
 }
 
@@ -137,6 +136,7 @@ QVariant ObjectItem::data(int role) const
 			return AppContext::get().getThemeManager().getColor(theme::color::dimmedItem);
 		}
 	}
+
 	return QStandardItem::data(role);
 }
 

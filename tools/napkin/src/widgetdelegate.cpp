@@ -68,14 +68,6 @@ static QColor getColorFromString(const QString& colorString)
 }
 
 
-PropertyValueItemDelegate::PropertyValueItemDelegate()
-{
-	mLinkIcon  = QIcon(QRC_ICONS_LINK);
-	mFileIcon  = QIcon(QRC_ICONS_FILE);
-	mColorIcon = QIcon(QRC_COLOR_WHEEL_FILE);
-}
-
-
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 									  const QModelIndex& index) const
 {
@@ -108,7 +100,8 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 			option.rect.height());
 
 		// Add pointer button
-		auto pixmap = mLinkIcon.pixmap(rect_btn.size());
+		QIcon link_icon = AppContext::get().getResourceFactory().getIcon(QRC_ICONS_LINK);
+		auto pixmap = link_icon.pixmap(rect_btn.size());
 		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
 	}
 	else if (path.isColor())
@@ -179,7 +172,8 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 			option.rect.height()); 
 
 		// Add pointer button
-		auto pixmap = mFileIcon.pixmap(rect_btn.size());
+		QIcon file_icon = AppContext::get().getResourceFactory().getIcon(QRC_ICONS_FILE);
+		auto pixmap = file_icon.pixmap(rect_btn.size());
 		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
 	}
 	else

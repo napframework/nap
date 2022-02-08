@@ -179,8 +179,8 @@ void MainWindow::updateWindowTitle()
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
-	addDocks();
 	addMenu();
+	addDocks();
 	bindSignals();
 }
 

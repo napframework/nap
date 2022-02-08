@@ -94,6 +94,11 @@ namespace napkin
 		QColor getColor(const QString& key) const;
 
 		/**
+		 * @return if the icons should be inverted or not
+		 */
+		bool invertIcons() const;
+
+		/**
 		 * @return all color replacement ids
 		 */
 		const QMap<QString, QColor>& getColors() const;
@@ -102,6 +107,11 @@ namespace napkin
 		 * @return all font replacement ids
 		 */
 		const QMap<QString, QString>& getFonts() const;
+
+		/**
+		 * @return regular or inverted icon, based on theme settings
+		 */
+		QIcon getIcon(const QString& path);
 
 	private:
 		/**
@@ -121,6 +131,7 @@ namespace napkin
 		QMap<int, QColor> mLogColors;
 		QMap<QString, QColor> mColors;
 		QMap<QString, QString> mFonts;
+		bool mInvertIcons = false;
 		bool mValid = false;
 	};
 

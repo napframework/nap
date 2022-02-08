@@ -9,7 +9,7 @@
 #include <utility/fileutils.h>
 
 RTTI_BEGIN_CLASS(nap::VideoFile)
-	RTTI_PROPERTY_FILELINK("Path",	&nap::VideoFile::mPath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Video)
+	RTTI_PROPERTY_FILELINK("Path",	&nap::VideoFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Video)
 RTTI_END_CLASS
 
 namespace nap

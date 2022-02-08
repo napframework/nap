@@ -32,5 +32,9 @@
   {
     "font1": "Manrope",
     "font2": "Manrope"
+  },
+  "icons":
+  {
+    "invert": false
   }
 }

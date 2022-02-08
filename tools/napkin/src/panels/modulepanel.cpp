@@ -13,7 +13,7 @@ ModuleItem::ModuleItem(const nap::Module& module)
 {
 	std::string name(module.getDescriptor().mID);
 	setText(QString::fromStdString(name));
-	setIcon(QIcon(QRC_ICONS_MODULE));
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MODULE));
 	setEditable(false);
 }
 

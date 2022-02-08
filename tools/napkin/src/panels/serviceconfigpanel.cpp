@@ -18,7 +18,7 @@ namespace napkin
 	{
 		std::string service_type = nap::utility::stripNamespace(config.getServiceType().get_name().to_string());
 		setText(QString::fromStdString(service_type));
-		setIcon(QIcon(QRC_ICONS_CONFIGURATION));
+		setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CONFIGURATION));
 		setEditable(false);
 	}
 
