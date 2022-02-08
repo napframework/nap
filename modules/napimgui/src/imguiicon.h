@@ -72,7 +72,7 @@ namespace nap
 		 */
 		ImTextureID getTextureHandle() const;
 
-		bool mInvert = false;								///< Property: 'Invert' if the RGB colors should be inverted
+		bool mInvert = false;								///< Property: 'Invert' if the icon colors should be inverted
 		std::string mImagePath;								///< Property: 'ImagePath' path to the image on disk
 
 	private:

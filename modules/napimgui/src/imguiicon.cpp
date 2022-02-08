@@ -22,9 +22,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static bool invert(FIBITMAP* source, utility::ErrorState& error)
+	static bool invert(BitmapFileBuffer& source, utility::ErrorState& error)
 	{
-		static const std::vector<FREE_IMAGE_COLOR_CHANNEL> inv_channels =
+		static const std::array<FREE_IMAGE_COLOR_CHANNEL, 4> channels =
 		{
 			FICC_RED,
 			FICC_GREEN,
@@ -32,15 +32,16 @@ namespace nap
 			FICC_BLACK
 		};
 
-		for (FREE_IMAGE_COLOR_CHANNEL ch : inv_channels)
+		FIBITMAP* bitmap = reinterpret_cast<FIBITMAP*>(source.getHandle());
+		for (FREE_IMAGE_COLOR_CHANNEL ch : channels)
 		{
 			// Get channel data if exists
-			FIBITMAP* ch_data = FreeImage_GetChannel(source, ch);
+			FIBITMAP* ch_data = FreeImage_GetChannel(bitmap, ch);
 			if (ch_data == nullptr)
 				continue;
 
 			// Invert
-			if (!error.check(FreeImage_Invert(ch_data) && FreeImage_SetChannel(source, ch_data, ch),
+			if (!error.check(FreeImage_Invert(ch_data) && FreeImage_SetChannel(bitmap, ch_data, ch),
 				"Unable to invert channel: %d", (int)ch))
 			{
 				FreeImage_Unload(ch_data);
@@ -81,15 +82,11 @@ namespace nap
 			return false;
 
 		// Invert colors if requested
-		if (mInvert)
-		{
-			FIBITMAP* bitmap_handle = reinterpret_cast<FIBITMAP*>(file_buffer.getHandle());
-			if (!invert(bitmap_handle, error))
-				return false;
-		}
+		if (mInvert && !invert(file_buffer, error))
+			return false;
 
 		// Create 2D texture
-		return mTexture.init(descriptor, false, file_buffer.getData(), 0, error);
+		return mTexture.init(descriptor, true, file_buffer.getData(), 0, error);
 	}
 
 
