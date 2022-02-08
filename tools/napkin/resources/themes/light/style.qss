@@ -172,7 +172,7 @@ QTabBar {
 
 QTabBar:tab {
     padding: 2px 12px 2px 12px;
-    color: @front4;
+    color: @dark1;
     background: @highlight1;
     border: 0;
 }
