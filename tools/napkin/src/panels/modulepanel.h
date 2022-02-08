@@ -16,7 +16,7 @@ namespace napkin
 	{
 	public:
 		ModuleItem(const nap::Module& module);
-
+		QVariant data(int role) const override;
 	private:
 		const nap::Module& mModule;
 	};

@@ -27,6 +27,14 @@ namespace napkin
 		 */
 		explicit GroupItem(const QString& name, GroupItem::GroupType t);
 
+		/**
+		 * @return data overrides
+		 */
+		QVariant data(int role) const override;
+
+		/**
+		 * @return type of group
+		 */
 		GroupType groupType() const { return mType; }
 	private:
 		GroupType mType;

@@ -69,9 +69,8 @@ const QIcon napkin::ResourceFactory::getIcon(const QString& path) const
 		it = em.first;
 	}
 
-	// Now return based on style
+	// Now return based on style, if present
 	const Theme* theme = AppContext::get().getThemeManager().getCurrentTheme();
-	assert(theme != nullptr);
 	return theme != nullptr && theme->invertIcons() ? it->second.mIconInverted : it->second.mIcon;
 }
 

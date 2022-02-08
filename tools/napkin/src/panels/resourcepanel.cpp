@@ -74,9 +74,6 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 
 void napkin::ResourceModel::populate()
 {
-	mObjectsItem.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_RTTIOBJECT));
-	mEntitiesItem.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ENTITY));
-
 	auto doc = AppContext::get().getDocument();
 	assert(doc != nullptr);
 	for (nap::rtti::Object* ob : topLevelObjects(doc->getObjectPointers()))
