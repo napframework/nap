@@ -10,7 +10,7 @@ RTTI_DEFINE_BASE(nap::StorageUniformValueBufferInstance)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStructInstance)
 	RTTI_CONSTRUCTOR(const nap::ShaderVariableStructDeclaration&, const nap::StorageUniformChangedCallback&)
-	RTTI_FUNCTION("findStorageUniform", (nap::StorageUniformInstance* (nap::StorageUniformStructInstance::*)(const std::string&)) &nap::StorageUniformStructInstance::findStorageUniform)
+	RTTI_FUNCTION("findStorageUniformBuffer", (nap::StorageUniformInstance* (nap::StorageUniformStructInstance::*)(const std::string&)) &nap::StorageUniformStructInstance::findStorageUniformBuffer)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStructBufferInstance)
@@ -72,12 +72,15 @@ namespace nap
 	{
 		rtti::TypeInfo declaration_type = declaration.get_type();
 
+		// Creates a StorageUniformStructBufferInstance
 		if (declaration_type == RTTI_OF(ShaderVariableStructBufferDeclaration))
 		{
 			const ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<const ShaderVariableStructBufferDeclaration>(&declaration);
 			std::unique_ptr<StorageUniformStructBufferInstance> buffer_instance = std::make_unique<StorageUniformStructBufferInstance>(*struct_buffer_declaration);
 			return std::move(buffer_instance);
-		}	
+		}
+
+		// Creates a StorageUniformValueBufferInstance
 		else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 		{
 			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&declaration);
@@ -118,46 +121,50 @@ namespace nap
 				return std::move(buffer_instance);
 			}
 		}
+
+		// Unsupported shader declarations for storage uniforms.
+		// As shader variable declarations are descriptor type agnostic, this point can be reached if individual values or structs are declared inside a storage buffer block.
+		// Notify the user and return false.
 		else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 		{
-			//const ShaderVariableStructDeclaration* struct_declaration = rtti_cast<const ShaderVariableStructDeclaration>(&declaration);
 			NAP_ASSERT_MSG(false, "Individual structs not supported for storage uniforms");
 		}
 		else if (declaration_type == RTTI_OF(ShaderVariableValueDeclaration))
 		{
-			//const ShaderVariableValueDeclaration* value_declaration = rtti_cast<const ShaderVariableValueDeclaration>(&declaration);
 			NAP_ASSERT_MSG(false, "Individual values not supported for storage uniforms");
 		}
 		else
 		{
 			// Possibly ShaderVariableStructArrayDeclaration - which is not supported for StorageUniforms
+			NAP_ASSERT_MSG(false, "Unsupported shader variable declaration");
 			assert(false);
 		}
 		return nullptr;
 	}
 
 
-	nap::StorageUniformInstance* StorageUniformStructInstance::findStorageUniform(const std::string& name)
+	StorageUniformBufferInstance* StorageUniformStructInstance::findStorageUniformBuffer(const std::string& name)
 	{
-		for (auto& uniform_instance : mStorageUniforms)
+		if (mStorageUniformBuffer != nullptr)
 		{
-			if (uniform_instance->getDeclaration().mName == name)
-				return uniform_instance.get();
+			if (mStorageUniformBuffer->getDeclaration().mName == name)
+				return mStorageUniformBuffer.get();
 		}
 		return nullptr;
 	}
 
 
-	bool StorageUniformStructInstance::addStorageUniform(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState)
+	bool StorageUniformStructInstance::setStorageUniformBuffer(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState)
 	{
 		for (auto& uniform_declaration : structDeclaration.mMembers)
 		{
 			rtti::TypeInfo declaration_type = uniform_declaration->get_type();
 
-			const StorageUniform* resource = nullptr;
-			if (structResource != nullptr && structResource->mStorageUniformBuffer != nullptr && structResource->mStorageUniformBuffer->mName == uniform_declaration->mName)
-				resource = structResource->mStorageUniformBuffer.get();
+			const StorageUniformBuffer* resource = nullptr;
+			if (structResource != nullptr)
+				resource = structResource->findStorageUniformBuffer(uniform_declaration->mName);
 
+			// Creates a StorageUniformStructBufferInstance
 			if (declaration_type == RTTI_OF(ShaderVariableStructBufferDeclaration))
 			{
 				ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<ShaderVariableStructBufferDeclaration>(uniform_declaration.get());
@@ -183,8 +190,10 @@ namespace nap
 						return false;
 				}
 
-				mStorageUniforms.emplace_back(std::move(struct_buffer_instance));
+				mStorageUniformBuffer = std::move(struct_buffer_instance);
 			}
+
+			// Creates a StorageUniformValueBufferInstance
 			else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 			{
 				ShaderVariableValueArrayDeclaration* value_declaration = rtti_cast<ShaderVariableValueArrayDeclaration>(uniform_declaration.get());
@@ -241,10 +250,12 @@ namespace nap
 						return false;
 				}
 
-				mStorageUniforms.emplace_back(std::move(instance_value_buffer));
+				mStorageUniformBuffer = std::move(instance_value_buffer);
 			}
 
-			// Unsupported shader declarations
+			// Unsupported shader declarations for storage uniforms.
+			// As shader variable declarations are descriptor type agnostic, this point can be reached if individual values or structs are declared inside a storage buffer block.
+			// Notify the user and return false.
 			else if (declaration_type == RTTI_OF(ShaderVariableStructDeclaration))
 			{
 				errorState.fail("Nested storage uniform structs are not yet supported for storage buffer shader variables");
@@ -257,7 +268,7 @@ namespace nap
 			}
 			else
 			{
-				errorState.fail("Storage uniform struct arrays are not supported for storage buffer shader variables");
+				NAP_ASSERT_MSG(false, "Unsupported shader variable declaration");
 				return false;
 			}
 		}

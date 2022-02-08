@@ -478,6 +478,11 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 
 				if (descriptorType == nap::EDescriptorType::Storage)
 				{
+					// ShaderVariableStructBufferDeclaration is a special shader variable declaration type exclusive to storage buffer descriptor types.
+					// They are not built recursively as none of the values have to be assigned or accessed individually, but rather the buffer as a whole.
+					// Therefore, we only store the declaration of a single struct item as a ShaderVariableStructDeclaration, and set it to the element member
+					// of the ShaderVariableStructBufferDeclaration along with the element stride and count.
+
 					std::unique_ptr<nap::ShaderVariableStructBufferDeclaration> buffer_declaration = std::make_unique<nap::ShaderVariableStructBufferDeclaration>(name, absoluteOffset, member_size, stride, num_elements);
 					std::unique_ptr<nap::ShaderVariableStructDeclaration> struct_declaration = std::make_unique<nap::ShaderVariableStructDeclaration>(name, parentStruct.mDescriptorType, absoluteOffset, struct_size);
 					buffer_declaration->mElement = std::move(struct_declaration);

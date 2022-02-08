@@ -23,18 +23,21 @@ namespace nap
 	class DescriptorSetCache;
 
 	/**
-	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used 
-	 * as fields in ComponentResources. The object needs to be passed to MaterialInstance's init() function.
+	 * Base class of MaterialInstanceResource and ComputeMaterialInstanceResource
 	 */
 	class NAPAPI BaseMaterialInstanceResource
 	{
 		RTTI_ENABLE()
 	public:
-		std::vector<ResourcePtr<UniformStruct>>			mUniforms;									///< Property: "Uniforms" uniform structs that you're overriding
-		std::vector<ResourcePtr<StorageUniformStruct>>	mStorageUniforms;							///< Property: "StorageUniforms" storage uniform structs that you're overriding
+		std::vector<ResourcePtr<UniformStruct>>			mUniforms;									///< Property: "Uniforms" uniform structs to override
+		std::vector<ResourcePtr<StorageUniformStruct>>	mStorageUniforms;							///< Property: "StorageUniforms" storage uniform structs to override
 		std::vector<ResourcePtr<Sampler>>				mSamplers;									///< Property: "Samplers" samplers that you're overriding
 	};
 
+	/**
+	 * MaterialInstanceResource is the 'resource' or 'data' counterpart of MaterialInstance, intended to be used
+	 * as fields in ComponentResources. The object must be passed to MaterialInstance's init() function.
+	 */
 	class NAPAPI MaterialInstanceResource : public BaseMaterialInstanceResource
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
@@ -44,6 +47,10 @@ namespace nap
 		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
 	};
 
+	/**
+	 * ComputeMaterialInstanceResource is the 'resource' or 'data' counterpart of ComputeMaterialInstance, intended to be
+	 * used as fields in ComponentResources. The object must be passed to ComputeMaterialInstance's init() function.
+	 */
 	class NAPAPI ComputeMaterialInstanceResource : public BaseMaterialInstanceResource
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
@@ -52,7 +59,7 @@ namespace nap
 	};
 
 	/**
-	 * BaseMaterialInstance
+	 * Base class of MaterialInstance and ComputeMaterialInstance
 	 */
 	class NAPAPI BaseMaterialInstance : public UniformContainer
 	{
@@ -61,7 +68,7 @@ namespace nap
 		/**
 		 * Gets or creates a uniform struct (ubo) for this material instance.
 		 * This means that the uniform returned is only applicable to this instance.
-		 * In order to change a uniform so that it's value is shared among MaterialInstances, use getMaterial().getUniform().
+		 * In order to change a uniform so that its value is shared among MaterialInstances, use getMaterial().getUniform().
 		 *
 		 * @param name: the name of the uniform struct (ubo) as declared in the shader.
 		 * @return uniform that was found or created, nullptr if not available.
@@ -71,7 +78,7 @@ namespace nap
 		/**
 		 * Gets or creates a shader storage uniform struct (ssbo) for this material instance.
 		 * This means that the uniform returned is only applicable to this instance.
-		 * In order to change a uniform so that it's value is shared among MaterialInstances, use getMaterial().getUniform().
+		 * In order to change a uniform so that its value is shared among MaterialInstances, use getMaterial().getUniform().
 		 *
 		 * @param name: the name of the sorage uniform struct (ssbo) as declared in the shader.
 		 * @return uniform that was found or created, nullptr if not available.
@@ -81,7 +88,7 @@ namespace nap
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
 		 * This means that the sampler returned is only applicable to this instance.
-		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
+		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
 		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
 		 *
 		 * ~~~~~{.cpp}
@@ -97,7 +104,7 @@ namespace nap
 		/**
 		 * Gets or creates a nap::SamplerInstance for this material instance.
 		 * This means that the sampler returned is only applicable to this instance.
-		 * In order to change a sampler so that it's value is shared among MaterialInstances, use getMaterial().findSampler().
+		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
 		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
 		 *
 		 * @param name: the name of the sampler declared in the shader.
@@ -121,7 +128,7 @@ namespace nap
 		virtual const BaseMaterialInstanceResource* getResource() const = 0;
 
 		/**
-		 * This needs to be called before each draw. It will push the current uniform and sampler data into memory
+		 * This must be called before each draw. It will push the current uniform and sampler data into memory
 		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets
 		 * before the Vulkan draw call is issued.
 		 *
@@ -161,7 +168,7 @@ namespace nap
 		DescriptorSetCache*						mDescriptorSetCache;					// Cache used to acquire Vulkan DescriptorSets on each update
 		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
 
-		std::vector<StorageUniformBufferObject>	mStorageBufferObjects;					// List of all HBO instances
+		std::vector<StorageUniformBufferObject>	mStorageBufferObjects;					// List of all SSBO instances
 		std::vector<VkWriteDescriptorSet>		mStorageWriteDescriptorSets;			// List of storage unform descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorBufferInfo>		mStorageDescriptors;					// List of storage buffers, used to update Descriptor Sets.
 
@@ -171,11 +178,11 @@ namespace nap
 	};
 
 	/**
-	 * To draw an object with a Material, you need to use a MaterialInstance. MaterialInstance contains the
+	 * To draw an object with a Material, you must use a MaterialInstance. MaterialInstance contains the
 	 * runtime data for drawing a Material. MaterialInstance is intended to be used as a property in Components. 
-	 * It needs to be initialized based on a MaterialInstanceResource object to fill it's runtime data. 
-	 * init() needs to be called from the ComponentInstance's init() function. Before drawing, make sure to call 
-	 * update() to update the uniforms and samplers. A descriptor will be returned that can be used to issue
+	 * It must be initialized based on a MaterialInstanceResource object to fill its runtime data. 
+	 * init() must be called from the ComponentInstance's init() function. Before drawing, make sure to call 
+	 * update() to update the uniforms and samplers. A descriptorset will be returned that can be used to issue
 	 * the Vulkan draw call.
 	 *
 	 * Multiple MaterialInstances can share a single Material and a single MaterialInstance can override Material 
@@ -185,6 +192,10 @@ namespace nap
 	 * 
 	 * It is also possible to set uniform or texture state on a single MaterialInstance multiple times per frame. 
 	 * When multiple draws are performed with the frame, the state at the point of draw will be used.
+	 *
+	 * Note that there is no implicit synchronization of access to shader resources bound to storage and regular uniforms
+	 * between render passes. Therefore, it is currently not recommended to write to storage uniforms inside vertex
+	 * and/or fragment shaders over consecutive render passes within a single frame.
 	 *
 	 * Performance note: changing the Depth mode or Blend mode frequently on a single MaterialInstance is not recommended,
 	 * as it requires a rebuild of the entire GPU pipeline. If changing it per frame is required, consider using multiple
@@ -256,24 +267,21 @@ namespace nap
 	};
 
 	/**
-	 * To draw an object with a Material, you need to use a MaterialInstance. MaterialInstance contains the
-	 * runtime data for drawing a Material. MaterialInstance is intended to be used as a property in Components.
-	 * It needs to be initialized based on a MaterialInstanceResource object to fill it's runtime data.
-	 * init() needs to be called from the ComponentInstance's init() function. Before drawing, make sure to call
-	 * update() to update the uniforms and samplers. A descriptor will be returned that can be used to issue
+	 * To run a compute shader, you must use a ComputeMaterialInstance. This material contains the runtime resources that
+	 * are bound to shader variable inputs in your compute shader. ComputeMaterialInstance is intended to be used as a
+	 * property in ComputeComponents. It must be initialized based on a ComputeMaterialInstanceResource object to fill
+	 * its runtime data. init() must be called from the ComponentInstance's init() function. Before drawing, make sure
+	 * to call update() to update the uniforms and samplers. A descriptorset will be returned that can be used to issue
 	 * the Vulkan draw call.
 	 *
-	 * Multiple MaterialInstances can share a single Material and a single MaterialInstance can override Material
-	 * properties on a per-instance basis. This means that you can set uniform or texture data on Material level,
-	 * which means that, as long as the property isn't overridden, you will set it for all MaterialInstances in one
-	 * go. If you set a property on MaterialInstance level, you will set it only for that MaterialInstance.
+	 * Multiple ComputeMaterialInstances can share a single ComputeMaterial and a single ComputeMaterialInstance can
+	 * override ComputeMaterial properties on a per-instance basis. This means that you can set (storage) uniform or
+	 * texture data on ComputeMaterial level, which means that, as long as the property isn't overridden, you will set
+	 * it for all ComputeMaterialInstances in one go. If you set a property on ComputeMaterialInstance level, you will
+	 * set it only for that ComputeMaterialInstance.
 	 *
-	 * It is also possible to set uniform or texture state on a single MaterialInstance multiple times per frame.
+	 * It is also possible to set (storage) uniform or texture state on a single MaterialInstance multiple times per frame.
 	 * When multiple draws are performed with the frame, the state at the point of draw will be used.
-	 *
-	 * Performance note: changing the Depth mode or Blend mode frequently on a single MaterialInstance is not recommended,
-	 * as it requires a rebuild of the entire GPU pipeline. If changing it per frame is required, consider using multiple
-	 * MaterialInstance objects and switch between them instead.
 	 */
 	class NAPAPI ComputeMaterialInstance : public BaseMaterialInstance
 	{

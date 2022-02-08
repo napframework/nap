@@ -19,6 +19,7 @@ namespace nap
 {
 	// Forward Declares
 	class StorageUniformInstance;
+	class StorageUniformBufferInstance;
 	class StorageUniformValueBufferInstance;
 	class StorageUniformStructBufferInstance;
 
@@ -28,11 +29,54 @@ namespace nap
 	using StorageUniformValueBufferChangedCallback = std::function<void(StorageUniformValueBufferInstance&)>;
 	using StorageUniformStructBufferChangedCallback = std::function<void(StorageUniformStructBufferInstance&)>;
 
-	/**
-	 * Instantiated version of a nap::StorageUniform.
-	 * Every uniform 'resource' has an associative 'instance', ie: nap::StorageUniformValueBuffer -> nap::StorageUniformValueBufferInstance.
-	 * An instance can be updated / inspected at run-time and is associated with a declaration.
-	 */
+	 /**
+	  * Instantiated version of a nap::StorageUniform.
+	  * Every uniform 'resource' has an associative 'instance', ie: nap::StorageUniformValueBuffer ->
+	  * nap::StorageUniformValueBufferInstance.
+	  * An instance can be updated / inspected at run-time and is associated with a declaration.
+	  * 
+	  * Unlike standard uniforms, storage uniforms store a reference to the underlying data as opposed to the data itself.
+	  * This allows for any compute shader to read from and write to the same data storage. Storage uniforms currently
+	  * always refer to a single nap::GPUBuffer, whether this is simple a `nap::ValueGPUBuffer` or a more complex
+	  * `nap::StructGPUBuffer`.
+	  *
+	  * A single vec4 array can be addressed as a `nap::Vec4GPUValueBuffer`:
+	  *~~~~~{.comp}
+	  *	layout(std430) buffer PositionSSBO
+	  *	{
+	  *		vec4 positions[100000];
+	  *	} pos_ssbo;
+	  *
+	  *	layout(std430) buffer NormalSSBO
+	  *	{
+	  *		vec4 normals[100000];
+	  *	} norm_ssbo;
+	  *~~~~~
+	  *
+	  * If you intend to pack some data types together, you can do so with a `nap::StructGPUBuffer`:
+	  *~~~~~{.comp}
+	  *	struct Item
+	  *	{
+	  *		vec4 position;
+	  *		vec4 normal;
+	  *	};
+	  *
+	  * 	layout(std430) buffer ItemSSBO
+	  *	{
+	  *		Item items[100000];
+	  *	} item_ssbo;
+	  *~~~~~
+	  *
+	  * Declaring multiple shader variables outside of a struct is currently not supported:
+	  *~~~~~{.comp}
+	  *	// ERROR
+	  *	layout(std430) buffer ExampleComputeBuffer
+	  *	{
+	  *		vec4 positions[100000];
+	  *		vec4 normals[100000];
+	  *	};
+	  *~~~~~
+	  */
 	class NAPAPI StorageUniformInstance
 	{
 		RTTI_ENABLE()
@@ -54,8 +98,21 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Contains other uniform instances, including: values, structs and arrays. 
-	 * A uniform value, struct or array must be declared as part of a uniform struct.
+	 * Instance of a Storage Uniform Buffer container.
+	 * 
+	 * Stores a single StorageUniformBuffer reference as opposed to a UniformStruct, which also supports multiple
+	 * and nested shader variables.
+	 *
+	 * The reason for restricting StorageUniformStruct to a single buffer variable is that we want to associate a
+	 * shader resource binding point with single shader storage buffer. This is a typical use case for storage
+	 * buffers and simplifies overall resource management.
+	 *
+	 *~~~~~{.comp}
+	 *	layout(std430) buffer PositionSSBO
+	 *	{
+	 *		vec4 positions[100000];
+	 *	} pos_ssbo;
+	 *~~~~~
 	 */
 	class NAPAPI StorageUniformStructInstance : public StorageUniformInstance
 	{
@@ -76,14 +133,14 @@ namespace nap
 		/**
 		 * @return all uniform instances contained by this struct.
 		 */
-		const std::vector<std::unique_ptr<StorageUniformInstance>>& getUniforms() const	{ return mStorageUniforms; }
+		const std::unique_ptr<StorageUniformBufferInstance>& getStorageUniformBuffer() const				{ return mStorageUniformBuffer; }
 
 		/**
 		 * Tries to find a uniform with the given name.
 		 * @param name the name of the uniform to find.
 		 * @return found uniform instance, nullptr if it does not exist.
 		 */
-		StorageUniformInstance* findStorageUniform(const std::string& name);
+		StorageUniformBufferInstance* findStorageUniformBuffer(const std::string& name);
 
 		/**
 		 * Tries to find a uniform of a specific type with the given name.
@@ -91,7 +148,7 @@ namespace nap
 		 * @return the uniform instance, nullptr if it does not exist
 		 */
 		template<typename T>
-		T* findStorageUniform(const std::string& name);
+		T* findStorageUniformBuffer(const std::string& name);
 
 		/**
 		 * Tries to find a uniform of a specific type with the given name, creates it if it does not exist.
@@ -99,12 +156,12 @@ namespace nap
 		 * @return the uniform instance, nullptr if it can't be found and created.
 		 */
 		template<typename T>
-		T* getOrCreateStorageUniform(const std::string& name);
+		T* getOrCreateStorageUniformBuffer(const std::string& name);
 
 		/**
 		 * @return the uniform declaration, used to create the uniform instance.
 		 */
-		virtual const ShaderVariableDeclaration& getDeclaration() const override { return mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override							{ return mDeclaration; }
 
 	private:
 		friend class BaseMaterial;
@@ -114,9 +171,9 @@ namespace nap
 		friend class MaterialInstance;
 
 		/**
-		 * Adds all associated uniforms to this instance, based on the struct declaration and resource.
+		 * Sets associated uniform buffer to this instance, based on the struct declaration and resource.
 		 */
-		bool addStorageUniform(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState);
+		bool setStorageUniformBuffer(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState);
 
 		/**
 		 * Creates a uniform instance from a uniform declaration. 
@@ -126,9 +183,9 @@ namespace nap
 		static std::unique_ptr<StorageUniformInstance> createStorageUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
 
 	private:
-		StorageUniformChangedCallback							mStorageUniformChangedCallback;
-		const ShaderVariableStructDeclaration&					mDeclaration;
-		std::vector<std::unique_ptr<StorageUniformInstance>>	mStorageUniforms;
+		StorageUniformChangedCallback								mStorageUniformChangedCallback;
+		const ShaderVariableStructDeclaration&						mDeclaration;
+		std::unique_ptr<StorageUniformBufferInstance>				mStorageUniformBuffer;
 	};
 
 
@@ -137,7 +194,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Represents a list of uniform struct instances.
+	 * Storage uniform buffer instance base class.
+	 *
+	 * A StorageUniformBufferInstance must be declared as part of a StorageUniformStructInstance.
 	 */
 	class NAPAPI StorageUniformBufferInstance : public StorageUniformInstance
 	{
@@ -155,7 +214,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Represents a uniform data buffer instance for struct elements
+	 * Represents an instance of a storage uniform struct buffer, for example:
+	 * StructGPUBuffer -> StorageUniformStructBuffer.
+	 *
+	 * A StorageUniformStructBufferInstance must be declared as part of a StorageUniformStructInstance.
 	 */
 	class NAPAPI StorageUniformStructBufferInstance : public StorageUniformBufferInstance
 	{
@@ -232,7 +294,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Base class of all uniform value array instances.
+	 * Base class of all typed storage uniform value buffer instances.
+	 * 
+	 * A StorageUniformValueBufferInstance must be declared as part of a StorageUniformStructInstance.
 	 */
 	class NAPAPI StorageUniformValueBufferInstance : public StorageUniformBufferInstance
 	{
@@ -281,8 +345,11 @@ namespace nap
 
 
 	/**
-	 * Specific type of uniform value buffer instance
+	 * Specific type of storage uniform value buffer instance, for example:
+	 * TypedValueGPUBuffer<float> -> TypedStorageUniformValueBufferInstance<float>.
 	 * All supported types are defined below for easier readability.
+	 *
+	 * A StorageUniformValueBufferInstance must be declared as part of a StorageUniformStructInstance.
 	 */
 	template<typename T>
 	class TypedStorageUniformValueBufferInstance : public StorageUniformValueBufferInstance
@@ -353,19 +420,19 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	T* nap::StorageUniformStructInstance::findStorageUniform(const std::string& name)
+	T* nap::StorageUniformStructInstance::findStorageUniformBuffer(const std::string& name)
 	{
-		StorageUniformInstance* instance = findStorageUniform(name);
+		StorageUniformBufferInstance* instance = findStorageUniformBuffer(name);
 		if (instance != nullptr)
 			return rtti_cast<T>(instance);
 		return nullptr;
 	}
 
 	template<typename T>
-	T* nap::StorageUniformStructInstance::getOrCreateStorageUniform(const std::string& name)
+	T* nap::StorageUniformStructInstance::getOrCreateStorageUniformBuffer(const std::string& name)
 	{
 		// First try to find it, if found cast and return
-		StorageUniformInstance* instance = findStorageUniform(name);
+		StorageUniformBufferInstance* instance = findStorageUniformBuffer(name);
 		if (instance != nullptr)
 		{
 			assert(instance->get_type().is_derived_from<T>());
@@ -380,7 +447,7 @@ namespace nap
 		std::unique_ptr<StorageUniformInstance> new_instance = createStorageUniformFromDeclaration(*declaration, mStorageUniformChangedCallback);
 		T* result = rtti_cast<T>(new_instance.get());
 		assert(result != nullptr);
-		mStorageUniforms.emplace_back(std::move(new_instance));
+		mStorageUniformBuffers.emplace_back(std::move(new_instance));
 
 		// Notify listeners
 		//if (mUniformCreatedCallback)

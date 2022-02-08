@@ -21,7 +21,7 @@ namespace nap
 	 * Resource part of Compute Component
 	 * 
 	 * The compute component represents a general-purpose computation that mutates one or more buffers.
-	 * Internally, a ComputeComponentInstance manages a ComputeMaterialInstance and can caches the desired invocation count
+	 * Internally, a ComputeComponentInstance manages a ComputeMaterialInstance and caches the desired invocation count
 	 * for repeated use.
 	 *
 	 * ComputeComponentInstance::compute() dispatches the compute shader with the given compute command buffer.

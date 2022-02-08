@@ -119,9 +119,9 @@ namespace nap
 		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
 
 	private:
-		UniformCreatedCallback							mUniformCreatedCallback;
+		UniformCreatedCallback									mUniformCreatedCallback;
 		const ShaderVariableStructDeclaration&					mDeclaration;
-		std::vector<std::unique_ptr<UniformInstance>>	mUniforms;
+		std::vector<std::unique_ptr<UniformInstance>>			mUniforms;
 	};
 
 
@@ -172,7 +172,7 @@ namespace nap
 		virtual const ShaderVariableDeclaration& getDeclaration() const override				{ return mDeclaration; }
 
 	private:
-		const ShaderVariableStructArrayDeclaration&					mDeclaration;
+		const ShaderVariableStructArrayDeclaration&				mDeclaration;
 		std::vector<std::unique_ptr<UniformStructInstance>>		mElements;
 
 		/**

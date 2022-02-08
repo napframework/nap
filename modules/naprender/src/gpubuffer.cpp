@@ -309,8 +309,9 @@ namespace nap
 		assert(mStagingBuffers.size() > 0 && mStagingBuffers[0].mBuffer != VK_NULL_HANDLE);
 		assert(mRenderBuffers.size() == 1);
 		assert(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead);
-		
+
 		// Copy staging buffer to GPU
+		// As uploads recorded to the upload command buffer always happen at the beginning of a frame, no additional synchronization is required before the copy command
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = mSize;
 		vkCmdCopyBuffer(commandBuffer, mStagingBuffers[0].mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
@@ -323,8 +324,8 @@ namespace nap
 		dst_access |= (usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) ? VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT : 0;
 		dst_access |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_ACCESS_UNIFORM_READ_BIT : 0;
 
-		// As gpu buffers can be bound to a descriptorset for any shader stage, and we do not store information about the pipeline stages in which they will be used,
-		// we assume the earliest possible pipeline stage for the buffer to be used - VERTEX and COMPUTE.
+		// As GPU buffers can be bound to a descriptorset for any shader stage, and we do not store information about the pipeline stages in which they will be used,
+		// we assume the earliest possible pipeline stage for the buffer to be used; VERTEX and COMPUTE.
 		VkPipelineStageFlags dst_stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		dst_stage |= (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT || usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) ? VK_PIPELINE_STAGE_VERTEX_INPUT_BIT : 0;
 		dst_stage |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_PIPELINE_STAGE_VERTEX_SHADER_BIT : 0;
@@ -362,7 +363,7 @@ namespace nap
 
 		VkPipelineStageFlags stage_flags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 
-		// Set memory barriers
+		// Memory barrier
 		memoryBarrier(commandBuffer, staging_buffer.mBuffer, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, stage_flags, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
 		// Copy to staging buffer

@@ -26,8 +26,8 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		/** 
-		* Base constructor associated with a material
-		*/
+		 * Base constructor associated with a material
+		 */
 		BaseMaterial(Core& core);
 		virtual ~BaseMaterial() = default;
 
@@ -51,10 +51,15 @@ namespace nap
 	};
 
 	/**
-	 * Resource that acts as the main interface to a shader. Controls how vertex buffers are bound to shader inputs.
-	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * Resource that acts as the main interface to a vertex or fragment shader. Controls how vertex buffers are bound to
+	 * shader inputs.
+	 * It also creates and holds a set of (storage) uniform struct instances, matching those exposed by the shader.
 	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use 
-	 * that same value, unless overridden by a nap::MaterialInstance. 
+	 * that same value, unless overridden by a nap::MaterialInstance.
+	 *
+	 * Note that there is no implicit synchronization of access to shader resources bound to storage and regular uniforms
+	 * between render passes. Therefore, it is currently not recommended to write to storage uniforms inside vertex
+	 * and/or fragment shaders over consecutive render passes within a single frame.
 	 */
 	class NAPAPI Material : public BaseMaterial
 	{
@@ -85,7 +90,7 @@ namespace nap
 
 		/**
 		 * Initializes the material. 
-		 * Validates and converts all the declared uniform values into instances and sets up the vertex buffer bindings.
+		 * Validates and converts all the declared shader variables into instances and sets up the vertex buffer bindings.
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
@@ -149,10 +154,14 @@ namespace nap
 
 
 	/**
-	 * Resource that acts as the main interface to a shader. Controls how vertex buffers are bound to shader inputs.
-	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * Resource that acts as the main interface to a compute shader. Controls how GPU buffers are bound to shader inputs.
+	 * It also creates and holds a set of (storage) uniform struct instances, matching those exposed by the shader.
 	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use
-	 * that same value, unless overridden by a nap::MaterialInstance.
+	 * that same value, unless overridden by a nap::ComputeMaterialInstance.
+	 *
+	 * Unlike nap::Material, does not expose vertex attribute buffer bindings (or blend/depth modes). It is still possible
+	 * to access a vertex buffer resource (inherits from nap::GPUBuffer) in a compute shader through a storage uniform.
+	 * This way, mesh data can remain static on the GPU, while being mutable in a compute shader.
 	 */
 	class NAPAPI ComputeMaterial : public BaseMaterial
 	{
@@ -164,15 +173,15 @@ namespace nap
 		ComputeMaterial(Core& core);
 
 		/**
-		 * Initializes the material.
-		 * Validates and converts all the declared uniform values into instances and sets up the vertex buffer bindings.
+		 * Initializes the compute material.
+		 * Validates and converts all the declared shader variables into instances and sets up the vertex buffer bindings.
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return The underlying shader
+		 * @return The underlying compute shader
 		 */
 		const ComputeShader& getShader() const				{ assert(mShader != nullptr); return *mShader; }
 
@@ -182,6 +191,6 @@ namespace nap
 		virtual const BaseShader* getBaseShader() const { assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
 
 	public:
-		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
+		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The compute shader that this material is using
 	};
 }

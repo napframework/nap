@@ -113,12 +113,14 @@ namespace nap
 		{
 			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(mStorageUniforms, subo_declaration));
 
-			// We must check if the SSBO declaration contains more than a single shader variable and exit early if this is the case
+			// We must check if the SSBO declaration contains more than a single shader variable and exit early if this is the case.
+			// The reason for this is that we want to associate a shader resource binding point with single shader storage buffer (VkBuffer).
+			// This is a typical use case for storage buffers and simplifies overall resource management.
 			if (!errorState.check(subo_declaration.mMembers.size() <= 1, utility::stringFormat("SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", subo_declaration.mName.c_str())))
 				return false;
 
 			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, StorageUniformChangedCallback());
-			if (!root_struct.addStorageUniform(subo_declaration, struct_resource, StorageUniformChangedCallback(), errorState))
+			if (!root_struct.setStorageUniformBuffer(subo_declaration, struct_resource, StorageUniformChangedCallback(), errorState))
 				return false;
 		}
 

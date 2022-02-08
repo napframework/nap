@@ -46,6 +46,7 @@ namespace nap
 	/**
 	 * Flag that determines the descriptor type of a shader resource. Regards the type of data access on the device (GPU) 
 	 * inside a shader program.
+	 * 
 	 * Uniform buffers are typically small blocks of data that are updated very frequently from CPU to GPU (each frame),
 	 * but immutable in a shader program.
 	 * Storage buffers are typically large blocks of data that are bound/unbound to an SSBO and frequently read and written

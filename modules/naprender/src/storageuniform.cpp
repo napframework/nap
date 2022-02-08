@@ -49,3 +49,27 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::StorageUniformMat4Buffer)
 	RTTI_PROPERTY("Buffer", &nap::StorageUniformMat4Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
+
+namespace nap
+{
+	StorageUniformBuffer* StorageUniformStruct::findStorageUniformBuffer(const std::string& name)
+	{
+		if (mStorageUniformBuffer != nullptr)
+		{
+			if (mStorageUniformBuffer->mName == name)
+				return mStorageUniformBuffer.get();
+		}
+		return nullptr;
+	}
+
+
+	const StorageUniformBuffer* StorageUniformStruct::findStorageUniformBuffer(const std::string& name) const
+	{
+		if (mStorageUniformBuffer != nullptr)
+		{
+			if (mStorageUniformBuffer->mName == name)
+				return mStorageUniformBuffer.get();
+			return nullptr;
+		}
+	}
+}

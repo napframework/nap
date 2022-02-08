@@ -42,9 +42,9 @@ namespace nap
 		ShaderVariableDeclaration(const std::string& name, int offset, int size);
 		virtual ~ShaderVariableDeclaration() {}
 
-		std::string		mName;													///< Name of the declaration
-		int				mOffset;												///< Memory offset
-		int				mSize;													///< Total size (in bytes) of declaration
+		std::string					mName;										///< Name of the declaration
+		int							mOffset;									///< Memory offset
+		int							mSize;										///< Total size (in bytes) of declaration
 	};
 
 
@@ -57,7 +57,7 @@ namespace nap
 
 	public:
 		ShaderVariableValueDeclaration(const std::string& name, int offset, int size, EShaderVariableValueType type);
-		EShaderVariableValueType mType;											///< ShaderVariable type
+		EShaderVariableValueType	mType;										///< ShaderVariable type
 	};
 
 
@@ -83,7 +83,7 @@ namespace nap
 		 */
 		const ShaderVariableDeclaration* findMember(const std::string& name) const;
 		std::vector<std::unique_ptr<ShaderVariableDeclaration>> mMembers;		///< All shader declarations associated with struct
-		EDescriptorType mDescriptorType;										///< e.g. ShaderVariable or Storage
+		EDescriptorType				mDescriptorType;							///< e.g. ShaderVariable or Storage
 	};
 
 
@@ -102,6 +102,11 @@ namespace nap
 
 	/**
 	 * Buffer representation of shader variable struct shader declarations. Used for storage buffers.
+	 *
+	 * ShaderVariableStructBufferDeclaration is a special shader variable declaration type exclusive to storage buffer descriptor types.
+	 * They are not built recursively as none of the values have to be assigned or accessed individually, but rather the buffer as a whole.
+	 * Therefore, we only store the declaration of a single struct item as a ShaderVariableStructDeclaration, and set it to the element member
+	 * of the ShaderVariableStructBufferDeclaration along with the element stride and count.
 	 */
 	class ShaderVariableStructBufferDeclaration : public ShaderVariableDeclaration
 	{
@@ -110,8 +115,8 @@ namespace nap
 		ShaderVariableStructBufferDeclaration(const std::string& name, int offset, int size, int stride, int numElements);
 
 		std::unique_ptr<ShaderVariableStructDeclaration> mElement;				///< Struct declaration
-		int					mNumElements;										///< Total number of struct elements in list
-		int					mStride;											///< Stride of struct element in array
+		int							mNumElements;								///< Total number of struct elements in list
+		int							mStride;									///< Stride of struct element in array
 	};
 
 
@@ -125,8 +130,8 @@ namespace nap
 		ShaderVariableValueArrayDeclaration(const std::string& name, int offset, int size, int stride, EShaderVariableValueType elementType, int numElements);
 
 		EShaderVariableValueType	mElementType;								///< Shader variable type
-		int					mNumElements;										///< Total number of elements in list
-		int					mStride;											///< Stride of element in array
+		int							mNumElements;								///< Total number of elements in list
+		int							mStride;									///< Stride of element in array
 	};
 
 
@@ -145,8 +150,8 @@ namespace nap
 		BufferObjectDeclaration(const BufferObjectDeclaration&) = delete;
 		BufferObjectDeclaration& operator=(const BufferObjectDeclaration&) = delete;
 
-		int														mBinding;	///< Shader binding identifier
-		VkShaderStageFlagBits									mStage;		///< Shader stage: vertex, fragment, compute etc.
+		int							mBinding;									///< Shader binding identifier
+		VkShaderStageFlagBits		mStage;										///< Shader stage: vertex, fragment, compute etc.
 	};
 
 	// Type alias

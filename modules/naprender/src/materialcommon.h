@@ -24,6 +24,9 @@ namespace nap
 	};
 
 
+	/**
+	 * Denotes the cull winding order of a mesh.
+	 */
 	enum class ECullWindingOrder : int
 	{
 		Clockwise,
@@ -45,6 +48,12 @@ namespace nap
 	};
 
 
+	/**
+	 * Non-hierarchical structure that holds pointers to all uniform leaf elements. These can point to either Material
+	 * or MaterialInstance instance uniforms, depending on whether the resource is overridden by an instance.
+	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in
+	 * MaterialInstance::update().
+	 */
 	class UniformBufferObject
 	{
 	public:
@@ -56,11 +65,17 @@ namespace nap
 			assert(declaration.mDescriptorType == EDescriptorType::Uniform);
 		}
 
-		const BufferObjectDeclaration*	mDeclaration;
+		const BufferObjectDeclaration*			mDeclaration;
 		UniformList								mUniforms;
 	};
 
 
+	/**
+	 * Non-hierarchical structure that holds pointers to all uniform leaf elements. These can point to either Material
+	 * or MaterialInstance instance storage uniforms, depending on whether the resource is overridden by an instance.
+	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in
+	 * MaterialInstance::update().
+	 */
 	class StorageUniformBufferObject
 	{
 	public:
@@ -72,7 +87,7 @@ namespace nap
 			assert(declaration.mDescriptorType == EDescriptorType::Storage);
 		}
 
-		const BufferObjectDeclaration*		mDeclaration;
-		StorageUniformList							mStorageUniforms;
+		const BufferObjectDeclaration*			mDeclaration;
+		const StorageUniformBufferInstance*		mStorageUniform;
 	};
 }
