@@ -149,14 +149,15 @@ QPushButton, QToolButton {
     padding: 3px 10px 3px 10px;
 }
 
-QPushButton:hover {
+QPushButton:hover, QToolButton:hover {
     background: @front3;
 }
-QPushButton:pressed {
+
+QPushButton:pressed, QToolButton:pressed {
     background: @dark1;
     color: @front3;
 }
-QPushButton:!enabled {
+QPushButton:!enabled, QToolButton:!enabled {
     background-color: @dark2;
     color: @dark1;
 }
