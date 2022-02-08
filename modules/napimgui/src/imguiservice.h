@@ -97,6 +97,7 @@ namespace nap
 			RGBColor8 mHighlightColor2 = { 0xD6, 0xFF, 0xA3 };		///< Property: 'HighlightColor2' Special highlight color 2 (info)
 			RGBColor8 mHighlightColor3 = { 0xFF, 0xEA, 0x30 };		///< Property: 'HighlightColor3' Special highlight color 3 (warning)
 			RGBColor8 mHighlightColor4 = { 0xFF, 0x50, 0x50 };		///< Property: 'HighlightColor4' Special highlight color 4 (errors)
+			bool mInvertIcon = false;								///< Property: 'InvertIcon' If icons should be inverted
 		};
 	}
 
