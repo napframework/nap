@@ -119,7 +119,7 @@ namespace nap
 
 			// Set color 1
 			auto* clr_one_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("colorOne");
-			clr_one_uniform->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
+			clr_one_uniform->setValue(theme.mHighlightColor4.convert<RGBColorFloat>());
 
 			// Set color 2
 			auto* clr_two_uniform = frag_ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
@@ -136,7 +136,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(theme.mHighlightColor1, "Move mouse over canvas to position blob");
+		ImGui::TextColored(theme.mHighlightColor4, "Move mouse over canvas to position blob");
 		ImGui::TextColored(theme.mHighlightColor2, "Left mouse button to rotate camera");
 		ImGui::TextColored(theme.mHighlightColor3, "Right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());

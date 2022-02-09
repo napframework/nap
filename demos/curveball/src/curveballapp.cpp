@@ -95,7 +95,7 @@ namespace nap
 		// Set sphere color
 		const auto& theme = mGuiService->getPalette();
 		auto* sphere_color = ubo->getOrCreateUniform<UniformVec3Instance>("ballColor");
-		sphere_color->setValue(theme.mHighlightColor1.convert<RGBColorFloat>());
+		sphere_color->setValue(theme.mHighlightColor4.convert<RGBColorFloat>());
 
 		// Find the animation uniform in the material of the plane.
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
