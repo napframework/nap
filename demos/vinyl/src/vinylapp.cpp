@@ -230,7 +230,7 @@ namespace nap
 		auto* ubo = render_comp.getMaterialInstance().getOrCreateUniform("UBO");
 		auto* color_one = ubo->getOrCreateUniform<UniformVec3Instance>("colorOne");
 		auto* color_two = ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
-		color_one->setValue(mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>());
+		color_one->setValue(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 		color_two->setValue(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 	}
 	

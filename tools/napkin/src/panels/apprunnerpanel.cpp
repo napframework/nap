@@ -57,7 +57,8 @@ void napkin::AppRunnerPanel::onStartApp()
 
 	if (!QFileInfo::exists(executable))
 	{
-		nap::Logger::fatal("File not found: '%s'", executable.toStdString().c_str());
+		nap::Logger::fatal(executable.isEmpty() ? "No executable specified" :
+			"Executable not found: '%s'", executable.toStdString().c_str());
 		return;
 	}
 
