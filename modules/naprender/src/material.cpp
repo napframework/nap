@@ -119,8 +119,8 @@ namespace nap
 			if (!errorState.check(subo_declaration.mMembers.size() <= 1, utility::stringFormat("SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", subo_declaration.mName.c_str())))
 				return false;
 
-			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, StorageUniformChangedCallback());
-			if (!root_struct.setStorageUniformBuffer(subo_declaration, struct_resource, StorageUniformChangedCallback(), errorState))
+			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, StorageUniformCreatedCallback());
+			if (!root_struct.addStorageUniformBuffer(subo_declaration, struct_resource, StorageUniformBufferChangedCallback(), errorState))
 				return false;
 		}
 

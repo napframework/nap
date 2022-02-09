@@ -9,7 +9,7 @@ RTTI_DEFINE_BASE(nap::StorageUniformBufferInstance)
 RTTI_DEFINE_BASE(nap::StorageUniformValueBufferInstance)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformStructInstance)
-	RTTI_CONSTRUCTOR(const nap::ShaderVariableStructDeclaration&, const nap::StorageUniformChangedCallback&)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableStructDeclaration&, const nap::StorageUniformCreatedCallback&)
 	RTTI_FUNCTION("findStorageUniformBuffer", (nap::StorageUniformInstance* (nap::StorageUniformStructInstance::*)(const std::string&)) &nap::StorageUniformStructInstance::findStorageUniformBuffer)
 RTTI_END_CLASS
 
@@ -49,16 +49,16 @@ RTTI_END_CLASS
 namespace nap
 {
 	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
-	static std::unique_ptr<INSTANCE_TYPE> createShaderVariableValueInstance(const StorageUniform* value, const DECLARATION_TYPE& declaration, utility::ErrorState& errorState)
+	static std::unique_ptr<INSTANCE_TYPE> createStorageUniformBufferInstance(const StorageUniform* value, const DECLARATION_TYPE& declaration, StorageUniformBufferChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
 	{
-		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(declaration);
+		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(declaration, bufferChangedCallback);
 		if (value != nullptr)
 		{
 			const RESOURCE_TYPE* typed_resource = rtti_cast<const RESOURCE_TYPE>(value);
 			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader"))
 				return nullptr;
 
-			result->set(*typed_resource);
+			result->setBuffer(*typed_resource);
 		}
 		return result;
 	}
@@ -68,7 +68,7 @@ namespace nap
 	// UniformStructInstance
 	//////////////////////////////////////////////////////////////////////////
 
-	std::unique_ptr<StorageUniformInstance> StorageUniformStructInstance::createStorageUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const StorageUniformCreatedCallback& uniformCreatedCallback)
+	std::unique_ptr<StorageUniformBufferInstance> StorageUniformStructInstance::createStorageUniformBufferFromDeclaration(const ShaderVariableDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback)
 	{
 		rtti::TypeInfo declaration_type = declaration.get_type();
 
@@ -154,7 +154,7 @@ namespace nap
 	}
 
 
-	bool StorageUniformStructInstance::setStorageUniformBuffer(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState)
+	bool StorageUniformStructInstance::addStorageUniformBuffer(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformBufferChangedCallback& bufferChangedCallback, utility::ErrorState& errorState)
 	{
 		for (auto& uniform_declaration : structDeclaration.mMembers)
 		{
@@ -175,7 +175,7 @@ namespace nap
 					return false;
 
 				std::unique_ptr<StorageUniformStructBufferInstance> struct_buffer_instance;
-				struct_buffer_instance = createShaderVariableValueInstance<StorageUniformStructBufferInstance, StorageUniformStructBuffer>(resource, *struct_buffer_declaration, errorState);
+				struct_buffer_instance = createStorageUniformBufferInstance<StorageUniformStructBufferInstance, StorageUniformStructBuffer>(resource, *struct_buffer_declaration, bufferChangedCallback, errorState);
 
 				if (struct_buffer_instance == nullptr)
 					return false;
@@ -186,7 +186,7 @@ namespace nap
 					if (!errorState.check(struct_buffer_instance->getBuffer().getCount() == struct_buffer_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
 						return false;
 
-					if (!errorState.check(struct_buffer_instance->getBuffer().mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform"))
+					if (!errorState.check(struct_buffer_instance->getBuffer().mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructGPUBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform"))
 						return false;
 				}
 
@@ -205,31 +205,31 @@ namespace nap
 
 				if (value_declaration->mElementType == EShaderVariableValueType::UInt)
 				{
-					instance_value_buffer = createShaderVariableValueInstance<StorageUniformUIntBufferInstance, StorageUniformUIntBuffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createStorageUniformBufferInstance<StorageUniformUIntBufferInstance, StorageUniformUIntBuffer>(resource, *value_declaration, bufferChangedCallback, errorState);
 				}
 				else if (value_declaration->mElementType == EShaderVariableValueType::Int)
 				{
-					instance_value_buffer = createShaderVariableValueInstance<StorageUniformIntBufferInstance, StorageUniformIntBuffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createStorageUniformBufferInstance<StorageUniformIntBufferInstance, StorageUniformIntBuffer>(resource, *value_declaration, bufferChangedCallback, errorState);
 				}
 				else if (value_declaration->mElementType == EShaderVariableValueType::Float)
 				{
-					instance_value_buffer = createShaderVariableValueInstance<StorageUniformFloatBufferInstance, StorageUniformFloatBuffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createStorageUniformBufferInstance<StorageUniformFloatBufferInstance, StorageUniformFloatBuffer>(resource, *value_declaration, bufferChangedCallback, errorState);
 				}
 				else if (value_declaration->mElementType == EShaderVariableValueType::Vec2)
 				{
-					instance_value_buffer = createShaderVariableValueInstance<StorageUniformVec2BufferInstance, StorageUniformVec2Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createStorageUniformBufferInstance<StorageUniformVec2BufferInstance, StorageUniformVec2Buffer>(resource, *value_declaration, bufferChangedCallback, errorState);
 				}
 				else if (value_declaration->mElementType == EShaderVariableValueType::Vec3)
 				{
-					instance_value_buffer = createShaderVariableValueInstance<StorageUniformVec3BufferInstance, StorageUniformVec3Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createStorageUniformBufferInstance<StorageUniformVec3BufferInstance, StorageUniformVec3Buffer>(resource, *value_declaration, bufferChangedCallback, errorState);
 				}
 				else if (value_declaration->mElementType == EShaderVariableValueType::Vec4)
 				{
-					instance_value_buffer = createShaderVariableValueInstance<StorageUniformVec4BufferInstance, StorageUniformVec4Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createStorageUniformBufferInstance<StorageUniformVec4BufferInstance, StorageUniformVec4Buffer>(resource, *value_declaration, bufferChangedCallback, errorState);
 				}
 				else if (value_declaration->mElementType == EShaderVariableValueType::Mat4)
 				{
-					instance_value_buffer = createShaderVariableValueInstance<StorageUniformMat4BufferInstance, StorageUniformMat4Buffer>(resource, *value_declaration, errorState);
+					instance_value_buffer = createStorageUniformBufferInstance<StorageUniformMat4BufferInstance, StorageUniformMat4Buffer>(resource, *value_declaration, bufferChangedCallback, errorState);
 				}
 				else
 				{
@@ -246,7 +246,7 @@ namespace nap
 					if (!errorState.check(value_buffer_resource->getCount() == value_declaration->mNumElements, "Encountered mismatch in array elements between array in material and array in shader"))
 						return false;
 
-					if (!errorState.check(value_buffer_resource->getBuffer()->mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. StructBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform."))
+					if (!errorState.check(value_buffer_resource->getBuffer()->mDescriptorType == EDescriptorType::Storage, "DescriptorType mismatch. ValueGPUBuffer 'DescriptorType' property must be 'Storage' to be used as a storage uniform."))
 						return false;
 				}
 

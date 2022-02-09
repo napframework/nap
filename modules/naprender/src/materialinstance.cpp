@@ -201,7 +201,7 @@ namespace nap
 			return nullptr;
 
 		// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
-		return &createStorageUniformRootStruct(*declaration, std::bind(&BaseMaterialInstance::onUniformCreated, this));
+		return &createStorageUniformRootStruct(*declaration, std::bind(&BaseMaterialInstance::onStorageUniformCreated, this));
 	}
 
 
@@ -210,6 +210,14 @@ namespace nap
 		// We only store that uniforms have been created. During update() we will update UBO structures. The reason
 		// why we don't do this in place is because we to avoid multiple rebuilds for a single draw.
 		mUniformsCreated = true;
+	}
+
+
+	void BaseMaterialInstance::onStorageUniformCreated()
+	{
+		// We only store that uniforms have been created. During update() we will update UBO structures. The reason
+		// why we don't do this in place is because we to avoid multiple rebuilds for a single draw.
+		mStorageUniformsCreated = true;
 	}
 
 
@@ -337,7 +345,7 @@ namespace nap
 
 				buffer_handle = override_buffer_uniform->getBuffer().getBuffer();
 				ssbo.mStorageUniform = override_buffer_uniform;
-				override_buffer_uniform->setStructBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
+				override_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 			}
 			else
 			{
@@ -346,7 +354,7 @@ namespace nap
 
 				buffer_handle = base_buffer_uniform->getBuffer().getBuffer();
 				ssbo.mStorageUniform = base_buffer_uniform;
-				base_buffer_uniform->setStructBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
+				base_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 			}
 		}
 		else if (declaration_type.is_derived_from(RTTI_OF(StorageUniformValueBufferInstance)))
@@ -361,7 +369,7 @@ namespace nap
 
 				buffer_handle = override_buffer_uniform->getBuffer().getBuffer();
 				ssbo.mStorageUniform = override_buffer_uniform;
-				override_buffer_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
+				override_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 			}
 			else
 			{
@@ -370,7 +378,7 @@ namespace nap
 
 				buffer_handle = base_buffer_uniform->getBuffer().getBuffer();
 				ssbo.mStorageUniform = base_buffer_uniform;
-				base_buffer_uniform->setValueBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
+				base_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
 			}
 		}
 		else
@@ -594,7 +602,7 @@ namespace nap
 		//    for the MaterialInstance, but only for the properties that we've overridden.
 		// 2) After pass 1, we create the UBO, which is a non-hierarchical structure that holds pointers to all leaf elements. These leaf
 		//    elements can point to either Material or MaterialInstance instance uniforms, depending on whether the property was overridden.
-		//    Notice that this also means that this structure should be rebuild when a 'new' override is made at runtime. This is handled in
+		//    Notice that this also means that this structure should be rebuilt when a 'new' override is made at runtime. This is handled in
 		//    update() by rebuilding the UBO when a new uniform is created.
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader->getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
@@ -605,7 +613,7 @@ namespace nap
 			UniformStructInstance* override_struct = nullptr;
 			if (struct_resource != nullptr)
 			{
-				override_struct = &createUniformRootStruct(ubo_declaration, std::bind(&MaterialInstance::onUniformCreated, this));
+				override_struct = &createUniformRootStruct(ubo_declaration, std::bind(&BaseMaterialInstance::onUniformCreated, this));
 				if (!override_struct->addUniformRecursive(ubo_declaration, struct_resource, std::bind(&BaseMaterialInstance::onUniformCreated, this), false, errorState))
 					return false;
 			}
@@ -620,6 +628,7 @@ namespace nap
 
 			mUniformBufferObjects.emplace_back(std::move(ubo));
 		}
+		mUniformsCreated = false;
 
 		// Here we create SSBOs in the same way as we did for UBOs above
 		const std::vector<BufferObjectDeclaration>& subo_declarations = shader->getSUBODeclarations();
@@ -635,8 +644,8 @@ namespace nap
 			StorageUniformStructInstance* override_struct = nullptr;
 			if (struct_resource != nullptr)
 			{
-				override_struct = &createStorageUniformRootStruct(subo_declaration, std::bind(&MaterialInstance::onUniformCreated, this));
-				if (!override_struct->setStorageUniformBuffer(subo_declaration, struct_resource, std::bind(&BaseMaterialInstance::onUniformCreated, this), errorState))
+				override_struct = &createStorageUniformRootStruct(subo_declaration, std::bind(&BaseMaterialInstance::onUniformCreated, this));
+				if (!override_struct->addStorageUniformBuffer(subo_declaration, struct_resource, std::bind(&BaseMaterialInstance::onUniformCreated, this), errorState))
 					return false;
 			}
 
@@ -652,8 +661,7 @@ namespace nap
 			mStorageBufferObjects.emplace_back(std::move(ssbo));
 			++ssbo_index;
 		}
-
-		mUniformsCreated = false;
+		mStorageUniformsCreated = false;
 
 		if (!initSamplers(errorState))
 			return false;
@@ -682,6 +690,11 @@ namespace nap
 			for (UniformBufferObject& ubo : mUniformBufferObjects)
 				rebuildUBO(ubo, findUniform(ubo.mDeclaration->mName));
 
+			mUniformsCreated = false;
+		}
+
+		if (mStorageUniformsCreated)
+		{
 			utility::ErrorState error_state;
 			uint ssbo_index = 0;
 			for (StorageUniformBufferObject& ssbo : mStorageBufferObjects)
@@ -691,8 +704,7 @@ namespace nap
 
 				++ssbo_index;
 			}
-
-			mUniformsCreated = false;
+			mStorageUniformsCreated = false;
 		}
 
 		// The DescriptorSet contains information about all UBOs and samplers, along with the buffers that are bound to it.

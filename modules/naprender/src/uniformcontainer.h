@@ -71,7 +71,7 @@ namespace nap
 
 	protected:
 		UniformStructInstance& createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-		StorageUniformStructInstance& createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
+		StorageUniformStructInstance& createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback);
 		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:

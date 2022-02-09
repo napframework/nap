@@ -60,9 +60,9 @@ namespace nap
 	}
 
 
-	StorageUniformStructInstance& UniformContainer::createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback)
+	StorageUniformStructInstance& UniformContainer::createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback)
 	{
-		std::unique_ptr<StorageUniformStructInstance> instance = std::make_unique<StorageUniformStructInstance>(declaration, uniformChangedCallback);
+		std::unique_ptr<StorageUniformStructInstance> instance = std::make_unique<StorageUniformStructInstance>(declaration, storageUniformCreatedCallback);
 		StorageUniformStructInstance* result = instance.get();
 		mStorageUniformRootStructs.emplace_back(std::move(instance));
 		return *result;

@@ -23,11 +23,8 @@ namespace nap
 	class StorageUniformValueBufferInstance;
 	class StorageUniformStructBufferInstance;
 
-	using StorageUniformChangedCallback = std::function<void()>;
-
 	// Called when the bound buffer resource changes
-	using StorageUniformValueBufferChangedCallback = std::function<void(StorageUniformValueBufferInstance&)>;
-	using StorageUniformStructBufferChangedCallback = std::function<void(StorageUniformStructBufferInstance&)>;
+	using StorageUniformBufferChangedCallback = std::function<void(StorageUniformBufferInstance&)>;
 
 	 /**
 	  * Instantiated version of a nap::StorageUniform.
@@ -121,12 +118,12 @@ namespace nap
 	public:
 
 		// Constructor
-		StorageUniformStructInstance(const ShaderVariableStructDeclaration& declaration, const StorageUniformChangedCallback& storageUniformChangedCallback) :
-			mStorageUniformChangedCallback(storageUniformChangedCallback),
+		StorageUniformStructInstance(const ShaderVariableStructDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback) :
+			mStorageUniformCreatedCallback(storageUniformCreatedCallback),
 			mDeclaration(declaration)
 		{ }
 
-		// Delete copy assignment operator and copy constructor
+		// Copy construction and copy assignment not allowed
 		StorageUniformStructInstance(const StorageUniformStructInstance&) = delete;
 		StorageUniformStructInstance& operator=(const StorageUniformStructInstance&) = delete;
 
@@ -173,17 +170,17 @@ namespace nap
 		/**
 		 * Sets associated uniform buffer to this instance, based on the struct declaration and resource.
 		 */
-		bool setStorageUniformBuffer(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformChangedCallback& uniformChangedCallback, utility::ErrorState& errorState);
+		bool addStorageUniformBuffer(const ShaderVariableStructDeclaration& structDeclaration, const StorageUniformStruct* structResource, const StorageUniformBufferChangedCallback& bufferChangedCallback, utility::ErrorState& errorState);
 
 		/**
-		 * Creates a uniform instance from a uniform declaration. 
+		 * Creates a uniform buffer instance from a uniform declaration. 
 		 * @param declaration the uniform declaration
-		 * @param uniformCreatedCallback callback that is triggered when the uniform is created.
 		 */
-		static std::unique_ptr<StorageUniformInstance> createStorageUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const StorageUniformChangedCallback& uniformChangedCallback);
+		static std::unique_ptr<StorageUniformBufferInstance> createStorageUniformBufferFromDeclaration(const ShaderVariableDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback);
 
 	private:
-		StorageUniformChangedCallback								mStorageUniformChangedCallback;
+		StorageUniformCreatedCallback								mStorageUniformCreatedCallback;
+
 		const ShaderVariableStructDeclaration&						mDeclaration;
 		std::unique_ptr<StorageUniformBufferInstance>				mStorageUniformBuffer;
 	};
@@ -202,10 +199,29 @@ namespace nap
 	{
 		RTTI_ENABLE(StorageUniformInstance)
 	public:
+		// Constructor
+		StorageUniformBufferInstance() { }
+
+		StorageUniformBufferInstance(const StorageUniformBufferChangedCallback& bufferChangedCallback) :
+			mBufferChangedCallback(bufferChangedCallback) { }
+
 		/**
 		 * @return if the value buffer is set
 		 */
 		virtual bool hasBuffer() const = 0;
+
+		/**
+		 * 
+		 */
+		void setBufferChangedCallback(const StorageUniformBufferChangedCallback& bufferChangedCallback) const { mBufferChangedCallback = bufferChangedCallback; }
+
+	protected:
+		/**
+		 * Called when the buffer changes
+		 */
+		void raiseChanged() { if (mBufferChangedCallback) mBufferChangedCallback(*this); }
+
+		mutable StorageUniformBufferChangedCallback					mBufferChangedCallback;
 	};
 
 
@@ -229,15 +245,13 @@ namespace nap
 			mDeclaration(&declaration)
 		{ }
 
+		StorageUniformStructBufferInstance(const ShaderVariableStructBufferDeclaration& declaration, const StorageUniformBufferChangedCallback& bufferChangedCallback) :
+			mDeclaration(&declaration), StorageUniformBufferInstance(bufferChangedCallback)
+		{ }
+
 		// Copy construction and copy assignment not allowed
 		StorageUniformStructBufferInstance(const StorageUniformStructBufferInstance&) = delete;
 		StorageUniformStructBufferInstance& operator=(const StorageUniformStructBufferInstance&) = delete;
-
-		/**
-		 * Updates the uniform value from a resource, data is not pushed immediately.
-		 * @param resource resource to copy data from.
-		 */
-		void set(const StorageUniformStructBuffer& resource)				{ mBuffer = resource.mBuffer; }
 
 		/**
 		 * Binds a new buffer to the uniform instance
@@ -249,6 +263,12 @@ namespace nap
 			mBuffer = &buffer;
 			raiseChanged();
 		}
+
+		/**
+		 * Updates the buffer from a resource
+		 * @param resource resource to set buffer from.
+		 */
+		void setBuffer(const StorageUniformStructBuffer& resource)			{ mBuffer = resource.mBuffer; }
 
 		/**
 		 * @return declaration used to create this instance. 
@@ -263,29 +283,16 @@ namespace nap
 		/**
 		 * @return value buffer
 		 */
-		virtual StructGPUBuffer& getBuffer()							{ assert(mBuffer != nullptr); return *mBuffer; };
+		virtual StructGPUBuffer& getBuffer()								{ assert(mBuffer != nullptr); return *mBuffer; };
 
 		/**
 		 * @return if the value buffer is set
 		 */
 		virtual bool hasBuffer() const										{ return mBuffer != nullptr; }
 
-		/**
-		 * TODO: Too specific. Handle instances should be decoupled from uniforms. New descriptor type StorageUniform
-		 */
-		void setStructBufferChangedCallback(const StorageUniformStructBufferChangedCallback& structBufferChangedCallback) const { mStructBufferChangedCallback = structBufferChangedCallback; }
-
-	protected:
-		/**
-		 * Called when the buffer changes
-		 */
-		void raiseChanged()													{ if (mStructBufferChangedCallback) mStructBufferChangedCallback(*this); }
-
 	private:
 		const ShaderVariableStructBufferDeclaration* mDeclaration;
 		rtti::ObjectPtr<StructGPUBuffer> mBuffer;
-
-		mutable StorageUniformStructBufferChangedCallback mStructBufferChangedCallback;
 	};
 
 
@@ -301,10 +308,13 @@ namespace nap
 	class NAPAPI StorageUniformValueBufferInstance : public StorageUniformBufferInstance
 	{
 		RTTI_ENABLE(StorageUniformBufferInstance)
-
 	public:
+		// Constructor
 		StorageUniformValueBufferInstance(const ShaderVariableValueArrayDeclaration& declaration) :
 			mDeclaration(&declaration) { }
+
+		StorageUniformValueBufferInstance(const ShaderVariableValueArrayDeclaration& declaration, const StorageUniformBufferChangedCallback& bufferChangedCallback) :
+			mDeclaration(&declaration), StorageUniformBufferInstance(bufferChangedCallback) { }
 
 		/**
 		 * @return uniform declaration.
@@ -326,21 +336,8 @@ namespace nap
 		 */
 		virtual bool hasBuffer() const = 0;
 
-		/**
-		 * TODO: Too specific. Handle instances should be decoupled from uniforms. New descriptor type StorageUniform
-		 */
-		void setValueBufferChangedCallback(const StorageUniformValueBufferChangedCallback& valueBufferChangedCallback) const { mValueBufferChangedCallback = valueBufferChangedCallback; }
-
 	protected:
-		/**
-		 * Called when the buffer changes
-		 */
-		void raiseChanged()													{ if (mValueBufferChangedCallback) mValueBufferChangedCallback(*this); }
-
 		const ShaderVariableValueArrayDeclaration* mDeclaration;
-
-	private:
-		mutable StorageUniformValueBufferChangedCallback mValueBufferChangedCallback;
 	};
 
 
@@ -357,14 +354,12 @@ namespace nap
 		RTTI_ENABLE(StorageUniformValueBufferInstance)
 
 	public:
+		// Constructor
 		TypedStorageUniformValueBufferInstance(const ShaderVariableValueArrayDeclaration& declaration) :
 			StorageUniformValueBufferInstance(declaration) { }
 
-		/**
-		 * Updates the uniform value from a resource, data is not pushed immediately.
-		 * @param resource resource to copy data from.
-		 */
-		void set(const TypedStorageUniformValueBuffer<T>& resource)			{ mBuffer = resource.mBuffer; }
+		TypedStorageUniformValueBufferInstance(const ShaderVariableValueArrayDeclaration& declaration, const StorageUniformBufferChangedCallback& bufferChangedCallback) :
+			StorageUniformValueBufferInstance(declaration, bufferChangedCallback) { }
 
 		 /**
 		  * Binds a new buffer to the uniform instance
@@ -373,9 +368,15 @@ namespace nap
 		void setBuffer(TypedValueGPUBuffer<T>& buffer);
 
 		/**
+		 * Updates thebuffer from a resource.
+		 * @param resource resource to set buffer from.
+		 */
+		void setBuffer(const TypedStorageUniformValueBuffer<T>& resource)	{ mBuffer = resource.mBuffer; }
+
+		/**
 		 * @return buffer
 		 */
-		const TypedValueGPUBuffer<T>& getTypedValueBuffer() const			{ assert(mBuffer != nullptr); return *mBuffer; }
+		const TypedValueGPUBuffer<T>& getTypedBuffer() const				{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return buffer
@@ -444,14 +445,14 @@ namespace nap
 		if (declaration == nullptr)
 			return nullptr;
 
-		std::unique_ptr<StorageUniformInstance> new_instance = createStorageUniformFromDeclaration(*declaration, mStorageUniformChangedCallback);
+		std::unique_ptr<StorageUniformBufferInstance> new_instance = createStorageUniformBufferFromDeclaration(*declaration, mStorageUniformCreatedCallback);
 		T* result = rtti_cast<T>(new_instance.get());
 		assert(result != nullptr);
-		mStorageUniformBuffers.emplace_back(std::move(new_instance));
+		mStorageUniformBuffer = std::move(new_instance);
 
 		// Notify listeners
-		//if (mUniformCreatedCallback)
-		//	mUniformCreatedCallback();
+		if (mStorageUniformCreatedCallback)
+			mStorageUniformCreatedCallback();
 		return result;
 	}
 

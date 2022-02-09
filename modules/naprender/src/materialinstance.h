@@ -147,6 +147,7 @@ namespace nap
 		bool initInternal(RenderService& renderService, utility::ErrorState& errorState);
 
 		void onUniformCreated();
+		void onStorageUniformCreated();
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
 		void onStorageUniformChanged(int storageBufferIndex, StorageUniformInstance& storageUniformInstance);
 
@@ -175,6 +176,7 @@ namespace nap
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerWriteDescriptors;				// List of sampler images, used to update Descriptor Sets.
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
+		bool									mStorageUniformsCreated = false;		// Set when a storage uniform instance is created in between draws
 	};
 
 	/**

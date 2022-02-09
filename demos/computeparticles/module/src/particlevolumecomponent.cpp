@@ -252,8 +252,8 @@ namespace nap
 			vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
 
 		// Get storage buffer handle
-		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniform<StorageUniformVec4BufferInstance>(uniform::vertices);
-		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedValueBuffer().getBuffer();
+		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniformBuffer<StorageUniformVec4BufferInstance>(uniform::vertices);
+		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedBuffer().getBuffer();
 
 		// Override position vertex attribute buffer with storage buffer
 		std::vector<VkBuffer> vertex_buffers = mRenderableMesh.getVertexBuffers();

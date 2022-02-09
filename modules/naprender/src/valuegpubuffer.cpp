@@ -42,7 +42,7 @@ RTTI_END_CLASS
 // GPUBuffer
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UIntGPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UIntGenericGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::UIntGPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::UIntGPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
@@ -51,7 +51,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UIntGPUBuffer)
 	RTTI_PROPERTY("Clear", &nap::UIntGPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IntGPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IntGenericGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::IntGPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::IntGPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
@@ -60,7 +60,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IntGPUBuffer)
 	RTTI_PROPERTY("Clear", &nap::IntGPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FloatGPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FloatGenericGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::FloatGPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::FloatGPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
@@ -69,7 +69,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FloatGPUBuffer)
 	RTTI_PROPERTY("Clear", &nap::FloatGPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec2GPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec2GenericGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::Vec2GPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::Vec2GPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
@@ -78,7 +78,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec2GPUBuffer)
 	RTTI_PROPERTY("Clear", &nap::Vec2GPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec3GPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec3GenericGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::Vec3GPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::Vec3GPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
@@ -87,7 +87,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec3GPUBuffer)
 	RTTI_PROPERTY("Clear", &nap::Vec3GPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec4GPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec4GenericGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::Vec4GPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::Vec4GPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
@@ -96,7 +96,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec4GPUBuffer)
 	RTTI_PROPERTY("Clear", &nap::Vec4GPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Mat4GPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Mat4GenericGPUBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Count", &nap::Mat4GPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::Mat4GPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)

@@ -112,7 +112,7 @@ namespace nap
 			{
 				if (fp->mName == name)
 				{
-					const auto* resolved = rtti_cast<const TypedShaderVariableFillPolicyEntry<T>>(fp.get());
+					const auto* resolved = rtti_cast<const TypedValueFillPolicyEntry<T>>(fp.get());
 					if (resolved != nullptr)
 						return resolved->mValueFillPolicy.get();
 

@@ -69,7 +69,7 @@ namespace nap
 		{
 			if (mStorageUniformBuffer->mName == name)
 				return mStorageUniformBuffer.get();
-			return nullptr;
 		}
+		return nullptr;
 	}
 }

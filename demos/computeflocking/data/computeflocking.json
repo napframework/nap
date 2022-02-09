@@ -1557,7 +1557,7 @@
             "mID": "ColorTextureShader"
         },
         {
-            "Type": "nap::UIntGPUBuffer",
+            "Type": "nap::UIntGenericGPUBuffer",
             "mID": "GridBuffer",
             "Count": 1000,
             "Usage": "Static",

@@ -169,7 +169,7 @@ namespace nap
 		/**
 		 * @return declaration used to create this instance. 
 		 */
-		virtual const ShaderVariableDeclaration& getDeclaration() const override				{ return mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override		{ return mDeclaration; }
 
 	private:
 		const ShaderVariableStructArrayDeclaration&				mDeclaration;

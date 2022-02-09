@@ -303,13 +303,21 @@ namespace nap
 	// GPU value buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using UIntGPUBuffer			= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Generic>;
-	using IntGPUBuffer			= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Generic>;
-	using FloatGPUBuffer		= TypedValuePropertyGPUBuffer<float,		EValueGPUBufferProperty::Generic>;
-	using Vec2GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec2,	EValueGPUBufferProperty::Generic>;
-	using Vec3GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Generic>;
-	using Vec4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Generic>;
-	using Mat4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::mat4,	EValueGPUBufferProperty::Generic>;
+	using UIntGPUBuffer			= TypedValueGPUBuffer<uint>;
+	using IntGPUBuffer			= TypedValueGPUBuffer<int>;
+	using FloatGPUBuffer		= TypedValueGPUBuffer<float>;
+	using Vec2GPUBuffer			= TypedValueGPUBuffer<glm::vec2>;
+	using Vec3GPUBuffer			= TypedValueGPUBuffer<glm::vec3>;
+	using Vec4GPUBuffer			= TypedValueGPUBuffer<glm::vec4>;
+	using Mat4GPUBuffer			= TypedValueGPUBuffer<glm::mat4>;
+
+	using UIntGenericGPUBuffer	= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Generic>;
+	using IntGenericGPUBuffer	= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Generic>;
+	using FloatGenericGPUBuffer	= TypedValuePropertyGPUBuffer<float,		EValueGPUBufferProperty::Generic>;
+	using Vec2GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::vec2,	EValueGPUBufferProperty::Generic>;
+	using Vec3GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Generic>;
+	using Vec4GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Generic>;
+	using Mat4GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::mat4,	EValueGPUBufferProperty::Generic>;
 
 	using UIntVertexBuffer		= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Vertex>;
 	using IntVertexBuffer		= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Vertex>;

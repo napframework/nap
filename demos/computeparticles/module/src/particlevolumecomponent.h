@@ -101,17 +101,17 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * 
+		 * Draws this component instance
 		 */
 		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 		/**
-		 * 
+		 * Computes a new component update 
 		 */
 		void compute();
 
 		/**
-		 * 
+		 * @return the number of particles
 		 */
 		int getNumParticles() const					{ return mParticleMesh->mNumParticles; }
 
