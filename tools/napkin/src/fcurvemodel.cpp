@@ -133,10 +133,11 @@ const PropertyPath FCurveAdapter::pointPath(int pointIndex)
 	assert(AppContext::isAvailable());
 	return {sourceCurve(), nap::rtti::Path::fromString(pointPath), *AppContext::get().getDocument()};
 }
- 
+
+
 const QColor FCurveAdapter::color() const
 {
-	return QColor(200, 105, 105);
+	return QColor::fromRgb(0xFF, 0x50, 0x50);
 }
 
 
