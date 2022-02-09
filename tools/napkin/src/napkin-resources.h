@@ -19,8 +19,8 @@ namespace napkin
 	inline constexpr const char* QRC_ICONS_FRAME_SELECTION_V        = ":/icons/frame-selection-v.png";
 	inline constexpr const char* QRC_ICONS_FRAME_SELECTION          = ":/icons/frame-selection.png";
 	inline constexpr const char* QRC_ICONS_LINK                     = ":/icons/link.png";
-	inline constexpr const char* QRC_ICONS_NAP_LOGO                 = ":/icons/nap-logo.png";
 	inline constexpr const char* QRC_ICONS_NAPKIN_SPLASH            = ":/icons/napkin-splash.png";
+	inline constexpr const char* QRC_ICONS_NAP_ICON					= ":/icons/icon.png";
 	inline constexpr const char* QRC_ICONS_RTTIOBJECT               = ":/icons/rttiobject.png";
 	inline constexpr const char* QRC_ICONS_SCENE                    = ":/icons/scene.png";
 	inline constexpr const char* QRC_ICONS_TANGENTS_ALIGNED         = ":/icons/tangents-aligned.png";

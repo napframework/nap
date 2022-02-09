@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
 	}
 
 	// Create main window and run
-	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
+	app.setWindowIcon(QIcon(QRC_ICONS_NAP_ICON));
 	std::unique_ptr<MainWindow> w = std::make_unique<MainWindow>();
 	w->show();
 	splash.finish(w.get());
