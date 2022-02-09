@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "publickey.h"
+#include "signingscheme.h"
  
  // External Includes
 #include <nap/service.h>
@@ -124,6 +125,46 @@ namespace nap
 		 * @return if this app has a valid license
 		 */
 		bool validateLicense(const std::string& publicKey, LicenseInformation& outInformation, utility::ErrorState& error);
+
+		/**
+		 * Validates the user provided license using a public RSA key.
+		 * Call this somewhere in your application, preferably on init(), to ensure the application has a valid license.
+		 *
+		 * The license is valid when:
+		 * - a .license and .key file is found on service initialization (using the LicenseConfiguration)
+		 * - is can be verified using the provided public key
+		 * - it is not expired
+		 *
+		 * Note that a license, without an expiration date, is considered valid when it passes verification.
+		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
+		 *
+		 * @param publicKey public key, generated using the 'licensegenerator'
+		 * @param signingScheme signing scheme used during license creation
+		 * @param outInformation validated user license information, empty if license is invalid
+		 * @param error explains why the license is not valid
+		 * @return if this app has a valid license
+		 */
+		bool validateLicense(const nap::PublicKey& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error);
+
+		/**
+		 * Validates the user provided license using a public RSA key.
+		 * Call this somewhere in your application, preferably on init(), to ensure the application has a valid license.
+		 *
+		 * The license is valid when:
+		 * - a .license and .key file is found on initialization (using the LicenseConfiguration)
+		 * - is can be verified using the provided public key
+		 * - it is not expired
+		 *
+		 * Note that a license, without an expiration date, is considered valid when it passes verification.
+		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
+		 *
+		 * @param publicKey public key, generated using the 'licensegenerator'
+		 * @param signingScheme signing scheme used during license creation
+		 * @param outInformation validated user license information, empty if license is invalid
+		 * @param error explains why the license is not valid
+		 * @return if this app has a valid license
+		 */
+		bool validateLicense(const std::string& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error);
 
 		/**
 		 * Returns if the user provided a license. Does not mean it is valid.
