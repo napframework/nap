@@ -19,17 +19,22 @@ napkin::FileType::FileType(const nap::rtti::EPropertyFileType filetype, const QS
 { }
 
 
-napkin::Icon::Icon(const QString& path) : mIcon(path)
-{
-	if (mIcon.isNull())
-		return;
+napkin::Icon::Icon(const QString& path) : mPath(path), mIcon(path)
+{ }
 
-	QImage img(path);
-	assert(!img.isNull());
-	img.invertPixels(QImage::InvertMode::InvertRgb);
-	QPixmap pix;
-	pix.convertFromImage(img);
-	mIconInverted = QIcon(pix);
+
+QIcon napkin::Icon::inverted() const
+{
+	assert(!mIcon.isNull());
+	if (mIconInverted.isNull())
+	{
+		QImage img(mPath);
+		QPixmap pix;
+		img.invertPixels(QImage::InvertMode::InvertRgb);
+		pix.convertFromImage(img);
+		mIconInverted = QIcon(pix);
+	}
+	return mIconInverted;
 }
 
 
@@ -58,20 +63,17 @@ const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::Object& object) co
 
 const QIcon napkin::ResourceFactory::getIcon(const QString& path) const
 {
-	// Map that holds all the loaded icons
-	static std::unordered_map<std::string, Icon> icons;
-
 	// Find icon, if not part of set add & update iterator
-	auto it = icons.find(path.toStdString());
-	if (it == icons.end())
+	auto it = mIcons.find(path.toStdString());
+	if (it == mIcons.end())
 	{
-		auto em = icons.emplace(std::make_pair(path.toStdString(), napkin::Icon(path)));
+		auto em = mIcons.emplace(std::make_pair(path.toStdString(), napkin::Icon(path)));
 		it = em.first;
 	}
 
 	// Now return based on style, if present
 	const Theme* theme = AppContext::get().getThemeManager().getCurrentTheme();
-	return theme != nullptr && theme->invertIcons() ? it->second.mIconInverted : it->second.mIcon;
+	return theme != nullptr && theme->invertIcons() ? it->second.inverted() : it->second.get();
 }
 
 

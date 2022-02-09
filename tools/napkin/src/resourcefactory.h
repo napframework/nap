@@ -23,13 +23,19 @@ namespace napkin
 	};
 
 	/**
-	 * Icon helper struct
+	 * Icon helper class.
 	 */
-	struct Icon
+	class Icon
 	{
+	public:
 		Icon(const QString& path);
+		QIcon get() const				{ return mIcon;  }
+		QIcon inverted() const;
+		bool valid() const				{ return !mIcon.isNull(); }
+	private:
+		QString mPath;
 		QIcon mIcon;
-		QIcon mIconInverted;
+		mutable QIcon mIconInverted;
 	};
 
     /**
@@ -66,5 +72,8 @@ namespace napkin
          * @return
          */
 		const FileType& getFiletype(const nap::rtti::Property& prop) const;
+
+		// Map that holds all the loaded icons
+		mutable std::unordered_map<std::string, Icon> mIcons;
     };
 }
