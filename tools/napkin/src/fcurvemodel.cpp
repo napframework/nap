@@ -137,7 +137,7 @@ const PropertyPath FCurveAdapter::pointPath(int pointIndex)
 
 const QColor FCurveAdapter::color() const
 {
-	return QColor::fromRgb(0xFF, 0x50, 0x50);
+	return QColor::fromRgb(0xFF, 0xFF, 0xFF);
 }
 
 
