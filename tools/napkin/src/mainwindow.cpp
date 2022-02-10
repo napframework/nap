@@ -23,7 +23,6 @@ void MainWindow::bindSignals()
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
-	connect(ctx, &AppContext::progressChanged, this, &MainWindow::onBlockingProgress);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
@@ -39,23 +38,31 @@ void MainWindow::unbindSignals()
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
-	disconnect(ctx, &AppContext::progressChanged, this, &MainWindow::onBlockingProgress);
 }
 
 
 void MainWindow::showEvent(QShowEvent* event)
 {
 	BaseWindow::showEvent(event);
-
-	if (mFirstShowEvent)
+	if (!mShown)
 	{
 		QSettings settings;
 		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 		getContext().restoreUI();
 		rebuildRecentMenu();
-		mFirstShowEvent = false;
+		mShown = true;
 	}
+	connect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress, Qt::UniqueConnection);
 }
+
+
+void napkin::MainWindow::hideEvent(QHideEvent* event)
+{
+	mProgressDialog.reset(nullptr);
+	disconnect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress);
+	BaseWindow::hideEvent(event);
+}
+
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -64,8 +71,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		event->ignore();
 		return;
 	}
-
-	unbindSignals();
 	BaseWindow::closeEvent(event);
 }
 
@@ -186,6 +191,7 @@ MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 
 MainWindow::~MainWindow()
 {
+	unbindSignals();
 }
 
 void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
@@ -247,7 +253,7 @@ void MainWindow::onLog(nap::LogMessage msg)
 		showError(msg);
 }
 
-void MainWindow::onBlockingProgress(float fraction, const QString& message)
+void MainWindow::onProgress(float fraction, const QString& message)
 {
 	if (mProgressDialog == nullptr)
 	{

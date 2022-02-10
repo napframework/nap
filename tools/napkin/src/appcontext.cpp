@@ -309,12 +309,9 @@ void AppContext::restoreUI()
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
-	if (!getProjectInfo() && mOpenRecentProjectAtStartup)
+	if (getProjectInfo() == nullptr && mOpenRecentProjectAtStartup)
 	{
-		QTimer::singleShot(100, [this]()
-		{
-			openRecentProject();
-		});
+		openRecentProject();
 	}
 }
 
