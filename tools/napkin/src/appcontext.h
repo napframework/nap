@@ -267,16 +267,6 @@ namespace napkin
 		 */
 		void setOpenRecentProjectOnStartup(bool b);
 
-		/**
-		 * Set to exit upon failure loading any project
-		 */
-		void setExitOnLoadFailure(bool b);
-
-		/**
-		 * Set to exit upon success loading any project
-		 */
-		void setExitOnLoadSuccess(bool b);
-
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -447,8 +437,6 @@ namespace napkin
 		nap::Core mCore;															// The nap::Core
 		ThemeManager mThemeManager;			 										// The theme manager
 		ResourceFactory mResourceFactory;											// Le resource factory
-		bool mExitOnLoadFailure = false;											// Whether to exit on any project load failure
-		bool mExitOnLoadSuccess = false;											// Whether to exit on any project load success
 		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
 
 		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;					// Clone of core project info

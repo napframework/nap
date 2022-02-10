@@ -117,9 +117,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	if (!mCore.initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
 		nap::Logger::error(err.toString());
-		if (mExitOnLoadFailure)
-			exit(1);
-
 		progressChanged(1.0f);
 		return nullptr;
 	}
@@ -137,25 +134,12 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	coreInitialized();
 	progressChanged(0.75f);
 
-	// Exit after successful load if requested
-    if (mExitOnLoadSuccess) 
-	{
-		nap::Logger::info("Loaded successfully, exiting as requested");
-		progressChanged(1.0f);
-        exit(EXIT_ON_SUCCESS_EXIT_CODE);
-    }
-	addRecentlyOpenedProject(projectFilename);
-
 	// Load document (data file)
 	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
 	else
-	{
 		nap::Logger::error("No data file specified");
-		if (mExitOnLoadFailure)
-			exit(1);
-	}
 
 	// All good
 	progressChanged(1.0f);
@@ -297,7 +281,6 @@ const QString AppContext::getLastOpenedProjectFilename()
 	auto recent = getRecentlyOpenedProjects();
 	if (recent.isEmpty())
 		return {};
-
 	return recent.last();
 }
 
@@ -529,17 +512,5 @@ void napkin::AppContext::closeServiceConfiguration()
 void AppContext::setOpenRecentProjectOnStartup(bool b)
 {
 	mOpenRecentProjectAtStartup = b;
-}
-
-
-void AppContext::setExitOnLoadFailure(bool b)
-{
-	mExitOnLoadFailure = b;
-}
-
-
-void AppContext::setExitOnLoadSuccess(bool b)
-{
-	mExitOnLoadSuccess = b;
 }
 
