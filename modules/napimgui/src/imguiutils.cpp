@@ -28,11 +28,11 @@ namespace ImGui
 	}
 
 
-	bool ImageButton(const nap::Icon& icon, const char* text, const ImVec2& tooltip_offset, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+	bool ImageButton(const nap::Icon& icon, const char* text, const ImVec2& tooltip_offset, const ImVec4& bg_col, const ImVec4& tint_col)
 	{
-		float height = ImGui::GetFontSize();
+		float height = ImGui::GetFrameHeight();
 		float width = (height / static_cast<float>(icon.getTexture().getHeight())) * static_cast<float>(icon.getTexture().getWidth());
-		return ImageButton(icon, { width, height }, text, tooltip_offset, frame_padding, bg_col, tint_col);
+		return ImageButton(icon, { width, height }, text, tooltip_offset, 0, bg_col, tint_col);
 	}
 
 

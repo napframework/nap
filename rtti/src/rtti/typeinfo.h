@@ -173,11 +173,12 @@ namespace nap
 			Font			= 9		///< Points to a true type font, must be used with EPropertyMetaData::FileLink
 		};
 
-		inline EPropertyMetaData NAPAPI operator&(EPropertyMetaData a, EPropertyMetaData b)
+		inline EPropertyMetaData operator&(EPropertyMetaData a, EPropertyMetaData b)
 		{
 			return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
 		}
-		inline EPropertyMetaData NAPAPI operator|(EPropertyMetaData a, EPropertyMetaData b)
+
+		inline EPropertyMetaData operator|(EPropertyMetaData a, EPropertyMetaData b)
 		{
 			return static_cast<EPropertyMetaData>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
 		}
@@ -185,7 +186,7 @@ namespace nap
 		/**
 		 * Helper function to determine whether the specified type is a primitive type (i.e. int, float, string, etc)
 		 */
-		inline bool NAPAPI isPrimitive(const rtti::TypeInfo& type)
+		inline bool isPrimitive(const rtti::TypeInfo& type)
 		{
 			return type.is_arithmetic() || type.is_enumeration() || type == rtti::TypeInfo::get<std::string>();
 		}
@@ -193,7 +194,7 @@ namespace nap
 		/**
 		 * Helper function to check whether a property has the specified flag set
 		 */
-		inline bool NAPAPI hasFlag(const rtti::Property& property, EPropertyMetaData flags)
+		inline bool hasFlag(const rtti::Property& property, EPropertyMetaData flags)
 		{
 			const rtti::Variant& meta_data = property.get_metadata("flags");
 			if (!meta_data.is_valid())
@@ -204,18 +205,16 @@ namespace nap
 		}
 
 		/**
-		 * Helper function to check whether a property has the specified flag set
+		 * Helper function to check whether a property is associated with a specific type of file
 		 */
-		inline bool NAPAPI isFileType(const rtti::Property &property, EPropertyFileType filetype)
+		inline bool isFileType(const rtti::Property &property, EPropertyFileType filetype)
 		{
 			const rtti::Variant& meta_data = property.get_metadata("filetype");
 			if (!meta_data.is_valid())
 				return false;
-			bool ok;
-			EPropertyFileType ftype = meta_data.convert<EPropertyFileType >(&ok);
-			if (!ok)
-				return false;
-			return ftype == filetype;
+
+			uint8_t current_type = meta_data.convert<uint8_t>();
+			return current_type == (uint8_t)filetype;
 		}
 
 		/**

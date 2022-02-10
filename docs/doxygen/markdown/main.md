@@ -1,7 +1,5 @@
-NAP Framework
+Welcome
 =======================
-
-# Description
 
 [NAP framework](https://www.napframework.com) is an [open source](https://github.com/napframework), low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
 

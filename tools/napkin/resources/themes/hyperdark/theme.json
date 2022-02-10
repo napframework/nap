@@ -1,0 +1,40 @@
+{
+  "name": "Hyper Dark",
+  "stylesheet": "style.qss",
+  "logColors": 
+  {
+    "fine": "#AEACA4",
+    "debug": "#AEACA4",
+    "info": "#CDCDC3",
+    "warn": "#FFEA30",
+    "error": "#FF347D",
+    "fatal": "#FF347D"
+  },
+  "colors": 
+  {
+    "highlight1": "#2958FF",
+    "highlight2": "#DBFF00",
+    "highlight3": "#FFEA30",
+    "background1": "#121212",
+    "background2": "#000000",
+    "dark1": "#3F3F3F",
+    "dark2": "#3F3F3F",
+    "front1": "#8D8B84",
+    "front2": "#AEACA4",
+    "front3": "#CDCDC3",
+    "front4": "#FFFFFF",
+    "header": "#262626",
+    "status": "#444",
+    "instancePropertyOverride": "#FFEA30",
+    "dimmedItem": "#AEACA4"
+  },
+  "fonts":
+  {
+    "font1": "Manrope",
+    "font2": "Manrope"
+  },
+  "icons": 
+  {
+    "invert": false
+  }
+}

@@ -164,7 +164,7 @@ namespace nap
 		ImGui::Separator();
 
 		if (total_count == 0)
-			ImGui::TextColored(ImVec4(mGuiService->getColors().mFront2Color), "No data");
+			ImGui::TextColored(mGuiService->getPalette().mFront2Color, "No data");
 
 		while (offset < total_count)
 		{

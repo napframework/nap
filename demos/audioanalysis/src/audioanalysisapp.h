@@ -87,8 +87,6 @@ namespace nap
             EAudioDevice, EAudioFile
         };
         InputSource mCurrentInputSource = EAudioFile;                   //< Indicates wether input from the audio device or a file will be analyzed
-        InputSource mInputSource = EAudioFile;                          //< GUI helper variable for the user to select a new input source
-        
-        RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };    //< GUI text highlight color
+        InputSource mInputSource = EAudioFile;                          //< GUI helper variable for the user to select a new input 
 	};
 }

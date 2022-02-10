@@ -19,7 +19,7 @@ namespace nap
 {
 	/**
 	 * Utility class that runs a nap::BaseApp until BaseApp::quit() is called or
-	 * AppRunner::stop(). The APP template argumentshould be derived from
+	 * AppRunner::stop(). The APP template argument should be derived from
 	 * nap::BaseApp, HANDLER should be of type nap::BaseAppEventHandler()
 	 *
 	 * When creating an AppRunner with those two template arguments the app is created
@@ -143,19 +143,14 @@ namespace nap
 		}
 
 		// Initialize the various services
-		if (!mCore.initializeServices(error))
-		{
-			mCore.shutdownServices();
-			error.fail("Failed to initialize services");
+		// Bail if handle is invalid, this means service initialization failed
+		Core::ServicesHandle handle = mCore.initializeServices(error);
+		if (handle == nullptr)
 			return false;
-		}
 
 #ifdef NAP_ENABLE_PYTHON
 		if (!mCore.initializePython(error))
-		{
-			mCore.shutdownServices();
 			return false;
-		}
 #endif
 		// Change current working directory to directory that contains the data file
 		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
@@ -165,30 +160,21 @@ namespace nap
 		// Ensure project data is available
 		if (!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
 			mCore.getProjectInfo()->getProjectDir().c_str()))
-		{
-			mCore.shutdownServices();
 			return false;
-		}
 
 		// Load project data
 		std::string data_file = utility::getFileName(mCore.getProjectInfo()->getDataFile());
 		nap::Logger::info("Loading data: %s", data_file.c_str());
 		if (!error.check(mCore.getResourceManager()->loadFile(data_file, error),
 			"Failed to load data: %s", data_file.c_str()))
-		{
-			mCore.shutdownServices();
 			return false;
-		}
 
 		// Watch the data directory
 		mCore.getResourceManager()->watchDirectory(data_dir);
 
 		// Initialize application
 		if(!error.check(app.init(error), "Unable to initialize application"))
-		{
-			mCore.shutdownServices();
 			return false;
-		}
 
 		// Start event handler
 		app_event_handler.start();
@@ -231,9 +217,6 @@ namespace nap
 
 		// Shutdown
 		mExitCode = app.shutdown();
-
-		// Shutdown core
-		mCore.shutdownServices();
 
 		// Message successful exit
 		return true;

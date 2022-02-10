@@ -74,6 +74,5 @@ namespace nap
         ObjectPtr<EntityInstance> mPythonEntity = nullptr;              ///< Entity containing the PythonScriptComponent
         float mValue = 0;												///< Value controlled directly by the ImGui slider
 		bool mPythonPrint = true;										///< If python prints the value to console
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 	};
 }
