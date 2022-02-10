@@ -62,7 +62,8 @@ namespace pipins
         void setPwmRange(int range);
 
         /**
-         * This sets the divisor for the PWM clock.
+         * This sets the divisor for the PWM clock. PWM frequency is determined by
+         * divisor using the following formula : 19.2 Mhz / divisor
          * @param divisor
          */
         void setPwmClock(int divisor);
@@ -97,12 +98,13 @@ namespace pipins
          * @param pin the pin
          * @param value the value HIGH or LOW (1 or 0) depending on the logic level at the pin.
          */
-        void setDigitalWrite(int pin, EPinValue value);
+        void setDigitalWrite(int pin, EDigitalPinValue value);
 
         /**
          * This writes the given value to the supplied analog pin.
+         * The analog input and output are 8-bit devices, so have a range of 0 to 255 when we read/write them
          * @param pin the pin
-         * @param value the value
+         * @param value the value between 0-255
          */
         void setAnalogWrite(int pin, int value);
 
@@ -122,7 +124,7 @@ namespace pipins
          * @param pin the pin
          * @param pud PUD_OFF, (no pull up/down), PUD_DOWN (pull to ground) or PUD_UP (pull to 3.3v)
          */
-        void setPullUpDnControl(int pin, int pud);
+        void setPullUpDnControl(int pin, EPUDMode pud);
 
         /**
          * Writes the value to the PWM register for the given pin.
@@ -139,7 +141,7 @@ namespace pipins
          * @param pin the value
          * @return will be HIGH or LOW (1 or 0) depending on the logic level at the pin.
          */
-        EPinValue getDigitalRead(int pin);
+        EDigitalPinValue getDigitalRead(int pin);
 
         /**
          * This returns the value read on the supplied analog input pin.

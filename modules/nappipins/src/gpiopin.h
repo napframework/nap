@@ -57,13 +57,13 @@ namespace pipins
          * The internal pull up/down resistors have a value of approximately 50KΩ on the Raspberry Pi.
          * @param pud PUD_OFF, (no pull up/down), PUD_DOWN (pull to ground) or PUD_UP (pull to 3.3v)
          */
-        void setPullUpDnControl(int pud);
+        void setPullUpDnControl(EPUDMode pud);
 
         /**
          * Writes the value to the PWM register for the given pin.
          * The Raspberry Pi has one on-board PWM pin, pin 1 (BMC_GPIO 18, Phys 12) and the range is 0-1024.
          * Other PWM devices may have other PWM ranges.
-         * @param value the value
+         * @param value the value between 0-1024
          */
         void setPwmValue(int value);
 
@@ -72,11 +72,12 @@ namespace pipins
          * It will be HIGH or LOW (1 or 0) depending on the logic level at the pin.
          * @return will be HIGH or LOW (1 or 0) depending on the logic level at the pin.
          */
-        EPinValue getDigitalRead();
+        EDigitalPinValue getDigitalRead();
 
         /**
          * This returns the value read on the supplied analog input pin.
-         * @return the value of the analog pin
+         * The analog input and output are 8-bit devices, so have a range of 0 to 255 when we read/write them.
+         * @return the value of the analog pin between 0-255
          */
         int getAnalogRead();
 
@@ -84,11 +85,12 @@ namespace pipins
          * Writes the value HIGH or LOW (1 or 0) to the given pin which must have been previously set as an output.
          * @param value the value HIGH or LOW (1 or 0) depending on the logic level at the pin.
          */
-        void setDigitalWrite(EPinValue value);
+        void setDigitalWrite(EDigitalPinValue value);
 
         /**
          * This writes the given value to the supplied analog pin.
-         * @param value the value
+         * The analog input and output are 8-bit devices, so have a range of 0 to 255 when we read/write them.
+         * @param value the value between 0-255
          */
         void setAnalogWrite(int value);
 

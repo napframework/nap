@@ -4,6 +4,8 @@
 
 #include "gpiopin.h"
 
+#include <mathutils.h>
+
 RTTI_BEGIN_ENUM(nap::pipins::EPinMode)
     RTTI_ENUM_VALUE(nap::pipins::EPinMode::OUTPUT, "Output"),
     RTTI_ENUM_VALUE(nap::pipins::EPinMode::INPUT, "Input"),
@@ -54,19 +56,19 @@ namespace nap
     }
 
 
-    void GpioPin::setPullUpDnControl(int pud)
+    void GpioPin::setPullUpDnControl(EPUDMode pud)
     {
         mService.setPullUpDnControl(mPin, pud);
     }
 
 
-    EPinValue GpioPin::getDigitalRead()
+    EDigitalPinValue GpioPin::getDigitalRead()
     {
         return mService.getDigitalRead(mPin);
     }
 
 
-    void GpioPin::setDigitalWrite(EPinValue value)
+    void GpioPin::setDigitalWrite(EDigitalPinValue value)
     {
         mService.setDigitalWrite(mPin, value);
     }
@@ -80,6 +82,7 @@ namespace nap
 
     void GpioPin::setAnalogWrite(int value)
     {
+        value = math::clamp<int>(value, 0, 255);
         mService.setAnalogWrite(mPin, value);
     }
 }

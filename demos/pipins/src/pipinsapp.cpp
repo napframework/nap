@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local Includes
 #include "pipinsapp.h"
 
@@ -176,7 +180,7 @@ namespace nap
                 if(ImGui::Checkbox("Blink", &blink))
                 {
                     if(!mSequencePlayer->getIsPlaying())
-                        mParameterBlink->setValue(blink ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
+                        mParameterBlink->setValue(blink ? pipins::EDigitalPinValue::HIGH : pipins::EDigitalPinValue::LOW);
                 }
             }
 
@@ -198,7 +202,7 @@ namespace nap
         });
         mParameterBlink->valueChanged.connect([this](const float &value)
         {
-            mGpioPinBlink->setDigitalWrite(value > 0 ? pipins::EPinValue::HIGH : pipins::EPinValue::LOW);
+            mGpioPinBlink->setDigitalWrite(value > 0 ? pipins::EDigitalPinValue::HIGH : pipins::EDigitalPinValue::LOW);
         });
 
         // fire up the sequence player and let it loop

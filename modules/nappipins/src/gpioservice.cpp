@@ -7,12 +7,9 @@
 
 // Third party includes
 #include <wiringPi.h>
-#include <nap/logger.h>
-#include <utility/stringutils.h>
 
 // External includes
 #include <stdlib.h>
-#include <unistd.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::pipins::GpioService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -129,7 +126,7 @@ namespace nap
     }
 
 
-    void GpioService::setDigitalWrite(int pin, EPinValue value)
+    void GpioService::setDigitalWrite(int pin, EDigitalPinValue value)
     {
         mQueue.enqueue([pin, value]()
         {
@@ -156,19 +153,19 @@ namespace nap
     }
 
 
-    void GpioService::setPullUpDnControl(int pin, int pud)
+    void GpioService::setPullUpDnControl(int pin, EPUDMode pud)
     {
         mQueue.enqueue([pin, pud]()
         {
-            pullUpDnControl(pin, pud);
+            pullUpDnControl(pin, static_cast<int>(pud));
         });
     }
 
 
-    EPinValue GpioService::getDigitalRead(int pin)
+    EDigitalPinValue GpioService::getDigitalRead(int pin)
     {
         std::lock_guard<std::mutex> l(mMutex);
-        return static_cast<EPinValue>(digitalRead(pin));
+        return static_cast<EDigitalPinValue>(digitalRead(pin));
     }
 
 
