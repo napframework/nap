@@ -135,6 +135,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	progressChanged(0.75f);
 
 	// Load document (data file)
+	addRecentlyOpenedProject(projectFilename);
 	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
