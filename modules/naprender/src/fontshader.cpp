@@ -19,8 +19,8 @@ RTTI_END_CLASS
 // FontShader path literals
 //////////////////////////////////////////////////////////////////////////
 
-static inline char* fontVert = "shaders/font.vert";
-static inline char* fontFrag = "shaders/font.frag";
+inline constexpr const char* fontVert = "shaders/font.vert";
+inline constexpr const char* fontFrag = "shaders/font.frag";
 
 
 //////////////////////////////////////////////////////////////////////////

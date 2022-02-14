@@ -12,6 +12,7 @@ namespace nap
 	// Forward declares
 	class Core;
 	class Material;
+        class RenderService;
 
 	// Uniform names
 	namespace uniform
