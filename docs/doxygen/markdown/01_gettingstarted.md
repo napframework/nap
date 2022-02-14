@@ -67,7 +67,7 @@ Open `module.json` inside the `module` directory and add `mod_napaudio` to `Requ
     "WindowsDllSearchPaths": []
 }
 ```
-If you add `mod_napaudio` as a `RequiredModule` to your application, instead of your `application module`, you won't have access to the resources of that module in your own module. It is therefore recommended to always link to other modules from your application module, not the application directly.
+If you add `mod_napaudio` as a `RequiredModule` to your application, instead of your application module, you won't have access to the audio resources in your own module. It is therefore recommended to always link to other modules from your application module and not the application directly.
 
 Compile and Run {#compile_run}
 ================
@@ -170,6 +170,7 @@ To make sure the audio entity is created on startup we have to add it to the sce
 
 ![](@ref content/gs_napkin_add_entity.png)
 
+- Select the `AudioEntity`
 - Save the file (`File` -> `Save`) 
 - Run the app from your IDE
 
@@ -182,32 +183,32 @@ Close Napkin and open the `newprojectapp.h` file located inside the `src` direct
 
 ## Init {#app_init}
 
-The `init` method is used to initialize important parts of your application and store references to resources. For this example we need access to the `AudioEntity`. To do so, declare the following variable at the bottom of the `NewProjectApp` class header.
+The init method is used to initialize important parts of your application and store references to resources. For this example we need access to the `AudioEntity`. Add the following line of code to your application class declaration, right after `mGnomonEntity` in `newprojectapp.h`:
 
 ~~~{cpp}
-ObjectPtr<EntityInstance> mAudioEntity = nullptr;
+ObjectPtr<EntityInstance>   mAudioEntity = nullptr;         ///< Pointer to the entity that plays back music
 ~~~
 
-And add the following line to the end of the init() method of your application:
+And add the following line of code to the end of the `NewProjectApp::init()` method of your application in `newprojectapp.cpp`:
 
 ~~~{cpp}
 mAudioEntity = mScene->findEntity("AudioEntity");
 ~~~
 
-We just initialized a pointer (link) to the audio entity. We can use this pointer to manipulate the entity and it's components when the app is running.
+We just created a link to the audio entity. We can use this link to manipulate the entity and it's components when the app is running.
 
 ## Update {#app_update}
 
 The `update` method is called every frame. The parameter `deltaTime` indicates how many seconds have passed since the last update call. You should perform any app specific logic in here that does not concern rendering.
 
-Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to `True`, the file starts playing automatically on startup. Let's add the button to start and stop the playback at runtime. Set `AutoPlay` to `False` in your `objects.json`, add the following headers to the top of  your `newprojectapp.cpp`:
+Because we set the property `AutoPlay` of the PlaybackComponent in the app structure file to `True`, the file starts playing automatically on startup. Let's add a button to start and stop playback at runtime. Add the following include directives to `newprojectapp.cpp`:
 
 ~~~{cpp}
 #include <audio/component/playbackcomponent.h>
 #include <imgui/imgui.h>
 ~~~
 
-.. and add the following to the `update` method:
+.. and add the following block of code to the `update` method:
 
 ~~~{cpp}
 auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
@@ -227,7 +228,7 @@ else
 ImGui::End();
 ~~~
 
-When we compile and run the app you should see a button. Click on it to start / stop the playback of the audio file. That concludes this little tutorial.
+When we compile and run the app you should see a button. Click on it to start / stop the playback of the audio file.
 
 ![](@ref content/gs_result.png)
 
