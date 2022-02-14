@@ -118,8 +118,6 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that renders text
-		ObjectPtr<WebSocketServerEndPoint> mServerEndPoint = nullptr;	//< Pointer to the web-socket server endpoint, manages all client connections
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-
+		ObjectPtr<WebSocketServerEndPoint> mServerEndPoint = nullptr;	//< Pointer to the web-socket server endpoint, manages all client 
 	};
 }

@@ -12,9 +12,9 @@
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
-                            0.8587999939918518,
-                            0.8587999939918518,
-                            0.8587999939918518
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     },
                     "Location": {
@@ -23,7 +23,8 @@
                     },
                     "Orientation": "Center",
                     "DepthMode": "NoReadWrite",
-                    "IgnoreTransform": true
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
                 }
             ],
             "Children": []
@@ -32,10 +33,9 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 26,
-                "DPI": 96
+                "Size": 26
             },
-            "Font": "fonts/Montserrat-Light.otf"
+            "Font": "fonts/Manrope-Light.otf"
         },
         {
             "Type": "nap::RenderWindow",
@@ -50,9 +50,9 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             },

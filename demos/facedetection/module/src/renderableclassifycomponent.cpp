@@ -41,7 +41,9 @@ namespace nap
 
 
 	RenderableClassifyComponentInstance::RenderableClassifyComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableComponentInstance(entity, resource), mRenderService(entity.getCore()->getService<nap::RenderService>())
+		RenderableComponentInstance(entity, resource),
+		mRenderService(entity.getCore()->getService<nap::RenderService>()),
+		mGUIService(entity.getCore()->getService<nap::IMGuiService>())
 	{
 
 	}
@@ -130,10 +132,10 @@ namespace nap
 			return false;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
-		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
-		mColors.emplace_back(RGBColor8(0x8B, 0x8C, 0xA0).convert<RGBColorFloat>());
-		mColors.emplace_back(RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>());
-			
+		mColors.emplace_back(mGUIService->getPalette().mFront1Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGUIService->getPalette().mFront2Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGUIService->getPalette().mHighlightColor4.convert<RGBColorFloat>());
+		mColors.emplace_back(mGUIService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 		return true;
 	}
 

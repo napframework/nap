@@ -25,9 +25,18 @@ namespace napkin
 
 		namespace color
 		{
-			inline constexpr const char* componentoverride			= "componentWithOverrides";
-			inline constexpr const char* instanceProperty			= "instanceProperty";
-			inline constexpr const char* overriddenInstanceProperty = "overriddenInstanceProperty";
+			inline constexpr const char* dark1						= "dark1";
+			inline constexpr const char* dark2						= "dark2";
+			inline constexpr const char* background1				= "background1";
+			inline constexpr const char* background2				= "background2";
+			inline constexpr const char* highlight1					= "highlight1";
+			inline constexpr const char* highlight2					= "highlight2";
+			inline constexpr const char* highlight3					= "highlight3";
+			inline constexpr const char* front1						= "front1";
+			inline constexpr const char* front2						= "front2";
+			inline constexpr const char* front3						= "front3";
+			inline constexpr const char* front4						= "front4";
+			inline constexpr const char* instancePropertyOverride	= "instancePropertyOverride";
 			inline constexpr const char* dimmedItem					= "dimmedItem";
 		}
 	}
@@ -85,6 +94,11 @@ namespace napkin
 		QColor getColor(const QString& key) const;
 
 		/**
+		 * @return if the icons should be inverted or not
+		 */
+		bool invertIcons() const;
+
+		/**
 		 * @return all color replacement ids
 		 */
 		const QMap<QString, QColor>& getColors() const;
@@ -93,6 +107,11 @@ namespace napkin
 		 * @return all font replacement ids
 		 */
 		const QMap<QString, QString>& getFonts() const;
+
+		/**
+		 * @return regular or inverted icon, based on theme settings
+		 */
+		QIcon getIcon(const QString& path);
 
 	private:
 		/**
@@ -112,6 +131,7 @@ namespace napkin
 		QMap<int, QColor> mLogColors;
 		QMap<QString, QColor> mColors;
 		QMap<QString, QString> mFonts;
+		bool mInvertIcons = false;
 		bool mValid = false;
 	};
 

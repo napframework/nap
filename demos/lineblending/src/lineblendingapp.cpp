@@ -72,8 +72,14 @@ namespace nap
 	 */
 	void LineBlendingApp::update(double deltaTime)
 	{
+		// Forward all input events associated with the first window to the listening components
+		nap::DefaultInputRouter input_router;
+		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
+
 		// Select GUI window
 		mGuiService->selectWindow(mRenderWindow);
+		const auto& theme = mGuiService->getPalette();
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
@@ -83,19 +89,9 @@ namespace nap
 
 		// Display some extra info
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(theme.mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
-
-		// The default input router forwards messages to key and mouse input components
-		// attached to a set of entities.
-		nap::DefaultInputRouter input_router;
-
-		// Forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
-		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Push some parameter settings to components
 		// Most custom app components directly reference the parameters

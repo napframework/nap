@@ -546,9 +546,6 @@ namespace nap
 		// Fetch required vulkan handles
 		mDevice = mRenderService->getDevice();
 
-		// Set size and store for future reference
-		setSize({mWidth, mHeight});
-
 		// Acquire max number of MSAA samples, issue warning if requested number of samples is not obtained
 		utility::ErrorState rast_error;
 		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, rast_error))
@@ -653,7 +650,15 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		SDL::setWindowSize(mSDLWindow, size);
+		// Causes the swap chain to be re-created if window size is different.
+		// TODO: This can trigger a resize event that is handled in a new frame. 
+		// causing the swap-chain to be re-created twice. Avoid this by
+		// checking against the swap extent instead of keeping one or multiple flags.
+		if (size != SDL::getWindowSize(mSDLWindow))
+		{
+			SDL::setWindowSize(mSDLWindow, size);
+			mRecreateSwapchain = true;
+		}
 	}
 
 

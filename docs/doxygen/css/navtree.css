@@ -1,3 +1,8 @@
+@font-face {
+    font-family: 'manrope';
+    src: url('Manrope-Regular.ttf') format('truetype');
+}
+
 #nav-tree .children_ul {
   margin:0;
   padding:4px;
@@ -43,7 +48,7 @@
 #nav-tree .label {
   margin:0px;
   padding:0px;
-  font: 12px 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
+  font: 12px 'manrope',sans-serif;
 }
 
 #nav-tree .label a {

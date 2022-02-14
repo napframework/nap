@@ -16,7 +16,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MeshFromFile)
 	RTTI_PROPERTY("Usage",			&nap::MeshFromFile::mUsage,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CullMode",		&nap::MeshFromFile::mCullMode,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PolygonMode",	&nap::MeshFromFile::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY_FILELINK("Path",	&nap::MeshFromFile::mPath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
+	RTTI_PROPERTY_FILELINK("Path",	&nap::MeshFromFile::mPath,			nap::rtti::EPropertyMetaData::Required,		nap::rtti::EPropertyFileType::Mesh)
 RTTI_END_CLASS
 
 namespace nap

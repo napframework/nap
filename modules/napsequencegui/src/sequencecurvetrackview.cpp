@@ -339,7 +339,7 @@ namespace nap
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().mFro3, // color
+				mService.getColors().mFro4, // color
 				3.0f * mState.mScale // thickness
 			); 
 
@@ -420,7 +420,7 @@ namespace nap
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					mService.getColors().mFro3, // color
+					mService.getColors().mFro4, // color
 					line_thickness_active // thickness
 				); 
 				ImGui::BeginTooltip();
@@ -434,7 +434,7 @@ namespace nap
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					mService.getColors().mFro3, // color
+					mService.getColors().mFro4, // color
 					line_thickness_regular // thickness
 				); 
 			}
@@ -446,7 +446,7 @@ namespace nap
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().mFro3, // color
+				mService.getColors().mFro4, // color
                 line_thickness_regular // thickness
 			); 
 

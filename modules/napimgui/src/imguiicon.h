@@ -10,7 +10,7 @@
 // External Includes
 #include <rtti/rtti.h>
 #include <nap/resource.h>
-#include <imagefromfile.h>
+#include <texture2d.h>
 
 namespace nap
 {
@@ -59,7 +59,7 @@ namespace nap
 		/**
 		 * @return 2DTexture that can be rendered
 		 */
-		const nap::Texture2D& getTexture() const			{ return mImage; }
+		const nap::Texture2D& getTexture() const			{ return mTexture; }
 
 		/**
 		 * @return the GUI Service
@@ -72,10 +72,11 @@ namespace nap
 		 */
 		ImTextureID getTextureHandle() const;
 
+		bool mInvert = false;								///< Property: 'Invert' if the icon colors should be inverted
 		std::string mImagePath;								///< Property: 'ImagePath' path to the image on disk
 
 	private:
-		nap::ImageFromFile mImage;							//< Texture to display
+		Texture2D	mTexture;								///< The GPU image representation
 		IMGuiService& mGuiService;							//< GUI Service
 		std::string mName;									//< Icon name, without extension
 	};

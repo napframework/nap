@@ -68,7 +68,7 @@
             "Properties": {
                 "Size": 32
             },
-            "Font": "fonts/Montserrat-Light.otf"
+            "Font": "fonts/Manrope-Light.otf"
         },
         {
             "Type": "nap::RenderWindow",
@@ -83,9 +83,9 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             },

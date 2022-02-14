@@ -348,7 +348,6 @@ void CurveSegmentItem::updateGeometry()
 	setPointsEmitItemChanges(false);
 
 	auto& curve = curveItem().curve();
-
 	mPen.setColor(curve.color());
 
 	int segCount = curve.pointCount();

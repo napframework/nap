@@ -1,3 +1,0 @@
-QTabBar {
-    qproperty-drawBase: 0;
-}

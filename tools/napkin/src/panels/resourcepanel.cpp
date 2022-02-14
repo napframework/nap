@@ -8,6 +8,7 @@
 #include <commands.h>
 #include <napqt/filterpopup.h>
 #include <napqt/qtutils.h>
+#include <napkin-resources.h>
 
 using namespace napkin;
 
@@ -95,7 +96,6 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 	{
 		auto entityItem = new EntityItem(*rtti_cast<nap::Entity>(&ob));
 		mEntitiesItem.appendRow({entityItem, typeItem});
-
 		return entityItem;
 	}
 
