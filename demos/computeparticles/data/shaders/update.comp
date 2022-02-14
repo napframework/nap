@@ -14,17 +14,17 @@ struct Particle
 	vec4 color;
 };
 
-layout(std430) buffer ParticleBuffer_In
+layout(std430) readonly buffer ParticleBuffer_In
 {
 	Particle particles[100000];
 } subo_in;
 
-layout(std430) buffer ParticleBuffer_Out
+layout(std430) writeonly buffer ParticleBuffer_Out
 {
 	Particle particles[100000];
 } subo_out;
 
-layout(std430) buffer VertexBuffer 
+layout(std430) writeonly buffer VertexBuffer 
 {
 	vec4 vertices[400000];
 };

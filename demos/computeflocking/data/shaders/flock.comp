@@ -23,12 +23,12 @@ struct Boid
 };
 
 // STORAGE
-layout(std430) buffer BoidBuffer_In
+layout(std430) readonly buffer BoidBuffer_In
 {
 	Boid boids[10000];
 } subo_in;
 
-layout(std430) buffer BoidBuffer_Out
+layout(std430) writeonly buffer BoidBuffer_Out
 {
 	Boid boids[10000];
 } subo_out;
@@ -239,7 +239,7 @@ void computeForces(uint gid, vec3 position, out vec4 avoidanceHeading, out vec4 
 
 
 // Optimized routine that utilizes shared memory 
-void computeForcesShared(uint gid, vec3 position, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
+void computeForcesShared(uint gid, vec3 position, vec3 velocity, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
 {
 	// Copy to fast shared data
 	// Process in chunks of SHARED_DATA_SIZE
@@ -253,34 +253,35 @@ void computeForcesShared(uint gid, vec3 position, out vec4 avoidanceHeading, out
 			sharedData[local_id].pos = subo_in.boids[id].position;
 			sharedData[local_id].vel = subo_in.boids[id].velocity;
 		}
-		else
+		else 
 		{
-			sharedData[local_id].pos = vec4(0.0);
-			sharedData[local_id].vel = vec4(0.0);
+			// Mark invalid
+			sharedData[local_id].pos.w = -1.0;
 		}
 
 		memoryBarrierShared();
 		barrier();
 
 		// Update force variables
-		for (uint j = 0; j < group_size; j++)
+		uint count = i < ubo.numBoids ? group_size : i-ubo.numBoids; 
+		for (int j = 0; j < count; j++)
 		{
-			vec4 other_pos = sharedData[j].pos;
-			vec4 other_dir = sharedData[j].vel;
+			BoidData other = sharedData[j];
+			if (other.pos.w < 0.0)
+				continue;
 
-			if (isZero(other_dir.xyz))
-				break;
+			// Vision is a half sphere
+			vec4 other_dir = vec4(safeNormalize(other.vel.xyz), 1.0);
+			float lookdot = dot(normalize(velocity), normalize(other.pos.xyz - position));
 
-			other_dir = vec4(normalize(other_dir.xyz), 1.0);
-
-			vec3 offset = other_pos.xyz - position.xyz;
+			vec3 offset = other.pos.xyz - position;
 			float l1 = dot(offset, offset);
 
-			if (l1 < ubo.viewRadius * ubo.viewRadius) 
+			if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > 0.0) 
 			{
 				numFlockMates++;
 				flockHeading += other_dir;
-				flockCenter += other_pos;
+				flockCenter += other.pos;
 
 				if (l1 < ubo.avoidRadius * ubo.avoidRadius)
 				{
@@ -311,7 +312,7 @@ void main()
 	b.flockCenter = vec4(0.0);
 	b.numFlockMates = 0;
 
-	computeForcesShared(global_id, b.position.xyz, b.avoidanceHeading, b.flockHeading, b.flockCenter, b.numFlockMates);
+	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, b.avoidanceHeading, b.flockHeading, b.flockCenter, b.numFlockMates);
 	//computeForces(global_id, b.position.xyz, b.avoidanceHeading, b.flockHeading, b.flockCenter, b.numFlockMates);
 
 	// Calculate base acceleration determined by a moving global target position

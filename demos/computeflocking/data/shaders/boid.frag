@@ -16,6 +16,7 @@ uniform UBO
 	float		shininess;					// Specular angle shininess
 	float		ambientIntensity;			// Ambient of ambient light
 	float		diffuseIntensity;			// Diffuse scaling factor
+	float		mateColorRate;				// Maximum mate color percentage
 	uint 		randomColor;				// Random color flag
 } ubo;
 
@@ -28,6 +29,9 @@ in float pass_Mates;
 flat in uint pass_Id;
 
 out vec4 out_Color;
+
+// CONSTANTS
+const float EPSILON 		= 0.00001;
 
 // Converts HSV color vector 'c' to an RGB color
 // Source: http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
@@ -51,11 +55,14 @@ void main(void)
 	vec3 boid_color = ubo.diffuseColor;
 
 	// Rainbow
-	if (true/*ubo.randomColor > 0*/)
+	vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
+	if (ubo.randomColor > EPSILON)
+	{	
+		boid_color = hsv2rgb(boid_hsv);
+	}
+	else
 	{
-		vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
-		//boid_color = hsv2rgb(boid_hsv);
-		boid_color = mix(boid_color, hsv2rgb(boid_hsv), map(pow(pass_Mates, 0.5), 0.0, 0.1, 0.0, 1.0));
+		boid_color = mix(boid_color, hsv2rgb(boid_hsv), map(pow(pass_Mates, 0.5), 0.0, ubo.mateColorRate, 0.0, 1.0));
 	}
 
 	// Surface to camera normal     

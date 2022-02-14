@@ -8,7 +8,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BoidSizeParameter",
                     "Name": "BoidSize",
-                    "Value": 0.25,
+                    "Value": 0.20000000298023225,
                     "Minimum": 0.0,
                     "Maximum": 4.0
                 },
@@ -83,6 +83,14 @@
                     "Value": 0.6940000057220459,
                     "Minimum": 0.0,
                     "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BoundsExtentParameter",
+                    "Name": "BoundsExtent",
+                    "Value": 12.5,
+                    "Minimum": 1.0,
+                    "Maximum": 20.0
                 }
             ],
             "Groups": [
@@ -232,6 +240,14 @@
                             "Value": 1.350000023841858,
                             "Minimum": 0.0,
                             "Maximum": 5.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "MateColorRateParameter",
+                            "Name": "MateColorRate",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0010000000474974514,
+                            "Maximum": 1.0
                         }
                     ],
                     "Groups": []

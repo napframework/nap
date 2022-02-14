@@ -141,7 +141,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 15.0
+                            "z": 20.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -305,6 +305,7 @@
                     "AmbientIntensity": "AmbientIntensityParameter",
                     "DiffuseIntensity": "DiffuseIntensityParameter",
                     "SpecularIntensity": "SpecularIntensityParameter",
+                    "MateColorRate": "MateColorRateParameter",
                     "PerspCameraComponent": "../../CameraEntity/PerspectiveCamera",
                     "TargetTransformComponent": "../BoidTargetEntity/ChildTransformEntity/BoidTargetTransform"
                 },
@@ -917,7 +918,7 @@
                     "mID": "MaxSteerForceParameter",
                     "Name": "MaxSteerForce",
                     "Value": 5.0,
-                    "Minimum": 0.0,
+                    "Minimum": 0.10000000149011612,
                     "Maximum": 8.0
                 },
                 {
@@ -934,7 +935,7 @@
                     "Name": "AlignmentWeight",
                     "Value": 0.800000011920929,
                     "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Maximum": 2.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
@@ -942,7 +943,7 @@
                     "Name": "CohesionWeight",
                     "Value": 0.6000000238418579,
                     "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Maximum": 2.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
@@ -950,7 +951,7 @@
                     "Name": "SeparationWeight",
                     "Value": 0.4000000059604645,
                     "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Maximum": 2.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
@@ -1108,6 +1109,14 @@
                             "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 5.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "MateColorRateParameter",
+                            "Name": "MateColorRate",
+                            "Value": 0.10000000149011612,
+                            "Minimum": 0.0010000000474974514,
+                            "Maximum": 1.0
                         }
                     ],
                     "Groups": []

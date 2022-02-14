@@ -44,6 +44,7 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("AmbientIntensity",			&nap::FlockingSystemComponent::mAmbientIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DiffuseIntensity",			&nap::FlockingSystemComponent::mDiffuseIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SpecularIntensity",			&nap::FlockingSystemComponent::mSpecularIntensityParam,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MateColorRate",				&nap::FlockingSystemComponent::mMateColorRateParam,			nap::rtti::EPropertyMetaData::Default)
 
 	RTTI_PROPERTY("PerspCameraComponent",		&nap::FlockingSystemComponent::mPerspCameraComponent,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TargetTransformComponent",	&nap::FlockingSystemComponent::mTargetTransformComponent,	nap::rtti::EPropertyMetaData::Default)
@@ -73,6 +74,7 @@ namespace nap
 		constexpr const char* lightColor = "lightColor";
 		constexpr const char* specularIntensity = "specularIntensity";
 		constexpr const char* specularColor = "specularColor";
+		constexpr const char* mateColorRate = "mateColorRate";
 		constexpr const char* shininess = "shininess";
 		constexpr const char* ambientIntensity = "ambientIntensity";
 		constexpr const char* diffuseIntensity = "diffuseIntensity";
@@ -211,6 +213,7 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::ambientIntensity)->setValue(mResource->mAmbientIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::diffuseIntensity)->setValue(mResource->mDiffuseIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity)->setValue(mResource->mSpecularIntensityParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::mateColorRate)->setValue(mResource->mMateColorRateParam->mValue);
 		}
 
 		mFirstUpdate = false;
