@@ -1488,7 +1488,7 @@ img
 
 div.image
 {
-	text-align: center;
+	text-align: left;
 }
 
 table.markdownTable td, table.markdownTable th {

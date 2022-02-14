@@ -85,31 +85,6 @@ The `data` folder within your project folder contains an `objects.json` file. Th
 - [Entities](@ref scene): objects that structure functionality by combining a set of components
 - [Components](@ref scene): used to add functionality to an entity and receive an update call
 
-Every new application contains a window and a scene:
-
-```
-{
-    "Objects" : 
-    [
-        {
-              "Type": "nap::RenderWindow",
-              "mID": "Window",
-              "Width": 1280,
-              "Height": 720,
-              "Title": "NewProject",
-              "Mode": "Immediate",
-              "SampleShading": true,
-              "Samples": "Four"
-        },
-        {
-              "Type" : "nap::Scene",
-              "mID": "Scene",   
-              "Entities" : []
-        }    
-    ]
-} 
-```
-
 ## Resource {#audio_resource}
 
 Let's add an [audio file](@ref nap::audio::AudioFileResource) resource. Instead of editing JSON files by hand we're going to use [Napkin](@ref napkin):
@@ -119,17 +94,24 @@ Let's add an [audio file](@ref nap::audio::AudioFileResource) resource. Instead 
 - Click on `File` -> `Open Project`
 - Select the `project.json` file
 
+Result:
+
+![](@ref content/gs_napkin.png)
+
 If Napkin fails to load the project make sure to [build](@ref compile_run) the project (in `release` mode) at least once before loading it. This ensures that the custom application module `mod_newproject` is compiled for you. The editor can then load and inspect it. All other modules (render, audio etc.) are pre-compiled and should work out of the box.
 
 To add an audio file:
 
-- Right click on the `resources` item inside the resource panel
+- Right click on the `Resources` item inside the resource panel
 - Select `Create Resource`
-- Select a nap::audio::AudioFileResource
+
+![](@ref content/gs_napkin_create_resource.png)
+
+- Select a `nap::audio::AudioFileResource`
 - Double click on the new resource 
 - Change the name to `AudioFile`
 
-If we start the application right now it will fail to initialize because the resource is invalid, it doesn't point to a valid file on disk:
+If we save and start the application right now it will fail to initialize because the resource doesn't point to a valid file on disk:
 
 - Select the `AudioFile` resource
 - Inside the inspector panel: click on the `folder` icon next to `AudioFilePath`
@@ -137,7 +119,7 @@ If we start the application right now it will fail to initialize because the res
 
 The audio file should be sourced from the `data` directory of your project. This allows the application to use relative paths, instead of absolute. Don't have a file on disk? Copy one from the `audioplaybackdemo`.
 
-![](@ref content/napkin_audiofile.png)
+![](@ref content/gs_audio_file.png)
 
 ## Entity {#audio_entity}
 
@@ -145,6 +127,9 @@ Continue by adding an entity that will hold the audio components.
 
 - Right click on the `Entities` item in the resource panel.
 - Select `Create Entity`.
+
+![](@ref content/gs_napkin_create_entity.png)
+
 - Double click on the new entity and change its name to `AudioEntity`.
 
 ## Components {#audio_components}
@@ -153,6 +138,9 @@ The `AudioEntity` requires 2 components: an [AudioPlaybackComponent](@ref nap::a
 
 - Right click on the `AudioEntity` 
 - Select `Add Component` from the popup menu
+
+![](@ref content/gs_napkin_add_component.png)
+
 - Select a nap::audio::PlaybackComponent 
 - Rename it to `PlaybackComponent`
 
@@ -162,22 +150,16 @@ But we're not there yet: we need to tell the audio playback component which file
 - Select the `PlaybackComponent`
 - Click on the `arrow` icon next to `Buffer`
 - Select the `AudioFile`
-- Right click on `ChannelRouting` 
-- Select `Add int` to add the first channel
-- Add a second channel and set its value to `1`
 
-![](@ref content/napkin_audioplayback.png)
+![](@ref content/gs_napkin_audio_playback.png)
 
 Next we instruct the output component how to route the stereo output of the playback component to the audio device. 
 
 - Select the `OutputComponent` 
 - Click on the `arrow` icon next to `Input`
 - Select the `PlaybackComponent`
-- Right click on `Routing`
-- Select `Add int` to add the first channel
-- Add a second channel and set its value to `1`
 
-![](@ref content/napkin_audiooutput.png)
+![](@ref content/gs_napkin_audio_output.png)
 
 ## Scene {#content_scene}
 
@@ -185,18 +167,18 @@ To make sure the audio entity is created on startup we have to add it to the sce
 
 - Right click on the `Scene` item inside the scene panel
 - Select `Add Entity`.
-- Pick the `AudioEntity` 
+
+![](@ref content/gs_napkin_add_entity.png)
+
 - Save the file (`File` -> `Save`) 
 - Run the app from your IDE
 
-You should see a blank window and hear the audio file being played on the default sound device.
-
-![](@ref content/napkin_audioscene.png)
+You should see a blank window and hear the audio file played back on the default audio device. If you don't hear anything make sure to save the file. Otherwise check the log.
 
 Application {#app_logic}
 ==========================
 
-Open the `newprojectapp.h` file located inside the `src` directory. This document, together with the `.cpp` file, contains the application runtime code. It allows you to control the flow of data and render specific objects to screen using the resources we just created.
+Close Napkin and open the `newprojectapp.h` file located inside the `src` directory. This document, together with the `.cpp` file, contains the application runtime code. It allows you to control the flow of data and render specific objects to screen using the resources we just created.
 
 ## Init {#app_init}
 
@@ -246,6 +228,8 @@ ImGui::End();
 ~~~
 
 When we compile and run the app you should see a button. Click on it to start / stop the playback of the audio file. That concludes this little tutorial.
+
+![](@ref content/gs_result.png)
 
 ## Rendering {#app_render}
 
