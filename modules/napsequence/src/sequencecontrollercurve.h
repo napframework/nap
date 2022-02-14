@@ -83,7 +83,7 @@ namespace nap
          * @param segmentID the segmentID
          * @param pointIndex the point index
          * @param curveIndex the curve index
-         * @param time new time
+         * @param time new time in percentage of segment duration normalized between 0 and 1
          * @param value new value
          */
         void changeCurvePoint(const std::string &trackID, const std::string &segmentID, int pointIndex, int curveIndex,

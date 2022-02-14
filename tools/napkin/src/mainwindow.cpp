@@ -23,7 +23,6 @@ void MainWindow::bindSignals()
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
-	connect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
 }
 
@@ -39,23 +38,31 @@ void MainWindow::unbindSignals()
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
-	disconnect(ctx, &AppContext::blockingProgressChanged, this, &MainWindow::onBlockingProgress);
 }
 
 
 void MainWindow::showEvent(QShowEvent* event)
 {
 	BaseWindow::showEvent(event);
-
-	if (mFirstShowEvent)
+	if (!mShown)
 	{
 		QSettings settings;
 		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 		getContext().restoreUI();
 		rebuildRecentMenu();
-		mFirstShowEvent = false;
+		mShown = true;
 	}
+	connect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress, Qt::UniqueConnection);
 }
+
+
+void napkin::MainWindow::hideEvent(QHideEvent* event)
+{
+	mProgressDialog.reset(nullptr);
+	disconnect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress);
+	BaseWindow::hideEvent(event);
+}
+
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -64,8 +71,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		event->ignore();
 		return;
 	}
-
-	unbindSignals();
 	BaseWindow::closeEvent(event);
 }
 
@@ -146,13 +151,6 @@ void MainWindow::addMenu()
 	auto optionsMenu = new QMenu("Options", menuBar());
 	{
 		optionsMenu->addMenu(&mThemeMenu);
-		optionsMenu->addAction("Save settings as...", [this]() {
-			auto filename = QFileDialog::getSaveFileName(this, "Save Settings", QString(), "Settings file (*.ini)");
-			if (filename.isEmpty())
-				return;
-			if (!QFile::copy(QSettings().fileName(), filename))
-				nap::Logger::error("Failed to save settings to file: %s", filename.toStdString().c_str());
-		});
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
 }
@@ -186,14 +184,14 @@ void MainWindow::updateWindowTitle()
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
-
-	addDocks();
 	addMenu();
+	addDocks();
 	bindSignals();
 }
 
 MainWindow::~MainWindow()
 {
+	unbindSignals();
 }
 
 void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
@@ -255,38 +253,25 @@ void MainWindow::onLog(nap::LogMessage msg)
 		showError(msg);
 }
 
-void MainWindow::onBlockingProgress(float fraction, const QString& message)
+void MainWindow::onProgress(float fraction, const QString& message)
 {
-	const int scale = 100;
-	if (fraction >= 1)
+	if (mProgressDialog == nullptr)
 	{
-		// Done
-		if (mProgressDialog)
-			mProgressDialog.reset();
-	}
-	else
-	{
-		// In progress
-		if (!mProgressDialog)
-		{
-			mProgressDialog = std::make_unique<QProgressDialog>(message, "Cancel", 0, 0, this);
-            mProgressDialog->setWindowTitle("Working...");
-			mProgressDialog->setCancelButton(nullptr);
-		}
-
-		if (fraction > 0)
-		{
-			mProgressDialog->setRange(0, scale);
-			mProgressDialog->setValue((int) fraction * scale);
-		}
-		else
-		{
-			mProgressDialog->setRange(0, 0);
-			mProgressDialog->setValue(0);
-		}
+		mProgressDialog = std::make_unique<QProgressDialog>(this);
+		mProgressDialog->setAutoReset(true);
+		mProgressDialog->setAutoClose(true);
+		mProgressDialog->setRange(0, 100);
+		mProgressDialog->setWindowTitle("Working...");
+		mProgressDialog->setCancelButton(nullptr);
+		mProgressDialog->setModal(Qt::WindowModal);
 		mProgressDialog->show();
+		QApplication::processEvents();
 	}
-	QApplication::processEvents();
+
+	// Set message and value
+	if (!message.isEmpty())
+		mProgressDialog->setLabelText(message);
+	mProgressDialog->setValue(static_cast<int>(fraction * 100.0f));
 }
 
 void MainWindow::showError(nap::LogMessage msg)

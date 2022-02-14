@@ -100,7 +100,6 @@ namespace nap
 		LicenseService* mLicenseService = nullptr;						//< The license service, used to validate app license
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		ObjectPtr<Scene> mScene = nullptr;								//< The scene that contains all entities and components
 		LicenseInformation mLicenseInfo;								//< Contains license information after license validation
 		utility::ErrorState mLicenseError;								//< Contains the error if license validation failed

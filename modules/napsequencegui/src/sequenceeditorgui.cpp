@@ -300,8 +300,6 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
-
-			//
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetScrollY());
 
 			// store position of next window (player controller), we need it later to draw the timelineplayer position
@@ -309,9 +307,9 @@ namespace nap
 
 			float top_size			= 70.0f * mState.mScale; // area of markers and player controller combined
 			float offset			= 10.0f * mState.mScale;
-			float clip_start_y		= ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
-			float end_clip_y 		= ImGui::GetWindowHeight() - offset; // bottom scrollbar overlaps clipping area
-			float end_clip_x		= ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
+			float clip_start_y		= ImGui::GetWindowPos().y + ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
+			float end_clip_y 		= ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - offset;    // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
 
 			// timeline window properties
 			ImVec2 timeline_window_pos =
@@ -538,8 +536,9 @@ namespace nap
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             // draw marker background
-			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().mDark);
-			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().mFro3);
+			draw_list->AddRectFilled(window_top_left,
+				{ window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() },
+				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]));
 
             // draw markers
 			for(const auto& marker : sequence.mMarkers)
@@ -577,9 +576,9 @@ namespace nap
 					hovered = true;
 
                 // draw text
-                const ImVec2 text_offset = { 2.0f * mState.mScale, -10.0f * mState.mScale };
+                const ImVec2 text_offset = { 5.0f * mState.mScale, -10.0f * mState.mScale };
 				draw_list->AddText({ player_time_rect_bottom_right.x + text_offset.x, player_time_rect_center.y + text_offset.y }, // position
-                                   mService.getColors().mHigh, // color
+                                   mService.getColors().mFro4, // color
                                    marker->mMessage.c_str()); // text
 
                 // no action and are we hovering the hit action ?
@@ -621,7 +620,7 @@ namespace nap
                 const float circle_thickness = 2.0f * mState.mScale;
 				int segments = static_cast<int>(12.0f * mState.mScale);
 				if (hovered)
-					draw_list->AddCircleFilled(player_time_rect_center, radius, mService.getColors().mFro3, segments);
+					draw_list->AddCircleFilled(player_time_rect_center, radius, mService.getColors().mFro4, segments);
 				else
 					draw_list->AddCircle(player_time_rect_center, radius, mService.getColors().mFro3, segments, circle_thickness);
 			}
@@ -681,12 +680,15 @@ namespace nap
 			// get window drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, mService.getColors().mBack);
+
 			// draw backgroundbox of controller
             const ImVec2 background_box_bottom_right = { start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15.0f * mState.mScale };
-			draw_list->AddRectFilled(start_pos, background_box_bottom_right, mService.getColors().mDark);
 
 			// draw box of controller
-			draw_list->AddRect(start_pos, background_box_bottom_right, mService.getColors().mFro3);
+			draw_list->AddRect(start_pos, background_box_bottom_right, mService.getColors().mFro1);
+
+			ImGui::PopStyleColor();
 
 			// draw handler of player position
 			const double player_time = player.getPlayerTime();
@@ -702,7 +704,7 @@ namespace nap
 			};
 
             // draw box
-			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().mHigh);
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().mHigh1);
 
             // define consts
             const float timestamp_line_height           = 18.0f * mState.mScale;
@@ -910,7 +912,7 @@ namespace nap
 			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y }, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
-				drawlist->AddLine(line_begin, line_end, mService.getColors().mHigh, line_thickness);
+				drawlist->AddLine(line_begin, line_end, mService.getColors().mHigh1, line_thickness);
 			}
 			ImGui::EndChild();
 
@@ -922,7 +924,7 @@ namespace nap
 	{
 		const float line_thickness  = 2.0f * mState.mScale;
 		const ImVec4 white_color    = ImGui::ColorConvertU32ToFloat4(mService.getColors().mFro3);
-		const ImU32 color           = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 0.5f});
+		const ImU32 color           = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 1.0f});
         const float marker_width    = 5.0f * mState.mScale;
         const float line_y_start    = 25.0f * mState.mScale;
         const float line_stop       = sequence.mTracks.size() * ((mState.mVerticalResolution + 10.0f) * mState.mScale) + (35.0f * mState.mScale) - mState.mScroll.y;
@@ -1332,6 +1334,7 @@ namespace nap
 					ImGui::CloseCurrentPopup();
 				}
 
+				ImGui::SameLine();
 				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
@@ -1509,19 +1512,19 @@ namespace nap
 			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
                 const float width = 200.0f * mState.mScale;
-				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
+				auto color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2);
 				ImGui::Text("Select & drag :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Left mouse button"); 
+				ImGui::TextColored(color, "Left mouse button"); 
 				ImGui::Text("Select & open edit popup :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Right mouse button");
+				ImGui::TextColored(color, "Right mouse button");
                 ImGui::Text("Copy segment :"); ImGui::SameLine(width);
-                ImGui::TextColored(red_color, "Shift + Left click segment handler");
+                ImGui::TextColored(color, "Shift + Left click segment handler");
                 ImGui::Text("Zoom in & out :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Control + Scroll Wheel");
+				ImGui::TextColored(color, "Control + Scroll Wheel");
 				ImGui::Text("Horizontal Scroll :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Shift + Scroll Wheel");
+				ImGui::TextColored(color, "Shift + Scroll Wheel");
 				ImGui::Text("Vertical Scroll :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Scroll Wheel");
+				ImGui::TextColored(color, "Scroll Wheel");
 
 				ImGui::Spacing();
 				ImGui::Separator();

@@ -81,7 +81,7 @@ namespace nap
 		if (!errorState.check(mColorUniform != nullptr, "%s: Unable to find uniform vec3 with name: %s in material: %s",
 			resource->mID.c_str(), uniform::font::textColor, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
-		mColorUniform->setValue(resource->mColor.toVec3());
+		mColorUniform->setValue(resource->mColor);
 
 		// Ensure the uniform to set the glyph is available on the source material
 		mGlyphUniform = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(uniform::font::glyphSampler);

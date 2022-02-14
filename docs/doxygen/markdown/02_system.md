@@ -5,7 +5,7 @@ System {#system}
 *	[Modules & Services](@ref modules_services)
 *   [Apps](@ref apps)
 *   [Core](@ref core)
-*	[Resourcemanager](@ref resourcemanager)
+*	[Resource Manager](@ref resourcemanager)
 *	[Events](@ref events)
 *	[Configuration](@ref service_config)
 

@@ -88,12 +88,9 @@ namespace nap
 
 		void setWindowSize(SDL_Window* window, const glm::ivec2& size)
 		{
-			// Ensure sizes are not the same
-			glm::ivec2 wsize = getWindowSize(window);
-			if (wsize == size)
-				return;
 			SDL_SetWindowSize(window, size.x, size.y);
 		}
+
 
 		glm::ivec2 getDrawableWindowSize(SDL_Window* window)
 		{

@@ -266,7 +266,7 @@ namespace nap
 		bool					mVisible		= true;								///< Property: 'Visible' if the render window is visible on screen
 		EPresentationMode		mMode			= EPresentationMode::Immediate;		///< Property: 'Mode' the image presentation mode to use
 		std::string				mTitle			= "";								///< Property: 'Title' window title
-		RGBAColorFloat			mClearColor		= { 0.067f, 0.078f, 0.149f, 1.0f };	///< Property: 'ClearColor' background clear color
+		RGBAColorFloat			mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
 		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
 		int						mAddedSwapImages = 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 

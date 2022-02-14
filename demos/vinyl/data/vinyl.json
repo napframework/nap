@@ -26,21 +26,7 @@
                                 ]
                             }
                         ],
-                        "Samplers": [
-                            {
-                                "Type": "nap::Sampler2D",
-                                "mID": "sampler_background_image",
-                                "Name": "backgroundTexture",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MaxLodLevel": 1000,
-                                "AnisotropicSamples": "Default",
-                                "Texture": "BackgroundImage"
-                            }
-                        ],
+                        "Samplers": [],
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
@@ -357,13 +343,6 @@
                 }
             ],
             "Children": []
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "BackgroundImage",
-            "Usage": "Static",
-            "ImagePath": "background.jpg",
-            "GenerateLods": true
         },
         {
             "Type": "nap::ImageFromFile",

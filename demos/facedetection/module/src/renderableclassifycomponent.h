@@ -17,6 +17,7 @@
 #include <smoothdamp.h>
 #include <nap/timer.h>
 #include <uniforminstance.h>
+#include <imguiservice.h>
 
 namespace nap
 {
@@ -181,7 +182,8 @@ namespace nap
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors
 		std::vector<Blob> mBlobs;										///< All the blobs in world space
 		std::vector<glm::vec4> mLocations;								///< Recent blob location and size data, xyz = position, z = size
-		nap::RenderService* mRenderService;								///< Handle to the renderer
+		nap::RenderService* mRenderService = nullptr;					///< Handle to the renderer
+		nap::IMGuiService* mGUIService = nullptr;						///< Handle to the gui
 	};
 
 

@@ -12,10 +12,10 @@ namespace nap
 	/**
 	 * Size of the font data buffer
 	 */
-	NAPAPI extern const uint nunitoSansSemiBoldSize;
+	inline constexpr uint manropeMediumSize = 80368;
 
 	/**
 	 * The compressed font data used by IMGui
 	 */
-	NAPAPI extern const uint nunitoSansSemiBoldData[15109];
+	extern const uint manropeMediumData[manropeMediumSize / 4];
 }

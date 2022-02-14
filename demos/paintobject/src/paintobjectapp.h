@@ -131,9 +131,6 @@ namespace nap
 		ObjectPtr<ParameterBool>			mEraserModeParam		= nullptr;
 		ObjectPtr<ParameterInt>				mMeshSelectionParam		= nullptr;
 
-		// Text Highlight Color
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-
 		// GUI
 		ObjectPtr<ParameterGUI> mParameterGUI = nullptr;	//< Able to draw parameters to screen
 

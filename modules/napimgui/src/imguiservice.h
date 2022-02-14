@@ -63,28 +63,43 @@ namespace nap
 	}
 
 
-	/**
-	 * GUI globals
-	 */
+	// GUI
 	namespace gui
 	{
 		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+
+		/**
+		 * All available color schemes
+		 */
+		enum class EColorScheme
+		{
+			Light		= 0,		///< Lighter color scheme
+			Dark		= 1,		///< Darker color scheme (default)
+			HyperDark	= 2,		///< High contrast dark color scheme
+			Classic		= 3,		///< Classic color scheme
+			Custom		= 4			///< Custom color scheme
+		};
+
+		/**
+		 * Configurable palette of GUI colors.
+		 */
+		struct NAPAPI ColorPalette
+		{
+			ColorPalette() = default;
+			RGBColor8 mBackgroundColor = { 0x2D, 0x2D, 0x2D };		///< Property: 'BackgroundColor' Gui window background color
+			RGBColor8 mDarkColor = { 0x00, 0x00, 0x00 };			///< Property: 'DarkColor' Gui dark color
+			RGBColor8 mMenuColor = { 0x8D, 0x8B, 0x84 };			///< Property: 'MenuColor' Gui menu color
+			RGBColor8 mFront1Color = { 0x8D, 0x8B, 0x84 };			///< Property: 'FrontColor1' Gui gradient color 1
+			RGBColor8 mFront2Color = { 0xAE, 0xAC, 0xA4 };			///< Property: 'FrontColor2' Gui gradient color 2
+			RGBColor8 mFront3Color = { 0xCD, 0xCD, 0xC3 };			///< Property: 'FrontColor3' Gui gradient color 3
+			RGBColor8 mFront4Color = { 0xFF, 0xFF, 0xFF };			///< Property: 'FrontColor4' Gui gradient color 4 (text)
+			RGBColor8 mHighlightColor1 = { 0x29, 0x58, 0xff };		///< Property: 'HighlightColor1' Special highlight color 1 (selection)
+			RGBColor8 mHighlightColor2 = { 0xD6, 0xFF, 0xA3 };		///< Property: 'HighlightColor2' Special highlight color 2 (info)
+			RGBColor8 mHighlightColor3 = { 0xFF, 0xEA, 0x30 };		///< Property: 'HighlightColor3' Special highlight color 3 (warning)
+			RGBColor8 mHighlightColor4 = { 0xFF, 0x50, 0x50 };		///< Property: 'HighlightColor4' Special highlight color 4 (errors)
+			bool mInvertIcon = false;								///< Property: 'InvertIcon' If icons should be inverted
+		};
 	}
-
-
-	/**
-	 * Configurable palette of GUI colors
-	 */
-	struct NAPAPI IMGuiColorPalette
-	{
-		IMGuiColorPalette() = default;
-		RGBColor8 mHighlightColor = { 0xC8, 0x69, 0x69 };		///< Property: 'HighlightColor' Gui highlight color
-		RGBColor8 mBackgroundColor = { 0x2D, 0x2E, 0x42 };		///< Property: 'BackgroundColor' Gui background color
-		RGBColor8 mDarkColor = { 0x11, 0x14, 0x26 };			///< Property: 'DarkColor' Gui dark color
-		RGBColor8 mFront1Color = { 0x52, 0x54, 0x6A };			///< Property: 'FrontColor1' Gui front color 1
-		RGBColor8 mFront2Color = { 0x5D, 0x5E, 0x73 };			///< Property: 'FrontColor2' Gui front color 2
-		RGBColor8 mFront3Color = { 0x8B, 0x8C, 0xA0 };			///< Property: 'FrontColor3' Gui front color 3
-	};
 
 
 	/**
@@ -93,15 +108,17 @@ namespace nap
 	class NAPAPI IMGuiServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
-
 	public:
-		float mFontSize = 17.0f;								///< Property: 'FontSize' Gui font size
-		float mScale = 1.0f;									///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
-		std::string mFontFile = "";								///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
-		IMGuiColorPalette mColors;								///< Property: 'Colors' Gui colors
+		gui::EColorScheme mColorScheme = gui::EColorScheme::Dark;		///< Property: 'Color Scheme' The color scheme to use (dark, light, custom etc.)
+		float mFontSize = 17.0f;										///< Property: 'Font Size' Gui font size
+		float mScale = 1.0f;											///< Property: 'Scale' Overall gui multiplication factor. Applies to the font and all other gui elements
+		std::string mFontFile = "";										///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
+		glm::ivec2 mFontOversampling = { 5, 3 };						///< Property: 'FontSampling' Horizontal and vertical font oversampling, higher values result in sharper text in exchange for more memory.
+		float mFontSpacing = 0.25f;										///< Property: 'FontSpacing' Extra horizontal spacing (in pixels) between glyphs.
+		gui::ColorPalette mCustomColors;								///< Property: 'Colors' Gui color overrides if scheme is set to custom
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
-
+	 
 
 	/**
 	 * This service manages the global ImGui state.
@@ -196,7 +213,7 @@ namespace nap
 		 * Returns the GUI color palette.
 		 * @return the GUI color palette.
 		 */
-		const IMGuiColorPalette& getColors() const;
+		const gui::ColorPalette& getPalette() const;
 
 		/**
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
@@ -374,6 +391,9 @@ namespace nap
 		IMGuiServiceConfiguration* mConfiguration = nullptr;
 		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
 		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
+
+		// Color palette
+		const gui::ColorPalette* mColorPalette = nullptr;
 
 		// Icons
 		std::unordered_map<std::string, std::unique_ptr<Icon>> mIcons;

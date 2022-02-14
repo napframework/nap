@@ -165,7 +165,10 @@ namespace nap
 
 		updatePixelFormat();
 		mData.resize(getSizeInBytes());
-		copyImageData((const uint8*)file_buffer.getData(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(), mData.data(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(), getWidth(), getHeight());
+		copyImageData(
+			(const uint8*)file_buffer.getData(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(),
+			mData.data(), mSurfaceDescriptor.getPitch(), mSurfaceDescriptor.getChannels(),
+			getWidth(), getHeight());
 
 		return true;
 	}
