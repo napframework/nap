@@ -10,15 +10,8 @@ struct Boid
 	vec4 velocity;
 	vec4 orientation;
 
-	vec4 avoidanceHeading;
-	vec4 flockHeading;
-	vec4 flockCenter;
-
-	// Padding member
 	uint padding[3];
-
-	// Maintain 16 byte-alignment
-	uint numFlockMates;
+	float mateRate;
 };
 
 // UNIFORM
@@ -53,7 +46,7 @@ out vec3 pass_Normals;
 out float pass_Speed;
 out float pass_Fresnel;
 out float pass_Mates;
-out uint pass_Id;
+flat out uint pass_Id;
 
 
 // Rotate vector v with quaterion q
@@ -86,7 +79,7 @@ void main(void)
 	pass_Fresnel = fresnelScale * pow(1.0 + dot(eye_to_surface, world_normal), fresnelPower);
 
 	pass_Speed = length(b.velocity.xyz);
-	pass_Mates = b.numFlockMates/float(boids.length());
+	pass_Mates = b.mateRate;
 
 	// Pass element id
 	pass_Id = gl_InstanceIndex;

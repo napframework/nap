@@ -7,9 +7,9 @@
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Size": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
+                "x": 0.5,
+                "y": 0.5,
+                "z": 2.0
             },
             "Position": {
                 "x": 0.0,
@@ -1312,7 +1312,7 @@
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
-            "Radius": 1.0,
+            "Radius": 0.5,
             "Rings": 16.0,
             "Sectors": 16.0,
             "Color": {
@@ -1430,58 +1430,20 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_07266880",
-                            "Name": "avoidanceHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_8f5acb1d",
-                            "Name": "flockHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_7ccb5b95",
-                            "Name": "flockCenter",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
                             "Type": "nap::UniformUIntArray",
-                            "mID": "UniformUIntArray_0775cdb8",
+                            "mID": "UniformUIntArray_abd57a26",
                             "Name": "padding",
                             "Values": [
+                                0,
                                 0,
                                 0
                             ]
                         },
                         {
-                            "Type": "nap::UniformUInt",
-                            "mID": "UniformUInt_7fb5fd14",
-                            "Name": "numFlockMates",
-                            "Value": 0
-                        },
-                        {
-                            "Type": "nap::UniformUInt",
-                            "mID": "UniformUInt_6d7d0394",
-                            "Name": "spatialIndex",
-                            "Value": 0
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_b51ccdc7",
+                            "Name": "mateRate",
+                            "Value": 0.0
                         }
                     ]
                 },
@@ -1535,58 +1497,20 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_07266880b",
-                            "Name": "avoidanceHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_8f5acb1db",
-                            "Name": "flockHeading",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_02b54fb6",
-                            "Name": "flockCenter",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
                             "Type": "nap::UniformUIntArray",
-                            "mID": "UniformUIntArray_6cb90972",
+                            "mID": "UniformUIntArray_83218a4c",
                             "Name": "padding",
                             "Values": [
+                                0,
                                 0,
                                 0
                             ]
                         },
                         {
-                            "Type": "nap::UniformUInt",
-                            "mID": "UniformUInt_dde288a6",
-                            "Name": "numFlockMates",
-                            "Value": 0
-                        },
-                        {
-                            "Type": "nap::UniformUInt",
-                            "mID": "UniformUInt_f5091449",
-                            "Name": "spatialIndex",
-                            "Value": 0
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_6eef5086",
+                            "Name": "mateRate",
+                            "Value": 0.0
                         }
                     ]
                 },

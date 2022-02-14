@@ -25,7 +25,7 @@ in vec3 pass_Normals;
 
 in float pass_Speed;
 in float pass_Fresnel;
-in float pass_Mates;
+win float pass_Mates;
 flat in uint pass_Id;
 
 out vec4 out_Color;
@@ -56,13 +56,13 @@ void main(void)
 
 	// Rainbow
 	vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
-	if (ubo.randomColor > EPSILON)
+	if (ubo.randomColor > 0.0)
 	{	
 		boid_color = hsv2rgb(boid_hsv);
 	}
 	else
 	{
-		boid_color = mix(boid_color, hsv2rgb(boid_hsv), map(pow(pass_Mates, 0.5), 0.0, ubo.mateColorRate, 0.0, 1.0));
+		boid_color = mix(boid_color, hsv2rgb(boid_hsv), map(pass_Mates, 0.0, ubo.mateColorRate, 0.0, 1.0));
 	}
 
 	// Surface to camera normal     

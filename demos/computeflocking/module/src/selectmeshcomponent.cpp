@@ -9,13 +9,13 @@
 #include <renderablemeshcomponent.h>
 #include <mathutils.h>
 
-// nap::SelectMeshcomponent run time class definition 
+// nap::SelectMeshComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SelectMeshComponent)
 	RTTI_PROPERTY("Meshes",	&nap::SelectMeshComponent::mMeshes,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Index",	&nap::SelectMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-// nap::SelectMeshcomponentInstance run time class definition 
+// nap::SelectMeshComponentInstance run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SelectMeshComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS

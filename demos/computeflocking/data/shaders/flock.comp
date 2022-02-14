@@ -11,15 +11,8 @@ struct Boid
 	vec4 velocity;
 	vec4 orientation;
 
-	vec4 avoidanceHeading;
-	vec4 flockHeading;
-	vec4 flockCenter;
-
-	// Padding member
 	uint padding[3];
-
-	// Maintain 16 byte-alignment
-	uint numFlockMates;
+	float mateRate;
 };
 
 // STORAGE
@@ -277,7 +270,7 @@ void computeForcesShared(uint gid, vec3 position, vec3 velocity, out vec4 avoida
 			vec3 offset = other.pos.xyz - position;
 			float l1 = dot(offset, offset);
 
-			if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > 0.0) 
+			if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > -0.1) 
 			{
 				numFlockMates++;
 				flockHeading += other_dir;
@@ -306,14 +299,13 @@ void main()
 	// Read boid from input buffer - use the invocation ID as an index into our storage buffer
 	Boid b = subo_in.boids[global_id];
 
-	// Reset boid
-	b.avoidanceHeading = vec4(0.0);
-	b.flockHeading = vec4(0.0);
-	b.flockCenter = vec4(0.0);
-	b.numFlockMates = 0;
-
-	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, b.avoidanceHeading, b.flockHeading, b.flockCenter, b.numFlockMates);
-	//computeForces(global_id, b.position.xyz, b.avoidanceHeading, b.flockHeading, b.flockCenter, b.numFlockMates);
+	// Compute forces
+	vec4 avoidance_heading = vec4(0.0);
+	vec4 flock_heading = vec4(0.0);
+	vec4 flock_center = vec4(0.0);
+	uint num_flock_mates = 0;
+	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
+	//computeForces(global_id, b.position.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 
 	// Calculate base acceleration determined by a moving global target position
 	vec4 offset = vec4(ubo.target, 0.0) - b.position;
@@ -323,15 +315,16 @@ void main()
 	// 'alignment' indicates a force pushing towards the average heading of the flock
 	// 'cohesion' indicates a force pushing towards the center of the flock
 	// 'separation' indicates a force steering away from flock mates within an avoidance radius
-	if (b.numFlockMates > 0)
+	if (num_flock_mates > 0)
 	{
-		vec4 average_flock_center = b.flockCenter / b.numFlockMates;
-		vec4 average_flock_heading = b.flockHeading / b.numFlockMates;
-		vec4 average_avoidance_heading = b.avoidanceHeading / b.numFlockMates;
+		float fcount = float(num_flock_mates);
+		vec4 mean_flock_center = flock_center / fcount;
+		vec4 mean_flock_heading = flock_heading / fcount;
+		vec4 mean_avoidance_heading = avoidance_heading / fcount;
 
-		vec3 alignment = steerTowards(average_flock_heading.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.alignmentWeight;
-		vec3 cohesion = steerTowards(average_flock_center.xyz - b.position.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.cohesionWeight;
-		vec3 seperation = steerTowards(average_avoidance_heading.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.separationWeight;
+		vec3 alignment = steerTowards(mean_flock_heading.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.alignmentWeight;
+		vec3 cohesion = steerTowards(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.cohesionWeight;
+		vec3 seperation = steerTowards(mean_avoidance_heading.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.separationWeight;
 
 		acceleration += alignment;
 		acceleration += cohesion;
@@ -361,6 +354,9 @@ void main()
 
 	// Compose a new orientation from last frame's quat and the delta
 	b.orientation = mulQuat(q_delta, b.orientation);
+
+	// Write mate rate
+	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.7), b.mateRate, 0.9);
 
 	// Write boid to output buffer
 	subo_out.boids[global_id] = b;

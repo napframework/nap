@@ -76,7 +76,7 @@ namespace nap
 
 	private:
 		std::vector<RenderableMesh> mMeshes;							//< All meshes to select from
-		int mCurrentIndex = 0;											//< Current video index
+		int mCurrentIndex = 0;											//< Current mesh index
 
 		RenderableMesh* mCurrentMesh = nullptr;							//< Current selected mesh
 		RenderableMeshComponentInstance* mRenderComponent = nullptr;	//< Renderable mesh component that receives the new selection
