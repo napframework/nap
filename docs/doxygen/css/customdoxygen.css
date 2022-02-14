@@ -22,7 +22,7 @@ body, table, div, p, dl,
 table.directory, #nav-tree,#nav-tree .label {
 	font-family:  'manrope', sans-serif;
 	color: #CDCDC3;
-	letter-spacing: 0.02em;
+	letter-spacing: 0.01em;
 }
 
 table.classindex {
