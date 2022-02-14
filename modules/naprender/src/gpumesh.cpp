@@ -2,8 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
 #include "gpumesh.h"
 #include "renderservice.h"
+
+// External includes
 #include <nap/assert.h>
 
 namespace nap
@@ -51,4 +54,22 @@ namespace nap
 		assert(index < mIndexBuffers.size());
 		return *mIndexBuffers[index];
 	}
+
+
+	template<typename ELEMENTTYPE>
+	ValueGPUBuffer& GPUMesh::addVertexBuffer(const std::string& id)
+	{
+		auto vertex_buffer = std::make_unique<TypedValuePropertyGPUBuffer<ELEMENTTYPE, EValueGPUBufferProperty::Vertex>>(mRenderService->getCore(), mUsage);
+		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
+		return *it->second;
+	}
+
+
+	// Explicit template instantiations
+	template ValueGPUBuffer& GPUMesh::addVertexBuffer<uint>(const std::string&);
+	template ValueGPUBuffer& GPUMesh::addVertexBuffer<int>(const std::string&);
+	template ValueGPUBuffer& GPUMesh::addVertexBuffer<float>(const std::string&);
+	template ValueGPUBuffer& GPUMesh::addVertexBuffer<glm::vec2>(const std::string&);
+	template ValueGPUBuffer& GPUMesh::addVertexBuffer<glm::vec3>(const std::string&);
+	template ValueGPUBuffer& GPUMesh::addVertexBuffer<glm::vec4>(const std::string&);
 }

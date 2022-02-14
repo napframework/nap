@@ -8,6 +8,7 @@
 #include "renderservice.h"
 #include "shadervariabledeclarations.h"
 #include "materialcommon.h"
+#include "formatutils.h"
 
 namespace nap
 {

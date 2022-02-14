@@ -5,9 +5,11 @@
 // Local Includes
 #include "valuegpubuffer.h"
 #include "renderservice.h"
+#include "mathutils.h"
 
 // External Includes
 #include <nap/core.h>
+#include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ValueGPUBuffer)
 RTTI_END_CLASS
@@ -177,3 +179,108 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IndexBuffer)
 	RTTI_PROPERTY("FillPolicy", &nap::IndexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::IndexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
+
+
+namespace nap
+{
+	//////////////////////////////////////////////////////////////////////////
+	// TypedValueGPUBuffer
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	bool TypedValueGPUBuffer<T>::init(utility::ErrorState& errorState)
+	{
+		if (!ValueGPUBuffer::init(errorState))
+			return false;
+
+		if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
+			return false;
+
+		// Compose usage flags from buffer configuration
+		mUsageFlags |= getBufferUsage(mDescriptorType);
+
+		// Calculate buffer size
+		uint32 buffer_size = mCount * sizeof(T);
+
+		// Allocate buffer memory
+		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
+			return false;
+
+		// Upload data when a buffer fill policy is available
+		if (mBufferFillPolicy != nullptr)
+		{
+			if (mUsage != EMemoryUsage::DynamicRead)
+			{
+				// Create a staging buffer to upload
+				auto staging_buffer = std::make_unique<T[]>(mCount);
+				mBufferFillPolicy->fill(mCount, staging_buffer.get());
+
+				// Prepare staging buffer upload
+				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
+					return false;
+			}
+			else
+			{
+				// Warn user that buffers cannot be filled when their usage is set to DynamicRead
+				nap::Logger::warn(utility::stringFormat("%s: The configured fill policy was ignored as the buffer usage is DynamicRead", mID.c_str()).c_str());
+			}
+		}
+
+		// Optionally clear - does not count as an upload
+		else if (mClear)
+			GPUBuffer::requestClear();
+
+		mInitialized = true;
+		return true;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// TypedValuePropertyGPUBuffer
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T, EValueGPUBufferProperty PROPERTY>
+	bool TypedValuePropertyGPUBuffer<T, PROPERTY>::init(utility::ErrorState& errorState)
+	{
+		// Compose usage flags from buffer configuration
+		switch (PROPERTY)
+		{
+		case EValueGPUBufferProperty::Index:
+			TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+			break;
+		case EValueGPUBufferProperty::Vertex:
+			TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			break;
+		}
+
+		if (!TypedValueGPUBuffer<T>::init(errorState))
+			return false;
+
+		return true;
+	}
+
+	// Explicit template instantiations
+	template bool IntGPUBuffer::init(utility::ErrorState& errorState);
+	template bool FloatGPUBuffer::init(utility::ErrorState& errorState);
+	template bool Vec2GPUBuffer::init(utility::ErrorState& errorState);
+	template bool Vec3GPUBuffer::init(utility::ErrorState& errorState);
+	template bool Vec4GPUBuffer::init(utility::ErrorState& errorState);
+	template bool Mat4GPUBuffer::init(utility::ErrorState& errorState);
+
+	template bool UIntGenericGPUBuffer::init(utility::ErrorState& errorState);
+	template bool IntGenericGPUBuffer::init(utility::ErrorState& errorState);
+	template bool FloatGenericGPUBuffer::init(utility::ErrorState& errorState);
+	template bool Vec2GenericGPUBuffer::init(utility::ErrorState& errorState);
+	template bool Vec3GenericGPUBuffer::init(utility::ErrorState& errorState);
+	template bool Vec4GenericGPUBuffer::init(utility::ErrorState& errorState);
+	template bool Mat4GenericGPUBuffer::init(utility::ErrorState& errorState);
+
+	template bool UIntVertexBuffer::init(utility::ErrorState& errorState);
+	template bool IntVertexBuffer::init(utility::ErrorState& errorState);
+	template bool FloatVertexBuffer::init(utility::ErrorState& errorState);
+	template bool Vec2VertexBuffer::init(utility::ErrorState& errorState);
+	template bool Vec3VertexBuffer::init(utility::ErrorState& errorState);
+	template bool Vec4VertexBuffer::init(utility::ErrorState& errorState);
+
+	template bool IndexBuffer::init(utility::ErrorState& errorState);
+}

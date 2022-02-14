@@ -4,7 +4,7 @@
 
 #pragma once
 
-// Local Includes
+// Local includes
 #include "valuegpubuffer.h"
 
 // External Includes
@@ -95,17 +95,4 @@ namespace nap
 		std::vector<std::unique_ptr<IndexBuffer>>		mIndexBuffers;					///< Index buffers
 		EMemoryUsage									mUsage = EMemoryUsage::Static;	///< By default a gpu mesh is static.
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template definitions
-	//////////////////////////////////////////////////////////////////////////
-
-	template<typename ELEMENTTYPE>
-	ValueGPUBuffer& GPUMesh::addVertexBuffer(const std::string& id)
-	{
-		auto vertex_buffer = std::make_unique<TypedValuePropertyGPUBuffer<ELEMENTTYPE, EValueGPUBufferProperty::Vertex>>(mRenderService->getCore(), mUsage);
-		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
-		return *it->second;
-	}
 }

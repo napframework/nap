@@ -6,16 +6,12 @@
 
 // Local Includes
 #include "gpubuffer.h"
-#include "shadervariabledeclarations.h"
 #include "vulkan/vulkan_core.h"
-#include "mathutils.h"
 #include "valuebufferfillpolicy.h"
 #include "formatutils.h"
 
 // External Includes
 #include <nap/resourceptr.h>
-#include <nap/logger.h>
-#include <stdint.h>
 #include <glm/glm.hpp>
 
 namespace nap
@@ -110,51 +106,7 @@ namespace nap
 		 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has priority
 		 * over the latter.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override
-		{
-			if (!ValueGPUBuffer::init(errorState))
-				return false;
-
-			if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
-				return false;
-
-			// Compose usage flags from buffer configuration
-			mUsageFlags |= getBufferUsage(mDescriptorType);
-
-			// Calculate buffer size
-			uint32 buffer_size = mCount * sizeof(T);
-
-			// Allocate buffer memory
-			if (!allocateInternal(buffer_size, mUsageFlags, errorState))
-				return false;
-
-			// Upload data when a buffer fill policy is available
-			if (mBufferFillPolicy != nullptr)
-			{
-				if (mUsage != EMemoryUsage::DynamicRead)
-				{
-					// Create a staging buffer to upload
-					auto staging_buffer = std::make_unique<T[]>(mCount);
-					mBufferFillPolicy->fill(mCount, staging_buffer.get());
-
-					// Prepare staging buffer upload
-					if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
-						return false;
-				}
-				else
-				{
-					// Warn user that buffers cannot be filled when their usage is set to DynamicRead
-					nap::Logger::warn(utility::stringFormat("%s: The configured fill policy was ignored as the buffer usage is DynamicRead", mID.c_str()).c_str());
-				}
-			}
-
-			// Optionally clear - does not count as an upload
-			else if (mClear)
-				GPUBuffer::requestClear();
-
-			mInitialized = true;
-			return true;
-		}
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
@@ -278,24 +230,7 @@ namespace nap
 		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
 		 * If a fill policy is available, the buffer will also be uploaded to immediately.
 		 */
-		virtual bool init(utility::ErrorState& errorState) override
-		{
-			// Compose usage flags from buffer configuration
-			switch (PROPERTY)
-			{
-			case EValueGPUBufferProperty::Index:
-				TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-				break;
-			case EValueGPUBufferProperty::Vertex:
-				TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-				break;
-			}
-
-			if (!TypedValueGPUBuffer<T>::init(errorState))
-				return false;
-
-			return true;
-		}
+		virtual bool init(utility::ErrorState& errorState) override;
 	};
 
 
