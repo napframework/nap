@@ -398,6 +398,16 @@
                         "Samplers": []
                     },
                     "Invocations": 1
+                },
+                {
+                    "Type": "nap::SelectMeshComponent",
+                    "mID": "SelectMeshComponent",
+                    "Meshes": [
+                        "CapsuleMesh",
+                        "BoxMesh",
+                        "SphereMesh"
+                    ],
+                    "Index": "MeshIndexParameter"
                 }
             ],
             "Children": []
@@ -874,6 +884,14 @@
             "mID": "FlockingParameters",
             "Parameters": [
                 {
+                    "Type": "nap::ParameterInt",
+                    "mID": "MeshIndexParameter",
+                    "Name": "MeshIndex",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 1
+                },
+                {
                     "Type": "nap::ParameterFloat",
                     "mID": "BoidSizeParameter",
                     "Name": "BoidSize",
@@ -1115,7 +1133,7 @@
                             "mID": "MateColorRateParameter",
                             "Name": "MateColorRate",
                             "Value": 0.10000000149011612,
-                            "Minimum": 0.0010000000474974514,
+                            "Minimum": 0.05000000074505806,
                             "Maximum": 1.0
                         }
                     ],
@@ -1284,6 +1302,24 @@
                     1.0,
                     0.0,
                     0.501960813999176,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "SphereMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill",
+            "Radius": 1.0,
+            "Rings": 16.0,
+            "Sectors": 16.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
                     1.0
                 ]
             }
