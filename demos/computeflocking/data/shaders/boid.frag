@@ -39,6 +39,12 @@ vec3 hsv2rgb(vec3 c)
 }
 
 
+float map(float value, float inMin, float inMax, float outMin, float outMax)
+{
+	return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
+}
+
+
 void main(void)
 {
 	// Theme color
@@ -49,7 +55,7 @@ void main(void)
 	{
 		vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
 		//boid_color = hsv2rgb(boid_hsv);
-		boid_color = mix(boid_color, hsv2rgb(boid_hsv), pow(pass_Mates, 1.3)*50.0);
+		boid_color = mix(boid_color, hsv2rgb(boid_hsv), map(pow(pass_Mates, 0.5), 0.0, 0.1, 0.0, 1.0));
 	}
 
 	// Surface to camera normal     

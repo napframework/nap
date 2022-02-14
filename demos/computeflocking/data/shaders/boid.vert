@@ -40,7 +40,7 @@ uniform Vert_UBO
 // STORAGE
 layout(std430) buffer SSBO
 {
-	Boid boids[1000];
+	Boid boids[10000];
 };
 
 // Input Vertex Attributes

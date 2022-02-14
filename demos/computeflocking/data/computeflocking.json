@@ -32,9 +32,9 @@
             "CullMode": "Front",
             "PolygonMode": "Line",
             "Size": {
-                "x": 20.0,
-                "y": 20.0,
-                "z": 20.0
+                "x": 25.0,
+                "y": 25.0,
+                "z": 25.0
             },
             "Position": {
                 "x": 0.0,
@@ -281,7 +281,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumBoids": 1000,
+                    "NumBoids": 10000,
                     "RandomColor": "RandomColorParameter",
                     "BoidSize": "BoidSizeParameter",
                     "FresnelScale": "FresnelScaleParameter",
@@ -956,7 +956,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "BoundsExtentParameter",
                     "Name": "BoundsExtent",
-                    "Value": 10.0,
+                    "Value": 12.5,
                     "Minimum": 1.0,
                     "Maximum": 20.0
                 }
@@ -1440,7 +1440,7 @@
                         }
                     ]
                 },
-                "Count": 1000
+                "Count": 10000
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
@@ -1545,7 +1545,7 @@
                         }
                     ]
                 },
-                "Count": 1000
+                "Count": 10000
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
@@ -1555,15 +1555,6 @@
         {
             "Type": "nap::TextureShader",
             "mID": "ColorTextureShader"
-        },
-        {
-            "Type": "nap::UIntGenericGPUBuffer",
-            "mID": "GridBuffer",
-            "Count": 1000,
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "",
-            "Clear": true
         }
     ]
 }

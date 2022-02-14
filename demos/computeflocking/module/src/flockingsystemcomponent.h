@@ -43,7 +43,7 @@ namespace nap
 			components.emplace_back(RTTI_OF(ComputeComponent));
 		}
 
-		int mNumBoids;													///< Property: "NumBoids" The number of boids
+		uint mNumBoids;													///< Property: "NumBoids" The number of boids
 
 		ResourcePtr<ParameterBool> mRandomColorParam;					///< Property: "RandomColorParam" Enable random colors
 		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Property: "BoidSizeParam" Default size of a boid

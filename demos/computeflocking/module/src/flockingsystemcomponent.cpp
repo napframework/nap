@@ -172,7 +172,7 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsExtent)->setValue(mResource->mBoundsExtentParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
+			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
 		}
 
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();

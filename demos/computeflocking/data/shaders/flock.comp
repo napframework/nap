@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
-layout(local_size_x = 32) in;
+layout(local_size_x = 256) in;
 
 struct Boid
 {
@@ -25,12 +25,12 @@ struct Boid
 // STORAGE
 layout(std430) buffer BoidBuffer_In
 {
-	Boid boids[1000];
+	Boid boids[10000];
 } subo_in;
 
 layout(std430) buffer BoidBuffer_Out
 {
-	Boid boids[1000];
+	Boid boids[10000];
 } subo_out;
 
 
@@ -38,7 +38,7 @@ layout(std430) buffer BoidBuffer_Out
 uniform UBO
 {
 	vec3 target;
-	int numBoids;
+	uint numBoids;
 	float deltaTime;
 	float elapsedTime;
 	float viewRadius;
@@ -64,6 +64,15 @@ const vec3 UP 				= vec3(0.0, 1.0, 0.0);
 const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
 
 const float avoidBoundWeightConst = 2.5;
+
+// SHARED
+struct BoidData
+{
+	vec4 pos;
+	vec4 vel;
+};
+shared BoidData sharedData[gl_WorkGroupSize.x];
+
 
 // Multiply two quaternions -> qa * qb
 vec4 mulQuat(vec4 qa, vec4 qb)
@@ -198,14 +207,103 @@ float rayBounds(in vec3 orig, in vec3 dir, in vec3 extent, out vec3 oN)
 }
 
 
+// Old routine that does not utilize shared memory 
+void computeForces(uint gid, vec3 position, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
+{
+	uint idx = 0;
+	for (uint i = 1; i < ubo.numBoids; i++) 
+	{
+		idx = (i + gid) % ubo.numBoids;
+
+		vec4 other_pos = subo_in.boids[idx].position;
+		vec4 other_dir = subo_in.boids[idx].velocity;
+		other_dir = vec4(safeNormalize(other_dir.xyz), 1.0);
+
+		vec3 offset = other_pos.xyz - position;
+		float l1 = dot(offset, offset);
+
+		if (l1 < ubo.viewRadius * ubo.viewRadius) 
+		{
+			numFlockMates++;
+			flockHeading += other_dir;
+			flockCenter += other_pos;
+
+			if (l1 < ubo.avoidRadius * ubo.avoidRadius)
+			{
+				// Note that this can be a zero vector
+				avoidanceHeading -= vec4(offset, 1.0) / l1;
+			}
+		}
+	}
+}
+
+
+// Optimized routine that utilizes shared memory 
+void computeForcesShared(uint gid, vec3 position, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
+{
+	// Copy to fast shared data
+	// Process in chunks of SHARED_DATA_SIZE
+	uint local_id = gl_LocalInvocationID.x;
+	uint group_size = gl_WorkGroupSize.x;
+	for (uint i = 0; i < ubo.numBoids; i += group_size)
+	{
+		uint id = i + local_id;
+		if (id < ubo.numBoids && id != gid)
+		{
+			sharedData[local_id].pos = subo_in.boids[id].position;
+			sharedData[local_id].vel = subo_in.boids[id].velocity;
+		}
+		else
+		{
+			sharedData[local_id].pos = vec4(0.0);
+			sharedData[local_id].vel = vec4(0.0);
+		}
+
+		memoryBarrierShared();
+		barrier();
+
+		// Update force variables
+		for (uint j = 0; j < group_size; j++)
+		{
+			vec4 other_pos = sharedData[j].pos;
+			vec4 other_dir = sharedData[j].vel;
+
+			if (isZero(other_dir.xyz))
+				break;
+
+			other_dir = vec4(normalize(other_dir.xyz), 1.0);
+
+			vec3 offset = other_pos.xyz - position.xyz;
+			float l1 = dot(offset, offset);
+
+			if (l1 < ubo.viewRadius * ubo.viewRadius) 
+			{
+				numFlockMates++;
+				flockHeading += other_dir;
+				flockCenter += other_pos;
+
+				if (l1 < ubo.avoidRadius * ubo.avoidRadius)
+				{
+					// Note that this can be a zero vector
+					avoidanceHeading -= vec4(offset, 1.0) / l1;
+				}
+			}
+		}
+
+		memoryBarrierShared();
+		barrier();
+	}
+}
+
+
 // SHADER MAIN
 void main()
 {
 	// Fetch global compute shader invocation ID
-	uint id = gl_GlobalInvocationID.x;
+	uint global_id = gl_GlobalInvocationID.x;
 
 	// Read boid from input buffer - use the invocation ID as an index into our storage buffer
-	Boid b = subo_in.boids[id];
+	Boid b = subo_in.boids[global_id];
 
 	// Reset boid
 	b.avoidanceHeading = vec4(0.0);
@@ -213,32 +311,8 @@ void main()
 	b.flockCenter = vec4(0.0);
 	b.numFlockMates = 0;
 
-	// Update force variables
-	uint idx = 0;
-	for (uint i = 1; i < ubo.numBoids; i++) 
-	{
-		idx = (i + id) % ubo.numBoids;
-
-		vec4 other_pos = subo_in.boids[idx].position;
-		vec4 other_dir = subo_in.boids[idx].velocity;
-		other_dir = vec4(safeNormalize(other_dir.xyz), 1.0);
-
-		vec3 offset = other_pos.xyz - b.position.xyz;
-		float l1 = dot(offset, offset);
-
-		if (l1 < ubo.viewRadius * ubo.viewRadius) 
-		{
-			b.numFlockMates++;
-			b.flockHeading += other_dir;
-			b.flockCenter += other_pos;
-
-			if (l1 < ubo.avoidRadius * ubo.avoidRadius)
-			{
-				// Note that this can be a zero vector
-				b.avoidanceHeading -= vec4(offset, 1.0) / l1;
-			}
-		}
-	}
+	computeForcesShared(global_id, b.position.xyz, b.avoidanceHeading, b.flockHeading, b.flockCenter, b.numFlockMates);
+	//computeForces(global_id, b.position.xyz, b.avoidanceHeading, b.flockHeading, b.flockCenter, b.numFlockMates);
 
 	// Calculate base acceleration determined by a moving global target position
 	vec4 offset = vec4(ubo.target, 0.0) - b.position;
@@ -288,5 +362,5 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write boid to output buffer
-	subo_out.boids[id] = b;
+	subo_out.boids[global_id] = b;
 }
