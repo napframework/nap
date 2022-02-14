@@ -17,11 +17,10 @@ Central to NAP are some key philosophies:
 - NAP wants you to be safe and validates data for you
 - NAP is responsive: hot-load content changes directly in to the running app
 - NAP is completely cross-platform and supports all modern desktop environments
-- NAP app content can be edited using an editor
 
 ## Features
 
-NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, an audio engine for music playback, recording and analysis, a data sequencer, an editor to author application content, a system for creating and loading presets, a video player powered by FFmpeg and a Python programming interface.
+NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, an audio engine for music playback, recording and analysis, a data sequencer, an editor to author application content, a web-portal, a system for creating and loading presets, a video player powered by FFmpeg and a Python programming interface.
 
 NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV, SQLite and many others. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
 
