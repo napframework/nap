@@ -238,16 +238,7 @@ When we compile and run the app you should see a button. Click on it to start / 
 Package for Distribution {#app_package}
 ==========================
 
-To create a distributable package of your application, including: 
-
-- the executable
-- dependencies (modules / third-party)
-- napkin (editor)
-- assets (json)
-
-run: 
-
-`./package` on macOS and Linux, `package.bat` on Windows. Note that on macOS you (might) have to run the `unquarantine_framework.command` and `Unquarantine Project.command`. The NAP package and NAP applications are not signed by default.
+To create a distributable package of your application run `package.bat` (windows) or `./package` (macOS / Linux). Append `--help` for additional information. By default the application including Napkin and all assets is packaged for you.
 
 
 
