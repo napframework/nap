@@ -771,6 +771,33 @@ namespace nap
 	}
 
 
+	bool Shader::loadDefault(const std::string& displayName, utility::ErrorState& errorState)
+	{
+		std::string relative_path = utility::joinPath({ "shaders", utility::appendFileExtension(displayName, "vert") });
+		const std::string vertex_shader_path = mRenderService->getModule().findAsset(relative_path);
+		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find %s vertex shader %s", mRenderService->getModule().getName().c_str(), displayName.c_str(), vertex_shader_path.c_str()))
+			return false;
+
+		relative_path = utility::joinPath({ "shaders", utility::appendFileExtension(displayName, "frag") });
+		const std::string fragment_shader_path = mRenderService->getModule().findAsset(relative_path);
+		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find %s fragment shader %s", mRenderService->getModule().getName().c_str(), displayName.c_str(), fragment_shader_path.c_str()))
+			return false;
+
+		// Read vert shader file
+		std::string vert_source;
+		if (!errorState.check(utility::readFileToString(vertex_shader_path, vert_source, errorState), "Unable to read %s vertex shader file", displayName.c_str()))
+			return false;
+
+		// Read frag shader file
+		std::string frag_source;
+		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read %s fragment shader file", displayName.c_str()))
+			return false;
+
+		// Compile shader
+		return this->load(displayName, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Compute Shader
 	//////////////////////////////////////////////////////////////////////////

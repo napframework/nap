@@ -21,8 +21,8 @@ RTTI_END_CLASS
 namespace nap
 {
 	/**
-	* Initialize all the resources and store the objects we need later on
-	*/
+	 * Initialize all the resources and store the objects we need later on
+	 */
 	bool ComputeFlockingApp::init(utility::ErrorState& errorState)
 	{
 		// Create render service

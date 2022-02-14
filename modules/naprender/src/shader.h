@@ -101,7 +101,7 @@ namespace nap
 		/**
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
 		 * Call this in a derived class on initialization.
-		 * @param displayName the name of the shader
+		 * @param displayName the name of the shader.
 		 * @param vertShader the vertex shader GLSL code.
 		 * @param vertSize total number of characters in vertShader.
 		 * @param fragShader the fragment shader GLSL code.
@@ -110,6 +110,16 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		 bool load(const std::string& displayName, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState);
+		 
+		 /**
+		  * Loads a NAP default shader from disk.
+		  * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
+		  * Call this in a derived class on initialization.
+		  * @param displayName the name of the NAP default shader.
+		  * @param errorState contains the error if initialization fails.
+		  * @return if initialization succeeded.
+		  */
+		 bool loadDefault(const std::string& displayName, utility::ErrorState& errorState);
 
 	private:
 		VertexAttributeDeclarations						mShaderAttributes;						///< Shader program vertex attribute inputs
