@@ -3,7 +3,7 @@
         {
             "Type": "nap::IMGuiServiceConfiguration",
             "mID": "IMGuiServiceConfiguration_9ca87195-ac98-4484-b21a-bf9cc3c765ee",
-            "ColorScheme": "Classic",
+            "ColorScheme": "Dark",
             "FontSize": 17.0,
             "GlobalScale": 1.0,
             "FontFile": "",

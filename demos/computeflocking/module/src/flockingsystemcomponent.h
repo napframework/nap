@@ -59,7 +59,7 @@ namespace nap
 		ResourcePtr<ParameterFloat> mAlignmentWeightParam;				///< Property: "AlignmentWeight" 
 		ResourcePtr<ParameterFloat> mCohesionWeightParam;				///< Property: "CohesionWeight" 
 		ResourcePtr<ParameterFloat> mSeparationWeightParam;				///< Property: "SeparationWeight" 
-		ResourcePtr<ParameterFloat> mBoundsExtentParam;					///< Property: "BoundsExtent" 
+		ResourcePtr<ParameterFloat> mBoundsRadiusParam;					///< Property: "BoundsRadius" 
 
 		ResourcePtr<ParameterVec3> mLightPositionParam;					///< Property: "LightPosition" 
 		ResourcePtr<ParameterFloat> mLightIntensityParam;				///< Property: "LightIntensity" 

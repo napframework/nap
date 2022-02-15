@@ -99,8 +99,8 @@
                         },
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "BoundsExtentParameter",
-                            "Name": "BoundsExtent",
+                            "mID": "BoundsRadiusParameter",
+                            "Name": "BoundsRadius",
                             "Value": 12.5,
                             "Minimum": 1.0,
                             "Maximum": 20.0

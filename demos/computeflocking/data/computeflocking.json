@@ -26,31 +26,6 @@
             }
         },
         {
-            "Type": "nap::BoxMesh",
-            "mID": "BoxMeshBounds",
-            "Usage": "Static",
-            "CullMode": "Front",
-            "PolygonMode": "Line",
-            "Size": {
-                "x": 25.0,
-                "y": 25.0,
-                "z": 25.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
             "Type": "nap::ColorAdjustmentShader",
             "mID": "ColorAdjustmentShader"
         },
@@ -114,6 +89,84 @@
             "Children": [
                 "ChildTransformEntity"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BoundsEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBoundsComponent",
+                    "Visible": true,
+                    "Mesh": "SphereMeshBounds",
+                    "MaterialInstance": {
+                        "Material": "BoundsMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_68577014",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_b599dd02",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 0.4000000059604645,
+                                            "y": 0.4000000059604645,
+                                            "z": 0.4000000059604645
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_d884840b",
+                                        "Name": "alpha",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "StorageUniforms": [],
+                        "Samplers": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_0c25b852",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -295,7 +348,7 @@
                     "AlignmentWeight": "AlignmentWeightParameter",
                     "CohesionWeight": "CohesionWeightParameter",
                     "SeparationWeight": "SeparationWeightParameter",
-                    "BoundsExtent": "BoundsExtentParameter",
+                    "BoundsRadius": "BoundsRadiusParameter",
                     "LightPosition": "LightPositionParameter",
                     "LightIntensity": "LightIntensityParameter",
                     "DiffuseColor": "DiffuseColorParameter",
@@ -643,60 +696,12 @@
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBoundsComponent",
-                    "Visible": true,
-                    "Mesh": "BoxMeshBounds",
-                    "MaterialInstance": {
-                        "Material": "BoundsMaterial",
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_68577014",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_b599dd02",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 0.4000000059604645,
-                                            "y": 0.4000000059604645,
-                                            "z": 0.4000000059604645
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_d884840b",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "StorageUniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
                 }
             ],
             "Children": [
                 "FlockingSystemEntity",
-                "BoidTargetEntity"
+                "BoidTargetEntity",
+                "BoundsEntity"
             ]
         },
         {
@@ -980,8 +985,8 @@
                         },
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "BoundsExtentParameter",
-                            "Name": "BoundsExtent",
+                            "mID": "BoundsRadiusParameter",
+                            "Name": "BoundsRadius",
                             "Value": 12.5,
                             "Minimum": 1.0,
                             "Maximum": 20.0
@@ -1347,6 +1352,24 @@
             "Radius": 0.5,
             "Rings": 16.0,
             "Sectors": 16.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "SphereMeshBounds",
+            "Usage": "Static",
+            "CullMode": "Front",
+            "PolygonMode": "Line",
+            "Radius": 1.0,
+            "Rings": 24.0,
+            "Sectors": 24.0,
             "Color": {
                 "Values": [
                     1.0,

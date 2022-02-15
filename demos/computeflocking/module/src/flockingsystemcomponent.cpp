@@ -33,7 +33,7 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("AlignmentWeight",			&nap::FlockingSystemComponent::mAlignmentWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CohesionWeight",				&nap::FlockingSystemComponent::mCohesionWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SeparationWeight",			&nap::FlockingSystemComponent::mSeparationWeightParam,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BoundsExtent",				&nap::FlockingSystemComponent::mBoundsExtentParam,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BoundsRadius",				&nap::FlockingSystemComponent::mBoundsRadiusParam,			nap::rtti::EPropertyMetaData::Default)
 
 	RTTI_PROPERTY("LightPosition",				&nap::FlockingSystemComponent::mLightPositionParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LightIntensity",				&nap::FlockingSystemComponent::mLightIntensityParam,		nap::rtti::EPropertyMetaData::Default)
@@ -104,7 +104,7 @@ namespace nap
 		constexpr const char* numBoids = "numBoids";
 		constexpr const char* matrixBufferStruct = "MatrixBuffer";
 		constexpr const char* transforms = "transforms";
-		constexpr const char* boundsExtent = "boundsExtent";
+		constexpr const char* boundsRadius = "boundsRadius";
 	}
 
 	namespace vertexid
@@ -177,7 +177,7 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight)->setValue(mResource->mAlignmentWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsExtent)->setValue(mResource->mBoundsExtentParam->mValue);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius)->setValue(mResource->mBoundsRadiusParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
 		}
 

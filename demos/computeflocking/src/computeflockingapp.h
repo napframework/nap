@@ -23,6 +23,9 @@
 
 namespace nap
 {
+	// Forward declares
+	class FlockingSystemComponentInstance;
+
 	/**
 	* Demo application that is called from within the main loop
 	*
@@ -105,6 +108,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity;
 		rtti::ObjectPtr<EntityInstance> mRenderEntity;
 		rtti::ObjectPtr<EntityInstance> mWorldEntity;
+		rtti::ObjectPtr<EntityInstance> mBoundsEntity;
 
 		rtti::ObjectPtr<RenderTarget> mRenderTarget;
 
@@ -127,15 +131,19 @@ namespace nap
 		ParameterFloat* mBlendParam = nullptr;
 		UniformFloatInstance* mBlendUniform = nullptr;
 
+		// Bounds radius
+		ParameterFloat* mBoundsRadiusParam = nullptr;
+
 		std::string mSelectedPreset;
 		nap::Slot<> mCacheSlot = { [&]() -> void { cache(); } };
 		nap::Slot<> mReloadSlot = { [&]() -> void { utility::ErrorState error_state; reload(error_state); } };
 
-		RenderBloomComponentInstance* mBloomComponent = nullptr;
-		RenderToTextureComponentInstance* mContrastComponent = nullptr;
-		RenderToTextureComponentInstance* mCompositeComponent = nullptr;
-		RenderableMeshComponentInstance* mTargetPointMeshComponent = nullptr;
-
-		glm::mat4 mCachedCameraTransform;
+		// RenderComponents
+		FlockingSystemComponentInstance*	mFlockingSystemComponent = nullptr;
+		RenderBloomComponentInstance*		mBloomComponent = nullptr;
+		RenderToTextureComponentInstance*	mContrastComponent = nullptr;
+		RenderToTextureComponentInstance*	mCompositeComponent = nullptr;
+		RenderableMeshComponentInstance*	mTargetPointMeshComponent = nullptr;
+		RenderableMeshComponentInstance*	mBoundsMeshComponent = nullptr;
 	};
 }

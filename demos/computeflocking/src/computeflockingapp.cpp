@@ -62,6 +62,17 @@ namespace nap
 		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 
+		// Get flocking system entity and component
+		mFlockingSystemEntity = scene->findEntity("FlockingSystemEntity");
+		if (!errorState.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
+			return false;
+
+		if (!errorState.check(mFlockingSystemEntity->hasComponent<FlockingSystemComponentInstance>(), "Missing 'FlockingSystemComponent' in 'FlockingSystemEntity'"))
+			return false;
+
+		mFlockingSystemComponent = &mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
+
+		// Get world entity - parent of our renderable scene
 		mWorldEntity = scene->findEntity("WorldEntity");
 		if (!errorState.check(mWorldEntity != nullptr, "Missing WorldEntity"))
 			return false;
@@ -70,8 +81,8 @@ namespace nap
 		if (!errorState.check(mRenderEntity != nullptr, "Missing RenderEntity"))
 			return false;
 
-		mFlockingSystemEntity = scene->findEntity("FlockingSystemEntity");
-		if (!errorState.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
+		mBoundsEntity = scene->findEntity("BoundsEntity");
+		if (!errorState.check(mBoundsEntity != nullptr, "Missing BoundsEntity"))
 			return false;
 
 		// Get render target
@@ -93,6 +104,11 @@ namespace nap
 		if (!errorState.check(mBloomComponent != nullptr, "Missing component nap::RenderBloomComponent with id 'RenderBloom'"))
 			return false;
 
+		// Get the bounds mesh component
+		mBoundsMeshComponent = &mBoundsEntity->getComponent<RenderableMeshComponentInstance>();
+		if (!errorState.check(mBoundsMeshComponent != nullptr, "Missing component 'nap::RenderableMeshcomponent'"))
+			return false;
+
 		// Get boid target point mesh component
 		const auto boid_target_entity = scene->findEntity("BoidTargetEntity");
 		if (boid_target_entity != nullptr)
@@ -100,7 +116,7 @@ namespace nap
 			std::vector<RenderableMeshComponentInstance*> comps;
 			boid_target_entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(comps);
 			mTargetPointMeshComponent = (!comps.empty()) ? comps[0] : nullptr;
-		}
+		}		
 
 		// Get the sampler instance for compositing bloom and color
 		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(mCompositeComponent->getMaterialInstance().findSampler("colorTextures"));
@@ -118,7 +134,7 @@ namespace nap
 		mBlendUniform = ubo_struct->findUniform<UniformFloatInstance>("blend");
 
 		// Cache boid count
-		mNumBoids = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>().mNumBoids;
+		mNumBoids = mFlockingSystemComponent->mNumBoids;
 
 		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
 		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
@@ -141,6 +157,8 @@ namespace nap
 		mBlendParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("BloomBlendParameter").get());
 		if (!errorState.check(mBlendParam != nullptr, "Missing float parameter 'BloomBlendParameter'"))
 			return false;
+
+		mBoundsRadiusParam = mFlockingSystemComponent->getResource().mBoundsRadiusParam.get();
 
 		// Load preset
 		if (mSelectedPreset.empty())
@@ -165,13 +183,13 @@ namespace nap
 		RGBColorFloat diffuse_color_ex = palette.mHighlightColor2.convert<RGBColorFloat>();
 		RGBColorFloat bg_color = palette.mDarkColor.convert<RGBColorFloat>();
 
-		auto& flocking_system = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
-		flocking_system.getResource().mDiffuseColorParam->setValue(diffuse_color);
-		flocking_system.getResource().mDiffuseColorExParam->setValue(diffuse_color_ex);
+		mFlockingSystemComponent->getResource().mDiffuseColorParam->setValue(diffuse_color);
+		mFlockingSystemComponent->getResource().mDiffuseColorExParam->setValue(diffuse_color_ex);
 
 		mRenderTarget->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 
+		// Set boid target color
 		if (mTargetPointMeshComponent != nullptr)
 		{
 			auto* ubo_struct = mTargetPointMeshComponent->getMaterialInstance().getOrCreateUniform("UBO");
@@ -224,6 +242,10 @@ namespace nap
 		mBrightnessUniform->setValue(mBrightnessParam->mValue);
 		mSaturationUniform->setValue(mSaturationParam->mValue);
 		mBlendUniform->setValue(mBlendParam->mValue);
+
+		// Update bounds
+		auto& transform = mBoundsEntity->getComponent<TransformComponentInstance>();
+		transform.setScale({ mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue });
 	}
 
 

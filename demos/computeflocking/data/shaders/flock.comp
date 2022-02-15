@@ -43,7 +43,7 @@ uniform UBO
 	float alignmentWeight;
 	float cohesionWeight;
 	float separationWeight;
-	float boundsExtent;
+	float boundsRadius;
 } ubo;
 
 
@@ -170,36 +170,19 @@ vec2 rayBox(in vec3 orig, in vec3 dir, in vec3 extent, out vec3 oN)
 }
 
 
-float rayBounds(in vec3 orig, in vec3 dir, in vec3 extent, out vec3 oN) 
+// Source: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+float raySphere(vec3 orig, vec3 dir, vec3 center, float radius)
 {
-	vec3 m = 1.0/dir;
-	vec3 n = m*orig;
-	vec3 k = abs(m)*extent;
+	vec3 oc = orig - center;
+	float b = dot(oc, dir);
+	float c = dot(oc, oc) - radius*radius;
+	float h = b*b - c;
 
-	vec3 t1 = -n - k;
-	vec3 t2 = -n + k;
+	if (h < 0.0)
+		return -1.0; // no intersection
 
-	float tn = max(max(t1.x, t1.y), t1.z);
-	float tf = min(min(t2.x, t2.y), t2.z);
-
-	if (tn > tf)
-		return -1.0;
-
-	// Origin is inside box
-	if (tn < 0.0 && tf > 0.0)
-	{
-		vec3 hit = orig + dir * tf;
-		vec3 c = (-extent + extent) * 0.5;
-		vec3 d = (-extent - extent) * 0.5;
-		vec3 p = hit - c;
-
-		// Inner collision normal
-		vec3 n = vec3(p.x / abs(d.x), p.y / abs(d.y), p.z / abs(d.z)) * BIAS;
-		oN = trunc(-n);
-
-		return tf;
-	}
-	return -1.0;
+	h = sqrt(h);
+	return -b - sign(c) * sqrt(h);
 }
 
 
@@ -336,12 +319,15 @@ void main()
 		acceleration += seperation;
 	}
 
-	// Steer away from bounds
-	vec3 hit_norm;
-	float dist = rayBounds(b.position.xyz, normalize(b.velocity.xyz), vec3(ubo.boundsExtent), hit_norm);
-	if (dist > -EPSILON && dist < (1.0 + ubo.avoidRadius*2.0))
+	// Steer away from sphere bounds
+	vec3 dir = normalize(b.velocity.xyz);
+	float dist = raySphere(b.position.xyz, dir, vec3(0.0), ubo.boundsRadius);	
+	if (dist > -EPSILON && dist < ubo.avoidRadius)
 	{
-		vec3 refl = reflect(normalize(b.velocity.xyz), hit_norm);
+		// Sphere bounds only
+		vec3 hit_norm = -1.0 * (b.position.xyz + dir * dist);
+		
+		vec3 refl = reflect(dir, hit_norm);
 		acceleration += steerTowards(refl, b.velocity.xyz, ubo.maxSteerForce*2.0) * avoidBoundWeightConst;
 	}
 
