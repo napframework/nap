@@ -1,10 +1,11 @@
 <br>
 <p align="center">
-  <img width=384 src="https://www.napframework.com/png/nap_logo_black_medium.png">
+  <img width=384 src="https://www.napframework.com/png/nap_logo_blue_medium.png">
 </p>
 
 *	[Description](#description)
 	*	[Features](#features)
+	* [Philosophy](#philosophy)
 	*	[Documentation](#documentation)
 	*	[Gallery](#gallery)
 *	[Where to Start](#where-to-start)
