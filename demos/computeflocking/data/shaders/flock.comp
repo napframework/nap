@@ -356,7 +356,7 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.7), b.mateRate, 0.9);
+	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.8);
 
 	// Write boid to output buffer
 	subo_out.boids[global_id] = b;

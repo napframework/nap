@@ -21,11 +21,11 @@ uniform UBO
 } ubo;
 
 in vec3 pass_Position;
-in vec3 pass_Normals;
+in vec3 pass_Normal;
 
 in float pass_Speed;
 in float pass_Fresnel;
-win float pass_Mates;
+in float pass_Mates;
 flat in uint pass_Id;
 
 out vec4 out_Color;
@@ -51,54 +51,36 @@ float map(float value, float inMin, float inMax, float outMin, float outMax)
 
 void main(void)
 {
-	// Theme color
-	vec3 boid_color = ubo.diffuseColor;
-
-	// Rainbow
+	// Diffuse color
 	vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
-	if (ubo.randomColor > 0.0)
-	{	
-		boid_color = hsv2rgb(boid_hsv);
-	}
-	else
-	{
-		boid_color = mix(boid_color, hsv2rgb(boid_hsv), map(pass_Mates, 0.0, ubo.mateColorRate, 0.0, 1.0));
-	}
+	vec3 boid_rgb = hsv2rgb(boid_hsv);	
+	vec3 boid_mix = mix(ubo.diffuseColor, boid_rgb, map(pass_Mates, 0.0, ubo.mateColorRate, 0.0, 1.0));	
+	vec3 boid_color = mix(boid_mix, boid_rgb, step(EPSILON, ubo.randomColor));
 
-	// Surface to camera normal     
-	vec3 surface_to_cam_n = normalize(ubo.cameraLocation - pass_Position);
-	vec3 surface_n = normalize(pass_Normals);
+	// Surface to camera normal
+	vec3 surface_to_cam = normalize(ubo.cameraLocation - pass_Position);
 
 	// Calculate the vector from this pixels surface to the light source
-	vec3 surface_to_light = ubo.lightPosition - pass_Position;
-	vec3 surface_to_light_n = normalize(surface_to_light);
+	vec3 surface_to_light = normalize(ubo.lightPosition - pass_Position);
 
 	// Compute diffuse value
-	float diffuse_coefficient = max(0.0, dot(surface_n, surface_to_light_n));
+	float diffuse_coefficient = max(0.0, dot(pass_Normal, surface_to_light));
 
 	// Compute specular value if coefficient is > 0.0
-	float specula_coefficient = 0.0;
-	if (diffuse_coefficient > 0.0)
-	{
-		vec3 halfway = normalize(surface_to_light_n + surface_to_cam_n);  
-		specula_coefficient = pow(max(dot(surface_n, halfway), 0.0), ubo.shininess);
-	}
-
-	float diffuse_v = 0.0;
-	float specula_v = 0.0;
+	vec3 halfway = normalize(surface_to_light + surface_to_cam);  
+	float spec = pow(max(dot(pass_Normal, halfway), 0.0), ubo.shininess);
+	float specular_coefficient = mix(0.0, spec, step(0.0, diffuse_coefficient));
 
 	// Compute final diffuse contribution
-	diffuse_v += diffuse_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.diffuseIntensity;
+	float diffuse = diffuse_coefficient * ubo.diffuseIntensity * ubo.lightIntensity;
 
 	// Compute final specual contribution
-	specula_v += specula_coefficient * ubo.lightIntensity * ubo.lightIntensity * ubo.specularIntensity;
+	float specular = specular_coefficient * ubo.specularIntensity * ubo.lightIntensity;
 
-	// Compute final diffuse and specular color values
-	vec3 diffuse_color = boid_color * ubo.lightColor * diffuse_v;
-	vec3 specular_color = ubo.specularColor * specula_v;
-
-	// Get ambient color
+	// Compute final ambient, diffuse and specular color values
 	vec3 ambient_color = boid_color * ubo.ambientIntensity;
+	vec3 diffuse_color = boid_color * ubo.lightColor * diffuse;
+	vec3 specular_color = ubo.specularColor * specular;
 
 	// Compute composite color value
 	vec3 comp_color = diffuse_color + specular_color + ambient_color;

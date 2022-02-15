@@ -41,7 +41,7 @@ in vec3 in_Position;
 in vec3 in_Normals;
 
 out vec3 pass_Position;
-out vec3 pass_Normals;
+out vec3 pass_Normal;
 
 out float pass_Speed;
 out float pass_Fresnel;
@@ -73,7 +73,7 @@ void main(void)
 	// Calculate normal in world coordinates and pass along
 	vec4 normal = vec4(in_Normals, 0.0);
 	vec3 world_normal = normalize(rotate((mvp.modelMatrix * normal).xyz, b.orientation));
-	pass_Normals = world_normal;
+	pass_Normal = world_normal;
 
 	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);
 	pass_Fresnel = fresnelScale * pow(1.0 + dot(eye_to_surface, world_normal), fresnelPower);

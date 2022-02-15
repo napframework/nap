@@ -403,8 +403,8 @@
                     "Type": "nap::SelectMeshComponent",
                     "mID": "SelectMeshComponent",
                     "Meshes": [
-                        "CapsuleMesh",
                         "BoxMesh",
+                        "CapsuleMesh",
                         "SphereMesh"
                     ],
                     "Index": "MeshIndexParameter"
@@ -418,7 +418,7 @@
             "Components": [
                 {
                     "Type": "nap::OrthoCameraComponent",
-                    "mID": "nap::OrthoCameraComponent_5d2f21e9",
+                    "mID": "OrthoCamera",
                     "Properties": {
                         "Mode": "PixelSpace",
                         "LeftPlane": 0.0,
