@@ -11,22 +11,17 @@
 // Audio includes
 #include <audio/service/audioservice.h>
 
-
 // RTTI
 RTTI_BEGIN_CLASS(nap::audio::PlaybackComponent)
 	RTTI_PROPERTY("Buffer", &nap::audio::PlaybackComponent::mBuffer, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ChannelRouting", &nap::audio::PlaybackComponent::mChannelRouting,
-	              nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ChannelRouting", &nap::audio::PlaybackComponent::mChannelRouting, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Gain", &nap::audio::PlaybackComponent::mGain, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("StereoPanning", &nap::audio::PlaybackComponent::mStereoPanning,
-	              nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("StereoPanning", &nap::audio::PlaybackComponent::mStereoPanning, nap::rtti::EPropertyMetaData::Default) 
 	RTTI_PROPERTY("AutoPlay", &nap::audio::PlaybackComponent::mAutoPlay, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("StartPosition", &nap::audio::PlaybackComponent::mStartPosition,
-	              nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("StartPosition", &nap::audio::PlaybackComponent::mStartPosition, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Duration", &nap::audio::PlaybackComponent::mDuration, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FadeInTime", &nap::audio::PlaybackComponent::mFadeInTime, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FadeOutTime", &nap::audio::PlaybackComponent::mFadeOutTime,
-	              nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FadeOutTime", &nap::audio::PlaybackComponent::mFadeOutTime, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Pitch", &nap::audio::PlaybackComponent::mPitch, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
