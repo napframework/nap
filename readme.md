@@ -1,5 +1,5 @@
 <p align="center">
-  <img width=256 height=256 src="https://www.napframework.com/png/nap_logo_small.png">
+  <img width=384 src="https://www.napframework.com/png/nap_logo_black_medium.png">
 </p>
 
 *	[Description](#description)
@@ -65,7 +65,7 @@ Visit [www.napframework.com](https://www.napframework.com/showcase) for more exa
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
 ![4DSound System](https://www.napframework.com/jpg/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://www.napframework.com/jpg/nap_heightmap_demo_1280.jpg)
+![NAP Framework](https://www.napframework.com/jpg/napkin_1280.jpg)
 [NAP Framework](https://napframework.com/) editor & demo
 
 # Where to Start
