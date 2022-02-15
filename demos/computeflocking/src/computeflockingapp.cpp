@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "computeflockingapp.h"
+#include "flockingsystemcomponent.h"
 
  // External Includes
 #include <nap/core.h>
@@ -44,17 +45,8 @@ namespace nap
 			return false;
 
 		// Reload the selected preset after hot-reloading 
-		mResourceManager->mPreResourcesLoadedSignal.connect(mCacheSelectedPresetSlot);
-		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSelectedPresetSlot);
-
-		// Load the first preset automatically
-		auto* parameter_service = getCore().getService<ParameterService>();
-		auto presets = parameter_service->getPresets(*mParameterGUI->mParameterGroup);
-		if (!parameter_service->getPresets(*mParameterGUI->mParameterGroup).empty())
-		{
-			if (!mParameterGUI->load(presets[0], errorState))
-				return false;
-		}
+		mResourceManager->mPreResourcesLoadedSignal.connect(mCacheSlot);
+		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSlot);
 
 		mGuiService->selectWindow(mRenderWindow);
 
@@ -101,6 +93,15 @@ namespace nap
 		if (!errorState.check(mBloomComponent != nullptr, "Missing component nap::RenderBloomComponent with id 'RenderBloom'"))
 			return false;
 
+		// Get boid target point mesh component
+		const auto boid_target_entity = scene->findEntity("BoidTargetEntity");
+		if (boid_target_entity != nullptr)
+		{
+			std::vector<RenderableMeshComponentInstance*> comps;
+			boid_target_entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(comps);
+			mTargetPointMeshComponent = (!comps.empty()) ? comps[0] : nullptr;
+		}
+
 		// Get the sampler instance for compositing bloom and color
 		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(mCompositeComponent->getMaterialInstance().findSampler("colorTextures"));
 
@@ -141,24 +142,49 @@ namespace nap
 		if (!errorState.check(mBlendParam != nullptr, "Missing float parameter 'BloomBlendParameter'"))
 			return false;
 
+		// Load preset
+		if (mSelectedPreset.empty())
+		{
+			// Load the first preset automatically
+			auto* parameter_service = getCore().getService<ParameterService>();
+			auto presets = parameter_service->getPresets(*mParameterGUI->mParameterGroup);
+			if (!parameter_service->getPresets(*mParameterGUI->mParameterGroup).empty())
+			{
+				if (!mParameterGUI->load(presets[0], errorState))
+					return false;
+			}
+		}
+		else
+		{
+			mParameterGUI->load(mSelectedPreset, errorState);
+		}
+
+		// Sample default color values from loaded color palette - overrides preset
+		const auto palette = mGuiService->getPalette();
+		RGBColorFloat diffuse_color = palette.mHighlightColor1.convert<RGBColorFloat>();
+		RGBColorFloat diffuse_color_ex = palette.mHighlightColor2.convert<RGBColorFloat>();
+		RGBColorFloat bg_color = palette.mDarkColor.convert<RGBColorFloat>();
+
+		auto& flocking_system = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
+		flocking_system.getResource().mDiffuseColorParam->setValue(diffuse_color);
+		flocking_system.getResource().mDiffuseColorExParam->setValue(diffuse_color_ex);
+
+		mRenderTarget->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
+		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
+
+		if (mTargetPointMeshComponent != nullptr)
+		{
+			auto* ubo_struct = mTargetPointMeshComponent->getMaterialInstance().getOrCreateUniform("UBO");
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>("color")->setValue(palette.mHighlightColor4.convert<RGBColorFloat>().toVec3());
+		}
+
 		return true;
 	}
 
 
-	void ComputeFlockingApp::reloadSelectedPreset()
+	void ComputeFlockingApp::cache()
 	{
-		utility::ErrorState error_state;
-		if (!reload(error_state))
-			assert(false);
-
-		// Load the first preset automatically
-		auto* parameter_service = getCore().getService<ParameterService>();
-		mParameterGUI->load(mSelectedPreset, error_state);
-	}
-
-
-	void ComputeFlockingApp::cacheSelectedPreset()
-	{
+		// Cache preset
 		auto* parameter_service = getCore().getService<ParameterService>();
 		mSelectedPreset = parameter_service->getPresets(*mParameterGUI->mParameterGroup)[mParameterGUI->getSelectedPresetIndex()];
 	}
@@ -187,8 +213,7 @@ namespace nap
 		// Update GUI
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
 		mParameterGUI->show(false);

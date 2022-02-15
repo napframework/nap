@@ -3,17 +3,16 @@
         {
             "Type": "nap::IMGuiServiceConfiguration",
             "mID": "IMGuiServiceConfiguration_9ca87195-ac98-4484-b21a-bf9cc3c765ee",
+            "ColorScheme": "Classic",
             "FontSize": 17.0,
             "GlobalScale": 1.0,
             "FontFile": "",
+            "FontSampling": {
+                "x": 5,
+                "y": 3
+            },
+            "FontSpacing": 0.25,
             "Colors": {
-                "HighlightColor": {
-                    "Values": [
-                        200,
-                        105,
-                        105
-                    ]
-                },
                 "BackgroundColor": {
                     "Values": [
                         45,
@@ -26,6 +25,13 @@
                         17,
                         20,
                         38
+                    ]
+                },
+                "MenuColor": {
+                    "Values": [
+                        141,
+                        139,
+                        132
                     ]
                 },
                 "FrontColor1": {
@@ -48,7 +54,43 @@
                         140,
                         160
                     ]
-                }
+                },
+                "FrontColor4": {
+                    "Values": [
+                        255,
+                        255,
+                        255
+                    ]
+                },
+                "HighlightColor1": {
+                    "Values": [
+                        41,
+                        88,
+                        255
+                    ]
+                },
+                "HighlightColor2": {
+                    "Values": [
+                        214,
+                        255,
+                        163
+                    ]
+                },
+                "HighlightColor3": {
+                    "Values": [
+                        255,
+                        234,
+                        48
+                    ]
+                },
+                "HighlightColor4": {
+                    "Values": [
+                        255,
+                        80,
+                        80
+                    ]
+                },
+                "InvertIcons": false
             }
         },
         {

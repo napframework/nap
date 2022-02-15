@@ -43,9 +43,9 @@
             },
             "Color": {
                 "Values": [
-                    0.6509804129600525,
-                    0.6509804129600525,
-                    0.6509804129600525,
+                    1.0,
+                    1.0,
+                    1.0,
                     1.0
                 ]
             }
@@ -141,7 +141,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 20.0
+                            "z": 25.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -204,7 +204,7 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent_76a248fd",
+                    "mID": "RenderBoidTargetMesh",
                     "Visible": true,
                     "Mesh": "BoidTargetPointMesh",
                     "MaterialInstance": {
@@ -299,7 +299,9 @@
                     "LightPosition": "LightPositionParameter",
                     "LightIntensity": "LightIntensityParameter",
                     "DiffuseColor": "DiffuseColorParameter",
+                    "DiffuseColorEx": "DiffuseColorExParameter",
                     "LightColor": "LightColorParameter",
+                    "HaloColor": "HaloColorParameter",
                     "SpecularColor": "SpecularColorParameter",
                     "Shininess": "ShininessParameter",
                     "AmbientIntensity": "AmbientIntensityParameter",
@@ -486,13 +488,13 @@
                     "Visible": true,
                     "PassCount": 3,
                     "Kernel": "5x5",
-                    "InputTexture": "ColorTexture_Contrast"
+                    "InputTexture": "ColorTextureContrast"
                 },
                 {
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "RenderContrast",
                     "Visible": true,
-                    "OutputTexture": "ColorTexture_Contrast",
+                    "OutputTexture": "ColorTextureContrast",
                     "MaterialInstance": {
                         "Material": "ContrastMaterial",
                         "Uniforms": [
@@ -555,7 +557,7 @@
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "RenderComposite",
                     "Visible": true,
-                    "OutputTexture": "ColorTexture_Final",
+                    "OutputTexture": "ColorTextureFinal",
                     "MaterialInstance": {
                         "Material": "CompositeMaterial",
                         "Uniforms": [
@@ -660,9 +662,9 @@
                                         "mID": "UniformVec3_b599dd02",
                                         "Name": "color",
                                         "Value": {
-                                            "x": 0.25,
-                                            "y": 0.25,
-                                            "z": 0.25
+                                            "x": 0.4000000059604645,
+                                            "y": 0.4000000059604645,
+                                            "z": 0.4000000059604645
                                         }
                                     },
                                     {
@@ -852,7 +854,7 @@
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
                     "AnisotropicSamples": "Default",
-                    "Texture": "ColorTexture_Contrast"
+                    "Texture": "ColorTextureContrast"
                 }
             ],
             "Shader": "ColorAdjustmentShader",
@@ -882,105 +884,111 @@
         {
             "Type": "nap::ParameterGroup",
             "mID": "FlockingParameters",
-            "Parameters": [
-                {
-                    "Type": "nap::ParameterInt",
-                    "mID": "MeshIndexParameter",
-                    "Name": "MeshIndex",
-                    "Value": 0,
-                    "Minimum": 0,
-                    "Maximum": 1
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "BoidSizeParameter",
-                    "Name": "BoidSize",
-                    "Value": 0.25,
-                    "Minimum": 0.0,
-                    "Maximum": 4.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ViewRadiusParameter",
-                    "Name": "ViewRadius",
-                    "Value": 1.0,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "AvoidRadiusParameter",
-                    "Name": "AvoidRadius",
-                    "Value": 0.75,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "MinSpeedParameter",
-                    "Name": "MinSpeed",
-                    "Value": 0.5,
-                    "Minimum": 0.0,
-                    "Maximum": 10.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "MaxSpeedParameter",
-                    "Name": "MaxSpeed",
-                    "Value": 3.0,
-                    "Minimum": 0.0,
-                    "Maximum": 10.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "MaxSteerForceParameter",
-                    "Name": "MaxSteerForce",
-                    "Value": 5.0,
-                    "Minimum": 0.10000000149011612,
-                    "Maximum": 8.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "TargetWeightParameter",
-                    "Name": "TargetWeight",
-                    "Value": 1.0,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "AlignmentWeightParameter",
-                    "Name": "AlignmentWeight",
-                    "Value": 0.800000011920929,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "CohesionWeightParameter",
-                    "Name": "CohesionWeight",
-                    "Value": 0.6000000238418579,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SeparationWeightParameter",
-                    "Name": "SeparationWeight",
-                    "Value": 0.4000000059604645,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "BoundsExtentParameter",
-                    "Name": "BoundsExtent",
-                    "Value": 12.5,
-                    "Minimum": 1.0,
-                    "Maximum": 20.0
-                }
-            ],
+            "Parameters": [],
             "Groups": [
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "FlockGroup",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "MeshIndexParameter",
+                            "Name": "MeshIndex",
+                            "Value": 0,
+                            "Minimum": 0,
+                            "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "BoidSizeParameter",
+                            "Name": "BoidSize",
+                            "Value": 0.25,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "ViewRadiusParameter",
+                            "Name": "ViewRadius",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "AvoidRadiusParameter",
+                            "Name": "AvoidRadius",
+                            "Value": 0.75,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "MinSpeedParameter",
+                            "Name": "MinSpeed",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "MaxSpeedParameter",
+                            "Name": "MaxSpeed",
+                            "Value": 3.0,
+                            "Minimum": 0.0,
+                            "Maximum": 10.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "MaxSteerForceParameter",
+                            "Name": "MaxSteerForce",
+                            "Value": 5.0,
+                            "Minimum": 0.10000000149011612,
+                            "Maximum": 8.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "TargetWeightParameter",
+                            "Name": "TargetWeight",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "AlignmentWeightParameter",
+                            "Name": "AlignmentWeight",
+                            "Value": 0.800000011920929,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "CohesionWeightParameter",
+                            "Name": "CohesionWeight",
+                            "Value": 0.6000000238418579,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SeparationWeightParameter",
+                            "Name": "SeparationWeight",
+                            "Value": 0.4000000059604645,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "BoundsExtentParameter",
+                            "Name": "BoundsExtent",
+                            "Value": 12.5,
+                            "Minimum": 1.0,
+                            "Maximum": 20.0
+                        }
+                    ],
+                    "Groups": []
+                },
                 {
                     "Type": "nap::ParameterGroup",
                     "mID": "RenderGroup",
@@ -999,8 +1007,32 @@
                         },
                         {
                             "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "DiffuseColorExParameter",
+                            "Name": "DiffuseColorEx",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
                             "mID": "LightColorParameter",
                             "Name": "LightColor",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "HaloColorParameter",
+                            "Name": "HaloColor",
                             "Value": {
                                 "Values": [
                                     1.0,
@@ -1052,9 +1084,9 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ShininessParameter",
                             "Name": "Shininess",
-                            "Value": 0.75,
+                            "Value": 1.0,
                             "Minimum": 0.0,
-                            "Maximum": 1.0
+                            "Maximum": 32.0
                         },
                         {
                             "Type": "nap::ParameterFloat",
@@ -1176,7 +1208,7 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "ColorTexture_Contrast",
+            "mID": "ColorTextureContrast",
             "Usage": "Static",
             "Fill": false,
             "Width": 1280,
@@ -1194,7 +1226,7 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "ColorTexture_Final",
+            "mID": "ColorTextureFinal",
             "Usage": "Static",
             "Fill": false,
             "Width": 1280,
@@ -1300,8 +1332,8 @@
             "Color": {
                 "Values": [
                     1.0,
-                    0.0,
-                    0.501960813999176,
+                    1.0,
+                    1.0,
                     1.0
                 ]
             }

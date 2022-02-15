@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
-layout(local_size_x = 256) in;
+layout(local_size_x = 1024) in;
 
 struct Boid
 {
@@ -64,6 +64,9 @@ struct BoidData
 	vec4 pos;
 	vec4 vel;
 };
+
+// Allocate a block of shared data in which we can store positions and velocities 
+// of a boid for each local thread in the group/warp.
 shared BoidData sharedData[gl_WorkGroupSize.x];
 
 
@@ -201,21 +204,22 @@ float rayBounds(in vec3 orig, in vec3 dir, in vec3 extent, out vec3 oN)
 
 
 // Old routine that does not utilize shared memory 
-void computeForces(uint gid, vec3 position, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
-{
-	uint idx = 0;
+void computeForces(uint gid, vec3 position, vec3 velocity, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
+{	
 	for (uint i = 1; i < ubo.numBoids; i++) 
 	{
-		idx = (i + gid) % ubo.numBoids;
-
+		uint idx = (i + gid) % ubo.numBoids;
 		vec4 other_pos = subo_in.boids[idx].position;
 		vec4 other_dir = subo_in.boids[idx].velocity;
-		other_dir = vec4(safeNormalize(other_dir.xyz), 1.0);
+		other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
+
+		// Vision is a half sphere
+		float lookdot = dot(normalize(velocity), normalize(other_pos.xyz - position));
 
 		vec3 offset = other_pos.xyz - position;
 		float l1 = dot(offset, offset);
 
-		if (l1 < ubo.viewRadius * ubo.viewRadius) 
+		if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > -0.1) 
 		{
 			numFlockMates++;
 			flockHeading += other_dir;
@@ -264,7 +268,7 @@ void computeForcesShared(uint gid, vec3 position, vec3 velocity, out vec4 avoida
 				continue;
 
 			// Vision is a half sphere
-			vec4 other_dir = vec4(safeNormalize(other.vel.xyz), 1.0);
+			vec4 other_dir = vec4(safeNormalize(other.vel.xyz), 0.0);
 			float lookdot = dot(normalize(velocity), normalize(other.pos.xyz - position));
 
 			vec3 offset = other.pos.xyz - position;
@@ -304,8 +308,9 @@ void main()
 	vec4 flock_heading = vec4(0.0);
 	vec4 flock_center = vec4(0.0);
 	uint num_flock_mates = 0;
+
 	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
-	//computeForces(global_id, b.position.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
+	//computeForces(global_id, b.position.xyz,  b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 
 	// Calculate base acceleration determined by a moving global target position
 	vec4 offset = vec4(ubo.target, 0.0) - b.position;
@@ -334,10 +339,10 @@ void main()
 	// Steer away from bounds
 	vec3 hit_norm;
 	float dist = rayBounds(b.position.xyz, normalize(b.velocity.xyz), vec3(ubo.boundsExtent), hit_norm);
-	if (dist > -EPSILON && dist < ubo.avoidRadius*2.5)
+	if (dist > -EPSILON && dist < (1.0 + ubo.avoidRadius*2.0))
 	{
-		vec3 ref = reflect(normalize(b.velocity.xyz), hit_norm);
-		acceleration += steerTowards(ref, b.velocity.xyz, ubo.maxSteerForce*1.5) * avoidBoundWeightConst;
+		vec3 refl = reflect(normalize(b.velocity.xyz), hit_norm);
+		acceleration += steerTowards(refl, b.velocity.xyz, ubo.maxSteerForce*2.0) * avoidBoundWeightConst;
 	}
 
 	// Calculate velocity
@@ -356,7 +361,7 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.8);
+	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.9), b.mateRate, 0.95);
 
 	// Write boid to output buffer
 	subo_out.boids[global_id] = b;

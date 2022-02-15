@@ -81,19 +81,14 @@ namespace nap
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 
 		/**
-		 *	Caches the selected default preset
-		 */
-		void cacheSelectedPreset();
-
-		/**
-		 *	Reloads the selected default preset
-		 */
-		void reloadSelectedPreset();
-
-		/**
-		 * Collects required resources 
+		 * Collects required resources
 		 */
 		bool reload(utility::ErrorState& errorState);
+
+		/**
+		 * Caches required resources
+		 */
+		void cache();
 
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
@@ -133,11 +128,14 @@ namespace nap
 		UniformFloatInstance* mBlendUniform = nullptr;
 
 		std::string mSelectedPreset;
-		nap::Slot<> mCacheSelectedPresetSlot = { [&]() -> void { cacheSelectedPreset(); } };
-		nap::Slot<> mReloadSelectedPresetSlot = { [&]() -> void { reloadSelectedPreset(); } };
+		nap::Slot<> mCacheSlot = { [&]() -> void { cache(); } };
+		nap::Slot<> mReloadSlot = { [&]() -> void { utility::ErrorState error_state; reload(error_state); } };
 
-		RenderBloomComponentInstance*		mBloomComponent = nullptr;
-		RenderToTextureComponentInstance*	mContrastComponent = nullptr;
-		RenderToTextureComponentInstance*	mCompositeComponent = nullptr;
+		RenderBloomComponentInstance* mBloomComponent = nullptr;
+		RenderToTextureComponentInstance* mContrastComponent = nullptr;
+		RenderToTextureComponentInstance* mCompositeComponent = nullptr;
+		RenderableMeshComponentInstance* mTargetPointMeshComponent = nullptr;
+
+		glm::mat4 mCachedCameraTransform;
 	};
 }

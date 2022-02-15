@@ -64,7 +64,9 @@ namespace nap
 		ResourcePtr<ParameterVec3> mLightPositionParam;					///< Property: "LightPosition" 
 		ResourcePtr<ParameterFloat> mLightIntensityParam;				///< Property: "LightIntensity" 
 		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorParam;			///< Property: "DiffuseColorParam" 
+		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorExParam;		///< Property: "DiffuseColorExParam" 
 		ResourcePtr<ParameterRGBColorFloat> mLightColorParam;			///< Property: "LightColorParam" 
+		ResourcePtr<ParameterRGBColorFloat> mHaloColorParam;			///< Property: "HaloColorParam" 
 		ResourcePtr<ParameterRGBColorFloat> mSpecularColorParam;		///< Property: "SpecularColor" 
 		ResourcePtr<ParameterFloat> mShininessParam;					///< Property: "Shininess" 
 		ResourcePtr<ParameterFloat> mAmbientIntensityParam;				///< Property: "AmbientIntensity" 
@@ -98,9 +100,20 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
+		/**
+		 * onDraw() override
+		 */
 		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
+		/**
+		 * Execute compute shader update associated with this component
+		 */
 		void compute();
+
+		/**
+		 * Returns the resource associated with this instance
+		 */
+		FlockingSystemComponent& getResource();
 
 		glm::vec4 mTarget;
 		int mNumBoids;

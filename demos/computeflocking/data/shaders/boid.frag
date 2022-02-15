@@ -9,8 +9,10 @@ uniform UBO
 	vec3		cameraLocation;				// World Space location of the camera
 	vec3		lightPosition;				// Light position
 	float		lightIntensity;				// Light intensity
-	vec3		diffuseColor;				// Color or the mesh
+	vec3		diffuseColor;				// Color or the boid
+	vec3		diffuseColorEx;				// Secondary color or the boid
 	vec3		lightColor;					// Color of the light
+	vec3		haloColor;					// Color of the halo/fresnel effect
 	float		specularIntensity;			// Amount of added specular
 	vec3		specularColor;				// Specular color
 	float		shininess;					// Specular angle shininess
@@ -33,6 +35,7 @@ out vec4 out_Color;
 // CONSTANTS
 const float EPSILON 		= 0.00001;
 
+
 // Converts HSV color vector 'c' to an RGB color
 // Source: http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
 vec3 hsv2rgb(vec3 c)
@@ -52,10 +55,10 @@ float map(float value, float inMin, float inMax, float outMin, float outMax)
 void main(void)
 {
 	// Diffuse color
-	vec3 boid_hsv = vec3(float(mod(pass_Id, 360)/360.0), 1.0, 0.9);
-	vec3 boid_rgb = hsv2rgb(boid_hsv);	
-	vec3 boid_mix = mix(ubo.diffuseColor, boid_rgb, map(pass_Mates, 0.0, ubo.mateColorRate, 0.0, 1.0));	
-	vec3 boid_color = mix(boid_mix, boid_rgb, step(EPSILON, ubo.randomColor));
+	vec3 boid_hsv = vec3(mod(pass_Id, 360)/360.0, 1.0, 0.9);
+	vec3 boid_rgb = hsv2rgb(boid_hsv);
+	vec3 boid_diffuse = mix(ubo.diffuseColor, ubo.diffuseColorEx, map(pass_Mates, 0.0, ubo.mateColorRate, 0.0, 1.0));		
+	vec3 boid_color = mix(boid_diffuse, boid_rgb, step(EPSILON, ubo.randomColor));
 
 	// Surface to camera normal
 	vec3 surface_to_cam = normalize(ubo.cameraLocation - pass_Position);
@@ -87,5 +90,5 @@ void main(void)
 	comp_color = clamp(comp_color, vec3(0.0), vec3(1.0));
 
 	// Compute final color value
-	out_Color = vec4(mix(comp_color, vec3(1.0), pass_Fresnel), 1.0); 
+	out_Color = vec4(mix(comp_color, ubo.haloColor, pass_Fresnel), 1.0); 
 }
