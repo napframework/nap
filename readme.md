@@ -33,8 +33,9 @@ NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render e
 
 NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
 
+<br>
 <p align="center">
-  <img src="https://www.napframework.com/png/Vulkan_170px_Dec16.png">
+  <img width=256 img src="https://www.napframework.com/svg/vulkan-logo.svg" >
 </p>
 
 ## Philosophy
@@ -76,7 +77,7 @@ x86-64: macOS Catalina (v10.15)
 ```
 **ARM**
 ```
-armhf: Raspberry Pi OS (v10)
+armhf: Raspberry Pi OS (v11)
 arm64: Ubuntu Linux LTS (v20.04) *experimental*
 ```
 
@@ -88,9 +89,7 @@ When working against a binary package, follow the official [installation](https:
 
 ## Raspberry Pi
 
-Only the Raspberry Pi 4 is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration, using the `LLVMpipe` instead of the integrated `Mali GPU`. Headless applications and services should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4.
-
-We recommend using the `Debian` buster-backports repository to install the updated `mesa-vulkan-drivers` package. Unfortunately Raspberry Pi OS does not have a buster-backports repository so you will have to use the one from `Debian`. This step won't be necessary once Raspberry Pi OS (and our support) moves on to being based on Debian Bullseye (v11).
+Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration, using the `LLVMpipe` instead of the integrated `Mali GPU`. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4.
 
 # Compilation
 
@@ -115,7 +114,7 @@ To generate a solution and compile the source code you need to have installed:
 		- During installation select **Custom installation** 
 		- Filter on the **LTS** category to download and install Qt 5.12.11 for your target platform
 	- ARM
-		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-armhf-pi4-raspbian_buster.tar.xz) Qt 5.12.11 for Raspberry Pi OS 10 *armhf*
+		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.12.11 for Raspberry Pi OS 11 *armhf*
 		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.12.11 for Ubuntu 20.04 *arm64*
 
 NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
