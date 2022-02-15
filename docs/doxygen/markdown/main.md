@@ -7,7 +7,7 @@ Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D gra
 
 ## Features
 
-NAP Framework ships with many useful modules, including: a `Vulkan 2D/3D` render engine, `Vulkan Compute` module, a multi-channel `audio engine` for music playback, recording and analysis, a `sequencer` to control parameters in real-time, an `editor` to author application content, a `web interface` to control and monitor your application, a system for creating and loading `presets`, a `video player` powered by FFmpeg and a `Python` programming interface.
+NAP Framework ships with many useful modules, including: a `Vulkan 2D/3D` render engine, `Vulkan Compute` module, a multi-channel `audio engine` for music playback, recording and analysis, a `sequencer` to control parameters in real-time, an `editor` to author application content, a `web portal` to control and monitor NAP applications in a browser, a system for creating and loading `presets`, a `video player` powered by FFmpeg and a `Python` programming interface.
 
 NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV, SQLite and many others. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
 
