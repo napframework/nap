@@ -98,7 +98,7 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundsComponent",
                     "Visible": true,
-                    "Mesh": "SphereMeshBounds",
+                    "Mesh": "SphereBoundsMesh",
                     "MaterialInstance": {
                         "Material": "BoundsMaterial",
                         "Uniforms": [
@@ -112,16 +112,16 @@
                                         "mID": "UniformVec3_b599dd02",
                                         "Name": "color",
                                         "Value": {
-                                            "x": 0.4000000059604645,
-                                            "y": 0.4000000059604645,
-                                            "z": 0.4000000059604645
+                                            "x": 0.1599999964237213,
+                                            "y": 0.3449999988079071,
+                                            "z": 1.0
                                         }
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_d884840b",
                                         "Name": "alpha",
-                                        "Value": 1.0
+                                        "Value": 0.20000000298023225
                                     }
                                 ]
                             },
@@ -134,22 +134,22 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_c82bd971",
                                         "Name": "fresnelPower",
-                                        "Value": 1.0
+                                        "Value": 3.0
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_fc965e79",
                                         "Name": "fresnelScale",
-                                        "Value": 1.0
+                                        "Value": 0.10000000149011612
                                     },
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_22521d9c",
+                                        "mID": "UniformVec3_35409873",
                                         "Name": "cameraLocation",
                                         "Value": {
                                             "x": 0.0,
                                             "y": 0.0,
-                                            "z": 30.0
+                                            "z": 0.0
                                         }
                                     }
                                 ]
@@ -157,8 +157,8 @@
                         ],
                         "StorageUniforms": [],
                         "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "ReadOnly"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -784,7 +784,7 @@
             "Uniforms": [],
             "StorageUniforms": [],
             "Samplers": [],
-            "Shader": "ConstantShader",
+            "Shader": "HaloShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -1016,9 +1016,9 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "BoundsRadiusParameter",
                             "Name": "BoundsRadius",
-                            "Value": 12.5,
-                            "Minimum": 1.0,
-                            "Maximum": 20.0
+                            "Value": 15.0,
+                            "Minimum": 5.0,
+                            "Maximum": 25.0
                         }
                     ],
                     "Groups": []
@@ -1380,13 +1380,13 @@
         },
         {
             "Type": "nap::SphereMesh",
-            "mID": "SphereMesh",
+            "mID": "SphereBoundsMesh",
             "Usage": "Static",
-            "CullMode": "Back",
+            "CullMode": "Front",
             "PolygonMode": "Fill",
-            "Radius": 0.5,
-            "Rings": 16.0,
-            "Sectors": 16.0,
+            "Radius": 1.0,
+            "Rings": 20.0,
+            "Sectors": 20.0,
             "Color": {
                 "Values": [
                     1.0,
@@ -1398,13 +1398,13 @@
         },
         {
             "Type": "nap::SphereMesh",
-            "mID": "SphereMeshBounds",
+            "mID": "SphereMesh",
             "Usage": "Static",
-            "CullMode": "Front",
-            "PolygonMode": "Line",
-            "Radius": 1.0,
-            "Rings": 24.0,
-            "Sectors": 24.0,
+            "CullMode": "Back",
+            "PolygonMode": "Fill",
+            "Radius": 0.5,
+            "Rings": 16.0,
+            "Sectors": 16.0,
             "Color": {
                 "Values": [
                     1.0,

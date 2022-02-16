@@ -25,6 +25,7 @@ namespace nap
 {
 	// Forward declares
 	class FlockingSystemComponentInstance;
+	class PerspCameraComponentInstance;
 
 	/**
 	* Demo application that is called from within the main loop
@@ -134,9 +135,15 @@ namespace nap
 		// Bounds radius
 		ParameterFloat* mBoundsRadiusParam = nullptr;
 
+		// Camera position
+		UniformVec3Instance* mBoundsCameraPositionUniform = nullptr;
+
 		std::string mSelectedPreset;
 		nap::Slot<> mCacheSlot = { [&]() -> void { cache(); } };
 		nap::Slot<> mReloadSlot = { [&]() -> void { utility::ErrorState error_state; reload(error_state); } };
+
+		// Camera
+		PerspCameraComponentInstance*		mPerspCameraComponent = nullptr;
 
 		// RenderComponents
 		FlockingSystemComponentInstance*	mFlockingSystemComponent = nullptr;

@@ -31,6 +31,13 @@ void main(void)
 	vec4 position = vec4(in_Position, 1.0);
     gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * position;
 
+	// Calculate vertex world space position
+	vec4 world_position = mvp.modelMatrix * position;
+
+	// Calculate normal in world coordinates and pass along
+	vec4 normal = vec4(in_Normals, 0.0);
+	vec3 world_normal = normalize(mvp.modelMatrix * normal).xyz;
+
 	// Calculate fresnel term
 	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);
 	pass_Fresnel = fresnelScale * pow(1.0 + dot(eye_to_surface, world_normal), fresnelPower);

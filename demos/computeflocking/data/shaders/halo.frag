@@ -18,5 +18,5 @@ out vec4 out_Color;
 
 void main(void)
 {
-	out_Color = vec4(ubo.color * pass_Fresnel, 1.0); 
+	out_Color = vec4(ubo.color, clamp(pass_Fresnel * ubo.alpha, 0.0, 1.0)); 
 }

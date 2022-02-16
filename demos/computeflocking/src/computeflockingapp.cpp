@@ -58,7 +58,6 @@ namespace nap
 	{
 		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("RenderWindow");
-		mCameraEntity = scene->findEntity("CameraEntity");
 		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 
@@ -75,6 +74,10 @@ namespace nap
 		// Get world entity - parent of our renderable scene
 		mWorldEntity = scene->findEntity("WorldEntity");
 		if (!errorState.check(mWorldEntity != nullptr, "Missing WorldEntity"))
+			return false;
+
+		mCameraEntity = scene->findEntity("CameraEntity");
+		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
 			return false;
 
 		mRenderEntity = scene->findEntity("RenderEntity");
@@ -109,6 +112,11 @@ namespace nap
 		if (!errorState.check(mBoundsMeshComponent != nullptr, "Missing component 'nap::RenderableMeshcomponent'"))
 			return false;
 
+		// Get the camera component
+		mPerspCameraComponent = &mCameraEntity->getComponent<PerspCameraComponentInstance>();
+		if (!errorState.check(mPerspCameraComponent != nullptr, "Missing component 'nap::PerspCameraComponent'"))
+			return false;
+
 		// Get boid target point mesh component
 		const auto boid_target_entity = scene->findEntity("BoidTargetEntity");
 		if (boid_target_entity != nullptr)
@@ -132,6 +140,9 @@ namespace nap
 
 		ubo_struct = mCompositeComponent->getMaterialInstance().findUniform("UBO");
 		mBlendUniform = ubo_struct->findUniform<UniformFloatInstance>("blend");
+
+		ubo_struct = mBoundsMeshComponent->getMaterialInstance().findUniform("Vert_UBO");
+		mBoundsCameraPositionUniform = ubo_struct->findUniform<UniformVec3Instance>("cameraLocation");
 
 		// Cache boid count
 		mNumBoids = mFlockingSystemComponent->mNumBoids;
@@ -242,10 +253,14 @@ namespace nap
 		mBrightnessUniform->setValue(mBrightnessParam->mValue);
 		mSaturationUniform->setValue(mSaturationParam->mValue);
 		mBlendUniform->setValue(mBlendParam->mValue);
-
+		
 		// Update bounds
 		auto& transform = mBoundsEntity->getComponent<TransformComponentInstance>();
 		transform.setScale({ mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue });
+
+		// Update camera position
+		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
+		mBoundsCameraPositionUniform->setValue(camera_transform.getTranslate());
 	}
 
 
