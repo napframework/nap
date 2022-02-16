@@ -26,6 +26,7 @@ namespace nap
 	// Forward declares
 	class FlockingSystemComponentInstance;
 	class PerspCameraComponentInstance;
+	class BoidTargetTranslateComponentInstance;
 
 	/**
 	* Demo application that is called from within the main loop
@@ -143,14 +144,17 @@ namespace nap
 		nap::Slot<> mReloadSlot = { [&]() -> void { utility::ErrorState error_state; reload(error_state); } };
 
 		// Camera
-		PerspCameraComponentInstance*		mPerspCameraComponent = nullptr;
+		PerspCameraComponentInstance*			mPerspCameraComponent = nullptr;
+
+		// Target transform
+		BoidTargetTranslateComponentInstance*	mBoidTargetTranslateComponent = nullptr;
 
 		// RenderComponents
-		FlockingSystemComponentInstance*	mFlockingSystemComponent = nullptr;
-		RenderBloomComponentInstance*		mBloomComponent = nullptr;
-		RenderToTextureComponentInstance*	mContrastComponent = nullptr;
-		RenderToTextureComponentInstance*	mCompositeComponent = nullptr;
-		RenderableMeshComponentInstance*	mTargetPointMeshComponent = nullptr;
-		RenderableMeshComponentInstance*	mBoundsMeshComponent = nullptr;
+		FlockingSystemComponentInstance*		mFlockingSystemComponent = nullptr;
+		RenderBloomComponentInstance*			mBloomComponent = nullptr;
+		RenderToTextureComponentInstance*		mContrastComponent = nullptr;
+		RenderToTextureComponentInstance*		mCompositeComponent = nullptr;
+		RenderableMeshComponentInstance*		mTargetPointMeshComponent = nullptr;
+		RenderableMeshComponentInstance*		mBoundsAtmosphereMeshComponent = nullptr;
 	};
 }

@@ -10,7 +10,6 @@
 // External Includes
 #include <entity.h>
 #include <rect.h>
-#include <glm/gtx/transform.hpp>
 #include <mathutils.h>
 #include <nap/core.h>
 #include <renderservice.h>
@@ -48,8 +47,8 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("SpecularIntensity",			&nap::FlockingSystemComponent::mSpecularIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MateColorRate",				&nap::FlockingSystemComponent::mMateColorRateParam,			nap::rtti::EPropertyMetaData::Default)
 
-	RTTI_PROPERTY("PerspCameraComponent",		&nap::FlockingSystemComponent::mPerspCameraComponent,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TargetTransformComponent",	&nap::FlockingSystemComponent::mTargetTransformComponent,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PerspCameraComponent",		&nap::FlockingSystemComponent::mPerspCameraComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("TargetTransformComponent",	&nap::FlockingSystemComponent::mTargetTransformComponent,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FlockingSystemComponentInstance)

@@ -52,7 +52,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "ParentTransform",
+                    "mID": "TargetTransform",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -73,22 +73,38 @@
                     }
                 },
                 {
-                    "Type": "nap::RotateComponent",
-                    "mID": "RotateComponent",
-                    "Properties": {
-                        "Axis": {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBoidTargetMesh",
+                    "Visible": true,
+                    "Mesh": "BoidTargetPointMesh",
+                    "MaterialInstance": {
+                        "Material": "BoidTargetPointMaterial",
+                        "Uniforms": [],
+                        "StorageUniforms": [],
+                        "Samplers": [],
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
                             "x": 0.0,
-                            "y": 1.0,
-                            "z": 0.0
+                            "y": 0.0
                         },
-                        "Speed": 0.05000000074505806,
-                        "Offset": 0.0
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
                     }
+                },
+                {
+                    "Type": "nap::BoidTargetTranslateComponent",
+                    "mID": "BoidTargetTranslateComponent",
+                    "Radius": 0.5,
+                    "Speed": 0.10000000149011612
                 }
             ],
-            "Children": [
-                "ChildTransformEntity"
-            ]
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -96,7 +112,7 @@
             "Components": [
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBoundsComponent",
+                    "mID": "RenderBoundsFill",
                     "Visible": true,
                     "Mesh": "SphereBoundsMesh",
                     "MaterialInstance": {
@@ -193,6 +209,55 @@
                         },
                         "UniformScale": 1.0
                     }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBoundsWireFrame",
+                    "Visible": true,
+                    "Mesh": "SphereBoundsWireFrameMesh",
+                    "MaterialInstance": {
+                        "Material": "ConstantMaterial",
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_a2602725",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_5901769d",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 1.0,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_81145a6d",
+                                        "Name": "alpha",
+                                        "Value": 0.05000000074505806
+                                    }
+                                ]
+                            }
+                        ],
+                        "StorageUniforms": [],
+                        "Samplers": [],
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "ReadWrite"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
@@ -252,60 +317,6 @@
                         "GridLocation": {
                             "x": 0,
                             "y": 0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "ChildTransformEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "BoidTargetTransform",
-                    "Properties": {
-                        "Translate": {
-                            "x": 10.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBoidTargetMesh",
-                    "Visible": true,
-                    "Mesh": "BoidTargetPointMesh",
-                    "MaterialInstance": {
-                        "Material": "BoidTargetPointMaterial",
-                        "Uniforms": [],
-                        "StorageUniforms": [],
-                        "Samplers": [],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
                         }
                     }
                 }
@@ -391,7 +402,7 @@
                     "SpecularIntensity": "SpecularIntensityParameter",
                     "MateColorRate": "MateColorRateParameter",
                     "PerspCameraComponent": "../../CameraEntity/PerspectiveCamera",
-                    "TargetTransformComponent": "../BoidTargetEntity/ChildTransformEntity/BoidTargetTransform"
+                    "TargetTransformComponent": "../BoidTargetEntity/TargetTransform"
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -847,6 +858,17 @@
                 }
             ],
             "Shader": "CompositeShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ConstantMaterial",
+            "Uniforms": [],
+            "StorageUniforms": [],
+            "Samplers": [],
+            "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -1366,7 +1388,7 @@
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
-            "Radius": 0.125,
+            "Radius": 0.25,
             "Rings": 8.0,
             "Sectors": 8.0,
             "Color": {
@@ -1386,6 +1408,24 @@
             "PolygonMode": "Fill",
             "Radius": 1.0,
             "Rings": 20.0,
+            "Sectors": 20.0,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "SphereBoundsWireFrameMesh",
+            "Usage": "Static",
+            "CullMode": "Front",
+            "PolygonMode": "Line",
+            "Radius": 1.0,
+            "Rings": 12.0,
             "Sectors": 20.0,
             "Color": {
                 "Values": [

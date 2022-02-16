@@ -10,9 +10,6 @@ uniform UBO
 	float alpha;
 } ubo;
 
-in vec3 pass_Position;
-in vec3 pass_Normal;
-
 in float pass_Fresnel;
 out vec4 out_Color;
 

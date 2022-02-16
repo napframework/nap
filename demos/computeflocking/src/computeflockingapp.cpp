@@ -4,6 +4,7 @@
 
 #include "computeflockingapp.h"
 #include "flockingsystemcomponent.h"
+#include "boidtargettranslatecomponent.h"
 
  // External Includes
 #include <nap/core.h>
@@ -108,8 +109,8 @@ namespace nap
 			return false;
 
 		// Get the bounds mesh component
-		mBoundsMeshComponent = &mBoundsEntity->getComponent<RenderableMeshComponentInstance>();
-		if (!errorState.check(mBoundsMeshComponent != nullptr, "Missing component 'nap::RenderableMeshcomponent'"))
+		mBoundsAtmosphereMeshComponent = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
+		if (!errorState.check(mBoundsAtmosphereMeshComponent != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsFill'"))
 			return false;
 
 		// Get the camera component
@@ -117,14 +118,13 @@ namespace nap
 		if (!errorState.check(mPerspCameraComponent != nullptr, "Missing component 'nap::PerspCameraComponent'"))
 			return false;
 
-		// Get boid target point mesh component
+		// Get boid target point mesh and translate component
 		const auto boid_target_entity = scene->findEntity("BoidTargetEntity");
 		if (boid_target_entity != nullptr)
 		{
-			std::vector<RenderableMeshComponentInstance*> comps;
-			boid_target_entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(comps);
-			mTargetPointMeshComponent = (!comps.empty()) ? comps[0] : nullptr;
-		}		
+			mTargetPointMeshComponent = &boid_target_entity->getComponent<RenderableMeshComponentInstance>();
+			mBoidTargetTranslateComponent = &boid_target_entity->getComponent<BoidTargetTranslateComponentInstance>();
+		}
 
 		// Get the sampler instance for compositing bloom and color
 		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(mCompositeComponent->getMaterialInstance().findSampler("colorTextures"));
@@ -141,7 +141,7 @@ namespace nap
 		ubo_struct = mCompositeComponent->getMaterialInstance().findUniform("UBO");
 		mBlendUniform = ubo_struct->findUniform<UniformFloatInstance>("blend");
 
-		ubo_struct = mBoundsMeshComponent->getMaterialInstance().findUniform("Vert_UBO");
+		ubo_struct = mBoundsAtmosphereMeshComponent->getMaterialInstance().findUniform("Vert_UBO");
 		mBoundsCameraPositionUniform = ubo_struct->findUniform<UniformVec3Instance>("cameraLocation");
 
 		// Cache boid count
@@ -254,9 +254,13 @@ namespace nap
 		mSaturationUniform->setValue(mSaturationParam->mValue);
 		mBlendUniform->setValue(mBlendParam->mValue);
 		
-		// Update bounds
+		// Update bound scale
 		auto& transform = mBoundsEntity->getComponent<TransformComponentInstance>();
 		transform.setScale({ mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue });
+
+		// Update target parent transform scale
+		if (mBoidTargetTranslateComponent != nullptr)
+			mBoidTargetTranslateComponent->mRadius = mBoundsRadiusParam->mValue;
 
 		// Update camera position
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
