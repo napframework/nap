@@ -141,6 +141,12 @@ deploy_single_path_mapping(${CMAKE_SOURCE_DIR})
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
 install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
 install(FILES ${NAP_ROOT}/cmake/project_creator/NAP.txt DESTINATION .)
+
+# Copy service configuration if it exists
+if(EXISTS ${CMAKE_SOURCE_DIR}/service_config.json)
+    install(FILES ${CMAKE_SOURCE_DIR}/service_config.json DESTINATION .)
+endif()
+
 if(NOT WIN32)
     # Set RPATH to search in ./lib
     if(APPLE)
