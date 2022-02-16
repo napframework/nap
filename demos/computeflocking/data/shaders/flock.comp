@@ -56,7 +56,7 @@ const vec3 FORWARD 			= vec3(0.0, 0.0, 1.0);
 const vec3 UP 				= vec3(0.0, 1.0, 0.0);
 const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
 
-const float avoidBoundWeightConst = 2.5;
+const float avoidBoundWeightConst = 3.0;
 
 // SHARED
 struct BoidData
@@ -322,13 +322,13 @@ void main()
 	// Steer away from sphere bounds
 	vec3 dir = normalize(b.velocity.xyz);
 	float dist = raySphere(b.position.xyz, dir, vec3(0.0), ubo.boundsRadius);	
+	
 	if (dist > -EPSILON && dist < ubo.avoidRadius)
 	{
-		// Sphere bounds only
-		vec3 hit_norm = -1.0 * (b.position.xyz + dir * dist);
-		
+		// Bounds in proximity
+		vec3 hit_norm = -1.0 * normalize(b.position.xyz + dir * dist);	
 		vec3 refl = reflect(dir, hit_norm);
-		acceleration += steerTowards(refl, b.velocity.xyz, ubo.maxSteerForce*2.0) * avoidBoundWeightConst;
+		acceleration += steerTowards(refl, b.velocity.xyz, ubo.maxSteerForce) * avoidBoundWeightConst;
 	}
 
 	// Calculate velocity
@@ -337,6 +337,9 @@ void main()
 	// Write current boid
 	b.velocity.xyz = mix(vel, b.velocity.xyz, 0.5);
 	b.position.xyz += b.velocity.xyz * ubo.deltaTime;
+
+	// Hard contraint to keep boid within bounds
+	b.position.xyz = clampMagnitude(b.position.xyz, EPSILON, ubo.boundsRadius);
 
 	// Get a quaternion describing the boid's delta rotation
 	vec3 dir_orig = rotate(FORWARD, b.orientation);

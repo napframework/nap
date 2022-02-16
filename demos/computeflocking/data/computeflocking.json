@@ -124,6 +124,35 @@
                                         "Value": 1.0
                                     }
                                 ]
+                            },
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_f1ab1db0",
+                                "Name": "Vert_UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_c82bd971",
+                                        "Name": "fresnelPower",
+                                        "Value": 1.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_fc965e79",
+                                        "Name": "fresnelScale",
+                                        "Value": 1.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_22521d9c",
+                                        "Name": "cameraLocation",
+                                        "Value": {
+                                            "x": 0.0,
+                                            "y": 0.0,
+                                            "z": 30.0
+                                        }
+                                    }
+                                ]
                             }
                         ],
                         "StorageUniforms": [],
@@ -1324,6 +1353,12 @@
             "mID": "CompositeShader",
             "VertShader": "shaders/composite.vert",
             "FragShader": "shaders/composite.frag"
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "HaloShader",
+            "VertShader": "shaders/halo.vert",
+            "FragShader": "shaders/halo.frag"
         },
         {
             "Type": "nap::SphereMesh",
