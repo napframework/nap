@@ -10,7 +10,8 @@ struct Boid
 	vec4 velocity;
 	vec4 orientation;
 
-	uint padding[3];
+	uint padding[2];
+	float debug;
 	float mateRate;
 };
 
@@ -43,7 +44,6 @@ in vec3 in_Normals;
 out vec3 pass_Position;
 out vec3 pass_Normal;
 
-out float pass_Speed;
 out float pass_Fresnel;
 out float pass_Mates;
 flat out uint pass_Id;
@@ -76,9 +76,10 @@ void main(void)
 	pass_Normal = world_normal;
 
 	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);
-	pass_Fresnel = fresnelScale * pow(1.0 + dot(eye_to_surface, world_normal), fresnelPower);
+	float fresnel = 0.04 + 0.96 * pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), fresnelPower);
+	pass_Fresnel = fresnelScale * fresnel;
 
-	pass_Speed = length(b.velocity.xyz);
+	// Pass percentage of neighbors (normalized)
 	pass_Mates = b.mateRate;
 
 	// Pass element id

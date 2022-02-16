@@ -25,7 +25,6 @@ uniform UBO
 in vec3 pass_Position;
 in vec3 pass_Normal;
 
-in float pass_Speed;
 in float pass_Fresnel;
 in float pass_Mates;
 flat in uint pass_Id;
@@ -56,9 +55,9 @@ void main(void)
 {
 	// Diffuse color
 	vec3 boid_hsv = vec3(mod(pass_Id, 360)/360.0, 1.0, 0.9);
-	vec3 boid_rgb = hsv2rgb(boid_hsv);
-	vec3 boid_diffuse = mix(ubo.diffuseColor, ubo.diffuseColorEx, map(pass_Mates, 0.0, ubo.mateColorRate, 0.0, 1.0));		
-	vec3 boid_color = mix(boid_diffuse, boid_rgb, step(EPSILON, ubo.randomColor));
+	vec3 boid_randomrgb = hsv2rgb(boid_hsv);
+	vec3 boid_diffuse = mix(ubo.diffuseColor, ubo.diffuseColorEx, map(pass_Mates, 0.05, ubo.mateColorRate, 0.0, 1.0));		
+	vec3 boid_color = mix(boid_diffuse, boid_randomrgb, step(EPSILON, ubo.randomColor));
 
 	// Surface to camera normal
 	vec3 surface_to_cam = normalize(ubo.cameraLocation - pass_Position);

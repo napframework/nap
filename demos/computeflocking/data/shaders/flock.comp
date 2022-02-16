@@ -11,7 +11,8 @@ struct Boid
 	vec4 velocity;
 	vec4 orientation;
 
-	uint padding[3];
+	uint padding[2];
+	float debug;
 	float mateRate;
 };
 
@@ -171,7 +172,7 @@ vec2 rayBox(in vec3 orig, in vec3 dir, in vec3 extent, out vec3 oN)
 
 
 // Source: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-float raySphere(vec3 orig, vec3 dir, vec3 center, float radius)
+float raySphere(in vec3 orig, in vec3 dir, in vec3 center, in float radius)
 {
 	vec3 oc = orig - center;
 	float b = dot(oc, dir);
@@ -180,9 +181,9 @@ float raySphere(vec3 orig, vec3 dir, vec3 center, float radius)
 
 	if (h < 0.0)
 		return -1.0; // no intersection
-
-	h = sqrt(h);
-	return -b - sign(c) * sqrt(h);
+	
+	//return -b - sqrt(h);			// Outside
+	return -b - sign(c) * sqrt(h);	// Inside and outside
 }
 
 
@@ -321,17 +322,18 @@ void main()
 
 	// Steer away from sphere bounds
 	vec3 dir = normalize(b.velocity.xyz);
-	float dist = raySphere(b.position.xyz, dir, vec3(0.0), ubo.boundsRadius);	
-	
+	float dist = raySphere(b.position.xyz, dir, vec3(0.0), ubo.boundsRadius);
+
+	// Steer away if bounds are in proximity
 	if (dist > -EPSILON && dist < ubo.avoidRadius)
 	{
-		// Bounds in proximity
-		vec3 hit_norm = -1.0 * normalize(b.position.xyz + dir * dist);	
-		vec3 refl = reflect(dir, hit_norm);
-		acceleration += steerTowards(refl, b.velocity.xyz, ubo.maxSteerForce) * avoidBoundWeightConst;
+		vec3 hit_norm = normalize(b.position.xyz + dir * dist);	
+		vec3 refl = reflect(dir, hit_norm);		
+		vec3 avoid = steerTowards(refl, b.velocity.xyz, ubo.maxSteerForce) * avoidBoundWeightConst;
+		acceleration += avoid;
 	}
 
-	// Calculate velocity
+	// Calculate velocityd
 	vec3 vel = clampMagnitude(b.velocity.xyz + acceleration * ubo.deltaTime, ubo.minSpeed, ubo.maxSteerForce);
 
 	// Write current boid
@@ -339,7 +341,7 @@ void main()
 	b.position.xyz += b.velocity.xyz * ubo.deltaTime;
 
 	// Hard contraint to keep boid within bounds
-	b.position.xyz = clampMagnitude(b.position.xyz, EPSILON, ubo.boundsRadius);
+	b.position.xyz = clampMagnitude(b.position.xyz, EPSILON, ubo.boundsRadius-EPSILON);
 
 	// Get a quaternion describing the boid's delta rotation
 	vec3 dir_orig = rotate(FORWARD, b.orientation);
@@ -350,7 +352,7 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.9), b.mateRate, 0.95);
+	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.99);
 
 	// Write boid to output buffer
 	subo_out.boids[global_id] = b;
