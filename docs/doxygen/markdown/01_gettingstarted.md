@@ -81,9 +81,9 @@ Add Content {#add_content}
 
 The `data` folder within your project folder contains an `objects.json` file. This file describes the general structure of your application and all additional resources that are required. Objects in this file can be split up into three different categories:
 
-- [Resources](@ref resources): static, often read-only, data such as an image, window, mesh etc.
-- [Entities](@ref scene): objects that structure functionality by combining a set of components
-- [Components](@ref scene): used to add functionality to an entity and receive an update call
+- [Resources](@ref resources): static, often read-only data such as an image, window, 3D mesh etc.
+- [Entities](@ref scene): groups functionality by combining a set of components.
+- [Components](@ref scene): adds specfic logic to an entity, receives an update call every frame.
 
 ## Resource {#audio_resource}
 
