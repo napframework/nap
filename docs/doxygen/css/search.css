@@ -244,8 +244,10 @@ span.SRScope {
 
 .SRPage .SRStatus {
     padding: 2px 5px;
-    font-size: 8pt;
+    font-size: 0.8em;
     font-style: italic;
+    color: #fff;
+    font-family:  'manrope', sans-serif;
 }
 
 .SRResult {

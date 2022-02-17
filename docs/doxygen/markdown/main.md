@@ -17,12 +17,10 @@ NAP is completely data driven and heavily influenced by modern game engine desig
 
 NAP applications are lean and mean: only package and ship what you actually use. On top of that NAP is easy to extend: build you own modules, resources, devices and components. NAP wants you to be safe and validates data for you on initialization. Applications are also responsive: hot-load content changes directly in to the running application. On top of that NAP is completely cross-platform and supports all modern desktop environments.
 
-![](@ref content/napkin_1280.jpg)
-
 ## Why
 
 Projects are growing in scope and complexity. Therefore the need for stable and performant software is increasing. Software needs to run for years without having to string together multiple applications or environments. To meet expectations NAP offers you a set of handles to tackle the most demanding creative and industrial problems.
 
-## Links
+## Downloads
 
 Pre-compiled NAP packages and source-code available on [Github](https://github.com/napframework) and [napframework.com](https://www.napframework.com/)
