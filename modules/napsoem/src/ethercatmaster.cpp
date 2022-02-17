@@ -2,19 +2,34 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-// Local Includes
+ // Local Includes
 #include "ethercatmaster.h"
 
 // External Includes
 #include <nap/logger.h>
 #include <soem/ethercat.h>
 
+//  All available Ethercat slave states
+RTTI_BEGIN_ENUM(nap::EtherCATMaster::ESlaveState)
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::None,				"None"),
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::Init,				"Init"),
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::PreOperational,	"PreOperational"),
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::Boot,				"Boot"),
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::SafeOperational,	"SafeOperational"),
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::Operational,		"Operational"),
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::Error,			"Error"),
+	RTTI_ENUM_VALUE(nap::EtherCATMaster::ESlaveState::ACK,				"ACK")
+RTTI_END_ENUM
+
 // nap::ethercatmaster run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
-	RTTI_PROPERTY("ForceOperational",	&nap::EtherCATMaster::mForceOperational,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Adapter",			&nap::EtherCATMaster::mAdapter,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ErrorCycleTime",		&nap::EtherCATMaster::mErrorCycleTime,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RecoveryTimeout",	&nap::EtherCATMaster::mRecoveryTimeout,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ForceOperational",		&nap::EtherCATMaster::mForceOperational,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ForceSafeOperational",	&nap::EtherCATMaster::mForceSafeOperational,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("OperationalTimeout",		&nap::EtherCATMaster::mOperationalTimeout,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SafeOperationalTimeout",	&nap::EtherCATMaster::mSafeOperationalTimeout,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Adapter",				&nap::EtherCATMaster::mAdapter,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ErrorCycleTime",			&nap::EtherCATMaster::mErrorCycleTime,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RecoveryTimeout",		&nap::EtherCATMaster::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,30 +81,30 @@ namespace nap
 			{
 				// Create context
 				mContext = new ecx_contextt
-					{
-						&mData.ecx_port_fsoe,
-						&mData.ec_slave[0],
-						&mData.ec_slavecount,
-						EC_MAXSLAVE,
-						&mData.ec_groups[0],
-						EC_MAXGROUP,
-						&mData.esibuf[0],
-						&mData.esimap[0],
-						0,
-						&mData.ec_elist,
-						&mData.ec_idxstack,
-						&mData.AppEcatError,
-						&mData.ec_DCtime,
-						&mData.ec_SMcommtype,
-						&mData.ec_PDOassign,
-						&mData.ec_PDOdesc,
-						&mData.ec_SM,
-						&mData.ec_FMMU,
-						NULL,
-						NULL,
-						0,
-						&master
-					};
+				{
+					&mData.ecx_port_fsoe,
+					&mData.ec_slave[0],
+					&mData.ec_slavecount,
+					EC_MAXSLAVE,
+					&mData.ec_groups[0],
+					EC_MAXGROUP,
+					&mData.esibuf[0],
+					&mData.esimap[0],
+					0,
+					&mData.ec_elist,
+					&mData.ec_idxstack,
+					&mData.AppEcatError,
+					&mData.ec_DCtime,
+					&mData.ec_SMcommtype,
+					&mData.ec_PDOassign,
+					&mData.ec_PDOdesc,
+					&mData.ec_SM,
+					&mData.ec_FMMU,
+					NULL,
+					NULL,
+					0,
+					&master
+				};
 			}
 
 			// Delete SOEM context
@@ -99,13 +114,13 @@ namespace nap
 				mContext = nullptr;
 			}
 
-			ecx_contextt* 			mContext = nullptr;		///< Soem (ethercat master) context
+			ecx_contextt* mContext = nullptr;		///< Soem (ethercat master) context
 			nap::soem::ContextData 	mData;					///< Data associated with context
 		};
 	}
 
 	static ecx_contextt* toContext(void* ctx)
-    {
+	{
 		return reinterpret_cast<soem::Context*>(ctx)->mContext;
 	}
 
@@ -123,11 +138,11 @@ namespace nap
 	}
 
 
-    EtherCATMaster::EtherCATMaster()
-    {
+	EtherCATMaster::EtherCATMaster()
+	{
 		// Create context
 		mContext = new soem::Context(*this);
-    }
+	}
 
 
 	bool EtherCATMaster::start(utility::ErrorState& errorState)
@@ -136,6 +151,10 @@ namespace nap
 		// The master shouldn't be in operation
 		assert(!mOperational);
 		assert(!mStarted);
+
+		//////////////////////////////////////////////////////////////////////////
+		// Init
+		//////////////////////////////////////////////////////////////////////////
 
 		// Try to initialize adapter
 		ecx_contextt* context = toContext(mContext);
@@ -160,13 +179,27 @@ namespace nap
 		// Configure DC options for every DC capable slave found in the list
 		ecx_configdc(context);
 
-		// All slaves should be in pre-op mode now
-		if (stateCheck(0, ESlaveState::PreOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::PreOperational)
+		//////////////////////////////////////////////////////////////////////////
+		// Pre Operational
+		//////////////////////////////////////////////////////////////////////////
+
+		// All slaves should be in pre-op mode now, if not show and bail if required
+		if (stateCheck(0, ESlaveState::PreOperational, mSafeOperationalTimeout) != ESlaveState::PreOperational)
 		{
-			nap::Logger::warn("Not all slaves reached pre-operational state");
+			nap::Logger::warn("%s: not all slaves reached pre-operational state", mID.c_str());
+
+			utility::ErrorState pre_op_error;
+			getStatusMessage(ESlaveState::PreOperational, pre_op_error);
+			if (mForceSafeOperational)
+			{
+				errorState = pre_op_error;
+				stop();
+				return false;
+			}
+			nap::Logger::warn(pre_op_error.toString());
 		}
 
-		// Allow derived class to startup
+		// Allow derived class to startup, bail of failure
 		readState();
 		if (!onStarted(errorState))
 		{
@@ -175,23 +208,47 @@ namespace nap
 		}
 
 		// Notify listeners, first update individual slave states
+		// Bail if pre-operation callback of any of the slaves failed
+		bool pre_op_success = true;
 		for (int i = 1; i <= getSlaveCount(); i++)
 		{
 			ec_slavet& cs = context->slavelist[i];
-			if(cs.state == static_cast<uint16>(ESlaveState::PreOperational))
+			if (cs.state == static_cast<uint16>(ESlaveState::PreOperational))
 			{
-				onPreOperational(&cs, i);
+				pre_op_success = onPreOperational(&cs, i, errorState);
 			}
 		}
+		if (!pre_op_success)
+		{
+			stop();
+			return false;
+		}
+		nap::Logger::info("%s: all slaves reached pre-operational state", mID.c_str());
+
+		//////////////////////////////////////////////////////////////////////////
+		// Safe Operational
+		//////////////////////////////////////////////////////////////////////////
 
 		// Map all PDOs from slaves to IOmap with Outputs/Inputs
+		nap::Logger::info("%s: mapping slaves...", mID.c_str());
 		ecx_config_map_group(context, &mIOmap, 0);
-		nap::Logger::info("%s: all slaves mapped", this->mID.c_str());
 
-		// All slaves should be in safe-op mode now
-		if (stateCheck(0, ESlaveState::SafeOperational, EC_TIMEOUTSTATE / 1000) != ESlaveState::SafeOperational)
+		nap::Logger::info("%s: all slaves mapped", mID.c_str());
+
+		// All slaves should be in safe-op mode 
+		if (stateCheck(0, ESlaveState::SafeOperational, mSafeOperationalTimeout) != ESlaveState::SafeOperational)
 		{
-			nap::Logger::warn("Not all slaves reached safe-operational state");
+			nap::Logger::warn("%s: not all slaves reached pre-operational state", mID.c_str());
+
+			utility::ErrorState safe_op_error;
+			getStatusMessage(ESlaveState::SafeOperational, safe_op_error);
+			if (mForceSafeOperational)
+			{
+				errorState = safe_op_error;
+				stop();
+				return false;
+			}
+			nap::Logger::warn(safe_op_error.toString());
 		}
 
 		// Calculate slave work counter, used to check in the error loop if slaves got lost
@@ -200,18 +257,34 @@ namespace nap
 		nap::Logger::info("%s: calculated work-counter: %d", mID.c_str(), mExpectedWKC);
 
 		// Print useful info and notify listeners
+		// Bail if safe operational callback failed, unsafe to proceed
 		readState();
+		bool safe_op_success = true;
 		for (int i = 1; i <= getSlaveCount(); i++)
 		{
 			ec_slavet& cs = context->slavelist[i];
+
+			ESlaveState state = static_cast<ESlaveState>(cs.state);
+			std::string state_label = RTTI_OF(ESlaveState).get_enumeration().value_to_name(state).to_string();
 			nap::Logger::info("Slave:%d Name:%s Output size:%3dbits Input size:%3dbits State:%2d delay:%d.%d",
-				i, cs.name, cs.Obits, cs.Ibits, cs.state, (int)cs.pdelay, cs.hasdc);
+				i, cs.name, cs.Obits, cs.Ibits, state_label.c_str(), (int)cs.pdelay, cs.hasdc);
 
 			if (context->slavelist[i].state == static_cast<uint16>(ESlaveState::SafeOperational))
 			{
-				onSafeOperational(&context->slavelist[i], i);
+				safe_op_success = onSafeOperational(&context->slavelist[i], i, errorState);
 			}
 		}
+		if (!safe_op_success)
+		{
+			errorState.fail("%s: failed to complete safe-operational setup", mID.c_str());
+			stop();
+			return false;
+		}
+		nap::Logger::info("%s: all slaves reached safe-operational state", mID.c_str());
+
+		//////////////////////////////////////////////////////////////////////////
+		// Operational
+		//////////////////////////////////////////////////////////////////////////
 
 		// Enable run mode, we're operational when all slaves reach operational state
 		mOperational = false;
@@ -226,43 +299,36 @@ namespace nap
 		mStopErrorTask = false;
 		mErrorTask = std::async(std::launch::async, std::bind(&EtherCATMaster::checkForErrors, this));
 
-		// request Operational state for all slaves, give it 10 seconds
+		// request Operational state for all slaves, give it at least mOperationalTimeout ms
 		nap::Logger::info("Request operational state for all slaves");
-		ESlaveState state = requestState(ESlaveState::Operational, 10000);
+		ESlaveState state = requestState(ESlaveState::Operational, mOperationalTimeout);
 
 		// If not all slaves reached operational state display errors and
 		// bail if operational state of all slaves is required on startup
 		if (state != EtherCATMaster::ESlaveState::Operational)
 		{
-			// Get error message and bail if required
-			errorState.fail(utility::stringFormat("%s: not all slaves reached operational state!", mID.c_str()));
-			getStatusMessage(ESlaveState::Operational, errorState);
-			nap::Logger::warn(errorState.toString());
+			nap::Logger::info("%s: not all slaves reached operational state in %dms", mID.c_str(), mOperationalTimeout);
 
-			// Stop if operational state for all slaves is enforced
+			// Get error message
+			utility::ErrorState op_error;
+			getStatusMessage(ESlaveState::Operational, op_error);
+			nap::Logger::warn(op_error.toString());
+
+			// Stop if operational state for all slaves is required
 			if (mForceOperational)
 			{
 				stop();
+				errorState.fail(utility::stringFormat("%s: not all slaves reached operational state (%dms timeout exceeded)!", mID.c_str(), mOperationalTimeout));
 				return false;
 			}
 		}
 		else
 		{
 			nap::Logger::info("%s: all slaves reached operational state", mID.c_str());
-			mOperational = true;
 		}
 
-		// Notify listeners
-		readState();
-		for (int i = 1; i <= getSlaveCount(); i++)
-		{
-			ec_slavet& cs = context->slavelist[i];
-			if (cs.state == static_cast<uint16>(EtherCATMaster::ESlaveState::Operational))
-			{
-				onOperational(&cs, i);
-			}
-		}
-
+		// Master is operational, starts error handling thread
+		mOperational = true;
 		mStarted = true;
 		return true;
 	}
@@ -281,30 +347,30 @@ namespace nap
 
 			// Stop processing task
 			assert(mProcessTask.valid());
-			this->onStopProcessing();
+			onStopProcessing();
 			mProcessTask.wait();
 
 			// Make all slaves go to initialization stage
 			if (requestState(ESlaveState::Init) != ESlaveState::Init)
 			{
-			 	nap::Logger::warn("%s: not all slaves reached init state", mID.c_str());
+				nap::Logger::warn("%s: not all slaves reached init state", mID.c_str());
 			}
 		}
 
 		// Close socket
 		if (mStarted || mRunning)
-		{	
+		{
 			onStopped();
 			ecx_contextt* context = toContext(mContext);
 			ecx_close(context);
 		}
 
 		// Reset work-counter and other variables
-		mActualWCK		= 0;
-		mExpectedWKC	= 0;
-		mRunning		= false;
-		mOperational	= false;
-		mStarted		= false;
+		mActualWCK = 0;
+		mExpectedWKC = 0;
+		mRunning = false;
+		mOperational = false;
+		mStarted = false;
 	}
 
 
@@ -369,7 +435,7 @@ namespace nap
 	}
 
 
-	void EtherCATMaster::sdoWrite(uint16 slave, uint16 index, uint8 subindex, bool ca, int psize, void *p)
+	void EtherCATMaster::sdoWrite(uint16 slave, uint16 index, uint8 subindex, bool ca, int psize, void* p)
 	{
 		ecx_SDOwrite(toContext(mContext), slave, index, subindex, ca, psize, p, EC_TIMEOUTRXM);
 	}
@@ -403,6 +469,7 @@ namespace nap
 			processErrors();
 			osal_usleep(mErrorCycleTime);
 		}
+		nap::Logger::info("%s: error process stopped", mID.c_str());
 	}
 
 
@@ -425,7 +492,7 @@ namespace nap
 				if (cs.state == static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational) +
 					static_cast<uint16>(EtherCATMaster::ESlaveState::Error))
 				{
-					nap::Logger::error("%s: slave %d is in SAFE_OP + ERROR, attempting ack", this->mID.c_str(), slave);
+					nap::Logger::error("%s: slave %d is in SAFE_OP + ERROR, attempting ack", mID.c_str(), slave);
 					cs.state = (
 						static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational) +
 						static_cast<uint16>(EtherCATMaster::ESlaveState::ACK));
@@ -435,21 +502,9 @@ namespace nap
 				// Safe operational
 				else if (cs.state == static_cast<uint16>(EtherCATMaster::ESlaveState::SafeOperational))
 				{
-					nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", this->mID.c_str(), slave);
-					onSafeOperational(&cs, slave);
+					nap::Logger::warn("%s: slave %d is in SAFE_OP, change to OPERATIONAL", mID.c_str(), slave);
 					cs.state = static_cast<uint16>(EtherCATMaster::ESlaveState::Operational);
 					writeState(slave);
-
-					// Call on operational if state changed
-					if (stateCheck(slave, ESlaveState::Operational) == ESlaveState::Operational)
-					{
-						onOperational(&cs, slave);
-						nap::Logger::info("%s: slave %d OPERATIONAL", mID.c_str(), slave);
-					}
-					else
-					{
-						nap::Logger::info("%s: slave %d unable to reach OPERATIONAL state", mID.c_str(), slave);
-					}
 				}
 
 				// Slave in between none and safe operational
@@ -458,7 +513,7 @@ namespace nap
 					if (ecx_reconfig_slave(ctx, slave, mRecoveryTimeout))
 					{
 						cs.islost = false;
-						nap::Logger::info("%s: slave %d reconfigured", this->mID.c_str(), slave);
+						nap::Logger::info("%s: slave %d reconfigured", mID.c_str(), slave);
 					}
 				}
 
@@ -471,6 +526,7 @@ namespace nap
 					if (cs.state == static_cast<uint16>(ESlaveState::None))
 					{
 						cs.islost = true;
+						nap::Logger::info("%s: slave %d lost", mID.c_str(), slave);
 					}
 				}
 			}
@@ -483,20 +539,24 @@ namespace nap
 					if (ecx_recover_slave(ctx, slave, mRecoveryTimeout))
 					{
 						cs.islost = false;
-						nap::Logger::info("%s: slave %d recovered", this->mID.c_str(), slave);
+						nap::Logger::info("%s: slave %d recovered", mID.c_str(), slave);
 					}
 				}
 				else
 				{
 					cs.islost = false;
-					nap::Logger::info("%s: slave %d found", this->mID.c_str(), slave);
+					nap::Logger::info("%s: slave %d found", mID.c_str(), slave);
 				}
 			}
+
+			// Exit early if the error task is stopped
+			if (mStopErrorTask)
+				return;
 		}
 
 		// Check current group state, notify when all slaves resumed operational state
 		if (!(cg.docheckstate))
-			nap::Logger::info("%s: all slaves resumed OPERATIONAL", this->mID.c_str());
+			nap::Logger::info("%s: all slaves resumed OPERATIONAL", mID.c_str());
 	}
 
 
@@ -575,7 +635,7 @@ namespace nap
 	int64 EtherCATMaster::syncClock(uint32 cycleTime, int32 dcOffset, int64& outCompensation, int64& ioIntegral)
 	{
 		int64 delta;
-		int32 dcoffset_ns = dcOffset  * 1000;		// Master offset ns
+		int32 dcoffset_ns = dcOffset * 1000;		// Master offset ns
 		int32 cyletime_ns = cycleTime * 1000;		// Frame cycle time ns
 
 		assert(hasDistributedClock());
