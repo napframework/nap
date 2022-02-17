@@ -19,4 +19,5 @@ if(WIN32)
         target_link_libraries(mod_napsoem INTERFACE ${WPCAP_DIR}/Lib/Packet.lib)
     endif()
 endif()
+
 add_define_to_interface_target(mod_napsoem __STDC_LIMIT_MACROS)
