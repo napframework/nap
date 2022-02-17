@@ -21,6 +21,7 @@ struct PointLight
 uniform UBO
 {
 	uniform vec3 		inCameraPosition;		//< Camera World Space Position
+	uniform vec3		ballColor;
 	uniform PointLight	light;
 } ubo;
 
@@ -29,10 +30,9 @@ uniform UBO
 out vec4 out_Color;
 
 const float 	specularIntensity = 0.5;
-const vec3  	specularColor = vec3(0.545, 0.549, 0.627);
+const vec3  	specularColor = vec3(1.0, 1.0, 1.0);
 const float 	shininess = 10;
 const float 	ambientIntensity = 0.5f;
-const vec3		ballColor = vec3(0.784, 0.411, 0.411);
 
 // Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
@@ -71,7 +71,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main()
 {
 	vec2 uvs = vec2(passUVs.x, passUVs.y);
-    vec3 col = ballColor;
+    vec3 col = ubo.ballColor;
 	vec3 output_color = applyLight(col, passNormal, passPosition);
 
 	out_Color =  vec4(output_color.rgb, 1.0);

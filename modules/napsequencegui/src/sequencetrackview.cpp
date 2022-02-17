@@ -79,6 +79,10 @@ namespace nap
 
 		// draw inspector window
 		float offset = 5.0f * mState.mScale;
+
+		// Push style
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.0f, 0.0f, 0.0f, 0.0f });
+
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
                                 { mState.mInspectorWidth , mState.mTrackHeight + offset }, // size
                                 false, // no border
@@ -99,13 +103,14 @@ namespace nap
 			(
 				window_pos,
 				{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
-				mService.getColors().mDark
+				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])
 			);
+
 			draw_list->AddRect
 			(
 				window_pos,
-				{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
-				mService.getColors().mFro3
+				{ window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
+				mService.getColors().mFro1
 			);
 
             /**
@@ -127,6 +132,12 @@ namespace nap
 			// scale down everything
 			float global_scale = 0.25f;
 			ImGui::GetStyle().ScaleAllSizes(global_scale);
+
+			// Remove background
+			ImVec4 frame_bg = { 0.0f, 0.0f, 0.0f, 0.0f };
+			ImGui::PushStyleColor(ImGuiCol_FrameBg, frame_bg);
+			ImGui::PushStyleColor(ImGuiCol_FrameBgActive, frame_bg);
+			ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, frame_bg);
 
             // show name label
             std::string name_copy = track.mName;
@@ -150,30 +161,35 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-			float btn_scale = 12.0f * mState.mScale;
 			auto& gui = mService.getGui();
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), { btn_scale, btn_scale }, "Move track up"))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), "Move track up"))
 			{
 				move_track_up = true;
 			}
 			ImGui::SameLine();
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), { btn_scale, btn_scale }, "Move track down"))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
 			{
 				move_track_down = true;
 			}
 			ImGui::SameLine();
-			if (ImGui::ImageButton(gui.getIcon(icon::del), { btn_scale, btn_scale }, "Delete track"))
+			if (ImGui::ImageButton(gui.getIcon(icon::del), "Delete track"))
 			{
 				delete_track = true;
 			}
 
-			// pop scale
+			// Pop gui style elements
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
 			ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
 
             // pop id
             ImGui::PopID();
 		}
 		ImGui::EndChild();
+
+		// Pop background style
+		ImGui::PopStyleColor();
 
 		ImGui::SetCursorPos(cursor_pos);
 
@@ -204,6 +220,7 @@ namespace nap
 		ImGui::SetCursorPos(window_cursor_pos);
 
 		// begin track
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.0f, 0.0f, 0.0f, 0.0f });
 		if (ImGui::BeginChild(
 			track.mID.c_str(), // id
 			{ mState.mTimelineWidth + offset, mState.mTrackHeight + (10.0f * mState.mScale) }, // size
@@ -229,13 +246,13 @@ namespace nap
 			draw_list->AddRectFilled(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				mService.getColors().mDark); // color
+				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])); // color
 
 			// draw border of track
 			draw_list->AddRect(
 				trackTopLeft, // top left position
 				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
-				mService.getColors().mFro3); // color
+				mService.getColors().mFro1); // color
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
@@ -252,23 +269,19 @@ namespace nap
 				if (pos.x > 0.0f )
 				{
 					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, mService.getColors().mBack);
-
 					if(pos.x > mState.mWindowPos.x + mState.mScroll.x + mState.mWindowSize.x)
-					{
 						break;
-					}
 				}
 			}
 
 			mState.mMouseCursorTime = (mState.mMousePos.x - trackTopLeft.x) / mState.mStepSize;
-
 			showTrackContent(track, trackTopLeft);
 
 			// pop id
 			ImGui::PopID();
 		}
-
 		ImGui::EndChild();
+		ImGui::PopStyleColor();
 		ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y } );
 	}
 

@@ -8,6 +8,7 @@
 #include <fcurvemodel.h>
 #include <appcontext.h>
 #include <napqt/qtutils.h>
+#include <napkin-resources.h>
 
 using namespace napkin;
 using namespace nap::qt;
@@ -16,7 +17,7 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 {
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	setLayout(&mLayout);
-	mLayout.addWidget(&mCurveView);
+	mLayout.addWidget(&mCurveEditor);
 
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, [this](const PropertyPath path)
 	{
@@ -68,13 +69,29 @@ CurvePanel::CurvePanel(QWidget* parent) : QWidget(parent)
 		mCurveModel->curve().pointsRemoved({static_cast<int>(index)});
 		mListenForCurveChanges = true;
 	});
+
+	// When theme changes, update icons & colors
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, [this]
+		{
+			auto& view = mCurveEditor.getView();
+			const auto& factory = AppContext::get().getResourceFactory();
+			view.mFrameViewAction.setIcon(factory.getIcon(QRC_ICONS_FRAME_SELECTION));
+			view.mFlattenTangentsAction.setIcon(factory.getIcon(QRC_ICONS_TANGENTS_FLAT));
+			view.mSetTangentsAlignedAction.setIcon(factory.getIcon(QRC_ICONS_TANGENTS_ALIGNED));
+			view.mSetTangentsBrokenAction.setIcon(factory.getIcon(QRC_ICONS_TANGENTS_BROKEN));
+			view.mInterpBezierAction.setIcon(factory.getIcon(QRC_ICONS_CURVEINTERP_BEZIER));
+			view.mInterpLinearAction.setIcon(factory.getIcon(QRC_ICONS_CURVEINTERP_LINEAR));
+			view.mInterpSteppedAction.setIcon(factory.getIcon(QRC_ICONS_CURVEINTERP_STEPPED));
+		});
+
+
 }
 
 void CurvePanel::editCurve(nap::math::FloatFCurve* curve)
 {
 	if (curve == nullptr)
 	{
-		mCurveView.setModel(nullptr);
+		mCurveEditor.setModel(nullptr);
 		mCurveModel.reset();
 		return;
 	}
@@ -122,5 +139,5 @@ void CurvePanel::editCurve(nap::math::FloatFCurve* curve)
 		mListenForPropertyChanges = true;
 	});
 
-	mCurveView.setModel(mCurveModel.get());
+	mCurveEditor.setModel(mCurveModel.get());
 }

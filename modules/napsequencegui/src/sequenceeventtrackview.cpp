@@ -192,7 +192,7 @@ namespace nap
 			auto type = (segment.get())->get_type();
 			auto it = mSegmentViews.find(type);
 			assert(it != mSegmentViews.end()); // type not found
-			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x + (5.0f * mState.mScale), mService.getColors().mHigh);
+			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x + (5.0f * mState.mScale), mService.getColors().mFro4);
 
 			prev_segment_x = segment_x;
 			segment_count++;
@@ -304,7 +304,7 @@ namespace nap
 			drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().mFro3, // color
+				mService.getColors().mFro4, // color
 				3.0f * mState.mScale); // thickness
 
 			if (!isAlreadyHovering && !isAlreadyDragging)
@@ -383,7 +383,7 @@ namespace nap
 			{
 				if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					line_color = mService.getColors().mHigh;
+					line_color = mService.getColors().mHigh1;
 				}
 			}
 

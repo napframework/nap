@@ -13,6 +13,7 @@
 #include <color.h>
 #include <uniforminstance.h>
 #include <materialinstance.h>
+#include <imguiservice.h>
 
 namespace nap
 {
@@ -115,5 +116,6 @@ namespace nap
 		double mTime = 0.0;																///< Total running time
 		float mRandomRotation = 0.0f;													///< Amount of randomization of rotation speed
 		RenderService* mRenderService = nullptr;										///< Renderer
+		IMGuiService* mGuiService = nullptr;											///< GUI
 	};
 }

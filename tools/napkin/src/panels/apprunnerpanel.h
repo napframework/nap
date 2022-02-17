@@ -84,6 +84,11 @@ namespace napkin
 		 */
 		void onAppFinished(int exitCode, QProcess::ExitStatus);
 
+		/**
+		 * Occurs when theme changes
+		 */
+		void themeChanged(const Theme* theme);
+
 		nap::qt::FileSelector mFileSelector;  // Widget allowing you to select a file
 		QHBoxLayout mLayout;		        // Layout
 		QPushButton mStartButton;           // Button with "Start" on it

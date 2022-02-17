@@ -21,7 +21,7 @@ namespace napkin
 	inline constexpr const char* TXT_LABEL_RESOURCES	= "Resources";
 	inline constexpr const char* TXT_LABEL_ENTITIES		= "Entities";
 	inline constexpr const char* TXT_UNTITLED_DOCUMENT	= "Untitled Document";
-	inline constexpr const char* TXT_THEME_DEFAULT		= "Napkin";
+	inline constexpr const char* TXT_THEME_DEFAULT		= "Dark";
 
 	// The file filter used by file dialogs
 	inline constexpr const char* JSON_FILE_EXT			= "json";

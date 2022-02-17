@@ -18,7 +18,6 @@ namespace napkin
 	{
 		std::string service_type = nap::utility::stripNamespace(config.getServiceType().get_name().to_string());
 		setText(QString::fromStdString(service_type));
-		setIcon(QIcon(QRC_ICONS_CONFIGURATION));
 		setEditable(false);
 	}
 
@@ -26,6 +25,18 @@ namespace napkin
 	napkin::PropertyPath ServiceConfigItem::propertyPath()
 	{
 		return PropertyPath(mConfig, *mDocument);
+	}
+
+
+	QVariant ServiceConfigItem::data(int role) const
+	{
+		switch (role)
+		{
+		case Qt::DecorationRole:
+			return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CONFIGURATION);
+		default:
+			return QStandardItem::data(role);
+		}
 	}
 
 

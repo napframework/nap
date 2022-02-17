@@ -240,8 +240,7 @@ namespace nap
 		// General Information
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Application Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Show selection box
@@ -281,7 +280,7 @@ namespace nap
 			{
 				nap::CVCaptureErrorMap map = adapter.getErrors();
 				for (auto error : map)
-					ImGui::TextColored(clr, error.second.c_str());
+					ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, error.second.c_str());
 			}
 		}
 
@@ -293,7 +292,7 @@ namespace nap
 			{
 				nap::CVCaptureErrorMap map = camera_one.getErrors();
 				for (auto error : map)
-					ImGui::TextColored(clr, error.second.c_str());
+					ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, error.second.c_str());
 
 				if (ImGui::Button("Reconnect Camera One"))
 				{

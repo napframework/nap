@@ -19,10 +19,11 @@ InstPropAttribItem::InstPropAttribItem(nap::TargetAttribute& attrib) : QStandard
 
 QVariant InstPropAttribItem::data(int role) const
 {
-	if (role == Qt::DisplayRole)
+	switch (role)
+	{
+	case Qt::DisplayRole:
 	{
 		QString path = QString::fromStdString(mAttrib.mPath);
-
 		auto instPropsItem = dynamic_cast<InstancePropsItem*>(parent());
 		assert(instPropsItem);
 		auto compPath = instPropsItem->props().mTargetComponent.getInstancePath();
@@ -39,12 +40,17 @@ QVariant InstPropAttribItem::data(int role) const
 			bool ok;
 			val = QString::fromStdString(propPath.getValue().to_string(&ok));
 		}
-
 		return QString("%1 = %2").arg(path, val);
 	}
-
-	return QStandardItem::data(role);
+	case Qt::TextColorRole:
+	{
+		return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+	}
+	default:
+		return QStandardItem::data(role);
+	}
 }
+
 
 nap::RootEntity* InstPropAttribItem::rootEntity() const
 {
@@ -192,6 +198,3 @@ void InstancePropPanel::onSelectComponentInstance()
 
 	selectComponentRequested(rootEntity, path);
 }
-
-
-

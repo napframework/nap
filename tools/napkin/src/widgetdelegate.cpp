@@ -14,6 +14,7 @@
 #include <QPainter>
 #include <color.h>
 #include <napqt/colorpicker.h>
+#include <QCheckBox>
 
 using namespace napkin;
 
@@ -67,14 +68,6 @@ static QColor getColorFromString(const QString& colorString)
 }
 
 
-PropertyValueItemDelegate::PropertyValueItemDelegate()
-{
-	mLinkIcon  = QIcon(QRC_ICONS_LINK);
-	mFileIcon  = QIcon(QRC_ICONS_FILE);
-	mColorIcon = QIcon(QRC_COLOR_WHEEL_FILE);
-}
-
-
 void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
 									  const QModelIndex& index) const
 {
@@ -97,29 +90,25 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 	}
 	else if (path.isPointer())
 	{
-		// Forward to draw text field
-		QRect rect_txt = QRect(option.rect.left(),
-							   option.rect.top(),
-							   option.rect.width() - option.rect.height(),
-							   option.rect.height());
-		QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
-							   option.rect.top(),
-							   option.rect.height(),
-							   option.rect.height());
-
 		QStyleOptionViewItem viewop(option);
-		viewop.rect = rect_txt;
 		QStyledItemDelegate::paint(painter, viewop, index);
 
+		// Get btn rect
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
+			option.rect.top(),
+			option.rect.height(),
+			option.rect.height());
 
 		// Add pointer button
-		auto pixmap = mLinkIcon.pixmap(rect_btn.size());
+		QIcon link_icon = AppContext::get().getResourceFactory().getIcon(QRC_ICONS_LINK);
+		auto pixmap = link_icon.pixmap(rect_btn.size());
 		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
 	}
 	else if (path.isColor())
 	{
-		// Forward to draw text field
-		QRect rect_txt = QRect(option.rect.left(), option.rect.top(), option.rect.width() - option.rect.height(), option.rect.height());
+		// Text
+		QStyleOptionViewItem viewop(option);
+		QStyledItemDelegate::paint(painter, viewop, index);
 
 		int offset = int(float(option.rect.height()) * 0.25);
 		QRect rect_btn = QRect
@@ -127,11 +116,6 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 			QPoint(option.rect.right() - option.rect.height() + offset, option.rect.top() + offset),
 			QPoint(option.rect.right() - offset, option.rect.top() + option.rect.height() - offset)
 		);
-
-		// Text
-		QStyleOptionViewItem viewop(option);
-		viewop.rect = rect_txt;
-		QStyledItemDelegate::paint(painter, viewop, index);
 
 		// Get current color and set as background
 		QString cur_color_str = index.model()->data(index, Qt::DisplayRole).toString();
@@ -143,37 +127,53 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		// Create and draw color picker icon
 		painter->setBrush(QBrush(background_color));
-		painter->setPen(QPen(option.palette.color(option.palette.Dark), 1.5f) );
+		painter->setPen(QPen(option.palette.color(option.palette.Text), 1.5f) );
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->drawEllipse(rect_btn);
 	}
 	else if (type == rttr::type::get<bool>())
 	{
+		// Draw regular (without text)
+		QStyleOptionViewItem viewop(option);
+		viewop.text.clear();
+		QStyledItemDelegate::paint(painter, viewop, index);
 
-		QStyleOptionButton styleOption;
-		styleOption.rect = option.rect;
-		if (index.data(Qt::DisplayRole).toBool())
-		{
-			styleOption.state |= QStyle::State_On;
-		}
-		else
-		{
-			styleOption.state |= QStyle::State_Off;
-		}
-		QApplication::style()->drawControl(QStyle::CE_CheckBox, &styleOption, painter);
+		// Get icon size
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height() + 5,
+			option.rect.top(),
+			option.rect.height(),
+			option.rect.height());
+
+		// Draw checkbox
+		QStyleOptionButton button_style;
+		button_style.palette = option.palette;
+
+		QColor frame_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::dark1);
+		QColor icon_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::front4);
+		button_style.palette.setBrush(QPalette::Background, frame_color);
+		button_style.palette.setBrush(QPalette::Base, frame_color);
+		button_style.palette.setBrush(QPalette::Highlight, frame_color);
+		button_style.palette.setBrush(QPalette::Text, icon_color);
+
+		button_style.rect = rect_btn;
+		button_style.state |= index.data(Qt::DisplayRole).toBool() ? QStyle::State_On : QStyle::State_Off;
+		QApplication::style()->drawControl(QStyle::CE_CheckBox, &button_style, painter);
 	}
 	else if (type == rttr::type::get<std::string>() && nap::rtti::hasFlag(path.getProperty(), nap::rtti::EPropertyMetaData::FileLink))
 	{
-		// Forward to draw text field
-		QRect rect_txt = QRect(option.rect.left(), option.rect.top(), option.rect.width() - option.rect.height(), option.rect.height());
-		QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.height(), option.rect.height()); 
-
+		// Draw text
 		QStyleOptionViewItem viewop(option);
-		viewop.rect = rect_txt;
 		QStyledItemDelegate::paint(painter, viewop, index);
 
+		// Get icon size
+		QRect rect_btn = QRect(option.rect.right() - option.rect.height(),
+			option.rect.top(),
+			option.rect.height(),
+			option.rect.height()); 
+
 		// Add pointer button
-		auto pixmap = mFileIcon.pixmap(rect_btn.size());
+		QIcon file_icon = AppContext::get().getResourceFactory().getIcon(QRC_ICONS_FILE);
+		auto pixmap = file_icon.pixmap(rect_btn.size());
 		painter->drawPixmap(rect_btn, pixmap, pixmap.rect());
 	}
 	else
@@ -207,11 +207,13 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 		if (event->type() == QEvent::MouseButtonPress)
 		{
 			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
-			QRect toggle_rect = QRect
-			(
-				QPoint(option.rect.left(), option.rect.top()),
-				QPoint(option.rect.left() + option.rect.height(), option.rect.top() + option.rect.height())
-			);
+
+			// Get icon size
+			QRect toggle_rect = QRect(
+				option.rect.right() - option.rect.height() + 5,
+				option.rect.top(),
+				option.rect.height(),
+				option.rect.height());
 
 			if (toggle_rect.contains(mouseEvent->pos()))
 			{
@@ -220,7 +222,6 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 				return true;
 			}
 		}
-		return false;
 	}
 
 	// Mouse click on icon

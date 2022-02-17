@@ -26,6 +26,11 @@ namespace napkin
 		 */
 		PropertyPath propertyPath();
 
+		/**
+		 * Data Overrides
+		 */
+		QVariant data(int role) const override;
+
 	private:
 		nap::ServiceConfiguration& mConfig;
 		Document* mDocument;
