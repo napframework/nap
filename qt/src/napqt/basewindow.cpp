@@ -12,7 +12,7 @@ BaseWindow::BaseWindow()
 {
 	setWindowTitle(QApplication::applicationName());
 	setDockNestingEnabled(true);
-	mWindowMenu = new QMenu("Window");
+	mWindowMenu = new QMenu("Panels");
 	menuBar()->addMenu(mWindowMenu);
 }
 
