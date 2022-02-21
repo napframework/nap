@@ -1,58 +1,55 @@
 Sequencer {#sequencer}
 =======================
 * [Introduction](@ref introduction)
-* [Player, Editor & EditorGUI](@ref player_editor_gui) 
-* [Thread independent playback](@ref thread_independent_playback)
-  * [Standard clock](@ref standard_clock)
-  * [Independent clock](@ref independent_clock)
-  * [Audio clock](@ref audio_clock)
+* [Player, Editor & EditorGUI](@ref player_editor_gui)
+* [Clocks](@ref clocks)
+  * [Standard Clock](@ref standard_clock)
+  * [Independent Clock](@ref independent_clock)
+  * [Audio Clock](@ref audio_clock)
 * [Outputs & Adapters](@ref outputs_and_adapters)
   * [Examples](@ref outputs_and_adapters_examples)
     * [Event Track](@ref outputs_and_adapters_examples_event)
     * [Curve Track](@ref outputs_and_adapters_examples_curve)
     * [Audio Track](@ref outputs_and_adapters_examples_audio)
 * [Example](@ref examples)
-  * [Create and use a SequenceTrackEvent](@ref using_event_track)
-  * [Create and use a SequenceTrackCurve](@ref using_curve_track)
-  * [Create and use a SequenceTrackAudio](@ref using_audio_track)
+  * [Create and Use an Event Track ](@ref using_event_track)
+  * [Create and Use a Curve Track](@ref using_curve_track)
+  * [Create and Use an Audio Track](@ref using_audio_track)
   * [Inserting markers](@ref inserting_markers)
   * [Renaming tracks](@ref renaming_tracks)
 
 # Introduction {#introduction}
 
-The Sequencer of NAP 0.5 can be used to control and manipulate parameters and trigger events from within a NAP application and/or synchronise this together with audio playback or an external clock. You can animate an arbitrary amount of parameters while at the same time maintaining flexibility and control over synchronization.
+The NAP sequencer can be used to control `parameters` and `trigger events` inside a NAP application. Playback can be synchronized to `audio` or a different `external clock`. You can animate any amount of parameters while at the same time maintaining flexibility and control over synchronization. 
 
-The sequencer is set up to run independently of the application’s main render thread. Because of this, the sequencer introduces some concepts that can be hard to understand at first glance. This document serves as a starting point for those who want to work with the sequencer and/or developers that want to add their own features or custom track types to the sequencer.
+To get a feeling of working with the sequencer check out the `sequencer demo`!
 
-The following three concepts should be understood when working with the sequencer.
-* Relationship between the [SequencePlayer, SequenceEditor & SequenceEditorGUI](@ref player_editor_gui)
-* [Thread independent playback using the SequencePlayerClock](@ref thread_independent_playback)
+The sequencer is set up to run independently of the application main render thread. Because of this, the sequencer introduces some concepts that can be hard to understand at first glance. This document serves as a starting point for those who want to work with the sequencer and/or developers that want to add their own features or custom track types to the sequencer.
+
+The following three concepts should be understood when working with the sequencer:
+* The relationship between the [SequencePlayer, SequenceEditor & SequenceEditorGUI](@ref player_editor_gui)
 * [Outputs & Adapters](@ref outputs_and_adapters)
+* Thread independent playback using the [SequencePlayerClock](@ref clocks)
 
 <img src="content/sequencer-intro.gif" alt="Sequencer Intro" style="width:100%;"/>
 
-# Player, Editor & EditorGUI {#player_editor_gui}
+# Player, Editor & GUI {#player_editor_gui}
 
-A fully featured NAP Sequencer is constructed from three different parts.
-- The [SequencePlayer](@ref nap::SequencePlayer). Responsible for loading and playing a [Sequence](@ref nap::Sequence).
-- The [SequenceEditor](@ref nap::SequenceEditor). Responsible for creating [SequenceControllers](@ref nap::SequenceController) for each [SequenceTrack](@ref nap::SequenceTrack) type and responsible for editing and saving the [Sequence](@ref nap::Sequence) loaded by the [SequencePlayer](@ref nap::SequencePlayer). Contains a [ResourcePtr](@ref nap::ResourcePtr) to the [SequencePlayer](@ref nap::SequencePlayer).
-- The [SequenceEditorGUI](@ref nap::SequenceEditorGUI). Responsible for drawing a user interface for the player and editor using ImGUI. Contains a [ResourcePtr](@ref nap::ResourcePtr) to the [SequenceEditor](@ref nap::SequenceEditor)
+A fully featured NAP Sequencer is constructed from three different parts:
 
-The [SequencePlayer](@ref nap::SequencePlayer) logic and [Sequence](@ref nap::Sequence) data structure is completely independent of the [SequenceEditor](@ref nap::SequenceEditor) and [SequenceEditorGUI](@ref nap::SequenceEditorGUI). This means that it is possible to create an application without a window or without the render engine initialized but still use the [SequencePlayer](@ref nap::SequencePlayer) (for example when working in real-time or near real-time environments) without the [SequenceEditor](@ref nap::SequenceEditor) or [SequenceEditorGUI](@ref nap::SequenceEditorGUI). 
+- The [SequencePlayer](@ref nap::SequencePlayer).
 
-The [SequenceEditor](@ref nap::SequenceEditor) can be added without a [SequenceEditorGUI](@ref nap::SequenceEditorGUI), meaning you can perform edit calls on the loaded [Sequence](@ref nap::Sequence) of the [SequencePlayer](@ref nap::SequencePlayer) without a GUI attached.
+Responsible for loading and playing a [Sequence](@ref nap::Sequence).
 
-The [SequenceEditorGUI](@ref nap::SequenceEditorGUI) is defined in a separate module called mod_sequencegui which depends on the module mod_napsequence but not vice versa. The [SequenceEditorGUI](@ref nap::SequenceEditorGUI) needs a [SequenceEditor](@ref nap::SequenceEditor) resource linked.
+- The [SequenceEditor](@ref nap::SequenceEditor). 
 
-To ensure all (live)edits to a running [Sequence](@ref nap::Sequence) are carried out in a thread-safe manner, all edit calls are routed through the [SequenceEditor](@ref nap::SequenceEditor). The [SequenceEditor](@ref nap::SequenceEditor) creates [SequenceControllers](@ref nap::SequenceController) for each available TrackType, [SequenceTracks](@ref nap::SequenceTrack) can be edited by these created controllers.
+Responsible for editing and saving the [sequence](@ref nap::Sequence), loaded by the player.
 
-Controllers for each available track type are created by the application at run-time during the initialization of the [SequenceEditor](@ref nap::SequenceEditor). All created [SequenceControllers](@ref nap::SequenceController) are owned by the [SequenceEditor](@ref nap::SequenceEditor).
+- The [SequenceEditorGUI](@ref nap::SequenceEditorGUI). 
 
-When performing an edit to the running [sequence](@ref nap::Sequence) always make sure the edit calls are performed on the same thread that is currently reading from the [SequencePlayer](@ref nap::SequencePlayer)!
+Responsible for drawing the sequence editor and sequence player using `ImGUI`.
 
-For example, the [SequenceEditorGUI](@ref nap::SequenceEditorGUI) is drawn on the main (render) thread of the application, so any edit calls to the [SequenceController](@ref nap::SequenceController) must be executed from the main thread as well. 
-
-The following JSON creates a [SequencePlayer](@ref nap::SequencePlayer) that uses a [SequencePlayerAudioClock](@ref nap::SequencePlayerAudioClock) for playback, a [SequenceEditor](@ref nap::SequenceEditor) for this [SequencePlayer](@ref nap::SequencePlayer) and a [SequenceEditorGUI](@ref nap::SequenceEditorGUI) for the [SequenceEditor](@ref nap::SequenceEditor).
+The following JSON snippet creates a sequence player that uses an [audio clock](@ref nap::SequencePlayerAudioClock) for playback. The sequence editor links to the sequence player. The sequence GUI, in turn, links to the editor:
 ```
 {
     "Type": "nap::SequenceEditor",
@@ -78,14 +75,18 @@ The following JSON creates a [SequencePlayer](@ref nap::SequencePlayer) that use
 }
 ```
 
-# Thread independent playback using the SequencePlayerClock {#thread_independent_playback}
+The sequence playback logic and data format is completely seperated from the sequence editor and GUI. This means that it is possible to create an application without a window or without the render engine and still use the sequence player (for example when working in headless real-time or near real-time environments) to play back sequences. Subsequently, the sequence editor can be declared without a GUI, meaning you can perform edit calls on a sequence without a GUI attached to it, although this is less common. The sequence editor GUI is defined in a separate module called `mod_sequencegui`, which depends on `mod_napsequence`. 
 
-You have complete control over synchronisation. The way the sequencer updates is by using a clock. You can decide what type of clock is used. It is possible to write your own clock when you need synchronisation with another already running process. For now, three types of clocks are already implemented in NAP 0.5.
+To ensure all (live) edits to a sequence are carried out in a thread-safe manner, all edit calls are routed through the sequence editor. The sequence editor creates [sequence controllers](@ref nap::SequenceController) for each available track type. [Tracks](@ref nap::SequenceTrack) can be edited by these controllers. Controllers for each available track type are created by the application at run-time during initialization of the sequence editor. All created Sequence Controllers are owned by the sequence editor. 
+
+Make sure the edit calls are performed on the same thread that is reading the sequence. For example: The GUI of the sequence editor is drawn on the main (render) thread of the application, so any edit calls to the sequence controller must be executed from the main thread as well. 
+
+# Clocks {#clocks}
+
+You have complete control over synchronisation. The way the sequencer updates is by using a `clock`. You can decide what type of clock is used. It is possible to write your own clock when you need synchronisation with another already running process. For now, three types of clocks are already implemented in NAP.
 
 ## Standard Clock {#standard_clock}
-The [SequencePlayerStandardClock](@ref nap::SequencePlayerStandardClock) is updated on the main thread from the [SequenceService](@ref nap::SequenceService). This is sufficient for most use cases.
-
-The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that uses a [SequencePlayerStandardClock](@ref nap::SequencePlayerStandardClock) for playback.
+The [standard clock](@ref nap::SequencePlayerStandardClock) is updated on the main thread by the [sequence service](@ref nap::SequenceService). This is sufficient for most use cases. The following example creates a sequence player that uses a standard clock for playback.
 
 ```
 {
@@ -101,9 +102,7 @@ The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that 
 ```
 
 ## Independent Clock {#independent_clock}
-The [SequencePlayerIndependentClock](@ref nap::SequencePlayerIndependentClock) launches its own thread. The thread's update cycle is dependent on the given frequency. Frequency is set in update calls per second (Hz).
-
-The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that uses a [SequencePlayerIndependentClock](@ref nap::SequencePlayerIndependentClock) for playback. The [SequencePlayerIndependentClock](@ref nap::SequencePlayerIndependentClock) will update the [SequencePlayer](@ref nap::SequencePlayer) 1000 times per second (1000 Hz).
+The [independent clock](@ref nap::SequencePlayerIndependentClock) launches its own thread. The thread update cycle is dependent on the given frequency. Frequency is set in update calls per second (Hz). The following example creates a sequence player that uses an independent clock for playback. The independent clock will update the sequence player 1000 times per second (1000 Hz).
 
 ```
 {
@@ -120,11 +119,9 @@ The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that 
 ```
 
 ## Audio Clock {#audio_clock}
-The update cycle is called on the audio thread of NAP’s audio engine. Amount of update calls is dependent on audio buffer size and sample rate. For example, a buffer size of 1024 and sample rate of 44100 samples means 44100 / 1024 = 43.06640625 calls per second. To increase the number of update calls per second make the buffer size smaller. The [SequencePlayerAudioClock](@ref nap::SequencePlayerAudioClock) must be used when using an [SequenceTrackAudio](@ref nap::SequenceTrackAudio) type in the sequencer.
+The update cycle is called on the audio thread of NAPs audio engine. Amount of update calls is dependent on audio buffer size and sample rate. For example, a buffer size of 1024 and sample rate of 44100 samples means 44100 / 1024 = 43.06640625 calls per second. To increase the number of update calls per second make the buffer size smaller. The [audio clock](@ref nap::SequencePlayerAudioClock) must be used when using an [audio track](@ref nap::SequenceTrackAudio) type in the sequencer.
 
-To change the buffer size and/or samplerate used by the [AudioService](@ref nap::audio::AudioService), see [AudioServiceConfiguration](@ref nap::audio::AudioServiceConfiguration)
-
-The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that uses a [SequencePlayerAudioClock](@ref nap::SequencePlayerAudioClock) for playback.
+To change the buffer size and/or samplerate used by the [audio service](@ref nap::audio::AudioService), see [audio service configuration](@ref nap::audio::AudioServiceConfiguration). The following example creates a sequence player that uses an audio clock for playback.
 
 ```
 {
@@ -141,16 +138,16 @@ The following example creates a [SequencePlayer](@ref nap::SequencePlayer) that 
 
 # Outputs & Adapters {#outputs_and_adapters}
 
-When the [SequencePlayer](@ref nap::SequencePlayer) starts playback it will create an adapter for each track in the running sequence. An adapter is responsible for evaluating the [SequenceTrack](@ref nap::SequenceTrack) for which it is created during an update call ([tick](@ref nap::SequencePlayerAdapter::tick)) coming from the [SequencePlayer](@ref nap::SequencePlayer) and translates this to an action on the track’s assigned [SequencePlayerOutput](@ref nap::SequencePlayerOutput). A [SequencePlayerOutput](@ref nap::SequencePlayerOutput) is a [Resource](@ref nap::Resource) embedded within the [SequencePlayer](@ref nap::SequencePlayer). When a track has an output id assigned the [SequencePlayer](@ref nap::SequencePlayer) will try to find the output with the corresponding id and correct type within its embedded outputs and create the appropriate adapter when playback is started linking the output to the [SequencePlayer](@ref nap::SequencePlayer). 
+When the sequence player starts playback it will create an [adapter](@ref nap::SequencePlayerAdapter) for each track in the sequence. The adapter evaluates the track on update ([tick](@ref nap::SequencePlayerAdapter::tick)) and translates the data into information to output. An assigned [sequence player ouput](@ref nap::SequencePlayerOutput) receives this information from the adapter and forwards it to your application. Every output is a resource, embedded within the sequence player, that can be linked to within your application. Adapters are created and managed by the [sequence player](@ref nap::SequencePlayer). 
 
-Outputs are resources managed by the [ResourceManager](@ref nap::ResourceManager) and adapters are created and owned/managed by the [SequencePlayer](@ref nap::SequencePlayer). 
+For example: Imagine a [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) with the ID `ShowControlOutput` that is added to your sequence player. The [mOutputID](@ref nap::SequenceTrack::mAssignedOutputID) property of the event track is assigned to `ShowControlOutput`. When the marker hits the `StartVideoPlayback` event on the track during playback, the sequence player will tell the output (using an adapter) to dispatch the `StartVideoPlayback` message on the main thread. A handler, somewhere in your application, is interested in this event and starts video playback when `StartVideoPlayback` is received. A good rule of thumb here is that outputs should always be safe to link to from other parts of the application and/or from the applications main thread, while adapters are only created, used and owned by the sequence player.
 
-For example, a [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) can be added to the [SequencePlayer](@ref nap::SequencePlayer). The [mOutputID](@ref nap::SequenceTrack::mAssignedOutputID) property of the [SequenceEventTrack](@ref nap::SequenceEventTrack) can be assigned to that [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput)’s ID. During playback the [SequencePlayer](@ref nap::SequencePlayer) will create an adapter that will tell the [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) to dispatch an event on the main thread whenever an event is passed by the [SequencePlayer](@ref nap::SequencePlayer)’s running time. The [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) then dispatches this event from the application’s main thread. A good rule of thumb here is that [SequencePlayerOutput](@ref nap::SequencePlayerOutput)’s should always be safe to link to from other parts of the application and/or from the applications main thread, while adapters are only created, used and owned by the [SequencePlayer](@ref nap::SequencePlayer).
+The following example creates a sequence player with two outputs. An [event output](@ref nap::SequencePlayerEventOutput) (discussed above) and a [curve output](@ref nap::SequencePlayerCurveOutput).
 
-The following example creates a [SequencePlayer](@ref nap::SequencePlayer) with two [SequencePlayerOutput](@ref nap::SequencePlayerOutput)'s. A [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) and a [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput).
+- The event output dispatches a message when an event occurs on an [event track](@ref nap::SequenceTrackEvent). 
+- The curve output evaluates the shape of a curve on a [curve track](@ref nap::BaseSequenceTrackCurve) and can be linked to a [parameter](@ref nap::Parameter)
 
-- The [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) dispatches when an event occurs on an [SequenceTrackEvent](@ref nap::SequenceTrackEvent). [SequenceEvent](@ref nap::SequenceEvent)s are always dispatched from the main thread!
-- The [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput) can be linked to a [Parameter](@ref nap::Parameter) that will follow the output of a [SequenceTrackCurve](@ref nap::SequenceTrackCurve). The [Use Main Thread](@ref nap::SequencePlayerCurveOutput::mUseMainThread) property will determine if [Parameter](@ref nap::Parameter) is updated on main thread or on the thread that is currently used by the clock updating the [SequencePlayer](@ref nap::SequencePlayer).
+The `Use Main Thread` property on a curve output controls if the parameter is updated on the main thread or the thread that updates the sequence player (controlled by the clock). Sequence track events are are always dispatched from the main thread.
 
 ```
 {
@@ -160,7 +157,7 @@ The following example creates a [SequencePlayer](@ref nap::SequencePlayer) with 
     "Outputs": [
         {
             "Type": "nap::SequencePlayerEventOutput",
-            "mID": "SequencePlayerEventOutput"
+            "mID": "ShowControlOutput"
         },
         {
             "Type": "nap::SequencePlayerCurveOutput",
@@ -176,41 +173,42 @@ The following example creates a [SequencePlayer](@ref nap::SequencePlayer) with 
 ```
 ## Flow Examples {#outputs_and_adapters_examples}
 
-The images belows explain the relation between the [SequencePlayer](@ref nap::SequencePlayer), [SequencePlayerAdapter](@ref nap::SequencePlayerAdapter) & [SequencePlayerOutput](@ref nap::SequencePlayerOutput). When the [SequencePlayer](@ref nap::SequencePlayer) receives a tick from the clock it asks all created adapters to evaluate their assigned SequenceTracks.
+The images belows explain the relation between the sequence player, sequence adapter & sequence player output. When the sequence player receives a tick from the clock it asks all created adapters to evaluate their assigned tracks.
 
 ### Event Track {#outputs_and_adapters_examples_event}
 
-If an event needs to be dispatched the [SequencePlayerEventAdapter](@ref nap::SequencePlayerEventAdapter) moves the [SequenceEvent](@ref nap::SequenceEvent) to it's assigned [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput). The [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) update method gets called on the main thread from the [SequenceService](@ref nap::SequenceService). On update all queued events will be consumed and dispatched using a [Signal](@ref nap::Signal) so any listeners will get notified.
+If an event needs to be dispatched the adapter moves the event to it's assigned output. The output update method gets called on the main thread from the sequence service. On update all queued events will be consumed and dispatched using a [signal](@ref nap::Signal) so any listeners will get notified.
 
 <img src="content/sequencer-event.png" alt="Sequencer Event" style="width:100%;"/>
 
 ### Curve Track {#outputs_and_adapters_examples_curve}
 
-When evaluating a [SequenceTrackCurve](@ref nap::SequenceTrackCurve) the [SequencePlayerCurveAdapter](@ref nap::SequencePlayerCurveAdapter) evaluates the curve 
-track and extracts the value. It then passes the value to it's assigned [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput). The [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput) then updates the linked [Parameter](@ref nap::SequencePlayerCurveOutput::mParameter) either directly (when [mUseMainThread](@ref nap::SequencePlayerCurveOutput::mUseMainThread) property is set to false) or on the main thread (when [mUseMainThread](@ref nap::SequencePlayerCurveOutput::mUseMainThread) is set to true). If [mUseMainThread](@ref nap::SequencePlayerCurveOutput::mUseMainThread) is set to true, the [mParameter](@ref nap::SequencePlayerCurveOutput::mParameter) will be updated on the next update coming from the [SequenceService](@ref nap::SequenceService).
+When evaluating a curve track the adapter evaluates the curve track and extracts the value. It then passes the value to it's assigned output. The output then updates the linked parameter either directly when the `mUseMainThread` property is set to false or on the main thread if `mUseMainThread` is set to true. If `mUseMainThread` is set to true, the will be updated on the next update coming from the service. 
 
 <img src="content/sequencer-curve.png" alt="Sequencer Curve" style="width:100%;"/>
 
 ### Audio Track {#outputs_and_adapters_examples_audio}
 
-When evaluating an [SequenceTrackAudio](@ref nap::SequenceTrackAudio) the [SequencePlayerAudioAdapter](@ref nap::SequencePlayerAudioAdapter) determines the player's position in samples of the buffer that is linked to by the [SequenceTrackSegmentAudio](@ref nap::SequenceTrackSegmentAudio) on the [SequenceTrackAudio](@ref nap::SequenceTrackAudio) and it's playback speed (pitch). The speed & position is then set on the [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput) which in turns plays or stops up the correct [MultiSampleBufferPlayerNode](@ref nap::audio::MultiSampleBufferPlayerNode) created for each found [AudioBufferResource](@ref nap::audio::AudioBufferResource).
+When evaluating an [audio track](@ref nap::SequenceTrackAudio) the [audio adapter](@ref nap::SequencePlayerAudioAdapter) figures out the player's position in samples of the buffer that is linked to by the [audio segment](@ref nap::SequenceTrackSegmentAudio) on the audio track, together with the playback speed (pitch). The speed & position is then set on the [sequence audio output](@ref nap::SequencePlayerAudioOutput) which in turns plays or stops up the correct [audio node](@ref nap::audio::MultiSampleBufferPlayerNode), created for each [audio buffer](@ref nap::audio::AudioBufferResource).
 
-The [SequencePlayerAudioOutputComponent](@ref nap::audio::SequencePlayerAudioOutputComponent) by default routes its audio to the AudioService by creating its own [OutputNode](@ref nap::audio::OutputNode)s. To disable this and route the audio output to your own processing chain you can set its "Manual Routing" property to true and use [getOutputForChannel](@ref nap::SequencePlayerAudioOutput::getOutputForChannel) or the [SequencePlayerAudioOutputComponent](@ref nap::audio::SequencePlayerAudioOutputComponent).
+The [sequence player audio output component](@ref nap::audio::SequencePlayerAudioOutputComponent) by default routes its audio to the AudioService by creating its own [output nodes](@ref nap::audio::OutputNode). To disable this and route the audio output to your own processing chain you can set its `Manual Routing` property to true and use [getOutputForChannel](@ref nap::SequencePlayerAudioOutput::getOutputForChannel) or the sequence player audio output componewnt.
 
 <img src="content/sequencer-audio.png" alt="Sequencer Audio" style="width:100%;"/>
 
 # Example {#example}
 
-In the following example we will create a sequence using the [SequencePlayer](@ref nap::SequencePlayer), [SequenceEditor](@ref nap::SequenceEditor) & [SequenceEditorGUI](@ref nap::SequenceEditorGUI). In this example we will create a [Sequence](@ref nap::Sequence) containing one [SequenceTrackEvent](@ref nap::SequenceTrackEvent) with a couple of [SequenceEvent](@ref nap::SequenceEvent)s, one [SequenceTrackCuve](@ref nap::SequenceTrackCurve) that animates a [ParameterFloat](@ref nap::ParameterFloat) and an [SequenceTrackAudio](@ref nap::SequenceTrackAudio) that plays back a [SequenceTrackSegmentAudio](@ref nap::SequenceTrackSegmentAudio).
+In the following example we will create a sequence using the [sequence player](@ref nap::SequencePlayer), [sequence editor](@ref nap::SequenceEditor) & [sequence editor GUI](@ref nap::SequenceEditorGUI). In this example we will create a [sequence](@ref nap::Sequence) that contains one event track with a couple of events, one curve track that animates a [float parameter](@ref nap::ParameterFloat) and an [audio track](@ref nap::SequenceTrackAudio) that plays back an [audio segment](@ref nap::SequenceTrackSegmentAudio).
 
-To make sure your project can use all features of the sequencer make sure you include the following modules to your projects module. 
+Include the following modules to make sure your project can use all the features of the sequencer:
 
 - mod_napsequence
 - mod_napsequencegui
 - mod_napsequenceaudio
 - mod_napsequenceaudiogui
 
-To setup your [SequencePlayer](@ref nap::SequencePlayer) to use the following examples make sure to embed a [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput), [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput) and a [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput) and make sure the [SequencePlayer](@ref nap::SequencePlayer) uses a [SequencePlayerAudioClock](@ref nap::SequencePlayerAudioClock). You can use the following JSON as an example
+Open `module.json` inside the `module` directory and add them to the `RequiredModules` field. For more information on how to add modules to your project read the [getting started](@ref getting_started_overview) guide. 
+
+Next step is to create a sequence player that has a `nap::SequencePlayerEventOutput`, a `nap::SequencePlayerCurveOutput` and a `nap::SequencePlayerAudioOutput`. You can use [Napkin](@ref napkin) to set this up for you or use the following JSON snippet as an example:
 
 ```
 {
@@ -244,32 +242,30 @@ To setup your [SequencePlayer](@ref nap::SequencePlayer) to use the following ex
 }
 ```
 
-## Create and use a SequenceTrackEvent{#using_event_track}
+## Create and Use an Event Track{#using_event_track}
 
-Select the window that draws the [SequenceEditorGUI](@ref nap::SequenceEditorGUI). Select "Insert Track" and then click on "nap::SequenceTrackEvent". An empty [SequenceTrackEvent](@ref nap::SequenceTrackEvent) will appear. To make sure events on the track get routed to the embedded [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput) make sure to select the embedded output from the inspector. To insert an event right-click somewhere in the track. A popup will appear with different types of events. In this example we will insert an event of type [string](@ref nap::SequenceTrackSegmentEventString). An empty [string event](@ref nap::SequenceTrackSegmentEventString) is inserted on the track. You can move it by dragging the handler of the event or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event. Because the event holds a string we change the [string event](@ref nap::SequenceTrackSegmentEventString) to hold a string with the value "hello world". When playing back the sequence the event will be dispatched whenever the playback time of the sequencer passes the time at which the event is inserted. To receive the event or get notified attach a listener to the [Signal](@ref nap::SequencePlayerEventOutput::mSignal) of the [SequencePlayerEventOutput](@ref nap::SequencePlayerEventOutput).
+Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackEvent`. An empty event track will appear. To make sure events on the track get routed to the event output make sure to select the `nap::SequencePlayerEventOutput` from the inspector. To insert an event right-click somewhere in the track. A popup will appear with different types of events. In this example we will insert an event of type [string](@ref nap::SequenceTrackSegmentEventString). An empty string event is inserted on the track. You can move it by dragging the handler of the event or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event. Because the event holds a string we change the string event to hold a string with the value `hello world`. When playing back the sequence the event will be dispatched whenever the playback time of the sequencer passes the time at which the event is inserted. To receive the event or get notified attach a listener to the [signal](@ref nap::SequencePlayerEventOutput::mSignal) of the event output.
 
 <img src="content/sequencer-event.gif" alt="Sequencer Event" style="width:100%;"/>
 
-## Create and use a SequenceTrackCurve{#using_curve_track}
+## Create and Use a Curve Track{#using_curve_track}
 
-Select the window that draws the [SequenceEditorGUI](@ref nap::SequenceEditorGUI). Select "Insert Track" and then click on "nap::SequenceTrackCurveFloat". An empty [SequenceTrackCurve](@ref nap::SequenceTrackCurve) will appear. To make sure the drawn curve on the track gets routed to the embedded [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput) make sure to select the embedded output from the inspector. To insert an event right-click somewhere in the track. A popup will appear asking you to insert a segment. Do so. An [curve segment](@ref nap::SequenceTrackSegmentCurveFloat) is inserted into the track. You can extend it by dragging the handler of the segment or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event by dragging the segment value or right click on the segment value. You can also insert point on the curve. Move the mouse cursor somewhere on the curve, right click and select "Insert Point" in the appearing popup. You can also change the curve type to "linear" in this popup. When playing back the sequence the [ParameterFloat](@ref nap::ParameterFloat) linked from the embedded [SequencePlayerCurveOutput](@ref nap::SequencePlayerCurveOutput) will get updated according to the value of the curved track at the current timestamp of the player.
+Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackCurveFloat`. An empty curve track will appear. To make sure the drawn curve on the track gets routed to the curve output make sure to select the `nap::SequencePlayerCurveOutput` from the inspector. To insert an event right-click somewhere in the track. A popup will appear asking you to insert a segment. Do so. A curve segment is inserted into the track. You can extend it by dragging the handler of the segment or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event by dragging the segment value or right click on the segment value. You can also insert point on the curve. Move the mouse cursor somewhere on the curve, right click and select `Insert Point` in the popup. You can also change the curve type to `linear` in this popup. When playing back the sequence the parameter, linked to from the curve output, will be set to the current value of the curve, evaluated at the current timestamp of the player.
 
 <img src="content/sequencer-curve.gif" alt="Sequencer Curve" style="width:100%;"/>
 
-## Create and use a SequenceTrackAudio{#using_audio_track}
+## Create and Use an Audio Track{#using_audio_track}
 
-Select the window that draws the [SequenceEditorGUI](@ref nap::SequenceEditorGUI). Select "Insert Track" and then click on "nap::SequenceTrackAudio". An empty [SequenceTrackAudio](@ref nap::SequenceTrackAudio) will appear. To make sure audio being played on the track gets routed to the embedded [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput) select the embedded output from the inspector. To insert an AudioSegment right-click somewhere in the track. A popup will appear with a popup containing all found [AudioBufferResource](@ref nap::audio::AudioBufferResource)s. In this example we will insert an audio segment linked to an [AudioBufferResource](@ref nap::audio::AudioBufferResource) called "AudioFileResource". To add [AudioBufferResource](@ref nap::audio::AudioBufferResource)s to you project see the documentation about NAP's audio. A [SequenceTrackSegmentAudio](@ref nap::SequenceTrackSegmentAudio) will appear on the audio track. When sequencer is playing the audio in the buffer of the segment will be routed to the [SequencePlayerAudioOutput](@ref nap::SequencePlayerAudioOutput). Right clicking the audio segment will open up a popup enabling you to edit the start time of the segment on the track, the start time within the audio buffer or end time within the audio buffer. This can also be achieved by dragging on the left or right side of the audio segment.
+Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackAudio`. An empty audio track will appear. To make sure audio is routed to the audio output select the `nap::SequencePlayerAudioOutput` from the inspector. To insert an audio segment right-click somewhere in the track. A popup will appear with a popup containing all available audio buffer resources. In this example we will insert an audio segment that links to an `AudioFileResource`, which is an audio file read from disk. To add an audio file resource to your project refer to the [audio](@ref audio_playback) documentation. An audio segment will appear on the audio track. When the sequencer is playing the audio in the buffer of the segment will be routed to the audio output. Right clicking on the audio segment will open up a popup that enables you to edit the start time of the segment on the track, the start time within the audio buffer or end time within the audio buffer. This can also be achieved by dragging on the left or right side of the audio segment.
 
 <img src="content/sequencer-audio.gif" alt="Sequencer Audio" style="width:100%;"/>
 
-## Inserting markers{#inserting_markers}
+## Inserting Markers{#inserting_markers}
 
-When you want to mark certain parts of your sequence you can insert markers by using the marker bar on top of the sequencer GUI. Right click somewhere inside the marker bar, a popup will appear, name the marker whatever you like and choose "Insert Marker". A marker will appear. You can move the marker by dragging it inside the marker bar or edit it by right clicking on the marker.
+The top bar of the gui holds markers. Makers are a visual aid that can be used to tag a specific point of interest in your sequence. Right click somewhere inside the marker bar, a popup will appear, name the marker whatever you like and choose `Insert Marker`. A marker will appear. You can move the marker by dragging it inside the marker bar or edit it by right clicking on the marker.
 
 <img src="content/sequencer-marker.gif" alt="Sequencer Marker" style="width:100%;"/>
 
-## Renaming tracks{#renaming_tracks}
+## Renaming Tracks{#renaming_tracks}
 
 You can rename tracks by clicking on the track title in the inspector.
-
-<img src="content/sequencer-rename.gif" alt="Sequencer Rename" style="width:100%;"/>
