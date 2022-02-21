@@ -3,7 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
-layout(local_size_x = 1024) in;
+layout(local_size_x = 512) in;
 
 struct Boid
 {
@@ -11,7 +11,10 @@ struct Boid
 	vec4 velocity;
 	vec4 orientation;
 
-	uint padding[3];
+	uint padding_0;
+	uint padding_1;
+	uint padding_2;
+	
 	float mateRate;
 };
 
