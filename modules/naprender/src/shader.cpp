@@ -833,17 +833,7 @@ namespace nap
 
 		// Compile both vert and frag into single shader pipeline program
 		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, errorState))
-		{
-			// Query useful compute info
-			std::array<uint, 3> size;
-			std::memcpy(size.data(), &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(size));
-			uint max_invocations = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupInvocations;
-
-			errorState.fail("Compute info (%s): Max WorkGroup Size = (%d, %d, %d) | Max WorkGroup Invocations = %d",
-				mRenderService->getPhysicalDeviceProperties().deviceName, size[0], size[1], size[2], max_invocations);
-
 			return false;
-		}
 
 		// Create compute shader module
 		mComputeModule = createShaderModule(comp_shader_spirv, device);
@@ -855,10 +845,32 @@ namespace nap
 		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		// Store local workgroup size
-		mLocalWorkGroupSize[0] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 0);
-		mLocalWorkGroupSize[1] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 1);
-		mLocalWorkGroupSize[2] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, 2);
+		// Query useful compute info
+		std::array<uint, 3> max_workgroup_size;
+		std::memcpy(max_workgroup_size.data(), &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(max_workgroup_size));
+
+		// Cache workgroup size specialization constants
+		std::array<spirv_cross::SpecializationConstant, 3> spec_constants;
+		comp_shader_compiler.get_work_group_size_specialization_constants(spec_constants[0], spec_constants[1], spec_constants[2]);
+
+		// Set to invalid (-1) by default
+		mWorkGroupSizeConstantIds.resize(3, -1);
+
+		// Search for workgroup specialization constants
+		for (uint i = 0; i < spec_constants.size(); i++)
+		{
+			if (spec_constants[i].id != spirv_cross::ID(0))
+			{
+				// Overwrite workgroup size with quaried maximum supported workgroup size
+				mWorkGroupSizeConstantIds[i] = spec_constants[i].constant_id;
+				mWorkGroupSize[i] = max_workgroup_size[i];
+			}
+			else
+			{
+				// Use reflection to store constant defined in shader source
+				mWorkGroupSize[i] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, i);
+			}
+		}
 
 		return initLayout(device, errorState);
 	}

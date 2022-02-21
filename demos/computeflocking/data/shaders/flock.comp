@@ -3,7 +3,13 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
-layout(local_size_x = 512) in;
+// Workgroup size as specialization constant as per: 
+// https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.60.html#specialization-constant-qualifier
+
+// When a workgroup size specialization constant is detected, NAP automatically overwrites
+// it with the maximum group size of the device on pipeline creation.
+layout(local_size_x_id = 0) in;
+//layout(local_size_x = 512) in;
 
 struct Boid
 {
@@ -14,7 +20,7 @@ struct Boid
 	uint padding_0;
 	uint padding_1;
 	uint padding_2;
-	
+
 	float mateRate;
 };
 
@@ -68,9 +74,14 @@ struct BoidData
 	vec4 vel;
 };
 
+
+// The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
+layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;	
+//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
+
 // Allocate a block of shared data in which we can store positions and velocities 
 // of a boid for each local thread in the group/warp.
-shared BoidData sharedData[gl_WorkGroupSize.x];
+shared BoidData sharedData[MAX_GROUP_SIZE_X];
 
 
 // Multiply two quaternions -> qa * qb
@@ -227,8 +238,7 @@ void computeForcesShared(uint gid, vec3 position, vec3 velocity, out vec4 avoida
 	// Copy to fast shared data
 	// Process in chunks of SHARED_DATA_SIZE
 	uint local_id = gl_LocalInvocationID.x;
-	uint group_size = gl_WorkGroupSize.x;
-	for (uint i = 0; i < ubo.numBoids; i += group_size)
+	for (uint i = 0; i < ubo.numBoids; i += MAX_GROUP_SIZE_X)
 	{
 		uint id = i + local_id;
 		if (id < ubo.numBoids && id != gid)
@@ -246,7 +256,7 @@ void computeForcesShared(uint gid, vec3 position, vec3 velocity, out vec4 avoida
 		barrier();
 
 		// Update force variables
-		uint count = i < ubo.numBoids ? group_size : i-ubo.numBoids; 
+		uint count = i < ubo.numBoids ? MAX_GROUP_SIZE_X : i-ubo.numBoids; 
 		for (int j = 0; j < count; j++)
 		{
 			BoidData other = sharedData[j];

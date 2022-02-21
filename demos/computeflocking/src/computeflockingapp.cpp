@@ -279,6 +279,16 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		// Big test
+		if (mFrameCount == 2000)
+		{
+			mRenderWindow->toggleFullscreen();
+		}
+		if (mFrameCount == 2100)
+		{
+			mRenderWindow->toggleFullscreen();
+		}
+
 		// Begin recording compute commands
 		if (mRenderService->beginComputeRecording())
 		{

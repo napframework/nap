@@ -150,7 +150,16 @@ namespace nap
 		/**
 		 * @return local work group size
 		 */
-		glm::u32vec3 getLocalWorkGroupSize() const { return mLocalWorkGroupSize; }
+		glm::u32vec3 getWorkGroupSize() const { return mWorkGroupSize; }
+
+		/**
+		 * Workgroup specialization constant IDs. 
+		 * When a workgroup size specialization constant is detected, NAP automatically overwrites it with the
+		 * maximum group size of the device on pipeline creation. Entries with the value -1 have no associated
+		 * specialization constant defined in the compute shader.
+		 * @return a vector of work group size specialization constant IDs
+		 */
+		const std::vector<int>& getWorkGroupSizeConstantIds() const { return mWorkGroupSizeConstantIds; }
 
 	protected:
 		/**
@@ -165,8 +174,10 @@ namespace nap
 		virtual bool load(const std::string& displayName, const char* compShader, int compSize, utility::ErrorState& errorState);
 
 	private:
-		glm::u32vec3									mLocalWorkGroupSize;
+		glm::u32vec3									mWorkGroupSize;
 		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
+
+		std::vector<int>								mWorkGroupSizeConstantIds;				///< Workgroup size specialization constant IDs
 	};
 
 

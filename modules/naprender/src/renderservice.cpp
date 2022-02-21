@@ -1097,6 +1097,32 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = "main";
 
+		// Overwrite workgroup size when specialization constants are defined
+		const std::vector<int> const_ids = computeShader.getWorkGroupSizeConstantIds();
+		std::vector<VkSpecializationMapEntry> spec_entries;
+		std::vector<uint> spec_data;
+
+		for (uint i = 0; i < const_ids.size(); i++)
+		{
+			if (const_ids[i] != -1)
+			{
+				VkSpecializationMapEntry entry = {};
+				entry.constantID = static_cast<uint>(const_ids[i]);
+				entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
+				entry.size = sizeof(uint);
+
+				spec_entries.emplace_back(std::move(entry));
+				spec_data.emplace_back(computeShader.getWorkGroupSize()[i]);
+			}
+		}
+
+		VkSpecializationInfo spec_info = {};
+		spec_info.pMapEntries = spec_entries.data();
+		spec_info.mapEntryCount = spec_entries.size();
+		spec_info.pData = spec_data.data();
+		spec_info.dataSize = spec_data.size() * sizeof(uint);
+		comp_shader_stage_info.pSpecializationInfo = &spec_info;
+
 		auto layout = computeShader.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
