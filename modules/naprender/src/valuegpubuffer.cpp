@@ -251,6 +251,9 @@ namespace nap
 		case EValueGPUBufferProperty::Vertex:
 			TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 			break;
+		default:
+			assert(false);
+			return false;
 		}
 
 		if (!TypedValueGPUBuffer<T>::init(errorState))

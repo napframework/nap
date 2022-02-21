@@ -320,7 +320,7 @@ void main()
 	}
 
 	// Steer away from sphere bounds
-	vec3 dir = normalize(b.velocity.xyz);
+	vec3 dir = safeNormalize(b.velocity.xyz);
 	float dist = raySphere(b.position.xyz, dir, vec3(0.0), ubo.boundsRadius);
 
 	// Steer away if bounds are in proximity

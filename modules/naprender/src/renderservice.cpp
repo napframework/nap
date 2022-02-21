@@ -2276,7 +2276,7 @@ namespace nap
 	bool RenderService::beginComputeRecording()
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		NAP_ASSERT_MSG(!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering || !mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering,
+		NAP_ASSERT_MSG(!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering && !mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering,
 			"Recording compute commands after (headless) rendering within a single frame is not allowed.");
 
 		// Reset command buffer for current frame

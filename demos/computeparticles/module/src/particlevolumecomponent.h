@@ -30,17 +30,17 @@ namespace nap
 		/**
 		 * Initialize this particle mesh
 		 */
-		virtual bool init(utility::ErrorState& errorState);
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual MeshInstance& getMeshInstance()	override { return *mMeshInstance; }
+		virtual MeshInstance& getMeshInstance()	override				{ return *mMeshInstance; }
 
 		/**
 		 * @return MeshInstance as created during init().
 		 */
-		virtual const MeshInstance& getMeshInstance() const	override { return *mMeshInstance; }
+		virtual const MeshInstance& getMeshInstance() const	override	{ return *mMeshInstance; }
 
 	private:
 		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;			///< The mesh instance to construct
@@ -113,7 +113,7 @@ namespace nap
 		/**
 		 * @return the number of particles
 		 */
-		int getNumParticles() const					{ return mParticleMesh->mNumParticles; }
+		int getNumParticles() const										{ return mParticleMesh->mNumParticles; }
 
 		float mVelocityTimeScale = 0.15f;
 		float mVelocityVariationScale = 0.75f;

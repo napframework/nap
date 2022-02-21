@@ -268,27 +268,27 @@ namespace nap
 		 * Updates the buffer from a resource
 		 * @param resource resource to set buffer from.
 		 */
-		void setBuffer(const StorageUniformStructBuffer& resource)			{ mBuffer = resource.mBuffer; }
+		void setBuffer(const StorageUniformStructBuffer& resource)					{ mBuffer = resource.mBuffer; }
 
 		/**
 		 * @return declaration used to create this instance. 
 		 */
-		virtual const ShaderVariableDeclaration& getDeclaration() const override { return *mDeclaration; }
-
-		/**
-		 * @return value buffer
-		 */
-		virtual const StructGPUBuffer& getBuffer() const					{ assert(mBuffer != nullptr); return *mBuffer; };
-
-		/**
-		 * @return value buffer
-		 */
-		virtual StructGPUBuffer& getBuffer()								{ assert(mBuffer != nullptr); return *mBuffer; };
+		virtual const ShaderVariableDeclaration& getDeclaration() const override	{ return *mDeclaration; }
 
 		/**
 		 * @return if the value buffer is set
 		 */
-		virtual bool hasBuffer() const										{ return mBuffer != nullptr; }
+		virtual bool hasBuffer() const override										{ return mBuffer != nullptr; }
+
+		/**
+		 * @return value buffer
+		 */
+		virtual const StructGPUBuffer& getBuffer() const							{ assert(mBuffer != nullptr); return *mBuffer; };
+
+		/**
+		 * @return value buffer
+		 */
+		virtual StructGPUBuffer& getBuffer()										{ assert(mBuffer != nullptr); return *mBuffer; };
 
 	private:
 		const ShaderVariableStructBufferDeclaration* mDeclaration;
@@ -376,27 +376,27 @@ namespace nap
 		/**
 		 * @return buffer
 		 */
-		const TypedValueGPUBuffer<T>& getTypedBuffer() const				{ assert(mBuffer != nullptr); return *mBuffer; }
+		const TypedValueGPUBuffer<T>& getTypedBuffer() const						{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return buffer
 		 */
-		TypedValueGPUBuffer<T>& getTypedBuffer()							{ assert(mBuffer != nullptr); return *mBuffer; }
+		TypedValueGPUBuffer<T>& getTypedBuffer()									{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual const ValueGPUBuffer& getBuffer() const override			{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual const ValueGPUBuffer& getBuffer() const override					{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual ValueGPUBuffer& getBuffer() override						{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual ValueGPUBuffer& getBuffer() override								{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return if the value buffer is set
 		 */
-		virtual bool hasBuffer() const override								{ return mBuffer != nullptr; }
+		virtual bool hasBuffer() const override										{ return mBuffer != nullptr; }
 
 	private:
 		rtti::ObjectPtr<TypedValueGPUBuffer<T>> mBuffer;

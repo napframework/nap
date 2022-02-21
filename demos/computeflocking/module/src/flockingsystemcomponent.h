@@ -119,8 +119,13 @@ namespace nap
 		int mNumBoids;
 
 	private:
+		void updateRenderUniforms();
+		void updateComputeUniforms(ComputeComponentInstance* comp);
+
 		FlockingSystemComponent*					mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
+
+		double										mDeltaTime = 0.0;
 		double										mElapsedTime = 0.0;
 
 		std::vector<ComputeComponentInstance*>		mComputeInstances;					// Compute instances found in the entity

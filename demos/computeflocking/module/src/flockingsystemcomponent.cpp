@@ -66,6 +66,7 @@ namespace nap
 	namespace uniform
 	{
 		constexpr const char* uboStruct = "UBO";
+		constexpr const char* ssboStruct = "SSBO";
 		constexpr const char* vertUboStruct = "Vert_UBO";
 		constexpr const char* randomColor = "randomColor";
 		constexpr const char* boidSize = "boidSize";
@@ -157,22 +158,21 @@ namespace nap
 
 	void FlockingSystemComponentInstance::update(double deltaTime)
 	{
+		mDeltaTime = deltaTime;
 		mElapsedTime += deltaTime;
+	}
 
-		if (!mFirstUpdate)
-		{
-			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
-		}
 
+	void FlockingSystemComponentInstance::updateComputeUniforms(ComputeComponentInstance* comp)
+	{
 		// Update compute shader uniforms
-		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		UniformStructInstance* ubo_struct = comp->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
 			glm::vec4 target_position = mTargetTransformComponent->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(computeuniform::target)->setValue(target_position.xyz);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime)->setValue(static_cast<float>(deltaTime));
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime)->setValue(static_cast<float>(mDeltaTime));
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius)->setValue(mResource->mViewRadiusParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius)->setValue(mResource->mAvoidRadiusParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed)->setValue(mResource->mMinSpeedParam->mValue);
@@ -185,11 +185,15 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius)->setValue(mResource->mBoundsRadiusParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
 		}
+	}
 
+
+	void FlockingSystemComponentInstance::updateRenderUniforms()
+	{
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
 
 		// Update vertex shader uniforms
-		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
+		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
@@ -199,7 +203,7 @@ namespace nap
 		}
 
 		// Update vertex shader storage uniforms
-		auto* ssbo_struct = getMaterialInstance().findStorageUniform("SSBO");
+		auto* ssbo_struct = getMaterialInstance().findStorageUniform(uniform::ssboStruct);
 		auto* compute_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform("BoidBuffer_Out");
 		if (ssbo_struct != nullptr && compute_struct != nullptr)
 		{
@@ -226,13 +230,19 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity)->setValue(mResource->mSpecularIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::mateColorRate)->setValue(mResource->mMateColorRateParam->mValue);
 		}
-
-		mFirstUpdate = false;
 	}
 
 
 	void FlockingSystemComponentInstance::compute()
 	{
+		if (!mFirstUpdate)
+		{
+			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
+			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
+		}
+		mFirstUpdate = false;
+
+		updateComputeUniforms(mCurrentComputeInstance);
 		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 
@@ -245,6 +255,9 @@ namespace nap
 			assert(false);
 			return;
 		}
+
+		// Update render uniforms
+		updateRenderUniforms();
 
 		// Set mvp matrices if present in material
 		if (mProjectMatUniform != nullptr)

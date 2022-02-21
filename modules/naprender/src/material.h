@@ -99,40 +99,40 @@ namespace nap
 		/**
 		 * @return The underlying shader
 		 */
-		const Shader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
+		const Shader& getShader() const								{ assert(mShader != nullptr); return *mShader; }
 
 		/**
 		 * @return The underlying base shader
 		 */
-		virtual const BaseShader* getBaseShader() const		{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
+		virtual const BaseShader* getBaseShader() const	override	{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
 
 		/**
 		 * Returns the current blend mode.
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @return Active blend mode
 		 */
-		EBlendMode getBlendMode() const						{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
+		EBlendMode getBlendMode() const								{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
 
 		/**
 		 * Sets the blend mode to use. 
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @param blendMode new blend mode to use
 		 */
-		void setBlendMode(EBlendMode blendMode)				{ mBlendMode = blendMode; }
+		void setBlendMode(EBlendMode blendMode)						{ mBlendMode = blendMode; }
 
 		/**
 		 * Returns the current depth mode.
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @return Depth mode
 		 */
-		EDepthMode getDepthMode() const						{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
+		EDepthMode getDepthMode() const								{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
 
 		/**
 		 * Sets the depth mode to use.
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @param depthMode new depth mode to use.
 		 */
-		void setDepthMode(EDepthMode depthMode)				{ mDepthMode = depthMode; }
+		void setDepthMode(EDepthMode depthMode)						{ mDepthMode = depthMode; }
 
 		/**
 		 * Finds the mesh / shader attribute binding based on the given shader attribute ID.
@@ -183,12 +183,12 @@ namespace nap
 		/**
 		 * @return The underlying compute shader
 		 */
-		const ComputeShader& getShader() const				{ assert(mShader != nullptr); return *mShader; }
+		const ComputeShader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
 
 		/**
 		 * @return The underlying base shader
 		 */
-		virtual const BaseShader* getBaseShader() const { assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
+		virtual const BaseShader* getBaseShader() const override	{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
 
 	public:
 		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The compute shader that this material is using
