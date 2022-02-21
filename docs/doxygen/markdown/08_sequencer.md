@@ -28,8 +28,8 @@ The sequencer is set up to run independently of the application main render thre
 
 The following three concepts should be understood when working with the sequencer:
 * The relationship between the [SequencePlayer, SequenceEditor & SequenceEditorGUI](@ref player_editor_gui)
-* [Outputs & Adapters](@ref outputs_and_adapters)
 * Thread independent playback using the [SequencePlayerClock](@ref clocks)
+* [Outputs & Adapters](@ref outputs_and_adapters)
 
 <img src="content/sequencer-intro.gif" alt="Sequencer Intro" style="width:100%;"/>
 
