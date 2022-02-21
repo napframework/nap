@@ -101,7 +101,7 @@
                     "Type": "nap::BoidTargetTranslateComponent",
                     "mID": "BoidTargetTranslateComponent",
                     "Radius": 0.5,
-                    "Speed": 0.15
+                    "Speed": 0.15000000596046449
                 }
             ],
             "Children": []

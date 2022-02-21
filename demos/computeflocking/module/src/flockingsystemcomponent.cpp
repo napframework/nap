@@ -12,6 +12,7 @@
 #include <rect.h>
 #include <mathutils.h>
 #include <nap/core.h>
+#include <nap/logger.h>
 #include <renderservice.h>
 #include <renderglobals.h>
 #include <nap/logger.h>
@@ -139,8 +140,13 @@ namespace nap
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
-		// Set non-parameter variables
+		// Clamp the boid count on raspberry pi
+#ifdef COMPUTEFLOCKING_RPI
+		nap::Logger::info("Maximum boid count is limited to 1000 on Raspberry Pi to reduce perfomance issues");
+		mNumBoids = math::clamp(mResource->mNumBoids, 0U, 1000U);
+#else
 		mNumBoids = mResource->mNumBoids;
+#endif
 
 		for (auto& comp : mComputeInstances)
 			comp->setInvocations(mNumBoids);

@@ -10,8 +10,7 @@ struct Boid
 	vec4 velocity;
 	vec4 orientation;
 
-	uint padding[2];
-	float debug;
+	uint padding[3];
 	float mateRate;
 };
 
