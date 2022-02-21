@@ -13,6 +13,8 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
 	// forward declares
 	class SequenceEventTrackSegmentViewBase;
 	class SequenceEventTrackView;
@@ -30,6 +32,20 @@ namespace nap
 	using SequenceTrackTypeForViewTypeMap			= std::unordered_map<rtti::TypeInfo, rtti::TypeInfo>;
 	using SequenceEventTrackPasteFunc 				= std::function<void(SequenceEventTrackView&, const std::string&, const SequenceTrackSegmentEventBase&, double)>;
 	using SequenceEventTrackEditFunc 				= std::function<void(SequenceEventTrackView&)>;
+
+	namespace icon
+	{
+		namespace sequencer
+		{
+			inline constexpr const char* play		= "seq_play.png";
+			inline constexpr const char* stop		= "seq_stop.png";
+			inline constexpr const char* rewind		= "seq_replay.png";
+			inline constexpr const char* up			= "seq_up-arrow.png";
+			inline constexpr const char* down		= "seq_down-arrow.png";
+			inline constexpr const char* pause		= "seq_pause.png";
+			inline constexpr const char* unpause	= "seq_unpause.png";
+		}
+	}
 
 	/**
 	 * The SequenceGUIService is responsible for registering track, segment & popup views and supplying the GUI the
@@ -56,14 +72,18 @@ namespace nap
 			 * Initialize palette against configurable ImGUI color palette
 			 * @param palette ImGUI color palette
 			 */
-			void init(const IMGuiColorPalette& palette);
+			void init(const gui::ColorPalette& palette);
 
-			ImU32 mHigh = 0;		///< Special Highlight Color
+			ImU32 mHigh1 = 0;		///< First highlight color
+			ImU32 mHigh2 = 0;		///< Second highlight color
+			ImU32 mHigh3 = 0;		///< Third highlight color
+			ImU32 mHigh4 = 0;		///< Fourth highlight color
 			ImU32 mDark = 0;		///< Dark background Color
 			ImU32 mBack = 0;		///< Background color
 			ImU32 mFro1 = 0;		///< Darker Foreground
 			ImU32 mFro2 = 0;		///< Dark Foreground
 			ImU32 mFro3 = 0;		///< Light Foreground
+			ImU32 mFro4 = 0;		///< Text
 
 			ImU32 mCurveColors[4] = { 4285098440, 4278255360, 4294901760, 4278255615 };
 		};
@@ -165,6 +185,11 @@ namespace nap
 		 * @return gui service
 		 */
 		nap::IMGuiService& getGui();
+
+		/**
+		 * @return gui service
+		 */
+		const nap::IMGuiService& getGui() const;
 
 		/**
 		 * Returns the sequencer GUI color palette 

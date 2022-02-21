@@ -28,6 +28,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::ModuleInfo)
 	RTTI_PROPERTY("RequiredModules", &nap::ModuleInfo::mRequiredModules, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("WindowsDllSearchPaths", &nap::ModuleInfo::mLibSearchPaths, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DataSearchPaths", &nap::ModuleInfo::mDataSearchPaths, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -96,8 +97,20 @@ namespace nap
 		return utility::joinPath(
 			{
 				getProjectDir(),
-				getDataFile().empty() ? projectinfo::defaultDataDir : utility::getFileDir(mDefaultData)
+				getDataFile().empty() ? projectinfo::dataDir : utility::getFileDir(mDefaultData)
 			});
+	}
+
+
+	std::string ProjectInfo::getIniDir() const
+	{
+		return utility::stringFormat("%s/%s", getProjectDir().c_str(), projectinfo::iniDirectory);
+	}
+
+
+	std::string ProjectInfo::getIniFilePath(const std::string& name) const
+	{
+		return utility::stringFormat("%s/%s%s", getIniDir().c_str(), name.c_str(), projectinfo::iniExtension);
 	}
 
 

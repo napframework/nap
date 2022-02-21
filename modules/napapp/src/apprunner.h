@@ -19,7 +19,7 @@ namespace nap
 {
 	/**
 	 * Utility class that runs a nap::BaseApp until BaseApp::quit() is called or
-	 * AppRunner::stop(). The APP template argumentshould be derived from
+	 * AppRunner::stop(). The APP template argument should be derived from
 	 * nap::BaseApp, HANDLER should be of type nap::BaseAppEventHandler()
 	 *
 	 * When creating an AppRunner with those two template arguments the app is created
@@ -143,12 +143,10 @@ namespace nap
 		}
 
 		// Initialize the various services
-		if (!mCore.initializeServices(error))
-		{
-			mCore.shutdownServices();
-			error.fail("Failed to initialize services");
+		// Bail if handle is invalid, this means service initialization failed
+		Core::ServicesHandle handle = mCore.initializeServices(error);
+		if (handle == nullptr)
 			return false;
-		}
 
 #ifdef NAP_ENABLE_PYTHON
 		if (!mCore.initializePython(error))
@@ -160,7 +158,7 @@ namespace nap
 		nap::Logger::info("Current working directory: % s", data_dir.c_str());
 
 		// Ensure project data is available
-		if(!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
+		if (!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
 			mCore.getProjectInfo()->getProjectDir().c_str()))
 			return false;
 
@@ -176,10 +174,7 @@ namespace nap
 
 		// Initialize application
 		if(!error.check(app.init(error), "Unable to initialize application"))
-		{
-			mCore.shutdownServices();
 			return false;
-		}
 
 		// Start event handler
 		app_event_handler.start();
@@ -222,9 +217,6 @@ namespace nap
 
 		// Shutdown
 		mExitCode = app.shutdown();
-
-		// Shutdown core
-		mCore.shutdownServices();
 
 		// Message successful exit
 		return true;

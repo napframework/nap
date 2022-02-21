@@ -51,8 +51,10 @@ namespace nap
 		Uint32 options = SDL_WINDOW_VULKAN;
 		options = renderWindow.mResizable  ? options | SDL_WINDOW_RESIZABLE : options;
 		options = renderWindow.mBorderless ? options | SDL_WINDOW_BORDERLESS : options;
-		options = !renderWindow.mVisible ? options | SDL_WINDOW_HIDDEN : options;
 		options = allowHighDPI ? options | SDL_WINDOW_ALLOW_HIGHDPI : options;
+
+		// Always hide window until added and configured by render service
+		options = options | SDL_WINDOW_HIDDEN;
 
 		SDL_Window* new_window = SDL_CreateWindow(renderWindow.mTitle.c_str(),
 			SDL_WINDOWPOS_CENTERED,
@@ -544,9 +546,6 @@ namespace nap
 		// Fetch required vulkan handles
 		mDevice = mRenderService->getDevice();
 
-		// Set size and store for future reference
-		setSize({mWidth, mHeight});
-
 		// Acquire max number of MSAA samples, issue warning if requested number of samples is not obtained
 		utility::ErrorState rast_error;
 		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, rast_error))
@@ -596,6 +595,10 @@ namespace nap
 
 		// We want to respond to resize events for this window
 		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
+
+		// Show if requestd
+		if (mVisible)
+			this->show();
 
 		return true;
 	}
@@ -647,7 +650,15 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		SDL::setWindowSize(mSDLWindow, size);
+		// Causes the swap chain to be re-created if window size is different.
+		// TODO: This can trigger a resize event that is handled in a new frame. 
+		// causing the swap-chain to be re-created twice. Avoid this by
+		// checking against the swap extent instead of keeping one or multiple flags.
+		if (size != SDL::getWindowSize(mSDLWindow))
+		{
+			SDL::setWindowSize(mSDLWindow, size);
+			mRecreateSwapchain = true;
+		}
 	}
 
 

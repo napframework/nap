@@ -88,9 +88,9 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             },
@@ -110,9 +110,9 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             },
@@ -177,7 +177,10 @@
                 {
                     "Type": "nap::SequencePlayerAudioOutput",
                     "mID": "SequencePlayerAudioOutput",
-                    "Create Output Nodes": false,
+                    "Audio Buffers": [
+                        "AudioFileResource"
+                    ],
+                    "Manual Routing": true,
                     "Max Channels": 2
                 }
             ],

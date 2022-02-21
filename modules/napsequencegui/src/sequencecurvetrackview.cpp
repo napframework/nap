@@ -6,11 +6,14 @@
 #include "sequencecurvetrackview.h"
 #include "sequenceeditorgui.h"
 #include "sequenceplayercurveoutput.h"
+#include "sequenceguiutils.h"
 
 // nap includes
 #include <nap/logger.h>
 #include <parametervec.h>
 #include <parameternumeric.h>
+#include <parametersimple.h>
+#include <imguiutils.h>
 
 // external includes
 #include <iostream>
@@ -78,7 +81,7 @@ namespace nap
 
 	static std::unordered_map<rttr::type, std::vector<rttr::type>> parameter_types_for_curve_types
 		{
-			{ RTTI_OF(SequenceTrackCurveFloat), { { RTTI_OF(ParameterFloat), RTTI_OF(ParameterDouble), RTTI_OF(ParameterLong), RTTI_OF(ParameterInt) } } },
+			{ RTTI_OF(SequenceTrackCurveFloat), { { RTTI_OF(ParameterFloat), RTTI_OF(ParameterDouble), RTTI_OF(ParameterLong), RTTI_OF(ParameterInt), RTTI_OF(ParameterBool) } } },
 			{ RTTI_OF(SequenceTrackCurveVec2), { { RTTI_OF(ParameterVec2) } } },
 			{ RTTI_OF(SequenceTrackCurveVec3), { { RTTI_OF(ParameterVec3) } } }
 		};
@@ -228,7 +231,7 @@ namespace nap
 						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale // thickness
-					); 
+					);
 
 					ImGui::BeginTooltip();
 
@@ -261,7 +264,7 @@ namespace nap
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale // thickness
-					); 
+					);
 				}
 			}
 
@@ -329,17 +332,17 @@ namespace nap
             && ((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringSegment>()) || (mState.mAction->isAction<StartDraggingSegment>() && mState.mAction->getDerived<StartDraggingSegment>()->mSegmentID != segment.mID))
             && ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds }, // top left
-					{ trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + mState.mTrackHeight + seg_bounds }))  // bottom right 
+					{ trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + mState.mTrackHeight + seg_bounds }))  // bottom right
 		{
-			
+
 			// draw handler of segment duration
 			drawList->AddLine
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().mFro3, // color
+				mService.getColors().mFro4, // color
 				3.0f * mState.mScale // thickness
-			); 
+			);
 
 			// we are hovering this segment with the mouse
 			mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
@@ -418,9 +421,9 @@ namespace nap
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					mService.getColors().mFro3, // color
+					mService.getColors().mFro4, // color
 					line_thickness_active // thickness
-				); 
+				);
 				ImGui::BeginTooltip();
 				ImGui::Text(formatTimeString(segment.mStartTime+segment.mDuration).c_str());
 				ImGui::EndTooltip();
@@ -432,9 +435,9 @@ namespace nap
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-					mService.getColors().mFro3, // color
+					mService.getColors().mFro4, // color
 					line_thickness_regular // thickness
-				); 
+				);
 			}
 		}
 		else
@@ -444,9 +447,9 @@ namespace nap
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().mFro3, // color
+				mService.getColors().mFro4, // color
                 line_thickness_regular // thickness
-			); 
+			);
 
 			// release if we are not hovering this segment
 			if (mState.mAction->isAction<HoveringSegment>()
@@ -490,7 +493,8 @@ namespace nap
 			{
 				if (ImGui::BeginPopup("Insert Segment"))
 				{
-					if (ImGui::Button("Insert"))
+					std::string btn_msg = "Insert " + utility::stripNamespace(action->mTrackType.get_name().to_string());
+					if (ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_msg.data()))
 					{
 						auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 						curve_controller.insertSegment(action->mTrackID, action->mTime);
@@ -505,7 +509,8 @@ namespace nap
 					// handle paste
 					if(mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 					{
-						if(ImGui::Button("Paste"))
+						ImGui::SameLine();
+						if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
 						{
                             static const std::unordered_map<rtti::TypeInfo, void(SequenceCurveTrackView::*)(const std::string&, double)> paste_map =
                                     { { RTTI_OF(SequenceTrackCurveFloat), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveFloat> },
@@ -524,7 +529,8 @@ namespace nap
 						}
 					}
 
-					if (ImGui::Button("Cancel"))
+					ImGui::SameLine();
+					if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 					{
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
@@ -551,9 +557,9 @@ namespace nap
 
 			auto* action = mState.mAction->getDerived<OpenCurveTypePopup>();
 			mState.mAction = createAction<CurveTypePopup>(
-				action->mTrackID, 
+				action->mTrackID,
 				action->mSegmentID,
-				action->mCurveIndex, 
+				action->mCurveIndex,
 				action->mPos,
 				action->mWindowPos);
 		}
@@ -577,7 +583,7 @@ namespace nap
 					mState.mAction = createAction<None>();
 					mCurveCache.clear();
 				}
-
+				ImGui::SameLine();
 				if (ImGui::Button("Bezier"))
 				{
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
@@ -588,8 +594,19 @@ namespace nap
 					mState.mAction = createAction<None>();
 					mCurveCache.clear();
 				}
+				ImGui::SameLine();
+                if (ImGui::Button("Stepped"))
+                {
+                    auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+                    curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Stepped, action->mCurveIndex);
+                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
-				if (ImGui::Button("Done"))
+                    ImGui::CloseCurrentPopup();
+                    mState.mAction = createAction<None>();
+                    mCurveCache.clear();
+                }
+                ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
@@ -615,9 +632,9 @@ namespace nap
 
 			auto* action = mState.mAction->getDerived<OpenInsertCurvePointPopup>();
 			mState.mAction = createAction<InsertingCurvePoint>(
-				action->mTrackID, 
-				action->mSegmentID, 
-				action->mSelectedIndex, 
+				action->mTrackID,
+				action->mSegmentID,
+				action->mSelectedIndex,
 				action->mPos);
 		}
 
@@ -627,7 +644,7 @@ namespace nap
 			if (ImGui::BeginPopup("Insert Curve Point"))
 			{
 				auto* action = mState.mAction->getDerived<InsertingCurvePoint>();
-				if (ImGui::Button("Insert Point"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::add), "Insert Point"))
 				{
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 					curve_controller.insertCurvePoint(
@@ -638,13 +655,13 @@ namespace nap
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
 					mCurveCache.clear();
-
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
 
 				}
 
-				if (ImGui::Button("Change Curve Type"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::change), "Change Curve Type"))
 				{
 					ImGui::CloseCurrentPopup();
 
@@ -656,7 +673,8 @@ namespace nap
 						ImGui::GetWindowPos());
 				}
 
-				if (ImGui::Button("Cancel"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
@@ -736,7 +754,7 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::Button("Done"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<sequenceguiactions::None>();
 
@@ -812,7 +830,7 @@ namespace nap
 
 					if(display_copy)
 					{
-						if(ImGui::Button("Copy"))
+						if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy)))
 						{
 							// create new clipboard
 							mState.mClipboard = createClipboard<CurveSegmentClipboard>(track->get_type(), track->mID, getEditor().mSequencePlayer->getSequenceFilename());
@@ -837,6 +855,7 @@ namespace nap
 							ImGui::CloseCurrentPopup();
 							mState.mAction = createAction<None>();
 						}
+						ImGui::SameLine();
 					}
 
 					if(!display_copy)
@@ -850,7 +869,7 @@ namespace nap
 						// does the clipboard already contain this segment ?
 						if(clipboard->containsObject(curve_segment->mID, getPlayer().getSequenceFilename()))
 						{
-							if(ImGui::Button("Remove from clipboard"))
+							if(ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
 							{
 								// remove the object from the clipboard
 								clipboard->removeObject(curve_segment->mID);
@@ -865,9 +884,10 @@ namespace nap
 								ImGui::CloseCurrentPopup();
 								mState.mAction = createAction<None>();
 							}
-						}else
+						}
+						else
 						{
-							if( ImGui::Button("Add to clipboard") )
+							if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Add to clipboard"))
 							{
 								// add object to clipboard
 								utility::ErrorState errorState;
@@ -887,6 +907,7 @@ namespace nap
 								mState.mAction = createAction<None>();
 							}
 						}
+						ImGui::SameLine();
 					}
 
 					// see if we can replace the contents of this segment with the one from the clipboard
@@ -900,7 +921,7 @@ namespace nap
 					// display the replace option
 					if( display_replace )
 					{
-						if( ImGui::Button("Paste Into This") )
+						if( ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
 						{
                             static const std::unordered_map<rtti::TypeInfo, void(SequenceCurveTrackView::*)(const std::string&, const std::string&)> paste_map =
                                     { { RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveFloat> },
@@ -920,9 +941,10 @@ namespace nap
 							ImGui::CloseCurrentPopup();
 							mState.mAction = createAction<None>();
 						}
+						ImGui::SameLine();
 					}
 
-					if (ImGui::Button("Delete"))
+					if (ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
 					{
 						controller.deleteSegment(
 							action->mTrackID,
@@ -930,7 +952,7 @@ namespace nap
 						mCurveCache.clear();
 
 						// remove delete object from clipboard
-						if( mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
+						if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
 						{
 							mState.mClipboard->removeObject(action->mSegmentID);
 						}
@@ -942,30 +964,20 @@ namespace nap
 						mState.mAction = createAction<None>();
 					}
 
-					int time_milseconds = (int) ( ( action->mStartTime + action->mDuration ) * 100.0 ) % 100;
-					int time_seconds = (int) ( action->mStartTime + action->mDuration ) % 60;
-					int time_minutes = (int) ( action->mStartTime + action->mDuration ) / 60;
-
+                    std::vector<int> time_array = convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
 					bool edit_time = false;
 
 					ImGui::Separator();
 					ImGui::PushItemWidth(100.0f * mState.mScale);
 
-					int time_array[3] =
-						{
-							time_minutes,
-							time_seconds,
-							time_milseconds
-						};
-
-					edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+					edit_time = ImGui::InputInt3("End time (mm:ss:ms)", &time_array[0]);
 					time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
 					time_array[1] = math::clamp<int>(time_array[1], 0, 59);
 					time_array[2] = math::clamp<int>(time_array[2], 0, 99);
 
 					if( edit_time )
 					{
-						double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
+						double new_time = convertMMSSMSArrayToTime(time_array);
 						double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, (float)(new_time - action->mStartTime));
 
 						// make the controller re-align start & end points of segments
@@ -979,10 +991,8 @@ namespace nap
 					}
 
 					ImGui::PopItemWidth();
-
 					ImGui::Separator();
-
-					if (ImGui::Button("Done"))
+					if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
 					{
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
@@ -1172,22 +1182,6 @@ namespace nap
 			{
 				auto* action = mState.mAction->getDerived<sequenceguiactions::CurvePointActionPopup<float>>();
 
-				if (ImGui::Button("Delete"))
-				{
-					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
-					curve_controller.deleteCurvePoint(
-						action->mTrackID,
-						action->mSegmentID,
-						action->mControlPointIndex,
-						action->mCurveIndex);
-					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-					mCurveCache.clear();
-
-					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-
-					ImGui::CloseCurrentPopup();
-				}
-
 				float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
 				if (ImGui::InputFloat("value", &value))
 				{
@@ -1203,13 +1197,72 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::Button("Done"))
-				{
-					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                /**
+                 * Handle adjusting time of point
+                 * Calculate mTime value to time in sequence, show InputInt3 (mm::ss::ms).
+                 * On edit : validate input and call controller
+                 */
+                // obtain segment
+                auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+                const auto* segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
+                assert(segment!=nullptr);
 
+                double time = action->mTime * segment->mDuration + segment->mStartTime;
+                double min_time = segment->mStartTime;
+                double max_time = segment->mStartTime + segment->mDuration;
+
+                std::vector<int> time_array = convertTimeToMMSSMSArray(time);
+
+                bool edit_time = false;
+
+                ImGui::Separator();
+                ImGui::PushItemWidth(100.0f * mState.mScale);
+
+                edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+                if(edit_time)
+                {
+                    double new_time = convertMMSSMSArrayToTime(time_array);
+                    new_time = math::clamp(new_time, min_time, max_time);
+
+                    float perc = (new_time-segment->mStartTime) / segment->mDuration;
+                    action->mTime = perc;
+                    curve_controller.changeCurvePoint(
+                            action->mTrackID,
+                            action->mSegmentID,
+                            action->mControlPointIndex,
+                            action->mCurveIndex,
+                            perc,
+                            action->mValue);
+                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                    mState.mDirty = true;
+                }
+
+                // delete button
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
+				{
+					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
+					curve_controller.deleteCurvePoint(
+						action->mTrackID,
+						action->mSegmentID,
+						action->mControlPointIndex,
+						action->mCurveIndex);
+					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+					mCurveCache.clear();
+
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 					ImGui::CloseCurrentPopup();
 				}
 
+				ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+				{
+					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+					ImGui::CloseCurrentPopup();
+				}
 				ImGui::EndPopup();
 			}
 			else
@@ -1263,10 +1316,9 @@ namespace nap
 					mState.mDirty = true;
 				}
 
-				if (ImGui::Button("Done"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
 				{
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-
 					ImGui::CloseCurrentPopup();
 				}
 

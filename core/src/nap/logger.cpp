@@ -95,7 +95,7 @@ namespace nap
 
 	void Logger::addFileHandler(const std::string& filename)
 	{
-		debug("Logging to file: %s", filename.c_str());
+		debug("Logging to file: %s", utility::forceSeparator(filename).c_str());
 		instance().addHandler(std::make_unique<FileLogHandler>(filename));
 	}
 

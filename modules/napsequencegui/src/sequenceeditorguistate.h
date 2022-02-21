@@ -14,6 +14,8 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Holds information about the state of the editor
 	 * Shared between GUI editor and view classes

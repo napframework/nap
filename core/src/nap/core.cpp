@@ -53,10 +53,6 @@ namespace nap
 
 	Core::~Core()
 	{
-		// In order to ensure a correct order of destruction we want our entities, components, etc. to be deleted before other services are deleted.
-		// Because entities and components are managed and owned by the resource manager we explicitly delete this first.
-		mResourceManager.reset(nullptr);
-
 		// After that remove all services
 		mServices.clear();
 
@@ -144,29 +140,20 @@ namespace nap
 	}
 
 
-	bool Core::initializeServices(utility::ErrorState& errorState)
+	Core::ServicesHandle Core::initializeServices(utility::ErrorState& errorState)
 	{
-		// Initialize all services one by one
-		std::vector<Service*> objects;
-
-		std::string si;
-		for (const auto& service : mServices)
-		{
-			si = utility::stringFormat("Initializing service: %s", service->getTypeName().c_str());
-			std::cout << std::string(si.size(), '-') << std::endl;
-			nap::Logger::info(si);
-
-			if (!service->init(errorState))
-				return false;
-		}
-		std::cout << std::string(si.size(), '-') << std::endl;
+		// Attempt to initialize services
+		Core::ServicesHandle services_handle(new Core::Services(*this, errorState));
+		if (!services_handle->initialized())
+			return nullptr;
 
 		// Listen to potential resource file changes and 
 		// forward those to all registered services
 		mResourceManager->mPreResourcesLoadedSignal.connect(mPreResourcesLoadedSlot);
 		mResourceManager->mPostResourcesLoadedSignal.connect(mPostResourcesLoadedSlot);
 
-		return true;
+		// Return service handle
+		return std::move(services_handle);
 	}
 
 
@@ -234,30 +221,6 @@ namespace nap
 			service->postUpdate(delta_time);
 
 		return delta_time;
-	}
-
-
-	void Core::shutdownServices()
-	{
-		// Call pre-shutdown on services to give them a chance to reset any state they need
-		// before resources are destroyed.
-		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
-		{
-			Service& service = **it;
-			service.preShutdown();
-		}
-
-		// Destroy the resource manager, which will destroy all loaded resources
-		mResourceManager.reset();
-
-		// Shutdown services after all resources have been destroyed.
-		// This order ensures that resources can still make use of services during destruction
-		for (auto it = mServices.rbegin(); it != mServices.rend(); it++)
-		{
-			Service& service = **it;
-			nap::Logger::debug("shutting down service: %s", service.getTypeName().c_str());
-			service.shutdown();
-		}
 	}
 
 
@@ -348,10 +311,24 @@ namespace nap
 		return found_service == mServices.end() ? nullptr : (*found_service).get();
 	}
 
+
 	nap::Service* Core::getService(const std::string& type)
 	{
 		rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(type.c_str());
 		return getService(stype);
+	}
+
+
+	const nap::Service* Core::getService(const rtti::TypeInfo& type) const
+	{
+		// Find service of type
+		const auto& found_service = std::find_if(mServices.begin(), mServices.end(), [&type](const auto& service)
+			{
+				return rtti::isTypeMatch(service->get_type(), type, rtti::ETypeCheck::EXACT_MATCH);
+			});
+
+		// Check if found
+		return found_service == mServices.end() ? nullptr : (*found_service).get();
 	}
 
 
@@ -631,5 +608,51 @@ namespace nap
 			configs.emplace_back(config.second.get());
 		}
 		return configs;
+	}
+
+
+	Core::Services::~Services()
+	{
+		// Call pre-shutdown on services to give them a chance to reset any state they need
+		// before resources are destroyed.
+		for (auto it = mCore.mServices.rbegin(); it != mCore.mServices.rend(); it++)
+		{
+			Service& service = **it;
+			service.preShutdown();
+		}
+
+		// Destroy the resource manager, which will destroy all loaded resources
+		mCore.mResourceManager.reset();
+
+		// Shutdown services after all resources have been destroyed.
+		// This order ensures that resources can still make use of services during destruction
+		for (auto it = mCore.mServices.rbegin(); it != mCore.mServices.rend(); it++)
+		{
+			Service& service = **it;
+			nap::Logger::debug("shutting down service: %s", service.getTypeName().c_str());
+			service.shutdown();
+		}
+	}
+
+
+	Core::Services::Services(Core& core, utility::ErrorState& error) : mCore(core)
+	{
+		// Initialize all services one by one
+		std::vector<Service*> objects;
+		std::string si;
+		for (const auto& service : mCore.mServices)
+		{
+			si = utility::stringFormat("Initializing service: %s", service->getTypeName().c_str());
+			std::cout << std::string(si.size(), '-') << std::endl;
+			nap::Logger::info(si);
+
+			if (!service->init(error))
+			{
+				error.fail("Failed to initialize services");
+				return;
+			}
+		}
+		std::cout << std::string(si.size(), '-') << std::endl;
+		mInitialized = true;
 	}
 }

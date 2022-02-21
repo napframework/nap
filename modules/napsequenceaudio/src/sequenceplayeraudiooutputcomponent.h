@@ -19,6 +19,8 @@ namespace nap
 {
     namespace audio
     {
+        //////////////////////////////////////////////////////////////////////////
+
         class SequencePlayerAudioOutputComponentInstance;
 
         /**
@@ -34,13 +36,13 @@ namespace nap
             /**
              * Constructor
              */
-            SequencePlayerAudioOutputComponent() : AudioComponentBase()
-            {}
+            SequencePlayerAudioOutputComponent()
+                    :AudioComponentBase()
+            {
+            }
 
-        public:
             ResourcePtr<SequencePlayerAudioOutput> mSequencePlayerAudioOutput; ///< Property: 'Sequence Player Audio Output' resource ptr to audio output of Sequencer
         };
-
 
         class NAPAPI SequencePlayerAudioOutputComponentInstance : public AudioComponentBaseInstance
         {
@@ -53,21 +55,31 @@ namespace nap
              * @param resource
              */
             SequencePlayerAudioOutputComponentInstance(EntityInstance& entity, Component& resource)
-				: AudioComponentBaseInstance(entity, resource)
-            {}
+                    :AudioComponentBaseInstance(entity, resource)
+            {
+            }
+
 
             /**
              * Returns all available channels of output
              * @return all available audio channels
              */
-			int getChannelCount() const override { return mSequencePlayerAudioOutput->getChannelCount(); }
+            int getChannelCount() const override
+            {
+                return mSequencePlayerAudioOutput->getChannelCount();
+            }
+
 
             /**
              * returns pointer to OutputPin of given channel, assert if out of bounds
              * @param channel channel of OutputPin
              * @return pointer to OutputPin
              */
-			OutputPin* getOutputForChannel(int channel) override { return mSequencePlayerAudioOutput->getOutputForChannel(channel); }
+            OutputPin* getOutputForChannel(int channel) override
+            {
+                return mSequencePlayerAudioOutput->getOutputForChannel(channel);
+            }
+
 
             /**
              * onDestroy is called before deconstruction
@@ -79,8 +91,7 @@ namespace nap
 
         private:
             // raw pointer to sequence player audio output
-            SequencePlayerAudioOutput*          mSequencePlayerAudioOutput;
+            SequencePlayerAudioOutput* mSequencePlayerAudioOutput;
         };
-
     }
 }

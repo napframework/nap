@@ -30,11 +30,61 @@
 #include <glslang/Public/ShaderLang.h>
 #include <nap/assert.h>
 #include <mathutils.h>
+#include <rtti/jsonwriter.h>
+#include <rtti/jsonreader.h>
+#include <rtti/defaultlinkresolver.h>
 
 // Required to enbale high dpi rendering on windows
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+namespace nap
+{
+	/**
+	 * Temporary window settings that are saved and restored in between sessions
+	 */
+	class WindowCache final : public Resource
+	{
+		RTTI_ENABLE(nap::Resource)
+	public:
+		WindowCache() = default;
+		WindowCache(const nap::RenderWindow& window, const nap::Display& display);
+
+		glm::ivec2 mPosition = {};					///< Property: 'Position' Position of window
+		glm::ivec2 mSize = {};						///< Property: 'Size' Size of window
+		std::string mDisplay;						///< Property: 'Display' Name of the display associated with the window
+		int mIndex = 0;								///< Property: 'Index' Index of the display 
+	};
+
+	WindowCache::WindowCache(const nap::RenderWindow& window, const nap::Display& display)
+	{
+		mID = window.mID;
+		mPosition = window.getPosition();
+		mSize = window.getSize();
+		mDisplay = display.getName();
+		mIndex = display.getIndex();
+	}
+
+
+	/**
+	 * Used by the render service to temporarily bind and destroy information.
+	 * This information is required by the render service (on initialization) to extract
+	 * all required Vulkan surface extensions and select a queue that can present images,
+	 * next to render and transfer functionality.
+	 */
+	struct DummyWindow
+	{
+		~DummyWindow()
+		{
+			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
+			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
+		}
+		SDL_Window*	mWindow = nullptr;
+		VkInstance	mInstance = VK_NULL_HANDLE;
+		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
+	};
+}
 
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
@@ -60,42 +110,15 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::WindowCache)
+	RTTI_PROPERTY("Position",			&nap::WindowCache::mPosition,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size",				&nap::WindowCache::mSize,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Display",			&nap::WindowCache::mDisplay,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",				&nap::WindowCache::mIndex,			nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// Dummy Window Wrapper
-	//////////////////////////////////////////////////////////////////////////
-	
-	/**
-	 * Used by the render service to temporarily bind and destroy information.
-	 * This information is required by the render service (on initialization) to extract
-	 * all required Vulkan surface extensions and select a queue that can present images,
-	 * next to render and transfer functionality.
-	 */
-	struct DummyWindow
-	{
-		~DummyWindow()
-		{
-			if (mSurface != VK_NULL_HANDLE)		{ assert(mInstance != nullptr);  vkDestroySurfaceKHR(mInstance, mSurface, nullptr); }
-			if (mWindow != nullptr)				{ SDL_DestroyWindow(mWindow); }
-		}
-		SDL_Window*	mWindow = nullptr;
-		VkInstance	mInstance = VK_NULL_HANDLE;
-		VkSurfaceKHR mSurface = VK_NULL_HANDLE;
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Compatible physical device
-	//////////////////////////////////////////////////////////////////////////
-
-
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Static Methods
-	//////////////////////////////////////////////////////////////////////////
-
 	/**
 	 * @return VK physical device type
 	 */
@@ -967,8 +990,13 @@ namespace nap
 
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
+		// Attempt to restore cached settings
+		restoreWindow(window);
+
+		// Add and notify listeners
 		mWindows.emplace_back(&window);
 		windowAdded.trigger(window);
+
 		return true;
 	}
 
@@ -982,7 +1010,6 @@ namespace nap
 		assert(pos != mWindows.end());
 		windowRemoved.trigger(window);
 		mWindows.erase(pos);
-
 	}
 
 
@@ -1016,7 +1043,7 @@ namespace nap
 	}
 
 
-	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window)
+	const nap::Display* RenderService::findDisplay(const nap::RenderWindow& window) const
 	{
 		return findDisplay(SDL::getDisplayIndex(window.getNativeWindow()));
 	}
@@ -1449,6 +1476,14 @@ namespace nap
 				return false;
 		}
 
+		// Try to load .ini file and extract saved settings, allowed to fail
+		nap::utility::ErrorState ini_error;
+		if (!loadIni(getIniFilePath(), ini_error))
+		{
+			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
+			nap::Logger::warn(errorState.toString());
+		}
+
 		mInitialized = true;
 		return true;
 	}
@@ -1471,6 +1506,119 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = true;
 	}
 
+
+	bool RenderService::writeIni(const std::string& path, utility::ErrorState error)
+	{
+		// Create window caches to write to disk
+		std::vector<std::unique_ptr<WindowCache>> caches;
+		nap::rtti::ObjectList resources;
+		caches.reserve(mWindows.size());
+		resources.reserve(mWindows.size());
+
+		for (const auto& window : mWindows)
+		{
+			// Find display that shows window
+			const auto* display = findDisplay(*window);
+			if (display == nullptr)
+				continue;
+
+			// Create cache
+			auto new_cache = std::make_unique<WindowCache>(*window, *display);
+			resources.emplace_back(new_cache.get());
+			caches.emplace_back(std::move(new_cache));
+		}
+
+		// Serialize current set of parameters to json
+		rtti::JSONWriter writer;
+		if (!rtti::serializeObjects(resources, writer, error))
+			return false;
+
+		// Get ini file path, create directory if it doesn't exist
+		std::string dir = utility::getFileDir(path);
+		if (!error.check(utility::ensureDirExists(dir), "unable to write %s file(s) to directory: %s", projectinfo::iniExtension, dir.c_str()))
+			return false;
+
+		// Open output file
+		std::ofstream output_stream(path, std::ios::binary | std::ios::out);
+		if (!error.check(output_stream.is_open() && output_stream.good(), "Failed to open %s for writing", path.c_str()))
+			return false;
+
+		// Write to disk
+		std::string json = writer.GetJSON();
+		output_stream.write(json.data(), json.size());
+		return true;
+	}
+
+
+	bool RenderService::loadIni(const std::string& path, utility::ErrorState error)
+	{
+		// Ensure file exists
+		mCache.clear();
+		if (!utility::fileExists(path))
+			return true;
+
+		// Read file
+		rtti::DeserializeResult result;
+		rtti::Factory& factory = getCore().getResourceManager()->getFactory();
+		if (!deserializeJSONFile(
+			path, rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::OnlyRawPointers,
+			factory, result, error))
+			return false;
+
+		// Resolve links
+		if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, error))
+			return false;
+
+		// Move found items
+		mCache.reserve(result.mReadObjects.size());
+		for (auto& item : result.mReadObjects)
+		{
+			// Ensure it's a window cache
+			if (item->get_type().is_derived_from(RTTI_OF(WindowCache)))
+				mCache.emplace_back(std::move(item));
+		}
+		return true;
+	}
+
+
+	void RenderService::restoreWindow(nap::RenderWindow& window)
+	{
+		// Find cache associated with given window
+		for (const auto& object : mCache)
+		{
+			// Make sure it's a window cache object
+			if (!object->get_type().is_derived_from(RTTI_OF(WindowCache)))
+				continue;
+
+			// Check if IDs match, if they do, find the display to position on
+			// The display name and index must match, subsequently: the cached coordinate must fit within display bounds
+			// Otherwise the configuration changed and we might position it somewhere unreachable.
+			// If that's the case we don't attempt to restore it at all
+			const WindowCache* cache = static_cast<const WindowCache*>(object.get());
+			if (window.mID == cache->mID)
+			{
+				// Now we have the cache, find the display to position it on.
+				for (const auto& display : mDisplays)
+				{
+					// Name match
+					if (cache->mDisplay != display.getName() || cache->mIndex != display.getIndex())
+						continue;
+
+					// Check if coordinates are within display bounds
+					glm::ivec2 min, max;
+					SDL::getDisplayBounds(display.getIndex(), min, max);
+					if (cache->mPosition.x >= min.x && cache->mPosition.y >= min.y &&
+						cache->mPosition.x < max.x && cache->mPosition.y < max.y)
+					{
+						window.setPosition(cache->mPosition);
+						window.setSize(cache->mSize);
+					}
+					break;
+				}
+			}
+		}
+	}
 
 	void RenderService::waitForFence(int frameIndex)
 	{
@@ -1536,8 +1684,15 @@ namespace nap
 
 	void RenderService::preShutdown()
 	{
-	    if(isInitialized())
+	    if(isInitialized()) 
 		    waitDeviceIdle();
+
+		utility::ErrorState write_error;
+		if (!writeIni(getIniFilePath(), write_error))
+		{
+			write_error.fail("Unable to write: %s", getIniFilePath().c_str());
+			nap::Logger::warn(write_error.toString());
+		}
 	}
 
 

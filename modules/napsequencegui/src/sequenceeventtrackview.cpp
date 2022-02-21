@@ -11,6 +11,7 @@
 
 #include <nap/logger.h>
 #include <iostream>
+#include <imguiutils.h>
 
 namespace nap
 {
@@ -191,7 +192,7 @@ namespace nap
 			auto type = (segment.get())->get_type();
 			auto it = mSegmentViews.find(type);
 			assert(it != mSegmentViews.end()); // type not found
-			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x + (5.0f * mState.mScale), mService.getColors().mHigh);
+			it->second->drawEvent(*(segment.get()), draw_list, trackTopLeft, segment_x + (5.0f * mState.mScale), mService.getColors().mFro4);
 
 			prev_segment_x = segment_x;
 			segment_count++;
@@ -220,8 +221,10 @@ namespace nap
 				auto& event_map = mService.getRegisteredSegmentEventTypes();
 				for(auto& type : event_map)
 				{
-					std::string buttonString = "Insert " + type.get_name().to_string();
-					if( ImGui::Button(buttonString.c_str()))
+					std::string type_str = utility::stripNamespace(type.get_name().to_string());
+					std::string btn_str = "Insert " + type_str;
+					ImGui::PushID(type_str.c_str());
+					if( ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_str.c_str()))
 					{
 						auto it = mSegmentViews.find(type);
 						assert(it!=mSegmentViews.end()); // type not found
@@ -230,12 +233,15 @@ namespace nap
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
 					}
+					ImGui::SameLine();
+					ImGui::Text(type_str.c_str());
+					ImGui::PopID();
 				}
 
 				// handle paste if event segment is in clipboard
 				if( mState.mClipboard->isClipboard<EventSegmentClipboard>())
 				{
-					if( ImGui::Button("Paste") )
+					if( ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
 					{
 						// call appropriate paste method
 						pasteEventsFromClipboard(action->mTrackID, action->mTime);
@@ -244,9 +250,10 @@ namespace nap
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
 					}
+					ImGui::SameLine();
 				}
 
-				if (ImGui::Button("Cancel"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
@@ -297,7 +304,7 @@ namespace nap
 			drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
 				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
-				mService.getColors().mFro3, // color
+				mService.getColors().mFro4, // color
 				3.0f * mState.mScale); // thickness
 
 			if (!isAlreadyHovering && !isAlreadyDragging)
@@ -376,7 +383,7 @@ namespace nap
 			{
 				if( mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()) )
 				{
-					line_color = mService.getColors().mHigh;
+					line_color = mService.getColors().mHigh1;
 				}
 			}
 
@@ -439,7 +446,7 @@ namespace nap
 
 				if( display_copy )
 				{
-					if(ImGui::Button("Copy"))
+					if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy)))
 					{
 						// create clipboard
 						mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
@@ -457,7 +464,8 @@ namespace nap
 
 						return;
 					}
-				}else
+				}
+				else
 				{
 					// obtain derived clipboard
 					auto* clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
@@ -467,7 +475,7 @@ namespace nap
 
 					if( display_remove_from_clipboard )
 					{
-						if( ImGui::Button("Remove from clipboard") )
+						if( ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
 						{
 							clipboard->removeObject(action->mSegmentID);
 
@@ -481,13 +489,13 @@ namespace nap
 							ImGui::CloseCurrentPopup();
 							mState.mAction = createAction<None>();
 							ImGui::EndPopup();
-
 							return;
 						}
-					}else
+					}
+					else
 					{
 						// clipboard is of correct type, but does not contain this segment, present the user with an add button
-						if( ImGui::Button("Add to clipboard") )
+						if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Add to clipboard"))
 						{
 							// obtain controller
 							auto& controller = getEditor().getController<SequenceControllerEvent>();
@@ -509,13 +517,13 @@ namespace nap
 							ImGui::CloseCurrentPopup();
 							mState.mAction = createAction<None>();
 							ImGui::EndPopup();
-
 							return;
 						}
 					}
 				}
+				ImGui::SameLine();
 
-				if (ImGui::Button("Delete"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
 				{
 					auto& controller = getEditor().getController<SequenceControllerEvent>();
 					controller.deleteSegment(action->mTrackID, action->mSegmentID);
@@ -527,7 +535,6 @@ namespace nap
 					}
 
 					mState.mDirty = true;
-
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();
 				}
@@ -535,7 +542,8 @@ namespace nap
 				{
 					if (action->mSegmentType.is_derived_from<SequenceTrackSegmentEventBase>())
 					{
-						if (ImGui::Button("Edit"))
+						ImGui::SameLine();
+						if (ImGui::ImageButton(mService.getGui().getIcon(icon::edit)))
 						{
 							auto& eventController = getEditor().getController<SequenceControllerEvent>();
 							const auto *eventSegment = dynamic_cast<const SequenceTrackSegmentEventBase*>(eventController.getSegment(action->mTrackID, action->mSegmentID));
@@ -550,13 +558,13 @@ namespace nap
 								assert(it!=mSegmentViews.end()); // type not found
 								mState.mAction = it->second->createEditAction(eventSegment, action->mTrackID, action->mSegmentID);
 							}
-
 							ImGui::CloseCurrentPopup();
 						}
 					}
 				}
 
-				if (ImGui::Button("Cancel"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();

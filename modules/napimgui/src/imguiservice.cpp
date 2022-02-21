@@ -19,23 +19,40 @@
 #include <SDL_keyboard.h>
 #include <nap/logger.h>
 #include <materialcommon.h>
-#include <descriptorsetallocator.h>
 #include <sdlhelpers.h>
+#include <nap/modulemanager.h>
 
-RTTI_BEGIN_STRUCT(nap::IMGuiColorPalette)
-	RTTI_PROPERTY("HighlightColor",		&nap::IMGuiColorPalette::mHighlightColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BackgroundColor",	&nap::IMGuiColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DarkColor",			&nap::IMGuiColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor1",		&nap::IMGuiColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor2",		&nap::IMGuiColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrontColor3",		&nap::IMGuiColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_ENUM(nap::gui::EColorScheme)
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Light,		"Light"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Dark,		"Dark"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::HyperDark,	"HyperDark"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Classic,	"Classic"),
+	RTTI_ENUM_VALUE(nap::gui::EColorScheme::Custom,		"Custom")
+RTTI_END_ENUM
+
+RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
+	RTTI_PROPERTY("BackgroundColor",	&nap::gui::ColorPalette::mBackgroundColor,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DarkColor",			&nap::gui::ColorPalette::mDarkColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MenuColor",			&nap::gui::ColorPalette::mMenuColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor1",		&nap::gui::ColorPalette::mFront1Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor2",		&nap::gui::ColorPalette::mFront2Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor3",		&nap::gui::ColorPalette::mFront3Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrontColor4",		&nap::gui::ColorPalette::mFront4Color,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor1",	&nap::gui::ColorPalette::mHighlightColor1,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor2",	&nap::gui::ColorPalette::mHighlightColor2,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor3",	&nap::gui::ColorPalette::mHighlightColor3,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightColor4",	&nap::gui::ColorPalette::mHighlightColor4,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("InvertIcons",		&nap::gui::ColorPalette::mInvertIcon,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
-	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,		nap::rtti::EPropertyMetaData::Default, nap::rtti::EPropertyFileType::Font)
-	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mColors,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ColorScheme", &nap::IMGuiServiceConfiguration::mColorScheme,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GlobalScale",		&nap::IMGuiServiceConfiguration::mScale,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("FontFile",	&nap::IMGuiServiceConfiguration::mFontFile,			nap::rtti::EPropertyMetaData::Default,nap::rtti::EPropertyFileType::Font)
+	RTTI_PROPERTY("FontSampling",		&nap::IMGuiServiceConfiguration::mFontOversampling, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FontSpacing",		&nap::IMGuiServiceConfiguration::mFontSpacing,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mCustomColors,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
@@ -49,6 +66,83 @@ static VkSampler                gSampler = VK_NULL_HANDLE;
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Icons
+	//////////////////////////////////////////////////////////////////////////
+
+	namespace icon
+	{
+		static const std::vector<std::string>& getDefaults()
+		{
+			const static std::vector<std::string> map =
+			{
+				icon::save,
+				icon::saveAs,
+				icon::cancel,
+				icon::del,
+				icon::file,
+				icon::help,
+				icon::settings,
+				icon::ok,
+				icon::reload,
+				icon::load,
+				icon::info,
+				icon::warning,
+				icon::error,
+				icon::copy,
+				icon::paste,
+				icon::insert,
+				icon::edit,
+				icon::remove,
+				icon::add,
+				icon::change
+			};
+			return map;
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// GUI
+	//////////////////////////////////////////////////////////////////////////
+
+	namespace gui
+	{
+		static const ColorPalette& getColorPalette(EColorScheme colorScheme, const gui::ColorPalette& customPalette)
+		{
+			static std::unordered_map<EColorScheme, ColorPalette> scheme_map =
+			{
+				{EColorScheme::Light, {
+					{ 0xCD, 0xCD, 0xC3 }, { 0xF5, 0xF5, 0xF3 }, { 0xa4, 0xa3, 0x9b },
+					{ 0xEC, 0xFF, 0xD3 }, { 0x8D, 0x8B, 0x84 }, { 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 },
+					{ 0x29, 0x58, 0xff }, { 0x8D, 0x8B, 0x84 }, { 0xFF, 0xA8, 0x00 }, { 0xFF, 0x50, 0x50 }, true}
+				},
+				{EColorScheme::Dark, {
+					{ 0x2D, 0x2D, 0x2D }, { 0x00, 0x00, 0x00 }, { 0x4F, 0x4E, 0x4C },
+					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
+					{ 0x29, 0x58, 0xff }, { 0xD6, 0xFF, 0xA3 }, { 0xFF, 0xEA, 0x30 }, { 0xFF, 0x50, 0x50 }, false}
+				},
+				{EColorScheme::HyperDark, {
+					{ 0x00, 0x00, 0x00 }, { 0x2D, 0x2D, 0x2D }, { 0x8D, 0x8B, 0x84 },
+					{ 0x8D, 0x8B, 0x84 }, { 0xAE, 0xAC, 0xA4 }, { 0xCD, 0xCD, 0xC3 }, { 0xFF, 0xFF, 0xFF },
+					{ 0x29, 0x58, 0xff }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }, { 0xFF, 0x34, 0x7D }, false}
+				},
+				{EColorScheme::Classic, {
+					{ 0x2D, 0x2E, 0x42 }, { 0x11, 0x14, 0x26 }, { 0x52, 0x54, 0x6A },
+					{ 0x52, 0x54, 0x6A }, { 0x5D, 0x5E, 0x73 }, { 0x8B, 0x8C, 0xA0 }, { 0xFF, 0xFF, 0xFF },
+					{ 0x8B, 0x8C, 0xA0 }, { 0xDB, 0xFF, 0x00 }, { 0xFF, 0xEA, 0x30 }, { 0xC8, 0x69, 0x69 }, false}
+				},
+			};
+
+			// Add custom scheme if not present
+			scheme_map.emplace(std::make_pair(EColorScheme::Custom, customPalette));
+			
+			// Return color palette
+			assert(scheme_map.find(colorScheme) != scheme_map.end());
+			return scheme_map[colorScheme];
+		}
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Static / Local methods
 	//////////////////////////////////////////////////////////////////////////
@@ -181,16 +275,20 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<ImGuiStyle> createStyle(const IMGuiServiceConfiguration& config)
+	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette)
 	{
 		// Get ImGUI colors
-		ImVec4 IMGUI_NAPDARK(config.mColors.mDarkColor, 1.0f);
-		ImVec4 IMGUI_NAPBACK(config.mColors.mBackgroundColor, 0.94f);
-		ImVec4 IMGUI_NAPMODA(config.mColors.mDarkColor, 0.85f);
-		ImVec4 IMGUI_NAPFRO1(config.mColors.mFront1Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO2(config.mColors.mFront2Color, 1.0f);
-		ImVec4 IMGUI_NAPFRO3(config.mColors.mFront3Color, 1.0f);
-		ImVec4 IMGUI_NAPHIGH(config.mColors.mHighlightColor, 1.0f);
+		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
+		ImVec4 IMGUI_NAPDARK(palette.mDarkColor, 0.66f);
+		ImVec4 IMGUI_NAPMODA(palette.mDarkColor, 0.85f);
+		ImVec4 IMGUI_NAPMENU(palette.mMenuColor, 0.66f);
+		ImVec4 IMGUI_NAPFRO1(palette.mFront1Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO2(palette.mFront2Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO3(palette.mFront3Color, 1.0f);
+		ImVec4 IMGUI_NAPFRO4(palette.mFront4Color, 1.0f);
+		ImVec4 IMGUI_NAPHIG1(palette.mHighlightColor1, 1.0f);
+		ImVec4 IMGUI_NAPHIG2(palette.mHighlightColor2, 1.0f);
+		ImVec4 IMGUI_NAPHIG3(palette.mHighlightColor3, 1.0f);
 
 		// Create style
 		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
@@ -203,8 +301,8 @@ namespace nap
 		style->ItemSpacing = ImVec2(12, 6);
 		style->ItemInnerSpacing = ImVec2(8, 6);
 		style->IndentSpacing = 25.0f;
-		style->ScrollbarSize = 12.0f;
-		style->ScrollbarRounding = 7.0f;
+		style->ScrollbarSize = 13.0f;
+		style->ScrollbarRounding = 0.0f;
 		style->GrabMinSize = 5.0f;
 		style->GrabRounding = 0.0f;
 		style->WindowBorderSize = 0.0f;
@@ -212,8 +310,9 @@ namespace nap
 		style->ChildRounding = 0.0f;
         style->WindowTitleAlign = { 0.5f, 0.5f };
 		style->PopupBorderSize = 0.0f;
+		style->TabRounding = 0.0f;
 
-		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
 		style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
 		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
@@ -223,53 +322,50 @@ namespace nap
 		style->Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
 		style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
+		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPFRO1;
+		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
 		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
+		style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
 		style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
+		style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPFRO2;
+		style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
+		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
+		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
 		style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
 		style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		style->Colors[ImGuiCol_Separator] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO3;
+		style->Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
+		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
+		style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
 		style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
-		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIGH;
+		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
 
 		return style;
 	}
 
 
-	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration, ImFontAtlas& fontAtlas, const ImGuiStyle& style)
+	static ImGuiContext* createContext(const IMGuiServiceConfiguration& configuration, ImFontAtlas& fontAtlas, const ImGuiStyle& style, const std::string& iniFile)
 	{
 		// Create ImGUI context
 		ImGuiContext* new_context = ImGui::CreateContext(&fontAtlas);
@@ -303,20 +399,27 @@ namespace nap
 		io.GetClipboardTextFn = getClipboardText;
 		io.ClipboardUserData = NULL;
 
-		// Set style and pop context
+		// Set style
 		ImGui::GetStyle() = style;
+
+		// Attempt to load .ini settings
+		ImGui::LoadIniSettingsFromDisk(iniFile.c_str());
+
+		// Pop context
 		ImGui::SetCurrentContext(cur_context);
+
 		return new_context;
 	}
 
 
-	static std::unique_ptr<ImFontAtlas> createFontAtlas(float fontSize, const char* fontFile = nullptr)
+	static std::unique_ptr<ImFontAtlas> createFontAtlas(float fontSize, const glm::ivec2& fontSampling, float fontSpacing, const char* fontFile = nullptr)
 	{
 		// Create font atlas
 		std::unique_ptr<ImFontAtlas> new_atlas = std::make_unique<ImFontAtlas>();
 		ImFontConfig font_config;
-		font_config.OversampleH = 3;
-		font_config.OversampleV = 1;
+		font_config.OversampleH = fontSampling.x;
+		font_config.OversampleV = fontSampling.y;
+		font_config.GlyphExtraSpacing.x = fontSpacing;
 
 		// Add font, scale based on main dpi (TODO: Make Monitor Aware)
 		float font_size = math::floor(fontSize);
@@ -326,7 +429,7 @@ namespace nap
 		}
 		else
 		{
-			new_atlas->AddFontFromMemoryCompressedTTF(nunitoSansSemiBoldData, nunitoSansSemiBoldSize, font_size, &font_config);
+			new_atlas->AddFontFromMemoryCompressedTTF(manropeMediumData, manropeMediumSize, font_size, &font_config);
 		}
 		return new_atlas;
 	}
@@ -352,8 +455,7 @@ namespace nap
 
 	IMGuiService::IMGuiService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{}
 
 
 	void IMGuiService::draw()
@@ -504,7 +606,7 @@ namespace nap
 	}
 
 
-	ImTextureID IMGuiService::getTextureHandle(nap::Texture2D& texture)
+	ImTextureID IMGuiService::getTextureHandle(const nap::Texture2D& texture) const
 	{
 		// Check if the texture has been requested before
 		auto it = mDescriptors.find(&texture);
@@ -534,10 +636,38 @@ namespace nap
 	}
 
 
-	const nap::IMGuiColorPalette& IMGuiService::getColors() const
+	nap::Icon& IMGuiService::getIcon(std::string&& name)
 	{
-		assert(mConfiguration != nullptr);
-		return mConfiguration->mColors;
+		return *mIcons[name];
+	}
+
+
+	bool IMGuiService::loadIcon(const std::string& name, const nap::Module& module, utility::ErrorState& error)
+	{
+		// Find path to asset
+		auto icon_path = module.findAsset(name);
+		if (!error.check(!icon_path.empty(), "%s: Unable to find icon %s", module.getName().c_str(), name.c_str()))
+			return false;
+
+		// Create and initialize icon
+		auto new_icon = std::make_unique<Icon>(*this, icon_path);
+		new_icon->mInvert = mColorPalette->mInvertIcon;
+		if (!new_icon->init(error))
+			return false;
+
+		// Add icon, issue warning if the icon is not unique
+		auto ret = mIcons.emplace(std::make_pair(name, std::move(new_icon)));
+		if (!error.check(ret.second, "Icon duplication, %s already found in: %s",
+			name.c_str(), utility::forceSeparator(ret.first->second->getPath()).c_str()))
+			return false;
+		return true;
+	}
+
+
+	const nap::gui::ColorPalette& IMGuiService::getPalette() const
+	{
+		assert(mColorPalette != nullptr);
+		return *mColorPalette;
 	}
 
 
@@ -558,6 +688,17 @@ namespace nap
 		// Global GUI & DPI scale
 		mGuiScale = math::max<float>(mConfiguration->mScale, 0.05f);
 
+		// Get palette associated with scheme
+		mColorPalette = &getColorPalette(mConfiguration->mColorScheme, mConfiguration->mCustomColors);
+
+		// Load all the default icons, bail if any of them fails to load
+		bool icons_loaded = true;
+		const auto& default_icons = icon::getDefaults();
+		for (const auto& icon_name : default_icons)
+		{
+			if (!loadIcon(icon_name, getModule(), error))
+				return false;
+		}
 		return true;
 	}
 
@@ -592,6 +733,25 @@ namespace nap
 	}
 
 
+	void IMGuiService::preShutdown()
+	{
+		// Ensure ini directory exists
+		std::string dir = getCore().getProjectInfo()->getIniDir();
+		if (!utility::ensureDirExists(dir))
+		{
+			nap::Logger::warn("Unable to write %s file(s) to directory: %s", projectinfo::iniExtension, dir.c_str());
+			return;
+		}
+
+		// Save imGUI .ini settings to disk, split by window
+		for (const auto& context : mContexts)
+		{
+			ImGui::SetCurrentContext(context.second->mContext);
+			ImGui::SaveIniSettingsToDisk(getIniFilePath(context.first->mID).c_str());
+		}
+	}
+
+
 	void IMGuiService::shutdown()
 	{
 		if (mFontAtlas != nullptr)
@@ -605,6 +765,15 @@ namespace nap
 
 		// Destroy imgui contexts
 		mContexts.clear();
+
+		// Destroy icons
+		mIcons.clear();
+	}
+
+
+	void IMGuiService::registerObjectCreators(rtti::Factory& factory)
+	{
+		factory.addObjectCreator(std::make_unique<IconObjectCreator>(*this));
 	}
 
 
@@ -632,13 +801,13 @@ namespace nap
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
 			float font_size = mConfiguration->mFontSize * mDPIScale * mGuiScale;
-			mFontAtlas = createFontAtlas(font_size, font_file);
+			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
-			mStyle = createStyle(*getConfiguration<IMGuiServiceConfiguration>());
+			mStyle = createStyle(getPalette());
 
 			// Create context using font & style
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
 
 			// Create all vulkan required resources
 			createVulkanResources(window);
@@ -646,7 +815,7 @@ namespace nap
 		else
 		{
 			// New context for window
-			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle);
+			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
 		}
 
 		// Add context, set display index & push scale accordingly
@@ -860,3 +1029,4 @@ namespace nap
 		ImGui::SetCurrentContext(mPreviousContext);
 	}
 }
+

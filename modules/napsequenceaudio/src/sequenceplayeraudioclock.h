@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "sequenceserviceaudio.h"
@@ -10,53 +9,58 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	// forward declares
-	class SequenceServiceAudio;
+    // forward declares
+    class SequenceServiceAudio;
     class SequencePlayerAudioClockProcess;
 
-	/**
-	 * The SequencePlayerAudioClock receives updates from the AudioService thread
-	 * The interval depends on the Audio Buffer size, the smaller the audio buffer size, the more updates per second
-	 * Use this clock when you want to use audio track types with the sequencer
-	 */
-	class NAPAPI SequencePlayerAudioClock final : public SequencePlayerClock
-	{
-		RTTI_ENABLE(SequencePlayerClock);
-	public:
-		/**
-		 * Constructor
-		 * @param service reference to SequenceServiceAudio
-		 */
-		SequencePlayerAudioClock(SequenceServiceAudio& service);
+    /**
+     * The SequencePlayerAudioClock receives updates from the AudioService thread
+     * The interval depends on the Audio Buffer size, the smaller the audio buffer size, the more updates per second
+     * Use this clock when you want to use audio track types with the sequencer
+     */
+    class NAPAPI SequencePlayerAudioClock final : public SequencePlayerClock
+    {
+        RTTI_ENABLE(SequencePlayerClock);
+    public:
+        /**
+         * Constructor
+         * @param service reference to SequenceServiceAudio
+         */
+        SequencePlayerAudioClock(SequenceServiceAudio& service);
+
+        // make this class explicitly non-copyable
+        SequencePlayerAudioClock(const SequencePlayerAudioClock&) = delete;
+        SequencePlayerAudioClock& operator =(const SequencePlayerAudioClock&) = delete;
 
         /**
          * onDestroy calls stop disconnecting update slot from created SequencePlayerAudioClockProcess
          */
         void onDestroy() override;
 
-		/**
-		 * Called on start of the sequence player
-		 * @param updateSlot
-		 */
-		void start(Slot<double>& updateSlot) override;
+        /**
+         * Called on start of the sequence player
+         * @param updateSlot
+         */
+        void start(Slot<double>& updateSlot) override;
 
-		/**
-		 * Called on stop of the sequence player
-		 * @param updateSlot
-		 */
-		void stop() override;
-	private:
-		// reference to SequenceAudioService
-		SequenceServiceAudio& 	mService;
+        /**
+         * Called on stop of the sequence player
+         * @param updateSlot
+         */
+        void stop() override;
 
-		// update slot, updates sequence player
-		Slot<double> mUpdateSlot;
+    private:
+        // reference to SequenceAudioService
+        SequenceServiceAudio& mService;
+
+        // update slot, updates sequence player
+        Slot<double> mUpdateSlot;
 
         // the audio clock process
         audio::SafeOwner<SequencePlayerAudioClockProcess> mAudioClockProcess;
-	};
+    };
 
     // shortcut to factory function
     using SequencePlayerAudioClockObjectCreator = rtti::ObjectCreator<SequencePlayerAudioClock, SequenceServiceAudio>;
@@ -96,7 +100,7 @@ namespace nap
          * @param slot the update slot
          */
         void disconnectUpdateSlot(Slot<double>& slot);
-    public:
+
         // Signals
         Signal<double> mUpdateSignal;
     protected:

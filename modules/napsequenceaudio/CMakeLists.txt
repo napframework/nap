@@ -7,8 +7,6 @@ file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
 
-# package find should go here
-
 # LIBRARY
 
 # compile shared lib as target
@@ -33,6 +31,18 @@ target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 
 # Deploy module.json as MODULENAME.json alongside module post-build
 copy_module_json_to_bin()
+
+# Package into platform release
+
+# Package into platform release
+if(APPLE)
+	# A temporary ugly fix for inter-dependent modules and their RPATHs on macOS.  NAP-225.
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/portaudio/lib)
+    list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/libsndfile/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/portaudio/lib)
+endif()
 
 # Package into platform release
 package_module()

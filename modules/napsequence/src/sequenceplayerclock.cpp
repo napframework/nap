@@ -5,8 +5,8 @@
 #include "sequenceplayerclock.h"
 #include "sequenceservice.h"
 
-RTTI_BEGIN_CLASS(nap::SequencePlayerThreadedClock)
-RTTI_PROPERTY("Frequency", &nap::SequencePlayerThreadedClock::mFrequency, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SequencePlayerIndependentClock)
+    RTTI_PROPERTY("Frequency", &nap::SequencePlayerIndependentClock::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerStandardClock)
@@ -14,64 +14,80 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayerStandardClock::SequencePlayerStandardClock(SequenceService& service) : mService(service)
-	{
-	}
+    SequencePlayerStandardClock::SequencePlayerStandardClock(SequenceService& service)
+            :mService(service)
+    {
+    }
 
 
-	void SequencePlayerStandardClock::start(Slot<double>& updateSlot)
-	{
-		mSlot = updateSlot;
-		mService.registerStandardClock(this);
-	}
+    void SequencePlayerStandardClock::start(Slot<double>& updateSlot)
+    {
+        mSlot = updateSlot;
+        mService.registerStandardClock(this);
+    }
 
 
-	void SequencePlayerStandardClock::stop()
-	{
-		mService.unregisterStandardClock(this);
-	}
+    void SequencePlayerStandardClock::stop()
+    {
+        mService.unregisterStandardClock(this);
+    }
 
 
-	void SequencePlayerStandardClock::update(double deltaTime)
-	{
-		mSlot.trigger(deltaTime);
-	}
-
-	void SequencePlayerThreadedClock::start(Slot<double>& updateSlot)
-	{
-		mRunning.store(true);
-		mSlot 		= updateSlot;
-		mUpdateTask = std::async(std::launch::async, [this] { onUpdate(); });
-	}
+    void SequencePlayerStandardClock::update(double deltaTime)
+    {
+        mSlot.trigger(deltaTime);
+    }
 
 
-	void SequencePlayerThreadedClock::stop()
-	{
-		// stop running thread
-		mRunning.store(false);
-		if (mUpdateTask.valid())
-		{
-			mUpdateTask.wait();
-		}
-	}
+    bool SequencePlayerIndependentClock::init(utility::ErrorState& errorState)
+    {
+        if(!errorState.check(mFrequency > 0.0f, "Frequency must be bigger then zero!"))
+        {
+            return false;
+        }
+
+        return true;
+    }
 
 
-	void SequencePlayerThreadedClock::onUpdate()
-	{
-		// Compute sleep time in microseconds
-		float sleep_time_microf = 1000.0f / static_cast<float>(mFrequency);
-		long  sleep_time_micro = static_cast<long>(sleep_time_microf * 1000.0f);
+    void SequencePlayerIndependentClock::start(Slot<double>& updateSlot)
+    {
+        mRunning.store(true);
+        mSlot = updateSlot;
+        mUpdateTask = std::async(std::launch::async, [this]
+        {
+            onUpdate();
+        });
+    }
 
-		while (mRunning.load())
-		{
-			// advance time
-			HighResTimeStamp now = HighResolutionClock::now();
-			double delta_time = std::chrono::duration<double>(now - mBefore).count();
-			mBefore = now;
 
-			mSlot.trigger(delta_time);
+    void SequencePlayerIndependentClock::stop()
+    {
+        // stop running thread
+        mRunning.store(false);
+        if (mUpdateTask.valid())
+        {
+            mUpdateTask.wait();
+        }
+    }
 
-			std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
-		}
-	}
+
+    void SequencePlayerIndependentClock::onUpdate()
+    {
+        // Compute sleep time in microseconds
+        float sleep_time_microf = 1000.0f/static_cast<float>(mFrequency);
+        long sleep_time_micro = static_cast<long>(sleep_time_microf*1000.0f);
+
+        while (mRunning.load())
+        {
+            // advance time
+            SteadyTimeStamp now = SteadyClock ::now();
+            double delta_time = std::chrono::duration<double>(now-mBefore).count();
+            mBefore = now;
+
+            mSlot.trigger(delta_time);
+
+            std::this_thread::sleep_for(std::chrono::microseconds(sleep_time_micro));
+        }
+    }
 }

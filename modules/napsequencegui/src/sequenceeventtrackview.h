@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include <utility>
-
 #include "sequencetrackview.h"
 #include "sequencecontrollerevent.h"
 #include "sequencetracksegment.h"
 #include "sequenceeditorguiclipboard.h"
 #include "sequenceeventtrackview_guiactions.h"
+#include "sequenceguiutils.h"
+
+#include <utility>
+#include <imguiutils.h>
 
 namespace nap
 {
@@ -74,7 +76,6 @@ namespace nap
 		 * @return unique pointer to created action, cannot be nullptr
 		 */
 		virtual std::unique_ptr<sequenceguiactions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
-	protected:
 	};
 
 	/**
@@ -130,7 +131,6 @@ namespace nap
 		 * @return unique pointer to created action, cannot be nullptr
 		 */
 		std::unique_ptr<sequenceguiactions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) override;
-	protected:
 	};
 
 	/**
@@ -284,21 +284,12 @@ namespace nap
 				it->second->handleEditPopupContent(*action);
 
 				// time
-				int time_milseconds = (int) ( ( action->mStartTime ) * 100.0 ) % 100;
-				int time_seconds = (int) ( action->mStartTime ) % 60;
-				int time_minutes = (int) ( action->mStartTime ) / 60;
+				std::vector<int> time_array = convertTimeToMMSSMSArray(action->mStartTime);
 
-				bool edit_time;
+				bool edit_time = false;
 
 				ImGui::Separator();
 				ImGui::PushItemWidth(100.0f * mState.mScale);
-
-				int time_array[3] =
-					{
-						time_minutes,
-						time_seconds,
-						time_milseconds
-					};
 
 				edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
 				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
@@ -309,17 +300,16 @@ namespace nap
 
 				ImGui::Separator();
 
-				if( edit_time )
+				if(edit_time)
 				{
 					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
-					double new_time = ( ( (double) time_array[2] )  / 100.0 ) + (double) time_array[1] + ( (double) time_array[0] * 60.0 );
+					double new_time = convertMMSSMSArrayToTime(time_array);
 					double time = event_controller.segmentEventStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					action->mStartTime = time;
 					mState.mDirty = true;
 				}
-
-				if (ImGui::Button("Done"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
 				{
 					auto& event_controller = getEditor().getController<SequenceControllerEvent>();
 					event_controller.editEventSegment<T>(action->mTrackID, action->mSegmentID, action->mValue);
@@ -327,8 +317,8 @@ namespace nap
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
                     ImGui::CloseCurrentPopup();
 				}
-
-				if (ImGui::Button("Cancel"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();

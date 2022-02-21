@@ -6,6 +6,11 @@
 #include "python.h"
 #include "logger.h"
 #include "service.h"
+#include "core.h"
+
+// External Includes
+#include <utility/stringutils.h>
+#include <nap/module.h>
 
 RTTI_DEFINE_BASE(nap::ServiceConfiguration)
 
@@ -36,8 +41,40 @@ namespace nap
 		return *mCore;
 	}
 
-	const std::string Service::getTypeName() const
+
+	const nap::Core& Service::getCore() const
+	{
+		assert(mCore);
+		return *mCore;
+	}
+
+
+	std::string Service::getTypeName() const
 	{
 		return rtti::TypeInfo::get(*this).get_name().data();
+	}
+
+
+	std::string Service::getIniFilePath() const
+	{
+		std::string file_name = utility::toLower(utility::stripNamespace(getTypeName()));
+		return getCore().getProjectInfo()->getIniFilePath(file_name);
+	}
+
+
+	std::string Service::getIniFilePath(const std::string& appendix) const
+	{
+		std::string file_name = utility::stringFormat("%s_%s",
+			utility::toLower(utility::stripNamespace(getTypeName())).c_str(),
+			utility::toLower(appendix).c_str());
+		return getCore().getProjectInfo()->getIniFilePath(file_name);
+	}
+
+
+	const Module& Service::getModule() const
+	{
+		auto module = getCore().getModuleManager().findModule(this->get_type());
+		assert(module != nullptr);
+		return *module;
 	}
 }

@@ -42,6 +42,12 @@ namespace nap
 			// Check if we're dealing with a window event
 			else if (mEventConverter->isWindowEvent(event))
 			{
+				// Quit when request to close
+				if (event.window.event == SDL_WINDOWEVENT_CLOSE && getApp<App>().shutdownRequested())
+				{
+					getApp<App>().quit();
+				}
+
 				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
 				if (window_event != nullptr)
 				{
@@ -51,12 +57,9 @@ namespace nap
 
 			// Check if we need to quit the app from running
 			// -1 signals a quit cancellation
-			else if (event.type == SDL_QUIT)
+			else if (event.type == SDL_QUIT && getApp<App>().shutdownRequested())
 			{
-				if (getApp<App>().shutdownRequested())
-				{
-					getApp<App>().quit();
-				}
+				getApp<App>().quit();
 			}
 		}
 	}

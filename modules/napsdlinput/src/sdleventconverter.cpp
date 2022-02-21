@@ -689,6 +689,7 @@ namespace nap
 
 	bool SDLEventConverter::isWindowEvent(SDL_Event& sdlEvent) const
 	{
-		return SDLToWindowMapping.find(sdlEvent.window.event) != SDLToWindowMapping.end();
+		return sdlEvent.type == SDL_WINDOWEVENT &&
+			SDLToWindowMapping.find(sdlEvent.window.event) != SDLToWindowMapping.end();
 	}
 }

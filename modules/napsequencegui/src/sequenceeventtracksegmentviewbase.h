@@ -8,6 +8,8 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
 	/**
 	* Base class for an event segment view
 	* This base class is used by the track view to draw and handle segment views of different event types
@@ -62,6 +64,5 @@ namespace nap
 		* @return unique pointer to created action, cannot be nullptr
 		*/
 		virtual std::unique_ptr<SequenceGUIActions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
-	protected:
 	};
 }

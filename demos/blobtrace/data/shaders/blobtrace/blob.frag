@@ -25,6 +25,9 @@ uniform UBOFrag
 	uniform float 		inTime;					//< Modulation time
 	uniform float 		inVelocity;				//< Velocity used for modulating frequency
 	uniform vec3 		inMousePosition;		//< Current mouse position in uv space
+	uniform vec3		colorOne;				//< First color (highlight)
+	uniform vec3		colorTwo;				//< Second color
+	uniform vec3		colorEdge;				//< Edge color
 	uniform PointLight	inLight;				//< Light
 } ubofrag;
 
@@ -43,10 +46,6 @@ const float 	specularIntensity = 0.5;
 const vec3  	specularColor = vec3(0.545, 0.549, 0.627);
 const float 	shininess = 10;
 const float 	ambientIntensity = 0.5f;
-const vec3		colorTwo = vec3(0.066, 0.078, 0.149);
-const vec3		colorOne = vec3(0.784, 0.411, 0.411);
-const vec3		colorThr = vec3(0.176, 0.180, 0.258);
-const vec3		colorFor = vec3(0.321, 0.329, 0.415);
 const float		uvOffset = 0.015;
 
 // Maps a value to a new range
@@ -195,14 +194,14 @@ void main()
 	float edge =  clamp(edge_x + edge_y, 0,1 );
 
 	// Blend between two colors based on returned sin value
-	vec3 color = mix(colorTwo, colorOne, sin_color);
+	vec3 color = mix(ubofrag.colorTwo, ubofrag.colorOne, sin_color);
 
 	// Mix in cursor
 	float cursor_v = calculateMouseCursor(passUVs.xy);
-	color  = mix(color, colorOne, cursor_v);
+	color  = mix(color, ubofrag.colorOne, cursor_v);
 
 	// Mix in border
-	color  = mix(color,colorFor, edge);
+	color  = mix(color, ubofrag.colorEdge, edge);
 	normal = mix(normal, passNormal,edge);
 
 	// Apply lights and specular

@@ -90,7 +90,7 @@ namespace nap
 		* Returns a pointer to the internal pixel data
 		* @return a pointer to the internal pixel data
 		*/
-		const void* getData();
+		void* getData();
 		
 		/**
 		 * Returns a handle to the FreeImage bitmap. This comprises the FreeImage info header and pixel data
@@ -105,6 +105,32 @@ namespace nap
 		void* getHandle();
 
 	private:
+		/**
+		 * Allocates this bitmap
+		 * @param surfaceDescriptor the surface descriptor used to allocate the file buffer
+		 * @param errorState contains the error if the file buffer could not be created
+		 * @return whether allocation succeeded
+		 */
+		bool allocate(const SurfaceDescriptor& surfaceDescriptor, utility::ErrorState& errorState);
+
+		/**
+		 * Allocates this bitmap and sets the data
+		 * @param surfaceDescriptor the surface descriptor used to allocate the file buffer
+		 * @param data a pointer to the raw bitmap data
+		 * @param copyData if true, allocates an additional file buffer to copy the bitmap data to, else wraps the image data
+		 * @param errorState contains the error if the file buffer could not be created
+		 * @return whether allocation and data copy/wrap succeeded
+		 */
+		bool setData(const SurfaceDescriptor& surfaceDescriptor, const void* data, bool copyData, utility::ErrorState& errorState);
+
+		/**
+		 * Releases the internal file buffer
+		 */
+		void release();
+
+		/**
+		 * Raw handle to internal bitmap file buffer
+		 */
 		void* mBitmapHandle = nullptr;
 	};
 

@@ -1,9 +1,0 @@
-{
-    "Objects": [
-        {
-            "Type": "nap::audio::AudioServiceConfiguration",
-            "mID": "AudioServiceConfiguration",
-            "DisableInput": true
-        }
-    ]
-}

@@ -4,21 +4,20 @@
 
 // local includes
 #include "sequenceeditorgui.h"
-#include "sequenceeditorguiclipboard.h"
-#include "sequenceeditorgui.h"
+#include "sequenceguiutils.h"
 
 // External Includes
 #include <entity.h>
-#include <imgui/imgui.h>
-#include <nap/logger.h>
-#include <utility/fileutils.h>
 #include <iomanip>
 #include <utility>
+#include <nap/modulemanager.h>
+#include <nap/logger.h>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
-RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
-RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -30,15 +29,16 @@ using namespace nap::sequenceguiclipboard;
 namespace nap
 {
 	SequenceEditorGUI::SequenceEditorGUI(SequenceGUIService& service) : mService(service)
-	{
-	}
+	{ }
 
 
 	bool SequenceEditorGUI::init(utility::ErrorState& errorState)
 	{
+		// Initialize base
 		if (!Resource::init(errorState))
 			return false;
 
+		// Create and initialize view
 		mView = std::make_unique<SequenceEditorGUIView>(mService, *mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
 		return true;
 	}
@@ -157,40 +157,37 @@ namespace nap
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetScrollY());
 
-			//
-			if (ImGui::Button("Save"))
+			IMGuiService& gui = mService.getGui();
+			if (ImGui::ImageButton(gui.getIcon(icon::save), "Save sequence"))
 			{
 				mEditor.save(mEditor.mSequencePlayer->mSequenceFileName);
 			}
 
 			ImGui::SameLine();
-
-			if (ImGui::Button("Save As"))
+			if (ImGui::ImageButton(gui.getIcon(icon::saveAs), "Save sequence as ..."))
 			{
 				ImGui::OpenPopup("Save As");
 				mState.mAction = createAction<SaveAsPopup>();
 			}
 
 			ImGui::SameLine();
-
-			if (ImGui::Button("Load"))
+			if (ImGui::ImageButton(gui.getIcon(icon::load), "Load sequence"))
 			{
 				ImGui::OpenPopup("Load");
 				mState.mAction = createAction<LoadPopup>();
 			}
 
 			ImGui::SameLine();
-
 			if (sequence_player.getIsPlaying())
 			{
-				if (ImGui::Button("Stop"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::stop), "Stop playback"))
 				{
 					sequence_player.setIsPlaying(false);
 				}
 			}
 			else
 			{
-				if (ImGui::Button("Play"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::play), "Start playback"))
 				{
 					sequence_player.setIsPlaying(true);
 				}
@@ -199,21 +196,22 @@ namespace nap
 			ImGui::SameLine();
 			if (sequence_player.getIsPaused())
 			{
-				if (ImGui::Button("Unpause"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::unpause), "Un-Pause playback"))
 				{
 					sequence_player.setIsPaused(false);
 				}
 			}
 			else
 			{
-				if (ImGui::Button("Pause"))
+				if (ImGui::ImageButton(gui.getIcon(icon::sequencer::pause), "Pause playback"))
 				{
+					sequence_player.setIsPaused(true);
 					sequence_player.setIsPaused(true);
 				}
 			}
 
 			ImGui::SameLine();
-			if (ImGui::Button("Rewind"))
+			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::rewind), "Move marker to beginning"))
 			{
 				sequence_player.setPlayerTime(0.0);
 			}
@@ -251,7 +249,7 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if(ImGui::Button("Help"))
+			if (ImGui::ImageButton(gui.getIcon(icon::help)))
 			{
 				mState.mAction = createAction<OpenHelpPopup>();
 			}
@@ -302,8 +300,6 @@ namespace nap
 			ImGui::Spacing();
 			ImGui::Separator();
 			ImGui::Spacing();
-
-			//
 			ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetScrollY());
 
 			// store position of next window (player controller), we need it later to draw the timelineplayer position
@@ -311,9 +307,9 @@ namespace nap
 
 			float top_size			= 70.0f * mState.mScale; // area of markers and player controller combined
 			float offset			= 10.0f * mState.mScale;
-			float clip_start_y		= ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
-			float end_clip_y 		= ImGui::GetWindowHeight() - offset; // bottom scrollbar overlaps clipping area
-			float end_clip_x		= ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
+			float clip_start_y		= ImGui::GetWindowPos().y + ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
+			float end_clip_y 		= ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - offset;    // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
 
 			// timeline window properties
 			ImVec2 timeline_window_pos =
@@ -432,10 +428,12 @@ namespace nap
 
 			// move the cursor below the tracks
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
-			if (ImGui::Button("Insert New Track"))
+			if (ImGui::ImageButton(gui.getIcon(icon::add)))
 			{
 				mState.mAction = createAction<OpenInsertTrackPopup>();
 			}
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
+			ImGui::Text("Add Track");
 
 			// handle actions
 			for (auto& it : mViews)
@@ -538,8 +536,9 @@ namespace nap
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             // draw marker background
-			draw_list->AddRectFilled(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().mDark);
-			draw_list->AddRect(window_top_left, { window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() }, mService.getColors().mFro3);
+			draw_list->AddRectFilled(window_top_left,
+				{ window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() },
+				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]));
 
             // draw markers
 			for(const auto& marker : sequence.mMarkers)
@@ -577,9 +576,9 @@ namespace nap
 					hovered = true;
 
                 // draw text
-                const ImVec2 text_offset = { 2.0f * mState.mScale, -10.0f * mState.mScale };
+                const ImVec2 text_offset = { 5.0f * mState.mScale, -10.0f * mState.mScale };
 				draw_list->AddText({ player_time_rect_bottom_right.x + text_offset.x, player_time_rect_center.y + text_offset.y }, // position
-                                   mService.getColors().mHigh, // color
+                                   mService.getColors().mFro4, // color
                                    marker->mMessage.c_str()); // text
 
                 // no action and are we hovering the hit action ?
@@ -621,7 +620,7 @@ namespace nap
                 const float circle_thickness = 2.0f * mState.mScale;
 				int segments = static_cast<int>(12.0f * mState.mScale);
 				if (hovered)
-					draw_list->AddCircleFilled(player_time_rect_center, radius, mService.getColors().mFro3, segments);
+					draw_list->AddCircleFilled(player_time_rect_center, radius, mService.getColors().mFro4, segments);
 				else
 					draw_list->AddCircle(player_time_rect_center, radius, mService.getColors().mFro3, segments, circle_thickness);
 			}
@@ -681,12 +680,15 @@ namespace nap
 			// get window drawlist
 			ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, mService.getColors().mBack);
+
 			// draw backgroundbox of controller
             const ImVec2 background_box_bottom_right = { start_pos.x + mState.mTimelineWidth, start_pos.y + sequence_controller_height - 15.0f * mState.mScale };
-			draw_list->AddRectFilled(start_pos, background_box_bottom_right, mService.getColors().mDark);
 
 			// draw box of controller
-			draw_list->AddRect(start_pos, background_box_bottom_right, mService.getColors().mFro3);
+			draw_list->AddRect(start_pos, background_box_bottom_right, mService.getColors().mFro1);
+
+			ImGui::PopStyleColor();
 
 			// draw handler of player position
 			const double player_time = player.getPlayerTime();
@@ -702,7 +704,7 @@ namespace nap
 			};
 
             // draw box
-			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().mHigh);
+			draw_list->AddRectFilled(player_time_top_rect_left, player_time_rect_bottom_right, mService.getColors().mHigh1);
 
             // define consts
             const float timestamp_line_height           = 18.0f * mState.mScale;
@@ -910,7 +912,7 @@ namespace nap
 			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y }, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
-				drawlist->AddLine(line_begin, line_end, mService.getColors().mHigh, line_thickness);
+				drawlist->AddLine(line_begin, line_end, mService.getColors().mHigh1, line_thickness);
 			}
 			ImGui::EndChild();
 
@@ -922,7 +924,7 @@ namespace nap
 	{
 		const float line_thickness  = 2.0f * mState.mScale;
 		const ImVec4 white_color    = ImGui::ColorConvertU32ToFloat4(mService.getColors().mFro3);
-		const ImU32 color           = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 0.5f});
+		const ImU32 color           = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 1.0f});
         const float marker_width    = 5.0f * mState.mScale;
         const float line_y_start    = 25.0f * mState.mScale;
         const float line_stop       = sequence.mTracks.size() * ((mState.mVerticalResolution + 10.0f) * mState.mScale) + (35.0f * mState.mScale) - mState.mScroll.y;
@@ -1040,7 +1042,8 @@ namespace nap
 					shows);
 
 				utility::ErrorState error_state;
-				if (ImGui::Button("Load"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok), "load"))
 				{
 					if (mEditor.mSequencePlayer->load(utility::getFileName(show_files[load_action->mSelectedShowIndex]),
 													  error_state))
@@ -1057,7 +1060,7 @@ namespace nap
 				}
 
 				ImGui::SameLine();
-				if (ImGui::Button("Cancel"))
+				if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1066,7 +1069,7 @@ namespace nap
 				if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 				{
 					ImGui::Text(load_action->mErrorString.c_str());
-					if (ImGui::Button("OK"))
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 					{
 						mState.mDirty = true;
 						mState.mAction = createAction<LoadPopup>();
@@ -1075,7 +1078,6 @@ namespace nap
 
 					ImGui::EndPopup();
 				}
-
 				ImGui::EndPopup();
 			}
 		}
@@ -1137,7 +1139,8 @@ namespace nap
 					static char name[256] = { 0 };
 					ImGui::InputText("Name", name, 256);
 
-					if (ImGui::Button("OK") && strlen(name) != 0)
+					auto& gui = mService.getGui();
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)) && strlen(name) != 0)
 					{
 						new_show_filename = std::string(name, strlen(name));
 						new_show_filename += ".json";
@@ -1147,8 +1150,7 @@ namespace nap
 					}
 
 					ImGui::SameLine();
-
-					if (ImGui::Button("Cancel"))
+					if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 						ImGui::CloseCurrentPopup();
 
 					ImGui::EndPopup();
@@ -1178,7 +1180,9 @@ namespace nap
 					utility::ErrorState error_state;
 					ImGui::Text(("Are you sure you want to overwrite " +
 						shows[save_as_action->mSelectedShowIndex] + " ?").c_str());
-					if (ImGui::Button("OK"))
+
+					auto& gui = mService.getGui();
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 					{
 						if (mEditor.mSequencePlayer->save(
 							utility::getFileName(shows[save_as_action->mSelectedShowIndex]), error_state))
@@ -1196,7 +1200,7 @@ namespace nap
 					}
 
 					ImGui::SameLine();
-					if (ImGui::Button("Cancel"))
+					if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 					{
 						ImGui::CloseCurrentPopup();
 					}
@@ -1206,7 +1210,8 @@ namespace nap
 				if (ImGui::BeginPopupModal("Error"))
 				{
 					ImGui::Text(save_as_action->mErrorString.c_str());
-					if (ImGui::Button("OK"))
+					auto& gui = mService.getGui();
+					if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 					{
 						mState.mDirty = true;
 						ImGui::CloseCurrentPopup();
@@ -1216,8 +1221,8 @@ namespace nap
 				}
 
 				ImGui::SameLine();
-
-				if (ImGui::Button("Done"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1258,7 +1263,8 @@ namespace nap
 					}
 				}
 
-				if (ImGui::Button("Cancel"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1293,30 +1299,21 @@ namespace nap
 
 				double time = action->mTime;
 
-				int time_milseconds = (int)(time * 100.0) % 100;
-				int time_seconds = (int)(time) % 60;
-				int time_minutes = (int)(time) / 60;
+                std::vector time_array = convertTimeToMMSSMSArray(time);
 
 				bool edit_time = false;
 
 				ImGui::Separator();
 				ImGui::PushItemWidth(100.0f * mState.mScale);
 
-				int time_array[3] =
-					{
-						time_minutes,
-						time_seconds,
-						time_milseconds
-					};
-
 				edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
-				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-				time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-				time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
 
 				if (edit_time)
 				{
-					double new_time = (((double)time_array[2]) / 100.0) + (double)time_array[1] + ((double)time_array[0] * 60.0);
+					double new_time = convertMMSSMSArrayToTime(time_array);
 					action->mTime = new_time;
 					mEditor.changeMarkerTime(action->mID, new_time);
 				}
@@ -1329,15 +1326,16 @@ namespace nap
 					mEditor.changeMarkerMessage(action->mID, action->mMessage);
 				}
 
-				if(ImGui::Button("Delete") )
+				auto& gui = mService.getGui();
+				if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete"))
 				{
 					mEditor.deleteMarker(action->mID);
-
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::Button("Done"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1360,7 +1358,7 @@ namespace nap
 		{
 			auto* action = mState.mAction->getDerived<OpenInsertSequenceMarkerPopup>();
 
-			mState.mAction = createAction<InsertingSequenceMarkerPopup>(action->mTime, "hello world!");
+			mState.mAction = createAction<InsertingSequenceMarkerPopup>(action->mTime, "your message");
 			ImGui::OpenPopup("Insert Sequence Marker");
 		}
 
@@ -1377,15 +1375,16 @@ namespace nap
 					action->mMessage = std::string(buffer);
 				}
 
-				if (ImGui::Button("Insert Marker"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok), "Insert Marker"))
 				{
 					mEditor.insertMarker(action->mTime, action->mMessage);
-
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::Button("Cancel"))
+				ImGui::SameLine();
+				if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1447,22 +1446,13 @@ namespace nap
 			{
 				double duration = mEditor.mSequencePlayer->getDuration();
 
-				int time_milseconds = (int)(duration * 100.0) % 100;
-				int time_seconds = (int)(duration) % 60;
-				int time_minutes = (int)(duration) / 60;
+				std::vector<int> time_array = convertTimeToMMSSMSArray(duration);
 
 				bool edit_time = false;
 
 				ImGui::Separator();
 
 				ImGui::PushItemWidth(100.0f);
-
-				int time_array[3] =
-				{
-					time_minutes,
-					time_seconds,
-					time_milseconds
-				};
 
 				edit_time = ImGui::InputInt3("Duration (mm:ss:ms)", &time_array[0]);
 				time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
@@ -1471,7 +1461,7 @@ namespace nap
 
 				if (edit_time)
 				{
-					double new_duration = (((double)time_array[2]) / 100.0) + (double)time_array[1] + ((double)time_array[0] * 60.0);
+					double new_duration = convertMMSSMSArrayToTime(time_array);
 					mEditor.changeSequenceDuration(new_duration);
 					mState.mDirty = true;
 				}
@@ -1480,7 +1470,8 @@ namespace nap
 
 				ImGui::Separator();
 
-				if (ImGui::Button("Done"))
+				auto& gui = mService.getGui();
+				if (ImGui::ImageButton(gui.getIcon(icon::ok)))
 				{
 					mState.mAction = createAction<None>();
 					ImGui::CloseCurrentPopup();
@@ -1521,25 +1512,25 @@ namespace nap
 			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
                 const float width = 200.0f * mState.mScale;
-				auto red_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh);
+				auto color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2);
 				ImGui::Text("Select & drag :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Left mouse button"); 
+				ImGui::TextColored(color, "Left mouse button"); 
 				ImGui::Text("Select & open edit popup :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Right mouse button");
+				ImGui::TextColored(color, "Right mouse button");
                 ImGui::Text("Copy segment :"); ImGui::SameLine(width);
-                ImGui::TextColored(red_color, "Shift + Left click segment handler");
+                ImGui::TextColored(color, "Shift + Left click segment handler");
                 ImGui::Text("Zoom in & out :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Control + Scroll Wheel");
+				ImGui::TextColored(color, "Control + Scroll Wheel");
 				ImGui::Text("Horizontal Scroll :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Shift + Scroll Wheel");
+				ImGui::TextColored(color, "Shift + Scroll Wheel");
 				ImGui::Text("Vertical Scroll :"); ImGui::SameLine(width);
-				ImGui::TextColored(red_color, "Scroll Wheel");
+				ImGui::TextColored(color, "Scroll Wheel");
 
 				ImGui::Spacing();
 				ImGui::Separator();
 				ImGui::Spacing();
 
-				if (ImGui::Button("Exit"))
+				if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
 				{
 					ImGui::CloseCurrentPopup();
 					mState.mAction = createAction<None>();

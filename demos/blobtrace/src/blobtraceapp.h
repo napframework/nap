@@ -99,7 +99,6 @@ namespace nap
 		ObjectPtr<EntityInstance> mCameraEntity = nullptr;							//< Pointer to the entity that holds the camera
 		ObjectPtr<EntityInstance> mPlaneEntity = nullptr;							//< Pointer to the entity that holds the sphere
 		ObjectPtr<PlaneMesh> mIntersectMesh = nullptr;								//< Plane that is used for ray intersection
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };				//< GUI text highlight color
 		bool mMouseDown = false;													//< If the mouse button is currently pressed
 		float mTime = 0.0f;															//< Current application running time
 		glm::vec3 mMouseUvPosition = { 0.5,0.5,0.0 };								//< Current mouse position in uv space

@@ -8,22 +8,23 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	SequencePlayerAudioClock::SequencePlayerAudioClock(SequenceServiceAudio& service) : mService(service)
-	{
-	}
+    SequencePlayerAudioClock::SequencePlayerAudioClock(SequenceServiceAudio& service)
+            :mService(service)
+    {
+    }
 
 
-	void SequencePlayerAudioClock::start(Slot<double>& updateSlot)
-	{
-		mUpdateSlot = updateSlot;
+    void SequencePlayerAudioClock::start(Slot<double>& updateSlot)
+    {
+        mUpdateSlot = updateSlot;
 
-		auto* audio_service = mService.getCore().getService<audio::AudioService>();
-		assert(audio_service!= nullptr);
+        auto* audio_service = mService.getCore().getService<audio::AudioService>();
+        assert(audio_service!=nullptr);
 
         auto& node_manager = audio_service->getNodeManager();
         mAudioClockProcess = node_manager.makeSafe<SequencePlayerAudioClockProcess>(node_manager);
         mAudioClockProcess->connectSlot(mUpdateSlot);
-	}
+    }
 
 
     void SequencePlayerAudioClock::onDestroy()
@@ -32,14 +33,14 @@ namespace nap
     }
 
 
-	void SequencePlayerAudioClock::stop()
-	{
+    void SequencePlayerAudioClock::stop()
+    {
         mAudioClockProcess->disconnectUpdateSlot(mUpdateSlot);
-	}
+    }
 
 
-    SequencePlayerAudioClockProcess::SequencePlayerAudioClockProcess(audio::NodeManager &nodeManager)
-        : audio::Process(nodeManager)
+    SequencePlayerAudioClockProcess::SequencePlayerAudioClockProcess(audio::NodeManager& nodeManager)
+            :audio::Process(nodeManager)
     {
         mSampleRate = nodeManager.getSampleRate();
         mTime = nodeManager.getSampleTime();
@@ -53,7 +54,7 @@ namespace nap
     }
 
 
-    void SequencePlayerAudioClockProcess::connectSlot(Slot<double> &slot)
+    void SequencePlayerAudioClockProcess::connectSlot(Slot<double>& slot)
     {
         mTasks.enqueue([this, &slot]()
         {
@@ -62,7 +63,7 @@ namespace nap
     }
 
 
-    void SequencePlayerAudioClockProcess::disconnectUpdateSlot(Slot<double> &slot)
+    void SequencePlayerAudioClockProcess::disconnectUpdateSlot(Slot<double>& slot)
     {
         mTasks.enqueue([this, &slot]()
         {
@@ -74,10 +75,10 @@ namespace nap
     void SequencePlayerAudioClockProcess::process()
     {
         // execute any connecting or disconnecting slots on this thread
-        while(mTasks.size_approx() > 0)
+        while (mTasks.size_approx()>0)
         {
-            std::function<void()> task;
-            if(mTasks.try_dequeue(task))
+            std::function<void()>task;
+            if (mTasks.try_dequeue(task))
             {
                 task();
             }
@@ -85,8 +86,8 @@ namespace nap
 
         // calculate delta time in seconds
         const auto& now = getNodeManager().getSampleTime();
-        audio::DiscreteTimeValue elapsed_samples = now - mTime;
-        double delta_time = static_cast<double>(elapsed_samples) / (double)mSampleRate;
+        audio::DiscreteTimeValue elapsed_samples = now-mTime;
+        double delta_time = static_cast<double>(elapsed_samples)/(double) mSampleRate;
         mTime = now;
 
         // dispatch delta time

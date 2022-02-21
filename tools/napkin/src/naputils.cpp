@@ -69,7 +69,7 @@ QVariant napkin::RTTITypeItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
 	{
-		return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(themeColDimmedItem));
+		return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(theme::color::dimmedItem));
 	}
 	return QStandardItem::data(role);
 }

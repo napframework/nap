@@ -23,6 +23,7 @@
 namespace nap
 {
     //////////////////////////////////////////////////////////////////////////
+
     // forward declares
     class SequenceService;
 
@@ -37,7 +38,7 @@ namespace nap
         friend class SequenceEditor;
         friend class SequenceController;
 
-    RTTI_ENABLE(Device)
+        RTTI_ENABLE(Device)
     public:
         /**
          * Constructor used by factory
@@ -149,13 +150,7 @@ namespace nap
          * @return returns current sequence filename, not thread-safe. Only call this from the main thread
          */
         const std::string& getSequenceFilename() const;
-    public:
-        // properties
-        std::string 			mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
-        bool 					mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
-        std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
-        ResourcePtr<SequencePlayerClock> mClock;
-    public:
+
         // signals
         /***
          * playbackSpeedChanged signal is dispatched when setPlaybackSpeed(float) method is called on SequencePlayer
@@ -196,6 +191,12 @@ namespace nap
          * postTick Signal is triggered on player thread, after updating the adapters
          */
         Signal<SequencePlayer&> postTick;
+
+        // properties
+        std::string mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
+        bool mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
+        std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
+        ResourcePtr<SequencePlayerClock> mClock;
     protected:
         /**
          * adptersCreated Signal is triggered from main thread, after creating adapters
@@ -205,6 +206,9 @@ namespace nap
          * SequencePlayer
          */
         Signal<std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)>&> adaptersCreated;
+
+        // Reference to sequence service
+        SequenceService& mService;
     private:
         /**
          * returns reference to sequence, can only be called internally or by friend class ( SequenceEditor or SequenceController )
@@ -222,11 +226,11 @@ namespace nap
         void tick(double deltaTime);
 
         // read objects from sequence
-        std::vector<std::unique_ptr<rtti::Object>>	mReadObjects;
+        std::vector<std::unique_ptr<rtti::Object>> mReadObjects;
 
         // read object ids from sequence
-        std::unordered_set<std::string>				mReadObjectIDs;
-    private:
+        std::unordered_set<std::string> mReadObjectIDs;
+
         /**
          * creates adapters for all assigned adapter ids for tracks
          * this function gets called by the player when player starts playing
@@ -267,10 +271,6 @@ namespace nap
 
         // list of instantiated adapters
         std::unordered_map<std::string, std::unique_ptr<SequencePlayerAdapter>> mAdapters;
-
-    protected:
-        // Reference to sequence service
-        SequenceService& mService;
     };
 
     using SequencePlayerObjectCreator = rtti::ObjectCreator<SequencePlayer, SequenceService>;
