@@ -156,7 +156,5 @@ namespace nap
 		RenderToTextureComponentInstance*		mCompositeComponent = nullptr;
 		RenderableMeshComponentInstance*		mTargetPointMeshComponent = nullptr;
 		RenderableMeshComponentInstance*		mBoundsAtmosphereMeshComponent = nullptr;
-
-		uint mFrameCount = 0;
 	};
 }
