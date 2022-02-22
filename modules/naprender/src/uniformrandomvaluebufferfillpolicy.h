@@ -6,10 +6,8 @@
 
 // External includes
 #include <nap/resource.h>
-#include <nap/numeric.h>
 
 // Local Includes
-#include "structbufferfillpolicy.h"
 #include "valuebufferfillpolicy.h"
 
 namespace nap

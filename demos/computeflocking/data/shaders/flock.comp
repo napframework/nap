@@ -205,7 +205,7 @@ void computeForces(uint gid, vec3 position, vec3 velocity, out vec4 avoidanceHea
 {	
 	for (uint i = 1; i < ubo.numBoids; i++) 
 	{
-		uint idx = (i + gid) % ubo.numBoids;
+		uint idx = (gid + i) % ubo.numBoids;
 		vec4 other_pos = subo_in.boids[idx].position;
 		vec4 other_dir = subo_in.boids[idx].velocity;
 		other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
@@ -306,7 +306,10 @@ void main()
 	uint num_flock_mates = 0;
 
 	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
-	//computeForces(global_id, b.position.xyz,  b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
+	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
+
+	// Clamp as an extra safety measure
+	num_flock_mates = (num_flock_mates > ubo.numBoids) ? 0 : num_flock_mates;
 
 	// Calculate base acceleration determined by a moving global target position
 	vec4 offset = vec4(ubo.target, 0.0) - b.position;
@@ -364,7 +367,7 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.99);
+	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.98);
 
 	// Write boid to output buffer
 	subo_out.boids[global_id] = b;

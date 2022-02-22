@@ -11,6 +11,7 @@
 
 RTTI_DEFINE_BASE(nap::BaseValueBufferFillPolicy)
 
+RTTI_DEFINE_BASE(nap::UIntBufferFillPolicy)
 RTTI_DEFINE_BASE(nap::IntBufferFillPolicy)
 RTTI_DEFINE_BASE(nap::FloatBufferFillPolicy)
 RTTI_DEFINE_BASE(nap::Vec2BufferFillPolicy)
