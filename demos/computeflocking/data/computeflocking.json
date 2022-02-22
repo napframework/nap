@@ -374,7 +374,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumBoids": 1000,
+                    "NumBoids": 10000,
                     "RandomColor": "RandomColorParameter",
                     "BoidSize": "BoidSizeParameter",
                     "FresnelScale": "FresnelScaleParameter",

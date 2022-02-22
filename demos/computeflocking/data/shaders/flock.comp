@@ -235,37 +235,33 @@ void computeForcesShared(
 
 	// Copy to fast shared data and process in chunks of MAX_GROUP_SIZE_X
 	uint local_id = gl_LocalInvocationID.x;
-	for (uint proc = 0; proc < ubo.numBoids; proc += MAX_GROUP_SIZE_X)
+	for (uint chunk_id = 0; chunk_id*MAX_GROUP_SIZE_X < ubo.numBoids; chunk_id++)
 	{
-		// 'id' may be out of bounds
-		uint id = proc + local_id;
-		float valid = (id < ubo.numBoids && id != gid) ? 0.0 : -1.0;
+		// Total boids processed by this workgroup
+		uint proc = chunk_id*MAX_GROUP_SIZE_X;
 
-		// 'safe_id' is always within buffer bounds
-		uint safe_id = clamp(id, 0, ubo.numBoids);
-		sharedData[local_id].pos = vec4(subo_in.boids[safe_id].position.xyz, valid);
-		sharedData[local_id].vel = subo_in.boids[safe_id].velocity;
+		// Number of boids to process in the current chunk
+		uint chunk_size = (proc+MAX_GROUP_SIZE_X > ubo.numBoids) ? ubo.numBoids - proc : MAX_GROUP_SIZE_X;
 
+		uint id = clamp(proc+local_id, 0, chunk_size);
+		sharedData[local_id].pos = subo_in.boids[id].position;
+		sharedData[local_id].vel = subo_in.boids[id].velocity;
+
+		// This barrier ensures 'sharedData' is available and visible for the current workgroup
 		memoryBarrierShared();
-		barrier();
 
 		// Update force variables
-		uint proc_size = (proc+MAX_GROUP_SIZE_X < ubo.numBoids) ? MAX_GROUP_SIZE_X : MAX_GROUP_SIZE_X - proc%MAX_GROUP_SIZE_X; 
-		for (uint i = 0; i < proc_size; i++)
+		for (uint i = 0; i < chunk_size; i++)
 		{
 			BoidData other = sharedData[i];
-			if (other.pos.w < 0.0)
-				continue;
-
-			// Vision is a half sphere
-			vec4 other_dir = vec4(safeNormalize(other.vel.xyz), 0.0);
-			float lookdot = dot(normalize(velocity), normalize(other.pos.xyz - position));
-
 			vec3 offset = other.pos.xyz - position;
 			float l1 = dot(offset, offset);
+			float lookdot = (l1 > 0.0) ? dot(normalize(velocity), normalize(other.pos.xyz - position)) : -1.0;
 
 			if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > -0.1) 
 			{
+				vec4 other_dir = vec4(safeNormalize(other.vel.xyz), 0.0);
+
 				numFlockMates++;
 				flockHeading += other_dir;
 				flockCenter += other.pos;
@@ -278,7 +274,7 @@ void computeForcesShared(
 			}
 		}
 
-		memoryBarrierShared();
+		// This barrier ensures storage buffer access is synchronized
 		barrier();
 	}
 }
@@ -301,9 +297,6 @@ void main()
 
 	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
-
-	// Clamp as an extra safety measure
-	num_flock_mates = (num_flock_mates > ubo.numBoids) ? 0 : num_flock_mates;
 
 	// Calculate base acceleration determined by a moving global target position
 	vec4 offset = vec4(ubo.target, 0.0) - b.position;
@@ -361,7 +354,7 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.98);
+	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.97);
 
 	// Write boid to output buffer
 	subo_out.boids[global_id] = b;
