@@ -2,6 +2,7 @@ Installation {#install}
 =======================
 
 *	[Overview](@ref build_env_overview)
+*	[Development Environments](@ref ides)
 *	[Windows](@ref win64)
 	*	[Setup Your Build Environment](@ref setup_build_env_win64)
 	*	[Run Your First Demo](@ref run_demo_win64)
@@ -21,6 +22,10 @@ Installation {#install}
 Installing the NAP release involves extracting the archive and running our script to guide you through dependency installation. Projects reside within the framework folder structure, and as such we recommend extracting the release into a user directory instead of a system directory.  For example on Windows something like `My Documents` is a more suitable location than C:\\Program Files.
 
 The prerequisites installation script is called `check_build_environment` and can be found in the tools directory within the release.  The script attempts to verify that your build environment is ready for NAP and is designed to be re-run until all checks are successfully passed.
+
+# Development Environments {#ides}
+
+NAP $(NAP_VERSION_FULL) supports `Visual Studio 2019 (v142)` on Windows, `XCode 11.7` on macOS and `make files` on Linux. Instead of using these environments you can use [Visual Studio Code](https://code.visualstudio.com/) or [CLion](https://www.jetbrains.com/clion). Although we don't officially support these environments others have confirmed that they work as expected. Both can be configured using CMake.
 
 # Windows {#win64}
 
@@ -45,7 +50,7 @@ Download and install <a href="https://visualstudio.microsoft.com/downloads/" tar
 
 ## Setup Your Build Environment {#setup_build_env_macos}
 
-NAP $(NAP_VERSION_FULL) supports `macOS Catalina` with `XCode 11.7`. Although NAP is known to work on other macOS releases, Catalina is the current supported platform.
+NAP $(NAP_VERSION_FULL) supports `macOS Catalina` with `XCode 11.7`. Although NAP is known to work on other macOS releases with newer versions of XCode, Catalina is the current supported platform.
 
 1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
 2. Ctrl-click on `tools/unquarantine_framework.command` 
@@ -76,15 +81,13 @@ xcode-select --install
 
 # Linux {#linux}
 
-## Raspberry Pi {#linux_pi}
-
-
-
-
-
 ## Desktop {#linux_desktop}
 
 NAP $(NAP_VERSION_FULL) supports `Ubuntu Linux 20.04` on `x86-64` machines using `GCC`. Although NAP is known to run on other distros: `Ubuntu 20.04 x86_64` is currently the only supported Linux desktop environment.
+
+## Raspberry Pi {#linux_pi}
+
+Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration, using the `LLVMpipe` instead of the integrated `Mali GPU`. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4.
 
 ## Setup Your Build Environment {#setup_build_env_linux}
 
@@ -128,5 +131,3 @@ make
 cd ../bin/Debug
 ./helloworld
 ```
-
-This example uses `make files`. Instead of using `make files` you can use [Visual Studio Code](https://code.visualstudio.com/) or [CLion](https://www.jetbrains.com/clion). Although we don't officially support these environments others have confirmed that they work as expected. Both can be configured using CMake.
