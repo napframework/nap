@@ -374,7 +374,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumBoids": 10000,
+                    "NumBoids": 1000,
                     "RandomColor": "RandomColorParameter",
                     "BoidSize": "BoidSizeParameter",
                     "FresnelScale": "FresnelScaleParameter",
@@ -1249,8 +1249,8 @@
             "mID": "ColorTexture",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1267,8 +1267,8 @@
             "mID": "ColorTextureContrast",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1285,8 +1285,8 @@
             "mID": "ColorTextureFinal",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1324,8 +1324,8 @@
             "Visible": true,
             "SampleShading": false,
             "Title": "ComputeFlockingDemo",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [

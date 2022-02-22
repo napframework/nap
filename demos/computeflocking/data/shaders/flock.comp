@@ -85,7 +85,7 @@ shared BoidData sharedData[MAX_GROUP_SIZE_X];
 
 
 // Multiply two quaternions -> qa * qb
-vec4 mulQuat(vec4 qa, vec4 qb)
+vec4 mulQuat(const vec4 qa, const vec4 qb)
 { 
 	return normalize(vec4(
 		qb.xyz * qa.w + qa.xyz * qb.w + cross(qa.xyz, qb.xyz),
@@ -95,7 +95,7 @@ vec4 mulQuat(vec4 qa, vec4 qb)
 
 
 // Rotate vector v with quaterion q
-vec3 rotate(vec3 v, vec4 q)
+vec3 rotate(const vec3 v, const vec4 q)
 {
 	float l1 = dot(q.xyz, q.xyz);
 	return v * (q.w * q.w - l1) + q.xyz * (dot(v, q.xyz) * 2.0) + cross(q.xyz, v) * (q.w * 2.0);
@@ -103,7 +103,7 @@ vec3 rotate(vec3 v, vec4 q)
 
 
 // Returns a quaternion describing a rotation from orig to dest
-vec4 rotationQuat(vec3 orig, vec3 dest)
+vec4 rotationQuat(const vec3 orig, const vec3 dest)
 {
 	float cos_theta = dot(orig, dest);
 	if (cos_theta >= 1.0-EPSILON)
@@ -123,7 +123,7 @@ vec4 rotationQuat(vec3 orig, vec3 dest)
 
 
 // Returns true if v is a zero-vector, otherwise false
-bool isZero(vec3 v)
+bool isZero(const vec3 v)
 {
 	float valid = 1.0;
 
@@ -136,26 +136,21 @@ bool isZero(vec3 v)
 
 
 // Returns a zero vector instead of nan if v cannot be normalized, otherwise normalizes v
-vec3 safeNormalize(vec3 v)
+vec3 safeNormalize(const vec3 v)
 {
 	return !isZero(v) ? normalize(v) : vec3(0.0);
 }
 
 
 // Clamps the magnitude of v between min and max
-vec3 clampMagnitude(vec3 v, float min, float max)
+vec3 clampMagnitude(const vec3 v, const float min, const float max)
 {
-	if (length(v) > max)
-		return normalize(v) * max;
-	else if (length(v) < min)
-		return normalize(v) * min;
-
-	return v;
+	return (length(v) > max) ? (normalize(v) * max) : (length(v) < min) ? (normalize(v) * min) : v;
 }
 
 
 // Returns a steering vector towards targetDir
-vec3 steerTowards(vec3 targetDir, vec3 velocity, float maxSteerForce)
+vec3 steerTowards(const vec3 targetDir, const vec3 velocity, const float maxSteerForce)
 {
 	vec3 v = !isZero(targetDir) ? normalize(targetDir) * ubo.maxSpeed - velocity : velocity;
 	return clampMagnitude(v, length(v), maxSteerForce);
@@ -163,29 +158,7 @@ vec3 steerTowards(vec3 targetDir, vec3 velocity, float maxSteerForce)
 
 
 // Source: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-vec2 rayBox(in vec3 orig, in vec3 dir, in vec3 extent, out vec3 oN) 
-{
-	vec3 m = 1.0/dir;
-	vec3 n = m*orig;
-	vec3 k = abs(m)*extent;
-
-	vec3 t1 = -n - k;
-	vec3 t2 = -n + k;
-
-	float tn = max(max(t1.x, t1.y), t1.z);
-	float tf = min(min(t2.x, t2.y), t2.z);
-
-	if (tn > tf || tf < 0.0)
-		return vec2(-1.0); // no intersection
-
-	oN = -sign(dir) * step(t1.yzx, t1.xyz) * step(t1.zxy, t1.xyz);
-
-	return vec2(tn, tf);
-}
-
-
-// Source: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-float raySphere(in vec3 orig, in vec3 dir, in vec3 center, in float radius)
+float raySphere(const vec3 orig, const vec3 dir, const vec3 center, const float radius)
 {
 	vec3 oc = orig - center;
 	float b = dot(oc, dir);
@@ -201,11 +174,24 @@ float raySphere(in vec3 orig, in vec3 dir, in vec3 center, in float radius)
 
 
 // Old routine that does not utilize shared memory 
-void computeForces(uint gid, vec3 position, vec3 velocity, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
+void computeForces(
+	const uint gid, 
+	const vec3 position, 
+	const vec3 velocity, 
+	out vec4 avoidanceHeading, 
+	out vec4 flockHeading, 
+	out vec4 flockCenter, 
+	out uint numFlockMates)
 {	
+	avoidanceHeading = vec4(0.0);
+	flockHeading = vec4(0.0);
+	flockCenter = vec4(0.0);
+	numFlockMates = 0;
+
 	for (uint i = 1; i < ubo.numBoids; i++) 
 	{
 		uint idx = (gid + i) % ubo.numBoids;
+
 		vec4 other_pos = subo_in.boids[idx].position;
 		vec4 other_dir = subo_in.boids[idx].velocity;
 		other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
@@ -233,33 +219,41 @@ void computeForces(uint gid, vec3 position, vec3 velocity, out vec4 avoidanceHea
 
 
 // Optimized routine that utilizes shared memory 
-void computeForcesShared(uint gid, vec3 position, vec3 velocity, out vec4 avoidanceHeading, out vec4 flockHeading, out vec4 flockCenter, out uint numFlockMates)
+void computeForcesShared(
+	const uint gid, 
+	const vec3 position, 
+	const vec3 velocity, 
+	out vec4 avoidanceHeading, 
+	out vec4 flockHeading, 
+	out vec4 flockCenter, 
+	out uint numFlockMates)
 {
-	// Copy to fast shared data
-	// Process in chunks of SHARED_DATA_SIZE
+	avoidanceHeading = vec4(0.0);
+	flockHeading = vec4(0.0);
+	flockCenter = vec4(0.0);
+	numFlockMates = 0;
+
+	// Copy to fast shared data and process in chunks of MAX_GROUP_SIZE_X
 	uint local_id = gl_LocalInvocationID.x;
-	for (uint i = 0; i < ubo.numBoids; i += MAX_GROUP_SIZE_X)
+	for (uint proc = 0; proc < ubo.numBoids; proc += MAX_GROUP_SIZE_X)
 	{
-		uint id = i + local_id;
-		if (id < ubo.numBoids && id != gid)
-		{
-			sharedData[local_id].pos = subo_in.boids[id].position;
-			sharedData[local_id].vel = subo_in.boids[id].velocity;
-		}
-		else 
-		{
-			// Mark invalid
-			sharedData[local_id].pos.w = -1.0;
-		}
+		// 'id' may be out of bounds
+		uint id = proc + local_id;
+		float valid = (id < ubo.numBoids && id != gid) ? 0.0 : -1.0;
+
+		// 'safe_id' is always within buffer bounds
+		uint safe_id = clamp(id, 0, ubo.numBoids);
+		sharedData[local_id].pos = vec4(subo_in.boids[safe_id].position.xyz, valid);
+		sharedData[local_id].vel = subo_in.boids[safe_id].velocity;
 
 		memoryBarrierShared();
 		barrier();
 
 		// Update force variables
-		uint count = i < ubo.numBoids ? MAX_GROUP_SIZE_X : i-ubo.numBoids; 
-		for (int j = 0; j < count; j++)
+		uint proc_size = (proc+MAX_GROUP_SIZE_X < ubo.numBoids) ? MAX_GROUP_SIZE_X : MAX_GROUP_SIZE_X - proc%MAX_GROUP_SIZE_X; 
+		for (uint i = 0; i < proc_size; i++)
 		{
-			BoidData other = sharedData[j];
+			BoidData other = sharedData[i];
 			if (other.pos.w < 0.0)
 				continue;
 
@@ -300,10 +294,10 @@ void main()
 	Boid b = subo_in.boids[global_id];
 
 	// Compute forces
-	vec4 avoidance_heading = vec4(0.0);
-	vec4 flock_heading = vec4(0.0);
-	vec4 flock_center = vec4(0.0);
-	uint num_flock_mates = 0;
+	vec4 avoidance_heading;
+	vec4 flock_heading;
+	vec4 flock_center;
+	uint num_flock_mates;
 
 	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
