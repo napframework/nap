@@ -78,7 +78,9 @@ xcode-select --install
 
 ## Raspberry Pi {#linux_pi}
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Applications that make use of the render engine will not run on older Raspberry Pi models because there is no support for Vulkan. However, headless applications without graphics might work on older Raspberry Pi models.
+
+
+
 
 ## Desktop {#linux_desktop}
 

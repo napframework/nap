@@ -146,13 +146,7 @@ void MainWindow::addMenu()
 		config_menu->addAction(setDefaultServiceConfig);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), config_menu);
-
-	// General Options
-	auto optionsMenu = new QMenu("Options", menuBar());
-	{
-		optionsMenu->addMenu(&mThemeMenu);
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), optionsMenu);
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), &mThemeMenu);
 }
 
 
