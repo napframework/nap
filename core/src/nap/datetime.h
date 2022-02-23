@@ -102,6 +102,11 @@ namespace nap
 	};
 
 	/**
+	 * @return days of the week as a list, from Monday to Sunday.
+	 */
+	NAPAPI const std::array<EDay,7>& getDaysInWeek();
+
+	/**
 	 * Converts a day in to a string
 	 * @param day the day to convert in to a string 
 	 * @return the day as a string

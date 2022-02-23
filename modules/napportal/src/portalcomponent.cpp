@@ -52,8 +52,8 @@ namespace nap
 	void PortalComponentInstance::onDestroy()
 	{
 		// De-register with the service
-		if (mService != nullptr)
-			mService->removeComponent(*this);
+		assert(mService != nullptr);
+		mService->removeComponent(*this);
 
 		// Disconnect from portal item updates
 		for (const auto& item : mItems)
@@ -64,7 +64,7 @@ namespace nap
 	bool PortalComponentInstance::processRequest(PortalEvent& event, utility::ErrorState& error)
 	{
 		// Check if the portal event has a WebSocket connection
-		if (!error.check(event.hasConnection(), "%s: event is missing connection for repsonse", getComponent()->mID.c_str()))
+		if (!error.check(event.hasConnection(), "%s: event is missing connection for response", getComponent()->mID.c_str()))
 			return false;
 
 		// Create response event

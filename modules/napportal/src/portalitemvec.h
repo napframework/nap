@@ -80,8 +80,6 @@ namespace nap
 		 * Sets the values of the linked vector parameter from a vector of the basic data type
 		 */
 		bool setVectorValues(const std::vector<typename T::value_type>& values, utility::ErrorState& error);
-
-		T mRetainedValue;								///< Retained value to check if the parameter has been updated externally
 	};
 
 
@@ -102,7 +100,6 @@ namespace nap
 	template<typename T>
 	bool PortalItemVec<T>::init(utility::ErrorState& error)
 	{
-		mRetainedValue = mParameter->mValue;
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
@@ -116,12 +113,6 @@ namespace nap
 	template<typename T>
 	void PortalItemVec<T>::onParameterUpdate(T value)
 	{
-		// No need to send update if retained value stays the same,
-		// e.g. when we changed the parameter from a client update
-		if (mRetainedValue == value)
-			return;
-
-		mRetainedValue = value;
 		updateSignal(*this);
 	}
 
@@ -182,12 +173,12 @@ namespace nap
 		if (!error.check(values.size() == length, "%s: expected a vector of size %i, received %i", mID.c_str(), length, values.size()))
 			return false;
 
-		// Update the vector trough setValue so the
-		// parameter will trigger an update signal
+		// Update the vector trough setValue so the parameter will trigger an update signal
 		T new_value;
 		std::memcpy(&new_value, values.data(), sizeof(typename T::value_type) * length);
-		mRetainedValue = new_value;
+		mParameter->valueChanged.disconnect(mParameterUpdateSlot);
 		mParameter->setValue(new_value);
+		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
 }

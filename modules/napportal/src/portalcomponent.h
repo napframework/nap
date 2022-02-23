@@ -29,7 +29,6 @@ namespace nap
 		DECLARE_COMPONENT(PortalComponent, PortalComponentInstance)
 
 	public:
-
 		ResourcePtr<PortalWebSocketServer> mServer;		///< Property: "Server" the portal WebSocket server this component listens to for events
 		std::vector<ResourcePtr<PortalItem>> mItems;	///< Property: 'Items' the portal items contained by this portal component
 	};
@@ -101,9 +100,7 @@ namespace nap
 		std::vector<PortalItem*> mItems;						///< The portal items contained by this portal component as vector
 		std::unordered_map<std::string, PortalItem*> mItemMap;	///< The portal items contained by this portal component as unordered map
 
-		/**
-		* Slot which is called when a portal item sends an update event
-		*/
+		//Slot which is called when a portal item sends an update event
 		Slot<const PortalItem&> mItemUpdateSlot = { this, &PortalComponentInstance::onItemUpdate };
 	};
 }

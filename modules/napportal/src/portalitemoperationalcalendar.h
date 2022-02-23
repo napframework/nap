@@ -16,10 +16,9 @@ namespace nap
 	/**
 	 * Represents an operational calendar item in a NAP portal.
 	 */
-	class PortalItemOperationalCalendar : public PortalItem
+	class NAPAPI PortalItemOperationalCalendar : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
-
 	public:
 
 		/**
@@ -46,12 +45,15 @@ namespace nap
 	private:
 
 		/**
-		 * @return the times of the linked operarional calendar as a vector of strings
+		 * @return the times of the linked operational calendar as a vector of strings
 		 */
 		const std::vector<std::string> getCalendarTimes() const;
 
 		/**
-		 * Sets the times of the linked operarional calendar from a vector of strings
+		 * Sets the times of the linked operational calendar from a vector of strings
+		 * @param times time specifications
+		 * @param error contains the error if the time could not be set
+		 * @return if the times are updated
 		 */
 		bool setCalendarTimes(const std::vector<std::string>& times, utility::ErrorState& error);
 	};

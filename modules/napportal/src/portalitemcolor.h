@@ -23,7 +23,6 @@ namespace nap
 	class PortalItemColor : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
-
 	public:
 
 		/**
@@ -89,8 +88,8 @@ namespace nap
 	// Portal Item Color Type Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using PortalItemRGBColor8 = PortalItemColor<RGBColor8>;
-	using PortalItemRGBAColor8 = PortalItemColor<RGBAColor8>;
+	using PortalItemRGBColor8		= PortalItemColor<RGBColor8>;
+	using PortalItemRGBAColor8		= PortalItemColor<RGBAColor8>;
 	using PortalItemRGBColorFloat	= PortalItemColor<RGBColorFloat>;
 	using PortalItemRGBAColorFloat	= PortalItemColor<RGBAColorFloat>;
 

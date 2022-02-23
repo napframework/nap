@@ -23,7 +23,6 @@ namespace nap
 	class PortalItemNumeric : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
-
 	public:
 
 		/**
@@ -68,10 +67,6 @@ namespace nap
 		Slot<T> mParameterUpdateSlot = { this, &PortalItemNumeric::onParameterUpdate };
 
 		ResourcePtr<ParameterNumeric<T>> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
-
-	private:
-
-		T mRetainedValue;								///< Retained value to check if the parameter has been updated externally
 	};
 
 
@@ -93,7 +88,6 @@ namespace nap
 	template<typename T>
 	bool PortalItemNumeric<T>::init(utility::ErrorState& error)
 	{
-		mRetainedValue = mParameter->mValue;
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
@@ -107,12 +101,6 @@ namespace nap
 	template<typename T>
 	void PortalItemNumeric<T>::onParameterUpdate(T value)
 	{
-		// No need to send update if retained value stays the same,
-		// e.g. when we changed the parameter from a client update
-		if (mRetainedValue == value)
-			return;
-
-		mRetainedValue = value;
 		updateSignal(*this);
 	}
 
@@ -131,8 +119,9 @@ namespace nap
 
 		// Cast and set the value on the parameter
 		T value = static_cast<const APIValue<T>*>(&arg->getValue())->mValue;
-		mRetainedValue = value;
+		mParameter->valueChanged.disconnect(mParameterUpdateSlot);
 		mParameter->setValue(value);
+		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
 

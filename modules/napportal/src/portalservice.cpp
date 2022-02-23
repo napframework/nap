@@ -20,8 +20,7 @@ namespace nap
 {
 
 	PortalService::PortalService(ServiceConfiguration* configuration) : Service(configuration)
-	{
-	}
+	{ }
 
 
 	nap::WebSocketService& PortalService::getWebSocketService()

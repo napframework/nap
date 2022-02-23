@@ -28,7 +28,6 @@ namespace nap
 		RTTI_ENABLE(Event)
 
 	public:
-
 		using APIEventList = std::vector<APIEventPtr>;
 		using APIEventConstIterator = utility::UniquePtrConstVectorWrapper<APIEventList, APIEvent*>;
 
@@ -49,27 +48,27 @@ namespace nap
 		/**
 		 * @return unique ID of the portal event
 		 */
-		const std::string& getID() const			{ return mHeader.mID; }
+		const std::string& getID() const						{ return mHeader.mID; }
 
 		/**
 		 * @return unique ID of the sending / receiving portal
 		 */
-		const std::string& getPortalID() const		{ return mHeader.mPortalID; }
+		const std::string& getPortalID() const					{ return mHeader.mPortalID; }
 
 		/**
 		 * @return type of the portal event, determines the effect
 		 */
-		const EPortalEventType& getType() const		{ return mHeader.mType; }
+		const EPortalEventType& getType() const					{ return mHeader.mType; }
 
 		/**
 		 * @return whether the portal event contains a WebSocket connection
 		 */
-		bool hasConnection() const { return mConnection.get() != nullptr; }
+		bool hasConnection() const								{ return mConnection.get() != nullptr; }
 
 		/**
 		 * @return retrieves the WebSocket connection used for sending the event
 		 */
-		const WebSocketConnection& getConnection() const { return *mConnection; }
+		const WebSocketConnection& getConnection() const		{ return *mConnection; }
 
 		/**
 		 * Converts the portal event to a JSON string of API messages used for sending over the WebSocket server.
@@ -88,12 +87,12 @@ namespace nap
 		/**
 		 * @return the number of API events inside this portal event
 		 */
-		int getCount() const { return static_cast<int>(mAPIEvents.size()); }
+		int getCount() const									{ return static_cast<int>(mAPIEvents.size()); }
 
 		/**
 		 * @return the API events of this portal event
 		 */
-		const APIEventConstIterator getAPIEvents() const { return APIEventConstIterator(mAPIEvents); }
+		const APIEventConstIterator getAPIEvents() const		{ return APIEventConstIterator(mAPIEvents); }
 
 		/**
 		 * @param index the index of the API event
@@ -111,13 +110,13 @@ namespace nap
 		 * Array [] subscript operator
 		 * @return the API event at index
 		 */
-		APIEvent& operator[](std::size_t idx) { return *getAPIEvent(static_cast<int>(idx)); }
+		APIEvent& operator[](std::size_t idx)					{ return *getAPIEvent(static_cast<int>(idx)); }
 
 		/**
 		 * Array [] subscript operator
 		 * @return the API event at index
 		 */
-		const APIEvent& operator[](std::size_t idx) const { return *getAPIEvent(static_cast<int>(idx)); }
+		const APIEvent& operator[](std::size_t idx) const		{ return *getAPIEvent(static_cast<int>(idx)); }
 
 	private:
 

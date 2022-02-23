@@ -47,11 +47,11 @@ namespace nap
 	/**
 	 * Object containing all portal event header information
 	 */
-	struct PortalEventHeader
+	struct NAPAPI PortalEventHeader
 	{
-		std::string mID;		///< Unique ID of the portal event
-		std::string mPortalID;	///< Unique ID of the sending / receiving portal
-		EPortalEventType mType;	///< Type of the portal event, determines the effect
+		std::string mID;										///< Unique ID of the portal event
+		std::string mPortalID;									///< Unique ID of the sending / receiving portal
+		EPortalEventType mType = EPortalEventType::Invalid;		///< Type of the portal event, determines the effect
 	};
 
 	/**
@@ -59,28 +59,28 @@ namespace nap
 	 * @param type the portal event type to convert to a string
 	 * @return A string representing the provided portal event type
 	 */
-	std::string getPortalEventTypeString(const EPortalEventType& type);
+	NAPAPI std::string getPortalEventTypeString(const EPortalEventType& type);
 
 	/**
 	 * Converts a string representation to a portal event type
 	 * @param type the string to convert to a portal event type
 	 * @return The portal event type derived from the string
 	 */
-	EPortalEventType getPortalEventType(const std::string& type);
+	NAPAPI EPortalEventType getPortalEventType(const std::string& type);
 
 	/**
 	 * Converts a portal item button event to a string representation
 	 * @param event the portal item button event to convert to a string
 	 * @return A string representing the provided portal item button event
 	 */
-	std::string getPortalItemButtonEventString(const EPortalItemButtonEvent& event);
+	NAPAPI std::string getPortalItemButtonEventString(const EPortalItemButtonEvent& event);
 
 	/**
 	 * Converts a string representation to a portal item button event
 	 * @param event the string to convert to a portal item button event
 	 * @return The portal item button event derived from the string
 	 */
-	EPortalItemButtonEvent getPortalItemButtonEvent(const std::string& event);
+	NAPAPI EPortalItemButtonEvent getPortalItemButtonEvent(const std::string& event);
 
 	/**
 	 * Attempts to extract a portal event header from a portal event header API event
@@ -89,12 +89,12 @@ namespace nap
 	 * @param error contains information when the extraction fails
 	 * @return whether the portal event header extraction succeeded
 	 */
-	bool extractPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader, utility::ErrorState& error);
+	NAPAPI bool extractPortalEventHeader(const APIEventPtr& event, PortalEventHeader& outHeader, utility::ErrorState& error);
 
 	/**
 	 * Creates an API event that functions as event header in a portal event
 	 * @param header the portal event header to be converted to API event
 	 * @return an API event that functions as event header in a portal event
 	 */
-	APIEventPtr createPortalEventHeader(const PortalEventHeader& header);
+	NAPAPI APIEventPtr createPortalEventHeader(const PortalEventHeader& header);
 }

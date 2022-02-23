@@ -85,7 +85,7 @@ namespace nap
 		void addPortalEvent(PortalEventPtr event);
 
 		/**
-		 * Consumes all received portal  events and moves them to outEvents
+		 * Consumes all received portal  events and moves them to outEvents.
 		 * Calling this will clear the internal queue and transfers ownership of the events to the caller
 		 * @param outEvents will hold the transferred portal events
 		 */

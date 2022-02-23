@@ -19,7 +19,6 @@ namespace nap
 	class NAPAPI PortalItem : public Resource
 	{
 		RTTI_ENABLE(Resource)
-
 	public:
 
 		/**

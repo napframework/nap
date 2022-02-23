@@ -51,12 +51,22 @@ namespace nap
 	{ }
 
 
-	CalendarItem::Time::Time(std::string timeString)
+	std::string CalendarItem::Time::toString() const
 	{
-		size_t colonPos = timeString.find(":");
-		assert(colonPos != std::string::npos);
-		mHour = std::stoi(timeString.substr(0, colonPos));
-		mMinute = std::stoi(timeString.substr(colonPos + 1, timeString.length() - colonPos - 1));
+		return utility::stringFormat("%.2d:%.2d", mHour, mMinute);
+	}
+
+
+	CalendarItem::Time CalendarItem::Time::fromString(const std::string& time)
+	{
+		Time timestruct = { -1, -1 };
+		std::vector<std::string> parts = utility::splitString(time, ':');
+		if (parts.size() == 2)
+		{
+			timestruct.mHour = std::stoi(parts[0]);
+			timestruct.mMinute = std::stoi(parts[0]);
+		}
+		return timestruct;
 	}
 
 
@@ -69,20 +79,6 @@ namespace nap
 	nap::Minutes nap::CalendarItem::Time::toMinutes() const
 	{
 		return nap::Minutes((mHour * 60) + mMinute);
-	}
-
-
-	std::string nap::CalendarItem::Time::toString() const
-	{
-		std::string str;
-		if (mHour < 10)
-			str.append("0");
-		str.append(std::to_string(mHour));
-		str.append(":");
-		if (mMinute < 10)
-			str.append("0");
-		str.append(std::to_string(mMinute));
-		return str;
 	}
 
 

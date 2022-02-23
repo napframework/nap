@@ -105,12 +105,12 @@ namespace nap
 
 			// Draw multiline text input when the string has a line break character
 			bool is_multiline = std::strchr(buffer, '\r\n') != nullptr || std::strchr(buffer, '\n') != nullptr;
-			bool has_changed = is_multiline
+			if(is_multiline
 				? ImGui::InputTextMultiline(string_parameter->getDisplayName().c_str(), buffer, buffer_size, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10))
-				: ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size);
-
-			if (has_changed)
+				: ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size))
+			{
 				string_parameter->setValue(std::string(buffer));
+			}	
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterRGBColorFloat), [](Parameter& parameter)

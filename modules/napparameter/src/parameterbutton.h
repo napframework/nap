@@ -15,21 +15,15 @@ namespace nap
 	/**
 	 * Parameter that triggers down, up and click for button actions
 	 */
-	class ParameterButton : public Parameter
+	class NAPAPI ParameterButton : public Parameter
 	{
 		RTTI_ENABLE(Parameter)
-
 	public:
 		/**
 		 * Set the value for this parameter from another parameter
 		 * @param value The parameter to set the value from
 		 */
-		virtual void setValue(const Parameter& value) override
-		{
-			const ParameterButton* derived_type = rtti_cast<const ParameterButton>(&value);
-			assert(derived_type != nullptr);
-			setPressed(derived_type->mPressed);
-		}
+		virtual void setValue(const Parameter& value) override;
 
 		/**
 		 * Set the pressed state of this parameter.
@@ -37,18 +31,12 @@ namespace nap
 		 * Raises the "release" signal if the state changed to not pressed.
 		 * @param pressed The pressed state to set
 		 */
-		void setPressed(const bool& pressed)
-		{
-			if (mPressed == pressed)
-				return;
-			mPressed = pressed;
-			mPressed ? press() : release();
-		}
+		void setPressed(const bool& pressed);
 
 		/**
-		 * @return whether the button is currenty pressed
+		 * @return whether the button is currently pressed
 		 */
-		const bool& isPressed() const { return mPressed; }
+		bool isPressed() const { return mPressed; }
 
 	public:
 		Signal<>	click;		///< Signal that's raised when the button is clicked
@@ -56,6 +44,6 @@ namespace nap
 		Signal<>	release;	///< Signal that's raised when the button is released
 
 	private:
-		bool		mPressed;	///< Stores whether the button is currenty pressed
+		bool		mPressed;	///< Stores whether the button is currently pressed
 	};
 }

@@ -6,9 +6,12 @@
 #include "portalitemoperationalcalendar.h"
 #include "portalutils.h"
 
+// External Includes
+#include <array>
+
 RTTI_BEGIN_CLASS(nap::PortalItemOperationalCalendar)
-	RTTI_PROPERTY("Name", &nap::PortalItemOperationalCalendar::mName, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Calendar", &nap::PortalItemOperationalCalendar::mCalendar, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Name",		&nap::PortalItemOperationalCalendar::mName,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Calendar",	&nap::PortalItemOperationalCalendar::mCalendar, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -55,39 +58,17 @@ namespace nap
 
 	const std::vector<std::string> nap::PortalItemOperationalCalendar::getCalendarTimes() const
 	{
-		auto monday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Monday));
-		auto tuesday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Tuesday));
-		auto wednesday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Wednesday));
-		auto thursday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Thursday));
-		auto friday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Friday));
-		auto saturday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Saturday));
-		auto sunday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Sunday));
-		assert(
-			monday != nullptr &&
-			tuesday != nullptr &&
-			wednesday != nullptr &&
-			thursday != nullptr &&
-			friday != nullptr &&
-			saturday != nullptr &&
-			sunday != nullptr
-		);
-
-		return std::vector<std::string>({
-			monday->getTime().toString(),
-			monday->getDuration().toString(),
-			tuesday->getTime().toString(),
-			tuesday->getDuration().toString(),
-			wednesday->getTime().toString(),
-			wednesday->getDuration().toString(),
-			thursday->getTime().toString(),
-			thursday->getDuration().toString(),
-			friday->getTime().toString(),
-			friday->getDuration().toString(),
-			saturday->getTime().toString(),
-			saturday->getDuration().toString(),
-			sunday->getTime().toString(),
-			sunday->getDuration().toString()
-		});
+		const auto& days = getDaysInWeek();
+		std::vector<std::string> times;
+		times.reserve(days.size() * 2);
+		for (const auto& day : days)
+		{
+			auto calendar_item = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(day));
+			assert(item != nullptr);
+			times.emplace_back(calendar_item->getTime().toString());
+			times.emplace_back(calendar_item->getDuration().toString());
+		}
+		return times;
 	}
 
 
@@ -96,37 +77,16 @@ namespace nap
 		if (!error.check(times.size() == 14, "%s: expected 14 time entries, received %i", mID.c_str(), times.size()))
 			return false;
 
-		auto monday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Monday));
-		auto tuesday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Tuesday));
-		auto wednesday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Wednesday));
-		auto thursday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Thursday));
-		auto friday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Friday));
-		auto saturday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Saturday));
-		auto sunday = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(EDay::Sunday));
-		assert(
-			monday != nullptr &&
-			tuesday != nullptr &&
-			wednesday != nullptr &&
-			thursday != nullptr &&
-			friday != nullptr &&
-			saturday != nullptr &&
-			sunday != nullptr
-		);
-
-		monday->setTime(CalendarItem::Time(times.at(0)));
-		monday->setDuration(CalendarItem::Time(times.at(1)));
-		tuesday->setTime(CalendarItem::Time(times.at(2)));
-		tuesday->setDuration(CalendarItem::Time(times.at(3)));
-		wednesday->setTime(CalendarItem::Time(times.at(4)));
-		wednesday->setDuration(CalendarItem::Time(times.at(5)));
-		thursday->setTime(CalendarItem::Time(times.at(6)));
-		thursday->setDuration(CalendarItem::Time(times.at(7)));
-		friday->setTime(CalendarItem::Time(times.at(8)));
-		friday->setDuration(CalendarItem::Time(times.at(9)));
-		saturday->setTime(CalendarItem::Time(times.at(10)));
-		saturday->setDuration(CalendarItem::Time(times.at(11)));
-		sunday->setTime(CalendarItem::Time(times.at(12)));
-		sunday->setDuration(CalendarItem::Time(times.at(13)));
-		return mCalendar->getInstance().save(error);
+		const auto& days = getDaysInWeek();
+		std::size_t idx = 0;
+		for (const auto& day : days)
+		{
+			auto calendar_item = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(day));
+			assert(item != nullptr);
+			calendar_item->setTime(CalendarItem::Time::fromString(times.at(idx + 0)));
+			calendar_item->setTime(CalendarItem::Time::fromString(times.at(idx + 1)));
+			idx += 2;
+		}
+		return true;
 	}
 }

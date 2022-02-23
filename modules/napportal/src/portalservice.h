@@ -19,7 +19,8 @@ namespace nap
 	class PortalComponentInstance;
 
 	/**
-	 * The portal service
+	 * The portal service consumes all events received by the portal web socket servers on
+	 * a background thread and forwards these events to the right portal on update of the application thread.
 	 */
 	class NAPAPI PortalService : public Service
 	{
@@ -28,7 +29,6 @@ namespace nap
 		RTTI_ENABLE(Service)
 
 	public:
-
 		/**
 		 * Default constructor
 		 */

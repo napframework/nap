@@ -53,9 +53,19 @@ namespace nap
 		if (!error.check(mButton != nullptr, "unable to find button with name: %s", "Button"))
 			return false;
 
-		mButton->click.connect([]() { nap::Logger::info("Button was clicked"); });
-		mButton->press.connect([]() { nap::Logger::info("Button was pressed"); });
-		mButton->release.connect([]() { nap::Logger::info("Button was released"); });
+		// Connect button callbacks
+		mButton->click.connect([]() {
+			nap::Logger::info("Button was clicked");
+			});
+
+		mButton->press.connect([]() {
+			nap::Logger::info("Button was pressed");
+			});
+
+
+		mButton->release.connect([]() {
+			nap::Logger::info("Button was released");
+			});
 
 		// All done!
 		return true;

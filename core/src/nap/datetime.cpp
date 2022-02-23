@@ -98,6 +98,21 @@ namespace nap
 	}
 
 
+	const std::array<nap::EDay, 7>& getDaysInWeek()
+	{
+		const static std::array<EDay, 7> days = {
+			EDay::Monday,
+			EDay::Tuesday,
+			EDay::Wednesday,
+			EDay::Thursday,
+			EDay::Friday,
+			EDay::Saturday,
+			EDay::Sunday
+		};
+		return days;
+	}
+
+
 	std::string toString(EDay day)
 	{
 		rtti::TypeInfo enum_type = RTTI_OF(EDay);

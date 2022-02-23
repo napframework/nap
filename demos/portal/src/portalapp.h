@@ -22,7 +22,28 @@ namespace nap
 	using namespace rtti;
 
 	/**
-	 * Portal Demo
+	 * The NAP Portal allows you to dynamically create a web-interface to control your NAP application in real-time,
+	 * without writing a single line of code.
+	 * 
+	 * This demo demonstrates how to communicate with the NAP Dashboard.
+	 * The NAP-Dashboard uses the NAP Portal NodeJS module to generate a ready-made control interface for your NAP application.
+	 *
+	 * Instructions on how to install and build the NAP Dashboard can be found here:
+	 * https://github.com/napframework/nap-dashboard
+	 * Build and run the dashboard using: 'npm run dev'
+	 *
+	 * Launch this demo and browse to the NAP-Dashboard in your browser. Make sure both environments use the same port for communication.
+	 * This demo defaults to port 2000. The port can be modified by editing the 'Port' property of the 'WebSocketServerEndPoint' in portal.json.
+	 * If everything works you should see that you are connected, together with a list of parameters that match the group of parameters in this demo.
+	 * Changing a parameter in the NAP application will update the control in the browser and vice-versa.
+	 *
+	 * This demo uses the 'nap::PortalWebSocketServer' to receive and respond to messages received over a web-socket.
+	 * Messages are forwarded as 'nap::PortalEvent' to the 'nap::PortalComponent', which in turn forwards the event to the correct 'nap::PortalItem'.
+	 * Every item updates a nap::Parameter, which can be rendered as a GUI element and are used to control your application.
+	 *
+	 * You can add and remove portal items from your NAP application. Changes to the data structure are
+	 * reflected in the the web-interface after a refresh. To get a better feeling of how everything works together,
+	 * experiment with adding and removing portal items to the 'PortalEntity'.
 	 */
 	class PortalApp : public App
 	{
@@ -83,4 +104,4 @@ namespace nap
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<ParameterButton>	mButton = nullptr;				///< Pointer to GUI button
 	};
-}
+}	
