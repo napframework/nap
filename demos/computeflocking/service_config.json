@@ -102,7 +102,7 @@
             "Type": "nap::RenderServiceConfiguration",
             "mID": "RenderServiceConfiguration_b2b35c14-a11e-425a-b503-030f26f63e5b",
             "Headless": false,
-            "PreferredGPU": "Integrated",
+            "PreferredGPU": "Discrete",
             "RequiredQueues": {
                 "Graphics": true,
                 "Compute": true,

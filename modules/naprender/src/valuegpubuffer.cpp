@@ -18,25 +18,25 @@ RTTI_END_CLASS
 // TypedValueGPUBuffer
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TypedValueGPUBuffer<nap::uint>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UIntGPUBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TypedValueGPUBuffer<int>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IntGPUBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TypedValueGPUBuffer<float>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FloatGPUBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TypedValueGPUBuffer<glm::vec2> )
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec2GPUBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TypedValueGPUBuffer<glm::vec3>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec3GPUBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TypedValueGPUBuffer<glm::vec4>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec4GPUBuffer)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TypedValueGPUBuffer<glm::mat4>)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Mat4GPUBuffer)
 RTTI_END_CLASS
 
 
@@ -263,6 +263,7 @@ namespace nap
 	}
 
 	// Explicit template instantiations
+	template bool UIntGPUBuffer::init(utility::ErrorState& errorState);
 	template bool IntGPUBuffer::init(utility::ErrorState& errorState);
 	template bool FloatGPUBuffer::init(utility::ErrorState& errorState);
 	template bool Vec2GPUBuffer::init(utility::ErrorState& errorState);

@@ -67,21 +67,13 @@ const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
 
 const float avoidBoundWeightConst = 4.0;
 
-// SHARED
-struct BoidData
-{
-	vec4 pos;
-	vec4 vel;
-};
-
-
 // The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
 layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;	
 //const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 // Allocate a block of shared data in which we can store positions and velocities 
 // of a boid for each local thread in the group/warp.
-shared BoidData sharedData[MAX_GROUP_SIZE_X];
+shared vec4 sharedData[MAX_GROUP_SIZE_X*2];
 
 
 // Multiply two quaternions -> qa * qb
@@ -188,22 +180,25 @@ void computeForces(
 	flockCenter = vec4(0.0);
 	numFlockMates = 0;
 
+	vec3 dir = safeNormalize(velocity);
+
 	for (uint i = 1; i < ubo.numBoids; i++) 
 	{
 		uint idx = (gid + i) % ubo.numBoids;
 
 		vec4 other_pos = subo_in.boids[idx].position;
 		vec4 other_dir = subo_in.boids[idx].velocity;
-		other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
-
-		// Vision is a half sphere
-		float lookdot = dot(normalize(velocity), normalize(other_pos.xyz - position));
 
 		vec3 offset = other_pos.xyz - position;
 		float l1 = dot(offset, offset);
 
+		// Vision is a half sphere
+		float lookdot = dot(dir, normalize(offset));
+
 		if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > -0.1) 
 		{
+			other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
+
 			numFlockMates++;
 			flockHeading += other_dir;
 			flockCenter += other_pos;
@@ -231,7 +226,9 @@ void computeForcesShared(
 	avoidanceHeading = vec4(0.0);
 	flockHeading = vec4(0.0);
 	flockCenter = vec4(0.0);
-	numFlockMates = 0;
+	numFlockMates = 0U;
+
+	vec3 dir = safeNormalize(velocity);
 
 	// Copy to fast shared data and process in chunks of MAX_GROUP_SIZE_X
 	uint local_id = gl_LocalInvocationID.x;
@@ -243,28 +240,33 @@ void computeForcesShared(
 		// Number of boids to process in the current chunk
 		uint chunk_size = (proc+MAX_GROUP_SIZE_X > ubo.numBoids) ? ubo.numBoids - proc : MAX_GROUP_SIZE_X;
 
-		uint id = clamp(proc+local_id, 0, chunk_size);
-		sharedData[local_id].pos = subo_in.boids[id].position;
-		sharedData[local_id].vel = subo_in.boids[id].velocity;
+		uint id = clamp(proc+local_id, 0, proc+chunk_size-1);
+		sharedData[local_id*2] = subo_in.boids[id].position;
+		sharedData[local_id*2+1] = subo_in.boids[id].velocity;
 
 		// This barrier ensures 'sharedData' is available and visible for the current workgroup
 		memoryBarrierShared();
+		barrier();
 
-		// Update force variables
+		// Update forces
 		for (uint i = 0; i < chunk_size; i++)
 		{
-			BoidData other = sharedData[i];
-			vec3 offset = other.pos.xyz - position;
-			float l1 = dot(offset, offset);
-			float lookdot = (l1 > 0.0) ? dot(normalize(velocity), normalize(other.pos.xyz - position)) : -1.0;
+			vec4 other_pos = sharedData[i*2];
+			vec4 other_dir = sharedData[i*2+1];
 
-			if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > -0.1) 
+			vec3 offset = other_pos.xyz - position;
+			float l1 = dot(offset, offset);
+
+			// Vision is a half sphere
+			float lookdot = dot(dir, normalize(offset));
+
+			if ((l1 > EPSILON) && (l1 < ubo.viewRadius * ubo.viewRadius) && (lookdot > -0.1)) 
 			{
-				vec4 other_dir = vec4(safeNormalize(other.vel.xyz), 0.0);
+				other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
 
 				numFlockMates++;
 				flockHeading += other_dir;
-				flockCenter += other.pos;
+				flockCenter += other_pos;
 
 				if (l1 < ubo.avoidRadius * ubo.avoidRadius)
 				{
@@ -275,6 +277,7 @@ void computeForcesShared(
 		}
 
 		// This barrier ensures storage buffer access is synchronized
+		memoryBarrierShared();
 		barrier();
 	}
 }
@@ -285,6 +288,8 @@ void main()
 {
 	// Fetch global compute shader invocation ID
 	uint global_id = gl_GlobalInvocationID.x;
+	if (global_id >= ubo.numBoids) 
+		return;
 
 	// Read boid from input buffer - use the invocation ID as an index into our storage buffer
 	Boid b = subo_in.boids[global_id];
@@ -354,7 +359,7 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = mix(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate, 0.97);
+	b.mateRate = max(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate) * 0.97;
 
 	// Write boid to output buffer
 	subo_out.boids[global_id] = b;

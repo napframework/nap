@@ -32,6 +32,8 @@ RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
 	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterialInstanceResource::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
+RTTI_DEFINE_BASE(nap::BaseMaterialInstance)
+
 RTTI_BEGIN_CLASS(nap::MaterialInstance)
 	RTTI_FUNCTION("getOrCreateUniform",	(nap::UniformStructInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
 	RTTI_FUNCTION("getOrCreateSampler",	(nap::SamplerInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateSampler);

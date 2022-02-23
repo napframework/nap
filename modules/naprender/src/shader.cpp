@@ -25,6 +25,7 @@
 
 RTTI_DEFINE_BASE(nap::BaseShader)
 RTTI_DEFINE_BASE(nap::Shader)
+RTTI_DEFINE_BASE(nap::ComputeShader)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
