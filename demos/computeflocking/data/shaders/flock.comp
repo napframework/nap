@@ -288,8 +288,6 @@ void main()
 {
 	// Fetch global compute shader invocation ID
 	uint global_id = gl_GlobalInvocationID.x;
-	if (global_id >= ubo.numBoids) 
-		return;
 
 	// Read boid from input buffer - use the invocation ID as an index into our storage buffer
 	Boid b = subo_in.boids[global_id];
