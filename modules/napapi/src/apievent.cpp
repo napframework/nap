@@ -15,37 +15,30 @@ namespace nap
 {
 	APIEvent::APIEvent(const std::string& name) : mName(name), 
 		mID(math::generateUUID())
-	{
-
-	}
+	{ }
 
 
 	APIEvent::APIEvent(std::string&& name) : mName(std::move(name)), 
 		mID(math::generateUUID())
-	{
-
-	}
+	{ }
 
 
 	APIEvent::APIEvent(const std::string& name, const std::string& id) : mName(name), 
 		mID(id)
-	{
-
-	}
+	{ }
 
 
 	APIEvent::APIEvent(std::string&& name, std::string&& id) : mName(std::move(name)), 
 		mID(std::move(id))
-	{
+	{ }
 
-	}
 
 	APIArgument* APIEvent::addArgument(std::unique_ptr<APIBaseValue> value)
 	{
 		// Create argument and move value
 		std::unique_ptr<APIArgument> argument = std::make_unique<APIArgument>(std::move(value));
-		mArguments.emplace_back(std::move(argument));
-		return mArguments.back().get();
+		auto& ref = mArguments.emplace_back(std::move(argument));
+		return ref.get();
 	}
 
 
@@ -72,8 +65,8 @@ namespace nap
 
 	APIArgument* APIEvent::getArgumentByName(std::string&& name)
 	{
-        auto it = std::find_if(mArguments.begin(), mArguments.end(), [&name](const auto& arg) { return arg->getName() == name; });
-        return it != mArguments.end() ? (*it).get() : nullptr;
+		auto it = std::find_if(mArguments.begin(), mArguments.end(), [&name](const auto& arg) { return arg->getName() == name; });
+		return it != mArguments.end() ? (*it).get() : nullptr;
 	}
 
 
