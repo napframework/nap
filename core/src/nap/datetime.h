@@ -196,16 +196,8 @@ namespace nap
 		*/
 		DateTime(const SystemTimeStamp& timeStamp);
 
-		/**
-		* Default destructor, the timestamp will be
-		*/
+		// Default destructor
 		~DateTime() = default;
-
-		bool operator<(const DateTime& other) const { return this->mTimeStamp < other.mTimeStamp; }
-		bool operator==(const DateTime& other) const { return this->mTimeStamp == other.mTimeStamp; }
-		bool operator!=(const DateTime& other) const { return this->mTimeStamp != other.mTimeStamp; }
-		bool operator<=(const DateTime& other) const { return this->mTimeStamp <= other.mTimeStamp; }
-		bool operator>=(const DateTime& other) const { return this->mTimeStamp >= other.mTimeStamp; }
 
 		/**
 		* @return the year associated with the time stamp
@@ -274,9 +266,16 @@ namespace nap
 		void setTimeStamp(const SystemTimeStamp& timeStamp);
 
 		/**
-		*	@return the time stamp asscoiated with this object
-		*/
+		 * @return the time stamp associated with this object
+		 */
 		const SystemTimeStamp& getTimeStamp() const { return mTimeStamp; }
+
+		// Allows for DateTime to be compared
+		bool operator<(const DateTime& other) const { return this->mTimeStamp < other.mTimeStamp; }
+		bool operator==(const DateTime& other) const { return this->mTimeStamp == other.mTimeStamp; }
+		bool operator!=(const DateTime& other) const { return this->mTimeStamp != other.mTimeStamp; }
+		bool operator<=(const DateTime& other) const { return this->mTimeStamp <= other.mTimeStamp; }
+		bool operator>=(const DateTime& other) const { return this->mTimeStamp >= other.mTimeStamp; }
 
 	private:
 
