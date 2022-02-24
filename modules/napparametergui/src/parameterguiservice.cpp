@@ -13,6 +13,7 @@
 #include <parameterenum.h>
 #include <parametercolor.h>
 #include <parameterquat.h>
+#include <parameterbutton.h>
 #include <imgui/imgui.h>
 #include <parameterservice.h>
 
@@ -78,12 +79,6 @@ namespace nap
 			showIntParameter(*byte_parameter);
 		});
 
-		registerParameterEditor(RTTI_OF(ParameterChar), [](Parameter& parameter)
-		{
-			ParameterChar* char_parameter = rtti_cast<ParameterChar>(&parameter);
-			showIntParameter(*char_parameter);
-		});
-
 		registerParameterEditor(RTTI_OF(ParameterBool), [](Parameter& parameter)
 		{
 			ParameterBool* bool_parameter = rtti_cast<ParameterBool>(&parameter);
@@ -91,6 +86,31 @@ namespace nap
 			bool value = bool_parameter->mValue;
 			if (ImGui::Checkbox(bool_parameter->getDisplayName().c_str(), &value))
 				bool_parameter->setValue(value);
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterString), [](Parameter& parameter)
+		{
+			ParameterString* string_parameter = rtti_cast<ParameterString>(&parameter);
+
+			char buffer[1024];
+			const size_t buffer_size = sizeof(buffer) / sizeof(*buffer);
+			const size_t string_length = string_parameter->mValue.length();
+			const size_t copy_size = std::min(string_length, buffer_size - 1);
+
+			// Copy string excluding null terminator
+			std::memcpy(buffer, string_parameter->mValue.data(), sizeof(char) * copy_size);
+
+			// Add null terminator
+			buffer[copy_size] = '\0';
+
+			// Draw multiline text input when the string has a line break character
+			bool is_multiline = std::strchr(buffer, '\r\n') != nullptr || std::strchr(buffer, '\n') != nullptr;
+			if(is_multiline
+				? ImGui::InputTextMultiline(string_parameter->getDisplayName().c_str(), buffer, buffer_size, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10))
+				: ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size))
+			{
+				string_parameter->setValue(std::string(buffer));
+			}	
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterRGBColorFloat), [](Parameter& parameter)
@@ -221,6 +241,21 @@ namespace nap
 			{
 				enum_parameter->setValue(value);
 			}
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterButton), [](Parameter& parameter)
+		{
+			ParameterButton* button_parameter = rtti_cast<ParameterButton>(&parameter);
+			ImGui::Button(button_parameter->getDisplayName().c_str());
+
+			if (ImGui::IsItemActivated())
+				button_parameter->setPressed(true);
+
+			if (ImGui::IsItemDeactivated())
+				button_parameter->setPressed(false);
+
+			if (ImGui::IsItemClicked())
+				button_parameter->click();
 		});
 	}
 

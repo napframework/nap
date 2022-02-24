@@ -36,12 +36,12 @@ namespace nap
 		const APIService& getAPIService() const;
 
 		/**
-		 * @return the api service
+		 * @return the web-socket service
 		 */
 		WebSocketService& getWebSocketService();
 
 		/**
-		 * @return const ref to the api service
+		 * @return const ref to the web-socket service
 		 */
 		const WebSocketService& getWebSocketService() const;
 

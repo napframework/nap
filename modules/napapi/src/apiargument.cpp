@@ -105,7 +105,7 @@ namespace nap
 	}
 
 
-	float nap::APIArgument::asDouble() const
+	double nap::APIArgument::asDouble() const
 	{
 		assert(isDouble());
 		return static_cast<const APIDouble*>(mAPIValue.get())->mValue;
@@ -131,7 +131,7 @@ namespace nap
 	}
 
 
-	char nap::APIArgument::asByte() const
+	uint8_t nap::APIArgument::asByte() const
 	{
 		assert(isByte());
 		return static_cast<const APIByte*>(mAPIValue.get())->mValue;

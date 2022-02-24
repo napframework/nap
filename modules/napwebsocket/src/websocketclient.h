@@ -113,7 +113,7 @@ namespace nap
 		 * Occurs when a new message from the server to this client is received.
 		 * @param msg the received message
 		 */
-		virtual void onMessageReceived(const WebSocketMessage& msg);
+		virtual void onMessageReceived(const WebSocketMessage& msg) = 0;
 
 	private:
 		// Called by web-socket client endpoint when the connection is opened
@@ -156,14 +156,6 @@ namespace nap
 		 * @param service the web-socket service that forwards events to the application.
 		 */
 		WebSocketClient(WebSocketService& service);
-
-		/**
-		 * Initialize this object after de-serialization.
-		 * Registers the web-socket client with the endpoint.
-		 * @param errorState contains the error message when initialization fails.
-		 * @return if initialization succeeded.
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Sends a message with the given opcode to the server. The message is send immediately. 

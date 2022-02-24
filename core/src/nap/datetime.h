@@ -102,6 +102,11 @@ namespace nap
 	};
 
 	/**
+	 * @return days of the week as a list, from Monday to Sunday.
+	 */
+	NAPAPI const std::array<EDay,7>& getDaysInWeek();
+
+	/**
 	 * Converts a day in to a string
 	 * @param day the day to convert in to a string 
 	 * @return the day as a string
@@ -196,9 +201,7 @@ namespace nap
 		*/
 		DateTime(const SystemTimeStamp& timeStamp);
 
-		/**
-		*	Default destructor, the timestamp will be
-		*/
+		// Default destructor
 		~DateTime() = default;
 
 		/**
@@ -268,9 +271,16 @@ namespace nap
 		void setTimeStamp(const SystemTimeStamp& timeStamp);
 
 		/**
-		*	@return the time stamp asscoiated with this object
-		*/
+		 * @return the time stamp associated with this object
+		 */
 		const SystemTimeStamp& getTimeStamp() const { return mTimeStamp; }
+
+		// Allows for DateTime to be compared
+		bool operator<(const DateTime& other) const { return this->mTimeStamp < other.mTimeStamp; }
+		bool operator==(const DateTime& other) const { return this->mTimeStamp == other.mTimeStamp; }
+		bool operator!=(const DateTime& other) const { return this->mTimeStamp != other.mTimeStamp; }
+		bool operator<=(const DateTime& other) const { return this->mTimeStamp <= other.mTimeStamp; }
+		bool operator>=(const DateTime& other) const { return this->mTimeStamp >= other.mTimeStamp; }
 
 	private:
 

@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Portal",
+    "Version": "1.0.0",
+    "Data": "data/portal.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
+    "RequiredModules": [
+        "mod_napapp",
+        "mod_napparametergui",
+        "mod_napportal"
+    ]
+}

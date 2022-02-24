@@ -320,7 +320,7 @@ namespace nap
 		std::queue<APIEventPtr> mAPIEvents;
 
 		// Mutex associated with setting / getting api events
-		std::mutex	mEventMutex;
+		std::mutex mEventMutex;
 
 		// Mutex associated with component registration and iteration
 		std::mutex mComponentMutex;
