@@ -16,6 +16,7 @@
 #include <parameterbutton.h>
 #include <scene.h>
 #include <app.h>
+#include <websocketserverendpoint.h>
 
 namespace nap
 {
@@ -45,7 +46,7 @@ namespace nap
 	 * reflected in the the web-interface after a refresh. To get a better feeling of how everything works together,
 	 * experiment with adding and removing portal items to the 'PortalEntity'.
 	 */
-	class PortalApp : public App
+	class WebPortalApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
@@ -53,7 +54,7 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		PortalApp(nap::Core& core) : App(core)	{ }
+		WebPortalApp(nap::Core& core) : App(core)	{ }
 
 		/**
 		 * Initialize all the services and app specific data structures
@@ -103,5 +104,6 @@ namespace nap
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;		///< Pointer to the render window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<ParameterButton>	mButton = nullptr;				///< Pointer to GUI button
+		ObjectPtr<WebSocketServerEndPoint> mServerEndPoint = nullptr;	//< Pointer to the web-socket server endpoint, manages all client 
 	};
 }	

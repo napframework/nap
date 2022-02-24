@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "portalapp.h"
+#include "webportalapp.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner using default event handler
-	nap::AppRunner<nap::PortalApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::WebPortalApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

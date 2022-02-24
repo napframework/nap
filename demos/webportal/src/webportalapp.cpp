@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "portalapp.h"
+#include "webportalapp.h"
 
 // External Includes
 #include <nap/core.h>
@@ -12,7 +12,7 @@
 
 // Register this application with RTTI, this is required by the AppRunner to
 // validate that this object is indeed an application
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebPortalApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -21,7 +21,7 @@ namespace nap
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
-	bool PortalApp::init(utility::ErrorState& error)
+	bool WebPortalApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService		= getCore().getService<nap::RenderService>();
@@ -46,6 +46,11 @@ namespace nap
 		// Get the scene that contains our entities and components
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
+			return false;
+
+		// Server end point, handles connections
+		mServerEndPoint = mResourceManager->findObject<nap::WebSocketServerEndPoint>("WebSocketServerEndPoint");
+		if (!error.check(mServerEndPoint != nullptr, "unable to find server end point with name WebSocketServerEndPoint"))
 			return false;
 
 		// Get button from the GUI and connect to its signals
@@ -75,17 +80,42 @@ namespace nap
 	/**
 	 * Called when the window is updating
 	 */
-	void PortalApp::update(double deltaTime)
+	void WebPortalApp::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the scene
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
 
-		// Draw the parameter GUI
+		// Setup the connectivity GUI
 		ImGui::SetNextWindowPos(ImVec2(32, 32), ImGuiCond_Once);
 		ImGui::SetNextWindowSize(ImVec2(640, 0), ImGuiCond_Once);
-		ImGui::Begin("Parameters");
-		mParameterGUI->show(false);
+
+		ImGui::Begin("Web Portal Demo");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Connect a web-portal to control the parameters in this window.");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Server Port: %d", mServerEndPoint->mPort).c_str());
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			mParameterGUI->show(false);
+		}
+		if (ImGui::CollapsingHeader("Connected Clients"))
+		{
+			// Get all connected clients
+			std::vector<std::string> host_names;
+			mServerEndPoint->getHostNames(host_names);
+
+			// Combine for display
+			std::string msg;
+			for (const auto& name : host_names)
+				msg += (name + "\n");
+
+			if (msg.empty())
+				msg = "No Connected Clients";
+
+			// Display block of text
+			ImGui::InputTextMultiline("Clients", &msg[0], msg.size(), ImVec2(-1.0f, ImGui::GetTextLineHeight() * 15), ImGuiInputTextFlags_ReadOnly);
+		}
 		ImGui::End();
 	}
 
@@ -93,7 +123,7 @@ namespace nap
 	/**
 	 * Called when the window is going to render
 	 */
-	void PortalApp::render()
+	void WebPortalApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -127,7 +157,7 @@ namespace nap
 	 * On the next update the render service automatically processes all window events.
 	 * If you want to listen to specific events associated with a window it's best to listen to a window's mWindowEvent signal.
 	 */
-	void PortalApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void WebPortalApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
@@ -137,7 +167,7 @@ namespace nap
 	 * Called by the app loop. It's best to forward messages to the input service for further processing later on.
 	 * In this case we also check if we need to toggle full-screen or exit the running app.
 	 */
-	void PortalApp::inputMessageReceived(InputEventPtr inputEvent)
+	void WebPortalApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -156,7 +186,7 @@ namespace nap
 	}
 
 
-	int PortalApp::shutdown()
+	int WebPortalApp::shutdown()
 	{
 		return 0;
 	}

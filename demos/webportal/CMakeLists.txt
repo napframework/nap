@@ -5,7 +5,7 @@ if(ANDROID)
     return()
 endif()
 
-project(portal)
+project(webportal)
 
 #add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
