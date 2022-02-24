@@ -71,11 +71,12 @@ namespace nap
 			components.emplace_back(RTTI_OF(ComputeComponent));
 		}
 
-		float				mSize = 0.5f;					///< Default size of a particle
-		float				mVelocity = 0.5f;				///< How fast the particles move
-		float				mVelocityVariation;				///< Deviation from initial velocity
-		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
-		int					mNumParticles = 1024;			///< Number of particles 
+		float										mSize = 0.5f;					///< Particle size
+		float										mTimeScale = 0.5f;				///< Time multiplier
+		float										mRotationVariation = 0.5f;		///< Rate of random variation in rotation speed
+		float										mRotationSpeed = 0.1f;			///< Base rotation speed
+		float										mSpeed = 1.0f;					///< Base speed
+		int											mNumParticles = 1024;			///< Number of particles 
 	};
 
 
@@ -115,14 +116,17 @@ namespace nap
 		 */
 		int getNumParticles() const										{ return mParticleMesh->mNumParticles; }
 
-		float mVelocityTimeScale = 0.15f;
-		float mVelocityVariationScale = 0.75f;
-		float mRotationSpeed = 1.0f;
-		float mParticleSize = 1.0f;
+		float										mRotationVariation = 0.75f;
+		float										mRotationSpeed = 1.0f;
+		float										mSpeed = 1.0f;
+		float										mParticleSize = 1.0f;
+		float										mTimeScale = 1.0f;
 
 	private:
 		RenderService*								mRenderService = nullptr;
 		std::unique_ptr<ParticleMesh>				mParticleMesh;
+
+		double										mDeltaTime = 0.0;
 		double										mElapsedTime = 0.0;
 
 		std::vector<ComputeComponentInstance*>		mComputeInstances;					// Compute instances found in the entity

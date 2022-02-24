@@ -126,10 +126,11 @@
                         }
                     },
                     "NumParticles": 100000,
-                    "Size": 0.1,
+                    "Size": 0.10000000149011612,
                     "RotationSpeed": 5.0,
-                    "Velocity": 0.75,
-                    "VelocityVariation": 0.85
+                    "Speed": 0.5,
+                    "TimeScale": 1.0,
+                    "RotationVariation": 1.0
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -370,27 +371,6 @@
                             "w": 1.0
                         }
                     }
-                },
-                {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_3c967f70",
-                    "Name": "rotation",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_411ccf52",
-                        "LowerBound": {
-                            "x": -1.0,
-                            "y": -1.0,
-                            "z": -1.0,
-                            "w": -1.0
-                        },
-                        "UpperBound": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0,
-                            "w": 1.0
-                        }
-                    }
                 }
             ]
         },
@@ -426,26 +406,28 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_0816be02",
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_5d9b4fa3",
                             "Name": "rotation",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
+                            "Value": 0.0
                         },
                         {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_e7ee127a",
-                            "Name": "color",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_20ffd4c0",
+                            "Name": "padding_0",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_a27e4554",
+                            "Name": "padding_1",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_60238506",
+                            "Name": "padding_2",
+                            "Value": 0
                         }
                     ]
                 },
@@ -488,26 +470,28 @@
                             }
                         },
                         {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_b822b7b5",
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_b01a6af3",
                             "Name": "rotation",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
+                            "Value": 0.0
                         },
                         {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_5c0d40fe",
-                            "Name": "color",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_129c0661",
+                            "Name": "padding_0",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_ce88f4e3",
+                            "Name": "padding_1",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_508e7718",
+                            "Name": "padding_2",
+                            "Value": 0
                         }
                     ]
                 },

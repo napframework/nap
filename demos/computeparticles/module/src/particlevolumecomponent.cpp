@@ -21,8 +21,9 @@ RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Velocity",					&nap::ParticleVolumeComponent::mVelocity,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VelocityVariation",			&nap::ParticleVolumeComponent::mVelocityVariation,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mSpeed,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("TimeScale",					&nap::ParticleVolumeComponent::mTimeScale,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParticleVolumeComponentInstance)
@@ -40,10 +41,11 @@ namespace nap
 		constexpr const char* uboStruct = "UBO";
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
-		constexpr const char* particleCount = "particleCount";
 
-		constexpr const char* ParticleBufferStruct = "ParticleBuffer";
-		constexpr const char* particles = "particles";
+		constexpr const char* speed = "speed";
+		constexpr const char* rotationSpeed = "rotationSpeed";
+		constexpr const char* rotationVariation = "rotationVariation";
+		constexpr const char* particleSize = "particleSize";
 
 		constexpr const char* vertexBufferStruct = "VertexBuffer";
 		constexpr const char* vertices = "vertices";
@@ -158,8 +160,9 @@ namespace nap
 		ParticleVolumeComponent* resource = getComponent<ParticleVolumeComponent>();
 
 		mParticleSize = resource->mSize;
-		mVelocityTimeScale = resource->mVelocity;
-		mVelocityVariationScale = resource->mVelocityVariation;
+		mTimeScale = resource->mTimeScale;
+		mSpeed = resource->mSpeed;
+		mRotationVariation = resource->mRotationVariation;
 		mRotationSpeed = resource->mRotationSpeed;
 
 		for (auto& comp : mComputeInstances)
@@ -184,31 +187,33 @@ namespace nap
 
 	void ParticleVolumeComponentInstance::update(double deltaTime)
 	{
-		mElapsedTime += deltaTime;
-
-		if (!mFirstUpdate)
-		{
-			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
-		}
-
-		// Update uniforms
-		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
-		if (ubo_struct != nullptr)
-		{
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::deltaTime)->setValue(static_cast<float>(deltaTime));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>("velocityTimeScale")->setValue(mVelocityTimeScale);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>("velocityVariationScale")->setValue(mVelocityVariationScale);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>("rotationSpeed")->setValue(mRotationSpeed);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>("particleSize")->setValue(mParticleSize);
-		}
-		mFirstUpdate = false;
+		// Update time
+		mDeltaTime = deltaTime * static_cast<double>(mTimeScale);
+		mElapsedTime += mDeltaTime;		
 	}
 
 
 	void ParticleVolumeComponentInstance::compute()
 	{
+		if (!mFirstUpdate)
+		{
+			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
+			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
+		}
+		mFirstUpdate = false;
+
+		// Update compute shader uniforms
+		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		if (ubo_struct != nullptr)
+		{
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::deltaTime)->setValue(static_cast<float>(mDeltaTime));
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::speed)->setValue(mSpeed);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::rotationSpeed)->setValue(mRotationSpeed);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::rotationVariation)->setValue(mRotationVariation);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::particleSize)->setValue(mParticleSize);
+		}
+
 		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 

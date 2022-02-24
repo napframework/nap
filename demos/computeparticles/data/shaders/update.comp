@@ -10,8 +10,11 @@ struct Particle
 {
 	vec4 position;
 	vec4 velocity;
-	vec4 rotation;
-	vec4 color;
+	float rotation;
+
+	uint padding_0;
+	uint padding_1;
+	uint padding_2;
 };
 
 layout(std430) readonly buffer ParticleBuffer_In
@@ -31,16 +34,19 @@ layout(std430) writeonly buffer VertexBuffer
 
 uniform UBO 
 {
-	float velocityTimeScale;
-	float velocityVariationScale;
+	float speed;
 	float rotationSpeed;
+	float rotationVariation;
 	float particleSize;
 	float deltaTime;
 	float elapsedTime;
-	int particleCount;
 } ubo; 
 
 
+// Forward declaration
+float simplex(vec3 v);
+
+// Translation matrix
 mat4 translate(vec3 d)
 {
 	return mat4(
@@ -51,6 +57,7 @@ mat4 translate(vec3 d)
 	);
 }
 
+// Rotation matrix
 mat4 rotate(vec3 axis, float angle)
 {
 	axis = normalize(axis);
@@ -66,36 +73,19 @@ mat4 rotate(vec3 axis, float angle)
 	));
 }
 
-float mod289(float x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec2 mod289(vec2 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec3 mod289(vec3 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-vec4 mod289(vec4 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-
-float rand(vec2 co) { return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
-float rand(vec2 co, float l) {return rand(vec2(rand(co), l));}
-
-float permute(float x) { return mod289(((x*34.0)+1.0)*x); }
-vec3 permute(vec3 x)   { return mod289(((x*34.0)+1.0)*x); }
-vec4 permute(vec4 x)   { return mod289(((x*34.0)+1.0)*x); }
-
-float taylorInvSqrt(float r) { return 1.79284291400159 - 0.85373472095314 * r; }
-vec4 taylorInvSqrt(vec4 r)   { return 1.79284291400159 - 0.85373472095314 * r; }
-
-float snoise(vec3 v);
 
 void main() 
 {
 	// Read
 	Particle p = subo_in.particles[gl_GlobalInvocationID.x];
 
-	float dx = snoise(p.velocity.xyz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
-	float dy = snoise(p.velocity.zyx * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
-	float dz = snoise(p.velocity.yxz * ubo.elapsedTime * ubo.velocityTimeScale) * ubo.velocityVariationScale;
+	vec3 vel = p.velocity.xyz * ubo.speed;
+	float simplex_x = simplex(vel.xyz * ubo.elapsedTime);
+	float simplex_y = simplex(vel.zyx * ubo.elapsedTime);
+	float simplex_z = simplex(vel.yxz * ubo.elapsedTime);
 
-	p.position.xyz += vec3(dx, dy, dz) * ubo.deltaTime;
-
-	// Write
-	subo_out.particles[gl_GlobalInvocationID.x] = p;
+	vec3 delta_pos = vec3(simplex_x, simplex_y, simplex_z) * ubo.deltaTime;
+	p.position.xyz += delta_pos;
 
 	// Create the position vertices
 	float extent = ubo.particleSize * 0.25;
@@ -108,15 +98,26 @@ void main()
 	edges[2] = vec4(-extent,	extent, 	0.0, 1.0);
 	edges[3] = vec4(extent,		extent, 	0.0, 1.0);
 
-	// Apply particle translation / rotation
+	// Compute particle translation
 	mat4 translation = translate(p.position.xyz);
-	mat4 rotation = rotate(p.position.xyz, p.rotation.w * ubo.rotationSpeed * (ubo.elapsedTime + 1.0));
+
+	// Compute particle rotation
+	float delta_rot = ubo.rotationSpeed * (p.velocity.w * (ubo.rotationVariation + 1.0)) * ubo.deltaTime;
+	p.rotation += delta_rot;
+
+	mat4 rotation = rotate(p.velocity.xyz, p.rotation);
+
+	// Compute transform
+	mat4 trans = translation * rotation;
 
 	// Write vertex storage buffer
 	for (int i=0; i<4; i++)
 	{
-		vertices[gl_GlobalInvocationID.x*4+i] = translation * rotation * edges[i];
+		vertices[gl_GlobalInvocationID.x*4+i] = trans * edges[i];
 	}
+
+	// Write particle storage buffer
+	subo_out.particles[gl_GlobalInvocationID.x] = p;
 }
 
 
@@ -135,7 +136,22 @@ void main()
 //               https://github.com/stegu/webgl-noise
 // 
 
-float snoise(vec3 v)
+float mod289(float x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec2 mod289(vec2 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec3 mod289(vec3 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 mod289(vec4 x)   { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+
+float rand(vec2 co) { return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+float rand(vec2 co, float l) {return rand(vec2(rand(co), l));}
+
+float permute(float x) { return mod289(((x*34.0)+1.0)*x); }
+vec3 permute(vec3 x)   { return mod289(((x*34.0)+1.0)*x); }
+vec4 permute(vec4 x)   { return mod289(((x*34.0)+1.0)*x); }
+
+float taylorInvSqrt(float r) { return 1.79284291400159 - 0.85373472095314 * r; }
+vec4 taylorInvSqrt(vec4 r)   { return 1.79284291400159 - 0.85373472095314 * r; }
+
+float simplex(vec3 v)
 { 
 	const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
 	const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
