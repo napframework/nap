@@ -64,7 +64,7 @@ namespace nap
 		for (const auto& day : days)
 		{
 			auto calendar_item = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(day));
-			assert(item != nullptr);
+			assert(calendar_item != nullptr);
 			times.emplace_back(calendar_item->getTime().toString());
 			times.emplace_back(calendar_item->getDuration().toString());
 		}
@@ -82,7 +82,7 @@ namespace nap
 		for (const auto& day : days)
 		{
 			auto calendar_item = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(day));
-			assert(item != nullptr);
+			assert(calendar_item != nullptr);
 			calendar_item->setTime(CalendarItem::Time::fromString(times.at(idx + 0)));
 			calendar_item->setTime(CalendarItem::Time::fromString(times.at(idx + 1)));
 			idx += 2;
