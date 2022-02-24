@@ -23,7 +23,7 @@ import sys
 # it will have completed initialisation.
 WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
 if sys.platform.startswith('linux') and not machine() == 'x86_64':
-    WAIT_SECONDS_FOR_PROCESS_HEALTH = 15
+    WAIT_SECONDS_FOR_PROCESS_HEALTH = 30
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -49,7 +49,7 @@ NAPKIN_SUCCESS_EXIT_CODE = 0
 # Seconds to wait for a Napkin load project and exit with expected exit code
 NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
 if sys.platform.startswith('linux') and not machine() == 'x86_64':
-    WAIT_SECONDS_FOR_PROCESS_HEALTH = 80
+    NAPKIN_SECONDS_WAIT_FOR_PROCESS = 40
 
 # Build directory names
 LINUX_BUILD_DIR = 'build_dir'
