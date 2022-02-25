@@ -10,6 +10,7 @@
 #include <utility/stringutils.h>
 #include <parametervec.h>
 #include <parameternumeric.h>
+#include <parametersimple.h>
 
 // Local Includes
 #include "sequenceplayeradapter.h"
@@ -73,7 +74,7 @@ namespace nap
             // check what type of parameter is being used and create a track that fits the parameter
             // ParameterVec2 = SequenceTrackCurveVec2
             // ParameterVec3 = SequenceTrackCurveVec3
-            // ParameterFloat, ParameterLong, ParameterInt & ParameterDouble = SequenceTrackCurveFloat
+            // ParameterFloat, ParameterLong, ParameterInt, ParameterBool & ParameterDouble = SequenceTrackCurveFloat
             if (curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterVec2))
             {
                 sequence_track = std::make_unique<SequenceTrackCurveVec2>();
@@ -82,7 +83,11 @@ namespace nap
             {
                 sequence_track = std::make_unique<SequenceTrackCurveVec3>();
             }
-            else if (curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterFloat) || curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterLong) || curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterInt) || curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterDouble))
+            else if (curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterFloat) ||
+                     curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterLong) ||
+                     curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterInt) ||
+                     curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterDouble) ||
+                     curve_output->mParameter.get()->get_type()==RTTI_OF(ParameterBool))
             {
                 sequence_track = std::make_unique<SequenceTrackCurveFloat>();
             }
@@ -176,6 +181,11 @@ namespace nap
             if (curve_output.mParameter.get()->get_type()==RTTI_OF(ParameterInt))
             {
                 return std::make_unique<SequencePlayerCurveAdapter<float, ParameterInt, int>>(track, curve_output);
+            }
+
+            if (curve_output.mParameter.get()->get_type()==RTTI_OF(ParameterBool))
+            {
+                return std::make_unique<SequencePlayerCurveAdapter<float, ParameterBool, bool>>(track, curve_output);
             }
 
             assert(false); // no correct parameter type found!

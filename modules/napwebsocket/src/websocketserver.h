@@ -9,7 +9,6 @@
 #include "websocketinterface.h"
 
 // External Includes
-#include <queue>
 #include <rtti/factory.h>
 #include <nap/resourceptr.h>
 
@@ -24,14 +23,23 @@ namespace nap
 	{
 		RTTI_ENABLE(WebSocketInterface)
 	public:
+		/**
+		 * Constructor
+		 * @param service the web-socket service that forwards events to the application.
+		 */
 		IWebSocketServer(WebSocketService& service);
 
 		/**
-		 * Registers the server with the end point.
+		 * Registers the web-socket server interface with the endpoint.
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Unregisters the web-socket server interface with the endpoint.
+		 */
+		virtual void onDestroy() override;
 
 		// Called by web-socket server endpoint when a new message is received
 		virtual void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message) = 0;
@@ -72,18 +80,6 @@ namespace nap
 		 * @param service the web-socket service that forwards events to the application.
 		 */
 		WebSocketServer(WebSocketService& service);
-
-		/**
-		 * Initializes the server.
-		 * @param errorState contains the error if the server can't be initialized.
-		 * @return if the server initialized correctly.
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * Destroys the server.
-		 */
-		virtual void onDestroy() override;
 
 		/**
 		 * Sends a message to a client.

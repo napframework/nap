@@ -23,16 +23,19 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// IWebSocketServer
+	//////////////////////////////////////////////////////////////////////////
 
-	WebSocketServer::WebSocketServer(WebSocketService& service) : IWebSocketServer(service)
+	IWebSocketServer::IWebSocketServer(WebSocketService& service) : WebSocketInterface(service)
 	{
+
 	}
 
 
-	bool WebSocketServer::init(utility::ErrorState& errorState)
+	bool IWebSocketServer::init(utility::ErrorState& errorState)
 	{
-		// Initialize base class
-		if (!IWebSocketServer::init(errorState))
+		if (!WebSocketInterface::init(errorState))
 			return false;
 
 		mEndPoint->registerListener(*this);
@@ -40,9 +43,19 @@ namespace nap
 	}
 
 
-	void WebSocketServer::onDestroy()
+	void IWebSocketServer::onDestroy()
 	{
 		mEndPoint->unregisterListener(*this);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// IWebSocketServer
+	//////////////////////////////////////////////////////////////////////////
+
+	WebSocketServer::WebSocketServer(WebSocketService& service) : IWebSocketServer(service)
+	{
+
 	}
 
 
@@ -97,16 +110,5 @@ namespace nap
 	void WebSocketServer::onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message)
 	{
 		addEvent(std::make_unique<WebSocketMessageReceivedEvent>(connection, message));
-	}
-
-
-	IWebSocketServer::IWebSocketServer(WebSocketService& service) : WebSocketInterface(service)
-	{
-
-	}
-
-	bool IWebSocketServer::init(utility::ErrorState& errorState)
-	{
-		return WebSocketInterface::init(errorState);
 	}
 }

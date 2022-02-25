@@ -102,7 +102,7 @@ namespace nap
 		 * The client is added to the list of internally managed clients.
 		 * @param client the client to register
 		 * @param error contains the error is registration fails.
-		 * @return the newly created web-socket connection
+		 * @return if the client was registered successfully
 		 */
 		bool registerClient(IWebSocketClient& client, utility::ErrorState& error);
 
