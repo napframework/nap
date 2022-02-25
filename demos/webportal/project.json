@@ -1,7 +1,7 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "Portal",
+    "Title": "Webportal",
     "Version": "1.0.0",
     "Data": "data/portal.json",
     "PathMapping": "cache/path_mapping.json",
