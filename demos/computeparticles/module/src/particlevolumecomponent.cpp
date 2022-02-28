@@ -19,11 +19,11 @@
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mTimeScale,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Displacement",				&nap::ParticleVolumeComponent::mDisplacement,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mDisplacement,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TimeScale",					&nap::ParticleVolumeComponent::mTimeScale,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParticleVolumeComponentInstance)
@@ -41,12 +41,10 @@ namespace nap
 		constexpr const char* uboStruct = "UBO";
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
-
 		constexpr const char* displacement = "displacement";
 		constexpr const char* rotationSpeed = "rotationSpeed";
 		constexpr const char* rotationVariation = "rotationVariation";
 		constexpr const char* particleSize = "particleSize";
-
 		constexpr const char* vertexBufferStruct = "VertexBuffer";
 		constexpr const char* vertices = "vertices";
 	}

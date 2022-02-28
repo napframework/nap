@@ -128,8 +128,8 @@
                     "NumParticles": 100000,
                     "Size": 0.07999999821186066,
                     "RotationSpeed": 5.0,
-                    "Speed": 0.4000000059604645,
-                    "TimeScale": 0.33000001311302187,
+                    "Displacement": 0.5,
+                    "Speed": 0.25,
                     "RotationVariation": 1.0
                 },
                 {
