@@ -21,7 +21,7 @@ RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mSpeed,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mDisplacement,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TimeScale",					&nap::ParticleVolumeComponent::mTimeScale,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -42,7 +42,7 @@ namespace nap
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
 
-		constexpr const char* speed = "speed";
+		constexpr const char* displacement = "displacement";
 		constexpr const char* rotationSpeed = "rotationSpeed";
 		constexpr const char* rotationVariation = "rotationVariation";
 		constexpr const char* particleSize = "particleSize";
@@ -161,7 +161,7 @@ namespace nap
 
 		mParticleSize = resource->mSize;
 		mTimeScale = resource->mTimeScale;
-		mSpeed = resource->mSpeed;
+		mDisplacement = resource->mDisplacement;
 		mRotationVariation = resource->mRotationVariation;
 		mRotationSpeed = resource->mRotationSpeed;
 
@@ -208,7 +208,7 @@ namespace nap
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::deltaTime)->setValue(static_cast<float>(mDeltaTime));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::speed)->setValue(mSpeed);
+			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::displacement)->setValue(mDisplacement);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::rotationSpeed)->setValue(mRotationSpeed);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::rotationVariation)->setValue(mRotationVariation);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::particleSize)->setValue(mParticleSize);

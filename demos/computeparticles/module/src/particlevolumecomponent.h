@@ -75,7 +75,7 @@ namespace nap
 		float										mTimeScale = 0.5f;				///< Time multiplier
 		float										mRotationVariation = 0.5f;		///< Rate of random variation in rotation speed
 		float										mRotationSpeed = 0.1f;			///< Base rotation speed
-		float										mSpeed = 1.0f;					///< Base speed
+		float										mDisplacement = 1.0f;			///< 
 		int											mNumParticles = 1024;			///< Number of particles 
 	};
 
@@ -118,7 +118,7 @@ namespace nap
 
 		float										mRotationVariation = 1.0f;
 		float										mRotationSpeed = 1.0f;
-		float										mSpeed = 1.0f;
+		float										mDisplacement = 1.0f;
 		float										mParticleSize = 1.0f;
 		float										mTimeScale = 1.0f;
 

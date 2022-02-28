@@ -80,10 +80,10 @@ namespace nap
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Text(utility::stringFormat("Particles: %d", mNumParticles).c_str());
-		ImGui::SliderFloat("Time Scale", &volume.mTimeScale, 0.0f, 2.0f);
-		ImGui::SliderFloat("Speed", &volume.mSpeed, 0.0, 2.0f);
+		ImGui::SliderFloat("Speed", &volume.mTimeScale, 0.0f, 2.0f);
+		ImGui::SliderFloat("Displacement", &volume.mDisplacement, 0.0, 2.0f);
+		ImGui::SliderFloat("Size", &volume.mParticleSize, 0.0, 1.0f);
 		ImGui::SliderFloat("Rotation Speed", &volume.mRotationSpeed, 0.0, 10.0f);
-		ImGui::SliderFloat("Particle Size", &volume.mParticleSize, 0.0, 1.0f);
 		ImGui::SliderFloat("Rotation Variation", &volume.mRotationVariation, 0.0, 1.0f);
 
 		ImGui::End();
