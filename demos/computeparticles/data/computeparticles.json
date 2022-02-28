@@ -13,7 +13,7 @@
                         "Type": "nap::StorageUniformVec4Buffer",
                         "mID": "StorageUniformVec4Buffer_970dc79d",
                         "Name": "vertices",
-                        "Buffer": "GPUVec4Buffer_Vertices"
+                        "Buffer": "ParticleVertexBuffer"
                     }
                 }
             ],
@@ -169,7 +169,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_2f2aafc2",
                                     "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_A"
+                                    "Buffer": "ParticleComputeBufferA"
                                 }
                             },
                             {
@@ -180,7 +180,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_80e8d81c",
                                     "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_B"
+                                    "Buffer": "ParticleComputeBufferB"
                                 }
                             }
                         ],
@@ -203,7 +203,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_b40f779b",
                                     "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_B"
+                                    "Buffer": "ParticleComputeBufferB"
                                 }
                             },
                             {
@@ -214,7 +214,7 @@
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_00e07917",
                                     "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_A"
+                                    "Buffer": "ParticleComputeBufferA"
                                 }
                             }
                         ],
@@ -328,7 +328,7 @@
         },
         {
             "Type": "nap::StructBufferFillPolicy",
-            "mID": "StructBufferFillPolicy_9e877e2d",
+            "mID": "ParticleFillPolicy",
             "VariableFillPolicies": [
                 {
                     "Type": "nap::Vec4FillPolicyEntry",
@@ -376,7 +376,7 @@
         },
         {
             "Type": "nap::StructGPUBuffer",
-            "mID": "StructGPUBuffer_Particles_A",
+            "mID": "ParticleComputeBufferA",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -435,12 +435,12 @@
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "FillPolicy": "StructBufferFillPolicy_9e877e2d",
+            "FillPolicy": "ParticleFillPolicy",
             "Clear": false
         },
         {
             "Type": "nap::StructGPUBuffer",
-            "mID": "StructGPUBuffer_Particles_B",
+            "mID": "ParticleComputeBufferB",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -504,7 +504,7 @@
         },
         {
             "Type": "nap::Vec4VertexBuffer",
-            "mID": "GPUVec4Buffer_Vertices",
+            "mID": "ParticleVertexBuffer",
             "Count": 400000,
             "Usage": "Static",
             "DescriptorType": "Storage",
