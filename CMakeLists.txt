@@ -171,6 +171,8 @@ add_subdirectory(demos/artnetsend)
 add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/artnetreceive/module)
 add_subdirectory(demos/webportal)
+add_subdirectory(demos/orb)
+add_subdirectory(demos/orb/module)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

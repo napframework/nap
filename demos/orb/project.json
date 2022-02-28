@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Orb",
+    "Version": "1.0.0",
+    "Data": "data/orb.json",
+    "PathMapping": "cache/path_mapping.json",
+    "RequiredModules": [
+        "mod_orb",
+        "mod_napapp",
+        "mod_napcameracontrol",
+        "mod_napimgui",
+        "mod_napparametergui"
+    ]
+}
