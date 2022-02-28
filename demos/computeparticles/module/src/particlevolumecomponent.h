@@ -114,9 +114,9 @@ namespace nap
 		/**
 		 * @return the number of particles
 		 */
-		int getNumParticles() const										{ return mParticleMesh->mNumParticles; }
+		int getNumParticles() const					{ return mParticleMesh->mNumParticles; }
 
-		float										mRotationVariation = 0.75f;
+		float										mRotationVariation = 1.0f;
 		float										mRotationSpeed = 1.0f;
 		float										mSpeed = 1.0f;
 		float										mParticleSize = 1.0f;

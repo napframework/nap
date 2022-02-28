@@ -44,7 +44,6 @@ namespace nap
 		mParticleEntity				= scene->findEntity("ParticleVolumeEntity");
 
 		mNumParticles = mParticleEntity->getComponent<ParticleVolumeComponentInstance>().getNumParticles();
-
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
@@ -78,10 +77,8 @@ namespace nap
 		ImGui::Begin("Controls");
 
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
 		ImGui::Text(utility::stringFormat("Particles: %d", mNumParticles).c_str());
 		ImGui::SliderFloat("Time Scale", &volume.mTimeScale, 0.0f, 2.0f);
 		ImGui::SliderFloat("Speed", &volume.mSpeed, 0.0, 2.0f);
