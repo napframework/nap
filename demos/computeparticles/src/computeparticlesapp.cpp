@@ -29,14 +29,8 @@ namespace nap
 		mSceneService	= getCore().getService<SceneService>();
 		mGuiService		= getCore().getService<IMGuiService>();
 
-		// Get resource manager and load
-		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("computeparticles.json", error))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;                
-		}
-		
+		// Get resource manager and find required resources and entities. 
+		mResourceManager = getCore().getResourceManager();		
 		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
 		mCameraEntity				= scene->findEntity("CameraEntity");
