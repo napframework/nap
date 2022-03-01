@@ -114,11 +114,9 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mBoundsEntity;
 
 		rtti::ObjectPtr<RenderTarget> mRenderTarget;
-
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		std::unique_ptr<ParameterGUI> mParameterGUI;
-
-		int mNumBoids;
+		bool mShowGUI = true;
+		int mNumBoids = 0;
 
 		// RenderContrast uniforms
 		ParameterFloat* mContrastParam = nullptr;

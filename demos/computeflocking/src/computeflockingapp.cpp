@@ -245,14 +245,18 @@ namespace nap
 			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 
-		// Update GUI
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
-		mParameterGUI->show(false);
-		ImGui::End();
+		// Prepare gui if requested
+		if (mShowGUI)
+		{
+			ImGui::Begin("Controls");
+			ImGui::Text(getCurrentDateTime().toString().c_str());
+			ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "'wasd' keys to move, mouse + left mouse button to look");
+			ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, "press 'h' to hide this window");
+			ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+			ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
+			mParameterGUI->show(false);
+			ImGui::End();
+		}
 
 		// Update uniforms
 		mContrastUniform->setValue(mContrastParam->mValue);
@@ -369,9 +373,14 @@ namespace nap
 				quit();
 			}
 			// Toggle fullscreen on 'f'
-			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			else if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
 				mRenderWindow->toggleFullscreen();
+			}
+			// Toggle show gui
+			else if (press_event->mKey == nap::EKeyCode::KEY_h)
+			{
+				mShowGUI = !mShowGUI;
 			}
 		}
 		mInputService->addEvent(std::move(inputEvent));
