@@ -732,7 +732,7 @@
                 {
                     "Type": "nap::RenderGnomonComponent",
                     "mID": "RenderGnomonComponent",
-                    "Visible": true,
+                    "Visible": false,
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -769,8 +769,8 @@
                             "Name": "color",
                             "Value": {
                                 "x": 1.0,
-                                "y": 0.314,
-                                "z": 0.314
+                                "y": 0.3140000104904175,
+                                "z": 0.3140000104904175
                             }
                         },
                         {

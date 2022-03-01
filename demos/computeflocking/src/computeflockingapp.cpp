@@ -103,8 +103,6 @@ namespace nap
 
 		// Get the bloom component responsible for producing a bloom texture
 		mBloomComponent = &mRenderEntity->getComponent<RenderBloomComponentInstance>();
-		if (!errorState.check(mBloomComponent != nullptr, "Missing component nap::RenderBloomComponent with id 'RenderBloom'"))
-			return false;
 
 		// Get the bounds mesh component
 		mBoundsAtmosphereMeshComponent = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
@@ -116,10 +114,11 @@ namespace nap
 		if (!errorState.check(mBoundsWireMeshComponent != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsWireFrame'"))
 			return false;
 
+		// Get the render gnomon component
+		mRenderGnomonComponent = &mWorldEntity->getComponent<RenderGnomonComponentInstance>();
+
 		// Get the camera component
 		mPerspCameraComponent = &mCameraEntity->getComponent<PerspCameraComponentInstance>();
-		if (!errorState.check(mPerspCameraComponent != nullptr, "Missing component 'nap::PerspCameraComponent'"))
-			return false;
 
 		// Get boid target point mesh and translate component
 		const auto boid_target_entity = scene->findEntity("BoidTargetEntity");
@@ -276,9 +275,10 @@ namespace nap
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
 		mBoundsCameraPositionUniform->setValue(camera_transform.getTranslate());
 
-		// Update if we need to display bounds
+		// Update if we need to display bounds and gnomon
 		mBoundsWireMeshComponent->setVisible(mShowBoundsParam->getValue());
 		mBoundsAtmosphereMeshComponent->setVisible(mShowBoundsParam->getValue());
+		mRenderGnomonComponent->setVisible(mShowBoundsParam->getValue());
 	}
 
 

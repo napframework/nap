@@ -21,6 +21,7 @@
 #include <parameternumeric.h>
 #include <nap/signalslot.h>
 #include <parametersimple.h>
+#include <rendergnomoncomponent.h>
 
 namespace nap
 {
@@ -159,5 +160,6 @@ namespace nap
 		RenderableMeshComponentInstance*		mTargetPointMeshComponent = nullptr;
 		RenderableMeshComponentInstance*		mBoundsAtmosphereMeshComponent = nullptr;
 		RenderableMeshComponentInstance*		mBoundsWireMeshComponent = nullptr;
+		RenderGnomonComponentInstance*			mRenderGnomonComponent = nullptr;
 	};
 }
