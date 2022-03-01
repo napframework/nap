@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_computeflocking", "0.2.0")
+NAP_MODULE("mod_computeflocking", "1.0.0")

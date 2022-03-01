@@ -60,4 +60,10 @@ namespace nap
 	{
 		mElapsedTime = 0.0f;
 	}
+
+
+	void BoidTargetTranslateComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.push_back(RTTI_OF(TransformComponent));
+	}
 }

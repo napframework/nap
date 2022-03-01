@@ -308,7 +308,6 @@ namespace nap
 
 			// Offscreen color pass -> Render all available geometry to ColorTexture
 			mRenderTarget->beginRendering();
-
 			mRenderService->renderObjects(*mRenderTarget, mCameraEntity->getComponent<PerspCameraComponentInstance>(), render_comps);	
 			mRenderTarget->endRendering();
 
