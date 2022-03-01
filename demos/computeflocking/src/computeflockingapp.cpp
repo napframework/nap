@@ -49,8 +49,6 @@ namespace nap
 		mResourceManager->mPreResourcesLoadedSignal.connect(mCacheSlot);
 		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSlot);
 
-		mGuiService->selectWindow(mRenderWindow);
-
 		return true;
 	}
 
@@ -113,6 +111,11 @@ namespace nap
 		if (!errorState.check(mBoundsAtmosphereMeshComponent != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsFill'"))
 			return false;
 
+		// Get the bounds wire frame component
+		mBoundsWireMeshComponent = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsWireFrame");
+		if (!errorState.check(mBoundsWireMeshComponent != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsWireFrame'"))
+			return false;
+
 		// Get the camera component
 		mPerspCameraComponent = &mCameraEntity->getComponent<PerspCameraComponentInstance>();
 		if (!errorState.check(mPerspCameraComponent != nullptr, "Missing component 'nap::PerspCameraComponent'"))
@@ -169,6 +172,10 @@ namespace nap
 		if (!errorState.check(mBlendParam != nullptr, "Missing float parameter 'BloomBlendParameter'"))
 			return false;
 
+		mShowBoundsParam = rtti_cast<ParameterBool>(mParameterGUI->mParameterGroup->findParameterRecursive("ShowBoundsParameter").get());
+		if (!errorState.check(mShowBoundsParam != nullptr, "Missing bool parameter 'ShowBoundsParameter'"))
+			return false;
+
 		mBoundsRadiusParam = mFlockingSystemComponent->getResource().mBoundsRadiusParam.get();
 
 		// Load preset
@@ -190,12 +197,11 @@ namespace nap
 
 		// Sample default color values from loaded color palette - overrides preset
 		const auto palette = mGuiService->getPalette();
-		RGBColorFloat diffuse_color = palette.mHighlightColor1.convert<RGBColorFloat>();
-		RGBColorFloat diffuse_color_ex = palette.mHighlightColor2.convert<RGBColorFloat>();
-		RGBColorFloat bg_color = palette.mDarkColor.convert<RGBColorFloat>();
-
-		mFlockingSystemComponent->getResource().mDiffuseColorParam->setValue(diffuse_color);
-		mFlockingSystemComponent->getResource().mDiffuseColorExParam->setValue(diffuse_color_ex);
+		mFlockingSystemComponent->getResource().mDiffuseColorParam->setValue(palette.mHighlightColor1);
+		mFlockingSystemComponent->getResource().mDiffuseColorExParam->setValue(palette.mHighlightColor2);
+		mFlockingSystemComponent->getResource().mLightColorParam->setValue(palette.mHighlightColor4);
+		mFlockingSystemComponent->getResource().mHaloColorParam->setValue(palette.mHighlightColor4);
+		mFlockingSystemComponent->getResource().mSpecularColorParam->setValue(palette.mHighlightColor2);
 
 		mRenderTarget->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
@@ -265,6 +271,10 @@ namespace nap
 		// Update camera position
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
 		mBoundsCameraPositionUniform->setValue(camera_transform.getTranslate());
+
+		// Update if we need to display bounds
+		mBoundsWireMeshComponent->setVisible(mShowBoundsParam->getValue());
+		mBoundsAtmosphereMeshComponent->setVisible(mShowBoundsParam->getValue());
 	}
 
 

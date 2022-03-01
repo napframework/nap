@@ -113,7 +113,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundsFill",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "SphereBoundsMesh",
                     "MaterialInstance": {
                         "Material": "BoundsMaterial",
@@ -213,7 +213,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundsWireFrame",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "SphereBoundsWireFrameMesh",
                     "MaterialInstance": {
                         "Material": "ConstantMaterial",
@@ -1050,6 +1050,18 @@
                     "mID": "RenderGroup",
                     "Parameters": [
                         {
+                            "Type": "nap::ParameterBool",
+                            "mID": "ShowBoundsParameter",
+                            "Name": "Show Bounds",
+                            "Value": false
+                        },
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "RandomColorParameter",
+                            "Name": "Random Color",
+                            "Value": false
+                        },
+                        {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "DiffuseColorParameter",
                             "Name": "DiffuseColor",
@@ -1108,12 +1120,6 @@
                                     1.0
                                 ]
                             }
-                        },
-                        {
-                            "Type": "nap::ParameterBool",
-                            "mID": "RandomColorParameter",
-                            "Name": "RandomColor",
-                            "Value": false
                         },
                         {
                             "Type": "nap::ParameterVec3",
@@ -1249,8 +1255,8 @@
             "mID": "ColorTexture",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1267,8 +1273,8 @@
             "mID": "ColorTextureContrast",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1285,8 +1291,8 @@
             "mID": "ColorTextureFinal",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {

@@ -20,6 +20,7 @@
 #include <parametergui.h>
 #include <parameternumeric.h>
 #include <nap/signalslot.h>
+#include <parametersimple.h>
 
 namespace nap
 {
@@ -129,6 +130,9 @@ namespace nap
 		ParameterFloat* mSaturationParam = nullptr;
 		UniformFloatInstance* mSaturationUniform = nullptr;
 
+		// If bounds are displayed
+		ParameterBool* mShowBoundsParam = nullptr;
+
 		// RenderComposite uniforms
 		ParameterFloat* mBlendParam = nullptr;
 		UniformFloatInstance* mBlendUniform = nullptr;
@@ -156,5 +160,6 @@ namespace nap
 		RenderToTextureComponentInstance*		mCompositeComponent = nullptr;
 		RenderableMeshComponentInstance*		mTargetPointMeshComponent = nullptr;
 		RenderableMeshComponentInstance*		mBoundsAtmosphereMeshComponent = nullptr;
+		RenderableMeshComponentInstance*		mBoundsWireMeshComponent = nullptr;
 	};
 }

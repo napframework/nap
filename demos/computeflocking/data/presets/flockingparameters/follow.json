@@ -21,7 +21,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "BoidSizeParameter",
                             "Name": "BoidSize",
-                            "Value": 0.20000000298023225,
+                            "Value": 0.10000000149011612,
                             "Minimum": 0.0,
                             "Maximum": 4.0
                         },
@@ -113,6 +113,18 @@
                     "mID": "RenderGroup",
                     "Parameters": [
                         {
+                            "Type": "nap::ParameterBool",
+                            "mID": "ShowBoundsParameter",
+                            "Name": "ShowBounds",
+                            "Value": false
+                        },
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "RandomColorParameter",
+                            "Name": "RandomColor",
+                            "Value": false
+                        },
+                        {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "DiffuseColorParameter",
                             "Name": "DiffuseColor",
@@ -142,9 +154,9 @@
                             "Name": "LightColor",
                             "Value": {
                                 "Values": [
-                                    0.9999899864196777,
-                                    0.9999921917915344,
-                                    1.0
+                                    1.0,
+                                    0.3137255012989044,
+                                    0.3137255012989044
                                 ]
                             }
                         },
@@ -155,8 +167,8 @@
                             "Value": {
                                 "Values": [
                                     1.0,
-                                    1.0,
-                                    1.0
+                                    0.3137255012989044,
+                                    0.3137255012989044
                                 ]
                             }
                         },
@@ -166,17 +178,11 @@
                             "Name": "SpecularColor",
                             "Value": {
                                 "Values": [
+                                    0.8392156958580017,
                                     1.0,
-                                    1.0,
-                                    1.0
+                                    0.6392157077789307
                                 ]
                             }
-                        },
-                        {
-                            "Type": "nap::ParameterBool",
-                            "mID": "RandomColorParameter",
-                            "Name": "RandomColor",
-                            "Value": false
                         },
                         {
                             "Type": "nap::ParameterVec3",
@@ -203,7 +209,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ShininessParameter",
                             "Name": "Shininess",
-                            "Value": 8.0,
+                            "Value": 10.201000213623047,
                             "Minimum": 0.0,
                             "Maximum": 32.0
                         },
@@ -227,7 +233,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "SpecularIntensityParameter",
                             "Name": "SpecularIntensity",
-                            "Value": 0.35600000619888308,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -235,7 +241,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "FresnelScaleParameter",
                             "Name": "FresnelScale",
-                            "Value": 0.6000000238418579,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 4.0
                         },
@@ -251,7 +257,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "BloomBlendParameter",
                             "Name": "BloomBlend",
-                            "Value": 0.5910000205039978,
+                            "Value": 0.5,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
