@@ -17,8 +17,8 @@ namespace nap
 	 */
 	enum class EBlurSamples : uint
 	{
-		X5,				///< 5x5 kernel, linear sampling
-		X9				///< 9x9 kernel, linear sampling
+		X5 = 0,				///< 5x5 kernel, linear sampling
+		X9 = 1				///< 9x9 kernel, linear sampling
 	};
 
 	/**
