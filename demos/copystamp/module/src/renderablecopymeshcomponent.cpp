@@ -181,7 +181,7 @@ namespace nap
 		// Draw individual shapes inside mesh
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			const ValueGPUBuffer& index_buffer = mesh.getIndexBuffer(index);
+			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
