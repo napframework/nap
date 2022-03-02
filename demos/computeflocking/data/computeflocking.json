@@ -576,20 +576,12 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderBloomComponent",
-                    "mID": "RenderBloom",
-                    "Visible": true,
-                    "PassCount": 3,
-                    "Kernel": "5x5",
-                    "InputTexture": "ColorTextureContrast"
-                },
-                {
                     "Type": "nap::RenderToTextureComponent",
-                    "mID": "RenderContrast",
+                    "mID": "ChangeColor",
                     "Visible": true,
                     "OutputTexture": "ColorTextureContrast",
                     "MaterialInstance": {
-                        "Material": "ContrastMaterial",
+                        "Material": "ColorAdjustmentMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -647,8 +639,16 @@
                     }
                 },
                 {
+                    "Type": "nap::RenderBloomComponent",
+                    "mID": "ApplyBloom",
+                    "Visible": true,
+                    "PassCount": 3,
+                    "Kernel": "5x5",
+                    "InputTexture": "ColorTextureContrast"
+                },
+                {
                     "Type": "nap::RenderToTextureComponent",
-                    "mID": "RenderComposite",
+                    "mID": "BlendTogether",
                     "Visible": true,
                     "OutputTexture": "ColorTextureFinal",
                     "MaterialInstance": {
@@ -802,6 +802,51 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "ColorAdjustmentMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_a71198c6",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_3bd65545",
+                            "Name": "brightness",
+                            "Value": 0.0
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_e6d29db6",
+                            "Name": "contrast",
+                            "Value": 0.10000000149011612
+                        }
+                    ]
+                }
+            ],
+            "StorageUniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2D",
+                    "mID": "Sampler2D_6d730852",
+                    "Name": "colorTexture",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Texture": "ColorTextureContrast"
+                }
+            ],
+            "Shader": "ColorAdjustmentShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "ColorTextureMaterial",
             "Uniforms": [],
             "StorageUniforms": [],
@@ -869,51 +914,6 @@
             "StorageUniforms": [],
             "Samplers": [],
             "Shader": "ConstantShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "ContrastMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_a71198c6",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_3bd65545",
-                            "Name": "brightness",
-                            "Value": 0.0
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_e6d29db6",
-                            "Name": "contrast",
-                            "Value": 0.10000000149011612
-                        }
-                    ]
-                }
-            ],
-            "StorageUniforms": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_6d730852",
-                    "Name": "colorTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "ColorTextureContrast"
-                }
-            ],
-            "Shader": "ColorAdjustmentShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"

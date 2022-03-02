@@ -92,12 +92,12 @@ namespace nap
 		if (!errorState.check(mRenderTarget != nullptr, "Missing resource nap::RenderTarget with id 'ColorTarget'"))
 			return false;
 
-		mContrastComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("RenderContrast");
+		mContrastComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor");
 		if (!errorState.check(mContrastComponent != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderContrast'"))
 			return false;
 
 		// Get composite component responsible for rendering final texture
-		mCompositeComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("RenderComposite");
+		mCompositeComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
 		if (!errorState.check(mCompositeComponent != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderComposite'"))
 			return false;
 
