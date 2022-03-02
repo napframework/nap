@@ -1239,13 +1239,13 @@
             "Type": "nap::RenderTarget",
             "mID": "ColorTarget",
             "ColorTexture": "ColorTexture",
-            "SampleShading": true,
+            "SampleShading": false,
             "Samples": "Four",
             "ClearColor": {
                 "Values": [
-                    0.06666667014360428,
-                    0.07450980693101883,
-                    0.14509804546833039,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             }
@@ -1261,9 +1261,9 @@
             "ColorSpace": "Linear",
             "ClearColor": {
                 "Values": [
-                    0.06666667014360428,
-                    0.07450980693101883,
-                    0.14509804546833039,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             }
@@ -1279,9 +1279,9 @@
             "ColorSpace": "Linear",
             "ClearColor": {
                 "Values": [
-                    0.06666667014360428,
-                    0.07450980693101883,
-                    0.14509804546833039,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             }
@@ -1297,9 +1297,9 @@
             "ColorSpace": "Linear",
             "ClearColor": {
                 "Values": [
-                    0.06666667014360428,
-                    0.07450980693101883,
-                    0.14509804546833039,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             }
