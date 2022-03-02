@@ -115,13 +115,13 @@
                         {
                             "Type": "nap::ParameterBool",
                             "mID": "ShowBoundsParameter",
-                            "Name": "ShowBounds",
+                            "Name": "Show Bounds",
                             "Value": false
                         },
                         {
                             "Type": "nap::ParameterBool",
                             "mID": "RandomColorParameter",
-                            "Name": "RandomColor",
+                            "Name": "Random Color",
                             "Value": false
                         },
                         {
@@ -257,7 +257,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "BloomBlendParameter",
                             "Name": "BloomBlend",
-                            "Value": 0.5,
+                            "Value": 0.8999999761581421,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
