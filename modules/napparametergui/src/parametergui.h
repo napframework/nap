@@ -51,13 +51,13 @@ namespace nap
 		 * Returns the index of the currently selected preset if one was selected, returns -1 otherwise
 		 * @return the index of the currently selected preset if one was selected, -1 otherwise
 		 */
-		int getSelectedPresetIndex();
+		int getSelectedPresetIndex() const;
 
 		/**
 		 * Returns the currently selected preset if one was selected, asserts false otherwise
 		 * @return the the currently selected preset if one was selected
 		 */
-		std::string getSelectedPreset();
+		const std::string& getSelectedPreset() const;
 
 		/**
 		 * Initializes the parameter GUI
