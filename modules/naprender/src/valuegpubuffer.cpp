@@ -204,12 +204,6 @@ namespace nap
 	// VertexBuffer
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T>
-	bool VertexBuffer<T>::init(utility::ErrorState& errorState)
-	{
-		GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		return GPUBufferNumeric<T>::init(errorState);
-	}
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -231,11 +225,4 @@ namespace nap
 	template bool Vec3GPUBuffer::init(utility::ErrorState& errorState);
 	template bool Vec4GPUBuffer::init(utility::ErrorState& errorState);
 	template bool Mat4GPUBuffer::init(utility::ErrorState& errorState);
-
-	template bool UIntVertexBuffer::init(utility::ErrorState& errorState);
-	template bool IntVertexBuffer::init(utility::ErrorState& errorState);
-	template bool FloatVertexBuffer::init(utility::ErrorState& errorState);
-	template bool Vec2VertexBuffer::init(utility::ErrorState& errorState);
-	template bool Vec3VertexBuffer::init(utility::ErrorState& errorState);
-	template bool Vec4VertexBuffer::init(utility::ErrorState& errorState);
 }

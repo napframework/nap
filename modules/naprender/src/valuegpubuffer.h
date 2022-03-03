@@ -199,7 +199,7 @@ namespace nap
 	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
 	template<typename T>
-	class NAPAPI VertexBuffer final : public GPUBufferNumeric<T>
+	class VertexBuffer final : public GPUBufferNumeric<T>
 	{
 		RTTI_ENABLE(GPUBufferNumeric<T>)
 	public:
@@ -282,4 +282,16 @@ namespace nap
 	using Vec2VertexBuffer		= VertexBuffer<glm::vec2>;
 	using Vec3VertexBuffer		= VertexBuffer<glm::vec3>;
 	using Vec4VertexBuffer		= VertexBuffer<glm::vec4>;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	bool VertexBuffer<T>::init(utility::ErrorState& errorState)
+	{
+		GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		return GPUBufferNumeric<T>::init(errorState);
+	}
 }
