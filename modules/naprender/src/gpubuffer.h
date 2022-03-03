@@ -264,21 +264,21 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// General purpose GPU buffers
-	using UIntGPUBuffer			= GPUBufferNumeric<uint>;
-	using IntGPUBuffer			= GPUBufferNumeric<int>;
-	using FloatGPUBuffer		= GPUBufferNumeric<float>;
-	using Vec2GPUBuffer			= GPUBufferNumeric<glm::vec2>;
-	using Vec3GPUBuffer			= GPUBufferNumeric<glm::vec3>;
-	using Vec4GPUBuffer			= GPUBufferNumeric<glm::vec4>;
-	using Mat4GPUBuffer			= GPUBufferNumeric<glm::mat4>;
+	using GPUBufferUInt			= GPUBufferNumeric<uint>;
+	using GPUBufferInt			= GPUBufferNumeric<int>;
+	using GPUBufferFloat		= GPUBufferNumeric<float>;
+	using GPUBufferVec2			= GPUBufferNumeric<glm::vec2>;
+	using GPUBufferVec3			= GPUBufferNumeric<glm::vec3>;
+	using GPUBufferVec4			= GPUBufferNumeric<glm::vec4>;
+	using GPUBufferMat4			= GPUBufferNumeric<glm::mat4>;
 
 	// Vertex GPU buffers
-	using UIntVertexBuffer		= VertexBuffer<uint>;
-	using IntVertexBuffer		= VertexBuffer<int>;
-	using FloatVertexBuffer		= VertexBuffer<float>;
-	using Vec2VertexBuffer		= VertexBuffer<glm::vec2>;
-	using Vec3VertexBuffer		= VertexBuffer<glm::vec3>;
-	using Vec4VertexBuffer		= VertexBuffer<glm::vec4>;
+	using VertexBufferUInt		= VertexBuffer<uint>;
+	using VertexBufferInt		= VertexBuffer<int>;
+	using VertexBufferFloat		= VertexBuffer<float>;
+	using VertexBufferVec2		= VertexBuffer<glm::vec2>;
+	using VertexBufferVec3		= VertexBuffer<glm::vec3>;
+	using VertexBufferVec4		= VertexBuffer<glm::vec4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
