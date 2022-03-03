@@ -29,7 +29,7 @@ namespace nap
 
 
 	/**
-	 * Base class for all types of GPU value buffers.
+	 * Base class for all types of one dimensional GPU buffers.
 	 * Supported values for child classes such as TypedValueGPUBuffer<T> must be primitives that can be mapped to 
 	 * VkFormat. This is enforced by the requirement to implement getFormat().
 	 */
@@ -61,7 +61,7 @@ namespace nap
 		 */
 		virtual VkFormat getFormat() const = 0;
 
-		uint32											mCount = 0;						///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
+		uint32	mCount = 0;		///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
 	};
 
 
@@ -238,21 +238,13 @@ namespace nap
 	// GPU value buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using UIntGPUBuffer			= TypedValueGPUBuffer<uint>;
-	using IntGPUBuffer			= TypedValueGPUBuffer<int>;
-	using FloatGPUBuffer		= TypedValueGPUBuffer<float>;
-	using Vec2GPUBuffer			= TypedValueGPUBuffer<glm::vec2>;
-	using Vec3GPUBuffer			= TypedValueGPUBuffer<glm::vec3>;
-	using Vec4GPUBuffer			= TypedValueGPUBuffer<glm::vec4>;
-	using Mat4GPUBuffer			= TypedValueGPUBuffer<glm::mat4>;
-
-	using UIntGenericGPUBuffer	= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Generic>;
-	using IntGenericGPUBuffer	= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Generic>;
-	using FloatGenericGPUBuffer	= TypedValuePropertyGPUBuffer<float,		EValueGPUBufferProperty::Generic>;
-	using Vec2GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::vec2,	EValueGPUBufferProperty::Generic>;
-	using Vec3GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Generic>;
-	using Vec4GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Generic>;
-	using Mat4GenericGPUBuffer	= TypedValuePropertyGPUBuffer<glm::mat4,	EValueGPUBufferProperty::Generic>;
+	using UIntGPUBuffer			= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Generic>;
+	using IntGPUBuffer			= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Generic>;
+	using FloatGPUBuffer		= TypedValuePropertyGPUBuffer<float,		EValueGPUBufferProperty::Generic>;
+	using Vec2GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec2,	EValueGPUBufferProperty::Generic>;
+	using Vec3GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Generic>;
+	using Vec4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Generic>;
+	using Mat4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::mat4,	EValueGPUBufferProperty::Generic>;
 
 	using UIntVertexBuffer		= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Vertex>;
 	using IntVertexBuffer		= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Vertex>;
