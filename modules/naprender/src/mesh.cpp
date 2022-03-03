@@ -89,7 +89,7 @@ namespace nap
 		mGPUMesh = std::make_unique<GPUMesh>(mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			ValueGPUBuffer* buffer = nullptr;
+			GPUBuffer* buffer = nullptr;
 
 			if (mesh_attribute->get_type() == RTTI_OF(UIntVertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<uint>(mesh_attribute->mAttributeID);
@@ -189,7 +189,7 @@ namespace nap
 		// Synchronize mesh attributes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			ValueGPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
+			GPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
 			if (!vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity(), errorState))
 				return false;
 		}
@@ -197,7 +197,7 @@ namespace nap
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			ValueGPUBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
+			GPUBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
 			if (!index_buffer.isInitialized())
 			{
 				index_buffer.mCount = mProperties.mShapes[shapeIndex].getNumIndices();
@@ -213,7 +213,7 @@ namespace nap
 
 	bool MeshInstance::update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState)
 	{
-		ValueGPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
+		GPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
 		if (!errorState.check(attribute.getCount() == mProperties.mNumVertices,
 			"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", attribute.mAttributeID.c_str(), attribute.getCount(), mProperties.mNumVertices))
 		{

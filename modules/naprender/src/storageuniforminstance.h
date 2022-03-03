@@ -324,12 +324,12 @@ namespace nap
 		/**
 		 * @return value buffer
 		 */
-		virtual const ValueGPUBuffer& getBuffer() const = 0;
+		virtual const GPUBuffer& getBuffer() const = 0;
 
 		/**
 		 * @return value buffer
 		 */
-		virtual ValueGPUBuffer& getBuffer() = 0;
+		virtual GPUBuffer& getBuffer() = 0;
 
 		/**
 		 * @return if the value buffer is set
@@ -386,12 +386,12 @@ namespace nap
 		/**
 		 * @return value buffer
 		 */
-		virtual const ValueGPUBuffer& getBuffer() const override					{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual const GPUBuffer& getBuffer() const override					{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual ValueGPUBuffer& getBuffer() override								{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual GPUBuffer& getBuffer() override								{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return if the value buffer is set

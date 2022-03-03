@@ -11,7 +11,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ValueGPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -190,7 +190,7 @@ namespace nap
 	template<typename T>
 	bool TypedValueGPUBuffer<T>::init(utility::ErrorState& errorState)
 	{
-		if (!ValueGPUBuffer::init(errorState))
+		if (!GPUBuffer::init(errorState))
 			return false;
 
 		if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
@@ -228,7 +228,7 @@ namespace nap
 
 		// Optionally clear - does not count as an upload
 		else if (mClear)
-			GPUBuffer::requestClear();
+			BaseGPUBuffer::requestClear();
 
 		mInitialized = true;
 		return true;

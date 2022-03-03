@@ -10,7 +10,7 @@
 #include <vector>
 #include "vulkan/vulkan_core.h"
 #include "rtti/typeinfo.h"
-#include "gpubuffer.h"
+#include "basegpubuffer.h"
 
 namespace nap
 {

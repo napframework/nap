@@ -12,7 +12,7 @@
 #include <vulkan/vulkan_core.h>
 
 // Local includes
-#include "gpubuffer.h"
+#include "basegpubuffer.h"
 
 namespace nap
 {

@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "gpubuffer.h"
+#include "basegpubuffer.h"
 #include "vulkan/vulkan_core.h"
 #include "valuebufferfillpolicy.h"
 #include "formatutils.h"
@@ -33,16 +33,16 @@ namespace nap
 	 * Supported values for child classes such as TypedValueGPUBuffer<T> must be primitives that can be mapped to 
 	 * VkFormat. This is enforced by the requirement to implement getFormat().
 	 */
-	class NAPAPI ValueGPUBuffer : public GPUBuffer
+	class NAPAPI GPUBuffer : public BaseGPUBuffer
 	{
-		RTTI_ENABLE(GPUBuffer)
+		RTTI_ENABLE(BaseGPUBuffer)
 	public:
-		ValueGPUBuffer(Core& core) :
-			GPUBuffer(core)
+		GPUBuffer(Core& core) :
+			BaseGPUBuffer(core)
 		{ }
 
-		ValueGPUBuffer(Core& core, EMemoryUsage usage) :
-			GPUBuffer(core, usage)
+		GPUBuffer(Core& core, EMemoryUsage usage) :
+			BaseGPUBuffer(core, usage)
 		{ }
 
 		/**
@@ -77,16 +77,16 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class NAPAPI TypedValueGPUBuffer : public ValueGPUBuffer
+	class NAPAPI TypedValueGPUBuffer : public GPUBuffer
 	{
-		RTTI_ENABLE(ValueGPUBuffer)
+		RTTI_ENABLE(GPUBuffer)
 	public:
 		/**
 		 * Every value buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		TypedValueGPUBuffer(Core& core) :
-			ValueGPUBuffer(core)
+			GPUBuffer(core)
 		{ }
 
 		/**
@@ -97,7 +97,7 @@ namespace nap
 		 * @param usage how the buffer is used at runtime.
 		 */
 		TypedValueGPUBuffer(Core& core, EMemoryUsage usage) :
-			ValueGPUBuffer(core, usage)
+			GPUBuffer(core, usage)
 		{ }
 
 		/**
