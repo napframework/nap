@@ -17,17 +17,6 @@
 namespace nap
 {
 	/**
-	 * A value buffer property for nap::TypedValuePropertyGPUBuffer
-	 * Used exclusively used as a template argument for index and vertex buffer type definitions
-	 */
-	enum EGPUBufferBindPolicy : uint
-	{
-		Vertex = 0,			///< Vertex buffer, enables binding this buffer as a vertex attribute
-		Index = 1			///< Index buffer, enables binding this buffer as an index buffer
-	};
-
-
-	/**
 	 * Base class for all types of one dimensional GPU buffers.
 	 * Supported values for child classes such as TypedValueGPUBuffer<T> must be primitives that can be mapped to 
 	 * VkFormat. This is enforced by the requirement to implement getFormat().
@@ -63,6 +52,10 @@ namespace nap
 		uint32	mCount = 0;		///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Numeric GPU Buffer
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Typed class for GPU value buffers.
@@ -184,6 +177,10 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Vertex Buffers
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Definitive typed class for GPU value buffers.
 	 *
@@ -201,8 +198,8 @@ namespace nap
 	 * @tparam T primitive value data type
 	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
-	template<typename T, EGPUBufferBindPolicy PROPERTY>
-	class NAPAPI TypedValuePropertyGPUBuffer final : public GPUBufferNumeric<T>
+	template<typename T>
+	class NAPAPI VertexBuffer final : public GPUBufferNumeric<T>
 	{
 		RTTI_ENABLE(GPUBufferNumeric<T>)
 	public:
@@ -210,7 +207,7 @@ namespace nap
 		 * Every value buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
-		TypedValuePropertyGPUBuffer(Core& core) :
+		VertexBuffer(Core& core) :
 			GPUBufferNumeric<T>(core)
 		{ }
 
@@ -221,7 +218,7 @@ namespace nap
 		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
 		 */
-		TypedValuePropertyGPUBuffer(Core& core, EMemoryUsage usage) :
+		VertexBuffer(Core& core, EMemoryUsage usage) :
 			GPUBufferNumeric<T>(core, usage)
 		{ }
 
@@ -234,9 +231,42 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Index Buffer
+	//////////////////////////////////////////////////////////////////////////
+
+	class NAPAPI IndexBuffer final : public GPUBufferNumeric<uint>
+	{
+		RTTI_ENABLE(GPUBufferNumeric<uint>)
+	public:
+		/**
+		 * Every value buffer needs to have access to the render engine.
+		 * @param renderService the render engine
+		 */
+		IndexBuffer(Core & core) : GPUBufferNumeric<uint>(core)		{ }
+
+		/**
+		 * Every value buffer needs to have access to the render engine.
+		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
+		 * The format defines the vertex element size in bytes.
+		 * @param renderService the render engine
+		 * @param usage how the buffer is used at runtime.
+		 */
+		IndexBuffer(Core & core, EMemoryUsage usage) :
+			GPUBufferNumeric<uint>(core, usage)						{ }
+
+		/**
+		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
+		 * If a fill policy is available, the buffer will also be uploaded to immediately.
+		 */
+		virtual bool init(utility::ErrorState & errorState) override;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// GPU value buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
+	// General purpose GPU buffers
 	using UIntGPUBuffer			= GPUBufferNumeric<uint>;
 	using IntGPUBuffer			= GPUBufferNumeric<int>;
 	using FloatGPUBuffer		= GPUBufferNumeric<float>;
@@ -245,12 +275,11 @@ namespace nap
 	using Vec4GPUBuffer			= GPUBufferNumeric<glm::vec4>;
 	using Mat4GPUBuffer			= GPUBufferNumeric<glm::mat4>;
 
-	using UIntVertexBuffer		= TypedValuePropertyGPUBuffer<uint,			EGPUBufferBindPolicy::Vertex>;
-	using IntVertexBuffer		= TypedValuePropertyGPUBuffer<int,			EGPUBufferBindPolicy::Vertex>;
-	using FloatVertexBuffer		= TypedValuePropertyGPUBuffer<float,		EGPUBufferBindPolicy::Vertex>;
-	using Vec2VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec2,	EGPUBufferBindPolicy::Vertex>;
-	using Vec3VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec3,	EGPUBufferBindPolicy::Vertex>;
-	using Vec4VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec4,	EGPUBufferBindPolicy::Vertex>;
-
-	using IndexBuffer			= TypedValuePropertyGPUBuffer<uint,			EGPUBufferBindPolicy::Index>;
+	// Vertex GPU buffers
+	using UIntVertexBuffer		= VertexBuffer<uint>;
+	using IntVertexBuffer		= VertexBuffer<int>;
+	using FloatVertexBuffer		= VertexBuffer<float>;
+	using Vec2VertexBuffer		= VertexBuffer<glm::vec2>;
+	using Vec3VertexBuffer		= VertexBuffer<glm::vec3>;
+	using Vec4VertexBuffer		= VertexBuffer<glm::vec4>;
 }

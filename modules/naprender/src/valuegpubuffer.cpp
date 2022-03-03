@@ -114,56 +114,26 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UIntVertexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Count", &nap::UIntVertexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::UIntVertexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::UIntVertexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::UIntVertexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::UIntVertexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IntVertexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Count", &nap::IntVertexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::IntVertexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::IntVertexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::IntVertexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::IntVertexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FloatVertexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Count", &nap::FloatVertexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::FloatVertexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::FloatVertexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FloatVertexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::FloatVertexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec2VertexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Count", &nap::Vec2VertexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::Vec2VertexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::Vec2VertexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::Vec2VertexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::Vec2VertexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec3VertexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Count", &nap::Vec3VertexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::Vec3VertexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::Vec3VertexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::Vec3VertexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::Vec3VertexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Vec4VertexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Count", &nap::Vec4VertexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::Vec4VertexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::Vec4VertexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::Vec4VertexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::Vec4VertexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -173,18 +143,13 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IndexBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Count", &nap::IndexBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::IndexBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::IndexBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::IndexBuffer::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::IndexBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// TypedValueGPUBuffer
+	// GPUBufferNumeric
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
@@ -236,31 +201,27 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// TypedValuePropertyGPUBuffer
+	// VertexBuffer
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T, EGPUBufferBindPolicy PROPERTY>
-	bool TypedValuePropertyGPUBuffer<T, PROPERTY>::init(utility::ErrorState& errorState)
+	template<typename T>
+	bool VertexBuffer<T>::init(utility::ErrorState& errorState)
 	{
-		// Compose usage flags from buffer configuration
-		switch (PROPERTY)
-		{
-		case EGPUBufferBindPolicy::Index:
-			GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-			break;
-		case EGPUBufferBindPolicy::Vertex:
-			GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-			break;
-		default:
-			assert(false);
-			return false;
-		}
-
-		if (!GPUBufferNumeric<T>::init(errorState))
-			return false;
-
-		return true;
+		GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		return GPUBufferNumeric<T>::init(errorState);
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Index Buffer
+	//////////////////////////////////////////////////////////////////////////
+
+	bool IndexBuffer::init(utility::ErrorState& errorState)
+	{
+		GPUBufferNumeric<uint>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		return GPUBufferNumeric<uint>::init(errorState);
+	}
+
 
 	// Explicit template instantiations
 	template bool UIntGPUBuffer::init(utility::ErrorState& errorState);
@@ -277,6 +238,4 @@ namespace nap
 	template bool Vec2VertexBuffer::init(utility::ErrorState& errorState);
 	template bool Vec3VertexBuffer::init(utility::ErrorState& errorState);
 	template bool Vec4VertexBuffer::init(utility::ErrorState& errorState);
-
-	template bool IndexBuffer::init(utility::ErrorState& errorState);
 }
