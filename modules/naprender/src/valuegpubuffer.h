@@ -77,7 +77,7 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class NAPAPI TypedValueGPUBuffer : public GPUBuffer
+	class NAPAPI GPUBufferNumeric : public GPUBuffer
 	{
 		RTTI_ENABLE(GPUBuffer)
 	public:
@@ -85,7 +85,7 @@ namespace nap
 		 * Every value buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
-		TypedValueGPUBuffer(Core& core) :
+		GPUBufferNumeric(Core& core) :
 			GPUBuffer(core)
 		{ }
 
@@ -96,7 +96,7 @@ namespace nap
 		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
 		 */
-		TypedValueGPUBuffer(Core& core, EMemoryUsage usage) :
+		GPUBufferNumeric(Core& core, EMemoryUsage usage) :
 			GPUBuffer(core, usage)
 		{ }
 
@@ -203,16 +203,16 @@ namespace nap
 	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
 	template<typename T, EValueGPUBufferProperty PROPERTY>
-	class NAPAPI TypedValuePropertyGPUBuffer final : public TypedValueGPUBuffer<T>
+	class NAPAPI TypedValuePropertyGPUBuffer final : public GPUBufferNumeric<T>
 	{
-		RTTI_ENABLE(TypedValueGPUBuffer<T>)
+		RTTI_ENABLE(GPUBufferNumeric<T>)
 	public:
 		/**
 		 * Every value buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		TypedValuePropertyGPUBuffer(Core& core) :
-			TypedValueGPUBuffer<T>(core)
+			GPUBufferNumeric<T>(core)
 		{ }
 
 		/**
@@ -223,7 +223,7 @@ namespace nap
 		 * @param usage how the buffer is used at runtime.
 		 */
 		TypedValuePropertyGPUBuffer(Core& core, EMemoryUsage usage) :
-			TypedValueGPUBuffer<T>(core, usage)
+			GPUBufferNumeric<T>(core, usage)
 		{ }
 
 		/**

@@ -188,7 +188,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool TypedValueGPUBuffer<T>::init(utility::ErrorState& errorState)
+	bool GPUBufferNumeric<T>::init(utility::ErrorState& errorState)
 	{
 		if (!GPUBuffer::init(errorState))
 			return false;
@@ -246,17 +246,17 @@ namespace nap
 		switch (PROPERTY)
 		{
 		case EValueGPUBufferProperty::Index:
-			TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+			GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 			break;
 		case EValueGPUBufferProperty::Vertex:
-			TypedValueGPUBuffer<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 			break;
 		default:
 			assert(false);
 			return false;
 		}
 
-		if (!TypedValueGPUBuffer<T>::init(errorState))
+		if (!GPUBufferNumeric<T>::init(errorState))
 			return false;
 
 		return true;

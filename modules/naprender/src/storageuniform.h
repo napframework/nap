@@ -187,7 +187,7 @@ namespace nap
 		 */
 		virtual const GPUBuffer* getBuffer() const override { return mBuffer.get(); }
 
-		rtti::ObjectPtr<TypedValueGPUBuffer<T>> mBuffer = nullptr;	/// Property 'Buffer'
+		rtti::ObjectPtr<GPUBufferNumeric<T>> mBuffer = nullptr;	/// Property 'Buffer'
 	};
 
 
