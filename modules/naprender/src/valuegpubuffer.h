@@ -20,11 +20,10 @@ namespace nap
 	 * A value buffer property for nap::TypedValuePropertyGPUBuffer
 	 * Used exclusively used as a template argument for index and vertex buffer type definitions
 	 */
-	enum EValueGPUBufferProperty : uint
+	enum EGPUBufferBindPolicy : uint
 	{
-		Generic = 0,		///< Generic value buffer, flags can be set by user
-		Vertex = 1,			///< Vertex buffer, enables binding this buffer as a vertex attribute
-		Index = 2			///< Index buffer, enables binding this buffer as an index buffer
+		Vertex = 0,			///< Vertex buffer, enables binding this buffer as a vertex attribute
+		Index = 1			///< Index buffer, enables binding this buffer as an index buffer
 	};
 
 
@@ -202,7 +201,7 @@ namespace nap
 	 * @tparam T primitive value data type
 	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
-	template<typename T, EValueGPUBufferProperty PROPERTY>
+	template<typename T, EGPUBufferBindPolicy PROPERTY>
 	class NAPAPI TypedValuePropertyGPUBuffer final : public GPUBufferNumeric<T>
 	{
 		RTTI_ENABLE(GPUBufferNumeric<T>)
@@ -238,20 +237,20 @@ namespace nap
 	// GPU value buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using UIntGPUBuffer			= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Generic>;
-	using IntGPUBuffer			= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Generic>;
-	using FloatGPUBuffer		= TypedValuePropertyGPUBuffer<float,		EValueGPUBufferProperty::Generic>;
-	using Vec2GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec2,	EValueGPUBufferProperty::Generic>;
-	using Vec3GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Generic>;
-	using Vec4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Generic>;
-	using Mat4GPUBuffer			= TypedValuePropertyGPUBuffer<glm::mat4,	EValueGPUBufferProperty::Generic>;
+	using UIntGPUBuffer			= GPUBufferNumeric<uint>;
+	using IntGPUBuffer			= GPUBufferNumeric<int>;
+	using FloatGPUBuffer		= GPUBufferNumeric<float>;
+	using Vec2GPUBuffer			= GPUBufferNumeric<glm::vec2>;
+	using Vec3GPUBuffer			= GPUBufferNumeric<glm::vec3>;
+	using Vec4GPUBuffer			= GPUBufferNumeric<glm::vec4>;
+	using Mat4GPUBuffer			= GPUBufferNumeric<glm::mat4>;
 
-	using UIntVertexBuffer		= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Vertex>;
-	using IntVertexBuffer		= TypedValuePropertyGPUBuffer<int,			EValueGPUBufferProperty::Vertex>;
-	using FloatVertexBuffer		= TypedValuePropertyGPUBuffer<float,		EValueGPUBufferProperty::Vertex>;
-	using Vec2VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec2,	EValueGPUBufferProperty::Vertex>;
-	using Vec3VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec3,	EValueGPUBufferProperty::Vertex>;
-	using Vec4VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec4,	EValueGPUBufferProperty::Vertex>;
+	using UIntVertexBuffer		= TypedValuePropertyGPUBuffer<uint,			EGPUBufferBindPolicy::Vertex>;
+	using IntVertexBuffer		= TypedValuePropertyGPUBuffer<int,			EGPUBufferBindPolicy::Vertex>;
+	using FloatVertexBuffer		= TypedValuePropertyGPUBuffer<float,		EGPUBufferBindPolicy::Vertex>;
+	using Vec2VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec2,	EGPUBufferBindPolicy::Vertex>;
+	using Vec3VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec3,	EGPUBufferBindPolicy::Vertex>;
+	using Vec4VertexBuffer		= TypedValuePropertyGPUBuffer<glm::vec4,	EGPUBufferBindPolicy::Vertex>;
 
-	using IndexBuffer			= TypedValuePropertyGPUBuffer<uint,			EValueGPUBufferProperty::Index>;
+	using IndexBuffer			= TypedValuePropertyGPUBuffer<uint,			EGPUBufferBindPolicy::Index>;
 }

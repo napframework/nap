@@ -239,16 +239,16 @@ namespace nap
 	// TypedValuePropertyGPUBuffer
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename T, EValueGPUBufferProperty PROPERTY>
+	template<typename T, EGPUBufferBindPolicy PROPERTY>
 	bool TypedValuePropertyGPUBuffer<T, PROPERTY>::init(utility::ErrorState& errorState)
 	{
 		// Compose usage flags from buffer configuration
 		switch (PROPERTY)
 		{
-		case EValueGPUBufferProperty::Index:
+		case EGPUBufferBindPolicy::Index:
 			GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 			break;
-		case EValueGPUBufferProperty::Vertex:
+		case EGPUBufferBindPolicy::Vertex:
 			GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 			break;
 		default:
