@@ -475,6 +475,8 @@ namespace nap
 
 	void EtherCATMaster::processErrors()
 	{
+		bool was_operational = mOperational;
+
 		ecx_contextt* ctx = toContext(mContext);
 		ec_groupt& cg = ctx->grouplist[0];
 		cg.docheckstate = false;
@@ -555,7 +557,7 @@ namespace nap
 		}
 
 		// Check current group state, notify when all slaves resumed operational state
-		if (!(cg.docheckstate))
+		if (!was_operational && !(cg.docheckstate))
 			nap::Logger::info("%s: all slaves resumed OPERATIONAL", mID.c_str());
 	}
 
