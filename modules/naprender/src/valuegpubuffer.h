@@ -19,7 +19,7 @@ namespace nap
 {
 	/**
 	 * Base class for all types of one dimensional GPU buffers.
-	 * Supported values for child classes such as TypedValueGPUBuffer<T> must be primitives that can be mapped to 
+	 * Supported values for child classes such as GPUBufferNumeric<T> must be primitives that can be mapped to 
 	 * VkFormat. This is enforced by the requirement to implement getFormat().
 	 */
 	class NAPAPI GPUBuffer : public BaseGPUBuffer
@@ -59,7 +59,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Typed class for GPU value buffers.
+	 * Typed class for GPU numeric buffers.
 	 *
 	 * Allocates all required host (staging) and device buffers based on the specified properties.
 	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
@@ -167,21 +167,19 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Definitive typed class for GPU value buffers.
+	 * Vertex GPU buffers.
 	 *
 	 * Allocates all required host (staging) and device buffers based on the specified properties.
 	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
 	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
 	 * priority over the latter.
 	 *
-	 * In addition to nap::TypedValueGPUBuffer, this class distinguishes specialized purpose vertex and index buffers
-	 * from general purpose value buffers. Internally, some flags are stored that help the driver identify and optimize
-	 * buffers that have a specific purpose in a rendering operation. They also play a role in synchronization of compute
-	 * and graphics operations.
+	 * In addition to nap::GPUBufferNumeric, this class distinguishes vertex buffers from general purpose value buffers.
+	 * Internally, some flags are stored that help the driver identify and optimize buffers that have a specific purpose in a rendering operation.
+	 * They also play a role in synchronization of compute and graphics operations.
 	 *
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
-	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
 	template<typename T>
 	class VertexBuffer final : public GPUBufferNumeric<T>
@@ -219,6 +217,20 @@ namespace nap
 	// Index Buffer
 	//////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Index GPU buffer.
+	 *
+	 * Allocates all required host (staging) and device buffers based on the specified properties.
+	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
+	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
+	 * priority over the latter.
+	 *
+	 * In addition to nap::GPUBufferNumeric, this class distinguishes index buffers from general purpose value buffers.
+	 * Internally, some flags are stored that help the driver identify and optimize buffers that have a specific purpose in a rendering operation.
+	 *
+	 * Supported types are primitive types that can be mapped to VkFormat.
+	 * @tparam T primitive value data type
+	 */
 	class NAPAPI IndexBuffer final : public GPUBufferNumeric<uint>
 	{
 		RTTI_ENABLE(GPUBufferNumeric<uint>)
