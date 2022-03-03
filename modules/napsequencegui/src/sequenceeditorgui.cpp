@@ -127,7 +127,7 @@ namespace nap
         }else
         {
             visible = ImGui::BeginChild(mID.c_str(), // id
-                                        { 0, 0 } // size,
+                                        { 0, 0 }, // size
                                         (bool*)0, // open
                                         window_flags); // window flags;
         }
