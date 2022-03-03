@@ -5,7 +5,7 @@
 #pragma once
 
 // Local includes
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <memory>

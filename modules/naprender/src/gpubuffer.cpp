@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "renderservice.h"
 #include "mathutils.h"
 

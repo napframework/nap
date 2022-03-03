@@ -6,7 +6,7 @@
 #include "renderabletextcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "fontshader.h"
 
 // External Includes

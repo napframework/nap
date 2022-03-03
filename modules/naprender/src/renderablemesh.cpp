@@ -4,7 +4,7 @@
 
 #include "renderablemesh.h"
 #include "renderablemeshcomponent.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "material.h"
 
 namespace nap

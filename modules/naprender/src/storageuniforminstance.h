@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "storageuniform.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "structgpubuffer.h"
 
 // External Includes

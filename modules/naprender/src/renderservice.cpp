@@ -13,7 +13,7 @@
 #include "renderglobals.h"
 #include "mesh.h"
 #include "depthsorter.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "texture2d.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"

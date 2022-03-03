@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "shadervariabledeclarations.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "structgpubuffer.h"
 
 // External Includes

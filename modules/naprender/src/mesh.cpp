@@ -6,7 +6,7 @@
 #include "mesh.h"
 #include "meshutils.h"
 #include "renderservice.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>

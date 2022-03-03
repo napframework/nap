@@ -6,7 +6,7 @@
 #include "renderbloomcomponent.h"
 #include "rendertarget.h"
 #include "renderservice.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "renderglobals.h"
 #include "uniforminstance.h"
 #include "renderglobals.h"
