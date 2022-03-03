@@ -13,6 +13,7 @@
 // External Includes
 #include <nap/resourceptr.h>
 #include <glm/glm.hpp>
+#include <nap/logger.h>
 
 namespace nap
 {
@@ -42,7 +43,7 @@ namespace nap
 		 * @param errorState contains the error if upload operation failed
 		 * @return if upload succeeded
 		 */
-		virtual bool setData(void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) = 0;
+		virtual bool setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) = 0;
 
 		/**
 		 * @return the buffer format
@@ -69,7 +70,7 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class NAPAPI GPUBufferNumeric : public GPUBuffer
+	class GPUBufferNumeric : public GPUBuffer
 	{
 		RTTI_ENABLE(GPUBuffer)
 	public:
@@ -109,15 +110,7 @@ namespace nap
 		 * @param errorState contains the error if upload operation failed
 		 * @return if upload succeeded
 		 */
-		virtual bool setData(void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) override
-		{
-			if (!setDataInternal(data, sizeof(T) * elementCount, sizeof(T) * reservedElementCount, mUsageFlags, errorState))
-				return false;
-
-			// Update count
-			mCount = elementCount;
-			return true;
-		}
+		virtual bool setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) override;
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
@@ -126,15 +119,7 @@ namespace nap
 		 * @param errorState contains the error if upload operation failed
 		 * @return if upload succeeded
 		 */
-		bool setData(const std::vector<T>& data, utility::ErrorState& errorState)
-		{
-			if (!setDataInternal(data.data(), data.size() * sizeof(T), data.capacity() * sizeof(T), mUsageFlags, errorState))
-				return false;
-
-			// Update count
-			mCount = data.size();
-			return true;
-		}
+		bool setData(const std::vector<T>& data, utility::ErrorState& errorState);
 
 		/**
 		 * @return the number of buffer values
@@ -287,6 +272,75 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	bool GPUBufferNumeric<T>::init(utility::ErrorState& errorState)
+	{
+		if (!GPUBuffer::init(errorState))
+			return false;
+
+		if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
+			return false;
+
+		// Compose usage flags from buffer configuration
+		mUsageFlags |= getBufferUsage(mDescriptorType);
+
+		// Calculate buffer size
+		uint32 buffer_size = mCount * sizeof(T);
+
+		// Allocate buffer memory
+		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
+			return false;
+
+		// Upload data when a buffer fill policy is available
+		if (mBufferFillPolicy != nullptr)
+		{
+			if (mUsage != EMemoryUsage::DynamicRead)
+			{
+				// Create a staging buffer to upload
+				auto staging_buffer = std::make_unique<T[]>(mCount);
+				mBufferFillPolicy->fill(mCount, staging_buffer.get());
+
+				// Prepare staging buffer upload
+				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
+					return false;
+			}
+			else
+			{
+				// Warn user that buffers cannot be filled when their usage is set to DynamicRead
+				nap::Logger::warn(utility::stringFormat("%s: The configured fill policy was ignored as the buffer usage is DynamicRead", mID.c_str()).c_str());
+			}
+		}
+
+		// Optionally clear - does not count as an upload
+		else if (mClear)
+			BaseGPUBuffer::requestClear();
+
+		mInitialized = true;
+		return true;
+	}
+
+	template<typename T>
+	bool GPUBufferNumeric<T>::setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState)
+	{
+		if (!setDataInternal(data, sizeof(T) * elementCount, sizeof(T) * reservedElementCount, mUsageFlags, errorState))
+			return false;
+
+		// Update count
+		mCount = elementCount;
+		return true;
+	}
+
+	template<typename T>
+	bool GPUBufferNumeric<T>::setData(const std::vector<T>& data, utility::ErrorState& errorState)
+	{
+		if (!setDataInternal(data.data(), data.size() * sizeof(T), data.capacity() * sizeof(T), mUsageFlags, errorState))
+			return false;
+
+		// Update count
+		mCount = data.size();
+		return true;
+	}
 
 	template<typename T>
 	bool VertexBuffer<T>::init(utility::ErrorState& errorState)

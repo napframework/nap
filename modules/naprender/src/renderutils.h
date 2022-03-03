@@ -112,5 +112,5 @@ namespace nap
 	/**
 	 * Uploads data into a staging buffer
 	 */
-	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer);
+	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, const void* data, BufferData& buffer);
 }

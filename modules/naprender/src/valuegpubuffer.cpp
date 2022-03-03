@@ -148,81 +148,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// GPUBufferNumeric
-	//////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	bool GPUBufferNumeric<T>::init(utility::ErrorState& errorState)
-	{
-		if (!GPUBuffer::init(errorState))
-			return false;
-
-		if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
-			return false;
-
-		// Compose usage flags from buffer configuration
-		mUsageFlags |= getBufferUsage(mDescriptorType);
-
-		// Calculate buffer size
-		uint32 buffer_size = mCount * sizeof(T);
-
-		// Allocate buffer memory
-		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
-			return false;
-
-		// Upload data when a buffer fill policy is available
-		if (mBufferFillPolicy != nullptr)
-		{
-			if (mUsage != EMemoryUsage::DynamicRead)
-			{
-				// Create a staging buffer to upload
-				auto staging_buffer = std::make_unique<T[]>(mCount);
-				mBufferFillPolicy->fill(mCount, staging_buffer.get());
-
-				// Prepare staging buffer upload
-				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
-					return false;
-			}
-			else
-			{
-				// Warn user that buffers cannot be filled when their usage is set to DynamicRead
-				nap::Logger::warn(utility::stringFormat("%s: The configured fill policy was ignored as the buffer usage is DynamicRead", mID.c_str()).c_str());
-			}
-		}
-
-		// Optionally clear - does not count as an upload
-		else if (mClear)
-			BaseGPUBuffer::requestClear();
-
-		mInitialized = true;
-		return true;
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// VertexBuffer
-	//////////////////////////////////////////////////////////////////////////
-
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Index Buffer
-	//////////////////////////////////////////////////////////////////////////
-
 	bool IndexBuffer::init(utility::ErrorState& errorState)
 	{
 		GPUBufferNumeric<uint>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		return GPUBufferNumeric<uint>::init(errorState);
 	}
-
-
-	// Explicit template instantiations
-	template bool UIntGPUBuffer::init(utility::ErrorState& errorState);
-	template bool IntGPUBuffer::init(utility::ErrorState& errorState);
-	template bool FloatGPUBuffer::init(utility::ErrorState& errorState);
-	template bool Vec2GPUBuffer::init(utility::ErrorState& errorState);
-	template bool Vec3GPUBuffer::init(utility::ErrorState& errorState);
-	template bool Vec4GPUBuffer::init(utility::ErrorState& errorState);
-	template bool Mat4GPUBuffer::init(utility::ErrorState& errorState);
 }
