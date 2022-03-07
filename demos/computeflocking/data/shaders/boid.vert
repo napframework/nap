@@ -25,7 +25,7 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-uniform Vert_UBO
+uniform VERTUBO
 {
 	vec3 cameraLocation;
 	float boidSize;
@@ -34,7 +34,7 @@ uniform Vert_UBO
 };
 
 // STORAGE
-layout(std430) buffer SSBO
+layout(std430) buffer VERTSSBO
 {
 	Boid boids[10000];
 };

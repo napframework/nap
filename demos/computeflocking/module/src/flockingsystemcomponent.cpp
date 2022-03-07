@@ -65,9 +65,9 @@ namespace nap
 
 	namespace uniform
 	{
-		constexpr const char* uboStruct = "UBO";
-		constexpr const char* ssboStruct = "SSBO";
-		constexpr const char* vertUboStruct = "Vert_UBO";
+		constexpr const char* ssboStruct = "VERTSSBO";
+		constexpr const char* vertUboStruct = "VERTUBO";
+		constexpr const char* fragUboStruct = "FRAGUBO";
 		constexpr const char* randomColor = "randomColor";
 		constexpr const char* boidSize = "boidSize";
 		constexpr const char* cameraLocation = "cameraLocation";
@@ -166,7 +166,7 @@ namespace nap
 	void FlockingSystemComponentInstance::updateComputeUniforms(ComputeComponentInstance* comp)
 	{
 		// Update compute shader uniforms
-		UniformStructInstance* ubo_struct = comp->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		UniformStructInstance* ubo_struct = comp->getComputeMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
 			glm::vec4 target_position = mTargetTransformComponent->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -212,7 +212,7 @@ namespace nap
 		}
 
 		// Update fragment shader uniforms
-		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor)->setValue(mResource->mRandomColorParam->mValue);

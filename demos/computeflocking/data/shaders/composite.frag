@@ -4,7 +4,7 @@
 
 #version 450 core
 
-uniform UBO
+uniform FRAGUBO
 {
 	float blend;
 } ubo;

@@ -121,7 +121,7 @@
                             {
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_68577014",
-                                "Name": "UBO",
+                                "Name": "FRAGUBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
@@ -144,7 +144,7 @@
                             {
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_f1ab1db0",
-                                "Name": "Vert_UBO",
+                                "Name": "VERTUBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformFloat",
@@ -350,7 +350,7 @@
                             {
                                 "Type": "nap::StorageUniformStruct",
                                 "mID": "StorageUniformStruct_21496d61",
-                                "Name": "SSBO",
+                                "Name": "VERTSSBO",
                                 "StorageUniform": {
                                     "Type": "nap::StorageUniformStructBuffer",
                                     "mID": "StorageUniformStructBuffer_fd82a185",
@@ -657,7 +657,7 @@
                             {
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_e0d96372",
-                                "Name": "UBO",
+                                "Name": "FRAGUBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformFloat",

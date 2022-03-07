@@ -198,8 +198,8 @@ namespace nap
 
 	void RenderBloomComponentInstance::draw()
 	{
-		VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
-		glm::mat4 identity_matrix = glm::mat4();
+		const VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
+		const glm::mat4 identity_matrix = glm::mat4();
 
 		// Set first input texture
 		RenderTexture2D* input_texture = mInputTexture;
@@ -248,8 +248,8 @@ namespace nap
 		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 		// Gather draw info
-		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-		GPUMesh& mesh = mesh_instance.getGPUMesh();
+		const MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
+		const GPUMesh& mesh = mesh_instance.getGPUMesh();
 
 		// Get pipeline to to render with
 		utility::ErrorState error_state;

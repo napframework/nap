@@ -87,16 +87,6 @@ namespace nap
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 
-		/**
-		 * Collects required resources
-		 */
-		bool reload(utility::ErrorState& errorState);
-
-		/**
-		 * Caches required resources
-		 */
-		void cache();
-
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
@@ -109,57 +99,26 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
 		rtti::ObjectPtr<EntityInstance> mOrthoCameraEntity;				//< Entity that holds the ortho camera
 
-		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity;
-		rtti::ObjectPtr<EntityInstance> mRenderEntity;
-		rtti::ObjectPtr<EntityInstance> mWorldEntity;
-		rtti::ObjectPtr<EntityInstance> mBoundsEntity;
+		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity;			//<
+		rtti::ObjectPtr<EntityInstance> mRenderEntity;					//<
+		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//<
+		rtti::ObjectPtr<EntityInstance> mBoundsEntity;					//<
+		rtti::ObjectPtr<EntityInstance> mTargetEntity;					//<
 
-		rtti::ObjectPtr<RenderTarget> mRenderTarget;
-		std::unique_ptr<ParameterGUI> mParameterGUI;
+		rtti::ObjectPtr<RenderTarget> mRenderTarget;					//<
+
+		std::unique_ptr<ParameterGUI> mParameterGUI;					//< Parameter GUI
+
+		// Parameters
+		ResourcePtr<Parameter> mContrastParam;
+		ResourcePtr<Parameter> mBrightnessParam;
+		ResourcePtr<Parameter> mSaturationParam;
+
+		ResourcePtr<ParameterFloat> mBoundsRadiusParam;
+		ResourcePtr<Parameter> mShowBoundsParam;
+		ResourcePtr<Parameter> mBlendParam;
+
 		bool mShowGUI = true;
 		int mNumBoids = 0;
-
-		// RenderContrast uniforms
-		ParameterFloat* mContrastParam = nullptr;
-		UniformFloatInstance* mContrastUniform = nullptr;
-
-		ParameterFloat* mBrightnessParam = nullptr;
-		UniformFloatInstance* mBrightnessUniform = nullptr;
-
-		ParameterFloat* mSaturationParam = nullptr;
-		UniformFloatInstance* mSaturationUniform = nullptr;
-
-		// If bounds are displayed
-		ParameterBool* mShowBoundsParam = nullptr;
-
-		// RenderComposite uniforms
-		ParameterFloat* mBlendParam = nullptr;
-		UniformFloatInstance* mBlendUniform = nullptr;
-
-		// Bounds radius
-		ParameterFloat* mBoundsRadiusParam = nullptr;
-
-		// Camera position
-		UniformVec3Instance* mBoundsCameraPositionUniform = nullptr;
-
-		std::string mSelectedPreset;
-		nap::Slot<> mCacheSlot = { [&]() -> void { cache(); } };
-		nap::Slot<> mReloadSlot = { [&]() -> void { utility::ErrorState error_state; reload(error_state); } };
-
-		// Camera
-		PerspCameraComponentInstance*			mPerspCameraComponent = nullptr;
-
-		// Target transform
-		BoidTargetTranslateComponentInstance*	mBoidTargetTranslateComponent = nullptr;
-
-		// RenderComponents
-		FlockingSystemComponentInstance*		mFlockingSystemComponent = nullptr;
-		RenderBloomComponentInstance*			mBloomComponent = nullptr;
-		RenderToTextureComponentInstance*		mContrastComponent = nullptr;
-		RenderToTextureComponentInstance*		mCompositeComponent = nullptr;
-		RenderableMeshComponentInstance*		mTargetPointMeshComponent = nullptr;
-		RenderableMeshComponentInstance*		mBoundsAtmosphereMeshComponent = nullptr;
-		RenderableMeshComponentInstance*		mBoundsWireMeshComponent = nullptr;
-		RenderGnomonComponentInstance*			mRenderGnomonComponent = nullptr;
 	};
 }

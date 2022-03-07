@@ -41,50 +41,39 @@ namespace nap
 			return false;
 		}
 
-		// Gather resources
-		if (!reload(errorState))
-			return false;
-
-		// Reload the selected preset after hot-reloading 
-		mResourceManager->mPreResourcesLoadedSignal.connect(mCacheSlot);
-		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSlot);
-
-		return true;
-	}
-
-
-	bool ComputeFlockingApp::reload(utility::ErrorState& errorState)
-	{
 		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("RenderWindow");
 		mOrthoCameraEntity = scene->findEntity("OrthoCameraEntity");
 		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 
-		// Get flocking system entity and component
+		// Get flocking system entity and ensure component
 		mFlockingSystemEntity = scene->findEntity("FlockingSystemEntity");
-		if (!errorState.check(mFlockingSystemEntity != nullptr, "Missing FlockingSystemEntity"))
+		if (!errorState.check(mFlockingSystemEntity != nullptr, "Missing entity 'FlockingSystemEntity'"))
 			return false;
 
+		// Ensure the flocking system component exists
 		if (!errorState.check(mFlockingSystemEntity->hasComponent<FlockingSystemComponentInstance>(), "Missing 'FlockingSystemComponent' in 'FlockingSystemEntity'"))
 			return false;
 
-		mFlockingSystemComponent = &mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
-
 		// Get world entity - parent of our renderable scene
 		mWorldEntity = scene->findEntity("WorldEntity");
-		if (!errorState.check(mWorldEntity != nullptr, "Missing WorldEntity"))
+		if (!errorState.check(mWorldEntity != nullptr, "Missing entity 'WorldEntity'"))
 			return false;
 
 		mCameraEntity = scene->findEntity("CameraEntity");
-		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
+		if (!errorState.check(mCameraEntity != nullptr, "Missing entity 'CameraEntity'"))
 			return false;
 
 		mRenderEntity = scene->findEntity("RenderEntity");
-		if (!errorState.check(mRenderEntity != nullptr, "Missing RenderEntity"))
+		if (!errorState.check(mRenderEntity != nullptr, "Missing entity 'RenderEntity'"))
 			return false;
 
 		mBoundsEntity = scene->findEntity("BoundsEntity");
-		if (!errorState.check(mBoundsEntity != nullptr, "Missing BoundsEntity"))
+		if (!errorState.check(mBoundsEntity != nullptr, "Missing entity 'BoundsEntity'"))
+			return false;
+
+		mTargetEntity = scene->findEntity("BoidTargetEntity");
+		if (!errorState.check(mBoundsEntity != nullptr, "Missing entity 'BoidTargetEntity'"))
 			return false;
 
 		// Get render target
@@ -92,135 +81,91 @@ namespace nap
 		if (!errorState.check(mRenderTarget != nullptr, "Missing resource nap::RenderTarget with id 'ColorTarget'"))
 			return false;
 
-		mContrastComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor");
-		if (!errorState.check(mContrastComponent != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderContrast'"))
-			return false;
-
-		// Get composite component responsible for rendering final texture
-		mCompositeComponent = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
-		if (!errorState.check(mCompositeComponent != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderComposite'"))
-			return false;
-
-		// Get the bloom component responsible for producing a bloom texture
-		mBloomComponent = &mRenderEntity->getComponent<RenderBloomComponentInstance>();
-
 		// Get the bounds mesh component
-		mBoundsAtmosphereMeshComponent = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
-		if (!errorState.check(mBoundsAtmosphereMeshComponent != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsFill'"))
+		auto* bounds_atmosphere = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
+		if (!errorState.check(bounds_atmosphere != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsFill'"))
 			return false;
 
 		// Get the bounds wire frame component
-		mBoundsWireMeshComponent = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsWireFrame");
-		if (!errorState.check(mBoundsWireMeshComponent != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsWireFrame'"))
+		auto* bounds_wireframe = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsWireFrame");
+		if (!errorState.check(bounds_wireframe != nullptr, "'BoundsEntity' is missing component 'nap::RenderableMeshcomponent' with id 'RenderBoundsWireFrame'"))
 			return false;
 
-		// Get the render gnomon component
-		mRenderGnomonComponent = &mWorldEntity->getComponent<RenderGnomonComponentInstance>();
-
-		// Get the camera component
-		mPerspCameraComponent = &mCameraEntity->getComponent<PerspCameraComponentInstance>();
-
-		// Get boid target point mesh and translate component
-		const auto boid_target_entity = scene->findEntity("BoidTargetEntity");
-		if (boid_target_entity != nullptr)
-		{
-			mTargetPointMeshComponent = &boid_target_entity->getComponent<RenderableMeshComponentInstance>();
-			mBoidTargetTranslateComponent = &boid_target_entity->getComponent<BoidTargetTranslateComponentInstance>();
-		}
+		// Get composite component responsible for rendering final texture
+		auto* composite_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
+		if (!errorState.check(composite_comp != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderComposite'"))
+			return false;
 
 		// Get the sampler instance for compositing bloom and color
-		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(mCompositeComponent->getMaterialInstance().findSampler("colorTextures"));
+		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(composite_comp->getMaterialInstance().findSampler("colorTextures"));
+
+		// Get the bloom component responsible for producing a bloom texture
+		auto* bloom_comp = &mRenderEntity->getComponent<RenderBloomComponentInstance>();
 
 		// Set the output texture of the render bloom component
-		sampler_instance->setTexture(1, mBloomComponent->getOutputTexture());
+		sampler_instance->setTexture(1, bloom_comp->getOutputTexture());
 
 		// Find uniforms
-		UniformStructInstance* ubo_struct = mContrastComponent->getMaterialInstance().findUniform("UBO");
-		mContrastUniform = ubo_struct->findUniform<UniformFloatInstance>("contrast");
-		mBrightnessUniform = ubo_struct->findUniform<UniformFloatInstance>("brightness");
-		mSaturationUniform = ubo_struct->findUniform<UniformFloatInstance>("saturation");
-
-		ubo_struct = mCompositeComponent->getMaterialInstance().findUniform("UBO");
-		mBlendUniform = ubo_struct->findUniform<UniformFloatInstance>("blend");
-
-		ubo_struct = mBoundsAtmosphereMeshComponent->getMaterialInstance().findUniform("Vert_UBO");
-		mBoundsCameraPositionUniform = ubo_struct->findUniform<UniformVec3Instance>("cameraLocation");
-
-		// Cache boid count
-		mNumBoids = mFlockingSystemComponent->mNumBoids;
-
-		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
-		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
-
-		if (!errorState.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
+		auto* contrast_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor");
+		if (!errorState.check(contrast_comp != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderContrast'"))
 			return false;
 
-		mContrastParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("ContrastParameter").get());
+		// Cache boid count
+		auto& flocking_system = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
+		mNumBoids = flocking_system.mNumBoids;
+
+		// Create parameter GUI
+		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
+
+		auto parameter_group = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
+		if (!errorState.check(parameter_group != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
+			return false;
+
+		mContrastParam = parameter_group->findParameterRecursive("ContrastParameter");
 		if (!errorState.check(mContrastParam != nullptr, "Missing float parameter 'ContrastParameter'"))
 			return false;
 
-		mBrightnessParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("BrightnessParameter").get());
+		mBrightnessParam = parameter_group->findParameterRecursive("BrightnessParameter");
 		if (!errorState.check(mBrightnessParam != nullptr, "Missing float parameter 'BrightnessParameter'"))
 			return false;
 
-		mSaturationParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("SaturationParameter").get());
+		mSaturationParam = parameter_group->findParameterRecursive("SaturationParameter");
 		if (!errorState.check(mSaturationParam != nullptr, "Missing float parameter 'SaturationParameter'"))
 			return false;
 
-		mBlendParam = rtti_cast<ParameterFloat>(mParameterGUI->mParameterGroup->findParameterRecursive("BloomBlendParameter").get());
+		mBlendParam = parameter_group->findParameterRecursive("BloomBlendParameter");
 		if (!errorState.check(mBlendParam != nullptr, "Missing float parameter 'BloomBlendParameter'"))
 			return false;
 
-		mShowBoundsParam = rtti_cast<ParameterBool>(mParameterGUI->mParameterGroup->findParameterRecursive("ShowBoundsParameter").get());
+		mShowBoundsParam = parameter_group->findParameterRecursive("ShowBoundsParameter");
 		if (!errorState.check(mShowBoundsParam != nullptr, "Missing bool parameter 'ShowBoundsParameter'"))
 			return false;
 
-		mBoundsRadiusParam = mFlockingSystemComponent->getResource().mBoundsRadiusParam.get();
+		mBoundsRadiusParam = flocking_system.getResource().mBoundsRadiusParam;
 
-		// Load preset
-		if (mSelectedPreset.empty())
-		{
-			// Load the first preset automatically
-			auto* parameter_service = getCore().getService<ParameterService>();
-			auto presets = parameter_service->getPresets(*mParameterGUI->mParameterGroup);
-			if (!parameter_service->getPresets(*mParameterGUI->mParameterGroup).empty())
-			{
-				if (!mParameterGUI->load(presets[0], errorState))
-					return false;
-			}
-		}
-		else
-		{
-			mParameterGUI->load(mSelectedPreset, errorState);
-		}
+		// Set the parameter group
+		mParameterGUI->mParameterGroup = parameter_group;
 
 		// Sample default color values from loaded color palette - overrides preset
 		const auto palette = mGuiService->getPalette();
-		mFlockingSystemComponent->getResource().mDiffuseColorParam->setValue(palette.mHighlightColor1);
-		mFlockingSystemComponent->getResource().mDiffuseColorExParam->setValue(palette.mHighlightColor2);
-		mFlockingSystemComponent->getResource().mLightColorParam->setValue(palette.mHighlightColor4);
-		mFlockingSystemComponent->getResource().mHaloColorParam->setValue(palette.mHighlightColor4);
-		mFlockingSystemComponent->getResource().mSpecularColorParam->setValue(palette.mHighlightColor2);
+		flocking_system.getResource().mDiffuseColorParam->setValue(palette.mHighlightColor1);
+		flocking_system.getResource().mDiffuseColorExParam->setValue(palette.mHighlightColor2);
+		flocking_system.getResource().mLightColorParam->setValue(palette.mHighlightColor4);
+		flocking_system.getResource().mHaloColorParam->setValue(palette.mHighlightColor4);
+		flocking_system.getResource().mSpecularColorParam->setValue(palette.mHighlightColor2);
 
 		mRenderTarget->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 
 		// Set boid target color
-		if (mTargetPointMeshComponent != nullptr)
+		auto* target_point = &mTargetEntity->getComponent<RenderableMeshComponentInstance>();
+		if (target_point != nullptr)
 		{
-			auto* ubo_struct = mTargetPointMeshComponent->getMaterialInstance().getOrCreateUniform("UBO");
+			auto* ubo_struct = target_point->getMaterialInstance().getOrCreateUniform("UBO");
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>("color")->setValue(palette.mHighlightColor4.convert<RGBColorFloat>().toVec3());
 		}
 
 		return true;
-	}
-
-
-	void ComputeFlockingApp::cache()
-	{
-		// Cache preset
-		auto* parameter_service = getCore().getService<ParameterService>();
-		mSelectedPreset = parameter_service->getPresets(*mParameterGUI->mParameterGroup)[mParameterGUI->getSelectedPresetIndex()];
 	}
 
 
@@ -258,27 +203,45 @@ namespace nap
 		}
 
 		// Update uniforms
-		mContrastUniform->setValue(mContrastParam->mValue);
-		mBrightnessUniform->setValue(mBrightnessParam->mValue);
-		mSaturationUniform->setValue(mSaturationParam->mValue);
-		mBlendUniform->setValue(mBlendParam->mValue);
+		auto* contrast_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor");
+		UniformStructInstance* ubo_struct = contrast_comp->getMaterialInstance().findUniform("UBO");
+
+		UniformFloatInstance* contrast_uniform = ubo_struct->findUniform<UniformFloatInstance>("contrast");
+		UniformFloatInstance* brightness_uniform = ubo_struct->findUniform<UniformFloatInstance>("brightness");
+		UniformFloatInstance* saturation_uniform = ubo_struct->findUniform<UniformFloatInstance>("saturation");
+
+		contrast_uniform->setValue(rtti_cast<ParameterFloat>(mContrastParam.get())->mValue);
+		brightness_uniform->setValue(rtti_cast<ParameterFloat>(mBrightnessParam.get())->mValue);
+		saturation_uniform->setValue(rtti_cast<ParameterFloat>(mSaturationParam.get())->mValue);
+
+		auto* composite_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
+		ubo_struct = composite_comp->getMaterialInstance().findUniform("FRAGUBO");
+
+		UniformFloatInstance* blend_uniform = ubo_struct->findUniform<UniformFloatInstance>("blend");
+		blend_uniform->setValue(rtti_cast<ParameterFloat>(mBlendParam.get())->mValue);
 		
 		// Update bound scale
+		const float radius = mBoundsRadiusParam->mValue;
 		auto& transform = mBoundsEntity->getComponent<TransformComponentInstance>();
-		transform.setScale({ mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue, mBoundsRadiusParam->mValue });
+		transform.setScale({ radius, radius, radius });
 
 		// Update target parent transform scale
-		if (mBoidTargetTranslateComponent != nullptr)
-			mBoidTargetTranslateComponent->mRadius = mBoundsRadiusParam->mValue;
+		auto& translate_comp = mTargetEntity->getComponent<BoidTargetTranslateComponentInstance>();
+		translate_comp.mRadius = radius;
 
-		// Update camera position
-		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
-		mBoundsCameraPositionUniform->setValue(camera_transform.getTranslate());
+		// Update camera location
+		auto* atmosphere_comp = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
+		ubo_struct = atmosphere_comp->getMaterialInstance().findUniform("VERTUBO");
+		UniformVec3Instance* camera_location_uniform = ubo_struct->findUniform<UniformVec3Instance>("cameraLocation");
+
+		auto& camera_transform = mCameraEntity->getComponent<TransformComponentInstance>();
+		camera_location_uniform->setValue(camera_transform.getTranslate());
 
 		// Update if we need to display bounds and gnomon
-		mBoundsWireMeshComponent->setVisible(mShowBoundsParam->getValue());
-		mBoundsAtmosphereMeshComponent->setVisible(mShowBoundsParam->getValue());
-		mRenderGnomonComponent->setVisible(mShowBoundsParam->getValue());
+		bool show = rtti_cast<ParameterBool>(mShowBoundsParam.get())->mValue;
+		mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsWireFrame")->setVisible(show);
+		mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill")->setVisible(show);
+		mWorldEntity->getComponent<RenderGnomonComponentInstance>().setVisible(show);
 	}
 
 
@@ -312,10 +275,13 @@ namespace nap
 			mRenderTarget->endRendering();
 
 			// Offscreen contrast pass -> Use ColorTexture as input, ColorTexture_Contrast as output
-			mContrastComponent->draw();
+			mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor")->draw();
+
+			// Get the bloom component responsible for producing a bloom texture
+			auto& bloom_comp = mRenderEntity->getComponent<RenderBloomComponentInstance>();
 
 			// Offscreen bloom pass -> Use ColorTexture as input, OutputTexture (internal) as output
-			mBloomComponent->draw();
+			bloom_comp.draw();
 
 			mRenderService->endHeadlessRecording();
 		}
@@ -327,8 +293,11 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
+			// Get composite component responsible for rendering final texture
+			auto* composite_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
+
 			// Render composite component
-			mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { mCompositeComponent });
+			mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { composite_comp });
 
 			// Render GUI elements
 			mGuiService->draw();
