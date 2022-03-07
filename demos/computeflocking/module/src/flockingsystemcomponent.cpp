@@ -163,7 +163,7 @@ namespace nap
 	}
 
 
-	void FlockingSystemComponentInstance::updateComputeUniforms(ComputeComponentInstance* comp)
+	void FlockingSystemComponentInstance::updateComputeMaterial(ComputeComponentInstance* comp)
 	{
 		// Update compute shader uniforms
 		UniformStructInstance* ubo_struct = comp->getComputeMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
@@ -188,7 +188,7 @@ namespace nap
 	}
 
 
-	void FlockingSystemComponentInstance::updateRenderUniforms()
+	void FlockingSystemComponentInstance::updateRenderMaterial()
 	{
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
 
@@ -242,7 +242,7 @@ namespace nap
 		}
 		mFirstUpdate = false;
 
-		updateComputeUniforms(mCurrentComputeInstance);
+		updateComputeMaterial(mCurrentComputeInstance);
 		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 
@@ -257,7 +257,7 @@ namespace nap
 		}
 
 		// Update render uniforms
-		updateRenderUniforms();
+		updateRenderMaterial();
 
 		// Set mvp matrices if present in material
 		if (mProjectMatUniform != nullptr)

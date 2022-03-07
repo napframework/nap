@@ -4,7 +4,7 @@
 
 #version 450 core
 
-uniform UBO
+uniform FRAGUBO
 {
 	vec3		cameraLocation;				// World Space location of the camera
 	vec3		lightPosition;				// Light position

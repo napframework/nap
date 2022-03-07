@@ -952,13 +952,13 @@
                             "Name": "MeshIndex",
                             "Value": 0,
                             "Minimum": 0,
-                            "Maximum": 1
+                            "Maximum": 2
                         },
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "BoidSizeParameter",
                             "Name": "BoidSize",
-                            "Value": 0.25,
+                            "Value": 0.10000000149011612,
                             "Minimum": 0.0,
                             "Maximum": 4.0
                         },
@@ -974,7 +974,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "AvoidRadiusParameter",
                             "Name": "AvoidRadius",
-                            "Value": 0.75,
+                            "Value": 1.215999960899353,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -982,7 +982,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "MinSpeedParameter",
                             "Name": "MinSpeed",
-                            "Value": 0.5,
+                            "Value": 2.6530001163482668,
                             "Minimum": 0.0,
                             "Maximum": 10.0
                         },
@@ -990,7 +990,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "MaxSpeedParameter",
                             "Name": "MaxSpeed",
-                            "Value": 3.0,
+                            "Value": 7.394000053405762,
                             "Minimum": 0.0,
                             "Maximum": 10.0
                         },
@@ -998,7 +998,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "MaxSteerForceParameter",
                             "Name": "MaxSteerForce",
-                            "Value": 5.0,
+                            "Value": 6.0,
                             "Minimum": 0.10000000149011612,
                             "Maximum": 8.0
                         },
@@ -1014,7 +1014,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "AlignmentWeightParameter",
                             "Name": "AlignmentWeight",
-                            "Value": 0.800000011920929,
+                            "Value": 0.3149999976158142,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -1022,7 +1022,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "CohesionWeightParameter",
                             "Name": "CohesionWeight",
-                            "Value": 0.6000000238418579,
+                            "Value": 0.18299999833106996,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -1030,7 +1030,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "SeparationWeightParameter",
                             "Name": "SeparationWeight",
-                            "Value": 0.4000000059604645,
+                            "Value": 1.4789999723434449,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -1038,7 +1038,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "BoundsRadiusParameter",
                             "Name": "BoundsRadius",
-                            "Value": 15.0,
+                            "Value": 20.0,
                             "Minimum": 5.0,
                             "Maximum": 25.0
                         }
@@ -1067,9 +1067,9 @@
                             "Name": "DiffuseColor",
                             "Value": {
                                 "Values": [
-                                    0.5,
-                                    0.5,
-                                    0.5
+                                    0.16078431904315949,
+                                    0.3450980484485626,
+                                    1.0
                                 ]
                             }
                         },
@@ -1079,9 +1079,9 @@
                             "Name": "DiffuseColorEx",
                             "Value": {
                                 "Values": [
+                                    0.8392156958580017,
                                     1.0,
-                                    1.0,
-                                    1.0
+                                    0.6392157077789307
                                 ]
                             }
                         },
@@ -1092,8 +1092,8 @@
                             "Value": {
                                 "Values": [
                                     1.0,
-                                    1.0,
-                                    1.0
+                                    0.3137255012989044,
+                                    0.3137255012989044
                                 ]
                             }
                         },
@@ -1104,8 +1104,8 @@
                             "Value": {
                                 "Values": [
                                     1.0,
-                                    1.0,
-                                    1.0
+                                    0.3137255012989044,
+                                    0.3137255012989044
                                 ]
                             }
                         },
@@ -1115,9 +1115,9 @@
                             "Name": "SpecularColor",
                             "Value": {
                                 "Values": [
+                                    0.8392156958580017,
                                     1.0,
-                                    1.0,
-                                    1.0
+                                    0.6392157077789307
                                 ]
                             }
                         },
@@ -1128,7 +1128,7 @@
                             "Value": {
                                 "x": 0.0,
                                 "y": 0.0,
-                                "z": 0.0
+                                "z": 100.0
                             },
                             "Clamp": false,
                             "Minimum": -10.0,
@@ -1146,7 +1146,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ShininessParameter",
                             "Name": "Shininess",
-                            "Value": 1.0,
+                            "Value": 10.201000213623047,
                             "Minimum": 0.0,
                             "Maximum": 32.0
                         },
@@ -1154,7 +1154,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "AmbientIntensityParameter",
                             "Name": "AmbientIntensity",
-                            "Value": 0.25,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1162,7 +1162,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "DiffuseIntensityParameter",
                             "Name": "DiffuseIntensity",
-                            "Value": 1.0,
+                            "Value": 0.800000011920929,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1170,7 +1170,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "SpecularIntensityParameter",
                             "Name": "SpecularIntensity",
-                            "Value": 0.25,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1186,7 +1186,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "FresnelPowerParameter",
                             "Name": "FresnelPower",
-                            "Value": 2.0,
+                            "Value": 3.0,
                             "Minimum": 0.0,
                             "Maximum": 4.0
                         },
@@ -1194,7 +1194,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "BloomBlendParameter",
                             "Name": "BloomBlend",
-                            "Value": 0.4000000059604645,
+                            "Value": 0.8999999761581421,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1202,7 +1202,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ContrastParameter",
                             "Name": "Contrast",
-                            "Value": 0.25,
+                            "Value": 0.13099999725818635,
                             "Minimum": -1.0,
                             "Maximum": 1.0
                         },
@@ -1218,7 +1218,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "SaturationParameter",
                             "Name": "Saturation",
-                            "Value": 1.0,
+                            "Value": 1.350000023841858,
                             "Minimum": 0.0,
                             "Maximum": 5.0
                         },
@@ -1226,7 +1226,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "MateColorRateParameter",
                             "Name": "MateColorRate",
-                            "Value": 0.10000000149011612,
+                            "Value": 0.15000000596046449,
                             "Minimum": 0.05000000074505806,
                             "Maximum": 1.0
                         }

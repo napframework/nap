@@ -119,8 +119,8 @@ namespace nap
 		int mNumBoids;
 
 	private:
-		void updateRenderUniforms();
-		void updateComputeUniforms(ComputeComponentInstance* comp);
+		void updateRenderMaterial();
+		void updateComputeMaterial(ComputeComponentInstance* comp);
 
 		FlockingSystemComponent*					mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
