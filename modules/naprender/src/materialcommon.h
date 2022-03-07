@@ -8,7 +8,7 @@
 #include "uniforminstance.h"
 #include "storageuniforminstance.h"
 #include "shadervariabledeclarations.h"
-#include "gpubuffer.h"
+#include "basegpubuffer.h"
 
 namespace nap
 {

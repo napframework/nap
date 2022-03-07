@@ -6,7 +6,7 @@
 #include "shader.h"
 #include "material.h"
 #include "renderservice.h"
-#include "gpubuffer.h"
+#include "basegpubuffer.h"
 #include "formatutils.h"
 
 // External Includes

@@ -4,7 +4,7 @@
 
 #include "renderablemesh.h"
 #include "renderablemeshcomponent.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "material.h"
 
 namespace nap
@@ -20,7 +20,7 @@ namespace nap
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			ValueGPUBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
+			GPUBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
 			vertex_buffer.bufferChanged.connect(mVertexBufferDataChangedSlot);
 			mVertexBufferOffsets.push_back(0);
 		}
@@ -74,7 +74,7 @@ namespace nap
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			ValueGPUBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
+			GPUBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
 			mVertexBuffers.push_back(vertex_buffer.getBuffer());
 		}
 

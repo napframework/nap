@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "storageuniform.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "structgpubuffer.h"
 
 // External Includes
@@ -324,12 +324,12 @@ namespace nap
 		/**
 		 * @return value buffer
 		 */
-		virtual const ValueGPUBuffer& getBuffer() const = 0;
+		virtual const GPUBuffer& getBuffer() const = 0;
 
 		/**
 		 * @return value buffer
 		 */
-		virtual ValueGPUBuffer& getBuffer() = 0;
+		virtual GPUBuffer& getBuffer() = 0;
 
 		/**
 		 * @return if the value buffer is set
@@ -365,7 +365,7 @@ namespace nap
 		  * Binds a new buffer to the uniform instance
 		  * @param buffer new buffer to bind
 		  */
-		void setBuffer(TypedValueGPUBuffer<T>& buffer);
+		void setBuffer(GPUBufferNumeric<T>& buffer);
 
 		/**
 		 * Updates thebuffer from a resource.
@@ -376,22 +376,22 @@ namespace nap
 		/**
 		 * @return buffer
 		 */
-		const TypedValueGPUBuffer<T>& getTypedBuffer() const						{ assert(mBuffer != nullptr); return *mBuffer; }
+		const GPUBufferNumeric<T>& getTypedBuffer() const						{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return buffer
 		 */
-		TypedValueGPUBuffer<T>& getTypedBuffer()									{ assert(mBuffer != nullptr); return *mBuffer; }
+		GPUBufferNumeric<T>& getTypedBuffer()									{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual const ValueGPUBuffer& getBuffer() const override					{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual const GPUBuffer& getBuffer() const override					{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return value buffer
 		 */
-		virtual ValueGPUBuffer& getBuffer() override								{ assert(mBuffer != nullptr); return *mBuffer; }
+		virtual GPUBuffer& getBuffer() override								{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return if the value buffer is set
@@ -399,7 +399,7 @@ namespace nap
 		virtual bool hasBuffer() const override										{ return mBuffer != nullptr; }
 
 	private:
-		rtti::ObjectPtr<TypedValueGPUBuffer<T>> mBuffer;
+		rtti::ObjectPtr<GPUBufferNumeric<T>> mBuffer;
 	};
 
 
@@ -457,7 +457,7 @@ namespace nap
 	}
 
 	template<class T>
-	void nap::TypedStorageUniformValueBufferInstance<T>::setBuffer(TypedValueGPUBuffer<T>& buffer)
+	void nap::TypedStorageUniformValueBufferInstance<T>::setBuffer(GPUBufferNumeric<T>& buffer)
 	{
 		assert(buffer.getSize() == mDeclaration->mSize);
 		mBuffer = &buffer;

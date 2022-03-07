@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "shadervariabledeclarations.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "structgpubuffer.h"
 
 // External Includes
@@ -151,7 +151,7 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const ValueGPUBuffer* getBuffer() const = 0;
+		virtual const GPUBuffer* getBuffer() const = 0;
 	};
 
 
@@ -185,9 +185,9 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const ValueGPUBuffer* getBuffer() const override { return mBuffer.get(); }
+		virtual const GPUBuffer* getBuffer() const override { return mBuffer.get(); }
 
-		rtti::ObjectPtr<TypedValueGPUBuffer<T>> mBuffer = nullptr;	/// Property 'Buffer'
+		rtti::ObjectPtr<GPUBufferNumeric<T>> mBuffer = nullptr;	/// Property 'Buffer'
 	};
 
 

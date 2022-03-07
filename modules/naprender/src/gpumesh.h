@@ -5,7 +5,7 @@
 #pragma once
 
 // Local includes
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <memory>
@@ -57,20 +57,20 @@ namespace nap
 		 * @param id name of the vertex buffer to create and add.
 		 */
 		template<typename ELEMENTTYPE>
-		ValueGPUBuffer& addVertexBuffer(const std::string& id);
+		GPUBuffer& addVertexBuffer(const std::string& id);
 
 		/**
 		 * Finds a vertex buffer with the given name.
 		 * @param id name of the vertex buffer
 		 * @return reference to the vertex buffer if found, nullptr otherwise.
 		 */
-		const ValueGPUBuffer* findVertexBuffer(const std::string& id) const;
+		const GPUBuffer* findVertexBuffer(const std::string& id) const;
 
 		/**
 		 * Returns a vertex buffer with the given name, asserts if not present.
 		 * @param id name of the vertex buffer to get.
 		 */
-		ValueGPUBuffer& getVertexBuffer(const std::string& id);
+		GPUBuffer& getVertexBuffer(const std::string& id);
 
 		/**
 		 * Creates an index buffer if one does not exist, returns the existing buffer otherwise.
@@ -88,7 +88,7 @@ namespace nap
 		const IndexBuffer& getIndexBuffer(int index) const;
 
 	private:
-		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<ValueGPUBuffer>>;
+		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<GPUBuffer>>;
 
 		RenderService*									mRenderService;					///< Link to the render engine
 		AttributeMap									mAttributes;					///< Map from vertex attribute ID to buffer

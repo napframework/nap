@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "gpubuffer.h"
+#include "basegpubuffer.h"
 #include "uniform.h"
 #include "structbufferfillpolicy.h"
 
@@ -33,16 +33,16 @@ namespace nap
 	 * @tparam T primitive value data type
 	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
-	class NAPAPI StructGPUBuffer final : public GPUBuffer
+	class NAPAPI StructGPUBuffer final : public BaseGPUBuffer
 	{
-		RTTI_ENABLE(GPUBuffer)
+		RTTI_ENABLE(BaseGPUBuffer)
 	public:
 		StructGPUBuffer(Core& core) :
-			GPUBuffer(core)
+			BaseGPUBuffer(core)
 		{ }
 
 		StructGPUBuffer(Core& core, EMemoryUsage usage) :
-			GPUBuffer(core, usage)
+			BaseGPUBuffer(core, usage)
 		{ }
 
 		/**

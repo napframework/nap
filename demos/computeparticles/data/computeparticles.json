@@ -503,7 +503,7 @@
             "Clear": false
         },
         {
-            "Type": "nap::Vec4VertexBuffer",
+            "Type": "nap::VertexBufferVec4",
             "mID": "ParticleVertexBuffer",
             "Count": 400000,
             "Usage": "Static",

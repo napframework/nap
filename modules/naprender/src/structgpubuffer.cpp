@@ -28,7 +28,7 @@ namespace nap
 		if (!errorState.check(mDescriptor.mCount >= 0, "Struct buffer descriptor's 'Count' property must be non-zero and non-negative"))
 			return false;
 
-		if (!GPUBuffer::init(errorState))
+		if (!BaseGPUBuffer::init(errorState))
 			return false;
 
 		// Calculate element size in bytes
@@ -66,7 +66,7 @@ namespace nap
 		// Optionally clear - does not count as an upload
 		else if (mClear)
 		{
-			GPUBuffer::requestClear();
+			BaseGPUBuffer::requestClear();
 		}
 
 		mInitialized = true;

@@ -231,7 +231,7 @@ namespace nap
 	}
 
 
-	bool uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer)
+	bool uploadToBuffer(VmaAllocator allocator, uint32 size, const void* data, BufferData& buffer)
 	{
 		void* mapped_memory;
 		if (vmaMapMemory(allocator, buffer.mAllocation, &mapped_memory) != VK_SUCCESS)
