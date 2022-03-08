@@ -94,16 +94,16 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
 RTTI_END_ENUM
 
-RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueFamilyOptions)
-	RTTI_PROPERTY("Graphics",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mGraphics,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Compute",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mCompute,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Transfer",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mTransfer,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueCapabilities)
+	RTTI_PROPERTY("Graphics",					&nap::RenderServiceConfiguration::QueueCapabilities::mGraphics,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Compute",					&nap::RenderServiceConfiguration::QueueCapabilities::mCompute,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Transfer",					&nap::RenderServiceConfiguration::QueueCapabilities::mTransfer,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RequiredQueues",				&nap::RenderServiceConfiguration::mQueueFamilies,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RequiredQueueCapabilities",	&nap::RenderServiceConfiguration::mRequiredQueueCapabilities,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
@@ -118,12 +118,12 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
-
+	
 RTTI_BEGIN_CLASS(nap::WindowCache)
-	RTTI_PROPERTY("Position",			&nap::WindowCache::mPosition,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Size",				&nap::WindowCache::mSize,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Display",			&nap::WindowCache::mDisplay,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",				&nap::WindowCache::mIndex,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Position",					&nap::WindowCache::mPosition,									nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size",						&nap::WindowCache::mSize,										nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Display",					&nap::WindowCache::mDisplay,									nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",						&nap::WindowCache::mIndex,										nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -152,12 +152,12 @@ namespace nap
 	/**
 	 * @return VK queue flags
 	 */
-	static VkQueueFlags getQueueFlags(RenderServiceConfiguration::QueueFamilyOptions opts)
+	static VkQueueFlags getQueueFlags(RenderServiceConfiguration::QueueCapabilities capabilities)
 	{
 		VkQueueFlags flags = 0;
-		flags |= opts.mGraphics ? VK_QUEUE_GRAPHICS_BIT : 0;
-		flags |= opts.mCompute ? VK_QUEUE_COMPUTE_BIT : 0;
-		flags |= opts.mTransfer ? VK_QUEUE_TRANSFER_BIT : 0;
+		flags |= capabilities.mGraphics ? VK_QUEUE_GRAPHICS_BIT : 0;
+		flags |= capabilities.mCompute ? VK_QUEUE_COMPUTE_BIT : 0;
+		flags |= capabilities.mTransfer ? VK_QUEUE_TRANSFER_BIT : 0;
 		return flags;
 	}
 
@@ -492,20 +492,20 @@ namespace nap
 	/**
 	 * Finds all queue families for a given VkPhysicalDevice
 	 */
-	static bool getQueueFamilyProperties(int device_index, VkPhysicalDevice physical_device, std::vector<VkQueueFamilyProperties>& queue_family_properties)
+	static bool getQueueFamilyProperties(int deviceIndex, VkPhysicalDevice physicalDevice, std::vector<VkQueueFamilyProperties>& outQueueFamilyProperties)
 	{
 		// Find the number queues this device supports
-		uint32 queue_family_count(0);
-		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
+		uint32 queue_family_count = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queue_family_count, nullptr);
 		if (queue_family_count == 0)
 		{
-			Logger::warn("%d: No queue families available", device_index);
+			Logger::warn("%d: No queue families available", deviceIndex);
 			return false;
 		}
 
 		// Extract the properties of all the queue families
-		queue_family_properties.resize(queue_family_count);
-		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_family_properties.data());
+		outQueueFamilyProperties.resize(queue_family_count);
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queue_family_count, outQueueFamilyProperties.data());
 		return true;
 	}
 
@@ -514,26 +514,23 @@ namespace nap
 	 * Selects a queue family index that supports the desired capabilities.
 	 * Returns false if no valid queue family index was found.
 	 */
-	static bool selectQueueFamilyIndex(VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, const std::vector<VkQueueFamilyProperties> queue_families, const std::vector<int>& search_mask, int& queue_family_index)
+	static bool selectQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlags desiredCapabilities, VkSurfaceKHR presentSurface, const std::vector<VkQueueFamilyProperties> queueFamilyProps, int& outQueueFamilyIndex)
 	{
 		// We want to make sure that we have a queue that supports the required flags
-		for (uint32 index = 0; index < static_cast<uint32>(queue_families.size()); ++index)
+		for (uint32 index = 0; index < static_cast<uint32>(queueFamilyProps.size()); ++index)
 		{
-			if (index >= search_mask.size() || search_mask[index] <= 0)
-				continue;
-
 			// Make sure this family supports presentation to the given surface
 			// If no present surface is specified (e.g. running headless) this check is not performed.
-			if (present_surface != VK_NULL_HANDLE)
+			if (presentSurface != VK_NULL_HANDLE)
 			{
 				VkBool32 supports_presentation = false;
-				vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, index, present_surface, &supports_presentation);
+				vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, index, presentSurface, &supports_presentation);
 				if (supports_presentation == 0)
 					continue;
 			}
-			if ((queue_families[index].queueCount > 0) && (queue_families[index].queueFlags & desired_capabilities))
+			if (queueFamilyProps[index].queueCount > 0 && (queueFamilyProps[index].queueFlags & desiredCapabilities) == desiredCapabilities)
 			{
-				queue_family_index = index;
+				outQueueFamilyIndex = static_cast<int>(index);
 				return true;
 			}
 		}
@@ -545,7 +542,7 @@ namespace nap
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueFlags, bool requireUnifiedQueue, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueCapabilities, PhysicalDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -587,50 +584,31 @@ namespace nap
 				continue;
 			}
 
-			std::vector<VkQueueFamilyProperties> queue_families;
-			if (!getQueueFamilyProperties(device_idx, physical_device, queue_families))
+			// Get a list of queue family properties for this device
+			std::vector<VkQueueFamilyProperties> queue_family_props;
+			if (!getQueueFamilyProperties(device_idx, physical_device, queue_family_props))
 			{
 				Logger::warn("%d: Could not find queue family properties", device_idx);
 				return false;
 			}
 
-			// Ensure there's a compatible queue for this device
-			int selected_graphics_queue_idx = -1;
-			std::vector<int> search_mask(queue_families.size(), 1);
-			if (!selectQueueFamilyIndex(physical_device, requiredQueueFlags, presentSurface, queue_families, search_mask, selected_graphics_queue_idx))
+			// Ensure there's a compatible queue family for this device
+			int selected_queue_family_idx;
+			if (!selectQueueFamilyIndex(physical_device, requiredQueueCapabilities, presentSurface, queue_family_props, selected_queue_family_idx))
 			{
-				Logger::warn("%d: Unable to find compatible graphics/transfer queue family", device_idx);
+				std::vector<std::string> queue_names;
+				if ((requiredQueueCapabilities & VK_QUEUE_GRAPHICS_BIT) == VK_QUEUE_GRAPHICS_BIT) queue_names.emplace_back("GRAPHICS");
+				if ((requiredQueueCapabilities & VK_QUEUE_TRANSFER_BIT) == VK_QUEUE_TRANSFER_BIT) queue_names.emplace_back("TRANSFER");
+				if ((requiredQueueCapabilities & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT) queue_names.emplace_back("COMPUTE");
+
+				std::string queue_str = utility::joinString(queue_names, "/");
+				Logger::warn("%d: Unable to find compatible unified %s queue family", device_idx, queue_str.c_str());
 				continue;
 			}
 
-			// If required, ensure there's a compatible compute queue for this device
-			int selected_compute_queue_idx = -1;
-			if (requiredQueueFlags & VK_QUEUE_COMPUTE_BIT)
-			{
-				// If no unified queue is required, do not consider the previously selected graphics queue when selecting the compute queue
-				if (!requireUnifiedQueue)
-					search_mask[selected_graphics_queue_idx] = 0;
-
-				// Only search unselected queue families
-				if (!selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx))
-				{
-					bool compute_queue_found = false;
-					if (!requireUnifiedQueue)
-					{
-						// Search again with all queue families
-						search_mask.resize(queue_families.size(), 1);
-						compute_queue_found = selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx);
-					}
-					if (!compute_queue_found)
-					{
-						Logger::warn("%d: Unable to find compatible compute queue family", device_idx);
-						continue;
-					}
-				}
-			}
-
 			// Add it as a compatible device
-			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_graphics_queue_idx, selected_compute_queue_idx));
+			const VkQueueFamilyProperties& selected_props = queue_family_props[selected_queue_family_idx];
+			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_props.queueFlags, selected_queue_family_idx));
 
 			// Check if it's the preferred type, if so select it.
 			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? 
@@ -651,11 +629,7 @@ namespace nap
 
 		// Set the output
 		outDevice = valid_devices[selected_idx];
-
-		std::string queue_msg = utility::stringFormat("Selected device: %d: %s | QueueIndex: GRAPHICS=%d TRANSFER=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex());
-		queue_msg = (outDevice.getComputeQueueIndex() != -1) ? utility::stringFormat("%s COMPUTE=%d", queue_msg.c_str(), outDevice.getComputeQueueIndex()) : queue_msg;
-		nap::Logger::info(queue_msg.c_str());
-
+		nap::Logger::info("Selected device: %d", selected_idx, outDevice.getProperties().deviceName);
 		return true;
 	}
 
@@ -715,21 +689,6 @@ namespace nap
 		queue_create_info.pQueuePriorities = queue_prio.data();
 		queue_create_info.pNext = nullptr;
 		queue_create_info.flags = 0;
-
-		// Additionally create a command processing queue for compute if available
-		// We do not have to create it if its the queue index is the same as the graphics queue
-		if (physicalDevice.getComputeQueueIndex() != -1 && physicalDevice.getQueueIndex() != physicalDevice.getComputeQueueIndex())
-		{
-			queue_create_infos.emplace_back();
-
-			auto& queue_create_info = queue_create_infos.back();
-			queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queue_create_info.queueFamilyIndex = physicalDevice.getComputeQueueIndex();
-			queue_create_info.queueCount = 1;
-			queue_create_info.pQueuePriorities = queue_prio.data();
-			queue_create_info.pNext = nullptr;
-			queue_create_info.flags = 0;
-		}
 
 		// Enable specific features, we could also enable all supported features here.
 		VkPhysicalDeviceFeatures device_features {0};
@@ -1608,12 +1567,11 @@ namespace nap
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
 
-		// Get the required queue flags
-		VkQueueFlags req_queue_flags = getQueueFlags(render_config->mQueueFamilies);
+		// Get the required queue capabilities
+		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mRequiredQueueCapabilities);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		bool req_unified_queue = true;
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_flags, req_unified_queue, mPhysicalDevice, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
@@ -1660,24 +1618,8 @@ namespace nap
 		if (!errorState.check(findDepthFormat(mPhysicalDevice.getHandle(), mDepthFormat), "Unable to find depth format"))
 			return false;
 
-		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
+		// Get a compatible queue responsible for processing commands
 		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
-
-		// If available, get a compatible compute queue that will process compute commands
-		if (isComputeAvailable() && mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
-		{
-			// Acquire and create dedicate compute resources
-			if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getComputeQueueIndex(), mComputeCommandPool), "Failed to create Compute Command Pool"))
-				return false;
-
-			// Get a compatible queue that will process commands, graphics / transfer needs to be supported
-			vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
-		}
-		else
-		{
-			mComputeQueue = mQueue;
-			mComputeCommandPool = mCommandPool;
-		}
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
@@ -1711,7 +1653,7 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
 				return false;
 
-			if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mComputeCommandBuffer, errorState))
 				return false;
 
 			frame.mQueueSubmitOps = { false, false, false };
@@ -1988,7 +1930,7 @@ namespace nap
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffer);
 
 			if (frame.mComputeCommandBuffer != VK_NULL_HANDLE)
-				vkFreeCommandBuffers(mDevice, mComputeCommandPool, 1, &frame.mComputeCommandBuffer);
+				vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mComputeCommandBuffer);
 
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
 		}
@@ -2006,23 +1948,8 @@ namespace nap
 
 		if (mCommandPool != VK_NULL_HANDLE)
 		{
-			if (mCommandPool != mComputeCommandPool)
-			{
-				vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
-				mCommandPool = VK_NULL_HANDLE;
-
-				if (mComputeCommandPool != VK_NULL_HANDLE)
-				{
-					vkDestroyCommandPool(mDevice, mComputeCommandPool, nullptr);
-					mComputeCommandPool = VK_NULL_HANDLE;
-				}
-			}
-			else
-			{
-				vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
-				mCommandPool = VK_NULL_HANDLE;
-				mComputeCommandPool = VK_NULL_HANDLE;
-			}
+			vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
+			mCommandPool = VK_NULL_HANDLE;
 		}
 
 		if (mDevice != VK_NULL_HANDLE)
@@ -2302,6 +2229,7 @@ namespace nap
 	bool RenderService::beginComputeRecording()
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
+		assert(isComputeAvailable());
 		NAP_ASSERT_MSG(!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering && !mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering,
 			"Recording compute commands after (headless) rendering within a single frame is not allowed.");
 
@@ -2330,6 +2258,7 @@ namespace nap
 	void RenderService::endComputeRecording()
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
+		assert(isComputeAvailable());
 
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
@@ -2339,7 +2268,7 @@ namespace nap
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
 
-		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, NULL);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
  		assert(result == VK_SUCCESS);
 
 		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mCompute = true;
@@ -2518,8 +2447,8 @@ namespace nap
 	}
 
 
-	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex, int computeQueueIndex) :
-		mDevice(device), mProperties(properties), mQueueIndex(queueIndex), mComputeQueueIndex(computeQueueIndex)
+	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, const VkQueueFlags& queueCapabilities, int queueIndex) :
+		mDevice(device), mProperties(properties), mQueueCapabilities(queueCapabilities), mQueueIndex(queueIndex)
 	{
 		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
 	}
