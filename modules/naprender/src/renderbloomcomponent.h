@@ -14,14 +14,18 @@ namespace nap
 	class RenderBloomComponentInstance;
 
 	/**
-	 * Renders to a texture
+	 * Pre- or post-processing effect that blurs the input texture at a downsampled resolution into internally managed
+	 * rendertargets.
+	 *
+	 * Resource-part of RenderBloomComponentInstance.
 	 */
 	class NAPAPI RenderBloomComponent : public RenderableComponent
 	{
 		RTTI_ENABLE(RenderableComponent)
 		DECLARE_COMPONENT(RenderBloomComponent, RenderBloomComponentInstance)
 	public:
-		ResourcePtr<RenderTexture2D>	mInputTexture = nullptr;							///< Property: 'InputTexture' the input color texture
+		ResourcePtr<RenderTexture2D>	mInputTexture = nullptr;							///< Property: 'InputTexture' the input color texture, must be copyable
+		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;							///< Property: 'OutputTexture' the output color texture
 		EBlurSamples					mKernel = EBlurSamples::X5;							///< Property: 'Kernel' the blur kernel
 		uint							mPassCount = 1;										///< Property: 'PassCount' the number of combined horizontal/vertical passes
 	};
@@ -33,14 +37,14 @@ namespace nap
 	 *
 	 * This component manages its own render target and plane to render to.
 	 * The plane is automatically scaled to fit the bounds of the render target.
+	 *
+	 * `InputTexture` is blitted to an internally managed render target, and then blurred based on the specified pass
+	 * count. Each blur 'pass' then comprises two passes; horizontal and vertical. The gaussian sampling kernel size can
+	 * be specified with the 'Kernel' property. Each subsequent pass performs a horizontal and vertical blur at half the
+	 * resolution of the former pass, with the first being at half the resolution of `InputTexture`.
 	 * 
-	 * The output texture is not exposed as an RTTI property as it is created on init() based on the specified pass count.
-	 * Each blur 'pass' actually combines two passes; horizontal and vertical. The gaussian sampling kernel size can be
-	 * specified with the 'Kernel' property.
-	 * Each subsequent pass performs a horizontal and vertical blur at half the resolution of the former, with the being at
-	 * half the resolution of the input texture.
-	 * 
-	 * Access to the output texture is possible with the getOutputTexture() getter.
+	 * When the bloom passes have been completed, the result is blitted to `OutputTexture`. `InputTexture` and
+	 * `OutputTexture` are allowed to refer to the same `nap::RenderTexture`.
 	 *
 	 * Simply declare the component in json and call RenderBloomComponentInstance::draw() in the render part of your
 	 * application, in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
@@ -55,7 +59,7 @@ namespace nap
 		RenderBloomComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		 * Initialize RenderBloomComponentInstance based on the RenderBloomComponent resource
+		 * Initialize RenderBloomComponentInstance based on the RenderBloomComponent resource.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the RenderBloomComponentInstance initialized successfully
 		 */
@@ -67,8 +71,8 @@ namespace nap
 		 * and nap::RenderService::endHeadlessRecording().
 		 * Do not call this function outside of a headless recording pass i.e. when rendering to a window.
 		 * The result is rendered into a dynamically created output texture, which is accessible through
-		 * RenderBloomComponentInstance::getOutputTexture()
-		 * Alternatively, you can use the render service to render this component, see onDraw()
+		 * RenderBloomComponentInstance::getOutputTexture().
+		 * Alternatively, you can use the render service to render this component, see onDraw().
 		 */
 		void draw();
 
@@ -77,7 +81,7 @@ namespace nap
 		 * The size of this texture equals { input_width/2^PassCount, input_height/2^PassCount }
 		 * @return the bloom texture created from the specified input texture
 		 */
-		Texture2D& getOutputTexture() { return *mBloomRTs.back()[1]->mColorTexture; }
+		Texture2D& getOutputTexture() { return *mOutputTexture; }
 
 	protected:
 		/**
@@ -95,6 +99,7 @@ namespace nap
 
 		RenderService*				mRenderService = nullptr;			///< Render service
 		RenderTexture2D*			mInputTexture = nullptr;			///< Reference to the input texture
+		RenderTexture2D*			mOutputTexture = nullptr;			///< Reference to the output texture
 		
 		std::vector<DoubleBufferedRenderTarget> mBloomRTs;				///< Internally managed render targets
 
@@ -114,6 +119,15 @@ namespace nap
 		Sampler2DInstance*			mColorTextureSampler = nullptr;		///< Sampler instance for color textures in the blur material
 		UniformVec2Instance*		mDirectionUniform = nullptr;		///< Direction uniform of the blur material
 		UniformVec2Instance*		mTextureSizeUniform = nullptr;		///< Texture size uniform of the blur material
+
+		/**
+		 * Pushes a full-size blit to the command buffer. Must be called inside a render pass, in onDraw(). Assumes no mip-maps.
+		 * The layouts of srcTexture and dstTexture are transferred to SHADER_READ after the blit operation.
+		 * @param commandBuffer the command buffer to push the blit operation to
+		 * @param srcTexture the source texture
+		 * @param dstTexture the destination texture
+		 */
+		void blit(VkCommandBuffer commandBuffer, nap::Texture2D& srcTexture, nap::Texture2D& dstTexture);
 
 		/**
 		 * Checks if the uniform is available on the source material and creates it if so

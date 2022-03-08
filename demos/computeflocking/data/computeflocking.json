@@ -579,7 +579,7 @@
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "ChangeColor",
                     "Visible": true,
-                    "OutputTexture": "ColorTextureContrast",
+                    "OutputTexture": "ColorTextureFX",
                     "MaterialInstance": {
                         "Material": "ColorAdjustmentMaterial",
                         "Uniforms": [
@@ -644,7 +644,8 @@
                     "Visible": true,
                     "PassCount": 3,
                     "Kernel": "5x5",
-                    "InputTexture": "ColorTextureContrast"
+                    "InputTexture": "ColorTextureFX",
+                    "OutputTexture": "ColorTextureFX"
                 },
                 {
                     "Type": "nap::RenderToTextureComponent",
@@ -683,7 +684,7 @@
                                 "AnisotropicSamples": "Default",
                                 "Textures": [
                                     "ColorTexture",
-                                    "DummyRT"
+                                    "ColorTextureFX"
                                 ]
                             }
                         ],
@@ -837,7 +838,7 @@
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
                     "AnisotropicSamples": "Default",
-                    "Texture": "ColorTextureContrast"
+                    "Texture": "ColorTextureFX"
                 }
             ],
             "Shader": "ColorAdjustmentShader",
@@ -1255,6 +1256,7 @@
             "mID": "ColorTexture",
             "Usage": "Static",
             "Fill": false,
+            "Copyable": false,
             "Width": 1920,
             "Height": 1080,
             "Format": "RGBA8",
@@ -1270,9 +1272,10 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "ColorTextureContrast",
+            "mID": "ColorTextureFX",
             "Usage": "Static",
             "Fill": false,
+            "Copyable": true,
             "Width": 1920,
             "Height": 1080,
             "Format": "RGBA8",
@@ -1291,6 +1294,7 @@
             "mID": "ColorTextureFinal",
             "Usage": "Static",
             "Fill": false,
+            "Copyable": false,
             "Width": 1920,
             "Height": 1080,
             "Format": "RGBA8",
@@ -1309,6 +1313,7 @@
             "mID": "DummyRT",
             "Usage": "Static",
             "Fill": false,
+            "Copyable": false,
             "Width": 16,
             "Height": 16,
             "Format": "RGBA8",

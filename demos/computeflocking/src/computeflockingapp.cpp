@@ -96,15 +96,6 @@ namespace nap
 		if (!errorState.check(composite_comp != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderComposite'"))
 			return false;
 
-		// Get the sampler instance for compositing bloom and color
-		Sampler2DArrayInstance* sampler_instance = static_cast<Sampler2DArrayInstance*>(composite_comp->getMaterialInstance().findSampler("colorTextures"));
-
-		// Get the bloom component responsible for producing a bloom texture
-		auto* bloom_comp = &mRenderEntity->getComponent<RenderBloomComponentInstance>();
-
-		// Set the output texture of the render bloom component
-		sampler_instance->setTexture(1, bloom_comp->getOutputTexture());
-
 		// Find uniforms
 		auto* contrast_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor");
 		if (!errorState.check(contrast_comp != nullptr, "Missing component nap::RenderToTextureComponentInstance with id 'RenderContrast'"))
@@ -196,7 +187,7 @@ namespace nap
 			ImGui::Text(getCurrentDateTime().toString().c_str());
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "'wasd' keys to move, mouse + left mouse button to look");
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, "press 'h' to hide this window");
-			ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+			ImGui::Text(utility::stringFormat("Performance: %.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000).c_str());
 			ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
 			mParameterGUI->show(false);
 			ImGui::End();

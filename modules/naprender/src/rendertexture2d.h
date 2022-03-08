@@ -54,5 +54,6 @@ namespace nap
 		EFormat				mFormat		= EFormat::RGBA8;					///< Property: 'Format' texture format
 		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
 		bool				mFill		= false;							///< Property: 'Fill' if the texture is initialized to black when usage is static
+		bool				mCopyable	= false;							///< Property: 'Copyable' if the texture may be used as a transfer source
 	};
 }

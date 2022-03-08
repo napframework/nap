@@ -43,6 +43,7 @@ namespace nap
 	class NAPAPI Texture2D : public Resource
 	{
 		friend class RenderService;
+		friend class RenderBloomComponentInstance;
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D(Core& core);
