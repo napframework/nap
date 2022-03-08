@@ -14,6 +14,7 @@
 #include <inputservice.h>
 #include <inputrouter.h>
 #include <rendertarget.h>
+#include <depthrendertarget.h>
 #include <app.h>
 #include <imguiservice.h>
 #include <renderservice.h>
@@ -25,6 +26,7 @@ namespace nap
 {
 	// Forward declares
 	class OrbComponentInstance;
+	class LightComponentInstance;
 	class PerspCameraComponentInstance;
 
 	/**
@@ -110,6 +112,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mWorldEntity;
 
 		rtti::ObjectPtr<RenderTarget> mRenderTarget;
+		rtti::ObjectPtr<DepthRenderTarget> mDepthRenderTarget;
 
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		std::unique_ptr<ParameterGUI> mParameterGUI;
@@ -133,8 +136,11 @@ namespace nap
 		nap::Slot<> mReloadSlot = { [&]() -> void { utility::ErrorState error_state; reload(error_state); } };
 
 		// Camera
-		PerspCameraComponentInstance*			mPerspCameraComponent = nullptr;
+		PerspCameraComponentInstance*					mPerspCameraComponent = nullptr;
+		OrbComponentInstance*							mOrbComponent = nullptr;
+		LightComponentInstance*							mLightComponent = nullptr;
 
-		OrbComponentInstance* mOrbComponent = nullptr;
+		std::vector<RenderableComponentInstance*>		mCachedRenderComponents;
+		std::vector<RenderableComponentInstance*>		mCachedLitRenderComponents;
 	};
 }

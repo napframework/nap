@@ -10,8 +10,10 @@
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
 #include <orthocameracomponent.h>
+#include <lightcomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
+#include <imguiutils.h>
 #include <glm/ext.hpp>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbApp)
@@ -79,44 +81,69 @@ namespace nap
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
 			return false;
 
-		// Get render target
-		//mRenderTarget = mResourceManager->findObject<RenderTarget>("ColorTarget");
-		//if (!errorState.check(mRenderTarget != nullptr, "Missing resource nap::RenderTarget with id 'ColorTarget'"))
-		//	return false;
+		// Get depth render target
+		mDepthRenderTarget = mResourceManager->findObject<DepthRenderTarget>("DepthRenderTarget");
+		if (!errorState.check(mDepthRenderTarget != nullptr, "Missing resource nap::DepthRenderTarget with id 'DepthRenderTarget'"))
+			return false;
 
 		// Get the camera component
 		mPerspCameraComponent = &mCameraEntity->getComponent<PerspCameraComponentInstance>();
 		if (!errorState.check(mPerspCameraComponent != nullptr, "Missing component 'nap::PerspCameraComponent'"))
 			return false;
 
+		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
+		mParameterGUI->mParameterGroup = mResourceManager->findObject<ParameterGroup>("OrbParameters");
+
+		if (!errorState.check(mParameterGUI->mParameterGroup != nullptr, "Missing ParameterGroup 'FlockingParameters'"))
+			return false;
+
 		// Load preset
-		//if (mSelectedPreset.empty())
-		//{
-		//	// Load the first preset automatically
-		//	auto* parameter_service = getCore().getService<ParameterService>();
-		//	auto presets = parameter_service->getPresets(*mParameterGUI->mParameterGroup);
-		//	if (!parameter_service->getPresets(*mParameterGUI->mParameterGroup).empty())
-		//	{
-		//		if (!mParameterGUI->load(presets[0], errorState))
-		//			return false;
-		//	}
-		//}
-		//else
-		//{
-		//	mParameterGUI->load(mSelectedPreset, errorState);
-		//}
+		if (mSelectedPreset.empty())
+		{
+			// Load the first preset automatically
+			auto* parameter_service = getCore().getService<ParameterService>();
+			auto presets = parameter_service->getPresets(*mParameterGUI->mParameterGroup);
+			if (!parameter_service->getPresets(*mParameterGUI->mParameterGroup).empty())
+			{
+				if (!mParameterGUI->load(presets[0], errorState))
+					return false;
+			}
+		}
+		else
+		{
+			mParameterGUI->load(mSelectedPreset, errorState);
+		}
 
-		// Sample default color values from loaded color palette - overrides preset
-		//const auto palette = mGuiService->getPalette();
-		//RGBColorFloat diffuse_color = palette.mHighlightColor1.convert<RGBColorFloat>();
-		//RGBColorFloat diffuse_color_ex = palette.mHighlightColor2.convert<RGBColorFloat>();
-		//RGBColorFloat bg_color = palette.mDarkColor.convert<RGBColorFloat>();
+		// Get highlight color from palette
+		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 
-		//mOrbComponent->getResource().mDiffuseColorParam->setValue(diffuse_color);
-		//mOrbComponent->getResource().mDiffuseColorExParam->setValue(diffuse_color_ex);
+		// Cache render components
+		mCachedRenderComponents.clear();
+		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(mCachedRenderComponents);
+		mCachedLitRenderComponents = mCachedRenderComponents;
 
-		//mRenderTarget->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
-		//mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
+		// Cache light component
+		std::vector<LightComponentInstance*> light_comps;
+		mWorldEntity->getComponentsOfTypeRecursive<LightComponentInstance>(light_comps);
+
+		if (!light_comps.empty())
+		{
+			mLightComponent = light_comps[0];
+
+			// Exclude gizmos from rendering to the depth buffer
+			std::vector<RenderableComponentInstance*> light_gizmos;
+			mLightComponent->getEntityInstance()->getComponentsOfTypeRecursive<RenderableComponentInstance>(light_gizmos);
+
+			for (auto it = mCachedLitRenderComponents.begin(); it != mCachedLitRenderComponents.end();)
+			{
+				for (auto* gizmo : light_gizmos)
+				{
+					if (*it == gizmo)
+						it = mCachedLitRenderComponents.erase(it);
+				}
+				it++;
+			}
+		}
 
 		return true;
 	}
@@ -125,8 +152,8 @@ namespace nap
 	void OrbApp::cache()
 	{
 		// Cache preset
-		//auto* parameter_service = getCore().getService<ParameterService>();
-		//mSelectedPreset = parameter_service->getPresets(*mParameterGUI->mParameterGroup)[mParameterGUI->getSelectedPresetIndex()];
+		auto* parameter_service = getCore().getService<ParameterService>();
+		mSelectedPreset = parameter_service->getPresets(*mParameterGUI->mParameterGroup)[mParameterGUI->getSelectedPresetIndex()];
 	}
 
 
@@ -154,15 +181,13 @@ namespace nap
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		//mParameterGUI->show(false);
-		ImGui::End();
+		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
-		// Update uniforms
-		//mContrastUniform->setValue(mContrastParam->mValue);
-		//mBrightnessUniform->setValue(mBrightnessParam->mValue);
-		//mSaturationUniform->setValue(mSaturationParam->mValue);
-		//mBlendUniform->setValue(mBlendParam->mValue);
+		// Requires layout transition
+		//ImGui::Image(mDepthRenderTarget->getDepthTexture(), { 200.0f, 200.0f });
+
+		mParameterGUI->show(false);
+		ImGui::End();
 	}
 
 
@@ -177,46 +202,34 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		// Begin recording compute commands
-		if (mRenderService->beginComputeRecording())
+		if (mLightComponent->isCameraEnabled())
 		{
-			//mOrbEntity->getComponent<OrbComponentInstance>().compute();
-			mRenderService->endComputeRecording();
-		}
-		
-		// Headless
-		if (mRenderService->beginHeadlessRecording())
-		{
-			//std::vector<RenderableComponentInstance*> render_comps;
-			//mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
+			// Get shadow camera
+			CameraComponentInstance* shadow_camera = mLightComponent->getShadowCamera();
 
-			// Offscreen color pass -> Render all available geometry to ColorTexture
-			//mRenderTarget->beginRendering();
+			// Shadow pass
+			if (mRenderService->beginHeadlessRecording())
+			{
+				// Offscreen color pass -> Render all available geometry to ColorTexture
+				mDepthRenderTarget->beginRendering();
 
-			//mRenderService->renderObjects(*mRenderTarget, mCameraEntity->getComponent<PerspCameraComponentInstance>(), render_comps);	
-			//mRenderTarget->endRendering();
+				mRenderService->renderObjects(*mDepthRenderTarget, *shadow_camera, mCachedLitRenderComponents);
+				mDepthRenderTarget->endRendering();
 
-			// Offscreen contrast pass -> Use ColorTexture as input, ColorTexture_Contrast as output
-			//mContrastComponent->draw();
-
-			// Offscreen bloom pass -> Use ColorTexture as input, OutputTexture (internal) as output
-			//mBloomComponent->draw();
-
-			mRenderService->endHeadlessRecording();
+				mRenderService->endHeadlessRecording();
+			}
 		}
 
 		// Begin recording the render commands for the main render window
 		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			std::vector<RenderableComponentInstance*> render_comps;
-			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
-
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
 			// Render world
-			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<PerspCameraComponentInstance>(), render_comps);
+			auto& perspective_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			mRenderService->renderObjects(*mRenderWindow, perspective_camera, mCachedRenderComponents);
 
 			// Render composite component
 			//mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { mCompositeComponent });

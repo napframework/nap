@@ -13,7 +13,6 @@
 #include <parametervec.h>
 #include <parametercolor.h>
 #include <componentptr.h>
-#include <perspcameracomponent.h>
 
 namespace nap
 {
@@ -38,9 +37,7 @@ namespace nap
 			components.emplace_back(RTTI_OF(ComputeComponent));
 		}
 
-		ResourcePtr<ParameterRGBColorFloat> mColorParam;				///< Property: "Color"
-
-		ComponentPtr<PerspCameraComponent> mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
+		ResourcePtr<ParameterVec3> mRefractiveIndexParam;				///< Property: "RefractiveIndex"
 	};
 
 
@@ -81,7 +78,6 @@ namespace nap
 
 	private:
 		void updateRenderUniforms();
-		void updateComputeUniforms(ComputeComponentInstance* comp);
 
 		OrbComponent*								mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
@@ -93,7 +89,5 @@ namespace nap
 		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;
 		int											mComputeInstanceIndex = 0;
 		bool										mFirstUpdate = true;
-
-		ComponentInstancePtr<PerspCameraComponent>	mPerspCameraComponent = { this, &OrbComponent::mPerspCameraComponent };
 	};
 }

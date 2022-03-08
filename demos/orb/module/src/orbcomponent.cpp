@@ -17,8 +17,7 @@
 #include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS(nap::OrbComponent)
-	RTTI_PROPERTY("Color",						&nap::OrbComponent::mColorParam,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PerspCameraComponent",		&nap::OrbComponent::mPerspCameraComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RefractiveIndex",			&nap::OrbComponent::mRefractiveIndexParam,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbComponentInstance)
@@ -31,19 +30,29 @@ namespace nap
 	// Constants
 	//////////////////////////////////////////////////////////////////////////
 
+	namespace sampler
+	{
+		constexpr const char* albedoMap = "albedoMap";
+		constexpr const char* normalMap = "normalMap";
+		constexpr const char* metallicMap = "metallicMap";
+		constexpr const char* roughnessMap = "roughnessMap";
+		constexpr const char* ambientOcclusionMap = "ambientOcclusionMap";
+		constexpr const char* heightMap = "heightMap";
+		constexpr const char* shadowMap = "shadowMap";
+	}
+
 	namespace uniform
 	{
 		constexpr const char* uboStruct = "UBO";
-		constexpr const char* ssboStruct = "SSBO";
-		constexpr const char* color = "color";
-		constexpr const char* cameraLocation = "cameraLocation";
+		constexpr const char* vertUboStruct = "VERTUBO";
+		constexpr const char* fragUboStruct = "FRAGUBO";
+		constexpr const char* refractiveIndex = "refractiveIndex";
 	}
 
 	namespace computeuniform
 	{
 		constexpr const char* uboStruct = "UBO";
 		constexpr const char* ssboStruct = "SSBO";
-		constexpr const char* color = "color";
 	}
 
 
@@ -62,7 +71,7 @@ namespace nap
 		// Ensure a compute component is available
 		if (!errorState.check(getEntityInstance()->findComponent<ComputeComponentInstance>() != nullptr, "%s: missing ComputeComponent", mID.c_str()))
 			return false;
-
+		
 		// Cache resource
 		mResource = getComponent<OrbComponent>();
 
@@ -73,9 +82,6 @@ namespace nap
 		// Initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
-
-		//for (auto& comp : mComputeInstances)
-		//	comp->setInvocations(1024);
 
 		return true;
 	}
@@ -88,35 +94,13 @@ namespace nap
 	}
 
 
-	void OrbComponentInstance::updateComputeUniforms(ComputeComponentInstance* comp)
-	{
-		// Update compute shader uniforms
-		UniformStructInstance* ubo_struct = comp->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
-		if (ubo_struct != nullptr)
-		{
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(computeuniform::color)->setValue(mResource->mColorParam->getValue().toVec3());
-		}
-	}
-
-
 	void OrbComponentInstance::updateRenderUniforms()
 	{
-		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
-
-		// Update vertex shader uniforms
-		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		// Update shader uniforms
+		UniformStructInstance*  ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
 		if (ubo_struct != nullptr)
 		{
-			//ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::color)->setValue(mResource->mColorParam->getValue().toVec3());
-		}
-
-		// Update fragment shader uniforms
-		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
-		if (ubo_struct != nullptr)
-		{
-			//ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::color)->setValue(mResource->mColorParam->getValue().toVec3());
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::refractiveIndex)->setValue(mResource->mRefractiveIndexParam->mValue);
 		}
 	}
 
@@ -129,8 +113,6 @@ namespace nap
 			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 		}
 		mFirstUpdate = false;
-
-		updateComputeUniforms(mCurrentComputeInstance);
 		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 
