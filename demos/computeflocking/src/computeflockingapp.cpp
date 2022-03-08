@@ -187,7 +187,7 @@ namespace nap
 			ImGui::Text(getCurrentDateTime().toString().c_str());
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "'wasd' keys to move, mouse + left mouse button to look");
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, "press 'h' to hide this window");
-			ImGui::Text(utility::stringFormat("Performance: %.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000).c_str());
+			ImGui::Text(utility::stringFormat("Performance: %.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 			ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
 			mParameterGUI->show(false);
 			ImGui::End();

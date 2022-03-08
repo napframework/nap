@@ -172,6 +172,9 @@ namespace nap
 		case EBlurSamples::X9:
 			blur_material = mRenderService->getOrCreateMaterial<Blur9x9Shader>(errorState);
 			break;
+		case EBlurSamples::X13:
+			blur_material = mRenderService->getOrCreateMaterial<Blur13x13Shader>(errorState);
+			break;
 		default:
 			errorState.fail("Unsupported blur shader");
 			return false;

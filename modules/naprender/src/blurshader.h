@@ -18,7 +18,8 @@ namespace nap
 	enum class EBlurSamples : uint
 	{
 		X5 = 0,				///< 5x5 kernel, linear sampling
-		X9 = 1				///< 9x9 kernel, linear sampling
+		X9 = 1,				///< 9x9 kernel, linear sampling
+		X13 = 2				///< 13x13 kernel, linear sampling
 	};
 
 	/**
@@ -77,4 +78,5 @@ namespace nap
 
 	using Blur5x5Shader = BlurShader<EBlurSamples::X5>;
 	using Blur9x9Shader = BlurShader<EBlurSamples::X9>;
+	using Blur13x13Shader = BlurShader<EBlurSamples::X13>;
 }
