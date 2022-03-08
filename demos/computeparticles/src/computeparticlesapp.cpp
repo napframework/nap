@@ -72,7 +72,7 @@ namespace nap
 
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Performance: %.02f fps | %.02f ms", getCore().getFramerate(), deltaTime * 1000.0).c_str());
 		ImGui::Text(utility::stringFormat("Particles: %d", mNumParticles).c_str());
 		ImGui::SliderFloat("Speed", &volume.mTimeScale, 0.0f, 2.0f);
 		ImGui::SliderFloat("Displacement", &volume.mDisplacement, 0.0, 2.0f);
