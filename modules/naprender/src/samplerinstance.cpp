@@ -75,6 +75,59 @@ namespace nap
 	}
 
 
+	static VkBorderColor getBorderColor(EBorderColor borderColor)
+	{
+		switch (borderColor)
+		{
+		case EBorderColor::FloatTransparentBlack:
+			return VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+		case EBorderColor::IntTransparentBlack:
+			return VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
+		case EBorderColor::FloatOpaqueBlack:
+			return VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+		case EBorderColor::IntOpaqueBlack:
+			return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		case EBorderColor::FloatOpaqueWhite:
+			return VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		case EBorderColor::IntOpaqueWhite:
+			return VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+		default:
+			assert(false);
+			return VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		}
+	}
+
+
+	/**
+	 * @return depth compare operation
+	 */
+	static VkCompareOp getDepthCompareOp(EDepthCompareMode compareMode)
+	{
+		switch (compareMode)
+		{
+		case EDepthCompareMode::Never:
+			return VK_COMPARE_OP_NEVER;
+		case EDepthCompareMode::Less:
+			return VK_COMPARE_OP_LESS;
+		case EDepthCompareMode::Equal:
+			return VK_COMPARE_OP_EQUAL;
+		case EDepthCompareMode::LessOrEqual:
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		case EDepthCompareMode::Greater:
+			return VK_COMPARE_OP_GREATER;
+		case EDepthCompareMode::NotEqual:
+			return VK_COMPARE_OP_NOT_EQUAL;
+		case EDepthCompareMode::GreaterOrEqual:
+			return VK_COMPARE_OP_GREATER_OR_EQUAL;
+		case EDepthCompareMode::Always:
+			return VK_COMPARE_OP_ALWAYS;
+		default:
+			assert(false);
+			return VK_COMPARE_OP_NEVER;
+		}
+	}
+
+
 	static float getAnisotropicSamples(const Sampler* sampler, const nap::RenderService& renderer)
 	{
 		// If there is no sampler or setting is derived from system default, use the global setting
@@ -119,14 +172,14 @@ namespace nap
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		samplerInfo.anisotropyEnable = mRenderService->anisotropicFilteringSupported() ? VK_TRUE : VK_FALSE;
 		samplerInfo.maxAnisotropy = getAnisotropicSamples(mSampler, *mRenderService);
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.borderColor = mSampler == nullptr ? VK_BORDER_COLOR_INT_OPAQUE_BLACK : getBorderColor(mSampler->mBorderColor);
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 		samplerInfo.mipmapMode = mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
 		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.compareEnable = mSampler == nullptr ? VK_FALSE : mSampler->mEnableCompare ? VK_TRUE : VK_FALSE;
+		samplerInfo.compareOp = mSampler == nullptr ? VK_COMPARE_OP_ALWAYS : getDepthCompareOp(mSampler->mCompareMode);
 
 		return errorState.check(vkCreateSampler(mRenderService->getDevice(), &samplerInfo, nullptr, &mVulkanSampler) == VK_SUCCESS, "Could not initialize sampler");
 	}

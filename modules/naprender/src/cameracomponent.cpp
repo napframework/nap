@@ -9,6 +9,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <nap/logger.h>
 
+RTTI_BEGIN_ENUM(nap::ECameraType)
+	RTTI_ENUM_VALUE(nap::ECameraType::Perspective, "Perspective"),
+	RTTI_ENUM_VALUE(nap::ECameraType::Orthographic, "Orthographic")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraComponentInstance)
 RTTI_END_CLASS
 

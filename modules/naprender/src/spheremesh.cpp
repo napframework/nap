@@ -35,6 +35,17 @@ namespace nap
 
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
+		// Setup plane
+		if (!setup(errorState))
+			return false;
+
+		// Initialize instance
+		return mMeshInstance->init(errorState);
+	}
+
+
+	bool SphereMesh::setup(utility::ErrorState& errorState)
+	{
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
@@ -63,7 +74,7 @@ namespace nap
 				float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
 
 				// Set texture coordinates
-				*t++ = {s*S, r*R, 0.5f };
+				*t++ = { s * S, r * R, 0.5f };
 
 				// Set vertex coordinates
 				*v++ = { x * mRadius, y * mRadius, z * mRadius };
@@ -101,19 +112,19 @@ namespace nap
 		mMeshInstance->setUsage(mUsage);
 		mMeshInstance->setPolygonMode(mPolygonMode);
 
-		nap::Vec3VertexAttribute& position_attribute	= mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-		nap::Vec3VertexAttribute& normal_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
-		nap::Vec3VertexAttribute& uv_attribute			= mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
-		nap::Vec4VertexAttribute& color_attribute		= mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
+		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		nap::Vec3VertexAttribute& normal_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::normal);
+		nap::Vec3VertexAttribute& uv_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
+		nap::Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 
 		position_attribute.setData(vertices.data(), vertex_count);
 		normal_attribute.setData(normals.data(), vertex_count);
 		uv_attribute.setData(texcoords.data(), vertex_count);
-		color_attribute.setData({vertex_count, mColor.toVec4()});
-		
+		color_attribute.setData({ vertex_count, mColor.toVec4() });
+
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setIndices(indices.data(), index_count);
 
-		return mMeshInstance->init(errorState);
+		return true;
 	}
 }

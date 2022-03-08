@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "samplerdeclaration.h"
+#include "materialcommon.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -28,6 +29,7 @@ namespace nap
 		Nearest = 0,				///< Nearest sampling
 		Linear						///< Linear sampling
 	};
+
 
 	/**
 	 *	Supported sampler wrap modes
@@ -53,6 +55,20 @@ namespace nap
 	};
 
 
+	/**
+	 * Supported sampler border colors
+	 */
+	enum class EBorderColor : uint32
+	{
+		FloatTransparentBlack = 0,	///< 
+		IntTransparentBlack,
+		FloatOpaqueBlack,
+		IntOpaqueBlack,
+		FloatOpaqueWhite,
+		IntOpaqueWhite
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Sampler
 	//////////////////////////////////////////////////////////////////////////
@@ -73,6 +89,9 @@ namespace nap
 		EAddressMode		mAddressModeVertical	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeVertical' vertical address mode
 		EAddressMode		mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal'	horizontal address mode
 		EAnisotropicSamples	mMaxAnisotropy			= EAnisotropicSamples::Default;			///< Property: 'AnisotropicSamples' max number of anisotropic filter samples
+		EBorderColor		mBorderColor			= EBorderColor::IntOpaqueBlack;			///< Property: 'BorderColor' border color used for texture lookups
+		EDepthCompareMode	mCompareMode			= EDepthCompareMode::LessOrEqual;		///< Property: 'DepthCompareMode' 
+		bool				mEnableCompare			= false;								///< Property: 'EnableCompare'
 		uint32				mMaxLodLevel			= 1000;									///< Property: 'MaxLodLevel' max number of considered LODs, 0 = only consider highest lod
 	};
 
@@ -112,9 +131,9 @@ namespace nap
 
 	public:
 		/**
-		* Retrieve the number of elements in this array
-		* @return The number of elements in this array
-		*/
+		 * Retrieve the number of elements in this array
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const = 0;
 	};
 

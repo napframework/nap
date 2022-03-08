@@ -26,6 +26,15 @@ RTTI_BEGIN_ENUM(nap::EAnisotropicSamples)
 	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Sixteen,	"Sixteen")
 RTTI_END_ENUM
 
+RTTI_BEGIN_ENUM(nap::EBorderColor)
+	RTTI_ENUM_VALUE(nap::EBorderColor::FloatTransparentBlack,	"FloatTransparentBlack"),
+	RTTI_ENUM_VALUE(nap::EBorderColor::IntTransparentBlack,		"IntTransparentBlack"),
+	RTTI_ENUM_VALUE(nap::EBorderColor::FloatOpaqueBlack,		"FloatOpaqueBlack"),
+	RTTI_ENUM_VALUE(nap::EBorderColor::IntOpaqueBlack,			"IntOpaqueBlack"),
+	RTTI_ENUM_VALUE(nap::EBorderColor::FloatOpaqueWhite,		"FloatOpaqueWhite"),
+	RTTI_ENUM_VALUE(nap::EBorderColor::IntOpaqueWhite,			"IntOpaqueWhite")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler)
 	RTTI_PROPERTY("Name",					&nap::Sampler::mName,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MinFilter",				&nap::Sampler::mMinFilter,				nap::rtti::EPropertyMetaData::Default)
@@ -35,6 +44,9 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler)
 	RTTI_PROPERTY("AddressModeHorizontal",	&nap::Sampler::mAddressModeHorizontal,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxLodLevel",			&nap::Sampler::mMaxLodLevel,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AnisotropicSamples",		&nap::Sampler::mMaxAnisotropy,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BorderColor",			&nap::Sampler::mBorderColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CompareMode",			&nap::Sampler::mCompareMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableCompare",			&nap::Sampler::mEnableCompare,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_DEFINE_BASE(nap::SamplerArray)

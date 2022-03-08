@@ -147,6 +147,11 @@ namespace nap
 		VkImageView getImageView() const					{ return mImageData.mTextureView; }
 
 		/**
+		 * @return Vulkan image layout
+		 */
+		virtual VkImageLayout getImageLayout() const		{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; }
+
+		/**
 		 * @return number of mip-map levels
 		 */
 		int getMipmapCount()								{ return static_cast<int>(mMipLevels); }

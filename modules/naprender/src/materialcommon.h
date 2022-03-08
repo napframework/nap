@@ -49,6 +49,23 @@ namespace nap
 
 
 	/**
+	 *	Supported depth compare modes.
+	 */
+	enum class EDepthCompareMode : int
+	{
+		NotSet = 0,				///<
+		Never,
+		Less,
+		Equal,
+		LessOrEqual,
+		Greater,
+		NotEqual,
+		GreaterOrEqual,
+		Always
+	};
+
+
+	/**
 	 * Non-hierarchical structure that holds pointers to all uniform leaf elements. These can point to either Material
 	 * or MaterialInstance instance uniforms, depending on whether the resource is overridden by an instance.
 	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in

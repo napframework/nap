@@ -14,6 +14,16 @@
 namespace nap
 {
 	/**
+	 * Denotes a camera type
+	 */
+	enum class ECameraType : uint
+	{
+		Perspective = 0,
+		Orthographic
+	};
+
+
+	/**
 	 * Base class for perspective and orthographic cameras.
 	 */
 	class NAPAPI CameraComponentInstance : public ComponentInstance
@@ -85,7 +95,6 @@ namespace nap
 		virtual const glm::mat4& getRenderProjectionMatrix() const = 0;
 
 	private:
-		glm::ivec2	mRenderTargetSize;			// The size of the render target we're rendering to
-
+		glm::ivec2	mRenderTargetSize = { 1, 1 };						// The size of the render target we're rendering to
 	};
 }

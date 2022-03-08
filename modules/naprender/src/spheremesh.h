@@ -33,6 +33,15 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		* Creates and prepares the mesh instance but doesn't initialize it.
+		* Call this when you want to prepare a sphere without creating the GPU representation.
+		* You have to manually call init() on the mesh instance afterwards.
+		* @param error contains the error code if setup fails
+		* @return if setup succeeded
+		*/
+		bool setup(utility::ErrorState& errorState);
+
+		/**
 		 * @return the mesh instance that can be rendered
 		 */
 		virtual MeshInstance& getMeshInstance() override { return *mMeshInstance; }
@@ -46,7 +55,7 @@ namespace nap
 		float			mRadius	= 1.0f;							///< Property: 'Radius' of the sphere
 		float			mRings = 50.0f;							///< Property: 'Rings' number of rings
 		float			mSectors = 50.0f;						///< Property: 'Sectors' number of sectors
-		EMemoryUsage	mUsage = EMemoryUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		EMemoryUsage	mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 		EPolygonMode	mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
 		RGBAColorFloat	mColor = { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' the vertex color of the sphere

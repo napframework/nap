@@ -16,7 +16,8 @@ RTTI_END_CLASS
 RTTI_BEGIN_ENUM(nap::ESurfaceChannels)
 	RTTI_ENUM_VALUE(nap::ESurfaceChannels::R,		"R"),
 	RTTI_ENUM_VALUE(nap::ESurfaceChannels::RGBA,	"RGBA"),
-	RTTI_ENUM_VALUE(nap::ESurfaceChannels::BGRA,	"BGRA")
+	RTTI_ENUM_VALUE(nap::ESurfaceChannels::BGRA,	"BGRA"),
+	RTTI_ENUM_VALUE(nap::ESurfaceChannels::D,		"D")
 RTTI_END_ENUM
 
 RTTI_BEGIN_ENUM(nap::ESurfaceDataType)
@@ -54,6 +55,7 @@ namespace nap
 		switch (mChannels)
 		{
 		case ESurfaceChannels::R:
+		case ESurfaceChannels::D:
 			return 1;
 		case ESurfaceChannels::RGBA:
 		case ESurfaceChannels::BGRA:

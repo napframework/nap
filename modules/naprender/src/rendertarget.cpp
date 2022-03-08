@@ -154,7 +154,7 @@ namespace nap
 		renderPassInfo.renderPass = mRenderPass;
 		renderPassInfo.framebuffer = mFramebuffer;
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { (uint32_t)size.x, (uint32_t)size.y };
+		renderPassInfo.renderArea.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) };;
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 

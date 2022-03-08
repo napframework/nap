@@ -45,6 +45,8 @@ namespace nap
 		ResourcePtr<Material>						mMaterial;										///< Property: "Material" source material
 		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
 		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
+		EDepthCompareMode							mDepthCompareMode = EDepthCompareMode::LessOrEqual;	///< Property: 'DepthCompareMode' ...
+		bool										mEnableDepthCompare = false;						///< Property: 'EnableDepthCompare' ...
 	};
 
 	/**
@@ -263,6 +265,16 @@ namespace nap
 		* @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
 		*/
 		EDepthMode getDepthMode() const;
+
+		/**
+		 *
+		 */
+		void setDepthCompareMode(EDepthCompareMode depthMode);
+
+		/**
+		 * 
+		 */
+		EDepthCompareMode getDepthCompareMode() const;
 
 	private:
 		MaterialInstanceResource*				mResource;								// Resource this instance is associated with
