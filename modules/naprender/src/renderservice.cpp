@@ -915,7 +915,7 @@ namespace nap
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
-			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
+			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0U });
 
 			shader_attribute_binding++;
 		}
@@ -927,13 +927,13 @@ namespace nap
 		vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
 		vert_shader_stage_info.module = vert_shader_module;
-		vert_shader_stage_info.pName = "main";
+		vert_shader_stage_info.pName = shader::main;
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		frag_shader_stage_info.module = frag_shader_module;
-		frag_shader_stage_info.pName = "main";
+		frag_shader_stage_info.pName = shader::main;
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1044,7 +1044,7 @@ namespace nap
 		comp_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		comp_shader_stage_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 		comp_shader_stage_info.module = comp_shader_module;
-		comp_shader_stage_info.pName = "main";
+		comp_shader_stage_info.pName = shader::main;
 
 		// Overwrite workgroup size with device maximum when specialization constants are defined
 		const std::vector<int> const_ids = computeShader.getWorkGroupSizeConstantIds();
