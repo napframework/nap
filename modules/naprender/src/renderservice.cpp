@@ -698,11 +698,13 @@ namespace nap
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
 
-		// Robust buffer access
+		// The device feature 'robustBufferAccess' enables bounds checks on buffers and therefore be a useful debugging tool
+		// We only enable this feature if it is marked true in the render service configuration
 		if (robustBufferAccess)
 		{
-			device_features.robustBufferAccess = VK_TRUE;
-			Logger::info("Robust buffer access enabled");
+			device_features.robustBufferAccess = physicalDevice.getFeatures().robustBufferAccess;
+			if (physicalDevice.getFeatures().robustBufferAccess != VK_TRUE)
+				Logger::warn("Device feature 'RobustBufferAccess' is not available for the current device");
 		}
 
 		// Device creation information	
