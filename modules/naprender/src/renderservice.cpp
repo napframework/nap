@@ -1046,7 +1046,9 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = shader::main;
 
-		// Overwrite workgroup size with device maximum when specialization constants are defined
+		// Overwrite workgroup size with device maximum when specialization constants are defined.
+		// This is useful when you want to use a group size equal to the maximum supported group size of the current device,
+		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
 		const std::vector<int> const_ids = computeShader.getWorkGroupSizeConstantIds();
 		std::vector<VkSpecializationMapEntry> spec_entries;
 		std::vector<uint> spec_data;
@@ -1646,7 +1648,8 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mComputeCommandBuffer, errorState))
 				return false;
 
-			frame.mQueueSubmitOps = { false, false, false };
+			// Clear the queue submit operation flags
+			frame.mQueueSubmitOps = 0U;
 		}
 
 		// Try to load .ini file and extract saved settings, allowed to fail
@@ -1918,9 +1921,7 @@ namespace nap
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mHeadlessCommandBuffer);
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mUploadCommandBuffer);
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffer);
-
-			if (frame.mComputeCommandBuffer != VK_NULL_HANDLE)
-				vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mComputeCommandBuffer);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mComputeCommandBuffer);
 
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
 		}
@@ -1999,9 +2000,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &commandBuffer;
-
 		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
-		//assert(result == VK_SUCCESS);
 	}
 
 
@@ -2100,8 +2099,8 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = false;
 		mIsRenderingFrame = true;
 
-		// Reset queue submit operation flags for the current frame
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = { false, false, false };
+		// Clear the queue submit operation flags for the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = 0U;
 
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
 		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
@@ -2184,7 +2183,8 @@ namespace nap
 		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering = true;
+		// Set the headless bit of queue submit ops of the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::HeadlessRendering;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -2219,12 +2219,17 @@ namespace nap
 	bool RenderService::beginComputeRecording()
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		assert(isComputeAvailable());
-		NAP_ASSERT_MSG(!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering && !mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering,
-			"Recording compute commands after (headless) rendering within a single frame is not allowed.");
+		NAP_ASSERT_MSG(isComputeAvailable(), "Cannot record Compute commands when Compute capability is unavailable");
+
+		// Ensure no (headless) rendering commands have been recorded in the current frame. After vkQueueSubmit() is called
+		// on any of the command buffers (rendering, headless rendering, compute), the corresponding EQueueSubmitOp bit is
+		// set in mQueueSubmitOps of the current frame. This way, we keep track of what queue submissions have occurred.
+		const Frame& frame = mFramesInFlight[mCurrentFrameIndex];
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::Rendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::HeadlessRendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
 
 		// Reset command buffer for current frame
-		VkCommandBuffer compute_command_buffer = mFramesInFlight[mCurrentFrameIndex].mComputeCommandBuffer;
+		VkCommandBuffer compute_command_buffer = frame.mComputeCommandBuffer;
  		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
 			return false;
 
@@ -2248,7 +2253,7 @@ namespace nap
 	void RenderService::endComputeRecording()
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
-		assert(isComputeAvailable());
+		NAP_ASSERT_MSG(isComputeAvailable(), "Cannot record Compute commands when Compute capability is unavailable");
 
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
@@ -2257,11 +2262,11 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
-
 		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
  		assert(result == VK_SUCCESS);
 
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mCompute = true;
+		// Set the compute bit of queue submit ops of the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::Compute;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 

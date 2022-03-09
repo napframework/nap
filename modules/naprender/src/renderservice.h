@@ -1124,14 +1124,16 @@ namespace nap
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 
 		/**
-		 * Marks whether render and/or compute queue submission occured in a frame
+		 * Bit flags to keep track of what type of queue submissions have occurred within the current frame.
+		 * Each entry represents one of the command buffers that can be used between beginFrame() and endFrame().
 		 */
-		struct QueueSubmitOps
+		enum EQueueSubmitOp : uint
 		{
-			bool mRendering = false;
-			bool mHeadlessRendering = false;
-			bool mCompute = false;
+			Rendering			= 0x01,
+			HeadlessRendering	= 0x02,
+			Compute				= 0x04
 		};
+		using QueueSubmitOps = uint;
 
 		/**
 		 * Binds together all the Vulkan data for a frame.
@@ -1143,10 +1145,10 @@ namespace nap
 			std::vector<BaseGPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
 			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
-			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window.
+			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window
 			VkCommandBuffer						mComputeCommandBuffer;				///< Command buffer used to record compute operations
 			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;		///< All Vulkan resources queued for destruction
-			QueueSubmitOps						mQueueSubmitOps;
+			QueueSubmitOps						mQueueSubmitOps = 0U;				///< Queue submit operations that occurred in the current frame
 		};
 
 		/**
