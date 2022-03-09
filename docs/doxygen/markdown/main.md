@@ -1,7 +1,7 @@
 Welcome
 =======================
 
-[NAP framework](https://nap.tech) is an [open source](https://github.com/napframework), low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
+[NAP](https://nap.tech) is an [open source](https://github.com/napframework), low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
 
 Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many displays, many lights, many speakers, many sensors, many servos.
 

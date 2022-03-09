@@ -23,7 +23,7 @@
 	
 # Description
 
-[NAP framework](https://nap.tech) is an open source, low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
+[NAP](https://nap.tech) is an open source, low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
 
 Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many displays, many lights, many speakers, many sensors, many servos.
 
@@ -114,8 +114,8 @@ To generate a solution and compile the source code you need to have installed:
 		- During installation select **Custom installation** 
 		- Filter on the **LTS** category to download and install Qt 5.12.11 for your target platform
 	- ARM
-		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.12.11 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.12.11 for Ubuntu 20.04 *arm64*
+		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.12.11 for Raspberry Pi OS 11 *armhf*
+		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.12.11 for Ubuntu 20.04 *arm64*
 
 NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
 
