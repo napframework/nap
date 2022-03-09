@@ -2370,16 +2370,12 @@ namespace nap
 
 	void RenderService::requestBufferClear(BaseGPUBuffer& buffer)
 	{
-		// Erase the buffer from the upload queue if it was requested before in the current frame
-		mBuffersToUpload.erase(&buffer);
 		mBuffersToClear.insert(&buffer);
 	}
 
 
 	void RenderService::requestBufferUpload(BaseGPUBuffer& buffer)
 	{
-		// Erase the buffer from the clear queue if it was requested before in the current frame
-		mBuffersToClear.erase(&buffer);
 		mBuffersToUpload.insert(&buffer);
 	}
 

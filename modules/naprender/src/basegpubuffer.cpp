@@ -310,8 +310,11 @@ namespace nap
 		assert(mRenderBuffers.size() == 1);
 		assert(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead);
 
+		// Buffer uploads are recorded after clear commands, and we do not want operations on the same buffer to interfere with each other
+		// Therefore, a buffer copy requires synchronization with a potential prior clear command
+		memoryBarrier(commandBuffer, mRenderBuffers[0].mBuffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
 		// Copy staging buffer to GPU
-		// As uploads recorded to the upload command buffer always happen at the beginning of a frame, no additional synchronization is required before the copy command
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = mSize;
 		vkCmdCopyBuffer(commandBuffer, mStagingBuffers[0].mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
@@ -379,7 +382,9 @@ namespace nap
 		// Ensure the render buffers are created
 		assert(mRenderBuffers.size() > 0);
 
-		// Clear buffer command - this command is treated as a TRANSFER operation, therefore we can use the same synchronization method as in upload()
+		// The vkCmdFillBuffer/clear command is treated as a TRANSFER operation
+		// Clear commands are recorded to the upload command buffer and always happen at the beginning of a frame
+		// Therefore, no initial memory barrier is required
 		vkCmdFillBuffer(commandBuffer, mRenderBuffers[0].mBuffer, 0, VK_WHOLE_SIZE, 0);
 
 		// Determine dest access flags for memory barrier
