@@ -442,6 +442,8 @@ namespace nap
 
 	void Texture2D::clear(VkCommandBuffer commandBuffer)
 	{
+		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
+		// Therefore, the initial layout transition waits for nothing
 		VkAccessFlags srcMask = 0;
 		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -487,16 +489,18 @@ namespace nap
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		assert(buffer.mAllocation != VK_NULL_HANDLE);
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
-		
-		VkAccessFlags srcMask = 0;
+
+		// Texture uploads are recorded after clear commands, and we do not want operations on the same texture to interfere with each other
+		// Therefore, the initial layout transition requires synchronization with a potential prior clear command
+		VkAccessFlags srcMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
 		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
 		{
-			srcMask  = VK_ACCESS_SHADER_READ_BIT;
-			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			srcMask  |= VK_ACCESS_SHADER_READ_BIT;
+			srcStage |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
 		// Get image ready for copy, applied to all mipmap layers

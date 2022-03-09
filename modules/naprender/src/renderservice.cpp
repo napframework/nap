@@ -2331,16 +2331,14 @@ namespace nap
 
 	void RenderService::requestTextureClear(Texture2D& texture)
 	{
-		// Erase the buffer from the upload queue if it was requested before in the current frame
-		mTexturesToUpload.erase(&texture);
+		// Push a texture clear for the beginning of the next frame
 		mTexturesToClear.insert(&texture);
 	}
 
 
 	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
-		// Erase the buffer from the clear queue if it was requested before in the current frame
-		mTexturesToClear.erase(&texture);
+		// Push a texture upload for the beginning of the next frame
 		mTexturesToUpload.insert(&texture);
 	}
 
