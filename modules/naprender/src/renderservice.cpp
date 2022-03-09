@@ -335,9 +335,7 @@ namespace nap
 		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 		create_info.pfnCallback = debugCallback;
 
-		if (!errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension"))
-			return false;
-		return true;
+		return errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension");
 	}
 
 
@@ -400,9 +398,7 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
-			return false;
-		return true;
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL");
 	}
 
 
@@ -721,10 +717,7 @@ namespace nap
 		create_info.flags = 0;
 
 		// Finally we're ready to create a new device
-		if (!errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
-			return false;
-
-		return true;
+		return errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device");
 	}
 
 
@@ -772,10 +765,7 @@ namespace nap
 		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		alloc_info.commandBufferCount = 1;
 
-		if (!errorState.check(vkAllocateCommandBuffers(device, &alloc_info, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer"))
-			return false;
-
-		return true;
+		return errorState.check(vkAllocateCommandBuffers(device, &alloc_info, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer");
 	}
 
 
@@ -799,10 +789,8 @@ namespace nap
 	{
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		if (!errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &outSemaphore) == VK_SUCCESS, "Failed to create semaphore"))
-			return false;
 
-		return true;
+		return errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &outSemaphore) == VK_SUCCESS, "Failed to create semaphore");
 	}
 
 
