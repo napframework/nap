@@ -12,7 +12,6 @@
 #include <QSplashScreen>
 #include <utility/fileutils.h>
 
-
 namespace napkin
 {
 	// Napkin return error codes
@@ -22,6 +21,15 @@ namespace napkin
 		inline constexpr int parseError		= 1;		//< Parse error
 		inline constexpr int coreError		= 2;		//< Core initialization error
 		inline constexpr int documentError	= 3;		//< Document load error
+	}
+
+	void setEnv(const char* key, const char* value)
+	{
+#ifdef _WIN32
+		_putenv_s(key, value);
+#else
+		setenv(key, value)
+#endif // _WIN32
 	}
 }
 
@@ -140,6 +148,11 @@ int main(int argc, char* argv[])
 	QApplication::setApplicationVersion("0.5");
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+	// Set scale factor policy using environment variable instead of in code.
+	// Allows editor to scale using fractional scaling values in Qt 5.14+ whilst 
+	// maintaining compatibility with older versions of Qt (< 5.14)
+	napkin::setEnv("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough");
 
 	// Configure settings
 	initializeSettings();
