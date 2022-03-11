@@ -13,7 +13,7 @@ NAP also has built in support for many common protocols and standards, including
 
 ## Philosophy
 
-NAP is completely data driven and heavily influenced by modern game engine design, with one exception: it does not dictate any sort of pipeline. This allows NAP to run on any type of device: from low-power, energy efficient ARM computers such as the Raspberry Pi to industrial PCs and x86 gaming rigs. 
+NAP is completely data driven and heavily influenced by modern game engine design, with one exception: it does not dictate any sort of pipeline. This allows NAP to run on any type of device: from low-power, energy efficient ARM computers such as the `Raspberry Pi` to `industrial PCs` and `x86 gaming rigs`. 
 
 NAP applications are lean and mean: only package and ship what you actually use. On top of that NAP is easy to extend: build you own modules, resources, devices and components. NAP wants you to be safe and validates data for you on initialization. Applications are also responsive: hot-load content changes directly in to the running application. On top of that NAP is completely cross-platform and supports all modern desktop environments.
 
