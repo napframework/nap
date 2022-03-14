@@ -237,7 +237,7 @@
             "mID": "ParticleTwo",
             "Usage": "Static",
             "ImagePath": "texture_two.png",
-            "GenerateLods": true
+            "GenerateLods": false
         },
         {
             "Type": "nap::Material",
@@ -286,7 +286,7 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": false,
+            "SampleShading": true,
             "Title": "ComputeParticlesDemo",
             "Width": 1280,
             "Height": 720,
