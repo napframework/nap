@@ -162,6 +162,7 @@ int main(int argc, char* argv[])
 
 	// Show splash screen during initialization of engine
 	QPixmap splashpic(napkin::QRC_ICONS_NAPKIN_SPLASH);
+	splashpic.setDevicePixelRatio(app.devicePixelRatio());
 	QSplashScreen splash(splashpic);
 	splash.show();
 	app.processEvents();
