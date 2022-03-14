@@ -1129,9 +1129,9 @@ namespace nap
 		 */
 		enum EQueueSubmitOp : uint
 		{
-			Rendering			= 0x01,
-			HeadlessRendering	= 0x02,
-			Compute				= 0x04
+			Rendering			= 0x01,												///< Window rendering queue submission
+			HeadlessRendering	= 0x02,												///< Render target rendering queue submission
+			Compute				= 0x04												///< Compute dispatch compute queue submission
 		};
 		using QueueSubmitOps = uint;
 
@@ -1177,6 +1177,7 @@ namespace nap
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
 		std::unique_ptr<Texture2D>				mEmptyTexture;
+
 		TextureSet								mTexturesToClear;
 		TextureSet								mTexturesToUpload;
 		BufferSet								mBuffersToClear;
@@ -1209,8 +1210,9 @@ namespace nap
 		bool									mInitialized = false;
 		bool									mSDLInitialized = false;
 		bool									mShInitialized = false;
-		UniqueMaterialCache						mMaterials;
 		bool									mHeadless = false;
+
+		UniqueMaterialCache						mMaterials;
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;

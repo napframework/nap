@@ -16,19 +16,23 @@ uniform sampler2D colorTexture;
 in vec3 pass_UV;
 out vec4 out_Color;
 
+const float PI 				= 3.141592;
+const float PIVOT			= 0.5;
+
 // @param color: input color
 // @param value: [-1, 1] where negative reduces contrast and positive increases it
 vec3 contrast(vec3 color, float value) 
-{
-	return 0.5 + (1.0 + value) * (color - 0.5);
+{	
+	float s_curve = tan((value) * PI * 0.25) + 1.0;
+	return clamp(s_curve * (color - PIVOT) + PIVOT, 0.0, 1.0);
 }
 
 // @param color: input color
 // @param value: [-1, 1] where negative reduces brightness and positive increases it
 vec3 brightness(vec3 color, float value) 
 {
-	return color + vec3(value);
-}
+	return clamp(color + value, 0.0, 1.0);
+} 
 
 // @param color: input color
 // @param value: [0, x] increases saturation
@@ -44,7 +48,7 @@ void main(void)
 	vec4 color = texture(colorTexture, pass_UV.xy);
 
 	// Apply adjustments to RGB
-	vec3 color_mod = brightness(color.xyz, ubo.brightness);
+	vec3 color_mod = brightness(color.rgb, ubo.brightness);
 	color_mod = contrast(color_mod, ubo.contrast);
 	color_mod = saturation(color_mod, ubo.saturation);
 
