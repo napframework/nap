@@ -28,7 +28,7 @@ namespace napkin
 #ifdef _WIN32
 		_putenv_s(key, value);
 #else
-		setenv(key, value)
+		setenv(key, value, 0)
 #endif // _WIN32
 	}
 }
