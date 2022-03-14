@@ -79,7 +79,7 @@ void main()
 	// Read
 	Particle p = subo_in.particles[gl_GlobalInvocationID.x];
 
-	vec3 vel = p.velocity.xyz * max(ubo.displacement, 0.01);
+	vec3 vel = p.velocity.xyz * max(ubo.displacement * 10.0, 0.01);
 	float simplex_x = simplex(vel.xyz * ubo.elapsedTime);
 	float simplex_y = simplex(vel.zyx * ubo.elapsedTime);
 	float simplex_z = simplex(vel.yxz * ubo.elapsedTime);

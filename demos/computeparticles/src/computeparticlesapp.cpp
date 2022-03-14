@@ -24,20 +24,19 @@ namespace nap
 	bool ComputeParticlesApp::init(utility::ErrorState& error)
 	{		
 		// Create render service
-		mRenderService	= getCore().getService<RenderService>();		
-		mInputService	= getCore().getService<InputService>();
-		mSceneService	= getCore().getService<SceneService>();
-		mGuiService		= getCore().getService<IMGuiService>();
+		mRenderService		= getCore().getService<RenderService>();		
+		mInputService		= getCore().getService<InputService>();
+		mSceneService		= getCore().getService<SceneService>();
+		mGuiService			= getCore().getService<IMGuiService>();
 
 		// Get resource manager and find required resources and entities. 
-		mResourceManager = getCore().getResourceManager();		
-		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
-		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
-		mCameraEntity				= scene->findEntity("CameraEntity");
-		mDefaultInputRouter			= scene->findEntity("DefaultInputRouterEntity");
-		mParticleEntity				= scene->findEntity("ParticleVolumeEntity");
+		mResourceManager	= getCore().getResourceManager();		
+		const auto scene	= mResourceManager->findObject<Scene>("Scene");
+		mRenderWindow		= mResourceManager->findObject<RenderWindow>("Window0");
+		mCameraEntity		= scene->findEntity("CameraEntity");
+		mDefaultInputRouter	= scene->findEntity("DefaultInputRouterEntity");
+		mParticleEntity		= scene->findEntity("ParticleVolumeEntity");
 
-		mNumParticles = mParticleEntity->getComponent<ParticleVolumeComponentInstance>().getNumParticles();
 		mGuiService->selectWindow(mRenderWindow);
 
 		return true;
@@ -73,9 +72,10 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Performance: %.02f fps | %.02f ms", getCore().getFramerate(), deltaTime * 1000.0).c_str());
-		ImGui::Text(utility::stringFormat("Particles: %d", mNumParticles).c_str());
-		ImGui::SliderFloat("Speed", &volume.mTimeScale, 0.0f, 2.0f);
-		ImGui::SliderFloat("Displacement", &volume.mDisplacement, 0.0, 2.0f);
+		ImGui::Text(utility::stringFormat("Particles: %d", volume.getNumParticles()).c_str());
+
+		ImGui::SliderFloat("Speed", &volume.mSpeed, 0.0f, 2.0f);
+		ImGui::SliderFloat("Displacement", &volume.mDisplacement, 0.0, 1.0f);
 		ImGui::SliderFloat("Size", &volume.mParticleSize, 0.0, 1.0f);
 		ImGui::SliderFloat("Rotation Speed", &volume.mRotationSpeed, 0.0, 10.0f);
 		ImGui::SliderFloat("Rotation Variation", &volume.mRotationVariation, 0.0, 1.0f);
@@ -85,8 +85,8 @@ namespace nap
 	
 	
 	/**
-	 * Render all objects to screen at once
-	 * In this case that's only the particle mesh
+	 * Render all objects to screen at once.
+	 * Compute work is also dispatched here as this must happen inside a frame when compute command buffer recording is activated.
 	 */
 	void ComputeParticlesApp::render()
 	{
@@ -95,16 +95,24 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		// Begin recording compute commands
+		// Begin recording compute commands.
+		// Compute commands are pushed to a separate compute command buffer. This must also always happen before the recording of any rendering commands
+		// within a single frame (including headless). This order is enforced to ensure correct synchronization and simplicity.
 		if (mRenderService->beginComputeRecording())
 		{
-			utility::ErrorState error_state;
-			mParticleEntity->getComponent<ParticleVolumeComponentInstance>().compute();
+			// Fetch the particle volume component instance from the particle entity
+			auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
 
+			// The instances exposes a compute function which selects the correct compute instance to use in the current frame,
+			// updates its compute material and dispatches the compute shader. Resources that are accessed in both compute and
+			// graphics within the same frame are guarded by memory and execution barriers. See ComputeComponentInstance::onCompute().
+			volume.compute();
+
+			// End the compute recording
 			mRenderService->endComputeRecording();
 		}
 
-		// Begin recording the render commands for the main render window
+		// Begin recording the render commands for the main render window. Rendering always happens after compute.
 		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
@@ -112,8 +120,8 @@ namespace nap
 			mRenderWindow->beginRendering();
 
 			// Render all available geometry
-			PerspCameraComponentInstance& frame_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, frame_cam);
+			// In this case that's only the particle volume mesh
+			mRenderService->renderObjects(*mRenderWindow, mCameraEntity->getComponent<PerspCameraComponentInstance>());
 
 			// Render GUI elements
 			mGuiService->draw();

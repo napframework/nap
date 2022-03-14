@@ -20,7 +20,7 @@ namespace nap
 	/**
 	 * Resource part of Compute Component
 	 * 
-	 * The compute component represents a general-purpose computation that mutates one or more buffers.
+	 * The compute component represents a general-purpose computation that mutates one or more storage buffers.
 	 * Internally, a ComputeComponentInstance manages a ComputeMaterialInstance and caches the desired invocation count
 	 * for repeated use.
 	 *
@@ -45,7 +45,7 @@ namespace nap
 	/**
 	 * Instance part of Compute Component
 	 *
-	 * The compute component represents a general-purpose computation that mutates one or more buffers.
+	 * The compute component represents a general-purpose computation that mutates one or more storage buffers.
 	 * Internally, a ComputeComponentInstance manages a ComputeMaterialInstance and can caches the desired invocation count
 	 * for repeated use.
 	 *

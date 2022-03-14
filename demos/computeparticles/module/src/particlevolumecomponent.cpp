@@ -19,7 +19,7 @@
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mTimeScale,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mSpeed,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Displacement",				&nap::ParticleVolumeComponent::mDisplacement,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default)
@@ -93,11 +93,15 @@ namespace nap
 		UIntVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<uint>(vertexid::id);
 		MeshShape& shape = mMeshInstance->createShape();
 
-		// Reserve CPU memory for all the particle geometry necessary to create
-		// We want to draw the mesh as a set of triangles, 2 triangles per particle
+		// Reserve CPU memory for all the particle geometry necessary to create.
+		// We want to draw the mesh as a set of triangles, 2 triangles per particle.
+		// As the mesh is static, the staging buffers are destroyed after the initial upload to the GPU.
 		shape.reserveIndices(mNumParticles);
 
-		// Build the mesh based on the amount of particles
+		// Build the mesh based on the particle count.
+		// The position vertex attribute is created here and uploaded on initialization, but is overwritten by the result of the update compute shader in onDraw().
+		// The reason we have to create it here anyway is because the vertex shader declares attribute `in_Position`, and materials require valid data to be present
+		// for the initial upload during initialization. At the same time we have other custom vertex attributes that cannot be defined in JSON.
 		std::vector<glm::vec4> zero_buffer(num_vertices);
 		position_attribute.setData(zero_buffer.data(), num_vertices);
 
@@ -146,7 +150,7 @@ namespace nap
 		if (!errorState.check(getEntityInstance()->findComponent<ComputeComponentInstance>() != nullptr, "%s: missing ComputeComponent", mID.c_str()))
 			return false;
 
-		// Collect compute instances
+		// Collect compute instances under this entity
 		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
 		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 
@@ -158,11 +162,12 @@ namespace nap
 		ParticleVolumeComponent* resource = getComponent<ParticleVolumeComponent>();
 
 		mParticleSize = resource->mSize;
-		mTimeScale = resource->mTimeScale;
+		mSpeed = resource->mSpeed;
 		mDisplacement = resource->mDisplacement;
 		mRotationVariation = resource->mRotationVariation;
 		mRotationSpeed = resource->mRotationSpeed;
 
+		// Run the update compute shader once for each particle
 		for (auto& comp : mComputeInstances)
 			comp->setInvocations(resource->mNumParticles);
 
@@ -185,21 +190,14 @@ namespace nap
 
 	void ParticleVolumeComponentInstance::update(double deltaTime)
 	{
-		// Update time
-		mDeltaTime = deltaTime * static_cast<double>(mTimeScale);
+		// Update time variables
+		mDeltaTime = deltaTime * static_cast<double>(mSpeed);
 		mElapsedTime += mDeltaTime;		
 	}
 
 
 	void ParticleVolumeComponentInstance::compute()
 	{
-		if (!mFirstUpdate)
-		{
-			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
-		}
-		mFirstUpdate = false;
-
 		// Update compute shader uniforms
 		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)
@@ -212,6 +210,8 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::particleSize)->setValue(mParticleSize);
 		}
 
+		// Compute the current compute instance
+		// This updates the particle storage buffers and the position vertex attribute buffer to use for rendering.
 		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 
@@ -246,26 +246,41 @@ namespace nap
 
 		// Bind shader descriptors
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
-		
-		// Find storage buffer uniform in the material instance resource, else the material resource
-		StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform(uniform::vertexBufferStruct);
-		if (vertex_struct == nullptr)
-			vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
 
-		// Get storage buffer handle
-		StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniformBuffer<StorageUniformVec4BufferInstance>(uniform::vertices);
-		const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedBuffer().getBuffer();
+		// Here we intend to fetch the updated vertex buffer of the compute shader,
+		// and bind it to the position vertex attribute of the particle mesh.
+		{
+			// Find storage buffer uniform in the material instance resource, else the material resource.
+			StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform(uniform::vertexBufferStruct);
 
-		// Override position vertex attribute buffer with storage buffer
-		std::vector<VkBuffer> vertex_buffers = mRenderableMesh.getVertexBuffers();
-		int position_attr_binding_idx = mRenderableMesh.getVertexBufferBindingIndex(vertexid::position);
-		vertex_buffers[position_attr_binding_idx] = storage_buffer;
+			// If it is null, search for it in the base material.
+			if (vertex_struct == nullptr)
+				vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
 
-		// Get offsets
-		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+			// Assert if unavailable
+			assert(vertex_struct != nullptr);
 
-		// Bind buffers
-		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
+			// Fetch the storage buffer uniform of the position vertex buffer currently bound to the update compute shader.
+			StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniformBuffer<StorageUniformVec4BufferInstance>(uniform::vertices);
+			const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedBuffer().getBuffer();
+
+			// Override position vertex attribute buffer with storage buffer.
+			// We do this by first fetching the internal buffer binding index of the position vertex attribute.
+			int position_attr_binding_idx = mRenderableMesh.getVertexBufferBindingIndex(vertexid::position);
+
+			// Then we copy the ordered vector of VkBuffers from the renderable mesh...
+			std::vector<VkBuffer> vertex_buffers = mRenderableMesh.getVertexBuffers();
+
+			// ...and overwrite the VkBuffer under the previously fetched position vertex attribute index.
+			vertex_buffers[position_attr_binding_idx] = storage_buffer;
+
+			// Get offsets
+			const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+
+			// Bind buffers
+			// The shader will now use the storage buffer updated by the compute shader as a vertex buffer when rendering the current mesh.
+			vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
+		}
 
 		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
@@ -303,5 +318,9 @@ namespace nap
 			rect.extent.height = renderTarget.getBufferSize().y;
 			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 		}
+
+		// Update the current compute instance and index for the subsequent frame.
+		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
+		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 	}
 }
