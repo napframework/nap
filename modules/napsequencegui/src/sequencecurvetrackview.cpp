@@ -1185,6 +1185,8 @@ namespace nap
 				float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
 				if (ImGui::InputFloat("value", &value))
 				{
+                    float new_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
+
 					auto& curve_controller = getEditor().getController<SequenceControllerCurve>();
 					curve_controller.changeCurvePoint(
 						action->mTrackID,
@@ -1192,7 +1194,7 @@ namespace nap
 						action->mControlPointIndex,
 						action->mCurveIndex,
 						action->mTime,
-						value);
+                        new_value);
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					mState.mDirty = true;
 				}
