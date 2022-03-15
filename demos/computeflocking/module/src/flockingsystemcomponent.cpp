@@ -235,15 +235,12 @@ namespace nap
 
 	void FlockingSystemComponentInstance::compute()
 	{
-		if (!mFirstUpdate)
-		{
-			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
-		}
-		mFirstUpdate = false;
-
 		updateComputeMaterial(mCurrentComputeInstance);
 		mRenderService->computeObjects({ mCurrentComputeInstance });
+
+		// Update current compute instance and index
+		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
+		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 	}
 
 

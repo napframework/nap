@@ -15,6 +15,7 @@
 #include <imgui/imgui.h>
 #include <flockingsystemcomponent.h>
 #include <glm/ext.hpp>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeFlockingApp)
 RTTI_CONSTRUCTOR(nap::Core&)
@@ -170,7 +171,7 @@ namespace nap
 	void ComputeFlockingApp::update(double deltaTime)
 	{
 		// Update input
-		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
+		DefaultInputRouter& input_router			= mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
 		{
 			// Update input for first window
 			std::vector<nap::EntityInstance*> entities;
@@ -181,52 +182,61 @@ namespace nap
 		}
 
 		// Prepare gui if requested
+		auto* composite_comp						= mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
+		auto* coloradjust_comp						= mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor");
 		if (mShowGUI)
 		{
 			ImGui::Begin("Controls");
 			ImGui::Text(getCurrentDateTime().toString().c_str());
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "'wasd' keys to move, mouse + left mouse button to look");
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, "press 'h' to hide this window");
+			ImGui::Text(utility::stringFormat("Rendering Resolution: %d x %d", composite_comp->getOutputTexture().getWidth(), composite_comp->getOutputTexture().getHeight()).c_str());
 			ImGui::Text(utility::stringFormat("Performance: %.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 			ImGui::Text(utility::stringFormat("Boids: %d", mNumBoids).c_str());
 			mParameterGUI->show(false);
+
+			ImGui::Separator();
+			if (ImGui::CollapsingHeader("Bloom"))
+			{
+				const float aspect = coloradjust_comp->getOutputTexture().getHeight() / static_cast<float>(coloradjust_comp->getOutputTexture().getWidth());
+				const float width = ImGui::GetWindowContentRegionWidth();
+				ImGui::Image(coloradjust_comp->getOutputTexture(), { width, width*aspect });
+			}
 			ImGui::End();
 		}
 
-		// Update uniforms
-		auto* contrast_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("ChangeColor");
-		UniformStructInstance* ubo_struct = contrast_comp->getMaterialInstance().findUniform("UBO");
+		// Update color adjustment material
+		UniformStructInstance* ubo_struct			= coloradjust_comp->getMaterialInstance().findUniform("UBO");
+		UniformFloatInstance* contrast_uni			= ubo_struct->findUniform<UniformFloatInstance>("contrast");
+		UniformFloatInstance* brightness_uni		= ubo_struct->findUniform<UniformFloatInstance>("brightness");
+		UniformFloatInstance* saturation_uni		= ubo_struct->findUniform<UniformFloatInstance>("saturation");
 
-		UniformFloatInstance* contrast_uniform = ubo_struct->findUniform<UniformFloatInstance>("contrast");
-		UniformFloatInstance* brightness_uniform = ubo_struct->findUniform<UniformFloatInstance>("brightness");
-		UniformFloatInstance* saturation_uniform = ubo_struct->findUniform<UniformFloatInstance>("saturation");
+		contrast_uni->setValue(rtti_cast<ParameterFloat>(mContrastParam.get())->mValue);
+		brightness_uni->setValue(rtti_cast<ParameterFloat>(mBrightnessParam.get())->mValue);
+		saturation_uni->setValue(rtti_cast<ParameterFloat>(mSaturationParam.get())->mValue);
 
-		contrast_uniform->setValue(rtti_cast<ParameterFloat>(mContrastParam.get())->mValue);
-		brightness_uniform->setValue(rtti_cast<ParameterFloat>(mBrightnessParam.get())->mValue);
-		saturation_uniform->setValue(rtti_cast<ParameterFloat>(mSaturationParam.get())->mValue);
+		// Update composite material
+		ubo_struct									= composite_comp->getMaterialInstance().findUniform("FRAGUBO");
+		UniformFloatInstance* blend_uni				= ubo_struct->findUniform<UniformFloatInstance>("blend");
 
-		auto* composite_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
-		ubo_struct = composite_comp->getMaterialInstance().findUniform("FRAGUBO");
-
-		UniformFloatInstance* blend_uniform = ubo_struct->findUniform<UniformFloatInstance>("blend");
-		blend_uniform->setValue(rtti_cast<ParameterFloat>(mBlendParam.get())->mValue);
+		blend_uni->setValue(rtti_cast<ParameterFloat>(mBlendParam.get())->mValue);
 		
 		// Update bound scale
-		const float radius = mBoundsRadiusParam->mValue;
-		auto& transform = mBoundsEntity->getComponent<TransformComponentInstance>();
+		const float radius							= mBoundsRadiusParam->mValue;
+		auto& transform								= mBoundsEntity->getComponent<TransformComponentInstance>();
+
 		transform.setScale({ radius, radius, radius });
 
 		// Update target parent transform scale
-		auto& translate_comp = mTargetEntity->getComponent<BoidTargetTranslateComponentInstance>();
-		translate_comp.mRadius = radius;
+		auto& translate_comp						= mTargetEntity->getComponent<BoidTargetTranslateComponentInstance>();
+		translate_comp.mRadius						= radius;
 
 		// Update camera location
-		auto* atmosphere_comp = mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
-		ubo_struct = atmosphere_comp->getMaterialInstance().findUniform("VERTUBO");
-		UniformVec3Instance* camera_location_uniform = ubo_struct->findUniform<UniformVec3Instance>("cameraLocation");
+		auto* atmosphere_comp						= mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
+		ubo_struct									= atmosphere_comp->getMaterialInstance().findUniform("VERTUBO");
+		UniformVec3Instance* cam_location_uni		= ubo_struct->findUniform<UniformVec3Instance>("cameraLocation");
 
-		auto& camera_transform = mCameraEntity->getComponent<TransformComponentInstance>();
-		camera_location_uniform->setValue(camera_transform.getTranslate());
+		cam_location_uni->setValue(mCameraEntity->getComponent<TransformComponentInstance>().getTranslate());
 
 		// Update if we need to display bounds and gnomon
 		bool show = rtti_cast<ParameterBool>(mShowBoundsParam.get())->mValue;

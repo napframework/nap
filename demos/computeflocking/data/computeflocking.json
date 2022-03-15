@@ -636,7 +636,8 @@
                             37,
                             255
                         ]
-                    }
+                    },
+                    "PreserveAspect": false
                 },
                 {
                     "Type": "nap::RenderBloomComponent",
@@ -699,7 +700,8 @@
                             37,
                             255
                         ]
-                    }
+                    },
+                    "PreserveAspect": true
                 }
             ],
             "Children": []

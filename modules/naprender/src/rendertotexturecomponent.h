@@ -57,6 +57,7 @@ namespace nap
 		MaterialInstanceResource		mMaterialInstanceResource;							///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'
 		RGBAColor8						mClearColor = { 255, 255, 255, 255 };				///< Property: 'ClearColor' the color that is used to clear the render target
+		bool							mPreserveAspect = false;							///< Property: 'PreserveAspect' whether to preserve the texture aspect ratio
 	};
 
 
@@ -151,6 +152,7 @@ namespace nap
 		RenderService*				mService = nullptr;					///< Render service
 		glm::mat4x4					mModelMatrix;						///< Plane model matrix
 		bool						mDirty = true;						///< If the model matrix needs to be recomputed
+		bool						mPreserveAspect = false;			///< Whether to preserve the texture aspect ratio
 		UniformMat4Instance*		mModelMatrixUniform = nullptr;		///< Name of the model matrix uniform in the shader
 		UniformMat4Instance*		mProjectMatrixUniform = nullptr;	///< Name of the projection matrix uniform in the shader
 		UniformMat4Instance*		mViewMatrixUniform = nullptr;		///< View matrix uniform
