@@ -2,6 +2,12 @@ Sequencer {#sequencer}
 =======================
 * [Introduction](@ref introduction)
 * [Player, Editor & EditorGUI](@ref player_editor_gui)
+* [Usage](@ref usage)
+  * [Create and Use an Event Track ](@ref using_event_track)
+  * [Create and Use a Curve Track](@ref using_curve_track)
+  * [Create and Use an Audio Track](@ref using_audio_track)
+  * [Inserting markers](@ref inserting_markers)
+  * [Renaming tracks](@ref renaming_tracks)
 * [Clocks](@ref clocks)
   * [Standard Clock](@ref standard_clock)
   * [Independent Clock](@ref independent_clock)
@@ -11,12 +17,6 @@ Sequencer {#sequencer}
     * [Event Track](@ref outputs_and_adapters_examples_event)
     * [Curve Track](@ref outputs_and_adapters_examples_curve)
     * [Audio Track](@ref outputs_and_adapters_examples_audio)
-* [Example](@ref examples)
-  * [Create and Use an Event Track ](@ref using_event_track)
-  * [Create and Use a Curve Track](@ref using_curve_track)
-  * [Create and Use an Audio Track](@ref using_audio_track)
-  * [Inserting markers](@ref inserting_markers)
-  * [Renaming tracks](@ref renaming_tracks)
 
 # Introduction {#introduction}
 
@@ -80,6 +80,81 @@ The sequence playback logic and data format is completely seperated from the seq
 To ensure all (live) edits to a sequence are carried out in a thread-safe manner, all edit calls are routed through the sequence editor. The sequence editor creates [sequence controllers](@ref nap::SequenceController) for each available track type. [Tracks](@ref nap::SequenceTrack) can be edited by these controllers. Controllers for each available track type are created by the application at run-time during initialization of the sequence editor. All created Sequence Controllers are owned by the sequence editor. 
 
 Make sure the edit calls are performed on the same thread that is reading the sequence. For example: The GUI of the sequence editor is drawn on the main (render) thread of the application, so any edit calls to the sequence controller must be executed from the main thread as well. 
+
+# Usage {#usage}
+
+In the following example we will create a custom sequence using the [Sequence Player](@ref nap::SequencePlayer), [Sequence Editor](@ref nap::SequenceEditor) & [Sequence GUI](@ref nap::SequenceEditorGUI). The [sequence](@ref nap::Sequence) contains one event track with a couple of events, one curve track that animates a [float parameter](@ref nap::ParameterFloat) and an [audio track](@ref nap::SequenceTrackAudio) that plays back an [audio segment](@ref nap::SequenceTrackSegmentAudio). Alternatively you can skip this step and use the `sequencer demo` instead.
+
+Include the following modules to make sure your project can use all the features of the sequencer:
+
+- mod_napsequence
+- mod_napsequencegui
+- mod_napsequenceaudio
+- mod_napsequenceaudiogui
+
+Open `module.json` inside the `module` directory and add them to the `RequiredModules` field. For more information on how to add modules to your project read the [getting started](@ref getting_started_overview) guide. 
+
+Next step is to create a sequence player that has a `nap::SequencePlayerEventOutput`, a `nap::SequencePlayerCurveOutput` and a `nap::SequencePlayerAudioOutput`. You can use [Napkin](@ref napkin) to set this up for you or use the following JSON snippet as an example:
+
+```
+{
+    "Type": "nap::SequencePlayer",
+    "mID": "SequencePlayer",
+    "Default Show": "Default Show.json",
+    "Outputs": [
+        {
+            "Type": "nap::SequencePlayerEventOutput",
+            "mID": "SequencePlayerEventOutput"
+        },
+        {
+            "Type": "nap::SequencePlayerCurveOutput",
+            "mID": "Float Output",
+            "Parameter": "Float1",
+            "Use Main Thread": true
+        },
+        {
+            "Type": "nap::SequencePlayerAudioOutput",
+            "mID": "SequencePlayerAudioOutput",
+            "Audio Buffers": [
+                "AudioFileResource"
+            ],
+            "Manual Routing": true,
+            "Max Channels": 2
+        }],
+    "Clock": {
+        "Type": "nap::SequencePlayerAudioClock",
+        "mID": "SequencePlayerAudioClock"
+    }
+}
+```
+
+## Create and Use an Event Track{#using_event_track}
+
+Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackEvent`. An empty event track will appear. To make sure events on the track get routed to the event output make sure to select the `nap::SequencePlayerEventOutput` from the inspector. To insert an event right-click somewhere in the track. A popup will appear with different types of events. In this example we will insert an event of type [string](@ref nap::SequenceTrackSegmentEventString). An empty string event is inserted on the track. You can move it by dragging the handler of the event or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event. Because the event holds a string we change the string event to hold a string with the value `hello world`. When playing back the sequence the event will be dispatched whenever the playback time of the sequencer passes the time at which the event is inserted. To receive the event or get notified attach a listener to the [signal](@ref nap::SequencePlayerEventOutput::mSignal) of the event output.
+
+<img src="content/sequencer-event.gif" alt="Sequencer Event" style="width:100%;"/>
+
+## Create and Use a Curve Track{#using_curve_track}
+
+Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackCurveFloat`. An empty curve track will appear. To make sure the drawn curve on the track gets routed to the curve output make sure to select the `nap::SequencePlayerCurveOutput` from the inspector. To insert an event right-click somewhere in the track. A popup will appear asking you to insert a segment. Do so. A curve segment is inserted into the track. You can extend it by dragging the handler of the segment or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event by dragging the segment value or right click on the segment value. You can also insert point on the curve. Move the mouse cursor somewhere on the curve, right click and select `Insert Point` in the popup. You can also change the curve type to `linear` in this popup. When playing back the sequence the parameter, linked to from the curve output, will be set to the current value of the curve, evaluated at the current timestamp of the player.
+
+<img src="content/sequencer-curve.gif" alt="Sequencer Curve" style="width:100%;"/>
+
+## Create and Use an Audio Track{#using_audio_track}
+
+Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackAudio`. An empty audio track will appear. To make sure audio is routed to the audio output select the `nap::SequencePlayerAudioOutput` from the inspector. To insert an audio segment right-click somewhere in the track. A popup will appear with a popup containing all available audio buffer resources. In this example we will insert an audio segment that links to an `AudioFileResource`, which is an audio file read from disk. To add an audio file resource to your project refer to the [audio](@ref audio_playback) documentation. An audio segment will appear on the audio track. When the sequencer is playing the audio in the buffer of the segment will be routed to the audio output. Right clicking on the audio segment will open up a popup that enables you to edit the start time of the segment on the track, the start time within the audio buffer or end time within the audio buffer. This can also be achieved by dragging on the left or right side of the audio segment.
+
+<img src="content/sequencer-audio.gif" alt="Sequencer Audio" style="width:100%;"/>
+
+## Inserting Markers{#inserting_markers}
+
+The top bar of the gui holds markers. Makers are a visual aid that can be used to tag a specific point of interest in your sequence. Right click somewhere inside the marker bar, a popup will appear, name the marker whatever you like and choose `Insert Marker`. A marker will appear. You can move the marker by dragging it inside the marker bar or edit it by right clicking on the marker.
+
+<img src="content/sequencer-marker.gif" alt="Sequencer Marker" style="width:100%;"/>
+
+## Renaming Tracks{#renaming_tracks}
+
+You can rename tracks by clicking on the track title in the inspector.
 
 # Clocks {#clocks}
 
@@ -194,78 +269,3 @@ When evaluating an [audio track](@ref nap::SequenceTrackAudio) the [audio adapte
 The [sequence player audio output component](@ref nap::audio::SequencePlayerAudioOutputComponent) by default routes its audio to the AudioService by creating its own [output nodes](@ref nap::audio::OutputNode). To disable this and route the audio output to your own processing chain you can set its `Manual Routing` property to true and use [getOutputForChannel](@ref nap::SequencePlayerAudioOutput::getOutputForChannel) or the sequence player audio output componewnt.
 
 <img src="content/sequencer-audio.png" alt="Sequencer Audio" style="width:100%;"/>
-
-# Example {#example}
-
-In the following example we will create a sequence using the [sequence player](@ref nap::SequencePlayer), [sequence editor](@ref nap::SequenceEditor) & [sequence editor GUI](@ref nap::SequenceEditorGUI). In this example we will create a [sequence](@ref nap::Sequence) that contains one event track with a couple of events, one curve track that animates a [float parameter](@ref nap::ParameterFloat) and an [audio track](@ref nap::SequenceTrackAudio) that plays back an [audio segment](@ref nap::SequenceTrackSegmentAudio).
-
-Include the following modules to make sure your project can use all the features of the sequencer:
-
-- mod_napsequence
-- mod_napsequencegui
-- mod_napsequenceaudio
-- mod_napsequenceaudiogui
-
-Open `module.json` inside the `module` directory and add them to the `RequiredModules` field. For more information on how to add modules to your project read the [getting started](@ref getting_started_overview) guide. 
-
-Next step is to create a sequence player that has a `nap::SequencePlayerEventOutput`, a `nap::SequencePlayerCurveOutput` and a `nap::SequencePlayerAudioOutput`. You can use [Napkin](@ref napkin) to set this up for you or use the following JSON snippet as an example:
-
-```
-{
-    "Type": "nap::SequencePlayer",
-    "mID": "SequencePlayer",
-    "Default Show": "Default Show.json",
-    "Outputs": [
-        {
-            "Type": "nap::SequencePlayerEventOutput",
-            "mID": "SequencePlayerEventOutput"
-        },
-        {
-            "Type": "nap::SequencePlayerCurveOutput",
-            "mID": "Float Output",
-            "Parameter": "Float1",
-            "Use Main Thread": true
-        },
-        {
-            "Type": "nap::SequencePlayerAudioOutput",
-            "mID": "SequencePlayerAudioOutput",
-            "Audio Buffers": [
-                "AudioFileResource"
-            ],
-            "Manual Routing": true,
-            "Max Channels": 2
-        }],
-    "Clock": {
-        "Type": "nap::SequencePlayerAudioClock",
-        "mID": "SequencePlayerAudioClock"
-    }
-}
-```
-
-## Create and Use an Event Track{#using_event_track}
-
-Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackEvent`. An empty event track will appear. To make sure events on the track get routed to the event output make sure to select the `nap::SequencePlayerEventOutput` from the inspector. To insert an event right-click somewhere in the track. A popup will appear with different types of events. In this example we will insert an event of type [string](@ref nap::SequenceTrackSegmentEventString). An empty string event is inserted on the track. You can move it by dragging the handler of the event or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event. Because the event holds a string we change the string event to hold a string with the value `hello world`. When playing back the sequence the event will be dispatched whenever the playback time of the sequencer passes the time at which the event is inserted. To receive the event or get notified attach a listener to the [signal](@ref nap::SequencePlayerEventOutput::mSignal) of the event output.
-
-<img src="content/sequencer-event.gif" alt="Sequencer Event" style="width:100%;"/>
-
-## Create and Use a Curve Track{#using_curve_track}
-
-Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackCurveFloat`. An empty curve track will appear. To make sure the drawn curve on the track gets routed to the curve output make sure to select the `nap::SequencePlayerCurveOutput` from the inspector. To insert an event right-click somewhere in the track. A popup will appear asking you to insert a segment. Do so. A curve segment is inserted into the track. You can extend it by dragging the handler of the segment or by right clicking it and change the timestamp in the appearing popup. You can also change the value of this event by dragging the segment value or right click on the segment value. You can also insert point on the curve. Move the mouse cursor somewhere on the curve, right click and select `Insert Point` in the popup. You can also change the curve type to `linear` in this popup. When playing back the sequence the parameter, linked to from the curve output, will be set to the current value of the curve, evaluated at the current timestamp of the player.
-
-<img src="content/sequencer-curve.gif" alt="Sequencer Curve" style="width:100%;"/>
-
-## Create and Use an Audio Track{#using_audio_track}
-
-Select the window that draws the sequencer gui. Select `Insert Track` and then click on `nap::SequenceTrackAudio`. An empty audio track will appear. To make sure audio is routed to the audio output select the `nap::SequencePlayerAudioOutput` from the inspector. To insert an audio segment right-click somewhere in the track. A popup will appear with a popup containing all available audio buffer resources. In this example we will insert an audio segment that links to an `AudioFileResource`, which is an audio file read from disk. To add an audio file resource to your project refer to the [audio](@ref audio_playback) documentation. An audio segment will appear on the audio track. When the sequencer is playing the audio in the buffer of the segment will be routed to the audio output. Right clicking on the audio segment will open up a popup that enables you to edit the start time of the segment on the track, the start time within the audio buffer or end time within the audio buffer. This can also be achieved by dragging on the left or right side of the audio segment.
-
-<img src="content/sequencer-audio.gif" alt="Sequencer Audio" style="width:100%;"/>
-
-## Inserting Markers{#inserting_markers}
-
-The top bar of the gui holds markers. Makers are a visual aid that can be used to tag a specific point of interest in your sequence. Right click somewhere inside the marker bar, a popup will appear, name the marker whatever you like and choose `Insert Marker`. A marker will appear. You can move the marker by dragging it inside the marker bar or edit it by right clicking on the marker.
-
-<img src="content/sequencer-marker.gif" alt="Sequencer Marker" style="width:100%;"/>
-
-## Renaming Tracks{#renaming_tracks}
-
-You can rename tracks by clicking on the track title in the inspector.

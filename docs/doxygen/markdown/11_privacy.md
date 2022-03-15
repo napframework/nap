@@ -3,7 +3,7 @@ Privacy Statement {#privacy_statement}
 
 1.	Identity
 -----------------------
-Responsible for this website is Naivi Service B.V., with registered office at Contactweg 47, 1014 AN Amsterdam, and hereafter referred to as Naivi. Naivi can be contacted via info@naivi.nl.
+Responsible for this website is Naivi Service B.V., with registered office at Contactweg 47, 1014 AN Amsterdam, and hereafter referred to as Naivi. Naivi is the parent company of NAP Labs and can be contacted via info@naivi.nl.
 
 2.	Purpose
 -----------------------
