@@ -183,7 +183,7 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius)->setValue(mResource->mBoundsRadiusParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
+			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mNumBoids);
 		}
 	}
 
@@ -322,8 +322,14 @@ namespace nap
 	}
 
 
-	FlockingSystemComponent& FlockingSystemComponentInstance::getResource()
+	FlockingSystemComponent& FlockingSystemComponentInstance::getResource() const
 	{
 		return *mResource;
+	}
+
+
+	uint FlockingSystemComponentInstance::getNumBoids() const
+	{
+		return mNumBoids;
 	}
 }

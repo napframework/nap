@@ -27,7 +27,7 @@ namespace nap
 	 * buffers containing particle data. In this demo, the particle data is stored in a nap::StructGPUBuffer, the layout
 	 * and contents of which are described in JSON. In this case, the particle buffer contains 1 mln elements, each of
 	 * which comprises of a position, velocity and rotation. Storage buffers are bound to compute shaders via a
-	 * nap::ComputeMaterial. Subsequently, compute shaders can be dispatched using a nap::ComputComponent, which combines
+	 * nap::ComputeMaterial. Subsequently, compute shaders can be dispatched using a nap::ComputeComponent, which combines
 	 * invocation information with a compute material and handles memory access and execution synchronization.
 	 * 
 	 * The application scene graph includes an instance of a particle volume that we want to render. The component is

@@ -31,31 +31,29 @@ namespace nap
 	class BoidTargetTranslateComponentInstance;
 
 	/**
-	* Demo application that is called from within the main loop
-	*
-	* Shows upward floating textured particles
-	* Use the 'wasd' keys and the left mouse button to move through the scene
-	*
-	* This application uses it's own module: mod_dynamicgeo. In there sits an object
-	* that creates, removes and updates the particles. It also renders the particles as a single mesh to screen
-	* It demonstrates one important thing: the creation of dynamic geometry. Because the particle
-	* count changes constantly the mesh is updated every frame to reflect those changes. 
-	* Refer to particleemittercomponent.h for more information
-	*
-	* Mouse and key events are forwarded to the input service, the input service collects input events
-	* and processes all of them on update. Because NAP does not have a default space (objects can
-	* be rendered in multiple ways), you need to specify what input actually means to the application.
-	* The input router does that for you. This demo uses the default one that forwards the events to every input component
-	* Refer to the cpp-update() call for more information on handling input
-	*
-	* We simply render all the objects in the scene to the primary screen at once. 
-	* This makes sense because there is only 1 drawable object (the particle simulation) and
-	* we don't use any other render targets. 
-	*
-	* The particle object is an example and not something that should be considered final.
-	* It demonstrates how you can modify a buffer and use that buffer to create a mesh that is drawn to screen
-	* More information about rendering, scenes etc. can be found in the other, more basic, examples.
-	*/
+	 * Demo application that demonstrates the use of compute to update and render a 3D flocking system.
+	 *
+	 * This application depends on its corresponding module: mod_computeflocking. This includes the object
+	 * nap::FlockingSystemComponent, which manages a flocking system that can be rendered as a single mesh.
+	 *
+	 * This demo is somewhat similar to `computeparticles`, but far more complex on the GPU side. We therefore
+	 * recommend studying this demo before moving on to this one.
+	 * 
+	 * This demo includes a compute shader in which each thread reads from a storage buffer thousands of times, and
+	 * leverages shared memory to do so faster. The world is also rendered offscreen, after which a stack of
+	 * post-processing effects applied to the color texture. The final texture is then applied to a quad and rendered
+	 * to a window with an orthographic camera.
+	 * 
+	 * The compute shader `flock.comp` generates a nap::StructGPUBuffer comprising of boid data. The most important
+	 * properties of a boid are its position, velocity (direction and magnitude) and orientation (a quaternion). The
+	 * layout and contents of the boid buffers described in JSON match those defined in `flock.comp`.
+	 *
+	 * The application scene graph includes an instance of a flocking system that we want to render. The component is
+	 * designed such that, in order to update the boids, we must call FlockingSystemComponent::compute(). This call
+	 * pushes a compute shader dispatch command to the current command buffer. As all compute work must be recorded to
+	 * the compute command buffer, compute work is always dispatched inside App::render(), between
+	 * RenderService::beginComputeRecording() and RenderService::endComputeRecording().
+	 */
 	class ComputeFlockingApp : public App
 	{
 		RTTI_ENABLE(App)
@@ -99,13 +97,13 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
 		rtti::ObjectPtr<EntityInstance> mOrthoCameraEntity;				//< Entity that holds the ortho camera
 
-		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity;			//<
-		rtti::ObjectPtr<EntityInstance> mRenderEntity;					//<
-		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//<
-		rtti::ObjectPtr<EntityInstance> mBoundsEntity;					//<
-		rtti::ObjectPtr<EntityInstance> mTargetEntity;					//<
+		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity;			//< Holds the flocking system abd required components
+		rtti::ObjectPtr<EntityInstance> mRenderEntity;					//< Holds rendering operations as components
+		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//< Holds components to render
+		rtti::ObjectPtr<EntityInstance> mBoundsEntity;					//< Holds world bounds
+		rtti::ObjectPtr<EntityInstance> mTargetEntity;					//< Holds boid target
 
-		rtti::ObjectPtr<RenderTarget> mRenderTarget;					//<
+		rtti::ObjectPtr<RenderTarget> mRenderTarget;					//< Offscreen render target
 
 		std::unique_ptr<ParameterGUI> mParameterGUI;					//< Parameter GUI
 
@@ -119,6 +117,5 @@ namespace nap
 		ResourcePtr<Parameter> mBlendParam;
 
 		bool mShowGUI = true;
-		int mNumBoids = 0;
 	};
 }

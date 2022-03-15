@@ -57,7 +57,8 @@ namespace nap
 		MaterialInstanceResource		mMaterialInstanceResource;							///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'
 		RGBAColor8						mClearColor = { 255, 255, 255, 255 };				///< Property: 'ClearColor' the color that is used to clear the render target
-		bool							mPreserveAspect = false;							///< Property: 'PreserveAspect' whether to preserve the texture aspect ratio
+		bool							mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
+		bool							mPreserveAspect = false;							///< Property: 'PreserveAspect' Whether to preserve the texture aspect ratio
 	};
 
 
@@ -125,6 +126,7 @@ namespace nap
 
 		/**
 		 * Called by the Render Service. Only orthographic cameras are supported.
+		 * @return true if camera is orthographic
 		 */
 		virtual bool isSupported(nap::CameraComponentInstance& camera) const override;
 
@@ -132,6 +134,11 @@ namespace nap
 		 * @return current material used when drawing the mesh.
 		 */
 		MaterialInstance& getMaterialInstance();
+
+		/**
+		 * Sets whether to preserve the texture aspect ratio when rendering to the target
+		 */
+		void setPreserveAspect(bool preserveAspect);
 
 	protected:
 		/**

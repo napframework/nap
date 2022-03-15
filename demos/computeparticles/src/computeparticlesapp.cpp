@@ -103,7 +103,7 @@ namespace nap
 			// Fetch the particle volume component instance from the particle entity
 			auto& volume = mParticleEntity->getComponent<ParticleVolumeComponentInstance>();
 
-			// The instances exposes a compute function which selects the correct compute instance to use in the current frame,
+			// The component instance exposes a compute function which selects the correct compute instance to use in the current frame,
 			// updates its compute material and dispatches the compute shader. Resources that are accessed in both compute and
 			// graphics within the same frame are guarded by memory and execution barriers. See ComputeComponentInstance::onCompute().
 			volume.compute();

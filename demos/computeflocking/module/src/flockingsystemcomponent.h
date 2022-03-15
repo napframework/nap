@@ -47,32 +47,32 @@ namespace nap
 
 		ResourcePtr<ParameterBool> mRandomColorParam;					///< Property: "RandomColorParam" Enable random colors
 		ResourcePtr<ParameterFloat> mBoidSizeParam;						///< Property: "BoidSizeParam" Default size of a boid
-		ResourcePtr<ParameterFloat> mFresnelScaleParam;					///< Property: "FresnelScale" 
-		ResourcePtr<ParameterFloat> mFresnelPowerParam;					///< Property: "FresnelPower" 
+		ResourcePtr<ParameterFloat> mFresnelScaleParam;					///< Property: "FresnelScale" Scale fresnel term
+		ResourcePtr<ParameterFloat> mFresnelPowerParam;					///< Property: "FresnelPower" Apply power to fresnel term
 
-		ResourcePtr<ParameterFloat> mViewRadiusParam;					///< Property: "ViewRadius" 
-		ResourcePtr<ParameterFloat> mAvoidRadiusParam;					///< Property: "AvoidRadius" 
-		ResourcePtr<ParameterFloat> mMinSpeedParam;						///< Property: "MinSpeed" 
-		ResourcePtr<ParameterFloat> mMaxSpeedParam;						///< Property: "MaxSteerForce" 
-		ResourcePtr<ParameterFloat> mMaxSteerForceParam;				///< Property: "MaxSteerForce" 
-		ResourcePtr<ParameterFloat> mTargetWeightParam;					///< Property: "TargetWeight" 
-		ResourcePtr<ParameterFloat> mAlignmentWeightParam;				///< Property: "AlignmentWeight" 
-		ResourcePtr<ParameterFloat> mCohesionWeightParam;				///< Property: "CohesionWeight" 
-		ResourcePtr<ParameterFloat> mSeparationWeightParam;				///< Property: "SeparationWeight" 
-		ResourcePtr<ParameterFloat> mBoundsRadiusParam;					///< Property: "BoundsRadius" 
+		ResourcePtr<ParameterFloat> mViewRadiusParam;					///< Property: "ViewRadius" Radius in which a boid detects mates to follow
+		ResourcePtr<ParameterFloat> mAvoidRadiusParam;					///< Property: "AvoidRadius" Radius in which a boid detect mates to avoid
+		ResourcePtr<ParameterFloat> mMinSpeedParam;						///< Property: "MinSpeed" Minimum speed
+		ResourcePtr<ParameterFloat> mMaxSpeedParam;						///< Property: "MaxSteerForce" Maximum speed
+		ResourcePtr<ParameterFloat> mMaxSteerForceParam;				///< Property: "MaxSteerForce" Maximum steer force, also acceleration and deceleration
+		ResourcePtr<ParameterFloat> mTargetWeightParam;					///< Property: "TargetWeight" Contribution of target on boid forces
+		ResourcePtr<ParameterFloat> mAlignmentWeightParam;				///< Property: "AlignmentWeight" Contribution of aligment vector to boid forces
+		ResourcePtr<ParameterFloat> mCohesionWeightParam;				///< Property: "CohesionWeight" Contribution of cohesion vector on boid movement
+		ResourcePtr<ParameterFloat> mSeparationWeightParam;				///< Property: "SeparationWeight" Contibution of separation vector on boid movement
+		ResourcePtr<ParameterFloat> mBoundsRadiusParam;					///< Property: "BoundsRadius" Radius of bounding sphere
 
-		ResourcePtr<ParameterVec3> mLightPositionParam;					///< Property: "LightPosition" 
-		ResourcePtr<ParameterFloat> mLightIntensityParam;				///< Property: "LightIntensity" 
-		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorParam;			///< Property: "DiffuseColorParam" 
-		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorExParam;		///< Property: "DiffuseColorExParam" 
-		ResourcePtr<ParameterRGBColorFloat> mLightColorParam;			///< Property: "LightColorParam" 
-		ResourcePtr<ParameterRGBColorFloat> mHaloColorParam;			///< Property: "HaloColorParam" 
-		ResourcePtr<ParameterRGBColorFloat> mSpecularColorParam;		///< Property: "SpecularColor" 
-		ResourcePtr<ParameterFloat> mShininessParam;					///< Property: "Shininess" 
-		ResourcePtr<ParameterFloat> mAmbientIntensityParam;				///< Property: "AmbientIntensity" 
-		ResourcePtr<ParameterFloat> mDiffuseIntensityParam;				///< Property: "DiffuseIntensity" 
-		ResourcePtr<ParameterFloat> mSpecularIntensityParam;			///< Property: "SpecularIntensity" 
-		ResourcePtr<ParameterFloat> mMateColorRateParam;				///< Property: "MateColorRate" 
+		ResourcePtr<ParameterVec3> mLightPositionParam;					///< Property: "LightPosition" Light position
+		ResourcePtr<ParameterFloat> mLightIntensityParam;				///< Property: "LightIntensity" Light intensity
+		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorParam;			///< Property: "DiffuseColorParam" Diffuse color
+		ResourcePtr<ParameterRGBColorFloat> mDiffuseColorExParam;		///< Property: "DiffuseColorExParam" Secondary diffuse color when in proximity of mates
+		ResourcePtr<ParameterRGBColorFloat> mLightColorParam;			///< Property: "LightColorParam" Light color
+		ResourcePtr<ParameterRGBColorFloat> mHaloColorParam;			///< Property: "HaloColorParam" Halo color
+		ResourcePtr<ParameterRGBColorFloat> mSpecularColorParam;		///< Property: "SpecularColor" Specular color
+		ResourcePtr<ParameterFloat> mShininessParam;					///< Property: "Shininess" Shininess
+		ResourcePtr<ParameterFloat> mAmbientIntensityParam;				///< Property: "AmbientIntensity" Ambient intensity
+		ResourcePtr<ParameterFloat> mDiffuseIntensityParam;				///< Property: "DiffuseIntensity" Diffuse intensity
+		ResourcePtr<ParameterFloat> mSpecularIntensityParam;			///< Property: "SpecularIntensity" Specular intensity
+		ResourcePtr<ParameterFloat> mMateColorRateParam;				///< Property: "MateColor" Maximum rate of mates for blending boid diffuse colors
 
 		ComponentPtr<PerspCameraComponent> mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
 		ComponentPtr<TransformComponent> mTargetTransformComponent;		///< Property: "TargetTransformComponent" Camera that we're controlling
@@ -80,7 +80,7 @@ namespace nap
 
 
 	/**
-	 * Runtime particle emitter component
+	 * Runtime 
 	 */
 	class NAPAPI FlockingSystemComponentInstance : public RenderableMeshComponentInstance
 	{
@@ -113,10 +113,12 @@ namespace nap
 		/**
 		 * Returns the resource associated with this instance
 		 */
-		FlockingSystemComponent& getResource();
+		FlockingSystemComponent& getResource() const;
 
-		glm::vec4 mTarget;
-		int mNumBoids;
+		/**
+		 * Returns the number of boids in this flocking system
+		 */
+		uint getNumBoids() const;
 
 	private:
 		void updateRenderMaterial();
@@ -125,12 +127,13 @@ namespace nap
 		FlockingSystemComponent*					mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
 
+		uint										mNumBoids = 1000;
 		double										mDeltaTime = 0.0;
 		double										mElapsedTime = 0.0;
 
-		std::vector<ComputeComponentInstance*>		mComputeInstances;					// Compute instances found in the entity
-		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	// The current compute instance
-		uint										mComputeInstanceIndex = 0;			// Current compute instance index
+		std::vector<ComputeComponentInstance*>		mComputeInstances;					//< Compute instances found in the entity
+		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	//< The current compute instance
+		uint										mComputeInstanceIndex = 0;			//< Current compute instance index
 
 		ComponentInstancePtr<PerspCameraComponent>	mPerspCameraComponent = { this, &FlockingSystemComponent::mPerspCameraComponent };
 		ComponentInstancePtr<TransformComponent>	mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };

@@ -637,13 +637,14 @@
                             255
                         ]
                     },
+                    "SampleShading": false,
                     "PreserveAspect": false
                 },
                 {
                     "Type": "nap::RenderBloomComponent",
                     "mID": "ApplyBloom",
                     "Visible": true,
-                    "PassCount": 3,
+                    "PassCount": 2,
                     "Kernel": "5x5",
                     "InputTexture": "ColorTextureFX",
                     "OutputTexture": "ColorTextureFX"
@@ -652,7 +653,7 @@
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "BlendTogether",
                     "Visible": true,
-                    "OutputTexture": "ColorTextureFinal",
+                    "OutputTexture": "DummyRT",
                     "MaterialInstance": {
                         "Material": "CompositeMaterial",
                         "Uniforms": [
@@ -701,6 +702,7 @@
                             255
                         ]
                     },
+                    "SampleShading": false,
                     "PreserveAspect": true
                 }
             ],
@@ -1257,7 +1259,7 @@
             "Type": "nap::RenderTexture2D",
             "mID": "ColorTexture",
             "Usage": "Static",
-            "Fill": false,
+            "Fill": true,
             "Copyable": false,
             "Width": 1920,
             "Height": 1080,
@@ -1293,31 +1295,12 @@
         },
         {
             "Type": "nap::RenderTexture2D",
-            "mID": "ColorTextureFinal",
+            "mID": "DummyRT",
             "Usage": "Static",
             "Fill": false,
             "Copyable": false,
             "Width": 1920,
             "Height": 1080,
-            "Format": "RGBA8",
-            "ColorSpace": "Linear",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ]
-            }
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "DummyRT",
-            "Usage": "Static",
-            "Fill": false,
-            "Copyable": false,
-            "Width": 16,
-            "Height": 16,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {

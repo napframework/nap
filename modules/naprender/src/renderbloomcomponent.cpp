@@ -135,9 +135,9 @@ namespace nap
 				tex->mWidth = resource->mInputTexture->getWidth() / math::power<int>(2, pass_idx+1);
 				tex->mHeight = resource->mInputTexture->getHeight() / math::power<int>(2, pass_idx+1);
 				tex->mFill = resource->mInputTexture->mFill;
-				tex->mCopyable = resource->mInputTexture->mCopyable;
 				tex->mFormat = resource->mInputTexture->mFormat;
 				tex->mUsage = ETextureUsage::Static;
+				tex->mCopyable = true;
 				if (!tex->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize internal render texture", tex->mID.c_str());
@@ -191,10 +191,10 @@ namespace nap
 
 		// Now create a plane and initialize it.
 		// The model matrix is computed on draw and used to scale the model to fit target bounds.
-		mPlane.mSize = glm::vec2(1.0f, 1.0f);
-		mPlane.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+		mPlane.mSize = { 1.0f, 1.0f };
+		mPlane.mPosition = { 0.0f, 0.0f };
 		mPlane.mUsage = EMemoryUsage::Static;
-		mPlane.mCullMode = ECullMode::Back;
+		mPlane.mCullMode = ECullMode::None;
 		mPlane.mColumns = 1;
 		mPlane.mRows = 1;
 		
@@ -257,7 +257,7 @@ namespace nap
 		const uint TARGET_B = 1;
 
 		const VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
-		const glm::mat4 identity_matrix = glm::mat4();
+		const glm::mat4 identity_matrix = {};
 
 		auto& initial_texture = *mBloomRTs.front()[TARGET_A]->mColorTexture;
 

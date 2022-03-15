@@ -338,7 +338,7 @@ void main()
 		acceleration += avoid;
 	}
 
-	// Calculate velocityd
+	// Calculate velocity
 	vec3 vel = clampMagnitude(b.velocity.xyz + acceleration * ubo.deltaTime, ubo.minSpeed, ubo.maxSteerForce);
 
 	// Write current boid
