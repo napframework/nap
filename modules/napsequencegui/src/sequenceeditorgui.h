@@ -47,10 +47,11 @@ namespace nap
 		 */
 		void onDestroy() override;
 
-		/**
-		 * Call this method to draw the GUI
-		 */
-		virtual void show();
+        /**
+         * Shows the editor interface
+         * @param newWindow when true interface will be drawn in a new ImGUI window
+         */
+		virtual void show(bool newWindow = true);
 
 		/**
 		 * @return sequence editor gui service
@@ -89,9 +90,10 @@ namespace nap
 		SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
 		/**
-		 * shows the editor interface
+		 * Shows the editor interface
+		 * @param newWindow when true interface will be drawn in a new ImGUI window
 		 */
-		virtual void show();
+		virtual void show(bool newWindow = true);
 
 		SequenceGUIService& getService()	{ return mService; }
 
