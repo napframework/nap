@@ -12,6 +12,7 @@
 RTTI_BEGIN_CLASS(nap::BoidTargetTranslateComponent)
 	RTTI_PROPERTY("Radius", &nap::BoidTargetTranslateComponent::mRadius, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Speed", &nap::BoidTargetTranslateComponent::mSpeed, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RandomOffset", &nap::BoidTargetTranslateComponent::mRandomOffset, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoidTargetTranslateComponentInstance)
@@ -32,6 +33,13 @@ namespace nap
 		mRadius = resource->mRadius;
 		mSpeed = resource->mSpeed;
 
+		if (resource->mRandomOffset)
+		{
+			mOffset = math::random<float>(
+				std::numeric_limits<float>().min() * 0.1f,
+				std::numeric_limits<float>().max() * 0.1f
+			);
+		}
 		return true;
 	}
 
@@ -43,10 +51,11 @@ namespace nap
 
 		// Calculate new target position
 		// Use simple non-periodic function to generate a cheap to compute noise signal
+		float offset = mElapsedTime + mOffset;
 		glm::quat orientation = { {
-			static_cast<float>(glm::sin(2.0 * mElapsedTime) + glm::sin(math::PI * mElapsedTime)) * 0.5f,
-			static_cast<float>(glm::sin(4.0 * mElapsedTime) + glm::sin(math::PI * mElapsedTime)) * 0.5f,
-			static_cast<float>(glm::sin(0.5 * mElapsedTime) + glm::sin(math::PI * mElapsedTime)) * 0.5f
+			static_cast<float>(glm::sin(2.0 * offset) + glm::sin(math::PI * offset)) * 0.5f,
+			static_cast<float>(glm::sin(4.0 * offset) + glm::sin(math::PI * offset)) * 0.5f,
+			static_cast<float>(glm::sin(0.5 * offset) + glm::sin(math::PI * offset)) * 0.5f
 		} };
 
 		float magnitude = static_cast<float>(glm::sin(0.25 * mElapsedTime) + glm::sin(math::PI * mElapsedTime)) * 0.5f * mRadius;

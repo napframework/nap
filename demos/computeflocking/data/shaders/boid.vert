@@ -34,7 +34,7 @@ uniform VERTUBO
 };
 
 // STORAGE
-layout(std430) buffer VERTSSBO
+layout(std430) buffer readonly VERTSSBO
 {
 	Boid boids[10000];
 };

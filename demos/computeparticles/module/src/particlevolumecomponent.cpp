@@ -167,7 +167,7 @@ namespace nap
 		mRotationVariation = resource->mRotationVariation;
 		mRotationSpeed = resource->mRotationSpeed;
 
-		// Run the update compute shader once for each particle
+		// We setup the update compute shader to run once for each particle
 		for (auto& comp : mComputeInstances)
 			comp->setInvocations(resource->mNumParticles);
 

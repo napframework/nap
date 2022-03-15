@@ -133,7 +133,7 @@ namespace nap
 		// Cache resource
 		mResource = getComponent<FlockingSystemComponent>();
 
-		// Collect compute instances
+		// Collect compute instances under this entity
 		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
 		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 
@@ -141,7 +141,7 @@ namespace nap
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
-		// Clamp the boid count on raspberry pi
+		// Clamp the boid count if we are compiling on Raspberry Pi
 #ifdef COMPUTEFLOCKING_RPI
 		nap::Logger::info("Maximum boid count is limited to 1000 on Raspberry Pi to reduce perfomance issues");
 		mNumBoids = math::clamp(mResource->mNumBoids, 0U, 1000U);
@@ -158,6 +158,7 @@ namespace nap
 
 	void FlockingSystemComponentInstance::update(double deltaTime)
 	{
+		// Update time variables
 		mDeltaTime = deltaTime;
 		mElapsedTime += deltaTime;
 	}
@@ -235,7 +236,11 @@ namespace nap
 
 	void FlockingSystemComponentInstance::compute()
 	{
+		// Update the compute material uniforms of the current compute instance
 		updateComputeMaterial(mCurrentComputeInstance);
+
+		// Compute the current compute instance
+		// This updates the boid storage buffers to use for rendering
 		mRenderService->computeObjects({ mCurrentComputeInstance });
 
 		// Update current compute instance and index
@@ -244,6 +249,12 @@ namespace nap
 	}
 
 
+	/**
+	 * This onDraw override is almost identical to the default in nap::RenderableMeshComponentInstance. The only difference is that we
+	 * set the `instanceCount` of `vkCmdDrawIndexed()` equal to the boid count. This will render the specified number of boids in a
+	 * single draw call. We can also identify which boid is rendered using the built-in variable `gl_InstanceIndex`, which is used as
+	 * a key to fetch the appropriate data from the boid storage buffer.
+	 */
 	void FlockingSystemComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get material to work with
@@ -304,6 +315,9 @@ namespace nap
 
 		const IndexBuffer& index_buffer = mesh.getIndexBuffer(0);
 		vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+		// Make use of instanced rendering by setting the `instanceCount` of `vkCmdDrawIndexed()` equal to the boid count.
+		// This renders the boid mesh `mNumboids` times in a single draw call.
 		vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), mNumBoids, 0, 0, 0);
 
 		// Restore line width

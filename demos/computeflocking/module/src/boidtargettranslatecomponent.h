@@ -21,7 +21,7 @@ namespace nap
 
 	/**
 	 * Resource part of the target translate component.
-	 * Translates the boid target entity randomly over time within a specified radius.
+	 * Translates the boid target entity, randomly if desired, over time within a specified radius.
 	 * This component updates (overrides) the translation value of the transform component.
 	 * Entities that use this component must have a transform.
 	 */
@@ -37,13 +37,13 @@ namespace nap
 	public:
 		float mRadius = 1.0f;					///< Property: 'Radius' Radius
 		float mSpeed = 1.0f;					///< Property: 'Speed' Rotation speed
+		bool mRandomOffset = true;				///< Property: 'RandomOffset' Start time at random offset
 	};
 
 
 	/**
 	 * Instance part of the target translate component. 
-	 * Translates boid target entity randomly over time within a specified radius.
-	 * The initial rotation value after initialization is used to rotate along the specified axis.
+	 * Translates the boid target entity, randomly if desired, over time within a specified radius.
 	 * This component updates (overrides) the rotate value of the transform component.
 	 * Entities that use this component must have a transform.
 	 */
@@ -84,5 +84,8 @@ namespace nap
 
 		// Local elapsed time
 		double mElapsedTime = 0.0;
+
+		// Offset
+		float mOffset = 0.0f;
 	};
 }

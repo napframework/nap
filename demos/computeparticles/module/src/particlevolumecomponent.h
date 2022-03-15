@@ -69,7 +69,7 @@ namespace nap
 	 * This component uses a bounce pass to update the particle buffers, because it's not allowed to read
 	 * and write to the same buffer in the same frame. This is how the particle mesh is rendered:
 	 *
-	 * Frame 1: Read from buffer A, write to buffer B, write positions in compute shader. Read from buffer B to particle mesh.
+	 * Frame 1: Read from buffer A, write to buffer B, bind buffer B to particle mesh
 	 * Frame 2: Read from buffer B, write to buffer A, bind buffer A to particle mesh
 	 * Frame 3: Read from buffer A, write to buffer B, bind buffer B to particle mesh
 	 * etc.
