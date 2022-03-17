@@ -84,7 +84,7 @@ namespace nap
 		// Clamp& set the components for each element individually
 		T oldValue = mValue;
 
-		if (mClamp) 
+		if (mClamp)
 		{
 			for (int i = 0; i != mValue.length(); ++i)
 				mValue[i] = math::clamp(value[i], mMinimum, mMaximum);
@@ -106,16 +106,16 @@ namespace nap
 		mMaximum = maximum;
 		setValue(mValue);
 	}
-
-	/**
-	 * Helper macro that can be used to define the RTTI for a vector parameter type
-	 */
-	#define DEFINE_VECTOR_PARAMETER(Type)																				\
-		RTTI_BEGIN_CLASS(Type)																						\
-			RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_PROPERTY("Clamp",		&Type::mClamp,			nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_FUNCTION("setValue",	static_cast<void (Type::*)(decltype(Type::mValue))>(&Type::setValue))	\
-		RTTI_END_CLASS
 }
+
+/**
+ * Helper macro that can be used to define the RTTI for a vector parameter type
+ */
+#define DEFINE_VECTOR_PARAMETER(Type)																		\
+	RTTI_BEGIN_CLASS(Type)																					\
+		RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)			\
+		RTTI_PROPERTY("Clamp",		&Type::mClamp,			nap::rtti::EPropertyMetaData::Default)			\
+		RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)			\
+		RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)			\
+		RTTI_FUNCTION("setValue",	static_cast<void (Type::*)(decltype(Type::mValue))>(&Type::setValue))	\
+	RTTI_END_CLASS

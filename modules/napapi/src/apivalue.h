@@ -115,11 +115,13 @@ namespace nap
 	using APILong = APIValue<int64_t>;
 
 	using APIFloatArray = APIValue<std::vector<float>>;
+	using APIBoolArray = APIValue<std::vector<bool>>;
 	using APIIntArray = APIValue<std::vector<int>>;
 	using APICharArray = APIValue<std::vector<char>>;
 	using APIByteArray = APIValue<std::vector<uint8_t>>;
 	using APIStringArray = APIValue<std::vector<std::string>>;
 	using APIDoubleArray = APIValue<std::vector<double>>;
+	using APILongArray = APIValue<std::vector<int64_t>>;
 
 
 	//////////////////////////////////////////////////////////////////////////

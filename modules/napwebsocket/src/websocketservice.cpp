@@ -23,10 +23,10 @@ namespace nap
 	}
 
 
-    bool WebSocketService::init(nap::utility::ErrorState& errorState)
-    {
+	bool WebSocketService::init(nap::utility::ErrorState& errorState)
+	{
 		return true;
-    }    
+	}
 
 
 	void WebSocketService::registerObjectCreators(rtti::Factory& factory)

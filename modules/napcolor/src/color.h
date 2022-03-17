@@ -201,6 +201,8 @@ namespace nap
 	class Color : public BaseColor
 	{
 	public:
+		using value_type = T;
+
 		/**
 		* Constructor that simply creates a 0 initialized color
 		*/
@@ -281,7 +283,7 @@ namespace nap
 		 * Otherwise the actual values are copied over.
 		 * @param data the color data to copy, behind the scenes a memcopy is performed
 		 */
-		void setData(T* data);
+		void setData(const T* data);
 
 		/**
 		 * Computes the distance between this and another color in Euclidean space. The result is not squared
@@ -685,7 +687,7 @@ namespace nap
 	}
 
 	template<typename T, int CHANNELS>
-	void nap::Color<T, CHANNELS>::setData(T* data)
+	void nap::Color<T, CHANNELS>::setData(const T* data)
 	{
 		memcpy(mValues.data(), data, sizeof(T) * CHANNELS);
 	}

@@ -11,16 +11,16 @@
 }
 
 body{
-	background-color: #2D2D2D;
-	margin: 0;
-	font-size: 12pt;
-	max-width: 1024px;
-	margin: auto;
+		background-color: #2D2D2D;
+    margin: 0em;
+    font-size: 1rem;
+    max-width: 850px;
+    margin: auto;
 }
 
 body, table, div, p, dl,
 table.directory, #nav-tree,#nav-tree .label {
-	font-family:  'manrope', sans-serif;
+	font: 400 0.95em/1.5em 'manrope',sans-serif;
 	color: #CDCDC3;
 	letter-spacing: 0.01em;
 }
@@ -50,13 +50,13 @@ pre.fragment, div.line,
 }
 
 .memtitle {
-	font-family:'manrope', sans-serif;
-	background-color: #8D8B84;
-	color: #FFFFFF;
-	font-weight: normal;
-	border-top-right-radius: 0px;
-	border-top-left-radius: 0px;
-	font-size: 1rem;
+	font-family: 'manrope', sans-serif;
+    font-weight: normal;
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    font-size: 1rem;
+   	background-color: #8D8B84;
+    color: #FFFFFF;
 }
 
 tr.heading h2,
@@ -64,7 +64,7 @@ tr.heading h1,
 tr.heading h3,
 tr.heading h4 {
 	font-family: 'manrope', sans-serif;
-	font-weight: 300;
+	font-weight: 400;
 	margin: 1.75em 0 .2em 0;
 }
 
@@ -75,30 +75,31 @@ h3, h3.groupheader,
 h4, h4.groupheader {
 	font-family: 'manrope', sans-serif;
 	margin: 1.75em 0 .2em 0;
-	font-weight: 200;
+	font-weight: 400;
 }
 #projectname {color:#FFFFFF; font-weight:900;}
 #projectbrief{color:#FFFFFF;}
 
 h1,h2,h3, h4{
 	color: #FFFFFF;
-	letter-spacing: 0.066em;
+	letter-spacing: 0.01em;
 }
 
 /* @group Heading Levels */
 .title {
 	color: #FFFFFF;
-	font-weight: 500;
-	font-size: 1.75rem;
-	margin: 10px 2px;
-	letter-spacing: 0.066em;
-	font-family: 'manrope', sans-serif;
+    font-weight: 400;
+    font-size: 1.8rem;
+    margin: 2.75em 0em 1.2em 0em;
+    letter-spacing: 0.01em;
+    font-family: 'manrope', sans-serif;
 }
 
 h1, h1.groupheader {
-  color: #FFFFFF;
-  font-size: 1.5rem;
-  margin: 1.75em 0 .2em 0;
+	color: #FFFFFF;
+ 	font-size: 1.8rem;
+ 	margin: 2.75em 0 1.2em 0;
+	letter-spacing: -0.01em;
 }
 
 h2, h2.groupheader {
@@ -110,7 +111,7 @@ h2, h2.groupheader {
 }
 
 h3.groupheader {
-	font-size: 1.0rem;
+	font-size: 1.15rem;
 	color: #000;
 }
 
@@ -174,7 +175,7 @@ div.qindex, div.navpath {
 }
 
 div.qindex {
-		font-size: 1.15rem;
+		font-size: 1rem;
 }
 
 div.navpath {
@@ -188,22 +189,27 @@ div.navtab {
 /* @group Link Styling */
 a, a:visited {
 	color: #AEACA4;
-	text-decoration: underline;
-	font-weight: normal;
-	text-decoration-style: dotted;
+	text-decoration: none;
+	text-decoration-style: none;
 }
 
 a:hover {
 	color: #FFFFFF;
-	text-decoration: underline;
-	text-decoration-style: dotted;
+	text-decoration-color: #FFFFFF;
 }
 
 a.el, a.el:visited {
+	text-decoration: underline #AEACA4 solid;
+ 	text-underline-offset: 30%;
 	color: #AEACA4;
-	text-decoration: underline;
-	font-weight: normal;
-	text-decoration-style: dotted;
+  font-weight: normal;
+}
+
+.contents a {
+	text-decoration: underline #AEACA4 solid;
+ 	text-underline-offset: 30%;
+  font-weight: normal;
+  text-decoration-style: none;
 }
 
 .contents a:visited {
@@ -212,28 +218,27 @@ a.el, a.el:visited {
 
 .contents a:hover {
 	color: #FFFFFF;
-	text-decoration: underline;
 	font-weight: normal;
-	text-decoration-style: dotted;
+	text-decoration-color: #FFFFFF;
 }
 
 .directory a.el {
 	color: #CDCDC3;
-	text-decoration-style: dotted;
-	text-decoration: none;
+	text-transform: none;
 }
 
 .directory a.el:hover {
 	color: #FFFFFF;
+	text-decoration-color: #FFFFFF;
 }
 
 table.classindex a.el {
-	text-decoration: none;
 	color: #CDCDC3
 }
 
 table.classindex a.el:hover {
-	color: #FFFFFF
+	color: #FFFFFF;
+	text-decoration-color: #FFFFFF;
 }
 
 
@@ -241,12 +246,12 @@ a.qindex, a.qindex:visited  {
 	color: #CDCDC3;
 	text-decoration: none;
 	font-weight: normal;
+	border-bottom: none;
 }
 
 a.qindex:hover {
 	color: #FFFFFF;
-	text-decoration-style: dotted;
-	text-decoration: none;
+	text-decoration-color:#FFFFFF;
 }
 
 a.qindexHL {
@@ -262,18 +267,19 @@ a.code, a.code:visited {
 	color: #AEACA4;
 	font-weight: normal;
 	text-decoration: none;
-	text-decoration-style: dotted;
+	text-decoration-style: none;
 }
 
 a.codeRef, a.codeRef:visited {
 	color: #AEACA4;
 	font-weight: normal;
 	text-decoration: none;
-	text-decoration-style: dotted;
+	text-decoration-style: none;
 }
 
 a.code:hover, a.codeRef:hover {
 	text-decoration: none;
+	color: #FFFFFF;
 }
 
 a.line, a.line:visited {
@@ -308,30 +314,30 @@ div.fragment {
 }
 div.line {
 	min-height: 15pt;
-	line-height: 1.6em;
-	text-wrap: unrestricted;
-	white-space: -moz-pre-wrap; /* Moz */
-	white-space: -pre-wrap;     /* Opera 4-6 */
-	white-space: -o-pre-wrap;   /* Opera 7 */
-	white-space: pre-wrap;      /* CSS3  */
-	word-wrap: break-word;      /* IE 5.5+ */
-	text-indent: -53px;
-	padding-left: 53px;
-	padding-bottom: 0px;
-	margin: 0px;
-	color: #FFFFFF;
-	-webkit-transition-property: background-color, box-shadow;
-	-webkit-transition-duration: 0.5s;
-	-moz-transition-property: background-color, box-shadow;
-	-moz-transition-duration: 0.5s;
-	-ms-transition-property: background-color, box-shadow;
-	-ms-transition-duration: 0.5s;
-	-o-transition-property: background-color, box-shadow;
-	-o-transition-duration: 0.5s;
-	transition-property: background-color, box-shadow;
-	transition-duration: 0.5s;
-	font-family: 'inconsolata', sans-serif, monospace;
-	font-size: 1em;
+    line-height: 1.6em;
+    text-wrap: unrestricted;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-indent: -53px;
+    padding-left: 53px;
+    padding-bottom: 0px;
+    margin: 0px;
+    color: #FFFFFF;
+    -webkit-transition-property: background-color, box-shadow;
+    -webkit-transition-duration: 0.5s;
+    -moz-transition-property: background-color, box-shadow;
+    -moz-transition-duration: 0.5s;
+    -ms-transition-property: background-color, box-shadow;
+    -ms-transition-duration: 0.5s;
+    -o-transition-property: background-color, box-shadow;
+    -o-transition-duration: 0.5s;
+    transition-property: background-color, box-shadow;
+    transition-duration: 0.5s;
+    font-family: 'inconsolata', sans-serif, monospace;
+    font-size: 1em;
 }
 div.line.glow {
 	background-color: blue;
@@ -1041,8 +1047,11 @@ dl.section dd {
 #projectlogo img
 {
 	border: 0px none;
-	margin-left: 1em;
-	margin-right: 0em;
+    margin-left: 1em;
+    margin-right: 0em;
+    margin-top: 3em;
+    margin-bottom: 1em;
+    height: 40px;
 }
 #projectname
 {
@@ -1072,6 +1081,10 @@ dl.section dd {
 	width: 100%;
 	padding-top: 10px;
 	backround-color: gainsboro;
+}
+.image
+{
+  text-align: center;
 }
 .dotgraph
 {
@@ -1245,7 +1258,7 @@ div.toc li.level4 {
 	color: #CDCDC3;
 	text-shadow:none;/*: none;*/
 	text-decoration: underline;
-	text-decoration-style: dotted;
+	text-decoration-style: none;
 }
 .navpath li.navelem a:hover {
 	background-image: none;
@@ -1344,18 +1357,26 @@ background-image: none;
 .sm-dox a:active,
 .sm-dox a.highlighted {
 	font-family: 'manrope', sans-serif;
-  color: #CDCDC3;
-  outline: 0;
-  text-shadow: none;
-  font-weight: normal;
-  font-size: 1.15rem;
-  background-image: none;
-  background: none;
-  background-color: #2D2D2D;
+    color: #CDCDC3;
+    outline: 0;
+    padding-right: 0px;
+    padding-left: 0px;
+    margin-left: 12px;
+    margin-right: 12px;
+    text-shadow: none;
+    font-weight: normal;
+    font-size: 0.95em;
+    background-image: none;
+    background: none;
+    background-color: #2D2D2D;
+    text-transform: uppercase;
+    text-decoration: underline #CDCDC3 solid;
+    text-underline-offset: 40%;
 }
 
 .sm-dox a:hover {
 	color: #FFFFFF;
+	text-decoration-color: #FFFFFF;
 }
 
 .sm-dox ul {
@@ -1393,6 +1414,7 @@ a.SRScope {
 {
 	text-decoration: none;
 	color: #FFFFFF;
+	border-bottom: solid #FFFFFF 0.01em;
 }
 
 #side-nav 
@@ -1423,20 +1445,23 @@ a.SRScope {
 
 #MSearchField 
 {
-    display: block;
-    height: 19px;
-    background-color: #CDCDC3;
+    background-color: #2d2d2d;
     background-image: none;
-    width: 115px;
-    margin-left: 20px;
-    padding-left: 4px;
-    padding-right: 4px;	
-    outline: none;
-    font-weight: normal;
-    color: #000000;
-    font-family:  'manrope', sans-serif;
-    -webkit-border-radius: 0px;
-   	vertical-align: middle;
+    color: #AEACA4;
+    height: 36px;
+    margin-top: -9px;
+    margin-left: -24px;
+    padding-left: 12px;
+    font-family: 'manrope', sans-serif;
+    vertical-align: middle;
+    border: solid 1px;
+    font-size: 0.95em;
+    text-transform: uppercase;
+    width: initial;
+}
+
+.MSearchBoxActive #MSearchField {
+	color: #CDCDC3;
 }
 
 #MSearchBox .right {
@@ -1444,10 +1469,7 @@ a.SRScope {
     background-color: #CDCDC3;
     height: 19px;
     width: 19px;
-}
-
-.right #MSearchClose {
-    visibility: hidden;
+    display: none;
 }
 
 #MSearchBox .left {
@@ -1457,14 +1479,12 @@ a.SRScope {
     width: 0px;
 }
 
-.left #MSearchSelect {
+.right #MSearchClose {
     visibility: hidden;
 }
 
-#MSearchBox {
-    white-space: nowrap;
-    float: none;
-    margin-top: 8px;
+.left #MSearchSelect {
+    visibility: hidden;
 }
 
 /*---------------- Search results window */
@@ -1482,7 +1502,7 @@ a.SRScope {
 
 img 
 {
-	max-width:100%;
+	max-width: 100%;
 	max-height: 100%;
 }
 
@@ -1529,7 +1549,7 @@ svg .graph .edge text {
     fill: #CDCDC3;
 }
 div.contents code {
-    font-size: 1.0rem;
-    color: #FF347D;
+   
+    color: #D6FFA3;
     font-family: manrope;
 }

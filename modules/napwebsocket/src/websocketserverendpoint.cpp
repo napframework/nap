@@ -378,13 +378,33 @@ namespace nap
 			return;
 		}
 
-		// set whether the response can be shared with requesting code from the given origin.
+		// Set whether the response can be shared with requesting code from the given origin.
 		conp->append_header("Access-Control-Allow-Origin", mAccessAllowControlOrigin);
+
+		// Get request method
+		std::string method = conp->get_request().get_method();
+
+		// Handle CORS preflight request
+		if (method.compare("OPTIONS") == 0)
+		{
+			conp->set_status(websocketpp::http::status_code::no_content);
+			conp->append_header("Access-Control-Allow-Methods", "OPTIONS, POST");
+			conp->append_header("Access-Control-Allow-Headers", "Content-Type");
+			return;
+		}
+
+		// Reject methods other than OPTIONS and POST
+		if (method.compare("POST") != 0)
+		{
+			conp->set_status(websocketpp::http::status_code::method_not_allowed,
+				"only OPTIONS and POST requests are allowed");
+			return;
+		}
 
 		// When there is no access policy the server doesn't generate tickets
 		if (mMode == EAccessMode::EveryOne)
 		{
-			conp->set_status(websocketpp::http::status_code::bad_request,
+			conp->set_status(websocketpp::http::status_code::conflict,
 				"unable to generate ticket, no access policy set");
 			return;
 		}
@@ -405,7 +425,8 @@ namespace nap
 		// Extract user information, this field is required
 		if (!document.HasMember("user"))
 		{
-			conp->set_status(websocketpp::http::status_code::bad_request,
+			conp->append_header("WWW-Authenticate", "NAPUserPass");
+			conp->set_status(websocketpp::http::status_code::unauthorized,
 				"missing required member: 'user");
 			return;
 		}
@@ -413,7 +434,8 @@ namespace nap
 		// Extract pass information, this field is required
 		if (!document.HasMember("pass"))
 		{
-			conp->set_status(websocketpp::http::status_code::bad_request,
+			conp->append_header("WWW-Authenticate", "NAPUserPass");
+			conp->set_status(websocketpp::http::status_code::unauthorized,
 				"missing required member: 'pass");
 			return;
 		}
@@ -428,7 +450,8 @@ namespace nap
 		utility::ErrorState error;
 		if(!ticket.init(error))
 		{
-			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+			conp->append_header("WWW-Authenticate", "NAPUserPass");
+			conp->set_status(websocketpp::http::status_code::unauthorized,
 				utility::stringFormat("invalid username or password: %s", error.toString().c_str()));
 			return;
 		}
@@ -441,7 +464,8 @@ namespace nap
 			// The username or password is wrong and the request invalid
 			if (mClientHashes.find(ticket.toHash()) == mClientHashes.end())
 			{
-				conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+				conp->append_header("WWW-Authenticate", "NAPUserPass");
+				conp->set_status(websocketpp::http::status_code::unauthorized,
 					"invalid username or password");
 				return;
 			}
@@ -478,7 +502,7 @@ namespace nap
 		// Make sure we accept new connections
 		if (!acceptsNewConnections())
 		{
-			conp->set_status(websocketpp::http::status_code::too_many_requests,
+			conp->set_status(websocketpp::http::status_code::forbidden, 
 				"client connection count exceeded");
 			return false;
 		}
@@ -501,7 +525,7 @@ namespace nap
 		// Use the sub_protocol to extract client information
 		if (sub_protocol.empty())
 		{
-			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+			conp->set_status(websocketpp::http::status_code::forbidden,
 				"unable to extract ticket");
 			return false;
 		}
@@ -515,7 +539,7 @@ namespace nap
 		WebSocketTicket* client_ticket = WebSocketTicket::fromBinaryString(sub_protocol[0], result, error);
 		if (client_ticket == nullptr)
 		{
-			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+			conp->set_status(websocketpp::http::status_code::forbidden,
 				"first sub-protocol argument is not a valid ticket object");
 			return false;
 		}
@@ -527,7 +551,7 @@ namespace nap
 		// Locate ticket
 		if (mClientHashes.find(client_ticket->toHash()) == mClientHashes.end())
 		{
-			conp->set_status(websocketpp::http::status_code::non_authoritative_information,
+			conp->set_status(websocketpp::http::status_code::forbidden,
 				"not a valid ticket");
 			return false;
 		}
