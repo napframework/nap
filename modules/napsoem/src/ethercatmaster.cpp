@@ -158,6 +158,29 @@ namespace nap
 
 		// Try to initialize adapter
 		ecx_contextt* context = toContext(mContext);
+
+		// Acquire names of available adapters
+        std::vector<std::string> adapters;
+        {
+            ec_adaptert *adapter = ec_find_adapters();
+            while (adapter != NULL)
+            {
+                adapters.emplace_back(adapter->name);
+                adapter = adapter->next;
+            }
+        }
+
+        // Check if the configured adapter name is among the available adapters
+        auto it = std::find_if(adapters.begin(), adapters.end(), [adapter = mAdapter](const auto& it)
+        {
+            return it == adapter.c_str();
+        });
+
+	    // Ensure the configured adapter name is among the available adapters, else fail
+        if (!errorState.check(it != adapters.end(), "%s: configured adapter %s does not exist", mID.c_str(), mAdapter.c_str()))
+            return false;
+
+        // Initialize the adapter
 		if (!ecx_init(context, mAdapter.c_str()))
 		{
 			errorState.fail("%s: no socket connection: %s", mID.c_str(), mAdapter.c_str());
