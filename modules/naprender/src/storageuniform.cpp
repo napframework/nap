@@ -4,72 +4,45 @@
 
 #include "storageuniform.h"
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniform)
-	RTTI_PROPERTY("Name", &nap::StorageUniform::mName, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBinding)
+	RTTI_PROPERTY("Name", &nap::BufferBinding::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingNumeric)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StorageUniformValueBuffer)
+RTTI_BEGIN_CLASS(nap::BufferBindingStruct)
+	RTTI_PROPERTY("BufferBinding", &nap::BufferBindingStruct::mBuffer, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformStruct)
-	RTTI_PROPERTY("StorageUniform", &nap::StorageUniformStruct::mStorageUniformBuffer, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::BufferBindingStruct)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingStruct::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformStructBuffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformStructBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BufferBindingUInt)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingUInt::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformUIntBuffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformUIntBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BufferBindingInt)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingInt::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformIntBuffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformIntBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BufferBindingFloat)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingFloat::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformFloatBuffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformFloatBuffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BufferBindingVec2)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingVec2::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformVec2Buffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformVec2Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BufferBindingVec3)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingVec3::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformVec3Buffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformVec3Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BufferBindingVec4)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingVec4::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::StorageUniformVec4Buffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformVec4Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BufferBindingMat4)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingMat4::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::StorageUniformMat4Buffer)
-	RTTI_PROPERTY("Buffer", &nap::StorageUniformMat4Buffer::mBuffer, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
-
-namespace nap
-{
-	StorageUniformBuffer* StorageUniformStruct::findStorageUniformBuffer(const std::string& name)
-	{
-		if (mStorageUniformBuffer != nullptr)
-		{
-			if (mStorageUniformBuffer->mName == name)
-				return mStorageUniformBuffer.get();
-		}
-		return nullptr;
-	}
-
-
-	const StorageUniformBuffer* StorageUniformStruct::findStorageUniformBuffer(const std::string& name) const
-	{
-		if (mStorageUniformBuffer != nullptr)
-		{
-			if (mStorageUniformBuffer->mName == name)
-				return mStorageUniformBuffer.get();
-		}
-		return nullptr;
-	}
-}

@@ -18,10 +18,8 @@
 namespace nap
 {
 	// Forward Declares
-	class StorageUniformInstance;
-	class StorageUniformBuffer;
-
-	using StorageUniformCreatedCallback = std::function<void()>;
+	class BufferBindingInstance;
+	class BufferBinding;
 
 	/**
 	 * Shader storage uniform resource base class.
@@ -68,60 +66,12 @@ namespace nap
 	 *	};
 	 *~~~~~
 	 */
-	class NAPAPI StorageUniform : public Resource
+	class NAPAPI BufferBinding : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
 		std::string mName;		///< Name of uniform in shader
-	};
 
-
-	/**
-	 * Storage Uniform Buffer container.
-	 * 
-	 * Stores a single StorageUniformBuffer reference as opposed to a UniformStruct, which also supports multiple
-	 * and nested shader variables.
-	 *
-	 * The reason for restricting StorageUniformStruct to a single buffer variable is that we want to associate a
-	 * shader resource binding point with single shader storage buffer. This is a typical use case for storage
-	 * buffers and simplifies overall resource management.
-	 *
-	 *~~~~~{.comp}
-	 *	layout(std430) buffer PositionSSBO
-	 *	{
-	 *		vec4 positions[100000];
-	 *	} pos_ssbo;
-	 *~~~~~
-	 */
-	class NAPAPI StorageUniformStruct : public StorageUniform
-	{
-		RTTI_ENABLE(StorageUniform)
-	public:
-		/**
-		 * @param name the name of the storage uniform buffer to find.
-		 * @return a storage uniform buffer with the given name, nullptr if not found
-		 */
-		StorageUniformBuffer* findStorageUniformBuffer(const std::string& name);
-
-		/**
-		 * @param name the name of the storage uniform buffer to find.
-		 * @return a storage uniform buffer with the given name, nullptr if not found
-		 */
-		const StorageUniformBuffer* findStorageUniformBuffer(const std::string& name) const;
-
-		rtti::ObjectPtr<StorageUniformBuffer> mStorageUniformBuffer;
-	};
-
-
-	/**
-	 * Storage uniform buffer base class.
-	 * 
-	 * A StorageUniformBuffer must be declared as part of a StorageUniformStruct.
-	 */
-	class NAPAPI StorageUniformBuffer : public StorageUniform
-	{
-		RTTI_ENABLE(StorageUniform)
-	public:
 		/**
 		 * @return The number of elements in this array
 		 */
@@ -142,11 +92,11 @@ namespace nap
 	/**
 	 * Base class of all typed storage uniform value buffers.
 	 * 
-	 * A StorageUniformValueBuffer must be declared as part of a StorageUniformStruct.
+	 * ABufferBindingNumeric must be declared as part of a BufferBindingStruct.
 	 */
-	class NAPAPI StorageUniformValueBuffer : public StorageUniformBuffer
+	class NAPAPI BufferBindingNumeric : public BufferBinding
 	{
-		RTTI_ENABLE(StorageUniformBuffer)
+		RTTI_ENABLE(BufferBinding)
 	public:
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
@@ -157,15 +107,15 @@ namespace nap
 
 	/**
 	 * Specific type of storage uniform value buffer, for example:
-	 * TypedValueGPUBuffer<float> -> TypedStorageUniformValueBuffer<float>.
+	 * TypedValueGPUBuffer<float> -> TypedBufferBindingNumeric<float>.
 	 * All supported types are defined below for easier readability.
 	 *
-	 * A StorageUniformValueBuffer must be declared as part of a StorageUniformStruct.
+	 * A BufferBindingNumericmust be declared as part of a BufferBindingStruct.
 	 */
 	template <typename T>
-	class NAPAPI TypedStorageUniformValueBuffer : public StorageUniformValueBuffer
+	class NAPAPI TypedBufferBindingNumeric : public BufferBindingNumeric
 	{
-		RTTI_ENABLE(StorageUniformValueBuffer)
+		RTTI_ENABLE(BufferBindingNumeric)
 	public:
 		/**
 		 * @return total number of elements
@@ -193,13 +143,13 @@ namespace nap
 
 	/**
 	 * Represents a storage uniform struct buffer, for example:
-	 * StructGPUBuffer -> StorageUniformStructBuffer.
+	 * StructGPUBuffer -> BufferBindingStruct.
 	 *
-	 * A StorageUniformStructBuffer must be declared as part of a StorageUniformStruct.
+	 * A BufferBindingStruct must be declared as part of a BufferBindingStruct.
 	 */
-	class NAPAPI StorageUniformStructBuffer : public StorageUniformBuffer
+	class NAPAPI BufferBindingStruct : public BufferBinding
 	{
-		RTTI_ENABLE(StorageUniformBuffer)
+		RTTI_ENABLE(BufferBinding)
 	public:
 		/**
 		 * @return total number of elements.
@@ -225,31 +175,15 @@ namespace nap
 	};
 
 
-	/**
-	 * Find a shader storage uniform based on the given shader variable declaration.
-	 * @param members uniforms of type nap::StorageUniform to search through.
-	 * @param declaration uniform declaration to match
-	 * @return uniform that matches with the given shader declaration, nullptr if not found.
-	 */
-	template<class T>
-	const StorageUniform* findStorageUniformStructMember(const std::vector<T>& members, const ShaderVariableDeclaration& declaration)
-	{
-		for (auto& member : members)
-			if (member->mName == declaration.mName)
-				return member.get();
-		return nullptr;
-	}
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Storage uniform value buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using StorageUniformUIntBuffer	= TypedStorageUniformValueBuffer<uint>;
-	using StorageUniformIntBuffer	= TypedStorageUniformValueBuffer<int>;
-	using StorageUniformFloatBuffer = TypedStorageUniformValueBuffer<float>;
-	using StorageUniformVec2Buffer	= TypedStorageUniformValueBuffer<glm::vec2>;
-	using StorageUniformVec3Buffer	= TypedStorageUniformValueBuffer<glm::vec3>;
-	using StorageUniformVec4Buffer	= TypedStorageUniformValueBuffer<glm::vec4>;
-	using StorageUniformMat4Buffer	= TypedStorageUniformValueBuffer<glm::mat4>;
+	using BufferBindingUInt		= TypedBufferBindingNumeric<uint>;
+	using BufferBindingInt		= TypedBufferBindingNumeric<int>;
+	using BufferBindingFloat	= TypedBufferBindingNumeric<float>;
+	using BufferBindingVec2		= TypedBufferBindingNumeric<glm::vec2>;
+	using BufferBindingVec3		= TypedBufferBindingNumeric<glm::vec3>;
+	using BufferBindingVec4		= TypedBufferBindingNumeric<glm::vec4>;
+	using BufferBindingMat4		= TypedBufferBindingNumeric<glm::mat4>;
 }

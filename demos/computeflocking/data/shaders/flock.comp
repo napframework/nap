@@ -49,12 +49,12 @@ struct Boid
 layout(std430) readonly buffer BoidBuffer_In
 {
 	Boid boids[10000];
-} subo_in;
+} ssbo_in;
 
 layout(std430) writeonly buffer BoidBuffer_Out
 {  
 	Boid boids[10000];
-} subo_out;
+} ssbo_out;
 
 
 // UNIFORM
@@ -245,8 +245,8 @@ void computeForces(
 		uint idx = (gid + i) % ubo.numBoids;
 
 		// Fetch other position and velocity
-		vec4 other_pos = subo_in.boids[idx].position;
-		vec4 other_dir = subo_in.boids[idx].velocity;
+		vec4 other_pos = ssbo_in.boids[idx].position;
+		vec4 other_dir = ssbo_in.boids[idx].velocity;
 
 		// Calculate the difference vector between current and other
 		vec3 offset = other_pos.xyz - position;
@@ -326,8 +326,8 @@ void computeForcesShared(
 		uint id = clamp(proc+local_id, 0, proc+chunk_size-1);
 
 		// Copy other position and velocity to shared data
-		sharedData[local_id*2] = subo_in.boids[id].position;
-		sharedData[local_id*2+1] = subo_in.boids[id].velocity;
+		sharedData[local_id*2] = ssbo_in.boids[id].position;
+		sharedData[local_id*2+1] = ssbo_in.boids[id].velocity;
 
 		// This barrier ensures 'sharedData' is available and visible for the current workgroup
 		memoryBarrierShared();
@@ -380,7 +380,7 @@ void main()
 	uint global_id = gl_GlobalInvocationID.x;
 
 	// Read boid from input buffer - use the invocation ID as an index into our storage buffer
-	Boid b = subo_in.boids[global_id];
+	Boid b = ssbo_in.boids[global_id];
 
 	// Compute forces
 	vec4 avoidance_heading;
@@ -451,5 +451,5 @@ void main()
 	b.mateRate = max(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate) * 0.97;
 
 	// Write boid to output buffer
-	subo_out.boids[global_id] = b;
+	ssbo_out.boids[global_id] = b;
 }

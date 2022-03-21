@@ -45,7 +45,7 @@ namespace nap
 		/**
 		 * @return all Storage UniformBufferObject declarations.
 		 */
-		const std::vector<BufferObjectDeclaration>& getSUBODeclarations() const { return mSUBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const { return mSSBODeclarations; }
 
 		/**
 		 * @return shader display name
@@ -61,7 +61,7 @@ namespace nap
 		RenderService* mRenderService = nullptr;													///< Handle to render engine
 		std::string											mDisplayName;							///< Filename of shader used as display name
 		BufferObjectDeclarationList							mUBODeclarations;						///< All uniform buffer object declarations
-		BufferObjectDeclarationList							mSUBODeclarations;						///< All storage uniform buffer object declarations
+		BufferObjectDeclarationList							mSSBODeclarations;						///< All storage uniform buffer object declarations
 		SamplerDeclarations									mSamplerDeclarations;					///< All sampler declarations
 		VkDescriptorSetLayout								mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 

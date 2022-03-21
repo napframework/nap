@@ -76,18 +76,18 @@ namespace nap
 	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in
 	 * MaterialInstance::update().
 	 */
-	class StorageUniformBufferObject
+	class BindingBufferObject
 	{
 	public:
-		using StorageUniformList = std::vector<const StorageUniformBufferInstance*>;
+		using BufferBindingList = std::vector<const BufferBindingInstance*>;
 
-		StorageUniformBufferObject(const BufferObjectDeclaration& declaration) :
+		BindingBufferObject(const BufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
 			assert(declaration.mDescriptorType == EDescriptorType::Storage);
 		}
 
 		const BufferObjectDeclaration*			mDeclaration;
-		const StorageUniformBufferInstance*		mStorageUniform;
+		const BufferBindingInstance*			mBufferBinding;
 	};
 }

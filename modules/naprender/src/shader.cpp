@@ -662,7 +662,7 @@ namespace nap
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
-		for (const BufferObjectDeclaration& declaration : mSUBODeclarations)
+		for (const BufferObjectDeclaration& declaration : mSSBODeclarations)
 		{
 			VkDescriptorSetLayoutBinding suboLayoutBinding = {};
 			suboLayoutBinding.binding = declaration.mBinding;
@@ -748,7 +748,7 @@ namespace nap
 
 		// Extract vertex shader uniforms & inputs
 		spirv_cross::Compiler vertex_shader_compiler(vertex_shader_spirv.data(), vertex_shader_spirv.size());
-		if (!parseShaderVariables(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		for (const spirv_cross::Resource& stage_input : vertex_shader_compiler.get_shader_resources().stage_inputs)
@@ -765,7 +765,7 @@ namespace nap
 
 		// Extract fragment shader uniforms
 		spirv_cross::Compiler fragment_shader_compiler(fragment_shader_spirv.data(), fragment_shader_spirv.size());
-		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		return initLayout(device, errorState);
@@ -843,7 +843,7 @@ namespace nap
 
 		// Extract shader variables
 		spirv_cross::Compiler comp_shader_compiler(comp_shader_spirv.data(), comp_shader_spirv.size());
-		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		// Query useful compute info

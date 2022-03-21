@@ -20,12 +20,12 @@ struct Particle
 layout(std430) readonly buffer ParticleBuffer_In
 {
 	Particle particles[100000];
-} subo_in;
+} ssbo_in;
 
 layout(std430) writeonly buffer ParticleBuffer_Out
 {
 	Particle particles[100000];
-} subo_out;
+} ssbo_out;
 
 layout(std430) writeonly buffer VertexBuffer 
 {
@@ -77,7 +77,7 @@ mat4 rotate(vec3 axis, float angle)
 void main() 
 {
 	// Read
-	Particle p = subo_in.particles[gl_GlobalInvocationID.x];
+	Particle p = ssbo_in.particles[gl_GlobalInvocationID.x];
 
 	vec3 vel = p.velocity.xyz * max(ubo.displacement * 10.0, 0.01);
 	float simplex_x = simplex(vel.xyz * ubo.elapsedTime);
@@ -117,7 +117,7 @@ void main()
 	}
 
 	// Write particle storage buffer
-	subo_out.particles[gl_GlobalInvocationID.x] = p;
+	ssbo_out.particles[gl_GlobalInvocationID.x] = p;
 }
 
 

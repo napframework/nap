@@ -32,7 +32,7 @@ namespace nap
 		virtual ~BaseMaterial() = default;
 
 		std::vector<ResourcePtr<UniformStruct>>			mUniforms;										///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<StorageUniformStruct>>	mStorageUniforms;								///< Property: 'StorageUniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<BufferBinding>>			mBufferBindings;								///< Property: 'Bindings' Static buffer bindings (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<Sampler>>				mSamplers;										///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
 
 		/**

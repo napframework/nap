@@ -251,17 +251,17 @@ namespace nap
 		// and bind it to the position vertex attribute of the particle mesh.
 		{
 			// Find storage buffer uniform in the material instance resource, else the material resource.
-			StorageUniformStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform(uniform::vertexBufferStruct);
+			BufferBindingStructInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findBufferBinding(uniform::vertexBufferStruct);
 
 			// If it is null, search for it in the base material.
 			if (vertex_struct == nullptr)
-				vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findStorageUniform(uniform::vertexBufferStruct);
+				vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findBufferBinding(uniform::vertexBufferStruct);
 
 			// Assert if unavailable
 			assert(vertex_struct != nullptr);
 
 			// Fetch the storage buffer uniform of the position vertex buffer currently bound to the update compute shader.
-			StorageUniformVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateStorageUniformBuffer<StorageUniformVec4BufferInstance>(uniform::vertices);
+			BufferBindingVec4BufferInstance* vertex_buffer_uniform = vertex_struct->getOrCreateBufferBinding<BufferBindingVec4BufferInstance>(uniform::vertices);
 			const VkBuffer storage_buffer = vertex_buffer_uniform->getTypedBuffer().getBuffer();
 
 			// Override position vertex attribute buffer with storage buffer.

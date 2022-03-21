@@ -29,9 +29,9 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
-		std::vector<ResourcePtr<UniformStruct>>			mUniforms;									///< Property: "Uniforms" uniform structs to override
-		std::vector<ResourcePtr<StorageUniformStruct>>	mStorageUniforms;							///< Property: "StorageUniforms" storage uniform structs to override
-		std::vector<ResourcePtr<Sampler>>				mSamplers;									///< Property: "Samplers" samplers that you're overriding
+		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
+		std::vector<ResourcePtr<BufferBinding>>		mBufferBindings;								///< Property: "Bindings" buffer bindings to override
+		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
 	};
 
 	/**
@@ -83,7 +83,7 @@ namespace nap
 		 * @param name: the name of the sorage uniform struct (ssbo) as declared in the shader.
 		 * @return uniform that was found or created, nullptr if not available.
 		 */
-		virtual StorageUniformStructInstance* getOrCreateStorageUniform(const std::string& name);
+		virtual BufferBindingInstance* getOrCreateBufferBinding(const std::string& name);
 
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
@@ -146,15 +146,14 @@ namespace nap
 
 		bool initInternal(RenderService& renderService, utility::ErrorState& errorState);
 
-		void onUniformCreated();
-		void onStorageUniformCreated();
-		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
-		void onStorageUniformChanged(int storageBufferIndex, StorageUniformInstance& storageUniformInstance);
-
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
-		bool rebuildSSBO(StorageUniformBufferObject& ssbo, StorageUniformStructInstance* overrideStruct, uint ssboIndex, utility::ErrorState& errorState);
 
-		void updateStorageUniforms(const DescriptorSet& descriptorSet);
+		void onUniformCreated();
+		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
+		void onBindingChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
+
+		void updateBindings(const DescriptorSet& descriptorSet);
+		bool initBindings(utility::ErrorState& errorState);
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(utility::ErrorState& errorState);
@@ -169,14 +168,13 @@ namespace nap
 		DescriptorSetCache*						mDescriptorSetCache;					// Cache used to acquire Vulkan DescriptorSets on each update
 		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
 
-		std::vector<StorageUniformBufferObject>	mStorageBufferObjects;					// List of all SSBO instances
-		std::vector<VkWriteDescriptorSet>		mStorageWriteDescriptorSets;			// List of storage unform descriptors, used to update Descriptor Sets
+		std::vector<VkWriteDescriptorSet>		mStorageWriteDescriptorSets;			// List of storage storage descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorBufferInfo>		mStorageDescriptors;					// List of storage buffers, used to update Descriptor Sets.
 
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
-		std::vector<VkDescriptorImageInfo>		mSamplerWriteDescriptors;				// List of sampler images, used to update Descriptor Sets.
+		std::vector<VkDescriptorImageInfo>		mSamplerDescriptors;					// List of sampler images, used to update Descriptor Sets.
+
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
-		bool									mStorageUniformsCreated = false;		// Set when a storage uniform instance is created in between draws
 	};
 
 	/**
@@ -321,7 +319,7 @@ namespace nap
 		virtual const BaseMaterialInstanceResource* getResource() const override;
 
 	private:
-		ComputeMaterialInstanceResource* mResource;								// Resource this instance is associated with
+		ComputeMaterialInstanceResource*		mResource;								// Resource this instance is associated with
 	};
 	
 	template<class T>

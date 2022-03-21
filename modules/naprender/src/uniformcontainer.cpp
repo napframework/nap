@@ -26,11 +26,20 @@ namespace nap
 	}
 
 
-	StorageUniformStructInstance* UniformContainer::findStorageUniform(const std::string& name)
+	BufferBindingInstance* UniformContainer::findBufferBinding(const std::string& name)
 	{
-		for (auto& instance : mStorageUniformRootStructs)
+		for (auto& instance : mBufferBindingInstances)
 			if (instance->getDeclaration().mName == name)
 				return instance.get();
+		return nullptr;
+	}
+
+
+	SamplerInstance* UniformContainer::findSampler(const std::string& name) const
+	{
+		for (auto& sampler : mSamplerInstances)
+			if (sampler->getDeclaration().mName == name)
+				return sampler.get();
 		return nullptr;
 	}
 
@@ -43,29 +52,17 @@ namespace nap
 	}
 
 
-	nap::StorageUniformStructInstance& UniformContainer::getStorageUniform(const std::string& name)
+	BufferBindingInstance& UniformContainer::getBufferBinding(const std::string& name)
 	{
-		StorageUniformStructInstance* instance = findStorageUniform(name);
+		BufferBindingInstance* instance = findBufferBinding(name);
 		assert(instance != nullptr);
 		return *instance;
 	}
 
 
-	UniformStructInstance& UniformContainer::createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
+	void UniformContainer::addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance)
 	{
-		std::unique_ptr<UniformStructInstance> instance = std::make_unique<UniformStructInstance>(declaration, uniformCreatedCallback);
-		UniformStructInstance* result = instance.get();
-		mUniformRootStructs.emplace_back(std::move(instance));
-		return *result;
-	}
-
-
-	StorageUniformStructInstance& UniformContainer::createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback)
-	{
-		std::unique_ptr<StorageUniformStructInstance> instance = std::make_unique<StorageUniformStructInstance>(declaration, storageUniformCreatedCallback);
-		StorageUniformStructInstance* result = instance.get();
-		mStorageUniformRootStructs.emplace_back(std::move(instance));
-		return *result;
+		mBufferBindingInstances.emplace_back(std::move(instance));
 	}
 
 
@@ -75,11 +72,11 @@ namespace nap
 	}
 
 
-	SamplerInstance* UniformContainer::findSampler(const std::string& name) const
+	UniformStructInstance& UniformContainer::createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback)
 	{
-		for (auto& sampler : mSamplerInstances)
-			if (sampler->getDeclaration().mName == name)
-				return sampler.get();
-		return nullptr;
+		std::unique_ptr<UniformStructInstance> instance = std::make_unique<UniformStructInstance>(declaration, uniformCreatedCallback);
+		UniformStructInstance* result = instance.get();
+		mUniformRootStructs.emplace_back(std::move(instance));
+		return *result;
 	}
 }

@@ -37,11 +37,11 @@ namespace nap
 		UniformStructInstance* findUniform(const std::string& name);
 
 		/**
-		 * Tries to find a uniform struct instance with the given name.
-		 * @param name name of the uniform struct (ubo) as declared in the shader.
-		 * @return a uniform struct instance (ubo), nullptr if not present.
+		 * Tries to find a buffer binding instance with the given name.
+		 * @param name name of the buffer binding as declared in the shader.
+		 * @return a buffer binding instance, nullptr if not present.
 		 */
-		StorageUniformStructInstance* findStorageUniform(const std::string& name);
+		BufferBindingInstance* findBufferBinding(const std::string& name);
 
 		/**
 		 * Returns a uniform struct instance with the given name, the struct has to exist.
@@ -51,11 +51,11 @@ namespace nap
 		UniformStructInstance& getUniform(const std::string& name);
 
 		/**
-		 * Returns a uniform struct instance with the given name, the struct has to exist.
-		 * @param name name of the uniform struct as declared in the shader.
-		 * @return uniform struct instance with the given name, asserts if not present.
+		 * Returns a buffer binding instance with the given name. The binding must exist.
+		 * @param name name of the buffer binding as declared in the shader.
+		 * @return buffer binding instance with the given name, asserts if not present.
 		 */
-		StorageUniformStructInstance& getStorageUniform(const std::string& name);
+		BufferBindingInstance& getBufferBinding(const std::string& name);
 
 		/**
 		 * @return all the uniforms sampler instances.
@@ -71,12 +71,12 @@ namespace nap
 
 	protected:
 		UniformStructInstance& createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-		StorageUniformStructInstance& createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback);
+		void addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance);
 		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:
 		std::vector<std::unique_ptr<UniformStructInstance>> mUniformRootStructs;
-		std::vector<std::unique_ptr<StorageUniformStructInstance>> mStorageUniformRootStructs;
+		std::vector<std::unique_ptr<BufferBindingInstance>> mBufferBindingInstances;
 		std::vector<std::unique_ptr<SamplerInstance>> mSamplerInstances;
 	};
 }

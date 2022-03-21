@@ -204,12 +204,11 @@ namespace nap
 		}
 
 		// Update vertex shader storage uniforms
-		auto* ssbo_struct = getMaterialInstance().findStorageUniform(uniform::ssboStruct);
-		auto* compute_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform("BoidBuffer_Out");
-		if (ssbo_struct != nullptr && compute_struct != nullptr)
+		auto* storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getComputeMaterialInstance().findBufferBinding("BoidBuffer_Out"));
+		if (storage_binding != nullptr && storage_binding != nullptr)
 		{
-			auto& storage_buffer = compute_struct->findStorageUniformBuffer<StorageUniformStructBufferInstance>("boids")->getBuffer();
-			ssbo_struct->findStorageUniformBuffer<StorageUniformStructBufferInstance>("boids")->setBuffer(storage_buffer);
+			auto& storage_buffer = storage_binding->getBuffer();
+			storage_binding->setBuffer(storage_buffer);
 		}
 
 		// Update fragment shader uniforms

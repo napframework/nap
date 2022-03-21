@@ -19,7 +19,7 @@ RTTI_DEFINE_BASE(nap::BaseMaterialInstanceResource)
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("StorageUniforms",			&nap::MaterialInstanceResource::mStorageUniforms,			nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Bindings",					&nap::MaterialInstanceResource::mBufferBindings,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
@@ -28,7 +28,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
 	RTTI_PROPERTY("ComputeMaterial",			&nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterialInstanceResource::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("StorageUniforms",			&nap::ComputeMaterialInstanceResource::mStorageUniforms,	nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Bindings",					&nap::ComputeMaterialInstanceResource::mBufferBindings,		nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterialInstanceResource::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
@@ -58,10 +58,11 @@ namespace nap
 
 
 	template<class T>
-	const StorageUniformInstance* findStorageUniformStructInstanceMember(const T& member, const std::string& name)
+	const BufferBinding* findBindingResource(const std::vector<T>& bindings, const ShaderVariableDeclaration& declaration)
 	{
-		if (member->getDeclaration().mName == name)
-			return member.get();
+		for (auto& binding : bindings)
+			if (binding->mName == declaration.mName)
+				return binding.get();
 
 		return nullptr;
 	}
@@ -181,29 +182,68 @@ namespace nap
 	}
 
 
-	StorageUniformStructInstance* BaseMaterialInstance::getOrCreateStorageUniform(const std::string& name)
+	BufferBindingInstance* BaseMaterialInstance::getOrCreateBufferBinding(const std::string& name)
 	{
-		StorageUniformStructInstance* existing = findStorageUniform(name);
-		if (existing != nullptr)
-			return existing;
+		// See if we have an override in MaterialInstance. If so, we can return it
+		BufferBindingInstance* existing_binding = findBufferBinding(name);
+		if (existing_binding != nullptr)
+			return existing_binding;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
 		const ShaderVariableStructDeclaration* declaration = nullptr;
-		const std::vector<BufferObjectDeclaration>& subo_declarations = getBaseMaterial()->getBaseShader()->getSUBODeclarations();
-		for (const BufferObjectDeclaration& subo_declaration : subo_declarations)
+		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
+		utility::ErrorState error_state;
+
+		int ssbo_index = 0;
+		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
-			if (subo_declaration.mName == name)
+			if (declaration.mName == name)
 			{
-				declaration = &subo_declaration;
-				break;
+				std::unique_ptr<BufferBindingInstance> binding_instance_override;
+				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, nullptr, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), error_state);
+				NAP_ASSERT_MSG(binding_instance_override, error_state.toString());
+
+				addBufferBindingInstance(std::move(binding_instance_override));
+				return binding_instance_override.get();
 			}
+			++ssbo_index;
 		}
+		return nullptr;
+	}
 
-		if (declaration == nullptr)
-			return nullptr;
 
-		// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
-		return &createStorageUniformRootStruct(*declaration, std::bind(&BaseMaterialInstance::onStorageUniformCreated, this));
+	SamplerInstance* BaseMaterialInstance::getOrCreateSamplerInternal(const std::string& name)
+	{
+		// See if we have an override in MaterialInstance. If so, we can return it
+		SamplerInstance* existing_sampler = findSampler(name);
+		if (existing_sampler != nullptr)
+			return existing_sampler;
+
+		const BaseShader* shader = getBaseMaterial()->getBaseShader();
+		const SamplerDeclarations& sampler_declarations = shader->getSamplerDeclarations();
+		int image_start_index = 0;
+		for (const SamplerDeclaration& declaration : sampler_declarations)
+		{
+			if (declaration.mName == name)
+			{
+				bool is_array = declaration.mNumArrayElements > 1;
+
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
+				if (is_array)
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+				else
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+
+				utility::ErrorState error_state;
+				bool initialized = sampler_instance_override->init(error_state);
+				assert(initialized);
+
+				addSamplerInstance(std::move(sampler_instance_override));
+				return sampler_instance_override.get();
+			}
+			image_start_index += declaration.mNumArrayElements;
+		}
+		return nullptr;
 	}
 
 
@@ -212,14 +252,6 @@ namespace nap
 		// We only store that uniforms have been created. During update() we will update UBO structures. The reason
 		// why we don't do this in place is because we to avoid multiple rebuilds for a single draw.
 		mUniformsCreated = true;
-	}
-
-
-	void BaseMaterialInstance::onStorageUniformCreated()
-	{
-		// We only store that uniforms have been created. During update() we will update UBO structures. The reason
-		// why we don't do this in place is because we to avoid multiple rebuilds for a single draw.
-		mStorageUniformsCreated = true;
 	}
 
 
@@ -239,7 +271,7 @@ namespace nap
 			{
 				const Texture2D& texture = sampler_2d_array->getTexture(index);
 
-				VkDescriptorImageInfo& imageInfo = mSamplerWriteDescriptors[imageStartIndex + index];
+				VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex + index];
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				imageInfo.imageView = texture.getImageView();
 				imageInfo.sampler = vk_sampler;
@@ -249,7 +281,7 @@ namespace nap
 		{
 			Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
 
-			VkDescriptorImageInfo& imageInfo = mSamplerWriteDescriptors[imageStartIndex];
+			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex];
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = sampler_2d->getTexture().getImageView();
 			imageInfo.sampler = vk_sampler;
@@ -257,47 +289,52 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::onStorageUniformChanged(int storageBufferIndex, StorageUniformInstance& storageUniformInstance)
+	void BaseMaterialInstance::onBindingChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance)
 	{
 		// Update the buffer info structure stored in the buffer info handles
 		VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[storageBufferIndex];
-		if (storageUniformInstance.get_type().is_derived_from(RTTI_OF(StorageUniformValueBufferInstance)))
+		if (bindingInstance.get_type().is_derived_from(RTTI_OF(BufferBindingStructInstance)))
 		{
-			if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformIntBufferInstance))
-			{
-				StorageUniformIntBufferInstance* instance = (StorageUniformIntBufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getBuffer().getBuffer();
-			}
-			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformFloatBufferInstance))
-			{
-				StorageUniformFloatBufferInstance* instance = (StorageUniformFloatBufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getBuffer().getBuffer();
-			}
-			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformVec2BufferInstance))
-			{
-				StorageUniformVec2BufferInstance* instance = (StorageUniformVec2BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getBuffer().getBuffer();
-			}
-			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformVec3BufferInstance))
-			{
-				StorageUniformVec3BufferInstance* instance = (StorageUniformVec3BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getBuffer().getBuffer();
-			}
-			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformVec4BufferInstance))
-			{
-				StorageUniformVec4BufferInstance* instance = (StorageUniformVec4BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getBuffer().getBuffer();
-			}
-			else if (storageUniformInstance.get_type() == RTTI_OF(StorageUniformMat4BufferInstance))
-			{
-				StorageUniformMat4BufferInstance* instance = (StorageUniformMat4BufferInstance*)(&storageUniformInstance);
-				buffer_info.buffer = instance->getBuffer().getBuffer();
-			}
-		}
-		else if (storageUniformInstance.get_type().is_derived_from(RTTI_OF(StorageUniformStructBufferInstance)))
-		{
-			StorageUniformStructBufferInstance* instance = (StorageUniformStructBufferInstance*)(&storageUniformInstance);
+			BufferBindingStructInstance* instance = static_cast<BufferBindingStructInstance*>(&bindingInstance);
 			buffer_info.buffer = instance->getBuffer().getBuffer();
+		}
+		else if (bindingInstance.get_type().is_derived_from(RTTI_OF(BufferBindingNumericInstance)))
+		{
+			if (bindingInstance.get_type() == RTTI_OF(BufferBindingUIntInstance))
+			{
+				auto* instance = static_cast<BufferBindingUIntInstance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingIntInstance))
+			{
+				auto* instance = static_cast<BufferBindingIntInstance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingFloatInstance))
+			{
+				auto* instance = static_cast<BufferBindingFloatInstance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingVec2Instance))
+			{
+				auto* instance = static_cast<BufferBindingVec2Instance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingVec3Instance))
+			{
+				auto* instance = static_cast<BufferBindingVec3Instance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingVec4Instance))
+			{
+				auto* instance = static_cast<BufferBindingVec4Instance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingMat4Instance))
+			{
+				auto* instance = static_cast<BufferBindingMat4Instance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
 		}
 		else
 		{
@@ -317,95 +354,6 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::rebuildSSBO(StorageUniformBufferObject& ssbo, StorageUniformStructInstance* overrideStruct, uint ssboIndex, utility::ErrorState& errorState)
-	{
-		ssbo.mStorageUniform = nullptr;
-
-		const StorageUniformStructInstance* base_struct = rtti_cast<const StorageUniformStructInstance>(getBaseMaterial()->findStorageUniform(ssbo.mDeclaration->mName));
-		assert(base_struct != nullptr);
-
-		auto& base_uniform = base_struct->getStorageUniformBuffer();
-
-		const StorageUniformBufferInstance* override_uniform = nullptr;
-		if (overrideStruct != nullptr)
-		{
-			if (overrideStruct->getStorageUniformBuffer()->getDeclaration().mName == base_uniform->getDeclaration().mName)
-				override_uniform = overrideStruct->getStorageUniformBuffer().get();
-		}
-
-		VkBuffer buffer_handle = VK_NULL_HANDLE;
-		rtti::TypeInfo declaration_type = base_uniform->get_type();
-		if (declaration_type == RTTI_OF(StorageUniformStructBufferInstance))
-		{
-			const StorageUniformStructBufferInstance* override_buffer_uniform = rtti_cast<const StorageUniformStructBufferInstance>(override_uniform);
-			const StorageUniformStructBufferInstance* base_buffer_uniform = rtti_cast<const StorageUniformStructBufferInstance>(base_uniform.get());
-
-			if (override_buffer_uniform != nullptr)
-			{
-				if (!errorState.check(override_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
-					return false;
-
-				buffer_handle = override_buffer_uniform->getBuffer().getBuffer();
-				ssbo.mStorageUniform = override_buffer_uniform;
-				override_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
-			}
-			else
-			{
-				if (!errorState.check(base_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
-					return false;
-
-				buffer_handle = base_buffer_uniform->getBuffer().getBuffer();
-				ssbo.mStorageUniform = base_buffer_uniform;
-				base_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
-			}
-		}
-		else if (declaration_type.is_derived_from(RTTI_OF(StorageUniformValueBufferInstance)))
-		{
-			const StorageUniformValueBufferInstance* override_buffer_uniform = rtti_cast<const StorageUniformValueBufferInstance>(override_uniform);
-			const StorageUniformValueBufferInstance* base_buffer_uniform = rtti_cast<const StorageUniformValueBufferInstance>(base_uniform.get());
-
-			if (override_buffer_uniform != nullptr)
-			{
-				if (!errorState.check(override_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
-					return false;
-
-				buffer_handle = override_buffer_uniform->getBuffer().getBuffer();
-				ssbo.mStorageUniform = override_buffer_uniform;
-				override_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
-			}
-			else
-			{
-				if (!errorState.check(base_buffer_uniform->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", base_uniform->getDeclaration().mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
-					return false;
-
-				buffer_handle = base_buffer_uniform->getBuffer().getBuffer();
-				ssbo.mStorageUniform = base_buffer_uniform;
-				base_buffer_uniform->setBufferChangedCallback(std::bind(&MaterialInstance::onStorageUniformChanged, this, (int)ssboIndex, std::placeholders::_1));
-			}
-		}
-		else
-		{
-			return false;
-		}
-
-		VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[ssboIndex];
-		buffer_info.buffer = buffer_handle;
-		buffer_info.offset = 0;
-		buffer_info.range = VK_WHOLE_SIZE;
-
-		VkWriteDescriptorSet& ssbo_descriptor = mStorageWriteDescriptorSets.emplace_back();
-		ssbo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		ssbo_descriptor.dstSet = VK_NULL_HANDLE;
-		ssbo_descriptor.dstBinding = ssbo.mDeclaration->mBinding;
-		ssbo_descriptor.dstArrayElement = 0;
-		ssbo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		ssbo_descriptor.descriptorCount = 1;
-		ssbo_descriptor.pBufferInfo = mStorageDescriptors.data() + ssboIndex;
-		
-		return true;
-	}
-
-
 	void BaseMaterialInstance::addImageInfo(const Texture2D& texture2D, VkSampler sampler)
 	{
 		VkDescriptorImageInfo imageInfo = {};
@@ -413,7 +361,68 @@ namespace nap
 		imageInfo.imageView = texture2D.getImageView();
 		imageInfo.sampler = sampler;
 
-		mSamplerWriteDescriptors.push_back(imageInfo);
+		mSamplerDescriptors.push_back(imageInfo);
+	}
+
+
+	bool BaseMaterialInstance::initBindings(utility::ErrorState& errorState)
+	{
+		// Here we create SSBOs in the same way as we did for UBOs above
+		const auto& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
+		mStorageDescriptors.resize(ssbo_declarations.size());
+		mStorageWriteDescriptorSets.reserve(ssbo_declarations.size()); // We reserve to ensure that pointers remain consistent during the iteration
+
+		int ssbo_index = 0;
+		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
+		{
+			// Verify buffer object type
+			if (!errorState.check(declaration.mDescriptorType == EDescriptorType::Storage, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", declaration.mName.c_str())))
+				return false;
+
+			// Check if the binding is set as override in the MaterialInstance
+			const BufferBinding* override_resource = findBindingResource(getResource()->mBufferBindings, declaration);
+
+			BufferBindingInstance* binding = nullptr;
+			if (override_resource != nullptr)
+			{
+				// Buffer binding is overridden, make a BufferBindingInstance object
+				auto override_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, override_resource, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), errorState);
+				if (!errorState.check(override_instance != nullptr, "Failed to create buffer binding instance for shader variable `%s`", declaration.mName.c_str()))
+					return false;
+
+				if (!errorState.check(override_instance->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", declaration.mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
+					return false;
+
+				addBufferBindingInstance(std::move(override_instance));		
+			}
+			else
+			{
+				// Binding is not overridden, find it in the Material
+				binding = findBufferBinding(declaration.mName);
+				if (!errorState.check(binding != nullptr, "Failed to find buffer binding instance for shader variable `%s` in base material", declaration.mName.c_str()))
+					return false;
+
+				if (!errorState.check(binding->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", declaration.mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
+					return false;
+			}
+
+			VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[ssbo_index];
+			buffer_info.buffer = binding->getBaseBuffer().getBuffer();
+			buffer_info.offset = 0;
+			buffer_info.range = VK_WHOLE_SIZE;
+
+			VkWriteDescriptorSet& ssbo_descriptor = mStorageWriteDescriptorSets.emplace_back();
+			ssbo_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			ssbo_descriptor.dstSet = VK_NULL_HANDLE;
+			ssbo_descriptor.dstBinding = declaration.mBinding;
+			ssbo_descriptor.dstArrayElement = 0;
+			ssbo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			ssbo_descriptor.descriptorCount = 1;
+			ssbo_descriptor.pBufferInfo = mStorageDescriptors.data() + ssbo_index;
+
+			++ssbo_index;
+		}
+		return true;
 	}
 
 
@@ -427,7 +436,7 @@ namespace nap
 			num_sampler_images += declaration.mNumArrayElements;
 
 		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
-		mSamplerWriteDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
+		mSamplerDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
 
 		Texture2D& emptyTexture = mRenderService->getEmptyTexture();
 
@@ -463,9 +472,9 @@ namespace nap
 				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerWriteDescriptors.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
 
 				if (!sampler_instance_override->init(errorState))
 					return false;
@@ -480,7 +489,7 @@ namespace nap
 			}
 
 			// Store the offset into the mSamplerImages array. This can either be the first index of an array, or just the element itself if it's not
-			size_t sampler_descriptor_start_index = mSamplerWriteDescriptors.size();
+			size_t sampler_descriptor_start_index = mSamplerDescriptors.size();
 			VkSampler vk_sampler = sampler_instance->getVulkanSampler();
 			if (is_array)
 			{
@@ -513,51 +522,11 @@ namespace nap
 			write_descriptor_set.dstBinding = sampler_instance->getDeclaration().mBinding;
 			write_descriptor_set.dstArrayElement = 0;
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			write_descriptor_set.descriptorCount = mSamplerWriteDescriptors.size() - sampler_descriptor_start_index;
-			write_descriptor_set.pImageInfo = mSamplerWriteDescriptors.data() + sampler_descriptor_start_index;
+			write_descriptor_set.descriptorCount = mSamplerDescriptors.size() - sampler_descriptor_start_index;
+			write_descriptor_set.pImageInfo = mSamplerDescriptors.data() + sampler_descriptor_start_index;
 		}
 
 		return true;
-	}
-
-
-	SamplerInstance* BaseMaterialInstance::getOrCreateSamplerInternal(const std::string& name)
-	{
-		// See if we have an override in MaterialInstance. If so, we can return it
-		SamplerInstance* existing_sampler = findSampler(name);
-		if (existing_sampler != nullptr)
-			return existing_sampler;
-
-		SamplerInstance* result = nullptr;
-
-		const BaseShader* shader = getBaseMaterial()->getBaseShader();
-		const SamplerDeclarations& sampler_declarations = shader->getSamplerDeclarations();
-		int image_start_index = 0;
-		for (const SamplerDeclaration& declaration : sampler_declarations)
-		{
-			if (declaration.mName == name)
-			{
-				bool is_array = declaration.mNumArrayElements > 1;
-
-				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
-				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
-
-				utility::ErrorState error_state;
-				bool initialized = sampler_instance_override->init(error_state);
-				assert(initialized);
-
-				result = sampler_instance_override.get();
-
-				addSamplerInstance(std::move(sampler_instance_override));
-				break;
-			}
-
-			image_start_index += declaration.mNumArrayElements;
-		}
-		return result;
 	}
 
 
@@ -575,7 +544,7 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::updateStorageUniforms(const DescriptorSet& descriptorSet)
+	void BaseMaterialInstance::updateBindings(const DescriptorSet& descriptorSet)
 	{
 		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
 		// with the actual set that was acquired.
@@ -632,38 +601,8 @@ namespace nap
 		}
 		mUniformsCreated = false;
 
-		// Here we create SSBOs in the same way as we did for UBOs above
-		const std::vector<BufferObjectDeclaration>& subo_declarations = shader->getSUBODeclarations();
-		mStorageDescriptors.resize(subo_declarations.size());
-		mStorageWriteDescriptorSets.reserve(subo_declarations.size()); // We reserve to ensure that pointers remain consistent during the iteration
-
-		uint ssbo_index = 0;
-		for (const BufferObjectDeclaration& subo_declaration : subo_declarations)
-		{
-			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(getResource()->mStorageUniforms, subo_declaration));
-
-			// Pass 1: create hierarchical structure
-			StorageUniformStructInstance* override_struct = nullptr;
-			if (struct_resource != nullptr)
-			{
-				override_struct = &createStorageUniformRootStruct(subo_declaration, std::bind(&BaseMaterialInstance::onUniformCreated, this));
-				if (!override_struct->addStorageUniformBuffer(subo_declaration, struct_resource, std::bind(&BaseMaterialInstance::onUniformCreated, this), errorState))
-					return false;
-			}
-
-			// Verify buffer object type
-			if (!errorState.check(subo_declaration.mDescriptorType == EDescriptorType::Storage, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", subo_declaration.mName.c_str())))
-				return false;
-
-			// Pass 2: gather handles
-			StorageUniformBufferObject ssbo(subo_declaration);
-			if (!rebuildSSBO(ssbo, override_struct, ssbo_index, errorState))
-				return false;
-
-			mStorageBufferObjects.emplace_back(std::move(ssbo));
-			++ssbo_index;
-		}
-		mStorageUniformsCreated = false;
+		if (!initBindings(errorState))
+			return false;
 
 		if (!initSamplers(errorState))
 			return false;
@@ -695,20 +634,6 @@ namespace nap
 			mUniformsCreated = false;
 		}
 
-		if (mStorageUniformsCreated)
-		{
-			utility::ErrorState error_state;
-			uint ssbo_index = 0;
-			for (StorageUniformBufferObject& ssbo : mStorageBufferObjects)
-			{
-				if (!rebuildSSBO(ssbo, findStorageUniform(ssbo.mDeclaration->mName), ssbo_index, error_state))
-					NAP_ASSERT_MSG(false, error_state.toString().c_str());
-
-				++ssbo_index;
-			}
-			mStorageUniformsCreated = false;
-		}
-
 		// The DescriptorSet contains information about all UBOs and samplers, along with the buffers that are bound to it.
 		// We acquire a descriptor set that is compatible with our shader. The allocator holds a number of allocated descriptor
 		// sets and we acquire one that is not in use anymore (that is not in any active command buffer). We cannot make assumptions
@@ -723,11 +648,10 @@ namespace nap
 		// at it is that MaterialInstance's state is 'volatile'. This means we cannot perform dirty checking.
 		// One way to tackle this is by maintaining a hash for the uniform/sampler constants that is maintained both in the allocator for
 		// a descriptor set and in MaterialInstance. We could then prefer to acquire descriptor sets that have matching hashes.
-		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mStorageBufferObjects.size(), mSamplerWriteDescriptors.size());
+		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mStorageDescriptors.size(), mSamplerDescriptors.size());
 
 		updateUniforms(descriptor_set, mUniformBufferObjects);
-
-		updateStorageUniforms(descriptor_set);
+		updateBindings(descriptor_set);
 		updateSamplers(descriptor_set);
 
 		return descriptor_set;
