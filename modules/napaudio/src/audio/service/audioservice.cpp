@@ -297,13 +297,13 @@ namespace nap
 			PaStreamParameters* inputParamsPtr = nullptr;
 			if (mInputDeviceIndex >= 0)
 			{
-				inputParameters.suggestedLatency = Pa_GetDeviceInfo(mInputDeviceIndex)->defaultLowInputLatency;
+				inputParameters.suggestedLatency = 0.f;
 				inputParamsPtr = &inputParameters;
 			}
 			PaStreamParameters* outputParamsPtr = nullptr;
 			if (mOutputDeviceIndex >= 0)
 			{
-				outputParameters.suggestedLatency = Pa_GetDeviceInfo(mOutputDeviceIndex)->defaultLowOutputLatency;
+				outputParameters.suggestedLatency = 0.f;
 				outputParamsPtr = &outputParameters;
 			}
 
