@@ -1360,7 +1360,7 @@
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
-            "Radius": 0.25,
+            "Radius": 0.1,
             "Rings": 8.0,
             "Sectors": 8.0,
             "Color": {

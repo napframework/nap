@@ -15,7 +15,7 @@
 #include <renderglobals.h>
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
-#include <storageuniforminstance.h>
+#include <bufferbindinginstance.h>
 
 RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
 	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)

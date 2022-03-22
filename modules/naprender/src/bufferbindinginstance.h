@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "storageuniform.h"
+#include "bufferbinding.h"
 #include "gpubuffer.h"
 #include "structgpubuffer.h"
 

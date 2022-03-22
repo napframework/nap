@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "storageuniform.h"
+#include "bufferbinding.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBinding)
 	RTTI_PROPERTY("Name", &nap::BufferBinding::mName, nap::rtti::EPropertyMetaData::Default)

@@ -6,7 +6,7 @@
 
 #include <vector>
 #include "uniforminstance.h"
-#include "storageuniforminstance.h"
+#include "bufferbindinginstance.h"
 #include "shadervariabledeclarations.h"
 #include "basegpubuffer.h"
 

@@ -7,7 +7,7 @@
 // Local Includes
 #include "samplerinstance.h"
 #include "uniforminstance.h"
-#include "storageuniforminstance.h"
+#include "bufferbindinginstance.h"
 
 namespace nap
 {
