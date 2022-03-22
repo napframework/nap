@@ -65,7 +65,20 @@ namespace nap
 		SamplerDeclarations								mSamplerDeclarations;					///< All sampler declarations
 		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 
+		/**
+		 * Initializes the descriptorset layout of this shader.
+		 * @param device the vulkan device.
+		 * @param errorState contains the error if the operation failed.
+		 * @return whether the descriptorset layout was initialized successfully.
+		 */
 		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
+
+		/**
+		 * Verifies if the shader declarations are in accordance with the API.
+		 * @param errorState contains the error if the operation failed.
+		 * @return whether the shader declarations are valid according to the capabilities of the API.
+		 */
+		bool verifyShaderVariableDeclarations(utility::ErrorState& errorState);
 	};
 
 

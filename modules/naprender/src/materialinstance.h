@@ -30,7 +30,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
-		std::vector<ResourcePtr<BufferBinding>>		mBufferBindings;								///< Property: "Bindings" buffer bindings to override
+		std::vector<ResourcePtr<BufferBinding>>		mBindings;										///< Property: "Bindings" buffer bindings to override
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
 	};
 
@@ -76,20 +76,36 @@ namespace nap
 		virtual UniformStructInstance* getOrCreateUniform(const std::string& name);
 
 		/**
-		 * Gets or creates a shader storage uniform struct (ssbo) for this material instance.
-		 * This means that the uniform returned is only applicable to this instance.
-		 * In order to change a uniform so that its value is shared among MaterialInstances, use getMaterial().getUniform().
+		 * Gets or creates a nap::BufferBindingInstance of type T for this material instance.
+		 * This means that the buffer binding returned is only applicable to this instance.
+		 * In order to change a buffer binding so that its value is shared among MaterialInstances, use getMaterial().getBinding().
+		 * This function will assert if the name of the binding does not match the type that you are trying to create.
 		 *
-		 * @param name: the name of the sorage uniform struct (ssbo) as declared in the shader.
-		 * @return uniform that was found or created, nullptr if not available.
+		 * ~~~~~{.cpp}
+		 * material_instance->getOrCreateBinding<nap::BufferBindingVec4Instance>("inBinding");
+		 * ~~~~~
+		 *
+		 * @param name: the name of the buffer binding as declared in the shader.
+		 * @return buffer binding that was found or created, nullptr if not available.
 		 */
-		virtual BufferBindingInstance* getOrCreateBufferBinding(const std::string& name);
+		template<class T>
+		T* getOrCreateBinding(const std::string& name);
+
+		/**
+		 * Gets or creates a buffer binding isntance for this material instance.
+		 * This means that the buffer binding returned is only applicable to this instance.
+		 * In order to change a buffer binding so that its value is shared among MaterialInstances, use getMaterial().getBinding().
+		 *
+		 * @param name: the name of the buffer binding as declared in the shader.
+		 * @return buffer binding that was found or created, nullptr if not available.
+		 */
+		BufferBindingInstance* getOrCreateBinding(const std::string& name) { return getOrCreateBindingInternal(name); }
 
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
 		 * This means that the sampler returned is only applicable to this instance.
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
+		 * This function will assert if the name of the sampler does not match the type that you are trying to create.
 		 *
 		 * ~~~~~{.cpp}
 		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>("inTexture");
@@ -159,6 +175,7 @@ namespace nap
 		bool initSamplers(utility::ErrorState& errorState);
 		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
 
+		BufferBindingInstance* getOrCreateBindingInternal(const std::string& name);
 		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
 
 	protected:
@@ -194,7 +211,7 @@ namespace nap
 	 * When multiple draws are performed with the frame, the state at the point of draw will be used.
 	 *
 	 * Note that there is no implicit synchronization of access to shader resources bound to storage and regular uniforms
-	 * between render passes. Therefore, it is currently not recommended to write to storage uniforms inside vertex
+	 * between render passes. Therefore, it is currently not recommended to write to storage buffers inside vertex
 	 * and/or fragment shaders over consecutive render passes within a single frame.
 	 *
 	 * Performance note: changing the Depth mode or Blend mode frequently on a single MaterialInstance is not recommended,
@@ -212,8 +229,8 @@ namespace nap
 		bool init(RenderService& renderService, MaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		/**
-		* @return material that this instance is overriding.
-		*/
+		 * @return material that this instance is overriding.
+		 */
 		Material& getMaterial();
 
 		/**
@@ -237,8 +254,8 @@ namespace nap
 		virtual const BaseMaterialInstanceResource* getResource() const override;
 
 		/**
-		* @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
-		*/
+		 * @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
+		 */
 		EBlendMode getBlendMode() const;
 
 		/**
@@ -258,8 +275,8 @@ namespace nap
 		void setDepthMode(EDepthMode depthMode);
 
 		/**
-		* @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
-		*/
+		 * @return If depth mode was overridden for this material, returns depth mode, otherwise material's depthmode.
+		 */
 		EDepthMode getDepthMode() const;
 
 	private:
@@ -275,12 +292,12 @@ namespace nap
 	 * the Vulkan draw call.
 	 *
 	 * Multiple ComputeMaterialInstances can share a single ComputeMaterial and a single ComputeMaterialInstance can
-	 * override ComputeMaterial properties on a per-instance basis. This means that you can set (storage) uniform or
+	 * override ComputeMaterial properties on a per-instance basis. This means that you can set uniform, buffer or
 	 * texture data on ComputeMaterial level, which means that, as long as the property isn't overridden, you will set
 	 * it for all ComputeMaterialInstances in one go. If you set a property on ComputeMaterialInstance level, you will
 	 * set it only for that ComputeMaterialInstance.
 	 *
-	 * It is also possible to set (storage) uniform or texture state on a single MaterialInstance multiple times per frame.
+	 * It is also possible to set uniform, buffer or texture state on a single MaterialInstance multiple times per frame.
 	 * When multiple draws are performed with the frame, the state at the point of draw will be used.
 	 */
 	class NAPAPI ComputeMaterialInstance : public BaseMaterialInstance
@@ -321,6 +338,17 @@ namespace nap
 	private:
 		ComputeMaterialInstanceResource*		mResource;								// Resource this instance is associated with
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<class T>
+	T* BaseMaterialInstance::getOrCreateBinding(const std::string& name)
+	{
+		return rtti_cast<T>(getOrCreateBindingInternal(name));
+	}
 	
 	template<class T>
 	T* BaseMaterialInstance::getOrCreateSampler(const std::string& name)

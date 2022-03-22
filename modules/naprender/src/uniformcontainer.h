@@ -41,7 +41,7 @@ namespace nap
 		 * @param name name of the buffer binding as declared in the shader.
 		 * @return a buffer binding instance, nullptr if not present.
 		 */
-		BufferBindingInstance* findBufferBinding(const std::string& name);
+		BufferBindingInstance* findBinding(const std::string& name);
 
 		/**
 		 * Returns a uniform struct instance with the given name, the struct has to exist.
@@ -55,7 +55,7 @@ namespace nap
 		 * @param name name of the buffer binding as declared in the shader.
 		 * @return buffer binding instance with the given name, asserts if not present.
 		 */
-		BufferBindingInstance& getBufferBinding(const std::string& name);
+		BufferBindingInstance& getBinding(const std::string& name);
 
 		/**
 		 * @return all the uniforms sampler instances.
@@ -71,12 +71,12 @@ namespace nap
 
 	protected:
 		UniformStructInstance& createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-		BufferBindingInstance& addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance);
+		BufferBindingInstance& addBindingInstance(std::unique_ptr<BufferBindingInstance> instance);
 		SamplerInstance& addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:
 		std::vector<std::unique_ptr<UniformStructInstance>> mUniformRootStructs;
-		std::vector<std::unique_ptr<BufferBindingInstance>> mBufferBindingInstances;
+		std::vector<std::unique_ptr<BufferBindingInstance>> mBindingInstances;
 		std::vector<std::unique_ptr<SamplerInstance>> mSamplerInstances;
 	};
 }

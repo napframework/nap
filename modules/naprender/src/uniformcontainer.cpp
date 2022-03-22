@@ -11,6 +11,7 @@
 
 RTTI_BEGIN_CLASS(nap::UniformContainer)
 	RTTI_FUNCTION("findUniform", (nap::UniformStructInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findUniform)
+	RTTI_FUNCTION("findBinding", (nap::BufferBindingInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findBinding)
 	RTTI_FUNCTION("findSampler", (nap::SamplerInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findSampler)
 RTTI_END_CLASS
 
@@ -26,10 +27,10 @@ namespace nap
 	}
 
 
-	BufferBindingInstance* UniformContainer::findBufferBinding(const std::string& name)
+	BufferBindingInstance* UniformContainer::findBinding(const std::string& name)
 	{
-		for (auto& instance : mBufferBindingInstances)
-			if (instance->getDeclaration().mName == name)
+		for (auto& instance : mBindingInstances)
+			if (instance->getBindingName() == name)
 				return instance.get();
 		return nullptr;
 	}
@@ -52,17 +53,17 @@ namespace nap
 	}
 
 
-	BufferBindingInstance& UniformContainer::getBufferBinding(const std::string& name)
+	BufferBindingInstance& UniformContainer::getBinding(const std::string& name)
 	{
-		BufferBindingInstance* instance = findBufferBinding(name);
+		BufferBindingInstance* instance = findBinding(name);
 		assert(instance != nullptr);
 		return *instance;
 	}
 
 
-	BufferBindingInstance& UniformContainer::addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance)
+	BufferBindingInstance& UniformContainer::addBindingInstance(std::unique_ptr<BufferBindingInstance> instance)
 	{
-		return *mBufferBindingInstances.emplace_back(std::move(instance));
+		return *mBindingInstances.emplace_back(std::move(instance));
 	}
 
 

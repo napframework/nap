@@ -51,10 +51,11 @@ namespace nap
 	 * but immutable in a shader program.
 	 * Storage buffers are typically large blocks of data that are bound/unbound to an SSBO and frequently read and written
 	 * in a compute shader program.
+	 * The Default option is used for buffers that are not bound to descriptorsets, e.g. vertex and index buffers.
 	 */
 	enum class EDescriptorType : uint
 	{
-		None,				///< None
+		Default,			///< Specifies a default buffer that is not bound to a descriptor, e.g. vertex buffers
 		Uniform,			///< Specifies a uniform buffer descriptor. device readonly
 		Storage				///< Specifies a storage buffer descriptor. device read/write
 	};
@@ -154,7 +155,7 @@ namespace nap
 		nap::Signal<> bufferChanged;
 
 		EMemoryUsage			mUsage = EMemoryUsage::Static;					///< Property 'Usage' How the buffer is used, static, updated frequently etc.
-		EDescriptorType			mDescriptorType = EDescriptorType::Storage;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
+		EDescriptorType			mDescriptorType = EDescriptorType::Default;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
 		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 
 	protected:

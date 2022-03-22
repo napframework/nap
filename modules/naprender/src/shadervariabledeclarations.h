@@ -49,7 +49,7 @@ namespace nap
 	
 
 	/**
-	 * Shadrer variable value shader declaration (float, int etc.)
+	 * Shader variable value shader declaration (float, int etc.)
 	 */
 	class ShaderVariableValueDeclaration : public ShaderVariableDeclaration
 	{
@@ -62,7 +62,7 @@ namespace nap
 
 
 	/**
-	 * ShaderVariable struct shader declaration.
+	 * Shader variable struct shader declaration.
 	 */
 	class NAPAPI ShaderVariableStructDeclaration : public ShaderVariableDeclaration
 	{
@@ -83,7 +83,7 @@ namespace nap
 		 */
 		const ShaderVariableDeclaration* findMember(const std::string& name) const;
 		std::vector<std::unique_ptr<ShaderVariableDeclaration>> mMembers;		///< All shader declarations associated with struct
-		EDescriptorType				mDescriptorType;							///< e.g. ShaderVariable or Storage
+		EDescriptorType				mDescriptorType;							///< The type of descriptor for this resource
 	};
 
 
@@ -136,8 +136,8 @@ namespace nap
 
 
 	/**
-	 * Buffer Object Declaration struct
-	 * Stores shader variable declarations and is used as a descriptor object for UBOs and SSBOs
+	 * Buffer Object Declaration struct.
+	 * Stores shader variable declarations and is used as a descriptor object for UBOs and SSBOs.
 	 */
 	class BufferObjectDeclaration : public ShaderVariableStructDeclaration
 	{

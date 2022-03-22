@@ -553,7 +553,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
-	// Uniform buffers e.g. 'uniform float'
+	// Uniform buffers
 	for (const spirv_cross::Resource& resource : shader_resources.uniform_buffers)
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
@@ -569,7 +569,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
 	}
 
-	// Storage buffers e.g. 'uniform buffer'
+	// Storage buffers
 	for (const spirv_cross::Resource& resource : shader_resources.storage_buffers)
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
@@ -585,7 +585,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 		ssboDeclarations.emplace_back(std::move(storage_buffer_object));
 	}
 
-	// Samplers e.g. 'uniform sampler2D'
+	// Samplers
 	for (const spirv_cross::Resource& sampled_image : shader_resources.sampled_images)
 	{
 		spirv_cross::SPIRType sampler_type = compiler.get_type(sampled_image.type_id);
@@ -695,6 +695,22 @@ namespace nap
 	}
 
 
+	bool BaseShader::verifyShaderVariableDeclarations(utility::ErrorState& errorState)
+	{
+		// We must check if SSBO declarations contain more than a single shader variable and exit early if this is the case.
+		// The reason for this is that we want to associate a shader buffer resource binding point with single shader storage
+		// buffer (VkBuffer), this is a typical use case for storage buffers and simplifies overall resource management. At the
+		// same time we use regular shader variable declarations, that assume a list of member variables, to generate buffer bindings.
+		for (const auto& declaration : mSSBODeclarations)
+		{
+			if (!errorState.check(declaration.mMembers.size() <= 1, utility::stringFormat(
+				"SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", declaration.mName.c_str())))
+				return false;
+		}
+		return true;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Shader
 	//////////////////////////////////////////////////////////////////////////
@@ -766,6 +782,10 @@ namespace nap
 		// Extract fragment shader uniforms
 		spirv_cross::Compiler fragment_shader_compiler(fragment_shader_spirv.data(), fragment_shader_spirv.size());
 		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
+			return false;
+
+		// Verify the shader variable declarations
+		if (!verifyShaderVariableDeclarations(errorState))
 			return false;
 
 		return initLayout(device, errorState);

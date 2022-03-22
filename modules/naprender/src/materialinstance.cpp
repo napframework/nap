@@ -19,7 +19,7 @@ RTTI_DEFINE_BASE(nap::BaseMaterialInstanceResource)
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::MaterialInstanceResource::mBufferBindings,			nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Bindings",					&nap::MaterialInstanceResource::mBindings,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
@@ -28,7 +28,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
 	RTTI_PROPERTY("ComputeMaterial",			&nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterialInstanceResource::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::ComputeMaterialInstanceResource::mBufferBindings,		nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Bindings",					&nap::ComputeMaterialInstanceResource::mBindings,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterialInstanceResource::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
@@ -58,7 +58,7 @@ namespace nap
 
 
 	template<class T>
-	const BufferBinding* findBindingResource(const std::vector<T>& bindings, const ShaderVariableDeclaration& declaration)
+	const BufferBinding* findBindingResource(const std::vector<T>& bindings, const BufferObjectDeclaration& declaration)
 	{
 		for (auto& binding : bindings)
 			if (binding->mName == declaration.mName)
@@ -173,44 +173,44 @@ namespace nap
 				break;
 			}
 		}
-
-		if (declaration == nullptr)
-			return nullptr;
+		assert(declaration != nullptr);
 
 		// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
 		return &createUniformRootStruct(*declaration, std::bind(&BaseMaterialInstance::onUniformCreated, this));
 	}
 
 
-	BufferBindingInstance* BaseMaterialInstance::getOrCreateBufferBinding(const std::string& name)
+	BufferBindingInstance* BaseMaterialInstance::getOrCreateBindingInternal(const std::string& name)
 	{
 		// See if we have an override in MaterialInstance. If so, we can return it
-		BufferBindingInstance* existing_binding = findBufferBinding(name);
+		BufferBindingInstance* existing_binding = findBinding(name);
 		if (existing_binding != nullptr)
 			return existing_binding;
 
-		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const ShaderVariableStructDeclaration* declaration = nullptr;
-		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
-		utility::ErrorState error_state;
+		BufferBindingInstance* result = nullptr;
 
+		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
+		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
 		int ssbo_index = 0;
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
-			if (declaration.mName == name)
+			const std::string& binding_name = declaration.mName;
+			if (binding_name == name)
 			{
-				// Get the first and only member of the declaration
-				const auto& binding_declaration = declaration.getBufferDeclaration();
-
 				std::unique_ptr<BufferBindingInstance> binding_instance_override;
-				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(binding_declaration, nullptr, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), error_state);
-				NAP_ASSERT_MSG(binding_instance_override != nullptr, error_state.toString().c_str());
 
-				return &addBufferBindingInstance(std::move(binding_instance_override));	
+				utility::ErrorState error_state;
+				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, nullptr, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), error_state);
+
+				if (!error_state.check(binding_instance_override != nullptr, "Failed to create buffer binding instance"))
+					NAP_ASSERT_MSG(binding_instance_override != nullptr, error_state.toString().c_str());
+
+				result = &addBindingInstance(std::move(binding_instance_override));
+				break;
 			}
 			++ssbo_index;
 		}
-		return nullptr;
+		return result;
 	}
 
 
@@ -220,6 +220,8 @@ namespace nap
 		SamplerInstance* existing_sampler = findSampler(name);
 		if (existing_sampler != nullptr)
 			return existing_sampler;
+
+		SamplerInstance* result = nullptr;
 
 		const BaseShader* shader = getBaseMaterial()->getBaseShader();
 		const SamplerDeclarations& sampler_declarations = shader->getSamplerDeclarations();
@@ -240,11 +242,12 @@ namespace nap
 				bool initialized = sampler_instance_override->init(error_state);
 				assert(initialized);
 
-				return &addSamplerInstance(std::move(sampler_instance_override));
+				result = &addSamplerInstance(std::move(sampler_instance_override));
+				break;
 			}
 			image_start_index += declaration.mNumArrayElements;
 		}
-		return nullptr;
+		return result;
 	}
 
 
@@ -339,7 +342,7 @@ namespace nap
 		}
 		else
 		{
-			NAP_ASSERT_MSG(false, "Unsupported storage uniform type");
+			NAP_ASSERT_MSG(false, "Unsupported buffer binding type");
 		}
 	}
 
@@ -376,13 +379,8 @@ namespace nap
 		int ssbo_index = 0;
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
-			// Verify buffer object type
-			if (!errorState.check(declaration.mDescriptorType == EDescriptorType::Storage, utility::stringFormat("Buffer Object Type mismatch in shader declaration %s", declaration.mName.c_str())))
-				return false;
-
 			// Check if the binding is set as override in the MaterialInstance
-			const BufferBinding* override_resource = findBindingResource(getResource()->mBufferBindings, declaration);
-
+			const BufferBinding* override_resource = findBindingResource(getResource()->mBindings, declaration);
 			const auto& buffer_declaration = declaration.getBufferDeclaration();
 
 			BufferBindingInstance* binding = nullptr;
@@ -393,18 +391,20 @@ namespace nap
 				if (!errorState.check(override_instance != nullptr, "Failed to create buffer binding instance for shader variable `%s`", declaration.mName.c_str()))
 					return false;
 
+				// A buffer is required to be assigned at this point
 				if (!errorState.check(override_instance->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", declaration.mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 					return false;
 
-				binding = &addBufferBindingInstance(std::move(override_instance));
+				binding = &addBindingInstance(std::move(override_instance));
 			}
 			else
 			{
-				// Binding is not overridden, find it in the Material
-				binding = findBufferBinding(declaration.mName);
+				// Binding is not overridden, find it in the base material
+				binding = getBaseMaterial()->findBinding(declaration.mName);
 				if (!errorState.check(binding != nullptr, "Failed to find buffer binding instance for shader variable `%s` in base material", declaration.mName.c_str()))
 					return false;
 
+				// A buffer is required to be assigned at this point
 				if (!errorState.check(binding->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", declaration.mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 					return false;
 			}

@@ -44,7 +44,9 @@ namespace nap
 
 
 	/**
-	 * Returns the vulkan buffer usage flags for a given buffer type
+	 * Returns the vulkan buffer usage flags for a given buffer type.
+	 * @param descriptorType the descriptor type to get the associated usage flags of.
+	 * @return the vulkan buffer usage flags for a given buffer type.
 	 */
 	static VkBufferUsageFlags getBufferUsage(EDescriptorType descriptorType)
 	{
@@ -59,7 +61,10 @@ namespace nap
 
 
 	/**
-	 * Returns the vulkan descriptor type for a given buffer object type, VK_DESCRIPTOR_TYPE_MAX_ENUM if descriptorType is 'None' 
+	 * Converts nap::EDescriptorType to VkDescriptorType.
+	 * @param descriptorType the descriptor type to convert.
+	 * @return the vulkan descriptor type for a given buffer object type, asserts if descriptorType
+	 * is not 'Uniform' or 'Storage'.
 	 */
 	static VkDescriptorType getVulkanDescriptorType(nap::EDescriptorType descriptorType)
 	{
@@ -69,7 +74,9 @@ namespace nap
 		else if (descriptorType == nap::EDescriptorType::Storage)
 			return VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
+		NAP_ASSERT_MSG(descriptorType != nap::EDescriptorType::Default, "nap::DescriptorType 'Default' cannot be used as a Vulkan descriptor type");
 		NAP_ASSERT_MSG(false, "Unsupported descriptor type");
+
 		return VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
 	}
 }

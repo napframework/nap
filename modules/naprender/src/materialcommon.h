@@ -72,16 +72,16 @@ namespace nap
 
 	/**
 	 * Non-hierarchical structure that holds pointers to all uniform leaf elements. These can point to either Material
-	 * or MaterialInstance instance storage uniforms, depending on whether the resource is overridden by an instance.
+	 * or MaterialInstance instance buffer bindings, depending on whether the resource is overridden by an instance.
 	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in
 	 * MaterialInstance::update().
 	 */
-	class BindingBufferObject
+	class ShaderStorageBufferObject
 	{
 	public:
 		using BufferBindingList = std::vector<const BufferBindingInstance*>;
 
-		BindingBufferObject(const BufferObjectDeclaration& declaration) :
+		ShaderStorageBufferObject(const BufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
 			assert(declaration.mDescriptorType == EDescriptorType::Storage);

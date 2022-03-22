@@ -24,21 +24,20 @@ namespace nap
 	using BufferBindingChangedCallback = std::function<void(BufferBindingInstance&)>;
 
 	/**
-	 * Instantiated version of a nap::BufferBinding.
-	 * Every uniform 'resource' has an associative 'instance', ie: nap::BufferBindingNumeric->
+	 * Instantiated version of nap::BufferBinding.
+	 * Every buffer binding 'resource' has an associative 'instance', ie: nap::BufferBindingNumeric ->
 	 * nap::BufferBindingNumericInstance.
 	 * An instance can be updated / inspected at run-time and is associated with a declaration.
 	 *
-	 * Unlike standard uniforms, storage uniforms store a reference to the underlying data as opposed to the data itself.
-	 * This allows for any compute shader to read from and write to the same data storage. Storage uniforms currently
-	 * always refer to a single nap::GPUBuffer, whether this is simple a `nap::ValueGPUBuffer` or a more complex
-	 * `nap::StructGPUBuffer`.
+	 * Buffer bindings, unlike standard uniforms, store a reference to the underlying data as opposed to the data itself.
+	 * This allows for any compute shader to read from and write to the same data storage. Buffer bindings always refer to
+	 * a single nap::GPUBuffer, whether this is simple a `nap::GPUBufferNumeric` or a more complex `nap::StructGPUBuffer`.
 	 *
-	 * A single vec4 array can be addressed as a `nap::Vec4GPUValueBuffer`:
+	 * A single vec4 array can be addressed as a `nap::VertexBufferVec4`:
 	 *~~~~~{.comp}
-	 *	layout(std430) buffer PositionSSBO
+	 *	layout(std430) buffer PositionSSBO		//<- binding name
 	 *	{
-	 *		vec4 positions[100000];
+	 *		vec4 positions[100000];				//<- buffer declaration name
 	 *	} pos_ssbo;
 	 *
 	 *	layout(std430) buffer NormalSSBO
@@ -76,7 +75,8 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		// Constructor
-		BufferBindingInstance(const BufferBindingChangedCallback& bindingChangedCallback) :
+		BufferBindingInstance(const std::string& bindingName, const BufferBindingChangedCallback& bindingChangedCallback) :
+			mBindingName(bindingName),
 			mBindingChangedCallback(bindingChangedCallback)
 		{ }
 
@@ -99,19 +99,28 @@ namespace nap
 		 */
 		virtual const BaseGPUBuffer& getBaseBuffer() const = 0;
 
+		/**
+		 * @return binging name
+		 */
+		const std::string& getBindingName() const									{ return mBindingName; }
+
 	protected:
-		BufferBindingChangedCallback mBindingChangedCallback;
+		const std::string									mBindingName;
+		BufferBindingChangedCallback						mBindingChangedCallback;
 
 	private:
 		friend class BaseMaterial;
 		friend class BaseMaterialInstance;
 
 		/**
-		 * Creates a uniform buffer instance from a uniform declaration.
-		 * @param declaration the uniform declaration
-		 * @param binding the binding resource to create the instance from. Is allowed to be nullptr.
+		 * Creates a buffer binding instance from a uniform declaration and returns a unique ptr to if successful. Returns nullptr otherwise.
+		 * @param declaration the shader variable declaration.
+		 * @param binding the binding resource to create the instance from. Is allowed to be nullptr, in which case the instance will have no buffer.
+		 * @param bindingChangedCallback callback function that is fired each time the binding instance is updated.
+		 * @param errorState contains the error if the buffer binding creation fails.
+		 * @return a unique ptr to the new buffer binding instance. nullptr if the operation has failed.
 		 */
-		static std::unique_ptr<BufferBindingInstance> createBufferBindingInstanceFromDeclaration(const ShaderVariableDeclaration& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState);
+		static std::unique_ptr<BufferBindingInstance> createBufferBindingInstanceFromDeclaration(const BufferObjectDeclaration& declaration, const BufferBinding* binding, BufferBindingChangedCallback bindingChangedCallback, utility::ErrorState& errorState);
 	};
 
 
@@ -120,30 +129,37 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Instance of a Storage Uniform Buffer container.
+	 * Instantiated version of nap::BufferBindingStruct.
 	 * 
-	 * Stores a single BufferBinding reference as opposed to a UniformStruct, which also supports multiple
-	 * and nested shader variables.
+	 * Every buffer binding 'resource' has an associative 'instance', ie: nap::BufferBindingNumeric ->
+	 * nap::BufferBindingNumericInstance.
+	 * An instance can be updated / inspected at run-time and is associated with a declaration.
 	 *
-	 * The reason for restricting BufferBindingStruct to a single buffer variable is that we want to associate a
-	 * shader resource binding point with single shader storage buffer. This is a typical use case for storage
-	 * buffers and simplifies overall resource management.
+	 * Buffer bindings, unlike standard uniforms, store a reference to the underlying data as opposed to the data itself.
+	 * This allows for any compute shader to read from and write to the same data storage. Buffer bindings always refer to
+	 * a single nap::GPUBuffer, whether this is simple a `nap::GPUBufferNumeric` or a more complex `nap::StructGPUBuffer`.
 	 *
+	 * A struct array can be addressed as a `nap::GPUStructBuffer`:
 	 *~~~~~{.comp}
-	 *	layout(std430) buffer PositionSSBO
+	 *	struct Particle
+	 * 	{
+	 *		vec4 position;
+	 *		vec4 velocity;
+	 *	}
+	 * 
+	 *	layout(std430) buffer ParticleSSBO
 	 *	{
-	 *		vec4 positions[100000];
+	 *		Particle particles[100000];
 	 *	} pos_ssbo;
 	 *~~~~~
 	 */
 	class NAPAPI BufferBindingStructInstance final : public BufferBindingInstance
 	{
 		RTTI_ENABLE(BufferBindingInstance)
-
 	public:
 		// Constructor
-		BufferBindingStructInstance(const ShaderVariableStructBufferDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
-			BufferBindingInstance(bindingChangedCallback),
+		BufferBindingStructInstance(const std::string& bindingName, const ShaderVariableStructBufferDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
+			BufferBindingInstance(bindingName, bindingChangedCallback),
 			mDeclaration(&declaration)
 		{ }
 
@@ -197,7 +213,13 @@ namespace nap
 		 * Updates the buffer from a resource
 		 * @param resource resource to set buffer from.
 		 */
-		void setBuffer(const BufferBindingStruct& resource)							{ mBuffer = resource.mBuffer; }
+		void setBuffer(const BufferBindingStruct& resource)
+		{
+			assert(resource.mBuffer != nullptr);
+			assert(resource.mBuffer->getSize() == mDeclaration->mSize);
+			mBuffer = resource.mBuffer;
+			raiseChanged();
+		}
 
 	private:
 		friend class BaseMaterial;
@@ -207,11 +229,6 @@ namespace nap
 		 * Called when the buffer changes
 		 */
 		void raiseChanged()															{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
-
-		/**
-		 * Sets associated uniform buffer to this instance, based on the struct declaration and resource.
-		 */
-		//bool addBufferBinding(const ShaderVariableStructDeclaration& structDeclaration, const BufferBindingStruct* structResource, const BufferBindingChangedCallback& bufferChangedCallback, utility::ErrorState& errorState);
 
 		const ShaderVariableStructBufferDeclaration*		mDeclaration;
 		rtti::ObjectPtr<StructGPUBuffer>					mBuffer;
@@ -223,17 +240,15 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Base class of all typed storage uniform value buffer instances.
-	 * 
-	 * A BufferBindingNumericInstance must be declared as part of a BufferBindingStructInstance.
+	 * Base class of all numeric value typed buffer binding instances.
 	 */
 	class NAPAPI BufferBindingNumericInstance : public BufferBindingInstance
 	{
 		RTTI_ENABLE(BufferBindingInstance)
 	public:
 		// Constructor
-		BufferBindingNumericInstance(const ShaderVariableValueArrayDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
-			BufferBindingInstance(bindingChangedCallback),
+		BufferBindingNumericInstance(const std::string& bindingName, const ShaderVariableValueArrayDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
+			BufferBindingInstance(bindingName, bindingChangedCallback),
 			mDeclaration(&declaration)
 		{ }
 
@@ -263,17 +278,14 @@ namespace nap
 		virtual bool hasBuffer() const = 0;
 
 	protected:
-		const ShaderVariableValueArrayDeclaration* mDeclaration;
-		BufferBindingChangedCallback mBindingChangedCallback;
+		const ShaderVariableValueArrayDeclaration*			mDeclaration;
+		BufferBindingChangedCallback						mBindingChangedCallback;
 	};
 
 
 	/**
-	 * Specific type of storage uniform value buffer instance, for example:
-	 * TypedValueGPUBuffer<float> -> TypedBufferBindingNumericInstance<float>.
-	 * All supported types are defined below for easier readability.
-	 *
-	 * A BufferBindingNumericInstance must be declared as part of a BufferBindingStructInstance.
+	 * Specific numeric value type of buffer binding instance, for example:
+	 * `VertexBufferVec4` binds to `BufferBindingVec4Instance`.
 	 */
 	template<typename T>
 	class TypedBufferBindingNumericInstance final : public BufferBindingNumericInstance
@@ -281,8 +293,8 @@ namespace nap
 		RTTI_ENABLE(BufferBindingNumericInstance)
 	public:
 		// Constructor
-		TypedBufferBindingNumericInstance(const ShaderVariableValueArrayDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
-			BufferBindingNumericInstance(declaration, bindingChangedCallback)
+		TypedBufferBindingNumericInstance(const std::string& bindingName, const ShaderVariableValueArrayDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
+			BufferBindingNumericInstance(bindingName, declaration, bindingChangedCallback)
 		{ }
 
 		/**
@@ -333,12 +345,12 @@ namespace nap
 		 */
 		void raiseChanged()															{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
 
-		rtti::ObjectPtr<GPUBufferNumeric<T>> mBuffer;
+		rtti::ObjectPtr<GPUBufferNumeric<T>>				mBuffer;
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Type definitions for all supported storage uniform value buffer instance types
+	// TypedBufferBindingNumericInstance type definitions
 	//////////////////////////////////////////////////////////////////////////
 
 	using BufferBindingUIntInstance		= TypedBufferBindingNumericInstance<uint>;
@@ -353,42 +365,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Template definitions
 	//////////////////////////////////////////////////////////////////////////
-
-	//template<typename T>
-	//T* nap::BufferBindingInstance::findBufferBinding(const std::string& name)
-	//{
-	//	BufferBindingInstance* instance = findBufferBinding(name);
-	//	if (instance != nullptr)
-	//		return rtti_cast<T>(instance);
-	//	return nullptr;
-	//}
-
-	//template<typename T>
-	//T* nap::BufferBindingStructInstance::getOrCreateBufferBinding(const std::string& name)
-	//{
-	//	// First try to find it, if found cast and return
-	//	BufferBindingInstance* instance = findBufferBinding(name);
-	//	if (instance != nullptr)
-	//	{
-	//		assert(instance->get_type().is_derived_from<T>());
-	//		return rtti_cast<T>(instance);
-	//	}
-
-	//	// Otherwise fetch the declaration and use it to create the new instance
-	//	const ShaderVariableDeclaration* declaration = mDeclaration.findMember(name);
-	//	if (declaration == nullptr)
-	//		return nullptr;
-
-	//	std::unique_ptr<BufferBindingInstance> new_instance = createBufferBindingFromDeclaration(*declaration, mBufferBindingCreatedCallback);
-	//	T* result = rtti_cast<T>(new_instance.get());
-	//	assert(result != nullptr);
-	//	mBufferBinding = std::move(new_instance);
-
-	//	// Notify listeners
-	//	if (mBufferBindingCreatedCallback)
-	//		mBufferBindingCreatedCallback();
-	//	return result;
-	//}
 
 	template<class T>
 	void nap::TypedBufferBindingNumericInstance<T>::setBuffer(GPUBufferNumeric<T>& buffer)

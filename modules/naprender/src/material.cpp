@@ -36,13 +36,12 @@ RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
 	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_STRUCT
 
-
 RTTI_DEFINE_BASE(nap::BaseMaterial)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::Material::mBufferBindings,			nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Bindings",					&nap::Material::mBindings,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::Material::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
@@ -53,7 +52,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterial::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::ComputeMaterial::mBufferBindings,		nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Bindings",					&nap::ComputeMaterial::mBindings,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterial::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -112,26 +111,18 @@ namespace nap
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
 			std::unique_ptr<BufferBindingInstance> binding_instance;
-			for (auto& binding : mBufferBindings)
+			for (auto& binding : mBindings)
 			{
-				if (binding->mName == declaration.mName)
+				const std::string& binding_name = declaration.mName;
+				if (binding_name == binding->mName)
 				{
-					// We must check if the SSBO declaration contains more than a single shader variable and exit early if this is the case.
-					// The reason for this is that we want to associate a shader buffer resource binding point with single shader storage
-					// buffer (VkBuffer), this is a typical use case for storage buffers and simplifies overall resource management. At the
-					// same time we use regular shader variable declarations, that assume a list of member variables, to generate buffer bindings.
-					if (!errorState.check(declaration.mMembers.size() <= 1, utility::stringFormat("SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", declaration.mName.c_str())))
-						return false;
-
-					// Get the first and only member of the declaration
-					const auto& buffer_declaration = declaration.getBufferDeclaration();
-
 					// Create a buffer binding instance of the appropriate type
-					binding_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(buffer_declaration, binding.get(), BufferBindingChangedCallback(), errorState);
+					binding_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, binding.get(), BufferBindingChangedCallback(), errorState);
 					if (!errorState.check(binding_instance != nullptr, "Failed to create buffer binding instance %s", binding->mName.c_str()))
 						return false;
 
-					addBufferBindingInstance(std::move(binding_instance));
+					addBindingInstance(std::move(binding_instance));
+					break;
 				}
 			}
 		}

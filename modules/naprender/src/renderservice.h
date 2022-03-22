@@ -824,7 +824,7 @@ namespace nap
 		bool isComputeAvailable() const												{ return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT; }
 
 		/**
-		 * Returns an empty texture that is available on the GPU for temporary biding or storage.
+		 * Returns an empty texture that is available on the GPU for temporary binding or storage.
 		 * @return empty texture that is available on the GPU.
 		 */
 		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }

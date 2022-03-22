@@ -4,17 +4,12 @@
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
-            "StorageUniforms": [
+            "Bindings": [
                 {
-                    "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_afd17387",
+                    "Type": "nap::BufferBindingVec4",
+                    "mID": "BufferBindingVec4_6c36afa1",
                     "Name": "VertexBuffer",
-                    "StorageUniform": {
-                        "Type": "nap::StorageUniformVec4Buffer",
-                        "mID": "StorageUniformVec4Buffer_970dc79d",
-                        "Name": "vertices",
-                        "Buffer": "ParticleVertexBuffer"
-                    }
+                    "Buffer": "ParticleVertexBuffer"
                 }
             ],
             "Samplers": [],
@@ -109,7 +104,7 @@
                     "MaterialInstance": {
                         "Material": "ParticleMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [],
+                        "Bindings": [],
                         "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -160,28 +155,18 @@
                     "ComputeMaterialInstance": {
                         "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [
+                        "Bindings": [
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_0fa64241",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_112b3571",
                                 "Name": "ParticleBuffer_In",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_2f2aafc2",
-                                    "Name": "particles",
-                                    "Buffer": "ParticleComputeBufferA"
-                                }
+                                "Buffer": "ParticleComputeBufferA"
                             },
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_406bb963",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_8cf0f85d",
                                 "Name": "ParticleBuffer_Out",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_80e8d81c",
-                                    "Name": "particles",
-                                    "Buffer": "ParticleComputeBufferB"
-                                }
+                                "Buffer": "ParticleComputeBufferB"
                             }
                         ],
                         "Samplers": []
@@ -194,28 +179,18 @@
                     "ComputeMaterialInstance": {
                         "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [
+                        "Bindings": [
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_30fe19c9",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_a712e84d",
                                 "Name": "ParticleBuffer_In",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_b40f779b",
-                                    "Name": "particles",
-                                    "Buffer": "ParticleComputeBufferB"
-                                }
+                                "Buffer": "ParticleComputeBufferB"
                             },
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_85c16027",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_602f8cad",
                                 "Name": "ParticleBuffer_Out",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_00e07917",
-                                    "Name": "particles",
-                                    "Buffer": "ParticleComputeBufferA"
-                                }
+                                "Buffer": "ParticleComputeBufferA"
                             }
                         ],
                         "Samplers": []
@@ -243,7 +218,7 @@
             "Type": "nap::Material",
             "mID": "ParticleMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2DArray",

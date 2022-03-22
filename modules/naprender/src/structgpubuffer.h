@@ -23,7 +23,7 @@ namespace nap
 	 * The layout of the struct buffer is defined by a StructBufferDescriptor. This descriptor is used to denote the 
 	 * buffer layout, allocate the right amount of memory, and possibly store information on how fill the buffer
 	 * accordingly. As the size of the buffer is determined by the descriptor, it is important that it matches the
-	 * declaration of the shader variable it is bound to. Initialization of (storage) uniforms may fail otherwise.
+	 * declaration of the shader variable it is bound to. Initialization of buffer bindings may fail otherwise.
 	 * 
 	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
 	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has

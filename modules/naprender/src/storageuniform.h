@@ -22,14 +22,14 @@ namespace nap
 	class BufferBinding;
 
 	/**
-	 * Shader storage uniform resource base class.
+	 * Buffer Binding resource base class.
 	 * 
-	 * Unlike standard uniforms, storage uniforms store a reference to the underlying data as opposed to the data itself.
-	 * This allows for any compute shader to read from and write to the same data storage. Storage uniforms currently
-	 * always refer to a single nap::GPUBuffer, whether this is simple a `nap::ValueGPUBuffer` or a more complex
+	 * Buffer bindings, unlinke uniforms, store a reference to the underlying data as opposed to the data itself.
+	 * This allows for any compute shader to read from and write to the same data storage. Buffer bindings always refer
+	 * to a single nap::GPUBuffer, whether this is simple a `nap::VertexBufferVec4` or a more complex
 	 * `nap::StructGPUBuffer`.
 	 *
-	 * A single vec4 array can be addressed as a `nap::Vec4GPUValueBuffer`:
+	 * A single vec4 array can be addressed as a `nap::VertexBufferVec4`:
 	 *~~~~~{.comp}
 	 *	layout(std430) buffer PositionSSBO
 	 *	{
@@ -86,13 +86,16 @@ namespace nap
 		 * @return Whether a buffer is set
 		 */
 		virtual bool hasBuffer() const = 0;
+
+		/**
+		 * @return the base GPU buffer, nullptr if not set
+		 */
+		virtual const BaseGPUBuffer* getBaseBuffer() const = 0;
 	};
 
 
 	/**
-	 * Base class of all typed storage uniform value buffers.
-	 * 
-	 * ABufferBindingNumeric must be declared as part of a BufferBindingStruct.
+	 * Base class of all numeric value typed buffer bindings.
 	 */
 	class NAPAPI BufferBindingNumeric : public BufferBinding
 	{
@@ -106,11 +109,8 @@ namespace nap
 
 
 	/**
-	 * Specific type of storage uniform value buffer, for example:
-	 * TypedValueGPUBuffer<float> -> TypedBufferBindingNumeric<float>.
-	 * All supported types are defined below for easier readability.
-	 *
-	 * A BufferBindingNumericmust be declared as part of a BufferBindingStruct.
+	 * Specific numeric value type of buffer binding, for example:
+	 * `VertexBufferFloat` binds to `BufferBindingFloat`.
 	 */
 	template <typename T>
 	class NAPAPI TypedBufferBindingNumeric : public BufferBindingNumeric
@@ -120,32 +120,35 @@ namespace nap
 		/**
 		 * @return total number of elements
 		 */
-		virtual int getCount() const override { return hasBuffer() ? mBuffer->mCount : 0; }
+		virtual int getCount() const override							{ return hasBuffer() ? mBuffer->mCount : 0; }
 
 		/**
 		 * @return The size in bytes
 		 */
-		virtual size_t getSize() const override { return mBuffer->getSize(); }
+		virtual size_t getSize() const override							{ return mBuffer->getSize(); }
 
 		/**
 		 * @return Whether a buffer is set
 		 */
-		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
+		virtual bool hasBuffer() const override							{ return mBuffer != nullptr; }
+
+		/**
+		 * @return the base GPU buffer, nullptr if not set
+		 */
+		virtual const BaseGPUBuffer* getBaseBuffer() const override		{ return mBuffer.get(); }
 
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const GPUBuffer* getBuffer() const override { return mBuffer.get(); }
+		virtual const GPUBuffer* getBuffer() const override				{ return mBuffer.get(); }
 
 		rtti::ObjectPtr<GPUBufferNumeric<T>> mBuffer = nullptr;	/// Property 'Buffer'
 	};
 
 
 	/**
-	 * Represents a storage uniform struct buffer, for example:
-	 * StructGPUBuffer -> BufferBindingStruct.
-	 *
-	 * A BufferBindingStruct must be declared as part of a BufferBindingStruct.
+	 * Represents a struct buffer binding, for example:
+	 * `StructGPUBuffer` binds to `BufferBindingStruct`.
 	 */
 	class NAPAPI BufferBindingStruct : public BufferBinding
 	{
@@ -154,29 +157,34 @@ namespace nap
 		/**
 		 * @return total number of elements.
 		 */
-		virtual int getCount() const override { return mBuffer->getCount(); }
+		virtual int getCount() const override							{ return mBuffer->getCount(); }
 
 		/**
 		 * @return The size in bytes
 		 */
-		virtual size_t getSize() const override { return mBuffer->getSize(); }
+		virtual size_t getSize() const override							{ return mBuffer->getSize(); }
 
 		/**
 		 * @return if the buffer is set
 		 */
-		virtual bool hasBuffer() const override { return mBuffer != nullptr; }
+		virtual bool hasBuffer() const override							{ return mBuffer != nullptr; }
+
+		/**
+		 * @return the base GPU buffer, nullptr if not set
+		 */
+		virtual const BaseGPUBuffer* getBaseBuffer() const override		{ return mBuffer.get(); }
 
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const StructGPUBuffer* getBuffer() const { return mBuffer.get(); };
+		virtual const StructGPUBuffer* getBuffer() const				{ return mBuffer.get(); };
 
 		rtti::ObjectPtr<StructGPUBuffer> mBuffer = nullptr;
 	};
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Storage uniform value buffer type definitions
+	// TypedBufferBindingNumeric type definitions
 	//////////////////////////////////////////////////////////////////////////
 
 	using BufferBindingUInt		= TypedBufferBindingNumeric<uint>;

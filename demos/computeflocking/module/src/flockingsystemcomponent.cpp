@@ -62,12 +62,10 @@ namespace nap
 	// Constants
 	//////////////////////////////////////////////////////////////////////////
 
-
 	namespace uniform
 	{
-		constexpr const char* ssboStruct = "VERTSSBO";
-		constexpr const char* vertUboStruct = "VERTUBO";
-		constexpr const char* fragUboStruct = "FRAGUBO";
+		constexpr const char* VERTUBO = "VERTUBO";
+		constexpr const char* FRAGUBO = "FRAGUBO";
 		constexpr const char* randomColor = "randomColor";
 		constexpr const char* boidSize = "boidSize";
 		constexpr const char* cameraLocation = "cameraLocation";
@@ -194,7 +192,7 @@ namespace nap
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
 
 		// Update vertex shader uniforms
-		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
+		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
@@ -203,8 +201,8 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower)->setValue(mResource->mFresnelPowerParam->mValue);
 		}
 
-		// Update vertex shader storage uniforms
-		auto* storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getComputeMaterialInstance().findBufferBinding("BoidBuffer_Out"));
+		// Update vertex shader buffer bindings
+		auto* storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getComputeMaterialInstance().findBinding("BoidBuffer_Out"));
 		if (storage_binding != nullptr && storage_binding != nullptr)
 		{
 			auto& storage_buffer = storage_binding->getBuffer();
@@ -212,7 +210,7 @@ namespace nap
 		}
 
 		// Update fragment shader uniforms
-		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
+		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor)->setValue(mResource->mRandomColorParam->mValue);
