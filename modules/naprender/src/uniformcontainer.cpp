@@ -60,15 +60,15 @@ namespace nap
 	}
 
 
-	void UniformContainer::addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance)
+	BufferBindingInstance& UniformContainer::addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance)
 	{
-		mBufferBindingInstances.emplace_back(std::move(instance));
+		return *mBufferBindingInstances.emplace_back(std::move(instance));
 	}
 
 
-	void UniformContainer::addSamplerInstance(std::unique_ptr<SamplerInstance> instance)
+	SamplerInstance& UniformContainer::addSamplerInstance(std::unique_ptr<SamplerInstance> instance)
 	{
-		mSamplerInstances.emplace_back(std::move(instance));
+		return *mSamplerInstances.emplace_back(std::move(instance));
 	}
 
 

@@ -20,15 +20,15 @@ namespace nap
 	enum class EShaderVariableValueType : uint8
 	{
 		Unknown = 0,		///< unknown or invalid shader uniform
-		Float = 2,			///< float
-		Int = 3,			///< int
-		UInt = 4,			///< unsigned int
-		Vec2 = 5,			///< 2 float vector
-		Vec3 = 6,			///< 3 float vector
-		Vec4 = 7,			///< 4 float vector
-		Mat2 = 8,			///< 2x2 float matrix
-		Mat3 = 9,			///< 3x3 float matrix
-		Mat4 = 10			///< 4x4 float matrix
+		Float,				///< float
+		Int,				///< int
+		UInt,				///< unsigned int
+		Vec2,				///< 2 float vector
+		Vec3,				///< 3 float vector
+		Vec4,				///< 4 float vector
+		Mat2,				///< 2x2 float matrix
+		Mat3,				///< 3x3 float matrix
+		Mat4				///< 4x4 float matrix
 	};
 
 
@@ -46,7 +46,7 @@ namespace nap
 		int							mOffset;									///< Memory offset
 		int							mSize;										///< Total size (in bytes) of declaration
 	};
-
+	
 
 	/**
 	 * Shadrer variable value shader declaration (float, int etc.)
@@ -149,6 +149,12 @@ namespace nap
 		BufferObjectDeclaration& operator=(BufferObjectDeclaration&& inRHS);
 		BufferObjectDeclaration(const BufferObjectDeclaration&) = delete;
 		BufferObjectDeclaration& operator=(const BufferObjectDeclaration&) = delete;
+
+		/**
+		 * Returns the first buffer declaration. Asserts if not present.
+		 * Handy accessor for buffer bindings.
+		 */
+		const ShaderVariableDeclaration& getBufferDeclaration() const { assert(!mMembers.empty()); return *mMembers[0]; }
 
 		int							mBinding;									///< Shader binding identifier
 		VkShaderStageFlagBits		mStage;										///< Shader stage: vertex, fragment, compute etc.

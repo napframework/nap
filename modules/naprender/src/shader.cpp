@@ -549,7 +549,7 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 }
 
 
-static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::BufferObjectDeclarationList& uboDeclarations, nap::BufferObjectDeclarationList& suboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
+static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::BufferObjectDeclarationList& uboDeclarations, nap::BufferObjectDeclarationList& ssboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
@@ -582,7 +582,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 		if (!addShaderVariablesRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Storage, errorState))
 			return false;
 
-		suboDeclarations.emplace_back(std::move(storage_buffer_object));
+		ssboDeclarations.emplace_back(std::move(storage_buffer_object));
 	}
 
 	// Samplers e.g. 'uniform sampler2D'
@@ -664,14 +664,14 @@ namespace nap
 
 		for (const BufferObjectDeclaration& declaration : mSSBODeclarations)
 		{
-			VkDescriptorSetLayoutBinding suboLayoutBinding = {};
-			suboLayoutBinding.binding = declaration.mBinding;
-			suboLayoutBinding.descriptorCount = 1;
-			suboLayoutBinding.pImmutableSamplers = nullptr;
-			suboLayoutBinding.stageFlags = declaration.mStage;
-			suboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
+			VkDescriptorSetLayoutBinding ssboLayoutBinding = {};
+			ssboLayoutBinding.binding = declaration.mBinding;
+			ssboLayoutBinding.descriptorCount = 1;
+			ssboLayoutBinding.pImmutableSamplers = nullptr;
+			ssboLayoutBinding.stageFlags = declaration.mStage;
+			ssboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
-			descriptor_set_layouts.push_back(suboLayoutBinding);
+			descriptor_set_layouts.push_back(ssboLayoutBinding);
 		}
 
 		for (const SamplerDeclaration& declaration : mSamplerDeclarations)

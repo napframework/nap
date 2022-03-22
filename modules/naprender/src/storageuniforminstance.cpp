@@ -58,25 +58,41 @@ namespace nap
 	}
 
 
+	/**
+	 * Returns the declaration of the buffer, if the declaration is a BufferObjectDeclaration.
+	 */
+	static const ShaderVariableDeclaration& getBufferDeclaration(const ShaderVariableDeclaration& declaration)
+	{
+		// If a buffer object declaration is passed, we can safely acquire the actual buffer declaration from it
+		if (declaration.get_type() == RTTI_OF(BufferObjectDeclaration))
+		{
+			const BufferObjectDeclaration* buffer_object_declaration = rtti_cast<const BufferObjectDeclaration>(&declaration);
+			return buffer_object_declaration->getBufferDeclaration();
+		}
+		return declaration;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// UniformStructInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	std::unique_ptr<BufferBindingInstance> BufferBindingInstance::createBufferBindingInstanceFromDeclaration(const ShaderVariableDeclaration& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
 	{
-		rtti::TypeInfo declaration_type = declaration.get_type();
+		// Ensure we retrieve the actual buffer declaration
+		const auto& buffer_declaration = getBufferDeclaration(declaration);
+		rtti::TypeInfo declaration_type = buffer_declaration.get_type();
 
 		// Creates a BufferBindingStructInstance
 		if (declaration_type == RTTI_OF(ShaderVariableStructBufferDeclaration))
 		{
-			const ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<const ShaderVariableStructBufferDeclaration>(&declaration);
+			const ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<const ShaderVariableStructBufferDeclaration>(&buffer_declaration);
 			return createBufferBindingInstance<BufferBindingStructInstance, BufferBindingStruct, ShaderVariableStructBufferDeclaration>(binding, *struct_buffer_declaration, bufferChangedCallback, errorState);
 		}
 
 		// Creates a BufferBindingNumericInstance
-		else if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
+		if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 		{
-			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&declaration);
+			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&buffer_declaration);
 
 			if (value_array_declaration->mElementType == EShaderVariableValueType::UInt)
 			{

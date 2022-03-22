@@ -43,7 +43,7 @@ namespace nap
 		const std::vector<BufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
 
 		/**
-		 * @return all Storage UniformBufferObject declarations.
+		 * @return all Shader Storage Buffer Object declarations.
 		 */
 		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const { return mSSBODeclarations; }
 
@@ -58,12 +58,12 @@ namespace nap
 		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
 
 	protected:
-		RenderService* mRenderService = nullptr;													///< Handle to render engine
-		std::string											mDisplayName;							///< Filename of shader used as display name
-		BufferObjectDeclarationList							mUBODeclarations;						///< All uniform buffer object declarations
-		BufferObjectDeclarationList							mSSBODeclarations;						///< All storage uniform buffer object declarations
-		SamplerDeclarations									mSamplerDeclarations;					///< All sampler declarations
-		VkDescriptorSetLayout								mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
+		RenderService*									mRenderService = nullptr;				///< Handle to render engine
+		std::string										mDisplayName;							///< Filename of shader used as display name
+		BufferObjectDeclarationList						mUBODeclarations;						///< All uniform buffer object declarations
+		BufferObjectDeclarationList						mSSBODeclarations;						///< All storage buffer object declarations
+		SamplerDeclarations								mSamplerDeclarations;					///< All sampler declarations
+		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 
 		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
 	};

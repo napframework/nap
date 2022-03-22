@@ -23,7 +23,6 @@ RTTI_BEGIN_ENUM(nap::EMemoryUsage)
 RTTI_END_ENUM
 
 RTTI_BEGIN_ENUM(nap::EDescriptorType)
-	RTTI_ENUM_VALUE(nap::EDescriptorType::None,			"None"),
 	RTTI_ENUM_VALUE(nap::EDescriptorType::Uniform,		"Uniform"),
 	RTTI_ENUM_VALUE(nap::EDescriptorType::Storage,		"Storage")
 RTTI_END_ENUM

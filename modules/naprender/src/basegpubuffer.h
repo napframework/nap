@@ -154,7 +154,7 @@ namespace nap
 		nap::Signal<> bufferChanged;
 
 		EMemoryUsage			mUsage = EMemoryUsage::Static;					///< Property 'Usage' How the buffer is used, static, updated frequently etc.
-		EDescriptorType			mDescriptorType = EDescriptorType::None;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
+		EDescriptorType			mDescriptorType = EDescriptorType::Storage;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
 		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 
 	protected:

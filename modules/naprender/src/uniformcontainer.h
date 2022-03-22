@@ -71,8 +71,8 @@ namespace nap
 
 	protected:
 		UniformStructInstance& createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-		void addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance);
-		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
+		BufferBindingInstance& addBufferBindingInstance(std::unique_ptr<BufferBindingInstance> instance);
+		SamplerInstance& addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:
 		std::vector<std::unique_ptr<UniformStructInstance>> mUniformRootStructs;

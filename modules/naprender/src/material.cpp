@@ -109,22 +109,25 @@ namespace nap
 
 		// Bindings
 		const std::vector<BufferObjectDeclaration>& ssbo_declarations = shader.getSSBODeclarations();
-		for (const BufferObjectDeclaration& ssbo_declaration : ssbo_declarations)
+		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
 			std::unique_ptr<BufferBindingInstance> binding_instance;
 			for (auto& binding : mBufferBindings)
 			{
-				if (binding->mName == ssbo_declaration.mName)
+				if (binding->mName == declaration.mName)
 				{
 					// We must check if the SSBO declaration contains more than a single shader variable and exit early if this is the case.
 					// The reason for this is that we want to associate a shader buffer resource binding point with single shader storage
 					// buffer (VkBuffer), this is a typical use case for storage buffers and simplifies overall resource management. At the
 					// same time we use regular shader variable declarations, that assume a list of member variables, to generate buffer bindings.
-					if (!errorState.check(ssbo_declaration.mMembers.size() <= 1, utility::stringFormat("SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", ssbo_declaration.mName.c_str())))
+					if (!errorState.check(declaration.mMembers.size() <= 1, utility::stringFormat("SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", declaration.mName.c_str())))
 						return false;
 
+					// Get the first and only member of the declaration
+					const auto& buffer_declaration = declaration.getBufferDeclaration();
+
 					// Create a buffer binding instance of the appropriate type
-					binding_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(ssbo_declaration, binding.get(), BufferBindingChangedCallback(), errorState);
+					binding_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(buffer_declaration, binding.get(), BufferBindingChangedCallback(), errorState);
 					if (!errorState.check(binding_instance != nullptr, "Failed to create buffer binding instance %s", binding->mName.c_str()))
 						return false;
 

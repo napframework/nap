@@ -12,10 +12,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingNumeric)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::BufferBindingStruct)
-	RTTI_PROPERTY("BufferBinding", &nap::BufferBindingStruct::mBuffer, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::BufferBindingStruct)
 	RTTI_PROPERTY("Buffer", &nap::BufferBindingStruct::mBuffer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

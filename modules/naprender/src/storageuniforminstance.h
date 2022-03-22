@@ -142,7 +142,7 @@ namespace nap
 
 	public:
 		// Constructor
-		BufferBindingStructInstance(const ShaderVariableStructDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
+		BufferBindingStructInstance(const ShaderVariableStructBufferDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
 			BufferBindingInstance(bindingChangedCallback),
 			mDeclaration(&declaration)
 		{ }
@@ -170,7 +170,7 @@ namespace nap
 		/**
 		 * @return the uniform declaration, used to create the uniform instance.
 		 */
-		const ShaderVariableStructDeclaration& getStructDeclaration() const			{ return *mDeclaration; }
+		const ShaderVariableStructBufferDeclaration& getStructDeclaration() const	{ return *mDeclaration; }
 
 		/**
 		 * @return value buffer
@@ -213,7 +213,7 @@ namespace nap
 		 */
 		//bool addBufferBinding(const ShaderVariableStructDeclaration& structDeclaration, const BufferBindingStruct* structResource, const BufferBindingChangedCallback& bufferChangedCallback, utility::ErrorState& errorState);
 
-		const ShaderVariableStructDeclaration*				mDeclaration;
+		const ShaderVariableStructBufferDeclaration*		mDeclaration;
 		rtti::ObjectPtr<StructGPUBuffer>					mBuffer;
 	};
 
@@ -282,7 +282,7 @@ namespace nap
 	public:
 		// Constructor
 		TypedBufferBindingNumericInstance(const ShaderVariableValueArrayDeclaration& declaration, const BufferBindingChangedCallback& bindingChangedCallback) :
-			BufferBindingNumericInstance(&declaration, bindingChangedCallback)
+			BufferBindingNumericInstance(declaration, bindingChangedCallback)
 		{ }
 
 		/**
@@ -355,7 +355,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	//template<typename T>
-	//T* nap::BufferBindingStructInstance::findBufferBinding(const std::string& name)
+	//T* nap::BufferBindingInstance::findBufferBinding(const std::string& name)
 	//{
 	//	BufferBindingInstance* instance = findBufferBinding(name);
 	//	if (instance != nullptr)

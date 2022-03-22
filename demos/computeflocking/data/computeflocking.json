@@ -33,7 +33,7 @@
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [],
             "Shader": "ComputeShader"
         },
@@ -80,7 +80,7 @@
                     "MaterialInstance": {
                         "Material": "BoidTargetPointMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [],
+                        "Bindings": [],
                         "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -172,7 +172,7 @@
                                 ]
                             }
                         ],
-                        "StorageUniforms": [],
+                        "Bindings": [],
                         "Samplers": [],
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadOnly"
@@ -243,7 +243,7 @@
                                 ]
                             }
                         ],
-                        "StorageUniforms": [],
+                        "Bindings": [],
                         "Samplers": [],
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadWrite"
@@ -347,17 +347,12 @@
                     "MaterialInstance": {
                         "Material": "RenderMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [
+                        "Bindings": [
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_21496d61",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_16105ead",
                                 "Name": "VERTSSBO",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_fd82a185",
-                                    "Name": "boids",
-                                    "Buffer": "BoidBufferA"
-                                }
+                                "Buffer": "BoidBufferB"
                             }
                         ],
                         "Samplers": [],
@@ -433,28 +428,18 @@
                     "ComputeMaterialInstance": {
                         "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [
+                        "Bindings": [
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_fa361196",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_e2682986",
                                 "Name": "BoidBuffer_In",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_5b39dd7e",
-                                    "Name": "boids",
-                                    "Buffer": "BoidBufferA"
-                                }
+                                "Buffer": "BoidBufferA"
                             },
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_65e2035d",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_9caa9046",
                                 "Name": "BoidBuffer_Out",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_9d11e61f",
-                                    "Name": "boids",
-                                    "Buffer": "BoidBufferB"
-                                }
+                                "Buffer": "BoidBufferB"
                             }
                         ],
                         "Samplers": []
@@ -467,28 +452,18 @@
                     "ComputeMaterialInstance": {
                         "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [
+                        "Bindings": [
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_ac1f1177",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_00f5d2ba",
                                 "Name": "BoidBuffer_In",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_0f16b598",
-                                    "Name": "boids",
-                                    "Buffer": "BoidBufferB"
-                                }
+                                "Buffer": "BoidBufferB"
                             },
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_89f0acee",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_8f875ea7",
                                 "Name": "BoidBuffer_Out",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_2707750c",
-                                    "Name": "boids",
-                                    "Buffer": "BoidBufferA"
-                                }
+                                "Buffer": "BoidBufferA"
                             }
                         ],
                         "Samplers": []
@@ -610,7 +585,7 @@
                                 ]
                             }
                         ],
-                        "StorageUniforms": [],
+                        "Bindings": [],
                         "Samplers": [
                             {
                                 "Type": "nap::Sampler2D",
@@ -672,7 +647,7 @@
                                 ]
                             }
                         ],
-                        "StorageUniforms": [],
+                        "Bindings": [],
                         "Samplers": [
                             {
                                 "Type": "nap::Sampler2DArray",
@@ -788,7 +763,7 @@
                     ]
                 }
             ],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
@@ -799,7 +774,7 @@
             "Type": "nap::Material",
             "mID": "BoundsMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [],
             "Shader": "HaloShader",
             "VertexAttributeBindings": [],
@@ -830,7 +805,7 @@
                     ]
                 }
             ],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",
@@ -855,7 +830,7 @@
             "Type": "nap::Material",
             "mID": "ColorTextureMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",
@@ -889,7 +864,7 @@
             "Type": "nap::Material",
             "mID": "CompositeMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2DArray",
@@ -917,7 +892,7 @@
             "Type": "nap::Material",
             "mID": "ConstantMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
@@ -928,7 +903,7 @@
             "Type": "nap::Material",
             "mID": "RenderMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
+            "Bindings": [],
             "Samplers": [],
             "Shader": "BoidShader",
             "VertexAttributeBindings": [],

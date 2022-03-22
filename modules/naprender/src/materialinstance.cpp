@@ -199,12 +199,14 @@ namespace nap
 		{
 			if (declaration.mName == name)
 			{
-				std::unique_ptr<BufferBindingInstance> binding_instance_override;
-				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, nullptr, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), error_state);
-				NAP_ASSERT_MSG(binding_instance_override, error_state.toString());
+				// Get the first and only member of the declaration
+				const auto& binding_declaration = declaration.getBufferDeclaration();
 
-				addBufferBindingInstance(std::move(binding_instance_override));
-				return binding_instance_override.get();
+				std::unique_ptr<BufferBindingInstance> binding_instance_override;
+				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(binding_declaration, nullptr, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), error_state);
+				NAP_ASSERT_MSG(binding_instance_override != nullptr, error_state.toString().c_str());
+
+				return &addBufferBindingInstance(std::move(binding_instance_override));	
 			}
 			++ssbo_index;
 		}
@@ -238,8 +240,7 @@ namespace nap
 				bool initialized = sampler_instance_override->init(error_state);
 				assert(initialized);
 
-				addSamplerInstance(std::move(sampler_instance_override));
-				return sampler_instance_override.get();
+				return &addSamplerInstance(std::move(sampler_instance_override));
 			}
 			image_start_index += declaration.mNumArrayElements;
 		}
@@ -382,6 +383,8 @@ namespace nap
 			// Check if the binding is set as override in the MaterialInstance
 			const BufferBinding* override_resource = findBindingResource(getResource()->mBufferBindings, declaration);
 
+			const auto& buffer_declaration = declaration.getBufferDeclaration();
+
 			BufferBindingInstance* binding = nullptr;
 			if (override_resource != nullptr)
 			{
@@ -393,7 +396,7 @@ namespace nap
 				if (!errorState.check(override_instance->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", declaration.mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
 					return false;
 
-				addBufferBindingInstance(std::move(override_instance));		
+				binding = &addBufferBindingInstance(std::move(override_instance));
 			}
 			else
 			{
