@@ -83,7 +83,7 @@ namespace nap
 		const glm::vec3 mForward = { 0.0f, 0.0f, 1.0f };
 
 		// Local elapsed time
-		double mElapsedTime = 0.0;
+		float mElapsedTime = 0.0f;
 
 		// Offset
 		float mOffset = 0.0f;

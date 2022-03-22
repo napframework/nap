@@ -8,6 +8,7 @@
 
 // External Includes
 #include <mathutils.h>
+#include <glm/gtc/noise.hpp>
 
 RTTI_BEGIN_CLASS(nap::BoidTargetTranslateComponent)
 	RTTI_PROPERTY("Radius", &nap::BoidTargetTranslateComponent::mRadius, nap::rtti::EPropertyMetaData::Default)
@@ -31,14 +32,11 @@ namespace nap
 
 		auto* resource = getComponent<BoidTargetTranslateComponent>();
 		mRadius = resource->mRadius;
-		mSpeed = resource->mSpeed;
+		mSpeed = glm::max(resource->mSpeed, 0.0f);
 
 		if (resource->mRandomOffset)
 		{
-			mOffset = math::random<float>(
-				std::numeric_limits<float>().min() * 0.1f,
-				std::numeric_limits<float>().max() * 0.1f
-			);
+			mOffset = math::random<float>(-9999.0f, 9999.0f);
 		}
 		return true;
 	}
@@ -47,18 +45,24 @@ namespace nap
 	void BoidTargetTranslateComponentInstance::update(double deltaTime)
 	{
 		// Update elapsed time taking in to account rotation speed
-		mElapsedTime += (deltaTime * mSpeed);
+		mElapsedTime += static_cast<float>(deltaTime) * mSpeed;
 
 		// Calculate new target position
 		// Use simple non-periodic function to generate a cheap to compute noise signal
 		float offset = mElapsedTime + mOffset;
+
+		const glm::vec2 n0 = { offset, 1.2344980816f };
+		const glm::vec2 n1 = { offset, 2.7702631534f };
+		const glm::vec2 n2 = { offset, 3.5157356376f };
+		const glm::vec2 n3 = { offset, 0.8180252648f };
+
 		glm::quat orientation = { {
-			static_cast<float>(glm::sin(2.0 * offset) + glm::sin(math::PI * offset)) * 0.5f,
-			static_cast<float>(glm::sin(4.0 * offset) + glm::sin(math::PI * offset)) * 0.5f,
-			static_cast<float>(glm::sin(0.5 * offset) + glm::sin(math::PI * offset)) * 0.5f
+			glm::simplex(n0),
+			glm::simplex(n1),
+			glm::simplex(n2)
 		} };
 
-		float magnitude = static_cast<float>(glm::sin(0.25 * mElapsedTime) + glm::sin(math::PI * mElapsedTime)) * 0.5f * mRadius;
+		float magnitude = math::lerp(0.1f, 1.0f, glm::simplex(n3)) * mRadius;
 
 		// Set new translation
 		mTransform->setTranslate((orientation * mForward) * magnitude);
