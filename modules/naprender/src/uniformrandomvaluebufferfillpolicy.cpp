@@ -9,37 +9,37 @@
 // External Includes
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::UniformRandomUIntBufferFillPolicy)
-	RTTI_PROPERTY("LowerBound", &nap::UniformRandomUIntBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomUIntBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyUInt)
+	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyUInt::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyUInt::mUpperBound, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformRandomIntBufferFillPolicy)
-	RTTI_PROPERTY("LowerBound", &nap::UniformRandomIntBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomIntBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyInt)
+	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyInt::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyInt::mUpperBound, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformRandomFloatBufferFillPolicy)
-	RTTI_PROPERTY("LowerBound", &nap::UniformRandomFloatBufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomFloatBufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyFloat)
+	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyFloat::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyFloat::mUpperBound, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformRandomVec2BufferFillPolicy)
-	RTTI_PROPERTY("LowerBound", &nap::UniformRandomVec2BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomVec2BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyVec2)
+	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyVec2::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyVec2::mUpperBound, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformRandomVec3BufferFillPolicy)
-	RTTI_PROPERTY("LowerBound", &nap::UniformRandomVec3BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomVec3BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyVec3)
+	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyVec3::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyVec3::mUpperBound, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformRandomVec4BufferFillPolicy)
-	RTTI_PROPERTY("LowerBound", &nap::UniformRandomVec4BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomVec4BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyVec4)
+	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyVec4::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyVec4::mUpperBound, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UniformRandomMat4BufferFillPolicy)
-	RTTI_PROPERTY("LowerBound", &nap::UniformRandomMat4BufferFillPolicy::mLowerBound, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UpperBound", &nap::UniformRandomMat4BufferFillPolicy::mUpperBound, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyMat4)
+	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyMat4::mLowerBound, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyMat4::mUpperBound, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

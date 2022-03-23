@@ -50,7 +50,7 @@ namespace nap
 		 */
 		virtual VkFormat getFormat() const = 0;
 
-		uint32	mCount = 0;		///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
+		uint32 mCount = 0;																///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
 	};
 
 
@@ -75,7 +75,7 @@ namespace nap
 		RTTI_ENABLE(GPUBuffer)
 	public:
 		/**
-		 * Every value buffer needs to have access to the render engine.
+		 * Every numeric buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		GPUBufferNumeric(Core& core) :
@@ -83,7 +83,7 @@ namespace nap
 		{ }
 
 		/**
-		 * Every value buffer needs to have access to the render engine.
+		 * Every numeric buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
@@ -151,7 +151,7 @@ namespace nap
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
 
-		ResourcePtr<TypedValueBufferFillPolicy<T>>		mBufferFillPolicy = nullptr;	///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		ResourcePtr<FillPolicy<T>>						mFillPolicy = nullptr;	///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
 
 	protected:
 		// Whether the buffer was successfully initialized
@@ -174,7 +174,7 @@ namespace nap
 	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
 	 * priority over the latter.
 	 *
-	 * In addition to nap::GPUBufferNumeric, this class distinguishes vertex buffers from general purpose value buffers.
+	 * In addition to nap::GPUBufferNumeric, this class distinguishes vertex buffers from general purpose numeric buffers.
 	 * Internally, some flags are stored that help the driver identify and optimize buffers that have a specific purpose in a rendering operation.
 	 * They also play a role in synchronization of compute and graphics operations.
 	 *
@@ -187,7 +187,7 @@ namespace nap
 		RTTI_ENABLE(GPUBufferNumeric<T>)
 	public:
 		/**
-		 * Every value buffer needs to have access to the render engine.
+		 * Every vertex buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		VertexBuffer(Core& core) :
@@ -195,7 +195,7 @@ namespace nap
 		{ }
 
 		/**
-		 * Every value buffer needs to have access to the render engine.
+		 * Every vertex buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
@@ -225,7 +225,7 @@ namespace nap
 	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
 	 * priority over the latter.
 	 *
-	 * In addition to nap::GPUBufferNumeric, this class distinguishes index buffers from general purpose value buffers.
+	 * In addition to nap::GPUBufferNumeric, this class distinguishes index buffers from general purpose numeric buffers.
 	 * Internally, some flags are stored that help the driver identify and optimize buffers that have a specific purpose in a rendering operation.
 	 *
 	 * Supported types are primitive types that can be mapped to VkFormat.
@@ -236,13 +236,13 @@ namespace nap
 		RTTI_ENABLE(GPUBufferNumeric<uint>)
 	public:
 		/**
-		 * Every value buffer needs to have access to the render engine.
+		 * Every index buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		IndexBuffer(Core & core) : GPUBufferNumeric<uint>(core)		{ }
 
 		/**
-		 * Every value buffer needs to have access to the render engine.
+		 * Every index buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
@@ -260,7 +260,7 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// GPU value buffer type definitions
+	// GPU numeric buffer type definitions
 	//////////////////////////////////////////////////////////////////////////
 
 	// General purpose GPU buffers
@@ -305,13 +305,13 @@ namespace nap
 			return false;
 
 		// Upload data when a buffer fill policy is available
-		if (mBufferFillPolicy != nullptr)
+		if (mFillPolicy != nullptr)
 		{
 			if (mUsage != EMemoryUsage::DynamicRead)
 			{
 				// Create a staging buffer to upload
 				auto staging_buffer = std::make_unique<T[]>(mCount);
-				mBufferFillPolicy->fill(mCount, staging_buffer.get());
+				mFillPolicy->fill(mCount, staging_buffer.get());
 
 				// Prepare staging buffer upload
 				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))

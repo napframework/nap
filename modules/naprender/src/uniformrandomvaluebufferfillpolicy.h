@@ -24,9 +24,9 @@ namespace nap
 	 * policy is free to implement the way fill() is used in their own way however.
 	 */
 	template<typename T>
-	class UniformRandomValueBufferFillPolicy : public TypedValueBufferFillPolicy<T>
+	class RandomFillPolicy : public FillPolicy<T>
 	{
-		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
+		RTTI_ENABLE(FillPolicy<T>)
 	public:
 		/**
 		 * Fills the preallocated data
@@ -41,16 +41,16 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// UniformRandomBufferFillPolicy type definitions
+	// TypedRandomFillPolicyNumeric type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using UniformRandomUIntBufferFillPolicy = UniformRandomValueBufferFillPolicy<uint>;
-	using UniformRandomIntBufferFillPolicy = UniformRandomValueBufferFillPolicy<int>;
-	using UniformRandomFloatBufferFillPolicy = UniformRandomValueBufferFillPolicy<float>;
-	using UniformRandomVec2BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::vec2>;
-	using UniformRandomVec3BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::vec3>;
-	using UniformRandomVec4BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::vec4>;
-	using UniformRandomMat4BufferFillPolicy = UniformRandomValueBufferFillPolicy<glm::mat4>;
+	using RandomFillPolicyUInt		= RandomFillPolicy<uint>;
+	using RandomFillPolicyInt		= RandomFillPolicy<int>;
+	using RandomFillPolicyFloat		= RandomFillPolicy<float>;
+	using RandomFillPolicyVec2		= RandomFillPolicy<glm::vec2>;
+	using RandomFillPolicyVec3		= RandomFillPolicy<glm::vec3>;
+	using RandomFillPolicyVec4		= RandomFillPolicy<glm::vec4>;
+	using RandomFillPolicyMat4		= RandomFillPolicy<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	void UniformRandomValueBufferFillPolicy<T>::fill(uint numElements, T* data) const
+	void RandomFillPolicy<T>::fill(uint numElements, T* data) const
 	{
 		for (uint i = 0; i < numElements; i++)
 		{

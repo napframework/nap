@@ -48,7 +48,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt)
 	RTTI_PROPERTY("Count", &nap::GPUBufferUInt::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBufferUInt::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUBufferUInt::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::GPUBufferUInt::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -56,7 +56,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt)
 	RTTI_PROPERTY("Count", &nap::GPUBufferInt::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBufferInt::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUBufferInt::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::GPUBufferInt::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -64,7 +64,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat)
 	RTTI_PROPERTY("Count", &nap::GPUBufferFloat::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBufferFloat::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUBufferFloat::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::GPUBufferFloat::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -72,7 +72,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2)
 	RTTI_PROPERTY("Count", &nap::GPUBufferVec2::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBufferVec2::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUBufferVec2::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::GPUBufferVec2::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -80,7 +80,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3)
 	RTTI_PROPERTY("Count", &nap::GPUBufferVec3::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBufferVec3::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUBufferVec3::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::GPUBufferVec3::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -88,7 +88,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4)
 	RTTI_PROPERTY("Count", &nap::GPUBufferVec4::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBufferVec4::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUBufferVec4::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::GPUBufferVec4::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -96,7 +96,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4)
 	RTTI_PROPERTY("Count", &nap::GPUBufferMat4::mCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBufferMat4::mUsage, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DescriptorType", &nap::GPUBufferMat4::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferMat4::mBufferFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Clear", &nap::GPUBufferMat4::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

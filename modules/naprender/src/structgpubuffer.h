@@ -86,7 +86,7 @@ namespace nap
 		 */
 		bool setData(void* data, size_t size, utility::ErrorState& error);
 
-		ResourcePtr<StructBufferFillPolicy>			mFillPolicy = nullptr;							///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		ResourcePtr<FillPolicyStruct>				mFillPolicy = nullptr;							///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
 		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor' The descriptor that defines the buffer layout
 
 	private:

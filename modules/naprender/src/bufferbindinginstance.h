@@ -189,12 +189,12 @@ namespace nap
 		const ShaderVariableStructBufferDeclaration& getStructDeclaration() const	{ return *mDeclaration; }
 
 		/**
-		 * @return value buffer
+		 * @return struct buffer
 		 */
 		virtual const StructGPUBuffer& getBuffer() const							{ assert(hasBuffer()); return *mBuffer; };
 
 		/**
-		 * @return value buffer
+		 * @return struct buffer
 		 */
 		virtual StructGPUBuffer& getBuffer()										{ assert(hasBuffer()); return *mBuffer; };
 
@@ -263,17 +263,17 @@ namespace nap
 		const ShaderVariableValueArrayDeclaration& getNumericDeclaration() const	{ return *mDeclaration; }
 
 		/**
-		 * @return value buffer
+		 * @return numeric buffer
 		 */
 		virtual const GPUBuffer& getBuffer() const = 0;
 
 		/**
-		 * @return value buffer
+		 * @return numeric buffer
 		 */
 		virtual GPUBuffer& getBuffer() = 0;
 
 		/**
-		 * @return if the value buffer is set
+		 * @return if the buffer is set
 		 */
 		virtual bool hasBuffer() const = 0;
 
@@ -303,17 +303,17 @@ namespace nap
 		virtual const BaseGPUBuffer& getBaseBuffer() const override					{ assert(hasBuffer()); return *mBuffer; }
 
 		/**
-		 * @return value buffer
+		 * @return numeric buffer
 		 */
 		virtual const GPUBuffer& getBuffer() const override							{ assert(hasBuffer()); return *mBuffer; }
 
 		/**
-		 * @return value buffer
+		 * @return numeric buffer
 		 */
 		virtual GPUBuffer& getBuffer() override										{ assert(hasBuffer()); return *mBuffer; }
 
 		/**
-		 * @return if the value buffer is set
+		 * @return if the buffer is set
 		 */
 		virtual bool hasBuffer() const override										{ return mBuffer != nullptr; }
 

@@ -14,26 +14,26 @@
 namespace nap
 {
 	/**
-	 * Base class of fill policies for value buffers.
+	 * Base class of fill policies for numeric buffers.
 	 *
 	 * Fill policies are initialization utilities that can help fill large blocks of preallocated memory. The fill function
 	 * assigns a contiguous block of data based on the specified arguments.
 	 * 
-	 * Fill policies can be bound to another resource's property (i.e. ValueGPUBuffer) in configuration. Typically, an object
+	 * Fill policies can be bound to another resource's property (i.e. GPUBufferNumeric) in configuration. Typically, an object
 	 * will first check if a policy is available, and if so, use it to fill an internal buffer. Any object accepting a fill
 	 * policy is free implement the way fill() is used in their own way however.
 	 */
-	class NAPAPI BaseValueBufferFillPolicy : public Resource
+	class NAPAPI BaseFillPolicy : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		BaseValueBufferFillPolicy() = default;
-		virtual ~BaseValueBufferFillPolicy() = default;
+		BaseFillPolicy() = default;
+		virtual ~BaseFillPolicy() = default;
 	};
 
 
 	/**
-	 * Base class of a fill policy implementation (e.g. ConstantValueBufferFillPolicy<T>) of a specific value type T.
+	 * Base class of a fill policy implementation (e.g. ConstantFillPolicy<T>) of a specific value type T.
 	 * Inherit from this class in you intend to implement your own value fill policy.
 	 *
 	 * Fill policies are initialization utilities that can help fill large blocks of preallocated memory. The fill function
@@ -44,9 +44,9 @@ namespace nap
 	 * policy is free to implement the way fill() is used in their own way however.
 	 */
 	template<typename T>
-	class NAPAPI TypedValueBufferFillPolicy : public BaseValueBufferFillPolicy
+	class NAPAPI FillPolicy : public BaseFillPolicy
 	{
-		RTTI_ENABLE(BaseValueBufferFillPolicy)
+		RTTI_ENABLE(BaseFillPolicy)
 	public:
 		/**
 		 * Fills the preallocated data
@@ -68,9 +68,9 @@ namespace nap
 	 * policy is free to implement the way fill() is used in their own way however.
 	 */
 	template<typename T>
-	class ConstantValueBufferFillPolicy : public TypedValueBufferFillPolicy<T>
+	class ConstantFillPolicy : public FillPolicy<T>
 	{
-		RTTI_ENABLE(TypedValueBufferFillPolicy<T>)
+		RTTI_ENABLE(FillPolicy<T>)
 	public:
 		/**
 		 * Fills the preallocated data
@@ -84,29 +84,29 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// BaseValueBufferFillPolicy type definitions
+	// BaseFillPolicyNumeric type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using UIntBufferFillPolicy = TypedValueBufferFillPolicy<uint>;
-	using IntBufferFillPolicy = TypedValueBufferFillPolicy<int>;
-	using FloatBufferFillPolicy = TypedValueBufferFillPolicy<float>;
-	using Vec2BufferFillPolicy = TypedValueBufferFillPolicy<glm::vec2>;
-	using Vec3BufferFillPolicy = TypedValueBufferFillPolicy<glm::vec3>;
-	using Vec4BufferFillPolicy = TypedValueBufferFillPolicy<glm::vec4>;
-	using Mat4BufferFillPolicy = TypedValueBufferFillPolicy<glm::mat4>;
+	using FillPolicyUInt				= FillPolicy<uint>;
+	using FillPolicyInt					= FillPolicy<int>;
+	using FillPolicyFloat				= FillPolicy<float>;
+	using FillPolicyVec2				= FillPolicy<glm::vec2>;
+	using FillPolicyVec3				= FillPolicy<glm::vec3>;
+	using FillPolicyVec4				= FillPolicy<glm::vec4>;
+	using FillPolicyMat4				= FillPolicy<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// ConstantBufferFillPolicy type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using ConstantUIntBufferFillPolicy = ConstantValueBufferFillPolicy<uint>;
-	using ConstantIntBufferFillPolicy = ConstantValueBufferFillPolicy<int>;
-	using ConstantFloatBufferFillPolicy = ConstantValueBufferFillPolicy<float>;
-	using ConstantVec2BufferFillPolicy = ConstantValueBufferFillPolicy<glm::vec2>;
-	using ConstantVec3BufferFillPolicy = ConstantValueBufferFillPolicy<glm::vec3>;
-	using ConstantVec4BufferFillPolicy = ConstantValueBufferFillPolicy<glm::vec4>;
-	using ConstantMat4BufferFillPolicy = ConstantValueBufferFillPolicy<glm::mat4>;
+	using ConstantFillPolicyUInt		= ConstantFillPolicy<uint>;
+	using ConstantFillPolicyInt			= ConstantFillPolicy<int>;
+	using ConstantFillPolicyFloat		= ConstantFillPolicy<float>;
+	using ConstantFillPolicyVec2		= ConstantFillPolicy<glm::vec2>;
+	using ConstantFillPolicyVec3		= ConstantFillPolicy<glm::vec3>;
+	using ConstantFillPolicyVec4		= ConstantFillPolicy<glm::vec4>;
+	using ConstantFillPolicyMat4		= ConstantFillPolicy<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	void ConstantValueBufferFillPolicy<T>::fill(uint numElements, T* data) const 
+	void ConstantFillPolicy<T>::fill(uint numElements, T* data) const 
 	{
 		for (uint i = 0; i < numElements; i++)
 		{
