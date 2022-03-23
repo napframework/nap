@@ -3,52 +3,52 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "structbufferfillpolicy.h"
+#include "structfillpolicy.h"
 #include "uniform.h"
 
 // External Includes
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::FillPolicyStruct)
-	RTTI_PROPERTY("FillPolicies", &nap::FillPolicyStruct::mFillPolicies, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicy)
+	RTTI_PROPERTY("FillPolicies", &nap::StructFillPolicy::mFillPolicies, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseFillPolicyEntry)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FillPolicyEntryUInt)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryUInt::mName, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::FillPolicyEntryUInt::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FillPolicyEntryInt)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryInt::mName, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryInt::mFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::FillPolicyEntryInt::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FillPolicyEntryFloat)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryFloat::mName, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::FillPolicyEntryFloat::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FillPolicyEntryVec2)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec2::mName, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec2::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FillPolicyEntryVec3)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec3::mName, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec3::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FillPolicyEntryVec4)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec4::mName, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec4::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FillPolicyEntryMat4)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryMat4::mName, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Name", &nap::FillPolicyEntryMat4::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 
@@ -75,10 +75,10 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// FillPolicyStruct
+	// StructFillPolicy
 	//////////////////////////////////////////////////////////////////////////
 
-	bool FillPolicyStruct::fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data, size_t& outElementSize, utility::ErrorState& errorState)
+	bool StructFillPolicy::fillFromUniformRecursive(const UniformStruct* uniformStruct, uint8* data, size_t& outElementSize, utility::ErrorState& errorState)
 	{
 		size_t size = 0;
 		for (int idx = 0; idx < uniformStruct->mUniforms.size(); idx++)
@@ -220,7 +220,7 @@ namespace nap
 	}
 
 
-	bool FillPolicyStruct::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
+	bool StructFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
 	{
 		// Fill the buffer
 		size_t element_size = 0;

@@ -101,7 +101,7 @@
                     "Type": "nap::BoidTargetTranslateComponent",
                     "mID": "BoidTargetTranslateComponent",
                     "Radius": 0.75,
-                    "Speed": 0.08,
+                    "Speed": 0.07999999821186066,
                     "RandomOffset": true
                 }
             ],
@@ -1360,7 +1360,7 @@
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
-            "Radius": 0.1,
+            "Radius": 0.10000000149011612,
             "Rings": 8.0,
             "Sectors": 8.0,
             "Color": {
@@ -1427,16 +1427,16 @@
             }
         },
         {
-            "Type": "nap::StructBufferFillPolicy",
+            "Type": "nap::StructFillPolicy",
             "mID": "BoidBufferFillPolicy",
-            "VariableFillPolicies": [
+            "FillPolicies": [
                 {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_a67b85e9",
+                    "Type": "nap::FillPolicyEntryVec4",
+                    "mID": "FillPolicyEntryVec4_5a948427",
                     "Name": "position",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_09cb7c41",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_c2629a8d",
                         "LowerBound": {
                             "x": -4.0,
                             "y": -4.0,
@@ -1452,12 +1452,12 @@
                     }
                 },
                 {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_f3d6f238",
+                    "Type": "nap::FillPolicyEntryVec4",
+                    "mID": "FillPolicyEntryVec4_86a1275c",
                     "Name": "velocity",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_6e735ad8",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_86fa7df8",
                         "LowerBound": {
                             "x": -1.0,
                             "y": -1.0,
@@ -1473,12 +1473,12 @@
                     }
                 },
                 {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_fbc78f6e",
+                    "Type": "nap::FillPolicyEntryVec4",
+                    "mID": "FillPolicyEntryVec4_7a6fdac2",
                     "Name": "orientation",
-                    "ValueFillPolicy": {
-                        "Type": "nap::ConstantVec4BufferFillPolicy",
-                        "mID": "ConstantVec4BufferFillPolicy_4990961e",
+                    "FillPolicy": {
+                        "Type": "nap::ConstantFillPolicyVec4",
+                        "mID": "ConstantFillPolicyVec4_ae1d740e",
                         "Constant": {
                             "x": 0.0,
                             "y": 0.0,

@@ -7,7 +7,7 @@
 // Local Includes
 #include "basegpubuffer.h"
 #include "vulkan/vulkan_core.h"
-#include "valuebufferfillpolicy.h"
+#include "fillpolicy.h"
 #include "formatutils.h"
 
 // External Includes

@@ -7,7 +7,7 @@
 // Local Includes
 #include "basegpubuffer.h"
 #include "uniform.h"
-#include "structbufferfillpolicy.h"
+#include "structfillpolicy.h"
 
 // External Includes
 #include <nap/resourceptr.h>
@@ -86,7 +86,7 @@ namespace nap
 		 */
 		bool setData(void* data, size_t size, utility::ErrorState& error);
 
-		ResourcePtr<FillPolicyStruct>				mFillPolicy = nullptr;							///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		ResourcePtr<StructFillPolicy>				mFillPolicy = nullptr;							///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
 		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor' The descriptor that defines the buffer layout
 
 	private:

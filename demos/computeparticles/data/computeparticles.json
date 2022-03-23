@@ -302,16 +302,16 @@
             "FragShader": "shaders/particle.frag"
         },
         {
-            "Type": "nap::StructBufferFillPolicy",
-            "mID": "ParticleFillPolicy",
-            "VariableFillPolicies": [
+            "Type": "nap::StructFillPolicy",
+            "mID": "ParticleBufferFillPolicy",
+            "FillPolicies": [
                 {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_af36377c",
+                    "Type": "nap::FillPolicyEntryVec4",
+                    "mID": "FillPolicyEntryVec4_dfe3d0a7",
                     "Name": "position",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_aa9aefa5",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_0a036fb0",
                         "LowerBound": {
                             "x": -10.0,
                             "y": -10.0,
@@ -327,12 +327,12 @@
                     }
                 },
                 {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_74910f0b",
+                    "Type": "nap::FillPolicyEntryVec4",
+                    "mID": "FillPolicyEntryVec4_6b099245",
                     "Name": "velocity",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_905aef49",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_0f6fa77a",
                         "LowerBound": {
                             "x": -1.0,
                             "y": -1.0,
@@ -410,7 +410,7 @@
             },
             "Usage": "Static",
             "DescriptorType": "Storage",
-            "FillPolicy": "ParticleFillPolicy",
+            "FillPolicy": "ParticleBufferFillPolicy",
             "Clear": false
         },
         {

@@ -8,7 +8,7 @@
 #include <nap/resource.h>
 
 // Local Includes
-#include "valuebufferfillpolicy.h"
+#include "fillpolicy.h"
 
 namespace nap
 {
@@ -19,7 +19,7 @@ namespace nap
 	 * Fill policies are initialization utilities that can help fill large blocks of preallocated memory. The fill function
 	 * assigns a contiguous block of data based on the specified arguments.
 	 *
-	 * Fill policies can be bound to another resource's property (i.e. ValueGPUBuffer) in configuration. Typically, an object
+	 * Fill policies can be bound to another resource's property (i.e. GPUBufferNumeric) in configuration. Typically, an object
 	 * will first check if a policy is available, and if so, use it to fill an internal buffer. Any object accepting a fill
 	 * policy is free to implement the way fill() is used in their own way however.
 	 */
