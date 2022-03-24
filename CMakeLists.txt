@@ -131,9 +131,6 @@ add_subdirectory(test/render)
 # app targets, add your own app targets here!
 add_subdirectory(apps/example)
 add_subdirectory(apps/example/module)
-add_subdirectory(apps/ego)
-add_subdirectory(apps/ego/module)
-
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -216,8 +213,6 @@ add_subdirectory(modules/naptween)
 add_subdirectory(modules/napcalendar)
 add_subdirectory(modules/napasio)
 add_subdirectory(modules/napportal)
-add_subdirectory(modules/napappcontrol)
-add_subdirectory(modules/napappgui)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
