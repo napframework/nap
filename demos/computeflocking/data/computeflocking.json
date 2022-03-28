@@ -620,7 +620,7 @@
                     "Type": "nap::RenderBloomComponent",
                     "mID": "ApplyBloom",
                     "Visible": true,
-                    "PassCount": 3,
+                    "PassCount": 2,
                     "Kernel": "13x13",
                     "InputTexture": "ColorTextureFX",
                     "OutputTexture": "ColorTextureFX"
@@ -1098,7 +1098,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ContrastParameter",
                             "Name": "Contrast",
-                            "Value": 0.13099999725818635,
+                            "Value": 0.25,
                             "Minimum": -1.0,
                             "Maximum": 1.0
                         },
