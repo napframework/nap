@@ -134,7 +134,11 @@ namespace nap
     void ThreadPool::addThread()
     {
         mThreads.emplace_back([&](){
-			TaskQueue::Task dequeuedTask;
+		  int oldMXCSR = _mm_getcsr();
+		  int newMXCSR = oldMXCSR | 0x8040;
+		  _mm_setcsr( newMXCSR);
+
+		  TaskQueue::Task dequeuedTask;
             while (!mStop)
 			{
 				mTaskQueue.wait_dequeue(dequeuedTask);

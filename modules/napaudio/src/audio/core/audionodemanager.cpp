@@ -26,6 +26,10 @@ namespace nap
 		
 		void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
+			int oldMXCSR = _mm_getcsr();
+			int newMXCSR = oldMXCSR | 0x8040;
+			_mm_setcsr( newMXCSR);
+
 			// clean the output buffers
 			for (auto channel = 0; channel < mOutputChannelCount; ++channel)
 				memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
