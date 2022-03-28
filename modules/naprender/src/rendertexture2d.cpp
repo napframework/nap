@@ -18,7 +18,6 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Fill",		&nap::RenderTexture2D::mFill,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Copyable",	&nap::RenderTexture2D::mCopyable,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
@@ -94,15 +93,11 @@ namespace nap
 			}
 		}
 
-		// Figure out if the texture needs to be filled
-		EClearMode clear_mode = mFill ? EClearMode::Clear : EClearMode::DontClear;
-		glm::vec4 clear_color = mClearColor.toVec4();
-
 		// Determine image usage
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		usage |= mCopyable ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
 
 		// Create render texture
-		return Texture2D::init(settings, false, clear_mode, clear_color, usage, errorState);
+		return Texture2D::init(settings, false, mClearColor.toVec4(), usage, errorState);
 	}
 }

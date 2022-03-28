@@ -271,11 +271,11 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
 		mFormat = getTextureFormat(*mRenderService, descriptor);
-		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, 
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED,
 			"%s, Unsupported texture format", mID.c_str()))
 			return false;
 
@@ -287,7 +287,7 @@ namespace nap
 			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
 			return false;
 		}
-		
+
 		// If mip mapping is enabled, ensure it is supported
 		if (generateMipMaps)
 		{
@@ -354,63 +354,75 @@ namespace nap
 		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		switch (mUsage)
 		{
-			case ETextureUsage::DynamicRead:
-			{
-				// can be read
-				usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-				break;
-			}
-			case ETextureUsage::DynamicWrite:
-			case ETextureUsage::Static:
-			{
-				// can be read if mipmaps are enabled
-				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
-				break;
-			}
-			default:
-			{
-				assert(false);
-				break;
-			}
+		case ETextureUsage::DynamicRead:
+		{
+			// can be read
+			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+			break;
+		}
+		case ETextureUsage::DynamicWrite:
+		case ETextureUsage::Static:
+		{
+			// can be read if mipmaps are enabled
+			usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
+			break;
+		}
+		default:
+		{
+			assert(false);
+			break;
+		}
 		}
 
 		// Create GPU image
-		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, 
-			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
-				return false;
+		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+			return false;
 
 		// Create GPU image view
 		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
-				return false;
+			return false;
 
 		// Initialize buffer indexing
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 
-		// Fill the texture with nothing (black)
-		if (clearMode == Texture2D::EClearMode::Clear)
-		{
-			mRenderService->requestTextureClear(*this);
-		}
 		return true;
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, generateMipMaps, clearMode, requiredFlags, errorState))
+		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
 			return false;
 
+		// Clear the texture and perform a layout transition to shader read
+		mRenderService->requestTextureClear(*this);
+		return true;
+	}
+
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	{
+		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
+			return false;
+
+		// Set clear color
 		std::memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
+
+		// Clear the texture and perform a layout transition to shader read
+		mRenderService->requestTextureClear(*this);
 		return true;
 	}
 
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, requiredFlags, errorState))
+		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
 			return false;
 
+		// Upload initial data and perform a layout transition to shader read
 		update(initialData, descriptor);
 		return true;
 	}

@@ -50,41 +50,28 @@ namespace nap
 		~Texture2D() override;
 
 		/**
-		 * Defines how the Texture2D is cleared on initialization.
-		 */
-		enum class EClearMode : uint8
-		{
-			DontClear	= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
-			Clear		= 1				///< Texture is created and cleared on the GPU.
-		};
-
-		/**
-		* Creates the texture on the GPU using the provided settings.
-		* The texture is initialized to 'clearColor' if 'clearMode' is set to 'FillWithZero'.
+		* Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		* The Vulkan image usage flags are derived from texture usage.
 		* @param descriptor texture description.
 		* @param generateMipMaps if mip maps are generated when data is uploaded.
-		* @param clearMode if the texture is immediately initialized to black after creation.
 		* @param clearColor the color to clear the texture with.
 		* @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		* @param errorState contains the error if the texture can't be initialized.
 		* @return if the texture initialized successfully.
 		*/
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 		
 		/**
-		 * Creates the texture on the GPU using the provided settings.
-		 * The texture is initialized to black if 'clearMode' is set to 'FillWithZero'.
+		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * Otherwise the layout of the texture on the GPU will be undefined until upload.
 		 * The Vulkan image usage flags are derived from texture usage. 
 		 * @param descriptor texture description.
 		 * @param generateMipMaps if mip maps are generated when data is uploaded.
-		 * @param clearMode if the texture is immediately initialized to black after creation.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 		
 		/**
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
@@ -179,6 +166,17 @@ namespace nap
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
 
 	private:
+		/**
+		 * Creates the texture on the GPU using the provided settings.
+		 * The Vulkan image usage flags are derived from texture usage.
+		 * @param descriptor texture description.
+		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
+		 * @param errorState contains the error if the texture can't be initialized.
+		 * @return if the texture initialized successfully.
+		 */
+		bool initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+
 		/**
 		* Clears the texture to the specified clear colors
 		*/

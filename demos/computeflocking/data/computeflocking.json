@@ -601,8 +601,8 @@
                                 "Texture": "ColorTexture"
                             }
                         ],
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                        "BlendMode": "Opaque",
+                        "DepthMode": "InheritFromBlendMode"
                     },
                     "Samples": "One",
                     "ClearColor": {
@@ -620,8 +620,8 @@
                     "Type": "nap::RenderBloomComponent",
                     "mID": "ApplyBloom",
                     "Visible": true,
-                    "PassCount": 2,
-                    "Kernel": "5x5",
+                    "PassCount": 3,
+                    "Kernel": "13x13",
                     "InputTexture": "ColorTextureFX",
                     "OutputTexture": "ColorTextureFX"
                 },
@@ -1135,7 +1135,7 @@
             "Type": "nap::RenderTarget",
             "mID": "ColorTarget",
             "ColorTexture": "ColorTexture",
-            "SampleShading": false,
+            "SampleShading": true,
             "Samples": "Four",
             "ClearColor": {
                 "Values": [
@@ -1150,7 +1150,6 @@
             "Type": "nap::RenderTexture2D",
             "mID": "ColorTexture",
             "Usage": "Static",
-            "Fill": true,
             "Copyable": false,
             "Width": 1920,
             "Height": 1080,
@@ -1169,7 +1168,6 @@
             "Type": "nap::RenderTexture2D",
             "mID": "ColorTextureFX",
             "Usage": "Static",
-            "Fill": false,
             "Copyable": true,
             "Width": 1920,
             "Height": 1080,
@@ -1188,7 +1186,6 @@
             "Type": "nap::RenderTexture2D",
             "mID": "DummyRT",
             "Usage": "Static",
-            "Fill": false,
             "Copyable": false,
             "Width": 1920,
             "Height": 1080,

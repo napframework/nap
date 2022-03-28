@@ -1443,7 +1443,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::Clear, 0, errorState);
+		return mEmptyTexture->init(settings, false, 0, errorState);
 	}
 
 
