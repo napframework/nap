@@ -4,13 +4,15 @@
 
 #pragma once
 
+// Local includes
+#include "vulkan/vulkan_core.h"
+#include "rtti/typeinfo.h"
+#include "basegpubuffer.h"
+
 // External Includes
 #include <nap/numeric.h>
 #include <string>
 #include <vector>
-#include "vulkan/vulkan_core.h"
-#include "rtti/typeinfo.h"
-#include "basegpubuffer.h"
 
 namespace nap
 {
@@ -154,7 +156,7 @@ namespace nap
 		 * Returns the first buffer declaration. Asserts if not present.
 		 * Handy accessor for buffer bindings.
 		 */
-		const ShaderVariableDeclaration& getBufferDeclaration() const { assert(!mMembers.empty()); return *mMembers[0]; }
+		const ShaderVariableDeclaration& getBufferDeclaration() const;
 
 		int							mBinding;									///< Shader binding identifier
 		VkShaderStageFlagBits		mStage;										///< Shader stage: vertex, fragment, compute etc.
