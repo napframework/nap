@@ -122,7 +122,7 @@ namespace nap
 
 		// Get reference to input texture
 		mInputTexture = resource->mInputTexture.get();
-		mOutputTexture = resource->mInputTexture.get();
+		mOutputTexture = resource->mOutputTexture.get();
 
 		// Initialize double-buffered bloom render targets
 		for (int pass_idx = 0; pass_idx < resource->mPassCount; pass_idx++)

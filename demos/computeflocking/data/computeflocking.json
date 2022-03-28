@@ -784,79 +784,11 @@
         {
             "Type": "nap::Material",
             "mID": "ColorAdjustmentMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_a71198c6",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_3bd65545",
-                            "Name": "brightness",
-                            "Value": 0.0
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_e6d29db6",
-                            "Name": "contrast",
-                            "Value": 0.10000000149011612
-                        }
-                    ]
-                }
-            ],
-            "Bindings": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_6d730852",
-                    "Name": "colorTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "ColorTextureFX"
-                }
-            ],
-            "Shader": "ColorAdjustmentShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "ColorTextureMaterial",
             "Uniforms": [],
             "Bindings": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_8a347620",
-                    "Name": "colorTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "ColorTexture"
-                }
-            ],
-            "Shader": "ColorTextureShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                }
-            ],
+            "Samplers": [],
+            "Shader": "ColorAdjustmentShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -865,24 +797,7 @@
             "mID": "CompositeMaterial",
             "Uniforms": [],
             "Bindings": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2DArray",
-                    "mID": "Sampler2DArray_38dadfa2",
-                    "Name": "colorTextures",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Textures": [
-                        "ColorTexture",
-                        "DummyRT"
-                    ]
-                }
-            ],
+            "Samplers": [],
             "Shader": "CompositeShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -907,7 +822,7 @@
             "Samplers": [],
             "Shader": "BoidShader",
             "VertexAttributeBindings": [],
-            "BlendMode": "AlphaBlend",
+            "BlendMode": "Opaque",
             "DepthMode": "ReadWrite"
         },
         {
@@ -1622,10 +1537,6 @@
             "DescriptorType": "Storage",
             "FillPolicy": "",
             "Clear": true
-        },
-        {
-            "Type": "nap::TextureShader",
-            "mID": "ColorTextureShader"
         }
     ]
 }

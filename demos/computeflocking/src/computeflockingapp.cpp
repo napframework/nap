@@ -205,24 +205,24 @@ namespace nap
 			{
 				const float aspect = coloradjust_comp->getOutputTexture().getHeight() / static_cast<float>(coloradjust_comp->getOutputTexture().getWidth());
 				const float width = ImGui::GetWindowContentRegionWidth();
-				ImGui::Image(coloradjust_comp->getOutputTexture(), { width, width*aspect });
+				ImGui::Image(coloradjust_comp->getOutputTexture(), { width, width * aspect });
 			}
 			ImGui::End();
 		}
 
 		// Update color adjustment material
-		UniformStructInstance* ubo_struct			= coloradjust_comp->getMaterialInstance().findUniform("UBO");
-		UniformFloatInstance* contrast_uni			= ubo_struct->findUniform<UniformFloatInstance>("contrast");
-		UniformFloatInstance* brightness_uni		= ubo_struct->findUniform<UniformFloatInstance>("brightness");
-		UniformFloatInstance* saturation_uni		= ubo_struct->findUniform<UniformFloatInstance>("saturation");
+		UniformStructInstance* ubo_struct			= coloradjust_comp->getMaterialInstance().getOrCreateUniform("UBO");
+		UniformFloatInstance* contrast_uni			= ubo_struct->getOrCreateUniform<UniformFloatInstance>("contrast");
+		UniformFloatInstance* brightness_uni		= ubo_struct->getOrCreateUniform<UniformFloatInstance>("brightness");
+		UniformFloatInstance* saturation_uni		= ubo_struct->getOrCreateUniform<UniformFloatInstance>("saturation");
 
 		contrast_uni->setValue(rtti_cast<ParameterFloat>(mContrastParam.get())->mValue);
 		brightness_uni->setValue(rtti_cast<ParameterFloat>(mBrightnessParam.get())->mValue);
 		saturation_uni->setValue(rtti_cast<ParameterFloat>(mSaturationParam.get())->mValue);
 
 		// Update composite material
-		ubo_struct									= composite_comp->getMaterialInstance().findUniform("FRAGUBO");
-		UniformFloatInstance* blend_uni				= ubo_struct->findUniform<UniformFloatInstance>("blend");
+		ubo_struct									= composite_comp->getMaterialInstance().getOrCreateUniform("FRAGUBO");
+		UniformFloatInstance* blend_uni				= ubo_struct->getOrCreateUniform<UniformFloatInstance>("blend");
 
 		blend_uni->setValue(rtti_cast<ParameterFloat>(mBlendParam.get())->mValue);
 		
@@ -238,8 +238,8 @@ namespace nap
 
 		// Update camera location
 		auto* atmosphere_comp						= mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill");
-		ubo_struct									= atmosphere_comp->getMaterialInstance().findUniform("VERTUBO");
-		UniformVec3Instance* cam_location_uni		= ubo_struct->findUniform<UniformVec3Instance>("cameraLocation");
+		ubo_struct									= atmosphere_comp->getMaterialInstance().getOrCreateUniform("VERTUBO");
+		UniformVec3Instance* cam_location_uni		= ubo_struct->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
 
 		cam_location_uni->setValue(mCameraEntity->getComponent<TransformComponentInstance>().getTranslate());
 
