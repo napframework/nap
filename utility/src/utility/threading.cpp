@@ -9,13 +9,13 @@
 #endif
 
 #include <xmmintrin.h>
+#include <iostream>
 
 namespace nap
 {
     
     TaskQueue::TaskQueue(int maxQueueItems) : mQueue(maxQueueItems)
     {
-        mDequeuedTasks.resize(maxQueueItems);
     }
     
     
@@ -93,8 +93,8 @@ namespace nap
     }
     
     
-    ThreadPool::ThreadPool(int numberOfThreads, int maxQueueItems, bool realTimePriority)
-        : mTaskQueue(maxQueueItems), mRealTimePriority(realTimePriority)
+    ThreadPool::ThreadPool(int numberOfThreads, int maxQueueItems, bool realTimePriority, bool disableDenormals)
+        : mTaskQueue(maxQueueItems), mRealTimePriority(realTimePriority), mDisableDenormals(disableDenormals)
     {
         mStop = false;
         for (unsigned int i = 0; i < numberOfThreads; ++i)
@@ -136,11 +136,14 @@ namespace nap
     void ThreadPool::addThread()
     {
         mThreads.emplace_back([&](){
-		  int oldMXCSR = _mm_getcsr();
-		  int newMXCSR = oldMXCSR | 0x8040;
-		  _mm_setcsr( newMXCSR);
+			if (mDisableDenormals)
+			{
+				int oldMXCSR = _mm_getcsr();
+				int newMXCSR = oldMXCSR | 0x8040;
+				_mm_setcsr( newMXCSR);
+			}
 
-		  TaskQueue::Task dequeuedTask;
+			TaskQueue::Task dequeuedTask;
             while (!mStop)
 			{
 				mTaskQueue.wait_dequeue(dequeuedTask);
@@ -162,7 +165,9 @@ namespace nap
             schedParams.sched_priority = priority;
             auto result = pthread_setschedparam(thread.native_handle(), SCHED_FIFO, &schedParams);
             // If this assertion fails the thread failed to acquire realtime priority
-            assert(result == 0);
+			if (result != 0)
+				std::cout << "Warning: Failed to set thread realtime priority." << std::endl;
+			assert(result == 0);
 #endif
         }
     }
