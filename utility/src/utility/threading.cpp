@@ -8,6 +8,8 @@
 #include <windows.h>
 #endif
 
+#include <xmmintrin.h>
+
 namespace nap
 {
     

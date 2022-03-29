@@ -8,6 +8,8 @@
 #include <nap/logger.h>
 #include <nap/core.h>
 
+#include <xmmintrin.h>
+
 namespace nap
 {
 	namespace audio
