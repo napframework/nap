@@ -28,6 +28,7 @@ namespace nap
 		
 		void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
+			// Disable denormals
 			int oldMXCSR = _mm_getcsr();
 			int newMXCSR = oldMXCSR | 0x8040;
 			_mm_setcsr( newMXCSR);
@@ -65,6 +66,9 @@ namespace nap
 
 			if (mInternalBufferOffset != framesPerBuffer)
 				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
+
+			// Reset previous denormal handling mode
+			_mm_setcsr(oldMXCSR);
 		}
 		
 		
