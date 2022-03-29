@@ -9,7 +9,6 @@
 #endif
 
 #include <xmmintrin.h>
-#include <iostream>
 
 namespace nap
 {
@@ -165,8 +164,6 @@ namespace nap
             schedParams.sched_priority = priority;
             auto result = pthread_setschedparam(thread.native_handle(), SCHED_FIFO, &schedParams);
             // If this assertion fails the thread failed to acquire realtime priority
-			if (result != 0)
-				std::cout << "Warning: Failed to set thread realtime priority." << std::endl;
 			assert(result == 0);
 #endif
         }
