@@ -8,6 +8,8 @@
 #include <nap/logger.h>
 #include <nap/core.h>
 
+#include <xmmintrin.h>
+
 namespace nap
 {
 	namespace audio
@@ -26,6 +28,11 @@ namespace nap
 		
 		void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
+			// Disable denormals
+			int oldMXCSR = _mm_getcsr();
+			int newMXCSR = oldMXCSR | 0x8040;
+			_mm_setcsr( newMXCSR);
+
 			// clean the output buffers
 			for (auto channel = 0; channel < mOutputChannelCount; ++channel)
 				memset(outputBuffer[channel], 0, sizeof(float) * framesPerBuffer);
@@ -59,6 +66,9 @@ namespace nap
 
 			if (mInternalBufferOffset != framesPerBuffer)
 				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
+
+			// Reset previous denormal handling mode
+			_mm_setcsr(oldMXCSR);
 		}
 		
 		

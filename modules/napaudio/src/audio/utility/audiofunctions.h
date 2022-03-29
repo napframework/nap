@@ -90,16 +90,5 @@ namespace nap
 			return powf(10, db / 20.0);
 		}
 
-
-		/**
-		 * Flush denormal float value to zero
-		 * @param sample float value to be flushed to zero if denormal
-		 */
-		inline void undenormalize(float& sample)
-		{
-			if (((*(unsigned int*)&sample)&0x7f800000) == 0)
-				sample = 0;
-		}
-
 	}
 }

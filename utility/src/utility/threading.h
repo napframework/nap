@@ -48,7 +48,6 @@ namespace nap
         
     private:
         moodycamel::BlockingReaderWriterQueue<Task> mQueue;
-        std::vector<Task> mDequeuedTasks;
     };
     
     
@@ -111,7 +110,13 @@ namespace nap
     class ThreadPool final
 	{
     public:
-        ThreadPool(int numberOfThreads = 1, int maxQueueItems = 20, bool realTimePriority = false);
+		/**
+		 * Constructor
+		 * @param numberOfThreads Number of threads in the pool.
+		 * @param realTimePriority Indicates if the thread will get higher priority scheduling by the OS. Set this to true for audio processing threads.
+		 * @param disableDenormals  Indicates if denormal floats will be flushed to zero on the thread, reducing computational cost and increasing performance. Useful for audio processing tasks as denormal floats are small enough to be inaudible.
+		 */
+        ThreadPool(int numberOfThreads = 1, int maxQueueItems = 20, bool realTimePriority = false, bool disableDenormals = false);
         ~ThreadPool();
         
         /**
@@ -149,5 +154,6 @@ namespace nap
         std::atomic<bool> mStop;
         moodycamel::BlockingConcurrentQueue<TaskQueue::Task> mTaskQueue;
         bool mRealTimePriority = false;
+		bool mDisableDenormals = false;
     };
 }
