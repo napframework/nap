@@ -14,35 +14,29 @@
 #include <nap/logger.h>
 #include <rtti/rttiutilities.h>
 
-RTTI_DEFINE_BASE(nap::BaseMaterialInstanceResource)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
+	RTTI_PROPERTY("Uniforms", &nap::MaterialInstanceResource::mUniforms, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Bindings", &nap::MaterialInstanceResource::mBindings, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Samplers", &nap::MaterialInstanceResource::mSamplers, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::MaterialInstanceResource::mBindings,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
 	RTTI_PROPERTY("ComputeMaterial",			&nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterialInstanceResource::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::ComputeMaterialInstanceResource::mBindings,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterialInstanceResource::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_DEFINE_BASE(nap::BaseMaterialInstance)
-
-RTTI_BEGIN_CLASS(nap::MaterialInstance)
-	RTTI_FUNCTION("getOrCreateUniform",	(nap::UniformStructInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
-	RTTI_FUNCTION("getOrCreateSampler",	(nap::SamplerInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateSampler);
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstance)
+	RTTI_FUNCTION("getOrCreateUniform", (nap::UniformStructInstance* (nap::BaseMaterialInstance::*)(const std::string&))& nap::BaseMaterialInstance::getOrCreateUniform);
+	RTTI_FUNCTION("getOrCreateSampler", (nap::SamplerInstance* (nap::BaseMaterialInstance::*)(const std::string&))& nap::BaseMaterialInstance::getOrCreateSampler);
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::ComputeMaterialInstance)
-	RTTI_FUNCTION("getOrCreateUniform", (nap::UniformStructInstance* (nap::ComputeMaterialInstance::*)(const std::string&))& nap::ComputeMaterialInstance::getOrCreateUniform);
-	RTTI_FUNCTION("getOrCreateSampler", (nap::SamplerInstance* (nap::ComputeMaterialInstance::*)(const std::string&))& nap::ComputeMaterialInstance::getOrCreateSampler);
-RTTI_END_CLASS
+RTTI_DEFINE_CLASS(nap::MaterialInstance)
+RTTI_DEFINE_CLASS(nap::ComputeMaterialInstance)
 
 namespace nap
 {
