@@ -55,7 +55,7 @@ namespace nap
 	 */
 	enum class EDescriptorType : uint
 	{
-		Default,			///< Specifies a default buffer that is not bound to a descriptor, e.g. vertex buffers
+		None,				///< Specifies a default buffer that is not bound to a descriptor, e.g. vertex buffers
 		Uniform,			///< Specifies a uniform buffer descriptor. device readonly
 		Storage				///< Specifies a storage buffer descriptor. device read/write
 	};
@@ -155,7 +155,7 @@ namespace nap
 		nap::Signal<> bufferChanged;
 
 		EMemoryUsage			mUsage = EMemoryUsage::Static;					///< Property 'Usage' How the buffer is used, static, updated frequently etc.
-		EDescriptorType			mDescriptorType = EDescriptorType::Default;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
+		EDescriptorType			mDescriptorType = EDescriptorType::None;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
 		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 
 	protected:

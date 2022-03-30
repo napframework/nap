@@ -50,13 +50,18 @@ namespace nap
 	 */
 	static VkBufferUsageFlags getBufferUsage(EDescriptorType descriptorType)
 	{
-		if (descriptorType == EDescriptorType::Uniform)
+		switch (descriptorType)
+		{
+		case EDescriptorType::Uniform:
 			return VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-		else if (descriptorType == EDescriptorType::Storage)
+		case EDescriptorType::Storage:
 			return VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-
-		return 0;
+		case EDescriptorType::None:
+			return 0;
+		default:
+			NAP_ASSERT_MSG(false, "Unsupported descriptor type");
+			return 0;
+		}
 	}
 
 
@@ -68,15 +73,17 @@ namespace nap
 	 */
 	static VkDescriptorType getVulkanDescriptorType(nap::EDescriptorType descriptorType)
 	{
-		if (descriptorType == nap::EDescriptorType::Uniform)
+		switch (descriptorType)
+		{
+		case EDescriptorType::Uniform:
 			return VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-
-		else if (descriptorType == nap::EDescriptorType::Storage)
+		case EDescriptorType::Storage:
 			return VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-
-		NAP_ASSERT_MSG(descriptorType != nap::EDescriptorType::Default, "nap::DescriptorType 'Default' cannot be used as a Vulkan descriptor type");
-		NAP_ASSERT_MSG(false, "Unsupported descriptor type");
-
-		return VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
+		case EDescriptorType::None:
+			NAP_ASSERT_MSG(false, "nap::DescriptorType 'Default' cannot be used as a Vulkan descriptor type");
+		default:
+			NAP_ASSERT_MSG(false, "Unsupported descriptor type");
+			return VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
+		}		
 	}
 }
