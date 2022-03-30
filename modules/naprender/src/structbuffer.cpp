@@ -14,10 +14,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Descriptor", &nap::StructBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Usage", &nap::StructBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::StructBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FillPolicy", &nap::StructBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::StructBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -36,7 +33,7 @@ namespace nap
 		size_t buffer_size = getSize();
 
 		// Compose usage flags from buffer configuration
-		mUsageFlags = getBufferUsage(mDescriptorType);
+		mUsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
 		// Allocate buffer memory
 		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
