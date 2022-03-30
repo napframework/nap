@@ -7,7 +7,7 @@
 // Local Includes
 #include "bufferbinding.h"
 #include "gpubuffer.h"
-#include "structgpubuffer.h"
+#include "structbuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -191,18 +191,18 @@ namespace nap
 		/**
 		 * @return struct buffer
 		 */
-		virtual const StructGPUBuffer& getBuffer() const							{ assert(hasBuffer()); return *mBuffer; };
+		virtual const StructBuffer& getBuffer() const							{ assert(hasBuffer()); return *mBuffer; };
 
 		/**
 		 * @return struct buffer
 		 */
-		virtual StructGPUBuffer& getBuffer()										{ assert(hasBuffer()); return *mBuffer; };
+		virtual StructBuffer& getBuffer()										{ assert(hasBuffer()); return *mBuffer; };
 
 		/**
 		 * Binds a new buffer to the uniform instance
 		 * @param buffer new buffer to bind
 		 */
-		void setBuffer(StructGPUBuffer& buffer)
+		void setBuffer(StructBuffer& buffer)
 		{
 			assert(buffer.getSize() == mDeclaration->mSize);
 			mBuffer = &buffer;
@@ -231,7 +231,7 @@ namespace nap
 		void raiseChanged()															{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
 
 		const ShaderVariableStructBufferDeclaration*		mDeclaration;
-		rtti::ObjectPtr<StructGPUBuffer>					mBuffer;
+		rtti::ObjectPtr<StructBuffer>					mBuffer;
 	};
 
 

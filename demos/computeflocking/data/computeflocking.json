@@ -1402,7 +1402,7 @@
             ]
         },
         {
-            "Type": "nap::StructGPUBuffer",
+            "Type": "nap::StructBuffer",
             "mID": "BoidBufferA",
             "Descriptor": {
                 "Element": {
@@ -1469,7 +1469,7 @@
             "Clear": false
         },
         {
-            "Type": "nap::StructGPUBuffer",
+            "Type": "nap::StructBuffer",
             "mID": "BoidBufferB",
             "Descriptor": {
                 "Element": {

@@ -33,15 +33,15 @@ namespace nap
 	 * @tparam T primitive value data type
 	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
-	class NAPAPI StructGPUBuffer final : public BaseGPUBuffer
+	class NAPAPI StructBuffer final : public BaseGPUBuffer
 	{
 		RTTI_ENABLE(BaseGPUBuffer)
 	public:
-		StructGPUBuffer(Core& core) :
+		StructBuffer(Core& core) :
 			BaseGPUBuffer(core)
 		{ }
 
-		StructGPUBuffer(Core& core, EMemoryUsage usage) :
+		StructBuffer(Core& core, EMemoryUsage usage) :
 			BaseGPUBuffer(core, usage)
 		{ }
 

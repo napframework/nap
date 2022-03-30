@@ -350,7 +350,7 @@
             ]
         },
         {
-            "Type": "nap::StructGPUBuffer",
+            "Type": "nap::StructBuffer",
             "mID": "ParticleComputeBufferA",
             "Descriptor": {
                 "Element": {
@@ -414,7 +414,7 @@
             "Clear": false
         },
         {
-            "Type": "nap::StructGPUBuffer",
+            "Type": "nap::StructBuffer",
             "mID": "ParticleComputeBufferB",
             "Descriptor": {
                 "Element": {

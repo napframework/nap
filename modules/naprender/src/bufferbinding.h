@@ -7,7 +7,7 @@
 // Local Includes
 #include "shadervariabledeclarations.h"
 #include "gpubuffer.h"
-#include "structgpubuffer.h"
+#include "structbuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -24,7 +24,7 @@ namespace nap
 	/**
 	 * Buffer Binding resource base class.
 	 * 
-	 * Buffer bindings, unlinke uniforms, store a reference to the underlying data as opposed to the data itself.
+	 * Buffer bindings, unlike uniforms, store a reference to the underlying data as opposed to the data itself.
 	 * This allows for any compute shader to read from and write to the same data storage. Buffer bindings always refer
 	 * to a single nap::GPUBuffer, whether this is simple a `nap::VertexBufferVec4` or a more complex
 	 * `nap::StructGPUBuffer`.
@@ -177,9 +177,9 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const StructGPUBuffer* getBuffer() const				{ return mBuffer.get(); };
+		virtual const StructBuffer* getBuffer() const					{ return mBuffer.get(); };
 
-		rtti::ObjectPtr<StructGPUBuffer> mBuffer = nullptr;
+		rtti::ObjectPtr<StructBuffer> mBuffer = nullptr;
 	};
 
 
