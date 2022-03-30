@@ -91,7 +91,7 @@ namespace nap
 		if (binding != nullptr && binding->hasBuffer())
 		{
 			// Verify descriptortype
-			if (!errorState.check(binding->getBaseBuffer()->mDescriptorType == EDescriptorType::Storage,
+			if (!errorState.check((binding->getBaseBuffer()->getBufferUsageFlags() & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) > 0,
 				"DescriptorType mismatch. StructGPUBuffer 'DescriptorType' property must be 'Storage' to be used as a buffer binding"))
 				return nullptr;
 

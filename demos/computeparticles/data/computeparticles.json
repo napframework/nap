@@ -304,6 +304,8 @@
         {
             "Type": "nap::StructBuffer",
             "mID": "ParticleComputeBufferA",
+            "Clear": false,
+            "Usage": "Static",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -360,14 +362,13 @@
                 },
                 "Count": 100000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "ParticleBufferFillPolicy",
-            "Clear": false
+            "FillPolicy": "ParticleBufferFillPolicy"
         },
         {
             "Type": "nap::StructBuffer",
             "mID": "ParticleComputeBufferB",
+            "Clear": false,
+            "Usage": "Static",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -424,10 +425,7 @@
                 },
                 "Count": 100000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "",
-            "Clear": false
+            "FillPolicy": ""
         },
         {
             "Type": "nap::StructFillPolicy",
@@ -480,11 +478,11 @@
         {
             "Type": "nap::VertexBufferVec4",
             "mID": "ParticleVertexBuffer",
-            "Count": 400000,
+            "Clear": false,
             "Usage": "Static",
-            "DescriptorType": "Storage",
+            "Count": 400000,
             "FillPolicy": "",
-            "Clear": false
+            "Storage": true
         }
     ]
 }

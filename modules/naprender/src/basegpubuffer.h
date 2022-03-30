@@ -44,24 +44,6 @@ namespace nap
 
 
 	/**
-	 * Flag that determines the descriptor type of a shader resource. Regards the type of data access on the device (GPU) 
-	 * inside a shader program.
-	 * 
-	 * Uniform buffers are typically small blocks of data that are updated very frequently from CPU to GPU (each frame),
-	 * but immutable in a shader program.
-	 * Storage buffers are typically large blocks of data that are bound/unbound to an SSBO and frequently read and written
-	 * in a compute shader program.
-	 * The Default option is used for buffers that are not bound to descriptorsets, e.g. vertex and index buffers.
-	 */
-	enum class EDescriptorType : uint
-	{
-		None,				///< Specifies a default buffer that is not bound to a descriptor, e.g. vertex buffers
-		Uniform,			///< Specifies a uniform buffer descriptor. device readonly
-		Storage				///< Specifies a storage buffer descriptor. device read/write
-	};
-
-
-	/**
 	 * Defines a Vulkan buffer object on the GPU.
 	 *
 	 * A static buffer is updated (uploaded to) only once, a dynamic buffer can be updated more frequently but
@@ -155,7 +137,6 @@ namespace nap
 		nap::Signal<> bufferChanged;
 
 		EMemoryUsage			mUsage = EMemoryUsage::Static;					///< Property 'Usage' How the buffer is used, static, updated frequently etc.
-		EDescriptorType			mDescriptorType = EDescriptorType::None;		///< Property 'DescriptorType' How the buffer is used on the device (uniform = readonly, storage = readwrite)
 		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 
 	protected:

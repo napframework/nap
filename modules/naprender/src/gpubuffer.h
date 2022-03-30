@@ -50,7 +50,7 @@ namespace nap
 		 */
 		virtual VkFormat getFormat() const = 0;
 
-		uint32 mCount = 0;																///< Property 'Count' The number of vertex elements to initialize/allocate the buffer with
+		uint32 mCount = 0;				///< Property: 'Count' The number of  elements to initialize/allocate the buffer with.
 	};
 
 
@@ -139,7 +139,7 @@ namespace nap
 		/**
 		 * @return the buffer format
 		 */
-		virtual VkFormat getFormat() const override						{ return getGPUBufferFormat<T>(); }
+		virtual VkFormat getFormat() const override						{ return getVulkanFormat<T>(); }
 
 		/**
 		 * @return the buffer usage flags
@@ -210,6 +210,8 @@ namespace nap
 		 * If a fill policy is available, the buffer will also be uploaded to immediately.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		bool mStorage = false;			///< Property: 'Storage' Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
 	};
 
 
@@ -294,9 +296,6 @@ namespace nap
 		if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
 			return false;
 
-		// Compose usage flags from buffer configuration
-		mUsageFlags |= getBufferUsage(mDescriptorType);
-
 		// Calculate buffer size
 		uint32 buffer_size = mCount * sizeof(T);
 
@@ -357,7 +356,8 @@ namespace nap
 	template<typename T>
 	bool VertexBuffer<T>::init(utility::ErrorState& errorState)
 	{
-		GPUBufferNumeric<T>::mUsageFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		GPUBufferNumeric<T>::mUsageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		mUsageFlags |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
 		return GPUBufferNumeric<T>::init(errorState);
 	}
 }

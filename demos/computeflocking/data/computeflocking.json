@@ -1349,7 +1349,6 @@
             "mID": "BoidBufferA",
             "Clear": false,
             "Usage": "Static",
-            "DescriptorType": "Storage",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -1409,17 +1408,13 @@
                 },
                 "Count": 10000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "BoidBufferFillPolicy",
-            "Clear": false
+            "FillPolicy": "BoidBufferFillPolicy"
         },
         {
             "Type": "nap::StructBuffer",
             "mID": "BoidBufferB",
             "Clear": true,
             "Usage": "Static",
-            "DescriptorType": "Storage",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -1479,10 +1474,7 @@
                 },
                 "Count": 10000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "",
-            "Clear": true
+            "FillPolicy": ""
         },
         {
             "Type": "nap::StructFillPolicy",
