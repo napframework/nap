@@ -59,7 +59,7 @@ namespace nap
 	template<typename ELEMENTTYPE>
 	GPUBuffer& GPUMesh::addVertexBuffer(const std::string& id)
 	{
-		auto vertex_buffer = std::make_unique<VertexBuffer<ELEMENTTYPE>>(mRenderService->getCore(), mUsage);
+		auto vertex_buffer = std::make_unique<VertexBuffer<ELEMENTTYPE>>(mRenderService->getCore(), mUsage, false);
 		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
 		return *it->second;
 	}

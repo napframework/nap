@@ -200,9 +200,10 @@ namespace nap
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
+		 * @param if the buffer is allowed to be bound to a shader as a storage buffer using a descriptor
 		 */
-		VertexBuffer(Core& core, EMemoryUsage usage) :
-			GPUBufferNumeric<T>(core, usage)
+		VertexBuffer(Core& core, EMemoryUsage usage, bool storage) :
+			GPUBufferNumeric<T>(core, usage), mStorage(storage)
 		{ }
 
 		/**
