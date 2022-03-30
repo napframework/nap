@@ -29,6 +29,9 @@ RTTI_BEGIN_ENUM(nap::EDescriptorType)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseGPUBuffer)
+	RTTI_PROPERTY("Clear",				&nap::BaseGPUBuffer::mClear,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",				&nap::BaseGPUBuffer::mUsage,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DescriptorType",		&nap::BaseGPUBuffer::mDescriptorType,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
