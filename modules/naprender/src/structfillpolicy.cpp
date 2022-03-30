@@ -13,42 +13,36 @@ RTTI_BEGIN_CLASS(nap::StructFillPolicy)
 	RTTI_PROPERTY("FillPolicies", &nap::StructFillPolicy::mFillPolicies, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseFillPolicyEntry)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructFillPolicy::BaseEntry)
+	RTTI_PROPERTY("Name", &nap::StructFillPolicy::BaseEntry::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FillPolicyEntryUInt)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryUInt::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicyUInt)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FillPolicyEntryInt)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryInt::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicyInt)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FillPolicyEntryFloat)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryFloat::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicyFloat)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FillPolicyEntryVec2)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec2::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicyVec2)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FillPolicyEntryVec3)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec3::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicyVec3)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FillPolicyEntryVec4)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryVec4::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicyVec4)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FillPolicyEntryMat4)
-	RTTI_PROPERTY("Name", &nap::FillPolicyEntryMat4::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::FillPolicyEntryMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::StructFillPolicyMat4)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 
@@ -73,6 +67,21 @@ namespace nap
 		return false;
 	}
 
+
+	bool StructFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
+	{
+		// Fill the buffer
+		size_t element_size = 0;
+		for (size_t idx = 0; idx < descriptor->mCount; idx++)
+		{
+			if (!fillFromUniformRecursive(descriptor->mElement.get(), data + element_size * idx, element_size, errorState))
+			{
+				errorState.fail(utility::stringFormat("Failed to fill specified data storage", this->mID.c_str()));
+				return false;
+			}
+		}
+		return true;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// StructFillPolicy
@@ -216,22 +225,6 @@ namespace nap
 			}
 		}
 		outElementSize = size;
-		return true;
-	}
-
-
-	bool StructFillPolicy::fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState)
-	{
-		// Fill the buffer
-		size_t element_size = 0;
-		for (size_t idx = 0; idx < descriptor->mCount; idx++)
-		{
-			if (!fillFromUniformRecursive(descriptor->mElement.get(), data + element_size * idx, element_size, errorState))
-			{
-				errorState.fail(utility::stringFormat("Failed to fill specified data storage", this->mID.c_str()));
-				return false;
-			}
-		}
 		return true;
 	}
 }

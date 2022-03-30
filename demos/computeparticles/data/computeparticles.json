@@ -434,8 +434,8 @@
             "mID": "ParticleBufferFillPolicy",
             "FillPolicies": [
                 {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_dfe3d0a7",
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_dfe3d0a7",
                     "Name": "position",
                     "FillPolicy": {
                         "Type": "nap::RandomFillPolicyVec4",
@@ -455,8 +455,8 @@
                     }
                 },
                 {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_6b099245",
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_6b099245",
                     "Name": "velocity",
                     "FillPolicy": {
                         "Type": "nap::RandomFillPolicyVec4",

@@ -1477,8 +1477,8 @@
             "mID": "BoidBufferFillPolicy",
             "FillPolicies": [
                 {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_5a948427",
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_5a948427",
                     "Name": "position",
                     "FillPolicy": {
                         "Type": "nap::RandomFillPolicyVec4",
@@ -1498,8 +1498,8 @@
                     }
                 },
                 {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_86a1275c",
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_86a1275c",
                     "Name": "velocity",
                     "FillPolicy": {
                         "Type": "nap::RandomFillPolicyVec4",
@@ -1519,8 +1519,8 @@
                     }
                 },
                 {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_7a6fdac2",
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_7a6fdac2",
                     "Name": "orientation",
                     "FillPolicy": {
                         "Type": "nap::ConstantFillPolicyVec4",
