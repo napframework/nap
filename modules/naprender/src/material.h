@@ -112,7 +112,7 @@ namespace nap
 		/**
 		 * @return The underlying base shader
 		 */
-		virtual const BaseShader* getBaseShader() const	override	{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
+		virtual const BaseShader* getBaseShader() const	override	{ assert(mShader != nullptr); return mShader.get(); }
 
 		/**
 		 * Returns the current blend mode.
@@ -199,7 +199,7 @@ namespace nap
 		/**
 		 * @return The underlying base shader
 		 */
-		virtual const BaseShader* getBaseShader() const override	{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
+		virtual const BaseShader* getBaseShader() const override	{ assert(mShader != nullptr); return mShader.get(); }
 
 		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
 	};
