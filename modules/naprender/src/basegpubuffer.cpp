@@ -115,11 +115,16 @@ namespace nap
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
+		// Setup usage flags
+		mUsageFlags |= mUsage == EMemoryUsage::DynamicRead ?
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
 		return true;
 	}
 
 
-	bool BaseGPUBuffer::allocateInternal(size_t size, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool BaseGPUBuffer::allocateInternal(size_t size, utility::ErrorState& errorState)
 	{
 		// Persistent storage
 		if (mUsage == EMemoryUsage::DynamicWrite)
@@ -127,61 +132,50 @@ namespace nap
 			mSize = size;
 			return true;
 		}
-		else
+
+		// Calculate buffer byte size and fetch allocator
+		VmaAllocator allocator = mRenderService->getVulkanAllocator();
+
+		// Make sure we haven't already uploaded or are attempting to upload data
+		bool staging_buffers_free = true;
+		for (auto& staging_buffer : mStagingBuffers)
+			staging_buffers_free &= staging_buffer.mBuffer != VK_NULL_HANDLE;
+
+		if (mRenderBuffers[0].mBuffer != VK_NULL_HANDLE || staging_buffers_free)
 		{
-			// Calculate buffer byte size and fetch allocator
-			VmaAllocator allocator = mRenderService->getVulkanAllocator();
+			errorState.fail("Attempting to upload data to previously allocated buffer");
+			errorState.fail("Not allowed when usage is static");
+			return false;
+		}
 
-			// Make sure we haven't already uploaded or are attempting to upload data
-			bool staging_buffers_free = true;
-			for (auto& staging_buffer : mStagingBuffers)
-				staging_buffers_free &= staging_buffer.mBuffer != VK_NULL_HANDLE;
+		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
+		VkBufferUsageFlags staging_buffer_usage = mUsage == EMemoryUsage::DynamicRead ?
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT : VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-			if (mRenderBuffers[0].mBuffer != VK_NULL_HANDLE || staging_buffers_free)
+		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
+		VmaMemoryUsage staging_memory_usage = mUsage == EMemoryUsage::DynamicRead ?
+			VMA_MEMORY_USAGE_GPU_TO_CPU : VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+		// Create required staging buffers
+		for (auto& staging_buffer : mStagingBuffers)
+		{
+			// Create staging buffer
+			if (!createBuffer(allocator, size, staging_buffer_usage, staging_memory_usage, 0, staging_buffer, errorState))
 			{
-				errorState.fail("Attempting to upload data to previously allocated buffer");
-				errorState.fail("Not allowed when usage is static");
+				errorState.fail("Unable to create staging buffer");
 				return false;
 			}
+		}
 
-			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-			VkBufferUsageFlags buffer_usage = mUsage == EMemoryUsage::DynamicRead ?
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT :
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		// Update buffer size
+		if (!mStagingBuffers.empty())
+			mSize = size;
 
-			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-			VmaMemoryUsage memory_usage = mUsage == EMemoryUsage::DynamicRead ?
-				VMA_MEMORY_USAGE_GPU_TO_CPU :
-				VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-			for (auto& staging_buffer : mStagingBuffers)
-			{
-				// Create staging buffer
-				if (!createBuffer(allocator, size, buffer_usage, memory_usage, 0, staging_buffer, errorState))
-				{
-					errorState.fail("Unable to create staging buffer");
-					return false;
-				}
-			}
-
-			// Update buffer size
-			if (!mStagingBuffers.empty())
-				mSize = size;
-
-			// Device buffer memory usage
-			VkBufferUsageFlags transfer_usage = mUsage == EMemoryUsage::DynamicRead ?
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-			// Make sure the transfer bits are not set in advance as these are determined from the mesh data usage property
-			deviceUsage &= ~(VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-
-			// Now create the GPU buffer to transfer data to, create buffer information
-			if (!createBuffer(allocator, size, deviceUsage | transfer_usage, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
-			{
-				errorState.fail("Unable to create render buffer");
-				return false;
-			}
+		// Now create the GPU buffer to transfer data to, create buffer information
+		if (!createBuffer(allocator, size, mUsageFlags, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
+		{
+			errorState.fail("Unable to create render buffer");
+			return false;
 		}
 		return true;
 	}
@@ -199,7 +193,7 @@ namespace nap
 	}
 
 
-	bool BaseGPUBuffer::setDataInternal(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool BaseGPUBuffer::setDataInternal(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState)
 	{
 		// Ensure the sizes are valid
 		assert(size <= reservedSize || size > 0);
@@ -212,7 +206,7 @@ namespace nap
 		switch (mUsage)
 		{
 		case EMemoryUsage::DynamicWrite:
-			return setDataInternalDynamic(data, size, reservedSize, deviceUsage, errorState);
+			return setDataInternalDynamic(data, size, reservedSize, mUsageFlags, errorState);
 		case EMemoryUsage::Static:
 			return setDataInternalStatic(data, size, errorState);
 		default:

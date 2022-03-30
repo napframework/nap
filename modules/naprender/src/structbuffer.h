@@ -67,11 +67,6 @@ namespace nap
 		virtual uint getElementSize() const override					{ return mElementSize; };
 
 		/**
-		 * @return the buffer usage flags
-		 */
-		virtual VkBufferUsageFlags getBufferUsageFlags() const override { return mUsageFlags; }
-
-		/**
 		 * @return whether this buffer is initialized
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
@@ -95,8 +90,5 @@ namespace nap
 
 		// Cached element size
 		uint mElementSize = 0;
-
-		// Usage flags that are shared over host (staging) and device (gpu) buffers
-		VkBufferUsageFlags mUsageFlags = 0;
 	};
 }

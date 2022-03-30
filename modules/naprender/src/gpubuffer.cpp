@@ -101,7 +101,7 @@ namespace nap
 {
 	bool IndexBuffer::init(utility::ErrorState& errorState)
 	{
-		GPUBufferNumeric<uint>::mUsageFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		ensureUsage(VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 		return GPUBufferNumeric<uint>::init(errorState);
 	}
 }

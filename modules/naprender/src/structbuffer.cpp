@@ -25,6 +25,8 @@ namespace nap
 		if (!errorState.check(mDescriptor.mCount >= 0, "Struct buffer descriptor's 'Count' property must be non-zero and non-negative"))
 			return false;
 
+		// Ensure buffer can be tied to a shader descriptor set slot
+		ensureUsage(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 		if (!BaseGPUBuffer::init(errorState))
 			return false;
 
@@ -32,11 +34,8 @@ namespace nap
 		mElementSize = getUniformStructSizeRecursive(*mDescriptor.mElement);
 		size_t buffer_size = getSize();
 
-		// Compose usage flags from buffer configuration
-		mUsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-
 		// Allocate buffer memory
-		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
+		if (!allocateInternal(buffer_size, errorState))
 			return false;
 
 		// Upload data when a buffer fill policy is available
@@ -50,7 +49,7 @@ namespace nap
 					return false;
 
 				// Prepare staging buffer upload
-				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, 0, errorState))
+				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, errorState))
 					return false;
 			}
 			else
@@ -73,6 +72,6 @@ namespace nap
 
 	bool StructBuffer::setData(void* data, size_t size, utility::ErrorState& error)
 	{
-		return setDataInternal(data, size, size, mUsageFlags, error);
+		return setDataInternal(data, size, size, error);
 	}
 }

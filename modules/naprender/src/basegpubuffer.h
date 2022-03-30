@@ -115,9 +115,9 @@ namespace nap
 		virtual uint getElementSize() const = 0;
 
 		/**
-		 * @return the buffer usage flags
+		 * @return the buffer usage flags. 
 		 */
-		virtual VkBufferUsageFlags getBufferUsageFlags() const = 0;
+		virtual VkBufferUsageFlags getBufferUsageFlags() const	{ return mUsageFlags; }
 
 		/**
 		 * Implemented by derived classes
@@ -140,6 +140,13 @@ namespace nap
 		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 
 	protected:
+		/**
+		 * Ensures the given buffer usage flags are applied when allocating and creating the buffer,
+		 * next to the flags derived from the 'Usage' property. Call this function before
+		 * calling allocateInternal() or setDataInternal(). 
+		 * @param usage buffer usage flags required on allocation
+		 */
+		void ensureUsage(VkBufferUsageFlags usage)								{ mUsageFlags |= usage; }
 
 		/**
 		 * Allocates buffers, called by derived classes
@@ -148,7 +155,7 @@ namespace nap
 		 * @param errorState contains error when data could not be set.
 		 * @return if the data was set
 		 */
-		bool allocateInternal(size_t size, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
+		bool allocateInternal(size_t size, utility::ErrorState& errorState);
 
 		/**
 		 * Allocates and updates GPU buffer content, called by derived classes.
@@ -159,7 +166,7 @@ namespace nap
 		 * @param errorState contains error when data could not be set.
 		 * @return if the data was set
 		 */
-		bool setDataInternal(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
+		bool setDataInternal(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState);
 
 		/**
 		 * Helper function that calls requestBufferClear() in RenderService for derived classes
@@ -200,6 +207,7 @@ namespace nap
 		// Clears queued texture downloads
 		void clearDownloads();
 
-		std::vector<BufferReadCallback>	mReadCallbacks;							///< Number of callbacks based on number of frames in flight
+		std::vector<BufferReadCallback>	mReadCallbacks;			///< Number of callbacks based on number of frames in flight
+		VkBufferUsageFlags mUsageFlags = 0;						///< Buffer usage flags that are shared over host (staging) and device (gpu) buffers
 	};
 }

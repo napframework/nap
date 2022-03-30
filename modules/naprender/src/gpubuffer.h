@@ -142,11 +142,6 @@ namespace nap
 		virtual VkFormat getFormat() const override						{ return getVulkanFormat<T>(); }
 
 		/**
-		 * @return the buffer usage flags
-		 */
-		virtual VkBufferUsageFlags getBufferUsageFlags() const override { return mUsageFlags; }
-
-		/**
 		 * @return whether this buffer is initialized
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
@@ -156,9 +151,6 @@ namespace nap
 	protected:
 		// Whether the buffer was successfully initialized
 		bool											mInitialized = false;
-
-		// Usage flags that are shared over host (staging) and device (gpu) buffers
-		VkBufferUsageFlags								mUsageFlags = 0;
 	};
 
 
@@ -301,7 +293,7 @@ namespace nap
 		uint32 buffer_size = mCount * sizeof(T);
 
 		// Allocate buffer memory
-		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
+		if (!allocateInternal(buffer_size, errorState))
 			return false;
 
 		// Upload data when a buffer fill policy is available
@@ -314,7 +306,7 @@ namespace nap
 				mFillPolicy->fill(mCount, staging_buffer.get());
 
 				// Prepare staging buffer upload
-				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, mUsageFlags, errorState))
+				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, errorState))
 					return false;
 			}
 			else
@@ -335,7 +327,7 @@ namespace nap
 	template<typename T>
 	bool GPUBufferNumeric<T>::setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState)
 	{
-		if (!setDataInternal(data, sizeof(T) * elementCount, sizeof(T) * reservedElementCount, mUsageFlags, errorState))
+		if (!setDataInternal(data, sizeof(T) * elementCount, sizeof(T) * reservedElementCount, errorState))
 			return false;
 
 		// Update count
@@ -346,7 +338,7 @@ namespace nap
 	template<typename T>
 	bool GPUBufferNumeric<T>::setData(const std::vector<T>& data, utility::ErrorState& errorState)
 	{
-		if (!setDataInternal(data.data(), data.size() * sizeof(T), data.capacity() * sizeof(T), mUsageFlags, errorState))
+		if (!setDataInternal(data.data(), data.size() * sizeof(T), data.capacity() * sizeof(T), errorState))
 			return false;
 
 		// Update count
@@ -357,8 +349,9 @@ namespace nap
 	template<typename T>
 	bool VertexBuffer<T>::init(utility::ErrorState& errorState)
 	{
-		GPUBufferNumeric<T>::mUsageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		mUsageFlags |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
+		VkBufferUsageFlags req_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		req_usage |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
+		ensureUsage(req_usage);
 		return GPUBufferNumeric<T>::init(errorState);
 	}
 }
