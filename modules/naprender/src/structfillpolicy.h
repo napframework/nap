@@ -41,7 +41,7 @@ namespace nap
 		/**
 		 * Binds a struct member name to a fill policy. Used to define StructFillPolicy behavior.
 		 */
-		class BaseEntry : public Resource
+		class NAPAPI BaseEntry : public Resource
 		{
 			RTTI_ENABLE(Resource)
 		public:
