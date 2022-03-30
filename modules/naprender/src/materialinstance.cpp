@@ -15,9 +15,9 @@
 #include <rtti/rttiutilities.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
-	RTTI_PROPERTY("Uniforms", &nap::MaterialInstanceResource::mUniforms, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings", &nap::MaterialInstanceResource::mBindings, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers", &nap::MaterialInstanceResource::mSamplers, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Buffers",					&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
@@ -374,7 +374,7 @@ namespace nap
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
 			// Check if the binding is set as override in the MaterialInstance
-			const BufferBinding* override_resource = findBindingResource(getResource()->mBindings, declaration);
+			const BufferBinding* override_resource = findBindingResource(getResource()->mBuffers, declaration);
 			const auto& buffer_declaration = declaration.getBufferDeclaration();
 
 			BufferBindingInstance* binding = nullptr;

@@ -38,8 +38,8 @@ RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterial)
 	RTTI_PROPERTY("Uniforms",					&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::BaseMaterial::mBindings,				nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Samplers",					&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Buffers",					&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
@@ -109,7 +109,7 @@ namespace nap
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
 			std::unique_ptr<BufferBindingInstance> binding_instance;
-			for (auto& binding : mBindings)
+			for (auto& binding : mBuffers)
 			{
 				const std::string& binding_name = declaration.mName;
 				if (binding_name == binding->mName)

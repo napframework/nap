@@ -30,8 +30,8 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
-		std::vector<ResourcePtr<BufferBinding>>		mBindings;										///< Property: "Bindings" buffer bindings to override
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
+		std::vector<ResourcePtr<BufferBinding>>		mBuffers;										///< Property: "Buffers" buffer bindings to override
 	};
 
 	/**
