@@ -21,6 +21,12 @@ namespace nap
 	class DescriptorSetCache;
 	class Core;
 
+	/**
+	 * Acts as the main interface to any type of shader.
+	 * Creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use
+	 * that same value, unless overridden by a nap::MaterialInstanceResource.
+	 */
 	class BaseMaterial : public Resource, public UniformContainer
 	{
 		RTTI_ENABLE(Resource)
@@ -50,12 +56,14 @@ namespace nap
 		RenderService* mRenderService = nullptr;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Material
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Resource that acts as the main interface to a vertex or fragment shader. Controls how vertex buffers are bound to
-	 * shader inputs.
-	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
-	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use 
-	 * that same value, unless overridden by a nap::MaterialInstance.
+	 * Resource that acts as the main interface to a vertex or fragment shader.
+	 * Controls how vertex buffers are bound to shader inputs.
 	 *
 	 * Note that there is no implicit synchronization of access to shader resources bound to buffer bindings and regular
 	 * uniforms between render passes. Therefore, it is currently not recommended to write to storage buffers inside
@@ -152,6 +160,10 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Compute Material
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Resource that acts as the main interface to a compute shader. Controls how GPU buffers are bound to shader inputs.
 	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
@@ -189,6 +201,6 @@ namespace nap
 		 */
 		virtual const BaseShader* getBaseShader() const override	{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
 
-		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The compute shader that this material is using
+		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
 	};
 }
