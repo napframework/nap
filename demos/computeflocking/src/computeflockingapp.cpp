@@ -47,6 +47,7 @@ namespace nap
 		mBoundsEntity = scene->findEntity("BoundsEntity");
 		mTargetEntity = scene->findEntity("BoidTargetEntity");
 		mRenderTarget = mResourceManager->findObject<RenderTarget>("ColorTarget");
+		mParameterGUI = mResourceManager->findObject("ParameterGUI");
 
 		// Get parameters
 		mContrastParam = mResourceManager->findObject("ContrastParameter");
@@ -57,11 +58,6 @@ namespace nap
 
 		auto& flocking_system = mFlockingSystemEntity->getComponent<FlockingSystemComponentInstance>();
 		mBoundsRadiusParam = flocking_system.getResource().mBoundsRadiusParam;
-
-		// Create parameter GUI
-		mParameterGUI = std::make_unique<ParameterGUI>(getCore());
-		auto parameter_group = mResourceManager->findObject<ParameterGroup>("FlockingParameters");
-		mParameterGUI->mParameterGroup = parameter_group;
 
 		// Sample default color values from loaded color palette - overrides preset
 		const auto& palette = mGuiService->getPalette();

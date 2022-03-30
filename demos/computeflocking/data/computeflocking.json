@@ -834,6 +834,12 @@
             "Path": "capsule.mesh"
         },
         {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "FlockingParameters"
+        },
+        {
             "Type": "nap::ParameterGroup",
             "mID": "FlockingParameters",
             "Parameters": [],
@@ -1341,6 +1347,9 @@
         {
             "Type": "nap::StructBuffer",
             "mID": "BoidBufferA",
+            "Clear": false,
+            "Usage": "Static",
+            "DescriptorType": "Storage",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -1408,6 +1417,9 @@
         {
             "Type": "nap::StructBuffer",
             "mID": "BoidBufferB",
+            "Clear": true,
+            "Usage": "Static",
+            "DescriptorType": "Storage",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
