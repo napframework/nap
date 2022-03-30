@@ -24,6 +24,16 @@ using SystemTimeStamp = std::chrono::time_point<SystemClock>;
 constexpr const char* licenceToken = "LICENSE@";
 constexpr const char* licenseExtension = "license";
 constexpr const char* keyExtension = "key";
+constexpr const char* defaultSigningSceme = "RSASS_PKCS1v15_SHA1";
+constexpr const char* supportedSigningSchemes[] =
+{
+	defaultSigningSceme,
+	"RSASS_PKCS1v15_SHA224",
+	"RSASS_PKCS1v15_SHA256",
+	"RSASS_PKCS1v15_SHA384",
+	"RSASS_PKCS1v15_SHA512",
+	""
+};
 
 /**
  * Returns if the given date exists
@@ -70,21 +80,54 @@ static bool isNumber(const std::string& s)
 
 
 /**
+ * Helper function to instantiate the correct signing class with private key
+ * @return the instantiated Signer class
+ * @param privFilename path to private key, used to sign the license
+ * @param signingScheme the signing scheme
+ */
+static std::unique_ptr<PK_Signer> createSigner(const std::string& privFilename, const std::string& signingScheme)
+{
+	FileSource privFile(privFilename.c_str(), true, new HexDecoder);
+	std::unique_ptr<PK_Signer> signer;
+
+	if (signingScheme == "RSASS_PKCS1v15_SHA1")
+		signer.reset(new RSASS<PKCS1v15, SHA1>::Signer(privFile));
+	else if (signingScheme == "RSASS_PKCS1v15_SHA224")
+		signer.reset(new RSASS<PKCS1v15, SHA224>::Signer(privFile));
+	else if (signingScheme == "RSASS_PKCS1v15_SHA256")
+		signer.reset(new RSASS<PKCS1v15, SHA256>::Signer(privFile));
+	else if (signingScheme == "RSASS_PKCS1v15_SHA384")
+		signer.reset(new RSASS<PKCS1v15, SHA384>::Signer(privFile));
+	else if (signingScheme == "RSASS_PKCS1v15_SHA512")
+		signer.reset(new RSASS<PKCS1v15, SHA512>::Signer(privFile));
+
+	return signer;
+}
+
+
+/**
  * Creates, signs and saves the license
  * @param privFilename path to private key, used to sign the license
+ * @param signingScheme the signing scheme
  * @param license the license to sign and save
  * @param signatureFilename path to signature file
  * @param licenseFileName to license file
  */
-static bool signLicense(const std::string& privFilename, const std::string& license, const std::string& signatureFilename, const std::string& licenseFileName)
+static bool signLicense(const std::string& privFilename, const std::string& signingScheme, const std::string& license, const std::string& signatureFilename, const std::string& licenseFileName)
 {
 	try
 	{
+		std::unique_ptr<PK_Signer> signer = createSigner(privFilename, signingScheme);
+		if (!signer)
+		{
+			// Someone forgot to update createSigner(). This is undesirable.
+			std::cerr << "Signing scheme not fully implemented: " << signingScheme << std::endl << "Unable to create license" << std::endl;
+			return false;
+		}
+
 		// Write signed license version
-		FileSource privFile(privFilename.c_str(), true, new HexDecoder);
-		RSASS<PKCS1v15, SHA1>::Signer priv(privFile);
 		NonblockingRng rng;
-		StringSource f(license.c_str(), true, new SignerFilter(rng, priv, new HexEncoder(new FileSink(signatureFilename.c_str()))));
+		StringSource f(license.c_str(), true, new SignerFilter(rng, *signer, new HexEncoder(new FileSink(signatureFilename.c_str()))));
 
 		// Write regular text version
 		FileSink l(licenseFileName.c_str());
@@ -142,6 +185,32 @@ static bool validateDate(const std::string& date)
 
 
 /**
+ * Ensures the given signing scheme as string is valid
+ * @param signingScheme signing scheme as string
+ * @return if the signing scheme is correct
+ */
+static bool validateSigningScheme(const std::string& signingScheme)
+{
+	// Validate the signing scheme is supported
+	for (int i = 0; supportedSigningSchemes[i][0] != '\0'; ++i)
+	{
+		if (signingScheme == supportedSigningSchemes[i])
+		{
+			return true;
+		}
+	}
+
+	std::cout << "Invalid signing scheme: " << signingScheme << std::endl;
+	std::cout << "Supported signing schemes: " << std::endl;
+	for (int i = 0; supportedSigningSchemes[i][0] != '\0'; ++i)
+	{
+		std::cout << "  " << supportedSigningSchemes[i] << std::endl;
+	}
+	return false;
+}
+
+
+/**
  * Creates, signs and saves a license.
  * Use this tool to create a signed license that is compatible with mod_naplicense.
  *
@@ -156,15 +225,17 @@ static bool validateDate(const std::string& date)
  * -m	client mail address
  * -d	license expiry date
  * -t	additional message (tag)
+ * -s	signing scheme
  * 
  * If the date is not specified the license is not bound to an end date.
+ * For backwards compatibility with older versions of mod_naplicense, do not specify the signing scheme.
  * Output format of human readable license = '.license'
  * Output format of signed license = '.key'
  * Returns 0 on success, -1 on failure
  *
  * Example:
  * ~~~~~
- * licensegenerator -k c:/keys/key.private -f ben -l davis -a myapp -m ben@davis.com -d -t educational 30/12/2025 -o c:/license
+ * licensegenerator -k c:/keys/key.private -s RSASS_PKCS1v15_SHA1 -f ben -l davis -a myapp -m ben@davis.com -d 30/12/2025 -t educational -o c:/license
  * ~~~~~
  */
 int main(int argc, char* argv[])
@@ -173,6 +244,15 @@ int main(int argc, char* argv[])
 	CommandLine commandLine;
 	if (!CommandLine::parse(argc, argv, commandLine))
 		return -1;
+
+	// Set signing scheme
+	std::string signingScheme = defaultSigningSceme;
+	if (!commandLine.mSignScheme.empty())
+	{
+		signingScheme = commandLine.mSignScheme;
+		if (!validateSigningScheme(signingScheme))
+			return -1;
+	}
 
 	// Create license content
 	std::ostringstream lic_content;
@@ -218,7 +298,7 @@ int main(int argc, char* argv[])
 		"." << licenseExtension;
 
 	// Create license
-	if (!signLicense(commandLine.mKey, lic_content.str(), key_loc.str(), lic_loc.str()))
+	if (!signLicense(commandLine.mKey, signingScheme, lic_content.str(), key_loc.str(), lic_loc.str()))
 		return -1;
 
 	std::cout << "Successfully created and signed license" << std::endl;

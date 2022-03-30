@@ -94,13 +94,13 @@ Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supp
 # Compilation
 
 Windows 10<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 Ubuntu 20.04<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 macOS 10.15<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
 
@@ -108,14 +108,14 @@ To generate a solution and compile the source code you need to have installed:
 
 - Qt 5
 	- x86_64
-		- The precompiled package uses Qt 5.12.11 (LTS), although other versions are known to work.
+		- The precompiled package uses Qt 5.12 (LTS), although other versions are known to work.
 		- Go to [qt.io](https://www.qt.io/download) and select **Downloads for open source users**
 		- Download the Qt online installer
 		- During installation select **Custom installation** 
-		- Filter on the **LTS** category to download and install Qt 5.12.11 for your target platform
+		- Filter on the **LTS** category to download and install Qt 5.12 for your target platform
 	- ARM
-		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.12.11 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.12.11 for Ubuntu 20.04 *arm64*
+		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
+		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
 NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
 
