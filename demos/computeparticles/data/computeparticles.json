@@ -122,7 +122,7 @@
                     },
                     "NumParticles": 100000,
                     "Speed": 0.25,
-                    "Displacement": 0.5,
+                    "Displacement": 0.1,
                     "RotationSpeed": 5.0,
                     "RotationVariation": 1.0,
                     "Size": 0.07999999821186066
