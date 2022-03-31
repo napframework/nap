@@ -21,7 +21,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace defaultshader
+	namespace shader
 	{
 		inline constexpr const char* coloradjustment = "coloradjustment";
 	}
@@ -32,6 +32,6 @@ namespace nap
 
 	bool ColorAdjustmentShader::init(utility::ErrorState& errorState)
 	{
-		return loadDefault(defaultshader::coloradjustment, errorState);
+		return loadDefault(shader::coloradjustment, errorState);
 	}
 }

@@ -21,7 +21,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace defaultshader
+	namespace shader
 	{
 		inline constexpr const char* video = "video";
 	}
@@ -32,6 +32,6 @@ namespace nap
 
 	bool VideoShader::init(utility::ErrorState& errorState)
 	{
-		return loadDefault(defaultshader::video, errorState);
+		return loadDefault(shader::video, errorState);
 	}
 }

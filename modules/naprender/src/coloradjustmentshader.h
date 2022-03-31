@@ -23,9 +23,9 @@ namespace nap
 		}
 
 		inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
-		inline constexpr const char* brightness = "brightness";					///<
-		inline constexpr const char* contrast = "contrast";						///<
-		inline constexpr const char* saturation = "saturation";					///<
+		inline constexpr const char* brightness = "brightness";					///< Controls brightness [-x, x]
+		inline constexpr const char* contrast = "contrast";						///< Controls contrast [-1.0, 1.0]
+		inline constexpr const char* saturation = "saturation";					///< Controls saturation [0.0, x]
 	}
 
 	/**

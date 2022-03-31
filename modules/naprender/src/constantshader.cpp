@@ -21,7 +21,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace defaultshader
+	namespace shader
 	{
 		inline constexpr const char* constant = "constant";
 	}
@@ -32,6 +32,6 @@ namespace nap
 
 	bool ConstantShader::init(utility::ErrorState& errorState)
 	{
-		return loadDefault(defaultshader::constant, errorState);
+		return loadDefault(shader::constant, errorState);
 	}
 }
