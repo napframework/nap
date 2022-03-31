@@ -363,7 +363,7 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::initBindings(utility::ErrorState& errorState)
+	bool BaseMaterialInstance::initBindings(BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
 	{
 		// Here we create SSBOs in the same way as we did for UBOs above
 		const auto& ssbo_declarations = getMaterial()->getShader().getSSBODeclarations();
@@ -374,7 +374,7 @@ namespace nap
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
 			// Check if the binding is set as override in the MaterialInstance
-			const BufferBinding* override_resource = findBindingResource(getResource()->mBuffers, declaration);
+			const BufferBinding* override_resource = findBindingResource(instanceResource.mBuffers, declaration);
 			const auto& buffer_declaration = declaration.getBufferDeclaration();
 
 			BufferBindingInstance* binding = nullptr;
@@ -404,7 +404,7 @@ namespace nap
 			}
 
 			VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[ssbo_index];
-			buffer_info.buffer = binding->getBaseBuffer().getBuffer();
+			buffer_info.buffer = binding->getBuffer().getBuffer();
 			buffer_info.offset = 0;
 			buffer_info.range = VK_WHOLE_SIZE;
 
@@ -423,7 +423,7 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::initSamplers(utility::ErrorState& errorState)
+	bool BaseMaterialInstance::initSamplers(BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
 	{
 		BaseMaterial* material = getMaterial();
 		const SamplerDeclarations& sampler_declarations = material->getShader().getSamplerDeclarations();
@@ -462,7 +462,7 @@ namespace nap
 			bool is_array = declaration.mNumArrayElements > 1;
 
 			// Check if the sampler is set as override in the MaterialInstance
-			const Sampler* sampler = findSamplerResource(getResource()->mSamplers, declaration);
+			const Sampler* sampler = findSamplerResource(instanceResource.mSamplers, declaration);
 			SamplerInstance* sampler_instance = nullptr;
 			if (sampler != nullptr)
 			{
@@ -555,12 +555,14 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::initInternal(RenderService& renderService, BaseMaterial& material, utility::ErrorState& errorState)
+	bool BaseMaterialInstance::initInternal(RenderService& renderService, BaseMaterial& material, BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
 	{
 		mDevice = renderService.getDevice();
 		mRenderService = &renderService;
 		mMaterial = &material;
-		const auto& shader = material.getShader();
+		mResource = &instanceResource;
+
+		const auto& shader = mMaterial->getShader();
 
 		// Here we create UBOs in two parts:
 		// 1) We create a hierarchical uniform instance structure based on the hierarchical declaration structure from the shader. We do
@@ -574,7 +576,7 @@ namespace nap
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
-			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(getResource()->mUniforms, ubo_declaration));
+			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(instanceResource.mUniforms, ubo_declaration));
 
 			// Pass 1: create hierarchical structure
 			UniformStructInstance* override_struct = nullptr;
@@ -597,10 +599,10 @@ namespace nap
 		}
 		mUniformsCreated = false;
 
-		if (!initBindings(errorState))
+		if (!initBindings(instanceResource, errorState))
 			return false;
 
-		if (!initSamplers(errorState))
+		if (!initSamplers(instanceResource, errorState))
 			return false;
 
 		// We get/create an allocator that is compatible with the layout of the shader that this material is bound to. Practically this
@@ -661,28 +663,9 @@ namespace nap
 	bool MaterialInstance::init(RenderService& renderService, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
-		if (!initInternal(renderService, *resource.mMaterial, errorState))
+		if (!initInternal(renderService, *resource.mMaterial, resource, errorState))
 			return false;
-
 		return true;
-	}
-
-
-	Material& MaterialInstance::getMaterial()
-	{
-		return *mResource->mMaterial;
-	}
-
-
-	const nap::Material& MaterialInstance::getMaterial() const
-	{
-		return *mResource->mMaterial;
-	}
-
-
-	const BaseMaterialInstanceResource* MaterialInstance::getResource() const
-	{
-		return mResource;
 	}
 
 
@@ -723,27 +706,8 @@ namespace nap
 	bool ComputeMaterialInstance::init(RenderService& renderService, ComputeMaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
-		if (!initInternal(renderService, *mMaterial, errorState))
+		if (!initInternal(renderService,*resource.mComputeMaterial, resource, errorState))
 			return false;
-
 		return true;
-	}
-
-
-	ComputeMaterial& ComputeMaterialInstance::getMaterial()
-	{
-		return *mResource->mComputeMaterial;
-	}
-
-
-	const ComputeMaterial& ComputeMaterialInstance::getMaterial() const
-	{
-		return *mResource->mComputeMaterial;
-	}
-
-
-	const BaseMaterialInstanceResource* ComputeMaterialInstance::getResource() const
-	{
-		return mResource;
 	}
 }

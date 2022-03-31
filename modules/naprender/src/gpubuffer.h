@@ -82,13 +82,8 @@ namespace nap
 		 */
 		GPUBuffer(Core& core, EMemoryUsage usage);
 
+		// Queues buffers for destruction
 		virtual ~GPUBuffer();
-
-		// Copy construction not allowed
-		GPUBuffer(const GPUBuffer& other) = delete;
-
-		// Copy assignment not allowed
-		GPUBuffer& operator=(const GPUBuffer& other) = delete;
 
 		/**
 		 * @return handle to the Vulkan buffer.

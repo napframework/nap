@@ -255,7 +255,7 @@ namespace nap
 
 			// If it is null, search for it in the base material.
 			if (vertex_struct == nullptr)
-				vertex_struct = mCurrentComputeInstance->getMaterialInstance().getMaterial()->findBinding(uniform::vertexBufferStruct);
+				vertex_struct = mCurrentComputeInstance->getMaterialInstance().getMaterial().findBinding(uniform::vertexBufferStruct);
 
 			// Assert if unavailable
 			assert(vertex_struct != nullptr);

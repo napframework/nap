@@ -107,7 +107,7 @@ namespace nap
 		/**
 		 * @return The graphics shader
 		 */
-		const Shader& getShader() const								{ assert(mShader != nullptr); return *mShader; }
+		const Shader& getShader() const								{ assert(Material::mShader != nullptr); return *Material::mShader; }
 
 		/**
 		 * Returns the current blend mode.
@@ -189,7 +189,7 @@ namespace nap
 		/**
 		 * @return The underlying compute shader
 		 */
-		const ComputeShader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
+		const ComputeShader& getShader() const						{ assert(ComputeMaterial::mShader != nullptr); return *ComputeMaterial::mShader; }
 
 		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
 	};
