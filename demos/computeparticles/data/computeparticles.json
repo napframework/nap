@@ -481,8 +481,7 @@
             "Clear": false,
             "Usage": "Static",
             "Count": 400000,
-            "FillPolicy": "",
-            "Storage": true
+            "FillPolicy": ""
         }
     ]
 }
