@@ -27,14 +27,16 @@ RTTI_END_ENUM
 // GPUBuffer
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseGPUBuffer)
-	RTTI_PROPERTY("Clear", &nap::BaseGPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage", &nap::BaseGPUBuffer::mMemoryUsage, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
+	RTTI_PROPERTY("Clear", &nap::GPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage", &nap::GPUBuffer::mMemoryUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
-	RTTI_PROPERTY("Count", &nap::GPUBuffer::mCount, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS
+
+//////////////////////////////////////////////////////////////////////////
+// GPUBufferNumeric interface
+//////////////////////////////////////////////////////////////////////////
+RTTI_DEFINE_BASE(nap::IGPUBufferNumeric)
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -42,31 +44,38 @@ RTTI_END_CLASS
 //////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count",		&nap::GPUBufferUInt::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count",		&nap::GPUBufferInt::mCount,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count",		&nap::GPUBufferFloat::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count",		&nap::GPUBufferVec2::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count",		&nap::GPUBufferVec3::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count",		&nap::GPUBufferVec4::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy",	&nap::GPUBufferMat4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count",		&nap::GPUBufferMat4::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -172,17 +181,17 @@ namespace nap
 	// GPUBuffer
 	//////////////////////////////////////////////////////////////////////////
 
-	BaseGPUBuffer::BaseGPUBuffer(Core& core) :
+	GPUBuffer::GPUBuffer(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{}
 
 
-	BaseGPUBuffer::BaseGPUBuffer(Core& core, EMemoryUsage usage) :
+	GPUBuffer::GPUBuffer(Core& core, EMemoryUsage usage) :
 		mRenderService(core.getService<RenderService>()), mMemoryUsage(usage)
 	{}
 
 
-	bool BaseGPUBuffer::init(utility::ErrorState& errorState)
+	bool GPUBuffer::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mRenderBuffers.empty(), utility::stringFormat("%s: Renderbuffers created before initialization", mID.c_str())))
 			return false;
@@ -210,7 +219,7 @@ namespace nap
 	}
 
 
-	bool BaseGPUBuffer::allocateInternal(size_t size, utility::ErrorState& errorState)
+	bool GPUBuffer::allocateInternal(size_t size, utility::ErrorState& errorState)
 	{
 		// Persistent storage
 		if (mMemoryUsage == EMemoryUsage::DynamicWrite)
@@ -267,19 +276,19 @@ namespace nap
 	}
 
 
-	VkBuffer BaseGPUBuffer::getBuffer() const
+	VkBuffer GPUBuffer::getBuffer() const
 	{
 		return mRenderBuffers[mCurrentRenderBufferIndex].mBuffer;
 	}
 
 
-	const BufferData& BaseGPUBuffer::getBufferData() const
+	const BufferData& GPUBuffer::getBufferData() const
 	{
 		return mRenderBuffers[mCurrentRenderBufferIndex];
 	}
 
 
-	bool BaseGPUBuffer::setDataInternal(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternal(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState)
 	{
 		// Ensure the sizes are valid
 		assert(size <= reservedSize || size > 0);
@@ -304,7 +313,7 @@ namespace nap
 	}
 
 
-	bool BaseGPUBuffer::setDataInternalStatic(const void* data, size_t size, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalStatic(const void* data, size_t size, utility::ErrorState& errorState)
 	{
 		// Ensure the buffers are allocated
 		assert(!mRenderBuffers.empty());
@@ -337,7 +346,7 @@ namespace nap
 	}
 
 
-	bool BaseGPUBuffer::setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
 		// For each update of data, we cycle through the buffers
 		mCurrentRenderBufferIndex = (mCurrentRenderBufferIndex + 1) % mRenderBuffers.size();
@@ -379,7 +388,7 @@ namespace nap
 	}
 
 
-	void BaseGPUBuffer::upload(VkCommandBuffer commandBuffer)
+	void GPUBuffer::upload(VkCommandBuffer commandBuffer)
 	{
 		// Ensure we're dealing with an empty buffer, size of 1 that is used static.
 		assert(mStagingBuffers.size() > 0 && mStagingBuffers[0].mBuffer != VK_NULL_HANDLE);
@@ -431,7 +440,7 @@ namespace nap
 	}
 
 
-	void BaseGPUBuffer::download(VkCommandBuffer commandBuffer)
+	void GPUBuffer::download(VkCommandBuffer commandBuffer)
 	{
 		assert(mMemoryUsage == EMemoryUsage::DynamicRead);
 		BufferData& staging_buffer = mStagingBuffers[mCurrentStagingBufferIndex];
@@ -453,7 +462,7 @@ namespace nap
 	}
 
 
-	void BaseGPUBuffer::clear(VkCommandBuffer commandBuffer)
+	void GPUBuffer::clear(VkCommandBuffer commandBuffer)
 	{
 		// Ensure the render buffers are created
 		assert(mRenderBuffers.size() > 0);
@@ -481,7 +490,7 @@ namespace nap
 	}
 
 
-	void BaseGPUBuffer::notifyDownloadReady(int frameIndex)
+	void GPUBuffer::notifyDownloadReady(int frameIndex)
 	{
 		// Update the staging buffer using the Bitmap contents
 		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
@@ -500,7 +509,7 @@ namespace nap
 	}
 
 
-	void BaseGPUBuffer::asyncGetData(std::function<void(const void*, size_t)> copyFunction)
+	void GPUBuffer::asyncGetData(std::function<void(const void*, size_t)> copyFunction)
 	{
 		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = copyFunction;
@@ -508,20 +517,20 @@ namespace nap
 	}
 
 
-	void BaseGPUBuffer::clearDownloads()
+	void GPUBuffer::clearDownloads()
 	{
 		for (auto& callback : mReadCallbacks)
 			callback = BufferReadCallback();
 	}
 
 
-	void BaseGPUBuffer::requestClear()
+	void GPUBuffer::requestClear()
 	{
 		mRenderService->requestBufferClear(*this);
 	}
 
 
-	BaseGPUBuffer::~BaseGPUBuffer()
+	GPUBuffer::~GPUBuffer()
 	{
 		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
 		// This ensures the buffers are destroyed when certain they are not in use.

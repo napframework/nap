@@ -273,7 +273,7 @@ namespace nap
 	class NAPAPI RenderService : public Service
 	{
 		friend class Texture2D;
-		friend class BaseGPUBuffer;
+		friend class GPUBuffer;
 		friend class RenderWindow;
 		RTTI_ENABLE(Service)
 	public:
@@ -1032,26 +1032,26 @@ namespace nap
 		 * Request a buffer clear
 		 * @param buffer the buffer to clear.
 		 */
-		void requestBufferClear(BaseGPUBuffer& buffer);
+		void requestBufferClear(GPUBuffer& buffer);
 
 		/**
 		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
 		 * @param buffer the buffer to upload to the GPU.
 		 */
-		void requestBufferUpload(BaseGPUBuffer& buffer);
+		void requestBufferUpload(GPUBuffer& buffer);
 
 		/**
 		 * Request a Vulkan buffer transfer, from GPU buffer to staging buffer.
 		 * @param buffer the buffer to download data into.
 		 */
-		void requestBufferDownload(BaseGPUBuffer& buffer);
+		void requestBufferDownload(GPUBuffer& buffer);
 
 		/**
 		 * Deletes all buffer upload requests.
 		 * Called when the GPU buffer is destroyed.
 		 * @param buffer the buffer to remove pending upload commands for.
 		 */
-		void removeBufferRequests(BaseGPUBuffer& buffer);
+		void removeBufferRequests(GPUBuffer& buffer);
 
 		/**
 		 * Transfers all previously queued data to the GPU.
@@ -1119,7 +1119,7 @@ namespace nap
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
-		using BufferSet = std::unordered_set<BaseGPUBuffer*>;
+		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 
@@ -1142,7 +1142,7 @@ namespace nap
 		{
 			VkFence								mFence;								///< CPU sync primitive
 			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
-			std::vector<BaseGPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
+			std::vector<GPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
 			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
 			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window

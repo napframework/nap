@@ -44,6 +44,7 @@ namespace nap
 		DynamicWrite		///< Buffer data is updated more than once from the CPU to the GPU
 	};
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// GPU Buffer
 	//////////////////////////////////////////////////////////////////////////
@@ -59,7 +60,7 @@ namespace nap
 	 * allows for faster drawing times. 'DynamicWrite' buffers are uploaded into shared CPU / GPU memory
 	 * and are therefore slower to access. Keep this in mind when selecting the appropriate memory usage.
 	 */
-	class NAPAPI BaseGPUBuffer : public Resource
+	class NAPAPI GPUBuffer : public Resource
 	{
 		friend class RenderService;
 		RTTI_ENABLE(Resource)
@@ -70,7 +71,7 @@ namespace nap
 		 * and in which memory space it is placed.
 		 * @param core the nap core
 		 */
-		BaseGPUBuffer(Core& core);
+		GPUBuffer(Core& core);
 
 		/**
 		 * Every buffer needs to have access to the render engine.
@@ -79,15 +80,15 @@ namespace nap
 		 * @param core the nap core
 		 * @param usage how the buffer is used at runtime.
 		 */
-		BaseGPUBuffer(Core& core, EMemoryUsage usage);
+		GPUBuffer(Core& core, EMemoryUsage usage);
 
-		virtual ~BaseGPUBuffer();
+		virtual ~GPUBuffer();
 
 		// Copy construction not allowed
-		BaseGPUBuffer(const BaseGPUBuffer& other) = delete;
+		GPUBuffer(const GPUBuffer& other) = delete;
 
 		// Copy assignment not allowed
-		BaseGPUBuffer& operator=(const BaseGPUBuffer& other) = delete;
+		GPUBuffer& operator=(const GPUBuffer& other) = delete;
 
 		/**
 		 * @return handle to the Vulkan buffer.
@@ -222,20 +223,20 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Base class for all types of one dimensional GPU buffers.
+	 * Base interface for all types of one dimensional GPU buffers.
 	 * Supported values for child classes such as GPUBufferNumeric<T> must be primitives that can be mapped to 
 	 * VkFormat. This is enforced by the requirement to implement getFormat().
 	 */
-	class NAPAPI GPUBuffer : public BaseGPUBuffer
+	class NAPAPI IGPUBufferNumeric : public GPUBuffer
 	{
-		RTTI_ENABLE(BaseGPUBuffer)
+		RTTI_ENABLE(GPUBuffer)
 	public:
-		GPUBuffer(Core& core) :
-			BaseGPUBuffer(core)
+		IGPUBufferNumeric(Core& core) :
+			GPUBuffer(core)
 		{ }
 
-		GPUBuffer(Core& core, EMemoryUsage usage) :
-			BaseGPUBuffer(core, usage)
+		IGPUBufferNumeric(Core& core, EMemoryUsage usage) :
+			GPUBuffer(core, usage)
 		{ }
 
 		/**
@@ -250,11 +251,15 @@ namespace nap
 		virtual bool setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) = 0;
 
 		/**
+		 * Sets the number of elements this buffer will contain.
+		 * @param count new number of elements
+		 */
+		virtual void setCount(uint32 count) = 0;
+
+		/**
 		 * @return the buffer format
 		 */
 		virtual VkFormat getFormat() const = 0;
-
-		uint32 mCount = 0;				///< Property: 'Count' The number of  elements to initialize/allocate the buffer with.
 	};
 
 
@@ -274,16 +279,16 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class GPUBufferNumeric : public GPUBuffer
+	class GPUBufferNumeric : public IGPUBufferNumeric
 	{
-		RTTI_ENABLE(GPUBuffer)
+		RTTI_ENABLE(IGPUBufferNumeric)
 	public:
 		/**
 		 * Every numeric buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		GPUBufferNumeric(Core& core) :
-			GPUBuffer(core)
+			IGPUBufferNumeric(core)
 		{ }
 
 		/**
@@ -294,7 +299,7 @@ namespace nap
 		 * @param usage how the buffer is used at runtime.
 		 */
 		GPUBufferNumeric(Core& core, EMemoryUsage usage) :
-			GPUBuffer(core, usage)
+			IGPUBufferNumeric(core, usage)
 		{ }
 
 		/**
@@ -326,6 +331,12 @@ namespace nap
 		bool setData(const std::vector<T>& data, utility::ErrorState& errorState);
 
 		/**
+		 * Sets the number of elements this buffer will contain.
+		 * @param count new number of elements
+		 */
+		void setCount(uint32 count) override							{ mCount = count; }
+
+		/**
 		 * @return the number of buffer values
 		 */
 		virtual uint getCount() const override							{ return mCount; }
@@ -350,11 +361,12 @@ namespace nap
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
 
-		ResourcePtr<FillPolicy<T>>						mFillPolicy = nullptr;	///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		ResourcePtr<FillPolicy<T>> mFillPolicy = nullptr;				///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		uint32 mCount = 0;												///< Property: 'Count' The number of  elements to initialize/allocate the buffer with.
 
 	protected:
 		// Whether the buffer was successfully initialized
-		bool											mInitialized = false;
+		bool mInitialized = false;
 	};
 
 
@@ -455,8 +467,15 @@ namespace nap
 		/**
 		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
 		 * If a fill policy is available, the buffer will also be uploaded to immediately.
+		 * @param errorState contains the error if initialization fails.
 		 */
 		virtual bool init(utility::ErrorState & errorState) override;
+
+		/**
+		 * Sets the number of elements this buffer will contain.
+		 * @param count new number of elements
+		 */
+		void setCount(uint32 count) override							{ mCount = count; }
 
 	private:
 		bool mStorage = true;			///< Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
@@ -492,7 +511,7 @@ namespace nap
 	template<typename T>
 	bool GPUBufferNumeric<T>::init(utility::ErrorState& errorState)
 	{
-		if (!GPUBuffer::init(errorState))
+		if (!IGPUBufferNumeric::init(errorState))
 			return false;
 
 		if (!errorState.check(mMemoryUsage != EMemoryUsage::DynamicWrite || mCount >= 0,
@@ -528,7 +547,7 @@ namespace nap
 
 		// Optionally clear - does not count as an upload
 		else if (mClear)
-			BaseGPUBuffer::requestClear();
+			GPUBuffer::requestClear();
 
 		mInitialized = true;
 		return true;

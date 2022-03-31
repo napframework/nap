@@ -21,7 +21,7 @@ namespace nap
 	{ }
 
 
-	const GPUBuffer* GPUMesh::findVertexBuffer(const std::string& id) const
+	const IGPUBufferNumeric* GPUMesh::findVertexBuffer(const std::string& id) const
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		if (attribute != mAttributes.end())
@@ -30,7 +30,7 @@ namespace nap
 	}
 
 
-	GPUBuffer& GPUMesh::getVertexBuffer(const std::string& id)
+	IGPUBufferNumeric& GPUMesh::getVertexBuffer(const std::string& id)
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		assert(attribute != mAttributes.end());
@@ -54,22 +54,4 @@ namespace nap
 		assert(index < mIndexBuffers.size());
 		return *mIndexBuffers[index];
 	}
-
-
-	template<typename ELEMENTTYPE>
-	GPUBuffer& GPUMesh::addVertexBuffer(const std::string& id)
-	{
-		auto vertex_buffer = std::make_unique<VertexBuffer<ELEMENTTYPE>>(mRenderService->getCore(), mUsage, false);
-		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
-		return *it->second;
-	}
-
-
-	// Explicit template instantiations
-	template GPUBuffer& GPUMesh::addVertexBuffer<uint>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<int>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<float>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<glm::vec2>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<glm::vec3>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<glm::vec4>(const std::string&);
 }

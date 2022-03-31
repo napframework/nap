@@ -97,7 +97,7 @@ namespace nap
 		/**
 		 * @return base buffer
 		 */
-		virtual const BaseGPUBuffer& getBaseBuffer() const = 0;
+		virtual const GPUBuffer& getBaseBuffer() const = 0;
 
 		/**
 		 * @return binging name
@@ -181,7 +181,7 @@ namespace nap
 		/**
 		 * @return base buffer
 		 */
-		virtual const BaseGPUBuffer& getBaseBuffer() const override					{ assert(hasBuffer()); return *mBuffer; }
+		virtual const GPUBuffer& getBaseBuffer() const override					{ assert(hasBuffer()); return *mBuffer; }
 
 		/**
 		 * @return the uniform declaration, used to create the uniform instance.
@@ -265,12 +265,12 @@ namespace nap
 		/**
 		 * @return numeric buffer
 		 */
-		virtual const GPUBuffer& getBuffer() const = 0;
+		virtual const IGPUBufferNumeric& getBuffer() const = 0;
 
 		/**
 		 * @return numeric buffer
 		 */
-		virtual GPUBuffer& getBuffer() = 0;
+		virtual IGPUBufferNumeric& getBuffer() = 0;
 
 		/**
 		 * @return if the buffer is set
@@ -300,17 +300,17 @@ namespace nap
 		/**
 		 * @return base buffer
 		 */
-		virtual const BaseGPUBuffer& getBaseBuffer() const override					{ assert(hasBuffer()); return *mBuffer; }
+		virtual const GPUBuffer& getBaseBuffer() const override					{ assert(hasBuffer()); return *mBuffer; }
 
 		/**
 		 * @return numeric buffer
 		 */
-		virtual const GPUBuffer& getBuffer() const override							{ assert(hasBuffer()); return *mBuffer; }
+		virtual const IGPUBufferNumeric& getBuffer() const override							{ assert(hasBuffer()); return *mBuffer; }
 
 		/**
 		 * @return numeric buffer
 		 */
-		virtual GPUBuffer& getBuffer() override										{ assert(hasBuffer()); return *mBuffer; }
+		virtual IGPUBufferNumeric& getBuffer() override										{ assert(hasBuffer()); return *mBuffer; }
 
 		/**
 		 * @return if the buffer is set

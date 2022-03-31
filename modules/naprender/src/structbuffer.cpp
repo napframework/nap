@@ -27,7 +27,7 @@ namespace nap
 
 		// Ensure buffer can be tied to a shader descriptor set slot
 		ensureUsage(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-		if (!BaseGPUBuffer::init(errorState))
+		if (!GPUBuffer::init(errorState))
 			return false;
 
 		// Calculate element size in bytes
@@ -62,7 +62,7 @@ namespace nap
 		// Optionally clear - does not count as an upload
 		else if (mClear)
 		{
-			BaseGPUBuffer::requestClear();
+			GPUBuffer::requestClear();
 		}
 
 		mInitialized = true;
