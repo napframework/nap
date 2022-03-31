@@ -351,7 +351,7 @@ namespace nap
 	{
 		VkBufferUsageFlags req_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		req_usage |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
-		this->ensureUsage(req_usage);
+		GPUBufferNumeric<T>::ensureUsage(req_usage);
 		return GPUBufferNumeric<T>::init(errorState);
 	}
 }
