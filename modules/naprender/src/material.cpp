@@ -93,6 +93,9 @@ namespace nap
 	 */
 	bool BaseMaterial::rebuild(const BaseShader& shader, utility::ErrorState& errorState)
 	{
+		// Store shader
+		mShader = &shader;
+
 		// Uniforms
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)

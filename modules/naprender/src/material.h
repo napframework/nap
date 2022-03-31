@@ -37,14 +37,14 @@ namespace nap
 		BaseMaterial(Core& core);
 		virtual ~BaseMaterial() = default;
 
-		std::vector<ResourcePtr<UniformStruct>>			mUniforms;										///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<BufferBinding>>			mBuffers;										///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<Sampler>>				mSamplers;										///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<Sampler>>				mSamplers;												///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
 
 		/**
-		 * @return The underlying base shader
+		 * @return The underlying shader
 		 */
-		virtual const BaseShader* getBaseShader() const = 0;
+		const BaseShader& getShader()					{ assert(mShader != nullptr); return *mShader; }
 
 	protected:
 		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);
@@ -52,8 +52,8 @@ namespace nap
 	private:
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
 		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
-
 		RenderService* mRenderService = nullptr;
+		const BaseShader* mShader = nullptr;
 	};
 
 
@@ -105,14 +105,9 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return The underlying shader
+		 * @return The graphics shader
 		 */
 		const Shader& getShader() const								{ assert(mShader != nullptr); return *mShader; }
-
-		/**
-		 * @return The underlying base shader
-		 */
-		virtual const BaseShader* getBaseShader() const	override	{ assert(mShader != nullptr); return mShader.get(); }
 
 		/**
 		 * Returns the current blend mode.
@@ -195,11 +190,6 @@ namespace nap
 		 * @return The underlying compute shader
 		 */
 		const ComputeShader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
-
-		/**
-		 * @return The underlying base shader
-		 */
-		virtual const BaseShader* getBaseShader() const override	{ assert(mShader != nullptr); return mShader.get(); }
 
 		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
 	};

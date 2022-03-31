@@ -158,7 +158,7 @@ namespace nap
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
 		const ShaderVariableStructDeclaration* declaration = nullptr;
-		const std::vector<BufferObjectDeclaration>& ubo_declarations = getBaseMaterial()->getBaseShader()->getUBODeclarations();
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = getBaseMaterial()->getShader().getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			if (ubo_declaration.mName == name)
@@ -184,7 +184,7 @@ namespace nap
 		BufferBindingInstance* result = nullptr;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
+		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getBaseMaterial()->getShader().getSSBODeclarations();
 		int ssbo_index = 0;
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
@@ -217,8 +217,8 @@ namespace nap
 
 		SamplerInstance* result = nullptr;
 
-		const BaseShader* shader = getBaseMaterial()->getBaseShader();
-		const SamplerDeclarations& sampler_declarations = shader->getSamplerDeclarations();
+		const BaseShader& shader = getBaseMaterial()->getShader();
+		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		int image_start_index = 0;
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
@@ -366,7 +366,7 @@ namespace nap
 	bool BaseMaterialInstance::initBindings(utility::ErrorState& errorState)
 	{
 		// Here we create SSBOs in the same way as we did for UBOs above
-		const auto& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
+		const auto& ssbo_declarations = getBaseMaterial()->getShader().getSSBODeclarations();
 		mStorageDescriptors.resize(ssbo_declarations.size());
 		mStorageWriteDescriptorSets.reserve(ssbo_declarations.size()); // We reserve to ensure that pointers remain consistent during the iteration
 
@@ -426,7 +426,7 @@ namespace nap
 	bool BaseMaterialInstance::initSamplers(utility::ErrorState& errorState)
 	{
 		BaseMaterial* material = getBaseMaterial();
-		const SamplerDeclarations& sampler_declarations = material->getBaseShader()->getSamplerDeclarations();
+		const SamplerDeclarations& sampler_declarations = material->getShader().getSamplerDeclarations();
 
 		int num_sampler_images = 0;
 		for (const SamplerDeclaration& declaration : sampler_declarations)
@@ -561,7 +561,7 @@ namespace nap
 		mRenderService = &renderService;
 
 		BaseMaterial* material = getBaseMaterial();
-		const BaseShader* shader = material->getBaseShader();
+		const BaseShader& shader = material->getShader();
 
 		// Here we create UBOs in two parts:
 		// 1) We create a hierarchical uniform instance structure based on the hierarchical declaration structure from the shader. We do
@@ -572,7 +572,7 @@ namespace nap
 		//    elements can point to either Material or MaterialInstance instance uniforms, depending on whether the property was overridden.
 		//    Notice that this also means that this structure should be rebuilt when a 'new' override is made at runtime. This is handled in
 		//    update() by rebuilding the UBO when a new uniform is created.
-		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader->getUBODeclarations();
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(getResource()->mUniforms, ubo_declaration));
@@ -612,7 +612,7 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(shader->getDescriptorSetLayout());
+		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(shader.getDescriptorSetLayout());
 
 		return true;
 	}
