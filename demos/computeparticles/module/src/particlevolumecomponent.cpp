@@ -199,7 +199,7 @@ namespace nap
 	void ParticleVolumeComponentInstance::compute()
 	{
 		// Update compute shader uniforms
-		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		UniformStructInstance* ubo_struct = mCurrentComputeInstance->getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
@@ -251,11 +251,11 @@ namespace nap
 		// and bind it to the position vertex attribute of the particle mesh.
 		{
 			// Find storage buffer uniform in the material instance resource, else the material resource.
-			BufferBindingInstance* vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().findBinding(uniform::vertexBufferStruct);
+			BufferBindingInstance* vertex_struct = mCurrentComputeInstance->getMaterialInstance().findBinding(uniform::vertexBufferStruct);
 
 			// If it is null, search for it in the base material.
 			if (vertex_struct == nullptr)
-				vertex_struct = mCurrentComputeInstance->getComputeMaterialInstance().getBaseMaterial()->findBinding(uniform::vertexBufferStruct);
+				vertex_struct = mCurrentComputeInstance->getMaterialInstance().getMaterial()->findBinding(uniform::vertexBufferStruct);
 
 			// Assert if unavailable
 			assert(vertex_struct != nullptr);

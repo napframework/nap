@@ -37,14 +37,14 @@ namespace nap
 		BaseMaterial(Core& core);
 		virtual ~BaseMaterial() = default;
 
+		/**
+		 * @return The shader
+		 */
+		const BaseShader& getShader()					{ assert(mShader != nullptr); return *mShader; }
+
 		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<Sampler>>				mSamplers;												///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
-
-		/**
-		 * @return The underlying shader
-		 */
-		const BaseShader& getShader()					{ assert(mShader != nullptr); return *mShader; }
 
 	protected:
 		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);

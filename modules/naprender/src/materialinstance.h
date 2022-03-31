@@ -126,17 +126,17 @@ namespace nap
 		 * @param name: the name of the sampler declared in the shader.
 		 * @return nap::SamplerInstance of type T, nullptr if not available.
 		 */
-		SamplerInstance* getOrCreateSampler(const std::string& name) { return getOrCreateSamplerInternal(name); }
+		SamplerInstance* getOrCreateSampler(const std::string& name)	{ return getOrCreateSamplerInternal(name); }
 
 		/**
 		 * @return base material that this instance is overriding
 		 */
-		virtual BaseMaterial* getBaseMaterial() = 0;
+		BaseMaterial* getMaterial()										{ assert(mMaterial != nullptr); return mMaterial; }
 
 		/**
 		 * @return base material that this instance is overriding
 		 */
-		virtual const BaseMaterial* getBaseMaterial() const = 0;
+		const BaseMaterial* getMaterial() const							{ assert(mMaterial != nullptr); return mMaterial; }
 
 		/**
 		 * @return base material instance resource
@@ -160,7 +160,7 @@ namespace nap
 	protected:
 		friend class RenderableMesh;	// For responding to pipeline state events
 
-		bool initInternal(RenderService& renderService, utility::ErrorState& errorState);
+		bool initInternal(RenderService& renderService, BaseMaterial& material, utility::ErrorState& errorState);
 
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
@@ -180,7 +180,8 @@ namespace nap
 
 	protected:
 		VkDevice								mDevice = nullptr;						// Vulkan device
-		RenderService*							mRenderService = nullptr;				// RenderService	
+		RenderService*							mRenderService = nullptr;				// RenderService
+		BaseMaterial*							mMaterial = nullptr;					// Material
 
 		DescriptorSetCache*						mDescriptorSetCache;					// Cache used to acquire Vulkan DescriptorSets on each update
 		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
@@ -237,16 +238,6 @@ namespace nap
 		 * @return material that this instance is overriding
 		 */
 		const Material& getMaterial() const;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual BaseMaterial* getBaseMaterial() override;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual const BaseMaterial* getBaseMaterial() const override;
 
 		/**
 		 * @return base material instance resource
@@ -313,22 +304,12 @@ namespace nap
 		/**
 		* @return material that this instance is overriding.
 		*/
-		ComputeMaterial& getComputeMaterial();
+		ComputeMaterial& getMaterial();
 
 		/**
 		 * @return material that this instance is overriding
 		 */
-		const ComputeMaterial& getComputeMaterial() const;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual BaseMaterial* getBaseMaterial() override;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual const BaseMaterial* getBaseMaterial() const override;
+		const ComputeMaterial& getMaterial() const;
 
 		/**
 		 * @return base material instance resource

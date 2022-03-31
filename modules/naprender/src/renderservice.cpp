@@ -1252,7 +1252,7 @@ namespace nap
 	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{
 		// Create pipeline key based on draw properties
-		const ComputeMaterial& material = computeMaterialInstance.getComputeMaterial();
+		const ComputeMaterial& material = computeMaterialInstance.getMaterial();
 		const ComputeShader& shader = material.getShader();
 		ComputePipelineKey pipeline_key(shader);
 
