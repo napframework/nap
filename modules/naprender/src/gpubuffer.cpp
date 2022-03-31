@@ -59,32 +59,26 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferUInt)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Storage", &nap::VertexBufferUInt::mStorage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferInt)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Storage", &nap::VertexBufferInt::mStorage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferFloat)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Storage", &nap::VertexBufferFloat::mStorage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec2)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Storage", &nap::VertexBufferVec2::mStorage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec3)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Storage", &nap::VertexBufferVec3::mStorage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec4)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Storage", &nap::VertexBufferVec4::mStorage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -101,7 +95,9 @@ namespace nap
 {
 	bool IndexBuffer::init(utility::ErrorState& errorState)
 	{
-		ensureUsage(VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+		VkBufferUsageFlags req_usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		req_usage |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
+		ensureUsage(req_usage);
 		return GPUBufferNumeric<uint>::init(errorState);
 	}
 }

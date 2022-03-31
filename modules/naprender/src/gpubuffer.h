@@ -204,7 +204,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		bool mStorage = false;			///< Property: 'Storage' Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
+	private:
+		bool mStorage = true;			///< Property: Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
 	};
 
 
@@ -234,7 +235,7 @@ namespace nap
 		 * Every index buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
-		IndexBuffer(Core & core) : GPUBufferNumeric<uint>(core)		{ }
+		IndexBuffer(Core & core) : GPUBufferNumeric<uint>(core)			{ }
 
 		/**
 		 * Every index buffer needs to have access to the render engine.
@@ -242,15 +243,19 @@ namespace nap
 		 * The format defines the vertex element size in bytes.
 		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
+		 * @param storage if the buffer is allowed to be bound to a shader as a storage buffer using a descriptor
 		 */
-		IndexBuffer(Core & core, EMemoryUsage usage) :
-			GPUBufferNumeric<uint>(core, usage)						{ }
+		IndexBuffer(Core & core, EMemoryUsage usage, bool storage) :
+			GPUBufferNumeric<uint>(core, usage), mStorage(storage)		{ }
 
 		/**
 		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
 		 * If a fill policy is available, the buffer will also be uploaded to immediately.
 		 */
 		virtual bool init(utility::ErrorState & errorState) override;
+
+	private:
+		bool mStorage = true;			///< Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
 	};
 
 
@@ -286,7 +291,8 @@ namespace nap
 		if (!GPUBuffer::init(errorState))
 			return false;
 
-		if (!errorState.check(mUsage != EMemoryUsage::DynamicWrite || mCount >= 0, "Cannot allocate a non-DynamicWrite buffer with zero elements."))
+		if (!errorState.check(mMemoryUsage != EMemoryUsage::DynamicWrite || mCount >= 0,
+			"Cannot allocate a non-DynamicWrite buffer with zero elements."))
 			return false;
 
 		// Calculate buffer size
@@ -299,7 +305,7 @@ namespace nap
 		// Upload data when a buffer fill policy is available
 		if (mFillPolicy != nullptr)
 		{
-			if (mUsage != EMemoryUsage::DynamicRead)
+			if (mMemoryUsage != EMemoryUsage::DynamicRead)
 			{
 				// Create a staging buffer to upload
 				auto staging_buffer = std::make_unique<T[]>(mCount);

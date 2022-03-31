@@ -23,8 +23,8 @@ RTTI_BEGIN_ENUM(nap::EMemoryUsage)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseGPUBuffer)
-	RTTI_PROPERTY("Clear",				&nap::BaseGPUBuffer::mClear,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage",				&nap::BaseGPUBuffer::mUsage,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",	&nap::BaseGPUBuffer::mClear,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",	&nap::BaseGPUBuffer::mMemoryUsage,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -93,7 +93,7 @@ namespace nap
 
 
 	BaseGPUBuffer::BaseGPUBuffer(Core& core, EMemoryUsage usage) :
-		mRenderService(core.getService<RenderService>()), mUsage(usage)
+		mRenderService(core.getService<RenderService>()), mMemoryUsage(usage)
 	{}
 
 
@@ -103,20 +103,21 @@ namespace nap
 			return false;
 
 		// Scale render buffers based on number of frames in flight when not static.
-		mRenderBuffers.resize(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead ? 1 : mRenderService->getMaxFramesInFlight() + 1);
+		mRenderBuffers.resize(mMemoryUsage == EMemoryUsage::Static || mMemoryUsage == EMemoryUsage::DynamicRead ?
+			1 : mRenderService->getMaxFramesInFlight() + 1);
 
 		// Create appropriate number of staging buffers
-		mStagingBuffers.resize(getInitialNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
+		mStagingBuffers.resize(getInitialNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mMemoryUsage));
 
 		// Ensure there are enough read callbacks based on max number of frames in flight
-		if (mUsage == EMemoryUsage::DynamicRead)
+		if (mMemoryUsage == EMemoryUsage::DynamicRead)
 		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
 		// Setup usage flags
-		mUsageFlags |= mUsage == EMemoryUsage::DynamicRead ?
+		mUsageFlags |= mMemoryUsage == EMemoryUsage::DynamicRead ?
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
@@ -127,7 +128,7 @@ namespace nap
 	bool BaseGPUBuffer::allocateInternal(size_t size, utility::ErrorState& errorState)
 	{
 		// Persistent storage
-		if (mUsage == EMemoryUsage::DynamicWrite)
+		if (mMemoryUsage == EMemoryUsage::DynamicWrite)
 		{
 			mSize = size;
 			return true;
@@ -149,11 +150,11 @@ namespace nap
 		}
 
 		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-		VkBufferUsageFlags staging_buffer_usage = mUsage == EMemoryUsage::DynamicRead ?
+		VkBufferUsageFlags staging_buffer_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT : VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-		VmaMemoryUsage staging_memory_usage = mUsage == EMemoryUsage::DynamicRead ?
+		VmaMemoryUsage staging_memory_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
 			VMA_MEMORY_USAGE_GPU_TO_CPU : VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 		// Create required staging buffers
@@ -199,11 +200,11 @@ namespace nap
 		assert(size <= reservedSize || size > 0);
 
 		// Ensure the buffer isn't DynamicRead
-		if (!errorState.check(mUsage != EMemoryUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
+		if (!errorState.check(mMemoryUsage != EMemoryUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
 			return false;
 
 		// Update buffers based on selected data usage type
-		switch (mUsage)
+		switch (mMemoryUsage)
 		{
 		case EMemoryUsage::DynamicWrite:
 			return setDataInternalDynamic(data, size, reservedSize, mUsageFlags, errorState);
@@ -298,7 +299,7 @@ namespace nap
 		// Ensure we're dealing with an empty buffer, size of 1 that is used static.
 		assert(mStagingBuffers.size() > 0 && mStagingBuffers[0].mBuffer != VK_NULL_HANDLE);
 		assert(mRenderBuffers.size() == 1);
-		assert(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead);
+		assert(mMemoryUsage == EMemoryUsage::Static || mMemoryUsage == EMemoryUsage::DynamicRead);
 
 		// Buffer uploads are recorded after clear commands, and we do not want operations on the same buffer to interfere with each other
 		// Therefore, a buffer copy requires synchronization with a potential prior clear command
@@ -329,7 +330,7 @@ namespace nap
 		// Queue destruction of staging buffer if usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
 		// Explicitly release the buffer, so it's not deleted twice
-		if (mUsage == EMemoryUsage::Static)
+		if (mMemoryUsage == EMemoryUsage::Static)
 		{
 			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService & renderService)
 			{
@@ -347,7 +348,7 @@ namespace nap
 
 	void BaseGPUBuffer::download(VkCommandBuffer commandBuffer)
 	{
-		assert(mUsage == EMemoryUsage::DynamicRead);
+		assert(mMemoryUsage == EMemoryUsage::DynamicRead);
 		BufferData& staging_buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 
 		// Store the staging buffer index associated with the download in the current frame for lookup later

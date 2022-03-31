@@ -41,7 +41,7 @@ namespace nap
 		// Upload data when a buffer fill policy is available
 		if (mFillPolicy != nullptr)
 		{
-			if (mUsage != EMemoryUsage::DynamicRead)
+			if (mMemoryUsage != EMemoryUsage::DynamicRead)
 			{
 				// Create a staging buffer to upload
 				auto staging_buffer = std::make_unique<uint8[]>(buffer_size);

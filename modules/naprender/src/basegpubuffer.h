@@ -117,7 +117,14 @@ namespace nap
 		/**
 		 * @return the buffer usage flags. 
 		 */
-		virtual VkBufferUsageFlags getBufferUsageFlags() const	{ return mUsageFlags; }
+		virtual VkBufferUsageFlags getBufferUsageFlags() const					{ return mUsageFlags; }
+
+		/**
+		 * Ensures the given buffer usage flags are applied when allocating and creating the buffer,
+		 * next to the flags derived from the 'Usage' property. Call this function before allocation.
+		 * @param usage buffer usage flags required on allocation
+		 */
+		void ensureUsage(VkBufferUsageFlags usage)								{ mUsageFlags |= usage; }
 
 		/**
 		 * Implemented by derived classes
@@ -136,17 +143,10 @@ namespace nap
 		 */
 		nap::Signal<> bufferChanged;
 
-		EMemoryUsage			mUsage = EMemoryUsage::Static;					///< Property 'Usage' How the buffer is used, static, updated frequently etc.
+		EMemoryUsage			mMemoryUsage = EMemoryUsage::Static;			///< Property 'Usage' How the buffer is used: initialized once (Static), updated frequently from CPU to GPU (DynamicWrite) or read from GPU to CPU (DynamicRead).
 		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 
 	protected:
-		/**
-		 * Ensures the given buffer usage flags are applied when allocating and creating the buffer,
-		 * next to the flags derived from the 'Usage' property. Call this function before
-		 * calling allocateInternal() or setDataInternal(). 
-		 * @param usage buffer usage flags required on allocation
-		 */
-		void ensureUsage(VkBufferUsageFlags usage)								{ mUsageFlags |= usage; }
 
 		/**
 		 * Allocates buffers, called by derived classes

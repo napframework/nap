@@ -43,7 +43,7 @@ namespace nap
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
 
-		auto index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage);
+		auto index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage, false);
 		mIndexBuffers.emplace_back(std::move(index_buffer));
 		return *mIndexBuffers.back();
 	}
