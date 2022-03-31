@@ -7,6 +7,7 @@
 // Local Includes
 #include "renderservice.h"
 #include "materialinstance.h"
+#include "shadervariabledeclarations.h"
 
 // External Includes
 #include <nap/resourceptr.h>

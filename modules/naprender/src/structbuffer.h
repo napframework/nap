@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "basegpubuffer.h"
+#include "gpubuffer.h"
 #include "uniform.h"
 #include "structfillpolicy.h"
 

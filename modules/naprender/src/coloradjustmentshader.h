@@ -4,15 +4,15 @@
 
 #pragma once
 
-// External Includes
-#include <shader.h>
+// Local Includes
+#include "shader.h"
 
 namespace nap
 {
 	// Forward declares
 	class Core;
 	class Material;
-        class RenderService;
+    class RenderService;
 
 	// Uniform names
 	namespace uniform

@@ -21,7 +21,7 @@ namespace nap
 	 * @param descriptorType the descriptor type to get the associated usage flags of.
 	 * @return the vulkan buffer usage flags for a given buffer type.
 	 */
-	NAPAPI VkBufferUsageFlags getVulkanBufferUsage(EDescriptorType descriptorType);
+	NAPAPI VkBufferUsageFlags getVulkanBufferUsage(nap::EDescriptorType descriptorType);
 
 	/**
 	 * Converts nap::EDescriptorType to VkDescriptorType.

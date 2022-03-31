@@ -5,7 +5,6 @@
 #pragma once
 
 // Local Includes
-#include "shadervariabledeclarations.h"
 #include "gpubuffer.h"
 #include "structbuffer.h"
 

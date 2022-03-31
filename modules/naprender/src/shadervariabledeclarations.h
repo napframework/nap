@@ -7,7 +7,6 @@
 // Local includes
 #include "vulkan/vulkan_core.h"
 #include "rtti/typeinfo.h"
-#include "basegpubuffer.h"
 
 // External Includes
 #include <nap/numeric.h>
