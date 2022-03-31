@@ -64,7 +64,7 @@ namespace nap
 		/**
 		 * @return the element size in bytes
 		 */
-		virtual uint getElementSize() const override					{ return mElementSize; };
+		virtual uint32 getElementSize() const override					{ return mElementSize; };
 
 		/**
 		 * @return whether this buffer is initialized
@@ -81,8 +81,9 @@ namespace nap
 		 */
 		bool setData(void* data, size_t size, utility::ErrorState& error);
 
-		ResourcePtr<StructFillPolicy>				mFillPolicy = nullptr;							///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
-		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor' The descriptor that defines the buffer layout
+		bool mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
+		ResourcePtr<StructFillPolicy> mFillPolicy = nullptr;	///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		StructBufferDescriptor mDescriptor;						///< Property 'Descriptor' The descriptor that defines the buffer layout
 
 	private:
 		// Whether the buffer was successfully initialized

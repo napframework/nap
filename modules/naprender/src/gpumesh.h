@@ -64,13 +64,13 @@ namespace nap
 		 * @param id name of the vertex buffer
 		 * @return reference to the vertex buffer if found, nullptr otherwise.
 		 */
-		const IGPUBufferNumeric* findVertexBuffer(const std::string& id) const;
+		const GPUBufferNumeric* findVertexBuffer(const std::string& id) const;
 
 		/**
 		 * Returns a vertex buffer with the given name, asserts if not present.
 		 * @param id name of the vertex buffer to get.
 		 */
-		IGPUBufferNumeric& getVertexBuffer(const std::string& id);
+		GPUBufferNumeric& getVertexBuffer(const std::string& id);
 
 		/**
 		 * Creates an index buffer if one does not exist, returns the existing buffer otherwise.
@@ -88,7 +88,7 @@ namespace nap
 		const IndexBuffer& getIndexBuffer(int index) const;
 
 	private:
-		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<IGPUBufferNumeric>>;
+		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<GPUBufferNumeric>>;
 
 		RenderService*									mRenderService;					///< Link to the render engine
 		AttributeMap									mAttributes;					///< Map from vertex attribute ID to buffer

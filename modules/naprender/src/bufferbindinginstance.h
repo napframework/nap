@@ -280,18 +280,18 @@ namespace nap
 		/**
 		 * @return numeric buffer
 		 */
-		const IGPUBufferNumeric& getBuffer() const								{ assert(hasBuffer()); return static_cast<const IGPUBufferNumeric&>(*mBuffer); }
+		const GPUBufferNumeric& getBuffer() const								{ assert(hasBuffer()); return static_cast<const GPUBufferNumeric&>(*mBuffer); }
 
 		/**
 		 * @return numeric buffer
 		 */
-		IGPUBufferNumeric& getBuffer()											{ assert(hasBuffer()); return static_cast<IGPUBufferNumeric&>(*mBuffer); }
+		GPUBufferNumeric& getBuffer()											{ assert(hasBuffer()); return static_cast<GPUBufferNumeric&>(*mBuffer); }
 
 		/**
 		 * Binds a new buffer to the uniform instance
 		 * @param buffer new buffer to bind
 		 */
-		void setBuffer(GPUBufferNumeric<T>& buffer);
+		void setBuffer(TypedGPUBufferNumeric<T>& buffer);
 
 		/**
 		 * Updates thebuffer from a resource.
@@ -302,12 +302,12 @@ namespace nap
 		/**
 		 * @return buffer
 		 */
-		const GPUBufferNumeric<T>& getTypedBuffer() const						{ assert(mBuffer != nullptr); return static_cast<const GPUBufferNumeric<T>&>(*mBuffer); }
+		const TypedGPUBufferNumeric<T>& getTypedBuffer() const						{ assert(mBuffer != nullptr); return static_cast<const TypedGPUBufferNumeric<T>&>(*mBuffer); }
 
 		/**
 		 * @return buffer
 		 */
-		GPUBufferNumeric<T>& getTypedBuffer()									{ assert(mBuffer != nullptr); return static_cast<GPUBufferNumeric<T>&>(*mBuffer); }
+		TypedGPUBufferNumeric<T>& getTypedBuffer()									{ assert(mBuffer != nullptr); return static_cast<TypedGPUBufferNumeric<T>&>(*mBuffer); }
 
 	private:
 		/**
@@ -335,7 +335,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	void nap::TypedBufferBindingNumericInstance<T>::setBuffer(GPUBufferNumeric<T>& buffer)
+	void nap::TypedBufferBindingNumericInstance<T>::setBuffer(TypedGPUBufferNumeric<T>& buffer)
 	{
 		assert(buffer.getSize() == mDeclaration->mSize);
 		BufferBindingInstance::mBuffer = &buffer;

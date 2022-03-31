@@ -28,7 +28,6 @@ RTTI_END_ENUM
 //////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
-	RTTI_PROPERTY("Clear", &nap::GPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage", &nap::GPUBuffer::mMemoryUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -36,7 +35,11 @@ RTTI_END_CLASS
 //////////////////////////////////////////////////////////////////////////
 // GPUBufferNumeric interface
 //////////////////////////////////////////////////////////////////////////
-RTTI_DEFINE_BASE(nap::IGPUBufferNumeric)
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferNumeric)
+	RTTI_PROPERTY("Clear", &nap::GPUBufferNumeric::mClear, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Count", &nap::GPUBufferNumeric::mCount, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,37 +48,30 @@ RTTI_DEFINE_BASE(nap::IGPUBufferNumeric)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Count",		&nap::GPUBufferUInt::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Count",		&nap::GPUBufferInt::mCount,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Count",		&nap::GPUBufferFloat::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Count",		&nap::GPUBufferVec2::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Count",		&nap::GPUBufferVec3::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4)
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Count",		&nap::GPUBufferVec4::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4)
 	RTTI_PROPERTY("FillPolicy",	&nap::GPUBufferMat4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Count",		&nap::GPUBufferMat4::mCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 
@@ -550,6 +546,21 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// GPU Buffer Numeric
+	//////////////////////////////////////////////////////////////////////////
+
+	bool GPUBufferNumeric::setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState)
+	{
+		if (setDataInternal(data, getElementSize() * elementCount, getElementSize() * reservedElementCount, errorState))
+		{
+			mCount = elementCount;
+			return true;
+		}
+		return false;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Index Buffer
 	//////////////////////////////////////////////////////////////////////////
 
@@ -558,6 +569,6 @@ namespace nap
 		VkBufferUsageFlags req_usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 		req_usage |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
 		ensureUsage(req_usage);
-		return GPUBufferNumeric<uint>::init(errorState);
+		return TypedGPUBufferNumeric<uint>::init(errorState);
 	}
 }

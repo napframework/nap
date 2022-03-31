@@ -74,7 +74,7 @@ namespace nap
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			IGPUBufferNumeric& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
+			GPUBufferNumeric& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
 			mVertexBuffers.push_back(vertex_buffer.getBuffer());
 		}
 

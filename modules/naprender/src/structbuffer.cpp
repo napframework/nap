@@ -13,10 +13,10 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Descriptor", &nap::StructBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::StructBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::StructBuffer::mClear,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Descriptor", &nap::StructBuffer::mDescriptor,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructBuffer::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
-
 
 namespace nap
 {

@@ -113,7 +113,7 @@ namespace nap
 		/**
 		 * @return the element size in bytes
 		 */
-		virtual uint getElementSize() const = 0;
+		virtual uint32 getElementSize() const = 0;
 
 		/**
 		 * @return the buffer usage flags.
@@ -144,11 +144,9 @@ namespace nap
 		 */
 		nap::Signal<> bufferChanged;
 
-		EMemoryUsage			mMemoryUsage = EMemoryUsage::Static;			///< Property 'Usage' How the buffer is used: initialized once (Static), updated frequently from CPU to GPU (DynamicWrite) or read from GPU to CPU (DynamicRead).
-		bool					mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
+		EMemoryUsage mMemoryUsage = EMemoryUsage::Static;			///< Property 'Usage' How the buffer is used: initialized once (Static), updated frequently from CPU to GPU (DynamicWrite) or read from GPU to CPU (DynamicRead).
 
 	protected:
-
 		/**
 		 * Allocates buffers, called by derived classes
 		 * @param size size in bytes of the buffer to allocate
@@ -222,17 +220,43 @@ namespace nap
 	 * Supported values for child classes such as GPUBufferNumeric<T> must be primitives that can be mapped to 
 	 * VkFormat. This is enforced by the requirement to implement getFormat().
 	 */
-	class NAPAPI IGPUBufferNumeric : public GPUBuffer
+	class NAPAPI GPUBufferNumeric : public GPUBuffer
 	{
 		RTTI_ENABLE(GPUBuffer)
 	public:
-		IGPUBufferNumeric(Core& core) :
-			GPUBuffer(core)
+		GPUBufferNumeric(Core& core, VkFormat format, uint32 elementSize) :
+			GPUBuffer(core), mFormat(format), mElementSize(elementSize)
 		{ }
 
-		IGPUBufferNumeric(Core& core, EMemoryUsage usage) :
-			GPUBuffer(core, usage)
+		GPUBufferNumeric(Core& core, VkFormat format, uint32 elementSize, EMemoryUsage usage) :
+			GPUBuffer(core, usage), mFormat(format), mElementSize(elementSize)
 		{ }
+
+		/**
+		 * @return the number of buffer values
+		 */
+		virtual uint getCount() const override						{ return mCount; }
+
+		/**
+		 * @return the size in bytes of a single vertex element
+		 */
+		virtual uint32 getElementSize() const override				{ return mElementSize; };
+
+		/**
+		 * @return the size of the buffer in bytes
+		 */
+		virtual size_t getSize() const override						{ return mCount * mElementSize; };
+
+		/**
+		 * @return the buffer format
+		 */
+		virtual VkFormat getFormat() const							{ return mFormat; }
+
+		/**
+		 * Sets the number of elements this buffer will contain
+		 * @param count new number of elements
+		 */
+		virtual void setCount(uint32 count)							{ mCount = count; }
 
 		/**
 		 * Uploads data to the GPU based on the settings provided.
@@ -243,18 +267,14 @@ namespace nap
 		 * @param errorState contains the error if upload operation failed
 		 * @return if upload succeeded
 		 */
-		virtual bool setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) = 0;
+		virtual bool setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState);
 
-		/**
-		 * Sets the number of elements this buffer will contain.
-		 * @param count new number of elements
-		 */
-		virtual void setCount(uint32 count) = 0;
+		bool mClear = false;							///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
+		uint32 mCount = 0;								///< Property: 'Count' The number of  elements to initialize/allocate the buffer with.
 
-		/**
-		 * @return the buffer format
-		 */
-		virtual VkFormat getFormat() const = 0;
+	private:
+		VkFormat mFormat = VK_FORMAT_UNDEFINED;			///< The Vulkan memory format
+		uint32 mElementSize = 0;						///< Size in bytes of a single element
 	};
 
 
@@ -274,16 +294,16 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class GPUBufferNumeric : public IGPUBufferNumeric
+	class TypedGPUBufferNumeric : public GPUBufferNumeric
 	{
-		RTTI_ENABLE(IGPUBufferNumeric)
+		RTTI_ENABLE(GPUBufferNumeric)
 	public:
 		/**
 		 * Every numeric buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
-		GPUBufferNumeric(Core& core) :
-			IGPUBufferNumeric(core)
+		TypedGPUBufferNumeric(Core& core) :
+			GPUBufferNumeric(core, getVulkanFormat(RTTI_OF(T)), sizeof(T))
 		{ }
 
 		/**
@@ -293,8 +313,8 @@ namespace nap
 		 * @param renderService the render engine
 		 * @param usage how the buffer is used at runtime.
 		 */
-		GPUBufferNumeric(Core& core, EMemoryUsage usage) :
-			IGPUBufferNumeric(core, usage)
+		TypedGPUBufferNumeric(Core& core, EMemoryUsage usage) :
+			GPUBufferNumeric(core, getVulkanFormat(RTTI_OF(T)), sizeof(T), usage)
 		{ }
 
 		/**
@@ -308,17 +328,6 @@ namespace nap
 		/**
 		 * Uploads data to the GPU based on the settings provided.
 		 * This function automatically allocates GPU memory if required.
-		 * @param data pointer to the block of data that needs to be uploaded.
-		 * @param elementCount the number of elements
-		 * @param reservedElementCount the number of elements to reserve
-		 * @param errorState contains the error if upload operation failed
-		 * @return if upload succeeded
-		 */
-		virtual bool setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState) override;
-
-		/**
-		 * Uploads data to the GPU based on the settings provided.
-		 * This function automatically allocates GPU memory if required.
 		 * @param data vector containing the data to upload
 		 * @param errorState contains the error if upload operation failed
 		 * @return if upload succeeded
@@ -326,41 +335,13 @@ namespace nap
 		bool setData(const std::vector<T>& data, utility::ErrorState& errorState);
 
 		/**
-		 * Sets the number of elements this buffer will contain.
-		 * @param count new number of elements
-		 */
-		void setCount(uint32 count) override							{ mCount = count; }
-
-		/**
-		 * @return the number of buffer values
-		 */
-		virtual uint getCount() const override							{ return mCount; }
-
-		/**
-		 * @return the size of the buffer in bytes
-		 */
-		virtual size_t getSize() const override							{ return mCount * sizeof(T); };
-
-		/**
-		 * @return the size of a single vertex element
-		 */
-		virtual uint getElementSize() const override					{ return sizeof(T); };
-
-		/**
-		 * @return the buffer format
-		 */
-		virtual VkFormat getFormat() const override						{ return getVulkanFormat<T>(); }
-
-		/**
 		 * @return whether this buffer is initialized
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
 
 		ResourcePtr<FillPolicy<T>> mFillPolicy = nullptr;				///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
-		uint32 mCount = 0;												///< Property: 'Count' The number of  elements to initialize/allocate the buffer with.
 
 	protected:
-		// Whether the buffer was successfully initialized
 		bool mInitialized = false;
 	};
 
@@ -385,16 +366,16 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class VertexBuffer final : public GPUBufferNumeric<T>
+	class VertexBuffer final : public TypedGPUBufferNumeric<T>
 	{
-		RTTI_ENABLE(GPUBufferNumeric<T>)
+		RTTI_ENABLE(TypedGPUBufferNumeric<T>)
 	public:
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
 		VertexBuffer(Core& core) :
-			GPUBufferNumeric<T>(core)
+			TypedGPUBufferNumeric<T>(core)
 		{ }
 
 		/**
@@ -406,7 +387,7 @@ namespace nap
 		 * @param if the buffer is allowed to be bound to a shader as a storage buffer using a descriptor
 		 */
 		VertexBuffer(Core& core, EMemoryUsage usage, bool storage) :
-			GPUBufferNumeric<T>(core, usage), mStorage(storage)
+			TypedGPUBufferNumeric<T>(core, usage), mStorage(storage)
 		{ }
 
 		/**
@@ -438,15 +419,15 @@ namespace nap
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
-	class NAPAPI IndexBuffer final : public GPUBufferNumeric<uint>
+	class NAPAPI IndexBuffer final : public TypedGPUBufferNumeric<uint>
 	{
-		RTTI_ENABLE(GPUBufferNumeric<uint>)
+		RTTI_ENABLE(TypedGPUBufferNumeric<uint>)
 	public:
 		/**
 		 * Every index buffer needs to have access to the render engine.
 		 * @param renderService the render engine
 		 */
-		IndexBuffer(Core & core) : GPUBufferNumeric<uint>(core)			{ }
+		IndexBuffer(Core & core) : TypedGPUBufferNumeric<uint>(core)			{ }
 
 		/**
 		 * Every index buffer needs to have access to the render engine.
@@ -457,7 +438,7 @@ namespace nap
 		 * @param storage if the buffer is allowed to be bound to a shader as a storage buffer using a descriptor
 		 */
 		IndexBuffer(Core & core, EMemoryUsage usage, bool storage) :
-			GPUBufferNumeric<uint>(core, usage), mStorage(storage)		{ }
+			TypedGPUBufferNumeric<uint>(core, usage), mStorage(storage)		{ }
 
 		/**
 		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
@@ -465,12 +446,6 @@ namespace nap
 		 * @param errorState contains the error if initialization fails.
 		 */
 		virtual bool init(utility::ErrorState & errorState) override;
-
-		/**
-		 * Sets the number of elements this buffer will contain.
-		 * @param count new number of elements
-		 */
-		void setCount(uint32 count) override							{ mCount = count; }
 
 	private:
 		bool mStorage = true;			///< Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
@@ -482,13 +457,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	// General purpose GPU buffers
-	using GPUBufferUInt			= GPUBufferNumeric<uint>;
-	using GPUBufferInt			= GPUBufferNumeric<int>;
-	using GPUBufferFloat		= GPUBufferNumeric<float>;
-	using GPUBufferVec2			= GPUBufferNumeric<glm::vec2>;
-	using GPUBufferVec3			= GPUBufferNumeric<glm::vec3>;
-	using GPUBufferVec4			= GPUBufferNumeric<glm::vec4>;
-	using GPUBufferMat4			= GPUBufferNumeric<glm::mat4>;
+	using GPUBufferUInt			= TypedGPUBufferNumeric<uint>;
+	using GPUBufferInt			= TypedGPUBufferNumeric<int>;
+	using GPUBufferFloat		= TypedGPUBufferNumeric<float>;
+	using GPUBufferVec2			= TypedGPUBufferNumeric<glm::vec2>;
+	using GPUBufferVec3			= TypedGPUBufferNumeric<glm::vec3>;
+	using GPUBufferVec4			= TypedGPUBufferNumeric<glm::vec4>;
+	using GPUBufferMat4			= TypedGPUBufferNumeric<glm::mat4>;
 
 	// Vertex GPU buffers
 	using VertexBufferUInt		= VertexBuffer<uint>;
@@ -504,9 +479,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool GPUBufferNumeric<T>::init(utility::ErrorState& errorState)
+	bool TypedGPUBufferNumeric<T>::init(utility::ErrorState& errorState)
 	{
-		if (!IGPUBufferNumeric::init(errorState))
+		if (!GPUBufferNumeric::init(errorState))
 			return false;
 
 		if (!errorState.check(mMemoryUsage != EMemoryUsage::DynamicWrite || mCount >= 0,
@@ -542,25 +517,16 @@ namespace nap
 
 		// Optionally clear - does not count as an upload
 		else if (mClear)
+		{
 			GPUBuffer::requestClear();
+		}
 
 		mInitialized = true;
 		return true;
 	}
 
 	template<typename T>
-	bool GPUBufferNumeric<T>::setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState)
-	{
-		if (!setDataInternal(data, sizeof(T) * elementCount, sizeof(T) * reservedElementCount, errorState))
-			return false;
-
-		// Update count
-		mCount = elementCount;
-		return true;
-	}
-
-	template<typename T>
-	bool GPUBufferNumeric<T>::setData(const std::vector<T>& data, utility::ErrorState& errorState)
+	bool TypedGPUBufferNumeric<T>::setData(const std::vector<T>& data, utility::ErrorState& errorState)
 	{
 		if (!setDataInternal(data.data(), data.size() * sizeof(T), data.capacity() * sizeof(T), errorState))
 			return false;
@@ -575,7 +541,7 @@ namespace nap
 	{
 		VkBufferUsageFlags req_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		req_usage |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
-		GPUBufferNumeric<T>::ensureUsage(req_usage);
-		return GPUBufferNumeric<T>::init(errorState);
+		TypedGPUBufferNumeric<T>::ensureUsage(req_usage);
+		return TypedGPUBufferNumeric<T>::init(errorState);
 	}
 }

@@ -21,7 +21,7 @@ namespace nap
 	{ }
 
 
-	const IGPUBufferNumeric* GPUMesh::findVertexBuffer(const std::string& id) const
+	const GPUBufferNumeric* GPUMesh::findVertexBuffer(const std::string& id) const
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		if (attribute != mAttributes.end())
@@ -30,7 +30,7 @@ namespace nap
 	}
 
 
-	IGPUBufferNumeric& GPUMesh::getVertexBuffer(const std::string& id)
+	GPUBufferNumeric& GPUMesh::getVertexBuffer(const std::string& id)
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		assert(attribute != mAttributes.end());

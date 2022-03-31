@@ -103,7 +103,7 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const IGPUBufferNumeric* getBuffer() const = 0;
+		virtual const GPUBufferNumeric* getBuffer() const = 0;
 	};
 
 
@@ -139,9 +139,9 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const IGPUBufferNumeric* getBuffer() const override				{ return mBuffer.get(); }
+		virtual const GPUBufferNumeric* getBuffer() const override				{ return mBuffer.get(); }
 
-		rtti::ObjectPtr<GPUBufferNumeric<T>> mBuffer = nullptr;	/// Property 'Buffer'
+		rtti::ObjectPtr<TypedGPUBufferNumeric<T>> mBuffer = nullptr;	/// Property 'Buffer'
 	};
 
 

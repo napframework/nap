@@ -1288,7 +1288,7 @@ namespace nap
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName().c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
-			const IGPUBufferNumeric* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
+			const GPUBufferNumeric* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return RenderableMesh();
 
