@@ -89,7 +89,7 @@ namespace nap
 		 * @return buffer binding that was found or created, nullptr if not available.
 		 */
 		template<class T>
-		T* getOrCreateBinding(const std::string& name);
+		T* getOrCreateBuffer(const std::string& name);
 
 		/**
 		 * Gets or creates a buffer binding isntance for this material instance.
@@ -99,7 +99,7 @@ namespace nap
 		 * @param name: the name of the buffer binding as declared in the shader.
 		 * @return buffer binding that was found or created, nullptr if not available.
 		 */
-		BufferBindingInstance* getOrCreateBinding(const std::string& name) { return getOrCreateBindingInternal(name); }
+		BufferBindingInstance* getOrCreateBuffer(const std::string& name) { return getOrCreateBufferInternal(name); }
 
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
@@ -160,16 +160,16 @@ namespace nap
 
 		void onUniformCreated();
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
-		void onBindingChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
+		void onBufferChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
 
-		void updateBindings(const DescriptorSet& descriptorSet);
-		bool initBindings(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
+		void updateBuffers(const DescriptorSet& descriptorSet);
+		bool initBuffers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
 
-		BufferBindingInstance* getOrCreateBindingInternal(const std::string& name);
+		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
 		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
 
 	protected:
@@ -311,9 +311,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	T* BaseMaterialInstance::getOrCreateBinding(const std::string& name)
+	T* BaseMaterialInstance::getOrCreateBuffer(const std::string& name)
 	{
-		return rtti_cast<T>(getOrCreateBindingInternal(name));
+		return rtti_cast<T>(getOrCreateBufferInternal(name));
 	}
 	
 	template<class T>

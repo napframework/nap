@@ -174,7 +174,7 @@ namespace nap
 	}
 
 
-	BufferBindingInstance* BaseMaterialInstance::getOrCreateBindingInternal(const std::string& name)
+	BufferBindingInstance* BaseMaterialInstance::getOrCreateBufferInternal(const std::string& name)
 	{
 		// See if we have an override in MaterialInstance. If so, we can return it
 		BufferBindingInstance* existing_binding = findBinding(name);
@@ -194,7 +194,7 @@ namespace nap
 				std::unique_ptr<BufferBindingInstance> binding_instance_override;
 
 				utility::ErrorState error_state;
-				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, nullptr, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), error_state);
+				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, nullptr, std::bind(&BaseMaterialInstance::onBufferChanged, this, ssbo_index, std::placeholders::_1), error_state);
 
 				if (!error_state.check(binding_instance_override != nullptr, "Failed to create buffer binding instance"))
 					NAP_ASSERT_MSG(binding_instance_override != nullptr, error_state.toString().c_str());
@@ -287,7 +287,7 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::onBindingChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance)
+	void BaseMaterialInstance::onBufferChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance)
 	{
 		// Update the buffer info structure stored in the buffer info handles
 		VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[storageBufferIndex];
@@ -363,7 +363,7 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::initBindings(BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
+	bool BaseMaterialInstance::initBuffers(BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
 	{
 		// Here we create SSBOs in the same way as we did for UBOs above
 		const auto& ssbo_declarations = getMaterial()->getShader().getSSBODeclarations();
@@ -381,7 +381,7 @@ namespace nap
 			if (override_resource != nullptr)
 			{
 				// Buffer binding is overridden, make a BufferBindingInstance object
-				auto override_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, override_resource, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), errorState);
+				auto override_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, override_resource, std::bind(&BaseMaterialInstance::onBufferChanged, this, ssbo_index, std::placeholders::_1), errorState);
 				if (!errorState.check(override_instance != nullptr, "Failed to create buffer binding instance for shader variable `%s`", declaration.mName.c_str()))
 					return false;
 
@@ -541,7 +541,7 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::updateBindings(const DescriptorSet& descriptorSet)
+	void BaseMaterialInstance::updateBuffers(const DescriptorSet& descriptorSet)
 	{
 		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
 		// with the actual set that was acquired.
@@ -599,7 +599,7 @@ namespace nap
 		}
 		mUniformsCreated = false;
 
-		if (!initBindings(instanceResource, errorState))
+		if (!initBuffers(instanceResource, errorState))
 			return false;
 
 		if (!initSamplers(instanceResource, errorState))
@@ -649,7 +649,7 @@ namespace nap
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mStorageDescriptors.size(), mSamplerDescriptors.size());
 
 		updateUniforms(descriptor_set, mUniformBufferObjects);
-		updateBindings(descriptor_set);
+		updateBuffers(descriptor_set);
 		updateSamplers(descriptor_set);
 
 		return descriptor_set;
