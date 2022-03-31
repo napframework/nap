@@ -5,9 +5,7 @@
 // Local Includes
 #include "gpumesh.h"
 #include "renderservice.h"
-
-// External includes
-#include <nap/assert.h>
+#include "nap/core.h"
 
 namespace nap
 {
@@ -16,7 +14,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	GPUMesh::GPUMesh(RenderService& renderService, EMemoryUsage inUsage) :
-		mRenderService(&renderService),
+        mCore(&renderService.getCore()),
 		mUsage(inUsage)
 	{ }
 
@@ -43,7 +41,7 @@ namespace nap
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
 
-		auto index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage, false);
+		auto index_buffer = std::make_unique<IndexBuffer>(*mCore, mUsage, false);
 		mIndexBuffers.emplace_back(std::move(index_buffer));
 		return *mIndexBuffers.back();
 	}

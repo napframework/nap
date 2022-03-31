@@ -90,7 +90,7 @@ namespace nap
 	private:
 		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<GPUBufferNumeric>>;
 
-		RenderService*									mRenderService;					///< Link to the render engine
+		Core*                                           mCore;                          ///< Link to Core
 		AttributeMap									mAttributes;					///< Map from vertex attribute ID to buffer
 		std::vector<std::unique_ptr<IndexBuffer>>		mIndexBuffers;					///< Index buffers
 		EMemoryUsage									mUsage = EMemoryUsage::Static;	///< By default a gpu mesh is static.
@@ -104,7 +104,7 @@ namespace nap
 	template<typename ELEMENTTYPE>
 	VertexBuffer<ELEMENTTYPE>& GPUMesh::addVertexBuffer(const std::string& id)
 	{
-		auto vertex_buffer = std::make_unique<VertexBuffer<ELEMENTTYPE>>(mRenderService->getCore(), mUsage, false);
+		auto vertex_buffer = std::make_unique<VertexBuffer<ELEMENTTYPE>>(*mCore, mUsage, false);
 		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
 		return static_cast<VertexBuffer<ELEMENTTYPE>&>(*it->second);
 	}
