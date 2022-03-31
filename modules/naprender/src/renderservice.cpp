@@ -1803,6 +1803,12 @@ namespace nap
 	}
 
 
+	bool RenderService::isComputeAvailable() const
+	{
+		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
+	}
+
+
 	Material* RenderService::getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error)
 	{
 		// Ensure it's a shader

@@ -821,7 +821,7 @@ namespace nap
 		 * Returns true if the selected device has compute capability, else returns false.
 		 * @return if the selected device has compute capability
 		 */
-		bool isComputeAvailable() const												{ return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT; }
+		bool isComputeAvailable() const;
 
 		/**
 		 * Returns an empty texture that is available on the GPU for temporary binding or storage.
