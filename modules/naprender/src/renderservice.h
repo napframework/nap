@@ -232,7 +232,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Main interface for 2D and 3D rendering operations.
+	 * Main interface for Vulkan Render (2D/3D) and Vulkan Compute operations.
 	 *
 	 * This service initializes the Vulkan back-end and provides an interface to render objects to a specific target (screen or back-buffer).
 	 * The service is shut down automatically on exit, and destroys all left over resources.
