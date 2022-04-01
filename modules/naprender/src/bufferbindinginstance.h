@@ -7,7 +7,7 @@
 // Local Includes
 #include "bufferbinding.h"
 #include "gpubuffer.h"
-#include "structgpubuffer.h"
+#include "structbuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -92,21 +92,27 @@ namespace nap
 		/**
 		 * @return if the buffer is set
 		 */
-		virtual bool hasBuffer() const = 0;
+		bool hasBuffer() const								{ return mBuffer != nullptr; }
 
 		/**
 		 * @return base buffer
 		 */
-		virtual const BaseGPUBuffer& getBaseBuffer() const = 0;
+		const GPUBuffer& getBuffer() const					{ assert(mBuffer != nullptr); return *mBuffer; }
+
+		/**
+		 * @return base buffer
+		 */
+		GPUBuffer& getBuffer()								{ assert(mBuffer != nullptr); return *mBuffer; }
 
 		/**
 		 * @return binging name
 		 */
-		const std::string& getBindingName() const									{ return mBindingName; }
+		const std::string& getBindingName() const			{ return mBindingName; }
 
 	protected:
 		const std::string									mBindingName;
 		BufferBindingChangedCallback						mBindingChangedCallback;
+		GPUBuffer*											mBuffer = nullptr;
 
 	private:
 		friend class BaseMaterial;
@@ -171,55 +177,34 @@ namespace nap
 		 * Required virtual, needs to be implemented in derived classes
 		 * @return the declaration associated with this uniform instance
 		 */
-		virtual const ShaderVariableDeclaration& getDeclaration() const	override	{ return *mDeclaration; }
-
-		/**
-		 * @return if the struct buffer is set
-		 */
-		virtual bool hasBuffer() const override										{ return mBuffer != nullptr; }
-
-		/**
-		 * @return base buffer
-		 */
-		virtual const BaseGPUBuffer& getBaseBuffer() const override					{ assert(hasBuffer()); return *mBuffer; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const	override		{ return *mDeclaration; }
 
 		/**
 		 * @return the uniform declaration, used to create the uniform instance.
 		 */
-		const ShaderVariableStructBufferDeclaration& getStructDeclaration() const	{ return *mDeclaration; }
+		const ShaderVariableStructBufferDeclaration& getStructDeclaration() const		{ return *mDeclaration; }
 
 		/**
 		 * @return struct buffer
 		 */
-		virtual const StructGPUBuffer& getBuffer() const							{ assert(hasBuffer()); return *mBuffer; };
+		const StructBuffer& getBuffer() const											{ assert(hasBuffer()); return static_cast<const StructBuffer&>(*mBuffer); };
 
 		/**
 		 * @return struct buffer
 		 */
-		virtual StructGPUBuffer& getBuffer()										{ assert(hasBuffer()); return *mBuffer; };
+		StructBuffer& getBuffer()														{ assert(hasBuffer()); return static_cast<StructBuffer&>(*mBuffer); };
 
 		/**
 		 * Binds a new buffer to the uniform instance
 		 * @param buffer new buffer to bind
 		 */
-		void setBuffer(StructGPUBuffer& buffer)
-		{
-			assert(buffer.getSize() == mDeclaration->mSize);
-			mBuffer = &buffer;
-			raiseChanged();
-		}
+		void setBuffer(StructBuffer& buffer);
 
 		/**
 		 * Updates the buffer from a resource
 		 * @param resource resource to set buffer from.
 		 */
-		void setBuffer(const BufferBindingStruct& resource)
-		{
-			assert(resource.mBuffer != nullptr);
-			assert(resource.mBuffer->getSize() == mDeclaration->mSize);
-			mBuffer = resource.mBuffer;
-			raiseChanged();
-		}
+		void setBuffer(const BufferBindingStruct& resource);
 
 	private:
 		friend class BaseMaterial;
@@ -228,10 +213,9 @@ namespace nap
 		/**
 		 * Called when the buffer changes
 		 */
-		void raiseChanged()															{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
+		void raiseChanged()									{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
 
 		const ShaderVariableStructBufferDeclaration*		mDeclaration;
-		rtti::ObjectPtr<StructGPUBuffer>					mBuffer;
 	};
 
 
@@ -262,21 +246,6 @@ namespace nap
 		 */
 		const ShaderVariableValueArrayDeclaration& getNumericDeclaration() const	{ return *mDeclaration; }
 
-		/**
-		 * @return numeric buffer
-		 */
-		virtual const GPUBuffer& getBuffer() const = 0;
-
-		/**
-		 * @return numeric buffer
-		 */
-		virtual GPUBuffer& getBuffer() = 0;
-
-		/**
-		 * @return if the buffer is set
-		 */
-		virtual bool hasBuffer() const = 0;
-
 	protected:
 		const ShaderVariableValueArrayDeclaration*			mDeclaration;
 		BufferBindingChangedCallback						mBindingChangedCallback;
@@ -298,54 +267,42 @@ namespace nap
 		{ }
 
 		/**
-		 * @return base buffer
+		 * @return numeric buffer
 		 */
-		virtual const BaseGPUBuffer& getBaseBuffer() const override					{ assert(hasBuffer()); return *mBuffer; }
+		const GPUBufferNumeric& getBuffer() const								{ assert(hasBuffer()); return static_cast<const GPUBufferNumeric&>(*mBuffer); }
 
 		/**
 		 * @return numeric buffer
 		 */
-		virtual const GPUBuffer& getBuffer() const override							{ assert(hasBuffer()); return *mBuffer; }
-
-		/**
-		 * @return numeric buffer
-		 */
-		virtual GPUBuffer& getBuffer() override										{ assert(hasBuffer()); return *mBuffer; }
-
-		/**
-		 * @return if the buffer is set
-		 */
-		virtual bool hasBuffer() const override										{ return mBuffer != nullptr; }
+		GPUBufferNumeric& getBuffer()											{ assert(hasBuffer()); return static_cast<GPUBufferNumeric&>(*mBuffer); }
 
 		/**
 		 * Binds a new buffer to the uniform instance
 		 * @param buffer new buffer to bind
 		 */
-		void setBuffer(GPUBufferNumeric<T>& buffer);
+		void setBuffer(TypedGPUBufferNumeric<T>& buffer);
 
 		/**
 		 * Updates thebuffer from a resource.
 		 * @param resource resource to set buffer from.
 		 */
-		void setBuffer(const TypedBufferBindingNumeric<T>& resource)				{ mBuffer = resource.mBuffer; }
+		void setBuffer(const TypedBufferBindingNumeric<T>& resource)			{ BufferBindingInstance::mBuffer = resource.mBuffer.get(); }
 
 		/**
 		 * @return buffer
 		 */
-		const GPUBufferNumeric<T>& getTypedBuffer() const							{ assert(mBuffer != nullptr); return *mBuffer; }
+		const TypedGPUBufferNumeric<T>& getTypedBuffer() const					{ assert(mBuffer != nullptr); return static_cast<const TypedGPUBufferNumeric<T>&>(*mBuffer); }
 
 		/**
 		 * @return buffer
 		 */
-		GPUBufferNumeric<T>& getTypedBuffer()										{ assert(mBuffer != nullptr); return *mBuffer; }
+		TypedGPUBufferNumeric<T>& getTypedBuffer()								{ assert(mBuffer != nullptr); return static_cast<TypedGPUBufferNumeric<T>&>(*mBuffer); }
 
 	private:
 		/**
 		 * Called when the buffer changes
 		 */
-		void raiseChanged()															{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
-
-		rtti::ObjectPtr<GPUBufferNumeric<T>>				mBuffer;
+		void raiseChanged()														{ if (mBindingChangedCallback) mBindingChangedCallback(*this); }
 	};
 
 
@@ -367,10 +324,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	void nap::TypedBufferBindingNumericInstance<T>::setBuffer(GPUBufferNumeric<T>& buffer)
+	void nap::TypedBufferBindingNumericInstance<T>::setBuffer(TypedGPUBufferNumeric<T>& buffer)
 	{
 		assert(buffer.getSize() == mDeclaration->mSize);
-		mBuffer = &buffer;
+		BufferBindingInstance::mBuffer = &buffer;
 		raiseChanged();
 	}
 }

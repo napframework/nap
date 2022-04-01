@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "structgpubuffer.h"
+#include "structbuffer.h"
 #include "renderservice.h"
 #include "uniformutils.h"
 
@@ -11,41 +11,37 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructGPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructBuffer)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Descriptor", &nap::StructGPUBuffer::mDescriptor, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Usage", &nap::StructGPUBuffer::mUsage, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DescriptorType", &nap::StructGPUBuffer::mDescriptorType, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::StructGPUBuffer::mFillPolicy, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Clear", &nap::StructGPUBuffer::mClear, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::StructBuffer::mClear,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Descriptor", &nap::StructBuffer::mDescriptor,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructBuffer::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
-
 
 namespace nap
 {
-	bool StructGPUBuffer::init(utility::ErrorState& errorState)
+	bool StructBuffer::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mDescriptor.mCount >= 0, "Struct buffer descriptor's 'Count' property must be non-zero and non-negative"))
 			return false;
 
-		if (!BaseGPUBuffer::init(errorState))
+		// Ensure buffer can be tied to a shader descriptor set slot
+		ensureUsage(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+		if (!GPUBuffer::init(errorState))
 			return false;
 
 		// Calculate element size in bytes
 		mElementSize = getUniformStructSizeRecursive(*mDescriptor.mElement);
 		size_t buffer_size = getSize();
 
-		// Compose usage flags from buffer configuration
-		mUsageFlags = getBufferUsage(mDescriptorType);
-
 		// Allocate buffer memory
-		if (!allocateInternal(buffer_size, mUsageFlags, errorState))
+		if (!allocateInternal(buffer_size, errorState))
 			return false;
 
 		// Upload data when a buffer fill policy is available
 		if (mFillPolicy != nullptr)
 		{
-			if (mUsage != EMemoryUsage::DynamicRead)
+			if (mMemoryUsage != EMemoryUsage::DynamicRead)
 			{
 				// Create a staging buffer to upload
 				auto staging_buffer = std::make_unique<uint8[]>(buffer_size);
@@ -53,7 +49,7 @@ namespace nap
 					return false;
 
 				// Prepare staging buffer upload
-				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, 0, errorState))
+				if (!setDataInternal(staging_buffer.get(), buffer_size, buffer_size, errorState))
 					return false;
 			}
 			else
@@ -66,7 +62,7 @@ namespace nap
 		// Optionally clear - does not count as an upload
 		else if (mClear)
 		{
-			BaseGPUBuffer::requestClear();
+			GPUBuffer::requestClear();
 		}
 
 		mInitialized = true;
@@ -74,8 +70,8 @@ namespace nap
 	}
 
 
-	bool StructGPUBuffer::setData(void* data, size_t size, utility::ErrorState& error)
+	bool StructBuffer::setData(void* data, size_t size, utility::ErrorState& error)
 	{
-		return setDataInternal(data, size, size, mUsageFlags, error);
+		return setDataInternal(data, size, size, error);
 	}
 }

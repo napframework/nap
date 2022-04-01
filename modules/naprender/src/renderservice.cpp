@@ -1030,9 +1030,8 @@ namespace nap
 		pipeline_info.subpass = 0;
 		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (!errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline"))
-			return false;
-		return true;
+		return errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphicsPipeline) == VK_SUCCESS,
+			"Failed to create graphics pipeline");
 	}
 
 
@@ -1094,12 +1093,8 @@ namespace nap
 		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 		pipeline_info.basePipelineIndex = -1;
 
-		if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &outComputePipeline) != VK_SUCCESS)
-		{
-			nap::Logger::info("Could not create compute pipeline");
-			return false;
-		}
-		return true;
+		return errorState.check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &outComputePipeline) == VK_SUCCESS,
+			"Failed to create compute pipeline");
 	}
 
 
@@ -1257,7 +1252,7 @@ namespace nap
 	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{
 		// Create pipeline key based on draw properties
-		const ComputeMaterial& material = computeMaterialInstance.getComputeMaterial();
+		const ComputeMaterial& material = computeMaterialInstance.getMaterial();
 		const ComputeShader& shader = material.getShader();
 		ComputePipelineKey pipeline_key(shader);
 
@@ -1293,11 +1288,12 @@ namespace nap
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName().c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
-			const GPUBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
+			const GPUBufferNumeric* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return RenderableMesh();
 
-			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(), "Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
+			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(),
+				"Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 			return RenderableMesh();
 		}
 
@@ -1803,6 +1799,12 @@ namespace nap
 	}
 
 
+	bool RenderService::isComputeAvailable() const
+	{
+		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
+	}
+
+
 	Material* RenderService::getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error)
 	{
 		// Ensure it's a shader
@@ -2020,11 +2022,11 @@ namespace nap
 				texture->upload(commandBuffer);
 			mTexturesToUpload.clear();
 
-			for (BaseGPUBuffer* buffer : mBuffersToClear)
+			for (GPUBuffer* buffer : mBuffersToClear)
 				buffer->clear(commandBuffer);
 			mBuffersToClear.clear();
 
-			for (BaseGPUBuffer* buffer : mBuffersToUpload)
+			for (GPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
 			mBuffersToUpload.clear();
 		});
@@ -2041,7 +2043,7 @@ namespace nap
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
 
-			for (BaseGPUBuffer* buffer : frame.mBufferDownloads)
+			for (GPUBuffer* buffer : frame.mBufferDownloads)
 				buffer->download(commandBuffer);
 		});
 	}
@@ -2074,7 +2076,7 @@ namespace nap
 			Frame& frame = mFramesInFlight[frame_index];
 			if (!frame.mBufferDownloads.empty() && vkGetFenceStatus(mDevice, frame.mFence) == VK_SUCCESS)
 			{
-				for (BaseGPUBuffer* buffer : frame.mBufferDownloads)
+				for (GPUBuffer* buffer : frame.mBufferDownloads)
 					buffer->notifyDownloadReady(frame_index);
 
 				frame.mBufferDownloads.clear();
@@ -2352,7 +2354,7 @@ namespace nap
 	}
 
 
-	void RenderService::removeBufferRequests(BaseGPUBuffer& buffer)
+	void RenderService::removeBufferRequests(GPUBuffer& buffer)
 	{
 		// When buffers are destroyed, we also need to remove any pending upload requests
 		mBuffersToClear.erase(&buffer);
@@ -2360,7 +2362,7 @@ namespace nap
 
 		for (Frame& frame : mFramesInFlight)
 		{
-			frame.mBufferDownloads.erase(std::remove_if(frame.mBufferDownloads.begin(), frame.mBufferDownloads.end(), [&buffer](BaseGPUBuffer* existingBuffer)
+			frame.mBufferDownloads.erase(std::remove_if(frame.mBufferDownloads.begin(), frame.mBufferDownloads.end(), [&buffer](GPUBuffer* existingBuffer)
 			{
 				return existingBuffer == &buffer;
 			}), frame.mBufferDownloads.end());
@@ -2368,19 +2370,19 @@ namespace nap
 	}
 
 
-	void RenderService::requestBufferClear(BaseGPUBuffer& buffer)
+	void RenderService::requestBufferClear(GPUBuffer& buffer)
 	{
 		mBuffersToClear.insert(&buffer);
 	}
 
 
-	void RenderService::requestBufferUpload(BaseGPUBuffer& buffer)
+	void RenderService::requestBufferUpload(GPUBuffer& buffer)
 	{
 		mBuffersToUpload.insert(&buffer);
 	}
 
 
-	void RenderService::requestBufferDownload(BaseGPUBuffer& buffer)
+	void RenderService::requestBufferDownload(GPUBuffer& buffer)
 	{
 		// We push a buffer download specifically for this frame. When the fence for that frame is signaled,
 		// we know the download has been processed by the GPU, and we can send the buffer a notification that

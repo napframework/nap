@@ -86,26 +86,24 @@ namespace nap
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 
 	private:
-		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
-		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
-		InputService* mInputService = nullptr;							//< Input service for processing input
-		IMGuiService* mGuiService = nullptr;							//< IMGui service
+		RenderService* mRenderService = nullptr;							//< Render Service that handles render calls
+		ResourceManager* mResourceManager = nullptr;						//< Manages all the loaded resources
+		SceneService* mSceneService = nullptr;								//< Manages all the objects in the scene
+		InputService* mInputService = nullptr;								//< Input service for processing input
+		IMGuiService* mGuiService = nullptr;								//< IMGui service
 
-		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Pointers to the render window
-		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
-		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
-		rtti::ObjectPtr<EntityInstance> mOrthoCameraEntity;				//< Entity that holds the ortho camera
+		rtti::ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Pointers to the render window
+		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter = nullptr;		//< Routes input events to the input component
+		rtti::ObjectPtr<EntityInstance> mCameraEntity = nullptr;			//< Entity that holds the camera
+		rtti::ObjectPtr<EntityInstance> mOrthoCameraEntity = nullptr;		//< Entity that holds the ortho camera
 
-		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity;			//< Holds the flocking system abd required components
-		rtti::ObjectPtr<EntityInstance> mRenderEntity;					//< Holds rendering operations as components
-		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//< Holds components to render
-		rtti::ObjectPtr<EntityInstance> mBoundsEntity;					//< Holds world bounds
-		rtti::ObjectPtr<EntityInstance> mTargetEntity;					//< Holds boid target
-
-		rtti::ObjectPtr<RenderTarget> mRenderTarget;					//< Offscreen render target
-
-		std::unique_ptr<ParameterGUI> mParameterGUI;					//< Parameter GUI
+		rtti::ObjectPtr<EntityInstance> mFlockingSystemEntity = nullptr;	//< Holds the flocking system abd required components
+		rtti::ObjectPtr<EntityInstance> mRenderEntity = nullptr;			//< Holds rendering operations as components
+		rtti::ObjectPtr<EntityInstance> mWorldEntity = nullptr;				//< Holds components to render
+		rtti::ObjectPtr<EntityInstance> mBoundsEntity = nullptr;			//< Holds world bounds
+		rtti::ObjectPtr<EntityInstance> mTargetEntity = nullptr;			//< Holds boid target
+		rtti::ObjectPtr<RenderTarget> mRenderTarget = nullptr;				//< Offscreen render target
+		rtti::ObjectPtr<ParameterGUI> mParameterGUI = nullptr;				//< Parameter GUI
 
 		// Parameters
 		ResourcePtr<Parameter> mContrastParam;

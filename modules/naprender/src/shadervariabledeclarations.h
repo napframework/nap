@@ -7,7 +7,6 @@
 // Local includes
 #include "vulkan/vulkan_core.h"
 #include "rtti/typeinfo.h"
-#include "basegpubuffer.h"
 
 // External Includes
 #include <nap/numeric.h>
@@ -16,6 +15,23 @@
 
 namespace nap
 {
+	/**
+	 * Flag that determines the descriptor type of a shader resource. Regards the type of data access on the device (GPU) 
+	 * inside a shader program.
+	 * 
+	 * Uniform buffers are typically small blocks of data that are updated very frequently from CPU to GPU (each frame),
+	 * but immutable in a shader program.
+	 * Storage buffers are typically large blocks of data that are bound/unbound to an SSBO and frequently read and written
+	 * in a compute shader program.
+	 * The Default option is used for buffers that are not bound to descriptorsets, e.g. vertex and index buffers.
+	 */
+	enum class EDescriptorType : uint
+	{
+		Uniform,			///< Specifies a uniform buffer descriptor. device readonly
+		Storage				///< Specifies a storage buffer descriptor. device read/write
+	};
+
+
 	/**
 	 * All available shader variable value types
 	 */

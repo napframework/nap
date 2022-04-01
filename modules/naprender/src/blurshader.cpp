@@ -36,7 +36,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace defaultshader
+	namespace shader
 	{
 		inline constexpr const char* gaussianblur5x5 = "gaussianblur5";
 		inline constexpr const char* gaussianblur9x9 = "gaussianblur9";
@@ -53,13 +53,13 @@ namespace nap
 		switch (KERNEL)
 		{
 		case nap::EBlurSamples::X5:
-			shader_name = defaultshader::gaussianblur5x5;
+			shader_name = shader::gaussianblur5x5;
 			break;
 		case nap::EBlurSamples::X9:
-			shader_name = defaultshader::gaussianblur9x9;
+			shader_name = shader::gaussianblur9x9;
 			break;
 		case nap::EBlurSamples::X13:
-			shader_name = defaultshader::gaussianblur13x13;
+			shader_name = shader::gaussianblur13x13;
 			break;
 		default:
 			errorState.fail("Unknown blur sample type.");

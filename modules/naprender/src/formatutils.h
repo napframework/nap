@@ -12,53 +12,16 @@
 #include <vulkan/vulkan_core.h>
 
 // Local includes
-#include "basegpubuffer.h"
+#include "shadervariabledeclarations.h"
 
 namespace nap
 {
-	/**
-	* Returns the vulkan format associated with ELEMENTTYPE
-	* @tparam ELEMENTTYPE the requested element type
-	* @return the VkFormat associated with the specified element type, otherwise VK_FORMAT_UNDEFINED
-	*/
-	template<typename ELEMENTTYPE>
-	static VkFormat getGPUBufferFormat()
-	{
-		static const std::map<rtti::TypeInfo, VkFormat> format_table =
-		{
-			{RTTI_OF(uint),			VkFormat::VK_FORMAT_R32_UINT},
-			{RTTI_OF(int),			VkFormat::VK_FORMAT_R32_SINT},
-			{RTTI_OF(float),		VkFormat::VK_FORMAT_R32_SFLOAT},
-			{RTTI_OF(glm::vec2),	VkFormat::VK_FORMAT_R32G32_SFLOAT},
-			{RTTI_OF(glm::vec3),	VkFormat::VK_FORMAT_R32G32B32_SFLOAT},
-			{RTTI_OF(glm::vec4),	VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT}
-		};
-
-		const auto it = format_table.find(RTTI_OF(ELEMENTTYPE));
-		if (it != format_table.end())
-			return it->second;
-
-		NAP_ASSERT_MSG(false, "Unsupported vertex buffer type");
-		return VkFormat::VK_FORMAT_UNDEFINED;
-	}
-
-
 	/**
 	 * Returns the vulkan buffer usage flags for a given buffer type.
 	 * @param descriptorType the descriptor type to get the associated usage flags of.
 	 * @return the vulkan buffer usage flags for a given buffer type.
 	 */
-	static VkBufferUsageFlags getBufferUsage(EDescriptorType descriptorType)
-	{
-		if (descriptorType == EDescriptorType::Uniform)
-			return VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-		else if (descriptorType == EDescriptorType::Storage)
-			return VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-
-		return 0;
-	}
-
+	NAPAPI VkBufferUsageFlags getVulkanBufferUsage(nap::EDescriptorType descriptorType);
 
 	/**
 	 * Converts nap::EDescriptorType to VkDescriptorType.
@@ -66,17 +29,20 @@ namespace nap
 	 * @return the vulkan descriptor type for a given buffer object type, asserts if descriptorType
 	 * is not 'Uniform' or 'Storage'.
 	 */
-	static VkDescriptorType getVulkanDescriptorType(nap::EDescriptorType descriptorType)
-	{
-		if (descriptorType == nap::EDescriptorType::Uniform)
-			return VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	NAPAPI VkDescriptorType getVulkanDescriptorType(nap::EDescriptorType descriptorType);
 
-		else if (descriptorType == nap::EDescriptorType::Storage)
-			return VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	/**
+	* Returns the vulkan format associated with the given numeric rtti type
+	* @tparam type the requested element type
+	* @return the VkFormat associated with the specified element type, otherwise VK_FORMAT_UNDEFINED
+	*/
+	NAPAPI VkFormat getVulkanFormat(nap::rtti::TypeInfo type);
 
-		NAP_ASSERT_MSG(descriptorType != nap::EDescriptorType::Default, "nap::DescriptorType 'Default' cannot be used as a Vulkan descriptor type");
-		NAP_ASSERT_MSG(false, "Unsupported descriptor type");
-
-		return VkDescriptorType::VK_DESCRIPTOR_TYPE_MAX_ENUM;
-	}
+	/**
+	* Returns the vulkan format associated with ELEMENTTYPE
+	* @tparam ELEMENTTYPE the requested element type
+	* @return the VkFormat associated with the specified element type, otherwise VK_FORMAT_UNDEFINED
+	*/
+	template<typename ELEMENTTYPE>
+	VkFormat getVulkanFormat()	{ return getVulkanFormat(RTTI_OF(ELEMENTTYPE)); }
 }

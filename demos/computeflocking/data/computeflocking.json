@@ -33,8 +33,8 @@
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
-            "Bindings": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "ComputeShader"
         },
         {
@@ -78,10 +78,10 @@
                     "Visible": true,
                     "Mesh": "BoidTargetPointMesh",
                     "MaterialInstance": {
-                        "Material": "BoidTargetPointMaterial",
                         "Uniforms": [],
-                        "Bindings": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "BoidTargetPointMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -117,7 +117,6 @@
                     "Visible": false,
                     "Mesh": "SphereBoundsMesh",
                     "MaterialInstance": {
-                        "Material": "BoundsMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -172,8 +171,9 @@
                                 ]
                             }
                         ],
-                        "Bindings": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "BoundsMaterial",
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadOnly"
                     },
@@ -217,7 +217,6 @@
                     "Visible": false,
                     "Mesh": "SphereBoundsWireFrameMesh",
                     "MaterialInstance": {
-                        "Material": "ConstantMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -243,8 +242,9 @@
                                 ]
                             }
                         ],
-                        "Bindings": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadWrite"
                     },
@@ -345,9 +345,9 @@
                     "Visible": true,
                     "Mesh": "CapsuleMesh",
                     "MaterialInstance": {
-                        "Material": "RenderMaterial",
                         "Uniforms": [],
-                        "Bindings": [
+                        "Samplers": [],
+                        "Buffers": [
                             {
                                 "Type": "nap::BufferBindingStruct",
                                 "mID": "BufferBindingStruct_16105ead",
@@ -355,7 +355,7 @@
                                 "Buffer": "BoidBufferB"
                             }
                         ],
-                        "Samplers": [],
+                        "Material": "RenderMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -426,9 +426,9 @@
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeComponent_A",
                     "ComputeMaterialInstance": {
-                        "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "Bindings": [
+                        "Samplers": [],
+                        "Buffers": [
                             {
                                 "Type": "nap::BufferBindingStruct",
                                 "mID": "BufferBindingStruct_e2682986",
@@ -442,7 +442,7 @@
                                 "Buffer": "BoidBufferB"
                             }
                         ],
-                        "Samplers": []
+                        "ComputeMaterial": "ComputeMaterial"
                     },
                     "Invocations": 1
                 },
@@ -450,9 +450,9 @@
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeComponent_B",
                     "ComputeMaterialInstance": {
-                        "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "Bindings": [
+                        "Samplers": [],
+                        "Buffers": [
                             {
                                 "Type": "nap::BufferBindingStruct",
                                 "mID": "BufferBindingStruct_00f5d2ba",
@@ -466,7 +466,7 @@
                                 "Buffer": "BoidBufferA"
                             }
                         ],
-                        "Samplers": []
+                        "ComputeMaterial": "ComputeMaterial"
                     },
                     "Invocations": 1
                 },
@@ -557,7 +557,6 @@
                     "Visible": true,
                     "OutputTexture": "ColorTextureFX",
                     "MaterialInstance": {
-                        "Material": "ColorAdjustmentMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -585,7 +584,6 @@
                                 ]
                             }
                         ],
-                        "Bindings": [],
                         "Samplers": [
                             {
                                 "Type": "nap::Sampler2D",
@@ -601,6 +599,8 @@
                                 "Texture": "ColorTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "ColorAdjustmentMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "InheritFromBlendMode"
                     },
@@ -631,7 +631,6 @@
                     "Visible": true,
                     "OutputTexture": "DummyRT",
                     "MaterialInstance": {
-                        "Material": "CompositeMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -647,7 +646,6 @@
                                 ]
                             }
                         ],
-                        "Bindings": [],
                         "Samplers": [
                             {
                                 "Type": "nap::Sampler2DArray",
@@ -666,6 +664,8 @@
                                 ]
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "CompositeMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -763,8 +763,8 @@
                     ]
                 }
             ],
-            "Bindings": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -774,8 +774,8 @@
             "Type": "nap::Material",
             "mID": "BoundsMaterial",
             "Uniforms": [],
-            "Bindings": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "HaloShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -785,8 +785,8 @@
             "Type": "nap::Material",
             "mID": "ColorAdjustmentMaterial",
             "Uniforms": [],
-            "Bindings": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "ColorAdjustmentShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -796,8 +796,8 @@
             "Type": "nap::Material",
             "mID": "CompositeMaterial",
             "Uniforms": [],
-            "Bindings": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "CompositeShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -807,8 +807,8 @@
             "Type": "nap::Material",
             "mID": "ConstantMaterial",
             "Uniforms": [],
-            "Bindings": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -818,8 +818,8 @@
             "Type": "nap::Material",
             "mID": "RenderMaterial",
             "Uniforms": [],
-            "Bindings": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "BoidShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -832,6 +832,12 @@
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Path": "capsule.mesh"
+        },
+        {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "FlockingParameters"
         },
         {
             "Type": "nap::ParameterGroup",
@@ -1339,71 +1345,10 @@
             }
         },
         {
-            "Type": "nap::StructFillPolicy",
-            "mID": "BoidBufferFillPolicy",
-            "FillPolicies": [
-                {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_5a948427",
-                    "Name": "position",
-                    "FillPolicy": {
-                        "Type": "nap::RandomFillPolicyVec4",
-                        "mID": "RandomFillPolicyVec4_c2629a8d",
-                        "LowerBound": {
-                            "x": -4.0,
-                            "y": -4.0,
-                            "z": -4.0,
-                            "w": -4.0
-                        },
-                        "UpperBound": {
-                            "x": 4.0,
-                            "y": 4.0,
-                            "z": 4.0,
-                            "w": 4.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_86a1275c",
-                    "Name": "velocity",
-                    "FillPolicy": {
-                        "Type": "nap::RandomFillPolicyVec4",
-                        "mID": "RandomFillPolicyVec4_86fa7df8",
-                        "LowerBound": {
-                            "x": -1.0,
-                            "y": -1.0,
-                            "z": -1.0,
-                            "w": -1.0
-                        },
-                        "UpperBound": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0,
-                            "w": 1.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::FillPolicyEntryVec4",
-                    "mID": "FillPolicyEntryVec4_7a6fdac2",
-                    "Name": "orientation",
-                    "FillPolicy": {
-                        "Type": "nap::ConstantFillPolicyVec4",
-                        "mID": "ConstantFillPolicyVec4_ae1d740e",
-                        "Constant": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0,
-                            "w": 1.0
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "Type": "nap::StructGPUBuffer",
+            "Type": "nap::StructBuffer",
             "mID": "BoidBufferA",
+            "Clear": false,
+            "Usage": "Static",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -1463,14 +1408,13 @@
                 },
                 "Count": 10000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "BoidBufferFillPolicy",
-            "Clear": false
+            "FillPolicy": "BoidBufferFillPolicy"
         },
         {
-            "Type": "nap::StructGPUBuffer",
+            "Type": "nap::StructBuffer",
             "mID": "BoidBufferB",
+            "Clear": true,
+            "Usage": "Static",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -1530,10 +1474,70 @@
                 },
                 "Count": 10000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "",
-            "Clear": true
+            "FillPolicy": ""
+        },
+        {
+            "Type": "nap::StructFillPolicy",
+            "mID": "BoidBufferFillPolicy",
+            "FillPolicies": [
+                {
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_5a948427",
+                    "Name": "position",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_c2629a8d",
+                        "LowerBound": {
+                            "x": -4.0,
+                            "y": -4.0,
+                            "z": -4.0,
+                            "w": -4.0
+                        },
+                        "UpperBound": {
+                            "x": 4.0,
+                            "y": 4.0,
+                            "z": 4.0,
+                            "w": 4.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_86a1275c",
+                    "Name": "velocity",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_86fa7df8",
+                        "LowerBound": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        },
+                        "UpperBound": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_7a6fdac2",
+                    "Name": "orientation",
+                    "FillPolicy": {
+                        "Type": "nap::ConstantFillPolicyVec4",
+                        "mID": "ConstantFillPolicyVec4_ae1d740e",
+                        "Constant": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0,
+                            "w": 1.0
+                        }
+                    }
+                }
+            ]
         }
     ]
 }

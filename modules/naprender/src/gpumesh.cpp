@@ -5,9 +5,7 @@
 // Local Includes
 #include "gpumesh.h"
 #include "renderservice.h"
-
-// External includes
-#include <nap/assert.h>
+#include "nap/core.h"
 
 namespace nap
 {
@@ -16,12 +14,12 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	GPUMesh::GPUMesh(RenderService& renderService, EMemoryUsage inUsage) :
-		mRenderService(&renderService),
+        mCore(&renderService.getCore()),
 		mUsage(inUsage)
 	{ }
 
 
-	const GPUBuffer* GPUMesh::findVertexBuffer(const std::string& id) const
+	const GPUBufferNumeric* GPUMesh::findVertexBuffer(const std::string& id) const
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		if (attribute != mAttributes.end())
@@ -30,7 +28,7 @@ namespace nap
 	}
 
 
-	GPUBuffer& GPUMesh::getVertexBuffer(const std::string& id)
+	GPUBufferNumeric& GPUMesh::getVertexBuffer(const std::string& id)
 	{
 		AttributeMap::const_iterator attribute = mAttributes.find(id);
 		assert(attribute != mAttributes.end());
@@ -43,7 +41,7 @@ namespace nap
 		if (index < mIndexBuffers.size())
 			return *mIndexBuffers[index];
 
-		auto index_buffer = std::make_unique<IndexBuffer>(mRenderService->getCore(), mUsage);
+		auto index_buffer = std::make_unique<IndexBuffer>(*mCore, mUsage, false);
 		mIndexBuffers.emplace_back(std::move(index_buffer));
 		return *mIndexBuffers.back();
 	}
@@ -54,22 +52,4 @@ namespace nap
 		assert(index < mIndexBuffers.size());
 		return *mIndexBuffers[index];
 	}
-
-
-	template<typename ELEMENTTYPE>
-	GPUBuffer& GPUMesh::addVertexBuffer(const std::string& id)
-	{
-		auto vertex_buffer = std::make_unique<VertexBuffer<ELEMENTTYPE>>(mRenderService->getCore(), mUsage);
-		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
-		return *it->second;
-	}
-
-
-	// Explicit template instantiations
-	template GPUBuffer& GPUMesh::addVertexBuffer<uint>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<int>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<float>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<glm::vec2>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<glm::vec3>(const std::string&);
-	template GPUBuffer& GPUMesh::addVertexBuffer<glm::vec4>(const std::string&);
 }

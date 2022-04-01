@@ -165,7 +165,7 @@ namespace nap
 	void FlockingSystemComponentInstance::updateComputeMaterial(ComputeComponentInstance* comp)
 	{
 		// Update compute shader uniforms
-		UniformStructInstance* ubo_struct = comp->getComputeMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
+		UniformStructInstance* ubo_struct = comp->getMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
 			glm::vec4 target_position = mTargetTransformComponent->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -202,7 +202,7 @@ namespace nap
 		}
 
 		// Update vertex shader buffer bindings
-		auto* storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getComputeMaterialInstance().findBinding("BoidBuffer_Out"));
+		auto* storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getMaterialInstance().findBinding("BoidBuffer_Out"));
 		if (storage_binding != nullptr && storage_binding != nullptr)
 		{
 			auto& storage_buffer = storage_binding->getBuffer();

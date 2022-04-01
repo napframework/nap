@@ -30,8 +30,8 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
-		std::vector<ResourcePtr<BufferBinding>>		mBindings;										///< Property: "Bindings" buffer bindings to override
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
+		std::vector<ResourcePtr<BufferBinding>>		mBuffers;										///< Property: "Buffers" buffer bindings to override
 	};
 
 	/**
@@ -89,7 +89,7 @@ namespace nap
 		 * @return buffer binding that was found or created, nullptr if not available.
 		 */
 		template<class T>
-		T* getOrCreateBinding(const std::string& name);
+		T* getOrCreateBuffer(const std::string& name);
 
 		/**
 		 * Gets or creates a buffer binding isntance for this material instance.
@@ -99,7 +99,7 @@ namespace nap
 		 * @param name: the name of the buffer binding as declared in the shader.
 		 * @return buffer binding that was found or created, nullptr if not available.
 		 */
-		BufferBindingInstance* getOrCreateBinding(const std::string& name) { return getOrCreateBindingInternal(name); }
+		BufferBindingInstance* getOrCreateBuffer(const std::string& name) { return getOrCreateBufferInternal(name); }
 
 		/**
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
@@ -126,22 +126,17 @@ namespace nap
 		 * @param name: the name of the sampler declared in the shader.
 		 * @return nap::SamplerInstance of type T, nullptr if not available.
 		 */
-		SamplerInstance* getOrCreateSampler(const std::string& name) { return getOrCreateSamplerInternal(name); }
+		SamplerInstance* getOrCreateSampler(const std::string& name)		{ return getOrCreateSamplerInternal(name); }
 
 		/**
 		 * @return base material that this instance is overriding
 		 */
-		virtual BaseMaterial* getBaseMaterial() = 0;
+		BaseMaterial* getMaterial()											{ assert(mMaterial != nullptr); return mMaterial; }
 
 		/**
 		 * @return base material that this instance is overriding
 		 */
-		virtual const BaseMaterial* getBaseMaterial() const = 0;
-
-		/**
-		 * @return base material instance resource
-		 */
-		virtual const BaseMaterialInstanceResource* getResource() const = 0;
+		const BaseMaterial* getMaterial() const								{ assert(mMaterial != nullptr); return mMaterial; }
 
 		/**
 		 * This must be called before each draw. It will push the current uniform and sampler data into memory
@@ -160,27 +155,28 @@ namespace nap
 	protected:
 		friend class RenderableMesh;	// For responding to pipeline state events
 
-		bool initInternal(RenderService& renderService, utility::ErrorState& errorState);
-
+		bool initInternal(RenderService& renderService, BaseMaterial& material, BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState);
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
 		void onUniformCreated();
 		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
-		void onBindingChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
+		void onBufferChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
 
-		void updateBindings(const DescriptorSet& descriptorSet);
-		bool initBindings(utility::ErrorState& errorState);
+		void updateBuffers(const DescriptorSet& descriptorSet);
+		bool initBuffers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
-		bool initSamplers(utility::ErrorState& errorState);
+		bool initSamplers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
 
-		BufferBindingInstance* getOrCreateBindingInternal(const std::string& name);
+		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
 		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
 
 	protected:
 		VkDevice								mDevice = nullptr;						// Vulkan device
-		RenderService*							mRenderService = nullptr;				// RenderService	
+		RenderService*							mRenderService = nullptr;				// RenderService
+		BaseMaterial*							mMaterial = nullptr;					// Material
+		BaseMaterialInstanceResource*			mResource = nullptr;					// Material Instance Resource
 
 		DescriptorSetCache*						mDescriptorSetCache;					// Cache used to acquire Vulkan DescriptorSets on each update
 		std::vector<UniformBufferObject>		mUniformBufferObjects;					// List of all UBO instances
@@ -231,27 +227,12 @@ namespace nap
 		/**
 		 * @return material that this instance is overriding.
 		 */
-		Material& getMaterial();
+		Material& getMaterial()																{ return static_cast<Material&>(*BaseMaterialInstance::getMaterial()); }
 
 		/**
 		 * @return material that this instance is overriding
 		 */
-		const Material& getMaterial() const;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual BaseMaterial* getBaseMaterial() override;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual const BaseMaterial* getBaseMaterial() const override;
-
-		/**
-		 * @return base material instance resource
-		 */
-		virtual const BaseMaterialInstanceResource* getResource() const override;
+		const Material& getMaterial() const													{ return static_cast<const Material&>(*BaseMaterialInstance::getMaterial()); }
 
 		/**
 		 * @return If blend mode was overridden for this material, returns blend mode, otherwise material's blendmode.
@@ -313,27 +294,12 @@ namespace nap
 		/**
 		* @return material that this instance is overriding.
 		*/
-		ComputeMaterial& getComputeMaterial();
+		ComputeMaterial& getMaterial()													{ return static_cast<ComputeMaterial&>(*BaseMaterialInstance::getMaterial()); }
 
 		/**
 		 * @return material that this instance is overriding
 		 */
-		const ComputeMaterial& getComputeMaterial() const;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual BaseMaterial* getBaseMaterial() override;
-
-		/**
-		 * @return base material that this instance is overriding
-		 */
-		virtual const BaseMaterial* getBaseMaterial() const override;
-
-		/**
-		 * @return base material instance resource
-		 */
-		virtual const BaseMaterialInstanceResource* getResource() const override;
+		const ComputeMaterial& getMaterial() const										{ return static_cast<const ComputeMaterial&>(*BaseMaterialInstance::getMaterial()); }
 
 	private:
 		ComputeMaterialInstanceResource*		mResource;								// Resource this instance is associated with
@@ -345,9 +311,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	T* BaseMaterialInstance::getOrCreateBinding(const std::string& name)
+	T* BaseMaterialInstance::getOrCreateBuffer(const std::string& name)
 	{
-		return rtti_cast<T>(getOrCreateBindingInternal(name));
+		return rtti_cast<T>(getOrCreateBufferInternal(name));
 	}
 	
 	template<class T>

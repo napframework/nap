@@ -16,41 +16,6 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// BaseFillPolicyEntry
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Base class of FillPolicyEntry.
-	 * Binds a struct member name to a fill policy. Used to define StructFillPolicy behavior.
-	 */
-	class BaseFillPolicyEntry : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		BaseFillPolicyEntry() = default;
-		virtual ~BaseFillPolicyEntry() = default;
-		std::string mName;																	///< Property 'Name': The struct member name of this fill policy entry
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// FillPolicyEntry
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * Typed fill policy entry.
-	 * Binds a struct member name to a fill policy. Used to define StructFillPolicy behavior.
-	 */
-	template<typename T>
-	class FillPolicyEntry : public BaseFillPolicyEntry
-	{
-		RTTI_ENABLE(BaseFillPolicyEntry)
-	public:
-		rtti::ObjectPtr<FillPolicy<T>> mFillPolicy;											///< Property 'FillPolicy': The fill policy associated with the member name
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
 	// StructFillPolicy
 	//////////////////////////////////////////////////////////////////////////
 
@@ -73,8 +38,29 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		StructFillPolicy() = default;
-		virtual ~StructFillPolicy() = default;
+		/**
+		 * Binds a struct member name to a fill policy. Used to define StructFillPolicy behavior.
+		 */
+		class NAPAPI BaseEntry : public Resource
+		{
+			RTTI_ENABLE(Resource)
+		public:
+			BaseEntry() = default;
+			virtual ~BaseEntry() = default;
+			std::string mName;																	///< Property 'Name': The struct member name of this fill policy entry
+		};
+
+		/**
+		 * Specialized struct fill policy entry.
+		 * Binds a struct member name to a specific fill policy.
+		 */
+		template<typename T>
+		class Entry : public BaseEntry
+		{
+			RTTI_ENABLE(BaseEntry)
+		public:
+			rtti::ObjectPtr<FillPolicy<T>> mFillPolicy;											///< Property 'FillPolicy': The fill policy associated with the member name
+		};
 
 		/**
 		 * Fills a preallocated buffer using the specified struct buffer descriptor.
@@ -82,9 +68,9 @@ namespace nap
 		 * @param data pointer to the preallocated data
 		 * @param errorState contains the error if the buffer cannot be filled
 		 */
-		virtual bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState);
+		bool fill(StructBufferDescriptor* descriptor, uint8* data, utility::ErrorState& errorState);
 
-		std::vector<rtti::ObjectPtr<BaseFillPolicyEntry>> mFillPolicies;					///< Property 'FillPolicies': List of shader variable fill policy entries
+		std::vector<rtti::ObjectPtr<BaseEntry>> mFillPolicies;								///< Property 'FillPolicies': List of shader variable fill policy entries
 
 	protected:
 		/**
@@ -109,7 +95,7 @@ namespace nap
 			{
 				if (fp->mName == name)
 				{
-					const auto* resolved = rtti_cast<const FillPolicyEntry<T>>(fp.get());
+					const auto* resolved = rtti_cast<const StructFillPolicy::Entry<T>>(fp.get());
 					if (resolved != nullptr)
 						return resolved->mFillPolicy.get();
 
@@ -124,14 +110,14 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// TypedShaderVariableFillPolicyEntry type definitions
+	// struct fill policy entry type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using FillPolicyEntryUInt		= FillPolicyEntry<uint>;
-	using FillPolicyEntryInt		= FillPolicyEntry<int>;
-	using FillPolicyEntryFloat		= FillPolicyEntry<float>;
-	using FillPolicyEntryVec2		= FillPolicyEntry<glm::vec2>;
-	using FillPolicyEntryVec3		= FillPolicyEntry<glm::vec3>;
-	using FillPolicyEntryVec4		= FillPolicyEntry<glm::vec4>;
-	using FillPolicyEntryMat4		= FillPolicyEntry<glm::mat4>;
+	using StructFillPolicyUInt		= StructFillPolicy::Entry<uint>;
+	using StructFillPolicyInt		= StructFillPolicy::Entry<int>;
+	using StructFillPolicyFloat		= StructFillPolicy::Entry<float>;
+	using StructFillPolicyVec2		= StructFillPolicy::Entry<glm::vec2>;
+	using StructFillPolicyVec3		= StructFillPolicy::Entry<glm::vec3>;
+	using StructFillPolicyVec4		= StructFillPolicy::Entry<glm::vec4>;
+	using StructFillPolicyMat4		= StructFillPolicy::Entry<glm::mat4>;
 }

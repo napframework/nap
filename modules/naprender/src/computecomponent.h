@@ -7,6 +7,7 @@
 // Local Includes
 #include "renderservice.h"
 #include "materialinstance.h"
+#include "shadervariabledeclarations.h"
 
 // External Includes
 #include <nap/resourceptr.h>
@@ -84,14 +85,14 @@ namespace nap
 		void compute(VkCommandBuffer commandBuffer, uint numInvocations);
 
 		/**
-		 * @return current material used when drawing the mesh.
+		 * @return compute program.
 		 */
-		ComputeMaterialInstance& getComputeMaterialInstance() 			{ return mComputeMaterialInstance; }
+		ComputeMaterialInstance& getMaterialInstance() 			{ return mComputeMaterialInstance; }
 
 		/**
 		 * @return the local workgroup size
 		 */
-		glm::u32vec3 getWorkGroupSize() const							{ return mComputeMaterialInstance.getComputeMaterial().getShader().getWorkGroupSize(); }
+		glm::u32vec3 getWorkGroupSize() const							{ return mComputeMaterialInstance.getMaterial().getShader().getWorkGroupSize(); }
 
 		/**
 		 * Sets the number of compute shader invocations for this instance

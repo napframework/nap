@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "basegpubuffer.h"
+#include "gpubuffer.h"
 #include "uniform.h"
 #include "structfillpolicy.h"
 
@@ -33,16 +33,16 @@ namespace nap
 	 * @tparam T primitive value data type
 	 * @tparam PROPERTY property for identifying the buffer usage and access type
 	 */
-	class NAPAPI StructGPUBuffer final : public BaseGPUBuffer
+	class NAPAPI StructBuffer final : public GPUBuffer
 	{
-		RTTI_ENABLE(BaseGPUBuffer)
+		RTTI_ENABLE(GPUBuffer)
 	public:
-		StructGPUBuffer(Core& core) :
-			BaseGPUBuffer(core)
+		StructBuffer(Core& core) :
+			GPUBuffer(core)
 		{ }
 
-		StructGPUBuffer(Core& core, EMemoryUsage usage) :
-			BaseGPUBuffer(core, usage)
+		StructBuffer(Core& core, EMemoryUsage usage) :
+			GPUBuffer(core, usage)
 		{ }
 
 		/**
@@ -64,12 +64,7 @@ namespace nap
 		/**
 		 * @return the element size in bytes
 		 */
-		virtual uint getElementSize() const override					{ return mElementSize; };
-
-		/**
-		 * @return the buffer usage flags
-		 */
-		virtual VkBufferUsageFlags getBufferUsageFlags() const override { return mUsageFlags; }
+		virtual uint32 getElementSize() const override					{ return mElementSize; };
 
 		/**
 		 * @return whether this buffer is initialized
@@ -86,8 +81,9 @@ namespace nap
 		 */
 		bool setData(void* data, size_t size, utility::ErrorState& error);
 
-		ResourcePtr<StructFillPolicy>				mFillPolicy = nullptr;							///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
-		StructBufferDescriptor						mDescriptor;									///< Property 'Descriptor' The descriptor that defines the buffer layout
+		bool mClear = false;									///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
+		ResourcePtr<StructFillPolicy> mFillPolicy = nullptr;	///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		StructBufferDescriptor mDescriptor;						///< Property 'Descriptor' The descriptor that defines the buffer layout
 
 	private:
 		// Whether the buffer was successfully initialized
@@ -95,8 +91,5 @@ namespace nap
 
 		// Cached element size
 		uint mElementSize = 0;
-
-		// Usage flags that are shared over host (staging) and device (gpu) buffers
-		VkBufferUsageFlags mUsageFlags = 0;
 	};
 }

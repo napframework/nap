@@ -14,35 +14,29 @@
 #include <nap/logger.h>
 #include <rtti/rttiutilities.h>
 
-RTTI_DEFINE_BASE(nap::BaseMaterialInstanceResource)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
+	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Buffers",					&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
 	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::MaterialInstanceResource::mBindings,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
 	RTTI_PROPERTY("ComputeMaterial",			&nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterialInstanceResource::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Bindings",					&nap::ComputeMaterialInstanceResource::mBindings,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterialInstanceResource::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_DEFINE_BASE(nap::BaseMaterialInstance)
-
-RTTI_BEGIN_CLASS(nap::MaterialInstance)
-	RTTI_FUNCTION("getOrCreateUniform",	(nap::UniformStructInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateUniform);
-	RTTI_FUNCTION("getOrCreateSampler",	(nap::SamplerInstance* (nap::MaterialInstance::*)(const std::string&)) &nap::MaterialInstance::getOrCreateSampler);
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstance)
+	RTTI_FUNCTION("getOrCreateUniform", (nap::UniformStructInstance* (nap::BaseMaterialInstance::*)(const std::string&))& nap::BaseMaterialInstance::getOrCreateUniform);
+	RTTI_FUNCTION("getOrCreateSampler", (nap::SamplerInstance* (nap::BaseMaterialInstance::*)(const std::string&))& nap::BaseMaterialInstance::getOrCreateSampler);
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::ComputeMaterialInstance)
-	RTTI_FUNCTION("getOrCreateUniform", (nap::UniformStructInstance* (nap::ComputeMaterialInstance::*)(const std::string&))& nap::ComputeMaterialInstance::getOrCreateUniform);
-	RTTI_FUNCTION("getOrCreateSampler", (nap::SamplerInstance* (nap::ComputeMaterialInstance::*)(const std::string&))& nap::ComputeMaterialInstance::getOrCreateSampler);
-RTTI_END_CLASS
+RTTI_DEFINE_CLASS(nap::MaterialInstance)
+RTTI_DEFINE_CLASS(nap::ComputeMaterialInstance)
 
 namespace nap
 {
@@ -164,7 +158,7 @@ namespace nap
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
 		const ShaderVariableStructDeclaration* declaration = nullptr;
-		const std::vector<BufferObjectDeclaration>& ubo_declarations = getBaseMaterial()->getBaseShader()->getUBODeclarations();
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader().getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			if (ubo_declaration.mName == name)
@@ -180,7 +174,7 @@ namespace nap
 	}
 
 
-	BufferBindingInstance* BaseMaterialInstance::getOrCreateBindingInternal(const std::string& name)
+	BufferBindingInstance* BaseMaterialInstance::getOrCreateBufferInternal(const std::string& name)
 	{
 		// See if we have an override in MaterialInstance. If so, we can return it
 		BufferBindingInstance* existing_binding = findBinding(name);
@@ -190,7 +184,7 @@ namespace nap
 		BufferBindingInstance* result = nullptr;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
+		const std::vector<BufferObjectDeclaration>& ssbo_declarations = getMaterial()->getShader().getSSBODeclarations();
 		int ssbo_index = 0;
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
@@ -200,7 +194,7 @@ namespace nap
 				std::unique_ptr<BufferBindingInstance> binding_instance_override;
 
 				utility::ErrorState error_state;
-				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, nullptr, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), error_state);
+				binding_instance_override = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, nullptr, std::bind(&BaseMaterialInstance::onBufferChanged, this, ssbo_index, std::placeholders::_1), error_state);
 
 				if (!error_state.check(binding_instance_override != nullptr, "Failed to create buffer binding instance"))
 					NAP_ASSERT_MSG(binding_instance_override != nullptr, error_state.toString().c_str());
@@ -223,8 +217,8 @@ namespace nap
 
 		SamplerInstance* result = nullptr;
 
-		const BaseShader* shader = getBaseMaterial()->getBaseShader();
-		const SamplerDeclarations& sampler_declarations = shader->getSamplerDeclarations();
+		const BaseShader& shader = getMaterial()->getShader();
+		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		int image_start_index = 0;
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
@@ -293,7 +287,7 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::onBindingChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance)
+	void BaseMaterialInstance::onBufferChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance)
 	{
 		// Update the buffer info structure stored in the buffer info handles
 		VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[storageBufferIndex];
@@ -351,7 +345,7 @@ namespace nap
 	{
 		ubo.mUniforms.clear();
 
-		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(getBaseMaterial()->findUniform(ubo.mDeclaration->mName));
+		const UniformStructInstance* base_struct = rtti_cast<const UniformStructInstance>(getMaterial()->findUniform(ubo.mDeclaration->mName));
 		assert(base_struct != nullptr);
 
 		buildUniformBufferObjectRecursive(*base_struct, overrideStruct, ubo);
@@ -369,10 +363,10 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::initBindings(utility::ErrorState& errorState)
+	bool BaseMaterialInstance::initBuffers(BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
 	{
 		// Here we create SSBOs in the same way as we did for UBOs above
-		const auto& ssbo_declarations = getBaseMaterial()->getBaseShader()->getSSBODeclarations();
+		const auto& ssbo_declarations = getMaterial()->getShader().getSSBODeclarations();
 		mStorageDescriptors.resize(ssbo_declarations.size());
 		mStorageWriteDescriptorSets.reserve(ssbo_declarations.size()); // We reserve to ensure that pointers remain consistent during the iteration
 
@@ -380,19 +374,19 @@ namespace nap
 		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
 			// Check if the binding is set as override in the MaterialInstance
-			const BufferBinding* override_resource = findBindingResource(getResource()->mBindings, declaration);
+			const BufferBinding* override_resource = findBindingResource(instanceResource.mBuffers, declaration);
 			const auto& buffer_declaration = declaration.getBufferDeclaration();
 
 			BufferBindingInstance* binding = nullptr;
 			if (override_resource != nullptr)
 			{
 				// Buffer binding is overridden, make a BufferBindingInstance object
-				auto override_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, override_resource, std::bind(&BaseMaterialInstance::onBindingChanged, this, ssbo_index, std::placeholders::_1), errorState);
+				auto override_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, override_resource, std::bind(&BaseMaterialInstance::onBufferChanged, this, ssbo_index, std::placeholders::_1), errorState);
 				if (!errorState.check(override_instance != nullptr, "Failed to create buffer binding instance for shader variable `%s`", declaration.mName.c_str()))
 					return false;
 
 				// A buffer is required to be assigned at this point
-				if (!errorState.check(override_instance->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", declaration.mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
+				if (!errorState.check(override_instance->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in material override '%s'", declaration.mName.c_str(), getMaterial()->mID.c_str()).c_str()))
 					return false;
 
 				binding = &addBindingInstance(std::move(override_instance));
@@ -400,17 +394,17 @@ namespace nap
 			else
 			{
 				// Binding is not overridden, find it in the base material
-				binding = getBaseMaterial()->findBinding(declaration.mName);
+				binding = getMaterial()->findBinding(declaration.mName);
 				if (!errorState.check(binding != nullptr, "Failed to find buffer binding instance for shader variable `%s` in base material", declaration.mName.c_str()))
 					return false;
 
 				// A buffer is required to be assigned at this point
-				if (!errorState.check(binding->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", declaration.mName.c_str(), getBaseMaterial()->mID.c_str()).c_str()))
+				if (!errorState.check(binding->hasBuffer(), utility::stringFormat("No valid buffer was assigned to shader variable '%s' in base material '%s'", declaration.mName.c_str(), getMaterial()->mID.c_str()).c_str()))
 					return false;
 			}
 
 			VkDescriptorBufferInfo& buffer_info = mStorageDescriptors[ssbo_index];
-			buffer_info.buffer = binding->getBaseBuffer().getBuffer();
+			buffer_info.buffer = binding->getBuffer().getBuffer();
 			buffer_info.offset = 0;
 			buffer_info.range = VK_WHOLE_SIZE;
 
@@ -429,10 +423,10 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::initSamplers(utility::ErrorState& errorState)
+	bool BaseMaterialInstance::initSamplers(BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
 	{
-		BaseMaterial* material = getBaseMaterial();
-		const SamplerDeclarations& sampler_declarations = material->getBaseShader()->getSamplerDeclarations();
+		BaseMaterial* material = getMaterial();
+		const SamplerDeclarations& sampler_declarations = material->getShader().getSamplerDeclarations();
 
 		int num_sampler_images = 0;
 		for (const SamplerDeclaration& declaration : sampler_declarations)
@@ -468,7 +462,7 @@ namespace nap
 			bool is_array = declaration.mNumArrayElements > 1;
 
 			// Check if the sampler is set as override in the MaterialInstance
-			const Sampler* sampler = findSamplerResource(getResource()->mSamplers, declaration);
+			const Sampler* sampler = findSamplerResource(instanceResource.mSamplers, declaration);
 			SamplerInstance* sampler_instance = nullptr;
 			if (sampler != nullptr)
 			{
@@ -547,7 +541,7 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::updateBindings(const DescriptorSet& descriptorSet)
+	void BaseMaterialInstance::updateBuffers(const DescriptorSet& descriptorSet)
 	{
 		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
 		// with the actual set that was acquired.
@@ -561,13 +555,14 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::initInternal(RenderService& renderService, utility::ErrorState& errorState)
+	bool BaseMaterialInstance::initInternal(RenderService& renderService, BaseMaterial& material, BaseMaterialInstanceResource& instanceResource, utility::ErrorState& errorState)
 	{
 		mDevice = renderService.getDevice();
 		mRenderService = &renderService;
+		mMaterial = &material;
+		mResource = &instanceResource;
 
-		BaseMaterial* material = getBaseMaterial();
-		const BaseShader* shader = material->getBaseShader();
+		const auto& shader = mMaterial->getShader();
 
 		// Here we create UBOs in two parts:
 		// 1) We create a hierarchical uniform instance structure based on the hierarchical declaration structure from the shader. We do
@@ -578,10 +573,10 @@ namespace nap
 		//    elements can point to either Material or MaterialInstance instance uniforms, depending on whether the property was overridden.
 		//    Notice that this also means that this structure should be rebuilt when a 'new' override is made at runtime. This is handled in
 		//    update() by rebuilding the UBO when a new uniform is created.
-		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader->getUBODeclarations();
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
-			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(getResource()->mUniforms, ubo_declaration));
+			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(instanceResource.mUniforms, ubo_declaration));
 
 			// Pass 1: create hierarchical structure
 			UniformStructInstance* override_struct = nullptr;
@@ -604,10 +599,10 @@ namespace nap
 		}
 		mUniformsCreated = false;
 
-		if (!initBindings(errorState))
+		if (!initBuffers(instanceResource, errorState))
 			return false;
 
-		if (!initSamplers(errorState))
+		if (!initSamplers(instanceResource, errorState))
 			return false;
 
 		// We get/create an allocator that is compatible with the layout of the shader that this material is bound to. Practically this
@@ -618,7 +613,7 @@ namespace nap
 		// possible that multiple shaders that have the same bindings, number of UBOs and samplers can share the same allocator. This is advantageous
 		// because internally, pools are created that are allocated from. We want as little empty space in those pools as possible (we want the allocators
 		// to act as 'globally' as possible).
-		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(shader->getDescriptorSetLayout());
+		mDescriptorSetCache = &renderService.getOrCreateDescriptorSetCache(shader.getDescriptorSetLayout());
 
 		return true;
 	}
@@ -654,7 +649,7 @@ namespace nap
 		const DescriptorSet& descriptor_set = mDescriptorSetCache->acquire(mUniformBufferObjects, mStorageDescriptors.size(), mSamplerDescriptors.size());
 
 		updateUniforms(descriptor_set, mUniformBufferObjects);
-		updateBindings(descriptor_set);
+		updateBuffers(descriptor_set);
 		updateSamplers(descriptor_set);
 
 		return descriptor_set;
@@ -668,40 +663,9 @@ namespace nap
 	bool MaterialInstance::init(RenderService& renderService, MaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
-		if (!initInternal(renderService, errorState))
+		if (!initInternal(renderService, *resource.mMaterial, resource, errorState))
 			return false;
-
 		return true;
-	}
-
-
-	Material& MaterialInstance::getMaterial()
-	{
-		return *mResource->mMaterial;
-	}
-
-
-	const nap::Material& MaterialInstance::getMaterial() const
-	{
-		return *mResource->mMaterial;
-	}
-
-
-	BaseMaterial* MaterialInstance::getBaseMaterial()
-	{
-		return mResource->mMaterial.get();
-	};
-
-
-	const BaseMaterial* MaterialInstance::getBaseMaterial() const
-	{
-		return mResource->mMaterial.get();
-	};
-
-
-	const BaseMaterialInstanceResource* MaterialInstance::getResource() const
-	{
-		return mResource;
 	}
 
 
@@ -742,39 +706,8 @@ namespace nap
 	bool ComputeMaterialInstance::init(RenderService& renderService, ComputeMaterialInstanceResource& resource, utility::ErrorState& errorState)
 	{
 		mResource = &resource;
-		if (!initInternal(renderService, errorState))
+		if (!initInternal(renderService,*resource.mComputeMaterial, resource, errorState))
 			return false;
-
 		return true;
-	}
-
-
-	ComputeMaterial& ComputeMaterialInstance::getComputeMaterial()
-	{
-		return *mResource->mComputeMaterial;
-	}
-
-
-	const ComputeMaterial& ComputeMaterialInstance::getComputeMaterial() const
-	{
-		return *mResource->mComputeMaterial;
-	}
-
-
-	BaseMaterial* ComputeMaterialInstance::getBaseMaterial()
-	{
-		return mResource->mComputeMaterial.get();
-	};
-
-
-	const BaseMaterial* ComputeMaterialInstance::getBaseMaterial() const
-	{
-		return mResource->mComputeMaterial.get();
-	};
-
-
-	const BaseMaterialInstanceResource* ComputeMaterialInstance::getResource() const
-	{
-		return mResource;
 	}
 }

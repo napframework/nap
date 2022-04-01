@@ -21,6 +21,12 @@ namespace nap
 	class DescriptorSetCache;
 	class Core;
 
+	/**
+	 * Acts as the main interface to any type of shader.
+	 * Creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use
+	 * that same value, unless overridden by a nap::MaterialInstanceResource.
+	 */
 	class BaseMaterial : public Resource, public UniformContainer
 	{
 		RTTI_ENABLE(Resource)
@@ -31,14 +37,14 @@ namespace nap
 		BaseMaterial(Core& core);
 		virtual ~BaseMaterial() = default;
 
-		std::vector<ResourcePtr<UniformStruct>>			mUniforms;										///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<BufferBinding>>			mBindings;										///< Property: 'Bindings' Static buffer bindings (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<Sampler>>				mSamplers;										///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
-
 		/**
-		 * @return The underlying base shader
+		 * @return The shader
 		 */
-		virtual const BaseShader* getBaseShader() const = 0;
+		const BaseShader& getShader()					{ assert(mShader != nullptr); return *mShader; }
+
+		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<Sampler>>				mSamplers;												///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
 
 	protected:
 		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);
@@ -46,16 +52,18 @@ namespace nap
 	private:
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
 		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
-
 		RenderService* mRenderService = nullptr;
+		const BaseShader* mShader = nullptr;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Material
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * Resource that acts as the main interface to a vertex or fragment shader. Controls how vertex buffers are bound to
-	 * shader inputs.
-	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
-	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use 
-	 * that same value, unless overridden by a nap::MaterialInstance.
+	 * Resource that acts as the main interface to a vertex or fragment shader.
+	 * Controls how vertex buffers are bound to shader inputs.
 	 *
 	 * Note that there is no implicit synchronization of access to shader resources bound to buffer bindings and regular
 	 * uniforms between render passes. Therefore, it is currently not recommended to write to storage buffers inside
@@ -97,14 +105,9 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return The underlying shader
+		 * @return The graphics shader
 		 */
-		const Shader& getShader() const								{ assert(mShader != nullptr); return *mShader; }
-
-		/**
-		 * @return The underlying base shader
-		 */
-		virtual const BaseShader* getBaseShader() const	override	{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
+		const Shader& getShader() const								{ assert(Material::mShader != nullptr); return *Material::mShader; }
 
 		/**
 		 * Returns the current blend mode.
@@ -152,6 +155,10 @@ namespace nap
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// Compute Material
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Resource that acts as the main interface to a compute shader. Controls how GPU buffers are bound to shader inputs.
 	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
@@ -182,13 +189,8 @@ namespace nap
 		/**
 		 * @return The underlying compute shader
 		 */
-		const ComputeShader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
+		const ComputeShader& getShader() const						{ assert(ComputeMaterial::mShader != nullptr); return *ComputeMaterial::mShader; }
 
-		/**
-		 * @return The underlying base shader
-		 */
-		virtual const BaseShader* getBaseShader() const override	{ assert(mShader != nullptr); return static_cast<BaseShader*>(mShader.get()); }
-
-		ResourcePtr<ComputeShader>					mShader = nullptr;									///< Property: 'Shader' The compute shader that this material is using
+		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
 	};
 }
