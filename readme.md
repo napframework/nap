@@ -175,7 +175,7 @@ After packaging a new zip or folder is created, with the naming convention `NAP-
 
 To package NAP run: `package.bat` (Windows) or `package.sh` (macOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
 ```
-QT_DIR=/home/myusername/Qt/5.11.3/gcc_64 ./package.sh
+./package.sh
 ```
 
 This will compile a package including all demos but without your own projects (defined in source). Alternatively, you can use the `-sna` flag to build a package including your own project (plus demos), e.g.:
