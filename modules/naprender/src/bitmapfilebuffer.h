@@ -90,7 +90,7 @@ namespace nap
 		* Returns a pointer to the internal pixel data
 		* @return a pointer to the internal pixel data
 		*/
-		const void* getData();
+		void* getData();
 		
 		/**
 		 * Returns a handle to the FreeImage bitmap. This comprises the FreeImage info header and pixel data

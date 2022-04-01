@@ -23,7 +23,7 @@ import sys
 # it will have completed initialisation.
 WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
 if sys.platform.startswith('linux') and not machine() == 'x86_64':
-    WAIT_SECONDS_FOR_PROCESS_HEALTH = 15
+    WAIT_SECONDS_FOR_PROCESS_HEALTH = 30
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -43,13 +43,13 @@ PROJECT_FILENAME = 'project.json'
 # JSON report filename
 REPORT_FILENAME = 'report.json'
 
-# Exit code that Napkin will 
-NAPKIN_SUCCESS_EXIT_CODE = 180
+# Napkin success exit code
+NAPKIN_SUCCESS_EXIT_CODE = 0
 
 # Seconds to wait for a Napkin load project and exit with expected exit code
 NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
 if sys.platform.startswith('linux') and not machine() == 'x86_64':
-    WAIT_SECONDS_FOR_PROCESS_HEALTH = 80
+    NAPKIN_SECONDS_WAIT_FOR_PROCESS = 40
 
 # Build directory names
 LINUX_BUILD_DIR = 'build_dir'
@@ -1350,7 +1350,7 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen', 
                                                                                     nap_framework_full_path, 
                                                                                     True)
 
@@ -1395,7 +1395,7 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
 
         # Run
         demo_project_json = os.path.join(demos_root_dir, demo_name, PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_project_json, 
                                                                                         nap_framework_full_path, 
                                                                                         True,
                                                                                         True,
@@ -1441,7 +1441,7 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     if 'build' in template_results and template_results['build']['success']:
         template_project_json = os.path.join(nap_framework_full_path, 'projects', TEMPLATE_APP_NAME.lower(), PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % template_project_json, 
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % template_project_json, 
                                                                                         nap_framework_full_path, 
                                                                                         True,
                                                                                         True,
@@ -1499,7 +1499,7 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     # Run demo from packaged project
     print("- Run Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen', 
                                                                                     os.path.abspath(os.pardir), 
                                                                                     True)
 
@@ -1542,7 +1542,7 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
     # Run demo from packaged project
     print("- Open project with Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_project_json, 
                                                                                     os.path.abspath(os.pardir),
                                                                                     True,
                                                                                     True,

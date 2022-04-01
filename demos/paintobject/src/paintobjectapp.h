@@ -27,7 +27,9 @@ namespace nap
 {
 	using namespace rtti;
 
-	/**
+
+	class PaintObjectApp : public App
+	{	/**
 	 * Demo application that shows how to use multiple render texture components to draw on 3D objects
 	 *
 	 * Shows an object that can be painted using the left mouse button.
@@ -53,8 +55,6 @@ namespace nap
 	 * The input router does that for you. This demo uses the default one that forwards the events to every input component
 	 * Refer to the cpp-update() call for more information on handling input
 	 */
-	class PaintObjectApp : public App
-	{
 		RTTI_ENABLE(App)
 	public:
 		PaintObjectApp(nap::Core& core) : App(core)	{ }
@@ -130,9 +130,6 @@ namespace nap
 		ObjectPtr<ParameterFloat>			mLightIntensityParam	= nullptr;
 		ObjectPtr<ParameterBool>			mEraserModeParam		= nullptr;
 		ObjectPtr<ParameterInt>				mMeshSelectionParam		= nullptr;
-
-		// Text Highlight Color
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 
 		// GUI
 		ObjectPtr<ParameterGUI> mParameterGUI = nullptr;	//< Able to draw parameters to screen

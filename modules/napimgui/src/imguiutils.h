@@ -45,9 +45,9 @@ namespace ImGui
 	bool IMGUI_API ImageButton(const nap::Texture2D& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 1), const ImVec2& uv1 = ImVec2(1, 0), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
-	 * Displays a NAP Icon as a squared IMGUI image button where
-	 * the width and height of the button is the active font size.
-	 * When hovered over the icon the name or optional text is displayed.
+	 * Displays a NAP Icon as an IMGUI image button where
+	 * the height of the button is the same as the height of the frame.
+	 * When hovered the name of the icon or optional text is displayed.
 	 * ~~~~~{.cpp}
 	 *	if (ImGui::ImageButton(gui_service.getIcon(icon::ok)))
 	 *	{
@@ -57,16 +57,15 @@ namespace ImGui
 	 * @param icon icon to apply to the button
 	 * @param text optional overlay text, when null icon name is shown
 	 * @param tooltip_offset offset tooltip needs to have in x and y axis
-	 * @param frame_padding image frame padding
 	 * @param bg_color button backgound color
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
-	bool IMGUI_API ImageButton(const nap::Icon& icon, const char* text=nullptr, const ImVec2& tooltip_offset = ImVec2(10, 10), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool IMGUI_API ImageButton(const nap::Icon& icon, const char* text=nullptr, const ImVec2& tooltip_offset = ImVec2(10, 10), const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
 
 	/**
-	 * Displays a NAP Icon as a squared IMGUI image of a certain size.
-	 * When hovered over the icon the name or optional text is displayed.
+	 * Displays a NAP Icon as an IMGUI image of a certain size.
+	 * When hovered the name of the icon or optional text is displayed.
 	 * ~~~~~{.cpp}
 	 *	if (ImGui::ImageButton(gui_service.getIcon(icon::ok)))
 	 *	{

@@ -213,19 +213,22 @@ namespace nap
 
 	void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target)
 	{
-		assert(source.getNumberOfChannels() >= target.getNumberOfChannels());
+		// Get conversion function
 		std::function<void(const BaseColor&, BaseColor&, int)> convert_func = getConverter(source, target);
-
-		// Perform conversion
 		assert(convert_func != nullptr);
-		for (int i = 0; i < target.getNumberOfChannels(); i++)
+
+		// Convert
+		int cc = math::min<int>(source.getNumberOfChannels(), target.getNumberOfChannels());
+		for (int i = 0; i < cc; i++)
 			convert_func(source, target, i);
 	}
 
 
 	void nap::BaseColor::convertColor(const BaseColor& source, BaseColor& target, const Converter& converter)
 	{
-		for (int i = 0; i < target.getNumberOfChannels(); i++)
+		// Convert
+		int cc = math::min<int>(source.getNumberOfChannels(), target.getNumberOfChannels());
+		for (int i = 0; i < cc; i++)
 			converter(source, target, i);
 	}
 

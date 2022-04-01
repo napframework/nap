@@ -384,9 +384,9 @@
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
-                            0.8587999939918518,
-                            0.8587999939918518,
-                            0.8587999939918518
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     },
                     "Location": {
@@ -429,7 +429,7 @@
                 "Size": 18,
                 "DPI": 96
             },
-            "Font": "fonts/Montserrat-Light.otf"
+            "Font": "fonts/Manrope-Light.otf"
         },
         {
             "Type": "nap::ImageFromFile",
@@ -734,9 +734,9 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             },

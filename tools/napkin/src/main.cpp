@@ -12,7 +12,27 @@
 #include <QSplashScreen>
 #include <utility/fileutils.h>
 
-using namespace napkin;
+namespace napkin
+{
+	// Napkin return error codes
+	namespace returncode
+	{
+		inline constexpr int success		= 0;		//< No error
+		inline constexpr int parseError		= 1;		//< Parse error
+		inline constexpr int coreError		= 2;		//< Core initialization error
+		inline constexpr int documentError	= 3;		//< Document load error
+	}
+
+	void setEnv(const char* key, const char* value)
+	{
+#ifdef _WIN32
+		_putenv_s(key, value);
+#else
+		setenv(key, value, 0);
+#endif // _WIN32
+	}
+}
+
 
 /**
  * Configure in-between session settings.
@@ -30,16 +50,81 @@ void initializeSettings()
 	{
 		auto settingsDir = QFileInfo(userSettingsFilename).dir();
 		if (!settingsDir.exists())
+		{
 			settingsDir.mkpath(".");
+		}
 
-		auto defaultSettingsFilename = QString("%1/%2").arg(exeDir, DEFAULT_SETTINGS_FILE);
+		auto defaultSettingsFilename = QString("%1/%2").arg(exeDir, napkin::DEFAULT_SETTINGS_FILE);
 		if (!QFileInfo::exists(defaultSettingsFilename))
+		{
 			nap::Logger::error("File not found: %s", defaultSettingsFilename.toStdString().c_str());
+		}
+
 		if (!QFile::copy(defaultSettingsFilename, userSettingsFilename))
-			nap::Logger::error("Failed to copy %s to %s",
-							   defaultSettingsFilename.toStdString().c_str(),
-							   userSettingsFilename.toStdString().c_str());
+		{
+			nap::Logger::error("Failed to copy %s to %s", 
+				defaultSettingsFilename.toStdString().c_str(),
+				userSettingsFilename.toStdString().c_str());
+		}
 	}
+}
+
+
+/**
+ * Command line handling. Exits application if requested or arguments are invalid.
+ * @param app the main application
+ * @param context the main application context
+ * @return if process should exit after load
+ */
+bool parseCommandline(QApplication& app, napkin::AppContext& context)
+{
+	QCommandLineParser parser;
+	auto op_help = parser.addHelpOption();
+	auto op_ver = parser.addVersionOption();
+
+	QCommandLineOption opProject({ "p", "project" }, "Load specified project file upon startup", "project", "");
+	parser.addOption(opProject);
+
+	// Options to assist with automated testing
+	QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
+	parser.addOption(opNoOpenRecent);
+
+	QCommandLineOption opExitAfterLoad("exit-after-load", "Exit after loading project (for testing)", "", "");
+	parser.addOption(opExitAfterLoad);
+	parser.process(app);
+
+	if (parser.isSet(op_help))
+		exit(napkin::returncode::success);
+
+	if (parser.isSet(op_ver))
+		exit(napkin::returncode::success);
+
+	// Check if we need to exit after load
+	bool exit_after_load = parser.isSet(opExitAfterLoad);
+
+	// Check if there's a project to load
+	bool project_set = parser.isSet(opProject);
+
+	// Bail if exit-after-load flag is set but no project is specified
+	if (exit_after_load && !project_set)
+	{
+		nap::Logger::error("exit-after-load requested without specifying project to load");
+		exit(napkin::returncode::parseError);
+	}
+
+	// Check if we need to load a specific project
+	// This flag has precedence over the 'open no recent' project flag if set simultaneously
+	if (project_set)
+	{
+		std::string projectPath = parser.value(opProject).toStdString();
+		projectPath = nap::utility::getAbsolutePath(projectPath);
+		context.addRecentlyOpenedProject(QString::fromStdString(projectPath));
+	}
+	else if (parser.isSet(opNoOpenRecent))
+	{
+		context.setOpenRecentProjectOnStartup(false);
+	}
+	return exit_after_load;
 }
 
 
@@ -55,73 +140,60 @@ int main(int argc, char* argv[])
 	nap::Logger::setLevel(nap::Logger::debugLevel());
 
     // Construct the app context singleton
-    auto& ctx = AppContext::create();
+    auto& ctx = napkin::AppContext::create();
 
 	// nap::Core is declared in AppContext
-	QApplication::setOrganizationName("napframework");
-	QApplication::setApplicationName("Napkin");
-	QApplication::setApplicationVersion("0.4");
+	QApplication::setOrganizationName("nap-labs");
+	QApplication::setApplicationName("napkin");
+	QApplication::setApplicationVersion("0.5");
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
+	// Set scale factor policy using environment variable instead of in code.
+	// Allows editor to scale using fractional scaling values in Qt 5.14+ whilst 
+	// maintaining compatibility with older versions of Qt (< 5.14)
+	napkin::setEnv("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough");
+
+	// Configure settings
 	initializeSettings();
 
+	// Create app
 	QApplication app(argc, argv);
 
-	// Show splash screen
-	QPixmap splashpic(QRC_ICONS_NAPKIN_SPLASH);
+	// Show splash screen during initialization of engine
+	QPixmap splashpic(napkin::QRC_ICONS_NAPKIN_SPLASH);
+	splashpic.setDevicePixelRatio(app.devicePixelRatio());
 	QSplashScreen splash(splashpic);
 	splash.show();
 	app.processEvents();
 
-	// handle commandline
-	{
-		QCommandLineParser parser;
-		auto opHelp = parser.addHelpOption();
-		auto opVer = parser.addVersionOption();
+	// Handle command line
+	bool exit_after_load = parseCommandline(app, ctx);
 
-		QCommandLineOption opProject({ "p", "project" }, "Load specified project file upon startup", "project", "");
-		parser.addOption(opProject);
-
-		// Options to assist with automated testing
-		QCommandLineOption opNoOpenRecent("no-project-reopen", "Don't attempt to re-open last project", "", "");
-		parser.addOption(opNoOpenRecent);
-		QCommandLineOption opExitFailure("exit-on-failure", "Exit on failure loading project (for testing)", "", "");
-		parser.addOption(opExitFailure);
-		QCommandLineOption opExitSuccess("exit-on-success", "Exit on success loading project (for testing)", "", "");
-		parser.addOption(opExitSuccess);
-		parser.process(app);
-
-		if (parser.isSet(opHelp)) { return 0; }
-		if (parser.isSet(opVer)) { return 0; }
-		if (parser.isSet(opExitFailure)) { ctx.setExitOnLoadFailure(true); }
-		if (parser.isSet(opExitSuccess)) { ctx.setExitOnLoadSuccess(true); }
-
-		if (parser.isSet(opProject))
-		{
-			std::string projectPath = parser.value(opProject).toStdString();
-			projectPath = nap::utility::getAbsolutePath(projectPath);
-			ctx.addRecentlyOpenedProject(QString::fromStdString(projectPath));
-		}
-		else if (parser.isSet(opNoOpenRecent))
-		{
-			ctx.setOpenRecentProjectOnStartup(false);
-		}
-	}
-
-	// Create main window and run
-	app.setWindowIcon(QIcon(QRC_ICONS_NAP_LOGO));
-	std::unique_ptr<MainWindow> w = std::make_unique<MainWindow>();
+	// Create main window and show, this loads a project if set
+	app.setWindowIcon(QIcon(napkin::QRC_ICONS_NAP_ICON));
+	std::unique_ptr<napkin::MainWindow> w = std::make_unique<napkin::MainWindow>();
 	w->show();
 	splash.finish(w.get());
-	int re = app.exec();
+
+	// Initialize return code.
+	// Informs the test environment if the NAP project loaded successfully.
+	// Only relevant when 'exit-after-load' flag is set for testing purposes.
+	int exit_code = !ctx.getCore().isInitialized() ? napkin::returncode::coreError :
+		!ctx.hasDocument() ? napkin::returncode::documentError :
+		napkin::returncode::success;
+
+	// Run until quit, this is the normal behavior.
+	if (!exit_after_load)
+		exit_code = app.exec();
+
+	// Remove all app fonts
 	QFontDatabase::removeAllApplicationFonts();
 
 	// Explicitly delete main window because of dangling references
 	w.reset(nullptr);
 
     // Destruct the app context singleton
-    AppContext::destroy();
-
-	return re;
+    napkin::AppContext::destroy();
+	return exit_code;
 }

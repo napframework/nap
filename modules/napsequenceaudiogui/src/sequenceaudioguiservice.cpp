@@ -48,12 +48,12 @@ namespace nap
         mAudioSegmentBackgroundHovering = ImGui::ColorConvertFloat4ToU32(audio_segment_background_hovering_float4);
 
         // audio segment clipboard
-        ImVec4 audio_segment_background_clipboard_float4 = ImGui::ColorConvertU32ToFloat4(palette.mHigh);
+        ImVec4 audio_segment_background_clipboard_float4 = ImGui::ColorConvertU32ToFloat4(palette.mHigh1);
         audio_segment_background_clipboard_float4.w = 0.25f;
         mAudioSegmentBackgroundClipboard = ImGui::ColorConvertFloat4ToU32(audio_segment_background_clipboard_float4);
 
         // audio segment clipboard hovering
-        ImVec4 audio_segment_background_hovering_clipboard_float4 = ImGui::ColorConvertU32ToFloat4(palette.mHigh);
+        ImVec4 audio_segment_background_hovering_clipboard_float4 = ImGui::ColorConvertU32ToFloat4(palette.mHigh1);
         audio_segment_background_hovering_clipboard_float4.w = 0.5f;
         mAudioSegmentBackgroundClipboardHovering = ImGui::ColorConvertFloat4ToU32(audio_segment_background_hovering_clipboard_float4);
     }

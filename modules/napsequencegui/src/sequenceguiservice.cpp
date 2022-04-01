@@ -97,7 +97,7 @@ namespace nap
 	{
 		// Get gui service and colors
 		mGuiService = getCore().getService<IMGuiService>();
-		mColors.init(mGuiService->getColors());
+		mColors.init(mGuiService->getPalette());
 
 		// Load all icons
 		const auto& icon_names = icon::sequencer::get();
@@ -304,13 +304,21 @@ namespace nap
 	}
 
 
-	void SequenceGUIService::Colors::init(const IMGuiColorPalette& palette)
+	void SequenceGUIService::Colors::init(const gui::ColorPalette& palette)
 	{
-		mHigh = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor));
+		mHigh1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor1));
+		mHigh2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor2));
+		mHigh3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor3));
+		mHigh4 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor4));
 		mDark = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mDarkColor));
-		mFro3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
-		mFro2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
 		mFro1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront1Color));
+		mFro2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
+		mFro3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
+		mFro4 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront4Color));
 		mBack = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mBackgroundColor));
+		mCurveColors[0] = mHigh4;
+		mCurveColors[1] = mHigh2;
+		mCurveColors[2] = mHigh1;
+		mCurveColors[3] = mHigh3;
 	}
 }

@@ -16,12 +16,10 @@ namespace nap
 {
 	namespace audio
 	{
-		
-		class OutputComponentInstance;
-		
+		class OutputComponentInstance;	
 		
 		/**
-		 * Component that routs output from an audio component to the audio interface.
+		 * Routs the output from an audio component to the audio interface.
 		 */
 		class NAPAPI OutputComponent : public Component
 		{
@@ -44,16 +42,15 @@ namespace nap
 		
 		
 		/**
-		 * Instance of component that routs output from another audio component to the audio interface
+		 * Instance part of an audio output component.
+		 * Routs the output from an audio component to the audio interface
 		 */
 		class NAPAPI OutputComponentInstance : public ComponentInstance
 		{
 		RTTI_ENABLE(nap::ComponentInstance)
 		
 		public:
-			OutputComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity,
-			                                                                                              resource)
-			{}
+			OutputComponentInstance(EntityInstance& entity, Component& resource) : nap::ComponentInstance(entity, resource)	{}
 			
 			// Initialize the component
 			bool init(utility::ErrorState& errorState) override;

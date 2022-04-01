@@ -28,6 +28,12 @@ Theme::Theme(const QString& filename) :
 }
 
 
+bool napkin::Theme::invertIcons() const
+{
+	return mInvertIcons;
+}
+
+
 bool napkin::Theme::reload()
 {
 	return mValid = loadTheme();
@@ -153,6 +159,18 @@ bool Theme::loadTheme()
 	else
 	{
 		nap::Logger::warn("Missing 'colors' element in '%s'", mFilePath.toStdString().c_str());
+	}
+
+	// check if icons should be inverted
+	auto icons_it = doc.FindMember("icons");
+	if (icons_it != doc.MemberEnd())
+	{
+		auto icons = icons_it->value.GetObject();
+		auto invert_it = icons.FindMember("invert");
+		if (invert_it != icons.MemberEnd())
+		{
+			mInvertIcons = invert_it->value.GetBool();
+		}
 	}
 	return true;
 }

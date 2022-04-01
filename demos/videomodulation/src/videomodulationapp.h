@@ -116,8 +116,8 @@ namespace nap
 		ObjectPtr<VideoPlayer> mVideoPlayer = nullptr;					//< Video player
 
 		// Background colors
-		RGBColorFloat mBackgroundColorOne =	{ 0.066f, 0.078f, 0.149f };			//< Color of the valley
-		RGBColorFloat mBackgroundColorTwo = { 0.784f, 0.411f, 0.411f };			//< Color of the peak
+		RGBColorFloat mColorOne;										//< First blend color
+		RGBColorFloat mColorTwo;										//< Second blend color
 		
 		// Selection
 		int mCurrentMesh  = 0;

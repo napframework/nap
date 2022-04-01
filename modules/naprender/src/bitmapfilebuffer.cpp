@@ -296,10 +296,10 @@ namespace nap
 	}
 
 
-	const void* BitmapFileBuffer::getData()
+	void* BitmapFileBuffer::getData()
 	{
 		FIBITMAP* fi_bitmap = reinterpret_cast<FIBITMAP*>(getHandle());
-		return static_cast<const void*>(FreeImage_GetBits(fi_bitmap));
+		return FreeImage_GetBits(fi_bitmap);
 	}
 
 

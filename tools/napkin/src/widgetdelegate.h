@@ -18,7 +18,7 @@ namespace napkin
 	class PropertyValueItemDelegate : public QStyledItemDelegate
 	{
 	public:
-		PropertyValueItemDelegate();
+		PropertyValueItemDelegate() = default;
 
 		/**
 		 * Get the type this modelindex represents
@@ -66,10 +66,5 @@ namespace napkin
 		 */
 		bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
 						 const QModelIndex& index) override;
-
-	private:
-		QIcon mLinkIcon;
-		QIcon mFileIcon;
-		QIcon mColorIcon;
 	};
 };

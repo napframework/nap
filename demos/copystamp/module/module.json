@@ -4,7 +4,8 @@
     "RequiredModules": [
         "mod_naprender",
         "mod_napmath",
-        "mod_napscene"
+        "mod_napscene",
+        "mod_napimgui"
     ],
     "WindowsDllSearchPaths": []
 }

@@ -170,6 +170,7 @@ add_subdirectory(demos/artnetsend)
 add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/artnetreceive/module)
 add_subdirectory(demos/pipins)
+add_subdirectory(demos/webportal)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -216,6 +217,7 @@ add_subdirectory(modules/naptween)
 add_subdirectory(modules/napcalendar)
 add_subdirectory(modules/napasio)
 add_subdirectory(modules/nappipins)
+add_subdirectory(modules/napportal)
 
 # Packaging
 include(cmake/packaging_macros.cmake)

@@ -103,8 +103,11 @@ namespace nap
 		ObjectPtr<ImageFromFile>	mTextureOne = nullptr;				//< Pointer to the first texture
 		ObjectPtr<ImageFromFile>	mTextureTwo = nullptr;				//< Pointer to the second texture
 		ObjectPtr<ImageFromFile>	mWorldTexture = nullptr;			//< Pointer to the world texture
-		
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
+
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
+
+		RGBColorFloat mColorOne;										//< First sphere blend color
+		RGBColorFloat mColorTwo;										//< Second sphere blend color
+		RGBColorFloat mHaloColor;										//< Sphere halo color
 	};
 }

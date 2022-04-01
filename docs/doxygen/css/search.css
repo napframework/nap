@@ -1,5 +1,8 @@
-@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,200,200italic,400italic);
-@import url(https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic,900,900italic&subset=latin,greek-ext,greek,latin-ext);
+@font-face {
+    font-family: 'manrope';
+    src: url('../Manrope-Regular.ttf') format('truetype');
+}
+
 /*---------------- Search Box */
 
 #FSearchBox {
@@ -51,7 +54,7 @@
     width:115px;
     margin-left:20px;
     padding-left:4px;
-    color: #909090;
+    color: #CDCDC3;
     outline: none;
     font: 9pt Arial, Verdana, sans-serif;
     -webkit-border-radius: 0px;
@@ -101,7 +104,7 @@
     display: none;
     position: absolute;
     left: 0; top: 0;
-    border: 1px solid #90A5CE;
+    border: 1px solid #FFFFFF;
     background-color: #F9FAFC;
     z-index: 10001;
     padding-top: 4px;
@@ -165,7 +168,7 @@ iframe#MSearchResults {
     position: absolute;
     left: 0; top: 0;
     border: 1px solid #000;
-    background-color: #EEF1F7;
+    background-color: #CDCDC3;
     z-index:10000;
 }
 
@@ -200,39 +203,39 @@ body.SRPage {
 }
 
 .SRSymbol {
-    font-weight: bold; 
-    color: #8B8CA0;
-    font-family:  'Nunito Sans', sans-serif;
+    font-weight: lighter; 
+    color: #CDCDC3;
+    font-family:  'manrope', sans-serif;
     text-decoration: none;
     outline: none;
 }
 
 .SRScope 
 {
-    color: #5D5E73; 
+    color: #8D8B84; 
 }
 
 a.SRScope {
     display: block;
-    color: #8B8CA0; 
-    font-family:  'Nunito Sans', sans-serif;
+    color: #CDCDC3; 
+    font-family:  'manrope', sans-serif;
     text-decoration: none;
     outline: none;
     padding: 5px 5px;
 }
 
 a.SRScope:hover {
-    text-decoration: underline;
+    color: #FFFFFF;
 }
 
 a.SRSymbol:hover
 {
-    text-decoration: underline;
+    color: #FFFFFF;
 }
 
 a.SRSymbol:focus, a.SRSymbol:active,
 a.SRScope:focus, a.SRScope:active {
-    text-decoration: underline;
+    color: #FFFFFF;
 }
 
 span.SRScope {
@@ -241,8 +244,10 @@ span.SRScope {
 
 .SRPage .SRStatus {
     padding: 2px 5px;
-    font-size: 8pt;
+    font-size: 0.8em;
     font-style: italic;
+    color: #fff;
+    font-family:  'manrope', sans-serif;
 }
 
 .SRResult {
