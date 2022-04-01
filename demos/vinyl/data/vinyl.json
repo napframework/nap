@@ -691,9 +691,9 @@
         {
             "Type": "nap::Snapshot",
             "mID": "Snapshot",
-            "Width": 3840,
-            "Height": 2160,
-            "Divisor": 4,
+            "Width": 1280,
+            "Height": 720,
+            "Divisor": 1,
             "OutputDirectory": "snapshots",
             "ImageFileFormat": "PNG",
             "TextureFormat": "RGBA8",

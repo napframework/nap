@@ -6,13 +6,14 @@
 #include "renderservice.h"
 #include "renderablemeshcomponent.h"
 #include "rendercomponent.h"
+#include "computecomponent.h"
 #include "renderwindow.h"
 #include "transformcomponent.h"
 #include "cameracomponent.h"
 #include "renderglobals.h"
 #include "mesh.h"
 #include "depthsorter.h"
-#include "vertexbuffer.h"
+#include "gpubuffer.h"
 #include "texture2d.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
@@ -93,28 +94,36 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
 RTTI_END_ENUM
 
+RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueCapabilities)
+	RTTI_PROPERTY("Graphics",					&nap::RenderServiceConfiguration::QueueCapabilities::mGraphics,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Compute",					&nap::RenderServiceConfiguration::QueueCapabilities::mCompute,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Transfer",					&nap::RenderServiceConfiguration::QueueCapabilities::mTransfer,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
-	RTTI_PROPERTY("Headless",			&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PreferredGPU",		&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Layers",				&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Extensions",			&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VulkanMajor",		&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VulkanMinor",		&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableHighDPI",		&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShowLayers",			&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShowExtensions",		&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AnisotropicSamples",	&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RequiredQueueCapabilities",	&nap::RenderServiceConfiguration::mRequiredQueueCapabilities,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
-
+	
 RTTI_BEGIN_CLASS(nap::WindowCache)
-	RTTI_PROPERTY("Position",			&nap::WindowCache::mPosition,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Size",				&nap::WindowCache::mSize,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Display",			&nap::WindowCache::mDisplay,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",				&nap::WindowCache::mIndex,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Position",					&nap::WindowCache::mPosition,									nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size",						&nap::WindowCache::mSize,										nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Display",					&nap::WindowCache::mDisplay,									nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",						&nap::WindowCache::mIndex,										nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -138,6 +147,18 @@ namespace nap
 			assert(false);
 		}
 		return VK_PHYSICAL_DEVICE_TYPE_OTHER;
+	}
+
+	/**
+	 * @return VK queue flags
+	 */
+	static VkQueueFlags getQueueFlags(RenderServiceConfiguration::QueueCapabilities capabilities)
+	{
+		VkQueueFlags flags = 0;
+		flags |= capabilities.mGraphics ? VK_QUEUE_GRAPHICS_BIT : 0;
+		flags |= capabilities.mCompute ? VK_QUEUE_COMPUTE_BIT : 0;
+		flags |= capabilities.mTransfer ? VK_QUEUE_TRANSFER_BIT : 0;
+		return flags;
 	}
 
 
@@ -314,9 +335,7 @@ namespace nap
 		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 		create_info.pfnCallback = debugCallback;
 
-		if (!errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension"))
-			return false;
-		return true;
+		return errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension");
 	}
 
 
@@ -379,9 +398,7 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
-			return false;
-		return true;
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL");
 	}
 
 
@@ -450,9 +467,9 @@ namespace nap
 		inst_info.pNext = NULL;
 		inst_info.flags = 0;
 		inst_info.pApplicationInfo = &app_info;
-		inst_info.enabledExtensionCount = static_cast<uint32_t>(ext_names.size());
+		inst_info.enabledExtensionCount = static_cast<uint32>(ext_names.size());
 		inst_info.ppEnabledExtensionNames = ext_names.empty() ? nullptr : ext_names.data();
-		inst_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
+		inst_info.enabledLayerCount = static_cast<uint32>(layer_names.size());
 		inst_info.ppEnabledLayerNames = layer_names.data();
 
 		// Create vulkan runtime instance
@@ -469,10 +486,59 @@ namespace nap
 
 
 	/**
+	 * Finds all queue families for a given VkPhysicalDevice
+	 */
+	static bool getQueueFamilyProperties(int deviceIndex, VkPhysicalDevice physicalDevice, std::vector<VkQueueFamilyProperties>& outQueueFamilyProperties)
+	{
+		// Find the number queues this device supports
+		uint32 queue_family_count = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queue_family_count, nullptr);
+		if (queue_family_count == 0)
+		{
+			Logger::warn("%d: No queue families available", deviceIndex);
+			return false;
+		}
+
+		// Extract the properties of all the queue families
+		outQueueFamilyProperties.resize(queue_family_count);
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queue_family_count, outQueueFamilyProperties.data());
+		return true;
+	}
+
+
+	/**
+	 * Selects a queue family index that supports the desired capabilities.
+	 * Returns false if no valid queue family index was found.
+	 */
+	static bool selectQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlags desiredCapabilities, VkSurfaceKHR presentSurface, const std::vector<VkQueueFamilyProperties> queueFamilyProps, int& outQueueFamilyIndex)
+	{
+		// We want to make sure that we have a queue that supports the required flags
+		for (uint32 index = 0; index < static_cast<uint32>(queueFamilyProps.size()); ++index)
+		{
+			// Make sure this family supports presentation to the given surface
+			// If no present surface is specified (e.g. running headless) this check is not performed.
+			if (presentSurface != VK_NULL_HANDLE)
+			{
+				VkBool32 supports_presentation = false;
+				vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, index, presentSurface, &supports_presentation);
+				if (supports_presentation == 0)
+					continue;
+			}
+			if (queueFamilyProps[index].queueCount > 0 && (queueFamilyProps[index].queueFlags & desiredCapabilities) == desiredCapabilities)
+			{
+				outQueueFamilyIndex = static_cast<int>(index);
+				return true;
+			}
+		}
+		return false;
+	}
+
+
+	/**
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueCapabilities, PhysicalDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -489,7 +555,6 @@ namespace nap
 		
 		// Pick the right GPU, based on type preference, api-version and queue support
 		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
-		VkQueueFlags required_flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
 
 		// All valid physical devices
 		std::vector<PhysicalDevice> valid_devices;
@@ -515,52 +580,31 @@ namespace nap
 				continue;
 			}
 
-			// Find the number queues this device supports
-			uint32 family_queue_count(0);
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, nullptr);
-			if (family_queue_count == 0)
+			// Get a list of queue family properties for this device
+			std::vector<VkQueueFamilyProperties> queue_family_props;
+			if (!getQueueFamilyProperties(device_idx, physical_device, queue_family_props))
 			{
-				Logger::warn("%d: No queue families available", device_idx);
-				continue;
+				Logger::warn("%d: Could not find queue family properties", device_idx);
+				return false;
 			}
 
-			// Extract the properties of all the queue families
-			// We want to make sure that we have a queue that supports the required flags
-			std::vector<VkQueueFamilyProperties> queue_properties(family_queue_count);
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &family_queue_count, queue_properties.data());
-
-			// Make sure the queue family supports both graphical and transfer commands.
-			int selected_queue_idx = -1;
-			for (uint32 i = 0; i < family_queue_count; i++)
+			// Ensure there's a compatible queue family for this device
+			int selected_queue_family_idx;
+			if (!selectQueueFamilyIndex(physical_device, requiredQueueCapabilities, presentSurface, queue_family_props, selected_queue_family_idx))
 			{
-				if ((queue_properties[i].queueFlags & required_flags) == required_flags)
-				{
-					// Make sure this family supports presentation to the given surface
-					// If running headless this check is not performed.
-					if (presentSurface != VK_NULL_HANDLE)
-					{
-						VkBool32 supports_presentation = false;
-						vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, i, presentSurface, &supports_presentation);
-						if (supports_presentation == 0)
-							continue;
-					}
+				std::vector<std::string> queue_names;
+				if ((requiredQueueCapabilities & VK_QUEUE_GRAPHICS_BIT) == VK_QUEUE_GRAPHICS_BIT) queue_names.emplace_back("GRAPHICS");
+				if ((requiredQueueCapabilities & VK_QUEUE_TRANSFER_BIT) == VK_QUEUE_TRANSFER_BIT) queue_names.emplace_back("TRANSFER");
+				if ((requiredQueueCapabilities & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT) queue_names.emplace_back("COMPUTE");
 
-					// Compatible
-					Logger::info("%d: Compatible queue found at index: %d", device_idx, i);
-					selected_queue_idx = i;
-					break;
-				}
-			}
-			
-			// Ensure there's a compatible queue for this device
-			if (selected_queue_idx < 0)
-			{
-				Logger::warn("%d: Unable to find compatible queue family", device_idx);
+				std::string queue_str = utility::joinString(queue_names, "/");
+				Logger::warn("%d: Unable to find compatible unified %s queue family", device_idx, queue_str.c_str());
 				continue;
 			}
 
 			// Add it as a compatible device
-			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_queue_idx));
+			const VkQueueFamilyProperties& selected_props = queue_family_props[selected_queue_family_idx];
+			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_props.queueFlags, selected_queue_family_idx));
 
 			// Check if it's the preferred type, if so select it.
 			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? 
@@ -589,7 +633,7 @@ namespace nap
 	/**
 	 * Creates the logical device based on the selected physical device, queue index and required extensions
 	 */
-	static bool createLogicalDevice(const PhysicalDevice& physicalDevice, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, VkDevice& outDevice, utility::ErrorState& errorState)
+	static bool createLogicalDevice(const PhysicalDevice& physicalDevice, const std::vector<std::string>& layerNames, const std::unordered_set<std::string>& extensionNames, bool print, bool robustBufferAccess, VkDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Copy layer names
 		std::vector<const char*> layer_names;
@@ -597,7 +641,7 @@ namespace nap
 			layer_names.emplace_back(layer.c_str());
 
 		// Get the number of available extensions for our graphics card
-		uint32_t device_property_count(0);
+		uint32 device_property_count(0);
 		if (!errorState.check(vkEnumerateDeviceExtensionProperties(physicalDevice.getHandle(), NULL, &device_property_count, NULL) == VK_SUCCESS, "Unable to acquire device extension property count"))
 			return false;
 		if (print) { Logger::info("Found %d Vulkan device extensions:", device_property_count); }
@@ -627,10 +671,13 @@ namespace nap
 		for (const auto& name : device_property_names)
 			Logger::info("Applying device extension: %s", name);
 
+		// Create queue information structures used by device based on the previously fetched queue information from the physical device
+		std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+		queue_create_infos.reserve(2);
+		queue_create_infos.emplace_back();
 
-		// Create queue information structure used by device based on the previously fetched queue information from the physical device
-		// We create one command processing queue for graphics
-		VkDeviceQueueCreateInfo queue_create_info = { };
+		// We create one command processing queue for graphics/transfer
+		auto& queue_create_info = queue_create_infos.back();
 		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queue_create_info.queueFamilyIndex = physicalDevice.getQueueIndex();
 		queue_create_info.queueCount = 1;
@@ -647,35 +694,41 @@ namespace nap
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
 
+		// The device feature 'robustBufferAccess' enables bounds checks on buffers and therefore be a useful debugging tool
+		// We only enable this feature if it is marked true in the render service configuration
+		if (robustBufferAccess)
+		{
+			device_features.robustBufferAccess = physicalDevice.getFeatures().robustBufferAccess;
+			if (physicalDevice.getFeatures().robustBufferAccess != VK_TRUE)
+				Logger::warn("Device feature 'RobustBufferAccess' is not available for the current device");
+		}
+
 		// Device creation information	
 		VkDeviceCreateInfo create_info = { };
 		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		create_info.queueCreateInfoCount = 1;
-		create_info.pQueueCreateInfos = &queue_create_info;
+		create_info.queueCreateInfoCount = queue_create_infos.size();
+		create_info.pQueueCreateInfos = &queue_create_infos[0];
 		create_info.ppEnabledLayerNames = layer_names.data();
-		create_info.enabledLayerCount = static_cast<uint32_t>(layer_names.size());
+		create_info.enabledLayerCount = static_cast<uint32>(layer_names.size());
 		create_info.ppEnabledExtensionNames = device_property_names.data();
-		create_info.enabledExtensionCount = static_cast<uint32_t>(device_property_names.size());
+		create_info.enabledExtensionCount = static_cast<uint32>(device_property_names.size());
 		create_info.pNext = nullptr;
 		create_info.pEnabledFeatures = &device_features;
 		create_info.flags = 0;
 
 		// Finally we're ready to create a new device
-		if (!errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
-			return false;
-
-		return true;
+		return errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device");
 	}
 
 
 	/**
 	 * Creates a command pool associated with the given queue index
 	 */
-	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, uint32 graphicsQueueIndex, VkCommandPool& commandPool)
+	static bool createCommandPool(VkPhysicalDevice physicalDevice, VkDevice device, uint32 queueIndex, VkCommandPool& commandPool)
 	{
 		VkCommandPoolCreateInfo pool_info = {};
 		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		pool_info.queueFamilyIndex = graphicsQueueIndex;
+		pool_info.queueFamilyIndex = queueIndex;
 		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		return vkCreateCommandPool(device, &pool_info, nullptr, &commandPool) == VK_SUCCESS;
 	}
@@ -712,10 +765,7 @@ namespace nap
 		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		alloc_info.commandBufferCount = 1;
 
-		if (!errorState.check(vkAllocateCommandBuffers(device, &alloc_info, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer"))
-			return false;
-
-		return true;
+		return errorState.check(vkAllocateCommandBuffers(device, &alloc_info, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer");
 	}
 
 
@@ -728,7 +778,19 @@ namespace nap
 		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		return errorState.check(vkCreateFence(device, &fence_info, nullptr, &fence) == VK_SUCCESS, "Failed to create sync objects");
+		return errorState.check(vkCreateFence(device, &fence_info, nullptr, &fence) == VK_SUCCESS, "Failed to create fence");
+	}
+
+
+	/**
+	 * Create GPU synchronization primitive
+	 */
+	static bool createSemaphore(VkDevice device, VkSemaphore& outSemaphore, utility::ErrorState& errorState)
+	{
+		VkSemaphoreCreateInfo semaphoreInfo = {};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		return errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &outSemaphore) == VK_SUCCESS, "Failed to create semaphore");
 	}
 
 
@@ -848,16 +910,16 @@ namespace nap
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
 		// Use the mapping in the material to bind mesh vertex attrs to shader vertex attrs
-		uint32_t shader_attribute_binding = 0;
+		uint shader_attribute_binding = 0;
 		for (auto& kvp : shader.getAttributes())
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
-			bindingDescriptions.push_back({ shader_attribute_binding, (uint32_t)getVertexSize(shader_vertex_attribute->mFormat), VK_VERTEX_INPUT_RATE_VERTEX });
-			attributeDescriptions.push_back({ (uint32_t)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
+			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
+			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0U });
 
 			shader_attribute_binding++;
 		}
-
+		
 		VkShaderModule vert_shader_module = shader.getVertexModule();
 		VkShaderModule frag_shader_module = shader.getFragmentModule();
 
@@ -865,13 +927,13 @@ namespace nap
 		vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
 		vert_shader_stage_info.module = vert_shader_module;
-		vert_shader_stage_info.pName = "main";
+		vert_shader_stage_info.pName = shader::main;
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		frag_shader_stage_info.module = frag_shader_module;
-		frag_shader_stage_info.pName = "main";
+		frag_shader_stage_info.pName = shader::main;
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -879,7 +941,7 @@ namespace nap
 		vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
 		vertex_input_info.vertexBindingDescriptionCount = (int)bindingDescriptions.size();
-		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
 		vertex_input_info.pVertexBindingDescriptions = bindingDescriptions.data();
 		vertex_input_info.pVertexAttributeDescriptions = attributeDescriptions.data();
 
@@ -938,12 +1000,12 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
-		VkDescriptorSetLayout set_layout = material.getShader().getDescriptorSetLayout();
+		auto layout = shader.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipeline_layout_info.setLayoutCount = 1;
-		pipeline_layout_info.pSetLayouts = &set_layout;
+		pipeline_layout_info.pSetLayouts = &layout;
 		pipeline_layout_info.pushConstantRangeCount = 0;
 
 		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
@@ -968,9 +1030,71 @@ namespace nap
 		pipeline_info.subpass = 0;
 		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (!errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline"))
+		return errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphicsPipeline) == VK_SUCCESS,
+			"Failed to create graphics pipeline");
+	}
+
+
+	static bool createComputePipeline(VkDevice device, const ComputeShader& computeShader, VkPipelineLayout& pipelineLayout, VkPipeline& outComputePipeline, utility::ErrorState& errorState)
+	{
+		VkShaderModule comp_shader_module = computeShader.getComputeModule();
+
+		VkPipelineShaderStageCreateInfo comp_shader_stage_info = {};
+		comp_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		comp_shader_stage_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+		comp_shader_stage_info.module = comp_shader_module;
+		comp_shader_stage_info.pName = shader::main;
+
+		// Overwrite workgroup size with device maximum when specialization constants are defined.
+		// This is useful when you want to use a group size equal to the maximum supported group size of the current device,
+		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
+		const std::vector<int> const_ids = computeShader.getWorkGroupSizeConstantIds();
+		std::vector<VkSpecializationMapEntry> spec_entries;
+		std::vector<uint> spec_data;
+
+		for (uint i = 0; i < const_ids.size(); i++)
+		{
+			if (const_ids[i] != -1)
+			{
+				VkSpecializationMapEntry entry = {};
+				entry.constantID = static_cast<uint>(const_ids[i]);
+				entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
+				entry.size = sizeof(uint);
+
+				spec_entries.emplace_back(std::move(entry));
+				spec_data.emplace_back(computeShader.getWorkGroupSize()[i]);
+			}
+		}
+
+		VkSpecializationInfo spec_info = {};
+		spec_info.pMapEntries = spec_entries.data();
+		spec_info.mapEntryCount = spec_entries.size();
+		spec_info.pData = spec_data.data();
+		spec_info.dataSize = spec_data.size() * sizeof(uint);
+		comp_shader_stage_info.pSpecializationInfo = !spec_entries.empty() ? &spec_info : NULL;
+		
+		auto layout = computeShader.getDescriptorSetLayout();
+
+		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
+		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipeline_layout_info.setLayoutCount = 1;
+		pipeline_layout_info.pSetLayouts = &layout;
+		pipeline_layout_info.pushConstantRangeCount = 0;
+
+		if (!errorState.check(vkCreatePipelineLayout(device, &pipeline_layout_info, nullptr, &pipelineLayout) == VK_SUCCESS, "Failed to create pipeline layout"))
 			return false;
-		return true;
+
+		VkComputePipelineCreateInfo pipeline_info = {};
+		pipeline_info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		pipeline_info.pNext = nullptr;
+		pipeline_info.flags = 0;
+		pipeline_info.stage = comp_shader_stage_info;
+		pipeline_info.layout = pipelineLayout;
+		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
+		pipeline_info.basePipelineIndex = -1;
+
+		return errorState.check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &outComputePipeline) == VK_SUCCESS,
+			"Failed to create compute pipeline");
 	}
 
 
@@ -1123,6 +1247,31 @@ namespace nap
 	{
 		return getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), errorState);
 	}
+
+
+	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
+	{
+		// Create pipeline key based on draw properties
+		const ComputeMaterial& material = computeMaterialInstance.getMaterial();
+		const ComputeShader& shader = material.getShader();
+		ComputePipelineKey pipeline_key(shader);
+
+		// Find key in cache and use previously created pipeline
+		ComputePipelineCache::iterator pos = mComputePipelineCache.find(pipeline_key);
+		if (pos != mComputePipelineCache.end())
+			return pos->second;
+
+		// Otherwise create new pipeline
+		Pipeline pipeline;
+		if (createComputePipeline(mDevice, shader, pipeline.mLayout, pipeline.mPipeline, errorState))
+		{
+			mComputePipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			return pipeline;
+		}
+
+		NAP_ASSERT_MSG(false, "Unable to create new pipeline");
+		return Pipeline();
+	}
 	
 
 	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
@@ -1139,11 +1288,12 @@ namespace nap
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName().c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
-			const VertexBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
+			const GPUBufferNumeric* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return RenderableMesh();
 
-			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(), "Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
+			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(),
+				"Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 			return RenderableMesh();
 		}
 
@@ -1270,6 +1420,16 @@ namespace nap
 	}
 
 
+	void RenderService::computeObjects(const std::vector<ComputeComponentInstance*>& components_to_compute)
+	{
+		assert(isComputeAvailable());
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
+
+		for (auto* comp : components_to_compute)
+			comp->compute(mCurrentCommandBuffer);
+	}
+
+
 	bool RenderService::initEmptyTexture(nap::utility::ErrorState& errorState)
 	{
 		SurfaceDescriptor settings;
@@ -1279,7 +1439,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::Clear, 0, errorState);
+		return mEmptyTexture->init(settings, false, 0, errorState);
 	}
 
 
@@ -1394,7 +1554,12 @@ namespace nap
 
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, mPhysicalDevice, errorState))
+
+		// Get the required queue capabilities
+		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mRequiredQueueCapabilities);
+
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
@@ -1429,7 +1594,8 @@ namespace nap
 
 		// Create a logical device that interfaces with the physical device.
 		bool print_extensions = render_config->mPrintAvailableExtensions;
-		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, mDevice, errorState))
+		bool robust_buffer_access = render_config->mEnableRobustBufferAccess;
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, robust_buffer_access, mDevice, errorState))
 			return false;
 
 		// Create command pool
@@ -1440,7 +1606,7 @@ namespace nap
 		if (!errorState.check(findDepthFormat(mPhysicalDevice.getHandle(), mDepthFormat), "Unable to find depth format"))
 			return false;
 
-		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
+		// Get a compatible queue responsible for processing commands
 		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
@@ -1469,11 +1635,17 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mUploadCommandBuffer, errorState))
 				return false;
 
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mDownloadCommandBuffers, errorState))
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mDownloadCommandBuffer, errorState))
 				return false;
 
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffers, errorState))
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
 				return false;
+
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mComputeCommandBuffer, errorState))
+				return false;
+
+			// Clear the queue submit operation flags
+			frame.mQueueSubmitOps = 0U;
 		}
 
 		// Try to load .ini file and extract saved settings, allowed to fail
@@ -1622,7 +1794,14 @@ namespace nap
 
 	void RenderService::waitForFence(int frameIndex)
 	{
-		vkWaitForFences(mDevice, 1, &mFramesInFlight[frameIndex].mFence, VK_TRUE, UINT64_MAX);
+		VkResult result = vkWaitForFences(mDevice, 1, &mFramesInFlight[frameIndex].mFence, VK_TRUE, UINT64_MAX);
+		assert(result == VK_SUCCESS);
+	}
+
+
+	bool RenderService::isComputeAvailable() const
+	{
+		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
 	}
 
 
@@ -1703,6 +1882,23 @@ namespace nap
 	}
 
 
+	void RenderService::postResourcesLoaded()
+	{
+		// Clear remaining texture and buffer downloads
+		for (auto& frame : mFramesInFlight)
+		{
+			for (auto& texture : frame.mTextureDownloads)
+				texture->clearDownloads();
+
+			for (auto& buffer : frame.mBufferDownloads)
+				buffer->clearDownloads();
+
+			frame.mTextureDownloads.clear();
+			frame.mBufferDownloads.clear();
+		}
+	}
+
+
 	// Shut down renderer
 	void RenderService::shutdown()
 	{
@@ -1714,12 +1910,21 @@ namespace nap
 		}
 		mPipelineCache.clear();
 
+		for (auto kvp : mComputePipelineCache)
+		{
+			vkDestroyPipeline(mDevice, kvp.second.mPipeline, nullptr);
+			vkDestroyPipelineLayout(mDevice, kvp.second.mLayout, nullptr);
+		}
+		mPipelineCache.clear();
+
 		for (Frame& frame : mFramesInFlight)
 		{
 			assert(frame.mQueuedVulkanObjectDestructors.empty());
-			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mHeadlessCommandBuffers);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mHeadlessCommandBuffer);
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mUploadCommandBuffer);
-			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffers);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffer);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mComputeCommandBuffer);
+
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
 		}
 
@@ -1797,8 +2002,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &commandBuffer;
-		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
-		//assert(result == VK_SUCCESS);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
 	}
 
 
@@ -1818,6 +2022,10 @@ namespace nap
 				texture->upload(commandBuffer);
 			mTexturesToUpload.clear();
 
+			for (GPUBuffer* buffer : mBuffersToClear)
+				buffer->clear(commandBuffer);
+			mBuffersToClear.clear();
+
 			for (GPUBuffer* buffer : mBuffersToUpload)
 				buffer->upload(commandBuffer);
 			mBuffersToUpload.clear();
@@ -1829,16 +2037,19 @@ namespace nap
 	{
 		// Push the download of a texture onto the command buffer
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
-		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffers;
+		VkCommandBuffer commandBuffer = frame.mDownloadCommandBuffer;
 		transferData(commandBuffer, [commandBuffer, &frame]()
 		{
 			for (Texture2D* texture : frame.mTextureDownloads)
 				texture->download(commandBuffer);
+
+			for (GPUBuffer* buffer : frame.mBufferDownloads)
+				buffer->download(commandBuffer);
 		});
 	}
 
 
-	void RenderService::updateTextureDownloads()
+	void RenderService::updateDownloads()
 	{
 		// Here we check if any pending texture downloads are ready. We always know for sure that textures
 		// for the current frame are ready (if this function is called after wait for fence). So we could just
@@ -1856,6 +2067,19 @@ namespace nap
 					texture->notifyDownloadReady(frame_index);
 
 				frame.mTextureDownloads.clear();
+			}
+		}
+
+		// Repeat for buffers
+		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
+		{
+			Frame& frame = mFramesInFlight[frame_index];
+			if (!frame.mBufferDownloads.empty() && vkGetFenceStatus(mDevice, frame.mFence) == VK_SUCCESS)
+			{
+				for (GPUBuffer* buffer : frame.mBufferDownloads)
+					buffer->notifyDownloadReady(frame_index);
+
+				frame.mBufferDownloads.clear();
 			}
 		}
 	}
@@ -1877,6 +2101,9 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = false;
 		mIsRenderingFrame = true;
 
+		// Clear the queue submit operation flags for the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = 0U;
+
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
 		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
 		// Notice that there are multiple other VkQueueSubmits that are performed by RenderWindow(s), and headless 
@@ -1885,12 +2112,12 @@ namespace nap
 		// by other VkQueueSubmits, are free to use.
 		vkWaitForFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence, VK_TRUE, UINT64_MAX);
 		
-		// We call updateTextureDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
+		// We call updateDownloads after we have waited for the fence. Otherwise it may happen that we check the fence
 		// status which could still not be signaled at that point, causing the notify not to be called. If we then wait for
-		// the fence anyway, we missed the opportunity to notify textures that downloads were ready. Because we reset the fence
+		// the fence anyway, we missed the opportunity to notify textures/buffers that downloads were ready. Because we reset the fence
 		// next, we could delay the notification for a full frame cycle. So this call is purposely put inbetween the wait and reset
 		// of the fence.
-		updateTextureDownloads();
+		updateDownloads();
 
 		// Release the DescriptorSets that were used for this frame index. This ensures that the DescriptorSets
 		// can be re-allocated as part of this frame's rendering.
@@ -1907,17 +2134,24 @@ namespace nap
 
 	void RenderService::endFrame()
 	{
+		// Acquire current frame
+		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
+
+		// Get the current frame fence status
+		VkResult result = vkGetFenceStatus(mDevice, frame.mFence);
+		assert(result == VK_SUCCESS);
+
 		// We reset the fences at the end of the frame to make sure that multiple waits on the same fence (using WaitForFence) complete correctly.
-		assert(vkGetFenceStatus(mDevice, mFramesInFlight[mCurrentFrameIndex].mFence) == VK_SUCCESS);
-		vkResetFences(mDevice, 1, &mFramesInFlight[mCurrentFrameIndex].mFence);
+		vkResetFences(mDevice, 1, &frame.mFence);
 
 		// Push any texture downloads on the command buffer
 		downloadData();
 
 		// We perform a no-op submit that will ensure that a fence will be signaled when all of the commands for all of 
 		// the command buffers that we submitted will be completed. This is how we can synchronize the CPU frame to the GPU.
-		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, mFramesInFlight[mCurrentFrameIndex].mFence);
-		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % 2;
+		vkQueueSubmit(mQueue, 0, VK_NULL_HANDLE, frame.mFence);
+		
+		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % getMaxFramesInFlight();
 		mIsRenderingFrame = false;
 	}
 
@@ -1925,7 +2159,7 @@ namespace nap
 	bool RenderService::beginHeadlessRecording()
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffers;
+		mCurrentCommandBuffer = mFramesInFlight[mCurrentFrameIndex].mHeadlessCommandBuffer;
 		vkResetCommandBuffer(mCurrentCommandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
 		VkCommandBufferBeginInfo begin_info = {};
@@ -1951,6 +2185,8 @@ namespace nap
 		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
+		// Set the headless bit of queue submit ops of the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::HeadlessRendering;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -1979,6 +2215,61 @@ namespace nap
 		mCurrentRenderWindow->endRecording();
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 		mCurrentRenderWindow  = VK_NULL_HANDLE;
+	}
+
+
+	bool RenderService::beginComputeRecording()
+	{
+		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
+		NAP_ASSERT_MSG(isComputeAvailable(), "Cannot record Compute commands when Compute capability is unavailable");
+
+		// Ensure no (headless) rendering commands have been recorded in the current frame. After vkQueueSubmit() is called
+		// on any of the command buffers (rendering, headless rendering, compute), the corresponding EQueueSubmitOp bit is
+		// set in mQueueSubmitOps of the current frame. This way, we keep track of what queue submissions have occurred.
+		const Frame& frame = mFramesInFlight[mCurrentFrameIndex];
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::Rendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::HeadlessRendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
+
+		// Reset command buffer for current frame
+		VkCommandBuffer compute_command_buffer = frame.mComputeCommandBuffer;
+ 		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
+			return false;
+
+		// Begin command buffe
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		begin_info.pNext = nullptr;
+
+		if (vkBeginCommandBuffer(compute_command_buffer, &begin_info) != VK_SUCCESS)
+			return false;
+
+		mCurrentCommandBuffer = compute_command_buffer;
+		if (mCurrentCommandBuffer == VK_NULL_HANDLE)
+			return false;
+
+		return true;
+	}
+
+
+	void RenderService::endComputeRecording()
+	{
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
+		NAP_ASSERT_MSG(isComputeAvailable(), "Cannot record Compute commands when Compute capability is unavailable");
+
+		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
+		assert(result == VK_SUCCESS);
+
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
+		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
+ 		assert(result == VK_SUCCESS);
+
+		// Set the compute bit of queue submit ops of the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::Compute;
+		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 
 
@@ -2018,8 +2309,8 @@ namespace nap
 		if (pos != mDescriptorSetCaches.end())
 			return *pos->second;
 
-		std::unique_ptr<DescriptorSetCache> allocator = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
-		auto inserted = mDescriptorSetCaches.insert(std::make_pair(layout, std::move(allocator)));
+		std::unique_ptr<DescriptorSetCache> cache = std::make_unique<DescriptorSetCache>(*this, layout, *mDescriptorSetAllocator);
+		auto inserted = mDescriptorSetCaches.insert({ layout, std::move(cache) });
 		return *inserted.first->second;
 	}
 
@@ -2042,12 +2333,14 @@ namespace nap
 
 	void RenderService::requestTextureClear(Texture2D& texture)
 	{
+		// Push a texture clear for the beginning of the next frame
 		mTexturesToClear.insert(&texture);
 	}
 
 
 	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
+		// Push a texture upload for the beginning of the next frame
 		mTexturesToUpload.insert(&texture);
 	}
 
@@ -2064,13 +2357,37 @@ namespace nap
 	void RenderService::removeBufferRequests(GPUBuffer& buffer)
 	{
 		// When buffers are destroyed, we also need to remove any pending upload requests
+		mBuffersToClear.erase(&buffer);
 		mBuffersToUpload.erase(&buffer);
+
+		for (Frame& frame : mFramesInFlight)
+		{
+			frame.mBufferDownloads.erase(std::remove_if(frame.mBufferDownloads.begin(), frame.mBufferDownloads.end(), [&buffer](GPUBuffer* existingBuffer)
+			{
+				return existingBuffer == &buffer;
+			}), frame.mBufferDownloads.end());
+		}
+	}
+
+
+	void RenderService::requestBufferClear(GPUBuffer& buffer)
+	{
+		mBuffersToClear.insert(&buffer);
 	}
 
 
 	void RenderService::requestBufferUpload(GPUBuffer& buffer)
 	{
 		mBuffersToUpload.insert(&buffer);
+	}
+
+
+	void RenderService::requestBufferDownload(GPUBuffer& buffer)
+	{
+		// We push a buffer download specifically for this frame. When the fence for that frame is signaled,
+		// we know the download has been processed by the GPU, and we can send the buffer a notification that
+		// transfer has completed.
+		mFramesInFlight[mCurrentFrameIndex].mBufferDownloads.push_back(&buffer);
 	}
 
 
@@ -2121,8 +2438,8 @@ namespace nap
 	}
 
 
-	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex) :
-		mDevice(device), mProperties(properties), mQueueIndex(queueIndex)
+	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, const VkQueueFlags& queueCapabilities, int queueIndex) :
+		mDevice(device), mProperties(properties), mQueueCapabilities(queueCapabilities), mQueueIndex(queueIndex)
 	{
 		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
 	}

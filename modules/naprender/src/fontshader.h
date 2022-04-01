@@ -11,7 +11,6 @@ namespace nap
 {
 	// Forward declares
 	class Core;
-	class Material;
 
 	// Video shader sampler names 
 	namespace uniform
@@ -26,6 +25,17 @@ namespace nap
 
 	/**
 	 * Shader that renders glyphs. Used by the nap::RenderableTextComponent
+	 *
+	 * The font shader exposes the following shader variables:
+	 *
+	 * ~~~~{.frag}
+	 *		uniform UBO
+	 *		{
+	 *			uniform vec3 textColor;
+	 *		};
+	 *
+	 *		uniform sampler2D glyph;
+	 * ~~~~
 	 */
 	class NAPAPI FontShader : public Shader
 	{
@@ -39,5 +49,8 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		RenderService* mRenderService = nullptr;
 	};
 }

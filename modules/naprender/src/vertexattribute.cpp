@@ -10,20 +10,16 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseVertexAttribute)
 	RTTI_PROPERTY("AttributeID", &nap::BaseVertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::FloatVertexAttribute)
-	RTTI_PROPERTY("Data", &nap::FloatVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::UIntVertexAttribute)
+	RTTI_PROPERTY("Data", &nap::UIntVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::IntVertexAttribute)
 	RTTI_PROPERTY("Data", &nap::IntVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::ByteVertexAttribute)
-	RTTI_PROPERTY("Data", &nap::ByteVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
-
-RTTI_BEGIN_CLASS(nap::DoubleVertexAttribute)
-	RTTI_PROPERTY("Data", &nap::DoubleVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::FloatVertexAttribute)
+	RTTI_PROPERTY("Data", &nap::FloatVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Vec2VertexAttribute)
@@ -48,16 +44,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	VkFormat FloatVertexAttribute::getFormat() const { return VK_FORMAT_R32_SFLOAT; }
+	VkFormat UIntVertexAttribute::getFormat() const { return VK_FORMAT_R32_UINT; }
 
 	template<>
 	VkFormat IntVertexAttribute::getFormat() const { return VK_FORMAT_R32_SINT; }
 
 	template<>
-	VkFormat ByteVertexAttribute::getFormat() const { return VK_FORMAT_R8_SINT; }
-
-	template<>
-	VkFormat DoubleVertexAttribute::getFormat() const { return VK_FORMAT_R64_SFLOAT; }
+	VkFormat FloatVertexAttribute::getFormat() const { return VK_FORMAT_R32_SFLOAT; }
 
 	template<>
 	VkFormat Vec2VertexAttribute::getFormat() const { return VK_FORMAT_R32G32_SFLOAT; }

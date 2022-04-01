@@ -10,7 +10,6 @@
 #include <nap/core.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
-#include <indexbuffer.h>
 #include <renderglobals.h>
 
 // nap::renderablecopymeshcomponent run time class definition 
@@ -165,10 +164,10 @@ namespace nap
 	{
 		// Get material to render with and descriptors for material
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
-		VkDescriptorSet descriptor_set = mat_instance.update();
+		const DescriptorSet& descriptor_set = mat_instance.update();
 
 		// Bind descriptor set for next draw call
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertexBuffers = renderableMesh.getVertexBuffers();

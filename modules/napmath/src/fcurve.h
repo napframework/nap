@@ -28,8 +28,8 @@ namespace nap
 		/**
 		 * A time/value pair to be used in function curves.
 		 * This is not a regular 2D vector because the components may have different types.
-		 * @param T type of the time parameter
-		 * @param V type of the value parameter
+		 * @tparam T type of the time parameter
+		 * @tparam V type of the value parameter
 		 */
 		template<typename T, typename V>
 		struct FComplex
@@ -68,8 +68,8 @@ namespace nap
 
 		/**
 		 * Represents a single handle on an FCurve
-		 * @param T type of the time parameter
-		 * @param V type of the value parameter
+		 * @tparam T type of the time parameter
+		 * @tparam V type of the value parameter
 		 */
 		template<typename T, typename V>
 		struct FCurvePoint
@@ -105,8 +105,8 @@ namespace nap
 		 * A 1-D curve that can be used to map one value to another.
 		 * This resource can be used to animate a value over time.
 		 * The times and values of this curve are unbounded.
-		 * @param T type of the time parameter
-		 * @param V type of the value parameter
+		 * @tparam T type of the time parameter
+		 * @tparam V type of the value parameter
 		 */
 		template<typename T, typename V>
 		class FCurve : public Resource

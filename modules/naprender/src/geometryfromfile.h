@@ -55,7 +55,7 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 		std::string		mPath;									///< Property: 'Path' path to the geometry (.fbx, .obj, etc.) file on disk
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		EMemoryUsage	mUsage = EMemoryUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		EPolygonMode	mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' Mesh polygon mode (fill, wires, points)
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 		bool			mGenerateNormals = false;				///< Property: 'GenerateNormals' If normals are generated when not present.

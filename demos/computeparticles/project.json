@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "ComputeParticles",
+    "Version": "1.0.0",
+    "Data": "data/computeparticles.json",
+    "PathMapping": "cache/path_mapping.json",
+    "RequiredModules": [
+        "mod_computeparticles",
+        "mod_napapp",
+        "mod_napcameracontrol",
+        "mod_napimgui"
+    ]
+}

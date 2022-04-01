@@ -22,6 +22,10 @@ RTTI_BEGIN_CLASS(nap::UniformStructArray)
 	RTTI_PROPERTY("Structs", &nap::UniformStructArray::mStructs, nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::UniformUInt)
+	RTTI_PROPERTY("Value", &nap::UniformUInt::mValue, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -44,6 +48,10 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformMat4)
 	RTTI_PROPERTY("Value", &nap::UniformMat4::mValue, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformUIntArray)
+	RTTI_PROPERTY("Values", &nap::UniformUIntArray::mValues, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformIntArray)
@@ -70,6 +78,8 @@ RTTI_BEGIN_CLASS(nap::UniformMat4Array)
 	RTTI_PROPERTY("Values", &nap::UniformMat4Array::mValues, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+
+
 namespace nap
 {
 	void UniformStruct::addUniform(Uniform& uniform)
@@ -84,6 +94,19 @@ namespace nap
 		{
 			return uniform->mName == name;
 		});
+
+		if (pos == mUniforms.end())
+			return nullptr;
+		return (*pos).get();
+	}
+
+
+	const Uniform* UniformStruct::findUniform(const std::string& name) const
+	{
+		auto pos = std::find_if(mUniforms.begin(), mUniforms.end(), [name](auto& uniform)
+			{
+				return uniform->mName == name;
+			});
 
 		if (pos == mUniforms.end())
 			return nullptr;

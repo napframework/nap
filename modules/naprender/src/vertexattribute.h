@@ -7,6 +7,8 @@
 #include <utility/dllexport.h>
 #include <nap/resource.h>
 #include <glm/glm.hpp>
+#include <nap/numeric.h>
+
 #include "vulkan/vulkan_core.h"
 
 namespace nap
@@ -114,7 +116,7 @@ namespace nap
 		 * Sets the internal values based on the contained type
 		 * @param values: the values that will be copied over
 		 */
-		void setData(const std::vector<ELEMENTTYPE>& values)			{ setData(&(values.front()), values.size()); }
+		void setData(const std::vector<ELEMENTTYPE>& values)	{ setData(&(values.front()), values.size()); }
 
 		/**
 		 * Sets the entire vertex attribute buffer.
@@ -123,6 +125,9 @@ namespace nap
 		 */
 		void setData(const ELEMENTTYPE* elements, int numElements);
 
+		/**
+		 * @return the VK_FORMAT of this vertex attribute
+		 */
 		virtual VkFormat getFormat() const override;
 
 		/**
@@ -159,10 +164,9 @@ namespace nap
 	// Type definitions for all supported vertex attribute types
 	//////////////////////////////////////////////////////////////////////////
 
-	using FloatVertexAttribute	= VertexAttribute<float>;
+	using UIntVertexAttribute	= VertexAttribute<uint>;
 	using IntVertexAttribute	= VertexAttribute<int>;
-	using ByteVertexAttribute	= VertexAttribute<int8_t>;
-	using DoubleVertexAttribute	= VertexAttribute<double>;
+	using FloatVertexAttribute	= VertexAttribute<float>;
 	using Vec2VertexAttribute	= VertexAttribute<glm::vec2>;
 	using Vec3VertexAttribute	= VertexAttribute<glm::vec3>;
 	using Vec4VertexAttribute	= VertexAttribute<glm::vec4>;
@@ -199,16 +203,13 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	NAPAPI VkFormat FloatVertexAttribute::getFormat() const;
+	NAPAPI VkFormat UIntVertexAttribute::getFormat() const;
 
 	template<>
 	NAPAPI VkFormat IntVertexAttribute::getFormat() const;
 
 	template<>
-	NAPAPI VkFormat ByteVertexAttribute::getFormat() const;
-
-	template<>
-	NAPAPI VkFormat DoubleVertexAttribute::getFormat() const;
+	NAPAPI VkFormat FloatVertexAttribute::getFormat() const;
 
 	template<>
 	NAPAPI VkFormat Vec2VertexAttribute::getFormat() const;

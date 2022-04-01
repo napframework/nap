@@ -161,7 +161,7 @@ namespace nap
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
 		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
-		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
+		EMemoryUsage			mUsage = EMemoryUsage::Static;	///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
 		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be the default
@@ -233,10 +233,10 @@ namespace nap
 		VertexAttribute<T>* findAttribute(const std::string& id);
 
 		/**
-		* Finds vertex attribute.
-		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
-		* @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
-		*/
+		 * Finds vertex attribute.
+		 * @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
+		 */
 		template<typename T>
 		const VertexAttribute<T>* findAttribute(const std::string& id) const;
 
@@ -249,10 +249,10 @@ namespace nap
 		VertexAttribute<T>& getAttribute(const std::string& id);
 
 		/**
-		* Gets vertex attribute.
-		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
-		* @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
-		*/
+		 * Gets vertex attribute.
+		 * @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
+		 */
 		template<typename T>
 		const VertexAttribute<T>& getAttribute(const std::string& id) const;
 
@@ -345,12 +345,12 @@ namespace nap
 		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called, 
 		 * changing it after init will not have any effect.
 		 */
-		void setUsage(EMeshDataUsage inUsage)									{ mProperties.mUsage = inUsage; }
+		void setUsage(EMemoryUsage inUsage)									{ mProperties.mUsage = inUsage; }
 
 		/**
 		 * @return how this mesh is used at runtime
 		 */
-		EMeshDataUsage getUsage() const											{ return mProperties.mUsage; }
+		EMemoryUsage getUsage() const											{ return mProperties.mUsage; }
 
 		/**
 		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
@@ -495,11 +495,13 @@ namespace nap
 	const VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id) const
 	{
 		for (auto& attribute : mProperties.mAttributes)
+		{
 			if (attribute->mAttributeID == id)
 			{
 				assert(attribute->get_type().is_derived_from(RTTI_OF(VertexAttribute<T>)));
 				return static_cast<VertexAttribute<T>*>(attribute.get());
 			}
+		}
 		return nullptr;
 	}
 
