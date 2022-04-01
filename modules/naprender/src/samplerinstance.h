@@ -157,7 +157,7 @@ namespace nap
 		 * making the following possible: `mTextures[0] = myTexture`;
 		 * @return a specific value in the array as a reference.
 		 */
-		rtti::ObjectPtr<Texture2D>& operator[](size_t index)		{ assert(index < mTextures.size()); return mTextures[index]; }
+		rtti::ObjectPtr<Texture2D>& operator[](size_t index)	{ assert(index < mTextures.size()); return mTextures[index]; }
 
 	private:
 		std::vector<rtti::ObjectPtr<Texture2D>>					mTextures;

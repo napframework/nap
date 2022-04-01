@@ -395,7 +395,7 @@ namespace nap
 				EntityCreationParameters::ComponentInstanceMap::const_iterator pos =
 						componentInstances.find(targetComponentResource);
 				if (!errorState.check(pos != componentInstances.end(),
-									  "Error resolving component path %s: taret component not found",
+									  "Error resolving component path %s: target component not found",
 									  targetComponentInstancePath.c_str()))
 					return nullptr;
 

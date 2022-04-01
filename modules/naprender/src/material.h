@@ -22,14 +22,56 @@ namespace nap
 	class Core;
 
 	/**
-	 * Resource that acts as the main interface to a shader. Controls how vertex buffers are bound to shader inputs.
-	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
-	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use 
-	 * that same value, unless overridden by a nap::MaterialInstance. 
+	 * Acts as the main interface to any type of shader.
+	 * Creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use
+	 * that same value, unless overridden by a nap::MaterialInstanceResource.
 	 */
-	class NAPAPI Material : public Resource, public UniformContainer
+	class BaseMaterial : public Resource, public UniformContainer
 	{
 		RTTI_ENABLE(Resource)
+	public:
+		/** 
+		 * Base constructor associated with a material
+		 */
+		BaseMaterial(Core& core);
+		virtual ~BaseMaterial() = default;
+
+		/**
+		 * @return The shader
+		 */
+		const BaseShader& getShader()					{ assert(mShader != nullptr); return *mShader; }
+
+		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<Sampler>>				mSamplers;												///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
+
+	protected:
+		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);
+
+	private:
+		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
+		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
+		RenderService* mRenderService = nullptr;
+		const BaseShader* mShader = nullptr;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Material
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Resource that acts as the main interface to a vertex or fragment shader.
+	 * Controls how vertex buffers are bound to shader inputs.
+	 *
+	 * Note that there is no implicit synchronization of access to shader resources bound to buffer bindings and regular
+	 * uniforms between render passes. Therefore, it is currently not recommended to write to storage buffers inside
+	 * vertex and/or fragment shaders over consecutive render passes within a single frame.
+	 */
+	class NAPAPI Material : public BaseMaterial
+	{
+		RTTI_ENABLE(BaseMaterial)
 	public:
 		/**
 		 * @param core the core instance
@@ -56,44 +98,44 @@ namespace nap
 
 		/**
 		 * Initializes the material. 
-		 * Validates and converts all the declared uniform values into instances and sets up the vertex buffer bindings.
+		 * Validates and converts all the declared shader variables into instances and sets up the vertex buffer bindings.
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return The underlying shader
+		 * @return The graphics shader
 		 */
-		const Shader& getShader() const						{ assert(mShader != nullptr); return *mShader; }
+		const Shader& getShader() const								{ assert(Material::mShader != nullptr); return *Material::mShader; }
 
 		/**
 		 * Returns the current blend mode.
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @return Active blend mode
 		 */
-		EBlendMode getBlendMode() const						{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
+		EBlendMode getBlendMode() const								{ assert(mBlendMode != EBlendMode::NotSet); return mBlendMode; }
 
 		/**
 		 * Sets the blend mode to use. 
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @param blendMode new blend mode to use
 		 */
-		void setBlendMode(EBlendMode blendMode)				{ mBlendMode = blendMode; }
+		void setBlendMode(EBlendMode blendMode)						{ mBlendMode = blendMode; }
 
 		/**
 		 * Returns the current depth mode.
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @return Depth mode
 		 */
-		EDepthMode getDepthMode() const						{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
+		EDepthMode getDepthMode() const								{ assert(mDepthMode != EDepthMode::NotSet); return mDepthMode; }
 
 		/**
 		 * Sets the depth mode to use.
 		 * Shared by all objects rendered with this material, unless overridden in a nap::MaterialInstance.
 		 * @param depthMode new depth mode to use.
 		 */
-		void setDepthMode(EDepthMode depthMode)				{ mDepthMode = depthMode; }
+		void setDepthMode(EDepthMode depthMode)						{ mDepthMode = depthMode; }
 
 		/**
 		 * Finds the mesh / shader attribute binding based on the given shader attribute ID.
@@ -106,18 +148,49 @@ namespace nap
 		 */
 		static const std::vector<VertexAttributeBinding>& sGetDefaultVertexAttributeBindings();
 
-	public:
-		std::vector<ResourcePtr<UniformStruct>>		mUniforms;											///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<Sampler>>			mSamplers;											///< Property: 
 		std::vector<VertexAttributeBinding>			mVertexAttributeBindings;							///< Property: 'VertexAttributeBindings' Optional, mapping from mesh vertex attr to shader vertex attr
 		ResourcePtr<Shader>							mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 		EBlendMode									mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
 		EDepthMode									mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
+	};
 
-	private:
-		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
-		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 
-		RenderService*								mRenderService = nullptr;
+	//////////////////////////////////////////////////////////////////////////
+	// Compute Material
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Resource that acts as the main interface to a compute shader. Controls how GPU buffers are bound to shader inputs.
+	 * It also creates and holds a set of uniform struct instances, matching those exposed by the shader.
+	 * If a uniform exposed by this material is updated, all the objects rendered using this material will use
+	 * that same value, unless overridden by a nap::ComputeMaterialInstance.
+	 *
+	 * Unlike nap::Material, does not expose vertex attribute buffer bindings (or blend/depth modes). It is still possible
+	 * to access a nap::VertexBuffer<T> in a compute shader through a nap::BufferBinding.
+	 * This way, mesh data can remain static on the GPU, while being mutable in a compute shader.
+	 */
+	class NAPAPI ComputeMaterial : public BaseMaterial
+	{
+		RTTI_ENABLE(BaseMaterial)
+	public:
+		/**
+		 * @param core the core instance
+		 */
+		ComputeMaterial(Core& core);
+
+		/**
+		 * Initializes the compute material.
+		 * Validates and converts all the declared shader variables into instances and sets up the vertex buffer bindings.
+		 * @param errorState contains the error if initialization fails.
+		 * @return if initialization succeeded.
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return The underlying compute shader
+		 */
+		const ComputeShader& getShader() const						{ assert(ComputeMaterial::mShader != nullptr); return *ComputeMaterial::mShader; }
+
+		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
 	};
 }

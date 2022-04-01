@@ -67,8 +67,8 @@ namespace nap
 		/**
 		 * BitmapFileBuffer cannot be moved
 		 */
-		BitmapFileBuffer(const BitmapFileBuffer&& rhs) = delete;
-		BitmapFileBuffer& operator=(const BitmapFileBuffer&& rhs) = delete;
+		BitmapFileBuffer(BitmapFileBuffer&& rhs) = delete;
+		BitmapFileBuffer& operator=(BitmapFileBuffer&& rhs) = delete;
 
 		/**
 		* Loads an image from disk and creates the bitmap file buffer

@@ -19,11 +19,12 @@ namespace nap
 	{
 	public:
 		// Constructor
-		VertexAttributeDeclaration(const std::string& name, int location, VkFormat format);
+		VertexAttributeDeclaration(const std::string& name, int location, int elementSize, VkFormat format);
 		VertexAttributeDeclaration() = delete;
 
 		std::string		mName;							///< Name of the shader attribute
 		int				mLocation;
+		int				mElementSize;					///< Element size of this vertex
 		VkFormat		mFormat;
 	};
 

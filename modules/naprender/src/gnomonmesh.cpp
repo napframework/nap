@@ -72,7 +72,7 @@ namespace nap
 		mMeshInstance->setCullMode(ECullMode::None);
 		mMeshInstance->setNumVertices(6);
 		mMeshInstance->setDrawMode(EDrawMode::Lines);
-		mMeshInstance->setUsage(EMeshDataUsage::Static);
+		mMeshInstance->setUsage(EMemoryUsage::Static);
 
 		// Initialize
 		return mMeshInstance->init(errorState);
