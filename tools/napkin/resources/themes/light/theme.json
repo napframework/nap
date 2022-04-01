@@ -1,7 +1,7 @@
 {
   "name": "Light",
   "stylesheet": "style.qss",
-  "logColors": 
+  "logColors":
   {
     "fine": "#8D8B84",
     "debug": "#8D8B84",
@@ -10,7 +10,7 @@
     "error": "#FF5050",
     "fatal": "#FF5050"
   },
-  "colors": 
+  "colors":
   {
     "highlight1": "#2958FF",
     "highlight2": "#D6FFA3",
@@ -23,7 +23,7 @@
     "front2": "#8D8B84",
     "front3": "#2D2D2D",
     "front4": "#000000",
-    "header": "#A7A79E",
+    "header": "#babab0",
     "status": "#F5F5F3",
     "instancePropertyOverride": "#5968FD",
     "dimmedItem": "#8D8B84"
@@ -33,7 +33,7 @@
     "font1": "Manrope",
     "font2": "Manrope"
   },
-  "icons": 
+  "icons":
   {
     "invert": true
   }
