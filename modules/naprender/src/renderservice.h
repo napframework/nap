@@ -25,7 +25,6 @@ namespace nap
 	class RenderService;
 	class SceneService;
 	class DescriptorSetCache;
-	class StaticDescriptorSetCache;
 	class DescriptorSetAllocator;
 	class RenderableMesh;
 	class IMesh;
