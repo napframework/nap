@@ -115,7 +115,7 @@ namespace nap
 			}
 
 			ecx_contextt* mContext = nullptr;		///< Soem (ethercat master) context
-			nap::soem::ContextData 	mData;					///< Data associated with context
+			nap::soem::ContextData 	mData;			///< Data associated with context
 		};
 	}
 
@@ -238,7 +238,10 @@ namespace nap
 			ec_slavet& cs = context->slavelist[i];
 			if (cs.state == static_cast<uint16>(ESlaveState::PreOperational))
 			{
-				pre_op_success = onPreOperational(&cs, i, errorState);
+				if (!onPreOperational(&cs, i, errorState))
+				{
+					pre_op_success = false;
+				}
 			}
 		}
 		if (!pre_op_success)
