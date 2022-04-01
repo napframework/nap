@@ -6,5 +6,9 @@
 
 QString napkin::napkinutils::getOpenFilename(QWidget* parent, const QString& caption, const QString& dir, const QString& filter)
 {
+#ifdef __linux__
 	return QFileDialog::getOpenFileName(parent, caption, dir, filter, nullptr, QFileDialog::DontUseNativeDialog);
+#else
+    return QFileDialog::getOpenFileName(parent, caption, dir, filter, nullptr);
+#endif
 }
