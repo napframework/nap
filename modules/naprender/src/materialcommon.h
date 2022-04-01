@@ -5,12 +5,13 @@
 #pragma once
 
 #include <vector>
+#include "uniforminstance.h"
+#include "bufferbindinginstance.h"
+#include "shadervariabledeclarations.h"
+#include "gpubuffer.h"
 
 namespace nap
 {
-	class UniformLeafInstance;
-	class UniformBufferObjectDeclaration;
-
 	/**
 	 * Blend mode for Materials.
 	 */
@@ -23,6 +24,9 @@ namespace nap
 	};
 
 
+	/**
+	 * Denotes the cull winding order of a mesh.
+	 */
 	enum class ECullWindingOrder : int
 	{
 		Clockwise,
@@ -44,17 +48,46 @@ namespace nap
 	};
 
 
+	/**
+	 * Non-hierarchical structure that holds pointers to all uniform leaf elements. These can point to either Material
+	 * or MaterialInstance instance uniforms, depending on whether the resource is overridden by an instance.
+	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in
+	 * MaterialInstance::update().
+	 */
 	class UniformBufferObject
 	{
 	public:
 		using UniformList = std::vector<const UniformLeafInstance*>;
 
-		UniformBufferObject(const UniformBufferObjectDeclaration& declaration) :
+		UniformBufferObject(const BufferObjectDeclaration& declaration) :
 			mDeclaration(&declaration)
 		{
+			assert(declaration.mDescriptorType == EDescriptorType::Uniform);
 		}
 
-		const UniformBufferObjectDeclaration*	mDeclaration;
+		const BufferObjectDeclaration*			mDeclaration;
 		UniformList								mUniforms;
+	};
+
+
+	/**
+	 * Non-hierarchical structure that holds pointers to all uniform leaf elements. These can point to either Material
+	 * or MaterialInstance instance buffer bindings, depending on whether the resource is overridden by an instance.
+	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in
+	 * MaterialInstance::update().
+	 */
+	class ShaderStorageBufferObject
+	{
+	public:
+		using BufferBindingList = std::vector<const BufferBindingInstance*>;
+
+		ShaderStorageBufferObject(const BufferObjectDeclaration& declaration) :
+			mDeclaration(&declaration)
+		{
+			assert(declaration.mDescriptorType == EDescriptorType::Storage);
+		}
+
+		const BufferObjectDeclaration*			mDeclaration;
+		const BufferBindingInstance*			mBufferBinding;
 	};
 }

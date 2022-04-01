@@ -45,7 +45,7 @@ namespace nap
 
 		ResourcePtr<IMesh> mReferenceMesh = nullptr;							///< Property: 'ReferenceMesh' link to the mesh that is used as a reference, can be null (ie: nothing)
 		int mNumberOfPoints = 1000;												///< Property: 'PointCount' number of points to scatter on the mesh
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;						///< Property: 'Usage' If the plane is created once or frequently updated.
+		EMemoryUsage	mUsage = EMemoryUsage::Static;						///< Property: 'Usage' If the plane is created once or frequently updated.
 
 	protected:
 		// Creates the mesh and shape

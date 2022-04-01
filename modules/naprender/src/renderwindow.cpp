@@ -798,23 +798,26 @@ namespace nap
 
 		// GPU needs to wait for the presentation engine to return the image to the swapchain (if still busy), so
 		// the GPU will wait for the image available semaphore to be signaled when we start writing to the color attachment.
-		VkSemaphore waitSemaphores[] = { mImageAvailableSemaphores[current_frame] };
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		VkSemaphore wait_semaphores[] = { mImageAvailableSemaphores[current_frame] };
+		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = waitSemaphores;
-		submit_info.pWaitDstStageMask = waitStages;
-
+		submit_info.pWaitSemaphores = wait_semaphores;
+		submit_info.pWaitDstStageMask = wait_stages;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCommandBuffers[current_frame];
 
 		// When the command buffer has completed execution, the render finished semaphore is signaled. This semaphore
 		// is used by the GPU presentation engine to wait before presenting the finished image to screen.
 		VkSemaphore signalSemaphores[] = { mRenderFinishedSemaphores[current_frame] };
+
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores = signalSemaphores;
-
+		
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
+
+		// Set the rendering bit of queue submit ops of the current frame
+		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps |= RenderService::EQueueSubmitOp::Rendering;
 
 		// Create present information
 		VkPresentInfoKHR present_info = {};
@@ -824,7 +827,7 @@ namespace nap
 
 		// Add swap chain
 		VkSwapchainKHR swap_chains[] = { mSwapchain };
-		present_info.swapchainCount = 1;
+		present_info.swapchainCount = 1; // Await only the render finished semaphore
 		present_info.pSwapchains = swap_chains;
 		present_info.pImageIndices = &mCurrentImageIndex;
 

@@ -1,54 +1,18 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 // Local includes
 #include "constantshader.h"
+#include "renderservice.h"
 
 // External includes
 #include <nap/core.h>
 
-// nap::VideoShader run time class definition 
+// nap::ConstantShader run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ConstantShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
-
-//////////////////////////////////////////////////////////////////////////
-// Constant Vertex Shader
-//////////////////////////////////////////////////////////////////////////
-
-static const char constantVertShader[] = R"glslang(
-#version 450 core
-uniform nap
-{
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
-} mvp;
-
-in vec3	in_Position;
-
-void main(void)
-{
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
-}
-)glslang";
-
-
-//////////////////////////////////////////////////////////////////////////
-// Constant Fragment Shader
-//////////////////////////////////////////////////////////////////////////
-
-static const char constantFragShader[] = R"glslang(
-#version 450 core
-uniform UBO
-{
-	uniform vec3 color;
-	uniform float alpha;
-} ubo;
-
-out vec4 out_Color;
-void main() 
-{
-    out_Color = vec4(ubo.color, ubo.alpha);
-}
-)glslang";
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,14 +21,17 @@ void main()
 
 namespace nap
 {
-	ConstantShader::ConstantShader(Core& core) : Shader(core) { }
+	namespace shader
+	{
+		inline constexpr const char* constant = "constant";
+	}
+
+	ConstantShader::ConstantShader(Core& core) : Shader(core),
+		mRenderService(core.getService<RenderService>()) { }
 
 
 	bool ConstantShader::init(utility::ErrorState& errorState)
 	{
-		// Number of characters = number of bytes minus null termination character of string literal.
-		auto vert_size = sizeof(constantVertShader) - 1;
-		auto frag_size = sizeof(constantFragShader) - 1;
-		return load("ConstantShader", constantVertShader, vert_size, constantFragShader, frag_size, errorState);
+		return loadDefault(shader::constant, errorState);
 	}
 }

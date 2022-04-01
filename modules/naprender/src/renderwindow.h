@@ -271,6 +271,7 @@ namespace nap
 		int						mAddedSwapImages = 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 
 	private:
+
 		RenderService*					mRenderService	= nullptr;
 		SDL_Window*						mSDLWindow		= nullptr;						
 		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;

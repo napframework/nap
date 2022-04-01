@@ -25,9 +25,9 @@ namespace nap
 	}
 
 
-	VkDescriptorSet DescriptorSetAllocator::allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors)
+	VkDescriptorSet DescriptorSetAllocator::allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSSBODescriptors, int numSamplerDescriptors)
 	{
-		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | numSamplerDescriptors;
+		uint64_t key = ((uint64_t)numUBODescriptors) << 32 | ((uint64_t)numSSBODescriptors << 16) | numSamplerDescriptors;
 
 		DescriptorPool* free_descriptor_pool = nullptr;
 		DescriptorPoolMap::iterator pos = mDescriptorPools.find(key);
@@ -60,6 +60,9 @@ namespace nap
 			std::vector<VkDescriptorPoolSize> pool_sizes;
 			if (numUBODescriptors != 0)
 				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, (uint32_t)(numUBODescriptors * maxSets) });
+
+			if (numSSBODescriptors != 0)
+				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, (uint32_t)(numSSBODescriptors * maxSets) });
 
 			if (numSamplerDescriptors != 0)
 				pool_sizes.push_back({ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(numSamplerDescriptors * maxSets) });

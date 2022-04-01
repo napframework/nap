@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "uniform.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -16,7 +17,6 @@
 namespace nap
 {
 	// Forward Declares
-	class Texture2D;
 	class UniformInstance;
 
 	using UniformCreatedCallback = std::function<void()>;
@@ -38,7 +38,7 @@ namespace nap
 		 * Required virtual, needs to be implemented in derived classes
 		 * @return the declaration associated with this uniform instance
 		 */
-		virtual const UniformDeclaration& getDeclaration() const = 0;
+		virtual const ShaderVariableDeclaration& getDeclaration() const = 0;
 	};
 
 
@@ -57,7 +57,7 @@ namespace nap
 	public:
 
 		// Constructor
-		UniformStructInstance(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback) :
+		UniformStructInstance(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback) :
 			mUniformCreatedCallback(uniformCreatedCallback),
 			mDeclaration(declaration)
 		{ }
@@ -95,30 +95,33 @@ namespace nap
 		T* getOrCreateUniform(const std::string& name);
 
 		/**
-		 * @return the uniform declaration, used to create the uniform instance.
+		 * @return the shader variable declaration, used to create the uniform instance.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override		{ return mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override		{ return mDeclaration; }
 
 	private:
+		friend class BaseMaterial;
+		friend class ComputeMaterial;
 		friend class Material;
+		friend class BaseMaterialInstance;
 		friend class MaterialInstance;
 
 		/**
 		 * Adds all associated uniforms recursively to this instance, based on the struct declaration and resource.
 		 */
-		bool addUniformRecursive(const UniformStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState);
+		bool addUniformRecursive(const ShaderVariableStructDeclaration& structDeclaration, const UniformStruct* structResource, const UniformCreatedCallback& uniformCreatedCallback, bool createDefaults, utility::ErrorState& errorState);
 
 		/**
 		 * Creates a uniform instance from a uniform declaration. 
 		 * @param declaration the uniform declaration
 		 * @param uniformCreatedCallback callback that is triggered when the uniform is created.
 		 */
-		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const UniformDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
 
 	private:
-		UniformCreatedCallback							mUniformCreatedCallback;
-		const UniformStructDeclaration&					mDeclaration;
-		std::vector<std::unique_ptr<UniformInstance>>	mUniforms;
+		UniformCreatedCallback									mUniformCreatedCallback;
+		const ShaderVariableStructDeclaration&					mDeclaration;
+		std::vector<std::unique_ptr<UniformInstance>>			mUniforms;
 	};
 
 
@@ -135,7 +138,7 @@ namespace nap
 		RTTI_ENABLE(UniformInstance)
 	public:
 		// Constructor
-		UniformStructArrayInstance(const UniformStructArrayDeclaration& declaration) :
+		UniformStructArrayInstance(const ShaderVariableStructArrayDeclaration& declaration) :
 			mDeclaration(declaration)
 		{ }
 
@@ -166,10 +169,10 @@ namespace nap
 		/**
 		 * @return declaration used to create this instance. 
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override				{ return mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override		{ return mDeclaration; }
 
 	private:
-		const UniformStructArrayDeclaration&					mDeclaration;
+		const ShaderVariableStructArrayDeclaration&				mDeclaration;
 		std::vector<std::unique_ptr<UniformStructInstance>>		mElements;
 
 		/**
@@ -195,7 +198,7 @@ namespace nap
 		/**
 		 * Needs to be implemented in derived classes, pushes buffer to the GPU.
 		 */
-		virtual void push(uint8_t* uniformBuffer) const = 0;
+		virtual void push(uint8* uniformBuffer) const = 0;
 	};
 
 
@@ -212,16 +215,16 @@ namespace nap
 	public:
 
 		// Constructor
-		UniformValueInstance(const UniformValueDeclaration& declaration) :
-			mDeclaration(&declaration)											{ }
+		UniformValueInstance(const ShaderVariableValueDeclaration& declaration) :
+			mDeclaration(&declaration) { }
 
 		/**
 		 * @return the uniform value declaration.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override		{ return *mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override		{ return *mDeclaration; }
 
 	protected:
-		const UniformValueDeclaration*	mDeclaration = nullptr;
+		const ShaderVariableValueDeclaration*	mDeclaration = nullptr;
 	};
 
 
@@ -234,20 +237,25 @@ namespace nap
 		RTTI_ENABLE(UniformValueInstance)
 
 	public:
-		TypedUniformValueInstance(const UniformValueDeclaration& declaration) :
-			UniformValueInstance(declaration)				{ }
+		TypedUniformValueInstance(const ShaderVariableValueDeclaration& declaration) :
+			UniformValueInstance(declaration) { }
 
 		/**
 		 * Updates the uniform value, data is not pushed immediately. 
 		 * @param value new uniform value
 		 */
 		void setValue(T value)								{ mValue = value; }
+
+		/**
+		 * Returns the uniform value
+		 */
+		const T& getValue() const							{ return mValue; }
 		
 		/**
 		 * Update instance from resource, data is not pushed immediately. 
 		 * @param resource the resource to copy the value from
 		 */
-		void set(const TypedUniformValue<T>& resource)		{ mValue = resource.mValue; 	}
+		void set(const TypedUniformValue<T>& resource)		{ mValue = resource.mValue; }
 
 		/**
 		 * Pushes the data to the 'Shader'.
@@ -272,13 +280,13 @@ namespace nap
 		RTTI_ENABLE(UniformLeafInstance)
 
 	public:
-		UniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
-			mDeclaration(&declaration)	{ }
+		UniformValueArrayInstance(const ShaderVariableValueArrayDeclaration& declaration) :
+			mDeclaration(&declaration) { }
 
 		/**
 		 * @return uniform declaration.
 		 */
-		virtual const UniformDeclaration& getDeclaration() const override	{ return *mDeclaration; }
+		virtual const ShaderVariableDeclaration& getDeclaration() const override	{ return *mDeclaration; }
 
 		/**
 		 * Required override, sets up default values.
@@ -286,7 +294,7 @@ namespace nap
 		virtual void setDefault() = 0;
 
 	protected:
-		const UniformValueArrayDeclaration* mDeclaration;
+		const ShaderVariableValueArrayDeclaration* mDeclaration;
 	};
 
 
@@ -301,7 +309,7 @@ namespace nap
 		RTTI_ENABLE(UniformValueArrayInstance)
 
 	public:
-		TypedUniformValueArrayInstance(const UniformValueArrayDeclaration& declaration) :
+		TypedUniformValueArrayInstance(const ShaderVariableValueArrayDeclaration& declaration) :
 			UniformValueArrayInstance(declaration)				{ }
 
 		/**
@@ -344,7 +352,7 @@ namespace nap
 		 * Pushes the data to the 'Shader'
 		 * @param uniformBuffer the buffer to copy the array into.
 		 */
-		virtual void push(uint8_t* uniformBuffer) const override;
+		virtual void push(uint8* uniformBuffer) const override;
 
 		/**
 		 * Array subscript operator, returns a specific value in the array as a reference,
@@ -363,6 +371,7 @@ namespace nap
 	// Type definitions for all supported uniform instance value types
 	//////////////////////////////////////////////////////////////////////////
 
+	using UniformUIntInstance	= TypedUniformValueInstance<uint>;
 	using UniformIntInstance	= TypedUniformValueInstance<int>;
 	using UniformFloatInstance	= TypedUniformValueInstance<float>;
 	using UniformVec2Instance	= TypedUniformValueInstance<glm::vec2>;
@@ -375,6 +384,7 @@ namespace nap
 	// Type definitions for all supported uniform instance array value types
 	//////////////////////////////////////////////////////////////////////////
 
+	using UniformUIntArrayInstance	= TypedUniformValueArrayInstance<uint>;
 	using UniformIntArrayInstance	= TypedUniformValueArrayInstance<int>;
 	using UniformFloatArrayInstance = TypedUniformValueArrayInstance<float>;
 	using UniformVec2ArrayInstance	= TypedUniformValueArrayInstance<glm::vec2>;
@@ -408,7 +418,7 @@ namespace nap
 		}
 
 		// Otherwise fetch the declaration and use it to create the new instance
-		const UniformDeclaration* declaration = mDeclaration.findMember(name);
+		const ShaderVariableDeclaration* declaration = mDeclaration.findMember(name);
 		if (declaration == nullptr)
 			return nullptr;
 
@@ -424,14 +434,14 @@ namespace nap
 	}
 
 	template<class T>
-	void nap::TypedUniformValueInstance<T>::push(uint8_t* uniformBuffer) const
+	void nap::TypedUniformValueInstance<T>::push(uint8* uniformBuffer) const
 	{
 		assert(sizeof(mValue) == mDeclaration->mSize);
 		memcpy(uniformBuffer + mDeclaration->mOffset, &mValue, sizeof(mValue));
 	}
 
 	template<typename T>
-	void nap::TypedUniformValueArrayInstance<T>::push(uint8_t* uniformBuffer) const
+	void nap::TypedUniformValueArrayInstance<T>::push(uint8* uniformBuffer) const
 	{
 		if (sizeof(T) == mDeclaration->mStride)
 		{
