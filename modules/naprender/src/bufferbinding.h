@@ -69,27 +69,34 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		std::string mName;		///< Name of uniform in shader
+
+		/**
+		 * Ensures the buffer is set.
+		 * @param errorState contains the error if the binding can't be initialized
+		 * @return if the binding initialized
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * @return The number of elements in this array
 		 */
-		virtual int getCount() const = 0;
+		virtual int getCount() const					{ assert(mBuffer != nullptr);  return mBuffer->getCount(); }
 
 		/**
 		 * @return The size in bytes
 		 */
-		virtual size_t getSize() const = 0;
-
-		/**
-		 * @return Whether a buffer is set
-		 */
-		virtual bool hasBuffer() const = 0;
+		virtual size_t getSize() const					{ assert(mBuffer != nullptr); return mBuffer->getSize(); }
 
 		/**
 		 * @return the base GPU buffer, nullptr if not set
 		 */
-		virtual const GPUBuffer* getBaseBuffer() const = 0;
+		const GPUBuffer* getBuffer() const				{ return mBuffer; }
+
+		std::string mName;								///< Property: 'Name' name of buffer binding uniform in shader
+
+	protected:
+		// Buffer, set by derived classes
+		const GPUBuffer* mBuffer = nullptr;
 	};
 
 
@@ -100,10 +107,18 @@ namespace nap
 	{
 		RTTI_ENABLE(BufferBinding)
 	public:
+
+		/**
+		 * Ensures the buffer is set
+		 * @param errorState contains the error if the binding can't be initialized
+		 * @return if the binding initialized
+		 */
+		virtual bool init(utility::ErrorState& errorState) override		{ return BufferBinding::init(errorState); }
+
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		virtual const GPUBufferNumeric* getBuffer() const = 0;
+		const GPUBufferNumeric* getBuffer()								{ return static_cast<const GPUBufferNumeric*>(BufferBinding::mBuffer); }
 	};
 
 
@@ -112,36 +127,18 @@ namespace nap
 	 * `VertexBufferFloat` binds to `BufferBindingFloat`.
 	 */
 	template <typename T>
-	class NAPAPI TypedBufferBindingNumeric : public BufferBindingNumeric
+	class TypedBufferBindingNumeric : public BufferBindingNumeric
 	{
 		RTTI_ENABLE(BufferBindingNumeric)
 	public:
 		/**
-		 * @return total number of elements
+		 * Ensures the buffer is set
+		 * @param errorState contains the error if the binding can't be initialized
+		 * @return if the binding initialized
 		 */
-		virtual int getCount() const override							{ return hasBuffer() ? mBuffer->mCount : 0; }
+		virtual bool init(utility::ErrorState& errorState);
 
-		/**
-		 * @return The size in bytes
-		 */
-		virtual size_t getSize() const override							{ return mBuffer->getSize(); }
-
-		/**
-		 * @return Whether a buffer is set
-		 */
-		virtual bool hasBuffer() const override							{ return mBuffer != nullptr; }
-
-		/**
-		 * @return the base GPU buffer, nullptr if not set
-		 */
-		virtual const GPUBuffer* getBaseBuffer() const override		{ return mBuffer.get(); }
-
-		/**
-		 * @return a pointer to the buffer, nullptr if not set
-		 */
-		virtual const GPUBufferNumeric* getBuffer() const override				{ return mBuffer.get(); }
-
-		rtti::ObjectPtr<TypedGPUBufferNumeric<T>> mBuffer = nullptr;	/// Property 'Buffer'
+		rtti::ObjectPtr<TypedGPUBufferNumeric<T>> mBuffer = nullptr;	/// Property: 'Buffer' the GPU NumericBuffer to bind
 	};
 
 
@@ -153,32 +150,20 @@ namespace nap
 	{
 		RTTI_ENABLE(BufferBinding)
 	public:
-		/**
-		 * @return total number of elements.
-		 */
-		virtual int getCount() const override							{ return mBuffer->getCount(); }
 
 		/**
-		 * @return The size in bytes
+		 * Ensures the buffer is set
+		 * @param errorState contains the error if the binding can't be initialized
+		 * @return if the binding initialized
 		 */
-		virtual size_t getSize() const override							{ return mBuffer->getSize(); }
-
-		/**
-		 * @return if the buffer is set
-		 */
-		virtual bool hasBuffer() const override							{ return mBuffer != nullptr; }
-
-		/**
-		 * @return the base GPU buffer, nullptr if not set
-		 */
-		virtual const GPUBuffer* getBaseBuffer() const override		{ return mBuffer.get(); }
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
 		virtual const StructBuffer* getBuffer() const					{ return mBuffer.get(); };
 
-		rtti::ObjectPtr<StructBuffer> mBuffer = nullptr;
+		rtti::ObjectPtr<StructBuffer> mBuffer = nullptr;				/// Property 'Buffer' the GPU StructBuffer to bind
 	};
 
 
@@ -193,4 +178,17 @@ namespace nap
 	using BufferBindingVec3		= TypedBufferBindingNumeric<glm::vec3>;
 	using BufferBindingVec4		= TypedBufferBindingNumeric<glm::vec4>;
 	using BufferBindingMat4		= TypedBufferBindingNumeric<glm::mat4>;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template <typename T>
+	bool nap::TypedBufferBindingNumeric<T>::init(utility::ErrorState& errorState)
+	{
+		BufferBinding::mBuffer = TypedBufferBindingNumeric::mBuffer.get();
+		return BufferBindingNumeric::init(errorState);
+	}
+
 }

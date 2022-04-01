@@ -88,10 +88,10 @@ namespace nap
 
 		// If the buffer binding was created from a resource, ensure its element count matches
 		// the one in the shader declaration and ensure the descriptortype is storage
-		if (binding != nullptr && binding->hasBuffer())
+		if (binding != nullptr)
 		{
 			// Verify descriptortype
-			if (!errorState.check((binding->getBaseBuffer()->getBufferUsageFlags() & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) > 0,
+			if (!errorState.check((binding->getBuffer()->getBufferUsageFlags() & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) > 0,
 				"DescriptorType mismatch. StructGPUBuffer 'DescriptorType' property must be 'Storage' to be used as a buffer binding"))
 				return nullptr;
 
@@ -105,7 +105,7 @@ namespace nap
 		if (declaration_type == RTTI_OF(ShaderVariableStructBufferDeclaration))
 		{
 			const ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<const ShaderVariableStructBufferDeclaration>(&buffer_declaration);
-			if (binding != nullptr && binding->hasBuffer())
+			if (binding != nullptr)
 			{
 				// Verify count
 				if (!errorState.check(binding->getCount() == struct_buffer_declaration->mNumElements,
@@ -121,7 +121,7 @@ namespace nap
 		if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 		{
 			const ShaderVariableValueArrayDeclaration* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&buffer_declaration);
-			if (binding != nullptr && binding->hasBuffer())
+			if (binding != nullptr)
 			{
 				// Verify count
 				if (!errorState.check(binding->getCount() == value_array_declaration->mNumElements,
