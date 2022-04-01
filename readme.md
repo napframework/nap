@@ -1,3 +1,4 @@
+<br>
 <p align="center">
   <img width=384 src="https://docs.nap.tech/content/nap_logo_blue.svg">
 </p>
