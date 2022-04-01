@@ -198,24 +198,13 @@ namespace nap
 		 * Binds a new buffer to the uniform instance
 		 * @param buffer new buffer to bind
 		 */
-		void setBuffer(StructBuffer& buffer)
-		{
-			assert(buffer.getSize() == mDeclaration->mSize);
-			BufferBindingInstance::mBuffer = &buffer;
-			raiseChanged();
-		}
+		void setBuffer(StructBuffer& buffer);
 
 		/**
 		 * Updates the buffer from a resource
 		 * @param resource resource to set buffer from.
 		 */
-		void setBuffer(const BufferBindingStruct& resource)
-		{
-			assert(resource.mBuffer != nullptr);
-			assert(resource.mBuffer->getSize() == mDeclaration->mSize);
-			BufferBindingInstance::mBuffer = resource.mBuffer.get();
-			raiseChanged();
-		}
+		void setBuffer(const BufferBindingStruct& resource);
 
 	private:
 		friend class BaseMaterial;
@@ -302,12 +291,12 @@ namespace nap
 		/**
 		 * @return buffer
 		 */
-		const TypedGPUBufferNumeric<T>& getTypedBuffer() const						{ assert(mBuffer != nullptr); return static_cast<const TypedGPUBufferNumeric<T>&>(*mBuffer); }
+		const TypedGPUBufferNumeric<T>& getTypedBuffer() const					{ assert(mBuffer != nullptr); return static_cast<const TypedGPUBufferNumeric<T>&>(*mBuffer); }
 
 		/**
 		 * @return buffer
 		 */
-		TypedGPUBufferNumeric<T>& getTypedBuffer()									{ assert(mBuffer != nullptr); return static_cast<TypedGPUBufferNumeric<T>&>(*mBuffer); }
+		TypedGPUBufferNumeric<T>& getTypedBuffer()								{ assert(mBuffer != nullptr); return static_cast<TypedGPUBufferNumeric<T>&>(*mBuffer); }
 
 	private:
 		/**

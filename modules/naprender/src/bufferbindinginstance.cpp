@@ -181,4 +181,21 @@ namespace nap
 		NAP_ASSERT_MSG(false, "Unsupported shader variable declaration");
 		return nullptr;
 	}
+
+
+	void BufferBindingStructInstance::setBuffer(StructBuffer& buffer)
+	{
+		assert(buffer.getSize() == mDeclaration->mSize);
+		BufferBindingInstance::mBuffer = &buffer;
+		raiseChanged();
+	}
+
+
+	void BufferBindingStructInstance::setBuffer(const BufferBindingStruct& resource)
+	{
+		assert(resource.mBuffer != nullptr);
+		assert(resource.mBuffer->getSize() == mDeclaration->mSize);
+		BufferBindingInstance::mBuffer = resource.mBuffer.get();
+		raiseChanged();
+	}
 }
