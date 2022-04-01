@@ -146,7 +146,7 @@ namespace nap
 	 * All uniforms, samplers and attributes are extracted.
 	 * Make sure to call init() on initialization of a derived shader class.
 	 * A nap::Material links to a BaseShader. The shader is compiled on initialization.
-	 * Use a nap::Material or nap::MaterialInstance to set / override uniforms and samplers.
+	 * Use a nap::ComputeMaterial or nap::ComputeMaterialInstance to set / override uniforms and samplers.
 	 */
 	class NAPAPI ComputeShader : public BaseShader
 	{
