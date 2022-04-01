@@ -64,7 +64,9 @@ namespace nap
 
 	bool Snapshot::init(utility::ErrorState& errorState)
 	{
-		assert(mWidth > 0 && mHeight > 0);
+		// Ensure width and height is valid
+		if (!errorState.check(mWidth > 0 && mHeight > 0, "%s: width and height must be greater than 0", mID.c_str()))
+			return false;
 		mDivisor = mDivisor > 0 ? mDivisor : 1;
 
 		// Ensure the RenderTexture2D format is supported for writing
@@ -126,7 +128,6 @@ namespace nap
 			cell = std::make_unique<RenderTexture2D>(mRenderService->getCore());
 			cell->mWidth = mCellWidth;
 			cell->mHeight = mCellHeight;
-			cell->mFill = true;
 			cell->mUsage = ETextureUsage::DynamicRead;
 			cell->mFormat = mTextureFormat;
 

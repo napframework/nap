@@ -1,0 +1,487 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ComputeMaterial",
+            "mID": "ComputeMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [
+                {
+                    "Type": "nap::BufferBindingVec4",
+                    "mID": "BufferBindingVec4_6c36afa1",
+                    "Name": "VertexBuffer",
+                    "Buffer": "ParticleVertexBuffer"
+                }
+            ],
+            "Shader": "ComputeShader"
+        },
+        {
+            "Type": "nap::ComputeShaderFromFile",
+            "mID": "ComputeShader",
+            "ComputeShader": "shaders/update.comp"
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 55.0,
+                        "NearClippingPlane": 0.009999999776482582,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "nap::KeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "nap::PointerInputComponent"
+                },
+                {
+                    "Type": "nap::FirstPersonController",
+                    "mID": "nap::FirstPersonController",
+                    "MovementSpeed": 2.0,
+                    "RotateSpeed": 0.0020000000949949028,
+                    "PerspCameraComponent": "PerspCameraComponent"
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": -0.5,
+                            "z": 3.5
+                        },
+                        "Rotate": {
+                            "x": 50.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DefaultInputRouterEntity",
+            "Components": [
+                {
+                    "Type": "nap::DefaultInputRouterComponent",
+                    "mID": "nap::DefaultInputRouterComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ParticleVolumeEntity",
+            "Components": [
+                {
+                    "Type": "nap::ParticleVolumeComponent",
+                    "mID": "ParticleVolumeComponent",
+                    "Visible": true,
+                    "Mesh": "",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ParticleMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    },
+                    "NumParticles": 100000,
+                    "Speed": 0.25,
+                    "Displacement": 0.10000000149011612,
+                    "RotationSpeed": 5.0,
+                    "RotationVariation": 1.0,
+                    "Size": 0.07999999821186066
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "nap::TransformComponent_2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::ComputeComponent",
+                    "mID": "ComputeComponent_A",
+                    "ComputeMaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [
+                            {
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_112b3571",
+                                "Name": "ParticleBuffer_In",
+                                "Buffer": "ParticleComputeBufferA"
+                            },
+                            {
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_8cf0f85d",
+                                "Name": "ParticleBuffer_Out",
+                                "Buffer": "ParticleComputeBufferB"
+                            }
+                        ],
+                        "ComputeMaterial": "ComputeMaterial"
+                    },
+                    "Invocations": 1
+                },
+                {
+                    "Type": "nap::ComputeComponent",
+                    "mID": "ComputeComponent_B",
+                    "ComputeMaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [
+                            {
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_a712e84d",
+                                "Name": "ParticleBuffer_In",
+                                "Buffer": "ParticleComputeBufferB"
+                            },
+                            {
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_602f8cad",
+                                "Name": "ParticleBuffer_Out",
+                                "Buffer": "ParticleComputeBufferA"
+                            }
+                        ],
+                        "ComputeMaterial": "ComputeMaterial"
+                    },
+                    "Invocations": 1
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ParticleOne",
+            "Usage": "Static",
+            "ImagePath": "texture_one.jpg",
+            "GenerateLods": true
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "ParticleTwo",
+            "Usage": "Static",
+            "ImagePath": "texture_two.png",
+            "GenerateLods": false
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ParticleMaterial",
+            "Uniforms": [],
+            "Samplers": [
+                {
+                    "Type": "nap::Sampler2DArray",
+                    "mID": "UniformTexture2DArray_be091041",
+                    "Name": "texture_input",
+                    "MinFilter": "Linear",
+                    "MaxFilter": "Linear",
+                    "MipMapMode": "Linear",
+                    "AddressModeVertical": "ClampToEdge",
+                    "AddressModeHorizontal": "ClampToEdge",
+                    "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
+                    "Textures": [
+                        "ParticleOne",
+                        "ParticleTwo"
+                    ]
+                }
+            ],
+            "Buffers": [],
+            "Shader": "ParticleShader",
+            "VertexAttributeBindings": [
+                {
+                    "MeshAttributeID": "Position",
+                    "ShaderAttributeID": "in_Position"
+                },
+                {
+                    "MeshAttributeID": "UV0",
+                    "ShaderAttributeID": "in_UV0"
+                },
+                {
+                    "MeshAttributeID": "Id",
+                    "ShaderAttributeID": "in_Id"
+                }
+            ],
+            "BlendMode": "AlphaBlend",
+            "DepthMode": "ReadWrite"
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "ComputeParticlesDemo",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "CameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DefaultInputRouterEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "ParticleVolumeEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "ParticleShader",
+            "VertShader": "shaders/particle.vert",
+            "FragShader": "shaders/particle.frag"
+        },
+        {
+            "Type": "nap::StructBuffer",
+            "mID": "ParticleComputeBufferA",
+            "Clear": false,
+            "Usage": "Static",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_45f9fab3",
+                    "Name": "particles",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_7ac6f70b",
+                            "Name": "position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_a02e4adb",
+                            "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_5d9b4fa3",
+                            "Name": "rotation",
+                            "Value": 0.0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_20ffd4c0",
+                            "Name": "padding_0",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_a27e4554",
+                            "Name": "padding_1",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_60238506",
+                            "Name": "padding_2",
+                            "Value": 0
+                        }
+                    ]
+                },
+                "Count": 100000
+            },
+            "FillPolicy": "ParticleBufferFillPolicy"
+        },
+        {
+            "Type": "nap::StructBuffer",
+            "mID": "ParticleComputeBufferB",
+            "Clear": false,
+            "Usage": "Static",
+            "Descriptor": {
+                "Element": {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_a35bf039",
+                    "Name": "particles",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_0676c053",
+                            "Name": "position",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_ff103c73",
+                            "Name": "velocity",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_b01a6af3",
+                            "Name": "rotation",
+                            "Value": 0.0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_129c0661",
+                            "Name": "padding_0",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_ce88f4e3",
+                            "Name": "padding_1",
+                            "Value": 0
+                        },
+                        {
+                            "Type": "nap::UniformUInt",
+                            "mID": "UniformUInt_508e7718",
+                            "Name": "padding_2",
+                            "Value": 0
+                        }
+                    ]
+                },
+                "Count": 100000
+            },
+            "FillPolicy": ""
+        },
+        {
+            "Type": "nap::StructFillPolicy",
+            "mID": "ParticleBufferFillPolicy",
+            "FillPolicies": [
+                {
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_dfe3d0a7",
+                    "Name": "position",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_0a036fb0",
+                        "LowerBound": {
+                            "x": -10.0,
+                            "y": -10.0,
+                            "z": -10.0,
+                            "w": -10.0
+                        },
+                        "UpperBound": {
+                            "x": 10.0,
+                            "y": 10.0,
+                            "z": 10.0,
+                            "w": 10.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_6b099245",
+                    "Name": "velocity",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_0f6fa77a",
+                        "LowerBound": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        },
+                        "UpperBound": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Type": "nap::VertexBufferVec4",
+            "mID": "ParticleVertexBuffer",
+            "Clear": false,
+            "Usage": "Static",
+            "Count": 400000,
+            "FillPolicy": ""
+        }
+    ]
+}

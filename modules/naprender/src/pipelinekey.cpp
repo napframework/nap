@@ -35,4 +35,14 @@ namespace nap
 			mCullMode == rhs.mCullMode &&
 			mPolygonMode == rhs.mPolygonMode;
 	}
+
+
+	ComputePipelineKey::ComputePipelineKey(const ComputeShader& shader) :
+		mShader(&shader) {}
+
+
+	bool ComputePipelineKey::operator==(const ComputePipelineKey& rhs) const
+	{
+		return mShader == rhs.mShader;
+	}
 }

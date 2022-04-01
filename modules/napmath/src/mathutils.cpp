@@ -38,16 +38,17 @@ namespace nap
 		}
 
 
-		static int randomInt(int min, int max)
+		static float randomFloat(float min, float max)
 		{
-			std::uniform_int_distribution<int> m_distribution(min, max);
+			std::uniform_real_distribution<float> m_distribution(min, max);
 			return m_distribution(getGenerator());
 		}
 
 
-		static float randomFloat(float min, float max)
+		template<typename T>
+		int randomInt(T min, T max)
 		{
-			std::uniform_real_distribution<float> m_distribution(min, max);
+			std::uniform_int_distribution<T> m_distribution(min, max);
 			return m_distribution(getGenerator());
 		}
 
@@ -311,6 +312,13 @@ namespace nap
 
 
 		template<>
+		uint random(uint min, uint max)
+		{
+			return randomInt<uint>(min, max);
+		}
+
+
+		template<>
 		int random(int min, int max)
 		{
 			return randomInt(min, max);
@@ -392,6 +400,19 @@ namespace nap
 			{
 				randomInt(min.x, max.x),
 				randomInt(min.y, max.y)
+			};
+		}
+
+
+		template<>
+		glm::mat4 random(glm::mat4 min, glm::mat4 max)
+		{
+			return
+			{
+				random<glm::vec4>(min[0], max[0]),
+				random<glm::vec4>(min[1], max[1]),
+				random<glm::vec4>(min[2], max[2]),
+				random<glm::vec4>(min[3], max[3])
 			};
 		}
 

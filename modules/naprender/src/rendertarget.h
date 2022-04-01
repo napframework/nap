@@ -161,7 +161,7 @@ namespace nap
 		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		RGBAColorFloat						mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
 		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		nap::ResourcePtr<RenderTexture2D>	mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
+		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
 
 	private:
 		RenderService*			mRenderService;
@@ -170,5 +170,7 @@ namespace nap
 		VkSampleCountFlagBits	mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		ImageData				mDepthImage;
 		ImageData				mColorImage;
+
+		//ResourcePtr<RenderTexture2D>		mDepthTexture;
 	};
 }

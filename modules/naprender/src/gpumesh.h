@@ -4,9 +4,8 @@
 
 #pragma once
 
-// Local Includes
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
+// Local includes
+#include "gpubuffer.h"
 
 // External Includes
 #include <memory>
@@ -43,7 +42,7 @@ namespace nap
 		 * @param renderService render backend.
 		 * @param usage how the mesh data is used at runtime.
 		 */
-		GPUMesh(RenderService& renderService, EMeshDataUsage usage);
+		GPUMesh(RenderService& renderService, EMemoryUsage usage);
 
 		// Default destructor
 		virtual ~GPUMesh() = default;
@@ -54,42 +53,59 @@ namespace nap
 
 		/**
 		 * Creates and adds a new vertex buffer to the mesh.
+		 * The new buffer has yet to be initialized before it can be updated. This can be checked with isInitialized().
 		 * @param id name of the vertex buffer to create and add.
-		 * @param format vertex buffer format.
 		 */
-		void addVertexBuffer(const std::string& id, VkFormat format);
+		template<typename ELEMENTTYPE>
+		VertexBuffer<ELEMENTTYPE>& addVertexBuffer(const std::string& id);
 
 		/**
 		 * Finds a vertex buffer with the given name.
 		 * @param id name of the vertex buffer
 		 * @return reference to the vertex buffer if found, nullptr otherwise.
 		 */
-		const VertexBuffer* findVertexBuffer(const std::string& id) const;
+		const GPUBufferNumeric* findVertexBuffer(const std::string& id) const;
 
 		/**
 		 * Returns a vertex buffer with the given name, asserts if not present.
 		 * @param id name of the vertex buffer to get.
 		 */
-		VertexBuffer& getVertexBuffer(const std::string& id);
+		GPUBufferNumeric& getVertexBuffer(const std::string& id);
 
 		/**
 		 * Creates an index buffer if one does not exist, returns the existing buffer otherwise.
+		 * If the buffer was created, it has yet to be initialized before it can be updated. This can be checked with isInitialized().
 		 * @param index value of the index buffer to get or create.
 		 * @return an already existing or new index buffer.
 		 */
 		IndexBuffer& getOrCreateIndexBuffer(int index);
 
 		/**
-		 * @param index lookup value of the index buffer to get.
-		 * @return The index buffer if one is created, if no index buffer exists, null is returned.
+		 * Returns an index buffer at the specified index, asserts if not present.
+		 * @param index value of the index buffer to get.
+		 * @return an index buffer.
 		 */
 		const IndexBuffer& getIndexBuffer(int index) const;
 
 	private:
-		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<VertexBuffer>>;
-		RenderService*								mRenderService;						///< Link to the render engine
-		AttributeMap								mAttributes;						///< Map from vertex attribute ID to buffer
-		std::vector<std::unique_ptr<IndexBuffer>>	mIndexBuffers;						///< Index buffers
-		EMeshDataUsage								mUsage = EMeshDataUsage::Static;	///< By default a gpu mesh is static.
+		using AttributeMap = std::unordered_map<std::string, std::unique_ptr<GPUBufferNumeric>>;
+
+		Core*                                           mCore;                          ///< Link to Core
+		AttributeMap									mAttributes;					///< Map from vertex attribute ID to buffer
+		std::vector<std::unique_ptr<IndexBuffer>>		mIndexBuffers;					///< Index buffers
+		EMemoryUsage									mUsage = EMemoryUsage::Static;	///< By default a gpu mesh is static.
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename ELEMENTTYPE>
+	VertexBuffer<ELEMENTTYPE>& GPUMesh::addVertexBuffer(const std::string& id)
+	{
+		auto vertex_buffer = std::make_unique<VertexBuffer<ELEMENTTYPE>>(*mCore, mUsage, false);
+		auto it = mAttributes.emplace(std::make_pair(id, std::move(vertex_buffer))).first;
+		return static_cast<VertexBuffer<ELEMENTTYPE>&>(*it->second);
+	}
 }

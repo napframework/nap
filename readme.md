@@ -94,13 +94,13 @@ Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supp
 # Compilation
 
 Windows 10<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 Ubuntu 20.04<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 macOS 10.15<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
 

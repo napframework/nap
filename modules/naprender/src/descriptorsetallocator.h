@@ -37,10 +37,11 @@ namespace nap
 		/**
 		 * Allocate a DescriptorSetLayout that is compatible with VkDescriptorSetLayout (same amount of UBOs and samplers).
 		 * @param layout layout of the descriptor set
-		 * @param numUBODescriptors number of uniform buffer objects descriptors
+		 * @param numUBODescriptors number of uniform buffer object descriptors
+		 * @param numSSBODescriptors number of storage buffer object descriptors
 		 * @param numSamplerDescriptors number of sampler descriptors.
 		 */
-		VkDescriptorSet allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSamplerDescriptors);
+		VkDescriptorSet allocate(VkDescriptorSetLayout layout, int numUBODescriptors, int numSSBODescriptors, int numSamplerDescriptors);
 
 	private:
 		/**
@@ -55,8 +56,8 @@ namespace nap
 		};
 
 		using DescriptorPoolMap = std::unordered_map<uint64_t, std::vector<DescriptorPool>>;
-		VkDevice					mDevice;
-		DescriptorPoolMap			mDescriptorPools;
+		VkDevice				mDevice;
+		DescriptorPoolMap		mDescriptorPools;
 	};
 } // nap
 

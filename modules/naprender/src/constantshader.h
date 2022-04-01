@@ -7,7 +7,7 @@ namespace nap
 {
 	// Forward declares
 	class Core;
-	class Material;
+	class RenderService;
 
 	// Video shader sampler names 
 	namespace uniform
@@ -22,6 +22,16 @@ namespace nap
 
 	/**
 	 * Constant shader. Renders an object using a color and alpha value.
+	 * 
+	 * The constant shader exposes the following shader variables:
+	 *
+	 * ~~~~{.frag}
+	 *		uniform UBO
+	 *		{
+	 *			vec3 color;
+	 *			float alpha;
+	 *		};
+	 * ~~~~
 	 */
 	class NAPAPI ConstantShader : public Shader
 	{
@@ -35,5 +45,8 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		RenderService* mRenderService = nullptr;
 	};
 }

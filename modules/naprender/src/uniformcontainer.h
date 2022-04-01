@@ -7,6 +7,7 @@
 // Local Includes
 #include "samplerinstance.h"
 #include "uniforminstance.h"
+#include "bufferbindinginstance.h"
 
 namespace nap
 {
@@ -36,11 +37,25 @@ namespace nap
 		UniformStructInstance* findUniform(const std::string& name);
 
 		/**
+		 * Tries to find a buffer binding instance with the given name.
+		 * @param name name of the buffer binding as declared in the shader.
+		 * @return a buffer binding instance, nullptr if not present.
+		 */
+		BufferBindingInstance* findBinding(const std::string& name);
+
+		/**
 		 * Returns a uniform struct instance with the given name, the struct has to exist.
 		 * @param name name of the uniform struct as declared in the shader.
 		 * @return uniform struct instance with the given name, asserts if not present.
 		 */
 		UniformStructInstance& getUniform(const std::string& name);
+
+		/**
+		 * Returns a buffer binding instance with the given name. The binding must exist.
+		 * @param name name of the buffer binding as declared in the shader.
+		 * @return buffer binding instance with the given name, asserts if not present.
+		 */
+		BufferBindingInstance& getBinding(const std::string& name);
 
 		/**
 		 * @return all the uniforms sampler instances.
@@ -55,11 +70,13 @@ namespace nap
 		SamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
-		UniformStructInstance& createRootStruct(const UniformStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
-		void addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
+		UniformStructInstance& createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
+		BufferBindingInstance& addBindingInstance(std::unique_ptr<BufferBindingInstance> instance);
+		SamplerInstance& addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
 
 	private:
-		std::vector<std::unique_ptr<UniformStructInstance>> mRootStructs;
+		std::vector<std::unique_ptr<UniformStructInstance>> mUniformRootStructs;
+		std::vector<std::unique_ptr<BufferBindingInstance>> mBindingInstances;
 		std::vector<std::unique_ptr<SamplerInstance>> mSamplerInstances;
 	};
 }

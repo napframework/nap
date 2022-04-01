@@ -48,6 +48,18 @@ namespace nap
 		bool load(std::string preset, utility::ErrorState& errorState);
 
 		/**
+		 * Returns the index of the currently selected preset if one was selected, returns -1 otherwise
+		 * @return the index of the currently selected preset if one was selected, -1 otherwise
+		 */
+		int getSelectedPresetIndex() const;
+
+		/**
+		 * Returns the currently selected preset if one was selected, asserts false otherwise
+		 * @return the the currently selected preset if one was selected
+		 */
+		const std::string& getSelectedPreset() const;
+
+		/**
 		 * Initializes the parameter GUI
 		 * @param errorState contains the error if initialization failed
 		 * @return if initialization succeeded

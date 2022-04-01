@@ -6,7 +6,7 @@
 #include "renderabletextcomponent.h"
 #include "renderglobals.h"
 #include "material.h"
-#include "indexbuffer.h"
+#include "gpubuffer.h"
 #include "fontshader.h"
 
 // External Includes
@@ -109,7 +109,7 @@ namespace nap
 		mPlane.mColumns = 1;
 		mPlane.mPosition = { 0.5f, 0.5f };
 		mPlane.mSize = { 1.0f, 1.0f };
-		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mUsage = EMemoryUsage::Static;
 		mPlane.mCullMode = ECullMode::Back;
 		if (!mPlane.setup(errorState))
 			return false;
@@ -325,10 +325,10 @@ namespace nap
 			mGlyphUniform->setTexture(render_glyph->getTexture());
 
 			// Get new descriptor set that contains the updated settings and bind pipeline
-			VkDescriptorSet descriptor_set = mMaterialInstance.update();
+			const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 			// Bind descriptor set
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 			// Draw geometry
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);

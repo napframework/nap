@@ -79,8 +79,7 @@ namespace nap
 
 			// Because the mesh is populated dynamically we set the initial amount of vertices to be 0
 			mMeshInstance->setNumVertices(0);
-			mMeshInstance->setUsage(EMeshDataUsage::DynamicWrite);
-			mMeshInstance->reserveVertices(1000);
+			mMeshInstance->setUsage(EMemoryUsage::DynamicWrite);
 			mMeshInstance->setDrawMode(EDrawMode::Triangles);
 			mMeshInstance->setCullMode(ECullMode::None);
 
@@ -90,6 +89,10 @@ namespace nap
 			Vec4VertexAttribute& color_attribute = mMeshInstance->getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
 			FloatVertexAttribute& id_attribute = mMeshInstance->getOrCreateAttribute<float>("pid");
 
+			// Reserve vertices for attribute data
+			mMeshInstance->reserveVertices(1000);
+
+			// Create mesh shape
 			MeshShape& shape = mMeshInstance->createShape();
 
 			// Reserve CPU memory for all the particle geometry necessary to create

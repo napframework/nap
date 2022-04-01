@@ -58,3 +58,20 @@ macro(ensure_patchelf_installed)
     endif()
 endmacro()
 
+# Check existence of bcm_host.h header file to see if we're building on Raspberry
+macro(check_raspbian_os RASPBERRY)
+    if(${ARCH} MATCHES "armhf")
+        MESSAGE(VERBOSE "Looking for bcm_host.h")
+        INCLUDE(CheckIncludeFiles)
+
+        # Raspbian bullseye bcm_host.h location
+        CHECK_INCLUDE_FILES("/usr/include/bcm_host.h" RASPBERRY)
+
+        # otherwise, check previous location of bcm_host.h on older Raspbian OS's
+        if(NOT RASPBERRY)
+            CHECK_INCLUDE_FILES("/opt/vc/include/bcm_host.h" RASPBERRY)
+        endif()
+    endif()
+endmacro()
+
+

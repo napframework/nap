@@ -12,6 +12,15 @@
 namespace nap
 {
 	/**
+	 * The default shader stage entry point name that is used whenever a pipeline stage is created.
+	 */
+	namespace shader
+	{
+		inline constexpr const char* main = "main";
+	}
+
+
+	/**
 	 * These uniforms are set automatically by all nap::RenderableComponent(s) when present in the vertex shader.
 	 * ~~~~~
 	 *	...
