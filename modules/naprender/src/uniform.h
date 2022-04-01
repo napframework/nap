@@ -1,7 +1,8 @@
 #pragma once
 
 // Local Includes
-#include "uniformdeclarations.h"
+#include "shadervariabledeclarations.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -12,7 +13,6 @@
 namespace nap
 {
 	// Forward Declares
-	class Texture2D;
 	class UniformInstance;
 
 	using UniformCreatedCallback = std::function<void()>;
@@ -56,6 +56,12 @@ namespace nap
 		 * @return a uniform with the given name, nullptr if not found
 		 */
 		Uniform* findUniform(const std::string& name);
+
+		/**
+		 * @param name the name of the uniform to find.
+		 * @return a uniform with the given name, nullptr if not found
+		 */
+		const Uniform* findUniform(const std::string& name) const;
 
 	public:
 		std::vector<rtti::ObjectPtr<Uniform>> mUniforms;
@@ -168,7 +174,6 @@ namespace nap
 	{
 		RTTI_ENABLE(UniformValueArray)
 	public:
-
 		/**
 		 * @return total number of elements.
 		 */
@@ -178,13 +183,13 @@ namespace nap
 
 
 	/**
-	 * Find a shader uniform based on the given shader uniform declaration.
+	 * Find a shader uniform based on the given shader variable declaration.
 	 * @param members uniforms of type nap::Uniform to search through.
 	 * @param declaration uniform declaration to match
 	 * @return uniform that matches with the given shader declaration, nullptr if not found.
 	 */
 	template<class T>
-	const Uniform* findUniformStructMember(const std::vector<T>& members, const UniformDeclaration& declaration)
+	const Uniform* findUniformStructMember(const std::vector<T>& members, const ShaderVariableDeclaration& declaration)
 	{
 		for (auto& member : members)
 			if (member->mName == declaration.mName)
@@ -197,22 +202,24 @@ namespace nap
 	// Uniform value type definitions
 	//////////////////////////////////////////////////////////////////////////
 	
-	using UniformInt = TypedUniformValue<int>;
-	using UniformFloat = TypedUniformValue<float>;
-	using UniformVec2 = TypedUniformValue<glm::vec2>;
-	using UniformVec3 = TypedUniformValue<glm::vec3>;
-	using UniformVec4 = TypedUniformValue<glm::vec4>;
-	using UniformMat4 = TypedUniformValue<glm::mat4>;
+	using UniformUInt						= TypedUniformValue<uint>;
+	using UniformInt						= TypedUniformValue<int>;
+	using UniformFloat						= TypedUniformValue<float>;
+	using UniformVec2						= TypedUniformValue<glm::vec2>;
+	using UniformVec3						= TypedUniformValue<glm::vec3>;
+	using UniformVec4						= TypedUniformValue<glm::vec4>;
+	using UniformMat4						= TypedUniformValue<glm::mat4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Uniform value array type definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	using UniformIntArray = TypedUniformValueArray<int>;
-	using UniformFloatArray = TypedUniformValueArray<float>;
-	using UniformVec2Array = TypedUniformValueArray<glm::vec2>;
-	using UniformVec3Array = TypedUniformValueArray<glm::vec3>;
-	using UniformVec4Array = TypedUniformValueArray<glm::vec4>;
-	using UniformMat4Array = TypedUniformValueArray<glm::mat4>;
+	using UniformUIntArray					= TypedUniformValueArray<uint>;
+	using UniformIntArray					= TypedUniformValueArray<int>;
+	using UniformFloatArray					= TypedUniformValueArray<float>;
+	using UniformVec2Array					= TypedUniformValueArray<glm::vec2>;
+	using UniformVec3Array					= TypedUniformValueArray<glm::vec3>;
+	using UniformVec4Array					= TypedUniformValueArray<glm::vec4>;
+	using UniformMat4Array					= TypedUniformValueArray<glm::mat4>;
 }

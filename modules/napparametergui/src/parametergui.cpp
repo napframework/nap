@@ -320,6 +320,19 @@ namespace nap
 	}
 
 
+	int ParameterGUI::getSelectedPresetIndex() const
+	{
+		return mSelectedPresetIndex;
+	}
+
+
+	const std::string& ParameterGUI::getSelectedPreset() const
+	{
+		assert(mSelectedPresetIndex != -1);
+		return mPresets[mSelectedPresetIndex];
+	}
+
+
 	bool ParameterGUI::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mParameterGroup != nullptr, "No parameter group to display"))

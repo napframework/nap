@@ -6,8 +6,7 @@
 #include "mesh.h"
 #include "meshutils.h"
 #include "renderservice.h"
-#include "vertexbuffer.h"
-#include "indexbuffer.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>
@@ -54,7 +53,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Mesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Properties",		&nap::Mesh::mProperties,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Properties",		&nap::Mesh::mProperties,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMesh)
@@ -89,7 +88,38 @@ namespace nap
 	{
 		mGPUMesh = std::make_unique<GPUMesh>(mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
-			mGPUMesh->addVertexBuffer(mesh_attribute->mAttributeID, mesh_attribute->getFormat());
+		{
+			GPUBufferNumeric* buffer = nullptr;
+
+			if (mesh_attribute->get_type() == RTTI_OF(UIntVertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<uint>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(IntVertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<int>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(FloatVertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<float>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(Vec2VertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<glm::vec2>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(Vec3VertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<glm::vec3>(mesh_attribute->mAttributeID);
+
+			else if (mesh_attribute->get_type() == RTTI_OF(Vec4VertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<glm::vec4>(mesh_attribute->mAttributeID);
+
+			else
+			{
+				errorState.fail("Unsupported vertex buffer type");
+				return false;
+			}
+
+			// Initialize the added vertex attribute buffer
+			buffer->setCount(mesh_attribute->getCount());
+			if (!buffer->init(errorState))
+				return false;
+		}
 
 		return update(errorState);
 	}
@@ -127,6 +157,7 @@ namespace nap
 
 	void MeshInstance::reserveVertices(size_t numVertices)
 	{
+		NAP_ASSERT_MSG(!mProperties.mAttributes.empty(), "No attributes available to reserve");
 		for (auto& mesh_attribute : mProperties.mAttributes)
 			mesh_attribute->reserve(numVertices);
 	}
@@ -142,7 +173,7 @@ namespace nap
 	bool MeshInstance::update(utility::ErrorState& errorState)
 	{
 		// Assert when trying to update a mesh that is static and already initialized
-		NAP_ASSERT_MSG(!mInitialized || mProperties.mUsage == EMeshDataUsage::DynamicWrite, 
+		NAP_ASSERT_MSG(!mInitialized || mProperties.mUsage == EMemoryUsage::DynamicWrite, 
 			"trying to update previously allocated mesh without usage set to: 'DynamicWrite'");
 
 		// Check for mismatches in sizes
@@ -158,7 +189,7 @@ namespace nap
 		// Synchronize mesh attributes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			VertexBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
+			GPUBufferNumeric& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
 			if (!vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity(), errorState))
 				return false;
 		}
@@ -166,8 +197,14 @@ namespace nap
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			IndexBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
-			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices(), errorState))
+			GPUBufferNumeric& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
+			if (!index_buffer.isInitialized())
+			{
+				index_buffer.setCount(mProperties.mShapes[shapeIndex].getNumIndices());
+				if (!index_buffer.init(errorState))
+					return false;
+			}
+			if (!index_buffer.setData(mProperties.mShapes[shapeIndex].getIndices().data(), mProperties.mShapes[shapeIndex].getNumIndices(), mProperties.mShapes[shapeIndex].mIndices.capacity(), errorState))
 				return false;
 		}
 		return true;
@@ -176,13 +213,13 @@ namespace nap
 
 	bool MeshInstance::update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState)
 	{
-		VertexBuffer& gpu_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
+		GPUBufferNumeric& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
 		if (!errorState.check(attribute.getCount() == mProperties.mNumVertices,
 			"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", attribute.mAttributeID.c_str(), attribute.getCount(), mProperties.mNumVertices))
 		{
 			return false;
 		}
-		return gpu_buffer.setData(attribute.getRawData(), attribute.getCount(), attribute.getCapacity(), errorState);
+		return vertex_attr_buffer.setData(attribute.getRawData(), attribute.getCount(), attribute.getCapacity(), errorState);
 	}
 
 

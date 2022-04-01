@@ -165,12 +165,13 @@ namespace nap
 			Image			= 1, 	///< Points to an image file, must be used with EPropertyMetaData::FileLink
 			FragShader		= 2, 	///< Points to a .vert file, must be used with EPropertyMetaData::FileLink
 			VertShader		= 3, 	///< Points to a .frag file, must be used with EPropertyMetaData::FileLink
-			Python			= 4,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
-			Mesh			= 5,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
-			Video			= 6,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
-			ImageSequence	= 7,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
-            Audio           = 8,	///< Points to an audio file, must be used with EPropertyMetaData::FileLink
-			Font			= 9		///< Points to a true type font, must be used with EPropertyMetaData::FileLink
+			ComputeShader	= 4, 	///< Points to a .comp file, must be used with EPropertyMetaData::FileLink
+			Python			= 5,	///< Points to a .py file, must be used with EPropertyMetaData::FileLink
+			Mesh			= 6,	///< Points to a .mesh file, must be used with EPropertyMetaData::FileLink
+			Video			= 7,	///< Points to a video file, must be used with EPropertyMetaData::FileLink
+			ImageSequence	= 8,	///< Points to a an image sequence, must be used with EPropertyMetaData::FileLink
+            Audio           = 9,	///< Points to an audio file, must be used with EPropertyMetaData::FileLink
+			Font			= 10	///< Points to a true type font, must be used with EPropertyMetaData::FileLink
 		};
 
 		inline EPropertyMetaData operator&(EPropertyMetaData a, EPropertyMetaData b)

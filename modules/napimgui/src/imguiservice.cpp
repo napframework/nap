@@ -614,7 +614,7 @@ namespace nap
 			return (ImTextureID)(it->second);
 
 		// Allocate new description set
-		VkDescriptorSet descriptor_set = mAllocator->allocate(gDescriptorSetLayout, 0, 1);
+		VkDescriptorSet descriptor_set = mAllocator->allocate(gDescriptorSetLayout, 0, 0, 1);
 
 		// Update description set
 		VkDescriptorImageInfo desc_image[1] = {};

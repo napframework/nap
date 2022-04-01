@@ -20,7 +20,7 @@ namespace nap
 	 */
 	struct PolyLineProperties
 	{
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;			///< Property: 'Usage' If the line is created once or frequently updated.
+		EMemoryUsage	mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the line is created once or frequently updated.
 		glm::vec4		mColor = { 1.0f, 1.0f, 1.0f,1.0f };			///< Property: 'Color' RGBA color of the line
 	};
 
