@@ -104,9 +104,12 @@ if(WIN32 AND NOT ANDROID)
     endif()
 endif()
 
-# Ensure we have patchelf on Linux, preventing silent failures
 if(UNIX AND NOT APPLE)
+    # Ensure we have patchelf on Linux, preventing silent failures
     ensure_patchelf_installed()
+
+    # Check if we're building on raspbian
+    check_raspbian_os(RASPBIAN)
 endif()
 
 # store project directory
@@ -170,6 +173,7 @@ add_subdirectory(demos/tween)
 add_subdirectory(demos/artnetsend)
 add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/artnetreceive/module)
+add_subdirectory(demos/pipins)
 add_subdirectory(demos/webportal)
 
 if(APPLE)
@@ -216,6 +220,7 @@ add_subdirectory(modules/napudp)
 add_subdirectory(modules/naptween)
 add_subdirectory(modules/napcalendar)
 add_subdirectory(modules/napasio)
+add_subdirectory(modules/nappipins)
 add_subdirectory(modules/napportal)
 
 # Packaging

@@ -28,7 +28,7 @@ else()
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
-    # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
+    # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up
     # builds when working in packaging and non-packaging at the same time)
     if(DEFINED NAP_PACKAGED_BUILD)
         set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
@@ -58,7 +58,7 @@ macro(export_fbx_in_place SRCDIR)
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
-    # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 
+    # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't
     # fall into place
     if(DEFINED NAP_PACKAGED_BUILD)
         set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
@@ -154,7 +154,7 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
                         string(FIND ${TMP_PATH} "/android/" ANDROID_EXCLUDE_DIR_FOUND)
                         if(NOT ${LOCAL_ANDROID_SOURCES} EQUAL -1)
                             list(APPEND LOCAL_ANDROID_SOURCES ${TMP_PATH})
-                        endif()                        
+                        endif()
                     endif()
                 endif()
             endif()
@@ -328,7 +328,7 @@ macro(module_json_to_cmake)
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/module_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR} ${NAP_ROOT} 
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/module_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR} ${NAP_ROOT}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)
@@ -343,7 +343,7 @@ macro(add_macos_rttr_rpath)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
-                       )    
+                       )
 endmacro()
 
 # Copy Windows Python DLLs to output directory
@@ -424,20 +424,20 @@ macro(copy_module_json_to_bin)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
     elseif(UNIX)
         # Linux: Single build type outputting to LIBRARY_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
 
     else()
         # Win64: Multi build type outputting to RUNTIME_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
     endif()
 endmacro()
 

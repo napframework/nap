@@ -165,3 +165,17 @@ function(add_define_to_interface_target TARGET_NAME DEFINE)
     list(APPEND module_defines ${DEFINE})
     set_target_properties(${TARGET_NAME} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${module_defines}")
 endfunction()
+
+# Check if we're building for Raspbian
+if(${ARCH} MATCHES "armhf")
+    MESSAGE(VERBOSE "Looking for bcm_host.h")
+    INCLUDE(CheckIncludeFiles)
+
+    # Raspbian bullseye bcm_host.h location
+    CHECK_INCLUDE_FILES("/usr/include/bcm_host.h" RASPBERRY)
+
+    # otherwise, check previous location of bcm_host.h on older Raspbian OS's
+    if(NOT RASPBERRY)
+        CHECK_INCLUDE_FILES("/opt/vc/include/bcm_host.h" RASPBERRY)
+    endif()
+endif()
