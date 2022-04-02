@@ -699,15 +699,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Make sure we're not trying to package all Naivi apps and just a single one
-    if args.include_apps and not args.include_single_naivi_app is None:
+    if args.include_apps and not args.include_single_app is None:
         print("Error: Can't include a single Naivi app and include all Naivi apps..")
         sys.exit(ERROR_BAD_INPUT)
 
     # If we're packaging a single Naivi app make sure it exists
-    if args.include_single_naivi_app:
-        path = os.path.join(get_nap_root(), APPS_SOURCE_DIR, args.include_single_naivi_app)
+    if args.include_single_app:
+        path = os.path.join(get_nap_root(), APPS_SOURCE_DIR, args.include_single_app)
         if not os.path.exists(path):
-            print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
+            print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_app)
             sys.exit(ERROR_BAD_INPUT)
 
     # It doesn't make sense to zip a source archive that we're not creating
@@ -718,7 +718,7 @@ if __name__ == '__main__':
     if args.source_archive_only and (args.no_zip 
                                      or args.include_docs 
                                      or args.include_apps
-                                     or args.include_single_naivi_app
+                                     or args.include_single_app
                                      or args.clean
                                      or args.include_apps
                                      or args.include_debug_symbols
@@ -731,8 +731,8 @@ if __name__ == '__main__':
     package(not args.no_zip,
             args.include_debug_symbols, 
             args.include_docs, 
-            args.include_apps or not args.include_single_naivi_app is None, 
-            args.include_single_naivi_app,
+            args.include_apps or not args.include_single_app is None, 
+            args.include_single_app,
             args.clean, 
             not args.no_timestamp, 
             args.label,
