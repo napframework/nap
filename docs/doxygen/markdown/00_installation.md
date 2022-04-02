@@ -87,7 +87,12 @@ NAP $(NAP_VERSION_FULL) supports `Ubuntu Linux 20.04` on `x86-64` machines using
 
 ## Raspberry Pi {#linux_pi}
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration, using the `LLVMpipe` instead of the integrated `Mali GPU`. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4.
+Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4. 
+
+Install the vulkan driver:
+```
+sudo apt install mesa-vulkan-drivers
+```
 
 ## Setup Your Build Environment {#setup_build_env_linux}
 
