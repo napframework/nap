@@ -5,11 +5,8 @@
 # PORTAUDIO_LIBRARIES - The libraries needed to use PORTAUDIO
 # PORTAUDIO_DEFINITIONS - Compiler switches required for using PORTAUDIO
 
-if(NOT ANDROID)
-    include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
-    target_architecture(ARCH)
-endif()
-
+include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
+target_architecture(ARCH)
 set(PORTAUDIO_DIR ${THIRDPARTY_DIR}/portaudio)
 set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/lib)
 
@@ -18,9 +15,6 @@ if(WIN32)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_DIR}/bin/portaudio_x64.dll)
 elseif(APPLE)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.2.dylib)
-    set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
-elseif(ANDROID)
-    set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/Release/${ANDROID_ABI}/libportaudio.so)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
 else()
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.so)

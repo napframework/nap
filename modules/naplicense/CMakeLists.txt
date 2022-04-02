@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_naplicense)
 
 # add all cpp files to SOURCES

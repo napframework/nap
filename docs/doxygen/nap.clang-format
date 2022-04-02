@@ -944,7 +944,6 @@ EXCLUDE                = ../../napkin \
                          ../../qt \
                          ../../tools\napkin \
                          ../../msvc64 \
-                         ../../core\src\nap\android \
                          ../../dist \
                          ../../packaging \
                          ../../packaging_bin \

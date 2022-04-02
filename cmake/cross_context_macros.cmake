@@ -7,9 +7,7 @@ macro(find_path_mapping SYSTEM_MAPPINGS PROJECT_DIR CONTEXT)
     set(CHECK_PATH_LIST "")
 
     # Provide for greater specificity
-    if(ANDROID)
-        list(APPEND CHECK_PATH_LIST android)
-    elseif(APPLE)
+    if(APPLE)
         list(APPEND CHECK_PATH_LIST macos)
     elseif(UNIX)
         list(APPEND CHECK_PATH_LIST linux)

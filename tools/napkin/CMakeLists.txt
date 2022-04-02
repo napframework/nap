@@ -1,10 +1,4 @@
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(napkin)
-
 nap_qt_pre()
 
 file(GLOB_RECURSE SOURCES src/*.cpp)

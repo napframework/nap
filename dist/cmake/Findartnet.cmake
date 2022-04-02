@@ -16,15 +16,6 @@ elseif(APPLE)
     set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin)
     set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libArtnet.dylib)
     set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
-elseif(ANDROID)
-    find_path(
-        ARTNET_DIR
-        NAMES bin/${ANDROID_ABI}/libartnet.so
-        HINTS ${THIRDPARTY_DIR}/libartnet
-    )   
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/bin/${ANDROID_ABI})
-    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so)
-    set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 else()
     find_path(
         ARTNET_DIR

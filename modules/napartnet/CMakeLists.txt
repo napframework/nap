@@ -68,9 +68,7 @@ install(FILES ${THIRDPARTY_DIR}/libartnet/source/README DESTINATION thirdparty/l
 install(DIRECTORY ${ARTNET_INCLUDE_DIRS}/ DESTINATION thirdparty/libartnet/include)
 
 # install libraries
-if(ANDROID)
-    install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin/${ANDROID_ABI})
-elseif(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE)
     file(GLOB ARTNET_DYLIBS ${ARTNET_LINUX_DIR}/lib/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${ARTNET_DYLIBS} DESTINATION thirdparty/libartnet/bin)
 else()

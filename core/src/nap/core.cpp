@@ -410,9 +410,6 @@ namespace nap
 			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "x86_64", "python36.zip"});
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
-#elif ANDROID
-		// TODO ANDROID Need's to be implemented'
-		Logger::warn("Python environment not setup for Android");
 #else
 		if (packagedBuild)
 		{

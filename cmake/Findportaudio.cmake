@@ -9,17 +9,15 @@
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-if(NOT ANDROID)
-    find_path(PORTAUDIO_DIR 
-              NAMES 
-              msvc/x86_64/include/portaudio.h
-              macos/x86_64/include/portaudio.h
-              linux/${ARCH}/include/portaudio.h
-              HINTS 
-              ${THIRDPARTY_DIR}/portaudio
-              ${CMAKE_CURRENT_LIST_DIR}/../../portaudio
-              )
-endif()
+find_path(PORTAUDIO_DIR 
+          NAMES 
+          msvc/x86_64/include/portaudio.h
+          macos/x86_64/include/portaudio.h
+          linux/${ARCH}/include/portaudio.h
+          HINTS 
+          ${THIRDPARTY_DIR}/portaudio
+          ${CMAKE_CURRENT_LIST_DIR}/../../portaudio
+          )
 
 if(WIN32)
     set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/msvc/x86_64/include)
@@ -33,17 +31,6 @@ elseif(APPLE)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.2.dylib)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
     set(PORTAUDIO_DIST_FILES ${PORTAUDIO_DIR}/macos/x86_64/LICENSE.txt)
-elseif(ANDROID)
-    set(PORTAUDIO_DIR ${THIRDPARTY_DIR}/portaudio_opensles)
-    set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/android/lib/Release/${ANDROID_ABI})
-    set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.so)
-    set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
-    # Check for our header to do some basic verification (that we're missing by not doing find_path above for 
-    # Android)
-    find_path(PORTAUDIO_INCLUDE_DIR portaudio.h
-              HINTS
-              ${PORTAUDIO_DIR}/include
-              )
 else()
     set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/include)
     set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/lib)

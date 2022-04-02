@@ -1,4 +1,4 @@
-# Workaround for cached path when changing between NAP release versions on Win64/Ninja/Android
+# Workaround for cached path when changing between NAP release versions on Win64
 if(GLM_INCLUDE_DIRS AND NOT EXISTS(GLM_INCLUDE_DIRS))
     unset(GLM_INCLUDE_DIRS)
     unset(GLM_INCLUDE_DIRS CACHE)
