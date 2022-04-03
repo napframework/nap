@@ -83,7 +83,7 @@ arm64: Ubuntu Linux LTS (v20.04) *experimental*
 
 ## Binary Packages
 
-NAP's official releases are provided as binary packages at [www.napframework.com](https://nap.tech) and [github](https://github.com/napframework/nap/releases). For most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release, which is created from source. 
+Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. For most developers this is the best place to start. Our developer experience is tuned to work with the packaged version of NAP, where the process of managing projects and modules is more streamlined. Certain functionality, eg. packaging a project for distribution, is only available through a NAP package, which is [created from source](#build-your-own-nap-distribution-package).
 
 When working against a binary package, follow the official [installation](https://docs.nap.tech) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
 
