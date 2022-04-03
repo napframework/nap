@@ -13,6 +13,7 @@ Installation {#install}
 *	[Linux](@ref linux) 
 	*	[Desktop](@ref linux_desktop)
 	*	[Raspberry Pi](@ref linux_pi)
+		*	[Install the Vulkan Driver](@ref install_vulkan_driver)
 	*	[Setup Your Build Environment](@ref setup_build_env_linux)
 		*	[Manual Dependency Installation](@ref setup_manual_linux)
 	*	[Run Your First Demo](@ref run_demo_linux)
@@ -87,9 +88,11 @@ NAP $(NAP_VERSION_FULL) supports `Ubuntu Linux 20.04` on `x86-64` machines using
 
 ## Raspberry Pi {#linux_pi}
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4. 
+Only the `Raspberry Pi 4` running `Raspbian Bullseye (v11, armhf)` is 'fully' supported. Targets that make use of the Vulkan render module 'might' run on older Raspberry Pi models, but without hardware acceleration. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4. 
 
-Install the vulkan driver:
+### Install the Vulkan Driver {#install_vulkan_driver}
+
+Run the following command to install the Mesa Vulkan Drivers for the Raspberry Pi 4 Mali GPU.
 ```
 sudo apt install mesa-vulkan-drivers
 ```
