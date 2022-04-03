@@ -32,7 +32,7 @@ NAP $(NAP_VERSION_FULL) supports `Visual Studio 2019 (v142)` on Windows, `XCode 
 
 ## Setup Your Build Environment {#setup_build_env_win64}
 
-NAP $(NAP_VERSION_FULL) supports `Windows 10` with `Visual Studio 2019 (v142)` . Although NAP is known to work on other versions of Windows, v10 is the current supported platform. Other versions of Visual Studio are not supported at this moment.
+NAP $(NAP_VERSION_FULL) supports `Windows 10 (x86_64)` with `Visual Studio 2019 (v142)`. Although NAP is known to work on other versions of Windows, v10 is the current supported platform. Other versions of Visual Studio are not supported at this moment.
 
 Download and install <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Visual Studio 2019</a>. This link points to the community edition which can be used for free. Make sure to select `Desktop development with C++` when installing Visual Studio, including `MSVC v142 - VS 2019 C++ x64/x86` and the `Windows 10 SDK`. Other settings are optional. Download and install the <a href=https://www.microsoft.com/en-us/download/details.aspx?id=40784 target="_blank">Visual C++ 2013 Redistributable (x64)</a>.
 
@@ -51,7 +51,7 @@ Download and install <a href="https://visualstudio.microsoft.com/downloads/" tar
 
 ## Setup Your Build Environment {#setup_build_env_macos}
 
-NAP $(NAP_VERSION_FULL) supports `macOS Catalina` with `XCode 11.7`. Although NAP is known to work on other macOS releases with newer versions of XCode, Catalina is the current supported platform.
+NAP $(NAP_VERSION_FULL) supports `macOS Catalina (x86_64)` with `XCode 11.7`. Although NAP is known to work on other macOS releases with newer versions of XCode, Catalina is the current supported platform.
 
 1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
 2. Ctrl-click on `tools/unquarantine_framework.command` 
