@@ -14,15 +14,6 @@ elseif (APPLE)
     )
     set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/napcore.dylib)
     set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/napcore.dylib)
-elseif (ANDROID)
-    find_path(
-        NAPCORE_LIBS_DIR
-        NO_CMAKE_FIND_ROOT_PATH
-        NAMES Release/${ANDROID_ABI}/napcore.so
-        HINTS ${NAP_ROOT}/lib/
-    )
-    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/${ANDROID_ABI}/napcore.so)
-    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/${ANDROID_ABI}/napcore.so)
 elseif (UNIX)
     find_path(
         NAPCORE_LIBS_DIR
@@ -66,7 +57,7 @@ if (WIN32)
 endif()
 
 # Install into packaged project for macOS/Linux
-if(NOT WIN32 AND NOT ANDROID)
+if(NOT WIN32)
     install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
 
     # On Linux use lib directory for RPATH

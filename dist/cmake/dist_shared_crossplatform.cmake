@@ -34,10 +34,6 @@ macro(find_nap_module MODULE_NAME)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.dylib)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.dylib)
                 set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.json)
-            elseif (ANDROID)
-                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${ANDROID_ABI}/${MODULE_NAME}.so)
-                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${ANDROID_ABI}/${MODULE_NAME}.so)
-                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/modules/${MODULE_NAME}/module.json)
             elseif (UNIX)
                 set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.so)
                 set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.so)
@@ -52,9 +48,7 @@ macro(find_nap_module MODULE_NAME)
             set_target_properties(${MODULE_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${NAP_ROOT}/modules/${MODULE_NAME}/include)
 
             # Build source groups for our headers maintaining their folder structure
-            if(NOT ANDROID)
-                create_hierarchical_source_groups_for_files("${module_headers}" ${MODULE_INCLUDE_ROOT} "Modules\\${MODULE_NAME}")
-            endif()
+            create_hierarchical_source_groups_for_files("${module_headers}" ${MODULE_INCLUDE_ROOT} "Modules\\${MODULE_NAME}")
         endif(NOT TARGET ${NAP_MODULE})
 
         # On macOS & Linux install module into packaged project
@@ -83,22 +77,6 @@ macro(find_nap_module MODULE_NAME)
             if(MODULE_NAME_EXTRA_LIBS)
                 foreach(extra_lib ${MODULE_NAME_EXTRA_LIBS})
                     target_link_libraries(${MODULE_NAME} INTERFACE ${extra_lib})
-
-                    # On Android copy the library into the staging area that's used for the CMake built libraries
-                    # that are loaded into the APK. This is a bit of a hack. Also, the specified library name for
-                    # Android currently needs to be a target, plus only a single library is currently supported
-                    # per module.
-                    # TODO support more than one library by operating over a list
-                    if(ANDROID)
-                        message("Adding copy for ${extra_lib}")
-                        add_custom_command(
-                            TARGET ${LIB_NAME} 
-                            POST_BUILD
-                            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                            $<TARGET_FILE:${extra_lib}>
-                            $<TARGET_FILE_DIR:${LIB_NAME}>
-                            )                    
-                    endif()
                 endforeach()
             endif()
         endif()

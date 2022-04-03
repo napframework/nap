@@ -10,7 +10,7 @@ module_json_to_cmake()
 # LIBRARY
 
 # compile shared lib as target
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${ANDROID_SOURCES})
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")

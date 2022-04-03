@@ -11,10 +11,6 @@ import sys
 from sys import platform
 from enum import Enum
 
-class CrossCompileTarget(Enum):
-    ANDROID = 1
-    IOS = 2
-
 WORKING_DIR = '.'
 BUILD_DIR = 'packaging_build'
 LIB_DIR = 'packaging_lib'
@@ -27,12 +23,8 @@ BUILDINFO_FILE = 'dist/cmake/build_info.json'
 BUILD_TYPES = ('Release', 'Debug')
 APPLY_PERMISSIONS_BATCHFILE = 'apply_executable_permissions.cmd'
 
-DEFAULT_ANDROID_ABIS = ('arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64')
-ANDROID_PLATFORM = 'android-19'
-    
 ERROR_PACKAGE_EXISTS = 1
 ERROR_INVALID_VERSION = 2
-ERROR_MISSING_ANDROID_NDK = 3
 ERROR_COULD_NOT_REMOVE_DIRECTORY = 4
 ERROR_BAD_INPUT = 5
 ERROR_SOURCE_ARCHIVE_GIT_NOT_CLEAN = 6
@@ -68,21 +60,12 @@ def package(zip_release,
             archive_source, 
             archive_source_zipped,
             archive_source_only,
-            overwrite, 
-            android_build, 
-            android_ndk_root, 
-            android_abis,
-            android_enable_python):
+            overwrite):
+    
     """Package a NAP platform release - main entry point"""
-
     nap_root = get_nap_root()
     os.chdir(nap_root)
     build_label_out = build_label if not build_label is None else ''
-
-    # Define cross compilation target, if relevant 
-    cross_compile_target = None
-    if android_build:
-        cross_compile_target = CrossCompileTarget.ANDROID
 
     # Add timestamp and git revision for build info
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
@@ -96,7 +79,7 @@ def package(zip_release,
     # Construct package name if name not given
     package_basename, source_archive_basename = package_name, package_name
     if package_name is None:
-        (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label, cross_compile_target);
+        (package_basename, source_archive_basename) = build_package_basename(timestamp if include_timestamp_in_name else None, build_label);
 
     # Ensure we won't overwrite any existing package
     if not archive_source_only and not overwrite:
@@ -118,29 +101,12 @@ def package(zip_release,
             remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')
         os.makedirs(PACKAGING_DIR)
 
-        # Setup ABIs for Android
-        if android_abis is None:
-            android_abis = DEFAULT_ANDROID_ABIS
-        else:
-            android_abis = android_abis.split(',')
-
         # Clean build if requested
         if clean:
-            clean_the_build(cross_compile_target, android_abis)
+            clean_the_build()
 
         # Do the packaging
-        if android_build:
-            package_path = package_for_android(package_basename, 
-                                               timestamp, 
-                                               git_revision, 
-                                               build_label_out, 
-                                               overwrite, 
-                                               zip_release, 
-                                               android_abis, 
-                                               android_ndk_root, 
-                                               android_enable_python
-                                               )
-        elif platform.startswith('linux'):    
+        if platform.startswith('linux'):    
             package_path = package_for_linux(package_basename, 
                                              timestamp, 
                                              git_revision, 
@@ -195,22 +161,11 @@ def remove_directory_exit_on_failure(path, use):
         print("Error: Could not remove directory '%s' (%s): %s" % (path, use, e))
         sys.exit(ERROR_COULD_NOT_REMOVE_DIRECTORY)
 
-def clean_the_build(cross_compile_target, android_abis):
+def clean_the_build():
     """Clean the build"""
 
     print("Cleaning...")
-
-    if not cross_compile_target is None:
-        if cross_compile_target == CrossCompileTarget.ANDROID:
-            # Iterate ABIs
-            for abi in android_abis:
-                # Iterate build types
-                for build_type in BUILD_TYPES:
-                    build_dir_for_type = "%s_Android_%s_%s" % (BUILD_DIR, abi, build_type.lower())
-                    if os.path.exists(build_dir_for_type):
-                        print("Clean removing %s" % os.path.abspath(build_dir_for_type))
-                        remove_directory_exit_on_failure(build_dir_for_type, 'build dir for %s' % build_type.lower())
-    elif platform.startswith('linux'):    
+    if platform.startswith('linux'):    
         for build_type in BUILD_TYPES:
             build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
             if os.path.exists(build_dir_for_type):
@@ -368,85 +323,6 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_android(package_basename, timestamp, git_revision, build_label, overwrite, zip_release, android_abis, android_ndk_root, android_enable_python):
-    """Cross compile NAP and package platform release for Android"""      
-
-    # Let's check we have an NDK path
-    ndk_root = None
-    if not android_ndk_root is None:
-        ndk_root = android_ndk_root
-    elif 'ANDROID_NDK_ROOT' in os.environ:
-        ndk_root = os.environ['ANDROID_NDK_ROOT']
-    else:
-        print("Error: Couldn't find Android NDK. Set with --android-ndk-root or in environment variable ANDROID_NDK_ROOT")
-        sys.exit(ERROR_MISSING_ANDROID_NDK)
-
-    # Verify NDK looks crudely sane
-    toolchain_file = os.path.join(ndk_root, 'build', 'cmake', 'android.toolchain.cmake')
-    if not os.path.exists(toolchain_file):
-        print("Error: Android NDK path '%s' does not appear to be valid (couldn't find build/cmake/android.toolchain.cmake')" % ndk_root)
-        sys.exit(ERROR_MISSING_ANDROID_NDK)
-
-    # Iterate ABIs
-    for abi in android_abis:
-        # Iterate build types
-        for build_type in BUILD_TYPES:
-            build_dir_for_type = "%s_Android_%s_%s" % (BUILD_DIR, abi, build_type.lower())
-
-            # Build CMake command with varying platform options
-            # TODO test and support Linux?
-            cmake_command = [get_cmake_path(), 
-                             '-H.', 
-                             '-B%s' % build_dir_for_type, 
-                             '-DCMAKE_TOOLCHAIN_FILE=%s' % toolchain_file,
-                             '-DANDROID_NDK=%s' % ndk_root,
-                             '-DANDROID_ABI=%s' % abi,
-                             '-DANDROID_PLATFORM=%s' % ANDROID_PLATFORM,
-                             '-DNAP_PACKAGED_BUILD=1',
-                             '-DCMAKE_BUILD_TYPE=%s' % build_type,
-                             '-DINCLUDE_DOCS=0' 
-                             '-DPACKAGE_NAIVI_APPS=0'
-                             '-DBUILD_TIMESTAMP=%s' % timestamp,
-                             '-DBUILD_GIT_REVISION=%s' % git_revision,
-                             '-DBUILD_LABEL=%s' % build_label
-                             ]
-
-            # Set Ninja generator on Windows
-            if platform.startswith('win'):
-                cmake_command.append('-GNinja')
-
-            # Enable Python if requested
-            if android_enable_python:
-                cmake_command.append('-DANDROID_PYTHON=1')
-
-            # Generate project
-            call(WORKING_DIR, cmake_command)
-
-            # Build
-            build_command = [get_cmake_path(), '--build', build_dir_for_type, '--target', 'install']
-            # TODO ANDROID ensure all cores are being utilised on Win64/Ninja
-            if not platform.startswith('win'):
-                build_command.extend(['-j', str(cpu_count())])
-            call(WORKING_DIR, build_command)
-
-    # If requested, overwrite any existing package
-    if overwrite:
-        check_for_existing_package(package_basename, zip_release, True)        
-
-    # Create archive
-    if zip_release:
-        if platform.startswith('linux'):
-            # TODO I feel like any Android builds should go to zip, supporting easy extraction on any platform.
-            #      Linux is currently creating a bz2 tarball.
-            package_path = archive_framework_to_linux_tar_bz2(package_basename)
-        elif platform == 'darwin':
-            package_path = archive_framework_to_macos_zip(package_basename)
-        else:
-            package_path = archive_framework_to_win64_zip(package_basename)
-    else:
-        package_path = archive_to_timestamped_dir(package_basename)
-    return package_path
-
 def archive_framework_to_linux_tar_bz2(package_basename):
     """Create build archive to bzipped tarball on Linux"""
 
@@ -556,16 +432,11 @@ def archive_source_archive_directory(source_directory):
 
     print("Source archived to %s" % os.path.abspath(package_filename_with_ext))
 
-def build_package_basename(timestamp, label, cross_compile_target):
+def build_package_basename(timestamp, label):
     """Build the name of our package and populate our JSON build info file"""
 
     # Do the packaging
-    if not cross_compile_target is None:
-        if cross_compile_target == CrossCompileTarget.ANDROID:
-            platform_name = 'Android'
-        elif cross_compile_target == CrossCompileTarget.IOS:
-            platform_name = 'iOS'
-    elif platform.startswith('linux'):
+    if platform.startswith('linux'):
         platform_name = 'Linux'
     elif platform == 'darwin':
         platform_name = 'macOS'
@@ -815,41 +686,28 @@ if __name__ == '__main__':
     source_archive_group.add_argument("-aso", "--source-archive-only", action="store_true",
                         help="Only create a source archive")        
 
-    naivi_apps_group = parser.add_argument_group('Naivi Apps')
+    naivi_apps_group = parser.add_argument_group('Applications')
     naivi_apps_group.add_argument("-a", "--include-apps", action="store_true",
-                        help="Include Naivi apps, packaging them as projects")
-    naivi_apps_group.add_argument("-sna", "--include-single-naivi-app",
+                        help="Include apps, packaging them as projects")
+    naivi_apps_group.add_argument("-sna", "--include-single-app",
                         type=str,
-                        help="A single Naivi app to include, packaged as project. Conflicts with --include-apps.")
-
-    android_group = parser.add_argument_group('Android')
-    android_group.add_argument("--android", action="store_true",
-                        help="Build for Android")
-    android_group.add_argument("--android-ndk-root", 
-                        type=str,
-                        help="The path to NDK to use for the Android build")
-    android_group.add_argument("--android-abis", 
-                        type=str,
-                        help="Restrict our package to the provided comma-separated ABI/s for Android")
-    android_group.add_argument("--android-enable-python", action="store_true",
-                        help="Enable Python for Android")
+                        help="A single app to include, packaged as project. Conflicts with --include-apps.")
 
     unsupported_group = parser.add_argument_group('Unsupported')
     unsupported_group.add_argument("--include-docs", action="store_true",
                         help="Include documentation")
-
     args = parser.parse_args()
 
     # Make sure we're not trying to package all Naivi apps and just a single one
-    if args.include_apps and not args.include_single_naivi_app is None:
+    if args.include_apps and not args.include_single_app is None:
         print("Error: Can't include a single Naivi app and include all Naivi apps..")
         sys.exit(ERROR_BAD_INPUT)
 
     # If we're packaging a single Naivi app make sure it exists
-    if args.include_single_naivi_app:
-        path = os.path.join(get_nap_root(), APPS_SOURCE_DIR, args.include_single_naivi_app)
+    if args.include_single_app:
+        path = os.path.join(get_nap_root(), APPS_SOURCE_DIR, args.include_single_app)
         if not os.path.exists(path):
-            print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_naivi_app)
+            print("Error: Can't package single Naivi app '%s' as it doesn't exist" % args.include_single_app)
             sys.exit(ERROR_BAD_INPUT)
 
     # It doesn't make sense to zip a source archive that we're not creating
@@ -860,13 +718,9 @@ if __name__ == '__main__':
     if args.source_archive_only and (args.no_zip 
                                      or args.include_docs 
                                      or args.include_apps
-                                     or args.include_single_naivi_app
+                                     or args.include_single_app
                                      or args.clean
                                      or args.include_apps
-                                     or args.android
-                                     or args.android_ndk_root
-                                     or args.android_abis
-                                     or args.android_enable_python
                                      or args.include_debug_symbols
                                      or args.build_projects
                                      ):
@@ -877,8 +731,8 @@ if __name__ == '__main__':
     package(not args.no_zip,
             args.include_debug_symbols, 
             args.include_docs, 
-            args.include_apps or not args.include_single_naivi_app is None, 
-            args.include_single_naivi_app,
+            args.include_apps or not args.include_single_app is None, 
+            args.include_single_app,
             args.clean, 
             not args.no_timestamp, 
             args.label,
@@ -887,8 +741,4 @@ if __name__ == '__main__':
             args.archive_source or args.source_archive_only, 
             args.source_archive_zipped,
             args.source_archive_only,            
-            args.overwrite, 
-            args.android, 
-            args.android_ndk_root,
-            args.android_abis,
-            args.android_enable_python)
+            args.overwrite)
