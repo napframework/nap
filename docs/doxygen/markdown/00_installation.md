@@ -26,7 +26,7 @@ The prerequisites installation script is called `check_build_environment` and ca
 
 # Development Environments {#ides}
 
-NAP $(NAP_VERSION_FULL) supports `Visual Studio 2019 (v142)` on Windows, `XCode 11.7` on macOS and `make files` on Linux. Instead of using these environments you can use [Visual Studio Code](https://code.visualstudio.com/) or [CLion](https://www.jetbrains.com/clion). Although we don't officially support these environments others have confirmed that they work as expected. Both can be configured using CMake.
+NAP $(NAP_VERSION_FULL) supports `Visual Studio 2019 (v142)` on Windows, `XCode 11.7` on macOS and `make files` on Linux. Instead of using these environments you can use [Visual Studio Code](https://code.visualstudio.com/) or [CLion](https://www.jetbrains.com/clion) to author your code. Although we don't officially support these environments others have confirmed that they work as expected. Both `Visual Studio Code` and `CLion` can be configured using CMake, which is the system NAP uses to build and package applications.
 
 # Windows {#win64}
 
