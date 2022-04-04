@@ -269,7 +269,6 @@ namespace nap
 		 */
 		virtual bool setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState);
 
-		bool mClear = false;							///< Property 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
 		uint32 mCount = 0;								///< Property: 'Count' The number of  elements to initialize/allocate the buffer with.
 
 	private:
@@ -339,7 +338,8 @@ namespace nap
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
 
-		ResourcePtr<FillPolicy<T>> mFillPolicy = nullptr;				///< Property 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		bool mClear = false;											///< Property: 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
+		ResourcePtr<FillPolicy<T>> mFillPolicy = nullptr;				///< Property: 'FillPolicy' Optional fill policy to fill the buffer with on initialization
 
 	protected:
 		bool mInitialized = false;
