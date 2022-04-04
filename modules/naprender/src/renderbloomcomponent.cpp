@@ -116,10 +116,6 @@ namespace nap
 		if (!errorState.check(resource->mPassCount > 0, "Property 'PassCount' must be higher than zero"))
 			return false;
 
-		// Verify input texture properties
-		if (!errorState.check(resource->mInputTexture->mCopyable, "RenderBloomComponent requires property 'Copyable' of 'InputTexture' to be enabled"))
-			return false;
-
 		// Get reference to input texture
 		mInputTexture = resource->mInputTexture.get();
 		mOutputTexture = resource->mOutputTexture.get();
@@ -136,7 +132,6 @@ namespace nap
 				tex->mHeight = resource->mInputTexture->getHeight() / math::power<int>(2, pass_idx+1);
 				tex->mFormat = resource->mInputTexture->mFormat;
 				tex->mUsage = ETextureUsage::Static;
-				tex->mCopyable = true;
 				if (!tex->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize internal render texture", tex->mID.c_str());

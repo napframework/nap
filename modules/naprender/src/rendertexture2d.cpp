@@ -18,7 +18,6 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Copyable",	&nap::RenderTexture2D::mCopyable,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mFormat,		nap::rtti::EPropertyMetaData::Required)
@@ -30,8 +29,7 @@ namespace nap
 {
 	RenderTexture2D::RenderTexture2D(Core& core) :
 		Texture2D(core)
-	{
-	}
+	{ }
 
 	// Initializes 2D texture. 
 	bool RenderTexture2D::init(utility::ErrorState& errorState)
@@ -95,7 +93,6 @@ namespace nap
 
 		// Determine image usage
 		VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		usage |= mCopyable ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
 
 		// Create render texture
 		return Texture2D::init(settings, false, mClearColor.toVec4(), usage, errorState);
