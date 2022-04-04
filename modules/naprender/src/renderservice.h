@@ -56,22 +56,12 @@ namespace nap
 			CPU = 4			///< CPU as graphics card
 		};
 
-		/**
-		 * Vulkan queue capabilities.
-		 */
-		struct QueueCapabilities
-		{
-			bool mGraphics 	= true;		///< Graphics
-			bool mCompute 	= true;		///< Compute
-			bool mTransfer 	= true;		///< Transfer
-		};
-
 		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
+		bool						mCompute = true;												///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
 		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
 		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
 		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
-		QueueCapabilities			mRequiredQueueCapabilities = { };								///< Property: 'QueueCapabilities' Required Vulkan queue capabilities.
 		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
