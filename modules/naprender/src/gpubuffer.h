@@ -224,10 +224,21 @@ namespace nap
 	{
 		RTTI_ENABLE(GPUBuffer)
 	public:
+		/**
+		 * @param core core reference
+		 * @param format Vulkan memory format
+		 * @param elementSize of a single element in bytes
+		 */
 		GPUBufferNumeric(Core& core, VkFormat format, uint32 elementSize) :
 			GPUBuffer(core), mFormat(format), mElementSize(elementSize)
 		{ }
 
+		/**
+		 * @param core core reference
+		 * @param format Vulkan memory format
+		 * @param elementSize of a single element in bytes
+		 * @param usage CPU-GPU usage
+		 */
 		GPUBufferNumeric(Core& core, VkFormat format, uint32 elementSize, EMemoryUsage usage) :
 			GPUBuffer(core, usage), mFormat(format), mElementSize(elementSize)
 		{ }
@@ -288,8 +299,10 @@ namespace nap
 	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
 	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
 	 * priority over the latter.
+	 *
+	 * This buffer (when 'storage' is set to 'true' on construction) can be bound to a descriptor in a shader.
+	 * This allows the buffer be read and set inside a shader program.
 	 * 
-	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
@@ -299,7 +312,7 @@ namespace nap
 	public:
 		/**
 		 * Every numeric buffer needs to have access to the render engine.
-		 * @param renderService the render engine
+		 * @param core reference to core
 		 */
 		TypedGPUBufferNumeric(Core& core) :
 			GPUBufferNumeric(core, getVulkanFormat(RTTI_OF(T)), sizeof(T))
@@ -308,12 +321,13 @@ namespace nap
 		/**
 		 * Every numeric buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
-		 * The format defines the vertex element size in bytes.
-		 * @param renderService the render engine
+		 * Storage controls if the buffer can be bound to a shader using a descriptor, allowing it to be read / set inside a shader program.
+		 * @param core reference to core
 		 * @param usage how the buffer is used at runtime.
+		 * @param storage if the buffer can be bound to a shader using a descriptor
 		 */
-		TypedGPUBufferNumeric(Core& core, EMemoryUsage usage) :
-			GPUBufferNumeric(core, getVulkanFormat(RTTI_OF(T)), sizeof(T), usage)
+		TypedGPUBufferNumeric(Core& core, EMemoryUsage usage, bool storage) :
+			GPUBufferNumeric(core, getVulkanFormat(RTTI_OF(T)), sizeof(T), usage), mStorage(storage)
 		{ }
 
 		/**
@@ -321,6 +335,7 @@ namespace nap
 		 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
 		 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has priority
 		 * over the latter.
+		 * @param errorState contains the error if initialization fails
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -338,11 +353,12 @@ namespace nap
 		 */
 		virtual bool isInitialized() const override						{ return mInitialized; };
 
-		bool mClear = false;											///< Property: 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init()
-		ResourcePtr<FillPolicy<T>> mFillPolicy = nullptr;				///< Property: 'FillPolicy' Optional fill policy to fill the buffer with on initialization
+		bool mClear = false;											///< Property: 'Clear' If no fill policy is set, performs an initial clear-to-zero transfer operation on the device buffer on init().
+		ResourcePtr<FillPolicy<T>> mFillPolicy = nullptr;				///< Property: 'FillPolicy' Optional fill policy to fill the buffer with on initialization.
 
-	protected:
-		bool mInitialized = false;
+	private:
+		bool mStorage = true;											///< Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
+		bool mInitialized = false;										///< If the buffer is initialized
 	};
 
 
@@ -362,6 +378,9 @@ namespace nap
 	 * Internally, some flags are stored that help the driver identify and optimize buffers that have a specific purpose in a rendering operation.
 	 * They also play a role in synchronization of compute and graphics operations.
 	 *
+	 * This buffer (when 'storage' is set to 'true' on construction) can be bound to a descriptor in a shader.
+	 * This allows the buffer be read and set inside a shader program.
+	 * 
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
@@ -372,7 +391,7 @@ namespace nap
 	public:
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
-		 * @param renderService the render engine
+		 * @param core reference to core
 		 */
 		VertexBuffer(Core& core) :
 			TypedGPUBufferNumeric<T>(core)
@@ -381,23 +400,21 @@ namespace nap
 		/**
 		 * Every vertex buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
-		 * The format defines the vertex element size in bytes.
-		 * @param renderService the render engine
+		 * The given 'storage' controls if the buffer can be bound to a shader using a descriptor, allowing it be read / set inside a shader.
+		 * @param core reference to core
 		 * @param usage how the buffer is used at runtime.
-		 * @param if the buffer is allowed to be bound to a shader as a storage buffer using a descriptor
+		 * @param storage if the buffer is allowed to be bound to a shader as a storage buffer using a descriptor
 		 */
 		VertexBuffer(Core& core, EMemoryUsage usage, bool storage) :
-			TypedGPUBufferNumeric<T>(core, usage), mStorage(storage)
+			TypedGPUBufferNumeric<T>(core, usage, storage)
 		{ }
 
 		/**
 		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
 		 * If a fill policy is available, the buffer will also be uploaded to immediately.
+		 * @param errorState contains the error if initialization fails
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-	private:
-		bool mStorage = true;			///< Property: Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
 	};
 
 
@@ -416,6 +433,9 @@ namespace nap
 	 * In addition to nap::GPUBufferNumeric, this class distinguishes index buffers from general purpose numeric buffers.
 	 * Internally, some flags are stored that help the driver identify and optimize buffers that have a specific purpose in a rendering operation.
 	 *
+	 * This buffer (when 'storage' is set to 'true' on construction) can be bound to a descriptor in a shader.
+	 * This allows the buffer be read and set inside a shader program.
+	 * 
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
@@ -432,13 +452,13 @@ namespace nap
 		/**
 		 * Every index buffer needs to have access to the render engine.
 		 * The given 'usage' controls if a buffer can be updated more than once, and in which memory space it is placed.
-		 * The format defines the vertex element size in bytes.
-		 * @param renderService the render engine
+		 * The given 'storage' controls if the buffer can be bound to a shader using a descriptor, allowing it be read / set inside a shader.
+		 * @param core reference to core
 		 * @param usage how the buffer is used at runtime.
 		 * @param storage if the buffer is allowed to be bound to a shader as a storage buffer using a descriptor
 		 */
 		IndexBuffer(Core & core, EMemoryUsage usage, bool storage) :
-			TypedGPUBufferNumeric<uint>(core, usage), mStorage(storage)		{ }
+			TypedGPUBufferNumeric<uint>(core, usage, storage)		{ }
 
 		/**
 		 * Initialize this buffer. This will allocate all required staging and device buffers based on the buffer properties.
@@ -446,9 +466,6 @@ namespace nap
 		 * @param errorState contains the error if initialization fails.
 		 */
 		virtual bool init(utility::ErrorState & errorState) override;
-
-	private:
-		bool mStorage = true;			///< Allows the buffer to be bound to a shader as a storage buffer using a descriptor, allowing it be read and set from a shader program.
 	};
 
 
@@ -481,6 +498,11 @@ namespace nap
 	template<typename T>
 	bool TypedGPUBufferNumeric<T>::init(utility::ErrorState& errorState)
 	{
+		// Ensure storage bit is set if requested
+		VkBufferUsageFlags req_usage = mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
+		this->ensureUsage(req_usage);
+
+		// Initialize Base
 		if (!GPUBufferNumeric::init(errorState))
 			return false;
 
@@ -539,9 +561,7 @@ namespace nap
 	template<typename T>
 	bool VertexBuffer<T>::init(utility::ErrorState& errorState)
 	{
-		VkBufferUsageFlags req_usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		req_usage |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
-		TypedGPUBufferNumeric<T>::ensureUsage(req_usage);
+		this->ensureUsage(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 		return TypedGPUBufferNumeric<T>::init(errorState);
 	}
 }

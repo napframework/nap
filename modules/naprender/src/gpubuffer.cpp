@@ -179,11 +179,6 @@ namespace nap
 		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// GPU Buffer
-	//////////////////////////////////////////////////////////////////////////
-
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// GPUBuffer
@@ -578,9 +573,7 @@ namespace nap
 
 	bool IndexBuffer::init(utility::ErrorState& errorState)
 	{
-		VkBufferUsageFlags req_usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-		req_usage |= mStorage ? VK_BUFFER_USAGE_STORAGE_BUFFER_BIT : 0;
-		ensureUsage(req_usage);
+		this->ensureUsage(VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 		return TypedGPUBufferNumeric<uint>::init(errorState);
 	}
 }
