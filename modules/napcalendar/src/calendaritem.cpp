@@ -64,7 +64,7 @@ namespace nap
 		if (parts.size() == 2)
 		{
 			timestruct.mHour = std::stoi(parts[0]);
-			timestruct.mMinute = std::stoi(parts[0]);
+			timestruct.mMinute = std::stoi(parts[1]);
 		}
 		return timestruct;
 	}
