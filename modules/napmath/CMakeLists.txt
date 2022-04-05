@@ -14,14 +14,17 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
+# Include GLM
 target_include_directories(${PROJECT_NAME} PUBLIC src ${GLM_INCLUDE_DIRS})
 
+# For backwards compatibility, force identity matrix on construction
+target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT)
+
 # setup definitions
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES)
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY _USE_MATH_DEFINES MODULE_NAME=${PROJECT_NAME})
 if(WIN32)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 endif()
-target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
 # libraries to link to
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
