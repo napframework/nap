@@ -84,7 +84,7 @@ namespace nap
 			auto calendar_item = mCalendar->getInstance().findByTitle<WeeklyCalendarItem>(toString(day));
 			assert(calendar_item != nullptr);
 			calendar_item->setTime(CalendarItem::Time::fromString(times.at(idx + 0)));
-			calendar_item->setTime(CalendarItem::Time::fromString(times.at(idx + 1)));
+			calendar_item->setDuration(CalendarItem::Time::fromString(times.at(idx + 1)));
 			idx += 2;
 		}
 		return true;
