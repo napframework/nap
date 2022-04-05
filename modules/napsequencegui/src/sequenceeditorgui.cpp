@@ -1313,7 +1313,7 @@ namespace nap
 
 				double time = action->mTime;
 
-                std::vector time_array = convertTimeToMMSSMSArray(time);
+                std::vector<int> time_array = convertTimeToMMSSMSArray(time);
 
 				bool edit_time = false;
 
