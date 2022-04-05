@@ -349,30 +349,11 @@ namespace nap
 			}
 		}
 
-		// Set image usage flags: can be written and sampled
+		// Set image usage flags: can be written to, read and sampled
 		VkImageUsageFlags usage = requiredFlags;
-		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		switch (mUsage)
-		{
-		case ETextureUsage::DynamicRead:
-		{
-			// can be read
-			usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-			break;
-		}
-		case ETextureUsage::DynamicWrite:
-		case ETextureUsage::Static:
-		{
-			// can be read if mipmaps are enabled
-			usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
-			break;
-		}
-		default:
-		{
-			assert(false);
-			break;
-		}
-		}
+		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+			VK_IMAGE_USAGE_SAMPLED_BIT |
+			VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create GPU image
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,

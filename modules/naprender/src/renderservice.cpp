@@ -94,20 +94,14 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
 RTTI_END_ENUM
 
-RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueCapabilities)
-	RTTI_PROPERTY("Graphics",					&nap::RenderServiceConfiguration::QueueCapabilities::mGraphics,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Compute",					&nap::RenderServiceConfiguration::QueueCapabilities::mCompute,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Transfer",					&nap::RenderServiceConfiguration::QueueCapabilities::mTransfer,	nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RequiredQueueCapabilities",	&nap::RenderServiceConfiguration::mRequiredQueueCapabilities,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mCompute,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
@@ -152,12 +146,10 @@ namespace nap
 	/**
 	 * @return VK queue flags
 	 */
-	static VkQueueFlags getQueueFlags(RenderServiceConfiguration::QueueCapabilities capabilities)
+	static VkQueueFlags getQueueFlags(bool enableCompute)
 	{
-		VkQueueFlags flags = 0;
-		flags |= capabilities.mGraphics ? VK_QUEUE_GRAPHICS_BIT : 0;
-		flags |= capabilities.mCompute ? VK_QUEUE_COMPUTE_BIT : 0;
-		flags |= capabilities.mTransfer ? VK_QUEUE_TRANSFER_BIT : 0;
+		VkQueueFlags flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
+		flags |= enableCompute ? VK_QUEUE_COMPUTE_BIT : 0;
 		return flags;
 	}
 
@@ -1556,7 +1548,7 @@ namespace nap
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
 
 		// Get the required queue capabilities
-		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mRequiredQueueCapabilities);
+		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mCompute);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
 		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
