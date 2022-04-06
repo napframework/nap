@@ -208,9 +208,7 @@ namespace nap
 			allocInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
 			break;
 		case VMA_MEMORY_USAGE_GPU_TO_CPU:
-			allocInfo.requiredFlags = VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-			break;
-		default:
+        default:
 			allocInfo.requiredFlags = 0;
 		}
 
