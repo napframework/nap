@@ -874,22 +874,13 @@ namespace nap
 		mWorkGroupSizeConstantIds.resize(3, -1);
 
 		// Search for workgroup specialization constants
-		const uint32* max_compute_group_size = &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0];
 		for (uint i = 0; i < spec_constants.size(); i++)
 		{
 			if (spec_constants[i].id != spirv_cross::ID(0))
 			{
 				// Overwrite workgroup size with quaried maximum supported workgroup size
 				mWorkGroupSizeConstantIds[i] = spec_constants[i].constant_id;
-				uint32 mwg_size = max_compute_group_size[i];
-#ifdef __APPLE__
-				// Clamp work group size for Apple to 512, based on 'maxTotalThreadsPerThreadgroup',
-				// which doesn't necessarily match physical device limits, especially on older devices.
-				// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
-				// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
-				mwg_size = math::min<uint32>(mwg_size[i], 512);
-#endif // __APPLE__
-				mWorkGroupSize[i] = mwg_size;
+				mWorkGroupSize[i] = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[i];
 			}
 			else
 			{

@@ -1052,9 +1052,16 @@ namespace nap
 				entry.constantID = static_cast<uint>(const_ids[i]);
 				entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
 				entry.size = sizeof(uint);
-
 				spec_entries.emplace_back(std::move(entry));
-				spec_data.emplace_back(computeShader.getWorkGroupSize()[i]);
+				uint32 work_group_size = computeShader.getWorkGroupSize()[i];
+#ifdef __APPLE__
+				// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
+				// which doesn't necessarily match physical device limits, especially on older devices.
+				// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
+				// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
+				work_group_size = math::min<uint32>(work_group_size, 512);
+#endif // __APPLE__
+				spec_data.emplace_back(work_group_size);
 			}
 		}
 
