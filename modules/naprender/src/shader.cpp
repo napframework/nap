@@ -866,10 +866,6 @@ namespace nap
 		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		// Query useful compute info
-		std::array<uint, 3> max_workgroup_size;
-		std::memcpy(max_workgroup_size.data(), &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(max_workgroup_size));
-
 		// Cache workgroup size specialization constants
 		std::array<spirv_cross::SpecializationConstant, 3> spec_constants;
 		comp_shader_compiler.get_work_group_size_specialization_constants(spec_constants[0], spec_constants[1], spec_constants[2]);
@@ -884,7 +880,7 @@ namespace nap
 			{
 				// Overwrite workgroup size with quaried maximum supported workgroup size
 				mWorkGroupSizeConstantIds[i] = spec_constants[i].constant_id;
-				mWorkGroupSize[i] = max_workgroup_size[i];
+				mWorkGroupSize[i] = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[i];
 			}
 			else
 			{
