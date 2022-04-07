@@ -269,7 +269,6 @@ namespace nap
 		std::string toComparableFilename(const std::string& filename)
 		{
 			std::string comparable = filename;
-			std::transform(comparable.begin(), comparable.end(), comparable.begin(), ::tolower);
 			std::replace(comparable.begin(), comparable.end(), '\\', '/');
 			return comparable;
 		}
