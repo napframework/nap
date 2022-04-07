@@ -866,10 +866,6 @@ namespace nap
 		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		// Query useful compute info
-		std::array<uint, 3> max_workgroup_size;
-		std::memcpy(max_workgroup_size.data(), &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(max_workgroup_size));
-
 		// Cache workgroup size specialization constants
 		std::array<spirv_cross::SpecializationConstant, 3> spec_constants;
 		comp_shader_compiler.get_work_group_size_specialization_constants(spec_constants[0], spec_constants[1], spec_constants[2]);
@@ -878,13 +874,22 @@ namespace nap
 		mWorkGroupSizeConstantIds.resize(3, -1);
 
 		// Search for workgroup specialization constants
+		const uint32* max_compute_group_size = &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0];
 		for (uint i = 0; i < spec_constants.size(); i++)
 		{
 			if (spec_constants[i].id != spirv_cross::ID(0))
 			{
 				// Overwrite workgroup size with quaried maximum supported workgroup size
 				mWorkGroupSizeConstantIds[i] = spec_constants[i].constant_id;
-				mWorkGroupSize[i] = max_workgroup_size[i];
+				uint32 mwg_size = max_compute_group_size[i];
+#ifdef __APPLE__
+				// Clamp work group size for Apple to 512, based on 'maxTotalThreadsPerThreadgroup',
+				// which doesn't necessarily match physical device limits, especially on older devices.
+				// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
+				// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
+				mwg_size = math::min<uint32>(mwg_size[i], 512);
+#endif // __APPLE__
+				mWorkGroupSize[i] = mwg_size;
 			}
 			else
 			{
