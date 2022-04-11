@@ -753,7 +753,7 @@ SHOW_FILES             = NO
 # Folder Tree View (if specified).
 # The default value is: YES.
 
-SHOW_NAMESPACES        = NO
+SHOW_NAMESPACES        = YES
 
 # The FILE_VERSION_FILTER tag can be used to specify a program or script that
 # doxygen should invoke to get the current version for each file (typically from
@@ -919,6 +919,7 @@ EXCLUDE                = ../../napkin \
                          ../../modules\napscriptserver \
                          ../../modules\network \
                          ../../modules\sfml \
+                         ../../modules/napmath/src/easing.h \
                          ../../unittests \
                          ../../apps \
                          ../../test \
@@ -997,7 +998,9 @@ EXCLUDE_SYMBOLS        = pybind* \
                          _wdirent \
                          nap::detail \
                          BaseClassList \
-                         BaseClassList
+                         BaseClassList \
+                         osc \
+                         serial
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
