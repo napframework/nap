@@ -14,7 +14,7 @@ body{
 		background-color: #2D2D2D;
     margin: 0em;
     font-size: 1rem;
-    max-width: 800px;
+    max-width: 850px;
     margin: auto;
 }
 
@@ -747,7 +747,6 @@ div.directory {
 .directory td.entry {
   white-space: nowrap;
   padding-right: 0px;
-	padding-top: 0px;
 	position: relative;
 	left: -16px;
 }
@@ -1096,7 +1095,9 @@ dl.section dd {
 }
 .caption
 {
-	font-weight: bold;
+	font-weight: normal;
+	font-style: italic;
+	font-size: 0.75rem;
 }
 div.zoom
 {

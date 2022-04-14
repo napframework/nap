@@ -21,7 +21,7 @@ namespace nap
 
 	/**
 	 * Resource part of the target translate component.
-	 * Automatically rotates the entity along a certain axis at a certain speed.
+	 * Translates the boid target entity, randomly if desired, over time within a specified radius.
 	 * This component updates (overrides) the translation value of the transform component.
 	 * Entities that use this component must have a transform.
 	 */
@@ -31,23 +31,19 @@ namespace nap
 		DECLARE_COMPONENT(BoidTargetTranslateComponent, BoidTargetTranslateComponentInstance)
 	public:
 		/**
-		* Uses transform to rotate itself in the world.
-		*/
-		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.push_back(RTTI_OF(TransformComponent));
-		}
-
+		 * Uses transform to rotate itself in the world.
+		 */
+		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	public:
 		float mRadius = 1.0f;					///< Property: 'Radius' Radius
 		float mSpeed = 1.0f;					///< Property: 'Speed' Rotation speed
+		bool mRandomOffset = true;				///< Property: 'RandomOffset' Start time at random offset
 	};
 
 
 	/**
 	 * Instance part of the target translate component. 
-	 * Automatically translates the entity randomly within a specified radius.
-	 * The initial rotation value after initialization is used to rotate along the specified axis.
+	 * Translates the boid target entity, randomly if desired, over time within a specified radius.
 	 * This component updates (overrides) the rotate value of the transform component.
 	 * Entities that use this component must have a transform.
 	 */
@@ -55,7 +51,8 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		BoidTargetTranslateComponentInstance(EntityInstance& entity, Component& resource) : ComponentInstance(entity, resource)		{ }
+		BoidTargetTranslateComponentInstance(EntityInstance& entity, Component& resource) :
+			ComponentInstance(entity, resource)		{ }
 
 		/**
 		 * Initialize this target translate component, copies it's members over and validates
@@ -75,8 +72,8 @@ namespace nap
 		*/
 		void reset();
 
-		float mRadius;
-		float mSpeed;
+		float mRadius = 0.0f;
+		float mSpeed = 0.0f;
 
 	private:
 		// Store pointer to transform, set during init
@@ -86,6 +83,9 @@ namespace nap
 		const glm::vec3 mForward = { 0.0f, 0.0f, 1.0f };
 
 		// Local elapsed time
-		double mElapsedTime = 0.0;
+		float mElapsedTime = 0.0f;
+
+		// Offset
+		float mOffset = 0.0f;
 	};
 }

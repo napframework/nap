@@ -1,6 +1,6 @@
 <br>
 <p align="center">
-  <img width=384 src="https://www.napframework.com/png/nap_logo_blue_medium.png">
+  <img width=384 src="https://docs.nap.tech/content/nap_logo_blue.svg">
 </p>
 
 *	[Description](#description)
@@ -23,7 +23,7 @@
 	
 # Description
 
-[NAP framework](https://www.napframework.com) is an open source, low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
+[NAP](https://nap.tech) is an open source, low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
 
 Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many displays, many lights, many speakers, many sensors, many servos.
 
@@ -31,11 +31,11 @@ Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D gra
 
 NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, a Vulkan Compute module, a multi-channel audio engine for music playback, recording and analysis, a sequencer to control parameters in real-time, an editor to author application content, a web-portal to control and monitor NAP applications in a browser, a system for creating and loading presets, a video player powered by FFmpeg and a Python programming interface.
 
-NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [napframework](https://www.napframework.com) website.
+NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [nap.tech](https://nap.tech) website.
 
 <br>
 <p align="center">
-  <img width=256 img src="https://www.napframework.com/svg/vulkan-logo.svg" >
+  <img width=256 img src="https://docs.nap.tech/content/vulkan-logo.svg" >
 </p>
 
 ## Philosophy
@@ -46,22 +46,22 @@ NAP applications are lean and mean: only package and ship what you actually use.
 
 ## Documentation
 
-NAP documentation can be found online at [www.napframework.com/doxygen](https://www.napframework.com/doxygen/). Take note that the installation and project creation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
+NAP documentation can be found online at [docs.nap.tech](https://docs.nap.tech/pages.html). Take note that the installation and project creation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
 
 ## Gallery
 
-Visit [www.napframework.com](https://www.napframework.com/showcase) for more examples
+Visit [nap-labs.tech](https://nap-labs.tech) for more examples
 
-![Between Mind and Matter, Nick Verstand](https://www.napframework.com/jpg/bmm_1280.jpg)
+![Between Mind and Matter, Nick Verstand](https://docs.nap.tech/additional_content/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
-![Habitat, Heleen Blanken](https://www.napframework.com/jpg/habitat_1280.jpg)
+![Habitat, Heleen Blanken](https://docs.nap.tech/additional_content/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
-![Shylight, Studio Drift](https://www.napframework.com/jpg/shylight_basel_1280.jpg)
+![Shylight, Studio Drift](https://docs.nap.tech/additional_content/shylight_basel_1280.jpg)
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
-![4DSound System](https://www.napframework.com/jpg/4D_1280.jpg)
+![4DSound System](https://docs.nap.tech/additional_content/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://www.napframework.com/jpg/napkin_1280.jpg)
-[NAP Framework](https://napframework.com/) editor & demo
+![NAP Framework](https://docs.nap.tech/additional_content/napkin_1280.jpg)
+[NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
 
@@ -83,9 +83,9 @@ arm64: Ubuntu Linux LTS (v20.04) *experimental*
 
 ## Binary Packages
 
-NAP's official releases are provided as binary packages at [www.napframework.com](https://napframework.com) and [github](https://github.com/napframework/nap/releases). For most developers this is the best place to start. Our developer experience is tuned to work with the releases there, where the process of managing projects and modules is streamlined. Certain functionality, eg. packaging a project for distribution, is also only available through a packaged framework release, which is created from source. 
+Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. For most developers this is the best place to start. Our developer experience is tuned to work with the packaged version of NAP, where the process of managing projects and modules is more streamlined. Certain functionality, eg. packaging a project for distribution, is only available through a NAP package, which is [created from source](#build-your-own-nap-distribution-package).
 
-When working against a binary package, follow the official [installation](https://www.napframework.com/doxygen/) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
+When working against a binary package, follow the official [installation](https://docs.nap.tech) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
 
 ## Raspberry Pi
 
@@ -94,13 +94,16 @@ Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supp
 # Compilation
 
 Windows 10<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
 
 Ubuntu 20.04<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
 
 macOS 10.15<br/>
-[![Build Status](http://engine9.nl:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](httphttp://engine9.nl:8092/viewType.html?buildTypeId=myID&guest=1)
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
+
+Raspbian 11<br/>
+[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapRaspberryPi)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
 
@@ -108,14 +111,14 @@ To generate a solution and compile the source code you need to have installed:
 
 - Qt 5
 	- x86_64
-		- The precompiled package uses Qt 5.12.11 (LTS), although other versions are known to work.
+		- The precompiled package uses Qt 5.12 (LTS), although other versions are known to work.
 		- Go to [qt.io](https://www.qt.io/download) and select **Downloads for open source users**
 		- Download the Qt online installer
 		- During installation select **Custom installation** 
-		- Filter on the **LTS** category to download and install Qt 5.12.11 for your target platform
+		- Filter on the **LTS** category to download and install Qt 5.12 for your target platform
 	- ARM
-		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.12.11 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://napframework.com/downloads/qt/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.12.11 for Ubuntu 20.04 *arm64*
+		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
+		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
 NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
 
@@ -173,9 +176,9 @@ After packaging a new zip or folder is created, with the naming convention `NAP-
 
 ## Package
 
-To package NAP run: `package.bat` (Windows) or `package.sh` (macOS / Linux). You can prefix the environment variable for the location of your Qt Framework library if necessary, e.g.
+To package NAP run: `package.bat` (Windows) or `package.sh` (macOS / Linux). 
 ```
-QT_DIR=/home/myusername/Qt/5.11.3/gcc_64 ./package.sh
+./package.sh
 ```
 
 This will compile a package including all demos but without your own projects (defined in source). Alternatively, you can use the `-sna` flag to build a package including your own project (plus demos), e.g.:

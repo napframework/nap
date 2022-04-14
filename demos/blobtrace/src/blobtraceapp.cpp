@@ -136,9 +136,9 @@ namespace nap
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(theme.mHighlightColor4, "Move mouse over canvas to position blob");
-		ImGui::TextColored(theme.mHighlightColor2, "Left mouse button to rotate camera");
-		ImGui::TextColored(theme.mHighlightColor3, "Right mouse button to zoom");
+		ImGui::TextColored(theme.mHighlightColor2, "Move mouse over canvas to position blob");
+		ImGui::TextColored(theme.mHighlightColor4, "Left mouse button to rotate camera");
+		ImGui::TextColored(theme.mHighlightColor1, "Right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}

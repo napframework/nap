@@ -26,7 +26,21 @@ namespace nap
 	}
 
 	/**
-	 * Constant shader. Renders an object using a color and alpha value.
+	 * Texture shader. Renders an object using a texture. Set color and alpha to 1.0 to render the texture in its original color.
+	 *
+	 * The texture shader exposes the following shader variables:
+	 *
+	 * ~~~~~{.vert}
+	 *		uniform UBO
+	 *		{
+	 *			uniform vec3 color;
+	 *			uniform float alpha;
+	 *		} ubo;
+	 * ~~~~
+	 *
+	 * ~~~~{.frag}
+	 *		uniform sampler2D colorTexture;
+	 * ~~~~
 	 */
 	class NAPAPI TextureShader : public Shader
 	{

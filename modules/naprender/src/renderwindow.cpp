@@ -816,7 +816,8 @@ namespace nap
 		VkResult result = vkQueueSubmit(mRenderService->getQueue(), 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
-		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps.mRendering = true;
+		// Set the rendering bit of queue submit ops of the current frame
+		mRenderService->mFramesInFlight[current_frame].mQueueSubmitOps |= RenderService::EQueueSubmitOp::Rendering;
 
 		// Create present information
 		VkPresentInfoKHR present_info = {};

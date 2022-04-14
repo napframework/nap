@@ -70,7 +70,7 @@ namespace nap
 
 			BufferData buffer;
 			utility::ErrorState error_state;
-			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, getBufferUsage(ubo_declaration.mDescriptorType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
+			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, getVulkanBufferUsage(ubo_declaration.mDescriptorType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
 			assert(success);
 
 			descriptor_set.mBuffers.push_back(buffer);

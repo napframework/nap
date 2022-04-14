@@ -11,6 +11,7 @@
 
 RTTI_BEGIN_CLASS(nap::UniformContainer)
 	RTTI_FUNCTION("findUniform", (nap::UniformStructInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findUniform)
+	RTTI_FUNCTION("findBinding", (nap::BufferBindingInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findBinding)
 	RTTI_FUNCTION("findSampler", (nap::SamplerInstance* (nap::UniformContainer::*)(const std::string&)) &nap::UniformContainer::findSampler)
 RTTI_END_CLASS
 
@@ -26,11 +27,20 @@ namespace nap
 	}
 
 
-	StorageUniformStructInstance* UniformContainer::findStorageUniform(const std::string& name)
+	BufferBindingInstance* UniformContainer::findBinding(const std::string& name)
 	{
-		for (auto& instance : mStorageUniformRootStructs)
-			if (instance->getDeclaration().mName == name)
+		for (auto& instance : mBindingInstances)
+			if (instance->getBindingName() == name)
 				return instance.get();
+		return nullptr;
+	}
+
+
+	SamplerInstance* UniformContainer::findSampler(const std::string& name) const
+	{
+		for (auto& sampler : mSamplerInstances)
+			if (sampler->getDeclaration().mName == name)
+				return sampler.get();
 		return nullptr;
 	}
 
@@ -43,11 +53,23 @@ namespace nap
 	}
 
 
-	nap::StorageUniformStructInstance& UniformContainer::getStorageUniform(const std::string& name)
+	BufferBindingInstance& UniformContainer::getBinding(const std::string& name)
 	{
-		StorageUniformStructInstance* instance = findStorageUniform(name);
+		BufferBindingInstance* instance = findBinding(name);
 		assert(instance != nullptr);
 		return *instance;
+	}
+
+
+	BufferBindingInstance& UniformContainer::addBindingInstance(std::unique_ptr<BufferBindingInstance> instance)
+	{
+		return *mBindingInstances.emplace_back(std::move(instance));
+	}
+
+
+	SamplerInstance& UniformContainer::addSamplerInstance(std::unique_ptr<SamplerInstance> instance)
+	{
+		return *mSamplerInstances.emplace_back(std::move(instance));
 	}
 
 
@@ -57,29 +79,5 @@ namespace nap
 		UniformStructInstance* result = instance.get();
 		mUniformRootStructs.emplace_back(std::move(instance));
 		return *result;
-	}
-
-
-	StorageUniformStructInstance& UniformContainer::createStorageUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const StorageUniformCreatedCallback& storageUniformCreatedCallback)
-	{
-		std::unique_ptr<StorageUniformStructInstance> instance = std::make_unique<StorageUniformStructInstance>(declaration, storageUniformCreatedCallback);
-		StorageUniformStructInstance* result = instance.get();
-		mStorageUniformRootStructs.emplace_back(std::move(instance));
-		return *result;
-	}
-
-
-	void UniformContainer::addSamplerInstance(std::unique_ptr<SamplerInstance> instance)
-	{
-		mSamplerInstances.emplace_back(std::move(instance));
-	}
-
-
-	SamplerInstance* UniformContainer::findSampler(const std::string& name) const
-	{
-		for (auto& sampler : mSamplerInstances)
-			if (sampler->getDeclaration().mName == name)
-				return sampler.get();
-		return nullptr;
 	}
 }

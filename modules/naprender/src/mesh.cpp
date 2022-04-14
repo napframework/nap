@@ -6,7 +6,7 @@
 #include "mesh.h"
 #include "meshutils.h"
 #include "renderservice.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>
@@ -89,7 +89,7 @@ namespace nap
 		mGPUMesh = std::make_unique<GPUMesh>(mRenderService, mProperties.mUsage);
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			ValueGPUBuffer* buffer = nullptr;
+			GPUBufferNumeric* buffer = nullptr;
 
 			if (mesh_attribute->get_type() == RTTI_OF(UIntVertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<uint>(mesh_attribute->mAttributeID);
@@ -116,7 +116,7 @@ namespace nap
 			}
 
 			// Initialize the added vertex attribute buffer
-			buffer->mCount = mesh_attribute->getCount();
+			buffer->setCount(mesh_attribute->getCount());
 			if (!buffer->init(errorState))
 				return false;
 		}
@@ -189,7 +189,7 @@ namespace nap
 		// Synchronize mesh attributes
 		for (auto& mesh_attribute : mProperties.mAttributes)
 		{
-			ValueGPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
+			GPUBufferNumeric& vertex_attr_buffer = mGPUMesh->getVertexBuffer(mesh_attribute->mAttributeID);
 			if (!vertex_attr_buffer.setData(mesh_attribute->getRawData(), mesh_attribute->getCount(), mesh_attribute->getCapacity(), errorState))
 				return false;
 		}
@@ -197,10 +197,10 @@ namespace nap
 		// Synchronize mesh indices
 		for (int shapeIndex = 0; shapeIndex != mProperties.mShapes.size(); ++shapeIndex)
 		{
-			ValueGPUBuffer& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
+			GPUBufferNumeric& index_buffer = mGPUMesh->getOrCreateIndexBuffer(shapeIndex);
 			if (!index_buffer.isInitialized())
 			{
-				index_buffer.mCount = mProperties.mShapes[shapeIndex].getNumIndices();
+				index_buffer.setCount(mProperties.mShapes[shapeIndex].getNumIndices());
 				if (!index_buffer.init(errorState))
 					return false;
 			}
@@ -213,7 +213,7 @@ namespace nap
 
 	bool MeshInstance::update(nap::BaseVertexAttribute& attribute, utility::ErrorState& errorState)
 	{
-		ValueGPUBuffer& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
+		GPUBufferNumeric& vertex_attr_buffer = mGPUMesh->getVertexBuffer(attribute.mAttributeID);
 		if (!errorState.check(attribute.getCount() == mProperties.mNumVertices,
 			"Vertex attribute %s has a different amount of elements (%d) than the mesh (%d)", attribute.mAttributeID.c_str(), attribute.getCount(), mProperties.mNumVertices))
 		{

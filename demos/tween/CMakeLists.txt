@@ -1,10 +1,4 @@
 cmake_minimum_required(VERSION 3.15.4)
-
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(tween)
 
 #add all cpp files to SOURCES

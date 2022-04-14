@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "uniform.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -244,7 +244,7 @@ namespace nap
 		 * Updates the uniform value, data is not pushed immediately. 
 		 * @param value new uniform value
 		 */
-		void setValue(T value)								{ mValue = value; }
+		void setValue(const T& value)					    { mValue = value; }
 
 		/**
 		 * Returns the uniform value

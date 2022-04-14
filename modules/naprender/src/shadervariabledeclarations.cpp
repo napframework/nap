@@ -6,6 +6,9 @@
 #include "shadervariabledeclarations.h"
 #include "uniform.h"
 
+// External includes
+#include <assert.h>
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderVariableDeclaration)
 RTTI_END_CLASS
 
@@ -134,5 +137,11 @@ namespace nap
 		ShaderVariableStructDeclaration::operator=(std::move(inRHS));
 
 		return *this;
+	}
+
+
+	const ShaderVariableDeclaration& BufferObjectDeclaration::getBufferDeclaration() const
+	{
+		assert(!mMembers.empty()); return *mMembers[0];
 	}
 }

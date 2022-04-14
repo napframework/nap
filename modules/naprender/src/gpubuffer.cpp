@@ -5,16 +5,16 @@
 // Local Includes
 #include "gpubuffer.h"
 #include "renderservice.h"
-#include "rtti/typeinfo.h"
+#include "mathutils.h"
 
 // External Includes
-#include "vulkan/vulkan.h"
-#include "renderservice.h"
-#include "nap/logger.h"
-
 #include <nap/core.h>
-#include <assert.h>
-#include <string.h>
+#include <nap/logger.h>
+
+
+//////////////////////////////////////////////////////////////////////////
+// Enums
+//////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_ENUM(nap::EMemoryUsage)
 	RTTI_ENUM_VALUE(nap::EMemoryUsage::Static,			"Static"),
@@ -22,13 +22,106 @@ RTTI_BEGIN_ENUM(nap::EMemoryUsage)
 	RTTI_ENUM_VALUE(nap::EMemoryUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
 
-RTTI_BEGIN_ENUM(nap::EDescriptorType)
-	RTTI_ENUM_VALUE(nap::EDescriptorType::None,			"None"),
-	RTTI_ENUM_VALUE(nap::EDescriptorType::Uniform,		"Uniform"),
-	RTTI_ENUM_VALUE(nap::EDescriptorType::Storage,		"Storage")
-RTTI_END_ENUM
+
+//////////////////////////////////////////////////////////////////////////
+// GPUBuffer
+//////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
+	RTTI_PROPERTY("Usage", &nap::GPUBuffer::mMemoryUsage, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+
+//////////////////////////////////////////////////////////////////////////
+// GPUBufferNumeric interface
+//////////////////////////////////////////////////////////////////////////
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferNumeric)
+	RTTI_PROPERTY("Count", &nap::GPUBufferNumeric::mCount, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+
+//////////////////////////////////////////////////////////////////////////
+// GPUBufferNumeric
+//////////////////////////////////////////////////////////////////////////
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferUInt::mClear,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferInt::mClear,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferFloat::mClear,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec2::mClear,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec3::mClear,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec4::mClear,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferMat4::mClear,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FillPolicy",	&nap::GPUBufferMat4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+
+//////////////////////////////////////////////////////////////////////////
+// VertexBuffer
+//////////////////////////////////////////////////////////////////////////
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferUInt)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferInt)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferFloat)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec2)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec3)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec4)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
+
+//////////////////////////////////////////////////////////////////////////
+// IndexBuffer
+//////////////////////////////////////////////////////////////////////////
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IndexBuffer)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 
@@ -97,7 +190,7 @@ namespace nap
 
 
 	GPUBuffer::GPUBuffer(Core& core, EMemoryUsage usage) :
-		mRenderService(core.getService<RenderService>()), mUsage(usage)
+		mRenderService(core.getService<RenderService>()), mMemoryUsage(usage)
 	{}
 
 
@@ -107,85 +200,80 @@ namespace nap
 			return false;
 
 		// Scale render buffers based on number of frames in flight when not static.
-		mRenderBuffers.resize(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead ? 1 : mRenderService->getMaxFramesInFlight() + 1);
+		mRenderBuffers.resize(mMemoryUsage == EMemoryUsage::Static || mMemoryUsage == EMemoryUsage::DynamicRead ?
+			1 : mRenderService->getMaxFramesInFlight() + 1);
 
 		// Create appropriate number of staging buffers
-		mStagingBuffers.resize(getInitialNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
+		mStagingBuffers.resize(getInitialNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mMemoryUsage));
 
 		// Ensure there are enough read callbacks based on max number of frames in flight
-		if (mUsage == EMemoryUsage::DynamicRead)
+		if (mMemoryUsage == EMemoryUsage::DynamicRead)
 		{
 			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
+		// Setup usage flags
+		mUsageFlags |= mMemoryUsage == EMemoryUsage::DynamicRead ?
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
 		return true;
 	}
 
 
-	bool GPUBuffer::allocateInternal(size_t size, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool GPUBuffer::allocateInternal(size_t size, utility::ErrorState& errorState)
 	{
 		// Persistent storage
-		if (mUsage == EMemoryUsage::DynamicWrite)
+		if (mMemoryUsage == EMemoryUsage::DynamicWrite)
 		{
 			mSize = size;
 			return true;
 		}
-		else
+
+		// Calculate buffer byte size and fetch allocator
+		VmaAllocator allocator = mRenderService->getVulkanAllocator();
+
+		// Make sure we haven't already uploaded or are attempting to upload data
+		bool staging_buffers_free = true;
+		for (auto& staging_buffer : mStagingBuffers)
+			staging_buffers_free &= staging_buffer.mBuffer != VK_NULL_HANDLE;
+
+		if (mRenderBuffers[0].mBuffer != VK_NULL_HANDLE || staging_buffers_free)
 		{
-			// Calculate buffer byte size and fetch allocator
-			VmaAllocator allocator = mRenderService->getVulkanAllocator();
+			errorState.fail("Attempting to upload data to previously allocated buffer");
+			errorState.fail("Not allowed when usage is static");
+			return false;
+		}
 
-			// Make sure we haven't already uploaded or are attempting to upload data
-			bool staging_buffers_free = true;
-			for (auto& staging_buffer : mStagingBuffers)
-				staging_buffers_free &= staging_buffer.mBuffer != VK_NULL_HANDLE;
+		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
+		VkBufferUsageFlags staging_buffer_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT : VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-			if (mRenderBuffers[0].mBuffer != VK_NULL_HANDLE || staging_buffers_free)
+		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
+		VmaMemoryUsage staging_memory_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
+			VMA_MEMORY_USAGE_GPU_TO_CPU : VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+		// Create required staging buffers
+		for (auto& staging_buffer : mStagingBuffers)
+		{
+			// Create staging buffer
+			if (!createBuffer(allocator, size, staging_buffer_usage, staging_memory_usage, 0, staging_buffer, errorState))
 			{
-				errorState.fail("Attempting to upload data to previously allocated buffer");
-				errorState.fail("Not allowed when usage is static");
+				errorState.fail("Unable to create staging buffer");
 				return false;
 			}
+		}
 
-			// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-			VkBufferUsageFlags buffer_usage = mUsage == EMemoryUsage::DynamicRead ?
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT :
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		// Update buffer size
+		if (!mStagingBuffers.empty())
+			mSize = size;
 
-			// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-			VmaMemoryUsage memory_usage = mUsage == EMemoryUsage::DynamicRead ?
-				VMA_MEMORY_USAGE_GPU_TO_CPU :
-				VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-			for (auto& staging_buffer : mStagingBuffers)
-			{
-				// Create staging buffer
-				if (!createBuffer(allocator, size, buffer_usage, memory_usage, 0, staging_buffer, errorState))
-				{
-					errorState.fail("Unable to create staging buffer");
-					return false;
-				}
-			}
-
-			// Update buffer size
-			if (!mStagingBuffers.empty())
-				mSize = size;
-
-			// Device buffer memory usage
-			VkBufferUsageFlags transfer_usage = mUsage == EMemoryUsage::DynamicRead ?
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
-				VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
-			// Make sure the transfer bits are not set in advance as these are determined from the mesh data usage property
-			deviceUsage &= ~(VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-
-			// Now create the GPU buffer to transfer data to, create buffer information
-			if (!createBuffer(allocator, size, deviceUsage | transfer_usage, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
-			{
-				errorState.fail("Unable to create render buffer");
-				return false;
-			}
+		// Now create the GPU buffer to transfer data to, create buffer information
+		if (!createBuffer(allocator, size, mUsageFlags, VMA_MEMORY_USAGE_GPU_ONLY, 0, mRenderBuffers[0], errorState))
+		{
+			errorState.fail("Unable to create render buffer");
+			return false;
 		}
 		return true;
 	}
@@ -203,20 +291,20 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternal(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternal(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState)
 	{
 		// Ensure the sizes are valid
 		assert(size <= reservedSize || size > 0);
 
 		// Ensure the buffer isn't DynamicRead
-		if (!errorState.check(mUsage != EMemoryUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
+		if (!errorState.check(mMemoryUsage != EMemoryUsage::DynamicRead, "DynamicRead buffers cannot be written to"))
 			return false;
 
 		// Update buffers based on selected data usage type
-		switch (mUsage)
+		switch (mMemoryUsage)
 		{
 		case EMemoryUsage::DynamicWrite:
-			return setDataInternalDynamic(data, size, reservedSize, deviceUsage, errorState);
+			return setDataInternalDynamic(data, size, reservedSize, mUsageFlags, errorState);
 		case EMemoryUsage::Static:
 			return setDataInternalStatic(data, size, errorState);
 		default:
@@ -228,7 +316,7 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternalStatic(void* data, size_t size, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalStatic(const void* data, size_t size, utility::ErrorState& errorState)
 	{
 		// Ensure the buffers are allocated
 		assert(!mRenderBuffers.empty());
@@ -261,7 +349,7 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternalDynamic(void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
 	{
 		// For each update of data, we cycle through the buffers
 		mCurrentRenderBufferIndex = (mCurrentRenderBufferIndex + 1) % mRenderBuffers.size();
@@ -278,9 +366,9 @@ namespace nap
 			if (buffer_data.mBuffer != VK_NULL_HANDLE)
 			{
 				mRenderService->queueVulkanObjectDestructor([buffer = buffer_data](RenderService& renderService)
-				{
-					destroyBuffer(renderService.getVulkanAllocator(), buffer);
-				});
+					{
+						destroyBuffer(renderService.getVulkanAllocator(), buffer);
+					});
 			}
 
 			// Create new buffer
@@ -308,10 +396,13 @@ namespace nap
 		// Ensure we're dealing with an empty buffer, size of 1 that is used static.
 		assert(mStagingBuffers.size() > 0 && mStagingBuffers[0].mBuffer != VK_NULL_HANDLE);
 		assert(mRenderBuffers.size() == 1);
-		assert(mUsage == EMemoryUsage::Static || mUsage == EMemoryUsage::DynamicRead);
+		assert(mMemoryUsage == EMemoryUsage::Static || mMemoryUsage == EMemoryUsage::DynamicRead);
+
+		// Buffer uploads are recorded after clear commands, and we do not want operations on the same buffer to interfere with each other
+		// Therefore, a buffer copy requires synchronization with a potential prior clear command
+		memoryBarrier(commandBuffer, mRenderBuffers[0].mBuffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
 		// Copy staging buffer to GPU
-		// As uploads recorded to the upload command buffer always happen at the beginning of a frame, no additional synchronization is required before the copy command
 		VkBufferCopy copyRegion = {};
 		copyRegion.size = mSize;
 		vkCmdCopyBuffer(commandBuffer, mStagingBuffers[0].mBuffer, mRenderBuffers[0].mBuffer, 1, &copyRegion);
@@ -319,7 +410,7 @@ namespace nap
 		// Determine dest access flags for memory barrier
 		VkBufferUsageFlags usage = getBufferUsageFlags();
 		VkAccessFlags dst_access = 0;
-		
+
 		dst_access |= (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) ? VK_ACCESS_INDEX_READ_BIT : 0;
 		dst_access |= (usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) ? VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT : 0;
 		dst_access |= (usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT || usage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT) ? VK_ACCESS_UNIFORM_READ_BIT : 0;
@@ -336,13 +427,13 @@ namespace nap
 		// Queue destruction of staging buffer if usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
 		// Explicitly release the buffer, so it's not deleted twice
-		if (mUsage == EMemoryUsage::Static)
+		if (mMemoryUsage == EMemoryUsage::Static)
 		{
-			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService & renderService)
-			{
-				for (const BufferData& buffer : staging_buffers)
-					destroyBuffer(renderService.getVulkanAllocator(), buffer);
-			});
+			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService& renderService)
+				{
+					for (const BufferData& buffer : staging_buffers)
+						destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				});
 			for (BufferData& buffer : mStagingBuffers)
 				buffer.release();
 		}
@@ -354,7 +445,7 @@ namespace nap
 
 	void GPUBuffer::download(VkCommandBuffer commandBuffer)
 	{
-		assert(mUsage == EMemoryUsage::DynamicRead);
+		assert(mMemoryUsage == EMemoryUsage::DynamicRead);
 		BufferData& staging_buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 
 		// Store the staging buffer index associated with the download in the current frame for lookup later
@@ -379,7 +470,9 @@ namespace nap
 		// Ensure the render buffers are created
 		assert(mRenderBuffers.size() > 0);
 
-		// Clear buffer command - this command is treated as a TRANSFER operation, therefore we can use the same synchronization method as in upload()
+		// The vkCmdFillBuffer/clear command is treated as a TRANSFER operation
+		// Clear commands are recorded to the upload command buffer and always happen at the beginning of a frame
+		// Therefore, no initial memory barrier is required
 		vkCmdFillBuffer(commandBuffer, mRenderBuffers[0].mBuffer, 0, VK_WHOLE_SIZE, 0);
 
 		// Determine dest access flags for memory barrier
@@ -446,15 +539,41 @@ namespace nap
 		// This ensures the buffers are destroyed when certain they are not in use.
 		mRenderService->removeBufferRequests(*this);
 		mRenderService->queueVulkanObjectDestructor([render_buffers = mRenderBuffers, staging_buffers = mStagingBuffers](RenderService& renderService)
-		{
-			// Destroy render buffers
-			for (const BufferData& buffer : render_buffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+			{
+				// Destroy render buffers
+				for (const BufferData& buffer : render_buffers)
+					destroyBuffer(renderService.getVulkanAllocator(), buffer);
 
-			// Also destroy the staging buffers if we reach this point before the initial upload has occurred.
-			// This could happen e.g. if app initialization fails.
-			for (const BufferData& buffer : staging_buffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
-		});
+				// Also destroy the staging buffers if we reach this point before the initial upload has occurred.
+				// This could happen e.g. if app initialization fails.
+				for (const BufferData& buffer : staging_buffers)
+					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+			});
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// GPU Buffer Numeric
+	//////////////////////////////////////////////////////////////////////////
+
+	bool GPUBufferNumeric::setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState)
+	{
+		if (setDataInternal(data, getElementSize() * elementCount, getElementSize() * reservedElementCount, errorState))
+		{
+			mCount = elementCount;
+			return true;
+		}
+		return false;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Index Buffer
+	//////////////////////////////////////////////////////////////////////////
+
+	bool IndexBuffer::init(utility::ErrorState& errorState)
+	{
+		this->ensureUsage(VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+		return TypedGPUBufferNumeric<uint>::init(errorState);
 	}
 }

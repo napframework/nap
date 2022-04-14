@@ -7,7 +7,6 @@
 
 // External includes
 #include <assert.h>
-#include <glm/detail/func_common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace nap

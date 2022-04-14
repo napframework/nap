@@ -70,8 +70,8 @@ namespace nap
 
 		destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
 		destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
-
 	}
+
 
 	bool RenderTarget::init(utility::ErrorState& errorState)
 	{

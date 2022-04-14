@@ -11,7 +11,7 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-uniform Vert_UBO
+uniform VERTUBO
 {
 	vec3 cameraLocation;
 	float fresnelScale;

@@ -22,13 +22,9 @@ if(MSVC OR APPLE)
     add_compile_definitions(NAP_BUILD_TYPE=$<CONFIG>)
     add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
 else()
-    if(ANDROID)
-        set(BUILD_CONF Android${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ANDROID_ABI})
-    else()
-        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
-    endif()
+    set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
 
-    # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up 
+    # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up
     # builds when working in packaging and non-packaging at the same time)
     if(DEFINED NAP_PACKAGED_BUILD)
         set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
@@ -58,7 +54,7 @@ macro(export_fbx_in_place SRCDIR)
         set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
-    # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't 
+    # Should be able to use CMAKE_RUNTIME_OUTPUT_DIRECTORY here which would be cleaner but it didn't
     # fall into place
     if(DEFINED NAP_PACKAGED_BUILD)
         set(FBXCONV_DIR ${CMAKE_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
@@ -126,14 +122,10 @@ endmacro()
 # - WIN32_SOURCES
 # - MACOS_SOURCES
 # - LINUX_SOURCES
-# - NATIVE_SOURCES
-# - ANDROID_SOURCES
 function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(LOCAL_WIN32_SOURCES)
     set(LOCAL_MACOS_SOURCES)
     set(LOCAL_LINUX_SOURCES)
-    set(LOCAL_NATIVE_SOURCES)
-    set(LOCAL_ANDROID_SOURCES)
     foreach(TMP_PATH ${${UNFILTERED_SOURCES}})
         string(FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
         if(NOT ${WIN32_EXCLUDE_DIR_FOUND} EQUAL -1)
@@ -146,16 +138,6 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
                 string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
                 if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
                     list(APPEND LOCAL_LINUX_SOURCES ${TMP_PATH})
-                else()
-                    string(FIND ${TMP_PATH} "/native/" NATIVE_EXCLUDE_DIR_FOUND)
-                    if(NOT ${NATIVE_EXCLUDE_DIR_FOUND} EQUAL -1)
-                        list(APPEND LOCAL_ANDROID_SOURCES ${TMP_PATH})
-                    else()
-                        string(FIND ${TMP_PATH} "/android/" ANDROID_EXCLUDE_DIR_FOUND)
-                        if(NOT ${LOCAL_ANDROID_SOURCES} EQUAL -1)
-                            list(APPEND LOCAL_ANDROID_SOURCES ${TMP_PATH})
-                        endif()                        
-                    endif()
                 endif()
             endif()
         endif()
@@ -164,13 +146,11 @@ function(filter_platform_specific_files UNFILTERED_SOURCES)
     set(WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
     set(MACOS_SOURCES ${LOCAL_MACOS_SOURCES} PARENT_SCOPE)
     set(LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
-    set(NATIVE_SOURCES ${LOCAL_NATIVE_SOURCES} PARENT_SCOPE)
-    set(ANDROID_SOURCES ${LOCAL_ANDROID_SOURCES} PARENT_SCOPE)
 endfunction()
 
 # Helper macro to add platform-specific files to the correct directory and
 # to only compile the platform-specific files that match the current platform
-macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES NATIVE_SOURCES ANDROID_SOURCES)
+macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
 
     # Add to solution folders
     if(MSVC)
@@ -183,12 +163,12 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES NATI
                 source_group("Header Files\\Win32" FILES ${TMP_PATH})
             endif()
         endforeach()
-        foreach(TMP_PATH ${NATIVE_SOURCES})
+        foreach(TMP_PATH ${LINUX_SOURCES})
             string(FIND ${TMP_PATH} ".cpp" IS_CPP)
             if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\Win32" FILES ${TMP_PATH})
+                source_group("Source Files\\Linux" FILES ${TMP_PATH})
             else()
-                source_group("Header Files\\Win32" FILES ${TMP_PATH})
+                source_group("Header Files\\Linux" FILES ${TMP_PATH})
             endif()
         endforeach()
         foreach(TMP_PATH ${MACOS_SOURCES})
@@ -197,14 +177,6 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES NATI
                 source_group("Source Files\\macOS" FILES ${TMP_PATH})
             else()
                 source_group("Header Files\\macOS" FILES ${TMP_PATH})
-            endif()
-        endforeach()
-        foreach(TMP_PATH ${ANDROID_SOURCES})
-            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
-            if(NOT ${IS_CPP} EQUAL -1)
-                source_group("Source Files\\Android" FILES ${TMP_PATH})
-            else()
-                source_group("Header Files\\Android" FILES ${TMP_PATH})
             endif()
         endforeach()
     endif()
@@ -222,15 +194,6 @@ macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES NATI
     if(APPLE OR NOT UNIX)
         set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
     endif()
-
-    if(NOT ANDROID)
-        set_source_files_properties(${ANDROID_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
-    endif()
-
-    if(ANDROID)
-        set_source_files_properties(${NATIVE_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
-    endif()
-
 endmacro()
 
 # Change our project output directories (when building against NAP source)
@@ -253,11 +216,7 @@ endmacro()
 macro(find_python_in_thirdparty)
     # Set our pre built Python location
     set(PYTHONLIBS_FOUND 1)
-    if(ANDROID)
-        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/android/install)
-        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/lib/${ANDROID_ABI}/libpython3.5m.so)
-        set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/${ANDROID_ABI}/python3.5m)
-    elseif(UNIX)
+    if(UNIX)
         if(APPLE)
             set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/macos/x86_64)
         else()
@@ -328,7 +287,7 @@ macro(module_json_to_cmake)
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}.  Have you updated thirdparty?")
     endif()
 
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/module_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR} ${NAP_ROOT} 
+    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/dist/user_scripts/platform/module_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR} ${NAP_ROOT}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)
@@ -343,7 +302,7 @@ macro(add_macos_rttr_rpath)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
                        COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
-                       )    
+                       )
 endmacro()
 
 # Copy Windows Python DLLs to output directory
@@ -372,24 +331,6 @@ macro(find_rttr)
                     ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
             )
             find_package(RTTR CONFIG REQUIRED Core)
-        elseif(ANDROID)
-            set(RTTR_DIR ${THIRDPARTY_DIR}/rttr/android/install)
-
-            # Create imported target RTTR::Core
-            add_library(RTTR::Core SHARED IMPORTED)
-            set_target_properties(RTTR::Core PROPERTIES
-                INTERFACE_COMPILE_DEFINITIONS "RTTR_DLL"
-                INTERFACE_INCLUDE_DIRECTORIES "${RTTR_DIR}/include"
-            )
-
-            set_property(TARGET RTTR::Core APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
-            set_property(TARGET RTTR::Core APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-            set_target_properties(RTTR::Core PROPERTIES
-                IMPORTED_LOCATION_RELEASE "${RTTR_DIR}/bin/Release/${ANDROID_ABI}/librttr_core.so"
-                IMPORTED_SONAME_RELEASE "librttr_core.so"
-                IMPORTED_LOCATION_DEBUG "${RTTR_DIR}/bin/Debug/${ANDROID_ABI}/librttr_core_d.so"
-                IMPORTED_SONAME_DEBUG "librttr_core_d.so"
-                )
         else()
             find_path(
                     RTTR_DIR
@@ -424,20 +365,20 @@ macro(copy_module_json_to_bin)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
     elseif(UNIX)
         # Linux: Single build type outputting to LIBRARY_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
 
     else()
         # Win64: Multi build type outputting to RUNTIME_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
     endif()
 endmacro()
 

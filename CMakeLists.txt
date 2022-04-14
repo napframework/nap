@@ -22,7 +22,7 @@ get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CU
 message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
 # Enforce GCC on Linux for now (when doing packaging build at least)
-if(UNIX AND NOT APPLE AND NOT ANDROID)
+if(UNIX AND NOT APPLE)
     if(DEFINED NAP_PACKAGED_BUILD AND NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         message(FATAL_ERROR "NAP only currently supports GCC on Linux (and this is enforced when doing release builds)")
     endif()
@@ -37,9 +37,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if(ANDROID)
-    # Avoid for Android
-elseif(WIN32)
+if(WIN32)
     if(MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
@@ -69,11 +67,8 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
-if(NOT ANDROID OR ANDROID_PYTHON)
-    set(NAP_ENABLE_PYTHON 1)
-    add_definitions(-DNAP_ENABLE_PYTHON)
-endif()
-
+set(NAP_ENABLE_PYTHON 1)
+add_definitions(-DNAP_ENABLE_PYTHON)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 NEW)
 
@@ -88,25 +83,12 @@ include(cmake/configure.cmake)
 include(cmake/cross_context_macros.cmake)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
-
-if(WIN32 AND NOT ANDROID)
-    if(MINGW)
-        # Copy required MinGW dll's to bin dir
-        get_filename_component(COMPILER_DIR ${CMAKE_CXX_COMPILER} PATH)
-        set(MODULES gcc_s_dw2-1 stdc++-6 winpthread-1)
-        foreach(MOD ${MODULES})
-            find_library(_LIB NAMES ${MOD} HINTS ${COMPILER_DIR})
-            message(STATUS "Copy ${_LIB} to ${BIN_DIR}")
-            file(COPY ${_LIB} DESTINATION ${BIN_DIR})
-            unset(_LIB CACHE)
-        endforeach()
-
-    endif()
-endif()
-
-# Ensure we have patchelf on Linux, preventing silent failures
 if(UNIX AND NOT APPLE)
+    # Ensure we have patchelf on Linux, preventing silent failures
     ensure_patchelf_installed()
+
+    # Check if we're building on raspbian
+    check_raspbian_os(RASPBIAN)
 endif()
 
 # store project directory
@@ -170,6 +152,7 @@ add_subdirectory(demos/tween)
 add_subdirectory(demos/artnetsend)
 add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/artnetreceive/module)
+add_subdirectory(demos/pipins)
 add_subdirectory(demos/webportal)
 add_subdirectory(demos/orb)
 add_subdirectory(demos/orb/module)
@@ -218,6 +201,7 @@ add_subdirectory(modules/napudp)
 add_subdirectory(modules/naptween)
 add_subdirectory(modules/napcalendar)
 add_subdirectory(modules/napasio)
+add_subdirectory(modules/nappipins)
 add_subdirectory(modules/napportal)
 
 # Packaging

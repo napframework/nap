@@ -549,11 +549,11 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 }
 
 
-static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::BufferObjectDeclarationList& uboDeclarations, nap::BufferObjectDeclarationList& suboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
+static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::BufferObjectDeclarationList& uboDeclarations, nap::BufferObjectDeclarationList& ssboDeclarations, nap::SamplerDeclarations& samplerDeclarations, nap::utility::ErrorState& errorState)
 {
 	spirv_cross::ShaderResources shader_resources = compiler.get_shader_resources();
 
-	// Uniform buffers e.g. 'uniform float'
+	// Uniform buffers
 	for (const spirv_cross::Resource& resource : shader_resources.uniform_buffers)
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
@@ -569,7 +569,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 		uboDeclarations.emplace_back(std::move(uniform_buffer_object));
 	}
 
-	// Storage buffers e.g. 'uniform buffer'
+	// Storage buffers
 	for (const spirv_cross::Resource& resource : shader_resources.storage_buffers)
 	{
 		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
@@ -582,10 +582,10 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 		if (!addShaderVariablesRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Storage, errorState))
 			return false;
 
-		suboDeclarations.emplace_back(std::move(storage_buffer_object));
+		ssboDeclarations.emplace_back(std::move(storage_buffer_object));
 	}
 
-	// Samplers e.g. 'uniform sampler2D'
+	// Samplers
 	for (const spirv_cross::Resource& sampled_image : shader_resources.sampled_images)
 	{
 		spirv_cross::SPIRType sampler_type = compiler.get_type(sampled_image.type_id);
@@ -662,16 +662,16 @@ namespace nap
 			descriptor_set_layouts.push_back(uboLayoutBinding);
 		}
 
-		for (const BufferObjectDeclaration& declaration : mSUBODeclarations)
+		for (const BufferObjectDeclaration& declaration : mSSBODeclarations)
 		{
-			VkDescriptorSetLayoutBinding suboLayoutBinding = {};
-			suboLayoutBinding.binding = declaration.mBinding;
-			suboLayoutBinding.descriptorCount = 1;
-			suboLayoutBinding.pImmutableSamplers = nullptr;
-			suboLayoutBinding.stageFlags = declaration.mStage;
-			suboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
+			VkDescriptorSetLayoutBinding ssboLayoutBinding = {};
+			ssboLayoutBinding.binding = declaration.mBinding;
+			ssboLayoutBinding.descriptorCount = 1;
+			ssboLayoutBinding.pImmutableSamplers = nullptr;
+			ssboLayoutBinding.stageFlags = declaration.mStage;
+			ssboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
-			descriptor_set_layouts.push_back(suboLayoutBinding);
+			descriptor_set_layouts.push_back(ssboLayoutBinding);
 		}
 
 		for (const SamplerDeclaration& declaration : mSamplerDeclarations)
@@ -692,6 +692,22 @@ namespace nap
 		layoutInfo.pBindings = descriptor_set_layouts.data();
 
 		return errorState.check(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS, "Failed to create descriptor set layout");
+	}
+
+
+	bool BaseShader::verifyShaderVariableDeclarations(utility::ErrorState& errorState)
+	{
+		// We must check if SSBO declarations contain more than a single shader variable and exit early if this is the case.
+		// The reason for this is that we want to associate a shader buffer resource binding point with single shader storage
+		// buffer (VkBuffer), this is a typical use case for storage buffers and simplifies overall resource management. At the
+		// same time we use regular shader variable declarations, that assume a list of member variables, to generate buffer bindings.
+		for (const auto& declaration : mSSBODeclarations)
+		{
+			if (!errorState.check(declaration.mMembers.size() <= 1, utility::stringFormat(
+				"SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", declaration.mName.c_str())))
+				return false;
+		}
+		return true;
 	}
 
 
@@ -748,7 +764,7 @@ namespace nap
 
 		// Extract vertex shader uniforms & inputs
 		spirv_cross::Compiler vertex_shader_compiler(vertex_shader_spirv.data(), vertex_shader_spirv.size());
-		if (!parseShaderVariables(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
 		for (const spirv_cross::Resource& stage_input : vertex_shader_compiler.get_shader_resources().stage_inputs)
@@ -765,7 +781,11 @@ namespace nap
 
 		// Extract fragment shader uniforms
 		spirv_cross::Compiler fragment_shader_compiler(fragment_shader_spirv.data(), fragment_shader_spirv.size());
-		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
+			return false;
+
+		// Verify the shader variable declarations
+		if (!verifyShaderVariableDeclarations(errorState))
 			return false;
 
 		return initLayout(device, errorState);
@@ -843,12 +863,8 @@ namespace nap
 
 		// Extract shader variables
 		spirv_cross::Compiler comp_shader_compiler(comp_shader_spirv.data(), comp_shader_spirv.size());
-		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSUBODeclarations, mSamplerDeclarations, errorState))
+		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
-
-		// Query useful compute info
-		std::array<uint, 3> max_workgroup_size;
-		std::memcpy(max_workgroup_size.data(), &mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0], sizeof(max_workgroup_size));
 
 		// Cache workgroup size specialization constants
 		std::array<spirv_cross::SpecializationConstant, 3> spec_constants;
@@ -864,7 +880,7 @@ namespace nap
 			{
 				// Overwrite workgroup size with quaried maximum supported workgroup size
 				mWorkGroupSizeConstantIds[i] = spec_constants[i].constant_id;
-				mWorkGroupSize[i] = max_workgroup_size[i];
+				mWorkGroupSize[i] = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[i];
 			}
 			else
 			{

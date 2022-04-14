@@ -221,7 +221,7 @@ namespace nap
 		}
 		else
 		{
-			// Possibly UniformStructBufferDeclaration - which is supported for StorageUniforms only
+			// Possibly UniformStructBufferDeclaration - which is supported for BufferBindings only
 			assert(false);
 		}
 
@@ -388,7 +388,7 @@ namespace nap
 			}
 			else
 			{
-				// Possibly UniformStructBufferDeclaration - which is supported for StorageUniforms only
+				// Possibly UniformStructBufferDeclaration - which is supported for BufferBindings only
 				assert(false);
 			}
 		}

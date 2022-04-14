@@ -21,7 +21,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace defaultshader
+	namespace shader
 	{
 		inline constexpr const char* font = "font";
 	}
@@ -32,6 +32,6 @@ namespace nap
 
 	bool FontShader::init(utility::ErrorState& errorState)
 	{
-		return loadDefault(defaultshader::font, errorState);
+		return loadDefault(shader::font, errorState);
 	}
 }

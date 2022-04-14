@@ -13,7 +13,7 @@
 #include "renderglobals.h"
 #include "mesh.h"
 #include "depthsorter.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "texture2d.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
@@ -94,20 +94,14 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
 RTTI_END_ENUM
 
-RTTI_BEGIN_STRUCT(nap::RenderServiceConfiguration::QueueFamilyOptions)
-	RTTI_PROPERTY("Graphics",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mGraphics,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Compute",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mCompute,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Transfer",	&nap::RenderServiceConfiguration::QueueFamilyOptions::mTransfer,	nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RequiredQueues",				&nap::RenderServiceConfiguration::mQueueFamilies,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mCompute,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
@@ -118,12 +112,12 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
-
+	
 RTTI_BEGIN_CLASS(nap::WindowCache)
-	RTTI_PROPERTY("Position",			&nap::WindowCache::mPosition,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Size",				&nap::WindowCache::mSize,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Display",			&nap::WindowCache::mDisplay,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",				&nap::WindowCache::mIndex,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Position",					&nap::WindowCache::mPosition,									nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Size",						&nap::WindowCache::mSize,										nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Display",					&nap::WindowCache::mDisplay,									nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Index",						&nap::WindowCache::mIndex,										nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -152,12 +146,10 @@ namespace nap
 	/**
 	 * @return VK queue flags
 	 */
-	static VkQueueFlags getQueueFlags(RenderServiceConfiguration::QueueFamilyOptions opts)
+	static VkQueueFlags getQueueFlags(bool enableCompute)
 	{
-		VkQueueFlags flags = 0;
-		flags |= opts.mGraphics ? VK_QUEUE_GRAPHICS_BIT : 0;
-		flags |= opts.mCompute ? VK_QUEUE_COMPUTE_BIT : 0;
-		flags |= opts.mTransfer ? VK_QUEUE_TRANSFER_BIT : 0;
+		VkQueueFlags flags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
+		flags |= enableCompute ? VK_QUEUE_COMPUTE_BIT : 0;
 		return flags;
 	}
 
@@ -276,36 +268,6 @@ namespace nap
 
 
 	/**
-	 * @return depth compare operation
-	 */
-	static VkCompareOp getDepthCompareOp(EDepthCompareMode compareMode)
-	{
-		switch (compareMode)
-		{
-		case EDepthCompareMode::Never:
-			return VK_COMPARE_OP_NEVER;
-		case EDepthCompareMode::Less:
-			return VK_COMPARE_OP_LESS;
-		case EDepthCompareMode::Equal:
-			return VK_COMPARE_OP_EQUAL;
-		case EDepthCompareMode::LessOrEqual:
-			return VK_COMPARE_OP_LESS_OR_EQUAL;
-		case EDepthCompareMode::Greater:
-			return VK_COMPARE_OP_GREATER;
-		case EDepthCompareMode::NotEqual:
-			return VK_COMPARE_OP_NOT_EQUAL;
-		case EDepthCompareMode::GreaterOrEqual:
-			return VK_COMPARE_OP_GREATER_OR_EQUAL;
-		case EDepthCompareMode::Always:
-			return VK_COMPARE_OP_ALWAYS;
-		default:
-			assert(false);
-			return VK_COMPARE_OP_NEVER;
-		}
-	}
-
-
-	/**
 	 * @return the set of required device extension names
 	 */
 	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
@@ -365,9 +327,7 @@ namespace nap
 		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
 		create_info.pfnCallback = debugCallback;
 
-		if (!errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension"))
-			return false;
-		return true;
+		return errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension");
 	}
 
 
@@ -430,9 +390,7 @@ namespace nap
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
 		// Use SDL to create the surface
-		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL"))
-			return false;
-		return true;
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE, "Unable to create Vulkan compatible surface using SDL");
 	}
 
 
@@ -522,20 +480,20 @@ namespace nap
 	/**
 	 * Finds all queue families for a given VkPhysicalDevice
 	 */
-	static bool getQueueFamilyProperties(int device_index, VkPhysicalDevice physical_device, std::vector<VkQueueFamilyProperties>& queue_family_properties)
+	static bool getQueueFamilyProperties(int deviceIndex, VkPhysicalDevice physicalDevice, std::vector<VkQueueFamilyProperties>& outQueueFamilyProperties)
 	{
 		// Find the number queues this device supports
-		uint32 queue_family_count(0);
-		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
+		uint32 queue_family_count = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queue_family_count, nullptr);
 		if (queue_family_count == 0)
 		{
-			Logger::warn("%d: No queue families available", device_index);
+			Logger::warn("%d: No queue families available", deviceIndex);
 			return false;
 		}
 
 		// Extract the properties of all the queue families
-		queue_family_properties.resize(queue_family_count);
-		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_family_properties.data());
+		outQueueFamilyProperties.resize(queue_family_count);
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queue_family_count, outQueueFamilyProperties.data());
 		return true;
 	}
 
@@ -544,26 +502,23 @@ namespace nap
 	 * Selects a queue family index that supports the desired capabilities.
 	 * Returns false if no valid queue family index was found.
 	 */
-	static bool selectQueueFamilyIndex(VkPhysicalDevice physical_device, VkQueueFlags desired_capabilities, VkSurfaceKHR present_surface, const std::vector<VkQueueFamilyProperties> queue_families, const std::vector<int>& search_mask, int& queue_family_index)
+	static bool selectQueueFamilyIndex(VkPhysicalDevice physicalDevice, VkQueueFlags desiredCapabilities, VkSurfaceKHR presentSurface, const std::vector<VkQueueFamilyProperties> queueFamilyProps, int& outQueueFamilyIndex)
 	{
 		// We want to make sure that we have a queue that supports the required flags
-		for (uint32 index = 0; index < static_cast<uint32>(queue_families.size()); ++index)
+		for (uint32 index = 0; index < static_cast<uint32>(queueFamilyProps.size()); ++index)
 		{
-			if (index >= search_mask.size() || search_mask[index] <= 0)
-				continue;
-
 			// Make sure this family supports presentation to the given surface
 			// If no present surface is specified (e.g. running headless) this check is not performed.
-			if (present_surface != VK_NULL_HANDLE)
+			if (presentSurface != VK_NULL_HANDLE)
 			{
 				VkBool32 supports_presentation = false;
-				vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, index, present_surface, &supports_presentation);
+				vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, index, presentSurface, &supports_presentation);
 				if (supports_presentation == 0)
 					continue;
 			}
-			if ((queue_families[index].queueCount > 0) && (queue_families[index].queueFlags & desired_capabilities))
+			if (queueFamilyProps[index].queueCount > 0 && (queueFamilyProps[index].queueFlags & desiredCapabilities) == desiredCapabilities)
 			{
-				queue_family_index = index;
+				outQueueFamilyIndex = static_cast<int>(index);
 				return true;
 			}
 		}
@@ -575,7 +530,7 @@ namespace nap
 	 * Selects a device based on user preference, min required api version and queue family requirements.
 	 * If a surface is provided (is not VK_NULL_HANDLE), the queue must also support presentation to that given type of surface.
 	 */
-	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueFlags, bool requireUnifiedQueue, PhysicalDevice& outDevice ,utility::ErrorState& errorState)
+	static bool selectPhysicalDevice(VkInstance instance, VkPhysicalDeviceType preferredType, uint32 minAPIVersion, VkSurfaceKHR presentSurface, VkQueueFlags requiredQueueCapabilities, PhysicalDevice& outDevice, utility::ErrorState& errorState)
 	{
 		// Get number of available physical devices, needs to be at least 1
 		uint32 physical_device_count(0);
@@ -617,50 +572,31 @@ namespace nap
 				continue;
 			}
 
-			std::vector<VkQueueFamilyProperties> queue_families;
-			if (!getQueueFamilyProperties(device_idx, physical_device, queue_families))
+			// Get a list of queue family properties for this device
+			std::vector<VkQueueFamilyProperties> queue_family_props;
+			if (!getQueueFamilyProperties(device_idx, physical_device, queue_family_props))
 			{
 				Logger::warn("%d: Could not find queue family properties", device_idx);
 				return false;
 			}
 
-			// Ensure there's a compatible queue for this device
-			int selected_graphics_queue_idx = -1;
-			std::vector<int> search_mask(queue_families.size(), 1);
-			if (!selectQueueFamilyIndex(physical_device, requiredQueueFlags, presentSurface, queue_families, search_mask, selected_graphics_queue_idx))
+			// Ensure there's a compatible queue family for this device
+			int selected_queue_family_idx;
+			if (!selectQueueFamilyIndex(physical_device, requiredQueueCapabilities, presentSurface, queue_family_props, selected_queue_family_idx))
 			{
-				Logger::warn("%d: Unable to find compatible graphics/transfer queue family", device_idx);
+				std::vector<std::string> queue_names;
+				if ((requiredQueueCapabilities & VK_QUEUE_GRAPHICS_BIT) == VK_QUEUE_GRAPHICS_BIT) queue_names.emplace_back("GRAPHICS");
+				if ((requiredQueueCapabilities & VK_QUEUE_TRANSFER_BIT) == VK_QUEUE_TRANSFER_BIT) queue_names.emplace_back("TRANSFER");
+				if ((requiredQueueCapabilities & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT) queue_names.emplace_back("COMPUTE");
+
+				std::string queue_str = utility::joinString(queue_names, "/");
+				Logger::warn("%d: Unable to find compatible unified %s queue family", device_idx, queue_str.c_str());
 				continue;
 			}
 
-			// If required, ensure there's a compatible compute queue for this device
-			int selected_compute_queue_idx = -1;
-			if (requiredQueueFlags & VK_QUEUE_COMPUTE_BIT)
-			{
-				// If no unified queue is required, do not consider the previously selected graphics queue when selecting the compute queue
-				if (!requireUnifiedQueue)
-					search_mask[selected_graphics_queue_idx] = 0;
-
-				// Only search unselected queue families
-				if (!selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx))
-				{
-					bool compute_queue_found = false;
-					if (!requireUnifiedQueue)
-					{
-						// Search again with all queue families
-						search_mask.resize(queue_families.size(), 1);
-						compute_queue_found = selectQueueFamilyIndex(physical_device, VK_QUEUE_COMPUTE_BIT, VK_NULL_HANDLE, queue_families, search_mask, selected_compute_queue_idx);
-					}
-					if (!compute_queue_found)
-					{
-						Logger::warn("%d: Unable to find compatible compute queue family", device_idx);
-						continue;
-					}
-				}
-			}
-
 			// Add it as a compatible device
-			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_graphics_queue_idx, selected_compute_queue_idx));
+			const VkQueueFamilyProperties& selected_props = queue_family_props[selected_queue_family_idx];
+			valid_devices.emplace_back(PhysicalDevice(physical_device, properties, selected_props.queueFlags, selected_queue_family_idx));
 
 			// Check if it's the preferred type, if so select it.
 			preferred_idx = properties.deviceType == preferredType && preferred_idx < 0 ? 
@@ -681,11 +617,7 @@ namespace nap
 
 		// Set the output
 		outDevice = valid_devices[selected_idx];
-
-		std::string queue_msg = utility::stringFormat("Selected device: %d: %s | QueueIndex: GRAPHICS=%d TRANSFER=%d", selected_idx, outDevice.getProperties().deviceName, outDevice.getQueueIndex(), outDevice.getQueueIndex());
-		queue_msg = (outDevice.getComputeQueueIndex() != -1) ? utility::stringFormat("%s COMPUTE=%d", queue_msg.c_str(), outDevice.getComputeQueueIndex()) : queue_msg;
-		nap::Logger::info(queue_msg.c_str());
-
+		nap::Logger::info("Selected device: %d", selected_idx, outDevice.getProperties().deviceName);
 		return true;
 	}
 
@@ -746,21 +678,6 @@ namespace nap
 		queue_create_info.pNext = nullptr;
 		queue_create_info.flags = 0;
 
-		// Additionally create a command processing queue for compute if available
-		// We do not have to create it if its the queue index is the same as the graphics queue
-		if (physicalDevice.getComputeQueueIndex() != -1 && physicalDevice.getQueueIndex() != physicalDevice.getComputeQueueIndex())
-		{
-			queue_create_infos.emplace_back();
-
-			auto& queue_create_info = queue_create_infos.back();
-			queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queue_create_info.queueFamilyIndex = physicalDevice.getComputeQueueIndex();
-			queue_create_info.queueCount = 1;
-			queue_create_info.pQueuePriorities = queue_prio.data();
-			queue_create_info.pNext = nullptr;
-			queue_create_info.flags = 0;
-		}
-
 		// Enable specific features, we could also enable all supported features here.
 		VkPhysicalDeviceFeatures device_features {0};
 		device_features.sampleRateShading = physicalDevice.getFeatures().sampleRateShading;
@@ -769,11 +686,13 @@ namespace nap
 		device_features.wideLines = physicalDevice.getFeatures().wideLines;
 		device_features.fillModeNonSolid = physicalDevice.getFeatures().fillModeNonSolid;
 
-		// Robust buffer access
+		// The device feature 'robustBufferAccess' enables bounds checks on buffers and therefore be a useful debugging tool
+		// We only enable this feature if it is marked true in the render service configuration
 		if (robustBufferAccess)
 		{
-			device_features.robustBufferAccess = VK_TRUE;
-			Logger::info("Robust buffer access enabled");
+			device_features.robustBufferAccess = physicalDevice.getFeatures().robustBufferAccess;
+			if (physicalDevice.getFeatures().robustBufferAccess != VK_TRUE)
+				Logger::warn("Device feature 'RobustBufferAccess' is not available for the current device");
 		}
 
 		// Device creation information	
@@ -790,10 +709,7 @@ namespace nap
 		create_info.flags = 0;
 
 		// Finally we're ready to create a new device
-		if (!errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device"))
-			return false;
-
-		return true;
+		return errorState.check(vkCreateDevice(physicalDevice.getHandle(), &create_info, nullptr, &outDevice) == VK_SUCCESS, "Failed to create logical device");
 	}
 
 
@@ -841,10 +757,7 @@ namespace nap
 		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		alloc_info.commandBufferCount = 1;
 
-		if (!errorState.check(vkAllocateCommandBuffers(device, &alloc_info, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer"))
-			return false;
-
-		return true;
+		return errorState.check(vkAllocateCommandBuffers(device, &alloc_info, &commandBuffer) == VK_SUCCESS, "Failed to allocate command buffer");
 	}
 
 
@@ -868,10 +781,8 @@ namespace nap
 	{
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		if (!errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &outSemaphore) == VK_SUCCESS, "Failed to create semaphore"))
-			return false;
 
-		return true;
+		return errorState.check(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &outSemaphore) == VK_SUCCESS, "Failed to create semaphore");
 	}
 
 
@@ -884,11 +795,9 @@ namespace nap
 		depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		depth_stencil.depthTestEnable = VK_FALSE;
 		depth_stencil.depthWriteEnable = VK_FALSE;
+		depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		depth_stencil.depthBoundsTestEnable = VK_FALSE;
 		depth_stencil.stencilTestEnable = VK_FALSE;
-
-		// Depth compare operation
-		depth_stencil.depthCompareOp = getDepthCompareOp(materialInstance.getDepthCompareMode());
 
 		// If the depth mode is inherited from the blend mode, determine the correct depth mode to use
 		EDepthMode depth_mode = materialInstance.getDepthMode();
@@ -925,7 +834,6 @@ namespace nap
 		default:
 			assert(false);
 		}
-
 		return depth_stencil;
 	}
 
@@ -981,7 +889,6 @@ namespace nap
 		VkRenderPass renderPass, 
 		VkSampleCountFlagBits sampleCount, 
 		bool enableSampleShading,
-		bool depthOnly,
 		ECullMode cullMode,
 		EPolygonMode polygonMode,
 		VkPipelineLayout& pipelineLayout, 
@@ -999,8 +906,8 @@ namespace nap
 		for (auto& kvp : shader.getAttributes())
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
-			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint32>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
-			attributeDescriptions.push_back({ static_cast<uint32>(shader_vertex_attribute->mLocation), shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
+			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
+			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0U });
 
 			shader_attribute_binding++;
 		}
@@ -1012,20 +919,20 @@ namespace nap
 		vert_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
 		vert_shader_stage_info.module = vert_shader_module;
-		vert_shader_stage_info.pName = "main";
+		vert_shader_stage_info.pName = shader::main;
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		frag_shader_stage_info.module = frag_shader_module;
-		frag_shader_stage_info.pName = "main";
+		frag_shader_stage_info.pName = shader::main;
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
 		VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
 		vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-		vertex_input_info.vertexBindingDescriptionCount = static_cast<uint32>(bindingDescriptions.size());
+		vertex_input_info.vertexBindingDescriptionCount = (int)bindingDescriptions.size();
 		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
 		vertex_input_info.pVertexBindingDescriptions = bindingDescriptions.data();
 		vertex_input_info.pVertexAttributeDescriptions = attributeDescriptions.data();
@@ -1033,7 +940,6 @@ namespace nap
 		VkPipelineInputAssemblyStateCreateInfo input_assembly = {};
 		input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		input_assembly.topology = getTopology(drawMode);
-		input_assembly.flags = 0;
 		input_assembly.primitiveRestartEnable = VK_FALSE;
 
 		VkDynamicState dynamic_states[3] = {
@@ -1062,9 +968,7 @@ namespace nap
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = getCullMode(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
-
-		// Enable depth bias if no color attachment is used
-		rasterizer.depthBiasEnable = depthOnly ? VK_TRUE : VK_FALSE;
+		rasterizer.depthBiasEnable = VK_FALSE;
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -1081,14 +985,12 @@ namespace nap
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
 		colorBlending.logicOp = VK_LOGIC_OP_COPY;
+		colorBlending.attachmentCount = 1;
+		colorBlending.pAttachments = &colorBlendAttachment;
 		colorBlending.blendConstants[0] = 0.0f;
 		colorBlending.blendConstants[1] = 0.0f;
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
-
-		// Set color blend attachment count to zero if no color attachment is used
-		colorBlending.attachmentCount = depthOnly ? 0 : 1;
-		colorBlending.pAttachments = &colorBlendAttachment;
 
 		auto layout = shader.getDescriptorSetLayout();
 
@@ -1105,7 +1007,7 @@ namespace nap
 
 		VkGraphicsPipelineCreateInfo pipeline_info = {};
 		pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipeline_info.stageCount = depthOnly ? 1 : 2;
+		pipeline_info.stageCount = 2;
 		pipeline_info.pStages = shader_stages;
 		pipeline_info.pVertexInputState = &vertex_input_info;
 		pipeline_info.pInputAssemblyState = &input_assembly;
@@ -1120,9 +1022,8 @@ namespace nap
 		pipeline_info.subpass = 0;
 		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 
-		if (!errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphicsPipeline) == VK_SUCCESS, "Failed to create graphics pipeline"))
-			return false;
-		return true;
+		return errorState.check(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &graphicsPipeline) == VK_SUCCESS,
+			"Failed to create graphics pipeline");
 	}
 
 
@@ -1134,9 +1035,11 @@ namespace nap
 		comp_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		comp_shader_stage_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 		comp_shader_stage_info.module = comp_shader_module;
-		comp_shader_stage_info.pName = "main";
+		comp_shader_stage_info.pName = shader::main;
 
-		// Overwrite workgroup size with device maximum when specialization constants are defined
+		// Overwrite workgroup size with device maximum when specialization constants are defined.
+		// This is useful when you want to use a group size equal to the maximum supported group size of the current device,
+		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
 		const std::vector<int> const_ids = computeShader.getWorkGroupSizeConstantIds();
 		std::vector<VkSpecializationMapEntry> spec_entries;
 		std::vector<uint> spec_data;
@@ -1149,9 +1052,16 @@ namespace nap
 				entry.constantID = static_cast<uint>(const_ids[i]);
 				entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
 				entry.size = sizeof(uint);
-
 				spec_entries.emplace_back(std::move(entry));
-				spec_data.emplace_back(computeShader.getWorkGroupSize()[i]);
+				uint32 work_group_size = computeShader.getWorkGroupSize()[i];
+#ifdef __APPLE__
+				// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
+				// which doesn't necessarily match physical device limits, especially on older devices.
+				// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
+				// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
+				work_group_size = math::min<uint32>(work_group_size, 512);
+#endif // __APPLE__
+				spec_data.emplace_back(work_group_size);
 			}
 		}
 
@@ -1182,12 +1092,8 @@ namespace nap
 		pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 		pipeline_info.basePipelineIndex = -1;
 
-		if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &outComputePipeline) != VK_SUCCESS)
-		{
-			nap::Logger::info("Could not create compute pipeline");
-			return false;
-		}
-		return true;
+		return errorState.check(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &outComputePipeline) == VK_SUCCESS,
+			"Failed to create compute pipeline");
 	}
 
 
@@ -1294,7 +1200,6 @@ namespace nap
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
 		ECullMode cull_mode = mesh.getMeshInstance().getCullMode();
 		EPolygonMode poly_mode = mesh.getMeshInstance().getPolygonMode();
-		bool depth_only = renderTarget.getColorFormat() == VK_FORMAT_UNDEFINED ? true : false;
 
 		// Create pipeline key based on draw properties
 		PipelineKey pipeline_key (
@@ -1324,12 +1229,11 @@ namespace nap
 			renderTarget.getRenderPass(),
 			renderTarget.getSampleCount(),
 			renderTarget.getSampleShadingEnabled(),
-			depth_only,
 			cull_mode,
 			poly_mode,
 			pipeline.mLayout, pipeline.mPipeline, errorState))
 		{
-			mPipelineCache.emplace(pipeline_key, pipeline);
+			mPipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
 			return pipeline;
 		}
 
@@ -1347,7 +1251,7 @@ namespace nap
 	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{
 		// Create pipeline key based on draw properties
-		const ComputeMaterial& material = computeMaterialInstance.getComputeMaterial();
+		const ComputeMaterial& material = computeMaterialInstance.getMaterial();
 		const ComputeShader& shader = material.getShader();
 		ComputePipelineKey pipeline_key(shader);
 
@@ -1383,11 +1287,12 @@ namespace nap
 			if (!errorState.check(material_binding != nullptr, "Unable to find binding %s for shader %s in material %s", kvp.first.c_str(), material.getShader().getDisplayName().c_str(), material.mID.c_str()))
 				return RenderableMesh();
 
-			const ValueGPUBuffer* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
+			const GPUBufferNumeric* vertex_buffer = mesh.getMeshInstance().getGPUMesh().findVertexBuffer(material_binding->mMeshAttributeID);
 			if (!errorState.check(vertex_buffer != nullptr, "Unable to find vertex attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 				return RenderableMesh();
 
-			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(), "Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
+			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(),
+				"Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
 			return RenderableMesh();
 		}
 
@@ -1533,7 +1438,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, Texture2D::EClearMode::Clear, 0, errorState);
+		return mEmptyTexture->init(settings, false, 0, errorState);
 	}
 
 
@@ -1649,12 +1554,11 @@ namespace nap
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
 
-		// Get the required queue flags
-		VkQueueFlags req_queue_flags = getQueueFlags(render_config->mQueueFamilies);
+		// Get the required queue capabilities
+		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mCompute);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		bool req_unified_queue = true;
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_flags, req_unified_queue, mPhysicalDevice, errorState))
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
 			return false;
 
 		// Sample physical device features and notify
@@ -1701,24 +1605,8 @@ namespace nap
 		if (!errorState.check(findDepthFormat(mPhysicalDevice.getHandle(), mDepthFormat), "Unable to find depth format"))
 			return false;
 
-		// Get a compatible queue that will process commands, graphics / transfer needs to be supported
+		// Get a compatible queue responsible for processing commands
 		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
-
-		// If available, get a compatible compute queue that will process compute commands
-		if (isComputeAvailable() && mPhysicalDevice.getQueueIndex() != mPhysicalDevice.getComputeQueueIndex())
-		{
-			// Acquire and create dedicate compute resources
-			if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getComputeQueueIndex(), mComputeCommandPool), "Failed to create Compute Command Pool"))
-				return false;
-
-			// Get a compatible queue that will process commands, graphics / transfer needs to be supported
-			vkGetDeviceQueue(mDevice, mPhysicalDevice.getComputeQueueIndex(), 0, &mComputeQueue);
-		}
-		else
-		{
-			mComputeQueue = mQueue;
-			mComputeCommandPool = mCommandPool;
-		}
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
@@ -1752,10 +1640,11 @@ namespace nap
 			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
 				return false;
 
-			if (!createCommandBuffer(mDevice, mComputeCommandPool, frame.mComputeCommandBuffer, errorState))
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mComputeCommandBuffer, errorState))
 				return false;
 
-			frame.mQueueSubmitOps = { false, false, false };
+			// Clear the queue submit operation flags
+			frame.mQueueSubmitOps = 0U;
 		}
 
 		// Try to load .ini file and extract saved settings, allowed to fail
@@ -1909,6 +1798,12 @@ namespace nap
 	}
 
 
+	bool RenderService::isComputeAvailable() const
+	{
+		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
+	}
+
+
 	Material* RenderService::getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error)
 	{
 		// Ensure it's a shader
@@ -2027,9 +1922,7 @@ namespace nap
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mHeadlessCommandBuffer);
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mUploadCommandBuffer);
 			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mDownloadCommandBuffer);
-
-			if (frame.mComputeCommandBuffer != VK_NULL_HANDLE)
-				vkFreeCommandBuffers(mDevice, mComputeCommandPool, 1, &frame.mComputeCommandBuffer);
+			vkFreeCommandBuffers(mDevice, mCommandPool, 1, &frame.mComputeCommandBuffer);
 
 			vkDestroyFence(mDevice, frame.mFence, nullptr);
 		}
@@ -2047,23 +1940,8 @@ namespace nap
 
 		if (mCommandPool != VK_NULL_HANDLE)
 		{
-			if (mCommandPool != mComputeCommandPool)
-			{
-				vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
-				mCommandPool = VK_NULL_HANDLE;
-
-				if (mComputeCommandPool != VK_NULL_HANDLE)
-				{
-					vkDestroyCommandPool(mDevice, mComputeCommandPool, nullptr);
-					mComputeCommandPool = VK_NULL_HANDLE;
-				}
-			}
-			else
-			{
-				vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
-				mCommandPool = VK_NULL_HANDLE;
-				mComputeCommandPool = VK_NULL_HANDLE;
-			}
+			vkDestroyCommandPool(mDevice, mCommandPool, nullptr);
+			mCommandPool = VK_NULL_HANDLE;
 		}
 
 		if (mDevice != VK_NULL_HANDLE)
@@ -2123,9 +2001,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &commandBuffer;
-
 		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
-		//assert(result == VK_SUCCESS);
 	}
 
 
@@ -2224,8 +2100,8 @@ namespace nap
 		mCanDestroyVulkanObjectsImmediately = false;
 		mIsRenderingFrame = true;
 
-		// Reset queue submit operation flags for the current frame
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = { false, false, false };
+		// Clear the queue submit operation flags for the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = 0U;
 
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
 		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
@@ -2308,7 +2184,8 @@ namespace nap
 		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 		assert(result == VK_SUCCESS);
 
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering = true;
+		// Set the headless bit of queue submit ops of the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::HeadlessRendering;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -2343,11 +2220,17 @@ namespace nap
 	bool RenderService::beginComputeRecording()
 	{
 		assert(mCurrentCommandBuffer == VK_NULL_HANDLE);
-		NAP_ASSERT_MSG(!mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mRendering && !mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mHeadlessRendering,
-			"Recording compute commands after (headless) rendering within a single frame is not allowed.");
+		NAP_ASSERT_MSG(isComputeAvailable(), "Cannot record Compute commands when Compute capability is unavailable");
+
+		// Ensure no (headless) rendering commands have been recorded in the current frame. After vkQueueSubmit() is called
+		// on any of the command buffers (rendering, headless rendering, compute), the corresponding EQueueSubmitOp bit is
+		// set in mQueueSubmitOps of the current frame. This way, we keep track of what queue submissions have occurred.
+		const Frame& frame = mFramesInFlight[mCurrentFrameIndex];
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::Rendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::HeadlessRendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
 
 		// Reset command buffer for current frame
-		VkCommandBuffer compute_command_buffer = mFramesInFlight[mCurrentFrameIndex].mComputeCommandBuffer;
+		VkCommandBuffer compute_command_buffer = frame.mComputeCommandBuffer;
  		if (vkResetCommandBuffer(compute_command_buffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT) != VK_SUCCESS)
 			return false;
 
@@ -2371,6 +2254,7 @@ namespace nap
 	void RenderService::endComputeRecording()
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);
+		NAP_ASSERT_MSG(isComputeAvailable(), "Cannot record Compute commands when Compute capability is unavailable");
 
 		VkResult result = vkEndCommandBuffer(mCurrentCommandBuffer);
 		assert(result == VK_SUCCESS);
@@ -2379,11 +2263,11 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &mCurrentCommandBuffer;
-
-		result = vkQueueSubmit(mComputeQueue, 1, &submit_info, NULL);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
  		assert(result == VK_SUCCESS);
 
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps.mCompute = true;
+		// Set the compute bit of queue submit ops of the current frame
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::Compute;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
 	}
 
@@ -2448,16 +2332,14 @@ namespace nap
 
 	void RenderService::requestTextureClear(Texture2D& texture)
 	{
-		// Erase the buffer from the upload queue if it was requested before in the current frame
-		mTexturesToUpload.erase(&texture);
+		// Push a texture clear for the beginning of the next frame
 		mTexturesToClear.insert(&texture);
 	}
 
 
 	void RenderService::requestTextureUpload(Texture2D& texture)
 	{
-		// Erase the buffer from the clear queue if it was requested before in the current frame
-		mTexturesToClear.erase(&texture);
+		// Push a texture upload for the beginning of the next frame
 		mTexturesToUpload.insert(&texture);
 	}
 
@@ -2489,16 +2371,12 @@ namespace nap
 
 	void RenderService::requestBufferClear(GPUBuffer& buffer)
 	{
-		// Erase the buffer from the upload queue if it was requested before in the current frame
-		mBuffersToUpload.erase(&buffer);
 		mBuffersToClear.insert(&buffer);
 	}
 
 
 	void RenderService::requestBufferUpload(GPUBuffer& buffer)
 	{
-		// Erase the buffer from the clear queue if it was requested before in the current frame
-		mBuffersToClear.erase(&buffer);
 		mBuffersToUpload.insert(&buffer);
 	}
 
@@ -2559,8 +2437,8 @@ namespace nap
 	}
 
 
-	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex, int computeQueueIndex) :
-		mDevice(device), mProperties(properties), mQueueIndex(queueIndex), mComputeQueueIndex(computeQueueIndex)
+	PhysicalDevice::PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, const VkQueueFlags& queueCapabilities, int queueIndex) :
+		mDevice(device), mProperties(properties), mQueueCapabilities(queueCapabilities), mQueueIndex(queueIndex)
 	{
 		vkGetPhysicalDeviceFeatures(mDevice, &mFeatures);
 	}

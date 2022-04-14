@@ -21,7 +21,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace defaultshader
+	namespace shader
 	{
 		inline constexpr const char* texture = "texture";
 	}
@@ -32,6 +32,6 @@ namespace nap
 
 	bool TextureShader::init(utility::ErrorState& errorState)
 	{
-		return loadDefault(defaultshader::texture, errorState);
+		return loadDefault(shader::texture, errorState);
 	}
 }

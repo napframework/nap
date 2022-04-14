@@ -693,7 +693,7 @@
             "mID": "Snapshot",
             "Width": 3840,
             "Height": 2160,
-            "Divisor": 4,
+            "Divisor": 2,
             "OutputDirectory": "snapshots",
             "ImageFileFormat": "PNG",
             "TextureFormat": "RGBA8",

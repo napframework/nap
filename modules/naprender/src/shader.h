@@ -43,9 +43,9 @@ namespace nap
 		const std::vector<BufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
 
 		/**
-		 * @return all Storage UniformBufferObject declarations.
+		 * @return all Shader Storage Buffer Object declarations.
 		 */
-		const std::vector<BufferObjectDeclaration>& getSUBODeclarations() const { return mSUBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const { return mSSBODeclarations; }
 
 		/**
 		 * @return shader display name
@@ -58,14 +58,27 @@ namespace nap
 		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
 
 	protected:
-		RenderService* mRenderService = nullptr;													///< Handle to render engine
-		std::string											mDisplayName;							///< Filename of shader used as display name
-		BufferObjectDeclarationList							mUBODeclarations;						///< All uniform buffer object declarations
-		BufferObjectDeclarationList							mSUBODeclarations;						///< All storage uniform buffer object declarations
-		SamplerDeclarations									mSamplerDeclarations;					///< All sampler declarations
-		VkDescriptorSetLayout								mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
+		RenderService*									mRenderService = nullptr;				///< Handle to render engine
+		std::string										mDisplayName;							///< Filename of shader used as display name
+		BufferObjectDeclarationList						mUBODeclarations;						///< All uniform buffer object declarations
+		BufferObjectDeclarationList						mSSBODeclarations;						///< All storage buffer object declarations
+		SamplerDeclarations								mSamplerDeclarations;					///< All sampler declarations
+		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 
+		/**
+		 * Initializes the descriptorset layout of this shader.
+		 * @param device the vulkan device.
+		 * @param errorState contains the error if the operation failed.
+		 * @return whether the descriptorset layout was initialized successfully.
+		 */
 		bool initLayout(VkDevice device, nap::utility::ErrorState& errorState);
+
+		/**
+		 * Verifies if the shader declarations are in accordance with the API.
+		 * @param errorState contains the error if the operation failed.
+		 * @return whether the shader declarations are valid according to the capabilities of the API.
+		 */
+		bool verifyShaderVariableDeclarations(utility::ErrorState& errorState);
 	};
 
 
@@ -133,7 +146,7 @@ namespace nap
 	 * All uniforms, samplers and attributes are extracted.
 	 * Make sure to call init() on initialization of a derived shader class.
 	 * A nap::Material links to a BaseShader. The shader is compiled on initialization.
-	 * Use a nap::Material or nap::MaterialInstance to set / override uniforms and samplers.
+	 * Use a nap::ComputeMaterial or nap::ComputeMaterialInstance to set / override uniforms and samplers.
 	 */
 	class NAPAPI ComputeShader : public BaseShader
 	{

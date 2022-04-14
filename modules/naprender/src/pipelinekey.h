@@ -15,7 +15,7 @@ namespace nap
 	class ComputeShader;
 
 	/**
-	 * Key associated with a specific Vulkan pipeline. 
+	 * Key associated with a specific Vulkan graphics pipeline. 
 	 * The render engine uses this key to cache Vulkan pipelines so they can be re-used at runtime.
 	 * Pipeline creation is considered a heavy Vulkan operation, we therefore cache pipelines to speed up rendering.
 	 */
@@ -55,6 +55,12 @@ namespace nap
 		EPolygonMode			mPolygonMode = EPolygonMode::Fill;
 	};
 
+
+	/**
+	 * Key associated with a specific Vulkan compute pipeline. 
+	 * The render engine uses this key to cache Vulkan pipelines so they can be re-used at runtime.
+	 * Pipeline creation is considered a heavy Vulkan operation, we therefore cache pipelines to speed up compute operations.
+	 */
 	struct NAPAPI ComputePipelineKey
 	{
 		/**

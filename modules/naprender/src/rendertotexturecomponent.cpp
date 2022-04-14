@@ -6,7 +6,7 @@
 #include "rendertotexturecomponent.h"
 #include "rendertarget.h"
 #include "renderservice.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "renderglobals.h"
 #include "uniforminstance.h"
 #include "renderglobals.h"
@@ -24,6 +24,8 @@ RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
 	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PreserveAspect",				&nap::RenderToTextureComponent::mPreserveAspect,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::rendertotexturecomponentInstance run time class definition 
@@ -37,17 +39,30 @@ RTTI_END_CLASS
 /**
  * Creates a model matrix based on the dimensions of the given target.
  */
-static void computeModelMatrix(const nap::IRenderTarget& target, glm::mat4& outMatrix)
+static void computeModelMatrix(const nap::IRenderTarget& target, const glm::vec2 contentSize, bool preserveAspect, glm::mat4& outMatrix)
 {
 	// Transform to middle of target
-	glm::ivec2 tex_size = target.getBufferSize();
-	outMatrix = glm::translate(glm::mat4(), glm::vec3(
-		tex_size.x / 2.0f,
-		tex_size.y / 2.0f,
-		0.0f));
+	glm::vec2 target_size = target.getBufferSize();
+	outMatrix = glm::translate(glm::mat4(), { target_size.x * 0.5f, target_size.y * 0.5f, 0.0f });
 
-	// Scale to fit target
-	outMatrix = glm::scale(outMatrix, glm::vec3(tex_size.x, tex_size.y, 1.0f));
+	if (!preserveAspect)
+	{
+		// Scale to fit target
+		outMatrix = glm::scale(outMatrix, { target_size.x, target_size.y, 1.0f });
+	}
+	else
+	{
+		// Scale to preserve aspect
+		float content_ratio	= contentSize.x / contentSize.y;
+		float target_ratio	= target_size.x / target_size.y;
+
+		if (target_ratio < content_ratio)
+			target_size.y = target_size.x / content_ratio;
+		else
+			target_size.x = target_size.y * content_ratio;
+
+		outMatrix = glm::scale(outMatrix, { target_size.x, target_size.y, 1.0f });
+	}
 }
 
 
@@ -71,7 +86,7 @@ namespace nap
 		// Create the render target, link in the output texture
 		mTarget.mClearColor = resource->mClearColor.convert<RGBAColorFloat>();
 		mTarget.mColorTexture = resource->mOutputTexture;
-		mTarget.mSampleShading = true;
+		mTarget.mSampleShading = resource->mSampleShading;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;
 
 		// Initialize target
@@ -117,6 +132,9 @@ namespace nap
 		// Get view matrix (optional)
 		utility::ErrorState view_error;
 		mViewMatrixUniform = ensureUniform(uniform::viewMatrix, *mMVPStruct, view_error);
+
+		// Get preserve aspect flag
+		mPreserveAspect = resource->mPreserveAspect;
 
 		// Create the renderable mesh, which represents a valid mesh / material combination
 		mRenderableMesh = mService->createRenderableMesh(mPlane, mMaterialInstance, errorState);
@@ -168,10 +186,16 @@ namespace nap
 	}
 
 
+	void RenderToTextureComponentInstance::setPreserveAspect(bool preserveAspect)
+	{
+		mPreserveAspect = preserveAspect;
+	}
+
+
 	void RenderToTextureComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{        
 		// Update the model matrix so that the plane mesh is of the same size as the render target
-		computeModelMatrix(renderTarget, mModelMatrix);
+		computeModelMatrix(renderTarget, mTarget.getColorTexture().getSize(), mPreserveAspect, mModelMatrix);
 		mModelMatrixUniform->setValue(mModelMatrix);
 
 		// Update matrices, projection and model are required
@@ -212,9 +236,7 @@ namespace nap
 	{
 		// Get matrix binding
 		UniformMat4Instance* found_mat = mvpStruct.getOrCreateUniform<UniformMat4Instance>(uniformName);
-		if(!error.check(found_mat != nullptr, 
-			"%s: unable to find uniform: %s in material: %s", this->mID.c_str(), uniformName.c_str(),
-			mMaterialInstance.getMaterial().mID.c_str()))
+		if (!error.check(found_mat != nullptr, "%s: unable to find uniform: %s in material: %s", this->mID.c_str(), uniformName.c_str(), mMaterialInstance.getMaterial().mID.c_str()))
 			return nullptr;
 		return found_mat;
 	}

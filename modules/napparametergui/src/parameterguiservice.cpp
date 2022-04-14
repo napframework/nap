@@ -171,7 +171,7 @@ namespace nap
 			glm::ivec2 value = vec2_parameter->mValue;
 			if (vec2_parameter->mClamp)
 			{
-				if (ImGui::SliderInt3(vec2_parameter->getDisplayName().c_str(), &value[0], vec2_parameter->mMinimum, vec2_parameter->mMaximum))
+				if (ImGui::SliderInt2(vec2_parameter->getDisplayName().c_str(), &value[0], vec2_parameter->mMinimum, vec2_parameter->mMaximum))
 					vec2_parameter->setValue(value);
 			}
 			else

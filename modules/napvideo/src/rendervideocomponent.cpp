@@ -18,7 +18,7 @@
 RTTI_BEGIN_CLASS(nap::RenderVideoComponent)
 	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

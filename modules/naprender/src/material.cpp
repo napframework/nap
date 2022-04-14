@@ -48,14 +48,14 @@ RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
 	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_STRUCT
 
-
-RTTI_DEFINE_BASE(nap::BaseMaterial)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterial)
+	RTTI_PROPERTY("Uniforms",					&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Samplers",					&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Buffers",					&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Uniforms",					&nap::Material::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("StorageUniforms",			&nap::Material::mStorageUniforms,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::Material::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
@@ -66,9 +66,6 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Uniforms",					&nap::ComputeMaterial::mUniforms,			nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("StorageUniforms",			&nap::ComputeMaterial::mStorageUniforms,	nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::ComputeMaterial::mSamplers,			nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shader",						&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -110,6 +107,9 @@ namespace nap
 	 */
 	bool BaseMaterial::rebuild(const BaseShader& shader, utility::ErrorState& errorState)
 	{
+		// Store shader
+		mShader = &shader;
+
 		// Uniforms
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
@@ -121,21 +121,25 @@ namespace nap
 				return false;
 		}
 
-		// Storage uniforms
-		const std::vector<BufferObjectDeclaration>& subo_declarations = shader.getSUBODeclarations();
-		for (const BufferObjectDeclaration& subo_declaration : subo_declarations)
+		// Bindings
+		const std::vector<BufferObjectDeclaration>& ssbo_declarations = shader.getSSBODeclarations();
+		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
 		{
-			const StorageUniformStruct* struct_resource = rtti_cast<const StorageUniformStruct>(findStorageUniformStructMember(mStorageUniforms, subo_declaration));
+			std::unique_ptr<BufferBindingInstance> binding_instance;
+			for (auto& binding : mBuffers)
+			{
+				const std::string& binding_name = declaration.mName;
+				if (binding_name == binding->mName)
+				{
+					// Create a buffer binding instance of the appropriate type
+					binding_instance = BufferBindingInstance::createBufferBindingInstanceFromDeclaration(declaration, binding.get(), BufferBindingChangedCallback(), errorState);
+					if (!errorState.check(binding_instance != nullptr, "Failed to create buffer binding instance %s", binding->mName.c_str()))
+						return false;
 
-			// We must check if the SSBO declaration contains more than a single shader variable and exit early if this is the case.
-			// The reason for this is that we want to associate a shader resource binding point with single shader storage buffer (VkBuffer).
-			// This is a typical use case for storage buffers and simplifies overall resource management.
-			if (!errorState.check(subo_declaration.mMembers.size() <= 1, utility::stringFormat("SSBO '%s' contains more than 1 shader variable, which is currently not supported. Consider using multiple SSBO's or a struct array.", subo_declaration.mName.c_str())))
-				return false;
-
-			StorageUniformStructInstance& root_struct = createStorageUniformRootStruct(subo_declaration, StorageUniformCreatedCallback());
-			if (!root_struct.addStorageUniformBuffer(subo_declaration, struct_resource, StorageUniformBufferChangedCallback(), errorState))
-				return false;
+					addBindingInstance(std::move(binding_instance));
+					break;
+				}
+			}
 		}
 
 		// Samplers

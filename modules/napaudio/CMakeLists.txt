@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napaudio)
 
 find_package(portaudio REQUIRED)
@@ -105,10 +100,6 @@ elseif(APPLE)
         ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib
                                                "@loader_path/../../../../thirdparty/mpg123/lib")
     endforeach()
-elseif(ANDROID)
-    install(DIRECTORY ${LIBMPG123_DIR}/install/android/lib/
-            DESTINATION thirdparty/mpg123/lib
-            )
 elseif(UNIX)
     file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${MPG123_DYLIBS}
@@ -126,10 +117,6 @@ if(WIN32)
     file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
     install(FILES ${LIBSNDFILE_IMPLIBS}
             DESTINATION thirdparty/libsndfile/lib)
-elseif(ANDROID)
-    install(DIRECTORY ${LIBSNDFILE_DIR}/android/install/lib/
-            DESTINATION thirdparty/libsndfile/lib
-            )
 elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
@@ -144,10 +131,6 @@ if(WIN32)
             DESTINATION thirdparty/portaudio/lib)
     install(FILES ${PORTAUDIO_LIBS_RELEASE_DLL}
             DESTINATION thirdparty/portaudio/bin)
-elseif(ANDROID)
-    install(DIRECTORY ${PORTAUDIO_DIR}/android/lib/
-            DESTINATION thirdparty/portaudio/lib
-            )
 elseif(UNIX)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}

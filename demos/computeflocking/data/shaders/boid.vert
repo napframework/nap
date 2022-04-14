@@ -25,7 +25,7 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-uniform Vert_UBO
+uniform VERTUBO
 {
 	vec3 cameraLocation;
 	float boidSize;
@@ -34,7 +34,7 @@ uniform Vert_UBO
 };
 
 // STORAGE
-layout(std430) buffer SSBO
+layout(std430) buffer readonly VERTSSBO
 {
 	Boid boids[10000];
 };
@@ -61,9 +61,14 @@ vec3 rotate(vec3 v, vec4 q)
 
 void main(void)
 {
-	// Get transformation
+	// Use the instance index to read from the boid storage buffer. We make sure the boid count is equal 
+	// to the buffer element count in this shader, the vertex shader, and in the buffer descriptor in JSON.
 	Boid b = boids[gl_InstanceIndex];
+
+	// Fetch position from vertex attribute
 	vec4 position = vec4(boidSize * in_Position, 1.0);
+
+	// Transform the fetched position to world space using the position and orientation of the boid
 	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, b.orientation) + b.position.xyz, 1.0);
 
 	// Calculate position

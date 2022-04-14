@@ -21,7 +21,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	namespace defaultshader
+	namespace shader
 	{
 		inline constexpr const char* gnomon = "gnomon";
 	}
@@ -32,6 +32,6 @@ namespace nap
 
 	bool GnomonShader::init(utility::ErrorState& errorState)
 	{
-		return loadDefault(defaultshader::gnomon, errorState);
+		return loadDefault(shader::gnomon, errorState);
 	}
 }

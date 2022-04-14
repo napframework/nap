@@ -4,7 +4,7 @@
 
 #version 450 core
 
-uniform UBO
+uniform FRAGUBO
 {
 	float blend;
 } ubo;
@@ -16,11 +16,16 @@ out vec4 out_Color;
 uniform sampler2D colorTextures[2];
 
 void main(void)
-{
+{	
+	// Get texel color values
 	vec4 col0 = texture(colorTextures[0], pass_UV.xy);
 	vec4 col1 = texture(colorTextures[1], pass_UV.xy);
 
-	// Blend
-	vec3 color = mix(col0.rgb, col1.rgb, ubo.blend);
+	// Get screened blend color
+	const vec3 vunit = vec3(1.0, 1.0, 1.0);
+	vec3 screen_color = vunit-(vunit-col0.rgb)*(vunit-col1.rgb);
+
+	// Blend into original based on blend value
+	vec3 color = mix(col0.rgb, screen_color, ubo.blend);
 	out_Color = vec4(color, 1.0);
 }

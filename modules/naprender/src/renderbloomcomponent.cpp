@@ -6,7 +6,7 @@
 #include "renderbloomcomponent.h"
 #include "rendertarget.h"
 #include "renderservice.h"
-#include "valuegpubuffer.h"
+#include "gpubuffer.h"
 #include "renderglobals.h"
 #include "uniforminstance.h"
 #include "renderglobals.h"
@@ -24,6 +24,7 @@ RTTI_BEGIN_CLASS(nap::RenderBloomComponent)
 	RTTI_PROPERTY("PassCount",					&nap::RenderBloomComponent::mPassCount,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Kernel",						&nap::RenderBloomComponent::mKernel,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OutputTexture",				&nap::RenderBloomComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::RenderBloomComponentInstance run time class definition 
@@ -53,6 +54,50 @@ static void computeModelMatrix(const nap::IRenderTarget& target, glm::mat4& outM
 
 namespace nap
 {
+	/**
+	 * Transition image to a new layout using an existing image barrier.
+	 */
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
+		VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
+		uint32 mipLevel, uint32 mipLevelCount)
+	{
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = mipLevel;
+		barrier.subresourceRange.levelCount = mipLevelCount;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = srcAccessMask;
+		barrier.dstAccessMask = dstAccessMask;
+		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	}
+
+
+	/**
+	 * Transition image to a new layout using an image barrier.
+	 */
+	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
+		VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
+		uint32 mipLevel, uint32 mipLevelCount)
+	{
+		VkImageMemoryBarrier barrier = {};
+		transitionImageLayout(commandBuffer, image, barrier,
+			oldLayout, newLayout,
+			srcAccessMask, dstAccessMask,
+			srcStage, dstStage,
+			mipLevel, mipLevelCount);
+	}
+
+
 	RenderBloomComponentInstance::RenderBloomComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
 		mPlane(*entity.getCore())
@@ -73,6 +118,7 @@ namespace nap
 
 		// Get reference to input texture
 		mInputTexture = resource->mInputTexture.get();
+		mOutputTexture = resource->mOutputTexture.get();
 
 		// Initialize double-buffered bloom render targets
 		for (int pass_idx = 0; pass_idx < resource->mPassCount; pass_idx++)
@@ -84,7 +130,6 @@ namespace nap
 				auto tex = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTexture2D>();
 				tex->mWidth = resource->mInputTexture->getWidth() / math::power<int>(2, pass_idx+1);
 				tex->mHeight = resource->mInputTexture->getHeight() / math::power<int>(2, pass_idx+1);
-				tex->mFill = resource->mInputTexture->mFill;
 				tex->mFormat = resource->mInputTexture->mFormat;
 				tex->mUsage = ETextureUsage::Static;
 				if (!tex->init(errorState))
@@ -121,6 +166,9 @@ namespace nap
 		case EBlurSamples::X9:
 			blur_material = mRenderService->getOrCreateMaterial<Blur9x9Shader>(errorState);
 			break;
+		case EBlurSamples::X13:
+			blur_material = mRenderService->getOrCreateMaterial<Blur13x13Shader>(errorState);
+			break;
 		default:
 			errorState.fail("Unsupported blur shader");
 			return false;
@@ -137,10 +185,10 @@ namespace nap
 
 		// Now create a plane and initialize it.
 		// The model matrix is computed on draw and used to scale the model to fit target bounds.
-		mPlane.mSize = glm::vec2(1.0f, 1.0f);
-		mPlane.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+		mPlane.mSize = { 1.0f, 1.0f };
+		mPlane.mPosition = { 0.0f, 0.0f };
 		mPlane.mUsage = EMemoryUsage::Static;
-		mPlane.mCullMode = ECullMode::Back;
+		mPlane.mCullMode = ECullMode::None;
 		mPlane.mColumns = 1;
 		mPlane.mRows = 1;
 		
@@ -198,36 +246,55 @@ namespace nap
 
 	void RenderBloomComponentInstance::draw()
 	{
-		VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
-		glm::mat4 identity_matrix = glm::mat4();
+		// Indices into a double-buffered render target
+		const uint TARGET_A = 0;
+		const uint TARGET_B = 1;
 
-		// Set first input texture
-		RenderTexture2D* input_texture = mInputTexture;
+		const VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
+		const glm::mat4 identity_matrix = {};
 
+		auto& initial_texture = *mBloomRTs.front()[TARGET_A]->mColorTexture;
+
+		// Blit the input texture to the smaller size RT
+		blit(command_buffer, *mInputTexture, initial_texture);
+
+		int pass_count = 0;
 		for (auto& bloom_target : mBloomRTs)
 		{
 			glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)bloom_target[0]->getBufferSize().x, 0.0f, (float)bloom_target[0]->getBufferSize().y);
 
 			// Horizontal
-			mColorTextureSampler->setTexture(*input_texture);
+			mColorTextureSampler->setTexture(*bloom_target[TARGET_A]->mColorTexture);
 			mDirectionUniform->setValue({ 1.0f, 0.0f });
-			mTextureSizeUniform->setValue(bloom_target[0]->mColorTexture->getSize());
+			mTextureSizeUniform->setValue(bloom_target[TARGET_A]->mColorTexture->getSize());
 
-			bloom_target[0]->beginRendering();
-			onDraw(*bloom_target[0], command_buffer, identity_matrix, proj_matrix);
-			bloom_target[0]->endRendering();
+			bloom_target[TARGET_B]->beginRendering();
+			onDraw(*bloom_target[TARGET_B], command_buffer, identity_matrix, proj_matrix);
+			bloom_target[TARGET_B]->endRendering();
 
 			// Vertical
-			mColorTextureSampler->setTexture(*bloom_target[0]->mColorTexture);
+			mColorTextureSampler->setTexture(*bloom_target[TARGET_B]->mColorTexture);
 			mDirectionUniform->setValue({ 0.0f, 1.0f });
 
-			bloom_target[1]->beginRendering();
-			onDraw(*bloom_target[1], command_buffer, identity_matrix, proj_matrix);
-			bloom_target[1]->endRendering();
+			bloom_target[TARGET_A]->beginRendering();
+			onDraw(*bloom_target[TARGET_A], command_buffer, identity_matrix, proj_matrix);
+			bloom_target[TARGET_A]->endRendering();
 
-			// Set output texture of current pass to input texture of subsequent pass
-			input_texture = bloom_target[1]->mColorTexture.get();
+			// Blit the input texture to the smaller size RT
+			if (pass_count+1 < mBloomRTs.size())
+			{
+				auto& blit_dst = *mBloomRTs[pass_count + 1][TARGET_A]->mColorTexture;
+				blit(command_buffer, *bloom_target[TARGET_A]->mColorTexture, blit_dst);
+				++pass_count;
+			}
 		}
+
+		// Get a reference to the bloom result
+		// The size of this texture equals { input_width / 2 ^ PassCount, input_height / 2 ^ PassCount }
+		auto& final_texture = *mBloomRTs.back()[TARGET_A]->mColorTexture;
+
+		// Blit to output, potentially resizing the texture another time
+		blit(command_buffer, final_texture, *mOutputTexture);
 	}
 
 
@@ -248,8 +315,8 @@ namespace nap
 		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 		// Gather draw info
-		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-		GPUMesh& mesh = mesh_instance.getGPUMesh();
+		const MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
+		const GPUMesh& mesh = mesh_instance.getGPUMesh();
 
 		// Get pipeline to to render with
 		utility::ErrorState error_state;
@@ -268,6 +335,68 @@ namespace nap
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
+	}
+
+
+	void RenderBloomComponentInstance::blit(VkCommandBuffer commandBuffer, nap::Texture2D& srcTexture, nap::Texture2D& dstTexture)
+	{
+		// Transition to transfer src
+		VkImageLayout src_tex_layout = srcTexture.mImageData.mCurrentLayout;
+		if (src_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+		{
+			transitionImageLayout(commandBuffer, srcTexture.mImageData.mTextureImage,
+				src_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0, 1);
+		}
+
+		// Transition to transfer dst
+		VkImageLayout dst_tex_layout = dstTexture.mImageData.mCurrentLayout;
+		if (dst_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+		{
+			transitionImageLayout(commandBuffer, dstTexture.mImageData.mTextureImage,
+				dst_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
+				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0, 1);
+		}
+
+		// Create blit structure
+		VkImageBlit blit{};
+		blit.srcOffsets[0] = { 0, 0, 0 };
+		blit.srcOffsets[1] = { srcTexture.getWidth(), srcTexture.getHeight(), 1 };
+		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.srcSubresource.mipLevel = 0;
+		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.layerCount = 1;
+		blit.dstOffsets[0] = { 0, 0, 0 };
+		blit.dstOffsets[1] = { dstTexture.getWidth(), dstTexture.getHeight(), 1 };
+
+		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.dstSubresource.mipLevel = 0;
+		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.layerCount = 1;
+
+		// Blit to output
+		vkCmdBlitImage(commandBuffer,
+			srcTexture.mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			dstTexture.mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &blit, VK_FILTER_LINEAR);
+
+		// Transition to shader read
+		transitionImageLayout(commandBuffer, srcTexture.mImageData.mTextureImage,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0, 1);
+
+		// Transition to shader read
+		transitionImageLayout(commandBuffer, dstTexture.mImageData.mTextureImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0, 1);
 	}
 
 

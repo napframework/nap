@@ -4,31 +4,49 @@
 
 #pragma once
 
+// Local includes
+#include "vulkan/vulkan_core.h"
+#include "rtti/typeinfo.h"
+
 // External Includes
 #include <nap/numeric.h>
 #include <string>
 #include <vector>
-#include "vulkan/vulkan_core.h"
-#include "rtti/typeinfo.h"
-#include "gpubuffer.h"
 
 namespace nap
 {
+	/**
+	 * Flag that determines the descriptor type of a shader resource. Regards the type of data access on the device (GPU) 
+	 * inside a shader program.
+	 * 
+	 * Uniform buffers are typically small blocks of data that are updated very frequently from CPU to GPU (each frame),
+	 * but immutable in a shader program.
+	 * Storage buffers are typically large blocks of data that are bound/unbound to an SSBO and frequently read and written
+	 * in a compute shader program.
+	 * The Default option is used for buffers that are not bound to descriptorsets, e.g. vertex and index buffers.
+	 */
+	enum class EDescriptorType : uint
+	{
+		Uniform,			///< Specifies a uniform buffer descriptor. device readonly
+		Storage				///< Specifies a storage buffer descriptor. device read/write
+	};
+
+
 	/**
 	 * All available shader variable value types
 	 */
 	enum class EShaderVariableValueType : uint8
 	{
 		Unknown = 0,		///< unknown or invalid shader uniform
-		Float = 2,			///< float
-		Int = 3,			///< int
-		UInt = 4,			///< unsigned int
-		Vec2 = 5,			///< 2 float vector
-		Vec3 = 6,			///< 3 float vector
-		Vec4 = 7,			///< 4 float vector
-		Mat2 = 8,			///< 2x2 float matrix
-		Mat3 = 9,			///< 3x3 float matrix
-		Mat4 = 10			///< 4x4 float matrix
+		Float,				///< float
+		Int,				///< int
+		UInt,				///< unsigned int
+		Vec2,				///< 2 float vector
+		Vec3,				///< 3 float vector
+		Vec4,				///< 4 float vector
+		Mat2,				///< 2x2 float matrix
+		Mat3,				///< 3x3 float matrix
+		Mat4				///< 4x4 float matrix
 	};
 
 
@@ -46,10 +64,10 @@ namespace nap
 		int							mOffset;									///< Memory offset
 		int							mSize;										///< Total size (in bytes) of declaration
 	};
-
+	
 
 	/**
-	 * Shadrer variable value shader declaration (float, int etc.)
+	 * Shader variable value shader declaration (float, int etc.)
 	 */
 	class ShaderVariableValueDeclaration : public ShaderVariableDeclaration
 	{
@@ -62,7 +80,7 @@ namespace nap
 
 
 	/**
-	 * ShaderVariable struct shader declaration.
+	 * Shader variable struct shader declaration.
 	 */
 	class NAPAPI ShaderVariableStructDeclaration : public ShaderVariableDeclaration
 	{
@@ -83,7 +101,7 @@ namespace nap
 		 */
 		const ShaderVariableDeclaration* findMember(const std::string& name) const;
 		std::vector<std::unique_ptr<ShaderVariableDeclaration>> mMembers;		///< All shader declarations associated with struct
-		EDescriptorType				mDescriptorType;							///< e.g. ShaderVariable or Storage
+		EDescriptorType				mDescriptorType;							///< The type of descriptor for this resource
 	};
 
 
@@ -136,8 +154,8 @@ namespace nap
 
 
 	/**
-	 * Buffer Object Declaration struct
-	 * Stores shader variable declarations and is used as a descriptor object for UBOs and SSBOs
+	 * Buffer Object Declaration struct.
+	 * Stores shader variable declarations and is used as a descriptor object for UBOs and SSBOs.
 	 */
 	class BufferObjectDeclaration : public ShaderVariableStructDeclaration
 	{
@@ -149,6 +167,12 @@ namespace nap
 		BufferObjectDeclaration& operator=(BufferObjectDeclaration&& inRHS);
 		BufferObjectDeclaration(const BufferObjectDeclaration&) = delete;
 		BufferObjectDeclaration& operator=(const BufferObjectDeclaration&) = delete;
+
+		/**
+		 * Returns the first buffer declaration. Asserts if not present.
+		 * Handy accessor for buffer bindings.
+		 */
+		const ShaderVariableDeclaration& getBufferDeclaration() const;
 
 		int							mBinding;									///< Shader binding identifier
 		VkShaderStageFlagBits		mStage;										///< Shader stage: vertex, fragment, compute etc.

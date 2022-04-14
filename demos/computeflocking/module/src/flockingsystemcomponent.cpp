@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#define GLM_FORCE_SWIZZLE
-
 // Local Includes
 #include "flockingsystemcomponent.h"
 
@@ -62,12 +60,10 @@ namespace nap
 	// Constants
 	//////////////////////////////////////////////////////////////////////////
 
-
 	namespace uniform
 	{
-		constexpr const char* uboStruct = "UBO";
-		constexpr const char* ssboStruct = "SSBO";
-		constexpr const char* vertUboStruct = "Vert_UBO";
+		constexpr const char* VERTUBO = "VERTUBO";
+		constexpr const char* FRAGUBO = "FRAGUBO";
 		constexpr const char* randomColor = "randomColor";
 		constexpr const char* boidSize = "boidSize";
 		constexpr const char* cameraLocation = "cameraLocation";
@@ -133,7 +129,7 @@ namespace nap
 		// Cache resource
 		mResource = getComponent<FlockingSystemComponent>();
 
-		// Collect compute instances
+		// Collect compute instances under this entity
 		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
 		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 
@@ -141,7 +137,7 @@ namespace nap
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
 
-		// Clamp the boid count on raspberry pi
+		// Clamp the boid count if we are compiling on Raspberry Pi
 #ifdef COMPUTEFLOCKING_RPI
 		nap::Logger::info("Maximum boid count is limited to 1000 on Raspberry Pi to reduce perfomance issues");
 		mNumBoids = math::clamp(mResource->mNumBoids, 0U, 1000U);
@@ -158,19 +154,20 @@ namespace nap
 
 	void FlockingSystemComponentInstance::update(double deltaTime)
 	{
+		// Update time variables
 		mDeltaTime = deltaTime;
 		mElapsedTime += deltaTime;
 	}
 
 
-	void FlockingSystemComponentInstance::updateComputeUniforms(ComputeComponentInstance* comp)
+	void FlockingSystemComponentInstance::updateComputeMaterial(ComputeComponentInstance* comp)
 	{
 		// Update compute shader uniforms
-		UniformStructInstance* ubo_struct = comp->getComputeMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		UniformStructInstance* ubo_struct = comp->getMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
 			glm::vec4 target_position = mTargetTransformComponent->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(computeuniform::target)->setValue(target_position.xyz);
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(computeuniform::target)->setValue(target_position);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime)->setValue(static_cast<float>(mDeltaTime));
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius)->setValue(mResource->mViewRadiusParam->mValue);
@@ -183,17 +180,17 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius)->setValue(mResource->mBoundsRadiusParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mResource->mNumBoids);
+			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mNumBoids);
 		}
 	}
 
 
-	void FlockingSystemComponentInstance::updateRenderUniforms()
+	void FlockingSystemComponentInstance::updateRenderMaterial()
 	{
 		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
 
 		// Update vertex shader uniforms
-		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
+		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
@@ -202,17 +199,16 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower)->setValue(mResource->mFresnelPowerParam->mValue);
 		}
 
-		// Update vertex shader storage uniforms
-		auto* ssbo_struct = getMaterialInstance().findStorageUniform(uniform::ssboStruct);
-		auto* compute_struct = mCurrentComputeInstance->getComputeMaterialInstance().findStorageUniform("BoidBuffer_Out");
-		if (ssbo_struct != nullptr && compute_struct != nullptr)
+		// Update vertex shader buffer bindings
+		auto* storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getMaterialInstance().findBinding("BoidBuffer_Out"));
+		if (storage_binding != nullptr && storage_binding != nullptr)
 		{
-			auto& storage_buffer = compute_struct->findStorageUniformBuffer<StorageUniformStructBufferInstance>("boids")->getBuffer();
-			ssbo_struct->findStorageUniformBuffer<StorageUniformStructBufferInstance>("boids")->setBuffer(storage_buffer);
+			auto& storage_buffer = storage_binding->getBuffer();
+			storage_binding->setBuffer(storage_buffer);
 		}
 
 		// Update fragment shader uniforms
-		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::uboStruct);
+		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor)->setValue(mResource->mRandomColorParam->mValue);
@@ -235,18 +231,25 @@ namespace nap
 
 	void FlockingSystemComponentInstance::compute()
 	{
-		if (!mFirstUpdate)
-		{
-			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
-		}
-		mFirstUpdate = false;
+		// Update the compute material uniforms of the current compute instance
+		updateComputeMaterial(mCurrentComputeInstance);
 
-		updateComputeUniforms(mCurrentComputeInstance);
+		// Compute the current compute instance
+		// This updates the boid storage buffers to use for rendering
 		mRenderService->computeObjects({ mCurrentComputeInstance });
+
+		// Update current compute instance and index
+		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
+		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 	}
 
 
+	/**
+	 * This onDraw override is almost identical to the default in nap::RenderableMeshComponentInstance. The only difference is that we
+	 * set the `instanceCount` of `vkCmdDrawIndexed()` equal to the boid count. This will render the specified number of boids in a
+	 * single draw call. We can also identify which boid is rendered using the built-in variable `gl_InstanceIndex`, which is used as
+	 * a key to fetch the appropriate data from the boid storage buffer.
+	 */
 	void FlockingSystemComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get material to work with
@@ -257,7 +260,7 @@ namespace nap
 		}
 
 		// Update render uniforms
-		updateRenderUniforms();
+		updateRenderMaterial();
 
 		// Set mvp matrices if present in material
 		if (mProjectMatUniform != nullptr)
@@ -307,6 +310,9 @@ namespace nap
 
 		const IndexBuffer& index_buffer = mesh.getIndexBuffer(0);
 		vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+		// Make use of instanced rendering by setting the `instanceCount` of `vkCmdDrawIndexed()` equal to the boid count.
+		// This renders the boid mesh `mNumboids` times in a single draw call.
 		vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), mNumBoids, 0, 0, 0);
 
 		// Restore line width
@@ -325,8 +331,14 @@ namespace nap
 	}
 
 
-	FlockingSystemComponent& FlockingSystemComponentInstance::getResource()
+	FlockingSystemComponent& FlockingSystemComponentInstance::getResource() const
 	{
 		return *mResource;
+	}
+
+
+	uint FlockingSystemComponentInstance::getNumBoids() const
+	{
+		return mNumBoids;
 	}
 }

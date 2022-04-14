@@ -12,9 +12,6 @@ uniform nap
 } mvp;
 
 in vec3	in_Position;
-in vec3 in_UV0;
-
-out vec3 passUVs;
 
 void main(void)
 {

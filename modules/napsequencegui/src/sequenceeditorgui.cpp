@@ -48,9 +48,9 @@ namespace nap
 	{ }
 
 
-	void SequenceEditorGUI::show()
+	void SequenceEditorGUI::show(bool newWindow)
 	{
-		mView->show();
+		mView->show(newWindow);
 	}
 
 
@@ -80,7 +80,7 @@ namespace nap
 	}
 
 
-	void SequenceEditorGUIView::show()
+	void SequenceEditorGUIView::show(bool newWindow)
 	{
 		// Store scale
 		mState.mScale = mService.getGui().getScale();
@@ -118,11 +118,22 @@ namespace nap
 			);
 		}
 
+        bool visible = false;
+        if(newWindow)
+        {
+            visible = ImGui::Begin( mID.c_str(), // id
+                                    (bool*)0, // open
+                                    window_flags); // window flags;
+        }else
+        {
+            visible = ImGui::BeginChild(mID.c_str(), // id
+                                        { 0, 0 }, // size
+                                        (bool*)0, // open
+                                        window_flags); // window flags;
+        }
+
 		// begin window
-		if (ImGui::Begin(
-			mID.c_str(), // id
-			(bool*)0, // open
-			window_flags)) // window flags
+		if (visible)
 		{
 			//
 			ImVec2 windowSize = ImGui::GetWindowSize();
@@ -450,7 +461,10 @@ namespace nap
 		}
 
 		// pop id
-		ImGui::End();
+        if(newWindow)
+		    ImGui::End();
+        else
+            ImGui::EndChild();
 		ImGui::PopID();
 
 		if(reset_dirty_flag)
@@ -1299,7 +1313,7 @@ namespace nap
 
 				double time = action->mTime;
 
-                std::vector time_array = convertTimeToMMSSMSArray(time);
+                std::vector<int> time_array = convertTimeToMMSSMSArray(time);
 
 				bool edit_time = false;
 
@@ -1514,7 +1528,7 @@ namespace nap
                 const float width = 200.0f * mState.mScale;
 				auto color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2);
 				ImGui::Text("Select & drag :"); ImGui::SameLine(width);
-				ImGui::TextColored(color, "Left mouse button"); 
+				ImGui::TextColored(color, "Left mouse button");
 				ImGui::Text("Select & open edit popup :"); ImGui::SameLine(width);
 				ImGui::TextColored(color, "Right mouse button");
                 ImGui::Text("Copy segment :"); ImGui::SameLine(width);

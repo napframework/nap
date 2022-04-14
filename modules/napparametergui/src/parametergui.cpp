@@ -320,13 +320,13 @@ namespace nap
 	}
 
 
-	int ParameterGUI::getSelectedPresetIndex()
+	int ParameterGUI::getSelectedPresetIndex() const
 	{
 		return mSelectedPresetIndex;
 	}
 
 
-	std::string ParameterGUI::getSelectedPreset()
+	const std::string& ParameterGUI::getSelectedPreset() const
 	{
 		assert(mSelectedPresetIndex != -1);
 		return mPresets[mSelectedPresetIndex];

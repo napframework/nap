@@ -12,8 +12,8 @@ vec4 blur(sampler2D tx)
 	col += texture(tx, pass_UVs[0]) * 0.2270270270;
 	col += texture(tx, pass_UVs[1]) * 0.3162162162;
 	col += texture(tx, pass_UVs[2]) * 0.3162162162;
-	col += texture(tx, pass_UVs[2]) * 0.0702702703;
-	col += texture(tx, pass_UVs[2]) * 0.0702702703;
+	col += texture(tx, pass_UVs[3]) * 0.0702702703;
+	col += texture(tx, pass_UVs[4]) * 0.0702702703;
 	return col;
 }
 

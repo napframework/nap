@@ -142,7 +142,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     background: none;
 }
 
-QPushButton, QToolButton {
+QPushButton {
     color: @front3;
     background: @dark2;
     border-radius: 2px;
@@ -151,20 +151,21 @@ QPushButton, QToolButton {
     padding: 3px 10px 3px 10px;
 }
 
-QPushButton:hover, QToolButton:hover {
-    background: @highlight1;
-    color: @front3;
-}
-
 QPushButton:pressed {
     background: @highlight1;
     color: @dark1;
 }
 
-QPushButton:!enabled, QToolButton:!enabled  {
+QPushButton:!enabled  {
     background-color: @front2;
     color: @dark1;
 }
+
+QPushButton:hover, QToolButton:hover {
+    background: @highlight1;
+    color: @front3;
+}
+
 
 QTabBar {
     qproperty-drawBase: 0;

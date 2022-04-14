@@ -32,7 +32,7 @@ namespace nap
 	}
 
 
-	int NAPAPI getUniformStructDepth(const UniformStruct& uniformStruct)
+	int getUniformStructDepth(const UniformStruct& uniformStruct)
 	{
 		int max = 0;
 		getUniformStructDepthRecursive(uniformStruct, max);
@@ -40,7 +40,7 @@ namespace nap
 	}
 
 
-	size_t NAPAPI getUniformStructSizeRecursive(const UniformStruct& uniformStruct)
+	size_t getUniformStructSizeRecursive(const UniformStruct& uniformStruct)
 	{
 		size_t size = 0;
 		for (const auto& uniform : uniformStruct.mUniforms)

@@ -25,7 +25,6 @@ namespace nap
 	class RenderService;
 	class SceneService;
 	class DescriptorSetCache;
-	class StaticDescriptorSetCache;
 	class DescriptorSetAllocator;
 	class RenderableMesh;
 	class IMesh;
@@ -57,22 +56,12 @@ namespace nap
 			CPU = 4			///< CPU as graphics card
 		};
 
-		/**
-		 * Supported queue families.
-		 */
-		struct QueueFamilyOptions
-		{
-			bool mGraphics 	= true;		///< Graphics
-			bool mCompute 	= true;		///< Compute
-			bool mTransfer 	= true;		///< Transfer
-		};
-
 		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
+		bool						mCompute = true;												///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
 		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
 		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
 		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
-		QueueFamilyOptions			mQueueFamilies = { };											///< Property: 'RequiredQueues' Required Vulkan queue family operations.
 		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
@@ -97,7 +86,7 @@ namespace nap
 		PhysicalDevice() = default;
 
 		// Called by the render service
-		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex, int computeQueueIndex = -1);
+		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, const VkQueueFlags& queueCapabilities, int queueIndex);
 
 		/**
 		 * @return Physical device handle
@@ -110,11 +99,6 @@ namespace nap
 		int getQueueIndex() const { return mQueueIndex; }
 
 		/**
-		 * @return queue index used for compute commands.
-		 */
-		int getComputeQueueIndex() const { return mComputeQueueIndex; }
-
-		/**
 		 * @return physical device properties
 		 */
 		const VkPhysicalDeviceProperties& getProperties() const { return mProperties; }
@@ -125,6 +109,11 @@ namespace nap
 		const VkPhysicalDeviceFeatures& getFeatures() const { return mFeatures; }
 
 		/**
+		 * @return Queue capabilities of the selected queue
+		 */
+		const VkQueueFlags& getQueueCapabilities() const { return mQueueCapabilities; }
+
+		/**
 		 * @return if the device is valid
 		 */
 		bool isValid() const { return mDevice != VK_NULL_HANDLE && mQueueIndex >= 0; }
@@ -133,8 +122,8 @@ namespace nap
 		VkPhysicalDevice			mDevice = VK_NULL_HANDLE;			///< Handle to physical device
 		VkPhysicalDeviceProperties	mProperties;						///< Properties of the physical device
 		VkPhysicalDeviceFeatures	mFeatures;							///< Physical device features
-		int							mQueueIndex = -1;					///< Graphics queue index
-		int							mComputeQueueIndex = -1;			///< Compute queue index
+		VkQueueFlags				mQueueCapabilities;					///< Capabilities of the selected queue
+		int							mQueueIndex = -1;					///< Queue index
 	};
 
 
@@ -233,7 +222,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Main interface for 2D and 3D rendering operations.
+	 * Main interface for Vulkan Render (2D/3D) and Vulkan Compute operations.
 	 *
 	 * This service initializes the Vulkan back-end and provides an interface to render objects to a specific target (screen or back-buffer).
 	 * The service is shut down automatically on exit, and destroys all left over resources.
@@ -798,13 +787,6 @@ namespace nap
 		 * @return handle to the Vulkan command pool object.
 		 */
 		VkCommandPool getCommandPool() const										{ return mCommandPool; }
-
-		/**
-		 * Returns a handle to the Vulkan compute command pool object.
-		 * Command pools are opaque objects that command buffer memory is allocated from.
-		 * @return handle to the Vulkan command pool object. VK_NULL_HANDLE is compute is disabled.
-		 */
-		VkCommandPool getComputeCommandPool() const									{ return mComputeCommandPool; }
 		
 		/**
 		 * @return flags that specify which depth aspects of an image are included in a view.
@@ -825,27 +807,13 @@ namespace nap
 		VkQueue getQueue() const													{ return mQueue; }
 
 		/**
-		 * Returns the index of the selected compute queue family.
-		 * @return the compute queue index.
+		 * Returns true if the selected device has compute capability, else returns false.
+		 * @return if the selected device has compute capability
 		 */
-		int getComputeQueueIndex() const											{ return mPhysicalDevice.getComputeQueueIndex(); }
+		bool isComputeAvailable() const;
 
 		/**
-		 * Returns the selected compute queue, used to execute recorded command buffers.
-		 * This queue must support Compute operations.
-		 * @return the queue that is used to execute recorded command buffers.
-		 */
-		VkQueue getComputeQueue() const												{ return mComputeQueue; }
-
-		/**
-		 * Returns true if compute is available and enabled in the render service
-		 * configuration, else returns false.
-		 * @return if compute functionality is available.
-		 */
-		bool isComputeAvailable() const												{ return mPhysicalDevice.getComputeQueueIndex() >= 0; }
-
-		/**
-		 * Returns an empty texture that is available on the GPU for temporary biding or storage.
+		 * Returns an empty texture that is available on the GPU for temporary binding or storage.
 		 * @return empty texture that is available on the GPU.
 		 */
 		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }
@@ -1145,14 +1113,16 @@ namespace nap
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 
 		/**
-		 * Marks whether render and/or compute queue submission occured in a frame
+		 * Bit flags to keep track of what type of queue submissions have occurred within the current frame.
+		 * Each entry represents one of the command buffers that can be used between beginFrame() and endFrame().
 		 */
-		struct QueueSubmitOps
+		enum EQueueSubmitOp : uint
 		{
-			bool mRendering = false;
-			bool mHeadlessRendering = false;
-			bool mCompute = false;
+			Rendering			= 0x01,												///< Window rendering queue submission
+			HeadlessRendering	= 0x02,												///< Render target rendering queue submission
+			Compute				= 0x04												///< Compute dispatch compute queue submission
 		};
+		using QueueSubmitOps = uint;
 
 		/**
 		 * Binds together all the Vulkan data for a frame.
@@ -1161,13 +1131,13 @@ namespace nap
 		{
 			VkFence								mFence;								///< CPU sync primitive
 			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
-			std::vector<GPUBuffer*>				mBufferDownloads;					///< All buffers currently being downloaded
+			std::vector<GPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
 			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
-			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window.
+			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window
 			VkCommandBuffer						mComputeCommandBuffer;				///< Command buffer used to record compute operations
 			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;		///< All Vulkan resources queued for destruction
-			QueueSubmitOps						mQueueSubmitOps;
+			QueueSubmitOps						mQueueSubmitOps = 0U;				///< Queue submit operations that occurred in the current frame
 		};
 
 		/**
@@ -1196,6 +1166,7 @@ namespace nap
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
 		std::unique_ptr<Texture2D>				mEmptyTexture;
+
 		TextureSet								mTexturesToClear;
 		TextureSet								mTexturesToUpload;
 		BufferSet								mBuffersToClear;
@@ -1216,10 +1187,7 @@ namespace nap
 		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
 
 		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
-		VkCommandPool							mComputeCommandPool = VK_NULL_HANDLE;
-
 		VkQueue									mQueue = VK_NULL_HANDLE;
-		VkQueue									mComputeQueue = VK_NULL_HANDLE;
 
 		PipelineCache							mPipelineCache;
 		ComputePipelineCache					mComputePipelineCache;
@@ -1231,8 +1199,9 @@ namespace nap
 		bool									mInitialized = false;
 		bool									mSDLInitialized = false;
 		bool									mShInitialized = false;
-		UniqueMaterialCache						mMaterials;
 		bool									mHeadless = false;
+
+		UniqueMaterialCache						mMaterials;
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;

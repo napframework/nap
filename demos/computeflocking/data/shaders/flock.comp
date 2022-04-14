@@ -3,12 +3,37 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 #version 450
 
+// GPU-accelerated flocking system
+
+// For an introduction to computational flocking systems, please refer to the seminal work by Reynolds:
+// `Reynolds, C. W. (1987, August). Flocks, herds and schools: A distributed behavioral model.`
+
+// This compute shader updates: (1) all boid transformations; position, velocity and orientation and 
+// (2) `mateRate`; the ratio of boids in the flock within one's view radius. In order to do this, we must 
+// first calculate the distances between all boids in the storage buffer (O^2). Then, based on the boids 
+// in close proximity (mates), calculate three individual forces that dictate the flocking behavior;
+// (1) alignment, (2) cohesion and (3) separation. The sum of these forces gives us the acceleration
+// vector of a boid that we can use to update the velocity. We use the direction of the velocity vector
+// to generate a quaternion describing the boid's orientation. The position is updated and clamped to the 
+// sphere bounds. Boids that come near the bounds are directed to the reflection between the view direction
+// and surface direction with an additional force.
+
+// For simplicity's sake, this algorithm takes a brute force approach to evaluating the distances between 
+// boids. Lots of interesting optimizations exist for this kind of GPU problem, however. Feel free to 
+// optimize further by looking into e.g. spatial partitioning and broad-phase algorithms. This chapter from
+// GPU Gems 3 is a good start: 
+// https://developer.nvidia.com/gpugems/gpugems3/part-v-physics-simulation/chapter-32-broad-phase-collision-detection-cuda
+
 // Workgroup size as specialization constant as per: 
 // https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.60.html#specialization-constant-qualifier
 
-// When a workgroup size specialization constant is detected, NAP automatically overwrites
-// it with the maximum group size of the device on pipeline creation.
+// NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
+// size supported by the device on pipeline creation.
 layout(local_size_x_id = 0) in;
+
+// When declaring the workgroup size specialization constant to be higher than 0, NAP will not 
+// override the workgroup size when creating the compute pipeline. Uncommenting this bit and commenting out 
+// the above will let the shader define the workgroup size.
 //layout(local_size_x = 512) in;
 
 struct Boid
@@ -28,12 +53,12 @@ struct Boid
 layout(std430) readonly buffer BoidBuffer_In
 {
 	Boid boids[10000];
-} subo_in;
+} ssbo_in;
 
 layout(std430) writeonly buffer BoidBuffer_Out
-{
+{  
 	Boid boids[10000];
-} subo_out;
+} ssbo_out;
 
 
 // UNIFORM
@@ -71,12 +96,14 @@ const float avoidBoundWeightConst = 4.0;
 layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;	
 //const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
-// Allocate a block of shared data in which we can store positions and velocities 
+// Allocate a block of shared data in which we can store positions and velocities (2*sizeof(vec4)) 
 // of a boid for each local thread in the group/warp.
 shared vec4 sharedData[MAX_GROUP_SIZE_X*2];
 
 
 // Multiply two quaternions -> qa * qb
+// @param v: the vector to rotate
+// @param q: the quaternion used to rotate v
 vec4 mulQuat(const vec4 qa, const vec4 qb)
 { 
 	return normalize(vec4(
@@ -86,7 +113,9 @@ vec4 mulQuat(const vec4 qa, const vec4 qb)
 }
 
 
-// Rotate vector v with quaterion q
+// Rotate vector v with quaterion q -> q * v
+// @param v: the vector to rotate
+// @param q: the quaternion used to rotate v
 vec3 rotate(const vec3 v, const vec4 q)
 {
 	float l1 = dot(q.xyz, q.xyz);
@@ -95,6 +124,8 @@ vec3 rotate(const vec3 v, const vec4 q)
 
 
 // Returns a quaternion describing a rotation from orig to dest
+// @param orig: the source vector
+// @param dest: the target vector
 vec4 rotationQuat(const vec3 orig, const vec3 dest)
 {
 	float cos_theta = dot(orig, dest);
@@ -115,6 +146,7 @@ vec4 rotationQuat(const vec3 orig, const vec3 dest)
 
 
 // Returns true if v is a zero-vector, otherwise false
+// @param v: the vector to evaluate
 bool isZero(const vec3 v)
 {
 	float valid = 1.0;
@@ -128,6 +160,7 @@ bool isZero(const vec3 v)
 
 
 // Returns a zero vector instead of nan if v cannot be normalized, otherwise normalizes v
+// @param v: the vector to normalize
 vec3 safeNormalize(const vec3 v)
 {
 	return !isZero(v) ? normalize(v) : vec3(0.0);
@@ -135,6 +168,9 @@ vec3 safeNormalize(const vec3 v)
 
 
 // Clamps the magnitude of v between min and max
+// @param v: the vector to clamp
+// @param min: the minimum magnitude
+// @param max: the maximum magnitude
 vec3 clampMagnitude(const vec3 v, const float min, const float max)
 {
 	return (length(v) > max) ? (normalize(v) * max) : (length(v) < min) ? (normalize(v) * min) : v;
@@ -142,6 +178,9 @@ vec3 clampMagnitude(const vec3 v, const float min, const float max)
 
 
 // Returns a steering vector towards targetDir
+// @param targetDir: the target direction
+// @param velocity: the current velocity
+// @param maxSteerForce: the maximum steer force, affects speed and direction
 vec3 steerTowards(const vec3 targetDir, const vec3 velocity, const float maxSteerForce)
 {
 	vec3 v = !isZero(targetDir) ? normalize(targetDir) * ubo.maxSpeed - velocity : velocity;
@@ -150,6 +189,10 @@ vec3 steerTowards(const vec3 targetDir, const vec3 velocity, const float maxStee
 
 
 // Source: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+// @param orig: the ray origin
+// @param dir: the ray direction
+// @param center: the sphere center
+// @param radius: the sphere radius
 float raySphere(const vec3 orig, const vec3 dir, const vec3 center, const float radius)
 {
 	vec3 oc = orig - center;
@@ -165,7 +208,25 @@ float raySphere(const vec3 orig, const vec3 dir, const vec3 center, const float 
 }
 
 
-// Old routine that does not utilize shared memory 
+// Compute the cumulative forces of the flock on a single boid. This guides its behavior.
+// For each boid in the storage buffer, we calculate the distance between them and the 
+// current boid. We also take the dot product of the current boid's view direction and the
+// difference vector between both positions. Then, we check if the other boid is within 
+// an analytical view cone defined by the view radius and dot product. Boids inside this 
+// cone are considered a `mate` of the current boid and influence its behavior. We do the
+// same with a separate avoid radius that steers the boid away from mates that are too close.
+// 
+// This is a naive routine that does not utilize shared memory. It is kept here unused for 
+// reference and performance comparison. computeForcesShared() achieves the same result,
+// but much faster.
+//
+// @param gid: the global invocation id
+// @param position: the current boid position
+// @param velocity: the current boid velocity
+// @param avoidanceHeading: outputs the cumulative avoidance vector
+// @param flockHeading: outputs the cumulative flock heading
+// @param flockCenter: outputs the cumulative flock center
+// @param numFlockMates: outputs the number of boids in view radius of the current boid
 void computeForces(
 	const uint gid, 
 	const vec3 position, 
@@ -184,17 +245,23 @@ void computeForces(
 
 	for (uint i = 1; i < ubo.numBoids; i++) 
 	{
+		// Evaluate all indices, except gid
 		uint idx = (gid + i) % ubo.numBoids;
 
-		vec4 other_pos = subo_in.boids[idx].position;
-		vec4 other_dir = subo_in.boids[idx].velocity;
+		// Fetch other position and velocity
+		vec4 other_pos = ssbo_in.boids[idx].position;
+		vec4 other_dir = ssbo_in.boids[idx].velocity;
 
+		// Calculate the difference vector between current and other
 		vec3 offset = other_pos.xyz - position;
+		
+		// Calculate the L1 norm (sum of magnitudes) of the offset
 		float l1 = dot(offset, offset);
 
 		// Vision is a half sphere
 		float lookdot = dot(dir, normalize(offset));
 
+		// Evaluating both the radius and the dot product gives us a view cone
 		if (l1 < ubo.viewRadius * ubo.viewRadius && lookdot > -0.1) 
 		{
 			other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
@@ -213,7 +280,27 @@ void computeForces(
 }
 
 
-// Optimized routine that utilizes shared memory 
+// Compute the cumulative forces of the flock on a single boid. This guides its behavior.
+// For each boid in the storage buffer, we calculate the distance between them and the 
+// current boid. We also take the dot product of the current boid's view direction and the
+// difference vector between both positions. Then, we check if the other boid is within 
+// an analytical view cone defined by the view radius and dot product. Boids inside this 
+// cone are considered a `mate` of the current boid and influence its behavior. We do the
+// same with a separate avoid radius that steers the boid away from mates that are too close.
+//
+// This is an optimized routine that leverages shared memory. Reading from shared memory is
+// much faster than reading from global storage buffers, but can only be accessed by threads 
+// in the same workgroup and is limited in size. Therefore, we copy data from the storage 
+// buffer to sharedData in chunks the size of MAX_GROUP_SIZE_X*sizeof(vec4); a position and 
+// velocity per boid, and the process said chunks in the same way as in computeForces().
+//
+// @param gid: the global invocation id
+// @param position: the current boid position
+// @param velocity: the current boid velocity
+// @param avoidanceHeading: outputs the cumulative avoidance vector
+// @param flockHeading: outputs the cumulative flock heading
+// @param flockCenter: outputs the cumulative flock center
+// @param numFlockMates: outputs the number of boids in view radius of the current boid
 void computeForcesShared(
 	const uint gid, 
 	const vec3 position, 
@@ -241,8 +328,10 @@ void computeForcesShared(
 		uint chunk_size = (proc+MAX_GROUP_SIZE_X > ubo.numBoids) ? ubo.numBoids - proc : MAX_GROUP_SIZE_X;
 
 		uint id = clamp(proc+local_id, 0, proc+chunk_size-1);
-		sharedData[local_id*2] = subo_in.boids[id].position;
-		sharedData[local_id*2+1] = subo_in.boids[id].velocity;
+
+		// Copy other position and velocity to shared data
+		sharedData[local_id*2] = ssbo_in.boids[id].position;
+		sharedData[local_id*2+1] = ssbo_in.boids[id].velocity;
 
 		// This barrier ensures 'sharedData' is available and visible for the current workgroup
 		memoryBarrierShared();
@@ -251,15 +340,20 @@ void computeForcesShared(
 		// Update forces
 		for (uint i = 0; i < chunk_size; i++)
 		{
+			// Fetch other position and velocity from shared data
 			vec4 other_pos = sharedData[i*2];
 			vec4 other_dir = sharedData[i*2+1];
 
+			// Calculate the difference vector between current and other
 			vec3 offset = other_pos.xyz - position;
+
+			// Calculate the L1 norm (sum of magnitudes) of the offset
 			float l1 = dot(offset, offset);
 
 			// Vision is a half sphere
 			float lookdot = dot(dir, normalize(offset));
 
+			// Evaluating both the radius and the dot product gives us a view cone
 			if ((l1 > EPSILON) && (l1 < ubo.viewRadius * ubo.viewRadius) && (lookdot > -0.1)) 
 			{
 				other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
@@ -290,7 +384,7 @@ void main()
 	uint global_id = gl_GlobalInvocationID.x;
 
 	// Read boid from input buffer - use the invocation ID as an index into our storage buffer
-	Boid b = subo_in.boids[global_id];
+	Boid b = ssbo_in.boids[global_id];
 
 	// Compute forces
 	vec4 avoidance_heading;
@@ -298,6 +392,7 @@ void main()
 	vec4 flock_center;
 	uint num_flock_mates;
 
+	// Comment/uncomment to compare the performance difference between computeForcesShared() and computeForces()
 	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 
@@ -338,7 +433,7 @@ void main()
 		acceleration += avoid;
 	}
 
-	// Calculate velocityd
+	// Calculate velocity
 	vec3 vel = clampMagnitude(b.velocity.xyz + acceleration * ubo.deltaTime, ubo.minSpeed, ubo.maxSteerForce);
 
 	// Write current boid
@@ -360,5 +455,5 @@ void main()
 	b.mateRate = max(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate) * 0.97;
 
 	// Write boid to output buffer
-	subo_out.boids[global_id] = b;
+	ssbo_out.boids[global_id] = b;
 }

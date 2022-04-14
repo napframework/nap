@@ -80,57 +80,46 @@ namespace nap
 
 		switch (descriptor.getChannels())
 		{
-		case ESurfaceChannels::R:
-		{
-			switch (dataType)
+			case ESurfaceChannels::R:
 			{
-			case nap::ESurfaceDataType::BYTE:
-				return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-			case nap::ESurfaceDataType::FLOAT:
-				return VK_FORMAT_R32_SFLOAT;
-			case nap::ESurfaceDataType::USHORT:
-				return VK_FORMAT_R16_UNORM;
+				switch (dataType)
+				{
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16_UNORM;
+				}
+				break;
 			}
-			break;
-		}
-		case ESurfaceChannels::RGBA:
-		{
-			switch (dataType)
+			case ESurfaceChannels::RGBA:
 			{
-			case nap::ESurfaceDataType::BYTE:
-				return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-			case nap::ESurfaceDataType::FLOAT:
-				return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case nap::ESurfaceDataType::USHORT:
-				return VK_FORMAT_R16G16B16A16_UNORM;
+				switch (dataType)
+				{
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_R32G32B32A32_SFLOAT;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_R16G16B16A16_UNORM;
+				}
+				break;
 			}
-			break;
-		}
-		case ESurfaceChannels::BGRA:
-		{
-			switch (dataType)
+			case ESurfaceChannels::BGRA:
 			{
-			case nap::ESurfaceDataType::BYTE:
-				return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-			case nap::ESurfaceDataType::FLOAT:
-				return VK_FORMAT_UNDEFINED;
-			case nap::ESurfaceDataType::USHORT:
-				return VK_FORMAT_UNDEFINED;
+				switch (dataType)
+				{
+					case nap::ESurfaceDataType::BYTE:
+						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
+					case nap::ESurfaceDataType::FLOAT:
+						return VK_FORMAT_UNDEFINED;
+					case nap::ESurfaceDataType::USHORT:
+						return VK_FORMAT_UNDEFINED;
+				}
+				break;
 			}
-			break;
-		}
-		case ESurfaceChannels::D:
-		{
-			switch (dataType)
-			{
-			case nap::ESurfaceDataType::FLOAT:
-				return VK_FORMAT_D32_SFLOAT;
-			case nap::ESurfaceDataType::USHORT:
-				return VK_FORMAT_D16_UNORM;
-			}
-			break;
-		}
-		NAP_ASSERT_MSG(false, "Surface descriptor could not be resolved to valid/supported texture format");
+			assert(false);
 		}
 		return VK_FORMAT_UNDEFINED;
 	}
@@ -197,7 +186,7 @@ namespace nap
 	}
 
 
-	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, VkImageLayout targetLayout, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
+	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
 	{
 
 		int32 mipWidth  = static_cast<int32>(texWidth);
@@ -237,7 +226,7 @@ namespace nap
 
 			// Prepare LOD for shader read
 			transitionImageLayout(buffer, image, barrier,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	targetLayout,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				i - 1,									1);
@@ -248,7 +237,7 @@ namespace nap
 
 		// Prepare final LOD for shader read
 		transitionImageLayout(buffer, image, barrier,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	targetLayout,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			mipLevels - 1,							1);
@@ -282,11 +271,12 @@ namespace nap
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
 		mFormat = getTextureFormat(*mRenderService, descriptor);
-		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED,
+			"%s, Unsupported texture format", mID.c_str()))
 			return false;
 
 		// Ensure our GPU image can be used as a transfer destination during uploads
@@ -297,7 +287,7 @@ namespace nap
 			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
 			return false;
 		}
-		
+
 		// If mip mapping is enabled, ensure it is supported
 		if (generateMipMaps)
 		{
@@ -359,72 +349,61 @@ namespace nap
 			}
 		}
 
-		// Set image usage flags: can be written and sampled
+		// Set image usage flags: can be written to, read and sampled
 		VkImageUsageFlags usage = requiredFlags;
-		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		switch (mUsage)
-		{
-			case ETextureUsage::DynamicRead:
-			{
-				// can be read
-				usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-				break;
-			}
-			case ETextureUsage::DynamicWrite:
-			case ETextureUsage::Static:
-			{
-				// can be read if mipmaps are enabled
-				usage |= mMipLevels > 1 ? VK_IMAGE_USAGE_TRANSFER_SRC_BIT : 0;
-				break;
-			}
-			default:
-			{
-				assert(false);
-				break;
-			}
-		}
+		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+			VK_IMAGE_USAGE_SAMPLED_BIT |
+			VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create GPU image
-		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, 
-			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY,  mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
-				return false;
-
-		// Check whether the texture is flagged as depth
-		bool is_depth = descriptor.getChannels() == ESurfaceChannels::D;
+		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+			return false;
 
 		// Create GPU image view
-		VkImageAspectFlags aspect_flags = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, aspect_flags, mImageData.mTextureView, errorState))
-				return false;
+		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
+			return false;
 
 		// Initialize buffer indexing
 		mCurrentStagingBufferIndex = 0;
 		mDescriptor = descriptor;
 
-		// Fill the texture with nothing (black)
-		if (clearMode == Texture2D::EClearMode::Clear)
-		{
-			mRenderService->requestTextureClear(*this);
-		}
 		return true;
 	}
 
 
-	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, generateMipMaps, clearMode, requiredFlags, errorState))
+		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
 			return false;
 
+		// Clear the texture and perform a layout transition to shader read
+		mRenderService->requestTextureClear(*this);
+		return true;
+	}
+
+
+	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	{
+		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
+			return false;
+
+		// Set clear color
 		std::memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
+
+		// Clear the texture and perform a layout transition to shader read
+		mRenderService->requestTextureClear(*this);
 		return true;
 	}
 
 
 	bool Texture2D::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, void* initialData, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
-		if (!init(descriptor, generateMipMaps, EClearMode::DontClear, requiredFlags, errorState))
+		if (!initInternal(descriptor, generateMipMaps, requiredFlags, errorState))
 			return false;
 
+		// Upload initial data and perform a layout transition to shader read
 		update(initialData, descriptor);
 		return true;
 	}
@@ -456,6 +435,8 @@ namespace nap
 
 	void Texture2D::clear(VkCommandBuffer commandBuffer)
 	{
+		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
+		// Therefore, the initial layout transition waits for nothing
 		VkAccessFlags srcMask = 0;
 		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
@@ -485,13 +466,13 @@ namespace nap
 
 		// Transition image layout
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getImageLayout(),
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				0, 1);
 
 		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = getImageLayout();
+		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
 
@@ -501,16 +482,18 @@ namespace nap
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 		assert(buffer.mAllocation != VK_NULL_HANDLE);
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
-		
-		VkAccessFlags srcMask = 0;
+
+		// Texture uploads are recorded after clear commands, and we do not want operations on the same texture to interfere with each other
+		// Therefore, the initial layout transition requires synchronization with a potential prior clear command
+		VkAccessFlags srcMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
 		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
 		{
-			srcMask  = VK_ACCESS_SHADER_READ_BIT;
-			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			srcMask  |= VK_ACCESS_SHADER_READ_BIT;
+			srcStage |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
 		// Get image ready for copy, applied to all mipmap layers
@@ -526,19 +509,19 @@ namespace nap
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			createMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, getImageLayout(), mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			createMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
 			transitionImageLayout(commandBuffer, mImageData.mTextureImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getImageLayout(),
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				0,										1);
 		}
 
 		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = getImageLayout();
+		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		// Destroy staging buffer when usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
@@ -566,7 +549,7 @@ namespace nap
 
 		// Transition for copy
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
-			getImageLayout(),							VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
 			0,											1);
@@ -576,7 +559,7 @@ namespace nap
 		
 		// Transition back to shader usage
 		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		getImageLayout(),
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0,											1);

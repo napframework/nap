@@ -11,7 +11,10 @@
 #include <apprunner.h>
 #include <guiappeventhandler.h>
 
-// Main loop
+/**
+ * Compute Flocking Demo
+ * Refer to computeflockingapp.h for a more detailed description of the application.
+ */
 int main(int argc, char *argv[])
 {
 	// Create core

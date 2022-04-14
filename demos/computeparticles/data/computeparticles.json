@@ -4,20 +4,15 @@
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
-            "StorageUniforms": [
+            "Samplers": [],
+            "Buffers": [
                 {
-                    "Type": "nap::StorageUniformStruct",
-                    "mID": "StorageUniformStruct_afd17387",
+                    "Type": "nap::BufferBindingVec4",
+                    "mID": "BufferBindingVec4_6c36afa1",
                     "Name": "VertexBuffer",
-                    "StorageUniform": {
-                        "Type": "nap::StorageUniformVec4Buffer",
-                        "mID": "StorageUniformVec4Buffer_970dc79d",
-                        "Name": "vertices",
-                        "Buffer": "GPUVec4Buffer_Vertices"
-                    }
+                    "Buffer": "ParticleVertexBuffer"
                 }
             ],
-            "Samplers": [],
             "Shader": "ComputeShader"
         },
         {
@@ -107,10 +102,10 @@
                     "Visible": true,
                     "Mesh": "",
                     "MaterialInstance": {
-                        "Material": "ParticleMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ParticleMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -126,11 +121,11 @@
                         }
                     },
                     "NumParticles": 100000,
-                    "Size": 0.10000000149011612,
+                    "Speed": 0.25,
+                    "Displacement": 0.10000000149011612,
                     "RotationSpeed": 5.0,
-                    "Speed": 0.5,
-                    "TimeScale": 1.0,
-                    "RotationVariation": 1.0
+                    "RotationVariation": 1.0,
+                    "Size": 0.07999999821186066
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -158,33 +153,23 @@
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeComponent_A",
                     "ComputeMaterialInstance": {
-                        "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [
+                        "Samplers": [],
+                        "Buffers": [
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_0fa64241",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_112b3571",
                                 "Name": "ParticleBuffer_In",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_2f2aafc2",
-                                    "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_A"
-                                }
+                                "Buffer": "ParticleComputeBufferA"
                             },
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_406bb963",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_8cf0f85d",
                                 "Name": "ParticleBuffer_Out",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_80e8d81c",
-                                    "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_B"
-                                }
+                                "Buffer": "ParticleComputeBufferB"
                             }
                         ],
-                        "Samplers": []
+                        "ComputeMaterial": "ComputeMaterial"
                     },
                     "Invocations": 1
                 },
@@ -192,33 +177,23 @@
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeComponent_B",
                     "ComputeMaterialInstance": {
-                        "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [
+                        "Samplers": [],
+                        "Buffers": [
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_30fe19c9",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_a712e84d",
                                 "Name": "ParticleBuffer_In",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_b40f779b",
-                                    "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_B"
-                                }
+                                "Buffer": "ParticleComputeBufferB"
                             },
                             {
-                                "Type": "nap::StorageUniformStruct",
-                                "mID": "StorageUniformStruct_85c16027",
+                                "Type": "nap::BufferBindingStruct",
+                                "mID": "BufferBindingStruct_602f8cad",
                                 "Name": "ParticleBuffer_Out",
-                                "StorageUniform": {
-                                    "Type": "nap::StorageUniformStructBuffer",
-                                    "mID": "StorageUniformStructBuffer_00e07917",
-                                    "Name": "particles",
-                                    "Buffer": "StructGPUBuffer_Particles_A"
-                                }
+                                "Buffer": "ParticleComputeBufferA"
                             }
                         ],
-                        "Samplers": []
+                        "ComputeMaterial": "ComputeMaterial"
                     },
                     "Invocations": 1
                 }
@@ -237,13 +212,12 @@
             "mID": "ParticleTwo",
             "Usage": "Static",
             "ImagePath": "texture_two.png",
-            "GenerateLods": true
+            "GenerateLods": false
         },
         {
             "Type": "nap::Material",
             "mID": "ParticleMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2DArray",
@@ -262,6 +236,7 @@
                     ]
                 }
             ],
+            "Buffers": [],
             "Shader": "ParticleShader",
             "VertexAttributeBindings": [
                 {
@@ -286,16 +261,16 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": false,
+            "SampleShading": true,
             "Title": "ComputeParticlesDemo",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.06700000166893006,
-                    0.07800000160932541,
-                    0.14900000393390656,
+                    0.0,
+                    0.0,
+                    0.0,
                     1.0
                 ]
             },
@@ -327,56 +302,10 @@
             "FragShader": "shaders/particle.frag"
         },
         {
-            "Type": "nap::StructBufferFillPolicy",
-            "mID": "StructBufferFillPolicy_9e877e2d",
-            "VariableFillPolicies": [
-                {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_af36377c",
-                    "Name": "position",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_aa9aefa5",
-                        "LowerBound": {
-                            "x": -10.0,
-                            "y": -10.0,
-                            "z": -10.0,
-                            "w": -10.0
-                        },
-                        "UpperBound": {
-                            "x": 10.0,
-                            "y": 10.0,
-                            "z": 10.0,
-                            "w": 10.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::Vec4FillPolicyEntry",
-                    "mID": "Vec4FillPolicyEntry_74910f0b",
-                    "Name": "velocity",
-                    "ValueFillPolicy": {
-                        "Type": "nap::UniformRandomVec4BufferFillPolicy",
-                        "mID": "UniformRandomVec4BufferFillPolicy_905aef49",
-                        "LowerBound": {
-                            "x": -1.0,
-                            "y": -1.0,
-                            "z": -1.0,
-                            "w": -1.0
-                        },
-                        "UpperBound": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0,
-                            "w": 1.0
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "Type": "nap::StructGPUBuffer",
-            "mID": "StructGPUBuffer_Particles_A",
+            "Type": "nap::StructBuffer",
+            "mID": "ParticleComputeBufferA",
+            "Clear": false,
+            "Usage": "Static",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -433,14 +362,13 @@
                 },
                 "Count": 100000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "StructBufferFillPolicy_9e877e2d",
-            "Clear": false
+            "FillPolicy": "ParticleBufferFillPolicy"
         },
         {
-            "Type": "nap::StructGPUBuffer",
-            "mID": "StructGPUBuffer_Particles_B",
+            "Type": "nap::StructBuffer",
+            "mID": "ParticleComputeBufferB",
+            "Clear": false,
+            "Usage": "Static",
             "Descriptor": {
                 "Element": {
                     "Type": "nap::UniformStruct",
@@ -497,19 +425,63 @@
                 },
                 "Count": 100000
             },
-            "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "",
-            "Clear": false
+            "FillPolicy": ""
         },
         {
-            "Type": "nap::Vec4VertexBuffer",
-            "mID": "GPUVec4Buffer_Vertices",
-            "Count": 400000,
+            "Type": "nap::StructFillPolicy",
+            "mID": "ParticleBufferFillPolicy",
+            "FillPolicies": [
+                {
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_dfe3d0a7",
+                    "Name": "position",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_0a036fb0",
+                        "LowerBound": {
+                            "x": -10.0,
+                            "y": -10.0,
+                            "z": -10.0,
+                            "w": -10.0
+                        },
+                        "UpperBound": {
+                            "x": 10.0,
+                            "y": 10.0,
+                            "z": 10.0,
+                            "w": 10.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::StructFillPolicyVec4",
+                    "mID": "StructFillPolicyVec4_6b099245",
+                    "Name": "velocity",
+                    "FillPolicy": {
+                        "Type": "nap::RandomFillPolicyVec4",
+                        "mID": "RandomFillPolicyVec4_0f6fa77a",
+                        "LowerBound": {
+                            "x": -1.0,
+                            "y": -1.0,
+                            "z": -1.0,
+                            "w": -1.0
+                        },
+                        "UpperBound": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "Type": "nap::VertexBufferVec4",
+            "mID": "ParticleVertexBuffer",
+            "Clear": false,
             "Usage": "Static",
-            "DescriptorType": "Storage",
-            "FillPolicy": "",
-            "Clear": false
+            "Count": 400000,
+            "FillPolicy": ""
         }
     ]
 }
