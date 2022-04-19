@@ -43,7 +43,7 @@ namespace nap
 
 	/**
 	 * Creates an ArtNet controller node. 
-	 * A controller node is used to convert dmx data into artnet data that is send over the network.
+	 * A controller node is used to convert dmx data into artnet data that is sent over the network.
 	 * Every controller node has a subnet and universe associated with it.
 	 * See comments in ArtNetService on addressing on how data is eventually sent over the network.
 	 */
