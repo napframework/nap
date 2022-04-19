@@ -94,11 +94,11 @@ Only the `Raspberry Pi 4` running `Raspbian Bullseye (v11, armhf)` is 'fully' su
 
 Please note that the current `V3DV driver` in the `Raspbian Bullseye Repository` is tagged as experimental and should not be considered production ready. Although most demos work fine, we did run into minor render issues, most notably with the `heightmap` and `computeflocking` demos. Using a more recent (upstream) driver improved overall performance and resolved most known render issues.
 
-- Run the following command to install the Driver from the Raspbian Repository 
+- Run the following command to install the driver from the Raspbian Repository 
 ```
 sudo apt install mesa-vulkan-drivers
 ```
-- Or compile and install the latest Mesa Driver from source
+- Or compile and install the latest [Mesa driver](https://mesa3d.org/) from source
 
 ## Setup Your Build Environment {#setup_build_env_linux}
 
