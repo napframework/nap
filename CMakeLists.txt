@@ -130,11 +130,8 @@ add_subdirectory(test/render)
 # app targets, add your own app targets here!
 #add_subdirectory(apps/example)
 #add_subdirectory(apps/example/module)
-#add_subdirectory(apps/napaudioapp)
-#add_subdirectory(apps/rain)
-#add_subdirectory(apps/rain/module)
-add_subdirectory(apps/4dsound)
-add_subdirectory(apps/theworks)
+#add_subdirectory(apps/4dsound)
+#add_subdirectory(apps/theworks)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -225,7 +222,9 @@ add_subdirectory(4dsound_modules/napturboactivate)
 add_subdirectory(4dsound_modules/napguilayout)
 add_subdirectory(4dsound_modules/napcontrol)
 add_subdirectory(4dsound_modules/napsettings)
-add_subdirectory(theworks_modules/theworks)
+
+# theworks modules
+# add_subdirectory(theworks_modules/theworks)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
