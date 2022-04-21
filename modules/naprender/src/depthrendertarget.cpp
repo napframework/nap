@@ -43,6 +43,8 @@ namespace nap
 		// Set image layout of the target depth texture to depth/stencil read
 		mDepthTexture->mLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
+		// Must perform layout transition to shader read only before being sampled in fragment shader
+
 		// Set framebuffer size
 		glm::uvec2 size = mDepthTexture->getSize();
 		VkExtent2D framebuffer_size = { size.x, size.y };

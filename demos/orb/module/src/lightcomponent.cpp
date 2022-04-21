@@ -61,6 +61,25 @@ namespace nap
 	}
 
 
+	static bool hasDeclaration(MaterialInstance& materialInstance, std::string name)
+	{
+		if (materialInstance.findUniform(name) != nullptr)
+			return true;
+
+		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
+		const ShaderVariableStructDeclaration* declaration = nullptr;
+		const std::vector<BufferObjectDeclaration>& ubo_declarations = materialInstance.getMaterial().getShader().getUBODeclarations();
+		for (const auto& ubo_declaration : ubo_declarations)
+		{
+			if (ubo_declaration.mName == name)
+			{
+				declaration = &ubo_declaration;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// LightComponent
 	//////////////////////////////////////////////////////////////////////////
@@ -150,21 +169,27 @@ namespace nap
 
 		for (auto* render_comp : mCachedRenderComponents)
 		{
-			UniformStructInstance* ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
-			if (ubo_struct != nullptr)
+			if (hasDeclaration(render_comp->getMaterialInstance(), uniform::vertUboStruct))
 			{
-				ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
-				ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
+				UniformStructInstance* ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
+				if (ubo_struct != nullptr)
+				{
+					ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
+					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
+				}
 			}
 
-			ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
-			if (ubo_struct != nullptr)
+			if (hasDeclaration(render_comp->getMaterialInstance(), uniform::fragUboStruct))
 			{
-				ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_location);
-				ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
-				ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightDirection)->setValue(light_direction);
-				ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->getValue().toVec3());
-				ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
+				UniformStructInstance* ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
+				if (ubo_struct != nullptr)
+				{
+					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_location);
+					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
+					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightDirection)->setValue(light_direction);
+					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->getValue().toVec3());
+					ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
+				}
 			}
 		}
 	}

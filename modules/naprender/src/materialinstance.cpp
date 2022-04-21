@@ -13,6 +13,7 @@
 // External includes
 #include <nap/logger.h>
 #include <rtti/rttiutilities.h>
+#include <depthtexture2d.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
 	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
@@ -280,6 +281,14 @@ namespace nap
 			Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
 
 			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex];
+			if (sampler_2d->getTexture().get_type() == RTTI_OF(DepthTexture2D))
+			{
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+			}
+			else
+			{
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			}
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = sampler_2d->getTexture().getImageView();
 			imageInfo.sampler = vk_sampler;
@@ -355,6 +364,14 @@ namespace nap
 	void BaseMaterialInstance::addImageInfo(const Texture2D& texture2D, VkSampler sampler)
 	{
 		VkDescriptorImageInfo imageInfo = {};
+		if (texture2D.get_type() == RTTI_OF(DepthTexture2D))
+		{
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+		}
+		else
+		{
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.imageView = texture2D.getImageView();
 		imageInfo.sampler = sampler;
@@ -696,6 +713,21 @@ namespace nap
 			return mResource->mDepthMode;
 
 		return mResource->mMaterial->getDepthMode();
+	}
+
+
+	void MaterialInstance::setDepthCompareMode(EDepthCompareMode depthCompareMode)
+	{
+		mResource->mDepthCompareMode = depthCompareMode;
+	}
+
+
+	EDepthCompareMode MaterialInstance::getDepthCompareMode() const
+	{
+		if (mResource->mDepthCompareMode != EDepthCompareMode::NotSet)
+			return mResource->mDepthCompareMode;
+
+		return mResource->mMaterial->getDepthCompareMode();
 	}
 
 

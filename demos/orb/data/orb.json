@@ -54,8 +54,8 @@
             "Type": "nap::ComputeMaterial",
             "mID": "ComputeMaterial",
             "Uniforms": [],
-            "StorageUniforms": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "ComputeShader"
         },
         {
@@ -189,7 +189,6 @@
                     "Visible": true,
                     "Mesh": "FloorMesh",
                     "MaterialInstance": {
-                        "Material": "PBRColorMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -221,12 +220,11 @@
                                 ]
                             }
                         ],
-                        "StorageUniforms": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PBRColorMaterial",
                         "BlendMode": "NotSet",
-                        "DepthMode": "NotSet",
-                        "DepthCompareMode": "LessOrEqual",
-                        "EnableDepthCompare": false
+                        "DepthMode": "NotSet"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -275,7 +273,6 @@
                     "Visible": true,
                     "Mesh": "LightReferenceMesh",
                     "MaterialInstance": {
-                        "Material": "ConstantMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -301,12 +298,11 @@
                                 ]
                             }
                         ],
-                        "StorageUniforms": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
                         "BlendMode": "NotSet",
-                        "DepthMode": "NotSet",
-                        "DepthCompareMode": "LessOrEqual",
-                        "EnableDepthCompare": false
+                        "DepthMode": "NotSet"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -352,7 +348,6 @@
                     "Visible": true,
                     "Mesh": "LightDirReferenceMesh",
                     "MaterialInstance": {
-                        "Material": "ConstantMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -378,12 +373,11 @@
                                 ]
                             }
                         ],
-                        "StorageUniforms": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
                         "BlendMode": "NotSet",
-                        "DepthMode": "NotSet",
-                        "DepthCompareMode": "LessOrEqual",
-                        "EnableDepthCompare": false
+                        "DepthMode": "NotSet"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -427,14 +421,12 @@
                     "Visible": true,
                     "Mesh": "HeightSphereMesh",
                     "MaterialInstance": {
-                        "Material": "PBRTextureMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PBRTextureMaterial",
                         "BlendMode": "NotSet",
-                        "DepthMode": "NotSet",
-                        "DepthCompareMode": "LessOrEqual",
-                        "EnableDepthCompare": false
+                        "DepthMode": "NotSet"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -453,10 +445,10 @@
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeComponent",
                     "ComputeMaterialInstance": {
-                        "ComputeMaterial": "ComputeMaterial",
                         "Uniforms": [],
-                        "StorageUniforms": [],
-                        "Samplers": []
+                        "Samplers": [],
+                        "Buffers": [],
+                        "ComputeMaterial": "ComputeMaterial"
                     },
                     "Invocations": 1
                 },
@@ -633,8 +625,8 @@
                     ]
                 }
             ],
-            "StorageUniforms": [],
             "Samplers": [],
+            "Buffers": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -676,7 +668,6 @@
                     ]
                 }
             ],
-            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",
@@ -695,6 +686,7 @@
                     "Texture": "ShadowMap"
                 }
             ],
+            "Buffers": [],
             "Shader": "PBRColorShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -713,7 +705,6 @@
                     "Uniforms": []
                 }
             ],
-            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",
@@ -828,6 +819,7 @@
                     "Texture": "PBRDisplacementMap"
                 }
             ],
+            "Buffers": [],
             "Shader": "PBRTextureShader",
             "VertexAttributeBindings": [
                 {

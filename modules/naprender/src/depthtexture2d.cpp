@@ -38,26 +38,23 @@ namespace nap
 		settings.mColorSpace = mColorSpace;
 		settings.mChannels = ESurfaceChannels::D;
 
-		// Figure out if the texture needs to be filled
-		EClearMode clear_mode = mFill ? EClearMode::Clear : EClearMode::DontClear;
-
 		// Initialize based on selected format
 		switch (mFormat)
 		{
 			case DepthTexture2D::EDepthFormat::D8:
 			{
 				settings.mDataType = ESurfaceDataType::BYTE;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
 			}
 			case DepthTexture2D::EDepthFormat::D16:
 			{
 				settings.mDataType = ESurfaceDataType::USHORT;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
 			}
 			case DepthTexture2D::EDepthFormat::D32:
 			{
 				settings.mDataType = ESurfaceDataType::FLOAT;
-				return Texture2D::init(settings, false, clear_mode, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+				return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
 			}
 			default:
 			{

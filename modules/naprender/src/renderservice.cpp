@@ -268,6 +268,36 @@ namespace nap
 
 
 	/**
+	 * @return depth compare operation
+	 */
+	static VkCompareOp getDepthCompareOp(EDepthCompareMode compareMode)
+	{
+		switch (compareMode)
+		{
+		case EDepthCompareMode::Never:
+			return VK_COMPARE_OP_NEVER;
+		case EDepthCompareMode::Less:
+			return VK_COMPARE_OP_LESS;
+		case EDepthCompareMode::Equal:
+			return VK_COMPARE_OP_EQUAL;
+		case EDepthCompareMode::LessOrEqual:
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		case EDepthCompareMode::Greater:
+			return VK_COMPARE_OP_GREATER;
+		case EDepthCompareMode::NotEqual:
+			return VK_COMPARE_OP_NOT_EQUAL;
+		case EDepthCompareMode::GreaterOrEqual:
+			return VK_COMPARE_OP_GREATER_OR_EQUAL;
+		case EDepthCompareMode::Always:
+			return VK_COMPARE_OP_ALWAYS;
+		default:
+			assert(false);
+			return VK_COMPARE_OP_NEVER;
+		}
+	}
+
+
+	/**
 	 * @return the set of required device extension names
 	 */
 	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
@@ -799,6 +829,9 @@ namespace nap
 		depth_stencil.depthBoundsTestEnable = VK_FALSE;
 		depth_stencil.stencilTestEnable = VK_FALSE;
 
+		// Depth compare operation
+		depth_stencil.depthCompareOp = getDepthCompareOp(materialInstance.getDepthCompareMode());
+
 		// If the depth mode is inherited from the blend mode, determine the correct depth mode to use
 		EDepthMode depth_mode = materialInstance.getDepthMode();
 		if (depth_mode == EDepthMode::InheritFromBlendMode)
@@ -889,6 +922,7 @@ namespace nap
 		VkRenderPass renderPass, 
 		VkSampleCountFlagBits sampleCount, 
 		bool enableSampleShading,
+		bool depthOnly,
 		ECullMode cullMode,
 		EPolygonMode polygonMode,
 		VkPipelineLayout& pipelineLayout, 
@@ -907,7 +941,7 @@ namespace nap
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
-			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0U });
+			attributeDescriptions.push_back({ static_cast<uint>(shader_vertex_attribute->mLocation), shader_attribute_binding, shader_vertex_attribute->mFormat, 0U });
 
 			shader_attribute_binding++;
 		}
@@ -933,13 +967,14 @@ namespace nap
 		vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
 		vertex_input_info.vertexBindingDescriptionCount = (int)bindingDescriptions.size();
-		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
+		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint>(attributeDescriptions.size());
 		vertex_input_info.pVertexBindingDescriptions = bindingDescriptions.data();
 		vertex_input_info.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 		VkPipelineInputAssemblyStateCreateInfo input_assembly = {};
 		input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		input_assembly.topology = getTopology(drawMode);
+		input_assembly.flags = 0;
 		input_assembly.primitiveRestartEnable = VK_FALSE;
 
 		VkDynamicState dynamic_states[3] = {
@@ -968,7 +1003,9 @@ namespace nap
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = getCullMode(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		rasterizer.depthBiasEnable = VK_FALSE;
+
+		// Enable depth bias if no color attachment is used
+		rasterizer.depthBiasEnable = depthOnly ? VK_TRUE : VK_FALSE;
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -992,6 +1029,10 @@ namespace nap
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
 
+		// Set color blend attachment count to zero if no color attachment is used
+		colorBlending.attachmentCount = depthOnly ? 0 : 1;
+		colorBlending.pAttachments = &colorBlendAttachment;
+
 		auto layout = shader.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
@@ -1007,7 +1048,7 @@ namespace nap
 
 		VkGraphicsPipelineCreateInfo pipeline_info = {};
 		pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipeline_info.stageCount = 2;
+		pipeline_info.stageCount = depthOnly ? 1 : 2;
 		pipeline_info.pStages = shader_stages;
 		pipeline_info.pVertexInputState = &vertex_input_info;
 		pipeline_info.pInputAssemblyState = &input_assembly;
@@ -1200,9 +1241,10 @@ namespace nap
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
 		ECullMode cull_mode = mesh.getMeshInstance().getCullMode();
 		EPolygonMode poly_mode = mesh.getMeshInstance().getPolygonMode();
+		bool depth_only = renderTarget.getColorFormat() == VK_FORMAT_UNDEFINED ? true : false;
 
 		// Create pipeline key based on draw properties
-		PipelineKey pipeline_key (
+		PipelineKey pipeline_key(
 			shader,
 			draw_mode, 
 			materialInstance.getDepthMode(), 
@@ -1229,11 +1271,12 @@ namespace nap
 			renderTarget.getRenderPass(),
 			renderTarget.getSampleCount(),
 			renderTarget.getSampleShadingEnabled(),
+			depth_only,
 			cull_mode,
 			poly_mode,
 			pipeline.mLayout, pipeline.mPipeline, errorState))
 		{
-			mPipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			mPipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;
 		}
 
@@ -2131,7 +2174,7 @@ namespace nap
 	}
 
 
-	void RenderService::endFrame()
+	void RenderService::endFrame()	
 	{
 		// Acquire current frame
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];

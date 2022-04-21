@@ -268,7 +268,7 @@ namespace nap
 		void setDepthCompareMode(EDepthCompareMode depthMode);
 
 		/**
-		 * 
+		 *
 		 */
 		EDepthCompareMode getDepthCompareMode() const;
 
