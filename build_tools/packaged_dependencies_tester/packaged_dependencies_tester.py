@@ -508,7 +508,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     if p.poll() == None:
 
         # Get unexpected libs
-        if is_linux()
+        if is_linux():
             unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
 
         # Send SIGTERM and wait a moment to close. Use force quit if wait timer expires.
