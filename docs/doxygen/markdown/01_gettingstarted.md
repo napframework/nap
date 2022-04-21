@@ -74,7 +74,7 @@ Compile and Run {#compile_run}
 
 After changing the `module.json` file you need to (re)generate the project by executing the `regenerate` shortcut in the project folder. You can build and run the project using Visual Studio on Windows (in directory `msvc64`), Xcode on macOS (in `xcode`) or make on Linux (in `build`). 
 
-Open the generated solution and select the `release` configuration. Compile and run your application. You should see an empty window pop up. To learn more about setting up projects, modules and third-party dependencies read the [Project Management](@ref project_management) documentation.
+Open the generated solution and select the `Release` configuration. Compile and run your application. You should see an empty window pop up. To learn more about setting up projects, modules and third-party dependencies read the [Project Management](@ref project_management) documentation.
 
 Add Content {#add_content}
 ================
@@ -98,7 +98,7 @@ Result:
 
 ![](@ref content/gs_napkin.png)
 
-If Napkin fails to load the project make sure to [build](@ref compile_run) the project (in `release` mode) at least once before loading it. This ensures that the custom application module `mod_newproject` is compiled for you. The editor can then load and inspect it. All other modules (render, audio etc.) are pre-compiled and should work out of the box.
+If Napkin fails to load the project make sure to [build](@ref compile_run) the project (in `Release` mode) at least once before loading it. This ensures that the custom application module `mod_newproject` is compiled for you. The editor can then load and inspect it. All other modules (render, audio etc.) are pre-compiled and should work out of the box.
 
 To add an audio file:
 
