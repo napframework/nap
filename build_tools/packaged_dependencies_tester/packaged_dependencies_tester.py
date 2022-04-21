@@ -11,7 +11,7 @@ from multiprocessing import cpu_count
 import os
 from platform import machine
 import re
-from subprocess import call, Popen, PIPE, check_output
+from subprocess import call, Popen, PIPE, check_output, TimeoutExpired
 import shlex
 import shutil
 import signal
@@ -499,23 +499,24 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         waited_time += 0.5
         p.poll()
 
-    if is_linux():
-        if p.returncode is None:
-            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
-        else:
-            unexpected_libraries = []
 
     # Track success
     success = False
+    unexpected_libraries = []
 
     # Process running
     if p.poll() == None:
+
+        # Get unexpected libs
+        if is_linux()
+            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
+
         # Send SIGTERM and wait a moment to close. Use force quit if wait timer expires.
         try:
             p.terminate()
             p.wait(10)
             success = not expect_early_closure
-        except subprocess.TimeoutExpired:
+        except TimeoutExpired:
             print("  Failed to close on terminate, sending kill signal")
             force_quit(p)
             pass
@@ -535,8 +536,6 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     # check for unexpected libraries
     if sys.platform == 'darwin':
         unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
-    elif sys.platform == 'win32':
-        unexpected_libraries = []
 
     # done
     return (success, stdout, stderr, unexpected_libraries, p.returncode)
