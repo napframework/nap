@@ -188,7 +188,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str, help="The project name")
     parser.add_argument('-t', '--build-type', type=str.lower, default=None,
-            choices=['release', 'debug'], help="Build type (default %s)" % DEFAULT_BUILD_TYPE.lower())
+            choices=['release', 'debug'], help="Build type (default=%s)" % DEFAULT_BUILD_TYPE.lower())
     args = parser.parse_args()
 
     b = SingleProjectBuilder()
