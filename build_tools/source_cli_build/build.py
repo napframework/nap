@@ -72,7 +72,7 @@ def main(target, clean_build, build_type):
     build_config = build_type.capitalize()
     if platform.startswith('linux'):
         # Linux
-        call(build_dir, ['make', t, '-j%s' % cpu_count()])
+        call(build_dir, ['make', target, '-j%s' % cpu_count()])
     elif platform == 'darwin':
         # macOS
         call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', target, '-configuration', build_config])
