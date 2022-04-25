@@ -526,18 +526,18 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         # If an application crashed or failed on initialization the exit code will not be 'success_exit_code'.
         success = p.returncode == success_exit_code
 
-    # gather info from stream
+    # Gather info from stream
     (stdout, stderr) = p.communicate()
     if type(stdout) == bytes:
         stdout = stdout.decode('utf8')
     if type(stderr) == bytes:
         stderr = stderr.decode('utf8')    
         
-    # check for unexpected libraries
+    # Check for unexpected libraries
     if sys.platform == 'darwin':
         unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
 
-    # done
+    # Done
     return (success, stdout, stderr, unexpected_libraries, p.returncode)
 
 def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path):
