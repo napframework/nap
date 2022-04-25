@@ -13,7 +13,7 @@ MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
 THIRDPARTY = 'thirdparty'
 
-DEFAULT_BUILD_TYPE = 'Debug'
+DEFAULT_BUILD_TYPE = 'Release'
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str, help="The project name")
     parser.add_argument('-t', '--build-type', type=str.lower, default=None,
-            choices=['release', 'debug'], help="Build type (default %s)" % DEFAULT_BUILD_TYPE.lower())
+            choices=['release', 'debug'], help="Build type (default=%s)" % DEFAULT_BUILD_TYPE.lower())
     args = parser.parse_args()
 
     b = SingleProjectBuilder()

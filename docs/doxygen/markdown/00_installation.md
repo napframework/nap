@@ -139,6 +139,6 @@ make
 ```
 4. Run the demo
 ```
-cd ../bin/Debug
+cd ../bin/Release
 ./helloworld
 ```
