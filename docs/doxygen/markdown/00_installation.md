@@ -134,7 +134,7 @@ cd NAP-0.5.0-Linux/demos/helloworld
 ```
 3. Build the solution
 ```
-cd build
+cd build_dir
 make
 ```
 4. Run the demo
