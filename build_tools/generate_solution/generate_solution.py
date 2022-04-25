@@ -10,7 +10,7 @@ LINUX_BUILD_DIR = 'build'
 MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
 CODEBLOCKS_BUILD_DIR = 'codeblocks'
-DEFAULT_LINUX_BUILD_TYPE = 'Debug'
+DEFAULT_LINUX_BUILD_TYPE = 'Release'
 
 def generate(forced_path, linux_build_type, use_codeblocks):
     nap_root = get_nap_root()

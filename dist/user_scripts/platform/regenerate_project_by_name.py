@@ -67,14 +67,14 @@ if __name__ == '__main__':
     parser.add_argument("PROJECT_NAME", type=str,
                         help="The project to regenerate")
     if sys.platform.startswith('linux'):    
-        parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
+        parser.add_argument('BUILD_TYPE', nargs='?', default='Release')
     else:
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")       
     args = parser.parse_args()
 
     # If we're on Linux and we've specified a build type let's grab that, otherwise
-    # default to debug
+    # default to release
     if sys.platform.startswith('linux'):    
         build_type = args.BUILD_TYPE.lower()
         if build_type == 'debug':
