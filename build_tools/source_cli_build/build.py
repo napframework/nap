@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str, help="The project name")
-    parser.add_argument('-t', '--build-type', type=str.lower, default=None,
+    parser.add_argument('-t', '--build-type', type=str.lower, default=DEFAULT_BUILD_TYPE,
             choices=['release', 'debug'], help="Build configuration (default=%s)" % DEFAULT_BUILD_TYPE.lower())
     parser.add_argument('-c', '--clean', default=False, action="store_true", help="Clean before build")
     args = parser.parse_args()
