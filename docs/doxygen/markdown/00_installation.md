@@ -36,12 +36,12 @@ NAP $(NAP_VERSION_FULL) supports `Windows 10 (x86_64)` with `Visual Studio 2019 
 
 Download and install <a href="https://visualstudio.microsoft.com/downloads/" target="_blank">Visual Studio 2019</a>. This link points to the community edition which can be used for free. Make sure to select `Desktop development with C++` when installing Visual Studio, including `MSVC v142 - VS 2019 C++ x64/x86` and the `Windows 10 SDK`. Other settings are optional. Download and install the <a href=https://www.microsoft.com/en-us/download/details.aspx?id=40784 target="_blank">Visual C++ 2013 Redistributable (x64)</a>.
 
-1. Extract `NAP-$(NAP_VERSION_FULL)-Win64.zip` using Explorer (or your preferred tool)
-2. In `NAP-$(NAP_VERSION_FULL)-Win64\tools` run `check_build_environment.bat` to guide you through installing prerequisites, following the instructions
+1. Extract `NAP-$(NAP_VERSION_FULL)-Win64-x86_64.zip` using Explorer (or your preferred tool)
+2. In `NAP-$(NAP_VERSION_FULL)-Win64-x86_64\tools` run `check_build_environment.bat` to guide you through installing prerequisites, following the instructions
 
 ## Run Your First Demo {#run_demo_win64}
 
-1. Navigate to `NAP-$(NAP_VERSION_FULL)-Win64\demos\helloworld` in Explorer
+1. Navigate to `NAP-$(NAP_VERSION_FULL)-Win64-x86_64\demos\helloworld` in Explorer
 2. Run `regenerate.bat`
 3. Open the generated Visual Studio solution (shown in Explorer)
 4. Select the `Release` configuration
@@ -53,10 +53,10 @@ Download and install <a href="https://visualstudio.microsoft.com/downloads/" tar
 
 NAP $(NAP_VERSION_FULL) supports `macOS Catalina (x86_64)` with `XCode 11.7`. Although NAP is known to work on other macOS releases with newer versions of XCode, Catalina is the current supported platform.
 
-1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS.zip` in Finder
+1. Extract the release by double clicking `NAP-$(NAP_VERSION_FULL)-macOS-x86_64.zip` in Finder
 2. Ctrl-click on `tools/unquarantine_framework.command` 
 3. Select Open to remove the framework from <a href="https://en.wikipedia.org/wiki/Gatekeeper_(macOS)" target="_blank">macOS' Gatekeeper</a> quarantine
-4. In `NAP-$(NAP_VERSION_FULL)-macOS/tools` run `check_build_environment` to guide you through installing prerequisites, following the instructions
+4. In `NAP-$(NAP_VERSION_FULL)-macOS-x86_64/tools` run `check_build_environment` to guide you through installing prerequisites, following the instructions
 
 Note: In a future release support for application bundles and codesigning will be assessed, however for the moment the script above is required to allow the framework to operate on a system with the Gatekeeper enabled. A similar script is included with packaged projects.
 
@@ -73,7 +73,7 @@ xcode-select --install
 
 ## Run Your First Demo {#run_demo_macos}
 
-1. Navigate to `NAP-$(NAP_VERSION_FULL)-macOS/demos/helloworld` in Finder
+1. Navigate to `NAP-$(NAP_VERSION_FULL)-macOS-x86_64/demos/helloworld` in Finder
 2. Run `regenerate`
 3. Open the generated Xcode project
 4. Click on `edit scheme`
@@ -104,11 +104,11 @@ sudo apt install mesa-vulkan-drivers
 
 1. Extract the release:
 ```
-tar jxvf NAP-0.5.0-Linux.tar.bz2
+tar jxvf NAP-0.*.tar.bz2
 ```
 2. Run the `check_build_environment` script to guide you through installing prerequisites, following the instructions:
 ```
-cd NAP-0.5.0-Linux
+cd NAP-0.*
 ./tools/check_build_environment
 ```
 3. If any changes are required re-run `check_build_environment` after those changes have been made to verify the final environment
@@ -126,7 +126,7 @@ apt-get install build-essential patchelf libglu1-mesa-dev
 
 1. Navigate to the helloworld demo
 ```
-cd NAP-0.5.0-Linux/demos/helloworld
+cd demos/helloworld
 ```
 2. Generate the Unix makefiles
 ```
@@ -139,6 +139,6 @@ make
 ```
 4. Run the demo
 ```
-cd ../bin/Release
+cd ../bin/GNU-Release-*
 ./helloworld
 ```
