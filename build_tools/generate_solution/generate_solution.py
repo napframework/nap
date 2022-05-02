@@ -19,13 +19,13 @@ def generate(forced_path, additional_dirs, linux_build_type):
     if platform.startswith('linux'):
         build_dir = forced_path if forced_path else os.path.join(nap_root, LINUX_BUILD_DIR)
         build_type = linux_build_type.lower().capitalize()
-        call(['%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s -DADDITIONAL_SUB_DIRECTORIES="%s"' % (cmake, nap_root, build_dir, build_type, additional_dirs)], shell=True)
+        call(['%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, build_type, additional_dirs)], shell=True)
     elif platform == 'darwin':
         build_dir = forced_path if forced_path else os.path.join(nap_root, MACOS_BUILD_DIR)
-        call(['%s -H%s -B%s -G Xcode -DADDITIONAL_SUB_DIRECTORIES="%s"' % (cmake, nap_root, build_dir, additional_dirs)], shell=True)
+        call(['%s -H%s -B%s -G Xcode -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, additional_dirs)], shell=True)
     else:
         build_dir = forced_path if forced_path else os.path.join(nap_root, MSVC_BUILD_DIR)
-        cmd = '%s -H%s -B%s -G "Visual Studio 16 2019" -DPYBIND11_PYTHON_VERSION=3.5 -DADDITIONAL_SUB_DIRECTORIES="%s"' % (cmake, nap_root, build_dir, additional_dirs)
+        cmd = '%s -H%s -B%s -G "Visual Studio 16 2019" -DPYBIND11_PYTHON_VERSION=3.5 -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, additional_dirs)
         call(cmd, shell=True)
     
 def get_cmake_path():
@@ -67,17 +67,17 @@ if __name__ == '__main__':
             choices=['release', 'debug'],
             help="Linux build type (default: %s)" % DEFAULT_LINUX_BUILD_TYPE.lower())
 
-    parser.add_argument('-d', '--dirs', 
+    parser.add_argument('-d', '--additional-dirs', 
         nargs='+',
         type=str,
         default=[],
-        help="List of additional directories to add to the build")
+        help="List of additional sub directories to add to the build")
 
     # parse command line arguments
     args = parser.parse_args()
 
-    # convert additional directories to CMAKE list type
-    additional_dirs = ';'.join(args.dirs)
+    # convert additional sub directories to CMAKE list type
+    additional_dirs = ';'.join(args.additional_dirs)
 
     # get linux build type
     linux_build_type = args.linux_build_type if platform.startswith('linux') else None   
