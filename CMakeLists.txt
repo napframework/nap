@@ -202,6 +202,16 @@ add_subdirectory(modules/napasio)
 add_subdirectory(modules/nappipins)
 add_subdirectory(modules/napportal)
 
+# Add additional directories if specified from command line.
+# For example: -DADDITIONAL_SUB_DIRECTORIES="apps/myapp;apps/myapp/module"
+if(ADDITIONAL_SUB_DIRECTORIES)
+    foreach(SUB_DIR ${ADDITIONAL_SUB_DIRECTORIES})
+        message(STATUS "Adding sub directory: ${SUB_DIR}")
+        add_subdirectory(${SUB_DIR})
+    endforeach()
+endif()
+
+
 # Packaging
 include(cmake/packaging_macros.cmake)
 package_nap()
