@@ -34,10 +34,9 @@ void main()
 
 	// Position
 	vec4 world_position = mvp.modelMatrix * vec4(in_Position, 1.0);
-	vec4 view_position = mvp.viewMatrix * world_position;
 
 	passPosition = world_position.xyz;
-	gl_Position = mvp.projectionMatrix * view_position;
+	gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
 
 	// UV
 	passUV = in_UV0;

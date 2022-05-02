@@ -247,15 +247,15 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_4dba366b",
+                    "mID": "TransformLight",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 4.0
+                            "z": 0.0
                         },
                         "Rotate": {
-                            "x": 0.0,
+                            "x": -45.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -326,7 +326,7 @@
                     "EyeCamera": "../../CameraEntity/PerspCamera",
                     "ShadowCameraOrthographic": "./ShadowCameraOrtho",
                     "ShadowCameraPerspective": "./ShadowCameraPersp",
-                    "CameraType": "Perspective",
+                    "CameraType": "Orthographic",
                     "EnableShadow": true
                 },
                 {
@@ -334,12 +334,12 @@
                     "mID": "ShadowCameraOrtho",
                     "Properties": {
                         "Mode": "Custom",
-                        "LeftPlane": -4.0,
-                        "RightPlane": 4.0,
-                        "TopPlane": 4.0,
-                        "BottomPlane": -4.0,
+                        "LeftPlane": -5.0,
+                        "RightPlane": 5.0,
+                        "TopPlane": 5.0,
+                        "BottomPlane": -5.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 100.0
+                        "FarClippingPlane": 10.0
                     }
                 },
                 {

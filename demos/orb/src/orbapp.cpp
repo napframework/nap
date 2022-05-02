@@ -184,7 +184,7 @@ namespace nap
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
 		// Requires layout transition
-		//ImGui::Image(mDepthRenderTarget->getDepthTexture(), { 200.0f, 200.0f });
+		ImGui::Image(mDepthRenderTarget->getDepthTexture(), { 200.0f, 200.0f });
 
 		mParameterGUI->show(false);
 		ImGui::End();

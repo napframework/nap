@@ -154,7 +154,7 @@ vec3 computeOutRadiance(vec3 N, vec3 V, vec3 L, vec3 radiance, PBRMaterial mtl)
 	// for energy conservation, the diffuse and specular light can't
 	// be above 1.0 (unless the surface emits light); to preserve this
 	// relationship the diffuse component (kD) should equal 1.0 - kS.
-	vec3 kD = vec3(1.0) - kS;
+	vec3 kD = 1.0 - kS;
 
 	// multiply kD by the inverse metalness such that only non-metals 
 	// have diffuse lighting, or a linear blend if partly metal (pure metals
@@ -178,21 +178,26 @@ vec3 computeOutRadiance(vec3 N, vec3 V, vec3 L, vec3 radiance, PBRMaterial mtl)
 // @param lightDir: the light direction
 float calcShadow(vec4 shadowCoord, vec3 lightDir)
 {
+	// Map coordinates to [0.0, 1.0] range
+	shadowCoord = shadowCoord * 0.5 + 0.5;
+
 	float bias = max(0.01 * (1.0 - dot(passNormal, lightDir)), 0.005);
-	float fragDepth = (shadowCoord.z-bias)/shadowCoord.w;
+	float frag_depth = (shadowCoord.z-bias) / shadowCoord.w;
 	float shadow = 0.0;
 
-	// for (int i=4; i<16; i++) 
-	// {
-	// 	//int idx = int(16.0*rnd(gl_FragCoord.xy, i))%16;
-	// 	int idx = i;
-	// 	shadow += 1.0 - texture(shadowMap, 
-	// 		vec3(shadowCoord.xy + POISSON_DISK_16[idx]/POISSON_SPREAD, fragDepth)
-	// 	);
-	// }
-	// shadow /= 16.0;
+	// Multi sample
+	for (int i=4; i<16; i++) 
+	{
+		//int idx = int(16.0*rnd(gl_FragCoord.xy, i))%16;
+		int idx = i;
+		shadow += texture(shadowMap, 
+			vec3(shadowCoord.xy + POISSON_DISK_16[idx]/POISSON_SPREAD, frag_depth)
+		);
+	}
+	shadow /= 16.0;
 
-	shadow = 1.0 - texture(shadowMap, vec3(shadowCoord.xy, fragDepth));
+	// Single sample
+	//shadow = 1.0 - texture(shadowMap, vec3(shadowCoord.xy, frag_depth));
 	return shadow;
 }
 
@@ -200,10 +205,9 @@ float calcShadow(vec4 shadowCoord, vec3 lightDir)
 vec3 pbrDirectional(vec3 N, vec3 V, DirectionalLight light, PBRMaterial mtl)
 {
 	vec3 L = normalize(-light.direction);
+	vec3 radiance = light.color * light.intensity; 
 
-	float shadow = calcShadow(passShadowCoord, L);
-	vec3 radiance = (1.0 - shadow) * light.color * light.intensity; 
-
+	// Debug coordinates
 	return computeOutRadiance(N, V, L, radiance, mtl);
 }
 
@@ -244,16 +248,19 @@ void main()
 	vec3 Lo = vec3(0.0);
 	{
 		// Directional light
-		//DirectionalLight dl = {frag_ubo.lightDirection, frag_ubo.lightColor, frag_ubo.lightIntensity};
-		//Lo += pbrDirectional(N, V, dl, mtl);
+		DirectionalLight dl = {frag_ubo.lightDirection, frag_ubo.lightColor, frag_ubo.lightIntensity};
+		Lo += pbrDirectional(N, V, dl, mtl);
+
+		vec3 L = normalize(-dl.direction);
+		Lo *= calcShadow(passShadowCoord, L);
 		
 		// Point light
-		PointLight pl = {frag_ubo.lightPosition, frag_ubo.lightColor, frag_ubo.lightIntensity};
-		Lo += pbrPoint(N, V, passPosition, pl, mtl);
+		// PointLight pl = {frag_ubo.lightPosition, frag_ubo.lightColor, frag_ubo.lightIntensity};
+		// Lo += pbrPoint(N, V, passPosition, pl, mtl);
 	}
 
 	vec3 ambient = BASE_AMBIENT * mtl.albedo;
-	vec3 color = ambient + Lo;
+	vec3 color = Lo;
 
 	// HDR tonemapping
     color = color / (color + vec3(1.0));

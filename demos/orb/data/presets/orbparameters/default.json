@@ -14,9 +14,9 @@
                             "mID": "LightPositionParameter",
                             "Name": "LightPosition",
                             "Value": {
-                                "x": -1.2070000171661378,
-                                "y": 3.2760000228881838,
-                                "z": 1.3559999465942383
+                                "x": 0.0,
+                                "y": 2.0,
+                                "z": 5.0
                             },
                             "Clamp": true,
                             "Minimum": -10.0,

@@ -135,6 +135,7 @@ namespace nap
 		// Calculate new light direction
 		const glm::vec3 light_position = mResource->mLightPositionParam->mValue;
 		const glm::vec3 light_direction = glm::normalize(mTargetTransformComponent->getTranslate() - light_position);
+		//const glm::vec3 light_direction = mTransform->getRotate() * glm::vec3(0.0f, 0.0f, -1.0f);
 
 		// Get light transformation and update
 		mTransform->setTranslate(light_position);
@@ -175,7 +176,7 @@ namespace nap
 				if (ubo_struct != nullptr)
 				{
 					ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
-					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
+					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
 				}
 			}
 
@@ -185,7 +186,7 @@ namespace nap
 				if (ubo_struct != nullptr)
 				{
 					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_location);
-					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
+					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
 					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightDirection)->setValue(light_direction);
 					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->getValue().toVec3());
 					ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
