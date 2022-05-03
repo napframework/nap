@@ -265,7 +265,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-BUILD_PROJECTS=%s' % int(build_projects),
+                       '-DBUILD_PROJECTS=%s' % int(build_projects),
                        '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs
                        ])
 
