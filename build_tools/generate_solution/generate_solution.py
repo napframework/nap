@@ -73,14 +73,14 @@ if __name__ == '__main__':
         default=[],
         help="List of additional sub directories to add to the build")
 
-    # parse command line arguments
+    # Parse command line arguments
     args = parser.parse_args()
 
-    # convert additional sub directories to CMAKE list type
+    # Convert additional sub directories to CMAKE list type
     additional_dirs = ';'.join(args.additional_dirs)
 
-    # get linux build type
+    # Get linux build type
     linux_build_type = args.linux_build_type if platform.startswith('linux') else None   
 
-    # generate solution
+    # Generate solution
     generate(args.build_path, additional_dirs, linux_build_type)

@@ -106,7 +106,7 @@ def package(zip_release,
         if clean:
             clean_the_build()
 
-        # convert additional sub directories to CMAKE list type
+        # Convert additional sub directories to CMAKE list type
         sub_dirs = ';'.join(additional_dirs)
 
         # Do the packaging
