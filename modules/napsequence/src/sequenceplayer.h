@@ -192,6 +192,11 @@ namespace nap
          */
         Signal<SequencePlayer&> postTick;
 
+		/**
+		 * edited Signal is dispatched when the Sequence has been edited
+		 */
+		Signal<SequencePlayer&> edited;
+
         // properties
         std::string mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
         bool mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence

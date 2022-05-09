@@ -427,8 +427,11 @@ namespace nap
 
     void SequencePlayer::performEditAction(std::function<void()>& action)
     {
-        std::lock_guard<std::mutex> lock(mMutex);
-        action();
+		{
+			std::lock_guard<std::mutex> lock(mMutex);
+			action();
+		}
+		edited.trigger(*this);
     }
 
 
