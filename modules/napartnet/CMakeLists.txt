@@ -24,10 +24,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${ARTNET_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link with external libs
-if(NOT WIN32)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
-endif()
-
 if(WIN32)
   target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} artnet Ws2_32.lib)
 else()
@@ -63,15 +59,23 @@ endif()
 package_module()
 
 # Package libartnet into platform release
-install(FILES ${THIRDPARTY_DIR}/libartnet/AUTHORS DESTINATION thirdparty/libartnet)
-install(FILES ${THIRDPARTY_DIR}/libartnet/COPYING DESTINATION thirdparty/libartnet)
-install(FILES ${THIRDPARTY_DIR}/libartnet/README DESTINATION thirdparty/libartnet)
-if(ANDROID)
-    install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin/${ANDROID_ABI})
+# Install docs
+install(FILES ${THIRDPARTY_DIR}/libartnet/source/AUTHORS DESTINATION thirdparty/libartnet)
+install(FILES ${THIRDPARTY_DIR}/libartnet/source/COPYING DESTINATION thirdparty/libartnet)
+install(FILES ${THIRDPARTY_DIR}/libartnet/source/README DESTINATION thirdparty/libartnet)
+
+# install includes
+install(DIRECTORY ${ARTNET_INCLUDE_DIRS}/ DESTINATION thirdparty/libartnet/include)
+
+# install libraries
+if(UNIX AND NOT APPLE)
+    file(GLOB ARTNET_DYLIBS ${ARTNET_LINUX_DIR}/lib/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    install(FILES ${ARTNET_DYLIBS} DESTINATION thirdparty/libartnet/bin)
 else()
     install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
 endif()
-install(DIRECTORY ${ARTNET_DIR}/artnet DESTINATION thirdparty/libartnet/include)
+
+# set artnet install name macOS
 if(WIN32)
     install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION thirdparty/libartnet/bin)
 elseif(APPLE)

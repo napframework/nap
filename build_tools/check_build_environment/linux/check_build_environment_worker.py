@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 from distutils.version import LooseVersion
+import json
 import os
+from platform import machine
 import subprocess
 import shutil
 import sys
 
 REQUIRED_UBUNTU_VERSION = '20.04'
-REQUIRED_QT_VERSION = '5.11.3'
+REQUIRED_QT_VERSION = '5.15.2'
+REQUIRED_RASPBIAN_VERSION = '11'
+SUPPORTED_ARCHITECTURES = ('x86_64', 'arm64', 'armhf')
 
 def call(cmd):
     """Execute command and return stdout"""
@@ -28,30 +32,57 @@ def log_test_success(test_item, success):
 
     print("Checking %s: %s" % (test_item, 'PASS' if success else 'FAIL'))
 
-def check_arch():
-    """Check if the we're running on a 64bit machine"""
+def get_machine_architecture():
+    """Retrieve architecture identifier"""
+    arch = machine()
+    if arch == 'x86_64':
+        return arch
+    elif arch == 'aarch64':
+        return 'arm64'
+    else:
+        return 'armhf'
 
-    arch = call('uname -m')
-    arch_ok = arch == 'x86_64'
-    log_test_success('x86-64 architecture', arch_ok)
-    return arch_ok
+def check_arch():
+    """Check if the machine matches the package arch"""
+
+    expected_arch = None
+    build_info_file = os.path.join(get_nap_root(), 'cmake', 'build_info.json')
+    with open(build_info_file, 'r') as f:
+        data = json.load(f)
+        expected_arch = data['architecture']
+
+    arch = get_machine_architecture()
+    arch_ok = arch == expected_arch
+    log_test_success('matched architecture', arch_ok)
+    return (arch_ok, expected_arch, arch)
 
 def check_distribution():
-    """Check if the we're running Ubuntu"""
+    """Check if the we're running our supported distro for the arch"""
 
+    arch = get_machine_architecture()
     distribution = call('lsb_release -id | grep ID')
     distributor_id = distribution.split(':')[1].strip().lower()
-    distribution_ok = distributor_id == 'ubuntu'
-    log_test_success('Ubuntu distribution', distribution_ok)
+    if arch == 'armhf':
+        distribution_ok = distributor_id == 'raspbian'
+        log_test_success('Raspbian distribution', distribution_ok)
+    else:
+        distribution_ok = distributor_id == 'ubuntu'
+        log_test_success('Ubuntu distribution', distribution_ok)
+
     return distribution_ok    
 
 def check_distribution_version():
     """Check if the we're running our supported distribution version"""
 
+    arch = get_machine_architecture()
     release = call('lsb_release -r')
     release = release.split(':')[1].strip()
-    release_ok = release == REQUIRED_UBUNTU_VERSION
-    log_test_success('Ubuntu %s' % REQUIRED_UBUNTU_VERSION, release_ok)
+    if arch == 'armhf':
+        release_ok = release == REQUIRED_RASPBIAN_VERSION
+        log_test_success('Raspbian %s' % REQUIRED_RASPBIAN_VERSION, release_ok)
+    else:
+        release_ok = release == REQUIRED_UBUNTU_VERSION
+        log_test_success('Ubuntu %s' % REQUIRED_UBUNTU_VERSION, release_ok)
     return release_ok
 
 def apt_package_installed(package_name):
@@ -72,7 +103,7 @@ def check_compiler():
 def check_for_thirdparty():
     """Check for the thirdparty repository"""
     
-    nap_root = get_nap_root()
+    nap_root = get_source_nap_root()
     thirdparty_ok = os.path.exists(os.path.join(nap_root, os.pardir, 'thirdparty'))
     log_test_success('for third party repository', thirdparty_ok)
     return thirdparty_ok
@@ -91,7 +122,7 @@ def check_qt_version():
     qt_version_ok = False
     
     # Remove temporary directory for CMake project files to go into if it exists 
-    nap_root = get_nap_root()
+    nap_root = get_source_nap_root()
     qt_checker_path = os.path.join(nap_root, 'dist', 'cmake', 'qt_checker')
     temp_build_dir = os.path.join(qt_checker_path, 'project_temp')
     if os.path.exists(temp_build_dir):
@@ -99,7 +130,14 @@ def check_qt_version():
     
     # Run Qt version checking logic, parsing output
     thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
-    cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'install', 'bin', 'cmake')
+    arch = machine()
+    if arch == 'x86_64':
+        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
+    elif arch == 'aarch64':
+        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'arm64', 'bin', 'cmake')
+    else:
+        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'armhf', 'bin', 'cmake')
+
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
         lines = out.split('\n')
@@ -127,7 +165,7 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     if not qt_env_var_ok:
         print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Distribution versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/home/username/Qt%s/%s/gcc_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
-        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions are currently unsupported." % (REQUIRED_QT_VERSION, qt_found_version))    
+        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))    
 
 def read_yes_no(question):
     """Read a yes/no answer for a question"""
@@ -152,6 +190,11 @@ def read_yes_no(question):
 def get_nap_root():
     """Get framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
+
+def get_source_nap_root():
+    """Get source framework root directory"""
+    script_dir = os.path.dirname(os.path.realpath(__file__))
     return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
     
 def check_and_warn_for_potential_system_qt():
@@ -171,17 +214,30 @@ def check_and_warn_for_potential_system_qt():
 def check_build_environment(against_source):
     """Check whether Linux build environment appears ready for NAP"""
 
-    # Check if 64bit
-    arch_ok = check_arch()
-    if not arch_ok:
-        print("\nNAP only supports x86-64 systems. Not continuing checks.")
-        sys.exit(1)
+    arch = get_machine_architecture()
+
+    if against_source:
+        # Check if supported arch
+        supported_arch = arch in SUPPORTED_ARCHITECTURES
+        log_test_success('supported architecture', supported_arch)
+        if not supported_arch:
+            print("\nNAP only currently supports %s systems under Linux".format(','.join(SUPPORTED_ARCHITECTURES)))
+            sys.exit(1)
+    else:
+        # Check if arch matches build
+        (arch_ok, expected_arch, system_arch) = check_arch()
+        if not arch_ok:
+            print("\nNAP only supports %s systems and yours is %s. Not continuing checks.".format(expected_arch, system_arch))
+            sys.exit(1)
 
     # Check distribution
     distribution_ok = check_distribution()
     if not distribution_ok:
-        print("\nThis version of NAP supports Ubuntu Linux (%s). Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
-        print("Hint for the adventurous: On Ubuntu we depend on build-essential, patchelf and when working against Source libglu1-mesa-dev (for Qt)")
+        if arch == 'armhf':
+            print("\nThis version of NAP supports Raspbian Linux (%s). Other distributions may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
+        else:
+            print("\nThis version of NAP supports Ubuntu Linux (%s). Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
+        print("Hint for the adventurous: On Debian-based distros we depend on build-essential, patchelf and when working against Source libglu1-mesa-dev (for Qt)")
         print("\nNot continuing checks.")
         sys.exit(1)
 
@@ -248,7 +304,10 @@ def check_build_environment(against_source):
 
     # Warn about wrong Ubuntu version
     if not distribution_version_ok:
-        print("\nWarning: This version of NAP is supported on Ubuntu %s. Other Linux configurations may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
+        if arch == 'armhf':
+            print("\nWarning: This version of NAP is supported on Raspbian %s. Other Linux configurations may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
+        else:
+            print("\nWarning: This version of NAP is supported on Ubuntu %s. Other Linux configurations may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
 
     if not compiler_ok:
         print("\nYour C++ compiler is not currently set to GCC. This release of NAP only currently supports GCC.")

@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napcameracontrol)
 
 # add all cpp files to SOURCES
@@ -39,5 +34,8 @@ if(APPLE)
     set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/FreeImage/lib)
     list(APPEND MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/assimp/lib)
     set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/assimp/lib)
 endif()
 package_module()

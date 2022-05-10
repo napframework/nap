@@ -78,9 +78,7 @@ namespace nap
 
 		/**
 		 * Converts and copies the values associated with this color in to the target color.
-		 * It's required that the source has an equal or higher amount of color channels compared to target.
-		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat.
-		 * This call asserts if the conversion can't be performed..
+		 * Channels that can't be converted are initialized to 0.
 		 * When converting to and from float colors, normalized color values are used.
 		 * Float values that do not fall within the 0-1 range are clamped.
 		 * When the target does not manage it's own color values, ie:
@@ -102,21 +100,21 @@ namespace nap
 		Converter getConverter(const BaseColor& target) const;
 
 		/**
-		 * returns a (converted) color of type T.
-		 * It's required that the color that is returned has a lower amount of color channels.
-		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat.
-		 * This call asserts if the conversion can't be performed.
+		 * Returns this color as a color of type T.
+		 * Channels that can't be converted are initialized to 0.
 		 * When converting to and from float colors, normalized color values are used.
 		 * Float values that do not fall within the 0-1 range are clamped
-		 * This call won't work with colors that point to values in memory! Valid options for T are: RGBColor8, RColor8, RGBColorFloat etc.
+		 * This call won't work with colors that point to values in memory!
+		 * Valid options for T are: RGBColor8, RColor8, RGBColorFloat etc.
 		 * 
 		 * Example:
 		 *
 		 *~~~~~{.cpp}
-		 * // Create RGBA 8 bit color
-		 * RGBAColor8 eight_bit_color = { 0xC8, 0x69, 0x69, 0xFF };
+		 * // Create 8 bit RGB color
+		 * RGBColor8 eight_bit_color = { 0xC8, 0x69, 0x69 };
 		 *
 		 * // Convert to RGBA float color
+		 * // The RGB channels are converted. Alpha is initialized to 0.
 		 * RGBAColorFloat as_float_color = eight_bit_color.convert<RGBAColorFloat>();
 		 *~~~~~
 		 *
@@ -143,13 +141,9 @@ namespace nap
 		int size() const														{ return mChannels * mValueSize; }
 
 		/**
-		 * Converts the color values in source Color to target Color.
-		 * It's required that the from color has an equal or higher amount of color channels.
-		 * Therefore this conversion is valid: RGBA8 to RGBFloat, but not: RGB8 to RGBAFloat.
-		 * The following is also valid: RGBColorData16 to RGBColorFloat or, RGBAColorData8 to RGBColorData16.
-		 * This call asserts if the conversion can't be performed.
+		 * Converts a color. Channels that can't be converted are initialized to 0.
 		 * When converting to and from float colors, normalized color values are used.
-		 * Float values that do not fall within the 0-1 range are clamped
+		 * Float values that do not fall within the 0-1 range are clamped.
 		 * When the target does not manage it's own color values, ie: 
 		 * holds pointers to color values in memory, the values that are pointed to are overridden by the result of the conversion.
 		 * This makes it possible (for example) to write colors directly in to a bitmap without having
@@ -207,18 +201,32 @@ namespace nap
 	class Color : public BaseColor
 	{
 	public:
+		using value_type = T;
+
 		/**
 		* Constructor that simply creates a 0 initialized color
 		*/
 		Color() : BaseColor(CHANNELS, sizeof(T))										{ mValues.fill(0); }
 
 		/**
-		 * Constructor that creates a color based on a set number of values.
-		 * Note that the number of values needs to match the number of channels.
-		 * The order is important: RGBA
+		 * Constructor that creates a color based on a list of values.
+		 * Note that the number of values in the array must match the number of channels.
+		 * The order is important: RGBA.
+		 *
+		 *~~~~~{.cpp}
+		 * // Create 8 bit RGBA color
+		 * RGBAColor8 eight_bit_color = { 0xC8, 0x69, 0x69, 0xFF };
+		 *~~~~~
 		 */
 		Color(const std::array<T, CHANNELS>& colors) : 
 			BaseColor(CHANNELS, sizeof(T)), mValues(colors)								{ }
+
+		/**
+		 * Initializes this color using a different type of color. Colors are converted automatically.
+		 * The source color must have an equal or higher amount of channels.
+		 * @param source the color to initialize this color with.
+		 */
+		Color(const nap::BaseColor& source);
 
 		/**
 		 *	@return the type of the value
@@ -256,7 +264,7 @@ namespace nap
 		/**
 		 *	@return all the values associated with this color
 		 */
-		const std::vector<T>& getValues() const											{ return mValues; }
+		const std::array<T, CHANNELS>& getValues() const											{ return mValues; }
 
 		/**
 		 *	@return pointer to the beginning of the data
@@ -275,7 +283,7 @@ namespace nap
 		 * Otherwise the actual values are copied over.
 		 * @param data the color data to copy, behind the scenes a memcopy is performed
 		 */
-		void setData(T* data);
+		void setData(const T* data);
 
 		/**
 		 * Computes the distance between this and another color in Euclidean space. The result is not squared
@@ -367,14 +375,21 @@ namespace nap
 		RTTI_ENABLE(BaseColor)
 	public:
 		/**
-		 *	Constructor that creates an RGB color based on the given values
+		 * Constructor that creates an RGB color based on the given values
 		 */
 		RGBColor(T red, T green, T blue) : Color<T, 3>({red, green, blue})		{ }
 
 		/**
-		 *	Default constructor
+		 * Default constructor
 		 */
 		RGBColor() : Color<T, 3>()												{ }
+
+		/**
+		 * Initialize using a different type of color. Colors are converted.
+		 * Channels that can't be converted are initialized to 0.
+		 * @param source the source color to convert.
+		 */
+		RGBColor(const nap::BaseColor& source) : Color<T, 3>(source)			{ }
 
 		/**
 		* Sets the red channel to the incoming value
@@ -413,6 +428,12 @@ namespace nap
 		 * @return the color as a vec3 (float)
 		 */
 		glm::vec3 toVec3() const;
+
+		/**
+		 * vec3 conversion function
+		 * @return the color as a vec3 (float)
+		 */
+		operator glm::vec3()													{ return toVec3(); }
 	};
 
 
@@ -425,15 +446,30 @@ namespace nap
 		RTTI_ENABLE(BaseColor)
 	public:
 		/**
-		*	Constructor that creates an RGB color based on the given values
-		*/
+		 *	Constructor that creates an RGB color based on the given values
+		 */
 		RGBAColor(T red, T green, T blue, T alpha) :
 			Color<T, 4>({ red, green, blue, alpha }) { }
 
 		/**
-		*	Default constructor
-		*/
+		 * Constructor that creates an RGBA color based on the given RGB color and alpha value.
+		 * @param rgb the RGB color
+		 * @param alpha the alpha value
+		 */
+		RGBAColor(const RGBColor<T>& rgb, T alpha) :
+			Color<T, 4>({rgb[0], rgb[1], rgb[2], alpha}) { }
+
+		/**
+		 *	Default constructor
+		 */
 		RGBAColor() : Color<T, 4>()												{ }
+
+		/**
+		 * Initialize using a different type of color. Colors are converted.
+		 * The source color must have an equal or higher amount of channels.
+		 * @param source the source color to convert.
+		 */
+		RGBAColor(const nap::BaseColor& source) : Color<T, 4>(source)			{ }
 
 		/**
 		 * Sets the red channel to the incoming value
@@ -483,6 +519,12 @@ namespace nap
 		 *	@return the color as a vec4 (float)
 		 */
 		glm::vec4 toVec4() const;
+
+		/**
+		 * vec4 conversion function
+		 * @return the color as a vec4 (float)
+		 */
+		operator glm::vec4()													{ return toVec4(); }
 	};
 
 	/**
@@ -495,14 +537,21 @@ namespace nap
 		RTTI_ENABLE(BaseColor)
 	public:
 		/**
-		* Constructor that creates an R color based on the given value
-		*/
+		 * Constructor that creates an R color based on the given value
+		 */
 		RColor(T value) : Color<T, 1>({ value }) { }
 
 		/**
-		*	Default constructor
-		*/
+		 * Default constructor
+		 */
 		RColor() : Color<T, 1>() { }
+
+		/**
+		 * Initialize using a different type of color. Colors are converted.
+		 * The source color must have an equal or higher amount of channels.
+		 * @param source the source color to convert.
+		 */
+		RColor(const nap::BaseColor& source) : Color<T, 1>(source)				{ }
 
 		/**
 		* Sets the red channel to the incoming value
@@ -535,7 +584,7 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Type definitions for all supported memory (data) color types
+	// Declarations for all supported memory (data) color types
 	// These colors are used to point to color values in memory 
 	// These colors can't be serialized or used as a resource
 	//////////////////////////////////////////////////////////////////////////
@@ -555,6 +604,14 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
+
+
+	template<typename T, int CHANNELS>
+	nap::Color<T, CHANNELS>::Color(const nap::BaseColor& source) : BaseColor(CHANNELS, sizeof(T))
+	{
+		source.convert(*this);
+	}
+
 
 	template<typename T, int CHANNELS>
 	bool nap::Color<T, CHANNELS>::operator==(const Color<T, CHANNELS>& rhs) const
@@ -630,7 +687,7 @@ namespace nap
 	}
 
 	template<typename T, int CHANNELS>
-	void nap::Color<T, CHANNELS>::setData(T* data)
+	void nap::Color<T, CHANNELS>::setData(const T* data)
 	{
 		memcpy(mValues.data(), data, sizeof(T) * CHANNELS);
 	}

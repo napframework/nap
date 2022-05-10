@@ -44,6 +44,7 @@ namespace napkin
 	 */
 	class PropertyPath
 	{
+		friend class Document;
 	public:
 		/**
 		 * Creates an invalid path
@@ -195,7 +196,7 @@ namespace napkin
 		bool hasProperty() const;
 
 		/**
-		 * @return If the path is a valid one
+		 * @return If the path is valid, this means the path can be resolved for the associated document
 		 */
 		bool isValid() const;
 
@@ -218,6 +219,11 @@ namespace napkin
 		 * @return true if the property pointed to is representing an enum
 		 */
 		bool isEnum() const;
+
+		/**
+		 * @return if the property pointed to is representing a color
+		 */
+		bool isColor() const;
 
 		/**
 		 * @return true if the property pointed to is an array
@@ -296,6 +302,12 @@ namespace napkin
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
 
+		/**
+		 * Invalidates the property path.
+		 * Called by the document when it is destroyed or changed.
+		 * Ensures no further operations on document can be performed
+		 */
+		void invalidate();
 		Document* mDocument = nullptr;
 		PPath mObjectPath;
 		PPath mPropertyPath;

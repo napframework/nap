@@ -77,8 +77,9 @@ namespace nap
         rtti::ObjectPtr<EntityInstance> mAudioEntity = nullptr;         //< Entity that contains the audio processing
         audio::ControllerValue mAnalysisFrequency = 500.f;              //< Center frequency of the analysis
         audio::ControllerValue mAnalysisBand = 100.f;                   //< Bandwidth of the analysis
-        audio::ControllerValue mAnalysisGain = 5.0f;                    //< Factor to gain the analysis input before analyzing
-        std::vector<audio::ControllerValue> mPlotvalues = { };  //< Output of the analysis will be stored chronologically in this factor, so we can draw a plot of the data
+        audio::ControllerValue mAnalysisGain = 1.0f;                    //< Factor to gain the analysis input before analyzing
+		std::array<audio::ControllerValue, 256> mPlotvalues = {};		//< Output of the analysis will be stored chronologically in this factor, so we can draw a plot of the data
+		nap::SteadyTimer mTimer;										//< Timer
 		uint32 mTickSum = 0;
 		uint32 mTickIdx = 0;
 
@@ -86,8 +87,6 @@ namespace nap
             EAudioDevice, EAudioFile
         };
         InputSource mCurrentInputSource = EAudioFile;                   //< Indicates wether input from the audio device or a file will be analyzed
-        InputSource mInputSource = EAudioFile;                          //< GUI helper variable for the user to select a new input source
-        
-        RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };    //< GUI text highlight color
+        InputSource mInputSource = EAudioFile;                          //< GUI helper variable for the user to select a new input 
 	};
 }

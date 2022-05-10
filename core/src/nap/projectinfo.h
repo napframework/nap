@@ -12,6 +12,14 @@ namespace nap
 {
 	class ModuleManager;
 
+	// Globals
+	namespace projectinfo
+	{
+		inline constexpr const char iniDirectory[] = ".ini";	///< .ini directory, holds files used to (re)-store module specific settings in between sessions
+		inline constexpr const char iniExtension[] = ".ini";	///< .ini file extension, used to (re)-store module specific settings in between sessions
+		inline constexpr const char dataDir[] = "data";			///< Default data directory
+	}
+
 	/**
 	 * Allows ProjectInfo to find the executable, editor and modules.
 	 */
@@ -105,6 +113,23 @@ namespace nap
 		std::string getDataDirectory() const;
 
 		/**
+		 * Returns the absolute path to this  project's .ini directory.
+		 * Note that it is not created if it does not exist.
+		 * The .ini directory contains files that are used to (re)-store settings in between sessions
+		 * @return Absolute path to this project's .ini directory
+		 */
+		std::string getIniDir() const;
+
+		/**
+		 * Returns an absolute .ini file path based on the given name.
+		 * Note that this call does not create the .ini directory if it does not exist.
+		 * The .ini file is used to (re)-store settings in between sessions
+		 * @param name name of the file
+		 * @return absolute path to the .ini file on disk
+		 */
+		std::string getIniFilePath(const std::string& name) const;
+
+		/**
 		 * Returns if a service configuration file has been provided.
 		 * Service configuration resources deserialized from the configuration file override service defaults.
 		 * This means that if no config file is provided, services are initialized using their default configuration resource.
@@ -164,6 +189,7 @@ namespace nap
 	public:
 		std::vector<std::string> mRequiredModules;		///< Property: 'RequiredModules' names of modules this module depends on
 		std::vector<std::string> mLibSearchPaths;		///< Property: 'WindowsDllSearchPaths' additional windows dll search paths
+		std::vector<std::string> mDataSearchPaths;		///< Property: 'DataSearchPaths' additional module data search paths
 
 		/**
 		 * @return The absolute file path this ModuleInfo was loaded from

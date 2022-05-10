@@ -34,9 +34,9 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	constexpr const char* licenseToken = "LICENSE@";
-	constexpr const char* licenseExtension = "license";
-	constexpr const char* keyExtension = "key";
+	inline constexpr const char* licenseToken = "LICENSE@";
+	inline constexpr const char* licenseExtension = "license";
+	inline constexpr const char* keyExtension = "key";
 
 	static bool findFile(const char* extension, const std::vector<std::string>& files, std::string& outFile)
 	{
@@ -51,26 +51,66 @@ namespace nap
 	}
 
 
-	static bool rsaVerifyFile(const std::string& publicKey, const std::string& licenseFile, const std::string& signatureFile)
+	static std::unique_ptr<CryptoPP::PK_Verifier> createVerifier(const std::string& publicKey, nap::ESigningScheme signingScheme)
+	{
+		CryptoPP::StringSource pub_file(publicKey.c_str(), true, new CryptoPP::HexDecoder);
+		std::unique_ptr<CryptoPP::PK_Verifier> verifier;
+		switch (signingScheme)
+		{
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA1:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA224:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA256:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA384:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
+			return verifier;
+		}
+		case nap::ESigningScheme::RSASS_PKCS1v15_SHA512:
+		{
+			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
+			return verifier;
+		}
+		default:
+		{
+			assert(false);
+		}
+		}
+
+		return nullptr;
+	}
+
+
+	static bool rsaVerifyFile(const std::string& publicKey, nap::ESigningScheme signingScheme, const std::string& licenseFile, const std::string& signatureFile)
 	{
 		try
 		{
 			// Load public key
-			CryptoPP::StringSource pub_file(publicKey.c_str(), true, new CryptoPP::HexDecoder);
-			CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier pub(pub_file);
+			std::unique_ptr<CryptoPP::PK_Verifier> verifier = createVerifier(publicKey, signingScheme);
 
 			// Load license signature file and ensure byte length matches
 			CryptoPP::FileSource signature_file(signatureFile.c_str(), true, new CryptoPP::HexDecoder);
-			if (signature_file.MaxRetrievable() != pub.SignatureLength())
+			if (signature_file.MaxRetrievable() != verifier->SignatureLength())
 				return false;
 
 			// Copy into signature
-			CryptoPP::SecByteBlock signature(pub.SignatureLength());
+			CryptoPP::SecByteBlock signature(verifier->SignatureLength());
 			signature_file.Get(signature, signature.size());
 
 			// Load license and verify
-			CryptoPP::SignatureVerificationFilter *verifier_filter = new CryptoPP::SignatureVerificationFilter(pub);
-			verifier_filter->Put(signature, pub.SignatureLength());
+			CryptoPP::SignatureVerificationFilter *verifier_filter = new CryptoPP::SignatureVerificationFilter(*verifier);
+			verifier_filter->Put(signature, verifier->SignatureLength());
 
 			CryptoPP::FileSource license_file(licenseFile.c_str(), true, verifier_filter);
 			return verifier_filter->GetLastResult();
@@ -110,11 +150,23 @@ namespace nap
 
 	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		return validateLicense(publicKey.getKey(), outInformation, error);
+		return validateLicense(publicKey.getKey(), nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
 	}
 
 
 	bool LicenseService::validateLicense(const std::string& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
+	{
+		return validateLicense(publicKey, nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
+	}
+
+
+	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
+	{
+		return validateLicense(publicKey.getKey(), signingScheme, outInformation, error);
+	}
+
+
+	bool LicenseService::validateLicense(const std::string& publicKey, nap::ESigningScheme signingScheme, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
 		// Ensure the user provided a license
 		if (!error.check(hasLicense(), "No .%s file found in: %s", licenseExtension, mDirectory.c_str()))
@@ -127,7 +179,7 @@ namespace nap
 		assert(utility::fileExists(mSignature));
 
 		// Verify license using provided public application key
-		if (!error.check(rsaVerifyFile(publicKey, mLicense, mSignature), "Invalid license"))
+		if (!error.check(rsaVerifyFile(publicKey, signingScheme, mLicense, mSignature), "Invalid license"))
 			return false;
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),

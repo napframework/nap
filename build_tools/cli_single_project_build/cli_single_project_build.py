@@ -2,6 +2,7 @@
 import argparse
 import os
 import subprocess
+from platform import machine
 from multiprocessing import cpu_count
 from sys import platform
 import sys
@@ -12,7 +13,7 @@ MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
 THIRDPARTY = 'thirdparty'
 
-DEFAULT_BUILD_TYPE = 'Debug'
+DEFAULT_BUILD_TYPE = 'Release'
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
@@ -36,11 +37,17 @@ class SingleProjectBuilder:
         if self.__source_context:
             cmake_thirdparty_root = os.path.join(self.__nap_root, os.pardir, THIRDPARTY, 'cmake')
             if platform.startswith('linux'):
-                return os.path.join(cmake_thirdparty_root, 'linux', 'install', 'bin', 'cmake')
+                arch = machine()
+                if arch == 'x86_64':
+                    return os.path.join(cmake_thirdparty_root, 'linux', 'x86_64', 'bin', 'cmake')
+                elif arch == 'aarch64':
+                    return os.path.join(cmake_thirdparty_root, 'linux', 'arm64', 'bin', 'cmake')
+                else:
+                    return os.path.join(cmake_thirdparty_root, 'linux', 'armhf', 'bin', 'cmake')
             elif platform == 'darwin':
-                return os.path.join(cmake_thirdparty_root, 'osx', 'install', 'bin', 'cmake')
+                return os.path.join(cmake_thirdparty_root, 'macos', 'x86_64', 'bin', 'cmake')
             else:
-                return os.path.join(cmake_thirdparty_root, 'msvc', 'install', 'bin', 'cmake')
+                return os.path.join(cmake_thirdparty_root, 'msvc', 'x86_64', 'bin', 'cmake')
         else:
             cmake_thirdparty_root = os.path.join(self.__nap_root, THIRDPARTY, 'cmake')
             return os.path.join(cmake_thirdparty_root, 'bin', 'cmake')
@@ -181,7 +188,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str, help="The project name")
     parser.add_argument('-t', '--build-type', type=str.lower, default=None,
-            choices=['release', 'debug'], help="Build type (default %s)" % DEFAULT_BUILD_TYPE.lower())
+            choices=['release', 'debug'], help="Build type (default=%s)" % DEFAULT_BUILD_TYPE.lower())
     args = parser.parse_args()
 
     b = SingleProjectBuilder()

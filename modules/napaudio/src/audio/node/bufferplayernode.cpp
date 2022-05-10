@@ -62,7 +62,7 @@ namespace nap
 		void BufferPlayerNode::process()
 		{
 			auto& outputBuffer = getOutputBuffer(audioOutput);
-			
+
 			auto playing = mPlaying.load();
 			auto channel = mChannel.load();
 			auto position = mPosition.load();

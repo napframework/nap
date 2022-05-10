@@ -1,29 +1,29 @@
 # default artnet directory
 find_path(ARTNET_DIR
           NO_CMAKE_FIND_ROOT_PATH
-          NAMES artnet/artnet.h
-          HINTS ${THIRDPARTY_DIR}/libartnet
+          NAMES 
+          msvc/x86_64/include/artnet/artnet.h
+          macos/x86_64/include/artnet/artnet.h
+          linux/${ARCH}/include/artnet/artnet.h
+          HINTS 
+          ${THIRDPARTY_DIR}/libartnet
           )
 
 if(WIN32)
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/msvc/install/bin/Release)
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/msvc/x86_64/bin/Release)
     set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.lib)
-    set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR})
+    set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR}/msvc/x86_64/include)
     set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS_DIR}/libartnet.dll)
 elseif(APPLE)
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/osx/bin/Release)
+    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/macos/x86_64/bin/Release)
     set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libArtnet.dylib)
-    set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR} ${ARTNET_DIR}/osx)
-    set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
-elseif(ANDROID)
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/android/bin/Release/${ANDROID_ABI})
-    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so)
-    set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR} ${ARTNET_DIR}/android)
+    set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR}/macos/x86_64/include)
     set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 else()
-    set(ARTNET_LIBS_DIR ${ARTNET_DIR}/linux/bin)
-    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so.1)
-    set(ARTNET_INCLUDE_DIRS ${ARTNET_DIR} ${ARTNET_DIR}/linux)
+    set(ARTNET_LINUX_DIR ${ARTNET_DIR}/linux/${ARCH})
+    set(ARTNET_LIBS_DIR ${ARTNET_LINUX_DIR}/lib)
+    set(ARTNET_LIBS ${ARTNET_LIBS_DIR}/libartnet.so)
+    set(ARTNET_INCLUDE_DIRS ${ARTNET_LINUX_DIR}/include)
     set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 endif()
 
@@ -48,7 +48,7 @@ endif()
 
 # promote package for find
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(artnet REQUIRED_VARS ARTNET_DIR)
+find_package_handle_standard_args(artnet REQUIRED_VARS ARTNET_DIR ARTNET_INCLUDE_DIRS ARTNET_LIBS_DIR)
 
 # Copy the artnet dynamic linked lib into the build directory
 macro(copy_artnet_dll)

@@ -11,6 +11,8 @@
 
 #include <QtDebug>
 #include <rtti/object.h>
+#include <color.h>
+#include <mathutils.h>
 
 QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 {
@@ -48,6 +50,12 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 	{
 		items << new PropertyItem(path);
 		items << new PropertyValueItem(path);
+		items << new RTTITypeItem(type);
+	}
+	else if (path.isColor())
+	{
+		items << new CompoundPropertyItem(path);
+		items << new ColorValueItem(path);
 		items << new RTTITypeItem(type);
 	}
 	else
@@ -149,8 +157,93 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 
 napkin::PointerValueItem::PointerValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
+{ }
+
+
+napkin::ColorValueItem::ColorValueItem(const PropertyPath& path) : PropertyPathItem(path)
+{ }
+
+
+QVariant napkin::ColorValueItem::data(int role) const
 {
+	switch (role)
+	{
+	case Qt::DisplayRole:
+	case Qt::EditRole:
+	{
+		// Get nap color
+		nap::rtti::ResolvedPath resolved = mPath.resolve();
+		assert(resolved.getType().is_derived_from(RTTI_OF(nap::BaseColor)));
+		nap::rtti::Variant var = resolved.getValue();
+		const nap::BaseColor& color = var.get_value<nap::BaseColor>();
+
+		// Create color for display conversion
+		nap::RGBAColor8 display_color;
+		assert(color.getNumberOfChannels() <= display_color.getNumberOfChannels());
+
+		// Create base 16 color display
+		nap::BaseColor::Converter color_converter = color.getConverter(display_color);
+		std::string display = "#";
+		for (int i = 0; i < color.getNumberOfChannels(); i++)
+		{
+			color_converter(color, display_color, i);
+			display += nap::utility::stringFormat("%02x", display_color[i]);
+		}
+		return QString::fromStdString(display).toUpper();
+	}
+	case Qt::UserRole:
+	{
+		return QVariant::fromValue(mPath);
+	}
+	default:
+		return QStandardItem::data(role);
+	}
 }
+
+
+void napkin::ColorValueItem::setData(const QVariant& value, int role)
+{
+	// Ensure we can parse string, must be dividable by 2
+	QString color_str = value.toString();
+	color_str.remove('#');
+	if (color_str.size() % 2 != 0)
+		return;
+
+	// Resolve path
+	nap::rtti::ResolvedPath resolved = mPath.resolve();
+	assert(resolved.getType().is_derived_from(RTTI_OF(nap::BaseColor)));
+	nap::rtti::Variant var = resolved.getValue();
+	const nap::BaseColor& target_color = var.get_value<nap::BaseColor>();
+
+	// Number of channels to set: min of the two.
+	// Allows for a wide range of edits, including single channel entries
+	int channel_count = nap::math::min<int>(color_str.size() / 2, target_color.getNumberOfChannels());
+
+	// Convert string to nap color RGBA8, which can hold max number of channels
+	nap::RGBAColor8 nap_color;
+	assert(channel_count <= nap_color.getNumberOfChannels());
+
+	bool valid = false;
+	for (int i = 0; i < channel_count; i++)
+	{
+		nap_color[i] = static_cast<nap::uint8>(color_str.midRef(i * 2, 2).toUInt(&valid, 16));
+		if (!valid)
+		{
+			return;
+		}
+	}
+
+	// Create target color using RTTI and set.
+	// The color constructor, registered with RTTI, is called and converts the RGBA8 color for us.
+	rttr::variant new_color = resolved.getType().create({ *static_cast<nap::BaseColor*>(&nap_color) });
+	if (!new_color.is_valid())
+	{
+		assert(false);	///< Color could not be constructed!
+		return;
+	}
+	resolved.setValue(new_color);
+}
+
 
 void napkin::EmbeddedPointerItem::populateChildren()
 {
@@ -194,7 +287,6 @@ napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
 
 QVariant napkin::PropertyValueItem::data(int role) const
 {
-
 	if (role == Qt::DisplayRole || role == Qt::EditRole)
 	{
 		QVariant variant;
@@ -235,4 +327,3 @@ napkin::PropertyValueItem::PropertyValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
 }
-

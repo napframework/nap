@@ -1,0 +1,227 @@
+QMainWindow
+{
+    background-color: @background2;
+}
+
+QWidget
+{
+    font-family: "@font1";
+    font-size: 13px;
+    selection-background-color:@highlight1;
+    selection-color: @front4;
+    border: none;
+}
+
+QMenuBar {
+    color: @front3;
+}
+
+QMenuBar::item:selected {
+    color: @front4;
+    background: @highlight1;
+}
+
+QMenu {
+    background-color: @dark2;
+    color: @front3;
+}
+
+QDialog, QLabel {
+    color: @front1;
+    background-color: @background2;
+    margin-right: 0.2em
+
+}
+
+QAbstractScrollArea {
+    color: @front3;
+    background: @background1;
+    alternate-background-color: @front1;
+    border: 0;
+}
+
+QHeaderView:section {
+    color: @front2;
+    background-color: @header;
+    border: 0;
+    padding-left: 4px;
+}
+
+QTreeView::item {
+    padding-top: 2.5px;
+    padding-bottom: 2.5px;
+}
+
+QGroupBox {
+    border: 0;
+    margin-top: 22px;
+    background-color: @front3;
+}
+
+QGroupBox:title {
+    color: @dark2;
+    background-color: @front3;
+}
+
+QDockWidget {
+    color: @front4;
+    border: 1px solid @header;
+    font-size: 15px;
+    titlebar-close-icon:url(:/icons/icon_close_nap.png);
+    titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
+    background: @front1;
+}
+
+QDockWidget::close-button,QDockWidget::float-button{
+  subcontrol-position:top right;
+  subcontrol-origin:margin;
+  position:absolute;
+  top:3px;
+  bottom:0px;
+  width:12px;
+  height:12px;
+  border:none;
+}
+
+QDockWidget::close-button{
+  right:3px;
+}
+
+QDockWidget::float-button{
+  right:18px;
+}
+
+
+QDockWidget::title {
+    text-align: left;
+    background: @front1;
+    padding: 4px;
+}
+
+QLineEdit {
+    border: none;
+    border-radius: 0px;
+    padding-left: 3px;
+    padding-right: 10px;
+    background: @dark2;
+    color: @front3;
+    selection-background-color: @front1;
+    selection-color: @dark1;
+}
+
+QLineEdit:focus {
+    background: @dark1;
+}
+
+QScrollBar:horizontal,
+QScrollBar:vertical {
+    border-radius: 0px;
+    background: @dark2;
+    width: 7px;
+}
+
+QScrollBar::handle:horizontal,
+QScrollBar::handle:vertical {
+    background: @front1;
+    border-radius: 0px;
+}
+QScrollBar::handle:horizontal:hover,
+QScrollBar::handle:vertical:hover {
+    background: @front3;
+    border-radius: 0px;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+QPushButton {
+    color: @dark1;
+    background: @front1;
+    border-radius: 2px;
+    margin: 2px;
+    border: 0;
+    padding: 3px 10px 3px 10px;
+}
+
+QPushButton:pressed  {
+    background: @front3;
+    color: @front4;
+}
+
+QPushButton:!enabled {
+    background-color: @status;
+    color: @dark1;
+}
+
+QPushButton:hover, QToolButton:hover {
+    background: @front3;
+}
+
+QTabBar {
+    qproperty-drawBase: 0;
+}
+
+QTabBar:tab {
+    padding: 2px 12px 2px 12px;
+    color: @front4;
+    background: @highlight1;
+    border: 0;
+}
+
+QTabBar:tab::!selected {
+    color: @front3;
+    background: @front1;
+}
+
+QStatusBar {
+    color: @front3;
+    background: @status;
+}
+
+QGraphicsView {
+    background: @front2;
+}
+
+QComboBox {
+    background: @front3;
+    color: @dark1;
+}
+
+QComboBox:on  {
+    color: @dark1;
+}
+
+QComboBox:off  {
+    color: @dark2;
+}
+
+QComboBox QAbstractItemView {
+    background: @front3;
+    color: @dark1;
+}
+
+QSpinBox {
+    background: @dark1;
+    selection-background-color: @front1;
+    selection-color: @dark1;
+    color:@front3;
+}
+
+QProgressBar {
+    text-align: center;
+    color: @dark1;
+    background-color: @front1;
+}
+
+QProgressBar::chunk {
+    background-color: @front3;
+    width: 20px;
+}

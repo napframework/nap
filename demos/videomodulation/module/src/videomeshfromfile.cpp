@@ -16,7 +16,7 @@
 // nap::videomesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoMeshFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Path", &nap::VideoMeshFromFile::mPath, nap::rtti::EPropertyMetaData::FileLink | nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY_FILELINK("Path", &nap::VideoMeshFromFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ namespace nap
 		mMeshInstance = std::move(mesh_instance);
 		mMeshInstance->setCullMode(ECullMode::Back);
 		mMeshInstance->setDrawMode(EDrawMode::Triangles);
-		mMeshInstance->setUsage(EMeshDataUsage::Static);
+		mMeshInstance->setUsage(EMemoryUsage::Static);
 
 		// Get position
 		mPositionAttribute = mMeshInstance->findAttribute<glm::vec3>(vertexid::position);

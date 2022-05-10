@@ -6,11 +6,11 @@
         "mod_napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/mpg123/install/msvc",
+        "{ROOT}/../thirdparty/mpg123/msvc/x86_64/lib",
         "{ROOT}/thirdparty/mpg123/bin",
-        "{ROOT}/../thirdparty/portaudio/msvc64",
+        "{ROOT}/../thirdparty/portaudio/msvc/x86_64/lib",
         "{ROOT}/thirdparty/portaudio/bin",
-        "{ROOT}/../thirdparty/libsndfile/msvc64",
+        "{ROOT}/../thirdparty/libsndfile/msvc/x86_64/lib",
         "{ROOT}/thirdparty/libsndfile/bin"
     ]
 }

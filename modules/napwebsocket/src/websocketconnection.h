@@ -48,4 +48,6 @@ namespace nap
 
 		wspp::ConnectionHandle mConnection;		///< Weak pointer to the underlying websocketpp connection, invalid by default.
 	};
+
+	using WebSocketConnectionPtr = std::unique_ptr<WebSocketConnection>;
 }

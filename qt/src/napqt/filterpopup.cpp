@@ -24,7 +24,7 @@ FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
 
 	mLayout.addWidget(&mFilterTree);
 
-	auto& model = mFilterTree.getFilterModel();
+	auto& model = mFilterTree.getProxyModel();
 	connect(&model, &QSortFilterProxyModel::rowsRemoved,
 			[this](const QModelIndex& parent, int first, int last) { updateSize(); });
 	connect(&model, &QSortFilterProxyModel::rowsInserted,
@@ -102,11 +102,11 @@ void FilterPopup::moveSelection(int d)
 {
 	auto& tree = mFilterTree.getTreeView();
 	int row = tree.currentIndex().row();
-	int nextRow = qMax(0, qMin(row + d, mFilterTree.getFilterModel().rowCount() - 1));
+	int nextRow = qMax(0, qMin(row + d, mFilterTree.getProxyModel().rowCount() - 1));
 	if (row == nextRow)
 		return;
 
-	tree.setCurrentIndex(mFilterTree.getFilterModel().index(nextRow, 0));
+	tree.setCurrentIndex(mFilterTree.getProxyModel().index(nextRow, 0));
 }
 
 
@@ -121,7 +121,7 @@ void FilterPopup::accept()
 
 void FilterPopup::updateSize()
 {
-	auto& model = mFilterTree.getFilterModel();
+	auto& model = mFilterTree.getProxyModel();
 
 	// Ensure there is always something selected
 	auto& tree = *dynamic_cast<FilterTree_*>(&mFilterTree.getTreeView());

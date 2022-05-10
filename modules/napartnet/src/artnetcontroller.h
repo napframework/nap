@@ -20,6 +20,14 @@ namespace nap
 	// Forward Declares
 	class ArtNetService;
 
+	namespace artnet
+	{
+		// This maximum is defined as the maximum refresh rate that can be achieved on the DMX512-A
+		// physical layer with a full 512 channel(data slot) payload. The actual value is 44 packets per second.
+		inline constexpr int refreshRate = 44;	///< The max supported artnet refresh rate
+	}
+
+
 	/**
 	 * Mode used by an artnet controller to send data.
 	 * When set to broadcast the message is broadcasted over the network.
@@ -35,7 +43,7 @@ namespace nap
 
 	/**
 	 * Creates an ArtNet controller node. 
-	 * A controller node is used to convert dmx data into artnet data that is send over the network.
+	 * A controller node is used to convert dmx data into artnet data that is sent over the network.
 	 * Every controller node has a subnet and universe associated with it.
 	 * See comments in ArtNetService on addressing on how data is eventually sent over the network.
 	 */
@@ -44,9 +52,9 @@ namespace nap
 		RTTI_ENABLE(Device)
 
 	public:
-		using ByteChannelData = std::vector<uint8_t>;
+		using ByteChannelData = std::vector<uint8>;
 		using FloatChannelData = std::vector<float>;
-		using Address = uint8_t;
+		using Address = uint8;
 
 		// Default constructor
 		ArtNetController() = default;
@@ -79,7 +87,7 @@ namespace nap
 		 * Sends normalized float channel data (ranging from 0.0 to 1.0) over the artnet network. Internally, the float data
 		 * is converted to bytes. The actual sending is deferred until the update, where data is sent when needed.
 		 * @param channelData Channel data in normalized floats (0.0 to 1.0)
-		 * @param channel The target channel where channelData should be applied to. Must be between 0 and 512.
+		 * @param channel The target channel where channelData should be applied to. Must be between 0 and 511.
 		 */
 		void send(float channelData, int channel);
 
@@ -94,9 +102,9 @@ namespace nap
 		/**
 		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update, where data is sent when needed.
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
-		 * @param channel The target channel where channelData should be applied to. Must be between 0 and 512.
+		 * @param channel The target channel where channelData should be applied to. Must be between 0 and 511.
 		 */
-		void send(uint8_t channelData, int channel);
+		void send(uint8 channelData, int channel);
 
 		/**
 		 *	Clears all the data associated with this controller, ie: sets their values to 0
@@ -113,7 +121,7 @@ namespace nap
 		 * @param subnet the artnet subnet address
 		 * @param universe the artnet universe address
 		 */
-		static Address createAddress(uint8_t subnet, uint8_t universe);
+		static Address createAddress(uint8 subnet, uint8 universe);
 
 		/**
 		 * Converts a nap artnet address in to a subnet and universe
@@ -121,23 +129,17 @@ namespace nap
 		 * @param subnet the subnet part of the address
 		 * @param universe the universe part of the address;
 		 */
-		static void convertAddress(Address address, uint8_t& subnet, uint8_t& universe);
+		static void convertAddress(Address address, uint8& subnet, uint8& universe);
 
-		/**
-		 * @return the max update frequency
-		 * 44hz, see http ://art-net.org.uk/wordpress/?page_id=456 / Refresh Rate)
-		 */
-		static const int getMaxUpdateFrequency();
-
-		uint8_t				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
-		uint8_t				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
-		int					mUpdateFrequency = getMaxUpdateFrequency();		///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
+		uint8				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
+		uint8				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
+		int					mUpdateFrequency = artnet::refreshRate;			///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
 		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is send regardless of changes
 		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Property: 'Mode' artnet message mode, Broadcast or Unicast
 		int					mUnicastLimit = 10;								///< Property: 'UnicastLimit' allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
 		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the console
 		float				mReadTimeout = 2.0f;							///< Property: 'Timeout' poll network node read timeout, only used when mode is set to Unicast
-		std::string			mIpAddress = "";								///< Property: 'IPAddress' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
+		std::string			mIpAddress = "";								///< Property: 'IP Address' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
 
 	private:
 

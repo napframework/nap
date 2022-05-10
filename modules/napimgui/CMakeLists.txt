@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napimgui)
 
 # add all cpp files to SOURCES
@@ -28,8 +23,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 # preprocessors
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
-target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY_IMGUI)
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY NAP_SHARED_LIBRARY_IMGUI)
 
 # link libs
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES})
@@ -47,5 +41,7 @@ if(APPLE)
 elseif(UNIX)
     set(LINUX_EXTRA_RPATH ../../../../thirdparty/SDL2/lib)
     list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/vulkansdk/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/FreeImage/lib)
+    list(APPEND LINUX_EXTRA_RPATH ../../../../thirdparty/assimp/lib)
 endif()    
 package_module()

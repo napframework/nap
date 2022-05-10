@@ -57,11 +57,12 @@ namespace nap
 		const math::Box& getBox() const { return mBox; }
 
 	public:
-		glm::vec3		mSize		= { 1.0f, 1.0f, 1.0f };			///< Property: 'Dimensions' of the box
-		glm::vec3		mPosition	= { 0.0f, 0.0f, 0.0f };			///< Property: 'Position'  of the box
-		RGBAColorFloat	mColor		= { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' color of the box
-		EMeshDataUsage	mUsage		= EMeshDataUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
-		ECullMode		mCullMode	= ECullMode::Back;				///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
+		glm::vec3		mSize			= { 1.0f, 1.0f, 1.0f };			///< Property: 'Dimensions' of the box
+		glm::vec3		mPosition		= { 0.0f, 0.0f, 0.0f };			///< Property: 'Position'  of the box
+		RGBAColorFloat	mColor			= { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' color of the box
+		EMemoryUsage	mUsage			= EMemoryUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		ECullMode		mCullMode		= ECullMode::Back;				///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
+		EPolygonMode	mPolygonMode	= EPolygonMode::Fill;			///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
 
 	protected:
 		/**

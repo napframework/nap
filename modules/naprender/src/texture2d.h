@@ -43,47 +43,35 @@ namespace nap
 	class NAPAPI Texture2D : public Resource
 	{
 		friend class RenderService;
+		friend class RenderBloomComponentInstance;
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D(Core& core);
 		~Texture2D() override;
 
 		/**
-		 * Defines how the Texture2D is cleared on initialization.
-		 */
-		enum class EClearMode : uint8
-		{
-			DontClear	= 0,			///< Texture is created on GPU but not filled, GPU layout is undefined.
-			Clear		= 1				///< Texture is created and cleared on the GPU.
-		};
-
-		/**
-		* Creates the texture on the GPU using the provided settings.
-		* The texture is initialized to 'clearColor' if 'clearMode' is set to 'FillWithZero'.
+		* Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		* The Vulkan image usage flags are derived from texture usage.
 		* @param descriptor texture description.
 		* @param generateMipMaps if mip maps are generated when data is uploaded.
-		* @param clearMode if the texture is immediately initialized to black after creation.
 		* @param clearColor the color to clear the texture with.
 		* @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		* @param errorState contains the error if the texture can't be initialized.
 		* @return if the texture initialized successfully.
 		*/
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 		
 		/**
-		 * Creates the texture on the GPU using the provided settings.
-		 * The texture is initialized to black if 'clearMode' is set to 'FillWithZero'.
+		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * Otherwise the layout of the texture on the GPU will be undefined until upload.
 		 * The Vulkan image usage flags are derived from texture usage. 
 		 * @param descriptor texture description.
 		 * @param generateMipMaps if mip maps are generated when data is uploaded.
-		 * @param clearMode if the texture is immediately initialized to black after creation.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, EClearMode clearMode, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 		
 		/**
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
@@ -157,6 +145,11 @@ namespace nap
 		RenderService& getRenderService()					{ return *mRenderService; }
 
 		/**
+		 * @return render service
+		 */
+		const RenderService& getRenderService() const		{ return *mRenderService; }
+
+		/**
 		 * Starts a transfer of texture data from GPU to CPU. 
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
@@ -174,6 +167,17 @@ namespace nap
 
 	private:
 		/**
+		 * Creates the texture on the GPU using the provided settings.
+		 * The Vulkan image usage flags are derived from texture usage.
+		 * @param descriptor texture description.
+		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags
+		 * @param errorState contains the error if the texture can't be initialized.
+		 * @return if the texture initialized successfully.
+		 */
+		bool initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+
+		/**
 		* Clears the texture to the specified clear colors
 		*/
 		void clear(VkCommandBuffer commandBuffer);
@@ -184,14 +188,19 @@ namespace nap
 		void upload(VkCommandBuffer commandBuffer);
 
 		/**
-		 * Called by the render service when download is ready
-		 */
-		void notifyDownloadReady(int frameIndex);		
-
-		/**
 		 * Downloads texture data
 		 */
 		void download(VkCommandBuffer commandBuffer);
+
+		/**
+		 * Called by the render service when download is ready
+		 */
+		void notifyDownloadReady(int frameIndex);
+
+		/**
+		 * Clears queued texture downloads
+		 */
+		void clearDownloads();
         
         // Hide resource init explicitly
         using Resource::init;
@@ -202,16 +211,15 @@ namespace nap
 	private:
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
-
-		ImageData							mImageData;							///< 2D Texture vulkan image buffers
-		std::vector<BufferData>				mStagingBuffers;					///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
-		int									mCurrentStagingBufferIndex = -1;	///< Currently used staging buffer
-		size_t								mImageSizeInBytes = -1;				///< Size in bytes of texture
-		SurfaceDescriptor					mDescriptor;						///< Texture description
-		VkFormat							mFormat = VK_FORMAT_UNDEFINED;		///< Vulkan texture format
-		std::vector<TextureReadCallback>	mReadCallbacks;						///< Number of callbacks based on number of frames in flight
-		std::vector<int>					mDownloadStagingBufferIndices;		///< Staging buffer indices associated with a frameindex
-		uint32								mMipLevels = 1;						///< Total number of generated mip-maps
-		VkClearColorValue					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };	///< Property: 'ClearColor' color selection used for clearing the texture
+		ImageData							mImageData;									///< 2D Texture vulkan image buffers
+		std::vector<BufferData>				mStagingBuffers;							///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
+		int									mCurrentStagingBufferIndex = -1;			///< Currently used staging buffer
+		size_t								mImageSizeInBytes = -1;						///< Size in bytes of texture
+		SurfaceDescriptor					mDescriptor;								///< Texture description
+		VkFormat							mFormat = VK_FORMAT_UNDEFINED;				///< Vulkan texture format
+		std::vector<TextureReadCallback>	mReadCallbacks;								///< Number of callbacks based on number of frames in flight
+		std::vector<int>					mDownloadStagingBufferIndices;				///< Staging buffer indices associated with a frameindex
+		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
+		VkClearColorValue					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };	///< Color used for clearing the texture
 	};
 }

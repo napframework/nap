@@ -170,6 +170,7 @@ namespace nap
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		mMeshInstance->setUsage(mUsage);
 		mMeshInstance->setDrawMode(EDrawMode::Lines);
+		mMeshInstance->setPolygonMode(EPolygonMode::Fill);
 
 		// Create shape that holds the normals
 		mMeshInstance->createShape();

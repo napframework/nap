@@ -19,7 +19,7 @@ namespace napkin
 	/**
 	 * The MIME type of a nap propertypath
 	 */
-	static constexpr char* sNapkinMimeData = (char*) "application/napkin-path";
+	inline constexpr char* sNapkinMimeData = (char*)"application/napkin-path";
 
 	class ArrayPropertyItem;
 

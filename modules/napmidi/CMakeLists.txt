@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napmidi)
 
 find_package(rtmidi REQUIRED)
@@ -39,17 +34,18 @@ endif()
 package_module()
 
 # Package rtmidi into platform release
-install(FILES ${THIRDPARTY_DIR}/rtmidi/bin/linux/install/README.md DESTINATION thirdparty/rtmidi)
-install(DIRECTORY ${THIRDPARTY_DIR}/rtmidi/bin/linux/install/include/rtmidi/ DESTINATION thirdparty/rtmidi/include)
+install(FILES ${RTMIDI_DIST_FILES} DESTINATION thirdparty/rtmidi)
+install(DIRECTORY ${RTMIDI_INCLUDE_DIR}/ DESTINATION thirdparty/rtmidi/include)
 if(MSVC)
-    file(GLOB RTMIDI_STATIC_LIBS ${THIRDPARTY_DIR}/rtmidi/bin/msvc/rtmidi*${CMAKE_STATIC_LIBRARY_SUFFIX})
+    file(GLOB RTMIDI_STATIC_LIBS ${RTMIDI_LIBRARY_DIR}/rtmidi*${CMAKE_STATIC_LIBRARY_SUFFIX})
     install(FILES ${RTMIDI_STATIC_LIBS}
             DESTINATION thirdparty/rtmidi/bin)
 elseif(APPLE)
-    install(FILES ${THIRDPARTY_DIR}/rtmidi/bin/osx/librtmidi.4.dylib
+    file(GLOB RTMIDI_DYLIBS ${RTMIDI_LIBRARY_DIR}/librtmidi*${CMAKE_SHARED_LIBRARY_SUFFIX})
+    install(FILES ${RTMIDI_DYLIBS}
             DESTINATION thirdparty/rtmidi/lib)
 elseif(UNIX)
-    file(GLOB RTMIDI_DYLIBS ${RTMIDI_DIR}/bin/linux/install/lib/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    file(GLOB RTMIDI_DYLIBS ${RTMIDI_LIBRARY_DIR}/librtmidi${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${RTMIDI_DYLIBS}
             DESTINATION thirdparty/rtmidi/lib)
 endif()

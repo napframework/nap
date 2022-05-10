@@ -16,7 +16,7 @@
             "Type": "nap::APIWebSocketServer",
             "mID": "WebSocketServer",
             "EndPoint": "WebSocketServerEndPoint",
-            "Mode": "Both",
+            "SendWebSocketEvents": true,
             "Verbose": true
         },
         {
@@ -26,6 +26,7 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "Render2DTextComponent",
+                    "Visible": true,
                     "Text": "waiting for a websocket client to change this text",
                     "Font": "Font",
                     "TextColor": {
@@ -40,12 +41,14 @@
                         "y": 0
                     },
                     "Orientation": "Center",
-                    "DepthMode": "NoReadWrite"
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
                 },
                 {
                     "Type": "nap::APIComponent",
                     "mID": "APIComponent",
-                    "Methods": [
+                    "Signatures": [
                         "ChangeText"
                     ]
                 },
@@ -63,10 +66,9 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 32,
-                "DPI": 96
+                "Size": 32
             },
-            "Font": "fonts/Montserrat-Light.otf"
+            "Font": "fonts/Manrope-Light.otf"
         },
         {
             "Type": "nap::RenderWindow",
@@ -80,10 +82,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1

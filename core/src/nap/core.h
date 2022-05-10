@@ -22,14 +22,15 @@
 #include <vector>
 
 // Default name to use when writing the file that contains all the settings for the NAP services.
-constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
-constexpr char PROJECT_INFO_FILENAME[] = "project.json";
+inline constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
+inline constexpr char PROJECT_INFO_FILENAME[] = "project.json";
 
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x
 #define STRINGIZE_VALUE_OF(x) STRINGIZE(x)
-constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
-constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_TYPE);
+inline constexpr char sBuildConf[] = STRINGIZE_VALUE_OF(NAP_BUILD_CONF);
+inline constexpr char sBuildType[] = STRINGIZE_VALUE_OF(NAP_BUILD_TYPE);
+inline constexpr char sBuildArch[] = STRINGIZE_VALUE_OF(NAP_BUILD_ARCH);
 
 namespace nap
 {
@@ -82,6 +83,11 @@ namespace nap
 	{
 		RTTI_ENABLE()
 	public:
+		// Unique services handle.
+		// Ensures services are destroyed after being initialized.
+		class Services;
+		using ServicesHandle = std::unique_ptr<Services>;
+
 		/**
 		 * Default Constructor
 		 */
@@ -139,25 +145,20 @@ namespace nap
 		bool initializeEngine(const std::string& projectInfofile, ProjectInfo::EContext context, utility::ErrorState& error);
 
 		/**
-		 * Initializes all registered services, call this after initializeEngine().
+		 * Attempts to initialize all registered services. Call this after initializeEngine().
 		 * Initialization occurs based on service dependencies, this means that if service B depends on Service A,
 		 * Service A is initialized before service B etc.
+		 * This call returns a handle that, when destroyed, shuts down all services in the right order.
 		 * @param errorState contains the error message when initialization fails
-		 * @return if initialization failed or succeeded
+		 * @return handle that manages services on success, nullptr if initialization fails
 		 */
-		bool initializeServices(utility::ErrorState& errorState);
+		Core::ServicesHandle initializeServices(utility::ErrorState& errorState);
 
 		/**
 		 * Returns if core is initialized.
 		 * @return true if the engine initialized successfully, false otherwise. 
 		 */
 		bool isInitialized() const;
-
-		/**
-		* Shuts down all registered services in the right order
-		* Only call this when initializeServices has been called
-		*/
-		void shutdownServices();
 
 		/**
 		 * Initialize python interpreter so we can have components running python scripts
@@ -219,6 +220,13 @@ namespace nap
 		Service* getService(const rtti::TypeInfo& type);
 
 		/**
+		 * Find a service of a given type.
+		 * @param type the type of service to get
+		 * @return found service, nullptr if not found.
+		 */
+		const Service* getService(const rtti::TypeInfo& type) const;
+
+		/**
 		 * Searches for a service based on given type name, names need to match exactly.
 		 * @return an already registered service based on its type name, nullptr if not found
 		 * @param type the type of the service as a string
@@ -227,10 +235,27 @@ namespace nap
 
 		/**
 		 * Searches for a service of type T, returns a nullptr if not found.
+		 * 
+		 * ~~~~~{.cpp}
+		 *	RenderService* renderer = getCore().getService<nap::RenderService>();
+		 *	...
+		 * ~~~~~
 		 * @return a service of type T, returns nullptr if that service can't be found
 		 */
 		template <typename T>
 		T* getService();
+
+		/**
+		 * Searches for a service of type T, returns a nullptr if not found.
+		 * 
+		 * ~~~~~{.cpp}
+		 *	const RenderService* renderer = getCore().getService<nap::RenderService>();
+		 *	...
+		 * ~~~~~
+		 * @return a service of type T, returns nullptr if that service can't be found
+		 */
+		template <typename T>
+		const T* getService() const;
 
 		/**
 		 * Returns the extension associated with this instance of core as T. 
@@ -287,6 +312,44 @@ namespace nap
 		 * Used on macOS to apply an environment variable for Vulkan.
 		 */
 		void setupPlatformSpecificEnvironment();
+
+		/**
+		 * Helper class. Automatically initializes all services on construction and
+		 * shuts down all services on destruction. This object is returned as a handle
+		 * by 'initializeServices()' and ensures services are always shut-down,
+		 * in the right order, after initialization.
+		 *
+		 * ~~~~~{.cpp}
+		 * // Initialize services & bail if handle is invalid.
+		 * Core::ServicesHandle handle = mCore.initializeServices(error);
+		 * if (handle == nullptr)
+		 *		return false;
+		 * ~~~~~
+		 */
+		class NAPAPI Services final
+		{
+		public:
+			/**
+			 * Shuts down all services
+			 */
+			~Services();
+
+			/**
+			 * @return if all services were initialized on construction
+			 */
+			bool initialized()	{ return mInitialized;  }
+
+		private:
+			friend class Core;
+			/**
+			 * Attempts to initialize all services.
+			 * @param core core instance
+			 * @param error contains the error if service initialization fails
+			 */
+			Services(Core& core, utility::ErrorState& error);
+			nap::Core& mCore;
+			bool mInitialized = false;
+		};
 
 	private:
 		/**
@@ -438,8 +501,17 @@ namespace nap
 template <typename T>
 T* nap::Core::getService()
 {
-	Service* new_service = getService(RTTI_OF(T));
-	return new_service == nullptr ? nullptr : static_cast<T*>(new_service);
+	return static_cast<T*>(getService(RTTI_OF(T)));
+}
+
+
+/**
+ * Searches for a service of type T in the services and returns it, returns nullptr if none found
+ */
+template <typename T>
+const T* nap::Core::getService() const
+{
+	return static_cast<const T*>(getService(RTTI_OF(T)));
 }
 
 

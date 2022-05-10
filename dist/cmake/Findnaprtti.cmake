@@ -1,20 +1,14 @@
-if(ANDROID)
-    if(NOT TARGET RTTR::Core)
-        find_package(rttr)
-    endif()
-else()
-    # Find RTTR
-    set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
-    if(NOT TARGET RTTR::Core)
-        find_package(RTTR CONFIG REQUIRED Core)
-    endif()
+# Find RTTR
+set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
+if(NOT TARGET RTTR::Core)
+    find_package(RTTR CONFIG REQUIRED Core)
+endif()
 
-    # Find Python
-    # Let find_python find our prepackaged Python in thirdparty
-    find_python_in_thirdparty()
-    set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
-    find_package(pybind11 REQUIRED)
-endif(ANDROID)
+# Find Python
+# Let find_python find our prepackaged Python in thirdparty
+find_python_in_thirdparty()
+set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
+find_package(pybind11 REQUIRED)
 
 # Find rapidjson
 find_package(rapidjson)
@@ -37,15 +31,6 @@ elseif (APPLE)
     )
     set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.dylib)
     set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.dylib)
-elseif (ANDROID)
-    find_path(
-        NAPRTTI_LIBS_DIR
-        NO_CMAKE_FIND_ROOT_PATH
-        NAMES Release/${ANDROID_ABI}/naprtti.so
-        HINTS ${NAP_ROOT}/lib/
-    )
-    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/${ANDROID_ABI}/naprtti.so)
-    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/${ANDROID_ABI}/naprtti.so)
 elseif (UNIX)
     find_path(
         NAPRTTI_LIBS_DIR
@@ -99,7 +84,7 @@ if (WIN32)
 endif()
 
 # Package naprtti and RTTR into projects for macOS/Linux
-if(NOT WIN32 AND NOT ANDROID)
+if(NOT WIN32)
     install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
     install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
 

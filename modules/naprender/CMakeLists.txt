@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_naprender)
 
 # Add all cpp files to SOURCES
@@ -16,30 +11,32 @@ source_group("sources" FILES ${SOURCES})
 module_json_to_cmake()
 
 # Find SDL2
+# Because we use the FindSDL2 from dist, we augment it with some extra platform specifc vars
+set(SDL2_DIR ${THIRDPARTY_DIR}/SDL2)
+set(SDL2_DIST_FILES ${SDL2_DIR}/COPYING.txt)
 if(WIN32)
-    if(MSVC)
-        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64)
-        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/msvc)
-    else()
-        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32)
-        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32)
-    endif()
+    set(SDL2_LIBS_DIR ${SDL2_DIR}/msvc/x86_64/lib)
+    set(CMAKE_LIBRARY_PATH ${SDL2_LIBS_DIR})
+    set(CMAKE_PREFIX_PATH ${SDL2_DIR}/msvc/x86_64)
 elseif(APPLE)
-    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/osx/install/lib)
-    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/osx/install)
+    set(SDL2_LIBS_DIR ${SDL2_DIR}/macos/x86_64/lib)
+    set(CMAKE_LIBRARY_PATH ${SDL2_LIBS_DIR})
+    set(CMAKE_PREFIX_PATH ${SDL2_DIR}/macos/x86_64)
 elseif(UNIX)
-    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/linux/install/lib)
-    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/linux/install)    
+    set(SDL2_LIBS_DIR ${SDL2_DIR}/linux/${ARCH}/lib)
+    set(CMAKE_LIBRARY_PATH ${SDL2_LIBS_DIR})
+    set(CMAKE_PREFIX_PATH ${SDL2_DIR}/linux/${ARCH})    
 endif()
 find_package(SDL2 REQUIRED)
 
 # Find Assimp
+set(ASSIMP_DIST_FILES ${THIRDPARTY_DIR}/assimp/source/LICENSE)
 if(WIN32)
-    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/msvc64/install/lib/cmake/assimp-3.3)
+    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/msvc/x86_64/lib/cmake/assimp-3.3)
 elseif(APPLE)
-    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/osx/install/lib/cmake/assimp-3.3)      
+    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/macos/x86_64/lib/cmake/assimp-3.3)      
 elseif(UNIX)
-    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/linux/install/lib/cmake/assimp-3.3)   
+    set(assimp_DIR ${THIRDPARTY_DIR}/assimp/linux/${ARCH}/lib/cmake/assimp-3.3)   
 endif()
 find_package(assimp REQUIRED)
 
@@ -58,7 +55,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 # Add includes
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
-    ${FREEIMAGE_INCLUDE_DIRS}
+    ${FREEIMAGE_INCLUDE_DIR}
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}
     ${SPIRVCROSS_INCLUDE_DIR}
@@ -91,6 +88,10 @@ elseif(UNIX)
          )
 endif()
 
+if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
+    list(APPEND LIBRARIES atomic)
+endif()
+
 # Link libraries
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES} ${DEPENDENT_NAP_MODULES})
 target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})
@@ -108,7 +109,8 @@ if(WIN32)
     copy_base_windows_graphics_dlls()
 
     # Copy over Assimp to build directory
-    copy_files_to_bin(${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll)
+    file(GLOB ASSIMP_DLLS ${ASSIMP_ROOT_DIR}/bin/*.dll)
+    copy_files_to_bin(${ASSIMP_DLLS})
 endif()
 
 # Package into platform release
@@ -137,74 +139,55 @@ endif()
 # Package dependent libs into platform release --
 
 # Assimp
-install(FILES ${THIRDPARTY_DIR}/assimp/LICENSE DESTINATION thirdparty/assimp)
-if (WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/msvc64/install/ DESTINATION thirdparty/assimp)
-elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/osx/install/ DESTINATION thirdparty/assimp)
-elseif(UNIX)
-    install(DIRECTORY ${THIRDPARTY_DIR}/assimp/linux/install/ 
-            DESTINATION thirdparty/assimp
-            PATTERN "*.a" EXCLUDE)   
-endif()
+install(FILES ${ASSIMP_DIST_FILES} DESTINATION thirdparty/assimp)
+install(DIRECTORY ${ASSIMP_ROOT_DIR}/ DESTINATION thirdparty/assimp)
 
 # FreeImage
+install(FILES ${FREEIMAGE_DIST_FILES} DESTINATION thirdparty/FreeImage/license)
+install(FILES ${FREEIMAGE_INCLUDE_DIR}/FreeImage.h DESTINATION thirdparty/FreeImage/include)
 if (WIN32)
-    file(GLOB FREEIMAGE_LICENSE_FILES ${THIRDPARTY_DIR}/FreeImage/msvc/license*.txt)
-    install(FILES ${FREEIMAGE_LICENSE_FILES} DESTINATION thirdparty/FreeImage/license)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.h DESTINATION thirdparty/FreeImage/include)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.lib DESTINATION thirdparty/FreeImage/lib)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll DESTINATION thirdparty/FreeImage/bin)
+    install(FILES ${FREEIMAGE_LIBS_DIR}/FreeImage.lib DESTINATION thirdparty/FreeImage/lib)
+    install(FILES ${FREEIMAGE_LIBS_DIR}/FreeImage.dll DESTINATION thirdparty/FreeImage/bin)
 elseif(APPLE)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/osx/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/osx/lib/libfreeimage-3.17.0.dylib DESTINATION thirdparty/FreeImage/lib)
-    install(DIRECTORY ${THIRDPARTY_DIR}/FreeImage/osx/license/
-            DESTINATION thirdparty/FreeImage/license
-            )
+    file(GLOB FREEIMAGE_DYLIBS ${FREEIMAGE_LIBS_DIR}/*.dylib*)
+    install(FILES ${FREEIMAGE_DYLIBS} DESTINATION thirdparty/FreeImage/lib)
 elseif(UNIX)
-    file(GLOB FREEIMAGE_LICENSE_FILES ${THIRDPARTY_DIR}/FreeImage/linux/install/license*.txt)
-    install(FILES ${FREEIMAGE_LICENSE_FILES} DESTINATION thirdparty/FreeImage/license)
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/linux/install/include/FreeImage.h DESTINATION thirdparty/FreeImage/include)
-    file(GLOB FREEIMAGE_DYLIBS ${THIRDPARTY_DIR}/FreeImage/linux/install/lib/*.so*)
+    file(GLOB FREEIMAGE_DYLIBS ${FREEIMAGE_LIBS_DIR}/*.so*)
     install(FILES ${FREEIMAGE_DYLIBS} DESTINATION thirdparty/FreeImage/lib)
 endif()
 
 # SDL2
-install(FILES ${THIRDPARTY_DIR}/SDL2/msvc/COPYING.txt
-        DESTINATION thirdparty/SDL2)
+install(DIRECTORY ${SDL2_INCLUDE_DIR} DESTINATION thirdparty/SDL2/include)
+install(FILES ${SDL2_DIST_FILES} DESTINATION thirdparty/SDL2)
 if (WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/ DESTINATION thirdparty/SDL2
-            PATTERN "lib" EXCLUDE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/ DESTINATION thirdparty/SDL2/lib)
+    install(DIRECTORY ${SDL2_LIBS_DIR}/ DESTINATION thirdparty/SDL2/lib)
 elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/osx/install/include DESTINATION thirdparty/SDL2)
-    file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/osx/install/lib/*.dylib)
+    file(GLOB SDL_DYLIBS ${SDL2_LIBS_DIR}/*.dylib)
     install(FILES ${SDL_DYLIBS} DESTINATION thirdparty/SDL2/lib)    
 elseif(UNIX)
-    install(DIRECTORY ${THIRDPARTY_DIR}/SDL2/linux/install/include DESTINATION thirdparty/SDL2)
-    file(GLOB SDL_DYLIBS ${THIRDPARTY_DIR}/SDL2/linux/install/lib/*.so*)
-    install(FILES ${SDL_DYLIBS} ${THIRDPARTY_DIR}/SDL2/linux/install/lib/libSDL2main.a
-            DESTINATION thirdparty/SDL2/lib)
+    file(GLOB SDL_DYLIBS ${SDL2_LIBS_DIR}/*.so*)
+    install(FILES ${SDL_DYLIBS} ${SDL2_LIBS_DIR}/libSDL2main.a 
+        DESTINATION thirdparty/SDL2/lib)
 endif()
 
 # Vulkan SDK
-install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION thirdparty/vulkansdk)
+install(FILES ${VULKANSDK_ROOT_DIR}/LICENSE.txt DESTINATION thirdparty/vulkansdk)
 if (WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/include DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/lib DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/bin DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/share DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/msvc/config DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/include DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/lib DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/bin DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/share DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/config DESTINATION thirdparty/vulkansdk)
 elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/osx/include DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/osx/lib DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/osx/share DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/osx/bin DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/include DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/lib DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/share DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/bin DESTINATION thirdparty/vulkansdk)
     install(FILES dist/vulkan_macos/MoltenVK_icd.json DESTINATION modules/${PROJECT_NAME}/macos/)
 elseif(UNIX)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/include DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/lib DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/share DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/etc DESTINATION thirdparty/vulkansdk)
-    install(DIRECTORY ${THIRDPARTY_DIR}/vulkansdk/linux/bin DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/include DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/lib DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/share DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/etc DESTINATION thirdparty/vulkansdk)
+    install(DIRECTORY ${VULKANSDK_DIR}/bin DESTINATION thirdparty/vulkansdk)
 endif()

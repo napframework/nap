@@ -36,10 +36,8 @@ namespace nap
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("helloworld.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -55,6 +53,12 @@ namespace nap
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
 		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
+
+		// Sample default color values from loaded color palette
+		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mColorOne = { mColorTwo[0] * 0.9f, mColorTwo[1] * 0.9f, mColorTwo[2] };
+		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+		mTextColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
 
 		return true;
 	}
@@ -75,24 +79,20 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Update the camera location in the world shader for the halo effect
-		// To do that we fetch the material associated with the world mesh and query the camera location uniform
-		// Once we have the uniform we can set it to the camera world space location
-		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		nap::UniformVec3Instance* cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
-
-		// Get camera world space position and set
-		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
-
-		// Add some gui elements
+		// Setup GUI
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		// Colors
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ImGui::ColorEdit3("Color One", mColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
+			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
+			ImGui::ColorEdit3("Text Color", mTextColor.getData());
+		}
 
 		// Display world texture in GUI
 		if (ImGui::CollapsingHeader("Textures"))
@@ -103,6 +103,27 @@ namespace nap
 			ImGui::Text("Word Texture");
 		}
 		ImGui::End();
+
+		// push camera location to the world shader for the halo effect
+		// To do that we fetch the material associated with the world mesh and query the camera location uniform
+		// Once we have the uniform we can set it to the camera world space location
+		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraPosition");
+
+		// Get camera world space position and set in sphere shader
+		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
+		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
+		cam_loc_uniform->setValue(global_pos);
+
+		// Now push sphere colors
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
+
+		// Push text color
+		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
+		text_comp.setColor(mTextColor);
 	}
 
 	

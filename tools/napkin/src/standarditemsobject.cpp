@@ -6,6 +6,7 @@
 #include "commands.h"
 #include "sceneservice.h"
 #include "naputils.h"
+#include "napkin-resources.h"
 
 using namespace napkin;
 
@@ -16,19 +17,29 @@ GroupItem::GroupItem(const QString& name, GroupItem::GroupType t) : QStandardIte
 	setEditable(false);
 }
 
+
+QVariant napkin::GroupItem::data(int role) const
+{
+	switch (role)
+	{
+	case Qt::DecorationRole:
+		return AppContext::get().getResourceFactory().getIcon(mType == GroupType::Entities ?
+			QRC_ICONS_ENTITY : QRC_ICONS_RTTIOBJECT);
+	default:
+		return QStandardItem::data(role);
+	}
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 		: QObject(), mObject(o), mIsPointer(isPointer)
 {
 	auto& ctx = AppContext::get();
-
 	setText(QString::fromStdString(o->mID));
-	setIcon(ctx.getResourceFactory().getIcon(*o));
-
 	connect(&ctx, &AppContext::propertyValueChanged, this, &ObjectItem::onPropertyValueChanged);
 	connect(&ctx, &AppContext::objectRemoved, this, &ObjectItem::onObjectRemoved);
-
 	refresh();
 }
 
@@ -128,11 +139,20 @@ void ObjectItem::setData(const QVariant& value, int role)
 
 QVariant ObjectItem::data(int role) const
 {
-	if (role == Qt::ForegroundRole && isPointer())
+	switch (role)
 	{
-		return AppContext::get().getThemeManager().getColor(sThemeCol_dimmedItem);
+	case Qt::DecorationRole:
+		assert(getObject() != nullptr);
+		return AppContext::get().getResourceFactory().getIcon(*getObject());
+	case Qt::ForegroundRole:
+	{
+		return isPointer() ?
+			AppContext::get().getThemeManager().getColor(theme::color::dimmedItem) :
+			QStandardItem::data(role);
 	}
-	return QStandardItem::data(role);
+	default:
+		return QStandardItem::data(role);
+	}
 }
 
 void ObjectItem::removeChildren()
@@ -456,7 +476,6 @@ ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEnti
 		: ObjectItem(&comp, false), mRootEntity(rootEntity)
 {
 	assert(&mRootEntity);
-	mOverrideColor = AppContext::get().getThemeManager().getColor(sThemeCol_componentWidthOverrides);
 }
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
@@ -476,10 +495,12 @@ nap::RootEntity& ComponentInstanceItem::rootEntity() const
 
 QVariant ComponentInstanceItem::data(int role) const
 {
-	if (role == Qt::BackgroundRole)
+	if (role == Qt::TextColorRole)
 	{
 		if (instanceProperties())
-			return mOverrideColor;
+		{
+			return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+		}
 	}
 	return ObjectItem::data(role);
 }
@@ -510,5 +531,3 @@ bool ComponentInstanceItem::hasInstanceProperties() const
 {
 	return mInstanceProperties.mTargetComponent.get();
 }
-
-

@@ -16,14 +16,12 @@ Failure to do so violates the MPL2.0 agreement.
 INFORMATION
 -----------
 
-NAP framework is an open source, data-driven platform that merges game 
-technology with the flexibility of a creative coding environment. NAP allows 
-you to create fast, modular and (above all) stable applications. 
+NAP framework is an open source, real-time control & visualization plaform. 
 
 Use any protocol (OSC, MIDI, Art-Net, Websockets etc) in combination with a 3D 
 graphics and sound engine to create real-time content that is transmitted to 
 any device you like. NAP is built to scale up to a large number of input and 
-outputdevices: many speakers, many lights, many screens, many sensors.
+outputdevices: many displays, many lights, many speakers, many sensors.
 	
 NAPs design is intended to be as open as possible: there is little fixed 
 functionality, but there are a lot of useful blocks that can be tied together 

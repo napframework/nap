@@ -26,12 +26,6 @@ namespace nap
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
 
-		// Convert our path and load resources from file
-        auto abspath = utility::getAbsolutePath(mFilename);
-        nap::Logger::info("Loading: %s", abspath.c_str());
-        if (!mResourceManager->loadFile(mFilename, error))
-            return false;
-
 		// Fetch parameter GUI
 		mParameterGUI = mResourceManager->findObject<ParameterGUI>("ParameterGUI");
 		if (!error.check(mParameterGUI != nullptr, "unable to find parameter GUI"))
@@ -141,9 +135,7 @@ namespace nap
 
 		// Display some extra info
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(ImVec4(clr.getRed(), clr.getGreen(), clr.getBlue(), clr.getAlpha()),
-			"Play the sequence to animate the parameters");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Play the sequence to animate the parameters");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 

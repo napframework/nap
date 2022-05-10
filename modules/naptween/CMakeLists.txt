@@ -1,4 +1,3 @@
-# Exclude for Android
 project(mod_naptween)
 
 # add all cpp files to SOURCES

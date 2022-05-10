@@ -129,10 +129,13 @@ namespace nap
 		 */
 		ESlaveState readState();
 
-		bool mForceOperational = false;		///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
-		std::string mAdapter;				///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
-		int mErrorCycleTime		= 40000;	///< Property: 'ErrorCycleTime' error checking cycle time in us. 1000us = 1ms
-		int mRecoveryTimeout	= 500;		///< Property: 'RecoveryTimeout' given time (in us) for a slave to recover. 1000us = 1ms
+		std::string		mAdapter;							///< Property: 'Adapter' the name of the ethernet adapter to use. A list of available adapters is printed by the SOEM service on startup.
+		bool			mForceOperational = false;			///< Property: 'ForceOperational' if all slaves need to reach operational state during startup.
+		bool			mForceSafeOperational = true;		///< Property: 'ForceSafeOperational' if all slaves need to reach safe operational state during startup
+		int				mOperationalTimeout = 2000;			///< Property: 'OperationalTimeout' given time (in ms) for all slaves to reach operational state.
+		int				mSafeOperationalTimeout = 2000;		///< Property: 'SafeOperationalTimeout' given time (in ms) for all slaves to reach pre-operational state
+		int				mErrorCycleTime = 40000;			///< Property: 'ErrorCycleTime' given time (in us) for a slave to recover. 1000us = 1ms
+		int				mRecoveryTimeout = 500;				///< Property: 'RecoveryTimeout' given time (in us) for a slave to recover. 1000us = 
 
 	protected:
 
@@ -168,7 +171,7 @@ namespace nap
 		/**
 		 * Called by the main thread when the processing task should be stopped.
 		 */
-		virtual void onStopProcessing() = 0;
+		virtual void onStopProcessing() { }
 
 		/**
 		 * Called when a slave reaches the pre-operational stage on the network.
@@ -178,18 +181,20 @@ namespace nap
 		 * You typically use the setup function to create your own custom PDO mapping.
 		 *
 		 * @param slave ec_slavet* pointer to the slave on the network.
-		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
+		 * @param error contains the error when operation fails
+		 * @return if operation succeeded, when false startup is aborted
 		 */
-		virtual void onPreOperational(void* slave, int index)		{ }
+		virtual bool onPreOperational(void* slave, int index, utility::ErrorState& error) { return true; }
 
 		/**
 		 * Called when a slave reaches the safe operational stage on the network.
 		 * Note that this function can be called from multiple threads.
 		 * PDO transmission is operational (slave sends data to master).
 		 * @param slave ec_slavet* pointer to the slave on the network.
-		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
+		 * @param error contains the error when operation fails
+		 * @return if operation succeeded, when false startup is aborted
 		 */
-		virtual void onSafeOperational(void* slave, int index)		{ }
+		virtual bool onSafeOperational(void* slave, int index, utility::ErrorState& error) { return true; }
 
 		/**
 		 * Called when a slave reaches the operational stage on the network.
@@ -198,7 +203,7 @@ namespace nap
 		 * @param slave ec_slavet* pointer to the slave on the network.
 		 * @param index slave index into SOEM ec_slave array, 1 = first slave.
 		 */
-		virtual void onOperational(void* slave, int index)			{ }
+		virtual void onOperational(void* slave, int index) { }
 
 		//////////////////////////////////////////////////////////////////////////
 		// Service Data Objects

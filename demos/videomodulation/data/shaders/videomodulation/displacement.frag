@@ -24,7 +24,10 @@ uniform sampler2D	videoTextureFrag;
 uniform UBO
 {
 	vec3		cameraPosition;		//< world space camera position
-	PointLight	light;
+	PointLight	light;				//< light
+	vec3 		colorOne;			//< second color
+	vec3 		colorTwo;			//< third color
+	vec3 		colorThr;			//< fourth color
 } ubo;
 
 // output
@@ -32,14 +35,9 @@ out vec4 out_Color;
 
 // constants
 const float specularIntensity = 0.5;
-const vec3  haloColor = vec3(0.545, 0.549, 0.627);
-const vec3  specularColor = vec3(0.545, 0.549, 0.627);
+const vec3  specularColor = vec3(1.0, 1.0, 1.0);
 const float shininess = 4;
 const float ambientIntensity = 0.45f;
-const vec3	colorOne = vec3(0.066, 0.078, 0.149);
-const vec3	colorTwo = vec3(0.545, 0.549, 0.627);
-const vec3 	colorThr = vec3(0.784, 0.411, 0.411);
-const vec3	colorFor = vec3(0.176, 0.180, 0.2588);
 
 void main() 
 {
@@ -59,9 +57,9 @@ void main()
 	// Get both mix colors
 	vec3 ver_color = passColor.rgb;
 	float ver_greyscale = (ver_color.r + ver_color.g + ver_color.b) / 3.0;
-	ver_color = mix(colorFor, colorTwo, pow(ver_greyscale,2.0));
-	vec3 ver_color_one = mix(ver_color, colorThr, 0.5);
-	vec3 ver_color_two = mix(ver_color, colorFor, 0.75);
+	ver_color = mix(ubo.colorThr, ubo.colorOne, pow(ver_greyscale,2.0));
+	vec3 ver_color_one = mix(ver_color, ubo.colorTwo, 0.5);
+	vec3 ver_color_two = mix(ver_color, ubo.colorThr, 0.75);
 
 	// Get textured color
 	float greyscale = (tex_color.r + tex_color.g + tex_color.b) / 3.0; 

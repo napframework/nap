@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "ArtNetSend",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "mod_napapp",
+        "mod_napimgui",
+        "mod_napartnet"
+    ],
+    "Data": "data/artnetsend.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

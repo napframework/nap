@@ -115,7 +115,7 @@ namespace nap
 		/**
 		 * @return this argument's value as a char
 		 */
-		char asByte() const;
+		uint8_t asByte() const;
 
 		/**
 		 *	@return if this argument's value is a float
@@ -135,7 +135,7 @@ namespace nap
 		/**
 		 *	@return this argument's value as a float
 		 */
-		float asDouble() const;
+		double asDouble() const;
 
 		/**
 		 * @return if this argument's value is an int

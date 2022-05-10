@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napsdlinput)
 
 # add all cpp files to SOURCES
@@ -17,18 +12,18 @@ module_json_to_cmake()
 
 if(WIN32)
     if(MSVC)
-        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64)
-        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/msvc)
+        set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/x64)
+        set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/msvc/x86_64)
     else()
         set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32)
         set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/mingw/x86_64-w64-mingw32)
     endif()
 elseif(APPLE)
-    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/osx/install/lib)
-    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/osx/install)
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/macos/x86_64/lib)
+    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/macos/x86_64)
 elseif(UNIX)
-    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/linux/install/lib)
-    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/linux/install)
+    set(CMAKE_LIBRARY_PATH ${THIRDPARTY_DIR}/SDL2/linux/${ARCH}/lib)
+    set(CMAKE_PREFIX_PATH ${THIRDPARTY_DIR}/SDL2/linux/${ARCH})
 endif()
 find_package(SDL2 REQUIRED)
 

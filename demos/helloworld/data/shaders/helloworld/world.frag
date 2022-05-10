@@ -8,16 +8,18 @@
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
-in vec4 passColor;						//< frag color
 
 // uniform buffer inputs
 uniform UBO
 {
-	uniform vec3 inCameraPosition;			//< Camera World Space Position
+	uniform vec3 cameraPosition;		//< Camera World Space Position
+	uniform vec3 colorOne;				//< Mix Color One
+	uniform vec3 colorTwo;				//< Mix Color Two
+	uniform vec3 haloColor;				//< Halo Color
 } ubo;
 
 // unfiorm sampler inputs 
-uniform sampler2D inWorldTexture;			//< World Texture
+uniform sampler2D inWorldTexture;		//< World Texture
 
 // output
 out vec4 out_Color;
@@ -26,10 +28,10 @@ void main()
 {
 	// Use texture alpha to blend between two colors
 	float alpha = texture(inWorldTexture, passUVs.xy).r;
-	vec3 world_color = mix(vec3(0.784, 0.411, 0.411), vec3(0.176, 0.180, 0.258), alpha) * passColor.rgb;
+	vec3 world_color = mix(ubo.colorOne, ubo.colorTwo, alpha);
 
 	// Calculate mesh to camera angle for halo effect
-	vec3 cam_normal = normalize(ubo.inCameraPosition - passPosition);
+	vec3 cam_normal = normalize(ubo.cameraPosition - passPosition);
 
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value
@@ -39,7 +41,7 @@ void main()
 	cam_surface_dot = pow(cam_surface_dot, 5.0);
 
 	// Mix in the halo
-	world_color = mix(world_color, vec3(0.545, 0.549, 0.627), cam_surface_dot);
+	world_color = mix(world_color, ubo.haloColor, cam_surface_dot);
 
 	// Set fragment color output
 	out_Color =  vec4(world_color,1.0);

@@ -393,29 +393,35 @@ void InspectorModel::populateItems()
 
 QVariant InspectorModel::data(const QModelIndex& index, int role) const
 {
-	if (role == Qt::UserRole)
+	switch (role)
 	{
-		auto valueItem = dynamic_cast<PropertyValueItem*>(itemFromIndex(index));
+	case Qt::UserRole:
+	{
+		auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (valueItem)
 		{
 			return QVariant::fromValue(valueItem->getPath());
 		}
+		break;
 	}
-	else if (role == Qt::BackgroundRole)
+	case Qt::TextColorRole:
 	{
 		if (auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index)))
 		{
-			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) ||
-							   dynamic_cast<PropertyValueItem*>(valueItem);
+			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) || dynamic_cast<PropertyValueItem*>(valueItem);
 			if (isValueItem && valueItem->getPath().isInstanceProperty())
 			{
 				auto& themeManager = AppContext::get().getThemeManager();
 				if (valueItem->getPath().isOverridden())
-					return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_overriddenInstanceProperty));
-
-				return QVariant::fromValue<QColor>(themeManager.getColor(sThemeCol_instanceProperty));
+				{
+					return QVariant::fromValue<QColor>(themeManager.getColor(theme::color::instancePropertyOverride));
+				}
 			}
 		}
+		break;
+	}
+	default:
+		break;
 	}
 	return QStandardItemModel::data(index, role);
 }

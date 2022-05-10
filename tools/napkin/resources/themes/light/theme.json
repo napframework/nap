@@ -1,0 +1,40 @@
+{
+  "name": "Light",
+  "stylesheet": "style.qss",
+  "logColors":
+  {
+    "fine": "#8D8B84",
+    "debug": "#8D8B84",
+    "info": "#2D2D2D",
+    "warn": "#FFA800",
+    "error": "#FF5050",
+    "fatal": "#FF5050"
+  },
+  "colors":
+  {
+    "highlight1": "#2958FF",
+    "highlight2": "#D6FFA3",
+    "highlight3": "#FFA800",
+    "background1": "#CDCDC3",
+    "background2": "#A7A79E",
+    "dark1": "#F5F5F3",
+    "dark2": "#dfe0d9",
+    "front1": "#ECFFD3",
+    "front2": "#8D8B84",
+    "front3": "#2D2D2D",
+    "front4": "#000000",
+    "header": "#C1C1B9",
+    "status": "#F5F5F3",
+    "instancePropertyOverride": "#5968FD",
+    "dimmedItem": "#8D8B84"
+  },
+  "fonts":
+  {
+    "font1": "Manrope",
+    "font2": "Manrope"
+  },
+  "icons":
+  {
+    "invert": true
+  }
+}

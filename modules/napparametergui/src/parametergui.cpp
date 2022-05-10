@@ -6,6 +6,8 @@
 #include <rtti/rttiutilities.h>
 #include <nap/core.h>
 #include <imgui/imgui.h>
+#include <imguiutils.h>
+#include <imguiservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterGUI)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -17,7 +19,8 @@ namespace nap
 {
 	ParameterGUI::ParameterGUI(nap::Core& core) : 
 		mParameterService(*core.getService<ParameterService>()),
-		mParameterGUIService(*core.getService<ParameterGUIService>())
+		mParameterGUIService(*core.getService<ParameterGUIService>()),
+		mGUIService(*core.getService<IMGuiService>())
 	{ }
 
 
@@ -25,7 +28,6 @@ namespace nap
 	{
 		if (ImGui::BeginPopupModal("Load", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			mPresets = mParameterService.getPresets(*mParameterGroup);
 			if (!mPresets.empty() && mSelectedPresetIndex == -1)
 				mSelectedPresetIndex = 0;
 
@@ -36,28 +38,33 @@ namespace nap
 				return true;
 			}, &mPresets, mPresets.size());
 
-			if (ImGui::Button("OK"))
+			if (!mPresets.empty())
 			{
-				utility::ErrorState errorState;
-				if (mParameterService.loadPreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
-					ImGui::CloseCurrentPopup();
-				else
-					ImGui::OpenPopup("Failed to load preset");
-
-				if (ImGui::BeginPopupModal("Failed to load preset"))
+				if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 				{
-					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
+					utility::ErrorState errorState;
+					if (mParameterService.loadPreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
 					{
 						ImGui::CloseCurrentPopup();
 					}
+					else
+						ImGui::OpenPopup("Failed to load preset");
 
-					ImGui::EndPopup();
+					if (ImGui::BeginPopupModal("Failed to load preset"))
+					{
+						ImGui::Text(errorState.toString().c_str());
+						if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
+						{
+							ImGui::CloseCurrentPopup();
+						}
+
+						ImGui::EndPopup();
+					}
 				}
+				ImGui::SameLine();
 			}
 
-			ImGui::SameLine();
-			if (ImGui::Button("Cancel"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::cancel)))
 			{
 				restorePresetState();
 				ImGui::CloseCurrentPopup();
@@ -77,7 +84,7 @@ namespace nap
 			static char name[256] = { 0 };
 			ImGui::InputText("Name", name, 256);
 
-			if (ImGui::Button("OK") && strlen(name) != 0)
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)) && strlen(name) != 0)
 			{
 				outNewFilename = std::string(name, strlen(name));
 				outNewFilename += ".json";
@@ -87,7 +94,7 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("Cancel"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::cancel)))
 				ImGui::CloseCurrentPopup();
 
 			ImGui::EndPopup();
@@ -121,43 +128,46 @@ namespace nap
 
 			ImGui::SameLine();
 
-			if (ImGui::Button("OK"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 			{
-				utility::ErrorState errorState;
-				if (mParameterService.savePreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
+				if (mSelectedPresetIndex != -1)
 				{
-					ImGui::CloseCurrentPopup();
-					std::string previous_selection = mPresets[mSelectedPresetIndex];
-
-					// After we have retrieved the filenames from the service, the list may be in a different order,
-					// so we search for the item in the list to find the selected index.
-					mPresets = mParameterService.getPresets(*mParameterGroup);
-					for (int index = 0; index < mPresets.size(); ++index)
+					utility::ErrorState errorState;
+					if (mParameterService.savePreset(*mParameterGroup, mPresets[mSelectedPresetIndex], errorState))
 					{
-						if (mPresets[index] == previous_selection)
+						ImGui::CloseCurrentPopup();
+						std::string previous_selection = mPresets[mSelectedPresetIndex];
+
+						// After we have retrieved the filenames from the service, the list may be in a different order,
+						// so we search for the item in the list to find the selected index.
+						mPresets = mParameterService.getPresets(*mParameterGroup);
+						for (int index = 0; index < mPresets.size(); ++index)
 						{
-							mSelectedPresetIndex = index;
-							break;
+							if (mPresets[index] == previous_selection)
+							{
+								mSelectedPresetIndex = index;
+								break;
+							}
 						}
+
+					}
+					else
+					{
+						ImGui::OpenPopup("Failed to save preset");
 					}
 
-				}
-				else
-				{
-					ImGui::OpenPopup("Failed to save preset");
-				}
-
-				if (ImGui::BeginPopupModal("Failed to save preset"))
-				{
-					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
-						ImGui::CloseCurrentPopup();
-					ImGui::EndPopup();
+					if (ImGui::BeginPopupModal("Failed to save preset"))
+					{
+						ImGui::Text(errorState.toString().c_str());
+						if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
+							ImGui::CloseCurrentPopup();
+						ImGui::EndPopup();
+					}
 				}
 			}
 
 			ImGui::SameLine();
-			if (ImGui::Button("Cancel"))
+			if (ImGui::ImageButton(mGUIService.getIcon(icon::cancel)))
 			{
 				restorePresetState();
 				ImGui::CloseCurrentPopup();
@@ -181,7 +191,7 @@ namespace nap
 	}
 
 
-	void ParameterGUI::showParameters(ParameterGroup& parameterGroup)
+	void ParameterGUI::showParameters(ParameterGroup& parameterGroup, int depth)
 	{
 		for (auto& parameter : parameterGroup.mParameters)
 		{
@@ -193,12 +203,23 @@ namespace nap
 			ImGui::PopID();
 		}
 
+		// Add indentation if depth is higher than zero
+		if (depth > 0)
+		{
+			ImGui::Indent(ImGui::GetStyle().FramePadding.x + 1.0f);
+		}
 		for (auto& child : parameterGroup.mChildren)
 		{
 			if (ImGui::CollapsingHeader(child->mID.c_str()))
 			{
-				showParameters(*child);
+			    // Increment the current depth to keep track of the indentation level
+				showParameters(*child, depth+1);
 			}
+		}
+		// Undo previously added indentation
+		if (depth > 0)
+		{
+			ImGui::Unindent(ImGui::GetStyle().FramePadding.x + 1.0f);
 		}
 	}
 
@@ -211,7 +232,7 @@ namespace nap
 		bool has_preset = mSelectedPresetIndex >= 0 && mSelectedPresetIndex < mPresets.size();
 		ImGui::Text(has_preset ? mPresets[mSelectedPresetIndex].data() : "<No preset>");
 
-		if (ImGui::Button("Save"))
+		if (ImGui::ImageButton(mGUIService.getIcon(icon::save)))
 		{
 			if (has_preset)
 			{
@@ -222,11 +243,10 @@ namespace nap
 				if (ImGui::BeginPopupModal("Failed to save preset"))
 				{
 					ImGui::Text(errorState.toString().c_str());
-					if (ImGui::Button("OK"))
+					if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
 						ImGui::CloseCurrentPopup();
 					ImGui::EndPopup();
 				}
-
 			}
 			else
 			{
@@ -237,7 +257,7 @@ namespace nap
 		}
 
 		ImGui::SameLine();
-		if (ImGui::Button("Save As"))
+		if (ImGui::ImageButton(mGUIService.getIcon(icon::saveAs)))
 		{
 			ImGui::OpenPopup("Save As");
 			savePresetState();
@@ -245,10 +265,11 @@ namespace nap
 		}
 
 		ImGui::SameLine();
-		if (ImGui::Button("Load"))
+		if (ImGui::ImageButton(mGUIService.getIcon(icon::load)))
 		{
 			ImGui::OpenPopup("Load");
 			savePresetState();
+			mPresets = mParameterService.getPresets(*mParameterGroup);
 		}
 
 		handleLoadPresetPopup();
@@ -272,6 +293,43 @@ namespace nap
 				showPresets();
 			showParameters(*mParameterGroup);
 		}
+	}
+
+
+	bool ParameterGUI::load(std::string preset, utility::ErrorState& errorState)
+	{
+		if (!errorState.check(mParameterGroup != nullptr, "No parameter group to reference"))
+			return false;
+
+		mPresets = mParameterService.getPresets(*mParameterGroup);
+		if (!errorState.check(!mPresets.empty(), "No presets found"))
+			return false;
+
+		const auto it = std::find(mPresets.begin(), mPresets.end(), preset);
+		if (!errorState.check(it != mPresets.end(), "Preset %s not found", preset.c_str()))
+			return false;
+
+		if (!mParameterService.loadPreset(*mParameterGroup, *it, errorState))
+		{
+			errorState.fail("Failed to load preset %s", (*it).c_str());
+			return false;
+		}
+
+		mSelectedPresetIndex = it - mPresets.begin();
+		return true;
+	}
+
+
+	int ParameterGUI::getSelectedPresetIndex() const
+	{
+		return mSelectedPresetIndex;
+	}
+
+
+	const std::string& ParameterGUI::getSelectedPreset() const
+	{
+		assert(mSelectedPresetIndex != -1);
+		return mPresets[mSelectedPresetIndex];
 	}
 
 

@@ -6,12 +6,12 @@ namespace nap
 	// Sequence Curve Track Actions
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIActions
+	namespace sequenceguiactions
 	{
 		/**
 		 * TrackAction that tells the GUI we're currently hovering a curve control point
 		 */
-		class HoveringControlPoint : public TrackAction
+		class NAPAPI HoveringControlPoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -60,7 +60,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently hovering a tan point
 		 */
-		class HoveringTanPoint : public TrackAction
+		class NAPAPI HoveringTanPoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -77,7 +77,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently hovering a curve
 		 */
-		class HoveringCurve : public TrackAction
+		class NAPAPI HoveringCurve : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -97,7 +97,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI to open an insert curve point popup
 		 */
-		class OpenInsertCurvePointPopup : public TrackAction
+		class NAPAPI OpenInsertCurvePointPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -119,7 +119,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside an insert curve point popup
 		 */
-		class InsertingCurvePoint : public TrackAction
+		class NAPAPI InsertingCurvePoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -186,7 +186,7 @@ namespace nap
 			 * @param controlPointIndex the control point index
 			 * @param curveIndex the curve index
 			 * @param value the new value of the curve point
-			 * @param time the new time of the curve point
+			 * @param time the new time of the curve point, time is in percentage normalized between 0 and 1. F.E. 0.5 is half of segment duration
 			 * @param minimum minimum value of the curve point
 			 * @param maximum maximum value of the curve point
 			 */
@@ -207,7 +207,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI to open a curve type popup
 		 */
-		class OpenCurveTypePopup : public TrackAction
+		class NAPAPI OpenCurveTypePopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -235,7 +235,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside a curve type popup
 		 */
-		class CurveTypePopup : public TrackAction
+		class NAPAPI CurveTypePopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -259,7 +259,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're currently dragging a tan point
 		 */
-		class DraggingTanPoint : public TrackAction
+		class NAPAPI DraggingTanPoint : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -271,13 +271,13 @@ namespace nap
 			 * @param curveIndex curve index
 			 * @param type tan point type, in or out
 			 */
-			DraggingTanPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes type)
+			DraggingTanPoint(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, sequencecurveenums::ETanPointTypes type)
 				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type) {}
 
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
-			SequenceCurveEnums::ETanPointTypes mType;
+			sequencecurveenums::ETanPointTypes mType;
 
 			float mNewValue = 0.0f;
 			float mNewTime = 0.0f;
@@ -286,7 +286,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we need to open a tan point edit popup
 		 */
-		class OpenEditTanPointPopup : public TrackAction
+		class NAPAPI OpenEditTanPointPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -300,13 +300,13 @@ namespace nap
 			 * @param value new tan point value
 			 * @param time new tan point time
 			 */
-			OpenEditTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes type, float value, float time)
+			OpenEditTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, sequencecurveenums::ETanPointTypes type, float value, float time)
 				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time) {}
 
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
-			SequenceCurveEnums::ETanPointTypes mType;
+			sequencecurveenums::ETanPointTypes mType;
 			float mValue;
 			float mTime;
 		};
@@ -314,7 +314,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside a tan point edit popup
 		 */
-		class EditingTanPointPopup : public TrackAction
+		class NAPAPI EditingTanPointPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -328,13 +328,13 @@ namespace nap
 			 * @param value new tan point value
 			 * @param time new tan point time
 			 */
-			EditingTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, SequenceCurveEnums::ETanPointTypes type, float value, float time)
+			EditingTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, sequencecurveenums::ETanPointTypes type, float value, float time)
 				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time){}
 
 			std::string mSegmentID;
 			int mControlPointIndex;
 			int mCurveIndex;
-			SequenceCurveEnums::ETanPointTypes mType;
+			sequencecurveenums::ETanPointTypes mType;
 			float mValue;
 			float mTime;
 		};
@@ -342,7 +342,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI to open an edit curve segment popup
 		 */
-		class OpenEditCurveSegmentPopup : public TrackAction
+		class NAPAPI OpenEditCurveSegmentPopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -366,7 +366,7 @@ namespace nap
 		/**
 		 * TrackAction that tells the GUI we're inside an edit curve segment popup
 		 */
-		class EditingCurveSegment : public TrackAction
+		class NAPAPI EditingCurveSegment : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -392,8 +392,7 @@ namespace nap
 		 * @tparam T value type of curve
 		 */
 		template<typename T>
-		class OpenEditSegmentCurveValuePopup :
-			public TrackAction
+		class OpenEditSegmentCurveValuePopup : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -408,14 +407,14 @@ namespace nap
 			 * @param maximum the new maximum
 			 */
 			OpenEditSegmentCurveValuePopup(const std::string& trackId, std::string segmentID,
-										   SequenceCurveEnums::SegmentValueTypes type, int curveIndex, T value,
-										   T minimum, T maximum) :
+                                           sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value,
+                                           T minimum, T maximum) :
 				TrackAction(trackId), mSegmentID(std::move(segmentID)),
 				mType(type), mCurveIndex(curveIndex), mValue(value),
 				mMinimum(minimum), mMaximum(maximum) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 			T mValue;
 			T mMinimum;
@@ -427,8 +426,7 @@ namespace nap
 		 * @tparam T value type of curve
 		 */
 		template<typename T>
-		class EditingSegmentCurveValue :
-			public TrackAction
+		class EditingSegmentCurveValue : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -442,11 +440,11 @@ namespace nap
 			 * @param minimum the new minimum
 			 * @param maximum the new maximum
 			 */
-			EditingSegmentCurveValue(const std::string& trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex, T value, T minimum, T maximum)
+			EditingSegmentCurveValue(const std::string& trackId, std::string segmentID, sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value, T minimum, T maximum)
 				: TrackAction(trackId), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex), mValue(value), mMinimum(minimum), mMaximum(maximum) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 			T mValue;
 			T mMinimum;
@@ -458,8 +456,7 @@ namespace nap
 		 * @tparam T value type of the curved track
 		 */
 		template<typename T>
-		class ChangeMinMaxCurve :
-			public TrackAction
+		class ChangeMinMaxCurve : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -479,7 +476,7 @@ namespace nap
 		/**
 		 * A TrackAction that tells the GUI we're hovering a segment value
 		 */
-		class HoveringSegmentValue : public TrackAction
+		class NAPAPI HoveringSegmentValue : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -490,19 +487,18 @@ namespace nap
 			 * @param type segment value, begin or end
 			 * @param curveIndex the index of the curve
 			 */
-			HoveringSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex)
+			HoveringSegmentValue(std::string trackId, std::string segmentID, sequencecurveenums::ESegmentValueTypes type, int curveIndex)
 				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 		};
 
 		/**
 		 * A TrackAction that tells the GUI we're dragging a segment value
 		 */
-		class DraggingSegmentValue :
-			public TrackAction
+		class DraggingSegmentValue : public TrackAction
 		{
 			RTTI_ENABLE(TrackAction)
 		public:
@@ -514,11 +510,11 @@ namespace nap
 			 * @param curveIndex the index of the curve
 			 * @param newValue the new value
 			 */
-			DraggingSegmentValue(std::string trackId, std::string segmentID, SequenceCurveEnums::SegmentValueTypes type, int curveIndex, float newValue)
+			DraggingSegmentValue(std::string trackId, std::string segmentID, sequencecurveenums::ESegmentValueTypes type, int curveIndex, float newValue)
 				: TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex), mNewValue(newValue) {}
 
 			std::string mSegmentID;
-			SequenceCurveEnums::SegmentValueTypes mType;
+			sequencecurveenums::ESegmentValueTypes mType;
 			int mCurveIndex;
 			float mNewValue;
 		};

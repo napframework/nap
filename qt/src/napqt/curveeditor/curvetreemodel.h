@@ -39,8 +39,8 @@ namespace nap
 			AbstractCurve* curveFromIndex(const QModelIndex& idx);
 
 		private:
-			void onCurvesInserted(const QList<int> indexes);
-			void onCurvesRemoved(const QList<int> indexes);
+			void onCurvesInserted(const QList<int>& indexes);
+			void onCurvesRemoved(const QList<int>& indexes);
 
 			AbstractCurveModel* mModel = nullptr;
 		};

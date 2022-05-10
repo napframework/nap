@@ -14,18 +14,20 @@
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Holds information about the state of the editor
 	 * Shared between GUI editor and view classes
 	 */
-	struct SequenceEditorGUIState
+	struct NAPAPI SequenceEditorGUIState
 	{
 	public:
 		// action 
-		SequenceGUIActions::SequenceActionPtr mAction = nullptr;
+		sequenceguiactions::SequenceActionPtr mAction = nullptr;
 
 		// clipboard
-		SequenceGUIClipboards::SequenceClipboardPtr mClipboard = nullptr;
+		sequenceguiclipboard::SequenceClipboardPtr mClipboard = nullptr;
 
 		// dirty means view has changed, and content of tracks need to be redrawn and cached
 		bool mDirty = false;
@@ -66,10 +68,10 @@ namespace nap
 		// previous window scroll
 		ImVec2 mScroll;
 
-		// vertical resolution
-		float mVerticalResolution = 150.0f;
+		// vertical resolution (not scaled)
+		float mVerticalResolution = 180.0f;
 
-		// horizontal resolution
+		// horizontal resolution (not scaled)
 		float mHorizontalResolution = 100.0f;
 
 		// current time in sequence of mouse cursor
@@ -80,6 +82,9 @@ namespace nap
 
 		// scroll follows player position
 		bool mFollow = false;
+
+		// current gui scaling factor 
+		float mScale = 1.0f;
 
 		// current sequence name
 		std::string mSequenceName;

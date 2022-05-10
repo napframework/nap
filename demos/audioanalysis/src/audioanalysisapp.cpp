@@ -26,8 +26,10 @@
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioAnalysisApp)
-	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
+
+static constexpr double plotDelta = 1.0 / 60.0;
 
 namespace nap 
 {
@@ -42,10 +44,8 @@ namespace nap
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("audioanalysis.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -60,10 +60,9 @@ namespace nap
         // Set parameters for level meter component
         levelMeter->setCenterFrequency(mAnalysisFrequency);
         levelMeter->setBandWidth(mAnalysisBand);
-        levelMeter->setFilterGain(mAnalysisGain);
-        
+        levelMeter->setFilterGain(1.f);
+
         // Resize the vector containing the results of the analysis
-        mPlotvalues.resize(512, 0);
 		return true;
 	}
 	
@@ -85,10 +84,14 @@ namespace nap
         assert(input);
         assert(player);
 
-		// Store new value in array
-		mPlotvalues[mTickIdx] = levelMeter->getLevel();	// save new value so it can be subtracted later		
-		if (++mTickIdx == mPlotvalues.size())			// increment current sample index
-			mTickIdx = 0;
+		// Store new value in array at 60 hz, allows update to run independent from framerate
+		if (mTimer.getElapsedTime() > plotDelta)
+		{
+			mPlotvalues[mTickIdx] = levelMeter->getLevel() * mAnalysisGain;	// save new value so it can be subtracted later
+			if (++mTickIdx == mPlotvalues.size())							// increment current sample index
+				mTickIdx = 0;
+			mTimer.reset();
+		}
 
 		// Draw some gui elements
 		ImGui::SetNextWindowSize(ImVec2(512, 512), ImGuiCond_FirstUseEver);
@@ -96,7 +99,7 @@ namespace nap
         ImGui::PlotHistogram("", mPlotvalues.data(), mPlotvalues.size(), mTickIdx, nullptr, 0.0f, 0.2f, ImVec2(ImGui::GetColumnWidth(), 128)); // Plot the output values
         ImGui::SliderFloat("Filter Frequency", &mAnalysisFrequency, 0.0f, 10000.0f, "%.3f", 2.0f);
         ImGui::SliderFloat("Filter Bandwidth", &mAnalysisBand, 1.f, 10000.0f, "%.3f", 2.0f);
-        ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.f, 10.0f, "%.3f", 1.0f);
+        ImGui::SliderFloat("Audio Gain", &mAnalysisGain, 0.5f, 5.f, "%.3f", 1.f);
         if (ImGui::RadioButton("Audio file input", mInputSource == EAudioFile))
             mInputSource = EAudioFile;
         if (ImGui::RadioButton("Audio device input", mInputSource == EAudioDevice))
@@ -122,11 +125,10 @@ namespace nap
                     break;
             }
         }
-        
+
         // Update the audio level meter analysis component
         levelMeter->setCenterFrequency(mAnalysisFrequency);
         levelMeter->setBandWidth(mAnalysisBand);
-        levelMeter->setFilterGain(mAnalysisGain);
 	}
 
 	

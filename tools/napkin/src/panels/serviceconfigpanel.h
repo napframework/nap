@@ -26,6 +26,11 @@ namespace napkin
 		 */
 		PropertyPath propertyPath();
 
+		/**
+		 * Data Overrides
+		 */
+		QVariant data(int role) const override;
+
 	private:
 		nap::ServiceConfiguration& mConfig;
 		Document* mDocument;
@@ -37,8 +42,13 @@ namespace napkin
 	 */
 	class ServiceConfigModel : public QStandardItemModel
 	{
+	Q_OBJECT
 	public:
 		ServiceConfigModel();
+
+	Q_SIGNALS:
+		void populated();
+
 	private:
 		void populate();
 		void onClosing(QString file);

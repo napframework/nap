@@ -13,6 +13,12 @@ CONTENT_DIR = "/content"
 OUTPUT_DIR = "/../html"
 SEARCH_TARGET = OUTPUT_DIR + "/search/search.css"
 SEARCH_SOURCE = "/css/search.css"
+FONT_FILE_SOURCE = "/css/Manrope-Regular.ttf"
+FONT_FILE_TARGET = OUTPUT_DIR + "/Manrope-Regular.ttf"
+MONO_FONT_FILE_SOURCE = "/css/Inconsolata-Medium.ttf"
+MONO_FONT_FILE_TARGET = OUTPUT_DIR + "/Inconsolata-Medium.ttf"
+OVERRIDE_DIR = "/overrides"
+
 
 # errors
 ERROR_INVALID_NAP_VERSION = 2
@@ -73,7 +79,18 @@ def copyContent():
 	except Exception as error:
 		print("unable to copy content, are you running as admin? %s" % error)
 
+# copy overrides
+def copyOverrides():
+    source = getWorkingDir() + OVERRIDE_DIR
+    target = getWorkingDir() + OUTPUT_DIR
+    print("copy: %s -> %s" % (source, target))
+    try:
+        distutils.dir_util.copy_tree(source, target)
+    except Exception as error:
+        print("unable to copy overrides, are you running as admin? %s" % error)
 
+ 
+# copy search window
 def copySearch():
 	source = getWorkingDir() + SEARCH_SOURCE
 	target = getWorkingDir() + SEARCH_TARGET
@@ -82,6 +99,17 @@ def copySearch():
 		shutil.copyfile(source, target)
 	except Exception as error:
 		print("unable to copy search stylesheet, are you running as admin? %s" % error)
+
+
+# copy font
+def copyFont(source, target):
+    font_source = getWorkingDir() + source
+    font_target = getWorkingDir() + target
+    print("copy: %s -> %s" % (font_source, font_target))
+    try:
+        shutil.copyfile(font_source, font_target)
+    except Exception as error:
+        print("unable to copy font, are you running as admin? %s" % error)
 
 
 def populateNAPVersionToEnvVars():
@@ -126,6 +154,13 @@ if __name__ == '__main__':
 
     # copy search
     copySearch()
+
+    # copy overrides
+    copyOverrides()
+
+    # copy fonts
+    copyFont(FONT_FILE_SOURCE, FONT_FILE_TARGET)
+    copyFont(MONO_FONT_FILE_SOURCE, MONO_FONT_FILE_TARGET)
 
 
 

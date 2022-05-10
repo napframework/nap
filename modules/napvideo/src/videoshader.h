@@ -11,22 +11,30 @@ namespace nap
 {
 	// Forward declares
 	class Core;
-	class Material;
+	class RenderService;
 
 	// Video shader sampler names 
 	namespace uniform
 	{
 		namespace video
 		{
-			constexpr const char* YSampler = "yTexture";	///< video shader Y sampler name
-			constexpr const char* USampler = "uTexture";	///< video shader U sampler name
-			constexpr const char* VSampler = "vTexture";	///< video shader V sampler name
+			inline constexpr const char* YSampler  = "yTexture";	///< video shader Y sampler name
+			inline constexpr const char* USampler  = "uTexture";	///< video shader U sampler name
+			inline constexpr const char* VSampler  = "vTexture";	///< video shader V sampler name
 		}
 	}
 
 	/**
 	 * Shader that converts YUV video textures, output by the nap::VideoPlayer, into an RGB image.
 	 * Used by the nap::RenderVideoComponent.
+	 *
+	 * The video shader exposes the following shader variables:
+	 *
+	 * ~~~~~{.frag}
+	 *		uniform sampler2D yTexture;
+	 *		uniform sampler2D uTexture;
+	 *		uniform sampler2D vTexture;
+	 * ~~~~
 	 */
 	class NAPAPI VideoShader : public Shader
 	{
@@ -40,5 +48,8 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		RenderService* mRenderService = nullptr;
 	};
 }

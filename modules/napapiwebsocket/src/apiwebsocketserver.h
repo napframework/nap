@@ -4,16 +4,13 @@
 
 #pragma once
 
-// Local Includes
-#include "websocketserver.h"
-#include "apiwebsocketevent.h"
-#include "apiwebsocketutils.h"
-
 // External Includes
-#include <nap/resource.h>
+#include <apievent.h>
+#include <websocketserver.h>
 
 namespace nap
 {
+	// Forward Declares
 	class APIWebSocketService;
 	class APIService;
 
@@ -91,23 +88,11 @@ namespace nap
 	{
 		RTTI_ENABLE(IWebSocketServer)
 	public:
-
 		/**
 		 * Constructor
 		 * @param service handle to the api web-socket service.
 		 */
 		APIWebSocketServer(APIWebSocketService& service);
-
-		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		* Destroys the socket server.
-		*/
-		virtual void onDestroy() override;
 
 		/**
 		 * Sends a message in the form of an api event to a client.
@@ -138,19 +123,16 @@ namespace nap
 
 		/**
 		 * Broadcasts a message in the form of an api event to all connected clients
-		 * @param message the message to send
-		 * @param error contains the error if sending fails
+		 * @param apiEvent api event to broadcast as a text message to the clients
+		 * @param error contains the error if broadcasting fails
 		 * @return if message was broadcast successfully
 		 */
-		 bool broadcast(nap::APIEventPtr apiEvent, nap::utility::ErrorState& error);
+		bool broadcast(nap::APIEventPtr apiEvent, nap::utility::ErrorState& error);
 
-
-		bool mVerbose = true;											///< Property: 'Verbose' log server message to api-event conversion failures.
-		EWebSocketForwardMode mMode = EWebSocketForwardMode::APIEvent;	///< Property: 'Mode' web-socket event translation and forward mode
+		bool mSendWebSocketEvents = true;		///< Property: 'SendWebSocketEvents' send events to WebSocket service as well as API service
+		bool mVerbose = true;					///< Property: 'Verbose' log server message to api-event conversion failures.
 
 	private:
-
-		APIService* mAPIService = nullptr;
 
 		/**
 		 * Sends an error reply to the specified connection. 
@@ -172,8 +154,10 @@ namespace nap
 
 		// Called by web-socket server endpoint when a client connection failed to extablish
 		virtual void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason) override;
+
+		APIService* mAPIService = nullptr;	///< Handle to the api service.
 	};
 
-	// Object creator used for constructing the the api web-socket server
+	// Object creator used for constructing the api web-socket server
 	using APIWebSocketServerObjectCreator = rtti::ObjectCreator<APIWebSocketServer, APIWebSocketService>;
 }

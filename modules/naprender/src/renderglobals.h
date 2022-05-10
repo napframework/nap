@@ -12,6 +12,15 @@
 namespace nap
 {
 	/**
+	 * The default shader stage entry point name that is used whenever a pipeline stage is created.
+	 */
+	namespace shader
+	{
+		inline constexpr const char* main = "main";
+	}
+
+
+	/**
 	 * These uniforms are set automatically by all nap::RenderableComponent(s) when present in the vertex shader.
 	 * ~~~~~
 	 *	...
@@ -31,10 +40,10 @@ namespace nap
 	 */
 	namespace uniform
 	{
-		constexpr const char* mvpStruct = "nap";						///< default model view projection struct name
-		constexpr const char* modelMatrix = "modelMatrix";				///< uniform model matrix name
-		constexpr const char* viewMatrix = "viewMatrix";				///< uniform view matrix name
-		constexpr const char* projectionMatrix = "projectionMatrix";	///< uniform projection matrix name
+		inline constexpr const char* mvpStruct = "nap";						///< default model view projection struct name
+		inline constexpr const char* modelMatrix = "modelMatrix";			///< uniform model matrix name
+		inline constexpr const char* viewMatrix = "viewMatrix";				///< uniform view matrix name
+		inline constexpr const char* projectionMatrix = "projectionMatrix";	///< uniform projection matrix name
 	}
 
 
@@ -49,12 +58,12 @@ namespace nap
 	 */
 	namespace vertexid
 	{
-		constexpr const char* position = "Position";					///< Default mesh position vertex attribute name
-		constexpr const char* normal = "Normal";						///< Default mesh normal vertex attribute name		
-		constexpr const char* tangent = "Tangent";						///< Default mesh tangent vertex attribute name		
-		constexpr const char* bitangent = "Bitangent";					///< Default mesh bi-tangent vertex attribute name
-		constexpr const char* uv = "UV0";								///< Default mesh uv vertex attribute name, 1 channel
-		constexpr const char* color = "Color0";							///< Default mesh color attribute name, 1 channel
+		inline constexpr const char* position = "Position";				///< Default mesh position vertex attribute name
+		inline constexpr const char* normal = "Normal";					///< Default mesh normal vertex attribute name		
+		inline constexpr const char* tangent = "Tangent";				///< Default mesh tangent vertex attribute name		
+		inline constexpr const char* bitangent = "Bitangent";			///< Default mesh bi-tangent vertex attribute name
+		inline constexpr const char* uv	= "UV0";						///< Default mesh uv vertex attribute name, 1 channel
+		inline constexpr const char* color = "Color0";					///< Default mesh color attribute name, 1 channel
 
 		/**
 		 * Returns the name of the vertex uv attribute based on the queried uv channel, ie: UV0, UV1 etc.
@@ -77,12 +86,12 @@ namespace nap
 		 */
 		namespace shader
 		{
-			constexpr const char* position = "in_Position";				///< Default shader position vertex input name
-			constexpr const char* normal = "in_Normals";				///< Default shader normal vertex input name
-			constexpr const char* tangent = "in_Tangent";				///< Default shader tangent vertex input name
-			constexpr const char* bitangent = "in_Bitangent";			///< Default shader bi-tangent vertex input name
-			constexpr const char* color = "in_Color0";					///< Default shader color vertex input name, 1 channel
-			constexpr const char* uv = "in_UV0";						///< Default shader uv vertex input name, 1 channel
+			inline constexpr const char* position = "in_Position";		///< Default shader position vertex input name
+			inline constexpr const char* normal = "in_Normals";			///< Default shader normal vertex input name
+			inline constexpr const char* tangent = "in_Tangent";		///< Default shader tangent vertex input name
+			inline constexpr const char* bitangent = "in_Bitangent";	///< Default shader bi-tangent vertex input name
+			inline constexpr const char* color = "in_Color0";			///< Default shader color vertex input name, 1 channel
+			inline constexpr const char* uv = "in_UV0";					///< Default shader uv vertex input name, 1 channel
 
 			/**
 			 * @param channel index to generate name for

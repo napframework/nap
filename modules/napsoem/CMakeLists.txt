@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napsoem)
 
 # add all cpp files to SOURCES
@@ -36,17 +31,16 @@ copy_module_json_to_bin()
 # Package into platform release
 package_module()
 
-# Install readme
-install(FILES ${THIRDPARTY_DIR}/soem/README.md DESTINATION thirdparty/soem)
-install(FILES ${THIRDPARTY_DIR}/soem/LICENSE DESTINATION thirdparty/soem)
+# Install license
+install(FILES ${SOEM_DIST_FILES} DESTINATION thirdparty/soem)
 
-# install inlcude
+# Install include
 install(DIRECTORY ${SOEM_DIR}/include DESTINATION thirdparty/soem)
 
-#install lib
+# Install lib
 install(DIRECTORY ${SOEM_DIR}/lib DESTINATION thirdparty/soem)
 
-#install wpcap includes (only windows)
+#install wpcap includes (only Windows)
 if(WIN32)
 	install(DIRECTORY ${WPCAP_DIR}/Include DESTINATION thirdparty/soem/wpcap)
 	install(DIRECTORY ${WPCAP_DIR}/Lib DESTINATION thirdparty/soem/wpcap)

@@ -7,21 +7,31 @@ namespace nap
 {
 	// Forward declares
 	class Core;
-	class Material;
+	class RenderService;
 
 	// Video shader sampler names 
 	namespace uniform
 	{
 		namespace constant
 		{	
-			constexpr const char* color			= "color";		///< Name of the 2D sampler that points to the glyph
-			constexpr const char* alpha			= "alpha";		///< Text color vec3 
-			constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
+			inline constexpr const char* color			= "color";		///< color value (0-1)
+			inline constexpr const char* alpha			= "alpha";		///< alpha value (0-1)
+			inline constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
 		}
 	}
 
 	/**
 	 * Constant shader. Renders an object using a color and alpha value.
+	 * 
+	 * The constant shader exposes the following shader variables:
+	 *
+	 * ~~~~{.frag}
+	 *		uniform UBO
+	 *		{
+	 *			vec3 color;
+	 *			float alpha;
+	 *		};
+	 * ~~~~
 	 */
 	class NAPAPI ConstantShader : public Shader
 	{
@@ -35,5 +45,8 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		RenderService* mRenderService = nullptr;
 	};
 }

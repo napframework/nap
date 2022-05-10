@@ -12,9 +12,10 @@ namespace nap
 {
 	// Forward Declares
 	class Shader;
+	class ComputeShader;
 
 	/**
-	 * Key associated with a specific Vulkan pipeline. 
+	 * Key associated with a specific Vulkan graphics pipeline. 
 	 * The render engine uses this key to cache Vulkan pipelines so they can be re-used at runtime.
 	 * Pipeline creation is considered a heavy Vulkan operation, we therefore cache pipelines to speed up rendering.
 	 */
@@ -23,7 +24,20 @@ namespace nap
 		/**
 		 * Creates the key based on the provided arguments.
 		 */
-		PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading, ECullMode cullMode);
+		PipelineKey
+		(
+			const Shader& shader,
+			EDrawMode drawMode,
+			EDepthMode depthMode,
+			EBlendMode blendMode,
+			ECullWindingOrder cullWindingOrder,
+			VkFormat colorFormat,
+			VkFormat depthFormat,
+			VkSampleCountFlagBits sampleCount,
+			bool sampleShading,
+			ECullMode cullMode,
+			EPolygonMode polygonMode
+		);
 
 		// TODO: Concatenate all properties into single / multiple 64bit values
 		bool operator==(const PipelineKey& rhs) const;
@@ -38,6 +52,25 @@ namespace nap
 		VkSampleCountFlagBits	mSampleCount = VK_SAMPLE_COUNT_1_BIT;
 		bool					mSampleShading = false;
 		ECullMode				mCullMode = ECullMode::Back;
+		EPolygonMode			mPolygonMode = EPolygonMode::Fill;
+	};
+
+
+	/**
+	 * Key associated with a specific Vulkan compute pipeline. 
+	 * The render engine uses this key to cache Vulkan pipelines so they can be re-used at runtime.
+	 * Pipeline creation is considered a heavy Vulkan operation, we therefore cache pipelines to speed up compute operations.
+	 */
+	struct NAPAPI ComputePipelineKey
+	{
+		/**
+		 * Creates the key based on the provided arguments.
+		 */
+		ComputePipelineKey(const ComputeShader& shader);
+
+		bool operator==(const ComputePipelineKey& rhs) const;
+
+		const ComputeShader* mShader = nullptr;
 	};
 }
 
@@ -64,7 +97,19 @@ namespace std
 			size_t sample_count_hash	= hash<size_t>{}((size_t)key.mSampleCount);
 			size_t sample_shading_hash	= hash<size_t>{}((size_t)key.mSampleShading);
 			size_t cull_mode_hash		= hash<size_t>{}((size_t)key.mCullMode);
-			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash ^ cull_mode_hash;
+			size_t poly_mode_hash		= hash<size_t>{}((size_t)key.mPolygonMode);
+			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash ^ cull_mode_hash ^ poly_mode_hash;
+		}
+	};
+
+
+	template<>
+	struct hash<nap::ComputePipelineKey>
+	{
+		size_t operator()(const nap::ComputePipelineKey& key) const
+		{
+			size_t shader_hash = hash<size_t>{}((size_t)key.mShader);
+			return shader_hash;
 		}
 	};
 }

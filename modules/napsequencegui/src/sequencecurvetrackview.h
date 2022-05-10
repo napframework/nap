@@ -66,7 +66,7 @@ namespace nap
 		 * @param drawList pointer to window drawlist
 		 */
 		template<typename T>
-		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, SequenceCurveEnums::SegmentValueTypes segmentType, ImDrawList* drawList);
+		void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, sequencecurveenums::ESegmentValueTypes segmentType, ImDrawList* drawList);
 	
 		/**
 		 * draws segment handler
@@ -121,14 +121,14 @@ namespace nap
 		 */
 		template<typename T>
 		void drawTanHandler(const SequenceTrack &track,
-							const SequenceTrackSegment &segment,
-							std::ostringstream &stringStream,
-							float segmentWidth,
-							const math::FCurvePoint<float, float> &curvePoint,
-							const ImVec2 &circlePoint, int controlPointIndex,
-							int curveIndex,
-							SequenceCurveEnums::ETanPointTypes type,
-							ImDrawList* drawList);
+                            const SequenceTrackSegment &segment,
+                            std::ostringstream &stringStream,
+                            float segmentWidth,
+                            const math::FCurvePoint<float, float> &curvePoint,
+                            const ImVec2 &circlePoint, int controlPointIndex,
+                            int curveIndex,
+                            sequencecurveenums::ETanPointTypes type,
+                            ImDrawList* drawList);
 	
 		/**
 		 * handles insert segment popup
@@ -284,13 +284,12 @@ namespace nap
 	// Curve Clipboards
 	//////////////////////////////////////////////////////////////////////////
 
-	namespace SequenceGUIClipboards
+	namespace sequenceguiclipboard
 	{
 		/**
 		 * CurveSegmentClipboard contains serialized curve segments
 		 */
-		class NAPAPI CurveSegmentClipboard final :
-			public Clipboard
+		class NAPAPI CurveSegmentClipboard final : public Clipboard
 		{
 			RTTI_ENABLE(Clipboard)
 		public:
@@ -320,59 +319,40 @@ namespace nap
 		};
 	}
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Forward declarations
 	//////////////////////////////////////////////////////////////////////////
 
 	template<>
-	void NAPAPI SequenceCurveTrackView::handleCurvePointActionPopup<float>();
+	void SequenceCurveTrackView::handleCurvePointActionPopup<float>();
 
 	template<>
-	void NAPAPI SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
+	void SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
 
 	template<>
-	void NAPAPI SequenceCurveTrackView::showValue<float>(
-		const SequenceTrack& track,
-		const SequenceTrackSegmentCurve<float>& segment,
-		float x,
-		double time,
-		int curveIndex);
+	void SequenceCurveTrackView::showValue<float>(const SequenceTrack& track, const SequenceTrackSegmentCurve<float>& segment, float x, double time, int curveIndex);
 
 	template<>
-	void NAPAPI SequenceCurveTrackView::showValue<glm::vec2>(
-		const SequenceTrack& track,
-		const SequenceTrackSegmentCurve<glm::vec2>& segment,
-		float x,
-		double time,
-		int curveIndex);
+	void SequenceCurveTrackView::showValue<glm::vec2>(const SequenceTrack& track, const SequenceTrackSegmentCurve<glm::vec2>& segment, float x, double time, int curveIndex);
 
 	template<>
-	void NAPAPI SequenceCurveTrackView::showValue<glm::vec3>(
-		const SequenceTrack& track,
-		const SequenceTrackSegmentCurve<glm::vec3>& segment,
-		float x,
-		double time,
-		int curveIndex);
+	void SequenceCurveTrackView::showValue<glm::vec3>(const SequenceTrack& track, const SequenceTrackSegmentCurve<glm::vec3>& segment, float x, double time, int curveIndex);
 
 	template<>
-	void NAPAPI SequenceCurveTrackView::showValue<glm::vec4>(
-		const SequenceTrack& track,
-		const SequenceTrackSegmentCurve<glm::vec4>& segment,
-		float x,
-		double time,
-		int curveIndex);
+	void SequenceCurveTrackView::showValue<glm::vec4>(const SequenceTrack& track, const SequenceTrackSegmentCurve<glm::vec4>& segment, float x, double time, int curveIndex);
 
 	template<>
-	bool NAPAPI SequenceCurveTrackView::inputFloat<float>(float &v, int precision);
+	bool SequenceCurveTrackView::inputFloat<float>(float &v, int precision);
 
 	template<>
-	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2 &v, int precision);
+	bool SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2 &v, int precision);
 
 	template<>
-	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3 &v, int precision);
+	bool SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3 &v, int precision);
 
 	template<>
-	bool NAPAPI SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision);
+	bool SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision);
 }
 
 // Include all template definitions

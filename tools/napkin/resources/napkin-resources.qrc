@@ -1,47 +1,17 @@
 <?xml version="1.0" ?>
 <RCC>
 	<qresource>
-		<file>icons/application_view_list.png</file>
-		<file>icons/application_view_tile.png</file>
-		<file>icons/arrow_redo.png</file>
-		<file>icons/arrow_undo.png</file>
-		<file>icons/box.png</file>
-		<file>icons/bricks.png</file>
-		<file>icons/bug.png</file>
-		<file>icons/bullet_green.png</file>
-		<file>icons/bullet_white.png</file>
 		<file>icons/component.png</file>
-		<file>icons/convert.png</file>
-		<file>icons/cube-blue.png</file>
 		<file>icons/curveinterp-bezier.png</file>
 		<file>icons/curveinterp-linear.png</file>
 		<file>icons/curveinterp-stepped.png</file>
-		<file>icons/cut_red.png</file>
-		<file>icons/delete.png</file>
-		<file>icons/diamond-orange.png</file>
-		<file>icons/disk.png</file>
 		<file>icons/entity.png</file>
-		<file>icons/error.png</file>
-		<file>icons/exclamation.png</file>
 		<file>icons/file.png</file>
-		<file>icons/folder.png</file>
-		<file>icons/folder_page.png</file>
 		<file>icons/frame-selection-h.png</file>
 		<file>icons/frame-selection-v.png</file>
 		<file>icons/frame-selection.png</file>
-		<file>icons/icon_close.png</file>
-		<file>icons/icon_restore.png</file>
-		<file>icons/icon_close_nap.png</file>
-		<file>icons/icon_restore_nap.png</file>
-		<file>icons/information.png</file>
-		<file>icons/link.png</file>
-		<file>icons/nap-logo.png</file>
 		<file>icons/napkin-splash.png</file>
-		<file>icons/node-select-all.png</file>
-		<file>icons/package.png</file>
-		<file>icons/page_copy.png</file>
-		<file>icons/page_paste.png</file>
-		<file>icons/page_white.png</file>
+		<file>icons/icon.png</file>
 		<file>icons/rttiobject.png</file>
 		<file>icons/scene.png</file>
 		<file>icons/tangents-aligned.png</file>
@@ -51,12 +21,9 @@
 		<file>icons/module.png</file>
 		<file>icons/app-play.png</file>
 		<file>icons/app-stop.png</file>
-		<file>fonts/Montserrat-ExtraBold.ttf</file>
-		<file>fonts/Montserrat-Light.ttf</file>
-		<file>fonts/Montserrat-Medium.ttf</file>
-		<file>fonts/Montserrat-SemiBold.ttf</file>
-		<file>fonts/NunitoSans-ExtraBold.ttf</file>
-		<file>fonts/NunitoSans-Regular.ttf</file>
-		<file>fonts/NunitoSans-SemiBold.ttf</file>
+		<file>icons/color_wheel.png</file>
+		<file>icons/icon_close_nap.png</file>
+		<file>icons/icon_restore_nap.png</file>
+		<file>icons/link.png</file>
 	</qresource>
 </RCC>

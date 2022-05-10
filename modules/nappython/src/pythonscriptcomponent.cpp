@@ -25,14 +25,14 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    
+
     PythonScriptComponentInstance::PythonScriptComponentInstance(EntityInstance& entity, Component& resource) :
         ComponentInstance(entity, resource)
     {
         mResource = rtti_cast<PythonScriptComponent>(&resource);
     }
 
-    
+
     PythonScriptComponentInstance::~PythonScriptComponentInstance()
     {
         if (mInitialized)
@@ -42,8 +42,8 @@ namespace nap
                 nap::Logger::warn(errorState.toString());
         }
     }
-    
-    
+
+
     void PythonScriptComponentInstance::update(double deltaTime)
     {
         utility::ErrorState errorState;
@@ -51,12 +51,13 @@ namespace nap
             nap::Logger::warn(errorState.toString());
     }
 
-    
+
     bool PythonScriptComponentInstance::init(utility::ErrorState& errorState)
     {
         mResource = getComponent<PythonScriptComponent>();
 
-		try {
+		try
+		{
 			mInstance = mResource->mPythonClass(getEntityInstance());
 		}
 		catch (const pybind11::error_already_set& err)
@@ -67,31 +68,31 @@ namespace nap
 
         return true;
     }
-    
-    
+
+
     void PythonScriptComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
     {
         for (auto& typeName : mDependencies)
         {
             rtti::TypeInfo type = rtti::TypeInfo::get_by_name(typeName);
-            
+
             if (type.is_valid() && type.is_derived_from<Component>())
                 components.emplace_back(type);
             else
                 nap::Logger::warn("Invalid component dependency typename in %s: %s", mID.c_str(), typeName.c_str());
         }
     }
-    
-    
+
+
     bool PythonScriptComponent::init(utility::ErrorState& errorState)
     {
         mPythonClass = mPythonScript->get(mClassName);
         if (mPythonClass.is_none())
             return false;
-            
+
         return true;
     }
 
-    
-    
+
+
 }

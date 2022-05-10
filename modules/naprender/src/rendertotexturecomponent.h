@@ -56,7 +56,9 @@ namespace nap
 		ResourcePtr<RenderTexture2D>	mOutputTexture = nullptr;							///< Property: 'OutputTexture' the target of the render step
 		MaterialInstanceResource		mMaterialInstanceResource;							///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		ERasterizationSamples			mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results enable 'SampleShading'
-		RGBColor8						mClearColor = { 255, 255, 255 };					///< Property: 'ClearColor' the color that is used to clear the render target
+		RGBAColor8						mClearColor = { 255, 255, 255, 255 };				///< Property: 'ClearColor' the color that is used to clear the render target
+		bool							mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
+		bool							mPreserveAspect = false;							///< Property: 'PreserveAspect' Whether to preserve the texture aspect ratio
 	};
 
 
@@ -124,6 +126,7 @@ namespace nap
 
 		/**
 		 * Called by the Render Service. Only orthographic cameras are supported.
+		 * @return true if camera is orthographic
 		 */
 		virtual bool isSupported(nap::CameraComponentInstance& camera) const override;
 
@@ -131,6 +134,11 @@ namespace nap
 		 * @return current material used when drawing the mesh.
 		 */
 		MaterialInstance& getMaterialInstance();
+
+		/**
+		 * Sets whether to preserve the texture aspect ratio when rendering to the target
+		 */
+		void setPreserveAspect(bool preserveAspect);
 
 	protected:
 		/**
@@ -151,6 +159,7 @@ namespace nap
 		RenderService*				mService = nullptr;					///< Render service
 		glm::mat4x4					mModelMatrix;						///< Plane model matrix
 		bool						mDirty = true;						///< If the model matrix needs to be recomputed
+		bool						mPreserveAspect = false;			///< Whether to preserve the texture aspect ratio
 		UniformMat4Instance*		mModelMatrixUniform = nullptr;		///< Name of the model matrix uniform in the shader
 		UniformMat4Instance*		mProjectMatrixUniform = nullptr;	///< Name of the projection matrix uniform in the shader
 		UniformMat4Instance*		mViewMatrixUniform = nullptr;		///< View matrix uniform

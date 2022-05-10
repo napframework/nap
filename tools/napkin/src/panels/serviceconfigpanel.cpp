@@ -5,7 +5,7 @@
 #include "serviceconfigpanel.h"
 
 #include <napkin-resources.h>
-#include <appcontext.h>"
+#include <appcontext.h>
 
 namespace napkin
 {
@@ -18,7 +18,6 @@ namespace napkin
 	{
 		std::string service_type = nap::utility::stripNamespace(config.getServiceType().get_name().to_string());
 		setText(QString::fromStdString(service_type));
-		setIcon(QIcon(QRC_ICONS_CONFIGURATION));
 		setEditable(false);
 	}
 
@@ -26,6 +25,18 @@ namespace napkin
 	napkin::PropertyPath ServiceConfigItem::propertyPath()
 	{
 		return PropertyPath(mConfig, *mDocument);
+	}
+
+
+	QVariant ServiceConfigItem::data(int role) const
+	{
+		switch (role)
+		{
+		case Qt::DecorationRole:
+			return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CONFIGURATION);
+		default:
+			return QStandardItem::data(role);
+		}
 	}
 
 
@@ -54,6 +65,7 @@ namespace napkin
 			auto item = new ServiceConfigItem(*config, ctx.getServiceConfig()->getDocument());
 			appendRow(item);
 		}
+		populated();
 	}
 
 
@@ -79,10 +91,14 @@ namespace napkin
 		mLayout.setContentsMargins(0, 0, 0, 0);
 		mLayout.addWidget(&mTreeView);
 		mTreeView.setModel(&mModel);
+		mTreeView.enableSorting();
 
 		// Listen to changes
-		connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
-			&ServiceConfigPanel::onSelectionChanged);
+		connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ServiceConfigPanel::onSelectionChanged);
+		connect(&mModel, &ServiceConfigModel::populated, this, [&]()
+		{
+			mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder);
+		});
 	}
 
 

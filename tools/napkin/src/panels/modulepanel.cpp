@@ -13,8 +13,19 @@ ModuleItem::ModuleItem(const nap::Module& module)
 {
 	std::string name(module.getDescriptor().mID);
 	setText(QString::fromStdString(name));
-	setIcon(QIcon(QRC_ICONS_MODULE));
 	setEditable(false);
+}
+
+
+QVariant napkin::ModuleItem::data(int role) const
+{
+	switch (role)
+	{
+	case Qt::DecorationRole:
+		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MODULE);
+	default:
+		return QStandardItem::data(role);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +47,7 @@ void ModuleModel::onCoreInitialized()
 	{
 		appendRow(new ModuleItem(*mod));
 	}
+	populated();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,4 +58,9 @@ ModulePanel::ModulePanel() : QWidget()
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.addWidget(&mTreeView);
 	mTreeView.setModel(&mModel);
+	mTreeView.enableSorting();
+	connect(&mModel, &ModuleModel::populated, [&]()
+	{
+		mTreeView.getTreeView().sortByColumn(0, Qt::SortOrder::AscendingOrder); 
+	});
 }

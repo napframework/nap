@@ -9,8 +9,9 @@ import datetime
 import json
 from multiprocessing import cpu_count
 import os
+from platform import machine
 import re
-from subprocess import call, Popen, PIPE, check_output
+from subprocess import call, Popen, PIPE, check_output, TimeoutExpired
 import shlex
 import shutil
 import signal
@@ -21,6 +22,8 @@ import sys
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
 WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
+if sys.platform.startswith('linux') and not machine() == 'x86_64':
+    WAIT_SECONDS_FOR_PROCESS_HEALTH = 30
 
 # Name for project created from template
 TEMPLATE_APP_NAME = 'TemplateProject'
@@ -40,11 +43,13 @@ PROJECT_FILENAME = 'project.json'
 # JSON report filename
 REPORT_FILENAME = 'report.json'
 
-# Exit code that Napkin will 
-NAPKIN_SUCCESS_EXIT_CODE = 180
+# Process success exit code
+SUCCESS_EXIT_CODE = 0
 
 # Seconds to wait for a Napkin load project and exit with expected exit code
 NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
+if sys.platform.startswith('linux') and not machine() == 'x86_64':
+    NAPKIN_SECONDS_WAIT_FOR_PROCESS = 40
 
 # Build directory names
 LINUX_BUILD_DIR = 'build_dir'
@@ -54,9 +59,18 @@ MSVC_BUILD_DIR = 'msvc64'
 # List of locations on a Ubuntu system where we're happy to find system libraries. Restricting
 # to these paths helps us identify libraries being source from strange locations, hand installed libs.
 # TODO Handle other architectures.. eventually
-LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/', 
-                                   '/lib/x86_64-linux-gnu', 
-                                   '/usr/lib/mesa-diverted/x86_64-linux-gnu/']
+LINUX_ACCEPTED_SYSTEM_LIB_PATHS = []
+if sys.platform.startswith('linux'):
+    arch = machine()
+    if arch == 'x86_64':
+        LINUX_ACCEPTED_SYSTEM_LIB_PATHS.extend(['/usr/lib/x86_64-linux-gnu/', 
+            '/lib/x86_64-linux-gnu', 
+            '/usr/lib/mesa-diverted/x86_64-linux-gnu/'])
+    elif arch == 'aarch64':
+        LINUX_ACCEPTED_SYSTEM_LIB_PATHS.append('/usr/lib/aarch64-linux-gnu/')
+    else:
+        LINUX_ACCEPTED_SYSTEM_LIB_PATHS.extend(['/usr/lib/arm-linux-gnueabihf/',
+            '/opt/vc/lib/'])
 
 # List of libraries we accept being sourced from the system paths defined above. Notes:
 # - These currently support Ubuntu 20.04/20.10 and are likely to require minor tweaks for new versions
@@ -70,8 +84,9 @@ LINUX_ACCEPTED_SYSTEM_LIB_PATHS = ['/usr/lib/x86_64-linux-gnu/',
 LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'i965_dri',
     'iris_dri',
-    r'ld-[0-9]+\.[0-9]+',
+   r'ld-[0-9]+\.[0-9]+',
     'libFLAC',
+    'libICE',
     'libGL',
     'libGLX',
     'libGLX_mesa',
@@ -79,6 +94,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libGLdispatch',
     'libLLVM-[0-9]+',
     'libOpenCL',
+    'libSM',
     'libVkLayer_MESA_device_select',
     'libX11',
     'libX11-xcb',
@@ -89,10 +105,15 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libXext',
     'libXfixes',
     'libXi',
+    'libXinerama',
+    'libXrandr',
     'libXrender',
+    'libXss',
+    'libXtst',
     'libXxf86vm',
     'libaom',
     'libapparmor',
+    'libarmmem-v7l',
     'libasound',
     'libasound_module_pcm_a52',
     'libasound_module_pcm_jack',
@@ -105,24 +126,29 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libasound_module_rate_samplerate',
     'libasound_module_rate_speexrate',
     'libasyncns',
+    'libatomic',
     'libavcodec',
     'libavresample',
     'libavutil',
+    'libbcm_host',
     'libblkid',
     'libbrotlicommon',
     'libbrotlidec',
     'libbsd',
-    r'libc-[0-9]+\.[0-9]+',
+    'libbz2',
+   r'libc-[0-9]+\.[0-9]+',
     'libcairo',
     'libcairo-gobject',
+    'libcap',
     'libcodec2',
     'libcom_err',
+   r'libcroco-[0-9]+\.[0-9]+',
     'libcuda',
     'libdatrie',
     'libdav1d',
-    r'libdb-[0-9]+\.[0-9]+',
+   r'libdb-[0-9]+\.[0-9]+',
     'libdbus-1',
-    r'libdl-[0-9]+\.[0-9]+',
+   r'libdl-[0-9]+\.[0-9]+',
     'libdrm',
     'libdrm_amdgpu',
     'libdrm_intel',
@@ -137,40 +163,46 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libfribidi',
     'libgcc_s',
     'libgcrypt',
-    r'libgdk_pixbuf-[0-9]+\.[0-9]+',
-    r'libgio-[0-9]+\.[0-9]+',
+   r'libgdk_pixbuf-[0-9]+\.[0-9]+',
+   r'libgio-[0-9]+\.[0-9]+',
     'libglapi',
     'libglib-2.0',
-    r'libglib-[0-9]+\.[0-9]+',
-    r'libgmodule-[0-9]+\.[0-9]+',
-    r'libgobject-[0-9]+\.[0-9]+',
+   r'libglib-[0-9]+\.[0-9]+',
+   r'libgmodule-[0-9]+\.[0-9]+',
+   r'libgobject-[0-9]+\.[0-9]+',
     'libgomp',
     'libgpg-error',
     'libgraphite2',
     'libgsm',
     'libgssapi_krb5',
-    r'libgthread-[0-9]+\.[0-9]+',
+   r'libgthread-[0-9]+\.[0-9]+',
     'libharfbuzz',
     'libicudata',
+    'libicui18n',
     'libicuuc',
     'libjack',
+    'libjpeg',
     'libk5crypto',
     'libkeyutils',
     'libkrb5',
     'libkrb5support',
     'liblz4',
     'liblzma',
-    r'libm-[0-9]+\.[0-9]+',
+   r'libm-[0-9]+\.[0-9]+',
+    'libmd',
     'libmfx',
     'libmount',
     'libmp3lame',
-    r'libmvec-[0-9]+\.[0-9]+',
+    'libmmal_core',
+    'libmmal_util',
+    'libmmal_vc_client',
+   r'libmvec-[0-9]+\.[0-9]+',
     'libnsl',
-    r'libnsl-[0-9]+\.[0-9]+',
-    r'libnss_compat-[0-9]+\.[0-9]+',
-    r'libnss_files-[0-9]+\.[0-9]+',
+   r'libnsl-[0-9]+\.[0-9]+',
+   r'libnss_compat-[0-9]+\.[0-9]+',
+   r'libnss_files-[0-9]+\.[0-9]+',
     'libnss_nis',
-    r'libnss_nis-[0-9]+\.[0-9]+',
+   r'libnss_nis-[0-9]+\.[0-9]+',
     'libnuma',
     'libnvidia-cbl',
     'libnvidia-compiler',
@@ -183,21 +215,21 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libogg',
     'libopenjp2',
     'libopus',
-    r'libpango-[0-9]+\.[0-9]+',
-    r'libpangocairo-[0-9]+\.[0-9]+',
-    r'libpangoft2-[0-9]+\.[0-9]+',
+   r'libpango-[0-9]+\.[0-9]+',
+   r'libpangocairo-[0-9]+\.[0-9]+',
+   r'libpangoft2-[0-9]+\.[0-9]+',
     'libpciaccess',
     'libpcre',
     'libpcre2-8',
     'libpixman-1',
     'libpng16',
-    r'libpthread-[0-9]+\.[0-9]+',
+   r'libpthread-[0-9]+\.[0-9]+',
     'libpulse',
-    r'libpulsecommon-[0-9]+\.[0-9]+',
-    r'libpython[0-9]+\.[0-9]+m',
-    r'libresolv-[0-9]+\.[0-9]+',
+   r'libpulsecommon-[0-9]+\.[0-9]+',
+   r'libpython[0-9]+\.[0-9]+m',
+   r'libresolv-[0-9]+\.[0-9]+',
     'librsvg-2',
-    r'librt-[0-9]+\.[0-9]+',
+   r'librt-[0-9]+\.[0-9]+',
     'libsamplerate',
     'libselinux',
     'libsensors',
@@ -206,7 +238,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libsndfile',
     'libsoxr',
     'libspeex',
-    r'libstdc\+\+',
+   r'libstdc\+\+',
     'libswresample',
     'libsystemd',
     'libthai',
@@ -216,17 +248,22 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libtirpc',
     'libtwolame',
     'libudev',
-    r'libusb-[0-9]+\.[0-9]+',
-    r'libutil-[0-9]+\.[0-9]+',
+   r'libusb-[0-9]+\.[0-9]+',
+   r'libutil-[0-9]+\.[0-9]+',
     'libuuid',
     'libva',
     'libva-drm',
     'libva-x11',
+    'libvchiq_arm',
+    'libvcos',
+    'libvcsm',
     'libvdpau',
     'libvorbis',
     'libvorbisenc',
     'libvpx',
+    'libvulkan_broadcom',
     'libvulkan_intel',
+    'libvulkan_lvp',
     'libvulkan_radeon',
     'libwavpack',
     'libwayland-client',
@@ -239,11 +276,22 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxcb-dri2',
     'libxcb-dri3',
     'libxcb-glx',
+    'libxcb-icccm',
+    'libxcb-image',
+    'libxcb-keysyms',
     'libxcb-present',
     'libxcb-randr',
     'libxcb-render',
+    'libxcb-render-util',
+    'libxcb-shape',
     'libxcb-shm',
     'libxcb-sync',
+    'libxcb-util',
+    'libxcb-xinerama',
+    'libxcb-xkb',
+    'libxcb-xfixes',
+    'libxkbcommon',
+    'libxkbcommon-x11',
     'libxml2',
     'libxshmfence',
     'libxvidcore',
@@ -251,7 +299,9 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libz3',
     'libzstd',
     'libzvbi',
-    'nouveau_dri'
+    'nouveau_dri',
+    'sun4i-drm_dri',
+    'vc4_dri'
 ]
 
 # List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
@@ -378,6 +428,16 @@ def kill_pulseaudio():
        websocket functionality)."""
     call_capturing_output('pulseaudio -k')
 
+def force_quit(process):
+    """Force quit given process by sending kill signal"""
+    while process.returncode is None:
+        try:
+            process.kill()
+        except OSError:
+            pass
+        time.sleep(1);
+        process.poll();
+
 def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
        still running before closing it
@@ -395,7 +455,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     expect_early_closure : bool
         Whether process having closed before we kill it is OK
     success_exit_code : int
-        Process exit code representing success when expecting early closure
+        Process exit code representing success when closing
     wait_for_seconds : int
         Seconds to wait before determining run success
 
@@ -439,67 +499,45 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         waited_time += 0.5
         p.poll()
 
-    if is_linux():
-        if p.returncode is None:
-            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
-        else:
-            unexpected_libraries = []
 
     # Track success
-    success = True
+    success = False
+    unexpected_libraries = []
 
-    # Check and make sure the app's still running
-    p.poll()
-    if p.returncode == None:
-        # Process isn't done, if we were running for Napkin that's a failure
-        if expect_early_closure:
-            success = False
-    else:
-        if expect_early_closure:
-            # Process done, if the success code matches we've had a successful Napkin run
-            success = p.returncode == success_exit_code
-        else:
-            eprint("  Error: Process already done?")
-            (stdout, stderr) = p.communicate()
-            if type(stdout) == bytes:
-                stdout = stdout.decode('utf8')
-            if type(stderr) == bytes:
-                stderr = stderr.decode('utf8')    
-                
-            if sys.platform == 'darwin':
-                unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
-            elif sys.platform == 'win32':
-                unexpected_libraries = []            
-            return (False, stdout, stderr, unexpected_libraries, p.returncode)
+    # Process running
+    if p.poll() == None:
 
-    if p.returncode == None:
-        # Send SIGTERM and wait a moment to close
-        p.terminate()
-        time.sleep(1)
-        p.poll()
+        # Get unexpected libs
+        if is_linux():
+            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
 
-    # If the app hasn't exited, brute close with kill signal
-    while p.returncode is None:
-        time.sleep(1)
-        p.poll()
-        print("  Failed to close on terminate, sending kill signal")
+        # Send SIGTERM and wait a moment to close. Use force quit if wait timer expires.
         try:
-            p.kill()
-        except OSError:
+            p.terminate()
+            p.wait(10)
+            success = not expect_early_closure
+        except TimeoutExpired:
+            print("  Failed to close on terminate, sending kill signal")
+            force_quit(p)
             pass
+    # Process done
+    else:
+        # Exit code must be 'success_exit_code'. 
+        # If an application crashed or failed on initialization the exit code will not be 'success_exit_code'.
+        success = p.returncode == success_exit_code
 
-    # Pull the output and return success
+    # Gather info from stream
     (stdout, stderr) = p.communicate()
     if type(stdout) == bytes:
         stdout = stdout.decode('utf8')
     if type(stderr) == bytes:
         stderr = stderr.decode('utf8')    
-
+        
+    # Check for unexpected libraries
     if sys.platform == 'darwin':
         unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
-    elif sys.platform == 'win32':
-        unexpected_libraries = []
 
+    # Done
     return (success, stdout, stderr, unexpected_libraries, p.returncode)
 
 def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path):
@@ -1300,7 +1338,7 @@ def open_napkin_from_framework_release_without_project(napkin_results, nap_frame
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --exit-on-failure --no-project-reopen', 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen', 
                                                                                     nap_framework_full_path, 
                                                                                     True)
 
@@ -1345,11 +1383,11 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
 
         # Run
         demo_project_json = os.path.join(demos_root_dir, demo_name, PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_project_json, 
                                                                                         nap_framework_full_path, 
                                                                                         True,
                                                                                         True,
-                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        SUCCESS_EXIT_CODE,
                                                                                         NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         this_demo['openWithNapkinBuildOutput'] = {}
@@ -1391,11 +1429,11 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     if 'build' in template_results and template_results['build']['success']:
         template_project_json = os.path.join(nap_framework_full_path, 'projects', TEMPLATE_APP_NAME.lower(), PROJECT_FILENAME)
-        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % template_project_json, 
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % template_project_json, 
                                                                                         nap_framework_full_path, 
                                                                                         True,
                                                                                         True,
-                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        SUCCESS_EXIT_CODE,
                                                                                         NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         template_results['openWithNapkinBuildOutput'] = {}
@@ -1449,7 +1487,7 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     # Run demo from packaged project
     print("- Run Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen --exit-on-failure', 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen', 
                                                                                     os.path.abspath(os.pardir), 
                                                                                     True)
 
@@ -1492,11 +1530,11 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
     # Run demo from packaged project
     print("- Open project with Napkin from packaged app...")
     demo_project_json = os.path.join(os.pardir, PROJECT_FILENAME)
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % demo_project_json, 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_project_json, 
                                                                                     os.path.abspath(os.pardir),
                                                                                     True,
                                                                                     True,
-                                                                                    NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                    SUCCESS_EXIT_CODE,
                                                                                     NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
     results['openWithNapkinPackagedApp'] = {}

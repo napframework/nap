@@ -2,24 +2,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-// Local Includes
+ // Local Includes
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "renderservice.h"
-#include "uniformdeclarations.h"
+#include "shadervariabledeclarations.h"
 #include "materialcommon.h"
+#include "formatutils.h"
 
 namespace nap
 {
 	DescriptorSetCache::DescriptorSetCache(RenderService& renderService, VkDescriptorSetLayout layout, DescriptorSetAllocator& descriptorSetAllocator) :
 		mRenderService(&renderService),
 		mDescriptorSetAllocator(&descriptorSetAllocator),
-        mLayout(layout)
+		mLayout(layout)
 	{
 		mUsedList.resize(mRenderService->getMaxFramesInFlight());
 	}
 
-	
+
 	DescriptorSetCache::~DescriptorSetCache()
 	{
 		// We assume the cache is destroyed after all rendering has completed, so it is safe to assume we can move any 'used' sets to the freelist
@@ -35,11 +36,11 @@ namespace nap
 	}
 
 
-	const DescriptorSet& DescriptorSetCache::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numSamplers)
+	const DescriptorSet& DescriptorSetCache::acquire(const std::vector<UniformBufferObject>& uniformBufferObjects, int numStorageBufferObjects, int numSamplers)
 	{
 		int frame_index = mRenderService->getCurrentFrameIndex();
 		DescriptorSetList& used_list = mUsedList[frame_index];
-		
+
 		// If there are available DescriptorSets, we can use them directly
 		if (!mFreeList.empty())
 		{
@@ -52,7 +53,7 @@ namespace nap
 		// Compatible means that it has the same amount of uniform buffers and same amount of samplers.
 		DescriptorSet descriptor_set;
 		descriptor_set.mLayout = mLayout;
-		descriptor_set.mSet = mDescriptorSetAllocator->allocate(mLayout, uniformBufferObjects.size(), numSamplers);
+		descriptor_set.mSet = mDescriptorSetAllocator->allocate(mLayout, uniformBufferObjects.size(), numStorageBufferObjects, numSamplers);
 
 		int num_descriptors = uniformBufferObjects.size();
 		std::vector<VkWriteDescriptorSet> ubo_descriptors;
@@ -65,11 +66,11 @@ namespace nap
 		for (int ubo_index = 0; ubo_index < uniformBufferObjects.size(); ++ubo_index)
 		{
 			const UniformBufferObject& ubo = uniformBufferObjects[ubo_index];
-			const UniformBufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
+			const BufferObjectDeclaration& ubo_declaration = *ubo.mDeclaration;
 
 			BufferData buffer;
 			utility::ErrorState error_state;
-			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
+			bool success = createBuffer(mRenderService->getVulkanAllocator(), ubo_declaration.mSize, getVulkanBufferUsage(ubo_declaration.mDescriptorType), VMA_MEMORY_USAGE_CPU_TO_GPU, VMA_ALLOCATION_CREATE_MAPPED_BIT, buffer, error_state);
 			assert(success);
 
 			descriptor_set.mBuffers.push_back(buffer);
@@ -84,7 +85,7 @@ namespace nap
 			ubo_descriptor.dstSet = descriptor_set.mSet;
 			ubo_descriptor.dstBinding = ubo_declaration.mBinding;
 			ubo_descriptor.dstArrayElement = 0;
-			ubo_descriptor.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			ubo_descriptor.descriptorType = getVulkanDescriptorType(ubo_declaration.mDescriptorType);
 			ubo_descriptor.descriptorCount = 1;
 			ubo_descriptor.pBufferInfo = &bufferInfo;
 		}
@@ -101,6 +102,4 @@ namespace nap
 		DescriptorSetList& used_list = mUsedList[frameIndex];
 		mFreeList.splice(mFreeList.end(), used_list);
 	}
-
 }
-

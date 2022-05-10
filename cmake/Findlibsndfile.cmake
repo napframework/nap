@@ -4,47 +4,49 @@
 # LIBSNDFILE_INCLUDE_DIRS - The LIBSNDFILE include directories
 # LIBSNDFILE_LIBRARIES - The libraries needed to use LIBSNDFILE
 # LIBSNDFILE_DEFINITIONS - Compiler switches required for using LIBSNDFILE
+# LIBSNDFILE_DIST_FILES - Files required when package is distributed (Licenses etc.)
 
 include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
 target_architecture(ARCH)
 
-find_path(LIBSNDFILE_DIR src/sndfile.h
-        HINTS
-        ${THIRDPARTY_DIR}/libsndfile
-        ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
+find_path(LIBSNDFILE_DIR 
+         NAMES 
+         msvc/x86_64/include/sndfile.h 
+         macos/x86_64/include/sndfile.h
+         linux/${ARCH}/include/sndfile.h
+         HINTS 
+         ${THIRDPARTY_DIR}/libsndfile
+         ${CMAKE_CURRENT_LIST_DIR}/../../libsndfile
         )
 
 if (WIN32)
-    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/msvc64)
+    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/msvc/x86_64/lib)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile-1.lib)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll)
-    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/src)
+    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/msvc/x86_64/include)
 elseif (APPLE)
-    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/osx/install/lib)
+    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/macos/x86_64/lib)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile.1.dylib)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.1.dylib)
-    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/src)
-elseif(ANDROID)
-    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/android/install/lib/${ANDROID_ABI})
-    set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
-    set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBS_RELEASE_DLL})
-    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/android/install/include)
+    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/macos/x86_64/include)
 else ()
-    if (${ARCH} STREQUAL "armv6")
-        set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux/arm)
-    else ()
-        set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux/install/lib)
-    endif ()
+    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux/${ARCH}/lib)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIBS_RELEASE_DLL})
-    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/src)
+    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/linux/${ARCH}/include)
 endif ()
 
+find_path(LIBSNDFILE_SOURCE_DIR
+    NAMES COPYING
+    HINTS 
+    ${LIBSNDFILE_DIR}/source
+    )
+set(LIBSNDFILE_DIST_FILES ${LIBSNDFILE_SOURCE_DIR}/COPYING)
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set LIBSNDFILE_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(libsndfile REQUIRED_VARS LIBSNDFILE_LIBRARIES LIBSNDFILE_INCLUDE_DIR LIBSNDFILE_DIR)
+find_package_handle_standard_args(libsndfile REQUIRED_VARS LIBSNDFILE_DIR LIBSNDFILE_SOURCE_DIR LIBSNDFILE_LIB_DIR LIBSNDFILE_INCLUDE_DIR)
 
 add_library(libsndfile SHARED IMPORTED)
 set_target_properties(libsndfile PROPERTIES

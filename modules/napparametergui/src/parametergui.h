@@ -13,6 +13,8 @@
 
 namespace nap
 {
+	class IMGuiService;
+
 	/**
 	 * Shows an ImGUI window that can be used to edit/load/save parameters of a specific group. 
 	 * The GUI is created by (recursively) traversing the parameters in a group and 
@@ -36,6 +38,26 @@ namespace nap
 		 * @param newWindow if the parameters should be added to a new window.
 		 */
 		void show(bool newWindow = true);
+
+		/**
+		 * Load a preset programmatically
+		 * @param preset the filename of the preset to load
+		 * @param errorState contains the error if the preset load failed
+		 * @return if the preset loaded successfully
+		 */
+		bool load(std::string preset, utility::ErrorState& errorState);
+
+		/**
+		 * Returns the index of the currently selected preset if one was selected, returns -1 otherwise
+		 * @return the index of the currently selected preset if one was selected, -1 otherwise
+		 */
+		int getSelectedPresetIndex() const;
+
+		/**
+		 * Returns the currently selected preset if one was selected, asserts false otherwise
+		 * @return the the currently selected preset if one was selected
+		 */
+		const std::string& getSelectedPreset() const;
 
 		/**
 		 * Initializes the parameter GUI
@@ -79,13 +101,16 @@ namespace nap
 		void restorePresetState();
 
 		/**
-		 * Display all parameters as GUI elements.
+		 * Display all parameters as GUI elements. This function is recursive.
+		 * @param parameterGroup the parameter group to display
+		 * @param depth the current recursion depth. This is zero by default and is incremented automatically when dealing with nested parameter groups.
 		 */
-		void showParameters(ParameterGroup& parameterGroup);
+		void showParameters(ParameterGroup& parameterGroup, int depth = 0);
 
 	private:
 		ParameterService&							mParameterService;					///< The parameter service
 		ParameterGUIService&						mParameterGUIService;				///< The parameter GUI service
+		IMGuiService&								mGUIService;						///< The GUI service
 		ParameterService::PresetFileList			mPresets;							///< The presets for the currently selected ParameterGroup
 		ParameterService::PresetFileList			mPrevPresets;						///< The previous list of presets for the currently selected ParameterGroup. Used to restore the state if the user cancels creation of a new preset.
 		int											mSelectedPresetIndex = -1;			///< The currently selected preset's index

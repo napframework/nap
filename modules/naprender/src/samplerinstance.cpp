@@ -102,7 +102,7 @@ namespace nap
 	{
 		mRenderService->queueVulkanObjectDestructor([sampler = mVulkanSampler](RenderService& renderService)
 		{
-			if (sampler != nullptr)
+			if (sampler != VK_NULL_HANDLE)
 				vkDestroySampler(renderService.getDevice(), sampler, nullptr);
 		});
 	}
@@ -110,23 +110,23 @@ namespace nap
 
 	bool SamplerInstance::init(utility::ErrorState& errorState)
 	{
-		VkSamplerCreateInfo samplerInfo = {};
-		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = mSampler == nullptr ? VK_FILTER_LINEAR : getFilter(mSampler->mMaxFilter);
-		samplerInfo.minFilter = mSampler == nullptr ? VK_FILTER_LINEAR : getFilter(mSampler->mMinFilter);
-		samplerInfo.addressModeU = mSampler == nullptr ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : getAddressMode(mSampler->mAddressModeHorizontal);
-		samplerInfo.addressModeV = mSampler == nullptr ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : getAddressMode(mSampler->mAddressModeVertical);
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		samplerInfo.anisotropyEnable = mRenderService->anisotropicFilteringSupported() ? VK_TRUE : VK_FALSE;
-		samplerInfo.maxAnisotropy = getAnisotropicSamples(mSampler, *mRenderService);
-		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		VkSamplerCreateInfo samplerInfo		= {};
+		samplerInfo.sType					= VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerInfo.magFilter				= mSampler == nullptr ? VK_FILTER_LINEAR : getFilter(mSampler->mMaxFilter);
+		samplerInfo.minFilter				= mSampler == nullptr ? VK_FILTER_LINEAR : getFilter(mSampler->mMinFilter);
+		samplerInfo.addressModeU			= mSampler == nullptr ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : getAddressMode(mSampler->mAddressModeHorizontal);
+		samplerInfo.addressModeV			= mSampler == nullptr ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : getAddressMode(mSampler->mAddressModeVertical);
+		samplerInfo.addressModeW			= VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.anisotropyEnable		= mRenderService->anisotropicFilteringSupported() ? VK_TRUE : VK_FALSE;
+		samplerInfo.maxAnisotropy			= getAnisotropicSamples(mSampler, *mRenderService);
+		samplerInfo.borderColor				= VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable = VK_FALSE;
-		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-		samplerInfo.mipmapMode = mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
-		samplerInfo.minLod = 0.0f;
-		samplerInfo.maxLod = mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
-		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.compareEnable			= VK_FALSE;
+		samplerInfo.compareOp				= VK_COMPARE_OP_ALWAYS;
+		samplerInfo.mipmapMode				= mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
+		samplerInfo.minLod					= 0.0f;
+		samplerInfo.maxLod					= mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
+		samplerInfo.mipLodBias				= 0.0f;
 
 		return errorState.check(vkCreateSampler(mRenderService->getDevice(), &samplerInfo, nullptr, &mVulkanSampler) == VK_SUCCESS, "Could not initialize sampler");
 	}

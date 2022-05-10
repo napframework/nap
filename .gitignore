@@ -10,6 +10,7 @@ xcode/*
 codeblocks/*
 cmake-build-debug/*
 core/Debug/
+.vscode/
 vs/
 modules/napof/Debug/
 modules/napof/Release/
@@ -69,7 +70,6 @@ cached_project_json.cmake
 cached_module_json.cmake
 NAP-*-*
 NAP_SOURCE-*
-
 .externalNativeBuild
 .gradle
 *.iml
@@ -86,3 +86,5 @@ cmake-build-release
 **/cache/path_mapping.json
 /venv/
 report.json
+*.ini
+demos/vinyl/data/snapshots

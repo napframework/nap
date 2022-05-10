@@ -24,7 +24,7 @@ RTTI_END_ENUM
 RTTI_BEGIN_CLASS(nap::ArtNetController)
 	RTTI_PROPERTY("Subnet",			&nap::ArtNetController::mSubnet,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Universe",		&nap::ArtNetController::mUniverse,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("IPAddress",		&nap::ArtNetController::mIpAddress,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("IP Address",		&nap::ArtNetController::mIpAddress,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("WaitTime",		&nap::ArtNetController::mWaitTime,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Frequency",		&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Mode",			&nap::ArtNetController::mMode,				nap::rtti::EPropertyMetaData::Default)
@@ -35,8 +35,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	static const int mMaxUpdateFrequency = 44;
-
 	ArtNetController::ArtNetController(ArtNetService& service) :
 		mService(&service)
 	{
@@ -55,7 +53,8 @@ namespace nap
 		assert(mNode == nullptr);
 		mNode = artnet_new((mIpAddress.empty() ? NULL : mIpAddress.c_str()), (mVerbose ? 1 : 0));
 
-		if (!errorState.check(mNode != nullptr, "Unable to create new ArtNode using address: %s error: %s", mIpAddress.c_str(), artnet_strerror()))
+		if (!errorState.check(mNode != nullptr,
+			"Unable to create new ArtNode using address: %s error: %s", mIpAddress.c_str(), artnet_strerror()))
 			return false;
 
 		// Add controller
@@ -69,15 +68,18 @@ namespace nap
 		artnet_set_port_type(mNode, 0, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX);
 
 		// Set artnet port
-		if (!errorState.check(artnet_set_port_addr(mNode, 0, ARTNET_INPUT_PORT, mUniverse) == 0, "Unable to set port address of ArtNode: %s error: %s", mID.c_str(), artnet_strerror()))
+		if (!errorState.check(artnet_set_port_addr(mNode, 0, ARTNET_INPUT_PORT, mUniverse) == 0,
+			"Unable to set port address of ArtNode: %s error: %s", mID.c_str(), artnet_strerror()))
 			return false;
 
 		// Set artnet subnet address
-		if (!errorState.check(artnet_set_subnet_addr(mNode, mSubnet) == 0, "Unable to set ArtNode subnet address: %s error: %s", mID.c_str(), artnet_strerror()))
+		if (!errorState.check(artnet_set_subnet_addr(mNode, mSubnet) == 0,
+			"Unable to set ArtNode subnet address: %s error: %s", mID.c_str(), artnet_strerror()))
 			return false;
 
 		// Start running
-		if (!errorState.check(artnet_start(mNode) == 0, "Unable to start ArtNode node %s, error: %s", mID.c_str(), artnet_strerror()))
+		if (!errorState.check(artnet_start(mNode) == 0,
+			"Unable to start ArtNode node %s, error: %s", mID.c_str(), artnet_strerror()))
 			return false;
 
 		// get the socket descriptor
@@ -148,7 +150,7 @@ namespace nap
 	}
 
 
-	void ArtNetController::send(uint8_t channelData, int channel)
+	void ArtNetController::send(uint8 channelData, int channel)
 	{
 		mService->send(*this, channelData, channel);
 	}
@@ -185,12 +187,14 @@ namespace nap
 
 	void ArtNetController::poll()
 	{
-		if (mVerbose) { nap::Logger::info("issuing new poll request: %s", mID.c_str()); }
+		if (mVerbose)
+			nap::Logger::info("issuing new poll request: %s", mID.c_str());
 
 		// Actual artnet poll request
 		if (artnet_send_poll(mNode, NULL, ARTNET_TTM_DEFAULT) != 0)
 		{
-			if (mVerbose) { nap::Logger::warn("artnet poll request failed: %s", mID.c_str()); }
+			if (mVerbose)
+				nap::Logger::warn("artnet poll request failed: %s", mID.c_str());
 			return;
 		}
 
@@ -221,12 +225,14 @@ namespace nap
 			{
 				case 0:
 				{
-					if (mVerbose) { nap::Logger::warn("artnet network poll request timed out: %s", mID.c_str()); }
+					if (mVerbose)
+						nap::Logger::warn("artnet network poll request timed out: %s", mID.c_str());
 					break;
 				}
 				case -1:
 				{
-					if (mVerbose) { nap::Logger::warn("artnet network select error: %s", mID.c_str()); }
+					if (mVerbose)
+						nap::Logger::warn("artnet network select error: %s", mID.c_str());
 					break;
 				}
 				default:
@@ -236,7 +242,8 @@ namespace nap
 					// Leading to the assumption that actually reading a reply is handled internally in a thread safe way
 					// If this is not the case make sure to protect the read here to ensure the list is not whilst sending dmx data. 
 					// Sending is handled inside the artnet service
-					if (mVerbose) { nap::Logger::info("reading node information: %s", mID.c_str()); }
+					if (mVerbose)
+						nap::Logger::info("reading node information: %s", mID.c_str());
 					artnet_read(mNode, 0);
 					break;
 				}
@@ -245,22 +252,16 @@ namespace nap
 	}
 
 
-	nap::ArtNetController::Address ArtNetController::createAddress(uint8_t subnet, uint8_t universe)
+	nap::ArtNetController::Address ArtNetController::createAddress(uint8 subnet, uint8 universe)
 	{
 		return (subnet << 4) | universe;
 	}
 
 
-	void ArtNetController::convertAddress(Address address, uint8_t& subnet, uint8_t& universe)
+	void ArtNetController::convertAddress(Address address, uint8& subnet, uint8& universe)
 	{
 		subnet = address >> 4;
 		universe = address & 0xF;
-	}
-
-
-	const int ArtNetController::getMaxUpdateFrequency()
-	{
-		return mMaxUpdateFrequency;
 	}
 
 
@@ -291,7 +292,8 @@ namespace nap
 		while (true)
 		{
 			// Wait for a poll request
-			if (mVerbose) { nap::Logger::info("waiting for artnet poll request"); }
+			if (mVerbose)
+				nap::Logger::info("waiting for artnet poll request");
 			
 			// The conditional variable makes sure the poll only executes
 			// when the main thread tiggers a poll request

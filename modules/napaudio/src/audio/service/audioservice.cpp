@@ -241,6 +241,8 @@ namespace nap
 			// First close port-audio, only do so when initialized
 			if (mPortAudioInitialized)
 			{
+				Pa_StopStream(mStream);
+
 				// Close stream
 				Pa_CloseStream(mStream);
 				mStream = nullptr;

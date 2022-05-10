@@ -15,14 +15,6 @@ elseif(APPLE)
     set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/bin)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
-elseif(ANDROID)
-    find_path(ETHERDREAM_DIR
-              NAMES bin/${ANDROID_ABI}/libetherdream.so
-              HINTS ${THIRDPARTY_DIR}/etherdream
-              )
-    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/bin/${ANDROID_ABI})
-    set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libetherdream.so)
-    set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS_DIR}/libetherdream.so)
 else()
     find_path(ETHERDREAM_DIR
               NAMES bin/libetherdream.so

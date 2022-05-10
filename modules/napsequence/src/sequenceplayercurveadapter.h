@@ -17,121 +17,129 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * Base class for curve adapters
-	 * setValue must be called from main thread to set value of parameter on main thread
-	 */
-	class SequencePlayerCurveAdapterBase : public SequencePlayerAdapter
-	{
-		friend class SequencePlayerCurveOutput;
-	private:
-		virtual void setValue() = 0;
-	};
+    /**
+     * Base class for curve adapters
+     * setValue must be called from main thread to set value of parameter on main thread
+     */
+    class NAPAPI SequencePlayerCurveAdapterBase : public SequencePlayerAdapter
+    {
+        friend class SequencePlayerCurveOutput;
+    private:
+        virtual void setValue() = 0;
+    };
 
-	/**
-	 * Responsible for translating the value read on a curve track, to a parameter
-	 * When the user wants to do this on the main thread, it uses a SequencePlayerCurveOutput as an intermediate class to ensure thread safety,
-	 * SequencePlayerCurveOutput will then call setValue()
-	 * otherwise it sets the parameter value directly from the sequence player thread
-	 */
-	template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
-	class SequencePlayerCurveAdapter final : public SequencePlayerCurveAdapterBase
-	{
-	public:
-		/**
-		 * Constructor
-		 * @param track reference to sequence track that holds curve information
-		 * @param output reference to curve output
-		 */
-		SequencePlayerCurveAdapter(const SequenceTrack& track, SequencePlayerCurveOutput& output)
-			:	mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output)
-		{
-			assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
-			mTrack = static_cast<const SequenceTrackCurve<CURVE_TYPE>*>(&track);
+    /**
+     * Responsible for translating the value read on a curve track, to a parameter
+     * When the user wants to do this on the main thread, it uses a SequencePlayerCurveOutput as an intermediate class to ensure thread safety,
+     * SequencePlayerCurveOutput will then call setValue()
+     * otherwise it sets the parameter value directly from the sequence player thread
+     */
+    template<typename CURVE_TYPE, typename PARAMETER_TYPE, typename PARAMETER_VALUE_TYPE>
+    class SequencePlayerCurveAdapter final : public SequencePlayerCurveAdapterBase
+    {
+    public:
+        /**
+         * Constructor
+         * @param track reference to sequence track that holds curve information
+         * @param output reference to curve output
+         */
+        SequencePlayerCurveAdapter(const SequenceTrack& track, SequencePlayerCurveOutput& output)
+                :mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output)
+        {
+            assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
+            mTrack = static_cast<const SequenceTrackCurve<CURVE_TYPE>*>(&track);
 
-			if (mOutput.mUseMainThread)
-			{
-				mSetFunction = &SequencePlayerCurveAdapter::storeParameterValue;
-				mOutput.registerAdapter(this);
-			}else
-			{
-				mSetFunction = &SequencePlayerCurveAdapter::setParameterValue;
-			}
-		}
+            if (mOutput.mUseMainThread)
+            {
+                mSetFunction = &SequencePlayerCurveAdapter::storeParameterValue;
+                mOutput.registerAdapter(this);
+            }
+            else
+            {
+                mSetFunction = &SequencePlayerCurveAdapter::setParameterValue;
+            }
+        }
 
-		/**
-		 * Deconstructor
-		 */
-		void destroy() override
-		{
-			mOutput.removeAdapter(this);
-		}
 
-		/**
-		 * called from sequence player thread
-		 * @param time time in sequence player
-		 */
-		void tick(double time) override
-		{
-			for (const auto& segment : mTrack->mSegments)
-			{
-				if (time >= segment->mStartTime && time < segment->mStartTime + segment->mDuration)
-				{
-					// get the segment we need
-					assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
-					const auto& source = *rtti_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>>(segment.get());
+        /**
+         * Deconstructor
+         */
+        void destroy() override
+        {
+            mOutput.removeAdapter(this);
+        }
 
-					// retrieve the source value
-					CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
-					
-					// cast it to a parameter value
-					auto value = static_cast<PARAMETER_VALUE_TYPE>(source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 
-					// call set or store function
-					(*this.*mSetFunction)(value);
+        /**
+         * called from sequence player thread
+         * @param time time in sequence player
+         */
+        void tick(double time) override
+        {
+            for (const auto& segment : mTrack->mSegments)
+            {
+                if (time>=segment->mStartTime && time<segment->mStartTime+segment->mDuration)
+                {
+                    // get the segment we need
+                    assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
+                    const auto& source = *rtti_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>>(segment.get());
 
-					break;
-				}
-			}
-		}
-	private:
-		/**
-		 * setValue gets called from main thread and sets the parameter value
-		 */
-		void setValue() override
-		{
-			std::unique_lock<std::mutex> l(mMutex);
-			mParameter.setValue(mStoredValue);
-		}
+                    // retrieve the source value
+                    CURVE_TYPE source_value = source.getValue((time-source.mStartTime)/source.mDuration);
 
-		/**
-		 * Directly sets parameter value, not thread safe
-		 * @param value the value
-		 */
-		void setParameterValue(PARAMETER_VALUE_TYPE& value)
-		{
-			mParameter.setValue(value);
-		}
+                    // cast it to a parameter value
+                    auto value = static_cast<PARAMETER_VALUE_TYPE>(source_value*(mTrack->mMaximum-mTrack->mMinimum)+mTrack->mMinimum);
 
-		/**
-		 * Uses SequencePlayerCurveOutput  to set parameter value, value will be set from main thread with function setValue(), thread safe
-		 * @param value the value
-		 */
-		void storeParameterValue(PARAMETER_VALUE_TYPE& value)
-		{
-			std::unique_lock<std::mutex> l(mMutex);
-			mStoredValue = value;
-		}
+                    // call set or store function
+                    (*this.*mSetFunction)(value);
 
-		PARAMETER_TYPE&									mParameter;
-		const SequenceTrackCurve<CURVE_TYPE>*			mTrack;
-		bool											mUseMainThread{};
-		SequencePlayerCurveOutput&						mOutput;
-		std::mutex										mMutex;
-		PARAMETER_VALUE_TYPE							mStoredValue;
+                    break;
+                }
+            }
+        }
 
-		void (SequencePlayerCurveAdapter::*mSetFunction)(PARAMETER_VALUE_TYPE& value);
-	};
+
+    private:
+        /**
+         * setValue gets called from main thread and sets the parameter value
+         */
+        void setValue() override
+        {
+            std::unique_lock<std::mutex> l(mMutex);
+            mParameter.setValue(mStoredValue);
+        }
+
+
+        /**
+         * Directly sets parameter value, not thread safe
+         * @param value the value
+         */
+        void setParameterValue(PARAMETER_VALUE_TYPE& value)
+        {
+            mParameter.setValue(value);
+        }
+
+
+        /**
+         * Uses SequencePlayerCurveOutput  to set parameter value, value will be set from main thread with function setValue(), thread safe
+         * @param value the value
+         */
+        void storeParameterValue(PARAMETER_VALUE_TYPE& value)
+        {
+            std::unique_lock<std::mutex> l(mMutex);
+            mStoredValue = value;
+        }
+
+
+        PARAMETER_TYPE& mParameter;
+        const SequenceTrackCurve<CURVE_TYPE>* mTrack;
+        bool mUseMainThread{};
+        SequencePlayerCurveOutput& mOutput;
+        std::mutex mMutex;
+        PARAMETER_VALUE_TYPE mStoredValue;
+
+        void (SequencePlayerCurveAdapter::* mSetFunction)(PARAMETER_VALUE_TYPE& value);
+    };
 }
