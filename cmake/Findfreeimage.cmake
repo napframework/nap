@@ -30,7 +30,7 @@ elseif(UNIX)
     set(FREEIMAGE_LIBS_DIR ${FREEIMAGE_DIR}/lib)
     set(FREEIMAGE_INCLUDE_DIR ${FREEIMAGE_DIR}/include)
     set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIR}/libfreeimage.so)
-    file(GLOB FREEIMAGE_DIST_FILES ${FREEIMAGE_DIR}/license*.txt)
+    file(GLOB FREEIMAGE_DIST_FILES ${FREEIMAGE_DIR}/license/license*.txt)
 endif()
 
 add_library(FreeImage SHARED IMPORTED)
@@ -50,7 +50,7 @@ find_package_handle_standard_args(freeimage REQUIRED_VARS
     FREEIMAGE_LIBRARIES 
     FREEIMAGE_INCLUDE_DIR 
     FREEIMAGE_LIBS_DIR
-    FREEIMAGE_DIST_FILES)
+    )
 
 # Copy the freeimage dynamic linked lib into the build directory
 macro(copy_freeimage_dll)
