@@ -66,7 +66,7 @@ namespace nap
 		// Construct a lookat matrix. Note that if this is currently called when facing up or downward, the
 		// camera may flip around the y axis. Currently this is only called when starting orbit so it isn't
 		// much of a problem, but if it is, we need to find another way of constructing a lookat camera.
-		glm::vec3 up(0.0f, 1.0f, 0.0f);
+		glm::vec3 up{ 0.0f, 1.0f, 0.0f };
 		glm::mat4 rotation = glm::lookAt(cameraPos, lookAtPos, up);
 		rotation = glm::inverse(rotation);
 		mTransformComponent->setRotate(rotation);
@@ -77,7 +77,7 @@ namespace nap
 
 	void OrbitControllerInstance::enable(const glm::vec3& lookAtPos)
 	{
-		glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
+		const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
 		enable(translate, lookAtPos);
 	}
 
@@ -123,9 +123,9 @@ namespace nap
 
 			// We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
 			// we rotate around the y axis (yaw).
-			glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::vec4 right = mTransformComponent->getLocalTransform()[0];
-			glm::mat4 pitch_rotation = glm::rotate(pitch, glm::vec3(right.x, right.y, right.z));
+			glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3{ 0.0f, 1.0f, 0.0f });
+			const glm::vec3& right = mTransformComponent->getLocalTransform()[0];
+			glm::mat4 pitch_rotation = glm::rotate(pitch, right);
 
 			// To rotate around the target point, we take the current transform, then bring it into local target space (only translation), then first rotate pitch,
 			// then rotate yaw, and then bring it back to worldspace.
@@ -159,7 +159,8 @@ namespace nap
 
 	void OrbitController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-		components.push_back(RTTI_OF(TransformComponent));
-		components.push_back(RTTI_OF(KeyInputComponent));
+		components.emplace_back(RTTI_OF(TransformComponent));
+		components.emplace_back(RTTI_OF(KeyInputComponent));
+		components.emplace_back(RTTI_OF(PointerInputComponent));
 	}
 }
