@@ -42,7 +42,7 @@ namespace nap
 
 		std::unique_ptr<ControllerData> controller_data = std::make_unique<ControllerData>();
 		controller_data->mController = &controller;
-		controller_data->mData.resize(controller.mDataSize);
+		controller_data->mData.resize(controller.mChannelCount);
 		controller_data->mIsDirty = true;
 		controller_data->mLastUpdateTime = 0.0f;
 

@@ -140,7 +140,7 @@ namespace nap
 		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the console
 		float				mReadTimeout = 2.0f;							///< Property: 'Timeout' poll network node read timeout, only used when mode is set to Unicast
 		std::string			mIpAddress = "";								///< Property: 'IP Address' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
-		uint16				mDataSize = 512;								///< Property: 'DataSize' the amount of channels sent with each data packet, must be between 2 and 512
+		uint16				mChannelCount = 512;							///< Property: 'ChannelCount' the amount of channels sent with each data packet, must be between 2 and 512
 
 	private:
 

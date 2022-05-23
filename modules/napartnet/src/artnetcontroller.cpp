@@ -31,7 +31,7 @@ RTTI_BEGIN_CLASS(nap::ArtNetController)
 	RTTI_PROPERTY("UnicastLimit",	&nap::ArtNetController::mUnicastLimit,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Verbose",		&nap::ArtNetController::mVerbose,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Timeout",		&nap::ArtNetController::mReadTimeout,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DataSize",		&nap::ArtNetController::mDataSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ChannelCount",	&nap::ArtNetController::mChannelCount,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -50,7 +50,7 @@ namespace nap
 		if (!errorState.check(mUniverse < 16, "%s: Universe must be between 0 and 16", mID.c_str()))
 			return false;
 
-		if (!errorState.check(mDataSize >= 2 && mDataSize <= 512, "%s: DataSize must be between 2 and 512", mID.c_str()))
+		if (!errorState.check(mChannelCount >= 2 && mChannelCount <= 512, "%s: ChannelCount must be between 2 and 512", mID.c_str()))
 			return false;
 
 		// Create a new artnet (controller) node
