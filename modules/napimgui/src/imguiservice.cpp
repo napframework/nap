@@ -387,6 +387,7 @@ namespace nap
 		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
 		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
 		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
+        io.KeyMap[ImGuiKey_Space] = (int)EKeyCode::KEY_SPACE;
 		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
 		io.KeyMap[ImGuiKey_C] = (int)EKeyCode::KEY_c;
 		io.KeyMap[ImGuiKey_V] = (int)EKeyCode::KEY_v;
@@ -551,7 +552,8 @@ namespace nap
 		{
 			bool pressed = event.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent));
 			KeyEvent& key_event = static_cast<KeyEvent&>(event);
-			io.KeysDown[(int)(key_event.mKey)] = pressed;
+
+			io.KeysDown[static_cast<int>(key_event.mKey)] = pressed;
 			io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
 			io.KeyCtrl	= ((SDL_GetModState() & KMOD_CTRL)	!= 0);
 			io.KeyAlt	= ((SDL_GetModState() & KMOD_ALT)	!= 0);
