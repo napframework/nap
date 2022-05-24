@@ -131,11 +131,13 @@ add_subdirectory(test/render)
 #add_subdirectory(apps/example)
 #add_subdirectory(apps/example/module)
 #add_subdirectory(apps/4dsound)
-#add_subdirectory(apps/theworks)
+add_subdirectory(apps/theworks)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
 add_subdirectory(demos/helloworld)
+add_subdirectory(demos/holo)
+add_subdirectory(demos/holo/module)
 #add_subdirectory(demos/vinyl)
 #add_subdirectory(demos/multiwindow)
 #add_subdirectory(demos/heightmap)
@@ -207,6 +209,7 @@ add_subdirectory(modules/napcolor)
 #add_subdirectory(modules/napsequencegui)
 #add_subdirectory(modules/naplicense)
 add_subdirectory(modules/nappythonparameter)
+add_subdirectory(modules/naplookingglass)
 
 # 4dsound modules
 add_subdirectory(4dsound_modules/spatialdsp)
@@ -224,7 +227,7 @@ add_subdirectory(4dsound_modules/napcontrol)
 add_subdirectory(4dsound_modules/napsettings)
 
 # theworks modules
-# add_subdirectory(theworks_modules/theworks)
+add_subdirectory(theworks_modules/theworks)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
