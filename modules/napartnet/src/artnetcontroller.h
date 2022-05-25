@@ -79,7 +79,7 @@ namespace nap
 		 * is converted to bytes. The actual sending is deferred until the update within the service, where data is sent when needed.
 		 * @param channelData data to send in normalized floats (0.0 to 1.0)
 		 * @param channelOffset defines where to insert the data in the array.
-		 * If the channel offset plus the size of the channelData exceeds the maximum amount of channels per universe (512), the function will assert.
+		 * If the channel offset plus the size of the channelData exceeds the maximum amount of channels per universe (mChannelCount), the function will assert.
 		 */
 		void send(const FloatChannelData& channelData, int channelOffset = 0);
 
@@ -95,7 +95,7 @@ namespace nap
 		 * Sends byte channel data over the artnet network. The actual sending is deferred until the update of the service, where data is sent when needed.
 		 * @param channelData data in unsigned bytes (0 - 255)
 		 * @param channelOffset defines where to insert the data in the array.
-		 * If the channel offset plus the size of the channelData exceeds the maximum amount of channels per universe (512), the function will assert.
+		 * If the channel offset plus the size of the channelData exceeds the maximum amount of channels per universe (mChannelCount), the function will assert.
 		 */
 		void send(const ByteChannelData& channelData, int channelOffset = 0);
 
