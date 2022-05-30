@@ -955,13 +955,9 @@ namespace nap
 			vkDestroyImageView(mDevice, view, nullptr);
 		mSwapChainImageViews.clear();
 
-		// Destroy depth image
+		// Destroy depth and color image
 		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
-		mDepthImage.release();
-
-		// Destroy color image
 		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
-		mColorImage.release();
 
 		// finally, destroy swapchain
 		if (mSwapchain != VK_NULL_HANDLE)

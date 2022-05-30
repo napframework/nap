@@ -175,13 +175,20 @@ namespace nap
 	}
 
 
-	void destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator)
+	void destroyImageAndView(ImageData& data, VkDevice device, VmaAllocator allocator)
 	{
 		if (data.mTextureView != VK_NULL_HANDLE)
+		{
 			vkDestroyImageView(device, data.mTextureView, nullptr);
+			data.mTextureView = VK_NULL_HANDLE;
+		}
 
 		if (data.mTextureImage != VK_NULL_HANDLE)
+		{
 			vmaDestroyImage(allocator, data.mTextureImage, data.mTextureAllocation);
+			data.mTextureImage = VK_NULL_HANDLE;
+			data.mTextureAllocation = VK_NULL_HANDLE;
+		}
 	}
 
 
@@ -222,10 +229,13 @@ namespace nap
 	}
 
 
-	void destroyBuffer(VmaAllocator allocator, const BufferData& buffer)
+	void destroyBuffer(VmaAllocator allocator, BufferData& buffer)
 	{
-		if(buffer.mBuffer != VK_NULL_HANDLE)
+		if (buffer.mBuffer != VK_NULL_HANDLE)
+		{
 			vmaDestroyBuffer(allocator, buffer.mBuffer, buffer.mAllocation);
+			buffer.mBuffer = VK_NULL_HANDLE;
+		}
 	}
 
 
