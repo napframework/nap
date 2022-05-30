@@ -177,15 +177,8 @@ namespace nap
 	/**
 	 * Returns the size of a swapchain image based on the current surface.
 	 */
-	bool getSwapImageSize(glm::ivec2 bufferSize, VkPhysicalDevice device, VkSurfaceKHR surface, VkExtent2D& outExtent, nap::utility::ErrorState& error)
+	void getSwapImageSize(glm::ivec2 bufferSize, VkSurfaceCapabilitiesKHR capabilities, VkExtent2D& outExtent, nap::utility::ErrorState& error)
 	{
-		VkSurfaceCapabilitiesKHR capabilities;
-		if(!getSurfaceProperties(device, surface, capabilities, error))
-		{
-			outExtent = {0,0};
-			return false;
-		}
-
 		outExtent = capabilities.currentExtent;
 		if (capabilities.currentExtent.width == UINT32_MAX)
 		{
@@ -194,10 +187,8 @@ namespace nap
 				static_cast<uint32>(bufferSize.y)
 			};
 		}
-
-		outExtent.width  = math::clamp<uint32>(outExtent.width,  capabilities.minImageExtent.width,  capabilities.maxImageExtent.width);
+		outExtent.width  = math::clamp<uint32>(outExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 		outExtent.height = math::clamp<uint32>(outExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-		return true;
 	}
 
 
@@ -297,7 +288,7 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 bufferSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	static bool createSwapChain(glm::ivec2 bufferSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkExtent2D extent, VkSwapchainKHR& outSwapChain, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
 		// Get image usage (color etc.)
 		VkImageUsageFlags usage_flags;
@@ -315,13 +306,8 @@ namespace nap
 		// Sharing mode = exclusive, graphics and presentation queue must be the same. Sharing not supported.
 		VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE;
 
-		// Size of swapchain images, queried just before creation to avoid potential race condition.
-		// This is a known Vulkan limitiation, that otherwise results in an image extent warning during resize
-		if(!getSwapImageSize(bufferSize, physicalDevice, surface, outSwapChainExtent, errorState))
-			return false;
-
 		// Ensure extent is valid
-		if (!errorState.check(outSwapChainExtent.width > 0 && outSwapChainExtent.height > 0, "Image extent members 'width' and 'height' must be higher than 0"))
+		if (!errorState.check(extent.width > 0 && extent.height > 0, "Image extent members 'width' and 'height' must be higher than 0"))
 			return false;
 
 		// Populate swapchain creation info
@@ -332,7 +318,7 @@ namespace nap
 		swap_info.minImageCount = swapImageCount;
 		swap_info.imageFormat = image_format.format;
 		swap_info.imageColorSpace = image_format.colorSpace;
-		swap_info.imageExtent = outSwapChainExtent;
+		swap_info.imageExtent = extent;
 		swap_info.imageArrayLayers = 1;
 		swap_info.imageUsage = usage_flags;
 		swap_info.imageSharingMode = sharing_mode;
@@ -884,6 +870,9 @@ namespace nap
 		if (!getSurfaceProperties(mRenderService->getPhysicalDevice(), mSurface, surface_capabilities, errorState))
 			return false;
 
+		// Size of swapchain images, queried just before creation to avoid potential race condition.
+		getSwapImageSize(getBufferSize(), surface_capabilities, mSwapchainExtent, errorState);
+
 		// Check if number of requested images is supported based on queried abilities
 		// When maxImageCount == 0 there is no theoretical limit, otherwise it has to fall within the range of min-max
 		mSwapChainImageCount = surface_capabilities.minImageCount + mAddedSwapImages;
@@ -894,7 +883,7 @@ namespace nap
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, mSwapchainExtent, mSwapchainFormat, errorState))
+		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
