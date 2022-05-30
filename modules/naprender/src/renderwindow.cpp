@@ -714,7 +714,7 @@ namespace nap
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
 		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
-		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is ouf of date or when
+		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date or when
 		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
 		// therefore we need to handle both situations explicitly.
 		if (mRecreateSwapchain)
