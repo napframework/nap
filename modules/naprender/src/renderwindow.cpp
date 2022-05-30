@@ -721,7 +721,7 @@ namespace nap
 		{
 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
-				Logger::warn("Failed to recreate swapchain: %s", errorState.toString().c_str());
+				Logger::error("Unable to recreate swapchain: %s", errorState.toString().c_str());
 			return VK_NULL_HANDLE;
 		}
 
@@ -963,12 +963,12 @@ namespace nap
 		mColorImage.release();
 
 		// finally, destroy swapchain
-		// Nothing to destroy
 		if (mSwapchain != VK_NULL_HANDLE)
 		{
 			vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
 			mSwapchain = VK_NULL_HANDLE;
 		}
+		mSwapchainExtent = { 0,0 };
 	}
 
 
