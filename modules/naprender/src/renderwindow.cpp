@@ -288,7 +288,7 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 bufferSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkExtent2D extent, VkSwapchainKHR& outSwapChain, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	static bool createSwapChain(VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkExtent2D extent, VkSwapchainKHR& outSwapChain, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
 		// Get image usage (color etc.)
 		VkImageUsageFlags usage_flags;
@@ -884,7 +884,7 @@ namespace nap
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
+		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
