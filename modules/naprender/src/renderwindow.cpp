@@ -175,7 +175,7 @@ namespace nap
 
 
 	/**
-	 * Returns the size of a swapchain image based on the current surface
+	 * Returns the size of a swapchain image based on the current surface.
 	 */
 	bool getSwapImageSize(glm::ivec2 bufferSize, VkPhysicalDevice device, VkSurfaceKHR surface, VkExtent2D& outExtent, nap::utility::ErrorState& error)
 	{
@@ -185,7 +185,6 @@ namespace nap
 			outExtent = {0,0};
 			return false;
 		}
-
 
 		outExtent = capabilities.currentExtent;
 		if (capabilities.currentExtent.width == UINT32_MAX)
@@ -319,6 +318,10 @@ namespace nap
 		// Size of swapchain images, queried just before creation to avoid potential race condition.
 		// This is a known Vulkan limitiation, that otherwise results in an image extent warning during resize
 		if(!getSwapImageSize(bufferSize, physicalDevice, surface, outSwapChainExtent, errorState))
+			return false;
+
+		// Ensure extent is valid
+		if (!errorState.check(outSwapChainExtent.width > 0 && outSwapChainExtent.height > 0, "Image extent members 'width' and 'height' must be higher than 0"))
 			return false;
 
 		// Populate swapchain creation info
@@ -732,17 +735,19 @@ namespace nap
 		{
 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
-				Logger::error("Failed to recreate swapchain: %s", errorState.toString().c_str());
+				Logger::warn("Failed to recreate swapchain: %s", errorState.toString().c_str());
 			return VK_NULL_HANDLE;
 		}
 
-		// Check if the current swap chain extent has a zero size.
-		// In the case where the window is minimized, SDL still reports the window as having a non-zero size.
+		// Check if the current extent has a valid (non-zero) size.
+		if (!validSwapchainExtent())
+			return VK_NULL_HANDLE;
+
+		// The swapchain extent can have a valid (higher than zero) size when the window is minimized.
 		// However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
 		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
 		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		bool minimized = SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED != 0;
-		if (mSwapchainExtent.width == 0 || mSwapchainExtent.height == 0 || minimized)
+		if ((SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0)
 			return VK_NULL_HANDLE;
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
@@ -955,9 +960,10 @@ namespace nap
 			mRenderPass = VK_NULL_HANDLE;
 		}
 
-		// Destroy swapchain image views
-		for(VkImageView view : mSwapChainImageViews)
+		// Destroy swapchain image views if present
+		for (VkImageView& view : mSwapChainImageViews)
 			vkDestroyImageView(mDevice, view, nullptr);
+		mSwapChainImageViews.clear();
 
 		// Destroy depth image
 		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
@@ -974,6 +980,12 @@ namespace nap
 			vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
 			mSwapchain = VK_NULL_HANDLE;
 		}
+	}
+
+
+	bool RenderWindow::validSwapchainExtent() const
+	{
+		return mSwapchainExtent.width > 0 && mSwapchainExtent.height > 0;
 	}
 
 

@@ -333,5 +333,10 @@ namespace nap
 		 * Destroys all Vulkan swapchain related resources.
 		 */
 		void destroySwapChainResources();
+
+		/**
+		 * @return if the swapchain extent is higher than zero in both axis
+		 */
+		bool validSwapchainExtent() const;
 	};
 }
