@@ -739,6 +739,7 @@ namespace nap
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
 		// This situation is unlikely but could occur when in between frame buffer creation and acquire the window is resized.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
+		assert(mSwapchain != VK_NULL_HANDLE);
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		if(result == VK_ERROR_OUT_OF_DATE_KHR)
         {
