@@ -24,6 +24,11 @@ namespace nap
 		// Default Constructor
 		ImageData() = default;
 
+		/**
+		 * Releases the image and view, resetting all the handles to null. Does not delete it.
+		 */
+		void				release();
+
 		VkImage				mTextureImage = VK_NULL_HANDLE;					///< Vulkan Image
 		VkImageView			mTextureView = VK_NULL_HANDLE;					///< Vulkan Image view
 		VmaAllocation		mTextureAllocation = VK_NULL_HANDLE;			///< Vulkan single memory allocation

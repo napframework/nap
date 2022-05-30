@@ -294,6 +294,7 @@ namespace nap
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
 		bool							mRecreateSwapchain = false;
+		VkExtent2D						mSwapchainExtent = {0,0};
 
 		/**
 		 * Called by the render service. 

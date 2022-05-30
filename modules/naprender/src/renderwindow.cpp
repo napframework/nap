@@ -724,15 +724,6 @@ namespace nap
 
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
-		// Check if the window has a zero size. Note that in the case where the window is minimized, it seems SDL still reports
-		// the window as having a non-zero size. However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
-		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
-		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		glm::ivec2 window_size = getSize();
-		uint32 window_state = SDL::getWindowFlags(mSDLWindow);
-		if (window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0)
-			return VK_NULL_HANDLE;
-
 		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
 		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is ouf of date or when
 		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
@@ -741,12 +732,18 @@ namespace nap
 		{
 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
-			{
 				Logger::error("Failed to recreate swapchain: %s", errorState.toString().c_str());
-				return VK_NULL_HANDLE;
-			}
 			return VK_NULL_HANDLE;
 		}
+
+		// Check if the current swap chain extent has a zero size.
+		// In the case where the window is minimized, SDL still reports the window as having a non-zero size.
+		// However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
+		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
+		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
+		bool minimized = SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED != 0;
+		if (mSwapchainExtent.width == 0 || mSwapchainExtent.height == 0 || minimized)
+			return VK_NULL_HANDLE;
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
 		// This situation is unlikely but could occur when in between frame buffer creation and acquire the window is resized.
@@ -892,8 +889,7 @@ namespace nap
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		VkExtent2D swap_chain_extent;
-		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, swap_chain_extent, mSwapchainFormat, errorState))
+		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, mSwapchainExtent, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -912,19 +908,19 @@ namespace nap
 
 		if (mRasterizationSamples == VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT)
 		{
-			if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
+			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
 				return false;
 		}
 		else
 		{
-			if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
+			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
 				return false;
 
-			if (!createColorResource(*mRenderService, swap_chain_extent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
+			if (!createColorResource(*mRenderService, mSwapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
 				return false;
 		}
 
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swap_chain_extent, mRasterizationSamples, errorState))
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, mSwapchainExtent, mRasterizationSamples, errorState))
 			return false;
 
 		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
@@ -963,9 +959,13 @@ namespace nap
 		for(VkImageView view : mSwapChainImageViews)
 			vkDestroyImageView(mDevice, view, nullptr);
 
-		// Destroy owned depth and color images
+		// Destroy depth image
 		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
+		mDepthImage.release();
+
+		// Destroy color image
 		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
+		mColorImage.release();
 
 		// finally, destroy swapchain
 		// Nothing to destroy

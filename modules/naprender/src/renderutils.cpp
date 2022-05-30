@@ -243,7 +243,15 @@ namespace nap
 
 	void nap::BufferData::release()
 	{
-		mAllocation = VK_NULL_HANDLE;
 		mBuffer = VK_NULL_HANDLE;
+		mAllocation = VK_NULL_HANDLE;
+	}
+
+
+	void nap::ImageData::release()
+	{
+		mTextureView = VK_NULL_HANDLE;
+		mTextureImage = VK_NULL_HANDLE;
+		mTextureAllocation = VK_NULL_HANDLE;
 	}
 }
