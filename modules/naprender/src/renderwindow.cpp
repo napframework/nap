@@ -1036,7 +1036,7 @@ namespace nap
 
 		// Notify if current swapchain extent differs from current buffer size
 		if (mSwapchainExtent.width != buffer_size.x || mSwapchainExtent.height != buffer_size.y)
-			nap::Logger::warn("Swap chain size mismatch: size of extent (%d:%d) does not match size of buffer (%d:%d)",
+			nap::Logger::warn("Swap chain size mismatch: extent of surface (%d:%d) does not match size of buffer (%d:%d)",
 				mSwapchainExtent.width,
 				mSwapchainExtent.height,
 				buffer_size.x,
