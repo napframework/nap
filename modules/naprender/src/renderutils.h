@@ -24,6 +24,11 @@ namespace nap
 		// Default Constructor
 		ImageData() = default;
 
+		/**
+		 * Releases the image and view, resetting all the handles to null. Does not delete it.
+		 */
+		void				release();
+
 		VkImage				mTextureImage = VK_NULL_HANDLE;					///< Vulkan Image
 		VkImageView			mTextureView = VK_NULL_HANDLE;					///< Vulkan Image view
 		VmaAllocation		mTextureAllocation = VK_NULL_HANDLE;			///< Vulkan single memory allocation
@@ -97,7 +102,7 @@ namespace nap
 	/**
 	 * Destroys a Vulkan image and Vulkan ImageView if present in data
 	 */
-	void NAPAPI destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator);
+	void NAPAPI destroyImageAndView(ImageData& data, VkDevice device, VmaAllocator allocator);
 
 	/**
 	 * Creates a Vulkan buffer
@@ -107,7 +112,7 @@ namespace nap
 	/**
 	 * Destroys a Vulkan buffer
 	 */
-	void NAPAPI destroyBuffer(VmaAllocator allocator, const BufferData& buffer);
+	void NAPAPI destroyBuffer(VmaAllocator allocator, BufferData& buffer);
 
 	/**
 	 * Uploads data into a staging buffer

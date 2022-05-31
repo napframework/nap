@@ -260,10 +260,10 @@ namespace nap
 		// If the service is not running, all objects are destroyed immediately.
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService->removeTextureRequests(*this);
-		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService)
+		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService) mutable
 		{
 			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
-			for (const BufferData& buffer : stagingBuffers)
+			for (BufferData& buffer : stagingBuffers)
 			{
 				destroyBuffer(renderService.getVulkanAllocator(), buffer);
 			}
@@ -529,7 +529,7 @@ namespace nap
 		if (mUsage == ETextureUsage::Static)
 		{
 			assert(mStagingBuffers.size() == 1);
-			mRenderService->queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService)
+			mRenderService->queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService) mutable
 			{
 				destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
 			});
