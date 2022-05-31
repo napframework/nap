@@ -76,18 +76,6 @@ namespace nap
 
 
 	/**
-	 * Obtain the surface properties that are required for the creation of the swap chain
-	 */
-	static bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities) == VK_SUCCESS, "Unable to acquire surface capabilities"))
-			return false;
-
-		return true;
-	}
-
-
-	/**
 	 *	Creates the vulkan surface that is rendered to by the device using SDL
 	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
@@ -171,24 +159,6 @@ namespace nap
 		// Fall back on FIFO if requested mode is not supported
 		outMode = VK_PRESENT_MODE_FIFO_KHR;
 		return true;
-	}
-
-
-	/**
-	 * Returns the size of a swapchain image based on the current surface.
-	 */
-	void getSwapImageSize(glm::ivec2 bufferSize, VkSurfaceCapabilitiesKHR capabilities, VkExtent2D& outExtent, nap::utility::ErrorState& error)
-	{
-		outExtent = capabilities.currentExtent;
-		if (capabilities.currentExtent.width == UINT32_MAX)
-		{
-			outExtent = {
-				static_cast<uint32>(bufferSize.x),
-				static_cast<uint32>(bufferSize.y)
-			};
-		}
-		outExtent.width  = math::clamp<uint32>(outExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-		outExtent.height = math::clamp<uint32>(outExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 	}
 
 
@@ -569,6 +539,10 @@ namespace nap
 		// Get presentation queue
 		vkGetDeviceQueue(mDevice, mRenderService->getQueueIndex(), 0, &mPresentQueue);
 
+		// Update surface capabilities
+		if (!getSurfaceCapabilities(errorState))
+			return false;
+
 		// Create swapchain based on current window properties
 		if (!createSwapChainResources(errorState))
 			return false;
@@ -859,6 +833,15 @@ namespace nap
 		mRecreateSwapchain = false;
 		destroySwapChainResources();
 
+		// Update surface capabilities
+		if (!getSurfaceCapabilities(errorState))
+			return false;
+
+		// Don't create a swapchain if width or height is invalid. 
+		// Vulkan requires the 'imageExtent' members width and height to be non zero.
+		if (mSwapchainExtent.width == 0 || mSwapchainExtent.height == 0)
+			return true;
+
 		// Create new swapchain based on current window properties
 		return createSwapChainResources(errorState);
 	}
@@ -866,25 +849,17 @@ namespace nap
 
 	bool RenderWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
-		// Get surface capabilities
-		VkSurfaceCapabilitiesKHR surface_capabilities;
-		if (!getSurfaceProperties(mRenderService->getPhysicalDevice(), mSurface, surface_capabilities, errorState))
-			return false;
-
-		// Size of swapchain images, queried just before creation to avoid potential race condition.
-		getSwapImageSize(getBufferSize(), surface_capabilities, mSwapchainExtent, errorState);
-
 		// Check if number of requested images is supported based on queried abilities
 		// When maxImageCount == 0 there is no theoretical limit, otherwise it has to fall within the range of min-max
-		mSwapChainImageCount = surface_capabilities.minImageCount + mAddedSwapImages;
-		if (surface_capabilities.maxImageCount != 0 && mSwapChainImageCount > surface_capabilities.maxImageCount)
+		mSwapChainImageCount = mSurfaceCapabilities.minImageCount + mAddedSwapImages;
+		if (mSurfaceCapabilities.maxImageCount != 0 && mSwapChainImageCount > mSurfaceCapabilities.maxImageCount)
 		{
-			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), mSwapChainImageCount, surface_capabilities.maxImageCount);
-			mSwapChainImageCount = surface_capabilities.maxImageCount;
+			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), mSwapChainImageCount, mSurfaceCapabilities.maxImageCount);
+			mSwapChainImageCount = mSurfaceCapabilities.maxImageCount;
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
+		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, mSurfaceCapabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -1034,5 +1009,39 @@ namespace nap
 	nap::ECullWindingOrder RenderWindow::getWindingOrder() const
 	{
 		return ECullWindingOrder::CounterClockwise;
+	}
+
+
+	bool RenderWindow::getSurfaceCapabilities(utility::ErrorState& errorState)
+	{
+		// Query the basic capabilities of a surface, needed in order to create a swapchain
+		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mRenderService->getPhysicalDevice(), mSurface, &mSurfaceCapabilities) == VK_SUCCESS,
+			"Unable to acquire surface capabilities"))
+			return false;
+
+		// Based on surface capabilities, determine swap image size
+		glm::ivec2 buffer_size = this->getBufferSize();
+		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
+		{
+			mSwapchainExtent =
+			{
+				math::clamp<uint32>((uint32)buffer_size.x, mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
+				math::clamp<uint32>((uint32)buffer_size.y, mSurfaceCapabilities.minImageExtent.height, mSurfaceCapabilities.maxImageExtent.height),
+			};
+		}
+		else
+		{
+			mSwapchainExtent = mSurfaceCapabilities.currentExtent;
+		}
+
+		// Notify if current swapchain extent differs from current buffer size
+		if (mSwapchainExtent.width != buffer_size.x || mSwapchainExtent.height != buffer_size.y)
+			nap::Logger::warn("Swap chain size mismatch: size of extent (%d:%d) does not match size of buffer (%d:%d)",
+				mSwapchainExtent.width,
+				mSwapchainExtent.height,
+				buffer_size.x,
+				buffer_size.y);
+
+		return true;
 	}
 }

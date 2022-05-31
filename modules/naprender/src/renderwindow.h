@@ -294,6 +294,7 @@ namespace nap
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
 		bool							mRecreateSwapchain = false;
+		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
 
 		/**
@@ -314,6 +315,11 @@ namespace nap
 		 * Checks if the event is a window resize event and updates size accordingly.
 		 */
 		void handleEvent(const Event& event);
+
+		/**
+		 * Obtain the surface properties that are required for the creation of the swap chain 
+		 */
+		bool getSurfaceCapabilities(utility::ErrorState& error);
 
 		/**
 		 * Destroys currently active swapchain and creates a new one based on the current window size and settings.
