@@ -45,6 +45,7 @@ namespace nap
 
 			double mTime;
 			std::string mMessage = "hello world";
+            std::string mErrorString;
 		};
 
 		/**

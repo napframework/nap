@@ -70,6 +70,10 @@ namespace nap
         {
             handleRightHandlerDrag();
         });
+        registerActionHandler(RTTI_OF(ShowLoadPresetPopup), [this]
+        {
+            handleLoadPresetPopup();
+        });
     }
 
 
@@ -356,7 +360,7 @@ namespace nap
             {
                 if (ImGui::GetIO().KeyShift)
                 {
-                    // if no event segment clipboard, create it or if previous clipboard is from a different sequence, create new clipboard
+                    // if no audio segment clipboard, create it or if previous clipboard is from a different sequence, create new clipboard
                     if (!mState.mClipboard->isClipboard<AudioSegmentClipboard>())
                         mState.mClipboard = createClipboard<AudioSegmentClipboard>(RTTI_OF(SequenceTrackAudio), getEditor().mSequencePlayer->getSequenceFilename());
                     else if (mState.mClipboard->getDerived<AudioSegmentClipboard>()->getSequenceName()!=getEditor().mSequencePlayer->getSequenceFilename())
@@ -633,49 +637,23 @@ namespace nap
                     if (clipboard->getObjectCount()>0)
                     {
                         // if we have multiple segments in clipboard, continue with paste option
-                        if (ImGui::Button("Paste"))
+                        if (ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
                         {
                             // deserialize objects
-                            std::vector<std::unique_ptr<rtti::Object>> deserialized_objects;
                             utility::ErrorState error_state;
 
-                            auto deserialized_audio_segments = mState.mClipboard->deserialize<SequenceTrackSegmentAudio>(deserialized_objects, error_state);
-                            if (!error_state.hasErrors())
+                            if (pasteClipboard(action->mTrackID, action->mTime, error_state))
                             {
-                                // if success on deserialization, get the first segment start time
-                                double first_segment_time = math::max<double>();
-
-                                for (const auto* deserialized_audio_segment: deserialized_audio_segments)
-                                {
-                                    if (deserialized_audio_segment->mStartTime<first_segment_time)
-                                    {
-                                        first_segment_time = deserialized_audio_segment->mStartTime;
-                                    }
-                                }
-
-                                // do appropriate calls to the controller to copy deserialized segments
-                                for (const auto* deserialized_audio_segment: deserialized_audio_segments)
-                                {
-                                    double time_offset = deserialized_audio_segment->mStartTime-first_segment_time;
-                                    assert(time_offset>=0.0);
-
-                                    auto new_segment_id = audio_controller.insertAudioSegment(action->mTrackID, action->mTime+time_offset, deserialized_audio_segment->mAudioBufferID, deserialized_audio_segment->mDuration, deserialized_audio_segment->mStartTimeInAudioSegment);
-
-                                    audio_controller.segmentAudioDurationChange(action->mTrackID, new_segment_id, deserialized_audio_segment->mDuration);
-                                    audio_controller.segmentAudioStartTimeInSegmentChange(action->mTrackID, new_segment_id, deserialized_audio_segment->mStartTimeInAudioSegment);
-                                    mState.mDirty = true;
-                                }
-
                                 ImGui::CloseCurrentPopup();
                                 mState.mAction = createAction<None>();
 
                                 ImGui::EndPopup();
-
                                 return;
                             }
                             else
                             {
-                                nap::Logger::error(error_state.toString());
+                                ImGui::OpenPopup("Error");
+                                action->mErrorString = error_state.toString();
                             }
                         }
                     }
@@ -722,6 +700,32 @@ namespace nap
                 else
                 {
                     ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2), "No audio output assigned!");
+                }
+
+                /**
+                 * handle load preset
+                 */
+                ImGui::SameLine();
+                if (ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
+                {
+                    mState.mAction = createAction<ShowLoadPresetPopup>(action->mTrackID, action->mTime, RTTI_OF(SequenceTrackAudio));
+                    ImGui::CloseCurrentPopup();
+                    ImGui::EndPopup();
+                    return;
+                }
+                ImGui::SameLine();
+
+                if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    ImGui::Text(action->mErrorString.c_str());
+                    if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+                    {
+                        mState.mDirty = true;
+                        mState.mAction = createAction<None>();
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
                 }
 
 				ImGui::SameLine();
@@ -1007,6 +1011,138 @@ namespace nap
                 mState.mAction = createAction<None>();
             }
         }
+    }
+
+
+    void SequenceAudioTrackView::handleLoadPresetPopup()
+    {
+        if (mState.mAction->isAction<ShowLoadPresetPopup>())
+        {
+            auto* load_action = mState.mAction->getDerived<ShowLoadPresetPopup>();
+            auto* controller = getEditor().getControllerWithTrackType(load_action->mTrackType);
+
+            if (controller->get_type().is_derived_from<SequenceControllerAudio>())
+            {
+                const std::string popup_name = "Load preset";
+                if (!ImGui::IsPopupOpen(popup_name.c_str()))
+                    ImGui::OpenPopup(popup_name.c_str());
+
+                //
+                if (ImGui::BeginPopupModal(popup_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    //
+                    const std::string presets_dir = utility::joinPath({"sequences", "presets"});
+
+                    // Find all files in the preset directory
+                    std::vector<std::string> files_in_directory;
+                    utility::listDir(presets_dir.c_str(), files_in_directory);
+
+                    std::vector<std::string> presets;
+                    std::vector<std::string> preset_files;
+                    for (const auto& filename: files_in_directory)
+                    {
+                        // Ignore directories
+                        if (utility::dirExists(filename))
+                            continue;
+
+                        if (utility::getFileExtension(filename)=="json")
+                        {
+                            presets.emplace_back(utility::getFileName(filename));
+                            preset_files.emplace_back(filename);
+                        }
+                    }
+
+                    SequenceTrackView::Combo("Presets", &load_action->mSelectedPresetIndex, presets);
+
+                    utility::ErrorState error_state;
+                    auto& gui = mService.getGui();
+                    if (ImGui::ImageButton(gui.getIcon(icon::ok), "Done"))
+                    {
+                        if (mState.mClipboard->load(preset_files[load_action->mSelectedPresetIndex], error_state))
+                        {
+                            if (pasteClipboard(load_action->mTrackID, load_action->mTime, error_state))
+                            {
+                                mState.mAction = createAction<None>();
+                                mState.mDirty = true;
+                                mState.mClipboard = createClipboard<Empty>();
+                                ImGui::CloseCurrentPopup();
+                            }
+                            else
+                            {
+                                mState.mClipboard = createClipboard<Empty>();
+                                ImGui::OpenPopup("Error");
+                                load_action->mErrorString = error_state.toString();
+                            }
+                        }
+                        else
+                        {
+                            ImGui::OpenPopup("Error");
+                            load_action->mErrorString = error_state.toString();
+                        }
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
+                    {
+                        mState.mAction = createAction<None>();
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                    {
+                        ImGui::Text(load_action->mErrorString.c_str());
+                        if (ImGui::ImageButton(gui.getIcon(icon::ok)))
+                        {
+                            mState.mDirty = true;
+                            mState.mAction = createAction<None>();
+                            ImGui::CloseCurrentPopup();
+                        }
+
+                        ImGui::EndPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+        }
+    }
+
+    bool SequenceAudioTrackView::pasteClipboard(const std::string& trackID, double time, utility::ErrorState& errorState)
+    {
+        auto& audio_controller = getEditor().getController<SequenceControllerAudio>();
+
+        std::vector<std::unique_ptr<rtti::Object>> deserialized_objects;
+        auto deserialized_audio_segments = mState.mClipboard->deserialize<SequenceTrackSegmentAudio>(deserialized_objects, errorState);
+        if (!errorState.hasErrors())
+        {
+            // if success on deserialization, get the first segment start time
+            double first_segment_time = math::max<double>();
+
+            for (const auto* deserialized_audio_segment: deserialized_audio_segments)
+            {
+                if (deserialized_audio_segment->mStartTime<first_segment_time)
+                {
+                    first_segment_time = deserialized_audio_segment->mStartTime;
+                }
+            }
+
+            // do appropriate calls to the controller to copy deserialized segments
+            for (const auto* deserialized_audio_segment: deserialized_audio_segments)
+            {
+                double time_offset = deserialized_audio_segment->mStartTime-first_segment_time;
+                assert(time_offset>=0.0);
+
+                auto new_segment_id = audio_controller.insertAudioSegment(trackID, time+time_offset, deserialized_audio_segment->mAudioBufferID, deserialized_audio_segment->mDuration, deserialized_audio_segment->mStartTimeInAudioSegment);
+
+                audio_controller.segmentAudioDurationChange(trackID, new_segment_id, deserialized_audio_segment->mDuration);
+                audio_controller.segmentAudioStartTimeInSegmentChange(trackID, new_segment_id, deserialized_audio_segment->mStartTimeInAudioSegment);
+                mState.mDirty = true;
+            }
+        }else
+        {
+            return false;
+        }
+
+        return true;
     }
 }
 

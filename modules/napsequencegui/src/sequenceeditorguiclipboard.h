@@ -44,9 +44,17 @@ namespace nap
 			/**
 			 * Serialize an object
 			 * @param object pointer object to serialize
+			 * @param sequenceName sequence name currently used, if sequence name is different from previous, clears previously added objects
 			 * @param errorState holds information about any errors
 			 */
 			void addObject(const rtti::Object* object, const std::string& sequenceName, utility::ErrorState& errorState);
+
+            /**
+             * Serialize an object
+             * @param object pointer object to serialize
+             * @param errorState holds information about any errors
+             */
+            void addObject(const rtti::Object* object, utility::ErrorState& errorState);
 
 			/**
 			 * Deserialize clipboard content to object of type T
@@ -112,6 +120,23 @@ namespace nap
 			 * @return rtti track type info
 			 */
 			rttr::type getTrackType() const { return mTrackType; }
+
+            /**
+             * Writes current serialized segments to disk, return true on success, errorState contains any errors
+             * FilePath is relative to application data folder
+             * @param filePath path of file to write relative to application data folder
+             * @param errorState contains any errors that may occur during this operation
+             * @return true on success
+             */
+            bool save(const std::string& filePath, utility::ErrorState& errorState);
+
+            /**
+             * Loads serialized segments to clipboard, return true on success, errorState contains any errors
+             * @param filePath path of file to load relative to application data folder
+             * @param errorState contains any errors that may occur during this operation
+             * @return true on success
+             */
+            bool load(const std::string& filePath, utility::ErrorState& errorState);
 
 		protected:
 			// the serialized objects
@@ -180,8 +205,6 @@ namespace nap
 				root_object = static_cast<T*>(first_object);
 				for (auto& read_object : result.mReadObjects)
 				{
-					if (read_object->get_type().is_derived_from<T>())
-						root_object = dynamic_cast<T*>(read_object.get());
 					createdObjects.emplace_back(std::move(read_object));
 				}
 

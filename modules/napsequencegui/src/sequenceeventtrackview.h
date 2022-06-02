@@ -183,8 +183,10 @@ namespace nap
 		 * @tparam T the event segment type
 		 * @param trackID the track id of where to paste the new event
 		 * @param time the time where to insert copied event segment
+		 * @param errorState contains any errors
+		 * @return true on succes
 		 */
-		void pasteEventsFromClipboard(const std::string& trackID, double time);
+		bool pasteEventsFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState);
 
 		/**
 		 * Paste events of type T. Base event is base class of event of type T
@@ -228,6 +230,11 @@ namespace nap
 		 * handles dragging of event segment
 		 */
 		void handleSegmentDrag();
+
+        /**
+         *
+         */
+        void handleLoadPresetPopup();
 	private:
 		// map of segment views for different event views
 		std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceEventTrackSegmentViewBase>> mSegmentViews;

@@ -28,6 +28,7 @@ namespace nap
         public:
             double mTime = 0.0;
             int mCurrentItem = 0;
+            std::string mErrorString;
         };
 
         /**
