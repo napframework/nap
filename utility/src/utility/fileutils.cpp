@@ -152,8 +152,13 @@ namespace nap
 
 			const size_t last_slash_idx = name.find_last_of("\\/");
 			if (last_slash_idx != std::string::npos)
-				name = name.erase(last_slash_idx, name.size() - last_slash_idx);
-			return name;
+            {
+                name = name.erase(last_slash_idx, name.size() - last_slash_idx);
+                return name;
+            }
+
+            // if file is not in a directory, return empty string
+            return "";
 		}
 
 
