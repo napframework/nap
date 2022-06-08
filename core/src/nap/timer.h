@@ -54,30 +54,52 @@ namespace nap
 		*/
 		float getElapsedTimeFloat() const;
 
-		/**
+	   /**
 		* @return amount of processed ticks in milliseconds
 		*/
 		uint32_t getTicks() const;
 
-		/**
-		* @return elapsed time in milliseconds
+	   /**
+		* @return elapsed time in nanoseconds
 		*/
-		Milliseconds getMillis();
+		NanoSeconds getNanos() const								{ return get<NanoSeconds>(); }
 
-		/**
+	   /**
 		* @return elapsed time in microseconds
 		*/
-		MicroSeconds getMicros();
+		MicroSeconds getMicros() const								{ return get<MicroSeconds>(); }
+
+	   /**
+		* @return elapsed time in milliseconds
+		*/
+		Milliseconds getMillis() const								{ return get<Milliseconds>(); }
 
 		/**
-		*	@return elapsed time in nanoseconds
-		*/
-		NanoSeconds getNanos();
+		 * @return elapsed time in seconds
+		 */
+		Seconds getSeconds() const									{ return get<Seconds>(); }
+
+		/**
+		 * @return elapsed time in minutes
+		 */
+		Minutes getMinutes() const									{ return get<Minutes>(); }
+
+		/**
+		 * @return elapsed time in hours
+		 */
+		Hours getHours() const										{ return get<Hours>(); }
+
+		/**
+		 * @return elapsed time in duration of type T
+		 */
+		template<typename T>
+		T get() const;
 
 	private:
 		// Members
 		std::chrono::time_point<Clock> mStart;
 	};
+
 
 	/**
 	* Keeps track of time from the moment the timer is started.
@@ -147,26 +169,10 @@ namespace nap
 
 
 	template<typename Clock>
-	Milliseconds nap::Timer<Clock>::getMillis()
+	template<typename T>
+	T nap::Timer<Clock>::get() const
 	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<Milliseconds>(elapsed);
-	}
-
-
-	template<typename Clock>
-	NanoSeconds nap::Timer<Clock>::getNanos()
-	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<NanoSeconds>(elapsed);
-	}
-
-
-	template<typename Clock>
-	MicroSeconds nap::Timer<Clock>::getMicros()
-	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<MicroSeconds>(elapsed);
+		return std::chrono::duration_cast<T>(Clock::now() - mStart);
 	}
 
 
