@@ -8,6 +8,7 @@
     "WindowsDllSearchPaths": [],
      "DataSearchPaths": [
         "{ROOT}/modules/napimgui/data",
-        "{ROOT}/modules/{MODULE_NAME}/data"
+        "{ROOT}/modules/{MODULE_NAME}/data",
+       "{ROOT}/../Resources/modules/{MODULE_NAME}/data"
     ]
 }

@@ -403,30 +403,52 @@ namespace nap
 			// TODO Explore locating Python instead in third party to reduce duplication on disk
 			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
 			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
+			Logger::info("Python home: %s", packagedAppPythonPath.c_str());
 			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
 			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "x86_64", "python36.zip"});
+			Logger::info("Python home: %s", pythonHome.c_str());
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #else
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
-			const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
+			std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
 			if (utility::dirExists(packagedAppPythonPath)) {
+			    Logger::info("Python home: %s", mProjectInfo->getProjectDir().c_str());
 				setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
 			}
 			else {
+    #ifdef __APPLE__
+			    // Check for app bundle directory structure
+			    std::string appBundleResourcesPath = utility::joinPath({mProjectInfo->getProjectDir(), "..", "Resources"});
+                packagedAppPythonPath = utility::joinPath({appBundleResourcesPath, "lib", "python3.6"});
+			    if (utility::dirExists(packagedAppPythonPath))
+			    {
+                    Logger::info("Python home: %s", appBundleResourcesPath.c_str());
+                    setenv("PYTHONHOME", appBundleResourcesPath.c_str(), 1);
+                }
+			    else {
+                    // Set PYTHONHOME to thirdparty location within packaged NAP release
+                    const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
+                    Logger::info("Python home: %s", pythonHome.c_str());
+                    setenv("PYTHONHOME", pythonHome.c_str(), 1);
+                }
+    #elif
 				// Set PYTHONHOME to thirdparty location within packaged NAP release
 				const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
+			    Logger::info("Python home: %s", pythonHome.c_str());
 				setenv("PYTHONHOME", pythonHome.c_str(), 1);
+    #endif
 			}
 		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
 			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, sBuildArch});
+            Logger::info("Python home: %s", pythonHome.c_str());
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
