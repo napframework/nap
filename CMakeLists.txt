@@ -113,8 +113,8 @@ add_subdirectory(test/render)
 # app targets, add your own app targets here!
 #add_subdirectory(apps/example)
 #add_subdirectory(apps/example/module)
-#add_subdirectory(apps/4dsound)
-#add_subdirectory(apps/theworks)
+add_subdirectory(apps/4dsound)
+add_subdirectory(apps/theworks)
 # END_SOURCE_ARCHIVE_REMOVED_SECTION (don't remove)
 
 # demo targets
@@ -191,19 +191,19 @@ add_subdirectory(modules/napparametergui)
 #add_subdirectory(modules/napwebsocket)
 #add_subdirectory(modules/napapiwebsocket)
 #add_subdirectory(modules/napopencv)
-add_subdirectory(modules/napsoem)
+#add_subdirectory(modules/napsoem)
 add_subdirectory(modules/napcolor)
-add_subdirectory(modules/napsequence)
-add_subdirectory(modules/napsequencegui)
-add_subdirectory(modules/napsequenceaudio)
-add_subdirectory(modules/napsequenceaudiogui)
-add_subdirectory(modules/naplicense)
-add_subdirectory(modules/napudp)
-add_subdirectory(modules/naptween)
-add_subdirectory(modules/napcalendar)
-add_subdirectory(modules/napasio)
-add_subdirectory(modules/nappipins)
-add_subdirectory(modules/napportal)
+#add_subdirectory(modules/napsequence)
+#add_subdirectory(modules/napsequencegui)
+#add_subdirectory(modules/napsequenceaudio)
+#add_subdirectory(modules/napsequenceaudiogui)
+#add_subdirectory(modules/naplicense)
+#add_subdirectory(modules/napudp)
+#add_subdirectory(modules/naptween)
+#add_subdirectory(modules/napcalendar)
+#add_subdirectory(modules/napasio)
+#add_subdirectory(modules/nappipins)
+#add_subdirectory(modules/napportal)
 
 # Add additional directories if specified from command line.
 # For example: -DADDITIONAL_SUB_DIRECTORIES="apps/myapp;apps/myapp/module"
@@ -235,7 +235,7 @@ add_subdirectory(4dsound_modules/napcontrol)
 add_subdirectory(4dsound_modules/napsettings)
 
 # theworks modules
-# add_subdirectory(theworks_modules/theworks)
+add_subdirectory(theworks_modules/theworks)
 
 # Packaging
 include(cmake/packaging_macros.cmake)
