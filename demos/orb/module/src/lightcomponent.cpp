@@ -38,8 +38,8 @@ namespace nap
 
 	namespace uniform
 	{
-		constexpr const char* vertUboStruct		= "VERTUBO";
-		constexpr const char* fragUboStruct		= "FRAGUBO";
+		constexpr const char* VERTUBO			= "VERTUBO";
+		constexpr const char* FRAGUBO			= "FRAGUBO";
 		constexpr const char* lightPosition		= "lightPosition";
 		constexpr const char* lightDirection	= "lightDirection";
 		constexpr const char* lightColor		= "lightColor";
@@ -61,24 +61,30 @@ namespace nap
 	}
 
 
-	static bool hasDeclaration(MaterialInstance& materialInstance, std::string name)
+	static bool ensureUBO(RenderableComponentInstance& renderComp, MaterialInstance& materialInstance, const std::string& uboName, utility::ErrorState& errorState)
 	{
-		if (materialInstance.findUniform(name) != nullptr)
-			return true;
+		if (!errorState.check(materialInstance.getMaterial().findUniform(uboName) != nullptr,
+			"The shader bound to material instance of renderable component instance '%s' requires an UBO with name '%s'", renderComp.mID.c_str(), uboName.c_str()))
+			return false;
 
-		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const ShaderVariableStructDeclaration* declaration = nullptr;
-		const std::vector<BufferObjectDeclaration>& ubo_declarations = materialInstance.getMaterial().getShader().getUBODeclarations();
-		for (const auto& ubo_declaration : ubo_declarations)
-		{
-			if (ubo_declaration.mName == name)
-			{
-				declaration = &ubo_declaration;
-				return true;
-			}
-		}
-		return false;
+		return true;
 	}
+
+
+	template<typename T>
+	static bool ensureMember(RenderableComponentInstance& renderComp, UniformStructInstance& uboStruct, const std::string& memberName, utility::ErrorState& errorState)
+	{
+		UniformInstance* instance = uboStruct.findUniform(memberName);
+		if (!errorState.check(instance != nullptr,
+			"UBO '%s' requires a member with name '%s' in material instance of renderable component instance '%s'", uboStruct.getDeclaration().mName.c_str(), memberName.c_str(), renderComp.mID.c_str()))
+			return false;
+
+		if (!errorState.check(instance->get_type().is_derived_from(RTTI_OF(T)), "%s.%s is of the wrong uniform type and should be %s", uboStruct.getDeclaration().mName.c_str(), memberName.c_str(), RTTI_OF(T).get_name().to_string().c_str()))
+			return false;
+
+		return true;
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// LightComponent
@@ -87,6 +93,7 @@ namespace nap
 	void LightComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(TransformComponent));
+		components.emplace_back(RTTI_OF(RenderableMeshComponent));
 	}
 
 
@@ -125,6 +132,30 @@ namespace nap
 		auto* root_entity = getRootEntityRecursive(entity_instance);
 		mCachedRenderComponents.clear();
 		root_entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(mCachedRenderComponents);
+
+		// Ensure the material is compatible with nap::LightComponent
+		for (auto* render_comp : mCachedRenderComponents)
+		{
+			// Ensure UBO structs exist
+			if (!ensureUBO(*render_comp, render_comp->getMaterialInstance(), uniform::VERTUBO, errorState))
+				return false;
+
+			if (!ensureUBO(*render_comp, render_comp->getMaterialInstance(), uniform::FRAGUBO, errorState))
+				return false;
+
+			// Ensure members exist
+			UniformStructInstance* vert_ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
+
+			// TODO: PAss material instance as argument and evaluate resource and instance
+			if (!ensureMember<UniformMat4Instance>(*render_comp, *vert_ubo_struct, uniform::lightSpaceMatrix, errorState))
+				return false;
+
+			if (!ensureMember<UniformVec3Instance>(*render_comp, *vert_ubo_struct, uniform::lightPosition, errorState))
+				return false;
+
+			vert_ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
+			vert_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
+		}
 
 		return true;
 	}
@@ -170,28 +201,16 @@ namespace nap
 
 		for (auto* render_comp : mCachedRenderComponents)
 		{
-			if (hasDeclaration(render_comp->getMaterialInstance(), uniform::vertUboStruct))
-			{
-				UniformStructInstance* ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::vertUboStruct);
-				if (ubo_struct != nullptr)
-				{
-					ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
-					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
-				}
-			}
+			UniformStructInstance* vert_ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
+			vert_ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
+			vert_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
 
-			if (hasDeclaration(render_comp->getMaterialInstance(), uniform::fragUboStruct))
-			{
-				UniformStructInstance* ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
-				if (ubo_struct != nullptr)
-				{
-					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_location);
-					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
-					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightDirection)->setValue(light_direction);
-					ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->getValue().toVec3());
-					ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
-				}
-			}
+			UniformStructInstance* frag_ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
+			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_location);
+			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
+			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightDirection)->setValue(light_direction);
+			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->getValue().toVec3());
+			frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
 		}
 	}
 
