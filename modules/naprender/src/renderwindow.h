@@ -137,6 +137,11 @@ namespace nap
 		const std::string& getTitle() const										{ return mTitle; }
 
 		/**
+		 *	Sets the window title
+		 */
+		void setTitle(std::string newTitle);
+
+		/**
 		 *	@return if the window is resizable
 		 */
 		bool isResizable() const												{ return mResizable; }
