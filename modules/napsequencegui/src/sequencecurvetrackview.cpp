@@ -995,9 +995,6 @@ namespace nap
 
 						if (edit_label)
 						{
-							// This closes the popup
-							// mState.mAction = createAction<ChangeSegmentLabel>(action->mTrackID, action->mSegmentID, label_copy);
-
 							controller.changeSegmentLabel(action->mTrackID, action->mSegmentID, label_copy);
 
 							// update any segments we have in the clipboard

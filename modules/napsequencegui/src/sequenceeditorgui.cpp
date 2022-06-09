@@ -1678,16 +1678,6 @@ namespace nap
             mState.mDirty = true;
             mState.mAction = createAction<None>();
         });
-		registerActionHandler(RTTI_OF(ChangeSegmentLabel), [this]
-		{
-			assert(mState.mAction->isAction<ChangeSegmentLabel>());
-			auto* action = mState.mAction->getDerived<ChangeSegmentLabel>();
-			auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
-			assert(controller != nullptr); // controller not found
-			controller->changeSegmentLabel(action->mTrackID, action->mSegmentID, action->mNewSegmentLabel);
-			mState.mDirty = true;
-			mState.mAction = createAction<None>();
-		});
 
         /**
          * When mouse is pressed but no actions are taken, switch to NonePressed action so no actions are triggered when
