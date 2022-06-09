@@ -48,6 +48,14 @@ namespace nap
          */
         void changeTrackName(const std::string &trackID, const std::string &name);
 
+		/**
+		 * Change segment label
+		 * @param trackID the track id
+		 * @param segmentID the segment id
+		 * @param newLabel the new segment label
+		 */
+		void changeSegmentLabel(const std::string& trackID, const std::string& segmentID, const std::string& newLabel);
+
         /**
          * assign track to specific output, the SequencePlayer will create an adapter linking the track to output with
          * given id

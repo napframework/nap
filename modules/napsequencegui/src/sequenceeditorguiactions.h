@@ -551,5 +551,18 @@ namespace nap
 
             std::string mNewTrackName;
         };
+
+		/**
+		 * Action that tells the gui to change the label of a segment
+		 */
+		class ChangeSegmentLabel : public TrackAction
+		{
+			RTTI_ENABLE(TrackAction)
+		public:
+			ChangeSegmentLabel(const std::string& trackID, const std::string& segmentID, const std::string& newLabel) : TrackAction(trackID), mSegmentID(segmentID), mNewSegmentLabel(newLabel) {}
+
+			std::string mSegmentID;
+			std::string mNewSegmentLabel;
+		};
 	}
 }

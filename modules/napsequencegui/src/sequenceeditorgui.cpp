@@ -18,6 +18,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
     RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Hide Marker Labels", &nap::SequenceEditorGUI::mHideMarkerLabels, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,17 @@ namespace nap
 
 		// Create and initialize view
 		mView = std::make_unique<SequenceEditorGUIView>(mService, *mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
+		mView->hideMarkerLabels(mHideMarkerLabels);
+
+		auto& sequence_player = mSequenceEditor->mSequencePlayer;
+		sequence_player->sequenceLoaded.connect([this](SequencePlayer& player, std::string sequence_name)
+		{
+			mRenderWindow->setTitle(sequence_name);
+		});
+
+		// TODO: Dont show name if invalid file was loaded
+		mRenderWindow->setTitle(sequence_player->getSequenceFilename());
+
 		return true;
 	}
 
@@ -1638,6 +1650,16 @@ namespace nap
             mState.mDirty = true;
             mState.mAction = createAction<None>();
         });
+		registerActionHandler(RTTI_OF(ChangeSegmentLabel), [this]
+		{
+			assert(mState.mAction->isAction<ChangeSegmentLabel>());
+			auto* action = mState.mAction->getDerived<ChangeSegmentLabel>();
+			auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+			assert(controller != nullptr); // controller not found
+			controller->changeSegmentLabel(action->mTrackID, action->mSegmentID, action->mNewSegmentLabel);
+			mState.mDirty = true;
+			mState.mAction = createAction<None>();
+		});
 
         /**
          * When mouse is pressed but no actions are taken, switch to NonePressed action so no actions are triggered when

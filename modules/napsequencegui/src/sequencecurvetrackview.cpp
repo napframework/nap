@@ -235,6 +235,21 @@ namespace nap
 
 					ImGui::BeginTooltip();
 
+					// display segment label
+					for (const auto& segment : track.mSegments)
+					{
+						float segment_start = (float)segment->mStartTime * mState.mStepSize;
+						float segment_width = (float)segment->mDuration * mState.mStepSize;
+
+						if (mState.mMousePos.x > trackTopLeft.x + segment_start &&
+							mState.mMousePos.x < trackTopLeft.x + segment_start + segment_width)
+						{
+							ImGui::Text(segment->mLabel.c_str());
+							break;
+						}
+					}
+
+					// display cursor time
 					ImGui::Text(formatTimeString(mState.mMouseCursorTime).c_str());
 
 					ImGui::EndTooltip();
@@ -365,7 +380,8 @@ namespace nap
 					segment.mID,
 					segment.get_type(),
 					segment.mStartTime,
-					segment.mDuration
+					segment.mDuration,
+					segment.mLabel
 				);
 			}
 
@@ -425,6 +441,7 @@ namespace nap
 					line_thickness_active // thickness
 				);
 				ImGui::BeginTooltip();
+                ImGui::Text(segment.mLabel.c_str());
 				ImGui::Text(formatTimeString(segment.mStartTime+segment.mDuration).c_str());
 				ImGui::EndTooltip();
 			}
@@ -786,7 +803,8 @@ namespace nap
 				action->mSegmentID,
 				action->mSegmentType,
 				action->mStartTime,
-				action->mDuration
+				action->mDuration,
+				action->mSegmentLabel
 			);
 		}
 
@@ -828,7 +846,7 @@ namespace nap
 						}
 					}
 
-					if(display_copy)
+					if (display_copy)
 					{
 						if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy)))
 						{
@@ -912,7 +930,7 @@ namespace nap
 
 					// see if we can replace the contents of this segment with the one from the clipboard
 					// this can only happen when we have 1 segment in the clipboard
-					bool display_replace = mState.mClipboard->isClipboard<CurveSegmentClipboard>();
+					bool display_replace = mState.mClipboard->isClipboard<CurveSegmentClipboard>() && mState.mClipboard->getObjectCount();
 					if( display_replace )
 					{
 						display_replace = mState.mClipboard->getObjectCount() == 1;
@@ -921,7 +939,7 @@ namespace nap
 					// display the replace option
 					if( display_replace )
 					{
-						if( ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
+						if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
 						{
                             static const std::unordered_map<rtti::TypeInfo, void(SequenceCurveTrackView::*)(const std::string&, const std::string&)> paste_map =
                                     { { RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveFloat> },
@@ -956,7 +974,6 @@ namespace nap
 						{
 							mState.mClipboard->removeObject(action->mSegmentID);
 						}
-
 						updateSegmentsInClipboard(action->mTrackID);
 
 						// exit popup
@@ -964,40 +981,63 @@ namespace nap
 						mState.mAction = createAction<None>();
 					}
 
-                    std::vector<int> time_array = convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
-					bool edit_time = false;
-
-					ImGui::Separator();
-					ImGui::PushItemWidth(100.0f * mState.mScale);
-
-					edit_time = ImGui::InputInt3("End time (mm:ss:ms)", &time_array[0]);
-					time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-					time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-					time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-					if( edit_time )
+					// Ensure the action is valid
+					if (!mState.mAction->isAction<None>())
 					{
-						double new_time = convertMMSSMSArrayToTime(time_array);
-						double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, (float)(new_time - action->mStartTime));
+						ImGui::Separator();
+						ImGui::PushItemWidth(100.0f * mState.mScale);
 
-						// make the controller re-align start & end points of segments
-						controller.updateCurveSegments(action->mTrackID);
+						// show segment label
+						std::string label_copy = action->mSegmentLabel;
+						label_copy.resize(32);
 
-						updateSegmentsInClipboard(action->mTrackID);
+						bool edit_label = ImGui::InputText("Label", &label_copy[0], 32);
 
-						action->mDuration = new_duration;
-						mState.mDirty = true;
-						mCurveCache.clear();
+						if (edit_label)
+						{
+							// This closes the popup
+							// mState.mAction = createAction<ChangeSegmentLabel>(action->mTrackID, action->mSegmentID, label_copy);
+
+							controller.changeSegmentLabel(action->mTrackID, action->mSegmentID, label_copy);
+
+							// update any segments we have in the clipboard
+							updateSegmentsInClipboard(action->mTrackID);
+
+							action->mSegmentLabel = label_copy;
+							mState.mDirty = true;
+						}
+
+						std::vector<int> time_array = convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
+						bool edit_time = false;
+
+						edit_time = ImGui::InputInt3("End time (mm:ss:ms)", &time_array[0]);
+						time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+						time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+						time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+						if (edit_time)
+						{
+							double new_time = convertMMSSMSArrayToTime(time_array);
+							double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, (float)(new_time - action->mStartTime));
+
+							// make the controller re-align start & end points of segments
+							controller.updateCurveSegments(action->mTrackID);
+
+							updateSegmentsInClipboard(action->mTrackID);
+
+							action->mDuration = new_duration;
+							mState.mDirty = true;
+							mCurveCache.clear();
+						}
+
+						ImGui::PopItemWidth();
+						ImGui::Separator();
+						if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+						{
+							ImGui::CloseCurrentPopup();
+							mState.mAction = createAction<None>();
+						}
 					}
-
-					ImGui::PopItemWidth();
-					ImGui::Separator();
-					if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
-					{
-						ImGui::CloseCurrentPopup();
-						mState.mAction = createAction<None>();
-					}
-
 					ImGui::EndPopup();
 				}
 				else
@@ -1541,6 +1581,12 @@ namespace nap
 		{
 			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 		}
+	}
+
+
+	void CurveSegmentClipboard::changeTrackID(const std::string& newTrackID)
+	{
+		mTrackID = newTrackID;
 	}
 }
 

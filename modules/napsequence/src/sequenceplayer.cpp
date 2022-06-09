@@ -28,8 +28,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    SequencePlayer::SequencePlayer(SequenceService& service)
-            :mService(service)
+    SequencePlayer::SequencePlayer(SequenceService& service) :
+		mService(service)
     {
     }
 
@@ -205,6 +205,7 @@ namespace nap
         }
 
         mSequenceFileName = name;
+		sequenceLoaded.trigger(*this, mSequenceFileName);
 
         // if the sequencer is playing, we need to re-create adapters because assigned outputs probably have changed
         if (mIsPlaying)

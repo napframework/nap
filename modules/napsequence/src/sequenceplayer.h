@@ -192,6 +192,11 @@ namespace nap
          */
         Signal<SequencePlayer&> postTick;
 
+		/***
+		 * sequenceLoaded signal is dispatched when the load(name) method succeeds on SequencePlayer
+		 */
+		Signal<SequencePlayer&, std::string> sequenceLoaded;
+
 		/**
 		 * edited Signal is dispatched when the Sequence has been edited
 		 */
