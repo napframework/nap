@@ -144,16 +144,17 @@ namespace nap
 
 		std::string getFileDir(const std::string& file)
 		{
-			std::string name = file;
-
 			// Replace any references to self in the path, ie. "/./" on Unix.  This fixes an issue when trying
 			// to get the current dir running from command line on OSX.
+			std::string name = file;
 			replaceAllInstances(name, "/./", "/");
 
+			// Return directory
+			// If file is not in a directory, return empty string
 			const size_t last_slash_idx = name.find_last_of("\\/");
-			if (last_slash_idx != std::string::npos)
-				name = name.erase(last_slash_idx, name.size() - last_slash_idx);
-			return name;
+			return last_slash_idx != std::string::npos ?
+				name.erase(last_slash_idx, name.size() - last_slash_idx) :
+				"";
 		}
 
 
