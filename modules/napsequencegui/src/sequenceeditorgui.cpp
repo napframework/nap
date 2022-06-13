@@ -612,10 +612,12 @@ namespace nap
 					const float hover_margin = 8.0f;
 
 					// if player position is inside the sequencer window, draw it
-					if (player_time_rect_center.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f && player_time_rect_center.x > mState.mWindowPos.x)
+					if (player_time_rect_center.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f * mState.mScale && player_time_rect_center.x > mState.mWindowPos.x)
 					{
 						ImGui::PopClipRect();
-						const float bottom = player_time_rect_center.y + math::min<float>(sequence.mTracks.size() * (mState.mVerticalResolution + 10.0f) + 55.0f, mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y);
+						const float bottom = player_time_rect_center.y + math::min<float>(sequence.mTracks.size() *
+                                (mState.mVerticalResolution + 10.0f * mState.mScale) + 55.0f * mState.mScale,
+                                mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y);
 						if (ImGui::IsMouseHoveringRect(
 							{ player_time_rect_center.x - hover_margin, player_time_rect_center.y - hover_margin },
 							{ player_time_rect_center.x + hover_margin, bottom + hover_margin }))
