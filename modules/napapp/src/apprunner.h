@@ -190,8 +190,7 @@ namespace nap
 		while (!app.shouldQuit() && !mStop)
 		{
 			// Get point in time when frame is requested to be completed
-			frame_time = timer.getMillis() + (
-				app.framerateCapped() ? 
+			frame_time = timer.getMillis() + (app.framerateCapped() ? 
 				Milliseconds(static_cast<long>(1000.0 / static_cast<double>(app.getRequestedFramerate()))) :
 				zero_delay);
 			 
