@@ -24,6 +24,9 @@ namespace nap
 	 * To send data, create an ArtNetController and specify the subnet and universe for the controller. Then call send on it,
 	 * this will redirect the send call to this service.
 	 *
+	 * Each ArtNetController determines the amount of channels they want to send. By default this is 512, but it can range from 2-512 as per the Art-Net specs.
+	 * When a send call is made that addresses channels outside range of what is configured for the controller, the function will assert.
+	 *
 	 * To receive data, first create an ArtNetReceiver and specify the port to listen on for receiving ArtDmx packets.
 	 * Then add an ArtNetInputComponent and specify whether to filter on ArtDmx packets by Net, SubNet and Universe or
 	 * to receive all packets. Connect to the input component's packetReceived slot for handling the incoming events.
@@ -113,7 +116,7 @@ namespace nap
 		 * @param channelData Channel data in normalized floats (0.0 to 1.0)
 		 * @param channelOffset Channel offset, the target start channel where @channelData should be applied to. If the 
 		 *                      channel offset plus the size of the @channelData exceeds the maximum amount of channels per 
-		 *                      universe (512), the function will assert.
+		 *                      universe (configured by ArtNetController), the function will assert.
 		 */
 		void send(ArtNetController& controller, const FloatChannelData& channelData, int channelOffset = 0);
 
@@ -132,7 +135,7 @@ namespace nap
 		 * @param channelData Channel data in unsigned bytes (0 - 255)
 		 * @param channelOffset Channel offset, the target start channel where @channelData should be applied to. If the
 		 *                      channel offset plus the size of the @channelData exceeds the maximum amount of channels per
-		 *                      universe (512), the function will assert.
+		 *                      universe (configured by ArtNetController), the function will assert.
 		 */
 		void send(ArtNetController& controller, const ByteChannelData& channelData, int channelOffset = 0);
 

@@ -37,7 +37,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='regenerate')
     parser.add_argument("PROJECT_PATH", type=str, help=argparse.SUPPRESS)
     if sys.platform.startswith('linux'):    
-        parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
+        parser.add_argument('BUILD_TYPE', nargs='?', default='Release')
     else:    
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")       

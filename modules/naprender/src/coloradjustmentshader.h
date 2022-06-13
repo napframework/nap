@@ -14,18 +14,21 @@ namespace nap
 	class Material;
     class RenderService;
 
-	// Uniform names
+	// Color adjustment uniform shader names
 	namespace uniform
 	{
-		namespace sampler
-		{	
-			inline constexpr const char* colorTexture	= "colorTexture";		///< Name of the color texture sampler
-		}
+		namespace coloradjustment
+		{
+			namespace sampler
+			{
+				inline constexpr const char* colorTexture = "colorTexture";			///< Name of the color texture sampler
+			}
 
-		inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
-		inline constexpr const char* brightness = "brightness";					///< Controls brightness [-x, x]
-		inline constexpr const char* contrast = "contrast";						///< Controls contrast [-1.0, 1.0]
-		inline constexpr const char* saturation = "saturation";					///< Controls saturation [0.0, x]
+			inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
+			inline constexpr const char* brightness = "brightness";					///< Controls brightness [-x, x]
+			inline constexpr const char* contrast = "contrast";						///< Controls contrast [-1.0, 1.0]
+			inline constexpr const char* saturation = "saturation";					///< Controls saturation [0.0, x]
+		}
 	}
 
 	/**

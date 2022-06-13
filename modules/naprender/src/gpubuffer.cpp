@@ -365,7 +365,7 @@ namespace nap
 			// Queue buffer for destruction if already allocated, the buffer data is copied, not captured by reference.
 			if (buffer_data.mBuffer != VK_NULL_HANDLE)
 			{
-				mRenderService->queueVulkanObjectDestructor([buffer = buffer_data](RenderService& renderService)
+				mRenderService->queueVulkanObjectDestructor([buffer = buffer_data](RenderService& renderService) mutable
 					{
 						destroyBuffer(renderService.getVulkanAllocator(), buffer);
 					});
@@ -426,14 +426,14 @@ namespace nap
 
 		// Queue destruction of staging buffer if usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
-		// Explicitly release the buffer, so it's not deleted twice
+		// Explicitly hand over ownership by releasing the buffer, so it's not deleted twice
 		if (mMemoryUsage == EMemoryUsage::Static)
 		{
-			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService& renderService)
-				{
-					for (const BufferData& buffer : staging_buffers)
-						destroyBuffer(renderService.getVulkanAllocator(), buffer);
-				});
+			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService& renderService) mutable
+			{
+				for (BufferData& buffer : staging_buffers)
+					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+			});
 			for (BufferData& buffer : mStagingBuffers)
 				buffer.release();
 		}
@@ -538,17 +538,17 @@ namespace nap
 		// Queue buffers for destruction, the buffer data is copied, not captured by reference.
 		// This ensures the buffers are destroyed when certain they are not in use.
 		mRenderService->removeBufferRequests(*this);
-		mRenderService->queueVulkanObjectDestructor([render_buffers = mRenderBuffers, staging_buffers = mStagingBuffers](RenderService& renderService)
-			{
-				// Destroy render buffers
-				for (const BufferData& buffer : render_buffers)
-					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+		mRenderService->queueVulkanObjectDestructor([render_buffers = mRenderBuffers, staging_buffers = mStagingBuffers](RenderService& renderService) mutable
+		{
+			// Destroy render buffers
+			for (BufferData& buffer : render_buffers)
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
 
-				// Also destroy the staging buffers if we reach this point before the initial upload has occurred.
-				// This could happen e.g. if app initialization fails.
-				for (const BufferData& buffer : staging_buffers)
-					destroyBuffer(renderService.getVulkanAllocator(), buffer);
-			});
+			// Also destroy the staging buffers if we reach this point before the initial upload has occurred.
+			// This could happen e.g. if app initialization fails.
+			for (BufferData& buffer : staging_buffers)
+				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+		});
 	}
 
 

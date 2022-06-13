@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='regenerate')
     parser.add_argument("MODULE_PATH", type=str, help=argparse.SUPPRESS)
     if sys.platform.startswith('linux'):    
-        parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
+        parser.add_argument('BUILD_TYPE', nargs='?', default='Release')
     args = parser.parse_args()
 
     linux_build_type = None

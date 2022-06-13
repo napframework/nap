@@ -27,9 +27,13 @@
 // Workgroup size as specialization constant as per: 
 // https://www.khronos.org/registry/OpenGL/specs/gl/GLSLangSpec.4.60.html#specialization-constant-qualifier
 
-// When a workgroup size specialization constant is detected, NAP automatically overwrites
-// it with the maximum group size of the device on pipeline creation.
+// NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
+// size supported by the device on pipeline creation.
 layout(local_size_x_id = 0) in;
+
+// When declaring the workgroup size specialization constant to be higher than 0, NAP will not 
+// override the workgroup size when creating the compute pipeline. Uncommenting this bit and commenting out 
+// the above will let the shader define the workgroup size.
 //layout(local_size_x = 512) in;
 
 struct Boid

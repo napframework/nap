@@ -11,7 +11,7 @@ from multiprocessing import cpu_count
 import os
 from platform import machine
 import re
-from subprocess import call, Popen, PIPE, check_output
+from subprocess import call, Popen, PIPE, check_output, TimeoutExpired
 import shlex
 import shutil
 import signal
@@ -43,8 +43,8 @@ PROJECT_FILENAME = 'project.json'
 # JSON report filename
 REPORT_FILENAME = 'report.json'
 
-# Napkin success exit code
-NAPKIN_SUCCESS_EXIT_CODE = 0
+# Process success exit code
+SUCCESS_EXIT_CODE = 0
 
 # Seconds to wait for a Napkin load project and exit with expected exit code
 NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
@@ -428,6 +428,16 @@ def kill_pulseaudio():
        websocket functionality)."""
     call_capturing_output('pulseaudio -k')
 
+def force_quit(process):
+    """Force quit given process by sending kill signal"""
+    while process.returncode is None:
+        try:
+            process.kill()
+        except OSError:
+            pass
+        time.sleep(1);
+        process.poll();
+
 def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=False, expect_early_closure=False, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH):
     """Run specified command and after the specified number of seconds check that the process is
        still running before closing it
@@ -445,7 +455,7 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
     expect_early_closure : bool
         Whether process having closed before we kill it is OK
     success_exit_code : int
-        Process exit code representing success when expecting early closure
+        Process exit code representing success when closing
     wait_for_seconds : int
         Seconds to wait before determining run success
 
@@ -489,67 +499,45 @@ def run_process_then_stop(cmd, accepted_shared_libs_path=None, testing_napkin=Fa
         waited_time += 0.5
         p.poll()
 
-    if is_linux():
-        if p.returncode is None:
-            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
-        else:
-            unexpected_libraries = []
 
     # Track success
-    success = True
+    success = False
+    unexpected_libraries = []
 
-    # Check and make sure the app's still running
-    p.poll()
-    if p.returncode == None:
-        # Process isn't done, if we were running for Napkin that's a failure
-        if expect_early_closure:
-            success = False
-    else:
-        if expect_early_closure:
-            # Process done, if the success code matches we've had a successful Napkin run
-            success = p.returncode == success_exit_code
-        else:
-            eprint("  Error: Process already done?")
-            (stdout, stderr) = p.communicate()
-            if type(stdout) == bytes:
-                stdout = stdout.decode('utf8')
-            if type(stderr) == bytes:
-                stderr = stderr.decode('utf8')    
-                
-            if sys.platform == 'darwin':
-                unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
-            elif sys.platform == 'win32':
-                unexpected_libraries = []            
-            return (False, stdout, stderr, unexpected_libraries, p.returncode)
+    # Process running
+    if p.poll() == None:
 
-    if p.returncode == None:
-        # Send SIGTERM and wait a moment to close
-        p.terminate()
-        time.sleep(1)
-        p.poll()
+        # Get unexpected libs
+        if is_linux():
+            unexpected_libraries = linux_check_for_unexpected_library_use(p.pid, accepted_shared_libs_path)
 
-    # If the app hasn't exited, brute close with kill signal
-    while p.returncode is None:
-        time.sleep(1)
-        p.poll()
-        print("  Failed to close on terminate, sending kill signal")
+        # Send SIGTERM and wait a moment to close. Use force quit if wait timer expires.
         try:
-            p.kill()
-        except OSError:
+            p.terminate()
+            p.wait(10)
+            success = not expect_early_closure
+        except TimeoutExpired:
+            print("  Failed to close on terminate, sending kill signal")
+            force_quit(p)
             pass
+    # Process done
+    else:
+        # Exit code must be 'success_exit_code'. 
+        # If an application crashed or failed on initialization the exit code will not be 'success_exit_code'.
+        success = p.returncode == success_exit_code
 
-    # Pull the output and return success
+    # Gather info from stream
     (stdout, stderr) = p.communicate()
     if type(stdout) == bytes:
         stdout = stdout.decode('utf8')
     if type(stderr) == bytes:
         stderr = stderr.decode('utf8')    
-
+        
+    # Check for unexpected libraries
     if sys.platform == 'darwin':
         unexpected_libraries = macos_check_for_unexpected_library_use(stderr, accepted_shared_libs_path)
-    elif sys.platform == 'win32':
-        unexpected_libraries = []
 
+    # Done
     return (success, stdout, stderr, unexpected_libraries, p.returncode)
 
 def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path):
@@ -1399,7 +1387,7 @@ def open_projects_in_napkin_from_framework_release(demo_results, nap_framework_f
                                                                                         nap_framework_full_path, 
                                                                                         True,
                                                                                         True,
-                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        SUCCESS_EXIT_CODE,
                                                                                         NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         this_demo['openWithNapkinBuildOutput'] = {}
@@ -1445,7 +1433,7 @@ def open_template_project_in_napkin_from_framework_release(template_results, nap
                                                                                         nap_framework_full_path, 
                                                                                         True,
                                                                                         True,
-                                                                                        NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                        SUCCESS_EXIT_CODE,
                                                                                         NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
         template_results['openWithNapkinBuildOutput'] = {}
@@ -1546,7 +1534,7 @@ def open_project_in_napkin_from_packaged_app(results, project_name, root_output_
                                                                                     os.path.abspath(os.pardir),
                                                                                     True,
                                                                                     True,
-                                                                                    NAPKIN_SUCCESS_EXIT_CODE,
+                                                                                    SUCCESS_EXIT_CODE,
                                                                                     NAPKIN_SECONDS_WAIT_FOR_PROCESS)
 
     results['openWithNapkinPackagedApp'] = {}

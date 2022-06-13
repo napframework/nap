@@ -14,7 +14,7 @@
 #include <rtti/typeinfo.h>
 
 /**
- * This file contains NAP overrides for popular IMGui functions
+ * This file contains NAP overrides for popular IMGui functions.
  * These utility functions allow you to use common NAP objects in conjunction with IMGui
  * All the functions in this file follow the IMGui style and naming conventions
  */

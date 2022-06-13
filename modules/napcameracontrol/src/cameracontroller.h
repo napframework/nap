@@ -59,12 +59,7 @@ namespace nap
 		 * Returns the controllers this component depends upon.
 		 * @param components the various controllers this component depends upon.
 		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.emplace_back(RTTI_OF(OrbitController));
-			components.emplace_back(RTTI_OF(FirstPersonController));
-			components.emplace_back(RTTI_OF(OrthoController));
-		}
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		nap::EntityPtr	mLookAtTarget;		///< Property: 'LookAtTarget' Object to look at, used by the orbit and ortho controller
 	};

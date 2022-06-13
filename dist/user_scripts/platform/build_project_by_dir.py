@@ -33,7 +33,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='build')
     parser.add_argument("PROJECT_PATH", type=str, help=argparse.SUPPRESS)
     parser.add_argument('BUILD_TYPE', nargs='?', type=str.lower, default=None,
-            choices=['release', 'debug'], help="Build type (default debug)", metavar='BUILD_TYPE')
+            choices=['release', 'debug'], help="Build type (default=release)", metavar='BUILD_TYPE')
     if not sys.platform.startswith('linux'):    
         parser.add_argument("-np", "--no-pause", action="store_true",
                             help="Don't pause afterwards on failed build")
