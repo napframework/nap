@@ -1480,10 +1480,8 @@ namespace nap
 		{
 			auto it = mDisplays.emplace_back(Display(i));
 			nap::Logger::info(it.toString());
-			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
-			{
+			if (!errorState.check(it.isValid(), "Display %d: unable to extract required information", i))
 				return false;
-			}
 		}
 
 		// Initialize shader compiler
