@@ -83,7 +83,7 @@ namespace nap
 		// Get calendar path
 		std::string path = utility::stringFormat("%s/%s/%s.json", mCore.getProjectInfo()->getDataDirectory().c_str(),
 			calendarDirectory, getName().c_str());
-		mPath = utility::toComparableFilename(path);
+		mPath = utility::forceSeparator(path);
 
 		// Load calendar if file exists
 		if (utility::fileExists(mPath))
