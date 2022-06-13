@@ -30,18 +30,23 @@ namespace nap
 		void start();
 
 		/**
-		* @return start time as point in time
-		*/
+		 * Returns the start time.
+		 * @return timer start time
+		 */
 		std::chrono::time_point<Clock> getStartTime() const;
 
 		/**
-		* Stop the timer, resets state
-		*/
+		 * Stops the timer, start time is set to 0.
+		 * 
+		 * This call is deprecated because setting the start time to 0 results in large time
+		 * time deltas, depending on the clock that is used. This call therefore serves no purpose
+		 * whatsoever and will be removed. 
+		 */
 		void stop();
 
 		/**
-		* Resets the timer and starts it again
-		*/
+		 * Resets the timer, essentially starting it again.
+		 */
 		void reset();
 
 		/**
@@ -90,7 +95,9 @@ namespace nap
 		Hours getHours() const										{ return get<Hours>(); }
 
 		/**
-		 * @return elapsed time in duration of type T
+		 * Utility function that casts this timer's duration to a duration of type T.
+		 * Where T can be NanoSeconds, MicroSeconds, MilliSeconds etc.
+		 * @return elapsed time as duration of type T (Microseconds, Milliseconds, Seconds, etc.)
 		 */
 		template<typename T>
 		T get() const;
@@ -163,8 +170,7 @@ namespace nap
 	template<typename Clock>
 	uint32_t Timer<Clock>::getTicks() const
 	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<Milliseconds>(elapsed).count();
+		return getMillis().count();
 	}
 
 

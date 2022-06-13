@@ -8,9 +8,9 @@
 #include "modulemanager.h"
 #include "resourcemanager.h"
 #include "service.h"
-#include "timer.h"
 #include "coreextension.h"
 #include "projectinfo.h"
+#include "timer.h"
 
 // External Includes
 #include <rtti/factory.h>
@@ -166,8 +166,7 @@ namespace nap
 		bool initializePython(utility::ErrorState& error);
 
 		/**
-		 * Starts core, call this after initializing the engine, just before starting
-		 * the application loop. This call will start the core timer
+		 * Starts core, call this after initializing the engine, just before starting the application loop.
 		 */
 		void start();
 
@@ -203,9 +202,9 @@ namespace nap
 		double getElapsedTime() const;
 
 		/**
-		* @return start time point
-		*/
-		HighResTimeStamp getStartTime() const;
+		 * @return core start time
+		 */
+		SteadyTimeStamp getStartTime() const;
 
 		/**
 		 * @return number of frames per second
@@ -466,11 +465,11 @@ namespace nap
 		// Interface associated with this instance of core.
 		std::unique_ptr<CoreExtension> mExtension = nullptr;
 
-		// Timer
-		HighResolutionTimer mTimer;
+		// Frame reference point
+		SteadyTimeStamp mTimeStamp;
 
-		// Amount of milliseconds the app is running
-		double mLastTimeStamp = 0;
+		// Core timer
+		SteadyTimer mTimer;
 
 		// Current framerate
 		float mFramerate = 0.0f;
