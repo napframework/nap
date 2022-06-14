@@ -184,20 +184,17 @@ namespace nap
 
 	void Core::start()
 	{
-		mTimer.reset();
+		mTimer.start();
+		mTimeStamp = mTimer.getStartTime();
 	}
 
 
 	double Core::update(std::function<void(double)>& updateFunction)
 	{
-		// Get current time in milliseconds
-		double new_elapsed_time = mTimer.getElapsedTime();
-
-		// Calculate amount of milliseconds since last time stamp
-		double delta_time = new_elapsed_time - mLastTimeStamp;
-
-		// Store time stamp
-		mLastTimeStamp = new_elapsed_time;
+		// Calculate frame duration seconds
+		SteadyTimeStamp current_time = SteadyClock::now();
+		double delta_time = std::chrono::duration<double>(current_time - mTimeStamp).count();
+		mTimeStamp = current_time;
 
 		// Update framerate
 		calculateFramerate(delta_time);
@@ -369,13 +366,6 @@ namespace nap
 	double Core::getElapsedTime() const
 	{
 		return mTimer.getElapsedTime();
-	}
-
-
-	// Returns start time of core module as point in time
-	HighResTimeStamp Core::getStartTime() const
-	{
-		return mTimer.getStartTime();
 	}
 
 
@@ -605,6 +595,12 @@ namespace nap
 			configs.emplace_back(config.second.get());
 		}
 		return configs;
+	}
+
+
+	nap::SteadyTimeStamp Core::getStartTime() const
+	{
+		return mTimer.getStartTime();
 	}
 
 
