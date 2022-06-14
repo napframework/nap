@@ -10,28 +10,54 @@
 
 using namespace napkin;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// RegularResourcesItem 
+//////////////////////////////////////////////////////////////////////////
 
-GroupItem::GroupItem(const QString& name, GroupItem::GroupType t) : QStandardItem(name), mType(t)
+napkin::RegularResourcesItem::RegularResourcesItem()
 {
 	setEditable(false);
+	setText("Resources");
 }
 
-
-QVariant napkin::GroupItem::data(int role) const
+QVariant napkin::RegularResourcesItem::data(int role) const
 {
 	switch (role)
 	{
 	case Qt::DecorationRole:
-		return AppContext::get().getResourceFactory().getIcon(mType == GroupType::Entities ?
-			QRC_ICONS_ENTITY : QRC_ICONS_RTTIOBJECT);
+		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_RTTIOBJECT);
 	default:
 		return QStandardItem::data(role);
 	}
 }
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// EntityResourcesItem 
+//////////////////////////////////////////////////////////////////////////
+
+napkin::EntityResourcesItem::EntityResourcesItem()
+{
+	setEditable(false);
+	setText("Entities");
+}
+
+
+QVariant napkin::EntityResourcesItem::data(int role) const
+{
+	switch (role)
+	{
+	case Qt::DecorationRole:
+		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ENTITY);
+	default:
+		return QStandardItem::data(role);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// ObjectItem 
+//////////////////////////////////////////////////////////////////////////
 
 ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 		: QObject(), mObject(o), mIsPointer(isPointer)

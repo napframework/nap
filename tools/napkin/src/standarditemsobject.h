@@ -12,33 +12,39 @@ namespace napkin
 	class ComponentInstanceItem;
 	class RootEntityItem;
 
+	//////////////////////////////////////////////////////////////////////////
+	// RegularResourcesItem 
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
-	 * An empty item for grouping purposes.
+	 * Used to group together all regular resources, except entities
 	 */
-	class GroupItem : public QStandardItem
+	class RegularResourcesItem : public QStandardItem
 	{
 	public:
-		enum class GroupType {
-			Resources, Entities
-		};
-
-		/**
-		 * @param name The name of the group
-		 */
-		explicit GroupItem(const QString& name, GroupItem::GroupType t);
-
-		/**
-		 * @return data overrides
-		 */
+		RegularResourcesItem();
 		QVariant data(int role) const override;
-
-		/**
-		 * @return type of group
-		 */
-		GroupType groupType() const { return mType; }
-	private:
-		GroupType mType;
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// EntityResourcesItem
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Used to group together all entity resources
+	 */
+	class EntityResourcesItem : public QStandardItem
+	{
+	public:
+		EntityResourcesItem();
+		QVariant data(int role) const override;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ObjectItem
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * An item representing a single nap::rtti::RTTIObject. The item will show the object's name.
@@ -141,6 +147,11 @@ namespace napkin
 		bool mIsPointer;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// EntityItem
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * An item representing an Entity
 	 */
@@ -163,9 +174,11 @@ namespace napkin
 
 	};
 
-	/**
-	 * An item representing one scene
-	 */
+
+	//////////////////////////////////////////////////////////////////////////
+	// SceneItem
+	//////////////////////////////////////////////////////////////////////////
+
 	class SceneItem : public ObjectItem
 	{
 	public:
@@ -173,9 +186,11 @@ namespace napkin
 
 	};
 
-	/**
-	 * And item representing a Component
-	 */
+
+	//////////////////////////////////////////////////////////////////////////
+	// ComponentItem
+	//////////////////////////////////////////////////////////////////////////
+
 	class ComponentItem : public ObjectItem
 	{
 	public:
@@ -186,6 +201,11 @@ namespace napkin
 		 */
 		nap::Component& getComponent();
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// EntityInstanceItem
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * An item that displays an entity instance
@@ -206,6 +226,11 @@ namespace napkin
 		nap::RootEntity& mRootEntity;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// RootEntityItem
+	//////////////////////////////////////////////////////////////////////////
+
 	class RootEntityItem : public EntityInstanceItem
 	{
 	Q_OBJECT
@@ -223,9 +248,13 @@ namespace napkin
 	};
 
 
+	//////////////////////////////////////////////////////////////////////////
+	// ComponentInstanceItem
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Item that displays a Component Instance,
-	 * it also holds a copy of the componentinstanceproperties from the RootEntity
+	 * it also holds a copy of the component instance properties from the RootEntity
 	 */
 	class ComponentInstanceItem : public ObjectItem
 	{

@@ -24,10 +24,10 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	auto r_item = resource_model->itemFromIndex(right);
 	assert(l_item != nullptr && r_item != nullptr);
 
-	// Don't sort groups
-	GroupItem* lg_item = dynamic_cast<GroupItem*>(l_item);
-	GroupItem* rg_item = dynamic_cast<GroupItem*>(r_item);
-	if (lg_item != nullptr && rg_item != nullptr)
+	// Don't sort regular resource groups
+	auto* rg_item = dynamic_cast<EntityResourcesItem*>(l_item);
+	auto* lg_item = dynamic_cast<RegularResourcesItem*>(r_item);
+	if (rg_item != nullptr && lg_item != nullptr)
 		return false;
 
 	// Don't sort items of which parent is an entity (components)
@@ -42,8 +42,6 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 
 
 napkin::ResourceModel::ResourceModel()
-		: mObjectsItem(TXT_LABEL_RESOURCES, GroupItem::GroupType::Resources),
-		  mEntitiesItem(TXT_LABEL_ENTITIES, GroupItem::GroupType::Entities)
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
 	appendRow(&mObjectsItem);
@@ -173,41 +171,36 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	if (selectedItem == nullptr)
 		return;
 
-	auto objItem = dynamic_cast<ObjectItem*>(selectedItem);
-	auto entityItem = dynamic_cast<EntityItem*>(selectedItem);
+	auto entity_item = dynamic_cast<EntityItem*>(selectedItem);
+	auto object_item = dynamic_cast<ObjectItem*>(selectedItem);
 
-	if (entityItem)
+	if (entity_item != nullptr)
 	{
-		menu.addAction(new AddChildEntityAction(*entityItem->getEntity()));
-		menu.addAction(new AddComponentAction(*entityItem->getEntity()));
+		menu.addAction(new AddChildEntityAction(*entity_item->getEntity()));
+		menu.addAction(new AddComponentAction(*entity_item->getEntity()));
 
-		if (entityItem->isPointer())
+		if (entity_item->isPointer())
 		{
-			auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
+			auto parentItem = dynamic_cast<EntityItem*>(entity_item->parentItem());
 			if (parentItem)
-				menu.addAction(new RemovePathAction(entityItem->propertyPath()));
-
+			{
+				menu.addAction(new RemovePathAction(entity_item->propertyPath()));
+			}
 		}
 
-		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+		menu.addAction(new DeleteObjectAction(*entity_item->getObject()));
 	}
-	else if (objItem)
+	else if (object_item != nullptr)
 	{
-		menu.addAction(new DeleteObjectAction(*objItem->getObject()));
+		menu.addAction(new DeleteObjectAction(*object_item->getObject()));
 	}
-
-	auto groupItem = dynamic_cast<GroupItem*>(selectedItem);
-	if (groupItem)
+	else if (dynamic_cast<RegularResourcesItem*>(selectedItem) != nullptr)
 	{
-		if (groupItem->groupType() == GroupItem::GroupType::Entities)
-		{
-			menu.addAction(new CreateEntityAction());
-		}
-		else if (groupItem->groupType() == GroupItem::GroupType::Resources)
-		{
-			// Resources
-			menu.addAction(new CreateResourceAction());
-		}
+		menu.addAction(new CreateResourceAction());
+	}
+	else if (dynamic_cast<EntityResourcesItem*>(selectedItem) != nullptr)
+	{
+		menu.addAction(new CreateEntityAction());
 	}
 }
 

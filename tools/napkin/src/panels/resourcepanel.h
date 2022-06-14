@@ -56,8 +56,8 @@ namespace napkin
 		void removeEmbeddedObjects();
 
 	private:
-		GroupItem mObjectsItem; // top level item that will hold objects/resources
-		GroupItem mEntitiesItem; // top level item that will hold entities
+		RegularResourcesItem mObjectsItem;		// top level item that will hold objects/resources
+		EntityResourcesItem  mEntitiesItem;		// top level item that will hold entities
 	};
 
 	/**
