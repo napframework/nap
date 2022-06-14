@@ -4,8 +4,12 @@
 
 #pragma once
 
+// Local Includes
 #include "actions.h"
+
+// External Includes
 #include <scene.h>
+#include <nap/group.h>
 
 namespace napkin
 {
@@ -132,7 +136,7 @@ namespace napkin
 		int childIndex(const ObjectItem& childItem) const;
 
 		/**
-		 * Disabmiguating index of child, index only increments when multiple children with the same name are found.
+		 * Disambiguating index of child, index only increments when multiple children with the same name are found.
 		 */
 		int nameIndex(const ObjectItem& childItem) const;
 
@@ -172,6 +176,20 @@ namespace napkin
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 		void onPropertyValueChanged(const PropertyPath& path);
 
+	};
+
+	/**
+	 * An item representing a group of resources
+	 */
+	class GroupItem : public ObjectItem
+	{
+	public:
+		explicit GroupItem(nap::Group& group);
+
+		/**
+		 * @return the resource group
+		 */
+		nap::Group* getGroup();
 	};
 
 
@@ -275,5 +293,4 @@ namespace napkin
 		// This is a copy of the instanceproperties on the root entity
 		mutable nap::ComponentInstanceProperties mInstanceProperties;
 	};
-
 } // namespace napkin

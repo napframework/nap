@@ -57,7 +57,7 @@ bool shouldObjectBeVisible(const nap::rtti::Object& obj)
 	if (obj.get_type().is_derived_from<nap::Component>())
 		return false;
 
-	// Exclude embeded objects
+	// Exclude embedded objects
 	if (doc->isPointedToByEmbeddedPointer(obj))
 		return false;
 
@@ -90,13 +90,23 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 {
 	auto typeItem = new RTTITypeItem(ob.get_type());
 
+	// If it's an entity, add it as such
 	if (ob.get_type().is_derived_from<nap::Entity>())
 	{
-		auto entityItem = new EntityItem(*rtti_cast<nap::Entity>(&ob));
+		auto entityItem = new EntityItem(static_cast<nap::Entity&>(ob));
 		mEntitiesItem.appendRow({entityItem, typeItem});
 		return entityItem;
 	}
 
+	// If it's a group, add it as such
+	if (ob.get_type().is_derived_from<nap::Group>())
+	{
+		auto group_item = new GroupItem(static_cast<nap::Group&>(ob));
+		mObjectsItem.appendRow({ group_item, typeItem });
+		return group_item;
+	}
+
+	// Hide items for specific types
 	if (!shouldObjectBeVisible(ob))
 		return nullptr;
 
@@ -162,7 +172,6 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 }
-
 
 
 void napkin::ResourcePanel::menuHook(QMenu& menu)
