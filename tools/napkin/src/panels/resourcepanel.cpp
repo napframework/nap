@@ -160,11 +160,10 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
-
-	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
-			&ResourcePanel::onSelectionChanged);
+	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ResourcePanel::onSelectionChanged);
 
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
+
 	// connect(&AppContext::get(), &AppContext::dataChanged, this, &ResourcePanel::refresh);
 	connect(&AppContext::get(), &AppContext::entityAdded, this, &ResourcePanel::onEntityAdded);
 	connect(&AppContext::get(), &AppContext::componentAdded, this, &ResourcePanel::onComponentAdded);
@@ -275,11 +274,31 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component* comp, nap::Entity* 
 	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, *comp));
 }
 
-void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, bool selectNewObject)
+void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
 {
-	auto item = mModel.addObjectItem(*obj);
+	// Add item to root if there is no parent
+	ObjectItem* item = nullptr;
+	if (parent == nullptr)
+	{
+		item = mModel.addObjectItem(*obj);
+	}
+	else
+	{
+		// Check if the parent is a group, if so, find and add item to group 
+		if (parent->get_type().is_derived_from(RTTI_OF(nap::Group)))
+		{
+			GroupItem* group_item = findItemInModel<GroupItem>(mModel, *parent);
+			assert(group_item != nullptr);
+			item = new ObjectItem(obj);
+			group_item->appendRow(item);
+		}
+	}
+
+	assert(item != nullptr);
 	if (selectNewObject)
+	{
 		mTreeView.selectAndReveal(item);
+	}
 }
 
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)

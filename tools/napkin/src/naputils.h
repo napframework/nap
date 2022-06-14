@@ -108,7 +108,6 @@ namespace napkin
 	T* findItemInModel(const QStandardItemModel& model, const nap::rtti::Object& obj, int column = 0)
 	{
 		T* foundItem = nullptr;
-
 		nap::qt::findIndexInModel(model, [&model, &foundItem, &obj](const QModelIndex& idx) -> bool {
 			QStandardItem* item = model.itemFromIndex(idx);
 			if (item == nullptr)
@@ -123,12 +122,9 @@ namespace napkin
 				foundItem = objItem;
 				return true;
 			}
-
 			return false;
 		}, column);
-
 		return foundItem;
-
 	}
 
 	/**

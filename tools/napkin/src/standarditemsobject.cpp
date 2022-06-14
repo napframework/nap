@@ -378,7 +378,12 @@ const std::string EntityItem::unambiguousName() const
 //////////////////////////////////////////////////////////////////////////
 
 napkin::GroupItem::GroupItem(nap::Group& group) : ObjectItem(&group, false)
-{ }
+{
+	for (auto& resource : group.mResources)
+	{
+		appendRow(new ObjectItem(resource.get()));
+	}
+}
 
 QVariant napkin::GroupItem::data(int role) const
 {

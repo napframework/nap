@@ -344,15 +344,6 @@ namespace napkin
 		int arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
 
 		/**
-		 * Create an object of the specified type and add it to the end of the array
-		 * The propertyValueChanged signal will be emitted.
-		 * @param path The path to the array
-		 * @param type The type of object to create
-		 * @return The index of the inserted object
-		 */
-		size_t arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type);
-
-		/**
 		 * Remove an element from an array
 		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path pointing to the array
@@ -490,11 +481,12 @@ namespace napkin
 		 * Qt Signal
 		 * Invoked after any object has been added (this includes Entities)
 		 * @param obj The newly added object
+		 * @param parent The parent item of the newly added object, can be nullptr
 		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::Object* obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
 
 		/**
 		 * Qt Signal

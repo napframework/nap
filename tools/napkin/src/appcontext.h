@@ -341,11 +341,12 @@ namespace napkin
 		 * Qt Signal
 		 * Invoked after any object has been added (this includes Entities)
 		 * @param obj The newly added object
+		 * @param parent the parent of the newly added object, can be nullptr
 		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
 		 * 		This is a notification, not a directive.
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::Object* obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
 
 		/**
 		 * Qt Signal

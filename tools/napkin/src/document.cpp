@@ -13,6 +13,7 @@
 #include <nap/logger.h>
 #include <mathutils.h>
 #include <utility/fileutils.h>
+#include <nap/group.h>
 
 using namespace napkin;
 using namespace nap::rtti;
@@ -153,8 +154,8 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 
 nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject, const std::string& name)
 {
+	// Make sure it's an rtti Object
 	Factory& factory = mCore.getResourceManager()->getFactory();
-
 	if (!type.is_derived_from<Object>())
 	{
 		nap::Logger::error("Cannot create object of type: %s, type does not derive from",
@@ -162,45 +163,26 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 		return nullptr;
 	}
 
+	// Ensure we can create the object using the factory
 	if (!factory.canCreate(type))
 	{
 		nap::Logger::error("Cannot create object of type: %s", type.get_name().data());
 		return nullptr;
 	}
 
+	// Get initial name
 	std::string base_name = name.empty() ? friendlyTypeName(type) : name;
-
 	std::unique_ptr<Object> obj = std::unique_ptr<Object>(factory.create(type));
-	Object* objptr = obj.get();
-	assert(objptr != nullptr);
-	obj->mID = getUniqueName(base_name, *objptr, true);
+	assert(obj != nullptr);
+	obj->mID = getUniqueName(base_name, *obj, true);
+
+	// Add to managed object list
+	Object* obj_ptr = obj.get();
 	mObjects.emplace_back(std::move(obj));
 
-	// Handle adding to a parent
-	// TODO: Make this a little less hokey
-	if (parent != nullptr)
-	{
-		auto parentEntity = rtti_cast<nap::Entity>(parent);
-
-		auto newEntity = rtti_cast<nap::Entity>(objptr);
-		auto newComponent = rtti_cast<nap::Component>(objptr);
-
-		if (parentEntity != nullptr)
-		{
-			if (newEntity != nullptr)
-			{
-				parentEntity->mChildren.emplace_back(newEntity);
-			}
-			else if (newComponent != nullptr)
-			{
-				parentEntity->mComponents.emplace_back(newComponent);
-			}
-		}
-	}
-
-	objectAdded(objptr, selectNewObject);
-
-	return objptr;
+	// Notify listeners
+	objectAdded(obj_ptr, parent, selectNewObject);
+	return obj_ptr;
 }
 
 void Document::reparentEntity(nap::Entity& entity, nap::Entity* newParent)
@@ -703,49 +685,35 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::Obj
 
 int Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, size_t index)
 {
+	// Resolve path
 	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
-	Variant array = resolved_path.getValue();
-	VariantArray array_view = array.create_array_view();
+	// Get parent
+	PropertyPath parent_path = path.getParent();
+	assert(parent_path.isValid());
+	auto* parent_object = parent_path.getObject();
 
-	Object* new_object = addObject(type, nullptr, false);
+	// Create object
+	Object* new_object = addObject(type, parent_object, parent_object->get_type().is_derived_from(RTTI_OF(nap::Group)) );
 	if (!new_object)
 	{
 		nap::Logger::error("Did not create object at: %s", path.toString().c_str());
 		return 0;
 	}
 
+	// Insert into array
+	Variant array = resolved_path.getValue();
+	VariantArray array_view = array.create_array_view();
 	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_object);
 	assert(inserted);
 
+	// Set array after modification
 	bool value_set = resolved_path.setValue(array);
 	assert(value_set);
 
-	propertyValueChanged(path);
-	propertyChildInserted(path, index);
-
-	return index;
-}
-
-size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type)
-{
-	ResolvedPath resolved_path = path.resolve();
-	assert(resolved_path.isValid());
-
-	Variant array = resolved_path.getValue();
-	VariantArray array_view = array.create_array_view();
-
-	Object* new_object = addObject(type, nullptr, false);
-
-	size_t index = array_view.get_size();
-	bool inserted = array_view.insert_value(index, new_object);
-	assert(inserted);
-
-	bool value_set = resolved_path.setValue(array);
-	assert(value_set);
-
+	// Call listeners
 	propertyValueChanged(path);
 	propertyChildInserted(path, index);
 

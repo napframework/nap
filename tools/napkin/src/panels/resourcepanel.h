@@ -45,6 +45,11 @@ namespace napkin
 		ObjectItem* addObjectItem(nap::rtti::Object& object);
 
 		/**
+		 * Find a specific group
+		 */
+		ObjectItem* findGroup(nap::Group& group);
+		
+		/**
 		 * Remove an item (row) representing an Object
 		 * @param object remove the item that represents this Object
 		 */
@@ -116,9 +121,10 @@ namespace napkin
 		/**
 		 * Called when an object has been added
 		 * @param obj The object that was added
+		 * @param parent the parent of the object, nullptr if top level object
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void onObjectAdded(nap::rtti::Object* obj, bool selectNewObject);
+		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
 
 		/**
 		 * Called when an object is about to be removed
