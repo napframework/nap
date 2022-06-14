@@ -25,5 +25,6 @@
 		<file>icons/icon_close_nap.png</file>
 		<file>icons/icon_restore_nap.png</file>
 		<file>icons/link.png</file>
+		<file>icons/group.png</file>
 	</qresource>
 </RCC>

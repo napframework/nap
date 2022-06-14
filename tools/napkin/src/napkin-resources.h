@@ -30,4 +30,5 @@ namespace napkin
 	inline constexpr const char* QRC_ICONS_MODULE					= ":/icons/module.png";
 	inline constexpr const char* QRC_ICONS_PLAY_APP				    = ":/icons/app-play.png";
 	inline constexpr const char* QRC_ICONS_STOP_APP				    = ":/icons/app-stop.png";
+	inline constexpr const char* QRC_ICONS_GROUP					= ":/icons/group.png";
 }

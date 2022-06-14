@@ -187,6 +187,11 @@ namespace napkin
 		explicit GroupItem(nap::Group& group);
 
 		/**
+		 * Returns item data based on given role
+		 */
+		QVariant data(int role) const override;
+
+		/**
 		 * @return the resource group
 		 */
 		nap::Group* getGroup();

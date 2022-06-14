@@ -380,6 +380,16 @@ const std::string EntityItem::unambiguousName() const
 napkin::GroupItem::GroupItem(nap::Group& group) : ObjectItem(&group, false)
 { }
 
+QVariant napkin::GroupItem::data(int role) const
+{
+	switch (role)
+	{
+	case Qt::DecorationRole:
+		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_GROUP);
+	default:
+		return QStandardItem::data(role);
+	}
+}
 
 nap::Group* napkin::GroupItem::getGroup()
 {
