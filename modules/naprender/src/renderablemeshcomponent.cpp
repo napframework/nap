@@ -152,12 +152,12 @@ namespace nap
 		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
 		if (has_clip_rect)
 		{
-			VkRect2D rect;
-			rect.offset.x = mClipRect.getMin().x;
-			rect.offset.y = mClipRect.getMin().y;
-			rect.extent.width = mClipRect.getWidth();
-			rect.extent.height = mClipRect.getHeight();
-			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
+//			VkRect2D rect;
+//			rect.offset.x = mClipRect.getMin().x;
+//			rect.offset.y = mClipRect.getMin().y;
+//			rect.extent.width = mClipRect.getWidth();
+//			rect.extent.height = mClipRect.getHeight();
+//			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
 		}
 
 		// Set line width
