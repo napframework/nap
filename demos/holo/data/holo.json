@@ -1010,7 +1010,7 @@
             "ColorTexture": "QuiltTexture",
             "SampleShading": true,
             "Samples": "Four",
-            "ClearColo": {
+            "ClearColor": {
                 "x": 0,
                 "y": 0,
                 "z": 0,

@@ -11,6 +11,7 @@
         "mod_napapp",
         "mod_napcameracontrol",
         "mod_napimgui",
-        "mod_napparametergui"
+        "mod_napparametergui",
+        "mod_naplookingglass"
     ]
 }
