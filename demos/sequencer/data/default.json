@@ -139,7 +139,8 @@
             "mID": "SequenceEditorGUI",
             "Sequence Editor": "SequenceEditor",
             "Render Window": "SequencerWindow",
-            "Draw Full Window": true
+            "Draw Full Window": true,
+            "Hide Marker Labels": false
         },
         {
             "Type": "nap::SequencePlayer",

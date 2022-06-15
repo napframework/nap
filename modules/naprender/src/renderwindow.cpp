@@ -586,6 +586,12 @@ namespace nap
 	}
 
 
+	void RenderWindow::setTitle(std::string newTitle)
+	{
+		SDL::setWindowTitle(mSDLWindow, newTitle);
+	}
+
+
 	void RenderWindow::setFullscreen(bool value)
 	{
 		SDL::setFullscreen(mSDLWindow, value);

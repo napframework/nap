@@ -1062,6 +1062,9 @@ namespace nap
 				// insert new segment
 				const auto* new_segment = curve_controller->insertSegment(trackId, time + curve_segment->mStartTime);
 
+				// copy label
+				curve_controller->changeSegmentLabel(trackId, new_segment->mID, curve_segment->mLabel);
+
 				// change duration
 				curve_controller->segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
 

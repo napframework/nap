@@ -18,6 +18,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditorGUI)
     RTTI_PROPERTY("Sequence Editor", &nap::SequenceEditorGUI::mSequenceEditor, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Render Window", &nap::SequenceEditorGUI::mRenderWindow, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Draw Full Window", &nap::SequenceEditorGUI::mDrawFullWindow, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Hide Marker Labels", &nap::SequenceEditorGUI::mHideMarkerLabels, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,17 @@ namespace nap
 
 		// Create and initialize view
 		mView = std::make_unique<SequenceEditorGUIView>(mService, *mSequenceEditor.get(), mID, mRenderWindow.get(), mDrawFullWindow);
+		mView->hideMarkerLabels(mHideMarkerLabels);
+
+		auto& sequence_player = mSequenceEditor->mSequencePlayer;
+		sequence_player->sequenceLoaded.connect([this](SequencePlayer& player, std::string sequence_name)
+		{
+			mRenderWindow->setTitle(sequence_name);
+		});
+
+		// TODO: Dont show name if invalid file was loaded
+		mRenderWindow->setTitle(sequence_player->getSequenceFilename());
+
 		return true;
 	}
 
@@ -554,6 +566,10 @@ namespace nap
 				{ window_top_left.x + ImGui::GetWindowWidth(), window_top_left.y + ImGui::GetWindowHeight() },
 				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]));
 
+			// store clip rect
+			const ImVec2 cliprect_min_cached = ImGui::GetWindowDrawList()->GetClipRectMin();
+			const ImVec2 cliprect_max_cached = ImGui::GetWindowDrawList()->GetClipRectMax();
+
             // draw markers
 			for(const auto& marker : sequence.mMarkers)
 			{
@@ -589,11 +605,37 @@ namespace nap
 				if( ImGui::IsMouseHoveringRect(player_time_top_rect_left, player_time_rect_bottom_right) )
 					hovered = true;
 
+				// is marker line hit area hovered ?
+				bool show_marker_label = mHideMarkerLabels ? hovered : true;
+				if (!show_marker_label)
+				{
+					const float hover_margin = 8.0f;
+
+					// if player position is inside the sequencer window, draw it
+					if (player_time_rect_center.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f * mState.mScale && player_time_rect_center.x > mState.mWindowPos.x)
+					{
+						ImGui::PopClipRect();
+						const float bottom = player_time_rect_center.y + math::min<float>(sequence.mTracks.size() *
+                                (mState.mVerticalResolution + 10.0f * mState.mScale) + 55.0f * mState.mScale,
+                                mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y);
+						if (ImGui::IsMouseHoveringRect(
+							{ player_time_rect_center.x - hover_margin, player_time_rect_center.y - hover_margin },
+							{ player_time_rect_center.x + hover_margin, bottom + hover_margin }))
+						{
+							show_marker_label = true;
+						}
+						ImGui::PushClipRect(cliprect_min_cached, cliprect_max_cached, false);
+					}
+				} 
+
                 // draw text
-                const ImVec2 text_offset = { 5.0f * mState.mScale, -10.0f * mState.mScale };
-				draw_list->AddText({ player_time_rect_bottom_right.x + text_offset.x, player_time_rect_center.y + text_offset.y }, // position
-                                   mService.getColors().mFro4, // color
-                                   marker->mMessage.c_str()); // text
+				if (show_marker_label)
+				{
+					const ImVec2 text_offset = { 5.0f * mState.mScale, -10.0f * mState.mScale };
+					draw_list->AddText({ player_time_rect_bottom_right.x + text_offset.x, player_time_rect_center.y + text_offset.y }, // position
+						mService.getColors().mFro4, // color
+						marker->mMessage.c_str()); // text
+				}
 
                 // no action and are we hovering the hit action ?
 				if(mState.mAction->isAction<None>() && hovered)
