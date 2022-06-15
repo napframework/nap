@@ -200,12 +200,15 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	{
 		GroupItem* group_item = static_cast<GroupItem*>(selectedItem);
 		menu.addAction(new CreateResourceGroupAction(*group_item->getGroup()));
-		menu.addAction(new AddResourceGroupAction(*group_item->getGroup()));
+		menu.addAction(new AddResourceToGroupAction(*group_item->getGroup()));
 		menu.addAction(new DeleteObjectAction(*group_item->getObject()));
 	}
 	else if (dynamic_cast<ObjectItem*>(selectedItem) != nullptr)
 	{
 		auto object_item = static_cast<ObjectItem*>(selectedItem);
+		auto* resource = rtti_cast<nap::Resource>(object_item->getObject());
+		assert(resource != nullptr);
+		menu.addAction(new AddResourceToGroupAction(*resource));
 		menu.addAction(new DeleteObjectAction(*object_item->getObject()));
 	}
 	else if (dynamic_cast<RegularResourcesItem*>(selectedItem) != nullptr)
@@ -342,9 +345,8 @@ void ResourcePanel::emitSelectionChanged()
 	for (auto m : mTreeView.getSelectedItems())
 	{
 		auto item = dynamic_cast<ObjectItem*>(m);
-		if (!item)
-			continue;
-		selectedPaths << item->propertyPath();
+		if (item != nullptr)
+			selectedPaths << item->propertyPath();
 	}
 
 	selectionChanged(selectedPaths);

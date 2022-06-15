@@ -231,15 +231,20 @@ namespace napkin
 	};
 
 	/**
-	 * Add an existing resource to a group
+	 * Add an existing resource to a group.
+	 * If the resource is not specified, a dialog to select a resource is presented.
+	 * If the group is not specified, a dialog to select the group is presented
 	 */
-	class AddResourceGroupAction : public StandardItemAction
+	class AddResourceToGroupAction : public StandardItemAction
 	{
 	public:
-		explicit AddResourceGroupAction(nap::Group& group);
+		explicit AddResourceToGroupAction(nap::Group& group);
+		explicit AddResourceToGroupAction(nap::Resource& resource);
+
 	private:
 		void perform() override;
 		nap::Group* mGroup = nullptr;
+		nap::Resource* mResource = nullptr;
 	};
 
 	/**

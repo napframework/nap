@@ -355,15 +355,41 @@ void CreateResourceGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddResourceGroupAction::AddResourceGroupAction(nap::Group& group) : mGroup(&group)
+AddResourceToGroupAction::AddResourceToGroupAction(nap::Group& group) : mGroup(&group)
 {
 	setText("Add Existing Resource...");
 }
 
 
-void AddResourceGroupAction::perform()
+napkin::AddResourceToGroupAction::AddResourceToGroupAction(nap::Resource& resource) : mResource(&resource)
 {
-	// Get path to resources array property
+	setText("Move to Group...");
+}
+
+
+void AddResourceToGroupAction::perform()
+{
+	// We don't know the group, find one and add
+	if (mGroup == nullptr)
+	{
+		auto groups = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Group));
+		auto parent_widget = AppContext::get().getMainWindow();
+		nap::rtti::Object* selected_object = showObjectSelector(parent_widget, groups);
+
+		// Get path to resources array property
+		rttr::property resources_property = selected_object->get_type().get_property(nap::Group::propertyName());
+		assert(resources_property.is_valid());
+		PropertyPath array_path(*selected_object, resources_property, *AppContext::get().getDocument());
+		if (selected_object != nullptr)
+		{
+			// Add resource to group
+			assert(mResource != nullptr);
+			AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *mResource));
+			return;
+		}
+	}
+
+	// We know the group, find a resource to add
 	rttr::property resources_property = mGroup->get_type().get_property(nap::Group::propertyName());
 	assert(resources_property.is_valid());
 	PropertyPath array_path(*mGroup, resources_property, *AppContext::get().getDocument());
