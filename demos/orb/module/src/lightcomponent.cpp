@@ -61,29 +61,38 @@ namespace nap
 	}
 
 
-	static bool ensureUBO(RenderableComponentInstance& renderComp, MaterialInstance& materialInstance, const std::string& uboName, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(materialInstance.getMaterial().findUniform(uboName) != nullptr,
-			"The shader bound to material instance of renderable component instance '%s' requires an UBO with name '%s'", renderComp.mID.c_str(), uboName.c_str()))
-			return false;
-
-		return true;
-	}
-
-
+	/**
+	 * Ensures the value member is created without asserting. Reports a verbose error message if this is not the case.
+	 *
+	 * @param materialInstance
+	 * @param uboName
+	 * @param memberName
+	 * @param errorState
+	 * @tparam the uniform instance type to create 
+	 * @return if the member was created
+	 */
 	template<typename T>
-	static bool ensureMember(RenderableComponentInstance& renderComp, UniformStructInstance& uboStruct, const std::string& memberName, utility::ErrorState& errorState)
+	static bool ensureValueMember(MaterialInstance& materialInstance, const std::string& uboName, const std::string& memberName, T value, utility::ErrorState& errorState)
 	{
-		UniformInstance* instance = uboStruct.findUniform(memberName);
-		if (!errorState.check(instance != nullptr,
-			"UBO '%s' requires a member with name '%s' in material instance of renderable component instance '%s'", uboStruct.getDeclaration().mName.c_str(), memberName.c_str(), renderComp.mID.c_str()))
+		// Ensure the member can be created
+		auto* ubo_struct = materialInstance.getMaterial().findUniform(uboName);
+		if (!errorState.check(ubo_struct != nullptr,
+			"The shader bound to material instance '%s' with shader '%s' requires an UBO with name '%s'",
+			materialInstance.getMaterial().mID.c_str(), materialInstance.getMaterial().getShader().getDisplayName().c_str(), uboName.c_str()))
 			return false;
 
-		if (!errorState.check(instance->get_type().is_derived_from(RTTI_OF(T)), "%s.%s is of the wrong uniform type and should be %s", uboStruct.getDeclaration().mName.c_str(), memberName.c_str(), RTTI_OF(T).get_name().to_string().c_str()))
+		auto* member = ubo_struct->findUniform<TypedUniformValueInstance<T>>(memberName);
+		if (!errorState.check(member != nullptr,
+			"UBO '%s' requires a member of type '%s' with name '%s' in material instance '%s' with shader '%s'",
+			ubo_struct->getDeclaration().mName.c_str(), RTTI_OF(T).get_name().to_string().c_str(), memberName.c_str(), materialInstance.getMaterial().mID.c_str(), materialInstance.getMaterial().getShader().getDisplayName().c_str()))
 			return false;
+
+		// Safely create and set the member
+		materialInstance.getOrCreateUniform(uboName)->getOrCreateUniform<TypedUniformValueInstance<T>>(memberName)->setValue(value);
 
 		return true;
 	}
+
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -126,35 +135,36 @@ namespace nap
 
 		mCameraEnabled = mResource->mEyeCamera != nullptr;
 
-		auto* entity_instance = getEntityInstance();
-		mTransform = &entity_instance->getComponent<TransformComponentInstance>();
+		auto* entity = getEntityInstance();
+		mTransform = &entity->getComponent<TransformComponentInstance>();
 
-		auto* root_entity = getRootEntityRecursive(entity_instance);
+		// Gather renderable mesh components under the parent entity
+		auto* parent_entity = entity->getParent();
 		mCachedRenderComponents.clear();
-		root_entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(mCachedRenderComponents);
+		parent_entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(mCachedRenderComponents);
+
+		// But exclude the ones directly under the current entity
+		std::vector<RenderableMeshComponentInstance*> excluded_comps;
+		entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(excluded_comps);
+
+		for (auto it = mCachedRenderComponents.begin(); it != mCachedRenderComponents.end();)
+		{
+			for (auto* exclude_comp : excluded_comps)
+			{
+				if (*it == exclude_comp)
+					it = mCachedRenderComponents.erase(it);
+			}
+			it++;
+		}
 
 		// Ensure the material is compatible with nap::LightComponent
 		for (auto* render_comp : mCachedRenderComponents)
 		{
-			// Ensure UBO structs exist
-			if (!ensureUBO(*render_comp, render_comp->getMaterialInstance(), uniform::VERTUBO, errorState))
+			if (!ensureValueMember<glm::mat4>(render_comp->getMaterialInstance(), uniform::VERTUBO, uniform::lightSpaceMatrix, mLightViewProjection, errorState))
 				return false;
 
-			if (!ensureUBO(*render_comp, render_comp->getMaterialInstance(), uniform::FRAGUBO, errorState))
+			if (!ensureValueMember<glm::vec3>(render_comp->getMaterialInstance(), uniform::VERTUBO, uniform::lightPosition, mTransform->getTranslate(), errorState))
 				return false;
-
-			// Ensure members exist
-			UniformStructInstance* vert_ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
-
-			// TODO: PAss material instance as argument and evaluate resource and instance
-			if (!ensureMember<UniformMat4Instance>(*render_comp, *vert_ubo_struct, uniform::lightSpaceMatrix, errorState))
-				return false;
-
-			if (!ensureMember<UniformVec3Instance>(*render_comp, *vert_ubo_struct, uniform::lightPosition, errorState))
-				return false;
-
-			vert_ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
-			vert_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
 		}
 
 		return true;
