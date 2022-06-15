@@ -187,6 +187,11 @@ namespace napkin
 		explicit GroupItem(nap::Group& group);
 
 		/**
+		 * Returns an invalid property path
+		 */
+		const PropertyPath propertyPath() const override { return PropertyPath(); }
+
+		/**
 		 * Returns item data based on given role
 		 */
 		QVariant data(int role) const override;
