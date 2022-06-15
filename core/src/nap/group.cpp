@@ -6,7 +6,7 @@
 
 // nap::Resource run time class definition 
 RTTI_BEGIN_CLASS(nap::Group)
-	RTTI_PROPERTY("Resources", &nap::Group::mResources, nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)
+	RTTI_PROPERTY(nap::Group::propertyName(), &nap::Group::mResources, nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)
 RTTI_END_CLASS
 
 namespace nap

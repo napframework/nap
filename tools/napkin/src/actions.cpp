@@ -13,6 +13,7 @@
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonwriter.h>
 #include <utility/errorstate.h>
+#include <entity.h>
 
 using namespace napkin;
 
@@ -305,16 +306,48 @@ CreateResourceAction::CreateResourceAction()
 void CreateResourceAction::perform()
 {
 	auto parentWidget = AppContext::get().getMainWindow();
-
 	auto type = napkin::showTypeSelector(parentWidget, [](auto t)
 	{
-		if (t.is_derived_from(RTTI_OF(nap::Component)))
-			return false;
-		return t.is_derived_from(RTTI_OF(nap::Resource));
+		return t.is_derived_from(RTTI_OF(nap::Resource)) &&
+			!t.is_derived_from(RTTI_OF(nap::Component))  &&
+			!t.is_derived_from(RTTI_OF(nap::Entity));
 	});
 
 	if (type.is_valid() && !type.is_derived_from(RTTI_OF(nap::Component)))
 		AppContext::get().executeCommand(new AddObjectCommand(type));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CreateResourceGroupAction::CreateResourceGroupAction(nap::Group& group) : mGroup(&group)
+{
+	setText("Create Resource...");
+}
+
+void CreateResourceGroupAction::perform()
+{
+	// Get path to resources array property
+	rttr::property resources_property = mGroup->get_type().get_property(nap::Group::propertyName());
+	assert(resources_property.is_valid());
+	PropertyPath array_path(*mGroup, resources_property, *AppContext::get().getDocument());
+
+	// Select type to add
+	auto type = array_path.getArrayElementType();
+	TypePredicate predicate = [type](auto t)
+	{
+		return t.is_derived_from(type) &&
+			!t.is_derived_from(RTTI_OF(nap::Component)) &&
+			!t.is_derived_from(RTTI_OF(nap::Entity)) &&
+			!t.is_derived_from(RTTI_OF(nap::Scene));
+	};
+
+	auto parentWidget = AppContext::get().getMainWindow();
+	rttr::type elementType = showTypeSelector(parentWidget, predicate);
+	if (elementType.is_valid())
+	{
+		AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

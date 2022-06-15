@@ -19,6 +19,7 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
+		static constexpr const char* propertyName()				{ return "Resources"; }
 		std::vector<rtti::ObjectPtr<Resource>> mResources;		///< Property: 'Resources' The resources that belong to this group
 	};
 }

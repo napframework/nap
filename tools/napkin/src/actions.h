@@ -16,6 +16,7 @@
 #include <QUndoCommand>
 #include <entity.h>
 #include <nap/logger.h>
+#include <nap/group.h>
 
 namespace napkin
 {
@@ -215,6 +216,18 @@ namespace napkin
 
 	private:
 		void perform() override;
+	};
+
+	/**
+	 * Add a new resource to a group
+	 */
+	class CreateResourceGroupAction : public StandardItemAction
+	{
+	public:
+		explicit CreateResourceGroupAction(nap::Group& group);
+	private:
+		void perform() override;
+		nap::Group* mGroup = nullptr;
 	};
 
 	/**

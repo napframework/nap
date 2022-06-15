@@ -179,11 +179,9 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	if (selectedItem == nullptr)
 		return;
 
-	auto entity_item = dynamic_cast<EntityItem*>(selectedItem);
-	auto object_item = dynamic_cast<ObjectItem*>(selectedItem);
-
-	if (entity_item != nullptr)
+	if (dynamic_cast<EntityItem*>(selectedItem) != nullptr)
 	{
+		auto entity_item = static_cast<EntityItem*>(selectedItem);
 		menu.addAction(new AddChildEntityAction(*entity_item->getEntity()));
 		menu.addAction(new AddComponentAction(*entity_item->getEntity()));
 
@@ -198,8 +196,15 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 
 		menu.addAction(new DeleteObjectAction(*entity_item->getObject()));
 	}
-	else if (object_item != nullptr)
+	else if (dynamic_cast<GroupItem*>(selectedItem) != nullptr)
 	{
+		GroupItem* group_item = static_cast<GroupItem*>(selectedItem);
+		menu.addAction(new CreateResourceGroupAction(*group_item->getGroup()));
+		menu.addAction(new DeleteObjectAction(*group_item->getObject()));
+	}
+	else if (dynamic_cast<ObjectItem*>(selectedItem) != nullptr)
+	{
+		auto object_item = static_cast<ObjectItem*>(selectedItem);
 		menu.addAction(new DeleteObjectAction(*object_item->getObject()));
 	}
 	else if (dynamic_cast<RegularResourcesItem*>(selectedItem) != nullptr)
