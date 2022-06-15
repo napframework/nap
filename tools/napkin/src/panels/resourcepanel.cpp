@@ -193,13 +193,13 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 				menu.addAction(new RemovePathAction(entity_item->propertyPath()));
 			}
 		}
-
 		menu.addAction(new DeleteObjectAction(*entity_item->getObject()));
 	}
 	else if (dynamic_cast<GroupItem*>(selectedItem) != nullptr)
 	{
 		GroupItem* group_item = static_cast<GroupItem*>(selectedItem);
 		menu.addAction(new CreateResourceGroupAction(*group_item->getGroup()));
+		menu.addAction(new AddResourceGroupAction(*group_item->getGroup()));
 		menu.addAction(new DeleteObjectAction(*group_item->getObject()));
 	}
 	else if (dynamic_cast<ObjectItem*>(selectedItem) != nullptr)
@@ -299,9 +299,9 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Obj
 		}
 	}
 
-	assert(item != nullptr);
 	if (selectNewObject)
 	{
+		assert(item != nullptr);
 		mTreeView.selectAndReveal(item);
 	}
 }

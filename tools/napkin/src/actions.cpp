@@ -320,6 +320,9 @@ void CreateResourceAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+
 CreateResourceGroupAction::CreateResourceGroupAction(nap::Group& group) : mGroup(&group)
 {
 	setText("Create Resource...");
@@ -349,6 +352,49 @@ void CreateResourceGroupAction::perform()
 		AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
 	}
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddResourceGroupAction::AddResourceGroupAction(nap::Group& group) : mGroup(&group)
+{
+	setText("Add Resource...");
+}
+
+
+void AddResourceGroupAction::perform()
+{
+	// Get path to resources array property
+	rttr::property resources_property = mGroup->get_type().get_property(nap::Group::propertyName());
+	assert(resources_property.is_valid());
+	PropertyPath array_path(*mGroup, resources_property, *AppContext::get().getDocument());
+
+	// Select type to add
+	auto type = array_path.getArrayElementType();
+
+	// Get objects to select from
+	const auto& objects = AppContext::get().getDocument()->getObjects();
+	std::vector<nap::rtti::Object*> object_selection;
+	object_selection.reserve(objects.size());
+	for (const auto& object : objects)
+	{
+		if (object->get_type().is_derived_from(type) &&
+			!object->get_type().is_derived_from(RTTI_OF(nap::Component)) &&
+			!object->get_type().is_derived_from(RTTI_OF(nap::Scene)))
+		{
+			object_selection.emplace_back(object.get());
+		}
+	}
+
+	// Get object to add
+	auto parent_widget = AppContext::get().getMainWindow();
+	nap::rtti::Object* selected_object = showObjectSelector(parent_widget, object_selection);
+	if (selected_object != nullptr)
+	{
+		AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

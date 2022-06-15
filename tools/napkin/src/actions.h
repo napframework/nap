@@ -231,6 +231,18 @@ namespace napkin
 	};
 
 	/**
+	 * Add an existing resource to a group
+	 */
+	class AddResourceGroupAction : public StandardItemAction
+	{
+	public:
+		explicit AddResourceGroupAction(nap::Group& group);
+	private:
+		void perform() override;
+		nap::Group* mGroup = nullptr;
+	};
+
+	/**
 	 * Create an Entity
 	 */
 	class CreateEntityAction : public StandardItemAction
