@@ -344,6 +344,10 @@ namespace napkin
 		int arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
 
 		/**
+		 * Clones an object and inserts it into the array
+		 */
+
+		/**
 		 * Remove an element from an array
 		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path pointing to the array

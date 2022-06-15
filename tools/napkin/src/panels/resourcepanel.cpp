@@ -170,6 +170,7 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
+	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &ResourcePanel::onPropertyChildInserted);
 }
 
 
@@ -281,29 +282,14 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component* comp, nap::Entity* 
 
 void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
 {
-	// Add item to root if there is no parent
-	ObjectItem* item = nullptr;
-	if (parent == nullptr)
-	{
-		item = mModel.addObjectItem(*obj);
-	}
-	else
-	{
-		// Check if the parent is a group, if so, find and add item to group 
-		if (parent->get_type().is_derived_from(RTTI_OF(nap::Group)))
-		{
-			GroupItem* group_item = findItemInModel<GroupItem>(mModel, *parent);
-			assert(group_item != nullptr);
-			item = new ObjectItem(obj);
-			group_item->appendRow(item);
-		}
-	}
+	// Parents handle item creation separately
+	if (parent != nullptr)
+		return;
 
+	// Add item
+	auto* item = mModel.addObjectItem(*obj);
 	if (selectNewObject)
-	{
-		assert(item != nullptr);
 		mTreeView.selectAndReveal(item);
-	}
 }
 
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
@@ -330,6 +316,23 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 
 	mModel.removeEmbeddedObjects();
 }
+
+
+void napkin::ResourcePanel::onPropertyChildInserted(const PropertyPath& path, int index)
+{
+	// If an item was moved into the group create an item
+	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
+	{
+		// Find group, item in group and add
+		auto* group = static_cast<nap::Group*>(path.getObject());
+		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
+		assert(group_item != nullptr);
+
+		// Get item from array 
+		group_item->appendRow(new ObjectItem(group->mResources[index].get()));
+	}
+}
+
 
 void ResourcePanel::emitSelectionChanged()
 {

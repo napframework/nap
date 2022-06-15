@@ -341,8 +341,7 @@ void CreateResourceGroupAction::perform()
 	{
 		return t.is_derived_from(type) &&
 			!t.is_derived_from(RTTI_OF(nap::Component)) &&
-			!t.is_derived_from(RTTI_OF(nap::Entity)) &&
-			!t.is_derived_from(RTTI_OF(nap::Scene));
+			!t.is_derived_from(RTTI_OF(nap::Entity));
 	};
 
 	auto parentWidget = AppContext::get().getMainWindow();
@@ -370,7 +369,7 @@ void AddResourceGroupAction::perform()
 	PropertyPath array_path(*mGroup, resources_property, *AppContext::get().getDocument());
 
 	// Select type to add
-	auto type = array_path.getArrayElementType();
+	auto base_type = array_path.getArrayElementType();
 
 	// Get objects to select from
 	const auto& objects = AppContext::get().getDocument()->getObjects();
@@ -378,9 +377,11 @@ void AddResourceGroupAction::perform()
 	object_selection.reserve(objects.size());
 	for (const auto& object : objects)
 	{
-		if (object->get_type().is_derived_from(type) &&
-			!object->get_type().is_derived_from(RTTI_OF(nap::Component)) &&
-			!object->get_type().is_derived_from(RTTI_OF(nap::Scene)))
+		nap::rtti::TypeInfo obj_type = object->get_type();
+		if (obj_type.is_derived_from(base_type) &&
+			!obj_type.is_derived_from(RTTI_OF(nap::Entity)) &&
+			!obj_type.is_derived_from(RTTI_OF(nap::Component)) &&
+			!(object->mID == mGroup->mID))
 		{
 			object_selection.emplace_back(object.get());
 		}

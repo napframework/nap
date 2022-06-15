@@ -602,7 +602,6 @@ int Document::arrayAddValue(const PropertyPath& path)
 	size_t index = array_view.get_size();
 	bool inserted = array_view.insert_value(index, new_value);
 	assert(inserted);
-
 	resolved_path.setValue(array);
 
 	propertyChildInserted(path, index);

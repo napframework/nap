@@ -162,6 +162,11 @@ namespace napkin
 		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
+		 * Called when a new item is inserted into an array
+		 */
+		void onPropertyChildInserted(const PropertyPath& path, int index);
+
+		/**
 		 * Used to provide this view with custom menu items
 		 * @param menu The menu to append items to.
 		 */
