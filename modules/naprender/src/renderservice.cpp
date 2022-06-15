@@ -2447,10 +2447,9 @@ namespace nap
 	nap::Display::Display(int index) : mIndex(index)
 	{
 		assert(index < SDL::getDisplayCount());
-		int dr = SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
-		bool name = SDL::getDisplayName(index, mName);
-		int br = SDL::getDisplayBounds(index, mMin, mMax);
-		mValid = dr == 0 && name && br == 0;
+		SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
+		SDL::getDisplayName(index, mName);
+		mValid = SDL::getDisplayBounds(index, mMin, mMax) == 0;
 	}
 
 

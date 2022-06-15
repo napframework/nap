@@ -11,7 +11,7 @@
 // External Includes
 #include <rtti/typeinfo.h>
 #include <nap/core.h>
-#include <nap/datetime.h>
+#include <nap/timer.h>
 #include <nap/logger.h>
 #include <thread>
 
@@ -185,7 +185,7 @@ namespace nap
 		mCore.start();
 
 		// Begin running
-		HighResolutionTimer timer;
+		SteadyTimer timer; timer.start();
 		Milliseconds frame_time, delay_time, zero_delay(0);
 		while (!app.shouldQuit() && !mStop)
 		{

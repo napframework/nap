@@ -138,8 +138,7 @@ namespace nap
 	{
 	public:
 		/**
-		 * Extracts display information.
-		 * Index must be >= 0 && < SDL::getDisplayCount()
+		 * Extracts display information. Index must be >= 0 && < SDL::getDisplayCount()
 		 * @param index display index
 		 */
 		Display(int index);
@@ -150,22 +149,26 @@ namespace nap
 		int getIndex() const { return mIndex; }
 
 		/**
-		 * @return diagonal dpi
+		 * Returns diagonal dots per inch. 0 if diagonal DPI not available. 
+		 * @return diagonal dots per inch. 0 if diagonal DPI not available.
 		 */
 		float getDiagonalDPI() const { return mDDPI; }
 
 		/**
-		 * @return horizontal dpi
+		 * Returns horizontal dots per inch. 0 if horizontal DPI not available. 
+		 * @return horizontal dots per inch. 0 if horizontal DPI not available. 
 		 */
 		float getHorizontalDPI() const { return mHDPI; }
 
 		/**
-		 * @return vertical dpi
+		 * Returns vertical dots per inch. 0 if vertical DPI not available.   
+		 * @return vertical dots per inch. 0 if vertical DPI not available.
 		 */
 		float getVerticalDPI() const { return mVDPI; }
 
 		/**
-		 * @return display name
+		 * Returns display name, empty if not available. 
+		 * @return display name, empty if not available. 
 		 */
 		const std::string& getName() const { return mName; }
 
@@ -185,7 +188,8 @@ namespace nap
 		math::Rect getBounds() const;
 
 		/**
-		 * @return if display information was extracted successfully on construction
+		 * Returns if this display has valid bounds.
+		 * @return if this display has valid bounds.
 		 */
 		bool isValid() const { return mValid; }
 

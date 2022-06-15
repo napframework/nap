@@ -30,18 +30,23 @@ namespace nap
 		void start();
 
 		/**
-		* @return start time as point in time
-		*/
+		 * Returns the start time.
+		 * @return timer start time
+		 */
 		std::chrono::time_point<Clock> getStartTime() const;
 
 		/**
-		* Stop the timer, resets state
-		*/
+		 * Stops the timer, start time is set to 0.
+		 * 
+		 * This call is deprecated because setting the start time to 0 results in large time
+		 * time deltas, depending on the clock that is used. This call therefore serves no purpose
+		 * whatsoever and will be removed. 
+		 */
 		void stop();
 
 		/**
-		* Resets the timer and starts it again
-		*/
+		 * Resets the timer, essentially starting it again.
+		 */
 		void reset();
 
 		/**
@@ -54,30 +59,54 @@ namespace nap
 		*/
 		float getElapsedTimeFloat() const;
 
-		/**
+	   /**
 		* @return amount of processed ticks in milliseconds
 		*/
 		uint32_t getTicks() const;
 
-		/**
-		* @return elapsed time in milliseconds
+	   /**
+		* @return elapsed time in nanoseconds
 		*/
-		Milliseconds getMillis();
+		NanoSeconds getNanos() const								{ return get<NanoSeconds>(); }
 
-		/**
+	   /**
 		* @return elapsed time in microseconds
 		*/
-		MicroSeconds getMicros();
+		MicroSeconds getMicros() const								{ return get<MicroSeconds>(); }
+
+	   /**
+		* @return elapsed time in milliseconds
+		*/
+		Milliseconds getMillis() const								{ return get<Milliseconds>(); }
 
 		/**
-		*	@return elapsed time in nanoseconds
-		*/
-		NanoSeconds getNanos();
+		 * @return elapsed time in seconds
+		 */
+		Seconds getSeconds() const									{ return get<Seconds>(); }
+
+		/**
+		 * @return elapsed time in minutes
+		 */
+		Minutes getMinutes() const									{ return get<Minutes>(); }
+
+		/**
+		 * @return elapsed time in hours
+		 */
+		Hours getHours() const										{ return get<Hours>(); }
+
+		/**
+		 * Utility function that casts this timer's duration to a duration of type T.
+		 * Where T can be NanoSeconds, MicroSeconds, MilliSeconds etc.
+		 * @return elapsed time as duration of type T (Microseconds, Milliseconds, Seconds, etc.)
+		 */
+		template<typename T>
+		T get() const;
 
 	private:
 		// Members
 		std::chrono::time_point<Clock> mStart;
 	};
+
 
 	/**
 	* Keeps track of time from the moment the timer is started.
@@ -141,32 +170,15 @@ namespace nap
 	template<typename Clock>
 	uint32_t Timer<Clock>::getTicks() const
 	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<Milliseconds>(elapsed).count();
+		return getMillis().count();
 	}
 
 
 	template<typename Clock>
-	Milliseconds nap::Timer<Clock>::getMillis()
+	template<typename T>
+	T nap::Timer<Clock>::get() const
 	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<Milliseconds>(elapsed);
-	}
-
-
-	template<typename Clock>
-	NanoSeconds nap::Timer<Clock>::getNanos()
-	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<NanoSeconds>(elapsed);
-	}
-
-
-	template<typename Clock>
-	MicroSeconds nap::Timer<Clock>::getMicros()
-	{
-		auto elapsed = Clock::now() - mStart;
-		return std::chrono::duration_cast<MicroSeconds>(elapsed);
+		return std::chrono::duration_cast<T>(Clock::now() - mStart);
 	}
 
 
