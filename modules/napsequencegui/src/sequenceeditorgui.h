@@ -62,6 +62,7 @@ namespace nap
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
 		bool mDrawFullWindow = false; ///< Property: 'Draw Full Window' if true, gui will span entire window size
+		bool mHideMarkerLabels = false; ///< Property: 'Hide Marker Labels' if true, hides marker labels when not hovered
 	protected:
 		// instantiated view
 		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
@@ -94,6 +95,12 @@ namespace nap
 		 * @param newWindow when true interface will be drawn in a new ImGUI window
 		 */
 		virtual void show(bool newWindow = true);
+
+		/**
+		 * Hides marker labels when not hovered
+		 * @param hide when true, hides marker labels when not hovered
+		 */
+		void hideMarkerLabels(bool hide) { mHideMarkerLabels = hide; }
 
 		SequenceGUIService& getService()	{ return mService; }
 
@@ -207,6 +214,9 @@ namespace nap
 
 		// set to true if we draw full window
 		bool mDrawFullWindow = false;
+
+		// set to true when marker labels should be hidden when not hovered
+		bool mHideMarkerLabels = false;
 
 		// pointer to render window
 		RenderWindow* mRenderWindow = nullptr;

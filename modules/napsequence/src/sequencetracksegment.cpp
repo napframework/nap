@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-// local includes
+// local includeso
 #include "sequencetracksegment.h"
 
 RTTI_BEGIN_CLASS(nap::SequenceTrackSegment)
+    RTTI_PROPERTY("Label", &nap::SequenceTrackSegment::mLabel, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Start Time", &nap::SequenceTrackSegment::mStartTime, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Duration", &nap::SequenceTrackSegment::mDuration, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

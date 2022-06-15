@@ -34,7 +34,7 @@ namespace nap
 		* For examples, see template specializations in SequenceEventTrackView.cpp
 		* @param action the incoming action from the gui, contains information about the track time and segment. Segment can be assumed to be of type SequenceTrackSegmentEvent<T>
 		*/
-		virtual void handleEditPopupContent(SequenceGUIActions::Action& action) = 0;
+		virtual void handleEditPopupContent(sequenceguiactions::Action& action) = 0;
 
 		/**
 		* Extend this method to specify a way to draw this event type
@@ -63,6 +63,6 @@ namespace nap
 		* @param segmentID the segment id
 		* @return unique pointer to created action, cannot be nullptr
 		*/
-		virtual std::unique_ptr<SequenceGUIActions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
+		virtual std::unique_ptr<sequenceguiactions::Action> createEditAction(const SequenceTrackSegmentEventBase* segment, const std::string& trackID, const std::string& segmentID) = 0;
 	};
 }

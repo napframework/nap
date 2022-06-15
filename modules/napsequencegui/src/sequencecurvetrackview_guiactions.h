@@ -353,14 +353,16 @@ namespace nap
 			 * @param segmentType segment type info
 			 * @param startTime new start time of segment
 			 * @param duration new duration of segment
+			 * @param label new label of segment
 			 */
-			OpenEditCurveSegmentPopup(std::string trackID, std::string segmentID, const rtti::TypeInfo & segmentType, double startTime, double duration)
-				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration){}
+			OpenEditCurveSegmentPopup(std::string trackID, std::string segmentID, const rtti::TypeInfo & segmentType, double startTime, double duration, std::string label)
+				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration), mSegmentLabel(label){}
 
 			std::string mSegmentID;
 			rtti::TypeInfo mSegmentType;
 			double mStartTime;
 			double mDuration;
+			std::string mSegmentLabel;
 		};
 
 		/**
@@ -377,14 +379,16 @@ namespace nap
 			 * @param segmentType segment type info
 			 * @param startTime new start time of segment
 			 * @param duration new duration of segment
+			 * @param label new label of segment
 			 */
-			EditingCurveSegment(std::string trackID, std::string segmentID, const rttr::type& segmentType, double startTime, double duration)
-				: TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration){}
+			EditingCurveSegment(std::string trackID, std::string segmentID, const rttr::type& segmentType, double startTime, double duration, std::string label)
+				: TrackAction(trackID), mSegmentID(segmentID), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration), mSegmentLabel(label){}
 
 			std::string mSegmentID;
 			rttr::type mSegmentType;
 			double mStartTime;
 			double mDuration;
+            std::string mSegmentLabel;
 		};
 
 		/**
