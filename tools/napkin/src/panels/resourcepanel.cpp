@@ -329,7 +329,8 @@ void napkin::ResourcePanel::onPropertyChildInserted(const PropertyPath& path, in
 		assert(group_item != nullptr);
 
 		// Get item from array 
-		group_item->appendRow(new ObjectItem(group->mResources[index].get()));
+		auto* object_item = group_item->add(*group->mResources[index].get());
+		mTreeView.selectAndReveal(object_item);
 	}
 }
 

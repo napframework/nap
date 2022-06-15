@@ -357,7 +357,7 @@ void CreateResourceGroupAction::perform()
 
 AddResourceGroupAction::AddResourceGroupAction(nap::Group& group) : mGroup(&group)
 {
-	setText("Add Resource...");
+	setText("Add Existing Resource...");
 }
 
 
@@ -372,7 +372,8 @@ void AddResourceGroupAction::perform()
 	auto base_type = array_path.getArrayElementType();
 
 	// Get objects to select from
-	const auto& objects = AppContext::get().getDocument()->getObjects();
+	auto objects = topLevelObjects(AppContext::get().getDocument()->getObjectPointers());
+
 	std::vector<nap::rtti::Object*> object_selection;
 	object_selection.reserve(objects.size());
 	for (const auto& object : objects)
@@ -383,7 +384,7 @@ void AddResourceGroupAction::perform()
 			!obj_type.is_derived_from(RTTI_OF(nap::Component)) &&
 			!(object->mID == mGroup->mID))
 		{
-			object_selection.emplace_back(object.get());
+			object_selection.emplace_back(object);
 		}
 	}
 

@@ -396,9 +396,18 @@ QVariant napkin::GroupItem::data(int role) const
 	}
 }
 
+
 nap::Group* napkin::GroupItem::getGroup()
 {
 	return rtti_cast<nap::Group>(mObject);
+}
+
+
+napkin::ObjectItem* napkin::GroupItem::add(nap::Resource& resource)
+{
+	auto* obj_item = new ObjectItem(&resource);
+	this->appendRow(obj_item);
+	return obj_item;
 }
 
 //////////////////////////////////////////////////////////////////////////

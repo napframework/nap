@@ -65,13 +65,7 @@ namespace napkin
 		 * @return All the objects in this document, derived from the provided type
 		 */
 		template<typename T>
-		std::vector<T*> getObjects()
-		{
-			std::vector<T*> ret;
-			for (auto obj : getObjects(RTTI_OF(T)))
-				ret.emplace_back(static_cast<T*>(obj));
-			return ret;
-		}
+		std::vector<T*> getObjects();
 
 		/**
 		 * @return All the objects that are currently loaded.
@@ -564,5 +558,24 @@ namespace napkin
 		 */
 		const std::string& forceSetObjectName(nap::rtti::Object& object, const std::string& name);
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+
+	template<typename T>
+	std::vector<T*> Document::getObjects()
+	{
+		auto objects = getObjects(RTTI_OF(T));
+		std::vector<T*> ret;
+		ret.reserve(objects.size());
+		for (auto& obj : objects)
+		{
+			ret.emplace_back(static_cast<T*>(obj));
+		}
+		return ret;
+	}
 
 }

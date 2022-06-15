@@ -149,7 +149,7 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 
 		// Only non-embedded objects can be roots
 		if (!is_embedded_object)
-			topLevelObjects.push_back(object);
+			topLevelObjects.emplace_back(object);
 	}
 
     return topLevelObjects;
