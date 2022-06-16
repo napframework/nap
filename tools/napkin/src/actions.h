@@ -243,6 +243,13 @@ namespace napkin
 
 	private:
 		void perform() override;
+
+		// Find a resource to add to the group
+		void findResource(nap::Group& group);
+
+		// Find a group to add the known resource to
+		void findGroup(nap::Resource& resource);
+
 		nap::Group* mGroup = nullptr;
 		nap::Resource* mResource = nullptr;
 	};
