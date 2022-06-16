@@ -230,6 +230,22 @@ namespace napkin
 		nap::Group* mGroup = nullptr;
 	};
 
+
+	/**
+	 * Parents a resource under a to be selected group
+	 * @param resource resource to parent under a group
+	 * @param parentGroup current parent group, nullptr if there is no parent
+	 */
+	class MoveResourceToGroupAction : public StandardItemAction
+	{
+	public:
+		explicit MoveResourceToGroupAction(nap::Resource& resource, nap::Group* parentGroup);
+	private:
+		void perform() override;
+		nap::Group* mParentGroup = nullptr;
+		nap::Resource* mResource = nullptr;
+	};
+
 	/**
 	 * Add an existing resource to a group.
 	 * If the resource is not specified, a dialog to select a resource is presented.
@@ -239,19 +255,10 @@ namespace napkin
 	{
 	public:
 		explicit AddResourceToGroupAction(nap::Group& group);
-		explicit AddResourceToGroupAction(nap::Resource& resource);
 
 	private:
 		void perform() override;
-
-		// Find a resource to add to the group
-		void findResource(nap::Group& group);
-
-		// Find a group to add the known resource to
-		void findGroup(nap::Resource& resource);
-
 		nap::Group* mGroup = nullptr;
-		nap::Resource* mResource = nullptr;
 	};
 
 	/**
@@ -261,11 +268,11 @@ namespace napkin
 	{
 	public:
 		explicit RemoveResourceFromGroupAction(nap::Group& group, nap::Resource& resource);
+		void perform() override;
 
 	private:
 		nap::Group* mGroup = nullptr;
 		nap::Resource* mResource = nullptr;
-		void perform() override;
 	};
 
 	/**

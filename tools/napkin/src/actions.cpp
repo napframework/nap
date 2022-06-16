@@ -355,24 +355,67 @@ void CreateResourceGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+napkin::MoveResourceToGroupAction::MoveResourceToGroupAction(nap::Resource& resource, nap::Group* parentGroup) :
+	mResource(&resource), mParentGroup(parentGroup)
+{
+	setText("Move to Group...");
+}
+
+
+
+void napkin::MoveResourceToGroupAction::perform()
+{
+	// Get group to move to
+	auto groups = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Group));
+
+	// Filter out current group, if parented
+	if (mParentGroup != nullptr)
+	{
+		auto it = std::find_if(groups.begin(), groups.end(), [current = mParentGroup](const auto& group)
+			{
+				return group == current;
+			});
+		assert(it != groups.end());
+		groups.erase(it);
+	}
+
+	// Select new group
+	auto parent_widget = AppContext::get().getMainWindow();
+	nap::rtti::Object* selected_group = showObjectSelector(parent_widget, groups);
+
+	// Operation canceled
+	if (selected_group == nullptr)
+		return;
+
+	// Remove from current parent, if parented
+	if (mParentGroup != nullptr)
+	{
+		RemoveResourceFromGroupAction action(*mParentGroup, *mResource);
+		action.perform();
+	}
+
+	// Get path to resources array property
+	rttr::property resources_property = selected_group->get_type().get_property(nap::Group::propertyName());
+	assert(resources_property.is_valid());
+	PropertyPath array_path(*selected_group, resources_property, *AppContext::get().getDocument());
+	AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *mResource));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 AddResourceToGroupAction::AddResourceToGroupAction(nap::Group& group) : mGroup(&group)
 {
 	setText("Add Resource...");
 }
 
 
-napkin::AddResourceToGroupAction::AddResourceToGroupAction(nap::Resource& resource) : mResource(&resource)
-{
-	setText("Move to Group...");
-}
-
-
-void napkin::AddResourceToGroupAction::findResource(nap::Group& group)
+void AddResourceToGroupAction::perform()
 {
 	// We know the group, find a resource to add
-	rttr::property resources_property = group.get_type().get_property(nap::Group::propertyName());
+	rttr::property resources_property = mGroup->get_type().get_property(nap::Group::propertyName());
 	assert(resources_property.is_valid());
-	PropertyPath array_path(group, resources_property, *AppContext::get().getDocument());
+	PropertyPath array_path(*mGroup, resources_property, *AppContext::get().getDocument());
 
 	// Select type to add
 	auto base_type = array_path.getArrayElementType();
@@ -388,7 +431,7 @@ void napkin::AddResourceToGroupAction::findResource(nap::Group& group)
 		if (obj_type.is_derived_from(base_type) &&
 			!obj_type.is_derived_from(RTTI_OF(nap::Entity)) &&
 			!obj_type.is_derived_from(RTTI_OF(nap::Component)) &&
-			!(object->mID == group.mID))
+			!(object->mID == mGroup->mID))
 		{
 			object_selection.emplace_back(object);
 		}
@@ -401,30 +444,6 @@ void napkin::AddResourceToGroupAction::findResource(nap::Group& group)
 	{
 		AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 	}
-}
-
-
-void napkin::AddResourceToGroupAction::findGroup(nap::Resource& resource)
-{
-	auto groups = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Group));
-	auto parent_widget = AppContext::get().getMainWindow();
-	nap::rtti::Object* selected_object = showObjectSelector(parent_widget, groups);
-	if (selected_object == nullptr)
-		return;
-
-	// Get path to resources array property
-	rttr::property resources_property = selected_object->get_type().get_property(nap::Group::propertyName());
-	assert(resources_property.is_valid());
-	PropertyPath array_path(*selected_object, resources_property, *AppContext::get().getDocument());
-	AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, resource));
-}
-
-
-void AddResourceToGroupAction::perform()
-{
-	// If we have a resource -> find a group to add it to
-	// Otherwise we know the group -> find a resource and add it to the group
-	mResource != nullptr ? findGroup(*mResource) : findResource(*mGroup);
 }
 
 
