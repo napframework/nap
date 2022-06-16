@@ -302,7 +302,7 @@ void napkin::ResourcePanel::onComponentAdded(nap::Component* comp, nap::Entity* 
 
 void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
 {
-	// Parents handle item creation separately
+	// We're only interested in root objects
 	if (parent != nullptr)
 		return;
 

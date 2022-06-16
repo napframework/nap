@@ -16,6 +16,7 @@
 #include <utility/fileutils.h>
 #include <napkinfiltertree.h>
 #include <napqt/filterpopup.h>
+#include <nap/group.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -240,6 +241,13 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
+	// Skip groups, they're not visible in the inspector, only their children
+	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
+	{
+		setPath({});
+		return;
+	}
+
 	// Get vertical scroll pos so we can restore it later (HACK)
 	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
 

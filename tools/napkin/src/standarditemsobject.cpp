@@ -403,11 +403,13 @@ nap::Group* napkin::GroupItem::getGroup()
 
 napkin::ObjectItem* napkin::GroupItem::append(nap::Resource& resource)
 {
+	// Create item
 	ObjectItem* obj_item = resource.get_type().is_derived_from(RTTI_OF(nap::Group)) ?
 		new GroupItem(static_cast<nap::Group&>(resource)) :
 		new ObjectItem(&resource);
 
-	this->appendRow(obj_item);
+	// Append
+	this->appendRow({ obj_item , new RTTITypeItem(resource.get_type()) });
 	return obj_item;
 }
 
