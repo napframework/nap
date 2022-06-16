@@ -430,7 +430,8 @@ void AddResourceToGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::Group& group, nap::Resource& resource)
+napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::Group& group, nap::Resource& resource) :
+	mGroup(&group), mResource(&resource)
 {
 	setText(QString("Remove From '%1'").arg(group.mID.c_str()));
 }
@@ -438,7 +439,26 @@ napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::Group&
 
 void napkin::RemoveResourceFromGroupAction::perform()
 {
-	
+	// Get property path to resource group
+	rttr::property resources_property = mGroup->get_type().get_property(nap::Group::propertyName());
+	assert(resources_property.is_valid());
+	PropertyPath array_path(*mGroup, resources_property, *AppContext::get().getDocument());
+
+	// Get index to remove
+	int resource_idx = -1;
+	for (int i = 0; i < mGroup->mResources.size(); i++)
+	{
+		if (mGroup->mResources[i].get() == mResource)
+		{
+			resource_idx = i;
+			break;
+		}
+	}
+
+	// Remove
+	assert(resource_idx >= 0);
+	AppContext::get().executeCommand(new ArrayRemoveElementCommand(array_path, resource_idx));
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
