@@ -455,7 +455,7 @@ void napkin::RemoveResourceFromGroupAction::perform()
 		}
 	}
 
-	// Remove
+	// Remove, causes the resource to be deleted
 	assert(resource_idx >= 0);
 	AppContext::get().executeCommand(new ArrayRemoveElementCommand(array_path, resource_idx));
 

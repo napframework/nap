@@ -171,6 +171,7 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &ResourcePanel::onPropertyChildInserted);
+	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &ResourcePanel::onPropertyChildRemoved);
 }
 
 
@@ -344,6 +345,19 @@ void napkin::ResourcePanel::onPropertyChildInserted(const PropertyPath& path, in
 		// Get item from array 
 		auto* object_item = group_item->append(*group->mResources[index].get());
 		mTreeView.selectAndReveal(object_item);
+	}
+}
+
+
+void ResourcePanel::onPropertyChildRemoved(const PropertyPath& path, int index)
+{
+	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
+	{
+		// Find group, item in group and add
+		auto* group = static_cast<nap::Group*>(path.getObject());
+		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
+		assert(group_item != nullptr);
+		group_item->removeRow(index);
 	}
 }
 

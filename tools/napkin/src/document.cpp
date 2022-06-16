@@ -721,28 +721,41 @@ int Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, 
 
 void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 {
-	// If embedded pointer, get pointee so we can delete that too
+	// If embedded pointer, get pointee 
 	auto elementPath = path.getArrayElement(index);
 	nap::rtti::Object* pointee = nullptr;
 	if (elementPath.isEmbeddedPointer())
 		pointee = elementPath.getPointee();
 
+	// Get array from path
 	ResolvedPath resolved_path = path.resolve();
 	Variant value = resolved_path.getValue();
 	VariantArray array = value.create_array_view();
 	assert(index < array.get_size());
 
+	// Remove from array and update
 	bool ok = array.remove_value(index);
 	assert(ok);
-
 	ok = resolved_path.setValue(value);
 	assert(ok);
 
-	if (pointee != nullptr)
-		removeObject(*pointee);
-
+	// Notify listeners that the array changed
 	propertyValueChanged(path);
 	propertyChildRemoved(path, index);
+
+	// Delete pointee if the resource is embedded, but only if it's not part of a group.
+	// A resource removed from a group is simply 'moved'.
+	if (pointee != nullptr)
+	{
+		if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
+		{
+			objectAdded(pointee, nullptr, true);
+		}
+		else
+		{
+			removeObject(*pointee);
+		}
+	}
 }
 
 size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
