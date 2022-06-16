@@ -380,9 +380,7 @@ const std::string EntityItem::unambiguousName() const
 napkin::GroupItem::GroupItem(nap::Group& group) : ObjectItem(&group, false)
 {
 	for (auto& resource : group.mResources)
-	{
-		appendRow(new ObjectItem(resource.get()));
-	}
+		append(*resource);
 }
 
 QVariant napkin::GroupItem::data(int role) const
@@ -403,7 +401,7 @@ nap::Group* napkin::GroupItem::getGroup()
 }
 
 
-napkin::ObjectItem* napkin::GroupItem::add(nap::Resource& resource)
+napkin::ObjectItem* napkin::GroupItem::append(nap::Resource& resource)
 {
 	ObjectItem* obj_item = resource.get_type().is_derived_from(RTTI_OF(nap::Group)) ?
 		new GroupItem(static_cast<nap::Group&>(resource)) :

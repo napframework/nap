@@ -205,7 +205,7 @@ namespace napkin
 		 * Add item
 		 * TODO: item must watch and respond to document changes
 		 */
-		ObjectItem* add(nap::Resource& resource);
+		ObjectItem* append(nap::Resource& resource);
 	};
 
 
