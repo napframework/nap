@@ -143,16 +143,8 @@ void FilterTreeView::onCollapseSelected()
 void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
 	QMenu menu;
-
 	if (mMenuHookFn != nullptr)
 		mMenuHookFn(menu);
-
-	auto expandAllAction = menu.addAction("Expand All");
-	connect(expandAllAction, &QAction::triggered, this, &FilterTreeView::onExpandSelected);
-
-	auto collapseAllAction = menu.addAction("Collapse");
-	connect(collapseAllAction, &QAction::triggered, this, &FilterTreeView::onCollapseSelected);
-
 	menu.exec(mapToGlobal(pos));
 }
 

@@ -430,6 +430,19 @@ void AddResourceToGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::Group& group, nap::Resource& resource)
+{
+	setText(QString("Remove From '%1'").arg(group.mID.c_str()));
+}
+
+
+void napkin::RemoveResourceFromGroupAction::perform()
+{
+	
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 CreateEntityAction::CreateEntityAction()
 {
 	setText("Create Entity");

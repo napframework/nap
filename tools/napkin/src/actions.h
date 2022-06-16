@@ -255,6 +255,20 @@ namespace napkin
 	};
 
 	/**
+	 * Removes a resource from a group, moving it to the root of the document
+	 */
+	class RemoveResourceFromGroupAction : public StandardItemAction
+	{
+	public:
+		explicit RemoveResourceFromGroupAction(nap::Group& group, nap::Resource& resource);
+
+	private:
+		nap::Group* mGroup = nullptr;
+		nap::Resource* mResource = nullptr;
+		void perform() override;
+	};
+
+	/**
 	 * Create an Entity
 	 */
 	class CreateEntityAction : public StandardItemAction

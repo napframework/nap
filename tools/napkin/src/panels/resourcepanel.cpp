@@ -205,9 +205,19 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	}
 	else if (dynamic_cast<ObjectItem*>(selectedItem) != nullptr)
 	{
+		// Cast to resource: TODO: Make the actions handle group requirements
 		auto object_item = static_cast<ObjectItem*>(selectedItem);
 		auto* resource = rtti_cast<nap::Resource>(object_item->getObject());
 		assert(resource != nullptr);
+
+		// Check if the parent is a group, if so add action to un group
+		if (object_item->parentItem() != nullptr &&
+			dynamic_cast<GroupItem*>(object_item->parentItem()) != nullptr)
+		{
+			GroupItem* parent_item = static_cast<GroupItem*>(object_item->parentItem());
+			menu.addAction(new RemoveResourceFromGroupAction(*parent_item->getGroup(), *resource));
+		}
+
 		menu.addAction(new AddResourceToGroupAction(*resource));
 		menu.addAction(new DeleteObjectAction(*object_item->getObject()));
 	}
