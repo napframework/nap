@@ -376,7 +376,6 @@ ArrayRemoveElementCommand::ArrayRemoveElementCommand(const PropertyPath& array_p
 
 void ArrayRemoveElementCommand::redo()
 {
-	mValue = AppContext::get().getDocument()->arrayGetElement(mPath, mIndex);
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
 
@@ -385,6 +384,26 @@ void ArrayRemoveElementCommand::undo()
 	// TODO: Need store on redo and be able to reinstate the original value
 	nap::Logger::fatal("No undo supported");
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+
+
+napkin::GroupRemoveElementCommand::GroupRemoveElementCommand(const PropertyPath& array_prop, size_t index)
+	: mPath(array_prop), mIndex(index), QUndoCommand()
+{ }
+
+void GroupRemoveElementCommand::redo()
+{
+	AppContext::get().getDocument()->removeElementFromGroup(mPath, mIndex);
+}
+
+void GroupRemoveElementCommand::undo()
+{
+	// TODO: Need store on redo and be able to reinstate the original value
+	nap::Logger::fatal("No undo supported");
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

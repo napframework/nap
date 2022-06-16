@@ -381,3 +381,4 @@ void ResourcePanel::emitSelectionChanged()
 
 	selectionChanged(selectedPaths);
 }
+

@@ -285,7 +285,25 @@ namespace napkin
 		void undo() override;
 	private:
 		const PropertyPath& mPath; ///< The path representing the array
-		nap::rtti::Variant mValue;
+		size_t mIndex; ///< The element to be removed
+	};
+
+	/**
+	 * Remove an element from a group at the specified index
+	 */
+	class GroupRemoveElementCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param array_prop The property representing the array
+		 * @param index The index of the element to remove
+		 */
+		GroupRemoveElementCommand(const PropertyPath& array_prop, size_t index);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path representing the array
 		size_t mIndex; ///< The element to be removed
 	};
 

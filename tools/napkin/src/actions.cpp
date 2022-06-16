@@ -378,8 +378,6 @@ void napkin::MoveResourceToGroupAction::perform()
 		assert(it != groups.end());
 		groups.erase(it);
 	}
-
-	// Select new group
 	auto parent_widget = AppContext::get().getMainWindow();
 	nap::rtti::Object* selected_group = showObjectSelector(parent_widget, groups);
 
@@ -476,7 +474,7 @@ void napkin::RemoveResourceFromGroupAction::perform()
 
 	// Remove, causes the resource to be deleted
 	assert(resource_idx >= 0);
-	AppContext::get().executeCommand(new ArrayRemoveElementCommand(array_path, resource_idx));
+	AppContext::get().executeCommand(new GroupRemoveElementCommand(array_path, resource_idx));
 
 }
 

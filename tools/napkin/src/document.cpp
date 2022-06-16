@@ -743,20 +743,42 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 	propertyValueChanged(path);
 	propertyChildRemoved(path, index);
 
-	// Delete pointee if the resource is embedded, but only if it's not part of a group.
-	// A resource removed from a group is simply 'moved'.
+	// Delete pointee if the resource is embedded
 	if (pointee != nullptr)
 	{
-		if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
-		{
-			objectAdded(pointee, nullptr, true);
-		}
-		else
-		{
-			removeObject(*pointee);
-		}
+		removeObject(*pointee);
 	}
 }
+
+
+void napkin::Document::removeElementFromGroup(const PropertyPath& path, size_t index)
+{
+	// Get item to remove
+	assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)));
+	auto elementPath = path.getArrayElement(index);
+	assert(elementPath.isEmbeddedPointer());
+	auto* pointee = elementPath.getPointee();
+
+	// Get array from path
+	ResolvedPath resolved_path = path.resolve();
+	Variant value = resolved_path.getValue();
+	VariantArray array = value.create_array_view();
+	assert(index < array.get_size());
+
+	// Remove from array and update
+	bool ok = array.remove_value(index);
+	assert(ok);
+	ok = resolved_path.setValue(value);
+	assert(ok);
+
+	// Notify listeners that the group changed
+	propertyValueChanged(path);
+	propertyChildRemoved(path, index);
+
+	// The group is detached (moved to root), notify listeners.
+	objectAdded(pointee, nullptr, true);
+}
+
 
 size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {

@@ -338,6 +338,11 @@ namespace napkin
 		int arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
 
 		/**
+		 * Remove an element from a group
+		 */
+		void removeElementFromGroup(const PropertyPath& path, size_t index);
+
+		/**
 		 * Remove an element from an array
 		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path pointing to the array
