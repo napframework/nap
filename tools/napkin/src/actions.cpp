@@ -308,7 +308,7 @@ void napkin::OpenFileAction::perform()
 CreateResourceAction::CreateResourceAction()
 {
 	setText("Create Resource...");
-	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_RTTIOBJECT));
 }
 
 
@@ -347,7 +347,7 @@ void napkin::CreateGroupAction::perform()
 CreateResourceGroupAction::CreateResourceGroupAction(nap::Group& group) : mGroup(&group)
 {
 	setText("Create Resource...");
-	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_RTTIOBJECT));
 }
 
 void CreateResourceGroupAction::perform()
@@ -507,7 +507,7 @@ void napkin::RemoveResourceFromGroupAction::perform()
 CreateEntityAction::CreateEntityAction()
 {
 	setText("Create Entity");
-	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ENTITY));
 }
 
 void CreateEntityAction::perform()
