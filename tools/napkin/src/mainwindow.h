@@ -155,6 +155,11 @@ namespace napkin
 		 */
 		AppContext& getContext() const;
 
+		/**
+		 * Occurs when theme changes
+		 */
+		void onThemeChanged(const Theme* theme);
+
 	private:
 		bool mShown = false;
 		ResourcePanel mResourcePanel;
