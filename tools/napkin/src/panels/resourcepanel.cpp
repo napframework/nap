@@ -232,6 +232,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	else if (dynamic_cast<RegularResourcesItem*>(selectedItem) != nullptr)
 	{
 		menu.addAction(new CreateResourceAction());
+		menu.addAction(new CreateGroupAction());
 	}
 	else if (dynamic_cast<EntityResourcesItem*>(selectedItem) != nullptr)
 	{

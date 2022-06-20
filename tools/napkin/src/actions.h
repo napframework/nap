@@ -219,6 +219,18 @@ namespace napkin
 	};
 
 	/**
+	 * Create a Group (resource)
+	 */
+	class CreateGroupAction : public StandardItemAction
+	{
+	public:
+		explicit CreateGroupAction();
+
+	private:
+		void perform() override;
+	};
+
+	/**
 	 * Add a new resource to a group
 	 */
 	class CreateResourceGroupAction : public StandardItemAction

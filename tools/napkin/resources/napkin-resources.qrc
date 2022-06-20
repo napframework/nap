@@ -26,6 +26,14 @@
 		<file>icons/icon_restore_nap.png</file>
 		<file>icons/link.png</file>
 		<file>icons/group.png</file>
+		<file>icons/save.png</file>
+		<file>icons/save_as.png</file>
+		<file>icons/add.png</file>
+		<file>icons/delete.png</file>
+		<file>icons/reload.png</file>
+		<file>icons/remove.png</file>
+		<file>icons/edit.png</file>
+		<file>icons/change.png</file>
 	</qresource>
 </RCC>
 

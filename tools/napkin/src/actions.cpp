@@ -7,6 +7,7 @@
 #include "commands.h"
 #include "naputils.h"
 #include "napkinutils.h"
+#include "napkin-resources.h"
 
 #include <QMessageBox>
 #include <QHBoxLayout>
@@ -24,6 +25,7 @@ Action::Action() : QAction() { connect(this, &QAction::triggered, this, &Action:
 NewFileAction::NewFileAction()
 {
 	setText("New");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
 	setShortcut(QKeySequence::New);
 }
 
@@ -75,6 +77,7 @@ void NewFileAction::perform()
 OpenProjectAction::OpenProjectAction()
 {
 	setText("Open...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_FILE));
 }
 
 void OpenProjectAction::perform()
@@ -91,6 +94,7 @@ void OpenProjectAction::perform()
 napkin::UpdateDefaultFileAction::UpdateDefaultFileAction()
 {
 	setText("Set as project default");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE));
 }
 
 
@@ -148,6 +152,7 @@ void napkin::UpdateDefaultFileAction::perform()
 
 ReloadFileAction::ReloadFileAction()
 {
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_RELOAD));
 	setText("Reload");
 }
 
@@ -162,6 +167,7 @@ void ReloadFileAction::perform()
 SaveFileAction::SaveFileAction()
 {
 	setText("Save");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_SAVE));
 	setShortcut(QKeySequence::Save);
 }
 
@@ -197,6 +203,7 @@ void SaveFileAction::perform()
 SaveFileAsAction::SaveFileAsAction()
 {
 	setText("Save as...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_SAVE_AS));
 	setShortcut(QKeySequence::SaveAs);
 }
 
@@ -253,6 +260,7 @@ void SaveFileAsAction::perform()
 napkin::OpenFileAction::OpenFileAction()
 {
 	setText("Open...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_FILE));
 	setShortcut(QKeySequence::Open);
 }
 
@@ -300,6 +308,7 @@ void napkin::OpenFileAction::perform()
 CreateResourceAction::CreateResourceAction()
 {
 	setText("Create Resource...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
 }
 
 
@@ -320,12 +329,25 @@ void CreateResourceAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+napkin::CreateGroupAction::CreateGroupAction()
+{
+	setText("Create Group");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_GROUP));
+}
 
 
+void napkin::CreateGroupAction::perform()
+{
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Group)));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CreateResourceGroupAction::CreateResourceGroupAction(nap::Group& group) : mGroup(&group)
 {
 	setText("Create Resource...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
 }
 
 void CreateResourceGroupAction::perform()
@@ -359,6 +381,7 @@ napkin::MoveResourceToGroupAction::MoveResourceToGroupAction(nap::Resource& reso
 	mResource(&resource), mParentGroup(parentGroup)
 {
 	setText("Move to Group...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE));
 }
 
 
@@ -405,6 +428,7 @@ void napkin::MoveResourceToGroupAction::perform()
 AddResourceToGroupAction::AddResourceToGroupAction(nap::Group& group) : mGroup(&group)
 {
 	setText("Add Resource...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD));
 }
 
 
@@ -483,6 +507,7 @@ void napkin::RemoveResourceFromGroupAction::perform()
 CreateEntityAction::CreateEntityAction()
 {
 	setText("Create Entity");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
 }
 
 void CreateEntityAction::perform()
@@ -495,6 +520,7 @@ void CreateEntityAction::perform()
 AddChildEntityAction::AddChildEntityAction(nap::Entity& entity) : entity(&entity)
 {
 	setText("Add Child Entity...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD));
 }
 
 void AddChildEntityAction::perform()
@@ -523,6 +549,7 @@ void AddChildEntityAction::perform()
 AddComponentAction::AddComponentAction(nap::Entity& entity) : entity(&entity)
 {
 	setText("Add Component...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD));
 }
 
 void AddComponentAction::perform()
@@ -543,6 +570,7 @@ void AddComponentAction::perform()
 DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : mObject(object)
 {
 	setText(QString("Delete '%1'").arg(mObject.mID.c_str()));
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE));
 }
 
 void DeleteObjectAction::perform()
@@ -566,6 +594,7 @@ void DeleteObjectAction::perform()
 napkin::DeleteGroupAction::DeleteGroupAction(nap::Group& group) : mGroup(group)
 {
 	setText(QString("Delete '%1'").arg(mGroup.mID.c_str()));
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE));
 }
 
 
@@ -604,6 +633,7 @@ void napkin::DeleteGroupAction::perform()
 RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) : entityItem(&entityItem)
 {
 	setText("Remove");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE));
 }
 
 void RemoveChildEntityAction::perform()
@@ -659,6 +689,7 @@ void SetThemeAction::perform()
 napkin::NewServiceConfigAction::NewServiceConfigAction()
 {
 	setText("New");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_EDIT));
 }
 
 
@@ -674,6 +705,7 @@ void napkin::NewServiceConfigAction::perform()
 napkin::SaveServiceConfigAction::SaveServiceConfigAction()
 {
 	setText("Save");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_SAVE));
 }
 
 
@@ -702,6 +734,7 @@ void napkin::SaveServiceConfigAction::perform()
 napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs()
 {
 	setText("Save as...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_SAVE_AS));
 }
 
 
@@ -750,6 +783,7 @@ void napkin::SaveServiceConfigurationAs::perform()
 napkin::OpenServiceConfigAction::OpenServiceConfigAction()
 {
 	setText("Open...");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_FILE));
 }
 
 
@@ -789,6 +823,7 @@ void napkin::OpenServiceConfigAction::perform()
 napkin::SetAsDefaultServiceConfigAction::SetAsDefaultServiceConfigAction()
 {
 	setText("Set as project default");
+	setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE));
 }
 
 
