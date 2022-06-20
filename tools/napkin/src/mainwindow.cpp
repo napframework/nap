@@ -24,7 +24,6 @@ void MainWindow::bindSignals()
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
-	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &MainWindow::onThemeChanged);
 }
 
 
@@ -39,7 +38,6 @@ void MainWindow::unbindSignals()
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
-	disconnect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &MainWindow::onThemeChanged);
 }
 
 
@@ -338,12 +336,4 @@ void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
 		auto path = paths.first();
 		mInspectorPanel.setPath(paths.first());
 	}
-}
-
-
-void napkin::MainWindow::onThemeChanged(const Theme* theme)
-{
-	// Rebuild menu
-	menuBar()->clear();
-	addMenu();
 }

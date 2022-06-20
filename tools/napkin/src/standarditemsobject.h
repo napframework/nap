@@ -184,7 +184,7 @@ namespace napkin
 	class GroupItem : public ObjectItem
 	{
 	public:
-		explicit GroupItem(nap::Group& group);
+		explicit GroupItem(nap::IGroup& group);
 
 		/**
 		 * Returns an invalid property path
@@ -199,13 +199,13 @@ namespace napkin
 		/**
 		 * @return the resource group
 		 */
-		nap::Group* getGroup();
+		nap::IGroup* getGroup();
 
 		/**
 		 * Add item
 		 * TODO: item must watch and respond to document changes
 		 */
-		ObjectItem* append(nap::Resource& resource);
+		ObjectItem* append(nap::rtti::Object& object);
 	};
 
 

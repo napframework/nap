@@ -6,6 +6,7 @@
 
 #include "appcontext.h"
 #include "napkinglobals.h"
+#include "napkin-resources.h"
 
 #include <QAction>
 #include <QFileDialog>
@@ -29,23 +30,23 @@ namespace napkin
 	class Action : public QAction
 	{
 	public:
-		Action();
-
+		/**
+		 * @param text action description
+		 * @param iconName name of icon to load, nullptr if there is no icon
+		 */
+		Action(const char* text, const char* iconName);
 	protected:
 		/**
 		 * This method will be called if the action is triggered
 		 */
 		virtual void perform() = 0;
+
+	private:
+		void loadIcon();
+		void onThemeChanged(const Theme* theme)		{ loadIcon(); }
+		QString mIconName;
 	};
 
-	/**
-	 * Base class for action that operates specifically on a QStandardItem
-	 */
-	class StandardItemAction : public Action
-	{
-	public:
-		virtual bool isValidFor(const QStandardItem& item) { return true; }
-	};
 
 	/**
 	 * Create a new file.
@@ -54,38 +55,34 @@ namespace napkin
 	{
 	public:
 		NewFileAction();
-
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
 	};
+
 
 	/**
 	 * Display a file open dialog and open the file if confirmed.
 	 */
 	class OpenProjectAction : public Action
 	{
-
 	public:
 		OpenProjectAction();
-
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
 	};
 
+
+	/**
+	 * Reload current data file
+	 */
 	class ReloadFileAction : public Action
 	{
 	public:
 		ReloadFileAction();
-
 	private:
 		void perform() override;
 	};
+
 
 	/**
 	 * Save the currently open file, show a save file dialog if the file wasn't saved before.
@@ -94,13 +91,10 @@ namespace napkin
 	{
 	public:
 		SaveFileAction();
-
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
 	};
+
 
 	/**
 	 * Present a save file dialog and store the file if confirmed.
@@ -109,13 +103,10 @@ namespace napkin
 	{
 	public:
 		SaveFileAsAction();
-
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
 	};
+
 
 	/**
 	 * Presents a load file dialog, to load a different data file
@@ -128,6 +119,7 @@ namespace napkin
 		void perform() override;
 	};
 
+
 	/**
 	 * Updates project data path to point to current loaded document
 	 */
@@ -135,10 +127,10 @@ namespace napkin
 	{
 	public:
 		UpdateDefaultFileAction();
-
 	private:
 		void perform() override;
 	};
+
 
 	/**
 	 * Creates a service configuration
@@ -151,6 +143,7 @@ namespace napkin
 		void perform();
 	};
 
+
 	/**
 	 * Saves a service configuration to disk
 	 */
@@ -161,6 +154,7 @@ namespace napkin
 	private:
 		void perform();
 	};
+
 
 	/**
 	 * Saves a service configuration to disk
@@ -173,8 +167,9 @@ namespace napkin
 		void perform();
 	};
 
+
 	/**
-	 * Saves a service configuration to disk
+	 * Open a service configuration from disk
 	 */
 	class OpenServiceConfigAction : public Action
 	{
@@ -184,8 +179,9 @@ namespace napkin
 		void perform();
 	};
 
+
 	/**
-	 * Saves a service configuration to disk
+	 * Sets current service configuration to be project default
 	 */
 	class SetAsDefaultServiceConfigAction : public Action
 	{
@@ -195,8 +191,9 @@ namespace napkin
 		void perform();
 	};
 
+
 	/**
-	 * Saves a service configuration to disk
+	 * Remove service configuration from project
 	 */
 	class ClearServiceConfigAction : public Action
 	{
@@ -206,40 +203,41 @@ namespace napkin
 		void perform();
 	};
 
+
 	/**
 	 * Create a Resource
 	 */
-	class CreateResourceAction : public StandardItemAction
+	class CreateResourceAction : public Action
 	{
 	public:
 		explicit CreateResourceAction();
-
 	private:
 		void perform() override;
 	};
 
+
 	/**
-	 * Create a Group (resource)
+	 * Create a Resource Group 
 	 */
-	class CreateGroupAction : public StandardItemAction
+	class CreateGroupAction : public Action
 	{
 	public:
 		explicit CreateGroupAction();
-
 	private:
 		void perform() override;
 	};
+
 
 	/**
 	 * Add a new resource to a group
 	 */
-	class CreateResourceGroupAction : public StandardItemAction
+	class CreateResourceGroupAction : public Action
 	{
 	public:
-		explicit CreateResourceGroupAction(nap::Group& group);
+		explicit CreateResourceGroupAction(nap::IGroup& group);
 	private:
 		void perform() override;
-		nap::Group* mGroup = nullptr;
+		nap::IGroup* mGroup = nullptr;
 	};
 
 
@@ -248,140 +246,124 @@ namespace napkin
 	 * @param resource resource to parent under a group
 	 * @param parentGroup current parent group, nullptr if there is no parent
 	 */
-	class MoveResourceToGroupAction : public StandardItemAction
+	class MoveResourceToGroupAction : public Action
 	{
 	public:
-		explicit MoveResourceToGroupAction(nap::Resource& resource, nap::Group* parentGroup);
+		explicit MoveResourceToGroupAction(nap::Resource& resource, nap::IGroup* parentGroup);
 	private:
 		void perform() override;
-		nap::Group* mParentGroup = nullptr;
+		nap::IGroup* mParentGroup = nullptr;
 		nap::Resource* mResource = nullptr;
 	};
+
 
 	/**
 	 * Add an existing resource to a group.
 	 * If the resource is not specified, a dialog to select a resource is presented.
 	 * If the group is not specified, a dialog to select the group is presented
 	 */
-	class AddResourceToGroupAction : public StandardItemAction
+	class AddResourceToGroupAction : public Action
 	{
 	public:
-		explicit AddResourceToGroupAction(nap::Group& group);
-
+		explicit AddResourceToGroupAction(nap::IGroup& group);
 	private:
 		void perform() override;
-		nap::Group* mGroup = nullptr;
+		nap::IGroup* mGroup = nullptr;
 	};
+
 
 	/**
 	 * Removes a resource from a group, moving it to the root of the document
 	 */
-	class RemoveResourceFromGroupAction : public StandardItemAction
+	class RemoveResourceFromGroupAction : public Action
 	{
 	public:
-		explicit RemoveResourceFromGroupAction(nap::Group& group, nap::Resource& resource);
+		explicit RemoveResourceFromGroupAction(nap::IGroup& group, nap::Resource& resource);
 		void perform() override;
-
 	private:
-		nap::Group* mGroup = nullptr;
+		nap::IGroup* mGroup = nullptr;
 		nap::Resource* mResource = nullptr;
+
 	};
+
 
 	/**
 	 * Create an Entity
 	 */
-	class CreateEntityAction : public StandardItemAction
+	class CreateEntityAction : public Action
 	{
 	public:
 		explicit CreateEntityAction();
-
 	private:
 		void perform() override;
 	};
+
 
 	/**
 	 * Add an Entity as child of another Entity
 	 */
-	class AddChildEntityAction : public StandardItemAction
+	class AddChildEntityAction : public Action
 	{
 	public:
 		explicit AddChildEntityAction(nap::Entity& entity);
-
 	private:
 		void perform() override;
-
-		nap::Entity* entity;
+		nap::Entity* mEntity;
 	};
+
 
 	/**
 	 * Add a Component to an Entity
 	 */
-	class AddComponentAction : public StandardItemAction
+	class AddComponentAction : public Action
 	{
 	public:
 		explicit AddComponentAction(nap::Entity& entity);
-
 	private:
 		void perform() override;
-
-		nap::Entity* entity;
+		nap::Entity* mEntity;
 	};
 
 	/**
 	 * Delete a single object.
 	 * If another object points to the object to delete, ask the user for confirmation.
 	 */
-	class DeleteObjectAction : public StandardItemAction
+	class DeleteObjectAction : public Action
 	{
 	public:
-        /**
-         * @param object The object to delete
-         */
 		explicit DeleteObjectAction(nap::rtti::Object& object);
-
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
-
 		nap::rtti::Object& mObject;
 	};
+
 
 	/**
 	 * Delete a group, including all children in the group.
 	 * If another object points to any of the children in the group, ask the user for confirmation.
 	 */
-	class DeleteGroupAction : public StandardItemAction
+	class DeleteGroupAction : public Action
 	{
 	public:
-        /**
-         * @param object The group to delete
-         */
-		explicit DeleteGroupAction(nap::Group& group);
-
+		explicit DeleteGroupAction(nap::IGroup& group);
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
-
-		nap::Group& mGroup;
+		nap::IGroup& mGroup;
 	};
+
 
 	/**
 	 * Remove a child Entity from its parent
 	 */
-	class RemoveChildEntityAction : public StandardItemAction
+	class RemoveChildEntityAction : public Action
 	{
 	public:
 		explicit RemoveChildEntityAction(EntityItem& entityItem);
-
 	private:
 		void perform() override;
-
-		EntityItem* entityItem;
+		EntityItem* mEntityItem;
 	};
+
 
 	/**
 	 * Remove something defined by the propertypath
@@ -390,11 +372,11 @@ namespace napkin
 	{
 	public:
 		explicit RemovePathAction(const PropertyPath& path);
-
 	private:
 		void perform() override;
 		PropertyPath mPath;
 	};
+
 
 	/**
 	 * Change the current theme. The name must match a theme name defined in the ThemeManager
@@ -402,18 +384,9 @@ namespace napkin
 	class SetThemeAction : public Action
 	{
 	public:
-        /**
-         * @param themeName The theme to set
-         */
         explicit SetThemeAction(const QString& themeName);
-
 	private:
-		/**
-		 * Implemented from Action
-		 */
 		void perform() override;
-
-		QString mTheme; // The theme to set
+		QString mTheme;	// The theme to set
 	};
-
 }

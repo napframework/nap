@@ -377,11 +377,22 @@ const std::string EntityItem::unambiguousName() const
 // Group Item
 //////////////////////////////////////////////////////////////////////////
 
-napkin::GroupItem::GroupItem(nap::Group& group) : ObjectItem(&group, false)
+napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 {
-	for (auto& resource : group.mResources)
-		append(*resource);
+	// Get group members property
+	rttr::property members_property = getGroup()->get_type().get_property(nap::IGroup::propertyName());
+	assert(members_property.is_valid());
+	PropertyPath array_path(*getGroup(), members_property, *AppContext::get().getDocument());
+
+	// Create items for every object in it
+	for (int i = 0; i < array_path.getArrayLength(); i++)
+	{
+		auto el_path = array_path.getArrayElement(i);
+		assert(el_path.isEmbeddedPointer());
+		append(*el_path.getPointee());
+	}
 }
+
 
 QVariant napkin::GroupItem::data(int role) const
 {
@@ -395,21 +406,21 @@ QVariant napkin::GroupItem::data(int role) const
 }
 
 
-nap::Group* napkin::GroupItem::getGroup()
+nap::IGroup* napkin::GroupItem::getGroup()
 {
-	return rtti_cast<nap::Group>(mObject);
+	return rtti_cast<nap::IGroup>(mObject);
 }
 
 
-napkin::ObjectItem* napkin::GroupItem::append(nap::Resource& resource)
+napkin::ObjectItem* napkin::GroupItem::append(nap::rtti::Object& object)
 {
 	// Create item
-	ObjectItem* obj_item = resource.get_type().is_derived_from(RTTI_OF(nap::Group)) ?
-		new GroupItem(static_cast<nap::Group&>(resource)) :
-		new ObjectItem(&resource);
+	ObjectItem* obj_item = object.get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
+		new GroupItem(static_cast<nap::IGroup&>(object)) :
+		new ObjectItem(&object);
 
 	// Append
-	this->appendRow({ obj_item , new RTTITypeItem(resource.get_type()) });
+	this->appendRow({ obj_item , new RTTITypeItem(object.get_type()) });
 	return obj_item;
 }
 

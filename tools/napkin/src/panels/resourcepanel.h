@@ -47,7 +47,7 @@ namespace napkin
 		/**
 		 * Find a specific group
 		 */
-		ObjectItem* findGroup(nap::Group& group);
+		ObjectItem* findGroup(nap::IGroup& group);
 		
 		/**
 		 * Remove an item (row) representing an Object

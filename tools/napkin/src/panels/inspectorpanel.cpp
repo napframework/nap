@@ -242,7 +242,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
 	// Skip groups, they're not visible in the inspector, only their children
-	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
+	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		setPath({});
 		return;

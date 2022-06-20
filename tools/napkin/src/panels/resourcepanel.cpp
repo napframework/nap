@@ -99,9 +99,9 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 	}
 
 	// If it's a group, add it as such
-	if (ob.get_type().is_derived_from<nap::Group>())
+	if (ob.get_type().is_derived_from<nap::IGroup>())
 	{
-		auto group_item = new GroupItem(static_cast<nap::Group&>(ob));
+		auto group_item = new GroupItem(static_cast<nap::IGroup&>(ob));
 		mObjectsItem.appendRow({ group_item, typeItem });
 		return group_item;
 	}
@@ -343,15 +343,18 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 void napkin::ResourcePanel::onPropertyChildInserted(const PropertyPath& path, int index)
 {
 	// If an item was moved into the group create an item
-	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
+	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		// Find group, item in group and add
-		auto* group = static_cast<nap::Group*>(path.getObject());
+		auto* group = static_cast<nap::IGroup*>(path.getObject());
 		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
 		assert(group_item != nullptr);
 
-		// Get item from array 
-		auto* object_item = group_item->append(*group->mResources[index].get());
+		// Get item from array
+		auto member_el = path.getArrayElement(index);
+		assert(member_el.isEmbeddedPointer());
+		
+		auto* object_item = group_item->append(*member_el.getPointee());
 		mTreeView.selectAndReveal(object_item);
 	}
 }
@@ -359,10 +362,10 @@ void napkin::ResourcePanel::onPropertyChildInserted(const PropertyPath& path, in
 
 void ResourcePanel::onPropertyChildRemoved(const PropertyPath& path, int index)
 {
-	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)))
+	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		// Find group, item in group and add
-		auto* group = static_cast<nap::Group*>(path.getObject());
+		auto* group = static_cast<nap::IGroup*>(path.getObject());
 		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
 		assert(group_item != nullptr);
 		group_item->removeRow(index);

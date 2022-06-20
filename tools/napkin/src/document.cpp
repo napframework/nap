@@ -694,7 +694,7 @@ int Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, 
 	auto* parent_object = parent_path.getObject();
 
 	// Create object
-	Object* new_object = addObject(type, parent_object, parent_object->get_type().is_derived_from(RTTI_OF(nap::Group)) );
+	Object* new_object = addObject(type, parent_object, parent_object->get_type().is_derived_from(RTTI_OF(nap::IGroup)) );
 	if (!new_object)
 	{
 		nap::Logger::error("Did not create object at: %s", path.toString().c_str());
@@ -754,7 +754,7 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 void napkin::Document::removeElementFromGroup(const PropertyPath& path, size_t index)
 {
 	// Get item to remove
-	assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Group)));
+	assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
 	auto elementPath = path.getArrayElement(index);
 	assert(elementPath.isEmbeddedPointer());
 	auto* pointee = elementPath.getPointee();
@@ -864,13 +864,33 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 						entity->mComponents.end())
 						continue;
 				}
-				else if (sourceObject->get_type().is_derived_from(RTTI_OF(nap::Group)))
+				else if (sourceObject->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 				{
-					auto* group = static_cast<nap::Group*>(sourceObject.get());
-					if (std::find(group->mResources.begin(), group->mResources.end(), &targetObject) != group->mResources.end())
+					auto* group = static_cast<nap::IGroup*>(sourceObject.get());
+					auto members_prop = group->get_type().get_property(nap::IGroup::propertyName());
+					assert(members_prop.is_valid());
+					PropertyPath array_path(*group, members_prop, *this);
+
+					// Check if item is part of group
+					bool part_of_group = false;
+					for (int i = 0; i < array_path.getArrayLength(); i++)
+					{
+						auto array_el = array_path.getArrayElement(i);
+						assert(array_el.isEmbeddedPointer());
+						if (array_el.getPointee() == &targetObject)
+						{
+							part_of_group = true;
+							break;
+						}
+					}
+
+					// Don't add groups that directly reference the item
+					if (part_of_group)
 						continue;
 				}
 			}
+
+			// This property references the item
 			properties << propPath;
 		}
 	}
