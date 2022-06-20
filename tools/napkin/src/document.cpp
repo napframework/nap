@@ -823,13 +823,9 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject,
-		bool excludeArrays,
-		bool excludeParent,
-		bool excludeInstanceProperties)
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent, bool excludeInstanceProperties)
 {
 	QList<PropertyPath> properties;
-
 	for (const std::unique_ptr<nap::rtti::Object>& sourceObject : mObjects)
 	{
 		std::vector<nap::rtti::ObjectLink> links;
@@ -838,9 +834,11 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 		{
 			assert(link.mSource == sourceObject.get());
 
+			// Link is target
 			if (link.mTarget != &targetObject)
 				continue;
 
+			// Construct path
 			PropertyPath propPath(*sourceObject, link.mSourcePath, *this);
 			auto proppathstr = propPath.toString();
 			assert(propPath.isPointer());
@@ -851,22 +849,28 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 			if (excludeArrays && propPath.isArray())
 				continue;
 
+			if (propPath.getParent().getType().is_derived_from<nap::ComponentInstanceProperties>())
+				continue;
+
 			if (excludeParent)
 			{
-				auto entity = rtti_cast<nap::Entity>(sourceObject.get());
-				if (entity != nullptr)
+				if (sourceObject->get_type().is_derived_from(RTTI_OF(nap::Entity)))
 				{
+					auto* entity = static_cast<nap::Entity*>(sourceObject.get());
 					if (std::find(entity->mChildren.begin(), entity->mChildren.end(), &targetObject) != entity->mChildren.end())
 						continue;
+
 					if (std::find(entity->mComponents.begin(), entity->mComponents.end(), &targetObject) !=
 						entity->mComponents.end())
 						continue;
 				}
+				else if (sourceObject->get_type().is_derived_from(RTTI_OF(nap::Group)))
+				{
+					auto* group = static_cast<nap::Group*>(sourceObject.get());
+					if (std::find(group->mResources.begin(), group->mResources.end(), &targetObject) != group->mResources.end())
+						continue;
+				}
 			}
-
-			if (propPath.getParent().getType().is_derived_from<nap::ComponentInstanceProperties>())
-				continue;
-
 			properties << propPath;
 		}
 	}

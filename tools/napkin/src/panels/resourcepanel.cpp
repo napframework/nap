@@ -202,7 +202,8 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		GroupItem* group_item = static_cast<GroupItem*>(selectedItem);
 		menu.addAction(new CreateResourceGroupAction(*group_item->getGroup()));
 		menu.addAction(new AddResourceToGroupAction(*group_item->getGroup()));
-		menu.addAction(new DeleteObjectAction(*group_item->getObject()));
+		menu.addAction(new DeleteGroupAction(*group_item->getGroup()));
+
 	}
 	else if (dynamic_cast<ObjectItem*>(selectedItem) != nullptr)
 	{

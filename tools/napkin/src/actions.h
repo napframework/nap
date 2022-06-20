@@ -316,7 +316,8 @@ namespace napkin
 	};
 
 	/**
-	 * Delete a set of objects
+	 * Delete a single object.
+	 * If another object points to the object to delete, ask the user for confirmation.
 	 */
 	class DeleteObjectAction : public StandardItemAction
 	{
@@ -333,6 +334,27 @@ namespace napkin
 		void perform() override;
 
 		nap::rtti::Object& mObject;
+	};
+
+	/**
+	 * Delete a group, including all children in the group.
+	 * If another object points to any of the children in the group, ask the user for confirmation.
+	 */
+	class DeleteGroupAction : public StandardItemAction
+	{
+	public:
+        /**
+         * @param object The group to delete
+         */
+		explicit DeleteGroupAction(nap::Group& group);
+
+	private:
+		/**
+		 * Implemented from Action
+		 */
+		void perform() override;
+
+		nap::Group& mGroup;
 	};
 
 	/**

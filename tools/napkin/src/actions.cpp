@@ -542,13 +542,12 @@ void AddComponentAction::perform()
 
 DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : mObject(object)
 {
-    setText("Delete");
+	setText(QString("Delete '%1'").arg(mObject.mID.c_str()));
 }
 
 void DeleteObjectAction::perform()
 {
 	auto pointers = AppContext::get().getDocument()->getPointersTo(mObject, false, true);
-
 	if (!pointers.empty())
 	{
 		QString message = "The following properties are still pointing to this object,\n"
@@ -558,6 +557,46 @@ void DeleteObjectAction::perform()
 			return;
 	}
     AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+napkin::DeleteGroupAction::DeleteGroupAction(nap::Group& group) : mGroup(group)
+{
+	setText(QString("Delete '%1'").arg(mGroup.mID.c_str()));
+}
+
+
+static void getObjectPointers(const nap::Group& group, QList<PropertyPath>& outPointers)
+{
+	for (const auto& child : group.mResources)
+	{
+		// Recursively get pointers for items in child groups
+		if (child->get_type().is_derived_from(RTTI_OF(nap::Group)))
+		{
+			getObjectPointers(static_cast<const nap::Group&>(*child), outPointers);
+			continue;
+		}
+		outPointers.append(AppContext::get().getDocument()->getPointersTo(*child, false, true));
+	}
+}
+
+
+void napkin::DeleteGroupAction::perform()
+{
+	QList<PropertyPath> pointers;
+	getObjectPointers(mGroup, pointers);
+	if (!pointers.empty())
+	{
+		QString message = "The following properties are still pointing to children in this group,\n"
+			"your data might end up in a broken state.\n\n"
+			"Do you want to delete anyway?";
+		if (!showPropertyListConfirmDialog(parentWidget(), pointers, "Warning", message))
+			return;
+	}
+	AppContext::get().executeCommand(new DeleteObjectCommand(mGroup));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
