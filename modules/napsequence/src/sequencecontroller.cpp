@@ -37,17 +37,6 @@ namespace nap
 	}
 
 
-    void SequenceController::changeTrackHeight(const std::string &trackID, float newHeight)
-    {
-        performEditAction([this, trackID, newHeight]()
-        {
-            SequenceTrack* track = findTrack(trackID);
-            assert(track != nullptr); // track not found
-            track->mTrackHeight = newHeight;
-        });
-    }
-
-
 	void SequenceController::updateTracks()
 	{
 		double longest_track_duration = 0.0;

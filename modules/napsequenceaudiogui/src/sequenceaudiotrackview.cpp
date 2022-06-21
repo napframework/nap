@@ -144,7 +144,7 @@ namespace nap
             mWaveformCache.clear();
         }
 
-        const float track_height = track.mTrackHeight * mState.mScale;
+        const float track_height = mState.mTrackHeight;
 
         // get drawlist
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -152,11 +152,11 @@ namespace nap
         // handle insertion of segment
         if (mState.mAction->isAction<None>())
         {
-            if (ImGui::IsMouseHoveringRect(trackTopLeft, {trackTopLeft.x+mState.mTimelineWidth, trackTopLeft.y+track_height}))
+            if (ImGui::IsMouseHoveringRect(trackTopLeft, {trackTopLeft.x+mState.mTimelineWidth, trackTopLeft.y+mState.mTrackHeight}))
             {
                 // position of mouse in track
                 draw_list->AddLine({mState.mMousePos.x, trackTopLeft.y}, // top left
-                        {mState.mMousePos.x, trackTopLeft.y+track_height}, // bottom right
+                        {mState.mMousePos.x, trackTopLeft.y+mState.mTrackHeight}, // bottom right
                         mService.getColors().mFro2, // color
                         1.0f); // thickness
 
@@ -184,7 +184,7 @@ namespace nap
                 // position of insertion in track
                 const float line_thickness = 1.0f*mState.mScale;
                 draw_list->AddLine({trackTopLeft.x+(float) action->mTime*mState.mStepSize, trackTopLeft.y}, // top left
-                        {trackTopLeft.x+(float) action->mTime*mState.mStepSize, trackTopLeft.y+track_height}, // bottom right
+                        {trackTopLeft.x+(float) action->mTime*mState.mStepSize, trackTopLeft.y+mState.mTrackHeight}, // bottom right
                         mService.getColors().mFro2, // color
                         line_thickness); // thickness
             }
@@ -200,7 +200,7 @@ namespace nap
                 // position of insertion in track
                 const float line_thickness = 1.0f*mState.mScale;
                 draw_list->AddLine({trackTopLeft.x+(float) action->mTime*mState.mStepSize, trackTopLeft.y}, // top left
-                        {trackTopLeft.x+(float) action->mTime*mState.mStepSize, trackTopLeft.y+track_height}, // bottom right
+                        {trackTopLeft.x+(float) action->mTime*mState.mStepSize, trackTopLeft.y+mState.mTrackHeight}, // bottom right
                         mService.getColors().mFro2, // color
                         line_thickness); // thickness
             }
@@ -215,6 +215,7 @@ namespace nap
             float segment_width = (float) (segment->mDuration)*mState.mStepSize;
 
             // calc segment top left and bottom right
+            const float track_height = mState.mTrackHeight;
             const float one_pixel_offset = 1.0f*mState.mScale;
             ImVec2 segment_top_left = {trackTopLeft.x+segment_x, trackTopLeft.y+one_pixel_offset};
             ImVec2 segment_bottom_right = {trackTopLeft.x+segment_x+segment_width, trackTopLeft.y+track_height-one_pixel_offset};

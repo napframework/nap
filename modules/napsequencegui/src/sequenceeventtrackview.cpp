@@ -113,18 +113,17 @@ namespace nap
 
 		if (mState.mIsWindowFocused)
 		{
-            const float track_height = track.mTrackHeight * mState.mScale;
 			// handle insertion of segment
 			if (mState.mAction->isAction<None>())
 			{
 				if (ImGui::IsMouseHoveringRect(
 					trackTopLeft, // top left position
-					{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + track_height }))
+					{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
 				{
 					// position of mouse in track
 					draw_list->AddLine(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
-						{ mState.mMousePos.x, trackTopLeft.y + track_height }, // bottom right
+						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale); // thickness
 
@@ -154,7 +153,7 @@ namespace nap
 					// position of insertion in track
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + track_height }, // bottom right
+						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale); // thickness
 				}
@@ -168,7 +167,7 @@ namespace nap
 					// position of insertion in track
 					draw_list->AddLine(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + track_height }, // bottom right
+						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale); // thickness
 				}
@@ -279,13 +278,12 @@ namespace nap
 		const float segmentWidth,
 		ImDrawList* drawList)
 	{
-        const float track_height = track.mTrackHeight * mState.mScale;
 		float seg_bounds = 10.0f * mState.mScale;
 
 		// segment handler
         if (((mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
             { trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds },
-            { trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + track_height + seg_bounds })) &&
+            { trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + mState.mTrackHeight + seg_bounds })) &&
              ( mState.mAction->isAction<None>() || ( mState.mAction->isAction<HoveringSegment>() && mState.mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID)))
 			||
 			( mState.mAction->isAction<DraggingSegment>() &&  mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID))
@@ -305,7 +303,7 @@ namespace nap
 			// draw handler of segment
 			drawList->AddLine(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height }, // bottom right
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 				mService.getColors().mFro4, // color
 				3.0f * mState.mScale); // thickness
 
@@ -392,7 +390,7 @@ namespace nap
 			// draw handler of segment duration
 			drawList->AddLine(
 			{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-			{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height }, // bottom right
+			{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
 				line_color, // color
 				1.0f * mState.mScale); // thickness
 
@@ -475,7 +473,7 @@ namespace nap
 					// is event contained by clipboard ? if so, add remove button
 					bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename());
 
-					if(display_remove_from_clipboard)
+					if( display_remove_from_clipboard )
 					{
 						if( ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
 						{
