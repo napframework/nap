@@ -150,8 +150,6 @@ namespace nap
 			if (abs(pointerMoveEvent.mRelY) > abs(pointerMoveEvent.mRelX))
 				pointer_move = pointerMoveEvent.mRelY;
 
-			nap::Logger::info("%d, %d", pointerMoveEvent.mRelX, pointerMoveEvent.mRelY);
-
 			// Increase/decrease distance to target
 			float distance = pointer_move * getComponent<OrbitController>()->mMovementSpeed;
 			const glm::vec3& direction = mTransformComponent->getLocalTransform()[2];
