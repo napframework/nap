@@ -175,6 +175,21 @@ napkin::ResourcePanel::ResourcePanel()
 }
 
 
+/**
+ * @return items group, nullptr if there is no parent or the parent isn't a group
+ */
+static nap::IGroup* getItemGroup(const ObjectItem& item)
+{
+	// Check if the parent is a group
+	GroupItem* parent_item = item.parentItem() != nullptr ?
+		dynamic_cast<GroupItem*>(item.parentItem()) :
+		nullptr;
+
+	// Return group from parent, nullptr otherwise
+	return parent_item != nullptr ? parent_item->getGroup() : nullptr;
+}
+
+
 void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
 	auto selectedItem = mTreeView.getSelectedItem();
@@ -202,19 +217,21 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		GroupItem* group_item = static_cast<GroupItem*>(selectedItem);
 
 		// Create and add new resource
-		menu.addAction(new CreateResourceGroupAction(*group_item->getGroup()));
+		menu.addAction(new AddNewResourceToGroupAction(*group_item->getGroup()));
 
 		// Add existing resource
-		menu.addAction(new AddResourceToGroupAction(*group_item->getGroup()));
+		menu.addAction(new AddExistingResourceToGroupAction(*group_item->getGroup()));
 
-		// Check if the parent is a group
-		GroupItem* parent_item = group_item->parentItem() != nullptr ?
-			dynamic_cast<GroupItem*>(group_item->parentItem()) :
-			nullptr;
+		// If the item is parented under a group, offer the option to remove it
+		auto* item_group = getItemGroup(*group_item);
+		if (item_group != nullptr)
+			menu.addAction(new RemoveResourceFromGroupAction(*item_group, *group_item->getGroup()));
 
 		// Add action to move group to another group
-		menu.addAction(new MoveResourceToGroupAction(*group_item->getGroup(),
-			parent_item != nullptr ? parent_item->getGroup() : nullptr));
+		menu.addAction(new MoveResourceToGroupAction(*group_item->getGroup(), item_group));
+
+		// Create and add new group
+		menu.addAction(new AddChildGroupAction(*group_item->getGroup()));
 
 		// Delete group action
 		menu.addAction(new DeleteGroupAction(*group_item->getGroup()));
@@ -223,31 +240,24 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	{
 		// Get resource
 		auto object_item = static_cast<ObjectItem*>(selectedItem);
-		auto* resource = rtti_cast<nap::Resource>(object_item->getObject());
-		assert(resource != nullptr);
-
-		// Check if the parent is a group
-		GroupItem* parent_item = object_item->parentItem() != nullptr ?
-			dynamic_cast<GroupItem*>(object_item->parentItem()) :
-			nullptr;
-
-		// Add action to move resource to a group
-		menu.addAction(new MoveResourceToGroupAction(*resource,
-			parent_item != nullptr ? parent_item->getGroup() : nullptr));
 
 		// If the item is parented under a group, offer the option to remove it
-		if (parent_item != nullptr)
-		{
-			GroupItem* parent_item = static_cast<GroupItem*>(object_item->parentItem());
-			menu.addAction(new RemoveResourceFromGroupAction(*parent_item->getGroup(), *resource));
-		}
+		auto* item_group = getItemGroup(*object_item);
+		if (item_group != nullptr)
+			menu.addAction(new RemoveResourceFromGroupAction(*item_group, *object_item->getObject()));
+
+		// Move resource to another group
+		menu.addAction(new MoveResourceToGroupAction(*object_item->getObject(), item_group));
 
 		// Delete resource action
 		menu.addAction(new DeleteObjectAction(*object_item->getObject()));
 	}
 	else if (dynamic_cast<RegularResourcesItem*>(selectedItem) != nullptr)
 	{
+		// Add Resource selection
 		menu.addAction(new CreateResourceAction());
+
+		// Add groups
 		menu.addAction(new CreateGroupAction());
 	}
 	else if (dynamic_cast<EntityResourcesItem*>(selectedItem) != nullptr)
@@ -399,7 +409,6 @@ void ResourcePanel::emitSelectionChanged()
 		if (item != nullptr)
 			selectedPaths << item->propertyPath();
 	}
-
 	selectionChanged(selectedPaths);
 }
 

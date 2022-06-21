@@ -231,10 +231,23 @@ namespace napkin
 	/**
 	 * Add a new resource to a group
 	 */
-	class CreateResourceGroupAction : public Action
+	class AddNewResourceToGroupAction : public Action
 	{
 	public:
-		explicit CreateResourceGroupAction(nap::IGroup& group);
+		explicit AddNewResourceToGroupAction(nap::IGroup& group);
+	private:
+		void perform() override;
+		nap::IGroup* mGroup = nullptr;
+	};
+
+
+	/**
+	 * Add a new group to a group
+	 */
+	class AddChildGroupAction : public Action
+	{
+	public:
+		explicit AddChildGroupAction(nap::IGroup& group);
 	private:
 		void perform() override;
 		nap::IGroup* mGroup = nullptr;
@@ -244,16 +257,16 @@ namespace napkin
 	/**
 	 * Parents a resource under a to be selected group
 	 * @param resource resource to parent under a group
-	 * @param parentGroup current parent group, nullptr if there is no parent
+	 * @param resourceGroup current parent group, nullptr if there is no parent
 	 */
 	class MoveResourceToGroupAction : public Action
 	{
 	public:
-		explicit MoveResourceToGroupAction(nap::Resource& resource, nap::IGroup* parentGroup);
+		explicit MoveResourceToGroupAction(nap::rtti::Object& resource, nap::IGroup* currentGroup);
 	private:
 		void perform() override;
-		nap::IGroup* mParentGroup = nullptr;
-		nap::Resource* mResource = nullptr;
+		nap::IGroup* mCurrentGroup = nullptr;
+		nap::rtti::Object* mObject = nullptr;
 	};
 
 
@@ -262,10 +275,10 @@ namespace napkin
 	 * If the resource is not specified, a dialog to select a resource is presented.
 	 * If the group is not specified, a dialog to select the group is presented
 	 */
-	class AddResourceToGroupAction : public Action
+	class AddExistingResourceToGroupAction : public Action
 	{
 	public:
-		explicit AddResourceToGroupAction(nap::IGroup& group);
+		explicit AddExistingResourceToGroupAction(nap::IGroup& group);
 	private:
 		void perform() override;
 		nap::IGroup* mGroup = nullptr;
@@ -278,12 +291,11 @@ namespace napkin
 	class RemoveResourceFromGroupAction : public Action
 	{
 	public:
-		explicit RemoveResourceFromGroupAction(nap::IGroup& group, nap::Resource& resource);
+		explicit RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
 		void perform() override;
 	private:
 		nap::IGroup* mGroup = nullptr;
-		nap::Resource* mResource = nullptr;
-
+		nap::rtti::Object* mObject = nullptr;
 	};
 
 

@@ -333,6 +333,7 @@ nap::Entity* EntityItem::getEntity()
 	return rtti_cast<nap::Entity>(mObject);
 }
 
+
 void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
 	if (parent != mObject)
@@ -340,6 +341,7 @@ void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 
 	appendRow({new EntityItem(*e, true), new RTTITypeItem(e->get_type())});
 }
+
 
 void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 {
@@ -350,6 +352,7 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 	auto compTypeItem = new RTTITypeItem(comp->get_type());
 	appendRow({compItem, compTypeItem});
 }
+
 
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
@@ -380,17 +383,14 @@ const std::string EntityItem::unambiguousName() const
 napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 {
 	// Get group members property
-	rttr::property members_property = getGroup()->get_type().get_property(nap::IGroup::propertyName());
-	assert(members_property.is_valid());
-	PropertyPath array_path(*getGroup(), members_property, *AppContext::get().getDocument());
+	PropertyPath array_path(*getGroup(), getGroup()->getProperty(), *AppContext::get().getDocument());
 
 	// Create items for every object in it
-	for (int i = 0; i < array_path.getArrayLength(); i++)
-	{
-		auto el_path = array_path.getArrayElement(i);
-		assert(el_path.isEmbeddedPointer());
-		append(*el_path.getPointee());
-	}
+	array_path.iterateChildren([this](const PropertyPath& path)
+		{
+			append(*path.getPointee());
+			return true;
+		}, 0);
 }
 
 

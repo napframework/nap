@@ -339,7 +339,6 @@ void Document::removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& ob
 		{
 			if (allComponents.contains(props[i].mTargetComponent.get()))
 			{
-//				qInfo() << "Remove instance properties: " << QString::fromStdString(props[i].mTargetComponent.get()->mID);
 				props.erase(props.begin() + i);
 			}
 		}
@@ -866,23 +865,16 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 				}
 				else if (sourceObject->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 				{
-					auto* group = static_cast<nap::IGroup*>(sourceObject.get());
-					auto members_prop = group->get_type().get_property(nap::IGroup::propertyName());
-					assert(members_prop.is_valid());
-					PropertyPath array_path(*group, members_prop, *this);
-
 					// Check if item is part of group
+					auto* group = static_cast<nap::IGroup*>(sourceObject.get());
+					PropertyPath array_path(*group, group->getProperty(), *this);
 					bool part_of_group = false;
-					for (int i = 0; i < array_path.getArrayLength(); i++)
-					{
-						auto array_el = array_path.getArrayElement(i);
-						assert(array_el.isEmbeddedPointer());
-						if (array_el.getPointee() == &targetObject)
+					array_path.iterateChildren([&](const PropertyPath& path)
 						{
-							part_of_group = true;
-							break;
-						}
-					}
+							// Cancel iteration if found 
+							part_of_group = path.getPointee() == &targetObject;
+							return !part_of_group;
+						}, 0);
 
 					// Don't add groups that directly reference the item
 					if (part_of_group)
