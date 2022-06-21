@@ -87,7 +87,7 @@ namespace nap
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
                                 { mState.mInspectorWidth , track_height + offset }, // size
                                 false, // no border
-                                ImGuiWindowFlags_NoMove)) // window flags
+                                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar)) // window flags
 		{
             // push track id
             ImGui::PushID(track.mID.c_str());
@@ -113,6 +113,9 @@ namespace nap
 				{ window_pos.x + window_size.x - offset, window_pos.y + track_height },
 				mService.getColors().mFro1
 			);
+
+            // push clipping rectangle
+            ImGui::PushClipRect(window_pos, { window_pos.x + window_size.x - offset, window_pos.y + track_height }, true);
 
             /**
              * Helper function for offsetting inspector
@@ -150,6 +153,25 @@ namespace nap
             }
             ImGui::PopID();
 
+            // draw move and delete controls aligned to upper right corner of inspector
+            const float upper_right_alignment = ImGui::GetWindowWidth() - 75.0f * mState.mScale;
+            ImGui::SameLine(upper_right_alignment);
+            auto& gui = mService.getGui();
+            if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), "Move track up"))
+            {
+                move_track_up = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
+            {
+                move_track_down = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::ImageButton(gui.getIcon(icon::del), "Delete track"))
+            {
+                delete_track = true;
+            }
+
             // offset inspector cursor
             inspector_cursor_pos = offset_inspector(offset);
 
@@ -158,31 +180,14 @@ namespace nap
 
 			ImGui::Spacing();
 
-			// delete track button
-			ImGui::Spacing();
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
-			ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset);
-			auto& gui = mService.getGui();
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::up), "Move track up"))
-			{
-				move_track_up = true;
-			}
-			ImGui::SameLine();
-			if (ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
-			{
-				move_track_down = true;
-			}
-			ImGui::SameLine();
-			if (ImGui::ImageButton(gui.getIcon(icon::del), "Delete track"))
-			{
-				delete_track = true;
-			}
-
 			// Pop gui style elements
 			ImGui::PopStyleColor();
 			ImGui::PopStyleColor();
 			ImGui::PopStyleColor();
 			ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
+
+            // pop clipping rectangle
+            ImGui::PopClipRect();
 
             // pop id
             ImGui::PopID();
@@ -223,10 +228,10 @@ namespace nap
 		// begin track
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.0f, 0.0f, 0.0f, 0.0f });
 		if (ImGui::BeginChild(
-			track.mID.c_str(), // id
-			{ mState.mTimelineWidth + offset, (track.mTrackHeight * mState.mScale) + (10.0f * mState.mScale) }, // size
-			false, // no border
-			ImGuiWindowFlags_NoMove)) // window flags
+                track.mID.c_str(), // id
+                { mState.mTimelineWidth + offset, (track.mTrackHeight * mState.mScale) + (10.0f * mState.mScale) }, // size
+                false, // no border
+                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar)) // window flags
 		{
 			// push id
 			ImGui::PushID(track.mID.c_str());
@@ -246,14 +251,10 @@ namespace nap
             ImVec2 track_bottom_right = {track_top_left.x + mState.mTimelineWidth, track_top_left.y + (track.mTrackHeight * mState.mScale)};
 
 			// draw background of track
-			draw_list->AddRectFilled(track_top_left, track_bottom_right,
-				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])); // color
+			draw_list->AddRectFilled(track_top_left, track_bottom_right,ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]));
 
 			// draw border of track
-			draw_list->AddRect(
-                    track_top_left, // top left position
-                    track_bottom_right, // bottom right position
-				mService.getColors().mFro1); // color
+			draw_list->AddRect(track_top_left, track_bottom_right, mService.getColors().mFro1);
 
 			// draw timestamp every 100 pixels
 			const float timestamp_interval = 100.0f;
@@ -275,22 +276,43 @@ namespace nap
 				}
 			}
 
+            // store time of current mouse position in track
 			mState.mMouseCursorTime = (mState.mMousePos.x - track_top_left.x) / mState.mStepSize;
+
+            // show the track content
 			showTrackContent(track, track_top_left);
 
             // extension handler of track height
-            if(mState.mAction->isAction<None>())
+            const float extension_handler_margin = 10.0f * mState.mScale;
+            const float extension_handler_line_thickness = 5.0f * mState.mScale;
+            if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringTrackExtensionHandler>())
             {
                 // are we hovering bottom of the track ?
-                if(ImGui::IsMouseHoveringRect({ track_top_left.x, track_bottom_right.y - 5.0f * mState.mScale },
-                                              { track_bottom_right.x, track_bottom_right.y + 5.0f * mState.mScale }))
+                if(ImGui::IsMouseHoveringRect({ track_top_left.x, track_bottom_right.y - extension_handler_margin },
+                                              { track_bottom_right.x, track_bottom_right.y + extension_handler_margin }))
                 {
-                    // draw line to indicate we are hovering
-                    draw_list->AddLine({ track_top_left.x, track_bottom_right.y }, { track_bottom_right.x, track_bottom_right.y },  mService.getColors().mFro1, 4.0f * mState.mScale);
+                    // create hovering action
+                    mState.mAction = createAction<HoveringTrackExtensionHandler>(track.mID);
 
+                    // draw line to indicate we are hovering
+                    draw_list->AddLine({ track_top_left.x, track_bottom_right.y }, { track_bottom_right.x, track_bottom_right.y },  mService.getColors().mFro1, extension_handler_line_thickness);
+
+                    // if click, continue dragging
                     if(ImGui::IsMouseDown(0))
                     {
                         mState.mAction = createAction<DraggingTrackExtensionHandler>(track.mID);
+                    }
+                }else
+                {
+                    // are we not hovering this track extension handler
+                    if(mState.mAction->isAction<HoveringTrackExtensionHandler>())
+                    {
+                        // is it the track we are currently drawing ?
+                        if(mState.mAction->getDerived<HoveringTrackExtensionHandler>()->mTrackID==track.mID)
+                        {
+                            // if so, action is no longer applicable
+                            mState.mAction = createAction<None>();
+                        }
                     }
                 }
             }else if(mState.mAction->isAction<DraggingTrackExtensionHandler>())
@@ -299,9 +321,10 @@ namespace nap
                 if(action->mTrackID==track.mID)
                 {
                     // draw line to indicate we are dragging
-                    draw_list->AddLine({ track_top_left.x, track_bottom_right.y }, { track_bottom_right.x, track_bottom_right.y },  mService.getColors().mFro1, 4.0f * mState.mScale);
+                    draw_list->AddLine({ track_top_left.x, track_bottom_right.y }, { track_bottom_right.x, track_bottom_right.y },  mService.getColors().mFro1, extension_handler_line_thickness);
                 }
             }
+
 			// pop id
 			ImGui::PopID();
 		}

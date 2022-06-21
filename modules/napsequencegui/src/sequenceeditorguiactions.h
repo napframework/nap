@@ -553,6 +553,20 @@ namespace nap
         };
 
         /**
+         * A TrackAction that tells the GUI we're hovering the bottom extension handler for trackheight
+         */
+        class HoveringTrackExtensionHandler : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            /**
+             * Constructor
+             * @param trackID track id of the track holding the segment being edited
+             */
+            HoveringTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId)){}
+        };
+
+        /**
          * A TrackAction that tells the GUI we're dragging the bottom extension handler for trackheight
          */
         class DraggingTrackExtensionHandler : public TrackAction

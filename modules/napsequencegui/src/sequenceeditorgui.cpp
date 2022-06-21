@@ -547,6 +547,7 @@ namespace nap
 
 			auto it = mViews.find(view_type);
 			assert(it != mViews.end()); // no view class created for this view type
+
 			it->second->showInspector(*sequence.mTracks[i].get());
 		}
 	}
@@ -1718,7 +1719,13 @@ namespace nap
 
                 // add delta move to track height
                 float move = mState.mMouseDelta.y / mState.mScale;
-                controller->changeTrackHeight(action->mTrackID, track->mTrackHeight + move);
+                float new_track_height = track->mTrackHeight + move;
+
+                // clip the track height to 30 pixels
+                if(new_track_height < 30.0f)
+                    new_track_height = 30.0f;
+
+                controller->changeTrackHeight(action->mTrackID, new_track_height);
 
                 // mark dirty
                 mState.mDirty = true;
