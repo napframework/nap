@@ -65,6 +65,7 @@ namespace nap
 		bool delete_track = false;
 		bool move_track_up = false;
 		bool move_track_down = false;
+        const float track_height = track.mTrackHeight * mState.mScale;
 
 		// begin inspector
 		std::ostringstream inspector_id_stream;
@@ -84,7 +85,7 @@ namespace nap
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.0f, 0.0f, 0.0f, 0.0f });
 
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
-                                { mState.mInspectorWidth , mState.mTrackHeight + offset }, // size
+                                { mState.mInspectorWidth , track_height + offset }, // size
                                 false, // no border
                                 ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -102,14 +103,14 @@ namespace nap
 			draw_list->AddRectFilled
 			(
 				window_pos,
-				{window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
+				{window_pos.x + window_size.x - offset, window_pos.y + track_height },
 				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])
 			);
 
 			draw_list->AddRect
 			(
 				window_pos,
-				{ window_pos.x + window_size.x - offset, window_pos.y + mState.mTrackHeight },
+				{ window_pos.x + window_size.x - offset, window_pos.y + track_height },
 				mService.getColors().mFro1
 			);
 
@@ -223,7 +224,7 @@ namespace nap
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.0f, 0.0f, 0.0f, 0.0f });
 		if (ImGui::BeginChild(
 			track.mID.c_str(), // id
-			{ mState.mTimelineWidth + offset, mState.mTrackHeight + (10.0f * mState.mScale) }, // size
+			{ mState.mTimelineWidth + offset, (track.mTrackHeight * mState.mScale) + (10.0f * mState.mScale) }, // size
 			false, // no border
 			ImGuiWindowFlags_NoMove)) // window flags
 		{
@@ -240,18 +241,18 @@ namespace nap
 			ImVec2 window_top_left = ImGui::GetWindowPos();
 
 			// calc beginning of timeline graphic
-			ImVec2 trackTopLeft = { window_top_left.x + cursor_pos.x, window_top_left.y + cursor_pos.y };
+			ImVec2 track_top_left = {window_top_left.x + cursor_pos.x, window_top_left.y + cursor_pos.y };
+
+            ImVec2 track_bottom_right = {track_top_left.x + mState.mTimelineWidth, track_top_left.y + (track.mTrackHeight * mState.mScale)};
 
 			// draw background of track
-			draw_list->AddRectFilled(
-				trackTopLeft, // top left position
-				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
+			draw_list->AddRectFilled(track_top_left, track_bottom_right,
 				ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])); // color
 
 			// draw border of track
 			draw_list->AddRect(
-				trackTopLeft, // top left position
-				{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }, // bottom right position
+                    track_top_left, // top left position
+                    track_bottom_right, // bottom right position
 				mService.getColors().mFro1); // color
 
 			// draw timestamp every 100 pixels
@@ -264,19 +265,43 @@ namespace nap
 				if(i==0) // ignore first timestamp since it will hide window left border
 					continue;
 
-				ImVec2 pos = { trackTopLeft.x + i * timestamp_interval, trackTopLeft.y };
+				ImVec2 pos = {track_top_left.x + i * timestamp_interval, track_top_left.y };
 
 				if (pos.x > 0.0f )
 				{
-					draw_list->AddLine(pos, { pos.x, pos.y + mState.mTrackHeight }, mService.getColors().mBack);
+					draw_list->AddLine(pos, { pos.x, pos.y + (track.mTrackHeight * mState.mScale) }, mService.getColors().mBack);
 					if(pos.x > mState.mWindowPos.x + mState.mScroll.x + mState.mWindowSize.x)
 						break;
 				}
 			}
 
-			mState.mMouseCursorTime = (mState.mMousePos.x - trackTopLeft.x) / mState.mStepSize;
-			showTrackContent(track, trackTopLeft);
+			mState.mMouseCursorTime = (mState.mMousePos.x - track_top_left.x) / mState.mStepSize;
+			showTrackContent(track, track_top_left);
 
+            // extension handler of track height
+            if(mState.mAction->isAction<None>())
+            {
+                // are we hovering bottom of the track ?
+                if(ImGui::IsMouseHoveringRect({ track_top_left.x, track_bottom_right.y - 5.0f * mState.mScale },
+                                              { track_bottom_right.x, track_bottom_right.y + 5.0f * mState.mScale }))
+                {
+                    // draw line to indicate we are hovering
+                    draw_list->AddLine({ track_top_left.x, track_bottom_right.y }, { track_bottom_right.x, track_bottom_right.y },  mService.getColors().mFro1, 4.0f * mState.mScale);
+
+                    if(ImGui::IsMouseDown(0))
+                    {
+                        mState.mAction = createAction<DraggingTrackExtensionHandler>(track.mID);
+                    }
+                }
+            }else if(mState.mAction->isAction<DraggingTrackExtensionHandler>())
+            {
+                auto* action = mState.mAction->getDerived<DraggingTrackExtensionHandler>();
+                if(action->mTrackID==track.mID)
+                {
+                    // draw line to indicate we are dragging
+                    draw_list->AddLine({ track_top_left.x, track_bottom_right.y }, { track_bottom_right.x, track_bottom_right.y },  mService.getColors().mFro1, 4.0f * mState.mScale);
+                }
+            }
 			// pop id
 			ImGui::PopID();
 		}

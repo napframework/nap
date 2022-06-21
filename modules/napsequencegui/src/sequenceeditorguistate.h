@@ -56,9 +56,6 @@ namespace nap
 		// stepsize amount pixels per second
 		float mStepSize;
 
-		// current trackheight / vertical resolution
-		float mTrackHeight;
-
 		// width of inspector box
 		float mInspectorWidth;
 

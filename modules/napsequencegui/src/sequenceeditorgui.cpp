@@ -334,6 +334,13 @@ namespace nap
 			float end_clip_y 		= ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - offset;    // bottom scrollbar overlaps clipping area
 			float end_clip_x		= ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
 
+            // get total height
+            float total_height = 0;
+            for(const auto& track : sequence.mTracks)
+            {
+                total_height += track->mTrackHeight * mState.mScale + offset;
+            }
+
 			// timeline window properties
 			ImVec2 timeline_window_pos =
 			{
@@ -343,7 +350,7 @@ namespace nap
 			ImVec2 timeline_window_size =
 			{
 				mState.mTimelineWidth + (50.0f * mState.mScale),
-				((mState.mVerticalResolution * mState.mScale) + offset) * sequence.mTracks.size() + top_size + offset
+				total_height + top_size + offset
 			};
 
 			// inspector window properties
@@ -489,14 +496,21 @@ namespace nap
 	void SequenceEditorGUIView::drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence)
 	{
 		// define consts
-		mState.mTrackHeight = mState.mVerticalResolution * mState.mScale;
-
 		auto cursor_pos = ImGui::GetCursorPos();
 
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + (mState.mTrackHeight + (10.0f * mState.mScale)) * (float)i });
+            const auto& track = sequence.mTracks[i];
+            float height = 0;
+            if(i > 0)
+            {
+                for(int j = 0; j < i; j++)
+                {
+                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (10.0f * mState.mScale);
+                }
+            }
+			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + height});
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
@@ -516,7 +530,16 @@ namespace nap
 		// draw tracks
 		for(int i = 0; i < sequence.mTracks.size(); i++)
 		{
-			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + (mState.mTrackHeight + (10.0f * mState.mScale)) * (float)i });
+            const auto& track = sequence.mTracks[i];
+            float height = 0;
+            if(i > 0)
+            {
+                for(int j = 0; j < i; j++)
+                {
+                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (10.0f * mState.mScale);
+                }
+            }
+            ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + height});
 			mState.mCursorPos = ImGui::GetCursorPos();
 
 			auto track_type = sequence.mTracks[i].get()->get_type();
@@ -1679,6 +1702,31 @@ namespace nap
             controller->changeTrackName(action->mTrackID, action->mNewTrackName);
             mState.mDirty = true;
             mState.mAction = createAction<None>();
+        });
+        registerActionHandler(RTTI_OF(DraggingTrackExtensionHandler), [this]
+        {
+            assert(mState.mAction->isAction<DraggingTrackExtensionHandler>());
+            auto* action = mState.mAction->getDerived<DraggingTrackExtensionHandler>();
+            if(ImGui::IsMouseDown(0))
+            {
+                // obtain controller
+                auto* controller = mEditor.getControllerWithTrackID(action->mTrackID);
+                assert(controller!= nullptr);
+
+                // obtain track
+                const auto* track = controller->getTrack(action->mTrackID);
+
+                // add delta move to track height
+                float move = mState.mMouseDelta.y / mState.mScale;
+                controller->changeTrackHeight(action->mTrackID, track->mTrackHeight + move);
+
+                // mark dirty
+                mState.mDirty = true;
+            }else
+            {
+                // mouse release so cancel action
+                mState.mAction = createAction<None>();
+            }
         });
 
         /**
