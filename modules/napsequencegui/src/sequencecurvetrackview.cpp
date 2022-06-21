@@ -136,6 +136,9 @@ namespace nap
 		int current_item = 0;
 		int count = 0;
 
+        // track height
+        const float track_height = track.mTrackHeight * mState.mScale;
+
         curve_outputs.emplace_back("none");
 
         // gather all available outputs for this track type
@@ -213,6 +216,9 @@ namespace nap
 			mCurveCache.clear();
 		}
 
+        // track height
+        const float track_height = track.mTrackHeight * mState.mScale;
+
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
 		if (mState.mIsWindowFocused)
@@ -222,13 +228,13 @@ namespace nap
 			{
 				if (ImGui::IsMouseHoveringRect(
 					trackTopLeft, // top left position
-					{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + mState.mTrackHeight }))
+					{ trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + track_height}))
 				{
 					// position of mouse in track
 					draw_list->AddLine
 					(
 						{ mState.mMousePos.x, trackTopLeft.y }, // top left
-						{ mState.mMousePos.x, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+						{ mState.mMousePos.x, trackTopLeft.y + track_height }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale // thickness
 					);
@@ -276,7 +282,7 @@ namespace nap
 					draw_list->AddLine
 					(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + track_height }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale // thickness
 					);
@@ -294,7 +300,7 @@ namespace nap
 					draw_list->AddLine
 					(
 						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+						{ trackTopLeft.x + (float)action->mTime * mState.mStepSize, trackTopLeft.y + track_height }, // bottom right
 						mService.getColors().mFro2, // color
 						1.0f * mState.mScale  // thickness
 					);
@@ -307,7 +313,7 @@ namespace nap
 		for (const auto& segment : track.mSegments)
 		{
 			const auto* segment_ptr = segment.get();
-			float segment_x	   = (float)(segment->mStartTime + segment->mDuration) * mState.mStepSize;
+			float segment_x	    = (float)(segment->mStartTime + segment->mDuration) * mState.mStepSize;
 			float segment_width = (float)segment->mDuration * mState.mStepSize;
 
 			// draw segment handlers
@@ -341,20 +347,21 @@ namespace nap
 		const float seg_bounds              = 10.0f * mState.mScale;
         const float line_thickness_regular  = 1.0f * mState.mScale;
         const float line_thickness_active   = 3.0f * mState.mScale;
+        const float track_height            = track.mTrackHeight * mState.mScale;
 
         // check if user is hovering or dragging the handler of this segment
 		if (mState.mIsWindowFocused
             && ((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringSegment>()) || (mState.mAction->isAction<StartDraggingSegment>() && mState.mAction->getDerived<StartDraggingSegment>()->mSegmentID != segment.mID))
             && ImGui::IsMouseHoveringRect(
 					{ trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds }, // top left
-					{ trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + mState.mTrackHeight + seg_bounds }))  // bottom right
+					{ trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + track_height + seg_bounds }))  // bottom right
 		{
 
 			// draw handler of segment duration
 			drawList->AddLine
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height }, // bottom right
 				mService.getColors().mFro4, // color
 				3.0f * mState.mScale // thickness
 			);
@@ -436,7 +443,7 @@ namespace nap
 				drawList->AddLine
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+					{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height }, // bottom right
 					mService.getColors().mFro4, // color
 					line_thickness_active // thickness
 				);
@@ -451,7 +458,7 @@ namespace nap
 				drawList->AddLine
 				(
 					{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-					{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+					{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height }, // bottom right
 					mService.getColors().mFro4, // color
 					line_thickness_regular // thickness
 				);
@@ -463,7 +470,7 @@ namespace nap
 			drawList->AddLine
 			(
 				{ trackTopLeft.x + segmentX, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // bottom right
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height }, // bottom right
 				mService.getColors().mFro4, // color
                 line_thickness_regular // thickness
 			);
