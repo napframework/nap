@@ -741,9 +741,9 @@ namespace nap
 
 		// draw timeline controller
 		if (ImGui::BeginChild(id_string.c_str(), // id
-			{ mState.mTimelineWidth + player_controller_offset, sequence_controller_height}, // size
-			false, // no border
-			ImGuiWindowFlags_NoMove)) // window flags
+                { mState.mTimelineWidth + player_controller_offset, sequence_controller_height}, // size
+                false, // no border
+                ImGuiWindowFlags_NoMove)) // window flags
 		{
 			ImVec2 cursor_pos	 	= ImGui::GetCursorPos();
 			ImVec2 window_top_left 	= ImGui::GetWindowPos();
@@ -989,7 +989,7 @@ namespace nap
                                                                      mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y) }; // clip the line to bottom of window
 
 			ImGui::SetNextWindowPos(line_begin);
-			if( ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y }, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
+			if(ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y }, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
 			{
 				auto* drawlist = ImGui::GetWindowDrawList();
 				drawlist->AddLine(line_begin, line_end, mService.getColors().mHigh1, line_thickness);
