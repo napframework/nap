@@ -118,13 +118,6 @@ namespace nap
          */
         const SequenceTrackSegment *getSegment(const std::string &trackID, const std::string &segmentID) const;
 
-        /**
-         * Change a track height
-         * @param trackID the track id
-         * @param newHeight the new track height
-         */
-        void changeTrackHeight(const std::string &trackID, float newHeight);
-
     protected:
         /**
          * @return returns reference to sequence of player

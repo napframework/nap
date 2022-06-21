@@ -205,8 +205,7 @@ namespace nap
 	{
 		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
 		const float points_per_pixel = 0.5f * mState.mScale;
-        const float track_height = track.mTrackHeight * mState.mScale;
-		bool needs_drawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + track_height });
+		bool needs_drawing = ImGui::IsRectVisible({ trackTopLeft.x + previousSegmentX, trackTopLeft.y }, { trackTopLeft.x + previousSegmentX + segmentWidth, trackTopLeft.y + mState.mTrackHeight });
 
 		if (needs_drawing)
 		{
@@ -237,7 +236,7 @@ namespace nap
 									ImVec2 point =
 									{
 										x,
-										trackTopLeft.y + value * track_height
+										trackTopLeft.y + value * mState.mTrackHeight
 									};
 									curve.emplace_back(point);
 								}
@@ -263,12 +262,12 @@ namespace nap
 			if ((mState.mAction->isAction<sequenceguiactions::None>() || mState.mAction->isAction<sequenceguiactions::HoveringCurve>())
 				&& ImGui::IsMouseHoveringRect(
 				    { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-				    { trackTopLeft.x + segmentX, trackTopLeft.y + track_height }))  // bottom right
+				    { trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }))  // bottom right
 			{
 				// translate mouse position to position in curve
 				ImVec2 mouse_pos = ImGui::GetMousePos();
 				float x_in_segment = ((mouse_pos.x - (trackTopLeft.x + segmentX - segmentWidth)) / mState.mStepSize) / segment.mDuration;
-				float y_in_segment = 1.0f - ((mouse_pos.y - trackTopLeft.y) / track_height);
+				float y_in_segment = 1.0f - ((mouse_pos.y - trackTopLeft.y) / mState.mTrackHeight);
 
 				for (int i = 0; i < segment.mCurves.size(); i++)
 				{
@@ -381,13 +380,11 @@ namespace nap
 			draw_selection_background = action->mSegmentID == segment.mID;
 		}
 
-        const float track_height = track.mTrackHeight * mState.mScale;
-
 		if( draw_selection_background )
 		{
 			drawList->AddRectFilled(
 				{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-				{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height }, // top right
+				{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight }, // top right
 				ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,0.25f))); // color
 		}
 		else
@@ -406,7 +403,7 @@ namespace nap
 					drawList->AddRectFilled
 					(
 						{ trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
-						{ trackTopLeft.x + segmentX, trackTopLeft.y + track_height},  // top right
+						{ trackTopLeft.x + segmentX, trackTopLeft.y + mState.mTrackHeight },  // top right
 						ImGui::ColorConvertFloat4ToU32(red) // color
 					); 
 				}
@@ -521,7 +518,6 @@ namespace nap
 			  return static_cast<const SequenceTrackSegmentCurve<glm::vec4>*>(&segment)->getValue(segmentType == sequencecurveenums::BEGIN ? 0.0f : 1.0f)[curveIndex];
 			}}
 		};
-        const float track_height = track.mTrackHeight * mState.mScale;
 
 		assert(segmentBase.get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>());
 		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
@@ -532,9 +528,9 @@ namespace nap
 			ImVec2 segment_value_pos =
 				{
 					trackTopLeft.x + segmentX - (segmentType == sequencecurveenums::BEGIN ? segmentWidth : 0.0f),
-					trackTopLeft.y + track_height * (1.0f - ((segmentType == sequencecurveenums::BEGIN ?
-                                                            (float)segment.mCurves[v]->mPoints[0].mPos.mValue :
-															(float)segment.mCurves[v]->mPoints[segment.mCurves[v]->mPoints.size() - 1].mPos.mValue) / 1.0f))
+					trackTopLeft.y + mState.mTrackHeight * (1.0f - ((segmentType == sequencecurveenums::BEGIN ?
+																	 (float)segment.mCurves[v]->mPoints[0].mPos.mValue :
+																	 (float)segment.mCurves[v]->mPoints[segment.mCurves[v]->mPoints.size() - 1].mPos.mValue) / 1.0f))
 				};
 
 			bool hovered = false;
@@ -626,7 +622,7 @@ namespace nap
                                 segmentType == sequencecurveenums::BEGIN ? segment.mStartTime : segment.mStartTime + segment.mDuration,
 								v);
 
-							float drag_amount = (mState.mMouseDelta.y / track_height) * -1.0f;
+							float drag_amount = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 							float value = get_value_map[RTTI_OF(T)](segment, v, segmentType) + drag_amount;
 
 							action->mNewValue = value;
@@ -655,7 +651,6 @@ namespace nap
 	{
 
 		const auto& segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segmentBase);
-        const float track_height = track.mTrackHeight * mState.mScale;
 
 		// draw first control point(s) handlers IF this is the first segment of the track
 		if (track.mSegments[0]->mID == segment.mID)
@@ -668,7 +663,7 @@ namespace nap
 
 				ImVec2 circle_point =
 					{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
-					  trackTopLeft.y + track_height * (1.0f - (float)curve_point.mPos.mValue) };
+					  trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
 				// only draw tan handlers when we have a bezier
 				if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
@@ -709,7 +704,7 @@ namespace nap
 				// determine the point at where to draw the control point
 				ImVec2 circle_point =
 					{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
-					  trackTopLeft.y + track_height * (1.0f - (float)curve_point.mPos.mValue) };
+					  trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
 				// handle mouse hovering
 				bool hovered = false;
@@ -792,7 +787,7 @@ namespace nap
 							if (action->mControlPointIndex == i && action->mCurveIndex == v)
 							{
 								float time_adjust = mState.mMouseDelta.x / segmentWidth;
-								float value_adjust = (mState.mMouseDelta.y / track_height) * -1.0f;
+								float value_adjust = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
 								hovered = true;
 
@@ -853,7 +848,7 @@ namespace nap
 
 			ImVec2 circle_point =
 				{ (trackTopLeft.x + segmentX - segmentWidth) + segmentWidth * curve_point.mPos.mTime,
-				  trackTopLeft.y + track_height * (1.0f - (float)curve_point.mPos.mValue) };
+				  trackTopLeft.y + mState.mTrackHeight * (1.0f - (float)curve_point.mPos.mValue) };
 
 			if( segment.mCurveTypes[v] == math::ECurveInterp::Bezier )
 			{
@@ -876,7 +871,7 @@ namespace nap
 		}
 
 		//
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - track_height);
+		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - mState.mTrackHeight);
 	}
 
 
@@ -893,8 +888,6 @@ namespace nap
 		const sequencecurveenums::ETanPointTypes type,
 		ImDrawList* drawList)
 	{
-        const float track_height = track.mTrackHeight * mState.mScale;
-
 		// draw tan handlers
 		{
 			// create a string stream to create identifier of this object
@@ -907,7 +900,7 @@ namespace nap
 			// get the offset from the tan
 			ImVec2 offset =
 				{ (segmentWidth * tan_complex.mTime) / (float)segment.mDuration,
-				  (track_height *  (float)tan_complex.mValue * -1.0f) };
+				  (mState.mTrackHeight *  (float)tan_complex.mValue * -1.0f) };
 			ImVec2 tan_point = { circlePoint.x + offset.x, circlePoint.y + offset.y };
 
 			// set if we are hoverting this point with the mouse
@@ -985,7 +978,7 @@ namespace nap
 						tan_point_hovered = true;
 
 						float delta_time = mState.mMouseDelta.x / mState.mStepSize;
-						float delta_value = (mState.mMouseDelta.y / track_height) * -1.0f;
+						float delta_value = (mState.mMouseDelta.y / mState.mTrackHeight) * -1.0f;
 
 						const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
 

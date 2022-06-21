@@ -551,19 +551,5 @@ namespace nap
 
             std::string mNewTrackName;
         };
-
-        /**
-         * A TrackAction that tells the GUI we're dragging the bottom extension handler for trackheight
-         */
-        class DraggingTrackExtensionHandler : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID track id of the track holding the segment being edited
-             */
-            DraggingTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId)){}
-        };
 	}
 }
