@@ -25,15 +25,27 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	assert(l_item != nullptr && r_item != nullptr);
 
 	// Don't sort regular resource groups
-	auto* rg_item = dynamic_cast<EntityResourcesItem*>(l_item);
-	auto* lg_item = dynamic_cast<RegularResourcesItem*>(r_item);
-	if (rg_item != nullptr && lg_item != nullptr)
+	auto* er_item = dynamic_cast<EntityResourcesItem*>(l_item);
+	auto* rr_item = dynamic_cast<RegularResourcesItem*>(r_item);
+	if (er_item != nullptr && rr_item != nullptr)
 		return false;
 
 	// Don't sort items of which parent is an entity (components)
 	EntityItem* le_item = dynamic_cast<EntityItem*>(l_item->parent());
 	EntityItem* re_item = dynamic_cast<EntityItem*>(r_item->parent());
 	if (le_item != nullptr && re_item != nullptr)
+		return false;
+
+	// Prioritize groups over other items
+	GroupItem* lg_item = dynamic_cast<GroupItem*>(l_item);
+	GroupItem* rg_item = dynamic_cast<GroupItem*>(r_item);
+
+	// Left is group, right is not
+	if (lg_item != nullptr && rg_item == nullptr)
+		return true;
+
+	// Right is group, left is not
+	if (rg_item != nullptr && lg_item == nullptr)
 		return false;
 
 	// Otherwise sort default
