@@ -241,8 +241,12 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
+	// Get parent of property and parent as potential object
+	auto parent = path.getParent(); 
+	auto object = parent.getObject();
+
 	// Skip groups, they're not visible in the inspector, only their children
-	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	if (object != nullptr && object->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		setPath({});
 		return;
@@ -251,37 +255,35 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	// Get vertical scroll pos so we can restore it later (HACK)
 	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
 
-	//	If the object name changed, the property path in the model is now invalid because it's string-based
-	if (path.getName() == sIDPropertyName)
-	{
-		auto parent = path.getParent();
-		if (parent.getObject() != nullptr)
-		{
-			// This is an embedded object name, refresh, but make sure to only show the root object
-			// Walk up embedded owners until the root object is found. Don't do this for groups.
-			auto doc = path.getDocument();
-			auto embeddedOwner = doc->getEmbeddedObjectOwner(*parent.getObject());
-			if (embeddedOwner && !embeddedOwner->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-			{
-				while (true) 
-				{
-					auto embeddedOwnerParent = doc->getEmbeddedObjectOwner(*embeddedOwner);
-					if (!embeddedOwnerParent)
-						break;
-					embeddedOwner = embeddedOwnerParent;
-				}
-				clear();
-				setPath(PropertyPath(*embeddedOwner, *doc));
-			} 
-			else 
-			{
-				setPath(parent);
-			}
-		}
-	}
-	else
+	// Regular property changed, not the ID. Rebuild the model and apply selection
+	if (path.getName() != sIDPropertyName)
 	{
 		rebuild(path);
+	}
+	// If the object name changed, the property path in the model is now invalid because it's string-based.
+	else
+	{
+		assert(object != nullptr);
+		auto doc = path.getDocument();
+
+		// If the object is embedded and the owner is not a group, refresh, but make sure to
+		// only show the root object. Walk up embedded owners until the root object or a group is found.
+		auto embedded_owner = doc->getEmbeddedObjectOwner(*object);
+		if (embedded_owner && !embedded_owner->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+		{
+			while (true)
+			{
+				auto embedded_owner_parent = doc->getEmbeddedObjectOwner(*embedded_owner);
+				if (!embedded_owner_parent || embedded_owner_parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+					break;
+				embedded_owner = embedded_owner_parent;
+			}
+			setPath(PropertyPath(*embedded_owner, *doc));
+		}
+		else
+		{
+			setPath(parent);
+		}
 	}
 
 	// Set scroll pos
@@ -326,7 +328,7 @@ void InspectorPanel::clear()
 void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 {
 	// Rebuild model
-	clear();
+	mModel.clearItems();
 	mModel.populateItems();
 	mTreeView.getTreeView().expandAll();
 
