@@ -385,7 +385,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 	// Get group members property
 	PropertyPath members_path(*getGroup(), getGroup()->getMembersProperty(), *AppContext::get().getDocument());
 
-	// Create items for every member object
+	// Create child item for every member object
 	members_path.iterateChildren([this](const PropertyPath& path)
 		{
 			// Append members as objects
@@ -397,21 +397,22 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 			return true;
 		}, 0);
 
-	// Get child members property
+	// Get sub-group property
 	PropertyPath children_path(*getGroup(), getGroup()->getChildrenProperty(), *AppContext::get().getDocument());
 
-	// Create child group for every sub-group
+	// Create child group item for every sub-group
 	children_path.iterateChildren([this](const PropertyPath& path)
 		{
-			// Append groups as group items
 			assert(path.getPointee()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
-			this->appendRow(
-				{
-					new GroupItem(*static_cast<nap::IGroup*>(path.getPointee())),
-					new RTTITypeItem(path.getPointee()->get_type())
-				});
+			GroupItem* group_item = new GroupItem(*rtti_cast<nap::IGroup>(path.getPointee()));
+			this->connect(group_item, &GroupItem::childAdded, this, &GroupItem::childAdded);
+			this->appendRow( { group_item, new RTTITypeItem(path.getPointee()->get_type()) });
 			return true;
 		}, 0);
+
+	// Listen to data-model changes
+	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
+	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
 }
 
 
@@ -430,6 +431,66 @@ QVariant napkin::GroupItem::data(int role) const
 nap::IGroup* napkin::GroupItem::getGroup()
 {
 	return rtti_cast<nap::IGroup>(mObject);
+}
+
+
+void napkin::GroupItem::onPropertyChildRemoved(const PropertyPath& path, int index)
+{
+	// Check if this group has changed
+	if (!(path.getObject() == getGroup()))
+		return;
+
+	// Figure out actual child index, based on edited property
+	// The group has 2 properties: members and children, but the group item
+	// displays them as 1 long list. First the members, then the children.
+	// We therefore offset the index based on the edited property.
+	int child_index = index;
+	if (path.getProperty() == getGroup()->getChildrenProperty())
+	{
+		PropertyPath array_path(*getGroup(), getGroup()->getMembersProperty(), *AppContext::get().getDocument());
+		child_index += array_path.getArrayLength();
+	}
+	this->removeRow(child_index);
+}
+
+
+void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int index)
+{
+	// Check if this group has changed
+	nap::IGroup* group = getGroup();
+	if (!(path.getObject() == group))
+		return;
+
+	// Check if an item has been added to the members property.
+	// If so, figure out the correct index to insert the child.
+	// 	   
+	// The NAP group has 2 properties: members and children, but the group item
+	// displays them as 1 long list. First the members, then the children.
+	// We therefore insert the item after the last member, but before the first child group
+	ObjectItem* new_item = nullptr;
+	if (path.getProperty() == group->getMembersProperty())
+	{
+		PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
+		int row_index = array_path.getArrayLength() - 1;
+		auto member_el = path.getArrayElement(index);
+		new_item = new ObjectItem(member_el.getPointee());
+		this->insertRow(row_index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
+	}
+	// Otherwise append it to the end
+	else
+	{
+		// Get item from array
+		assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
+		auto member_el = path.getArrayElement(index);
+		GroupItem* new_group = new GroupItem(*rtti_cast<nap::IGroup>(member_el.getPointee()));
+		this->connect(new_group, &GroupItem::childAdded, this, &GroupItem::childAdded);
+		this->appendRow( { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
+		new_item = new_group;
+	}
+
+	// Notify listeners
+	assert(new_item != nullptr);
+	childAdded(*this, *new_item);
 }
 
 

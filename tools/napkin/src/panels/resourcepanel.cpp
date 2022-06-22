@@ -114,6 +114,7 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 	if (ob.get_type().is_derived_from<nap::IGroup>())
 	{
 		auto group_item = new GroupItem(static_cast<nap::IGroup&>(ob));
+		connect(group_item, &GroupItem::childAdded, this, &ResourceModel::childAddedToGroup);
 		mObjectsItem.appendRow({ group_item, typeItem });
 		return group_item;
 	}
@@ -182,8 +183,8 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
-	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &ResourcePanel::onPropertyChildInserted);
-	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &ResourcePanel::onPropertyChildRemoved);
+
+	connect(&mModel, &ResourceModel::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
 }
 
 
@@ -378,57 +379,9 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 }
 
 
-void napkin::ResourcePanel::onPropertyChildInserted(const PropertyPath& path, int index)
+void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& item)
 {
-	// If an item was moved into the group create an item
-	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-	{
-		// Find group, item in group and add
-		auto* group = static_cast<nap::IGroup*>(path.getObject());
-		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
-		assert(group_item != nullptr);
-
-		ObjectItem* object_item = nullptr;
-		if (path.getName() == nap::IGroup::membersPropertyName())
-		{
-			PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
-			int row_index = array_path.getArrayLength()-1;
-			auto member_el = path.getArrayElement(index);
-			object_item = new ObjectItem(member_el.getPointee());
-			group_item->insertRow(row_index, { object_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
-		}
-		else
-		{
-			// Get item from array
-			auto member_el = path.getArrayElement(index);
-			assert(member_el.isEmbeddedPointer());
-			object_item = new GroupItem(*static_cast<nap::IGroup*>(member_el.getPointee()));
-			group_item->appendRow({object_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
-		}
-
-		mTreeView.selectAndReveal(object_item);
-	}
-}
-
-
-void ResourcePanel::onPropertyChildRemoved(const PropertyPath& path, int index)
-{
-	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-	{
-		// Find edited group
-		auto* group = static_cast<nap::IGroup*>(path.getObject());
-		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
-		assert(group_item != nullptr);
-
-		// Based on edited property, figure out the index of the child to remove
-		int child_index = index;
-		if (path.getName() == nap::IGroup::childrenPropertyName())
-		{
-			PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
-			child_index += array_path.getArrayLength();
-		}
-		group_item->removeRow(child_index);
-	}
+	mTreeView.selectAndReveal(&item);
 }
 
 

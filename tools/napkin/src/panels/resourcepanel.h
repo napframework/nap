@@ -25,6 +25,7 @@ namespace napkin
 	 */
 	class ResourceModel : public QStandardItemModel
 	{
+		Q_OBJECT
 	public:
 		ResourceModel();
 
@@ -43,11 +44,6 @@ namespace napkin
 		 * @param object the object to represent
 		 */
 		ObjectItem* addObjectItem(nap::rtti::Object& object);
-
-		/**
-		 * Find a specific group
-		 */
-		ObjectItem* findGroup(nap::IGroup& group);
 		
 		/**
 		 * Remove an item (row) representing an Object
@@ -59,6 +55,12 @@ namespace napkin
 		 * Find all Objects that are pointed to by an embedded pointer and remove the corresponding items
 		 */
 		void removeEmbeddedObjects();
+
+	Q_SIGNALS:
+		/**
+		 * Triggered when a new child is added to an existing item
+		 */
+		void childAddedToGroup(GroupItem& group, ObjectItem& item);
 
 	private:
 		RegularResourcesItem mObjectsItem;		// top level item that will hold objects/resources
@@ -164,12 +166,7 @@ namespace napkin
 		/**
 		 * Called when a new item is inserted into an array
 		 */
-		void onPropertyChildInserted(const PropertyPath& path, int index);
-
-		/**
-		 * Called when an item is removed from an array
-		 */
-		void onPropertyChildRemoved(const PropertyPath& path, int index);
+		void onChildAddedToGroup(GroupItem& group, ObjectItem& item);
 
 		/**
 		 * Used to provide this view with custom menu items

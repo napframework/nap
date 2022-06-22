@@ -179,10 +179,12 @@ namespace napkin
 	};
 
 	/**
-	 * An item representing a group of resources
+	 * Represents a nap::IGroup.
+	 * Groups together a set of objects and child -groups.
 	 */
 	class GroupItem : public ObjectItem
 	{
+		Q_OBJECT
 	public:
 		explicit GroupItem(nap::IGroup& group);
 
@@ -200,6 +202,25 @@ namespace napkin
 		 * @return the resource group
 		 */
 		nap::IGroup* getGroup();
+
+	Q_SIGNALS:
+		/**
+		 * Triggered when a new child item is added to this or a child group
+		 * @param group the item the new item is added to
+		 * @param item the item that is added to the group
+		 */
+		void childAdded(GroupItem& group, ObjectItem& item);
+
+	private:
+		/**
+		 * Called when an item is removed from an array
+		 */
+		void onPropertyChildRemoved(const PropertyPath& path, int index);
+
+		/**
+		 * Called when a new item is inserted into an array
+		 */
+		void onPropertyChildInserted(const PropertyPath& path, int index);
 	};
 
 
