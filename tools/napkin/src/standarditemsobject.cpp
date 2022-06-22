@@ -385,20 +385,31 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 	// Get group members property
 	PropertyPath members_path(*getGroup(), getGroup()->getMembersProperty(), *AppContext::get().getDocument());
 
-	// Create items for every object in it
+	// Create items for every member object
 	members_path.iterateChildren([this](const PropertyPath& path)
 		{
-			append(*path.getPointee());
+			// Append members as objects
+			this->appendRow(
+				{
+					new ObjectItem(path.getPointee()),
+					new RTTITypeItem(path.getPointee()->get_type())
+				});
 			return true;
 		}, 0);
 
 	// Get child members property
 	PropertyPath children_path(*getGroup(), getGroup()->getChildrenProperty(), *AppContext::get().getDocument());
 
-	// Create sub-groups for every object in it
+	// Create child group for every sub-group
 	children_path.iterateChildren([this](const PropertyPath& path)
 		{
-			append(*path.getPointee());
+			// Append groups as group items
+			assert(path.getPointee()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
+			this->appendRow(
+				{
+					new GroupItem(*static_cast<nap::IGroup*>(path.getPointee())),
+					new RTTITypeItem(path.getPointee()->get_type())
+				});
 			return true;
 		}, 0);
 }
@@ -421,18 +432,6 @@ nap::IGroup* napkin::GroupItem::getGroup()
 	return rtti_cast<nap::IGroup>(mObject);
 }
 
-
-napkin::ObjectItem* napkin::GroupItem::append(nap::rtti::Object& object)
-{
-	// Create item
-	ObjectItem* obj_item = object.get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
-		new GroupItem(static_cast<nap::IGroup&>(object)) :
-		new ObjectItem(&object);
-
-	// Append
-	this->appendRow({ obj_item , new RTTITypeItem(object.get_type()) });
-	return obj_item;
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentItem

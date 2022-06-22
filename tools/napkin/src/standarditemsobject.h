@@ -200,12 +200,6 @@ namespace napkin
 		 * @return the resource group
 		 */
 		nap::IGroup* getGroup();
-
-		/**
-		 * Add item
-		 * TODO: item must watch and respond to document changes
-		 */
-		ObjectItem* append(nap::rtti::Object& object);
 	};
 
 

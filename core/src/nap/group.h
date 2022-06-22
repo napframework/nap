@@ -76,11 +76,26 @@ namespace nap
 		Group() : IGroup(RTTI_OF(T)) { }
 
 		/**
+		 * Initialize this group
+		 * @param errorState contains the error if initialization fails
+		 * @return if initialization succeeded
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
 		 * Attempts to find a member in this group with the given ID. 
-		 * @param id member ID 
+		 * @param id member ID
+		 * @param attempt to find member in child groups as well
 		 * @return member with the given ID, nullptr if not found
 		 */
-		rtti::ObjectPtr<T> findMember(const std::string& id) const;
+		rtti::ObjectPtr<T> findObject(const std::string& id) const;
+
+		/**
+		 * Attempts to find a member in this group and all child groups with the given ID. 
+		 * @param id member ID
+		 * @return member with the given ID, nullptr if not found
+		 */
+		rtti::ObjectPtr<T> findObjectRecursive(const std::string& id) const;
 
 		/**
 		 * Attempts to find a member in this group, with the given ID, of type M
@@ -88,10 +103,21 @@ namespace nap
 		 * @return member with the given ID, nullptr if not found or not of the given type
 		 */
 		template<typename M>
-		rtti::ObjectPtr<M> findMember(const std::string& id);
+		rtti::ObjectPtr<M> findObject(const std::string& id) const;
 
-		std::vector<rtti::ObjectPtr<T>> mMembers;				///< Property: 'Members' The members that belong to this group
-		std::vector<rtti::ObjectPtr<T>> mChildren;				///< Property: 'Children' The sub groups
+		/**
+		 * Attempts to find a member in this group, and all child groups, with the given ID of type M
+		 * @param id member ID
+		 * @return member with the given ID, nullptr if not found or not of the given type
+		 */
+		template<typename M>
+		rtti::ObjectPtr<M> findObjectRecursive(const std::string& id) const;
+
+		std::vector<rtti::ObjectPtr<T>> mMembers;					///< Property: 'Members' The members that belong to this group
+		std::vector<rtti::ObjectPtr<Group<T>>> mChildren;			///< Property: 'Children' The sub groups
+
+	private:
+		std::unordered_map<std::string, T*> mMap;					///< Maps ID to member for faster lookup
 	};
 
 
@@ -108,20 +134,57 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	rtti::ObjectPtr<T> nap::Group<T>::findMember(const std::string& id) const
+	bool nap::Group<T>::init(utility::ErrorState& errorState)
 	{
-		const auto found_it = std::find_if(mMembers.begin(), mMembers.end(), [&](const auto& it)
-			{
-				return it->mID == id;
-			});
-		return found_it != mMembers.end() ? *found_it : nullptr;
+		mMap.reserve(mMembers.size());
+		for (const auto& member : mMembers)
+		{
+			mMap.emplace(std::make_pair(member->mID, member.get()));
+		}
+		return true;
+	}
+
+	template<typename T>
+	rtti::ObjectPtr<T> nap::Group<T>::findObject(const std::string& id) const
+	{
+		// Find in this group
+		auto it = mMap.find(id);
+		if (it != mMap.end())
+			return rtti::ObjectPtr<T>(it->second);
+		return nullptr;
+	}
+
+	template<typename T>
+	rtti::ObjectPtr<T> nap::Group<T>::findObjectRecursive(const std::string& id) const
+	{
+		// Find in this group
+		rtti::ObjectPtr<T> object = findObject(id);
+		if (object != nullptr)
+			return object;
+
+		// Find in sub-groups
+		for (const auto& child : mChildren)
+		{
+			rtti::ObjectPtr<T> object = child->findObject(id);
+			if (object == nullptr)
+				continue;
+			return object;
+		}
+		return nullptr;
 	}
 
 	template<typename T>
 	template<typename M>
-	rtti::ObjectPtr<M> nap::Group<T>::findMember(const std::string& id)
+	rtti::ObjectPtr<M> nap::Group<T>::findObject(const std::string& id) const
 	{
-		return rtti::ObjectPtr<M>(findMember(id));
+		return rtti::ObjectPtr<M>(findObject(id));
+	}
+
+	template<typename T>
+	template<typename M>
+	rtti::ObjectPtr<M> nap::Group<T>::findObjectRecursive(const std::string& id) const
+	{
+		return rtti::ObjectPtr<M>(findObjectRecursive(id));
 	}
 }
 

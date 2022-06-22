@@ -388,11 +388,24 @@ void napkin::ResourcePanel::onPropertyChildInserted(const PropertyPath& path, in
 		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
 		assert(group_item != nullptr);
 
-		// Get item from array
-		auto member_el = path.getArrayElement(index);
-		assert(member_el.isEmbeddedPointer());
-		
-		auto* object_item = group_item->append(*member_el.getPointee());
+		ObjectItem* object_item = nullptr;
+		if (path.getName() == nap::IGroup::membersPropertyName())
+		{
+			PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
+			int row_index = array_path.getArrayLength()-1;
+			auto member_el = path.getArrayElement(index);
+			object_item = new ObjectItem(member_el.getPointee());
+			group_item->insertRow(row_index, { object_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
+		}
+		else
+		{
+			// Get item from array
+			auto member_el = path.getArrayElement(index);
+			assert(member_el.isEmbeddedPointer());
+			object_item = new GroupItem(*static_cast<nap::IGroup*>(member_el.getPointee()));
+			group_item->appendRow({object_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
+		}
+
 		mTreeView.selectAndReveal(object_item);
 	}
 }
@@ -402,11 +415,19 @@ void ResourcePanel::onPropertyChildRemoved(const PropertyPath& path, int index)
 {
 	if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
-		// Find group, item in group and add
+		// Find edited group
 		auto* group = static_cast<nap::IGroup*>(path.getObject());
 		GroupItem* group_item = findItemInModel<GroupItem>(mModel, *group);
 		assert(group_item != nullptr);
-		group_item->removeRow(index);
+
+		// Based on edited property, figure out the index of the child to remove
+		int child_index = index;
+		if (path.getName() == nap::IGroup::childrenPropertyName())
+		{
+			PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
+			child_index += array_path.getArrayLength();
+		}
+		group_item->removeRow(child_index);
 	}
 }
 
