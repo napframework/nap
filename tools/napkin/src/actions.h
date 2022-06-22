@@ -193,18 +193,6 @@ namespace napkin
 
 
 	/**
-	 * Remove service configuration from project
-	 */
-	class ClearServiceConfigAction : public Action
-	{
-	public:
-		ClearServiceConfigAction();
-	private:
-		void perform();
-	};
-
-
-	/**
 	 * Create a Resource
 	 */
 	class CreateResourceAction : public Action

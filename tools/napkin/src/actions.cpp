@@ -920,13 +920,3 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 	// Set as default in project
 	ctx.getServiceConfig()->makeProjectDefault();
 }
-
-
-napkin::ClearServiceConfigAction::ClearServiceConfigAction() : Action("Clear", QRC_ICONS_REMOVE)
-{ }
-
-
-void napkin::ClearServiceConfigAction::perform()
-{
-		
-}
