@@ -255,15 +255,14 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	if (path.getName() == sIDPropertyName)
 	{
 		auto parent = path.getParent();
-		auto object = dynamic_cast<nap::rtti::Object*>(parent.getObject());
-		if (object)
+		if (parent.getObject() != nullptr)
 		{
+			// This is an embedded object name, refresh, but make sure to only show the root object
+			// Walk up embedded owners until the root object is found. Don't do this for groups.
 			auto doc = path.getDocument();
-			auto embeddedOwner = doc->getEmbeddedObjectOwner(*object);
-			if (embeddedOwner)
+			auto embeddedOwner = doc->getEmbeddedObjectOwner(*parent.getObject());
+			if (embeddedOwner && !embeddedOwner->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 			{
-				// This is an embedded object name, refresh, but make sure to only show the root object
-				// Walk up embedded owners until the root object is found
 				while (true) 
 				{
 					auto embeddedOwnerParent = doc->getEmbeddedObjectOwner(*embeddedOwner);
