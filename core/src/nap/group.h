@@ -24,19 +24,37 @@ namespace nap
 		RTTI_ENABLE(Resource)
 	public:
 		/**
+		 * @param memberType the group member type
+		 */
+		IGroup(rtti::TypeInfo memberType);
+
+		/**
 		 * @return group member type
 		 */
-		virtual rtti::TypeInfo memberType() const = 0;
+		rtti::TypeInfo getMemberType() const							{ return mMemberType; }
 
 		/**
 		 * @return member property name
 		 */
-		static constexpr const char* propertyName()				{ return "Members"; }
+		static constexpr const char* membersPropertyName()				{ return "Members"; }
 
 		/**
 		 * @return 'Members' rtti property
 		 */
-		rttr::property getProperty() const;
+		rttr::property getMembersProperty() const;
+
+		/**
+		 * @return children property name
+		 */
+		static constexpr const char* childrenPropertyName()				{ return "Children"; }
+
+		/**
+		 * @return 'Children' rtti property
+		 */
+		rttr::property getChildrenProperty() const;
+
+	private:
+		rtti::TypeInfo mMemberType;
 	};
 
 
@@ -53,9 +71,9 @@ namespace nap
 		RTTI_ENABLE(IGroup)
 	public:
 		/**
-		 * @return group member type
+		 * Constructs a group with members of type T
 		 */
-		virtual rtti::TypeInfo memberType() const override		{ return RTTI_OF(T); }
+		Group() : IGroup(RTTI_OF(T)) { }
 
 		/**
 		 * Attempts to find a member in this group with the given ID. 
@@ -73,6 +91,7 @@ namespace nap
 		rtti::ObjectPtr<M> findMember(const std::string& id);
 
 		std::vector<rtti::ObjectPtr<T>> mMembers;				///< Property: 'Members' The members that belong to this group
+		std::vector<rtti::ObjectPtr<T>> mChildren;				///< Property: 'Children' The sub groups
 	};
 
 
@@ -98,7 +117,6 @@ namespace nap
 		return found_it != mMembers.end() ? *found_it : nullptr;
 	}
 
-
 	template<typename T>
 	template<typename M>
 	rtti::ObjectPtr<M> nap::Group<T>::findMember(const std::string& id)
@@ -114,7 +132,8 @@ namespace nap
  * DEFINE_GROUP(nap::ResourceGroup)
  * ~~~~~ 
  */
-#define DEFINE_GROUP(Type)																																	\
-	RTTI_BEGIN_CLASS(Type)																																	\
-		RTTI_PROPERTY(nap::IGroup::propertyName(), &Type::mMembers, nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
+#define DEFINE_GROUP(Type)																																			\
+	RTTI_BEGIN_CLASS(Type)																																			\
+		RTTI_PROPERTY(nap::IGroup::membersPropertyName(),	&Type::mMembers,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)	\
+		RTTI_PROPERTY(nap::IGroup::childrenPropertyName(),	&Type::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)	\
 	RTTI_END_CLASS

@@ -357,7 +357,7 @@ AddNewResourceToGroupAction::AddNewResourceToGroupAction(nap::IGroup& group) :
 void AddNewResourceToGroupAction::perform()
 {
 	// Get path to resources array property
-	PropertyPath array_path(*mGroup, mGroup->getProperty(), *AppContext::get().getDocument());
+	PropertyPath array_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
 
 	// Select type to add
 	auto type = array_path.getArrayElementType();
@@ -365,6 +365,7 @@ void AddNewResourceToGroupAction::perform()
 	{
 		return t.is_derived_from(type) &&
 			!t.is_derived_from(RTTI_OF(nap::Component)) &&
+			!t.is_derived_from(RTTI_OF(nap::IGroup)) &&
 			!t.is_derived_from(RTTI_OF(nap::Entity));
 	};
 
@@ -387,21 +388,8 @@ napkin::AddChildGroupAction::AddChildGroupAction(nap::IGroup& group) :
 void napkin::AddChildGroupAction::perform()
 {
 	// Get path to resources array property
-	PropertyPath array_path(*mGroup, mGroup->getProperty(), *AppContext::get().getDocument());
-
-	// Select type to add
-	auto type = array_path.getArrayElementType();
-	TypePredicate predicate = [type](auto t)
-	{
-		return t.is_derived_from(type) && t.is_derived_from(RTTI_OF(nap::IGroup));
-	};
-
-	auto parentWidget = AppContext::get().getMainWindow();
-	rttr::type elementType = showTypeSelector(parentWidget, predicate);
-	if (elementType.is_valid())
-	{
-		AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
-	}
+	PropertyPath array_path(*mGroup, mGroup->getChildrenProperty(), *AppContext::get().getDocument());
+	AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, mGroup->get_type()));
 }
 
 
@@ -424,7 +412,7 @@ void napkin::MoveResourceToGroupAction::perform()
 	while(it != groups.end())
 	{
 		nap::IGroup* group = static_cast<nap::IGroup*>(*it);
-		if (group == mObject || group == mCurrentGroup || !mObject->get_type().is_derived_from(group->memberType()))
+		if (group == mObject || group == mCurrentGroup || !mObject->get_type().is_derived_from(group->getMemberType()))
 		{
 			it = groups.erase(it);
 			continue;
@@ -443,14 +431,84 @@ void napkin::MoveResourceToGroupAction::perform()
 	// Remove from current parent, if parented
 	if (mCurrentGroup != nullptr)
 	{
-		RemoveResourceFromGroupAction action(*mCurrentGroup, *mObject);
+		RemoveFromGroupAction action(*mCurrentGroup, *mObject);
 		action.perform();
 	}
 
 	// Get path to resources array property
-	rttr::property resources_property = selected_group->get_type().get_property(nap::IGroup::propertyName());
+	rttr::property resources_property = selected_group->get_type().get_property(nap::IGroup::membersPropertyName());
 	PropertyPath array_path(*selected_group, resources_property, *AppContext::get().getDocument());
 	AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *mObject));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+napkin::MoveGroupAction::MoveGroupAction(nap::IGroup& group, nap::IGroup* parentGroup) :
+	Action("Move to Group...", QRC_ICONS_CHANGE), mGroup(&group), mParentGroup(parentGroup)
+{ }
+
+
+void napkin::MoveGroupAction::perform()
+{
+	// Get all groups of the same type
+	auto groups = AppContext::get().getDocument()->getObjects(mGroup->get_type());
+
+	// Moving the group to a child is not allowed
+	PropertyPath group_path(*mGroup, mGroup->getChildrenProperty(), *AppContext::get().getDocument());
+	auto sub_groups = group_path.getChildren(IterFlag::Resursive | IterFlag::FollowEmbeddedPointers);
+
+	// Filter out groups that are not eligible. 
+	// This includes child groups, itself and the current parent
+	auto it = groups.begin();
+	while (it != groups.end())
+	{
+		// Skip self and parent
+		nap::IGroup* group = static_cast<nap::IGroup*>(*it);
+		if (group == mParentGroup || group == mGroup)
+		{
+			it = groups.erase(it);
+			continue;
+		}
+
+		// Check if the group is a child of the group to move
+		PropertyPath current_path(*group, *AppContext::get().getDocument());
+		auto child_it = std::find_if(sub_groups.begin(), sub_groups.end(), [&](const PropertyPath& sub_path)
+			{
+				return nap::utility::contains(sub_path.toString(), current_path.toString());
+			});
+
+		// If so, remove as option
+		if (child_it != sub_groups.end())
+		{
+			it = groups.erase(it);
+			continue;
+		}
+
+		it++;
+	}
+
+	// Let the user select the group
+	auto parent_widget = AppContext::get().getMainWindow();
+	nap::rtti::Object* selected_group = showObjectSelector(parent_widget, groups);
+
+	// Operation canceled
+	if (selected_group == nullptr)
+		return;
+
+	// Remove from current parent, if parented
+	if (mParentGroup != nullptr)
+	{
+		RemoveFromGroupAction action(*mParentGroup, *mGroup);
+		action.perform();
+	}
+
+	// Get path to children array property
+	rttr::property resources_property = selected_group->get_type().get_property(nap::IGroup::childrenPropertyName());
+	PropertyPath array_path(*selected_group, resources_property, *AppContext::get().getDocument());
+
+	// Add
+	AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *mGroup));
 }
 
 
@@ -464,7 +522,7 @@ AddExistingResourceToGroupAction::AddExistingResourceToGroupAction(nap::IGroup& 
 void AddExistingResourceToGroupAction::perform()
 {
 	// We know the group, find a resource to add
-	PropertyPath array_path(*mGroup, mGroup->getProperty(), *AppContext::get().getDocument());
+	PropertyPath array_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
 
 	// Select type to add
 	auto base_type = array_path.getArrayElementType();
@@ -480,7 +538,7 @@ void AddExistingResourceToGroupAction::perform()
 		if (obj_type.is_derived_from(base_type) &&
 			!obj_type.is_derived_from(RTTI_OF(nap::Entity)) &&
 			!obj_type.is_derived_from(RTTI_OF(nap::Component)) &&
-			!(object->mID == mGroup->mID))
+			!obj_type.is_derived_from(RTTI_OF(nap::IGroup)))
 		{
 			object_selection.emplace_back(object);
 		}
@@ -498,16 +556,20 @@ void AddExistingResourceToGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
+napkin::RemoveFromGroupAction::RemoveFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
 	Action(nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
 	mGroup(&group), mObject(&resource)
 { }
 
 
-void napkin::RemoveResourceFromGroupAction::perform()
+void napkin::RemoveFromGroupAction::perform()
 {
+	// Get property to remove object from based on type
+	rttr::property array_prop = mObject->get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
+		mGroup->getChildrenProperty() : mGroup->getMembersProperty();
+
 	// Get property path to group members
-	PropertyPath array_path(*mGroup, mGroup->getProperty(), *AppContext::get().getDocument());
+	PropertyPath array_path(*mGroup, array_prop, *AppContext::get().getDocument());
 
 	// Find index to remove
 	int resource_idx = -1; int length = array_path.getArrayLength();
@@ -619,7 +681,7 @@ napkin::DeleteGroupAction::DeleteGroupAction(nap::IGroup& group) :
 
 static void getObjectPointers(nap::IGroup& group, QList<PropertyPath>& outPointers)
 {
-	PropertyPath array_path(group, group.getProperty(), *AppContext::get().getDocument());
+	PropertyPath array_path(group, group.getMembersProperty(), *AppContext::get().getDocument());
 	int length = array_path.getArrayLength();
 	for (int i = 0; i < length; i++)
 	{

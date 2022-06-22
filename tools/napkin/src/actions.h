@@ -257,7 +257,7 @@ namespace napkin
 	/**
 	 * Parents a resource under a to be selected group
 	 * @param resource resource to parent under a group
-	 * @param resourceGroup current parent group, nullptr if there is no parent
+	 * @param currentGroup current parent group, nullptr if there is no parent
 	 */
 	class MoveResourceToGroupAction : public Action
 	{
@@ -267,6 +267,22 @@ namespace napkin
 		void perform() override;
 		nap::IGroup* mCurrentGroup = nullptr;
 		nap::rtti::Object* mObject = nullptr;
+	};
+
+
+	/**
+	 * Parents a group under a different group
+	 * @param group group to move
+	 * @param parentGroup current parent group, nullptr if there is no parent
+	 */
+	class MoveGroupAction : public Action
+	{
+	public:
+		explicit MoveGroupAction(nap::IGroup& group, nap::IGroup* parentGroup);
+	private:
+		void perform() override;
+		nap::IGroup* mGroup = nullptr;
+		nap::IGroup* mParentGroup = nullptr;
 	};
 
 
@@ -288,10 +304,10 @@ namespace napkin
 	/**
 	 * Removes a resource from a group, moving it to the root of the document
 	 */
-	class RemoveResourceFromGroupAction : public Action
+	class RemoveFromGroupAction : public Action
 	{
 	public:
-		explicit RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
+		explicit RemoveFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
 		void perform() override;
 	private:
 		nap::IGroup* mGroup = nullptr;

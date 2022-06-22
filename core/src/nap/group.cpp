@@ -3,7 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "group.h"
-#include <rtti/path.h>
 
 // Group Interface
 RTTI_DEFINE_BASE(nap::IGroup)
@@ -13,8 +12,19 @@ DEFINE_GROUP(nap::ResourceGroup)
 
 namespace nap
 {
-	rttr::property IGroup::getProperty() const
+
+	IGroup::IGroup(rtti::TypeInfo memberType) : mMemberType(memberType)
+	{ }
+
+
+	rttr::property IGroup::getMembersProperty() const
 	{
-		return get_type().get_property(IGroup::propertyName());
+		return get_type().get_property(IGroup::membersPropertyName());
+	}
+
+
+	rttr::property IGroup::getChildrenProperty() const
+	{
+		return get_type().get_property(IGroup::childrenPropertyName());
 	}
 }

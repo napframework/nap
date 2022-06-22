@@ -867,7 +867,7 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 				{
 					// Check if item is part of group
 					auto* group = static_cast<nap::IGroup*>(sourceObject.get());
-					PropertyPath array_path(*group, group->getProperty(), *this);
+					PropertyPath array_path(*group, group->getMembersProperty(), *this);
 					bool part_of_group = false;
 					array_path.iterateChildren([&](const PropertyPath& path)
 						{

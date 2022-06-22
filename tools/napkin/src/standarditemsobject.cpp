@@ -383,10 +383,20 @@ const std::string EntityItem::unambiguousName() const
 napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 {
 	// Get group members property
-	PropertyPath array_path(*getGroup(), getGroup()->getProperty(), *AppContext::get().getDocument());
+	PropertyPath members_path(*getGroup(), getGroup()->getMembersProperty(), *AppContext::get().getDocument());
 
 	// Create items for every object in it
-	array_path.iterateChildren([this](const PropertyPath& path)
+	members_path.iterateChildren([this](const PropertyPath& path)
+		{
+			append(*path.getPointee());
+			return true;
+		}, 0);
+
+	// Get child members property
+	PropertyPath children_path(*getGroup(), getGroup()->getChildrenProperty(), *AppContext::get().getDocument());
+
+	// Create sub-groups for every object in it
+	children_path.iterateChildren([this](const PropertyPath& path)
 		{
 			append(*path.getPointee());
 			return true;
