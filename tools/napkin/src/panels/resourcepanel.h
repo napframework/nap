@@ -51,11 +51,6 @@ namespace napkin
 		 */
 		void removeObjectItem(const nap::rtti::Object& object);
 
-		/**
-		 * Find all Objects that are pointed to by an embedded pointer and remove the corresponding items
-		 */
-		void removeEmbeddedObjects();
-
 	Q_SIGNALS:
 		/**
 		 * Triggered when a new child is added to an existing item

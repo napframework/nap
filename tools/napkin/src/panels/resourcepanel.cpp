@@ -130,6 +130,7 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 	return item;
 }
 
+
 void ResourceModel::removeObjectItem(const nap::rtti::Object& object)
 {
 	auto item = findItemInModel<napkin::ObjectItem>(*this, object);
@@ -137,28 +138,6 @@ void ResourceModel::removeObjectItem(const nap::rtti::Object& object)
 		return;
 
 	removeRow(item->row(), static_cast<QStandardItem*>(item)->parent()->index());
-}
-
-void ResourceModel::removeEmbeddedObjects()
-{
-	auto doc = AppContext::get().getDocument();
-
-	// First, gather the objects that are pointed to by embedded pointers,
-	// we are going to change the model layout
-	QList<const nap::rtti::Object*> removeObjects;
-	for (int row=0; row < mObjectsItem.rowCount(); row++)
-	{
-		auto item = rtti_cast<ObjectItem>(qt_item_cast(mObjectsItem.child(row, 0)));
-		auto object = item->getObject();
-		if (doc->isPointedToByEmbeddedPointer(*item->getObject()))
-		{
-			removeObjects << object;
-		}
-	}
-
-	// Now remove
-	for (const auto obj : removeObjects)
-		removeObjectItem(*obj);
 }
 
 
@@ -359,11 +338,18 @@ void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Obj
 	if (parent != nullptr)
 		return;
 
+	// Don't handle instance properties
+	if (obj->get_type().is_derived_from(RTTI_OF(nap::InstancePropertyValue)))
+		return;
+
 	// Add item
 	auto* item = mModel.addObjectItem(*obj);
 	if (selectNewObject)
+	{
 		mTreeView.selectAndReveal(item);
+	}
 }
+
 
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 {
@@ -371,10 +357,12 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
 }
 
+
 void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
 {
 	mModel.removeObjectItem(*object);
 }
+
 
 void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 {
@@ -384,10 +372,10 @@ void napkin::ResourcePanel::onPropertyValueChanged(const PropertyPath& path)
 		auto obj = path.getObject();
 		auto objectItem = findItemInModel<napkin::ObjectItem>(mModel, *obj);
 		if (objectItem != nullptr)
+		{
 			objectItem->setText(QString::fromStdString(obj->mID));
+		}
 	}
-
-	mModel.removeEmbeddedObjects();
 }
 
 
