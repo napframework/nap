@@ -8,6 +8,17 @@
 #include "naputils.h"
 #include "napkin-resources.h"
 
+RTTI_DEFINE_BASE(napkin::RegularResourcesItem)
+RTTI_DEFINE_BASE(napkin::EntityResourcesItem)
+RTTI_DEFINE_BASE(napkin::ObjectItem)
+RTTI_DEFINE_BASE(napkin::EntityItem)
+RTTI_DEFINE_BASE(napkin::GroupItem)
+RTTI_DEFINE_BASE(napkin::SceneItem)
+RTTI_DEFINE_BASE(napkin::ComponentItem)
+RTTI_DEFINE_BASE(napkin::EntityInstanceItem)
+RTTI_DEFINE_BASE(napkin::RootEntityItem)
+RTTI_DEFINE_BASE(napkin::ComponentInstanceItem)
+
 using namespace napkin;
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,7 +71,7 @@ QVariant napkin::EntityResourcesItem::data(int role) const
 //////////////////////////////////////////////////////////////////////////
 
 ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
-		: QObject(), mObject(o), mIsPointer(isPointer)
+		: mObject(o), mIsPointer(isPointer)
 {
 	auto& ctx = AppContext::get();
 	setText(QString::fromStdString(o->mID));
@@ -296,6 +307,7 @@ void ObjectItem::onPropertyValueChanged(PropertyPath path)
 		refresh();
 }
 
+
 void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
 {
 	if (o == mObject)
@@ -305,6 +317,7 @@ void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
 			parent->removeRow(index().row());
 	}
 }
+
 
 const std::string ObjectItem::unambiguousName() const
 {
@@ -498,10 +511,10 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(&comp, false)
 { }
 
+
 nap::Component& ComponentItem::getComponent()
 {
-	auto& o = *rtti_cast<nap::Component*>(mObject);
-	return *o;
+	return *rtti_cast<nap::Component>(mObject);
 }
 
 

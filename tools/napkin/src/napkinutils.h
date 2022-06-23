@@ -4,7 +4,11 @@
 
 #pragma once
 
+#include "rttiitem.h"
+
 #include <QFileDialog>
+#include <QStandardItem>
+#include <rtti/typeinfo.h>
 
 namespace napkin
 {

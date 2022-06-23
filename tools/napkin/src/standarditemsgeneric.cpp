@@ -5,13 +5,15 @@
 #include "standarditemsgeneric.h"
 #include "napkinglobals.h"
 
-napkin::EmptyItem::EmptyItem() : QStandardItem()
+napkin::EmptyItem::EmptyItem()
 {
 	setEditable(false);
 }
 
-napkin::InvalidItem::InvalidItem(const QString& name) : QStandardItem(name)
+
+napkin::InvalidItem::InvalidItem(const QString& name)
 {
+	setText(name);
 	setForeground(Qt::red);
 	setEditable(false);
 }

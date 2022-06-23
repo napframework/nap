@@ -620,7 +620,7 @@ void AddChildEntityAction::perform()
 	}
 
 	auto parentWidget = AppContext::get().getMainWindow();
-	auto child = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(parentWidget, filteredEntities));
+	auto child = rtti_cast<nap::Entity>(napkin::showObjectSelector(parentWidget, filteredEntities));
 	if (!child)
 		return;
 
@@ -681,22 +681,29 @@ napkin::DeleteGroupAction::DeleteGroupAction(nap::IGroup& group) :
 
 static void getObjectPointers(nap::IGroup& group, QList<PropertyPath>& outPointers)
 {
-	PropertyPath array_path(group, group.getMembersProperty(), *AppContext::get().getDocument());
-	int length = array_path.getArrayLength();
-	for (int i = 0; i < length; i++)
+	// Get members
+	PropertyPath mem_property(group, group.getMembersProperty(), *AppContext::get().getDocument());
+	int mem_count = mem_property.getArrayLength();
+	for (int i = 0; i < mem_count; i++)
 	{
-		auto array_el = array_path.getArrayElement(i);
+		// Get links to member
+		auto array_el = mem_property.getArrayElement(i);
 		auto* member = array_el.getPointee();
-
-		// Recursively get pointers for items in child groups
-		if (member->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-		{
-			getObjectPointers(static_cast<nap::IGroup&>(*member), outPointers);
-			continue;
-		}
 		outPointers.append(AppContext::get().getDocument()->getPointersTo(*member, false, true));
 	}
+
+	// Do the same for every child group
+	PropertyPath chi_property(group, group.getChildrenProperty(), *AppContext::get().getDocument());
+	int chi_count = chi_property.getArrayLength();
+	for (int i = 0; i < chi_count; i++)
+	{
+		auto array_el = chi_property.getArrayElement(i);
+		auto child = rtti_cast<nap::IGroup>(array_el.getPointee());
+		assert(child != nullptr);
+		getObjectPointers(*child, outPointers);
+	}
 }
+
 
 
 void napkin::DeleteGroupAction::perform()
@@ -705,7 +712,7 @@ void napkin::DeleteGroupAction::perform()
 	getObjectPointers(mGroup, pointers);
 	if (!pointers.empty())
 	{
-		QString message = "The following properties are still pointing to children in this group,\n"
+		QString message = "The following properties are still pointing to members in this group,\n"
 			"your data might end up in a broken state.\n\n"
 			"Do you want to delete anyway?";
 		if (!showPropertyListConfirmDialog(parentWidget(), pointers, "Warning", message))
@@ -725,7 +732,7 @@ RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) :
 void RemoveChildEntityAction::perform()
 {
 	// TODO: Move into Command
-	auto parentItem = dynamic_cast<EntityItem*>(mEntityItem->parentItem());
+	auto parentItem = rtti_cast<EntityItem>(mEntityItem->parentItem());
 
 	auto doc = AppContext::get().getDocument();
 	auto index = parentItem->childIndex(*mEntityItem);
@@ -735,10 +742,11 @@ void RemoveChildEntityAction::perform()
 	QStringList componentPaths;
 	nap::qt::traverse(*parentItem->model(), [&componentPaths](QStandardItem* item)
 	{
-		auto compItem = dynamic_cast<ComponentItem*>(item);
+		auto compItem = rtti_cast<ComponentItem>(static_cast<RTTIItem*>(item));
 		if (compItem)
+		{
 			componentPaths << QString::fromStdString(compItem->componentPath());
-
+		}
 		return true;
 	}, mEntityItem->index());
 

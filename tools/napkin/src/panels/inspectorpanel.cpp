@@ -2,19 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#pragma once
+
 #include "inspectorpanel.h"
 #include "appcontext.h"
 #include "commands.h"
 #include "napkinglobals.h"
 #include "standarditemsproperty.h"
 #include "naputils.h"
+#include "napkinutils.h"
 
 #include <QApplication>
 #include <QMimeData>
 #include <QScrollBar>
 
 #include <utility/fileutils.h>
-#include <napkinfiltertree.h>
 #include <napqt/filterpopup.h>
 #include <nap/group.h>
 
@@ -54,7 +56,7 @@ Qt::DropActions InspectorModel::supportedDropActions() const
 }
 
 
-InspectorPanel::InspectorPanel() : mTreeView(new _FilterTreeView())
+InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
@@ -390,7 +392,7 @@ bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const
 
 void InspectorModel::populateItems()
 {
-	if (dynamic_cast<nap::Entity*>(mPath.getObject()))
+	if (rtti_cast<nap::Entity>(mPath.getObject()))
 		return;
 
 	for (const auto& propPath : mPath.getChildren())
@@ -406,22 +408,25 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	{
 	case Qt::UserRole:
 	{
-		auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index));
-		if (valueItem)
+		auto value_item = rtti_cast<PropertyPathItem>(qt_item_cast(itemFromIndex(index)));
+		if (value_item != nullptr)
 		{
-			return QVariant::fromValue(valueItem->getPath());
+			return QVariant::fromValue(value_item->getPath());
 		}
 		break;
 	}
 	case Qt::TextColorRole:
 	{
-		if (auto valueItem = dynamic_cast<PropertyPathItem*>(itemFromIndex(index)))
+		auto value_item = rtti_cast<PropertyPathItem>(qt_item_cast(itemFromIndex(index)));
+		if (value_item != nullptr)
 		{
-			bool isValueItem = dynamic_cast<PointerValueItem*>(valueItem) || dynamic_cast<PropertyValueItem*>(valueItem);
-			if (isValueItem && valueItem->getPath().isInstanceProperty())
+			bool correct_item = value_item->get_type().is_derived_from(RTTI_OF(PointerValueItem)) ||
+				value_item->get_type().is_derived_from(RTTI_OF(PropertyValueItem));
+
+			if (value_item->getPath().isInstanceProperty() && correct_item)
 			{
 				auto& themeManager = AppContext::get().getThemeManager();
-				if (valueItem->getPath().isOverridden())
+				if (value_item->getPath().isOverridden())
 				{
 					return QVariant::fromValue<QColor>(themeManager.getColor(theme::color::instancePropertyOverride));
 				}
@@ -459,18 +464,18 @@ Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const
 		return flags;
 
 	// Is this item an array element? Enable dragging
-	auto parent_item = item->parent();
-	if ((parent_item != nullptr) && (dynamic_cast<ArrayPropertyItem*>(parent_item) != nullptr))
+	auto parent_item = qt_item_cast(item->parent());
+	if (parent_item != nullptr && parent_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
 	{
 		flags |= Qt::ItemIsDragEnabled;
 	}
 
 	// Is this item an array? Allow dropping
-	if (dynamic_cast<ArrayPropertyItem*>(item) != nullptr)
+	auto prop_item = qt_item_cast(item);
+	if (prop_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
 	{
 		flags |= Qt::ItemIsDropEnabled;
 	}
-
 	return flags;
 }
 

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "propertypath.h"
+#include "rttiitem.h"
 
 #include <QStandardItem>
 #include <QFileInfo>
@@ -19,16 +20,14 @@ namespace napkin
 	/**
 	* An item that displays an RTTI Type
 	*/
-	class RTTITypeItem : public QStandardItem
+	class RTTITypeItem : public RTTIItem
 	{
+		RTTI_ENABLE(RTTIItem)
 	public:
 		RTTITypeItem(const nap::rtti::TypeInfo& type);
-
 		QVariant data(int role) const override;
-
 	private:
 		void refresh();
-
 	private:
 		const nap::rtti::TypeInfo& mType;
 	};

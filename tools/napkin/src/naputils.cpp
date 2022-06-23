@@ -25,6 +25,8 @@ using namespace nap::rtti;
 using namespace nap::utility;
 using namespace napkin;
 
+RTTI_DEFINE_BASE(napkin::RTTITypeItem)
+
 std::vector<rttr::type> napkin::getImmediateDerivedTypes(const rttr::type& type)
 {
 	// Cycle over all derived types. This includes all derived types,

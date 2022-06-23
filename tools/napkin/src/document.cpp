@@ -352,7 +352,7 @@ void Document::removeInstanceProperties(PropertyPath path)
 	auto parent = path.getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
+	auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
 	assert(parentEntity);
 	auto instIndex = path.getInstanceChildEntityIndex();
 
@@ -501,15 +501,14 @@ void Document::remove(const PropertyPath& path)
 	if (parent.getType().is_derived_from<nap::Entity>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		// Removing child Entity from parent Entity
-		auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
+		auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
 		assert(parentEntity);
-		auto childEntity = dynamic_cast<nap::Entity*>(path.getObject());
+		auto childEntity = rtti_cast<nap::Entity>(path.getObject());
 		assert(childEntity);
-		auto realIndex = path.getRealChildEntityIndex();
 
 		// Remove all instanceproperties that refer to this Entity:0 under ParentEntity
+		auto realIndex = path.getRealChildEntityIndex();
 		removeInstanceProperties(path);
-
 		removeChildEntity(*parentEntity, realIndex);
 		return;
 	}
@@ -519,8 +518,8 @@ void Document::remove(const PropertyPath& path)
 
 	if (parent.getType().is_derived_from<nap::Scene>() && path.getType().is_derived_from<nap::Entity>())
 	{
-		auto entity = dynamic_cast<nap::Entity*>(path.getObject());
-		auto scene = dynamic_cast<nap::Scene*>(parent.getObject());
+		auto entity = rtti_cast<nap::Entity>(path.getObject());
+		auto scene = rtti_cast<nap::Scene>(parent.getObject());
 		int idx = 0;
 		int pathidx = path.getInstanceChildEntityIndex();
 		for (int i=0; i<scene->mEntities.size(); i++)
@@ -891,11 +890,11 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 
 QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::Object& object)
 {
-	auto entity = dynamic_cast<nap::Entity*>(&object);
+	auto entity = rtti_cast<nap::Entity>(&object);
 	if (entity == nullptr)
 	{
 		// must be component
-		auto comp = dynamic_cast<nap::Component*>(&object);
+		auto comp = rtti_cast<nap::Component>(&object);
 		entity = getOwner(*comp);
 	}
 	assert(entity);

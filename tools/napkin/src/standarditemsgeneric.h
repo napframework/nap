@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "rttiitem.h"
 #include <QtGui/QStandardItem>
 
 namespace napkin
@@ -12,7 +13,7 @@ namespace napkin
 	/**
 	 * An empty item.
 	 */
-	class EmptyItem : public QStandardItem
+	class EmptyItem : public RTTIItem
 	{
 	public:
 		/**
@@ -21,10 +22,11 @@ namespace napkin
 		EmptyItem();
 	};
 
+
 	/**
 	 * An item representing invalid data
 	 */
-	class InvalidItem : public QStandardItem
+	class InvalidItem : public RTTIItem
 	{
 	public:
 		/**
