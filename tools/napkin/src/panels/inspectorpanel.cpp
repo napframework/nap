@@ -241,12 +241,8 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
-	// Get parent of property and parent as potential object
-	auto parent = path.getParent(); 
-	auto object = parent.getObject();
-
 	// Skip groups, they're not visible in the inspector, only their children
-	if (object != nullptr && object->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	if (path.hasProperty() && path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		setPath({});
 		return;
@@ -263,6 +259,10 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	// If the object name changed, the property path in the model is now invalid because it's string-based.
 	else
 	{
+		// Get parent of property and parent as potential object
+		auto parent = path.getParent();
+		auto object = parent.getObject();
+
 		assert(object != nullptr);
 		auto doc = path.getDocument();
 
