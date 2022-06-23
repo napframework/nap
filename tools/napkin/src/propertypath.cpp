@@ -305,8 +305,7 @@ void PropertyPath::setValue(rttr::variant value)
 			targetAttr = &getOrCreateTargetAttribute();
 			if (isPointer())
 			{
-				std::string name("instanceProp_" + std::string(value.get_type().get_name().data())
-								 + "_" + nap::math::generateUUID());
+				std::string name("instanceProp_" + std::string(value.get_type().get_name().data()) + "_" + nap::math::generateUUID());
 				auto propValue = new nap::PointerInstancePropertyValue();
 				propValue->mID = name;
 				propValue->mValue = value.get_value<nap::rtti::Object*>();

@@ -148,11 +148,12 @@ void ResourceModel::removeEmbeddedObjects()
 	QList<const nap::rtti::Object*> removeObjects;
 	for (int row=0; row < mObjectsItem.rowCount(); row++)
 	{
-		auto item = mObjectsItem.child(row, 0);
-		assert(dynamic_cast<ObjectItem*>(item) != nullptr);
-		auto object = static_cast<ObjectItem*>(item)->getObject();
-		if (doc->isPointedToByEmbeddedPointer(*object))
+		auto item = rtti_cast<ObjectItem>(qt_item_cast(mObjectsItem.child(row, 0)));
+		auto object = item->getObject();
+		if (doc->isPointedToByEmbeddedPointer(*item->getObject()))
+		{
 			removeObjects << object;
+		}
 	}
 
 	// Now remove

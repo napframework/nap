@@ -97,64 +97,59 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 
 void InspectorPanel::onItemContextMenu(QMenu& menu)
 {
-	QStandardItem* item = mTreeView.getSelectedItem();
-	if (item == nullptr)
+	// Get property path item
+	auto path_item = rtti_cast<PropertyPathItem>(qt_item_cast(mTreeView.getSelectedItem()));
+	if (path_item == nullptr)
 		return;
-
-	auto parent_item = item->parent();
-	if (parent_item != nullptr)
+		
+	// In Array?
+	auto parent_item = path_item->parentItem();
+	if (parent_item != nullptr && parent_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
 	{
-		auto parent_array_item = dynamic_cast<ArrayPropertyItem*>(parent_item);
-		if (parent_array_item != nullptr)
-		{
-			PropertyPath parent_property = parent_array_item->getPath();
-			long element_index = item->row();
-			menu.addAction("Remove Element", [parent_property, element_index]()
+		auto parent_array_item = static_cast<ArrayPropertyItem*>(parent_item);
+		PropertyPath parent_property = parent_array_item->getPath();
+		long element_index = path_item->row();
+		menu.addAction("Remove Element", [parent_property, element_index]()
 			{
 				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
 			});
-		}
 	}
 
 	// File link?
-	auto path_item = dynamic_cast<PropertyPathItem*>(item);
-	if (path_item != nullptr)
+	auto& path = path_item->getPath();
+	const auto& type = path.getType();
+	const auto& prop = path.getProperty();
+	if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
 	{
-		auto& path = path_item->getPath();
-		const auto& type = path.getType();
-		const auto& prop = path.getProperty();
-		if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
+		bool ok;
+		std::string filename = path_item->getPath().getValue().to_string(&ok);
+		if (nap::utility::fileExists(filename))
 		{
-			bool ok;
-			std::string filename = path_item->getPath().getValue().to_string(&ok);
-			if (nap::utility::fileExists(filename))
+			menu.addAction("Show file in " + nap::qt::fileBrowserName(), [filename]()
 			{
-				menu.addAction("Show file in " + nap::qt::fileBrowserName(), [filename]()
-				{
-					nap::qt::revealInFileBrowser(QString::fromStdString(filename));
-				});
-				menu.addAction("Open in external editor", [filename]()
-				{
-					nap::qt::openInExternalEditor(QString::fromStdString(filename));
-				});
-			}
-
-		}
-
-		if (path.isInstanceProperty() && path.isOverridden())
-		{
-			menu.addAction("Remove override", [path]() {
-				PropertyPath p = path;
-				p.removeOverride();
+				nap::qt::revealInFileBrowser(QString::fromStdString(filename));
+			});
+			menu.addAction("Open in external editor", [filename]()
+			{
+				nap::qt::openInExternalEditor(QString::fromStdString(filename));
 			});
 		}
+
+	}
+
+	if (path.isInstanceProperty() && path.isOverridden())
+	{
+		menu.addAction("Remove override", [path]() {
+			PropertyPath p = path;
+			p.removeOverride();
+		});
 	}
 
 	// Pointer?
-	if (auto pointer_item = dynamic_cast<PointerItem*>(item))
+	if (path_item->get_type().is_derived_from(RTTI_OF(PointerItem)))
 	{
-		nap::rtti::Object* pointee = pointer_item->getPath().getPointee();
-		QAction* action = menu.addAction("Select Resource", [pointer_item, pointee]
+		nap::rtti::Object* pointee = path_item->getPath().getPointee();
+		QAction* action = menu.addAction("Select Resource", [pointee]
 		{
 			QList<nap::rtti::Object*> objects = {pointee};
 			AppContext::get().selectionChanged(objects);
@@ -163,17 +158,16 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 
 	// Embedded pointer?
-	if (auto embeddedPointerItem = dynamic_cast<EmbeddedPointerItem*>(item))
+	if (path_item->get_type().is_derived_from(RTTI_OF(EmbeddedPointerItem)))
 	{
-		nap::rtti::Object* pointee = embeddedPointerItem->getPath().getPointee();
+		nap::rtti::Object* pointee = path_item->getPath().getPointee();
 		QString label = QString(pointee ? "Replace" : "Create") + " Instance";
-		menu.addAction(label, [this, embeddedPointerItem, pointee]
+		menu.addAction(label, [this, path_item]
 		{
-			auto path = embeddedPointerItem->getPath();
+			auto path = path_item->getPath();
 			auto type = path.getWrappedType();
 
 			TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
-
 			rttr::type chosenType = showTypeSelector(this, predicate);
 			if (!chosenType.is_valid())
 				return;
@@ -183,26 +177,25 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 		if (pointee)
 		{
-			menu.addAction("Remove Instance", [embeddedPointerItem, pointee]
+			menu.addAction("Remove Instance", [path_item, pointee]
 			{
-				auto doc = embeddedPointerItem->getPath().getDocument();
-				auto pointeePath = PropertyPath(*pointee, *doc);
-
 				// TODO: Make this a command
+				auto doc = path_item->getPath().getDocument();
+				auto pointeePath = PropertyPath(*pointee, *doc);
 				auto ownerPath = doc->getEmbeddedObjectOwnerPath(*pointeePath.getObject());
 				doc->removeObject(*pointeePath.getObject());
 				if (ownerPath.isValid())
+				{
 					doc->propertyValueChanged(ownerPath);
+				}
 			});
 		}
 	}
 
 	// Array item?
-	auto* array_item = dynamic_cast<ArrayPropertyItem*>(item);
-	if (array_item != nullptr)
+	if (path_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
 	{
-		PropertyPath array_path = array_item->getPath();
-
+		PropertyPath array_path = path_item->getPath();
 		if (array_path.isNonEmbeddedPointer())
 		{
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
@@ -220,9 +213,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			menu.addAction("Create...", [this, array_path]()
 			{
 				auto type = array_path.getArrayElementType();
-
 				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
-
 				rttr::type elementType = showTypeSelector(this, predicate);
 				if (elementType.is_valid())
 					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
@@ -492,7 +483,7 @@ QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
 	// TODO: Handle dragging multiple items
 	for (auto index : indexes)
 	{
-		auto object_item = dynamic_cast<PropertyPathItem*>(itemFromIndex(index));
+		auto object_item = rtti_cast<PropertyPathItem>(qt_item_cast(itemFromIndex(index)));
 		if (object_item == nullptr)
 			continue;
 
