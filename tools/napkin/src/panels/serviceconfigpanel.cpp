@@ -107,8 +107,8 @@ namespace napkin
 		QList<PropertyPath> paths;
 		for (auto m : mTreeView.getSelectedItems())
 		{
-			auto item = dynamic_cast<ServiceConfigItem*>(m);
-			assert(item != nullptr);
+			assert(qobject_cast<ServiceConfigItem*>(qitem_cast(m)) != nullptr);
+			auto item = static_cast<ServiceConfigItem*>(m);
 			paths << item->propertyPath();
 		}
 		selectionChanged(paths);

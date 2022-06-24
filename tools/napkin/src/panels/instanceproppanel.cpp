@@ -24,7 +24,7 @@ QVariant InstPropAttribItem::data(int role) const
 	case Qt::DisplayRole:
 	{
 		QString path = QString::fromStdString(mAttrib.mPath);
-		auto instPropsItem = dynamic_cast<InstancePropsItem*>(parentItem());
+		auto instPropsItem = qobject_cast<InstancePropsItem*>(parentItem());
 		assert(instPropsItem);
 		auto compPath = instPropsItem->props().mTargetComponent.getInstancePath();
 
@@ -57,8 +57,10 @@ nap::RootEntity* InstPropAttribItem::rootEntity() const
 	auto parentItem = this->parentItem();
 	while (parentItem)
 	{
-		if (auto rootEntItem = dynamic_cast<RootEntityPropItem*>(this->parentItem()))
+		if (auto rootEntItem = qobject_cast<RootEntityPropItem*>(this->parentItem()))
+		{
 			return &rootEntItem->rootEntity();
+		}
 		parentItem = this->parentItem();
 	}
 	return nullptr;
@@ -192,12 +194,11 @@ void InstancePropPanel::onModelChanged()
 void InstancePropPanel::onSelectComponentInstance()
 {
 	auto instPropsItem = mTreeView.getSelectedItem<InstancePropsItem>();
-	auto rootEntityPropItem = dynamic_cast<RootEntityPropItem*>(instPropsItem->parentItem());
+	auto rootEntityPropItem = qobject_cast<RootEntityPropItem*>(instPropsItem->parentItem());
 	assert(rootEntityPropItem);
 	const nap::ComponentInstanceProperties& props = instPropsItem->props();
 
 	auto rootEntity = &rootEntityPropItem->rootEntity();
 	auto path = QString::fromStdString(props.mTargetComponent.toString());
-
 	selectComponentRequested(rootEntity, path);
 }

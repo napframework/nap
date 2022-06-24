@@ -330,11 +330,9 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 	// Find item based on path name
 	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
 	{
-		auto pitem = dynamic_cast<PropertyPathItem*>(item);
-		if (pitem == nullptr)
-			return false;
-
-		return pitem->getPath().toString() == selection.toString();
+		auto pitem = qobject_cast<PropertyPathItem*>(qitem_cast(item));
+		return pitem != nullptr ? pitem->getPath().toString() == selection.toString() :
+			false;
 	});
 
 	if (pathItem != nullptr)
@@ -356,10 +354,8 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 
 	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
-		auto pitem = dynamic_cast<PropertyPathItem*>(item);
-		if (pitem == nullptr)
-			return false;
-		return pitem->getPath() == prop;
+		auto pitem = qobject_cast<PropertyPathItem*>(qitem_cast(item));
+		return pitem != nullptr ? pitem->getPath() == prop : false;
 	});
 
 	mTreeView.selectAndReveal(pathItem);

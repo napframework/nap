@@ -206,7 +206,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	{
 		if (event->type() == QEvent::MouseButtonPress)
 		{
-			auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
+			auto mouseEvent = static_cast<QMouseEvent*>(event);
 
 			// Get icon size
 			QRect toggle_rect = QRect(
@@ -228,7 +228,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	if(event->type() == QEvent::MouseButtonPress)
 	{
 		QRect rect_btn = QRect(option.rect.right() - option.rect.height(), option.rect.top(), option.rect.right(), option.rect.height());
-		auto mouseEvent = dynamic_cast<QMouseEvent*>(event);
+		auto mouseEvent = static_cast<QMouseEvent*>(event);
 		if (rect_btn.contains(mouseEvent->pos()))
 		{
 			// TODO: There must be a less convoluted way.
@@ -313,6 +313,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 	return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
+
 rttr::type PropertyValueItemDelegate::getTypeFromModelIndex(const QModelIndex& index) const
 {
 	auto variant = index.data(Qt::UserRole);
@@ -323,6 +324,7 @@ rttr::type PropertyValueItemDelegate::getTypeFromModelIndex(const QModelIndex& i
 	return rttr::detail::get_invalid_type();
 }
 
+
 const PropertyPath PropertyValueItemDelegate::getPropertyPathFromIndex(const QModelIndex& idx) const
 {
 	auto variant = idx.data(Qt::UserRole);
@@ -332,6 +334,7 @@ const PropertyPath PropertyValueItemDelegate::getPropertyPathFromIndex(const QMo
 	}
 	return {};
 }
+
 
 QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option,
 												 const QModelIndex& index) const
@@ -352,12 +355,13 @@ QWidget* PropertyValueItemDelegate::createEditor(QWidget* parent, const QStyleOp
 	return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
+
 void PropertyValueItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
 	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
-		auto combo = dynamic_cast<QComboBox*>(editor);
+		auto combo = qobject_cast<QComboBox*>(editor);
 		int value = index.data(Qt::EditRole).toInt();
 		combo->setCurrentIndex(value);
 	}
@@ -367,12 +371,13 @@ void PropertyValueItemDelegate::setEditorData(QWidget* editor, const QModelIndex
 	}
 }
 
+
 void PropertyValueItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
 	auto type = getTypeFromModelIndex(index);
 	if (type.is_enumeration())
 	{
-		auto combo = dynamic_cast<QComboBox*>(editor);
+		auto combo = qobject_cast<QComboBox*>(editor);
 		int value = combo->currentIndex();
 		model->setData(index, value);
 	}

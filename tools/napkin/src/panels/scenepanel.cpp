@@ -47,7 +47,7 @@ napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& root
 		auto sceneItem = item(i, 0);
 		for (auto j = 0; j < sceneItem->rowCount(); j++)
 		{
-			auto reItem = dynamic_cast<RootEntityItem*>(sceneItem->child(j, 0));
+			auto reItem = qobject_cast<RootEntityItem*>(qitem_cast(sceneItem->child(j, 0)));
 			assert(reItem);
 			if (&reItem->rootEntity() == &rootEntity)
 				return reItem;
@@ -83,6 +83,7 @@ void napkin::SceneModel::onObjectAdded(nap::rtti::Object* obj)
 	refresh();
 }
 
+
 void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
 	// TODO: Don't refresh entire model
@@ -95,15 +96,18 @@ void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
 	refresh();
 }
 
+
 void napkin::SceneModel::onNewFile()
 {
 	populate();
 }
 
+
 void napkin::SceneModel::onFileOpened(const QString& filename)
 {
 	populate();
 }
+
 
 void napkin::SceneModel::onFileClosing(const QString& filename)
 {
@@ -130,13 +134,13 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 
 }
 
+
 void napkin::ScenePanel::menuHook(QMenu& menu)
 {
-	auto item = mFilterView.getSelectedItem();
-
+	auto item = qitem_cast(mFilterView.getSelectedItem());
 	{
-		auto sceneItem = dynamic_cast<SceneItem*>(item);
-		if (sceneItem)
+		auto sceneItem = qobject_cast<SceneItem*>(item);
+		if (sceneItem != nullptr)
 		{
 			auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
 			assert(scene->get_type().is_derived_from<nap::Scene>());
@@ -145,22 +149,19 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 			connect(addEntityAction, &QAction::triggered, [this, sceneItem, scene]()
 			{
 				auto entities = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Entity));
-				auto entity = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(this, entities));
-				if (!entity)
-					return;
-
-				AppContext::get().executeCommand(new AddEntityToSceneCommand(*scene, *entity));
+				auto entity = rtti_cast<nap::Entity>(napkin::showObjectSelector(this, entities));
+				if (entity != nullptr)
+				{
+					AppContext::get().executeCommand(new AddEntityToSceneCommand(*scene, *entity));
+				}
 			});
-
-
 		}
 	}
 
-	auto rootEntityItem = dynamic_cast<RootEntityItem*>(item);
+	auto rootEntityItem = qobject_cast<RootEntityItem*>(item);
 	if (rootEntityItem)
 	{
 		auto sceneItem = rootEntityItem->sceneItem();
-
 		if (sceneItem)
 		{
 			auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
@@ -177,10 +178,12 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 	}
 }
 
+
 nap::qt::FilterTreeView& napkin::ScenePanel::treeView()
 {
 	return mFilterView;
 }
+
 
 void napkin::ScenePanel::select(nap::RootEntity* rootEntity, const QString& path)
 {
@@ -188,23 +191,24 @@ void napkin::ScenePanel::select(nap::RootEntity* rootEntity, const QString& path
 	mFilterView.selectAndReveal(item);
 }
 
+
 void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
 {
 	// Grab selected nap objects
 	QList<PropertyPath> selectedPaths;
 	for (auto m : mFilterView.getSelectedItems())
 	{
-		auto eItem = dynamic_cast<EntityInstanceItem*>(m);
-		if (eItem)
+		auto eItem = qobject_cast<EntityInstanceItem*>(qitem_cast(m));
+		if (eItem) 
 			selectedPaths << eItem->propertyPath();
 
-		auto cItem = dynamic_cast<ComponentInstanceItem*>(m);
+		auto cItem = qobject_cast<ComponentInstanceItem*>(qitem_cast(m));
 		if (cItem)
 			selectedPaths << cItem->propertyPath();
 	}
-
 	selectionChanged(selectedPaths);
 }
+
 
 napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* rootEntity, const QString& path)
 {
@@ -226,7 +230,7 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 			// component
 			for (int row = 0; row < currentParent->rowCount(); row++)
 			{
-				auto child = dynamic_cast<ComponentInstanceItem*>(currentParent->child(row));
+				auto child = qobject_cast<ComponentInstanceItem*>(qitem_cast(currentParent->child(row)));
 				if (child->component().mID == part)
 					return child;
 			}
@@ -241,9 +245,10 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 			int foundIndex = 0;
 			for (int row = 0; row < currentParent->rowCount(); row++)
 			{
-				auto child = dynamic_cast<EntityInstanceItem*>(currentParent->child(row));
+				auto child = qobject_cast<EntityInstanceItem*>(qitem_cast(currentParent->child(row)));
 				if (!child)
 					continue;
+
 				if (child->entity().mID == name)
 				{
 					if (foundIndex == index)

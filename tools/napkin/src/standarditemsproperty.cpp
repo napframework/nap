@@ -87,9 +87,9 @@ QVariant napkin::PropertyPathItem::data(int role) const
 	if (role == Qt::DisplayRole)
 	{
 		// If the parent is an array, display the index of this item
-		if (auto parentPath = dynamic_cast<PropertyPathItem*>(parentItem()))
+		auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
+		if (parent_path != nullptr && parent_path->getPath().isArray())
 		{
-			if (parentPath->getPath().isArray())
 				return row();
 		}
 	}

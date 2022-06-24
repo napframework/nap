@@ -108,11 +108,11 @@ namespace napkin
 	{
 		T* foundItem = nullptr;
 		nap::qt::findIndexInModel(model, [&model, &foundItem, &obj](const QModelIndex& idx) -> bool {
-			QStandardItem* item = model.itemFromIndex(idx);
+			auto* item = qitem_cast(model.itemFromIndex(idx));
 			if (item == nullptr)
 				return false;
 
-			auto objItem = dynamic_cast<T*>(item);
+			auto objItem = qobject_cast<T*>(item);
 			if (objItem == nullptr)
 				return false;
 

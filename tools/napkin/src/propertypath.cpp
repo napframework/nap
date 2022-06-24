@@ -171,31 +171,32 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 		return nullptr;
 
 	assert(mDocument != nullptr);
-	auto scene = dynamic_cast<nap::Scene*>(mDocument->getObject(mObjectPath[0].mID));
+	auto scene = rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID));
 	if (!scene)
 		return nullptr;
 
-	auto entity = dynamic_cast<nap::Entity*>(mDocument->getObject(mObjectPath[1].mID));
+	auto entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
 	if (!entity)
 		return nullptr;
 
-	auto nameIdx = mObjectPath[1].mIndex;
-
-	int idx = 0;
+	auto nameIdx = mObjectPath[1].mIndex; int idx = 0;
 	for (auto& rootEntity : scene->mEntities)
 	{
 		if (idx == nameIdx && rootEntity.mEntity.get() == entity)
 			return &rootEntity;
+
 		if (rootEntity.mEntity.get() == entity)
 			++idx;
 	}
 	return nullptr;
 }
 
+
 nap::Component* PropertyPath::component() const
 {
-	return dynamic_cast<nap::Component*>(getObject());
+	return rtti_cast<nap::Component>(getObject());
 }
+
 
 nap::TargetAttribute* PropertyPath::targetAttribute() const
 {
@@ -248,7 +249,7 @@ rttr::variant PropertyPath::getValue() const
 		{
 			if (isPointer())
 			{
-				auto ptrInstPropValue = dynamic_cast<nap::PointerInstancePropertyValue*>(targetAttr->mValue.get());
+				auto ptrInstPropValue = rtti_cast<nap::PointerInstancePropertyValue>(targetAttr->mValue.get());
 				if (ptrInstPropValue)
 					return ptrInstPropValue->mValue;
 			}
@@ -702,12 +703,11 @@ int PropertyPath::getRealChildEntityIndex() const
 	auto parent = getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
+	auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
 	assert(parentEntity);
 
-	int instanceIndex = getInstanceChildEntityIndex();
-
 	int foundIDs = 0;
+	int instanceIndex = getInstanceChildEntityIndex();
 	for (int i = 0, len = static_cast<int>(parentEntity->mChildren.size()); i < len; i++)
 	{
 		auto currChild = parentEntity->mChildren[i];

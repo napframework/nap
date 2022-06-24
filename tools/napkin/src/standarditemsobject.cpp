@@ -595,11 +595,18 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 }
 
+
 const std::string EntityInstanceItem::unambiguousName() const
 {
 	if (auto parentObjectItem = qobject_cast<ObjectItem*>(parentItem()))
 		return ObjectItem::unambiguousName() + ":" + std::to_string(parentObjectItem->nameIndex(*this));
 	return ObjectItem::unambiguousName();
+}
+
+
+nap::Entity& napkin::EntityInstanceItem::entity() const
+{
+	return *rtti_cast<nap::Entity>(mObject);
 }
 
 
@@ -613,16 +620,19 @@ RootEntityItem::RootEntityItem(nap::RootEntity& e)
 	assert(&mRootEntity);
 }
 
+
 const PropertyPath RootEntityItem::propertyPath() const
 {
 	return EntityInstanceItem::propertyPath();
 }
+
 
 nap::RootEntity& RootEntityItem::rootEntity() const
 {
 	assert(&mRootEntity);
 	return mRootEntity;
 }
+
 
 void RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
@@ -632,6 +642,7 @@ void RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	appendRow(new EntityInstanceItem(*e, mRootEntity));
 }
 
+
 void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 {
 	if (owner != mRootEntity.mEntity.get())
@@ -640,6 +651,11 @@ void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 	appendRow(new ComponentInstanceItem(*c, mRootEntity));
 }
 
+
+SceneItem* RootEntityItem::sceneItem()
+{
+	return qobject_cast<SceneItem*>(parentItem());
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentInstanceItem

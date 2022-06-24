@@ -265,7 +265,7 @@ namespace napkin
 	public:
 		explicit EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity);
 		virtual nap::RootEntity& rootEntity() const;
-		nap::Entity& entity() const { return *dynamic_cast<nap::Entity*>(mObject); }
+		nap::Entity& entity() const;
 		const PropertyPath propertyPath() const override;
 		const std::string unambiguousName() const override;
 	private:
@@ -287,7 +287,7 @@ namespace napkin
 		explicit RootEntityItem(nap::RootEntity& e);
 		const PropertyPath propertyPath() const override;
 
-		SceneItem* sceneItem() { return dynamic_cast<SceneItem*>(QStandardItem::parent()); }
+		SceneItem* sceneItem();
 		nap::RootEntity& rootEntity() const override;
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);

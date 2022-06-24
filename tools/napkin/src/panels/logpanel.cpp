@@ -77,7 +77,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 {
 	if (role == Qt::ForegroundRole)
 	{
-		auto item = dynamic_cast<LogEntryItem*>(itemFromIndex(index));
+		auto item = qobject_cast<LogEntryItem*>(qitem_cast(itemFromIndex(index)));
 		assert(item != nullptr);
 		auto col = AppContext::get().getThemeManager().getLogColor(item->getMessage().level());
 		return QVariant(QColor(col));
@@ -134,7 +134,7 @@ void LogPanel::onLevelChanged(int index)
 void LogPanel::onDoubleClicked(const QModelIndex& index)
 {
 	auto sourceindex = mTreeView.getProxyModel().mapToSource(index);
-	auto textitem = dynamic_cast<LogTextItem*>(mTreeView.getModel()->itemFromIndex(sourceindex));
+	auto textitem = qobject_cast<LogTextItem*>(qitem_cast(mTreeView.getModel()->itemFromIndex(sourceindex)));
 	if (textitem == nullptr)
 		return;
 
@@ -178,7 +178,7 @@ bool LogPanel::levelFilter(const nap::qt::LeafFilterProxyModel& model, int sourc
 						   const QModelIndex& sourceParent)
 {
 	auto index = mLogModel.index(sourceRow, 0, sourceParent);
-	auto levelItem = dynamic_cast<LevelItem*>(mLogModel.itemFromIndex(index));
+	auto levelItem = qobject_cast<LevelItem*>(qitem_cast(mLogModel.itemFromIndex(index)));
 	assert(levelItem != nullptr);
 
 	const auto& itemLevel = levelItem->level();
