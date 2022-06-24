@@ -181,7 +181,7 @@ namespace nap
 				for (auto& read_object : result.mReadObjects)
 				{
 					if (read_object->get_type().is_derived_from<T>())
-						root_object = dynamic_cast<T*>(read_object.get());
+						root_object = static_cast<T*>(read_object.get());
 					createdObjects.emplace_back(std::move(read_object));
 				}
 
