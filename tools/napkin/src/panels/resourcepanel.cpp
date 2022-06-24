@@ -15,7 +15,7 @@ using namespace napkin;
 static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QAbstractItemModel* model)
 {
 	// Get model
-	assert(dynamic_cast<ResourceModel*>(model) != nullptr);
+	assert(qobject_cast<ResourceModel*>(model) != nullptr);
 	ResourceModel* resource_model = static_cast<ResourceModel*>(model);
 
 	// Get item
@@ -389,7 +389,7 @@ void ResourcePanel::emitSelectionChanged()
 	QList<PropertyPath> selectedPaths;
 	for (auto m : mTreeView.getSelectedItems())
 	{
-		auto item = dynamic_cast<ObjectItem*>(m);
+		auto item = qobject_cast<ObjectItem*>(qitem_cast(m));
 		if (item != nullptr)
 			selectedPaths << item->propertyPath();
 	}

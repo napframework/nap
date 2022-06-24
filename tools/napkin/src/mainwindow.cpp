@@ -206,9 +206,11 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 	mCurvePanel.editCurve(nullptr);
 	if (!paths.isEmpty())
 	{
-		auto ob = dynamic_cast<nap::math::FloatFCurve*>(paths.first().getObject());
-		if (ob)
+		auto ob = rtti_cast<nap::math::FloatFCurve>(paths.first().getObject());
+		if (ob != nullptr)
+		{
 			mCurvePanel.editCurve(ob);
+		}
 	}
 }
 

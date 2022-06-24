@@ -4,6 +4,10 @@
 
 #pragma once
 
+// Local Includes
+#include "rttiitem.h"
+
+// External Includes
 #include <QWidget>
 #include <QVBoxLayout>
 #include <napqt/filtertreeview.h>
@@ -12,7 +16,7 @@
 namespace napkin
 {
 
-	class ModuleItem : public QStandardItem
+	class ModuleItem : public RTTIItem
 	{
 	public:
 		ModuleItem(const nap::Module& module);
@@ -20,6 +24,7 @@ namespace napkin
 	private:
 		const nap::Module& mModule;
 	};
+
 
 	class ModuleModel : public QStandardItemModel
 	{
@@ -34,11 +39,11 @@ namespace napkin
 		void onCoreInitialized();
 	};
 
+
 	class ModulePanel : public QWidget
 	{
 	public:
 		ModulePanel();
-
 	private:
 		QVBoxLayout mLayout;
 		nap::qt::FilterTreeView mTreeView;

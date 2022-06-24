@@ -82,14 +82,14 @@ ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 
 const PropertyPath ObjectItem::propertyPath() const
 {
-	auto parentEntity = dynamic_cast<EntityItem*>(parentItem());
+	auto parentEntity = qobject_cast<EntityItem*>(parentItem());
 	QStringList path;
 
 	auto thisEntity = this;
 	while (parentEntity)
 	{
 		auto thisID = QString::fromStdString(thisEntity->getObject()->mID);
-		if (dynamic_cast<const ComponentItem*>(thisEntity))
+		if (qobject_cast<const ComponentItem*>(thisEntity))
 		{
 			// TODO: Remove this case if multiple entities of the same type/name may be added to entities
 			path.insert(0, thisID);
@@ -102,7 +102,7 @@ const PropertyPath ObjectItem::propertyPath() const
 		}
 
 		thisEntity = parentEntity;
-		parentEntity = dynamic_cast<EntityItem*>(parentEntity->parentItem());
+		parentEntity = qobject_cast<EntityItem*>(parentEntity->parentItem());
 	}
 
 	path.insert(0, QString::fromStdString(thisEntity->getObject()->mID));
@@ -116,13 +116,11 @@ std::string ObjectItem::absolutePath() const
 {
 	std::vector<std::string> path;
 	path.emplace(path.begin(), unambiguousName());
-
-	auto pitem = dynamic_cast<ObjectItem*>(parentItem());
-
+	auto pitem = qobject_cast<ObjectItem*>(parentItem());
 	while (pitem)
 	{
 		path.emplace(path.begin(), pitem->unambiguousName());
-		pitem = dynamic_cast<ObjectItem*>(pitem->parentItem());
+		pitem = qobject_cast<ObjectItem*>(pitem->parentItem());
 	}
 	return "/" + nap::utility::joinString(path, "/");
 }
@@ -132,7 +130,7 @@ bool ObjectItem::isPointer() const
 	if (mIsPointer)
 		return true;
 
-	auto parentItem = dynamic_cast<ObjectItem*>(QStandardItem::parent());
+	auto parentItem = qobject_cast<ObjectItem*>(this->parentItem());
 	return parentItem && parentItem->isPointer();
 }
 
@@ -206,12 +204,12 @@ QString ObjectItem::instanceName() const
 		int i = 0;
 		for (int row = 0, len = parent->rowCount(); row < len; row++)
 		{
-			auto sibling = dynamic_cast<ObjectItem*>(parent->child(row));
+			auto sibling = qobject_cast<ObjectItem*>(qitem_cast(parent->child(row)));
 			if (!sibling)
 				continue;
 
 			// Must be of either Entity items
-			if (! (dynamic_cast<EntityInstanceItem*>(sibling) || dynamic_cast<EntityItem*>(sibling)))
+			if (!(qobject_cast<EntityInstanceItem*>(sibling) || qobject_cast<EntityItem*>(sibling)))
 				continue;
 
 			if (sibling == this)
@@ -230,16 +228,15 @@ QString ObjectItem::instanceName() const
 std::string ObjectItem::componentPath() const
 {
 	{
-		auto ownerItem = dynamic_cast<EntityInstanceItem*>(parentItem());
+		auto ownerItem = qobject_cast<EntityInstanceItem*>(parentItem());
 		if (ownerItem)
 		{
 			std::vector<std::string> namePath = {mObject->mID};
-
 			auto parent = ownerItem;
-			while (parent != nullptr && !dynamic_cast<RootEntityItem*>(parent))
+			while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
 			{
 				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = dynamic_cast<EntityInstanceItem*>(parent->parentItem());
+				parent = qobject_cast<EntityInstanceItem*>(parent->parentItem());
 			}
 
 			return "./" + nap::utility::joinString(namePath, "/");
@@ -247,7 +244,7 @@ std::string ObjectItem::componentPath() const
 	}
 	// TODO: Merge this with the above code....
 	{
-		auto ownerItem = dynamic_cast<EntityItem*>(parentItem());
+		auto ownerItem = qobject_cast<EntityItem*>(parentItem());
 		if (ownerItem)
 		{
 			std::vector<std::string> namePath = {mObject->mID};
@@ -255,10 +252,12 @@ std::string ObjectItem::componentPath() const
 			auto parent = ownerItem;
 			while (parent)
 			{
-				if (!dynamic_cast<EntityItem*>(parent->parentItem()))
+				auto parent_entity = qobject_cast<EntityItem*>(parent->parentItem());
+				if (parent_entity == nullptr)
 					break;
+
 				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = dynamic_cast<EntityItem*>(parent->parentItem());
+				parent = parent_entity;
 			}
 
 			return "./" + nap::utility::joinString(namePath, "/");
@@ -287,9 +286,10 @@ int ObjectItem::nameIndex(const ObjectItem& childItem) const
 	int index = 0;
 	for (int row = 0; row < rowCount(); row++)
 	{
-		auto otherChildItem = dynamic_cast<ObjectItem*>(child(row, 0));
+		auto otherChildItem = qobject_cast<ObjectItem*>(qitem_cast(child(row, 0)));
 		if (!otherChildItem)
 			continue;
+
 		if (otherChildItem == &childItem)
 			return index;
 
@@ -381,7 +381,7 @@ void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 
 const std::string EntityItem::unambiguousName() const
 {
-	if (auto entityItem = dynamic_cast<EntityItem*>(parentItem()))
+	if (auto entityItem = qobject_cast<EntityItem*>(parentItem()))
 	{
 		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
 	}
@@ -576,16 +576,16 @@ void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
 
 const PropertyPath EntityInstanceItem::propertyPath() const
 {
-	auto ownerItem = dynamic_cast<EntityInstanceItem*>(parentItem());
+	auto ownerItem = qobject_cast<EntityInstanceItem*>(parentItem());
 	if (ownerItem)
 	{
 		std::vector<std::string> namePath = {mObject->mID};
 
 		auto parent = ownerItem;
-		while (parent != nullptr && !dynamic_cast<RootEntityItem*>(parent))
+		while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
 		{
 			namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-			parent = dynamic_cast<EntityInstanceItem*>(parent->parentItem());
+			parent = qobject_cast<EntityInstanceItem*>(parent->parentItem());
 		}
 
 		std::string path = "./" + nap::utility::joinString(namePath, "/");
@@ -597,7 +597,7 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 
 const std::string EntityInstanceItem::unambiguousName() const
 {
-	if (auto parentObjectItem = dynamic_cast<ObjectItem*>(parentItem()))
+	if (auto parentObjectItem = qobject_cast<ObjectItem*>(parentItem()))
 		return ObjectItem::unambiguousName() + ":" + std::to_string(parentObjectItem->nameIndex(*this));
 	return ObjectItem::unambiguousName();
 }
@@ -658,7 +658,7 @@ const PropertyPath ComponentInstanceItem::propertyPath() const
 
 nap::Component& ComponentInstanceItem::component() const
 {
-	return *dynamic_cast<nap::Component*>(mObject);
+	return *rtti_cast<nap::Component>(mObject);
 }
 
 nap::RootEntity& ComponentInstanceItem::rootEntity() const

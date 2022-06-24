@@ -4,20 +4,24 @@
 
 #pragma once
 
+// Local Includes
+#include "propertypath.h"
+#include "rttiitem.h"
+
+// External Includes
 #include <QWidget>
 #include <QVBoxLayout>
 #include <napqt/filtertreeview.h>
 #include <nap/service.h>
-
-#include "propertypath.h"
 
 namespace napkin
 {
 	/**
 	 * Wraps a NAP service configuration
 	 */
-	class ServiceConfigItem : public QStandardItem
+	class ServiceConfigItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		ServiceConfigItem(nap::ServiceConfiguration& config, Document& document);
 

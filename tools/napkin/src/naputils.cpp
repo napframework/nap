@@ -304,8 +304,8 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 				   [tree, &dialog](const QModelIndex& idx)
 	{
 		const auto sourceIndex = tree->getProxyModel().mapToSource(idx);
-		auto item = tree->getModel()->itemFromIndex(sourceIndex);
-		auto propitem = dynamic_cast<PropertyDisplayItem*>(item);
+		auto item = qitem_cast(tree->getModel()->itemFromIndex(sourceIndex));
+		auto propitem = qobject_cast<PropertyDisplayItem*>(item);
 		assert(propitem);
 		napkin::AppContext::get().propertySelectionChanged(propitem->getPath());
 		dialog.close();

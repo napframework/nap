@@ -4,6 +4,10 @@
 
 #pragma once
 
+// Local Includes
+#include "rttiitem.h"
+
+// External Includes
 #include <QWidget>
 #include <QVBoxLayout>
 #include <napqt/filtertreeview.h>
@@ -15,8 +19,9 @@ namespace napkin
 	/**
 	 * An item holding a nap::TargetAttribute
 	 */
-	class InstPropAttribItem : public QStandardItem
+	class InstPropAttribItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		explicit InstPropAttribItem(nap::TargetAttribute& attrib);
 		QVariant data(int role) const override;
@@ -26,11 +31,13 @@ namespace napkin
 		nap::TargetAttribute& mAttrib;
 	};
 
+
 	/**
 	 * An item holding nap::ComponentInstanceProperties
 	 */
-	class InstancePropsItem : public QStandardItem
+	class InstancePropsItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		explicit InstancePropsItem(nap::ComponentInstanceProperties& props);
 		QVariant data(int role) const override;
@@ -40,11 +47,13 @@ namespace napkin
 		nap::ComponentInstanceProperties& mProps;
 	};
 
+
 	/**
 	 * An item holding a RootEntity
 	 */
-	class RootEntityPropItem : public QStandardItem
+	class RootEntityPropItem : public RTTIItem
 	{
+		Q_OBJECT
 	public :
 		explicit RootEntityPropItem(nap::RootEntity& rootEntity);
 		QVariant data(int role) const override;
@@ -53,11 +62,13 @@ namespace napkin
 		nap::RootEntity& mRootEntity;
 	};
 
+
 	/**
 	 * An item holding a Scene
 	 */
-	class InstPropSceneItem : public QStandardItem
+	class InstPropSceneItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		explicit InstPropSceneItem(nap::Scene& scene);
 		QVariant data(int role) const override;
@@ -65,6 +76,7 @@ namespace napkin
 	private:
 		nap::Scene& mScene;
 	};
+
 
 	/**
 	 * A model providing a tree of all instance properties in a scene
@@ -82,6 +94,7 @@ namespace napkin
 		void onDocumentChanged();
 		void onSceneChanged();
 	};
+
 
 	/**
 	 * This panel shows the currently set instance properties

@@ -15,57 +15,31 @@
 
 using namespace napkin;
 
-class LogEntryItem : public QStandardItem
+const nap::LogMessage& LogEntryItem::getMessage() const
 {
-public:
-	LogEntryItem(const nap::LogMessage& msg) : mMessage(msg) { }
+	return mMessage;
+}
 
-	const nap::LogMessage& getMessage() const
-	{
-		return mMessage;
-	}
 
-private:
-	const nap::LogMessage mMessage;
-};
-
-class LogTextItem : public LogEntryItem
+LogTextItem::LogTextItem(const nap::LogMessage& msg) : LogEntryItem(msg)
 {
-public:
-	explicit LogTextItem(const nap::LogMessage& msg) : LogEntryItem(msg)
-	{
-		setText(QString::fromStdString(msg.text()));
-	}
+	setText(QString::fromStdString(msg.text()));
+}
 
-	void setLink(const QString& link) { mLink = link; }
 
-	bool hasLink() const { return !mLink.isEmpty(); }
-
-	const QString& link() { return mLink; }
-
-private:
-	QString mLink;
-};
-
-class LevelItem : public LogEntryItem
+LevelItem::LevelItem(const nap::LogMessage& msg) : LogEntryItem(msg)
 {
-public:
-	explicit LevelItem(const nap::LogMessage& msg) : LogEntryItem(msg)
-	{
-		setText(QString::fromStdString(msg.level().name()));
-	}
-
-	const nap::LogLevel& level() { return getMessage().level(); }
-};
+	setText(QString::fromStdString(msg.level().name()));
+}
 
 
 LogModel::LogModel() : QStandardItemModel()
 {
 	// Register with nap::Logger, call the Qt signal in order to let the signal arrive on the Qt UI thread
 	connect(&AppContext::get(), &AppContext::logMessage, this, &LogModel::onLog);
-
 	setHorizontalHeaderLabels({"Level", "Message"});
 }
+
 
 void LogModel::onLog(nap::LogMessage msg)
 {
@@ -98,6 +72,7 @@ void LogModel::onLog(nap::LogMessage msg)
 		removeRow(0);
 }
 
+
 QVariant LogModel::data(const QModelIndex& index, int role) const
 {
 	if (role == Qt::ForegroundRole)
@@ -109,6 +84,7 @@ QVariant LogModel::data(const QModelIndex& index, int role) const
 	}
 	return QStandardItemModel::data(index, role);
 }
+
 
 LogPanel::LogPanel() : QWidget()
 {
@@ -148,10 +124,12 @@ void LogPanel::populateFilterCombo()
 		mFilterCombo.addItem(QString::fromStdString(level->name()), level->level());
 }
 
+
 void LogPanel::onLevelChanged(int index)
 {
 	mTreeView.getProxyModel().refreshFilter();
 }
+
 
 void LogPanel::onDoubleClicked(const QModelIndex& index)
 {
@@ -170,6 +148,7 @@ void LogPanel::onRowsAboutToBeInserted(const QModelIndex& parent, int first, int
 	wasMaxScroll = scrollBar->value() == scrollBar->maximum();
 }
 
+
 void LogPanel::onRowInserted(const QModelIndex &parent, int first, int last)
 {
 	auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
@@ -182,15 +161,18 @@ void LogPanel::onRowInserted(const QModelIndex &parent, int first, int last)
 	}
 }
 
+
 void LogPanel::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 }
 
+
 void LogPanel::closeEvent(QCloseEvent* event)
 {
 	QWidget::closeEvent(event);
 }
+
 
 bool LogPanel::levelFilter(const nap::qt::LeafFilterProxyModel& model, int sourceRow,
 						   const QModelIndex& sourceParent)
@@ -203,6 +185,7 @@ bool LogPanel::levelFilter(const nap::qt::LeafFilterProxyModel& model, int sourc
 	return levelItem->level() >= getCurrentLevel();
 }
 
+
 const nap::LogLevel& LogPanel::getCurrentLevel() const
 {
 	const auto& levels = nap::Logger::getLevels();
@@ -212,12 +195,14 @@ const nap::LogLevel& LogPanel::getCurrentLevel() const
 	return *level;
 }
 
+
 void LogPanel::setCurrentLevel(const nap::LogLevel& level)
 {
 	int idx = getLevelIndex(level);
 	assert(idx > 0);
 	mFilterCombo.setCurrentIndex(idx);
 }
+
 
 int LogPanel::getLevelIndex(const nap::LogLevel& level) const
 {
@@ -242,6 +227,5 @@ void LogPanelWidgetStorer::restore(LogPanel& widget, const QString& key, const Q
 		nap::Logger::warn("Wrong log level in settings (%s), using default", std::to_string(index).c_str());
 		index = defaultIndex;
 	}
-
 	widget.setCurrentLevel(*levels[index]);
 }

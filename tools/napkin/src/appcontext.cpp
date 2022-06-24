@@ -353,7 +353,7 @@ QMainWindow* AppContext::getMainWindow() const
 {
 	for (auto window : getQApplication()->topLevelWidgets())
 	{
-		auto mainWin = dynamic_cast<QMainWindow*>(window);
+		auto mainWin = qobject_cast<QMainWindow*>(window);
 		if (mainWin != nullptr)
 			return mainWin;
 	}
@@ -458,7 +458,7 @@ const napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
 
 QApplication* napkin::AppContext::getQApplication() const
 {
-	return dynamic_cast<QApplication*>(qGuiApp);
+	return qobject_cast<QApplication*>(qGuiApp);
 }
 
 

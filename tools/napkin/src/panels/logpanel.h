@@ -4,20 +4,57 @@
 
 #pragma once
 
+// Local Includes
+#include "rttiitem.h"
+
+// External Includes
 #include <QWidget>
 #include <QStandardItemModel>
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QComboBox>
 #include <QSettings>
-
 #include <nap/logger.h>
-
 #include <napqt/filtertreeview.h>
 #include <napqt/autosettings.h>
 
 namespace napkin
 {
+	class LogEntryItem : public RTTIItem
+	{
+		Q_OBJECT
+	public:
+		LogEntryItem(const nap::LogMessage& msg) : mMessage(msg) { }
+		const nap::LogMessage& getMessage() const;
+
+	private:
+		const nap::LogMessage mMessage;
+	};
+
+
+	class LogTextItem : public LogEntryItem
+	{
+		Q_OBJECT
+	public:
+		explicit LogTextItem(const nap::LogMessage& msg);
+		void setLink(const QString& link) { mLink = link; }
+		bool hasLink() const { return !mLink.isEmpty(); }
+		const QString& link() { return mLink; }
+
+	private:
+		QString mLink;
+	};
+
+
+	class LevelItem : public LogEntryItem
+	{
+		Q_OBJECT
+	public:
+		explicit LevelItem(const nap::LogMessage& msg);
+		const nap::LogLevel& level() { return getMessage().level(); }
+	};
+
+
 	/**
 	 * Captures log messages and provides the LogPanel with the currently cached log messages.
 	 */
@@ -42,6 +79,7 @@ namespace napkin
 	private:
 		int mMaxRows = 1000; // The maximum number of rows to show in the log
 	};
+
 
 	/**
 	 * A panel showing all log messages in the system.
