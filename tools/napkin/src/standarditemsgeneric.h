@@ -15,6 +15,7 @@ namespace napkin
 	 */
 	class EmptyItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * Constructor
@@ -28,6 +29,7 @@ namespace napkin
 	 */
 	class InvalidItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to be displayed

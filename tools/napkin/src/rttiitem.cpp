@@ -10,16 +10,13 @@ namespace napkin
 {
 	RTTIItem* RTTIItem::parentItem() const
 	{
-		auto parent_item = QStandardItem::parent();
-		if (parent_item != nullptr)
-		{
-			RTTI_ITEM(parent_item) return static_cast<RTTIItem*>(QStandardItem::parent());
-		}
-		return nullptr;
+		return qitem_cast(QStandardItem::parent());
 	}
 
-	napkin::RTTIItem* qt_item_cast(QStandardItem* qItem)
+
+	napkin::RTTIItem* qitem_cast(QStandardItem* qItem)
 	{
+		// DEBUG CHECK
 		assert(qItem == nullptr || dynamic_cast<RTTIItem*>(qItem) != nullptr);
 		return static_cast<RTTIItem*>(qItem);
 	}

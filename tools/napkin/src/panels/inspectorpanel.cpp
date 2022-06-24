@@ -98,13 +98,15 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 void InspectorPanel::onItemContextMenu(QMenu& menu)
 {
 	// Get property path item
-	auto path_item = rtti_cast<PropertyPathItem>(qt_item_cast(mTreeView.getSelectedItem()));
+	auto path_item = qobject_cast<PropertyPathItem*>(qitem_cast(mTreeView.getSelectedItem()));
 	if (path_item == nullptr)
 		return;
 		
 	// In Array?
 	auto parent_item = path_item->parentItem();
-	if (parent_item != nullptr && parent_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
+
+	auto parent_array_item = qobject_cast<ArrayPropertyItem*>(parent_item);
+	if (parent_array_item != nullptr)
 	{
 		auto parent_array_item = static_cast<ArrayPropertyItem*>(parent_item);
 		PropertyPath parent_property = parent_array_item->getPath();
@@ -146,7 +148,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 
 	// Pointer?
-	if (path_item->get_type().is_derived_from(RTTI_OF(PointerItem)))
+	if (qobject_cast<PointerItem*>(path_item) != nullptr)
 	{
 		nap::rtti::Object* pointee = path_item->getPath().getPointee();
 		QAction* action = menu.addAction("Select Resource", [pointee]
@@ -158,7 +160,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 
 	// Embedded pointer?
-	if (path_item->get_type().is_derived_from(RTTI_OF(EmbeddedPointerItem)))
+	if (qobject_cast<EmbeddedPointerItem*>(path_item) != nullptr)
 	{
 		nap::rtti::Object* pointee = path_item->getPath().getPointee();
 		QString label = QString(pointee ? "Replace" : "Create") + " Instance";
@@ -193,7 +195,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 
 	// Array item?
-	if (path_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
+	if (qobject_cast<ArrayPropertyItem*>(path_item))
 	{
 		PropertyPath array_path = path_item->getPath();
 		if (array_path.isNonEmbeddedPointer())
@@ -399,7 +401,7 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	{
 	case Qt::UserRole:
 	{
-		auto value_item = rtti_cast<PropertyPathItem>(qt_item_cast(itemFromIndex(index)));
+		auto value_item = qobject_cast<PropertyPathItem*>(qitem_cast(itemFromIndex(index)));
 		if (value_item != nullptr)
 		{
 			return QVariant::fromValue(value_item->getPath());
@@ -408,11 +410,11 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	}
 	case Qt::TextColorRole:
 	{
-		auto value_item = rtti_cast<PropertyPathItem>(qt_item_cast(itemFromIndex(index)));
+		auto value_item = qobject_cast<PropertyPathItem*>(qitem_cast(itemFromIndex(index)));
 		if (value_item != nullptr)
 		{
-			bool correct_item = value_item->get_type().is_derived_from(RTTI_OF(PointerValueItem)) ||
-				value_item->get_type().is_derived_from(RTTI_OF(PropertyValueItem));
+			bool correct_item = qobject_cast<PointerValueItem*>(value_item) != nullptr ||
+				qobject_cast<PropertyValueItem*>(value_item) != nullptr;
 
 			if (value_item->getPath().isInstanceProperty() && correct_item)
 			{
@@ -455,15 +457,15 @@ Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const
 		return flags;
 
 	// Is this item an array element? Enable dragging
-	auto parent_item = qt_item_cast(item->parent());
-	if (parent_item != nullptr && parent_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
+	auto parent_item = qitem_cast(item->parent());
+	if (parent_item != nullptr && qobject_cast<ArrayPropertyItem*>(parent_item))
 	{
 		flags |= Qt::ItemIsDragEnabled;
 	}
 
 	// Is this item an array? Allow dropping
-	auto prop_item = qt_item_cast(item);
-	if (prop_item->get_type().is_derived_from(RTTI_OF(ArrayPropertyItem)))
+	auto prop_item = qitem_cast(item);
+	if (qobject_cast<ArrayPropertyItem*>(prop_item) != nullptr)
 	{
 		flags |= Qt::ItemIsDropEnabled;
 	}
@@ -483,7 +485,7 @@ QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
 	// TODO: Handle dragging multiple items
 	for (auto index : indexes)
 	{
-		auto object_item = rtti_cast<PropertyPathItem>(qt_item_cast(itemFromIndex(index)));
+		auto object_item = qobject_cast<PropertyPathItem*>(qitem_cast(itemFromIndex(index)));
 		if (object_item == nullptr)
 			continue;
 

@@ -24,22 +24,22 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	assert(l_item != nullptr && r_item != nullptr);
 
 	// Cast to RTTI Item
-	auto lr_item = qt_item_cast(l_item);
-	auto rr_item = qt_item_cast(r_item);
+	auto lr_item = qitem_cast(l_item);
+	auto rr_item = qitem_cast(r_item);
 
 	// Don't sort regular resource groups
-	if (lr_item->get_type().is_derived_from(RTTI_OF(EntityResourcesItem)) &&
-		rr_item->get_type().is_derived_from(RTTI_OF(RegularResourcesItem)))
+	if (qobject_cast<EntityResourcesItem*>(lr_item) != nullptr &&
+		qobject_cast<RegularResourcesItem*>(rr_item) != nullptr)
 		return false;
 
 	// Don't sort items of which parent is an entity (components)
-	if (lr_item->get_type().is_derived_from(RTTI_OF(EntityItem)) &&
-		rr_item->get_type().is_derived_from(RTTI_OF(EntityItem)))
+	if (qobject_cast<EntityItem*>(lr_item) != nullptr &&
+		qobject_cast<EntityItem*>(rr_item) != nullptr)
 		return false;
 
 	// Prioritize groups over other items
-	GroupItem* lg_item = rtti_cast<GroupItem>(lr_item);
-	GroupItem* rg_item = rtti_cast<GroupItem>(rr_item);
+	GroupItem* lg_item = qobject_cast<GroupItem*>(lr_item);
+	GroupItem* rg_item = qobject_cast<GroupItem*>(rr_item);
 
 	// Left is group, right is not
 	if (lg_item != nullptr && rg_item == nullptr)
@@ -175,7 +175,7 @@ static nap::IGroup* getItemGroup(const ObjectItem& item)
 {
 	// Check if the parent is a group
 	GroupItem* parent_item = item.parentItem() != nullptr ?
-		rtti_cast<GroupItem>(item.parentItem()) :
+		qobject_cast<GroupItem*>(item.parentItem()) :
 		nullptr;
 
 	// Return group from parent, nullptr otherwise
@@ -186,13 +186,12 @@ static nap::IGroup* getItemGroup(const ObjectItem& item)
 void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
 	// Get selection
-	auto item = mTreeView.getSelectedItem();
-	if (item == nullptr)
+	auto selected_item = qitem_cast(mTreeView.getSelectedItem());
+	if (selected_item == nullptr)
 		return;
 
 	// Cast to rtti item
-	auto selected_item = qt_item_cast(item);
-	if (selected_item->get_type().is_derived_from(RTTI_OF(EntityItem)))
+	if (qobject_cast<EntityItem*>(selected_item) != nullptr)
 	{
 		auto entity_item = static_cast<EntityItem*>(selected_item);
 		menu.addAction(new AddChildEntityAction(*entity_item->getEntity()));
@@ -200,24 +199,23 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 
 		if (entity_item->isPointer())
 		{
-			auto parent_item = rtti_cast<EntityItem>(entity_item->parentItem());
+			auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
 			if (parent_item)
 				menu.addAction(new RemovePathAction(entity_item->propertyPath()));
 		}
 		menu.addAction(new DeleteObjectAction(*entity_item->getObject()));
 	}
 	// Component
-	else if (selected_item->get_type().is_derived_from(RTTI_OF(ComponentItem)))
+	else if (qobject_cast<ComponentItem*>(selected_item) != nullptr)
 	{
 		auto component_item = static_cast<ComponentItem*>(selected_item);
 		menu.addAction(new DeleteObjectAction(*component_item->getObject()));
 	}
 	// Group
-	else if (selected_item->get_type().is_derived_from(RTTI_OF(GroupItem)))
+	else if (qobject_cast<GroupItem*>(selected_item) != nullptr)
 	{
-		GroupItem* group_item = static_cast<GroupItem*>(selected_item);
-
 		// Create and add new resource
+		GroupItem* group_item = static_cast<GroupItem*>(selected_item);
 		menu.addAction(new AddNewResourceToGroupAction(*group_item->getGroup()));
 
 		// Add existing resource
@@ -238,7 +236,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		menu.addAction(new DeleteGroupAction(*group_item->getGroup()));
 	}
 	// General Object
-	else if (selected_item->get_type().is_derived_from(RTTI_OF(ObjectItem)))
+	else if (qobject_cast<ObjectItem*>(selected_item) != nullptr)
 	{
 		// Get resource
 		auto object_item = static_cast<ObjectItem*>(selected_item);
@@ -255,7 +253,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		menu.addAction(new DeleteObjectAction(*object_item->getObject()));
 	}
 	// Top Resource
-	else if (selected_item->get_type().is_derived_from(RTTI_OF(RegularResourcesItem)))
+	else if (qobject_cast<RegularResourcesItem*>(selected_item) != nullptr)
 	{
 		// Add Resource selection
 		menu.addAction(new CreateResourceAction());
@@ -264,7 +262,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		menu.addAction(new CreateGroupAction());
 	}
 	// Top Entity
-	else if (selected_item->get_type().is_derived_from(RTTI_OF(EntityResourcesItem)))
+	else if (qobject_cast<EntityResourcesItem*>(selected_item) != nullptr)
 	{
 		menu.addAction(new CreateEntityAction());
 	}

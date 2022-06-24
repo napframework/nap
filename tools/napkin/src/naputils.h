@@ -22,7 +22,7 @@ namespace napkin
 	*/
 	class RTTITypeItem : public RTTIItem
 	{
-		RTTI_ENABLE(RTTIItem)
+		Q_OBJECT
 	public:
 		RTTITypeItem(const nap::rtti::TypeInfo& type);
 		QVariant data(int role) const override;

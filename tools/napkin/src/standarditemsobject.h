@@ -26,7 +26,7 @@ namespace napkin
 	 */
 	class RegularResourcesItem : public RTTIItem
 	{
-		RTTI_ENABLE(RTTIItem)
+		Q_OBJECT
 	public:
 		RegularResourcesItem();
 		QVariant data(int role) const override;
@@ -42,7 +42,7 @@ namespace napkin
 	 */
 	class EntityResourcesItem : public RTTIItem
 	{
-		RTTI_ENABLE(RTTIItem)
+		Q_OBJECT
 	public:
 		EntityResourcesItem();
 		QVariant data(int role) const override;
@@ -59,7 +59,6 @@ namespace napkin
 	class ObjectItem : public RTTIItem
 	{
 		Q_OBJECT
-		RTTI_ENABLE(RTTIItem)
 	public:
 		/**
 		 * @param o The object this item should represent
@@ -160,7 +159,7 @@ namespace napkin
 	 */
 	class EntityItem : public ObjectItem
 	{
-		RTTI_ENABLE(ObjectItem)
+		Q_OBJECT
 	public:
 		explicit EntityItem(nap::Entity& entity, bool isPointer = false);
 
@@ -185,7 +184,6 @@ namespace napkin
 	class GroupItem : public ObjectItem
 	{
 		Q_OBJECT
-		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit GroupItem(nap::IGroup& group);
 
@@ -231,7 +229,7 @@ namespace napkin
 
 	class SceneItem : public ObjectItem
 	{
-		RTTI_ENABLE(ObjectItem)
+		Q_OBJECT
 	public:
 		explicit SceneItem(nap::Scene& scene);
 	};
@@ -243,7 +241,7 @@ namespace napkin
 
 	class ComponentItem : public ObjectItem
 	{
-		RTTI_ENABLE(ObjectItem)
+		Q_OBJECT
 	public:
 		explicit ComponentItem(nap::Component& comp);
 
@@ -264,7 +262,6 @@ namespace napkin
 	class EntityInstanceItem : public ObjectItem
 	{
 		Q_OBJECT
-		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity);
 		virtual nap::RootEntity& rootEntity() const;
@@ -286,7 +283,6 @@ namespace napkin
 	class RootEntityItem : public EntityInstanceItem
 	{
 	Q_OBJECT
-	RTTI_ENABLE(EntityInstanceItem)
 	public:
 		explicit RootEntityItem(nap::RootEntity& e);
 		const PropertyPath propertyPath() const override;
@@ -311,7 +307,7 @@ namespace napkin
 	 */
 	class ComponentInstanceItem : public ObjectItem
 	{
-		RTTI_ENABLE(ObjectItem)
+		Q_OBJECT
 	public:
 		explicit ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity);
 		const PropertyPath propertyPath() const override;

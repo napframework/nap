@@ -33,7 +33,7 @@ namespace napkin
 	 */
 	class PropertyPathItem : public RTTIItem
 	{
-		RTTI_ENABLE(RTTIItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text on the item.
@@ -61,7 +61,7 @@ namespace napkin
 	 */
 	class PropertyItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -76,7 +76,7 @@ namespace napkin
 	 */
 	class CompoundPropertyItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -97,7 +97,7 @@ namespace napkin
 	 */
 	class ArrayPropertyItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -120,7 +120,7 @@ namespace napkin
 	 */
 	class PointerItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -135,7 +135,7 @@ namespace napkin
      */
 	class PointerValueItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -160,7 +160,7 @@ namespace napkin
 	 */
 	class ColorValueItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param path The path to the property, pointer.
@@ -183,7 +183,7 @@ namespace napkin
 	 */
 	class EmbeddedPointerItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -204,7 +204,7 @@ namespace napkin
 	 */
 	class PropertyValueItem : public PropertyPathItem
 	{
-		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.

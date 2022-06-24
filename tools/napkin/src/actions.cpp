@@ -732,8 +732,7 @@ RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) :
 void RemoveChildEntityAction::perform()
 {
 	// TODO: Move into Command
-	auto parentItem = rtti_cast<EntityItem>(mEntityItem->parentItem());
-
+	auto parentItem = qobject_cast<EntityItem*>(mEntityItem->parentItem());
 	auto doc = AppContext::get().getDocument();
 	auto index = parentItem->childIndex(*mEntityItem);
 	assert(index >= 0);
@@ -742,7 +741,7 @@ void RemoveChildEntityAction::perform()
 	QStringList componentPaths;
 	nap::qt::traverse(*parentItem->model(), [&componentPaths](QStandardItem* item)
 	{
-		auto compItem = rtti_cast<ComponentItem>(static_cast<RTTIItem*>(item));
+		auto compItem = qobject_cast<ComponentItem*>(static_cast<RTTIItem*>(item));
 		if (compItem)
 		{
 			componentPaths << QString::fromStdString(compItem->componentPath());

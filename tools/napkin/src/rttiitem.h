@@ -11,12 +11,11 @@
 namespace napkin
 {
 	/**
- 	 * RTTI Enabled QStandardItem
+ 	 * RTTI enabled QStandardItem, base class of ALL QStandardItems in Napkin.
 	 */
 	class RTTIItem : public QObject, public QStandardItem
 	{
 		Q_OBJECT
-		RTTI_ENABLE()
 	public:
 		/**
 		 * @return parent item, nullptr if there is no parent, asserts if parent not of type RTTIItem
@@ -29,9 +28,5 @@ namespace napkin
 	 * which every item in use should be derived. Asserts if the item is not an
 	 * rtti enabled QTStandardItem.
 	 */
-	RTTIItem* qt_item_cast(QStandardItem* qItem);
+	RTTIItem* qitem_cast(QStandardItem* qItem);
 }
-
-// Use this macro to verify that the given QT item, which isn't RTTI enabled, is an RTTI enabled QT item
-#define RTTI_ITEM(qtItem)	\
-	assert(dynamic_cast<napkin::RTTIItem*>(qtItem) != nullptr);
