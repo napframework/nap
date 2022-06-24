@@ -42,7 +42,7 @@ void AutoSettings::storeRecursive(QWidget& w, QSettings& s) const
 
 	for (auto child : w.children())
 	{
-		auto widget = dynamic_cast<QWidget*>(child);
+		auto widget = qobject_cast<QWidget*>(child);
 		if (widget != nullptr)
 			storeRecursive(*widget, s);
 	}
@@ -60,7 +60,7 @@ void AutoSettings::restoreRecursive(QWidget& w, const QSettings& s) const
 
 	for (const auto child : w.children())
 	{
-		auto widget = dynamic_cast<QWidget*>(child);
+		auto widget = qobject_cast<QWidget*>(child);
 		if (widget != nullptr && !mExclusions.contains(widget))
 			restoreRecursive(*widget, s);
 	}

@@ -110,7 +110,6 @@ namespace napkin
 
 	private:
 		void menuHook(QMenu& menu);
-		void onSelectComponentInstance();
 		void onModelChanged();
 
 		QVBoxLayout mLayout;

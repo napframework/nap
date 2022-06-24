@@ -63,7 +63,7 @@ void FilterTreeView::setModel(QAbstractItemModel* model)
 
 QStandardItemModel* FilterTreeView::getModel() const
 {
-	return dynamic_cast<QStandardItemModel*>(mProxyModel.sourceModel());
+	return qobject_cast<QStandardItemModel*>(mProxyModel.sourceModel());
 }
 
 void FilterTreeView::selectAndReveal(QStandardItem* item)

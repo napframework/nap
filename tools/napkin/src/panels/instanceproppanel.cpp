@@ -90,6 +90,7 @@ QVariant InstancePropsItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RootEntityPropItem::RootEntityPropItem(nap::RootEntity& rootEntity) : mRootEntity(rootEntity)
@@ -99,6 +100,7 @@ RootEntityPropItem::RootEntityPropItem(nap::RootEntity& rootEntity) : mRootEntit
 	for (auto& p : rootEntity.mInstanceProperties)
 		appendRow(new InstancePropsItem(p));
 }
+
 
 QVariant RootEntityPropItem::data(int role) const
 {
@@ -110,10 +112,12 @@ QVariant RootEntityPropItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
+
 nap::RootEntity& RootEntityPropItem::rootEntity() const
 {
 	return mRootEntity;
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -125,6 +129,7 @@ InstPropSceneItem::InstPropSceneItem(nap::Scene& scene) : mScene(scene)
 		appendRow(new RootEntityPropItem(e));
 }
 
+
 QVariant InstPropSceneItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
@@ -135,12 +140,15 @@ QVariant InstPropSceneItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 InstancePropModel::InstancePropModel()
 {
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::documentChanged, this, &InstancePropModel::onDocumentChanged);
 }
+
 
 void InstancePropModel::onDocumentChanged()
 {
@@ -153,6 +161,7 @@ void InstancePropModel::onDocumentChanged()
 	onSceneChanged();
 }
 
+
 void InstancePropModel::onSceneChanged()
 {
 	removeRows(0, rowCount());
@@ -162,6 +171,7 @@ void InstancePropModel::onSceneChanged()
 	}
 	sceneChanged();
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -177,28 +187,27 @@ InstancePropPanel::InstancePropPanel()
 	mTreeView.setMenuHook(std::bind(&InstancePropPanel::menuHook, this, std::placeholders::_1));
 }
 
+
 void InstancePropPanel::menuHook(QMenu& menu)
 {
-	auto instPropsItem = mTreeView.getSelectedItem<InstancePropsItem>();
-	if (instPropsItem)
+	auto item = qobject_cast<InstancePropsItem*>(qitem_cast(mTreeView.getSelectedItem()));
+	if (item != nullptr)
 	{
-		menu.addAction("Select Component Instance", this, &InstancePropPanel::onSelectComponentInstance);
+		menu.addAction("Select Component Instance", this, [this, item]
+			{
+				auto root_entity_prop_item = qobject_cast<RootEntityPropItem*>(item->parentItem());
+				assert(root_entity_prop_item);
+				const nap::ComponentInstanceProperties& props = item->props();
+
+				auto rootEntity = &root_entity_prop_item->rootEntity();
+				auto path = QString::fromStdString(props.mTargetComponent.toString());
+				this->selectComponentRequested(rootEntity, path);
+			});
 	}
 }
+
 
 void InstancePropPanel::onModelChanged()
 {
 	mTreeView.getTreeView().expandAll();
-}
-
-void InstancePropPanel::onSelectComponentInstance()
-{
-	auto instPropsItem = mTreeView.getSelectedItem<InstancePropsItem>();
-	auto rootEntityPropItem = qobject_cast<RootEntityPropItem*>(instPropsItem->parentItem());
-	assert(rootEntityPropItem);
-	const nap::ComponentInstanceProperties& props = instPropsItem->props();
-
-	auto rootEntity = &rootEntityPropItem->rootEntity();
-	auto path = QString::fromStdString(props.mTargetComponent.toString());
-	selectComponentRequested(rootEntity, path);
 }

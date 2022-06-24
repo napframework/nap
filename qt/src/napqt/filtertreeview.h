@@ -29,6 +29,7 @@ namespace nap
 		 */
 		class FilterTree_ : public QTreeView
 		{
+			Q_OBJECT
 		public:
 			FilterTree_(QWidget *parent = nullptr);
 			QRect visualRectFor(const QItemSelection& selection) const;
@@ -118,15 +119,6 @@ namespace nap
 			 * @return The currently selected items in the view.
 			 */
 			QList<QStandardItem*> getSelectedItems() const;
-
-			template<typename T>
-			T* getSelectedItem() const
-			{
-				for (auto item : getSelectedItems())
-					if (auto m = dynamic_cast<T*>(item))
-						return m;
-				return nullptr;
-			}
 
 			/**
 			 * @return The selection model used by the tree view.
