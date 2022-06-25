@@ -365,10 +365,10 @@ namespace napkin
 		 * Qt Signal
 		 * Invoked after an object (Resource or Group) moved to a new group.
 		 * @param object The object that moved to a new group
-		 * @param oldParent The previous group
-		 * @param newParent The the group
+		 * @param oldParent The previous parent
+		 * @param newParent The new parent
 		 */
-		void objectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
+		void objectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
 		 * Qt Signal

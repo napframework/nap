@@ -131,8 +131,11 @@ namespace napkin
 
 		/**
 		 * Called when an object moved to another group
+		 * @param object the object that moved
+		 * @param oldParent old parent property
+		 * @param newParent new parent property
 		 */
-		void onObjectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
+		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
 		 * Called when a new file was created.

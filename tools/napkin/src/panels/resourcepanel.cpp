@@ -363,16 +363,16 @@ void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
 }
 
 
-void napkin::ResourcePanel::onObjectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent)
+void napkin::ResourcePanel::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
 {
 	// The item was in the root, attempt to remove it
-	if (oldParent == nullptr)
+	if (!oldParent.isValid())
 	{
 		mModel.removeObjectItem(object);
 	}
 
 	// The item has no new owner, add it
-	if (newParent == nullptr)
+	if (!newParent.isValid())
 	{
 		auto new_item = mModel.addObjectItem(object);
 	}

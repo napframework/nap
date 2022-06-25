@@ -425,6 +425,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::objectReparented, this, &GroupItem::onObjectReparented);
+	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
 }
 
 
@@ -446,18 +447,27 @@ nap::IGroup* napkin::GroupItem::getGroup()
 }
 
 
-void napkin::GroupItem::onObjectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent)
+void napkin::GroupItem::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
 {
 	// Remove child item if the previous owner is represented by this item
-	if (oldParent == this->getGroup())
+	if (oldParent.getObject() == mObject)
 	{
 		removeChild(object);
 	}
 
 	// Add new child if the parent is represented by this item
-	if (newParent == this->getGroup())
+	if (newParent.getObject() == mObject)
 	{
-		insertChild(object);
+		insertChild(object, newParent);
+	}
+}
+
+
+void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int index)
+{
+	if (path.getObject() == mObject)
+	{
+		nap::Logger::info("Child Inserted: %s", mObject->mID.c_str());
 	}
 }
 
@@ -478,7 +488,7 @@ void napkin::GroupItem::removeChild(const nap::rtti::Object& object)
 }
 
 
-void napkin::GroupItem::insertChild(nap::rtti::Object& object)
+void napkin::GroupItem::insertChild(nap::rtti::Object& object, PropertyPath path)
 {
 	// Check if an item has been added to the members property.
 	// If so, figure out the correct index to insert the child.
@@ -486,9 +496,9 @@ void napkin::GroupItem::insertChild(nap::rtti::Object& object)
 	// The NAP group has 2 properties: members and children, but the group item
 	// displays them as 1 long list. First the members, then the children.
 	// We therefore insert the item after the last member, but before the first child group
-	if (!object.get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	auto group = getGroup();
+	if (path.getProperty() == getGroup()->getMembersProperty())
 	{
-		auto group = getGroup();
 		PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
 		int row_index = array_path.getArrayLength() - 1;
 		auto new_item = new ObjectItem(&object);

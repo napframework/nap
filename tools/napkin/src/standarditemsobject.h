@@ -215,13 +215,18 @@ namespace napkin
 
 	private:
 		/**
-		 * Called when an item is parented under a different group
+		 * Called when an item is parented under a different object
 		 */
-		void onObjectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
+		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
+
+		/**
+		 * Called when a new item is inserted
+		 */
+		void onPropertyChildInserted(const PropertyPath& path, int index);
 
 		// Utility functions
 		void removeChild(const nap::rtti::Object& object);
-		void insertChild(nap::rtti::Object& object);
+		void insertChild(nap::rtti::Object& object, PropertyPath path);
 	};
 
 

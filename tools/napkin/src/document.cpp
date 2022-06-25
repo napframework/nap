@@ -775,8 +775,10 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 		ResolvedPath resolved_path = currentPath.resolve();
 		Variant array_value = resolved_path.getValue();
 		VariantArray view = array_value.create_array_view();
-		bool ok = view.remove_value(resource_idx); assert(ok);
-		ok = resolved_path.setValue(array_value); assert(ok);
+		bool ok = view.remove_value(resource_idx);
+		assert(ok);
+		ok = resolved_path.setValue(array_value);
+		assert(ok);
 	}
 
 	// Move to new parent
@@ -786,10 +788,12 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 		ResolvedPath resolved_path = newPath.resolve();
 		Variant target_array_value = resolved_path.getValue();
 		VariantArray view = target_array_value.create_array_view();
-		bool ok = view.insert_value(view.get_size(), &object); assert(ok);
-		ok = resolved_path.setValue(target_array_value); assert(ok);
+		bool ok = view.insert_value(view.get_size(), &object);
+		assert(ok);
+		ok = resolved_path.setValue(target_array_value);
+		assert(ok);
 	}
-	objectReparented(object, rtti_cast<nap::IGroup>(currentPath.getObject()), rtti_cast<nap::IGroup>(newPath.getObject()));
+	objectReparented(object, currentPath, newPath);
 }
 
 

@@ -144,7 +144,6 @@ void AddObjectCommand::redo()
 
 	// Remember for undo
 	mObjectName = object->mID;
-
 	ctx.selectionChanged({object});
 }
 

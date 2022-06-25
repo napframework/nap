@@ -171,8 +171,7 @@ namespace napkin
 		 * 	In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr,
-									 bool selectNewObject = true, const std::string& name = std::string());
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr, bool selectNewObject = true, const std::string& name = std::string());
 
 		/**
 		 * Add an Entity to a parent Entity, remove from previous parent if necessary
@@ -518,10 +517,10 @@ namespace napkin
 		 * Qt Signal
 		 * Invoked after an object moved to a new group.
 		 * @param object The object that moved to a new group
-		 * @param oldParent The previous group, nullptr if it had no parent
-		 * @param newParent The the new group, nullptr if not attached to a group
+		 * @param oldParent The previous parent (array) property, invalid if it had no parent
+		 * @param newParent The new parent (array) property, invalid if not attached to a new parent
 		 */
-		void objectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
+		void objectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
 		 * Qt Signal
