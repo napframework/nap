@@ -18,28 +18,27 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	assert(qobject_cast<ResourceModel*>(model) != nullptr);
 	ResourceModel* resource_model = static_cast<ResourceModel*>(model);
 
-	// Get item
-	auto l_item = resource_model->itemFromIndex(left);
-	auto r_item = resource_model->itemFromIndex(right);
-	assert(l_item != nullptr && r_item != nullptr);
+	// Get and cast to RTTI Item
+	auto l_item = dynamic_cast<RTTIItem*>(resource_model->itemFromIndex(left));
+	auto r_item = dynamic_cast<RTTIItem*>(resource_model->itemFromIndex(right));
 
-	// Cast to RTTI Item
-	auto lr_item = qitem_cast(l_item);
-	auto rr_item = qitem_cast(r_item);
+	// Bail if we're not an rtti item
+	if (l_item == nullptr || r_item == nullptr)
+		return false;
 
 	// Don't sort regular resource groups
-	if (qobject_cast<EntityResourcesItem*>(lr_item) != nullptr &&
-		qobject_cast<RegularResourcesItem*>(rr_item) != nullptr)
+	if (qobject_cast<EntityResourcesItem*>(l_item) != nullptr &&
+		qobject_cast<RegularResourcesItem*>(r_item) != nullptr)
 		return false;
 
 	// Don't sort items of which parent is an entity (components)
-	if (qobject_cast<EntityItem*>(lr_item->parentItem()) != nullptr &&
-		qobject_cast<EntityItem*>(rr_item->parentItem()) != nullptr)
+	if (qobject_cast<EntityItem*>(l_item->parentItem()) != nullptr &&
+		qobject_cast<EntityItem*>(r_item->parentItem()) != nullptr)
 		return false;
 
 	// Prioritize groups over other items
-	GroupItem* lg_item = qobject_cast<GroupItem*>(lr_item);
-	GroupItem* rg_item = qobject_cast<GroupItem*>(rr_item);
+	GroupItem* lg_item = qobject_cast<GroupItem*>(l_item);
+	GroupItem* rg_item = qobject_cast<GroupItem*>(r_item);
 
 	// Left is group, right is not
 	if (lg_item != nullptr && rg_item == nullptr)
@@ -59,6 +58,7 @@ napkin::ResourceModel::ResourceModel()
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_TYPE});
 	appendRow(&mObjectsItem);
 	appendRow(&mEntitiesItem);
+	setItemPrototype(new RTTIItem());
 }
 
 // TODO: rename

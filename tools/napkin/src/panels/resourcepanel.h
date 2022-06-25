@@ -19,7 +19,7 @@ namespace nap
 
 namespace napkin
 {
-	/**
+	/**^
 	 * Model containing full list of resources in the system. Hierarchy is represented where possible.
 	 * The data is retrieved through AppContext
 	 */
