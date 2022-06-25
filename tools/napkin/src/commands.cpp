@@ -388,15 +388,16 @@ void ArrayRemoveElementCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 
-GroupReparentCommand::GroupReparentCommand(nap::rtti::Object& object, nap::IGroup* currentGroup, nap::IGroup* newGroup) :
-	mObject(&object), mCurrentGroup(currentGroup), mNewGroup(newGroup)
+GroupReparentCommand::GroupReparentCommand(nap::rtti::Object& object, PropertyPath currentPath, PropertyPath newPath) :
+	mObject(&object), mCurrentPath(currentPath), mNewPath(newPath)
 { }
 
 
 void napkin::GroupReparentCommand::redo()
 {
-	AppContext::get().getDocument()->reparentObject(*mObject, mCurrentGroup, mNewGroup);
+	AppContext::get().getDocument()->reparentObject(*mObject, mCurrentPath, mNewPath);
 }
+
 
 void napkin::GroupReparentCommand::undo()
 {

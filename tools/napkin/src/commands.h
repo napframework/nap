@@ -297,17 +297,17 @@ namespace napkin
 	public:
 		/**
 		 * @param object the object to move to another group 
-		 * @param currentGroup current parent group, nullptr if the object has no parent group
-		 * @param newGroup new parent group, nullptr if there is no new parent
+		 * @param currentPath current parent group, invalid path if the object has no parent group
+		 * @param newPath new parent path, invalid path if there is no new parent
 		 */
-		GroupReparentCommand(nap::rtti::Object& object, nap::IGroup* currentGroup, nap::IGroup* newGroup);
+		GroupReparentCommand(nap::rtti::Object& object, PropertyPath currentPath,  PropertyPath newPath);
 
 		void redo() override;
 		void undo() override;
 	private:
 		nap::rtti::Object* mObject = nullptr;
-		nap::IGroup* mCurrentGroup = nullptr;
-		nap::IGroup* mNewGroup = nullptr;
+		PropertyPath mCurrentPath = {};
+		PropertyPath mNewPath = {};
 	};
 
 	class ArrayMoveElementCommand : public QUndoCommand

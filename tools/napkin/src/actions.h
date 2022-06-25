@@ -292,10 +292,24 @@ namespace napkin
 	/**
 	 * Removes a resource from a group, moving it to the root of the document
 	 */
-	class RemoveFromGroupAction : public Action
+	class RemoveResourceFromGroupAction : public Action
 	{
 	public:
-		explicit RemoveFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
+		explicit RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
+		void perform() override;
+	private:
+		nap::IGroup* mGroup = nullptr;
+		nap::rtti::Object* mObject = nullptr;
+	};
+
+
+	/**
+	 * Removes a resource from a group, moving it to the root of the document
+	 */
+	class RemoveGroupFromGroupAction : public Action
+	{
+	public:
+		explicit RemoveGroupFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
 		void perform() override;
 	private:
 		nap::IGroup* mGroup = nullptr;

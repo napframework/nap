@@ -225,7 +225,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		// If the item is parented under a group, offer the option to remove it
 		auto* item_group = getItemGroup(*group_item);
 		if (item_group != nullptr)
-			menu.addAction(new RemoveFromGroupAction(*item_group, *group_item->getGroup()));
+			menu.addAction(new RemoveGroupFromGroupAction(*item_group, *group_item->getGroup()));
 
 		// Create and add new sub group
 		menu.addAction(new AddChildGroupAction(*group_item->getGroup()));
@@ -245,7 +245,7 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		// If the item is parented under a group, offer the option to remove it
 		auto* item_group = getItemGroup(*object_item);
 		if (item_group != nullptr)
-			menu.addAction(new RemoveFromGroupAction(*item_group, *object_item->getObject()));
+			menu.addAction(new RemoveResourceFromGroupAction(*item_group, *object_item->getObject()));
 
 		// Move resource to another group
 		menu.addAction(new MoveResourceToGroupAction(*object_item->getObject(), item_group));

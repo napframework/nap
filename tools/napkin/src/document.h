@@ -185,10 +185,10 @@ namespace napkin
 		 * Moves an object to a new group.
 		 * Removes the object from the current group if necessary.
 		 * @param object the object to move, group or object
-		 * @param currentParent the current parent of the object, nullptr if no parent
-		 * @param newParent the new parent of the object, nullptr if no parent
+		 * @param currentPath the property path it is currently parented under, invalid path if item is not parented
+		 * @param newParent the new property path to move the object to, invalid path item if it is not to be parented
 		 */
-		void reparentObject(nap::rtti::Object& object, nap::IGroup* currentParent, nap::IGroup* newParent);
+		void reparentObject(nap::rtti::Object& object, const PropertyPath& currentPath, const PropertyPath& newPath);
 
 		/**
 		 * Add an object of the specified type

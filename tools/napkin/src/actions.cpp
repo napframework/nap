@@ -428,9 +428,17 @@ void napkin::MoveResourceToGroupAction::perform()
 	if (selected_group == nullptr)
 		return;
 
+	// Create origin path
+	PropertyPath current_path = {};
+	if (mCurrentGroup != nullptr)
+		current_path = PropertyPath(*mCurrentGroup, mCurrentGroup->getMembersProperty(), *AppContext::get().getDocument());
+
+	// Create target
+	auto target_group = rtti_cast<nap::IGroup>(selected_group);
+	PropertyPath target_path(*target_group, target_group->getMembersProperty(), *AppContext::get().getDocument());
+
 	// Move
-	auto new_group = rtti_cast<nap::IGroup>(selected_group);
-	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, mCurrentGroup, new_group));
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, current_path, target_path));
 }
 
 
@@ -488,9 +496,18 @@ void napkin::MoveGroupAction::perform()
 	if (selected_group == nullptr)
 		return;
 
+	// Create origin path
+	PropertyPath current_path = {};
+	if (mParentGroup != nullptr)
+		current_path = PropertyPath(*mParentGroup, mParentGroup->getChildrenProperty(), *AppContext::get().getDocument());
+
+	// Create target path
+	auto target_group = rtti_cast<nap::IGroup>(selected_group);
+	PropertyPath target_path(*target_group, target_group->getChildrenProperty(), *AppContext::get().getDocument());
+
 	// Move
 	auto new_group = rtti_cast<nap::IGroup>(selected_group);
-	AppContext::get().executeCommand(new GroupReparentCommand(*mGroup, mParentGroup, new_group));
+	AppContext::get().executeCommand(new GroupReparentCommand(*mGroup, current_path, target_path));
 }
 
 
@@ -504,10 +521,10 @@ AddExistingResourceToGroupAction::AddExistingResourceToGroupAction(nap::IGroup& 
 void AddExistingResourceToGroupAction::perform()
 {
 	// We know the group, find a resource to add
-	PropertyPath array_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
+	PropertyPath members_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
 
 	// Select type to add
-	auto base_type = array_path.getArrayElementType();
+	auto base_type = members_path.getArrayElementType();
 
 	// Get objects to select from
 	auto objects = topLevelObjects(AppContext::get().getDocument()->getObjectPointers());
@@ -532,23 +549,40 @@ void AddExistingResourceToGroupAction::perform()
 	if (selected_object != nullptr)
 	{
 		// Move selected object from root to group
-		AppContext::get().executeCommand(new GroupReparentCommand(*selected_object, nullptr, mGroup));
+		AppContext::get().executeCommand(new GroupReparentCommand(*selected_object, {}, members_path));
 	}
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::RemoveFromGroupAction::RemoveFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
+napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
 	Action(nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
 	mGroup(&group), mObject(&resource)
 { }
 
 
-void napkin::RemoveFromGroupAction::perform()
+void napkin::RemoveResourceFromGroupAction::perform()
 {
-	// Remove parent
-	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, mGroup, nullptr));
+	// Remove from group
+	PropertyPath members_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, members_path, {}));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+napkin::RemoveGroupFromGroupAction::RemoveGroupFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
+	Action(nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+	mGroup(&group), mObject(&resource)
+{ }
+
+
+void napkin::RemoveGroupFromGroupAction::perform()
+{
+	// Remove from group
+	PropertyPath group_path(*mGroup, mGroup->getChildrenProperty(), *AppContext::get().getDocument());
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, group_path, {}));
 }
 
 
