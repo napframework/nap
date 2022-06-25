@@ -422,23 +422,15 @@ void napkin::MoveResourceToGroupAction::perform()
 
 	// Let the user select the group
 	auto parent_widget = AppContext::get().getMainWindow();
-	nap::rtti::Object* selected_group = showObjectSelector(parent_widget, groups);
+	auto selected_group = showObjectSelector(parent_widget, groups);
 
 	// Operation canceled
 	if (selected_group == nullptr)
 		return;
 
-	// Remove from current parent, if parented
-	if (mCurrentGroup != nullptr)
-	{
-		RemoveFromGroupAction action(*mCurrentGroup, *mObject);
-		action.perform();
-	}
-
-	// Get path to resources array property
-	rttr::property resources_property = selected_group->get_type().get_property(nap::IGroup::membersPropertyName());
-	PropertyPath array_path(*selected_group, resources_property, *AppContext::get().getDocument());
-	AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *mObject));
+	// Move
+	auto new_group = rtti_cast<nap::IGroup>(selected_group);
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, mCurrentGroup, new_group));
 }
 
 
@@ -496,19 +488,9 @@ void napkin::MoveGroupAction::perform()
 	if (selected_group == nullptr)
 		return;
 
-	// Remove from current parent, if parented
-	if (mParentGroup != nullptr)
-	{
-		RemoveFromGroupAction action(*mParentGroup, *mGroup);
-		action.perform();
-	}
-
-	// Get path to children array property
-	rttr::property resources_property = selected_group->get_type().get_property(nap::IGroup::childrenPropertyName());
-	PropertyPath array_path(*selected_group, resources_property, *AppContext::get().getDocument());
-
-	// Add
-	AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *mGroup));
+	// Move
+	auto new_group = rtti_cast<nap::IGroup>(selected_group);
+	AppContext::get().executeCommand(new GroupReparentCommand(*mGroup, mParentGroup, new_group));
 }
 
 
@@ -549,7 +531,8 @@ void AddExistingResourceToGroupAction::perform()
 	nap::rtti::Object* selected_object = showObjectSelector(parent_widget, object_selection);
 	if (selected_object != nullptr)
 	{
-		AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
+		// Move selected object from root to group
+		AppContext::get().executeCommand(new GroupReparentCommand(*selected_object, nullptr, mGroup));
 	}
 }
 
@@ -564,26 +547,8 @@ napkin::RemoveFromGroupAction::RemoveFromGroupAction(nap::IGroup& group, nap::rt
 
 void napkin::RemoveFromGroupAction::perform()
 {
-	// Get property to remove object from based on type
-	rttr::property array_prop = mObject->get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
-		mGroup->getChildrenProperty() : mGroup->getMembersProperty();
-
-	// Get property path to group members
-	PropertyPath array_path(*mGroup, array_prop, *AppContext::get().getDocument());
-
-	// Find index to remove
-	int resource_idx = -1; int length = array_path.getArrayLength();
-	for (int i = 0; i < length; i++)
-	{
-		auto el_path = array_path.getArrayElement(i);
-		if (el_path.getPointee() == mObject)
-		{
-			resource_idx = i;
-			break;
-		}
-	}
-	assert(resource_idx >= 0);
-	AppContext::get().executeCommand(new GroupRemoveElementCommand(array_path, resource_idx));
+	// Remove parent
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, mGroup, nullptr));
 }
 
 

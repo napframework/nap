@@ -13,6 +13,7 @@
 #include <QtCore/QVariant>
 #include <propertypath.h>
 #include <scene.h>
+#include <nap/group.h>
 
 namespace napkin
 {
@@ -289,22 +290,24 @@ namespace napkin
 	};
 
 	/**
-	 * Remove an element from a group at the specified index
+	 * Moves an object to another group
 	 */
-	class GroupRemoveElementCommand : public QUndoCommand
+	class GroupReparentCommand : public QUndoCommand
 	{
 	public:
 		/**
-		 * @param array_prop The property representing the array
-		 * @param index The index of the element to remove
+		 * @param object the object to move to another group 
+		 * @param currentGroup current parent group, nullptr if the object has no parent group
+		 * @param newGroup new parent group, nullptr if there is no new parent
 		 */
-		GroupRemoveElementCommand(const PropertyPath& array_prop, size_t index);
+		GroupReparentCommand(nap::rtti::Object& object, nap::IGroup* currentGroup, nap::IGroup* newGroup);
 
 		void redo() override;
 		void undo() override;
 	private:
-		const PropertyPath& mPath; ///< The path representing the array
-		size_t mIndex; ///< The element to be removed
+		nap::rtti::Object* mObject = nullptr;
+		nap::IGroup* mCurrentGroup = nullptr;
+		nap::IGroup* mNewGroup = nullptr;
 	};
 
 	class ArrayMoveElementCommand : public QUndoCommand

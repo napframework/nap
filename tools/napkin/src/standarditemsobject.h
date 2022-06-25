@@ -89,10 +89,13 @@ namespace napkin
 		nap::rtti::Object* getObject() const;
 
 		/**
-		 * @return The name of the object.
+		 * @return The name of the object, which is the object ID
 		 */
 		virtual const QString getName() const;
 
+		/**
+		 * @return The name of the object, which is the object ID
+		 */
 		virtual const std::string unambiguousName() const;
 
 		/**
@@ -212,14 +215,13 @@ namespace napkin
 
 	private:
 		/**
-		 * Called when an item is removed from an array
+		 * Called when an item is parented under a different group
 		 */
-		void onPropertyChildRemoved(const PropertyPath& path, int index);
+		void onObjectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
 
-		/**
-		 * Called when a new item is inserted into an array
-		 */
-		void onPropertyChildInserted(const PropertyPath& path, int index);
+		// Utility functions
+		void removeChild(const nap::rtti::Object& object);
+		void insertChild(nap::rtti::Object& object);
 	};
 
 

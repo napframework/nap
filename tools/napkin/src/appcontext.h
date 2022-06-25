@@ -363,6 +363,15 @@ namespace napkin
 
 		/**
 		 * Qt Signal
+		 * Invoked after an object (Resource or Group) moved to a new group.
+		 * @param object The object that moved to a new group
+		 * @param oldParent The previous group
+		 * @param newParent The the group
+		 */
+		void objectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
+
+		/**
+		 * Qt Signal
 		 * Invoked just after a property's value has changed
 		 * @param object The object that has the changed property
 		 * @param path The path to the property that has changed

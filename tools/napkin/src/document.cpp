@@ -749,32 +749,61 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 }
 
 
-void napkin::Document::removeElementFromGroup(const PropertyPath& path, size_t index)
+void napkin::Document::reparentObject(nap::rtti::Object& object, nap::IGroup* currentParent, nap::IGroup* newParent)
 {
-	// Get item to remove
-	assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
-	auto elementPath = path.getArrayElement(index);
-	assert(elementPath.isEmbeddedPointer());
-	auto* pointee = elementPath.getPointee();
+	// Get array property name
+	const char* property_name = object.get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
+		nap::IGroup::childrenPropertyName() : nap::IGroup::membersPropertyName();
 
-	// Get array from path
-	ResolvedPath resolved_path = path.resolve();
-	Variant value = resolved_path.getValue();
-	VariantArray array = value.create_array_view();
-	assert(index < array.get_size());
+	// remove from current parent if it has one
+	if (currentParent != nullptr)
+	{
+		// Get array property based on the property name
+		rttr::property array_prop = currentParent->get_type().get_property(property_name);
+		assert(array_prop.is_valid());
 
-	// Remove from array and update
-	bool ok = array.remove_value(index);
-	assert(ok);
-	ok = resolved_path.setValue(value);
-	assert(ok);
+		// Get property path to group members
+		PropertyPath array_path(*currentParent, array_prop, *this);
 
-	// Notify listeners that the group changed
-	propertyValueChanged(path);
-	propertyChildRemoved(path, index);
+		// Get index
+		int resource_idx = -1; int length = array_path.getArrayLength();
+		for (int i = 0; i < length; i++)
+		{
+			auto el_path = array_path.getArrayElement(i);
+			if (el_path.getPointee() == &object)
+			{
+				resource_idx = i;
+				break;
+			}
+		}
+		assert(resource_idx >= 0);
 
-	// The group is detached (moved to root), notify listeners.
-	objectAdded(pointee, nullptr, true);
+		// Remove from array
+		ResolvedPath resolved_path = array_path.resolve();
+		Variant array_value = resolved_path.getValue();
+		VariantArray view = array_value.create_array_view();
+		bool ok = view.remove_value(resource_idx); assert(ok);
+		ok = resolved_path.setValue(array_value); assert(ok);
+	}
+
+	// Move to new parent
+	if (newParent != nullptr)
+	{
+		// Get array property based on object type (group or asset)
+		rttr::property array_prop = newParent->get_type().get_property(property_name);
+		assert(array_prop.is_valid());
+
+		// Get property path to group members
+		PropertyPath target_array_path(*newParent, array_prop, *this);
+
+		// Add to existing array
+		ResolvedPath resolved_path = target_array_path.resolve();
+		Variant target_array_value = resolved_path.getValue();
+		VariantArray view = target_array_value.create_array_view();
+		bool ok = view.insert_value(view.get_size(), &object); assert(ok);
+		ok = resolved_path.setValue(target_array_value); assert(ok);
+	}
+	objectReparented(object, currentParent, newParent);
 }
 
 
@@ -802,7 +831,6 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	assert(ok);
 
 	propertyValueChanged(path);
-
 	propertyChildInserted(path, toIndex);
 
 	return toIndex;

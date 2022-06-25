@@ -5,8 +5,9 @@
 #pragma once
 
 #include <deque>
-#include <entity.h>
 #include <nap/core.h>
+#include <entity.h>
+#include <nap/group.h>
 #include <propertypath.h>
 
 #include <QString>
@@ -181,6 +182,15 @@ namespace napkin
 		void reparentEntity(nap::Entity& entity, nap::Entity* parent);
 
 		/**
+		 * Moves an object to a new group.
+		 * Removes the object from the current group if necessary.
+		 * @param object the object to move, group or object
+		 * @param currentParent the current parent of the object, nullptr if no parent
+		 * @param newParent the new parent of the object, nullptr if no parent
+		 */
+		void reparentObject(nap::rtti::Object& object, nap::IGroup* currentParent, nap::IGroup* newParent);
+
+		/**
 		 * Add an object of the specified type
 		 * @tparam T
 		 * @param parent
@@ -338,11 +348,6 @@ namespace napkin
 		int arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
 
 		/**
-		 * Remove an element from a group
-		 */
-		void removeElementFromGroup(const PropertyPath& path, size_t index);
-
-		/**
 		 * Remove an element from an array
 		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path pointing to the array
@@ -478,7 +483,7 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked after any object has been added (this includes Entities)
+		 * Invoked after any object has been added (this includes Entities and Groups)
 		 * @param obj The newly added object
 		 * @param parent The parent item of the newly added object, can be nullptr
 		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
@@ -508,6 +513,15 @@ namespace napkin
 		 * @param newParent The new parent of the Entity
 		 */
 		void entityReparented(nap::Entity* entity, nap::Entity* oldParent, nap::Entity* newParent);
+
+		/**
+		 * Qt Signal
+		 * Invoked after an object moved to a new group.
+		 * @param object The object that moved to a new group
+		 * @param oldParent The previous group, nullptr if it had no parent
+		 * @param newParent The the new group, nullptr if not attached to a group
+		 */
+		void objectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
 
 		/**
 		 * Qt Signal

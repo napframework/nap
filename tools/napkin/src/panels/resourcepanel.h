@@ -130,6 +130,11 @@ namespace napkin
 		void onObjectRemoved(const nap::rtti::Object* obj);
 
 		/**
+		 * Called when an object moved to another group
+		 */
+		void onObjectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent);
+
+		/**
 		 * Called when a new file was created.
 		 */
 		void onNewFile();
@@ -154,7 +159,7 @@ namespace napkin
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
 		/**
-		 * Called when an object name has changed
+		 * Called when a property value changed
 		 */
 		void onPropertyValueChanged(const PropertyPath& path);
 

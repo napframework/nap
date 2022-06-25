@@ -162,6 +162,7 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::componentAdded, this, &ResourcePanel::onComponentAdded);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
+	connect(&AppContext::get(), &AppContext::objectReparented, this, &ResourcePanel::onObjectReparented);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 
 	connect(&mModel, &ResourceModel::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
@@ -359,6 +360,22 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
 {
 	mModel.removeObjectItem(*object);
+}
+
+
+void napkin::ResourcePanel::onObjectReparented(nap::rtti::Object& object, nap::IGroup* oldParent, nap::IGroup* newParent)
+{
+	// The item was in the root, attempt to remove it
+	if (oldParent == nullptr)
+	{
+		mModel.removeObjectItem(object);
+	}
+
+	// The item has no new owner, add it
+	if (newParent == nullptr)
+	{
+		auto new_item = mModel.addObjectItem(object);
+	}
 }
 
 

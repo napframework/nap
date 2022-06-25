@@ -388,17 +388,17 @@ void ArrayRemoveElementCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 
-
-napkin::GroupRemoveElementCommand::GroupRemoveElementCommand(const PropertyPath& array_prop, size_t index)
-	: mPath(array_prop), mIndex(index), QUndoCommand()
+GroupReparentCommand::GroupReparentCommand(nap::rtti::Object& object, nap::IGroup* currentGroup, nap::IGroup* newGroup) :
+	mObject(&object), mCurrentGroup(currentGroup), mNewGroup(newGroup)
 { }
 
-void GroupRemoveElementCommand::redo()
+
+void napkin::GroupReparentCommand::redo()
 {
-	AppContext::get().getDocument()->removeElementFromGroup(mPath, mIndex);
+	AppContext::get().getDocument()->reparentObject(*mObject, mCurrentGroup, mNewGroup);
 }
 
-void GroupRemoveElementCommand::undo()
+void napkin::GroupReparentCommand::undo()
 {
 	// TODO: Need store on redo and be able to reinstate the original value
 	nap::Logger::fatal("No undo supported");
