@@ -330,6 +330,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
 		connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 		connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		connect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
 		connect(doc, &Document::objectReparented, this, &AppContext::objectReparented);
 		connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
@@ -343,6 +344,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		disconnect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
 		disconnect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 		disconnect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		disconnect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
 		disconnect(doc, &Document::objectReparented, this, &AppContext::objectReparented);
 		disconnect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		disconnect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);

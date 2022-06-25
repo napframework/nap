@@ -113,11 +113,10 @@ void SetPointerValueCommand::redo()
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent)
-		: mType(type), QUndoCommand()
+AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent) : mType(type), QUndoCommand()
 {
 	auto type_name = QString::fromUtf8(type.get_name().data());
 
@@ -146,6 +145,7 @@ void AddObjectCommand::redo()
 	mObjectName = object->mID;
 	ctx.selectionChanged({object});
 }
+
 
 void AddObjectCommand::undo()
 {

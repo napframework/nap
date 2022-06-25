@@ -515,12 +515,21 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked after an object moved to a new group.
+		 * Invoked after an object has moved to a new group
 		 * @param object The object that moved to a new group
 		 * @param oldParent The previous parent (array) property, invalid if it had no parent
 		 * @param newParent The new parent (array) property, invalid if not attached to a new parent
 		 */
 		void objectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
+
+		/**
+		 * Qt Signal
+		 * Invoked before an object is moved to a new group
+		 * @param object The object that is moved to a new group
+		 * @param oldParent The current parent (array) property, invalid if it had no parent
+		 * @param newParent The new parent (array) property, invalid if not attached to a new parent
+		 */
+		void objectReparenting(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
 		 * Qt Signal

@@ -751,9 +751,8 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 
 void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyPath& currentPath, const PropertyPath& newPath)
 {
-	// Get array property name
-	const char* property_name = object.get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
-		nap::IGroup::childrenPropertyName() : nap::IGroup::membersPropertyName();
+	// Notify users about re-parent operation
+	objectReparenting(object, currentPath, newPath);
 
 	// remove from current parent if it has one
 	if (currentPath.isValid())
@@ -779,6 +778,10 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 		assert(ok);
 		ok = resolved_path.setValue(array_value);
 		assert(ok);
+
+		// Notify listeners that the array changed
+		propertyValueChanged(currentPath);
+		propertyChildRemoved(currentPath, resource_idx);
 	}
 
 	// Move to new parent
@@ -788,11 +791,18 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 		ResolvedPath resolved_path = newPath.resolve();
 		Variant target_array_value = resolved_path.getValue();
 		VariantArray view = target_array_value.create_array_view();
-		bool ok = view.insert_value(view.get_size(), &object);
+		int index = view.get_size();
+		bool ok = view.insert_value(index, &object);
 		assert(ok);
 		ok = resolved_path.setValue(target_array_value);
 		assert(ok);
+
+		// Call listeners
+		propertyValueChanged(newPath);
+		propertyChildInserted(newPath, index);
 	}
+
+	// Notify users the re-parent operation succeeded
 	objectReparented(object, currentPath, newPath);
 }
 
@@ -811,15 +821,11 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	Variant taken_value = array.get_value(fromIndex);
 	bool ok = array.remove_value(fromIndex);
 	assert(ok);
-
 	propertyChildRemoved(path, fromIndex);
-
 	ok = array.insert_value(toIndex, taken_value);
 	assert(ok);
-
 	ok = resolved_path.setValue(array_value);
 	assert(ok);
-
 	propertyValueChanged(path);
 	propertyChildInserted(path, toIndex);
 

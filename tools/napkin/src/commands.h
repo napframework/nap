@@ -17,9 +17,6 @@
 
 namespace napkin
 {
-	/**
-	 * TODO: To be implemented
-	 */
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:

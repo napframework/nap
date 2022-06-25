@@ -426,6 +426,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::objectReparented, this, &GroupItem::onObjectReparented);
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
+	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
 }
 
 
@@ -449,71 +450,70 @@ nap::IGroup* napkin::GroupItem::getGroup()
 
 void napkin::GroupItem::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
 {
-	// Remove child item if the previous owner is represented by this item
-	if (oldParent.getObject() == mObject)
-	{
-		removeChild(object);
-	}
+}
 
-	// Add new child if the parent is represented by this item
-	if (newParent.getObject() == mObject)
+
+void napkin::GroupItem::onPropertyChildRemoved(const PropertyPath& path, int index)
+{
+	/*
+	// Check if this group has changed
+	nap::IGroup* group = getGroup();
+	if (!(path.getObject() == group))
+		return;
+
+	// Figure out actual child index, based on edited property
+	// The group has 2 properties: members and children, but the group item
+	// displays them as 1 long list. First the members, then the children.
+	// We therefore offset the index based on the edited property.
+	int child_index = index;
+	if (path.getProperty() == group->getChildrenProperty())
 	{
-		insertChild(object, newParent);
+		PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
+		child_index += array_path.getArrayLength();
 	}
+	this->removeRow(child_index);
+	*/
 }
 
 
 void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int index)
 {
-	if (path.getObject() == mObject)
-	{
-		nap::Logger::info("Child Inserted: %s", mObject->mID.c_str());
-	}
-}
+	// Check if this group has changed
+	nap::IGroup* group = getGroup();
+	if (!(path.getObject() == group))
+		return;
 
-
-void napkin::GroupItem::removeChild(const nap::rtti::Object& object)
-{
-	// find & remove
-	for (int i = 0; i < this->rowCount(); i++)
-	{
-		auto item = qobject_cast<ObjectItem*>(qitem_cast(this->child(i)));
-		if (item->getObject() == &object)
-		{
-			this->removeRow(i);
-			return;
-		}
-	}
-	assert(false);
-}
-
-
-void napkin::GroupItem::insertChild(nap::rtti::Object& object, PropertyPath path)
-{
 	// Check if an item has been added to the members property.
 	// If so, figure out the correct index to insert the child.
-	// 	   
 	// The NAP group has 2 properties: members and children, but the group item
 	// displays them as 1 long list. First the members, then the children.
-	// We therefore insert the item after the last member, but before the first child group
-	auto group = getGroup();
-	if (path.getProperty() == getGroup()->getMembersProperty())
+	if (path.getProperty() == group->getMembersProperty())
 	{
 		PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
-		int row_index = array_path.getArrayLength() - 1;
-		auto new_item = new ObjectItem(&object);
-		this->insertRow(row_index, { new_item, new RTTITypeItem(object.get_type()) });
+		auto member_el = path.getArrayElement(index);
+		ObjectItem* new_item = new ObjectItem(member_el.getPointee());
+		this->insertRow(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
 		childAdded(*this, *new_item);
 	}
-	// Otherwise append it to the end
+	// Otherwise, insert it at the end
 	else
 	{
-		GroupItem* new_item = new GroupItem(static_cast<nap::IGroup&>(object));
-		this->connect(new_item, &GroupItem::childAdded, this, &GroupItem::childAdded);
-		this->appendRow({ new_item, new RTTITypeItem(object.get_type()) });
-		childAdded(*this, *new_item);
+		// Create item
+		assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
+		auto child_el = path.getArrayElement(index);
+		GroupItem* new_group = new GroupItem(*rtti_cast<nap::IGroup>(child_el.getPointee()));
+		this->connect(new_group, &GroupItem::childAdded, this, &GroupItem::childAdded);
+
+		// Figure out where to insert
+		PropertyPath members_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
+		int child_index = index + members_path.getArrayLength();
+
+		// Insert
+		this->insertRow(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
+		childAdded(*this, *new_group);
 	}
 }
+
 
 
 //////////////////////////////////////////////////////////////////////////

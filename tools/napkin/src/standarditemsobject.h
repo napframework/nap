@@ -220,13 +220,14 @@ namespace napkin
 		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
-		 * Called when a new item is inserted
+		 * Called when an item is removed from an array
+		 */
+		void onPropertyChildRemoved(const PropertyPath& path, int index);
+
+		/**
+		 * Called when a new item is inserted into an array
 		 */
 		void onPropertyChildInserted(const PropertyPath& path, int index);
-
-		// Utility functions
-		void removeChild(const nap::rtti::Object& object);
-		void insertChild(nap::rtti::Object& object, PropertyPath path);
 	};
 
 

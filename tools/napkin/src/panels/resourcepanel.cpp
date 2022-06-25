@@ -33,8 +33,8 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 		return false;
 
 	// Don't sort items of which parent is an entity (components)
-	if (qobject_cast<EntityItem*>(lr_item) != nullptr &&
-		qobject_cast<EntityItem*>(rr_item) != nullptr)
+	if (qobject_cast<EntityItem*>(lr_item->parentItem()) != nullptr &&
+		qobject_cast<EntityItem*>(rr_item->parentItem()) != nullptr)
 		return false;
 
 	// Prioritize groups over other items
@@ -163,6 +163,7 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 	connect(&AppContext::get(), &AppContext::objectReparented, this, &ResourcePanel::onObjectReparented);
+	connect(&AppContext::get(), &AppContext::objectReparenting, this, &ResourcePanel::onObjectReparenting);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
 
 	connect(&mModel, &ResourceModel::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
@@ -324,12 +325,14 @@ void napkin::ResourcePanel::onEntityAdded(nap::Entity* entity, nap::Entity* pare
 	mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *entity));
 }
 
+
 void napkin::ResourcePanel::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 {
 	// TODO: Don't refresh the whole mModel
 	refresh();
 	mTreeView.selectAndReveal(findItemInModel<ObjectItem>(mModel, *comp));
 }
+
 
 void napkin::ResourcePanel::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
 {
@@ -363,18 +366,20 @@ void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
 }
 
 
-void napkin::ResourcePanel::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
+void napkin::ResourcePanel::onObjectReparenting(nap::rtti::Object& object, PropertyPath currentParent, PropertyPath newParent)
 {
 	// The item was in the root, attempt to remove it
-	if (!oldParent.isValid())
-	{
-		mModel.removeObjectItem(object);
-	}
+	mModel.removeObjectItem(object);
+}
 
+
+void napkin::ResourcePanel::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
+{
 	// The item has no new owner, add it
-	if (!newParent.isValid())
+	if (!(newParent.isValid()))
 	{
 		auto new_item = mModel.addObjectItem(object);
+		mTreeView.selectAndReveal(new_item);
 	}
 }
 
