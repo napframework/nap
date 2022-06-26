@@ -688,6 +688,7 @@ static void getObjectPointers(nap::IGroup& group, QList<PropertyPath>& outPointe
 		// Get links to member
 		auto array_el = mem_property.getArrayElement(i);
 		auto* member = array_el.getPointee();
+		assert(member != nullptr);
 		outPointers.append(AppContext::get().getDocument()->getPointersTo(*member, false, true));
 	}
 

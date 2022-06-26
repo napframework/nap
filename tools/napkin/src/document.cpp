@@ -1121,7 +1121,6 @@ std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(nap::rtti::Object& 
 				if (pointee != nullptr)
 				{
 					embedded_objects.emplace_back(pointee);
-					nap::Logger::info("Embedded Object: %s", pointee->mID.c_str());
 				}
 			}
 			return true;
