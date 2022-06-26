@@ -190,7 +190,7 @@ InstancePropPanel::InstancePropPanel()
 
 void InstancePropPanel::menuHook(QMenu& menu)
 {
-	auto item = qobject_cast<InstancePropsItem*>(qitem_cast(mTreeView.getSelectedItem()));
+	auto item = qitem_cast<InstancePropsItem*>(mTreeView.getSelectedItem());
 	if (item != nullptr)
 	{
 		menu.addAction("Select Component Instance", this, [this, item]

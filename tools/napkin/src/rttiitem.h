@@ -28,5 +28,10 @@ namespace napkin
 	 * which every item in use should be derived. Asserts if the item is not an
 	 * rtti enabled QTStandardItem.
 	 */
-	RTTIItem* qitem_cast(QStandardItem* qItem);
+	template<typename T>
+	T qitem_cast(QStandardItem* qItem)
+	{
+		assert(qItem == nullptr || dynamic_cast<RTTIItem*>(qItem) != nullptr);
+		return qobject_cast<T>(static_cast<RTTIItem*>(qItem));
+	}
 }

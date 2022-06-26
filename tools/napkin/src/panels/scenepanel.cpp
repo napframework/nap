@@ -47,7 +47,7 @@ napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& root
 		auto sceneItem = item(i, 0);
 		for (auto j = 0; j < sceneItem->rowCount(); j++)
 		{
-			auto reItem = qobject_cast<RootEntityItem*>(qitem_cast(sceneItem->child(j, 0)));
+			auto reItem = qitem_cast<RootEntityItem*>(sceneItem->child(j, 0));
 			assert(reItem);
 			if (&reItem->rootEntity() == &rootEntity)
 				return reItem;
@@ -137,16 +137,16 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 
 void napkin::ScenePanel::menuHook(QMenu& menu)
 {
-	auto item = qitem_cast(mFilterView.getSelectedItem());
-	{
-		auto sceneItem = qobject_cast<SceneItem*>(item);
-		if (sceneItem != nullptr)
-		{
-			auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
-			assert(scene->get_type().is_derived_from<nap::Scene>());
+	auto item (mFilterView.getSelectedItem());
 
-			auto addEntityAction = menu.addAction("Add Entity...");
-			connect(addEntityAction, &QAction::triggered, [this, sceneItem, scene]()
+	auto sceneItem = qitem_cast<SceneItem*>(item);
+	if (sceneItem != nullptr)
+	{
+		auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
+		assert(scene->get_type().is_derived_from<nap::Scene>());
+
+		auto addEntityAction = menu.addAction("Add Entity...");
+		connect(addEntityAction, &QAction::triggered, [this, sceneItem, scene]()
 			{
 				auto entities = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Entity));
 				auto entity = rtti_cast<nap::Entity>(napkin::showObjectSelector(this, entities));
@@ -155,10 +155,9 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 					AppContext::get().executeCommand(new AddEntityToSceneCommand(*scene, *entity));
 				}
 			});
-		}
 	}
 
-	auto rootEntityItem = qobject_cast<RootEntityItem*>(item);
+	auto rootEntityItem = qitem_cast<RootEntityItem*>(item);
 	if (rootEntityItem)
 	{
 		auto sceneItem = rootEntityItem->sceneItem();
@@ -198,11 +197,11 @@ void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, cons
 	QList<PropertyPath> selectedPaths;
 	for (auto m : mFilterView.getSelectedItems())
 	{
-		auto eItem = qobject_cast<EntityInstanceItem*>(qitem_cast(m));
+		auto eItem = qitem_cast<EntityInstanceItem*>(m);
 		if (eItem) 
 			selectedPaths << eItem->propertyPath();
 
-		auto cItem = qobject_cast<ComponentInstanceItem*>(qitem_cast(m));
+		auto cItem = qitem_cast<ComponentInstanceItem*>(m);
 		if (cItem)
 			selectedPaths << cItem->propertyPath();
 	}
@@ -230,7 +229,7 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 			// component
 			for (int row = 0; row < currentParent->rowCount(); row++)
 			{
-				auto child = qobject_cast<ComponentInstanceItem*>(qitem_cast(currentParent->child(row)));
+				auto child = qitem_cast<ComponentInstanceItem*>(currentParent->child(row));
 				if (child->component().mID == part)
 					return child;
 			}
@@ -245,7 +244,7 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 			int foundIndex = 0;
 			for (int row = 0; row < currentParent->rowCount(); row++)
 			{
-				auto child = qobject_cast<EntityInstanceItem*>(qitem_cast(currentParent->child(row)));
+				auto child = qitem_cast<EntityInstanceItem*>(currentParent->child(row));
 				if (!child)
 					continue;
 

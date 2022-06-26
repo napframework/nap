@@ -204,7 +204,7 @@ QString ObjectItem::instanceName() const
 		int i = 0;
 		for (int row = 0, len = parent->rowCount(); row < len; row++)
 		{
-			auto sibling = qobject_cast<ObjectItem*>(qitem_cast(parent->child(row)));
+			auto sibling = qitem_cast<ObjectItem*>(parent->child(row));
 			if (!sibling)
 				continue;
 
@@ -286,7 +286,7 @@ int ObjectItem::nameIndex(const ObjectItem& childItem) const
 	int index = 0;
 	for (int row = 0; row < rowCount(); row++)
 	{
-		auto otherChildItem = qobject_cast<ObjectItem*>(qitem_cast(child(row, 0)));
+		auto otherChildItem = qitem_cast<ObjectItem*>(child(row, 0));
 		if (!otherChildItem)
 			continue;
 

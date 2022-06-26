@@ -98,13 +98,12 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 void InspectorPanel::onItemContextMenu(QMenu& menu)
 {
 	// Get property path item
-	auto path_item = qobject_cast<PropertyPathItem*>(qitem_cast(mTreeView.getSelectedItem()));
+	auto path_item = qitem_cast<PropertyPathItem*>(mTreeView.getSelectedItem());
 	if (path_item == nullptr)
 		return;
 		
 	// In Array?
 	auto parent_item = path_item->parentItem();
-
 	auto parent_array_item = qobject_cast<ArrayPropertyItem*>(parent_item);
 	if (parent_array_item != nullptr)
 	{
@@ -330,7 +329,7 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 	// Find item based on path name
 	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
 	{
-		auto pitem = qobject_cast<PropertyPathItem*>(qitem_cast(item));
+		auto pitem = qitem_cast<PropertyPathItem*>(item);
 		return pitem != nullptr ? pitem->getPath().toString() == selection.toString() :
 			false;
 	});
@@ -354,7 +353,7 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 
 	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
-		auto pitem = qobject_cast<PropertyPathItem*>(qitem_cast(item));
+		auto pitem = qitem_cast<PropertyPathItem*>(item);
 		return pitem != nullptr ? pitem->getPath() == prop : false;
 	});
 
@@ -397,7 +396,7 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	{
 	case Qt::UserRole:
 	{
-		auto value_item = qobject_cast<PropertyPathItem*>(qitem_cast(itemFromIndex(index)));
+		auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (value_item != nullptr)
 		{
 			return QVariant::fromValue(value_item->getPath());
@@ -406,7 +405,7 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	}
 	case Qt::TextColorRole:
 	{
-		auto value_item = qobject_cast<PropertyPathItem*>(qitem_cast(itemFromIndex(index)));
+		auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (value_item != nullptr)
 		{
 			bool correct_item = qobject_cast<PointerValueItem*>(value_item) != nullptr ||
@@ -453,15 +452,13 @@ Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const
 		return flags;
 
 	// Is this item an array element? Enable dragging
-	auto parent_item = qitem_cast(item->parent());
-	if (parent_item != nullptr && qobject_cast<ArrayPropertyItem*>(parent_item))
+	if (qitem_cast<ArrayPropertyItem*>(item->parent()) != nullptr)
 	{
 		flags |= Qt::ItemIsDragEnabled;
 	}
 
 	// Is this item an array? Allow dropping
-	auto prop_item = qitem_cast(item);
-	if (qobject_cast<ArrayPropertyItem*>(prop_item) != nullptr)
+	if (qitem_cast<ArrayPropertyItem*>(item) != nullptr)
 	{
 		flags |= Qt::ItemIsDropEnabled;
 	}
@@ -481,7 +478,7 @@ QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
 	// TODO: Handle dragging multiple items
 	for (auto index : indexes)
 	{
-		auto object_item = qobject_cast<PropertyPathItem*>(qitem_cast(itemFromIndex(index)));
+		auto object_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (object_item == nullptr)
 			continue;
 

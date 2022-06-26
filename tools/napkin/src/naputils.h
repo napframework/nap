@@ -108,7 +108,7 @@ namespace napkin
 	{
 		T* foundItem = nullptr;
 		nap::qt::findIndexInModel(model, [&model, &foundItem, &obj](const QModelIndex& idx) -> bool {
-			auto* item = qitem_cast(model.itemFromIndex(idx));
+			auto* item = qitem_cast<RTTIItem*>(model.itemFromIndex(idx));
 			if (item == nullptr)
 				return false;
 

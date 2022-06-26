@@ -188,7 +188,7 @@ static nap::IGroup* getItemGroup(const ObjectItem& item)
 void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
 	// Get selection
-	auto selected_item = qitem_cast(mTreeView.getSelectedItem());
+	auto selected_item = qitem_cast<RTTIItem*>(mTreeView.getSelectedItem());
 	if (selected_item == nullptr)
 		return;
 
@@ -410,7 +410,7 @@ void ResourcePanel::emitSelectionChanged()
 	QList<PropertyPath> selectedPaths;
 	for (auto m : mTreeView.getSelectedItems())
 	{
-		auto item = qobject_cast<ObjectItem*>(qitem_cast(m));
+		auto item = qitem_cast<ObjectItem*>(m);
 		if (item != nullptr)
 			selectedPaths << item->propertyPath();
 	}
