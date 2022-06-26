@@ -71,12 +71,12 @@ bool Document::hasChild(const nap::Entity& parentEntity, const nap::Entity& chil
 
 nap::Entity* Document::getOwner(const nap::Component& component) const
 {
-	for (const auto& o : getObjects())
+	for (const auto& obj : getObjects())
 	{
-		if (!o->get_type().is_derived_from<nap::Entity>())
+		if (!obj->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		nap::Entity* owner = rtti_cast<nap::Entity>(o.get());
+		nap::Entity* owner = static_cast<nap::Entity*>(obj.get());
 		auto filter = [&component](ObjectPtr<nap::Component> comp) -> bool
 		{
 			return &component == comp.get();
@@ -85,6 +85,49 @@ nap::Entity* Document::getOwner(const nap::Component& component) const
 		if (std::find_if(owner->mComponents.begin(), owner->mComponents.end(), filter) != owner->mComponents.end())
 			return owner;
 	}
+	return nullptr;
+}
+
+
+nap::IGroup* napkin::Document::getOwner(const nap::IGroup& group, int& outIndex) const
+{
+	const auto& objects = getObjects();
+	PropertyPath group_children_path = {};
+	for(const auto& obj : objects)
+	{
+		if(!obj->get_type().is_derived_from(group.get_type()))
+			continue;
+
+		if(obj.get() == &group)
+			continue;
+
+		// Resolve child group property against current object
+		auto property_path = Path::fromString(nap::IGroup::childrenPropertyName());
+		ResolvedPath resolved_path;
+		property_path.resolve(obj.get(), resolved_path);
+		assert(resolved_path.isValid());
+
+		// Get array value
+		Variant value = resolved_path.getValue();
+		assert(value.is_valid() && value.is_array());
+		VariantArray view = value.create_array_view();
+		assert(view.is_valid());
+
+		// Check if the group is a child of this object
+		for (int i = 0; i < view.get_size(); i++)
+		{
+			Variant child = view.get_value(i);
+			assert(child.get_type().is_wrapper());
+			auto child_obj = child.extract_wrapped_value().get_value<nap::IGroup*>();
+			if (child_obj == &group)
+			{
+				outIndex = i;
+				return static_cast<nap::IGroup*>(obj.get());
+			}
+		}
+	}
+
+	outIndex = -1;
 	return nullptr;
 }
 
@@ -112,6 +155,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	return object.mID;
 }
 
+
 const std::string& Document::forceSetObjectName(nap::rtti::Object& object, const std::string& name)
 {
 	auto newName = getUniqueName(name, object, false);
@@ -129,13 +173,17 @@ const std::string& Document::forceSetObjectName(nap::rtti::Object& object, const
 	return object.mID;
 }
 
+
 nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 {
 	auto& factory = mCore.getResourceManager()->getFactory();
 	bool canCreate = factory.canCreate(type);
 
 	if (!canCreate)
+	{
 		nap::Logger::fatal("Cannot create instance of '%s'", type.get_name().data());
+	}
+
 	assert(canCreate);
 	assert(type.is_derived_from<nap::Component>());
 
@@ -145,9 +193,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 
 	mObjects.emplace_back(comp);
 	entity.mComponents.emplace_back(comp);
-
 	componentAdded(comp, &entity);
-
 	return comp;
 }
 
@@ -272,20 +318,23 @@ void Document::removeObject(Object& object)
 	// Start by cleaning up objects that depend on this one
 	if (object.get_type().is_derived_from<nap::Entity>())
 	{
-		auto entity = rtti_cast<nap::Entity>(&object);
 		// Remove from any scenes
+		auto entity = rtti_cast<nap::Entity>(&object);
 		for (auto& obj : getObjects())
 		{
 			auto scene = rtti_cast<nap::Scene>(obj.get());
 			if (scene != nullptr)
+			{
 				removeEntityFromScene(*scene, *entity);
+			}
 		}
 
 		// Delete any components on this Entity
 		std::vector<nap::rtti::ObjectPtr<nap::Component>> comps = entity->getComponents();
 		for (auto compptr : comps)
+		{
 			removeObject(*compptr.get());
-
+		}
 		reparentEntity(*entity, nullptr);
 	}
 
@@ -293,13 +342,30 @@ void Document::removeObject(Object& object)
 	for (auto embeddedObject : getEmbeddedObjects(object))
 		removeObject(*embeddedObject);
 
-	// Remove this object's components
-	if (auto component = rtti_cast<nap::Component>(&object))
+	// Remove the component from entities that reference it
+	if (object.get_type().is_derived_from(RTTI_OF(nap::Component)))
 	{
-		if (auto owner = getOwner(*component))
+		auto component = static_cast<nap::Component*>(&object);
+		auto owner = getOwner(*component);
+		if (owner != nullptr)
 		{
 			auto it = std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object);
 			owner->mComponents.erase(it, owner->mComponents.end());
+		}
+	}
+
+	// Remove the group from parent groups, if any
+	if (object.get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	{
+		// Get parent group
+		auto group = static_cast<nap::IGroup*>(&object);
+		int child_index = -1;
+		auto owner =  getOwner(*group, child_index);
+
+		// Remove from parent if found
+		if (owner != nullptr)
+		{
+			groupRemoveElement(*owner, owner->getChildrenProperty(), child_index);
 		}
 	}
 
@@ -746,6 +812,27 @@ void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 	{
 		removeObject(*pointee);
 	}
+}
+
+
+void napkin::Document::groupRemoveElement(nap::IGroup& group, rttr::property arrayProperty, size_t index)
+{
+	// Resolve path to property
+	PropertyPath path(group, arrayProperty, *this);
+	ResolvedPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	Variant value = resolved_path.getValue();
+	VariantArray array = value.create_array_view();
+	assert(index < array.get_size());
+
+	// Remove from array and update
+	bool ok = array.remove_value(index); assert(ok);
+	ok = resolved_path.setValue(value);  assert(ok);
+
+	// Notify listeners that the array changed
+	propertyValueChanged(path);
+	propertyChildRemoved(path, index);
 }
 
 

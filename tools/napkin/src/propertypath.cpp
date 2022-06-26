@@ -359,12 +359,11 @@ Object* PropertyPath::getPointee() const
 	auto value = getValue();
 	auto type = value.get_type();
 	auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : type;
-
-	if (wrappedType != type)
-		return value.extract_wrapped_value().get_value<nap::rtti::Object*>();
-	else
-		return value.get_value<nap::rtti::Object*>();
+	return wrappedType != type ?
+		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
+		value.get_value<nap::rtti::Object*>();
 }
+
 
 void PropertyPath::setPointee(Object* pointee)
 {
@@ -456,8 +455,7 @@ size_t PropertyPath::getArrayLength() const
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
-	assert(array.is_valid());
-	assert(array.is_array());
+	assert(array.is_valid()); assert(array.is_array());
 
 	VariantArray array_view = array.create_array_view();
 	assert(array_view.is_dynamic());

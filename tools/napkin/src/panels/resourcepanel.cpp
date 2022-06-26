@@ -368,7 +368,6 @@ void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
 
 void napkin::ResourcePanel::onObjectReparenting(nap::rtti::Object& object, PropertyPath currentParent, PropertyPath newParent)
 {
-	// The item was in the root, attempt to remove it
 	mModel.removeObjectItem(object);
 }
 

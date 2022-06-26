@@ -424,9 +424,14 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 		}, 0);
 
 	// Listen to data-model changes
-	connect(&AppContext::get(), &AppContext::objectReparented, this, &GroupItem::onObjectReparented);
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
-	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
+
+	// TODO: Improve delegation of object cleanup.
+	// Right now the resource panel deletes items based on changes to the model. This method is rather crude. 
+	// Preferably items that are not part of the root (have a parent) should manage cleanup them self.
+	// By listening to specific changes to the model, which is more efficient and easier to maintain.
+	// Subsequently, the line below can be uncommented.
+	// connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
 }
 
 
@@ -448,14 +453,8 @@ nap::IGroup* napkin::GroupItem::getGroup()
 }
 
 
-void napkin::GroupItem::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
-{
-}
-
-
 void napkin::GroupItem::onPropertyChildRemoved(const PropertyPath& path, int index)
 {
-	/*
 	// Check if this group has changed
 	nap::IGroup* group = getGroup();
 	if (!(path.getObject() == group))
@@ -472,7 +471,6 @@ void napkin::GroupItem::onPropertyChildRemoved(const PropertyPath& path, int ind
 		child_index += array_path.getArrayLength();
 	}
 	this->removeRow(child_index);
-	*/
 }
 
 

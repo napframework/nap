@@ -112,13 +112,21 @@ namespace napkin
 
 		/**
 		 * Retrieve the Entity the provided Component belongs to.
-		 *
 		 * TODO: Move to nap::Component if possible
 		 *
 		 * @param component The component of which to find the owner.
 		 * @return The owner of the component
 		 */
 		nap::Entity* getOwner(const nap::Component& component) const;
+
+		/**
+		 * Retrieve the group the provided group belongs to,
+		 * nullptr if the group is not the child of another group.
+		 * @param group The group of which to find the owner
+		 * @param outIndex the child index, -1 if the group isn't a child of another group
+		 * @return the group, nullptr if the group isn't a child of another group
+		 */
+		nap::IGroup* getOwner(const nap::IGroup& group, int& outIndex) const;
 
 		/**
 		 * Set an object's name. This is similar to setting a value on it's name property,
@@ -348,11 +356,20 @@ namespace napkin
 
 		/**
 		 * Remove an element from an array
-		 * The propertyValueChanged signal will be emitted.
+		 * Emits propertyValueChanged & propertyChildRemoved signals
 		 * @param path The path pointing to the array
 		 * @param index The index of the element to remove
 		 */
 		void arrayRemoveElement(const PropertyPath& path, size_t index);
+
+		/**
+		 * Remove an element from a group
+		 * Emits propertyValueChanged & propertyChildRemoved signals
+		 * @param group The group to remove the element from
+		 * @param arrayProperty the array property that contains the element
+		 * @param index The index of the element to remove
+		 */
+		void groupRemoveElement(nap::IGroup& group, rttr::property arrayProperty, size_t index);
 
 		/**
 		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,

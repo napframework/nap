@@ -215,11 +215,6 @@ namespace napkin
 
 	private:
 		/**
-		 * Called when an item is parented under a different object
-		 */
-		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
-
-		/**
 		 * Called when an item is removed from an array
 		 */
 		void onPropertyChildRemoved(const PropertyPath& path, int index);
