@@ -129,6 +129,15 @@ namespace napkin
 		nap::IGroup* getOwner(const nap::IGroup& group, int& outIndex) const;
 
 		/**
+		 * Retrieve the group the provided object belongs to.
+		 * nullptr if the group is not the child of another group.
+		 * @param group The object of which to find the owner
+		 * @param outIndex the child index, -1 if the group isn't a child of another group
+		 * @return the group, nullptr if the object isn't a child of another group
+		 */
+		nap::IGroup* getGroup(const nap::rtti::Object& object, int& outIndex) const;
+
+		/**
 		 * Set an object's name. This is similar to setting a value on it's name property,
 		 * but this ensures the object has a unique name.
 		 *
@@ -427,7 +436,7 @@ namespace napkin
 		 * @param owner The object that declares embedded pointers
 		 * @return A list of objects, owned by the given object.
 		 */
-		std::vector<nap::rtti::Object*> getEmbeddedObjects(const nap::rtti::Object& owner);
+		std::vector<nap::rtti::Object*> getEmbeddedObjects(nap::rtti::Object& owner);
 
 		/**
 		 * Get the absolute path of an object
@@ -603,7 +612,6 @@ namespace napkin
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
-
 
 	template<typename T>
 	std::vector<T*> Document::getObjects()

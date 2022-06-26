@@ -132,6 +132,50 @@ nap::IGroup* napkin::Document::getOwner(const nap::IGroup& group, int& outIndex)
 }
 
 
+nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& outIndex) const
+{
+	const auto& objects = getObjects();
+	PropertyPath group_children_path = {};
+	for (const auto& obj : objects)
+	{
+		if (!obj->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+			continue;
+
+		// Resolve child group property against current object
+		auto property_path = Path::fromString(nap::IGroup::membersPropertyName());
+		ResolvedPath resolved_path;
+		property_path.resolve(obj.get(), resolved_path);
+		assert(resolved_path.isValid());
+
+		// Get array value
+		Variant value = resolved_path.getValue();
+		assert(value.is_valid() && value.is_array());
+		VariantArray view = value.create_array_view();
+		assert(view.is_valid());
+
+		// Check if the group can hold the given type
+		auto element_type = view.get_rank_type(1).get_wrapped_type();
+		if (!object.get_type().is_derived_from(element_type))
+			continue;
+
+		// Check if the group is a child of this object
+		for (int i = 0; i < view.get_size(); i++)
+		{
+			Variant child = view.get_value(i);
+			assert(child.get_type().is_wrapper());
+			auto child_obj = child.extract_wrapped_value().get_value<nap::IGroup*>();
+			if (child_obj == &object)
+			{
+				outIndex = i;
+				return static_cast<nap::IGroup*>(obj.get());
+			}
+		}
+	}
+
+	outIndex = -1;
+	return nullptr;
+}
+
 const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
 {
 	if (name.empty())
@@ -315,32 +359,28 @@ void Document::removeObject(Object& object)
 	if (!object.get_type().is_derived_from<nap::InstancePropertyValue>())
 		removeInstanceProperties(object);
 
+	// Remove embedded objects under the given owner
+	nap::rtti::ObjectList embedded_objs = getEmbeddedObjects(object);
+	for (auto embedded_obj : embedded_objs)
+		removeObject(*embedded_obj);
+
 	// Start by cleaning up objects that depend on this one
 	if (object.get_type().is_derived_from<nap::Entity>())
 	{
-		// Remove from any scenes
-		auto entity = rtti_cast<nap::Entity>(&object);
-		for (auto& obj : getObjects())
-		{
-			auto scene = rtti_cast<nap::Scene>(obj.get());
-			if (scene != nullptr)
-			{
-				removeEntityFromScene(*scene, *entity);
-			}
-		}
+		// Remove from every scene
+		auto entity = static_cast<nap::Entity*>(&object);
+		auto scenes = getObjects(RTTI_OF(nap::Scene));
+		for (auto& scene : scenes)
+			removeEntityFromScene(static_cast<nap::Scene&>(*scene), *entity);
 
-		// Delete any components on this Entity
+		// Delete components of this Entity
 		std::vector<nap::rtti::ObjectPtr<nap::Component>> comps = entity->getComponents();
 		for (auto compptr : comps)
-		{
 			removeObject(*compptr.get());
-		}
+
+		// Remove from parent
 		reparentEntity(*entity, nullptr);
 	}
-
-	// Remove embedded objects under the given owner
-	for (auto embeddedObject : getEmbeddedObjects(object))
-		removeObject(*embeddedObject);
 
 	// Remove the component from entities that reference it
 	if (object.get_type().is_derived_from(RTTI_OF(nap::Component)))
@@ -352,6 +392,14 @@ void Document::removeObject(Object& object)
 			auto it = std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object);
 			owner->mComponents.erase(it, owner->mComponents.end());
 		}
+	}
+
+	// Remove the object from every group as a member
+	int child_index = -1;
+	auto parent_group = getGroup(object, child_index);
+	if (parent_group != nullptr)
+	{
+		groupRemoveElement(*parent_group, parent_group->getMembersProperty(), child_index);
 	}
 
 	// Remove the group from parent groups, if any
@@ -941,9 +989,8 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 		findObjectLinks(*sourceObject, links);
 		for (const auto& link : links)
 		{
-			assert(link.mSource == sourceObject.get());
-
 			// Link is target
+			assert(link.mSource == sourceObject.get());
 			if (link.mTarget != &targetObject)
 				continue;
 
@@ -1060,15 +1107,26 @@ PropertyPath Document::getEmbeddedObjectOwnerPath(const nap::rtti::Object& obj)
 	return {};
 }
 
-std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(const nap::rtti::Object& owner)
+std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(nap::rtti::Object& owner)
 {
-	std::vector<nap::rtti::Object*> embeddedObjects;
-	for (auto& obj : getObjects())
-	{
-		if (getEmbeddedObjectOwner(*obj.get()) == &owner)
-			embeddedObjects.emplace_back(obj.get());
-	}
-	return embeddedObjects;
+	// Iterate over child properties, down from owner
+	// Add every embedded object if not null
+	PropertyPath prop_path(owner, *this);
+	std::vector<nap::rtti::Object*> embedded_objects;
+	prop_path.iterateChildren([&](const PropertyPath& curent_path)
+		{
+			if (curent_path.isEmbeddedPointer() && !curent_path.isArray())
+			{
+				auto pointee = curent_path.getPointee();
+				if (pointee != nullptr)
+				{
+					embedded_objects.emplace_back(pointee);
+					nap::Logger::info("Embedded Object: %s", pointee->mID.c_str());
+				}
+			}
+			return true;
+		}, IterFlag::Resursive);
+	return embedded_objects;
 }
 
 nap::Component* Document::getComponent(nap::Entity& entity, rttr::type componenttype)
