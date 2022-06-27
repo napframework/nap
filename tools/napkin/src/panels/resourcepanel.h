@@ -44,12 +44,6 @@ namespace napkin
 		 * @param object the object to represent
 		 */
 		ObjectItem* addObjectItem(nap::rtti::Object& object);
-		
-		/**
-		 * Remove an item (row) representing an Object
-		 * @param object remove the item that represents this Object
-		 */
-		void removeObjectItem(const nap::rtti::Object& object);
 
 	Q_SIGNALS:
 		/**
@@ -136,14 +130,6 @@ namespace napkin
 		 * @param newParent new parent property
 		 */
 		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
-
-		/**
-		 * Called just before an objects moves to a new group
-		 * @param object the object that is going to be moved
-		 * @param oldParent old parent property
-		 * @param newParent new parent property
-		 */
-		void onObjectReparenting(nap::rtti::Object& object, PropertyPath currentParent, PropertyPath newParent);
 
 		/**
 		 * Called when a new file was created.

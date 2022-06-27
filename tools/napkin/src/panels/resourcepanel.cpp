@@ -131,16 +131,6 @@ ObjectItem* ResourceModel::addObjectItem(nap::rtti::Object& ob)
 }
 
 
-void ResourceModel::removeObjectItem(const nap::rtti::Object& object)
-{
-	auto item = findItemInModel<napkin::ObjectItem>(*this, object);
-	if (item == nullptr)
-		return;
-
-	removeRow(item->row(), static_cast<QStandardItem*>(item)->parent()->index());
-}
-
-
 napkin::ResourcePanel::ResourcePanel()
 {
 	setLayout(&mLayout);
@@ -150,22 +140,18 @@ napkin::ResourcePanel::ResourcePanel()
 	mTreeView.getTreeView().setColumnWidth(0, 300);
 	mTreeView.enableSorting(&ResourceSorter);
 
-	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
-	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
-	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ResourcePanel::onSelectionChanged);
 
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
 
-	// connect(&AppContext::get(), &AppContext::dataChanged, this, &ResourcePanel::refresh);
+	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
+	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 	connect(&AppContext::get(), &AppContext::entityAdded, this, &ResourcePanel::onEntityAdded);
 	connect(&AppContext::get(), &AppContext::componentAdded, this, &ResourcePanel::onComponentAdded);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &ResourcePanel::onObjectAdded);
-	connect(&AppContext::get(), &AppContext::objectRemoved, this, &ResourcePanel::onObjectRemoved);
 	connect(&AppContext::get(), &AppContext::objectReparented, this, &ResourcePanel::onObjectReparented);
-	connect(&AppContext::get(), &AppContext::objectReparenting, this, &ResourcePanel::onObjectReparenting);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &ResourcePanel::onPropertyValueChanged);
-
 	connect(&mModel, &ResourceModel::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
 }
 
@@ -357,18 +343,6 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 {
 	if (obj.size() > 0)
 		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
-}
-
-
-void napkin::ResourcePanel::onObjectRemoved(const nap::rtti::Object* object)
-{
-	mModel.removeObjectItem(*object);
-}
-
-
-void napkin::ResourcePanel::onObjectReparenting(nap::rtti::Object& object, PropertyPath currentParent, PropertyPath newParent)
-{
-	mModel.removeObjectItem(object);
 }
 
 

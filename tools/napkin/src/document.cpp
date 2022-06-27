@@ -275,21 +275,6 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 	return obj_ptr;
 }
 
-void Document::reparentEntity(nap::Entity& entity, nap::Entity* newParent)
-{
-	nap::Entity* oldParent = getParent(entity);
-
-	if (oldParent == newParent)
-		return; // nothing to do, already parented
-
-	if (oldParent)
-		oldParent->mChildren.erase(std::remove(oldParent->mChildren.begin(), oldParent->mChildren.end(), &entity));
-
-	if (newParent)
-		newParent->mChildren.emplace_back(&entity);
-
-	entityReparented(&entity, oldParent, newParent);
-}
 
 nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 {
@@ -353,18 +338,30 @@ ObjectList Document::getObjectPointers() const
 void Document::removeObject(Object& object)
 {
 	// Emit signal first so observers can act before the change
-	objectRemoved(&object);
+	removingObject(&object);
 
 	// Remove instance properties for this object
 	if (!object.get_type().is_derived_from<nap::InstancePropertyValue>())
 		removeInstanceProperties(object);
 
-	// Remove embedded objects under the given owner
+	// Delete embedded objects under the given owner.
 	nap::rtti::ObjectList embedded_objs = getEmbeddedObjects(object);
 	for (auto embedded_obj : embedded_objs)
 		removeObject(*embedded_obj);
 
-	// Start by cleaning up objects that depend on this one
+	// Remove this object from every group as a member
+	int child_index = -1;
+	auto parent_group = getGroup(object, child_index);
+	if (parent_group != nullptr)
+	{
+		groupRemoveElement(*parent_group, parent_group->getMembersProperty(), child_index);
+	}
+
+	// Handle specific objects.
+	// By default, all items that reference the deleted item will have their handle set to null.
+	// For some items we do a bit of cleanup, to ensure their children remain organized.
+	// TODO: Check if the item that references this item is in an array and a regular pointer
+	// If it is, we can erase that index. Note that that will be slower than handling specific cases.
 	if (object.get_type().is_derived_from<nap::Entity>())
 	{
 		// Remove from every scene
@@ -373,17 +370,25 @@ void Document::removeObject(Object& object)
 		for (auto& scene : scenes)
 			removeEntityFromScene(static_cast<nap::Scene&>(*scene), *entity);
 
-		// Delete components of this Entity
-		std::vector<nap::rtti::ObjectPtr<nap::Component>> comps = entity->getComponents();
-		for (auto compptr : comps)
-			removeObject(*compptr.get());
-
-		// Remove from parent
-		reparentEntity(*entity, nullptr);
+		// Remove (every!) reference to the entity
+		// Entities can have multiple references to the same child entity
+		auto parent_entity = getParent(*entity);
+		if (parent_entity != nullptr)
+		{
+			for (auto it = parent_entity->mChildren.begin(); it != parent_entity->mChildren.end(); )
+			{
+				if (it->get() == entity)
+				{
+					it = parent_entity->mChildren.erase(it);
+					continue;
+				}
+				it++;
+			}
+		}
 	}
 
 	// Remove the component from entities that reference it
-	if (object.get_type().is_derived_from(RTTI_OF(nap::Component)))
+	else if (object.get_type().is_derived_from(RTTI_OF(nap::Component)))
 	{
 		auto component = static_cast<nap::Component*>(&object);
 		auto owner = getOwner(*component);
@@ -394,16 +399,8 @@ void Document::removeObject(Object& object)
 		}
 	}
 
-	// Remove the object from every group as a member
-	int child_index = -1;
-	auto parent_group = getGroup(object, child_index);
-	if (parent_group != nullptr)
-	{
-		groupRemoveElement(*parent_group, parent_group->getMembersProperty(), child_index);
-	}
-
 	// Remove the group from parent groups, if any
-	if (object.get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	else if (object.get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		// Get parent group
 		auto group = static_cast<nap::IGroup*>(&object);
@@ -412,14 +409,23 @@ void Document::removeObject(Object& object)
 
 		// Remove from parent if found
 		if (owner != nullptr)
-		{
 			groupRemoveElement(*owner, owner->getChildrenProperty(), child_index);
-		}
 	}
 
-	// All clean. Remove our object
-	auto filter = [&](const auto& obj) { return obj.get() == &object; };
-	mObjects.erase(std::remove_if(mObjects.begin(), mObjects.end(), filter), mObjects.end());
+	// References to object have been removed, 
+	auto found_it = std::find_if(mObjects.begin(), mObjects.end(), [&](const auto& obj) 
+		{
+			return obj.get() == &object;
+		});
+	assert(found_it != mObjects.end());
+
+	// Erase
+	auto released_obj = found_it->release();
+	mObjects.erase(found_it);
+
+	// Notify listeners this object has been removed
+	objectRemoved(released_obj);
+	delete released_obj;
 }
 
 
@@ -654,37 +660,39 @@ void Document::remove(const PropertyPath& path)
 
 }
 
-void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
-{
-	removeInstanceProperties(scene, *entity.mEntity);
-
-	auto& v = scene.mEntities;
-	auto filter = [&](nap::RootEntity& obj) { return &obj == &entity; };
-	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
-	objectChanged(&scene);
-}
-
 void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 {
+	// Remove instance properties associated with this entity
 	removeInstanceProperties(scene, entity);
 
-	auto& v = scene.mEntities;
-	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
-	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
-	objectChanged(&scene);
+	// Remove (every!) child entity from the scene
+	bool changed = false;
+	for (auto it = scene.mEntities.begin(); it != scene.mEntities.end(); )
+	{
+		if (it->mEntity == &entity)
+		{
+			it = scene.mEntities.erase(it);
+			changed = true;
+			continue;
+		}
+		it++;
+	}
+
+	if (changed)
+	{
+		objectChanged(&scene);
+	}
 }
 
 void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
 	removeInstanceProperties(scene, *scene.mEntities[index].mEntity);
-
 	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);
 }
 
 int Document::arrayAddValue(const PropertyPath& path)
 {
-
 	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 

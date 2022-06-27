@@ -191,13 +191,6 @@ namespace napkin
 		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr, bool selectNewObject = true, const std::string& name = std::string());
 
 		/**
-		 * Add an Entity to a parent Entity, remove from previous parent if necessary
-		 * @param entity The Entity to move under a new parent
-		 * @param parent The parent entity or nullptr when the entity should have no parent
-		 */
-		void reparentEntity(nap::Entity& entity, nap::Entity* parent);
-
-		/**
 		 * Moves an object to a new group.
 		 * Removes the object from the current group if necessary.
 		 * @param object the object to move, group or object
@@ -260,13 +253,6 @@ namespace napkin
 		void recurseChildren(nap::Entity& entity, std::function<void(nap::Entity& child)>);
 
 		/**
-		 * Remove an entity from a scene, note that a Scene may contain the same entity multiple times.
-		 * @param scene The Scene to remove the entity from
-		 * @param entity The entity to remove from the scene
-		 */
-		void removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity);
-
-		/**
 		 * Remove all entity instances from a scene, note that a Scene may contain the same entity multiple times.
 		 * @param scene The Scene to remove the entity from
 		 * @param entity The entity to remove from the scene
@@ -279,7 +265,6 @@ namespace napkin
 		 * @param index The index of the Entity to be removed
 		 */
 		void removeEntityFromScene(nap::Scene& scene, size_t index);
-
 
 		/**
 		 * Add an entity to a scene (at root level)
@@ -525,19 +510,17 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked just before an object is removed (including Entities)
+		 * Invoked just before resource is removed, including entities, components and regular resources
 		 * @param object The object about to be removed
 		 */
-		void objectRemoved(nap::rtti::Object* object);
+		void removingObject(nap::rtti::Object* object);
 
 		/**
 		 * Qt Signal
-		 * Invoked after an Entity has moved under a new parent
-		 * @param entity The Entity that moved under a new parent
-		 * @param oldParent The old parent of the Entity
-		 * @param newParent The new parent of the Entity
+		 * Invoked just after a resource is removed, including entities, components and regular resources
+		 * @param object The object about to be removed
 		 */
-		void entityReparented(nap::Entity* entity, nap::Entity* oldParent, nap::Entity* newParent);
+		void objectRemoved(nap::rtti::Object* object);
 
 		/**
 		 * Qt Signal

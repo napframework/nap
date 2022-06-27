@@ -38,6 +38,7 @@ napkin::SceneModel::SceneModel() : QStandardItemModel()
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &SceneModel::onNewFile);
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &SceneModel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectChanged, this, &SceneModel::onObjectChanged);
+	connect(&AppContext::get(), &AppContext::objectRemoved, this, &SceneModel::onObjectRemoved);
 }
 
 napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& rootEntity) const
@@ -57,13 +58,6 @@ napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& root
 }
 
 
-void napkin::SceneModel::refresh()
-{
-	clear();
-	populate();
-}
-
-
 void napkin::SceneModel::clear()
 {
 	removeRows(0, rowCount());
@@ -77,23 +71,42 @@ void napkin::SceneModel::populate()
 }
 
 
+static bool refresh(nap::rtti::Object* obj)
+{
+	// TODO: Check if the component or entity is part of the scene.
+	return	obj->get_type().is_derived_from(RTTI_OF(nap::Scene))	||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Entity))		||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Component));
+}
+
+
 void napkin::SceneModel::onObjectAdded(nap::rtti::Object* obj)
 {
-	// TODO: Don't refresh entire model
-	refresh();
+	if (refresh(obj))
+	{
+		clear();
+		populate();
+	}
+}
+
+
+void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
+{
+	if (refresh(obj))
+	{
+		clear();
+		populate();
+	}
 }
 
 
 void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
-	// TODO: Don't refresh entire model
-	refresh();
-}
-
-void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
-{
-	// TODO: Don't refresh entire model
-	refresh();
+	if (refresh(obj))
+	{
+		clear();
+		populate();
+	}
 }
 
 
@@ -125,8 +138,7 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 	mFilterView.getTreeView().expandAll();
 	mFilterView.disableSorting();
 
-	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this,
-			&ScenePanel::onSelectionChanged);
+	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ScenePanel::onSelectionChanged);
 	connect(&mModel, &QAbstractItemModel::rowsInserted, [this](const QModelIndex& parent, int first, int last)
 	{
 		mFilterView.getTreeView().expandAll();
@@ -144,8 +156,7 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 	{
 		auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
 		assert(scene->get_type().is_derived_from<nap::Scene>());
-
-		auto addEntityAction = menu.addAction("Add Entity...");
+		auto addEntityAction = menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ENTITY), "Add Entity...");
 		connect(addEntityAction, &QAction::triggered, [this, sceneItem, scene]()
 			{
 				auto entities = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Entity));
@@ -168,7 +179,7 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 			auto rootEntity = &rootEntityItem->rootEntity();
 			assert(rootEntity);
 
-			auto removeEntityAction = menu.addAction("Delete Instance");
+			auto removeEntityAction = menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), "Delete Instance");
 			connect(removeEntityAction, &QAction::triggered, [rootEntityItem]
 			{
 				AppContext::get().executeCommand(new RemoveCommand(rootEntityItem->propertyPath()));

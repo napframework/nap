@@ -289,7 +289,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	auto doc = mModel.path().getDocument();
 
 	if (doc != nullptr)
-		disconnect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
+		disconnect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
 
 	if (path.isValid())
 	{
@@ -306,7 +306,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	mModel.setPath(path);
 	doc = path.getDocument();
 	if (doc != nullptr)
-		connect(doc, &Document::objectRemoved, this, &InspectorPanel::onObjectRemoved);
+		connect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
 
 	mTreeView.getTreeView().expandAll();
 }

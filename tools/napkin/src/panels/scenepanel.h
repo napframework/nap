@@ -42,26 +42,20 @@ namespace napkin
 		void populate();
 
 		/**
-		 * Reconstruct the list. The model is cleared and populated.
-		 */
-		void refresh();
-
-		/**
 		 * Called when an object has been added
 		 * @param obj The object that was added
 		 */
 		void onObjectAdded(nap::rtti::Object* obj);
 
 		/**
-		 * Called when an object is about to be removed
-		 * @param obj The object that will be removed
-		 */
-		void onObjectRemoved(nap::rtti::Object* obj);
-
-		/**
 		 * Called when an object has drastically changed
 		 */
 		void onObjectChanged(nap::rtti::Object* obj);
+
+		/**
+		 * Called when an object has been  removed
+		 */
+		void onObjectRemoved(nap::rtti::Object* obj);
 
 		/**
 		 * Called when a new file was created.

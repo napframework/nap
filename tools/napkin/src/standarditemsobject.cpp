@@ -2,11 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
 #include "standarditemsobject.h"
 #include "commands.h"
 #include "sceneservice.h"
 #include "naputils.h"
 #include "napkin-resources.h"
+
+// External Includes
+#include <nap/assert.h>
 
 RTTI_DEFINE_BASE(napkin::RegularResourcesItem)
 RTTI_DEFINE_BASE(napkin::EntityResourcesItem)
@@ -76,7 +80,7 @@ ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 	auto& ctx = AppContext::get();
 	setText(QString::fromStdString(o->mID));
 	connect(&ctx, &AppContext::propertyValueChanged, this, &ObjectItem::onPropertyValueChanged);
-	connect(&ctx, &AppContext::objectRemoved, this, &ObjectItem::onObjectRemoved);
+	connect(&ctx, &AppContext::removingObject, this, &ObjectItem::onObjectRemoved);
 	refresh();
 }
 
@@ -308,13 +312,16 @@ void ObjectItem::onPropertyValueChanged(PropertyPath path)
 }
 
 
-void ObjectItem::onObjectRemoved(nap::rtti::Object* o)
+void ObjectItem::onObjectRemoved(nap::rtti::Object* object)
 {
-	if (o == mObject)
+	if (object == mObject)
 	{
-		auto parent = parentItem();
-		if (parent)
-			parent->removeRow(index().row());
+		auto parent_item = parentItem();
+		NAP_ASSERT_MSG(parent_item != nullptr, "Invalid parent item, items that are intended for deletion must have a parent!");
+		if (parent_item != nullptr)
+		{
+			parent_item->removeRow(this->row());
+		}
 	}
 }
 
@@ -363,7 +370,7 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 	auto compItem = new ComponentItem(*comp);
 	auto compTypeItem = new RTTITypeItem(comp->get_type());
-	appendRow({compItem, compTypeItem});
+	appendRow({ compItem, compTypeItem });
 }
 
 
@@ -387,7 +394,6 @@ const std::string EntityItem::unambiguousName() const
 	}
 	return ObjectItem::unambiguousName();
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // Group Item
@@ -431,7 +437,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 	// Preferably items that are not part of the root (have a parent) should manage cleanup them self.
 	// By listening to specific changes to the model, which is more efficient and easier to maintain.
 	// Subsequently, the line below can be uncommented.
-	// connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
+	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
 }
 
 
@@ -722,7 +728,6 @@ nap::ComponentInstanceProperties* ComponentInstanceItem::instanceProperties() co
 	}
 
 	mInstancePropertiesResolved = true;
-
 	return &mInstanceProperties;
 }
 
