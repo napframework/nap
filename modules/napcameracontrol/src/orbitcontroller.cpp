@@ -168,7 +168,7 @@ namespace nap
 				if (glm::dot(lookdir_prevframe, lookdir_curframe) < 0.0f)
 					return;
 
-				// Ensure the distance from the target does not exceed the specified minimum
+				// Ensure the distance to the target does not exceed the specified minimum
 				if (glm::length(mLookAtPos - new_translate) < resource->mMinZoomDistance)
 					new_translate = -lookdir_prevframe * resource->mMinZoomDistance;
 			}
