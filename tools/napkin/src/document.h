@@ -510,14 +510,19 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked just before resource is removed, including entities, components and regular resources
+		 * Invoked just before an object is removed. This includes entities, components and regular resources.
+		 * The item, including all of it's embedded children, are still part of the document. 
 		 * @param object The object about to be removed
 		 */
 		void removingObject(nap::rtti::Object* object);
 
 		/**
 		 * Qt Signal
-		 * Invoked just after a resource is removed, including entities, components and regular resources
+		 * Invoked just after a resource is removed, but before it is destroyed.
+		 * This including entities, components and regular resources.
+		 * The object has been removed from the document, but not yet destroyed!
+		 * The embedded child objects, including components and child groups,
+		 * have been destroyed and removed from the document.
 		 * @param object The object about to be removed
 		 */
 		void objectRemoved(nap::rtti::Object* object);
