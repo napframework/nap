@@ -466,7 +466,7 @@ void ReplaceEmbeddedPointerCommand::redo()
 	if (pointee) // TODO: Serialize and store for undo
 		doc->removeObject(*pointee);
 
-	auto obj = doc->addObject(mType, nullptr, false);
+	auto obj = doc->addObject(mType, nullptr);
 	mCreatedObject = {*obj, *doc};
 	mPath.setPointee(obj);
 	doc->propertyValueChanged(mPath);

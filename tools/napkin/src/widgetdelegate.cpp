@@ -7,6 +7,7 @@
 #include "typeconversion.h"
 #include "appcontext.h"
 #include "napkin-resources.h"
+#include "napkinutils.h"
 
 #include <QComboBox>
 #include <QMouseEvent>
@@ -296,7 +297,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 
 				auto parent = ctx.getMainWindow();
 				auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
-				auto filename = QFileDialog::getOpenFileName(parent, "Select File", dir, filter, &filter);
+				auto filename = napkinutils::getOpenFilename(parent, "Select File", dir, filter);
 				if (!filename.isEmpty())
 				{
 					// Make relative if inside resource dir
