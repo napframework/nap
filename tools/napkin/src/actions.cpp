@@ -756,7 +756,7 @@ void RemoveChildEntityAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RemovePathAction::RemovePathAction(const PropertyPath& path) :
-	Action("Remove", QRC_ICONS_REMOVE), mPath(path)
+	Action(nap::utility::stringFormat("Remove '%s'", path.getName().c_str()).c_str(), QRC_ICONS_REMOVE), mPath(path)
 { }
 
 

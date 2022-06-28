@@ -30,6 +30,18 @@ namespace napkin
 		 */
 		RootEntityItem* rootEntityItem(nap::RootEntity& rootEntity) const;
 
+		/**
+		 * @return all the top level scene items
+		 */
+		const std::vector<SceneItem*>& getScenes() const							{ return mSceneItems; }
+
+	Q_SIGNALS:
+		/**
+		 * Signal emitted when the model is re-populated based on a change
+		 * @param scenes the new scenes
+		 */
+		void populated(const std::vector<SceneItem*>& scenes);
+
 	private:
 		/**
 		 * Clears the list
@@ -73,6 +85,8 @@ namespace napkin
 		 * @param filename The name of the document
 		 */
 		void onFileClosing(const QString& filename);
+
+		std::vector<SceneItem*> mSceneItems;
 	};
 
 	/**
@@ -97,6 +111,7 @@ namespace napkin
 
 	private:
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+		void onModelPopulated(const std::vector<SceneItem*>& scenes);
 		ComponentInstanceItem* resolveItem(nap::RootEntity* rootEntity, const QString& path);
 
 		QVBoxLayout mLayout;		// Layout

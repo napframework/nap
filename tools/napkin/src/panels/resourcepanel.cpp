@@ -128,17 +128,23 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	// Cast to rtti item
 	if (qobject_cast<EntityItem*>(selected_item) != nullptr)
 	{
+		// If it's a child of another entity
 		auto entity_item = static_cast<EntityItem*>(selected_item);
-		menu.addAction(new AddChildEntityAction(*entity_item->getEntity()));
-		menu.addAction(new AddComponentAction(*entity_item->getEntity()));
-
 		if (entity_item->isPointer())
 		{
 			auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
 			if (parent_item)
+			{
 				menu.addAction(new RemovePathAction(entity_item->propertyPath()));
+			}
 		}
-		menu.addAction(new DeleteObjectAction(*entity_item->getObject()));
+		// Otherwise it's the main resource
+		else
+		{
+			menu.addAction(new AddChildEntityAction(*entity_item->getEntity()));
+			menu.addAction(new AddComponentAction(*entity_item->getEntity()));
+			menu.addAction(new DeleteObjectAction(*entity_item->getObject()));
+		}
 	}
 	// Component
 	else if (qobject_cast<ComponentItem*>(selected_item) != nullptr)

@@ -50,14 +50,23 @@ void napkin::SceneModel::clear()
 
 void napkin::SceneModel::populate()
 {
+	this->clear();
+	mSceneItems.clear();
+
 	auto doc = napkin::AppContext::get().getDocument();
 	assert(doc != nullptr);
 
+	// Create items for scene & children in scene
 	auto scenes = doc->getObjects<nap::Scene>();
 	for (const auto& scene : scenes)
 	{
-		appendRow(new SceneItem(*scene));
+		auto scene_item = new SceneItem(*scene);
+		appendRow(scene_item);
+		mSceneItems.emplace_back(scene_item);
 	}
+
+	// Notify listeners
+	populated(mSceneItems);
 }
 
 
@@ -74,7 +83,6 @@ void napkin::SceneModel::onObjectAdded(nap::rtti::Object* obj)
 {
 	if (refresh(obj))
 	{
-		clear();
 		populate();
 	}
 }
@@ -84,7 +92,6 @@ void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
 {
 	if (refresh(obj))
 	{
-		clear();
 		populate();
 	}
 }
@@ -94,7 +101,6 @@ void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
 	if (refresh(obj))
 	{
-		clear();
 		populate();
 	}
 }
@@ -120,20 +126,19 @@ void napkin::SceneModel::onFileClosing(const QString& filename)
 
 napkin::ScenePanel::ScenePanel() : QWidget()
 {
+	// Setup widget
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	layout()->addWidget(&mFilterView);
+
+	// Add model
 	mFilterView.setModel(&mModel);
 	mFilterView.setMenuHook(std::bind(&napkin::ScenePanel::menuHook, this, std::placeholders::_1));
-	mFilterView.getTreeView().expandAll();
 	mFilterView.disableSorting();
 
+	// Listen to changes
 	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ScenePanel::onSelectionChanged);
-	connect(&mModel, &QAbstractItemModel::rowsInserted, [this](const QModelIndex& parent, int first, int last)
-	{
-		mFilterView.getTreeView().expandAll();
-	});
-
+	connect(&mModel, &SceneModel::populated, this, &ScenePanel::onModelPopulated);
 }
 
 
@@ -198,14 +203,29 @@ void napkin::ScenePanel::onSelectionChanged(const QItemSelection& selected, cons
 	for (auto m : mFilterView.getSelectedItems())
 	{
 		auto eItem = qitem_cast<EntityInstanceItem*>(m);
-		if (eItem) 
+		if (eItem != nullptr)
+		{
 			selectedPaths << eItem->propertyPath();
+			continue;
+		}
 
 		auto cItem = qitem_cast<ComponentInstanceItem*>(m);
-		if (cItem)
+		if (cItem != nullptr)
+		{
 			selectedPaths << cItem->propertyPath();
+			continue;
+		}
 	}
 	selectionChanged(selectedPaths);
+}
+
+
+void napkin::ScenePanel::onModelPopulated(const std::vector<SceneItem*>& scenes)
+{
+	for (const auto& item : scenes)
+	{
+		mFilterView.expand(*item);
+	}
 }
 
 
@@ -213,7 +233,6 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 {
 	EntityInstanceItem* rootEntityItem = mModel.rootEntityItem(*rootEntity);
 	assert(rootEntityItem);
-
 	EntityInstanceItem* currentParent = rootEntityItem;
 
 	auto splitstring = nap::utility::splitString(path.toStdString(), '/');

@@ -509,9 +509,13 @@ void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 		return;
 
 	removeChildren();
-	for (auto child : getEntity()->mChildren)
+	for (const auto& child : getEntity()->mChildren)
 		onEntityAdded(child.get(), getEntity());
+
+	for (const auto& comp : getEntity()->mComponents)
+		onComponentAdded(comp.get(), getEntity());
 }
+
 
 const std::string EntityItem::unambiguousName() const
 {
