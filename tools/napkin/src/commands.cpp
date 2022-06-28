@@ -139,7 +139,7 @@ void AddObjectCommand::redo()
 
 	// Create object
 	auto parent = ctx.getDocument()->getObject(mParentName);
-	auto object = ctx.getDocument()->addObject(mType, parent, true);
+	auto object = ctx.getDocument()->addObject(mType, parent);
 
 	// Remember for undo
 	mObjectName = object->mID;

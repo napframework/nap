@@ -63,12 +63,12 @@ void napkin::RootResourcesItem::populate(nap::rtti::ObjectList& objects)
 	clear();
 	for (auto& obj : objects)
 	{
-		onObjectAdded(obj, nullptr, false);
+		onObjectAdded(obj, nullptr);
 	}
 }
 
 
-void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
+void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent)
 {
 	// only add objects that have no parent
 	if (parent != nullptr)
@@ -100,7 +100,7 @@ void napkin::RootResourcesItem::onObjectReparented(nap::rtti::Object& object, Pr
 	// Only add if new parent is invalid (ie: part of root)
 	if (!newParent.isValid())
 	{
-		onObjectAdded(&object, nullptr, true);
+		onObjectAdded(&object, nullptr);
 	}
 }
 
@@ -140,12 +140,12 @@ void napkin::EntityResourcesItem::populate(nap::rtti::ObjectList& objects)
 	clear();
 	for (auto& obj : objects)
 	{
-		onObjectAdded(obj, nullptr, false);
+		onObjectAdded(obj, nullptr);
 	}
 }
 
 
-void napkin::EntityResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
+void napkin::EntityResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent)
 {
 	// Only consider entities
 	if (!obj->get_type().is_derived_from(RTTI_OF(nap::Entity)))

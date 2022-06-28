@@ -64,7 +64,7 @@ namespace napkin
 		 * @param parent the parent of the object, nullptr if top level object
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
+		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent);
 
 		/**
 		 * Called when an object moved to another group
@@ -122,7 +122,7 @@ namespace napkin
 		 * @param parent the parent of the object, nullptr if top level object
 		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
+		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent);
 	};
 
 

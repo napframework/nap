@@ -185,10 +185,10 @@ namespace napkin
 		 * Add an object of the specified type.
 		 * @param type The type of the desired object.
 		 * @param parent The parent of the object: In the case of Entity, this will be its new parent.
-		 * 	In the case of Component, this is going to be the owning Entity.
+		 * In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr, bool selectNewObject = true, const std::string& name = std::string());
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr, const std::string& name = std::string());
 
 		/**
 		 * Moves an object to a new group.
@@ -206,9 +206,9 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string(), bool selectNew = true)
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string())
 		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, selectNew, name));
+			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, name));
 		}
 
 		/**
@@ -496,11 +496,8 @@ namespace napkin
 		 * Invoked after any object has been added (this includes Entities and Groups)
 		 * @param obj The newly added object
 		 * @param parent The parent item of the newly added object, can be nullptr
-		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
-		 * 		This is a notification, not a directive.
-		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
 		 */
-		void objectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent);
 
 		/**
 		 * Qt Signal

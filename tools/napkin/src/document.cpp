@@ -242,7 +242,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 }
 
 
-nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject, const std::string& name)
+nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* parent, const std::string& name)
 {
 	// Make sure it's an rtti Object
 	Factory& factory = mCore.getResourceManager()->getFactory();
@@ -271,7 +271,7 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 	mObjects.emplace_back(std::move(obj));
 
 	// Notify listeners
-	objectAdded(obj_ptr, parent, selectNewObject);
+	objectAdded(obj_ptr, parent);
 	return obj_ptr;
 }
 
@@ -814,7 +814,7 @@ int Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, 
 	auto* parent_object = parent_path.getObject();
 
 	// Create object
-	Object* new_object = addObject(type, parent_object, parent_object->get_type().is_derived_from(RTTI_OF(nap::IGroup)) );
+	Object* new_object = addObject(type, parent_object);
 	if (!new_object)
 	{
 		nap::Logger::error("Did not create object at: %s", path.toString().c_str());

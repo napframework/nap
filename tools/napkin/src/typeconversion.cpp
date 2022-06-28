@@ -173,7 +173,7 @@ namespace napkin
 	{
 		auto doc = napkin::AppContext::get().getDocument();
 		std::string name("instanceProp_" + std::string(value.get_type().get_name().data()));
-		auto propValue = doc->addObject<nap::TypedInstancePropertyValue<T>>(nullptr, name, false);
+		auto propValue = doc->addObject<nap::TypedInstancePropertyValue<T>>(nullptr, name);
 		propValue->mValue = value.get_value<T>();
 		return propValue;
 	}
