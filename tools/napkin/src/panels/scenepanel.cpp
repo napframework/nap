@@ -12,27 +12,10 @@
 #include <naputils.h>
 #include <QtDebug>
 
-/**
- * @return All currently loaded scenes
- */
-nap::SceneService::SceneSet getScenes()
-{
-	nap::Core& core = napkin::AppContext::get().getCore();
-	if (!core.isInitialized())
-		return {};
-
-	auto sceneService = core.getService<nap::SceneService>();
-	if (!sceneService)
-		return {};
-
-	return sceneService->getScenes();
-}
-
 
 napkin::SceneModel::SceneModel() : QStandardItemModel()
 {
 	setHorizontalHeaderLabels({"Name"});
-
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &SceneModel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &SceneModel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &SceneModel::onNewFile);
@@ -40,6 +23,7 @@ napkin::SceneModel::SceneModel() : QStandardItemModel()
 	connect(&AppContext::get(), &AppContext::objectChanged, this, &SceneModel::onObjectChanged);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &SceneModel::onObjectRemoved);
 }
+
 
 napkin::RootEntityItem* napkin::SceneModel::rootEntityItem(nap::RootEntity& rootEntity) const
 {
@@ -66,8 +50,14 @@ void napkin::SceneModel::clear()
 
 void napkin::SceneModel::populate()
 {
-	for (auto scene : getScenes())
+	auto doc = napkin::AppContext::get().getDocument();
+	assert(doc != nullptr);
+
+	auto scenes = doc->getObjects<nap::Scene>();
+	for (const auto& scene : scenes)
+	{
 		appendRow(new SceneItem(*scene));
+	}
 }
 
 
@@ -178,7 +168,6 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 			assert(scene);
 			auto rootEntity = &rootEntityItem->rootEntity();
 			assert(rootEntity);
-
 			auto removeEntityAction = menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), "Delete Instance");
 			connect(removeEntityAction, &QAction::triggered, [rootEntityItem]
 			{

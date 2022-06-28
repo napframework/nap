@@ -14,6 +14,10 @@
 
 namespace napkin
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Resource Model
+	//////////////////////////////////////////////////////////////////////////
+
 	class ComponentInstanceItem;
 	class RootEntityItem;
 
@@ -215,7 +219,6 @@ namespace napkin
 		int nameIndex(const ObjectItem& childItem) const;
 
 	protected:
-
 		nap::rtti::Object* mObject; // THe object held by this item
 
 	private:
@@ -223,6 +226,11 @@ namespace napkin
 		void onObjectRemoved(nap::rtti::Object* o);
 		std::string mAbsolutePath;
 		bool mIsPointer;
+
+		/**
+		 * Called just before an item is reparented
+		 */
+		void onObjectReparenting(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 	};
 
 
@@ -260,6 +268,23 @@ namespace napkin
 		void onPropertyValueChanged(const PropertyPath& path);
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// ComponentItem
+	//////////////////////////////////////////////////////////////////////////
+
+	class ComponentItem : public ObjectItem
+	{
+		Q_OBJECT
+	public:
+		explicit ComponentItem(nap::Component& comp);
+
+		/**
+		 * @return The component held by this item.
+		 */
+		nap::Component& getComponent();
+	};
+
 	/**
 	 * Represents a nap::IGroup.
 	 * Groups together a set of objects and child -groups.
@@ -295,21 +320,15 @@ namespace napkin
 
 	private:
 		/**
-		 * Called when an item is removed from an array
-		 */
-		void onPropertyChildRemoved(const PropertyPath& path, int index);
-
-		/**
 		 * Called when a new item is inserted into an array
 		 */
 		void onPropertyChildInserted(const PropertyPath& path, int index);
-
-		/**
-		 * Called when an item is re-parented
-		 */
-		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Scene Model
+	//////////////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////////////////////////////
 	// SceneItem
@@ -320,23 +339,6 @@ namespace napkin
 		Q_OBJECT
 	public:
 		explicit SceneItem(nap::Scene& scene);
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// ComponentItem
-	//////////////////////////////////////////////////////////////////////////
-
-	class ComponentItem : public ObjectItem
-	{
-		Q_OBJECT
-	public:
-		explicit ComponentItem(nap::Component& comp);
-
-		/**
-		 * @return The component held by this item.
-		 */
-		nap::Component& getComponent();
 	};
 
 

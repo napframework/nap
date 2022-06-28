@@ -102,22 +102,6 @@ void napkin::RootResourcesItem::onObjectReparented(nap::rtti::Object& object, Pr
 	{
 		onObjectAdded(&object, nullptr, true);
 	}
-
-	// Attempt to remove if oldParent is invalid
-	// TODO: move to group item
-	if (!oldParent.isValid())
-	{
-		for (int i = 0; i < this->rowCount(); i++)
-		{
-			auto obj_item = qitem_cast<ObjectItem*>(this->child(i));
-			assert(obj_item != nullptr);
-			if (obj_item->getObject() == &object)
-			{
-				this->removeRow(i);
-				break;
-			}
-		}
-	}
 }
 
 
@@ -209,8 +193,10 @@ ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 	setText(QString::fromStdString(o->mID));
 	connect(&ctx, &AppContext::propertyValueChanged, this, &ObjectItem::onPropertyValueChanged);
 	connect(&ctx, &AppContext::removingObject, this, &ObjectItem::onObjectRemoved);
+	connect(&ctx, &AppContext::objectReparenting, this, &ObjectItem::onObjectReparenting);
 	refresh();
 }
+
 
 const PropertyPath ObjectItem::propertyPath() const
 {
@@ -442,21 +428,25 @@ void ObjectItem::onPropertyValueChanged(PropertyPath path)
 
 void ObjectItem::onObjectRemoved(nap::rtti::Object* object)
 {
-	if (object == mObject)
-	{
-		auto parent_item = parentItem();
-		NAP_ASSERT_MSG(parent_item != nullptr, "Invalid parent item, items that are intended for deletion must have a parent!");
-		if (parent_item != nullptr)
-		{
-			parent_item->removeRow(this->row());
-		}
-	}
+	if (object != mObject)
+		return;
+
+	auto parent_item = parentItem();
+	//NAP_ASSERT_MSG(parent_item != nullptr, "Invalid parent item, items that are intended for deletion must have a parent!");
+	if (parent_item != nullptr)
+		parent_item->removeRow(this->row());
 }
 
 
 const std::string ObjectItem::unambiguousName() const
 {
 	return getObject()->mID;
+}
+
+
+void napkin::ObjectItem::onObjectReparenting(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
+{
+	onObjectRemoved(&object);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -568,8 +558,6 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
-	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
-	connect(&AppContext::get(), &AppContext::objectReparented, this, &GroupItem::onObjectReparented);
 }
 
 
@@ -588,27 +576,6 @@ QVariant napkin::GroupItem::data(int role) const
 nap::IGroup* napkin::GroupItem::getGroup()
 {
 	return rtti_cast<nap::IGroup>(mObject);
-}
-
-
-void napkin::GroupItem::onPropertyChildRemoved(const PropertyPath& path, int index)
-{
-	// Check if this group has changed
-	nap::IGroup* group = getGroup();
-	if (!(path.getObject() == group))
-		return;
-
-	// Figure out actual child index, based on edited property
-	// The group has 2 properties: members and children, but the group item
-	// displays them as 1 long list. First the members, then the children.
-	// We therefore offset the index based on the edited property.
-	int child_index = index;
-	if (path.getProperty() == group->getChildrenProperty())
-	{
-		PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
-		child_index += array_path.getArrayLength();
-	}
-	this->removeRow(child_index);
 }
 
 
@@ -650,17 +617,6 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 	}
 }
 
-
-void napkin::GroupItem::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
-{
-	/*
-	// Old parent is root, remove
-	if (!oldParent.isValid())
-	{
-		parentItem()->removeRow(this->row());
-	}
-	*/
-}
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentItem
