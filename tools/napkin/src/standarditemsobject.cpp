@@ -12,7 +12,7 @@
 // External Includes
 #include <nap/assert.h>
 
-RTTI_DEFINE_BASE(napkin::RegularResourcesItem)
+RTTI_DEFINE_BASE(napkin::RootResourcesItem)
 RTTI_DEFINE_BASE(napkin::EntityResourcesItem)
 RTTI_DEFINE_BASE(napkin::ObjectItem)
 RTTI_DEFINE_BASE(napkin::EntityItem)
@@ -25,17 +25,22 @@ RTTI_DEFINE_BASE(napkin::ComponentInstanceItem)
 
 using namespace napkin;
 
+
 //////////////////////////////////////////////////////////////////////////
 // RegularResourcesItem 
 //////////////////////////////////////////////////////////////////////////
 
-napkin::RegularResourcesItem::RegularResourcesItem()
+napkin::RootResourcesItem::RootResourcesItem()
 {
 	setEditable(false);
 	setText("Resources");
+
+	connect(&AppContext::get(), &AppContext::objectAdded, this, &RootResourcesItem::onObjectAdded);
+	connect(&AppContext::get(), &AppContext::objectReparented, this, &RootResourcesItem::onObjectReparented);
 }
 
-QVariant napkin::RegularResourcesItem::data(int role) const
+
+QVariant napkin::RootResourcesItem::data(int role) const
 {
 	switch (role)
 	{
@@ -43,6 +48,75 @@ QVariant napkin::RegularResourcesItem::data(int role) const
 		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_RTTIOBJECT);
 	default:
 		return QStandardItem::data(role);
+	}
+}
+
+
+void napkin::RootResourcesItem::clear()
+{
+	this->removeRows(0, rowCount());
+}
+
+
+void napkin::RootResourcesItem::populate(nap::rtti::ObjectList& objects)
+{
+	clear();
+	for (auto& obj : objects)
+	{
+		onObjectAdded(obj, nullptr, false);
+	}
+}
+
+
+void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
+{
+	// only add objects that have no parent
+	if (parent != nullptr)
+		return;
+
+	// Skip items associated with entity resources
+	if (obj->get_type().is_derived_from(RTTI_OF(nap::Entity)) ||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Component)) ||
+		obj->get_type().is_derived_from(RTTI_OF(nap::InstancePropertyValue)))
+		return;
+
+	// If it's a group, add it as such
+	if (obj->get_type().is_derived_from<nap::IGroup>())
+	{
+		auto group_item = new GroupItem(static_cast<nap::IGroup&>(*obj));
+		this->appendRow({ group_item, new RTTITypeItem(obj->get_type()) });
+		connect(group_item, &GroupItem::childAdded, this, &RootResourcesItem::childAddedToGroup);
+	}
+	else
+	{
+		// Add as regular item
+		this->appendRow({ new ObjectItem(obj, false), new RTTITypeItem(obj->get_type()) });
+	}
+}
+
+
+void napkin::RootResourcesItem::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
+{
+	// Only add if new parent is invalid (ie: part of root)
+	if (!newParent.isValid())
+	{
+		onObjectAdded(&object, nullptr, true);
+	}
+
+	// Attempt to remove if oldParent is invalid
+	// TODO: move to group item
+	if (!oldParent.isValid())
+	{
+		for (int i = 0; i < this->rowCount(); i++)
+		{
+			auto obj_item = qitem_cast<ObjectItem*>(this->child(i));
+			assert(obj_item != nullptr);
+			if (obj_item->getObject() == &object)
+			{
+				this->removeRow(i);
+				break;
+			}
+		}
 	}
 }
 
@@ -55,6 +129,7 @@ napkin::EntityResourcesItem::EntityResourcesItem()
 {
 	setEditable(false);
 	setText("Entities");
+	connect(&AppContext::get(), &AppContext::objectAdded, this, &EntityResourcesItem::onObjectAdded);
 }
 
 
@@ -67,6 +142,59 @@ QVariant napkin::EntityResourcesItem::data(int role) const
 	default:
 		return QStandardItem::data(role);
 	}
+}
+
+
+void napkin::EntityResourcesItem::clear()
+{
+	this->removeRows(0, rowCount());
+}
+
+
+void napkin::EntityResourcesItem::populate(nap::rtti::ObjectList& objects)
+{
+	clear();
+	for (auto& obj : objects)
+	{
+		onObjectAdded(obj, nullptr, false);
+	}
+}
+
+
+void napkin::EntityResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject)
+{
+	// Only consider entities
+	if (!obj->get_type().is_derived_from(RTTI_OF(nap::Entity)))
+		return;
+
+	// Only consider root objects
+	if (parent != nullptr)
+		return;
+
+	// Add as regular item
+	auto entity_item = new EntityItem(*static_cast<nap::Entity*>(obj), false);
+	this->appendRow(
+		{
+			entity_item,
+			new RTTITypeItem(obj->get_type())
+		});
+
+	// Listen to changes
+	entity_item->connect(entity_item, &EntityItem::childAdded, this, &EntityResourcesItem::childAddedToEntity);
+}
+
+
+const napkin::EntityItem* napkin::EntityResourcesItem::findEntityItem(const nap::Entity& entity) const
+{
+	for (int i = 0; i < rowCount(); i++)
+	{
+		auto entity_item = qitem_cast<EntityItem*>(this->child(i));
+		if (entity_item != nullptr && entity_item->getObject() == &entity)
+		{
+			return entity_item;
+		}
+	}
+	return nullptr;
 }
 
 
@@ -344,7 +472,7 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity
 
 	auto& ctx = AppContext::get();
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
-	connect(&ctx, &AppContext::entityAdded, this, &EntityItem::onEntityAdded);
+	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
 }
 
@@ -359,7 +487,13 @@ void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	if (parent != mObject)
 		return;
 
-	appendRow({new EntityItem(*e, true), new RTTITypeItem(e->get_type())});
+	// Create and add new item
+	auto* new_item = new EntityItem(*e, true);
+	new_item->connect(new_item, &EntityItem::childAdded, this, &EntityItem::childAdded);
+	appendRow({new_item, new RTTITypeItem(e->get_type())});
+
+	// Notify listeners
+	childAdded(*this, *new_item);
 }
 
 
@@ -368,9 +502,12 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 	if (owner != mObject)
 		return;
 
-	auto compItem = new ComponentItem(*comp);
-	auto compTypeItem = new RTTITypeItem(comp->get_type());
-	appendRow({ compItem, compTypeItem });
+	// Create and add new component
+	auto comp_item = new ComponentItem(*comp);
+	appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+
+	// Notify listeners
+	childAdded(*this, *comp_item);
 }
 
 
@@ -431,13 +568,8 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
-
-	// TODO: Improve delegation of object cleanup.
-	// Right now the resource panel deletes items based on changes to the model. This method is rather crude. 
-	// Preferably items that are not part of the root (have a parent) should manage cleanup them self.
-	// By listening to specific changes to the model, which is more efficient and easier to maintain.
-	// Subsequently, the line below can be uncommented.
 	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &GroupItem::onPropertyChildRemoved);
+	connect(&AppContext::get(), &AppContext::objectReparented, this, &GroupItem::onObjectReparented);
 }
 
 
@@ -519,6 +651,16 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 }
 
 
+void napkin::GroupItem::onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent)
+{
+	/*
+	// Old parent is root, remove
+	if (!oldParent.isValid())
+	{
+		parentItem()->removeRow(this->row());
+	}
+	*/
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentItem
@@ -561,7 +703,7 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEnti
 
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
-	connect(ctx, &AppContext::entityAdded, this, &EntityInstanceItem::onEntityAdded);
+	connect(ctx, &AppContext::childEntityAdded, this, &EntityInstanceItem::onEntityAdded);
 }
 
 nap::RootEntity& EntityInstanceItem::rootEntity() const

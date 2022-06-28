@@ -40,10 +40,14 @@ namespace napkin
 		void clear();
 
 		/**
-		 * Add an item (row) to represent an Object
-		 * @param object the object to represent
+		 * @return Root resources item
 		 */
-		ObjectItem* addObjectItem(nap::rtti::Object& object);
+		const RootResourcesItem& getRootResourcesItem() const		{ return mObjectsItem; }
+
+		/**
+		 * @return Entity resources item
+		 */
+		const EntityResourcesItem& getEntityResourcesItem() const	{ return mEntitiesItem; }
 
 	Q_SIGNALS:
 		/**
@@ -52,7 +56,7 @@ namespace napkin
 		void childAddedToGroup(GroupItem& group, ObjectItem& item);
 
 	private:
-		RegularResourcesItem mObjectsItem;		// top level item that will hold objects/resources
+		RootResourcesItem mObjectsItem;			// top level item that will hold objects/resources
 		EntityResourcesItem  mEntitiesItem;		// top level item that will hold entities
 	};
 
@@ -80,12 +84,6 @@ namespace napkin
 
 	private:
 		/**
-		 * Reconstruct the list, present items are destroyed before being rebuild.
-		 * Internally the model is cleared and populated.
-		 */
-		void refresh();
-
-		/**
 		 * Clears the current model and enforces selection to be removed
 		 */
 		void clear();
@@ -94,42 +92,6 @@ namespace napkin
 		 * Populates the current model
 		 */
 		void populate();
-
-		/**
-		 * Called when an entity has been added
-		 * @param newEntity The entity that was added
-		 * @param parent The parent of the entity that was added
-		 */
-		void onEntityAdded(nap::Entity* newEntity, nap::Entity* parent);
-
-		/**
-		 * Called when a component has been added
-		 * @param comp The component that was added
-		 * @param owner The owner of the component
-		 */
-		void onComponentAdded(nap::Component* comp, nap::Entity* owner);
-
-		/**
-		 * Called when an object has been added
-		 * @param obj The object that was added
-		 * @param parent the parent of the object, nullptr if top level object
-		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
-		 */
-		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
-
-		/**
-		 * Called when an object is about to be removed
-		 * @param obj The object that will be removed
-		 */
-		void onObjectRemoved(const nap::rtti::Object* obj);
-
-		/**
-		 * Called when an object moved to another group
-		 * @param object the object that moved
-		 * @param oldParent old parent property
-		 * @param newParent new parent property
-		 */
-		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
 		 * Called when a new file was created.
@@ -156,14 +118,14 @@ namespace napkin
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
 		/**
-		 * Called when a property value changed
-		 */
-		void onPropertyValueChanged(const PropertyPath& path);
-
-		/**
 		 * Called when a new item is inserted into an array
 		 */
 		void onChildAddedToGroup(GroupItem& group, ObjectItem& item);
+
+		/**
+		 * Called when a new item is added to an entity
+		 */
+		void onChildAddedToEntity(EntityItem& entity, ObjectItem& item);
 
 		/**
 		 * Used to provide this view with custom menu items

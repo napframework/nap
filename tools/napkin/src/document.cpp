@@ -598,7 +598,7 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 {
 	auto index = parent.mChildren.size();
 	parent.mChildren.emplace_back(&child);
-	entityAdded(&child, &parent);
+	childEntityAdded(&child, &parent);
 	return index;
 }
 

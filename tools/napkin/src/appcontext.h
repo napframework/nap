@@ -327,7 +327,7 @@ namespace napkin
 		 * @param newEntity The newly added Entity
 		 * @param parent The parent the new Entity was added to
 		 */
-		void entityAdded(nap::Entity* newEntity, nap::Entity* parent = nullptr);
+		void childEntityAdded(nap::Entity* newEntity, nap::Entity* parent = nullptr);
 
 		/**
 		 * Qt Signal

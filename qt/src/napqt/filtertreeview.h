@@ -97,7 +97,12 @@ namespace nap
 			 * Select and item and make sure it's visible on screen by scrolling if needed.
 			 * @param item
 			 */
-			void selectAndReveal(QStandardItem* item);
+			void selectAndReveal(const QStandardItem* item);
+
+			/**
+			 * Expand the given item
+			 */
+			void expand(const QStandardItem& item) const;
 
 			/**
 			 * Force the selection to the top item

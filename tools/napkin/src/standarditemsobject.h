@@ -21,15 +21,54 @@ namespace napkin
 	// RegularResourcesItem 
 	//////////////////////////////////////////////////////////////////////////
 
+	class GroupItem;
+	class ObjectItem;
+
 	/**
 	 * Used to group together all regular resources, except entities
 	 */
-	class RegularResourcesItem : public RTTIItem
+	class RootResourcesItem : public RTTIItem
 	{
 		Q_OBJECT
 	public:
-		RegularResourcesItem();
+		RootResourcesItem();
 		QVariant data(int role) const override;
+
+		/**
+		 * Populate this item
+		 * @param objects the objects to populate this item with
+		 */
+		void populate(nap::rtti::ObjectList& objects);
+
+		/**
+		 * Clear all items
+		 */
+		void clear();
+
+	Q_SIGNALS:
+		/**
+		 * Triggered when a new child item is added to this or a child group
+		 * @param group the item the new item is added to
+		 * @param item the item that is added to the group
+		 */
+		void childAddedToGroup(GroupItem& group, ObjectItem& item);
+
+	private:
+		/**
+		 * Called when an object has been added
+		 * @param obj The object that was added
+		 * @param parent the parent of the object, nullptr if top level object
+		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
+		 */
+		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
+
+		/**
+		 * Called when an object moved to another group
+		 * @param object the object that moved
+		 * @param oldParent old parent property
+		 * @param newParent new parent property
+		 */
+		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 	};
 
 
@@ -46,6 +85,40 @@ namespace napkin
 	public:
 		EntityResourcesItem();
 		QVariant data(int role) const override;
+
+		/**
+		 * Populate this item
+		 * @param objects the objects to populate this item with
+		 */
+		void populate(nap::rtti::ObjectList& objects);
+
+		/**
+		 * Clear all items
+		 */
+		void clear();
+
+		/**
+		 * Find the (root) item for the given entity, nullptr if not found
+		 * @param entity the entity to find
+		 */
+		const EntityItem* findEntityItem(const nap::Entity& entity) const;
+
+	Q_SIGNALS:
+		/**
+		 * Signal emitted when a new item is added to an entity item
+		 * @param entity the parent entity
+		 * @param item the item that is added, either a EntityItem or ComponentItem
+		 */
+		void childAddedToEntity(EntityItem& entity, ObjectItem& item);
+
+	private:
+		/**
+		 * Called when an object has been added
+		 * @param obj The object that was added
+		 * @param parent the parent of the object, nullptr if top level object
+		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
+		 */
+		void onObjectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent, bool selectNewObject);
 	};
 
 
@@ -173,6 +246,14 @@ namespace napkin
 
 		const std::string unambiguousName() const override;
 
+	Q_SIGNALS:
+		/**
+		 * Signal that is emitted when a new item is added to this entity
+		 * @param entity the entity the item is added to 
+		 * @param item the added item, either an EntityItem or ComponentItem.
+		 */
+		void childAdded(EntityItem& entity, ObjectItem& item);
+
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
@@ -222,6 +303,11 @@ namespace napkin
 		 * Called when a new item is inserted into an array
 		 */
 		void onPropertyChildInserted(const PropertyPath& path, int index);
+
+		/**
+		 * Called when an item is re-parented
+		 */
+		void onObjectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 	};
 
 

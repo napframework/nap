@@ -66,7 +66,7 @@ QStandardItemModel* FilterTreeView::getModel() const
 	return qobject_cast<QStandardItemModel*>(mProxyModel.sourceModel());
 }
 
-void FilterTreeView::selectAndReveal(QStandardItem* item)
+void FilterTreeView::selectAndReveal(const QStandardItem* item)
 {
 	if (item == nullptr)
 		return;
@@ -184,5 +184,11 @@ void nap::qt::FilterTreeView::enableSorting(LeafFilterProxyModel::SortingFunctio
 void nap::qt::FilterTreeView::disableSorting()
 {
 	mTreeView->setSortingEnabled(false);
+}
+
+
+void nap::qt::FilterTreeView::expand(const QStandardItem& item) const
+{
+	mTreeView->expand(getProxyModel().mapFromSource(item.index()));
 }
 
