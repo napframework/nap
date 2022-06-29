@@ -367,7 +367,17 @@ namespace nap
 		/**
 		 * @return All the components currently on this entity
 		 */
-		const ComponentList& getComponents() const { return mComponents; }
+		const ComponentList& getComponents() const							{ return mComponents; }
+
+		/**
+		 * @return children property name
+		 */
+		static constexpr const char* componentsPropertyName()				{ return "Components"; }
+
+		/**
+		 * @return children property name
+		 */
+		static constexpr const char* childrenPropertyName()					{ return "Children"; }
 
 	public:
 		ComponentList	mComponents;			// The components of this entity
