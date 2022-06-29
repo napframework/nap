@@ -31,7 +31,23 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 		qobject_cast<RootResourcesItem*>(r_item) != nullptr)
 		return false;
 
-	// Don't sort items of which parent is an entity (components)
+	// Check if item is an entity
+	auto le_item = qobject_cast<EntityItem*>(l_item);
+	auto re_item = qobject_cast<EntityItem*>(r_item);
+
+	// Check if item is a component
+	auto lc_item = qobject_cast<ComponentItem*>(l_item);
+	auto rc_item = qobject_cast<ComponentItem*>(r_item);
+
+	// left is entity, right is component
+	if (le_item != nullptr && rc_item != nullptr)
+		return true;
+
+	// right is component, left is entity
+	if (lc_item != nullptr && re_item != nullptr)
+		return false;
+
+	// Don't sort items of which parent is an entity
 	if (qobject_cast<EntityItem*>(l_item->parentItem()) != nullptr &&
 		qobject_cast<EntityItem*>(r_item->parentItem()) != nullptr)
 		return false;
