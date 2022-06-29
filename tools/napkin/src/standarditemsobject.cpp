@@ -427,13 +427,11 @@ void ObjectItem::onPropertyValueChanged(PropertyPath path)
 
 void ObjectItem::onObjectRemoved(nap::rtti::Object* object)
 {
-	if (object != mObject)
-		return;
-
-	auto parent_item = parentItem();
-	//NAP_ASSERT_MSG(parent_item != nullptr, "Invalid parent item, items that are intended for deletion must have a parent!");
-	if (parent_item != nullptr)
-		parent_item->removeRow(this->row());
+	// Remove item if object that is deleted is referenced by this item
+	// Note that if the item has no parent it won't be able to delete itself
+	// In that case the model that manages the items must delete it.
+	if (object == mObject && parentItem() != nullptr)
+		parentItem()->removeRow(this->row());
 }
 
 
