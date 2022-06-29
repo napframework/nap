@@ -2,18 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#pragma once
-
 #include "rttiitem.h"
 
-#include <QFileDialog>
-#include <QStandardItem>
-#include <rtti/typeinfo.h>
+RTTI_DEFINE_BASE(napkin::RTTIItem)
 
 namespace napkin
 {
-	namespace napkinutils
+	RTTIItem* RTTIItem::parentItem() const
 	{
-		QString getOpenFilename(QWidget *parent = nullptr, const QString &caption = {}, const QString &dir = {}, const QString &filter = {});
+		return qitem_cast<RTTIItem*>(QStandardItem::parent());
 	}
 }

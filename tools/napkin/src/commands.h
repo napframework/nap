@@ -13,12 +13,10 @@
 #include <QtCore/QVariant>
 #include <propertypath.h>
 #include <scene.h>
+#include <nap/group.h>
 
 namespace napkin
 {
-	/**
-	 * TODO: To be implemented
-	 */
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
@@ -285,8 +283,28 @@ namespace napkin
 		void undo() override;
 	private:
 		const PropertyPath& mPath; ///< The path representing the array
-		nap::rtti::Variant mValue;
 		size_t mIndex; ///< The element to be removed
+	};
+
+	/**
+	 * Moves an object to another group
+	 */
+	class GroupReparentCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param object the object to move to another group 
+		 * @param currentPath current parent group, invalid path if the object has no parent group
+		 * @param newPath new parent path, invalid path if there is no new parent
+		 */
+		GroupReparentCommand(nap::rtti::Object& object, PropertyPath currentPath,  PropertyPath newPath);
+
+		void redo() override;
+		void undo() override;
+	private:
+		nap::rtti::Object* mObject = nullptr;
+		PropertyPath mCurrentPath = {};
+		PropertyPath mNewPath = {};
 	};
 
 	class ArrayMoveElementCommand : public QUndoCommand

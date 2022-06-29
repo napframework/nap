@@ -547,7 +547,6 @@ namespace nap
 						{
 							auto& eventController = getEditor().getController<SequenceControllerEvent>();
 							const auto *eventSegment = dynamic_cast<const SequenceTrackSegmentEventBase*>(eventController.getSegment(action->mTrackID, action->mSegmentID));
-
 							assert(eventSegment != nullptr);
 
 							if( eventSegment != nullptr)

@@ -124,7 +124,7 @@ void FilterPopup::updateSize()
 	auto& model = mFilterTree.getProxyModel();
 
 	// Ensure there is always something selected
-	auto& tree = *dynamic_cast<FilterTree_*>(&mFilterTree.getTreeView());
+	auto& tree = *qobject_cast<FilterTree_*>(&mFilterTree.getTreeView());
 	if (!tree.currentIndex().isValid())
 		tree.setCurrentIndex(model.index(0, 0));
 

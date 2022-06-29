@@ -5,8 +5,9 @@
 #pragma once
 
 #include <deque>
-#include <entity.h>
 #include <nap/core.h>
+#include <entity.h>
+#include <nap/group.h>
 #include <propertypath.h>
 
 #include <QString>
@@ -65,13 +66,7 @@ namespace napkin
 		 * @return All the objects in this document, derived from the provided type
 		 */
 		template<typename T>
-		std::vector<T*> getObjects()
-		{
-			std::vector<T*> ret;
-			for (auto obj : getObjects(RTTI_OF(T)))
-				ret.emplace_back(static_cast<T*>(obj));
-			return ret;
-		}
+		std::vector<T*> getObjects();
 
 		/**
 		 * @return All the objects that are currently loaded.
@@ -117,13 +112,30 @@ namespace napkin
 
 		/**
 		 * Retrieve the Entity the provided Component belongs to.
-		 *
 		 * TODO: Move to nap::Component if possible
 		 *
 		 * @param component The component of which to find the owner.
 		 * @return The owner of the component
 		 */
 		nap::Entity* getOwner(const nap::Component& component) const;
+
+		/**
+		 * Retrieve the group the provided group belongs to,
+		 * nullptr if the group is not the child of another group.
+		 * @param group The group of which to find the owner
+		 * @param outIndex the child index, -1 if the group isn't a child of another group
+		 * @return the group, nullptr if the group isn't a child of another group
+		 */
+		nap::IGroup* getOwner(const nap::IGroup& group, int& outIndex) const;
+
+		/**
+		 * Retrieve the group the provided object belongs to.
+		 * nullptr if the group is not the child of another group.
+		 * @param group The object of which to find the owner
+		 * @param outIndex the child index, -1 if the group isn't a child of another group
+		 * @return the group, nullptr if the object isn't a child of another group
+		 */
+		nap::IGroup* getGroup(const nap::rtti::Object& object, int& outIndex) const;
 
 		/**
 		 * Set an object's name. This is similar to setting a value on it's name property,
@@ -173,18 +185,19 @@ namespace napkin
 		 * Add an object of the specified type.
 		 * @param type The type of the desired object.
 		 * @param parent The parent of the object: In the case of Entity, this will be its new parent.
-		 * 	In the case of Component, this is going to be the owning Entity.
+		 * In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
-		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr,
-									 bool selectNewObject = true, const std::string& name = std::string());
+		nap::rtti::Object* addObject(rttr::type type, nap::rtti::Object* parent = nullptr, const std::string& name = std::string());
 
 		/**
-		 * Add an Entity to a parent Entity, remove from previous parent if necessary
-		 * @param entity The Entity to move under a new parent
-		 * @param parent The parent entity or nullptr when the entity should have no parent
+		 * Moves an object to a new group.
+		 * Removes the object from the current group if necessary.
+		 * @param object the object to move, group or object
+		 * @param currentPath the property path it is currently parented under, invalid path if item is not parented
+		 * @param newParent the new property path to move the object to, invalid path item if it is not to be parented
 		 */
-		void reparentEntity(nap::Entity& entity, nap::Entity* parent);
+		void reparentObject(nap::rtti::Object& object, const PropertyPath& currentPath, const PropertyPath& newPath);
 
 		/**
 		 * Add an object of the specified type
@@ -193,9 +206,9 @@ namespace napkin
 		 * @return
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string(), bool selectNew = true)
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string())
 		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, selectNew, name));
+			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, name));
 		}
 
 		/**
@@ -240,13 +253,6 @@ namespace napkin
 		void recurseChildren(nap::Entity& entity, std::function<void(nap::Entity& child)>);
 
 		/**
-		 * Remove an entity from a scene, note that a Scene may contain the same entity multiple times.
-		 * @param scene The Scene to remove the entity from
-		 * @param entity The entity to remove from the scene
-		 */
-		void removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity);
-
-		/**
 		 * Remove all entity instances from a scene, note that a Scene may contain the same entity multiple times.
 		 * @param scene The Scene to remove the entity from
 		 * @param entity The entity to remove from the scene
@@ -259,7 +265,6 @@ namespace napkin
 		 * @param index The index of the Entity to be removed
 		 */
 		void removeEntityFromScene(nap::Scene& scene, size_t index);
-
 
 		/**
 		 * Add an entity to a scene (at root level)
@@ -344,21 +349,21 @@ namespace napkin
 		int arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type, size_t index);
 
 		/**
-		 * Create an object of the specified type and add it to the end of the array
-		 * The propertyValueChanged signal will be emitted.
-		 * @param path The path to the array
-		 * @param type The type of object to create
-		 * @return The index of the inserted object
-		 */
-		size_t arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type);
-
-		/**
 		 * Remove an element from an array
-		 * The propertyValueChanged signal will be emitted.
+		 * Emits propertyValueChanged & propertyChildRemoved signals
 		 * @param path The path pointing to the array
 		 * @param index The index of the element to remove
 		 */
 		void arrayRemoveElement(const PropertyPath& path, size_t index);
+
+		/**
+		 * Remove an element from a group
+		 * Emits propertyValueChanged & propertyChildRemoved signals
+		 * @param group The group to remove the element from
+		 * @param arrayProperty the array property that contains the element
+		 * @param index The index of the element to remove
+		 */
+		void groupRemoveElement(nap::IGroup& group, rttr::property arrayProperty, size_t index);
 
 		/**
 		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,
@@ -416,7 +421,7 @@ namespace napkin
 		 * @param owner The object that declares embedded pointers
 		 * @return A list of objects, owned by the given object.
 		 */
-		std::vector<nap::rtti::Object*> getEmbeddedObjects(const nap::rtti::Object& owner);
+		std::vector<nap::rtti::Object*> getEmbeddedObjects(nap::rtti::Object& owner);
 
 		/**
 		 * Get the absolute path of an object
@@ -476,7 +481,7 @@ namespace napkin
 		 * @param newEntity The newly added Entity
 		 * @param parent The parent the new Entity was added to
 		 */
-		void entityAdded(nap::Entity* newEntity, nap::Entity* parent = nullptr);
+		void childEntityAdded(nap::Entity* newEntity, nap::Entity* parent = nullptr);
 
 		/**
 		 * Qt Signal
@@ -488,13 +493,11 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked after any object has been added (this includes Entities)
+		 * Invoked after any object has been added (this includes Entities and Groups)
 		 * @param obj The newly added object
-		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
-		 * 		This is a notification, not a directive.
-		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
+		 * @param parent The parent item of the newly added object, can be nullptr
 		 */
-		void objectAdded(nap::rtti::Object* obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent);
 
 		/**
 		 * Qt Signal
@@ -504,19 +507,40 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked just before an object is removed (including Entities)
+		 * Invoked just before an object is removed. This includes entities, components and regular resources.
+		 * The item, including all of it's embedded children, are still part of the document. 
+		 * @param object The object about to be removed
+		 */
+		void removingObject(nap::rtti::Object* object);
+
+		/**
+		 * Qt Signal
+		 * Invoked just after a resource is removed, but before it is destroyed.
+		 * This including entities, components and regular resources.
+		 * The object has been removed from the document, but not yet destroyed!
+		 * The embedded child objects, including components and child groups,
+		 * have been destroyed and removed from the document.
 		 * @param object The object about to be removed
 		 */
 		void objectRemoved(nap::rtti::Object* object);
 
 		/**
 		 * Qt Signal
-		 * Invoked after an Entity has moved under a new parent
-		 * @param entity The Entity that moved under a new parent
-		 * @param oldParent The old parent of the Entity
-		 * @param newParent The new parent of the Entity
+		 * Invoked after an object has moved to a new group
+		 * @param object The object that moved to a new group
+		 * @param oldParent The previous parent (array) property, invalid if it had no parent
+		 * @param newParent The new parent (array) property, invalid if not attached to a new parent
 		 */
-		void entityReparented(nap::Entity* entity, nap::Entity* oldParent, nap::Entity* newParent);
+		void objectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
+
+		/**
+		 * Qt Signal
+		 * Invoked before an object is moved to a new group
+		 * @param object The object that is moved to a new group
+		 * @param oldParent The current parent (array) property, invalid if it had no parent
+		 * @param newParent The new parent (array) property, invalid if not attached to a new parent
+		 */
+		void objectReparenting(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
 		 * Qt Signal
@@ -568,5 +592,23 @@ namespace napkin
 		 */
 		const std::string& forceSetObjectName(nap::rtti::Object& object, const std::string& name);
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	std::vector<T*> Document::getObjects()
+	{
+		auto objects = getObjects(RTTI_OF(T));
+		std::vector<T*> ret;
+		ret.reserve(objects.size());
+		for (auto& obj : objects)
+		{
+			ret.emplace_back(static_cast<T*>(obj));
+		}
+		return ret;
+	}
 
 }

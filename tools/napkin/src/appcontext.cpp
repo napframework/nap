@@ -325,11 +325,14 @@ void AppContext::connectDocumentSignals(bool enable)
 
     if (enable)
 	{
-		connect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
+		connect(doc, &Document::childEntityAdded, this, &AppContext::childEntityAdded);
 		connect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
 		connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
 		connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
+		connect(doc, &Document::removingObject, this, &AppContext::removingObject);
 		connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		connect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
+		connect(doc, &Document::objectReparented, this, &AppContext::objectReparented);
 		connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
@@ -337,11 +340,14 @@ void AppContext::connectDocumentSignals(bool enable)
 	}
 	else
 	{
-		disconnect(doc, &Document::entityAdded, this, &AppContext::entityAdded);
+		disconnect(doc, &Document::childEntityAdded, this, &AppContext::childEntityAdded);
 		disconnect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
 		disconnect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
 		disconnect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
+		disconnect(doc, &Document::removingObject, this, &AppContext::removingObject);
 		disconnect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
+		disconnect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
+		disconnect(doc, &Document::objectReparented, this, &AppContext::objectReparented);
 		disconnect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		disconnect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		disconnect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
@@ -353,7 +359,7 @@ QMainWindow* AppContext::getMainWindow() const
 {
 	for (auto window : getQApplication()->topLevelWidgets())
 	{
-		auto mainWin = dynamic_cast<QMainWindow*>(window);
+		auto mainWin = qobject_cast<QMainWindow*>(window);
 		if (mainWin != nullptr)
 			return mainWin;
 	}
@@ -458,7 +464,7 @@ const napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
 
 QApplication* napkin::AppContext::getQApplication() const
 {
-	return dynamic_cast<QApplication*>(qGuiApp);
+	return qobject_cast<QApplication*>(qGuiApp);
 }
 
 

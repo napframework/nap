@@ -29,6 +29,7 @@ namespace nap
 		 */
 		class FilterTree_ : public QTreeView
 		{
+			Q_OBJECT
 		public:
 			FilterTree_(QWidget *parent = nullptr);
 			QRect visualRectFor(const QItemSelection& selection) const;
@@ -96,7 +97,12 @@ namespace nap
 			 * Select and item and make sure it's visible on screen by scrolling if needed.
 			 * @param item
 			 */
-			void selectAndReveal(QStandardItem* item);
+			void selectAndReveal(const QStandardItem* item);
+
+			/**
+			 * Expand the given item
+			 */
+			void expand(const QStandardItem& item) const;
 
 			/**
 			 * Force the selection to the top item
@@ -118,15 +124,6 @@ namespace nap
 			 * @return The currently selected items in the view.
 			 */
 			QList<QStandardItem*> getSelectedItems() const;
-
-			template<typename T>
-			T* getSelectedItem() const
-			{
-				for (auto item : getSelectedItems())
-					if (auto m = dynamic_cast<T*>(item))
-						return m;
-				return nullptr;
-			}
 
 			/**
 			 * @return The selection model used by the tree view.

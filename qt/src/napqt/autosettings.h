@@ -135,21 +135,21 @@ namespace nap
 
 			void storeWidget(const QWidget& widget, const QString& key, QSettings& s) const override
 			{
-				auto w = dynamic_cast<const T*>(&widget);
+				auto w = qobject_cast<const T*>(&widget);
 				assert(w);
 				store(*w, key, s);
 			}
 
 			void restoreWidget(QWidget& widget, const QString& key, const QSettings& s) const override
 			{
-				auto w = dynamic_cast<T*>(&widget);
+				auto w = qobject_cast<T*>(&widget);
 				assert(w);
 				restore(*w, key, s);
 			}
 
 			bool canStore(const QWidget& widget) const override
 			{
-				return dynamic_cast<const T*>(&widget) != nullptr;
+				return qobject_cast<const T*>(&widget) != nullptr;
 			}
 		};
 
