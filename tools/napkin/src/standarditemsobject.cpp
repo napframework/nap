@@ -431,7 +431,7 @@ void ObjectItem::onObjectRemoved(nap::rtti::Object* object)
 		return;
 
 	auto parent_item = parentItem();
-	NAP_ASSERT_MSG(parent_item != nullptr, "Invalid parent item, items that are intended for deletion must have a parent!");
+	//NAP_ASSERT_MSG(parent_item != nullptr, "Invalid parent item, items that are intended for deletion must have a parent!");
 	if (parent_item != nullptr)
 		parent_item->removeRow(this->row());
 }
