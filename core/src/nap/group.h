@@ -98,7 +98,12 @@ namespace nap
 		rtti::ObjectPtr<T> findObjectRecursive(const std::string& id) const;
 
 		/**
-		 * Attempts to find a member in this group, with the given ID, of type M
+		 * Attempts to find a member in this group, with the given ID, as type M
+		 *
+		 *~~~~~{.cpp}
+		 * auto window = mGroup->findObject<nap::RenderWindow>("Window0");
+		 *~~~~~
+		 * 
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found or not of the given type
 		 */
@@ -106,7 +111,12 @@ namespace nap
 		rtti::ObjectPtr<M> findObject(const std::string& id) const;
 
 		/**
-		 * Attempts to find a member in this group, and all child groups, with the given ID of type M
+		 * Attempts to find a member in this group, and all child groups, with the given ID as type M.
+		 * 
+		 *~~~~~{.cpp}
+		 * auto window = mGroup->findObjectRecursive<nap::RenderWindow>("Window0");
+		 *~~~~~
+		 * 
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found or not of the given type
 		 */
