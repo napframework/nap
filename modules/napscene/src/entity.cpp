@@ -10,8 +10,8 @@
 using namespace std;
 
 RTTI_BEGIN_CLASS(nap::Entity)
-	RTTI_PROPERTY("Components", &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Children", &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY(nap::Entity::componentsPropertyName(), &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::Entity::childrenPropertyName(), &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EntityInstance)

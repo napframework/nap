@@ -310,8 +310,7 @@ QVariant ObjectItem::data(int role) const
 
 void ObjectItem::removeChildren()
 {
-	while (rowCount())
-		removeRow(0);
+	removeRows(0, rowCount());
 }
 
 QString ObjectItem::instanceName() const
@@ -428,13 +427,11 @@ void ObjectItem::onPropertyValueChanged(PropertyPath path)
 
 void ObjectItem::onObjectRemoved(nap::rtti::Object* object)
 {
-	if (object != mObject)
-		return;
-
-	auto parent_item = parentItem();
-	//NAP_ASSERT_MSG(parent_item != nullptr, "Invalid parent item, items that are intended for deletion must have a parent!");
-	if (parent_item != nullptr)
-		parent_item->removeRow(this->row());
+	// Remove item if object that is deleted is referenced by this item
+	// Note that if the item has no parent it won't be able to delete itself
+	// In that case the model that manages the items must delete it.
+	if (object == mObject && parentItem() != nullptr)
+		parentItem()->removeRow(this->row());
 }
 
 
@@ -453,12 +450,8 @@ void napkin::ObjectItem::onObjectReparenting(nap::rtti::Object& object, Property
 
 EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity, isPointer)
 {
-
-	for (auto& child : entity.mChildren)
-		onEntityAdded(child.get(), &entity);
-
-	for (auto& comp : entity.mComponents)
-		onComponentAdded(comp.get(), &entity);
+	// Populate item
+	populate();
 
 	auto& ctx = AppContext::get();
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
@@ -480,7 +473,7 @@ void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	// Create and add new item
 	auto* new_item = new EntityItem(*e, true);
 	new_item->connect(new_item, &EntityItem::childAdded, this, &EntityItem::childAdded);
-	appendRow({new_item, new RTTITypeItem(e->get_type())});
+	insertRow(parent->mChildren.size()-1, {new_item, new RTTITypeItem(e->get_type())});
 
 	// Notify listeners
 	childAdded(*this, *new_item);
@@ -503,17 +496,16 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
-	PropertyPath childrenPath(*getEntity(), nap::rtti::Path::fromString("Children"), *AppContext::get().getDocument());
+	PropertyPath childrenPath(*getEntity(),
+		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
+
+	// Check if this property was edited
 	assert(childrenPath.isValid());
-	if (path != childrenPath)
-		return;
-
-	removeChildren();
-	for (const auto& child : getEntity()->mChildren)
-		onEntityAdded(child.get(), getEntity());
-
-	for (const auto& comp : getEntity()->mComponents)
-		onComponentAdded(comp.get(), getEntity());
+	if (path == childrenPath)
+	{
+		// Re-populate
+		populate();
+	}
 }
 
 
@@ -524,6 +516,26 @@ const std::string EntityItem::unambiguousName() const
 		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
 	}
 	return ObjectItem::unambiguousName();
+}
+
+
+void napkin::EntityItem::populate()
+{
+	removeChildren();
+	auto* entity = getEntity();
+	for (auto& child : entity->mChildren)
+	{
+		auto* child_entity = new EntityItem(*child, true);
+		child_entity->connect(child_entity, &EntityItem::childAdded, this, &EntityItem::childAdded);
+		appendRow({ child_entity, new RTTITypeItem(child->get_type()) });
+	}
+
+	for (auto& comp : entity->mComponents)
+	{
+		// Create and add new component
+		auto comp_item = new ComponentItem(*comp);
+		appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
