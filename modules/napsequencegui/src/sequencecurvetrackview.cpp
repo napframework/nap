@@ -1356,8 +1356,7 @@ namespace nap
 						action->mSegmentID,
 						translated_value,
 						curveIndex,
-						action->mType
-					);
+						action->mType);
 					updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 					mState.mDirty = true;
 				}

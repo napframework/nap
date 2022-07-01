@@ -53,6 +53,9 @@ namespace nap
 		// current timelinewidth
 		float mTimelineWidth;
 
+        // height of all tracks with their respective heights
+        float mTotalTracksHeight;
+
 		// stepsize amount pixels per second
 		float mStepSize;
 
@@ -64,9 +67,6 @@ namespace nap
 
 		// previous window scroll
 		ImVec2 mScroll;
-
-		// vertical resolution (not scaled)
-		float mVerticalResolution = 180.0f;
 
 		// horizontal resolution (not scaled)
 		float mHorizontalResolution = 100.0f;

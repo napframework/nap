@@ -112,8 +112,16 @@ namespace nap
 		// calc width of content in timeline window
 		mState.mTimelineWidth = (float)(mState.mStepSize * sequence.mDuration);
 
-		// set content width of next window
-		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth + (mState.mVerticalResolution * mState.mScale), 0.0f));
+        // calc total tracksheight
+        mState.mTotalTracksHeight = 0.0f;
+        for(const auto& track : sequence.mTracks)
+        {
+            mState.mTotalTracksHeight += track->mTrackHeight * mState.mScale;
+        }
+        mState.mTotalTracksHeight += (10.0f * mState.mScale) * (sequence.mTracks.size() + 1);
+
+        // set content width of next window
+		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth, 0.0f));
 
 		// set window flags
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_HorizontalScrollbar;
@@ -307,16 +315,6 @@ namespace nap
                     mState.mAction          = createAction<ChangeHorizontalResolution>(new_resolution);
                 }
 			}
-
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetScrollX());
-            float vertical_resolution = mState.mVerticalResolution;
-			if (ImGui::SliderFloat("Vertical Zoom", &vertical_resolution, 180, 500, ""))
-            {
-                if(mState.mAction->isAction<None>() || mState.mAction->isAction<NonePressed>())
-                {
-                    mState.mAction = createAction<ChangeVerticalResolution>(vertical_resolution);
-                }
-            }
 
 			ImGui::PopItemWidth();
 
@@ -639,8 +637,8 @@ namespace nap
 					if (player_time_rect_center.x < mState.mWindowPos.x + mState.mWindowSize.x - 15.0f * mState.mScale && player_time_rect_center.x > mState.mWindowPos.x)
 					{
 						ImGui::PopClipRect();
-						const float bottom = player_time_rect_center.y + math::min<float>(sequence.mTracks.size() *
-                                (mState.mVerticalResolution + 10.0f * mState.mScale) + 55.0f * mState.mScale,
+						const float bottom = player_time_rect_center.y + math::min<float>(
+                                mState.mTotalTracksHeight + 55.0f * mState.mScale,
                                 mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y);
 						if (ImGui::IsMouseHoveringRect(
 							{ player_time_rect_center.x - hover_margin, player_time_rect_center.y - hover_margin },
@@ -971,7 +969,7 @@ namespace nap
 		const float line_thickness  = 2.0f * mState.mScale;
         const ImVec2 player_offset  = { 5.0f * mState.mScale, 50.0f * mState.mScale };
         const float line_x_offset   = 25.0f * mState.mScale;
-        const float line_x_end      = sequence.mTracks.size() * ((mState.mVerticalResolution + 10.0f) * mState.mScale) + (10.0f * mState.mScale);
+        const float line_y_end      = mState.mTotalTracksHeight;
 
 		ImVec2 pos =
 		{
@@ -984,9 +982,8 @@ namespace nap
 		// if player position in inside the sequencer window, draw it
 		if(pos.x < mState.mWindowPos.x + mState.mWindowSize.x && pos.x > mState.mWindowPos.x )
 		{
-			ImVec2 line_begin 	= { pos.x, math::max<float>( mState.mWindowPos.y + line_x_offset, pos.y ) }; // clip line to top of window
-			ImVec2 line_end 	= { pos.x, 	pos.y + math::min<float>(line_x_end,
-                                                                     mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y) }; // clip the line to bottom of window
+			ImVec2 line_begin 	= { pos.x, math::max<float>(mState.mWindowPos.y + line_x_offset, pos.y) }; // clip line to top of window
+			ImVec2 line_end 	= { pos.x, 	pos.y + math::min<float>(line_y_end, mState.mScroll.y + mState.mWindowSize.y - mState.mTimelineControllerPos.y) }; // clip the line to bottom of window
 
 			ImGui::SetNextWindowPos(line_begin);
 			if(ImGui::BeginChild("PlayerPosition", { line_thickness, line_end.y - line_begin.y }, false, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoMove) )
@@ -1007,7 +1004,7 @@ namespace nap
 		const ImU32 color           = ImGui::ColorConvertFloat4ToU32({white_color.x, white_color.y, white_color.z, 1.0f});
         const float marker_width    = 5.0f * mState.mScale;
         const float line_y_start    = 25.0f * mState.mScale;
-        const float line_stop       = sequence.mTracks.size() * ((mState.mVerticalResolution + 10.0f) * mState.mScale) + (35.0f * mState.mScale) - mState.mScroll.y;
+        const float line_stop       = mState.mTotalTracksHeight - mState.mScroll.y + line_y_start;
 
 		for(const auto& marker : sequence.mMarkers)
 		{
@@ -1057,7 +1054,7 @@ namespace nap
 		ImVec2 cursor_pos = ImGui::GetCursorPos();
 
         ImVec2 offset = { 5.0f * mState.mScale, 15.0f * mState.mScale };
-        const float bottom_y = sequence.mTracks.size() * ((mState.mVerticalResolution + 10.0f) * mState.mScale) + (10.0f * mState.mScale);
+        const float bottom_y = mState.mTotalTracksHeight + (10.0f * mState.mScale);
 
 		ImGui::SetCursorPos(
 		{
@@ -1603,8 +1600,6 @@ namespace nap
 				ImGui::TextColored(color, "Control + Scroll Wheel");
 				ImGui::Text("Horizontal Scroll :"); ImGui::SameLine(width);
 				ImGui::TextColored(color, "Shift + Scroll Wheel");
-				ImGui::Text("Vertical Scroll :"); ImGui::SameLine(width);
-				ImGui::TextColored(color, "Scroll Wheel");
 
 				ImGui::Spacing();
 				ImGui::Separator();
@@ -1642,7 +1637,7 @@ namespace nap
         registerActionHandler(RTTI_OF(ShowHelpPopup), [this]{ handleHelpPopup(); });
 
         /**
-         * action handlers for changing horizontal and vertical resolution (zoom)
+         * action handlers for changing horizontal resolution (zoom)
          */
         registerActionHandler(RTTI_OF(ChangeHorizontalResolution), [this]
         {
@@ -1650,14 +1645,6 @@ namespace nap
             auto* action = mState.mAction->getDerived<ChangeHorizontalResolution>();
             mState.mHorizontalResolution = action->mHorizontalResolution;
             handleHorizontalZoom();
-            mState.mAction = createAction<None>();
-        });
-        registerActionHandler(RTTI_OF(ChangeVerticalResolution), [this]
-        {
-            assert(mState.mAction->isAction<ChangeVerticalResolution>());
-            auto* action = mState.mAction->getDerived<ChangeVerticalResolution>();
-            mState.mVerticalResolution = action->mVerticalResolution;
-            mState.mDirty = true;
             mState.mAction = createAction<None>();
         });
 

@@ -495,22 +495,6 @@ namespace nap
         };
 
         /**
-         * Action that tells the gui to change vertical resolution
-         */
-        class ChangeVerticalResolution: public Action
-        {
-        RTTI_ENABLE(Action)
-        public:
-            /**
-             * Constructor
-             * @param newResolution the new vertical resolution
-             */
-            ChangeVerticalResolution(float newResolution) : mVerticalResolution(newResolution){}
-
-            float mVerticalResolution;
-        };
-
-        /**
          * Action that tells the gui to delete the track with specified track id
          */
         class DeleteTrack : public TrackAction
