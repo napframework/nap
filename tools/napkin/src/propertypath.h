@@ -26,10 +26,10 @@ namespace napkin
 		FollowEmbeddedPointers 		= 1 << 2,	// Resolve embedded pointers and visit the resolved object's properties
 	};
 
+
 	struct NameIndex
 	{
 		NameIndex(const std::string& nameIndex);
-
 		std::string toString() const;
 		operator std::string() const { return toString(); }
 		std::string mID;
@@ -37,6 +37,7 @@ namespace napkin
 	};
 
 	using PPath = std::vector<NameIndex>;
+
 
 	/**
 	 * A path to a property, including its object.
