@@ -377,6 +377,8 @@ namespace nap
 	using UniformVec2Instance	= TypedUniformValueInstance<glm::vec2>;
 	using UniformVec3Instance	= TypedUniformValueInstance<glm::vec3>;
 	using UniformVec4Instance	= TypedUniformValueInstance<glm::vec4>;
+	using UniformIVec4Instance	= TypedUniformValueInstance<glm::ivec4>;
+	using UniformUVec4Instance	= TypedUniformValueInstance<glm::uvec4>;
 	using UniformMat4Instance	= TypedUniformValueInstance<glm::mat4>;
 
 
@@ -390,6 +392,8 @@ namespace nap
 	using UniformVec2ArrayInstance	= TypedUniformValueArrayInstance<glm::vec2>;
 	using UniformVec3ArrayInstance	= TypedUniformValueArrayInstance<glm::vec3>;
 	using UniformVec4ArrayInstance	= TypedUniformValueArrayInstance<glm::vec4>;
+	using UniformIVec4ArrayInstance	= TypedUniformValueArrayInstance<glm::ivec4>;
+	using UniformUVec4ArrayInstance	= TypedUniformValueArrayInstance<glm::uvec4>;
 	using UniformMat4ArrayInstance	= TypedUniformValueArrayInstance<glm::mat4>;
 
 

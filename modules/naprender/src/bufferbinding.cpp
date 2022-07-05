@@ -39,6 +39,14 @@ RTTI_BEGIN_CLASS(nap::BufferBindingVec4)
 	RTTI_PROPERTY("Buffer", &nap::BufferBindingVec4::mBuffer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::BufferBindingIVec4)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingIVec4::mBuffer, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::BufferBindingUVec4)
+	RTTI_PROPERTY("Buffer", &nap::BufferBindingUVec4::mBuffer, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::BufferBindingMat4)
 	RTTI_PROPERTY("Buffer", &nap::BufferBindingMat4::mBuffer, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS

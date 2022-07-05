@@ -26,6 +26,14 @@ RTTI_BEGIN_CLASS(nap::UniformUInt)
 	RTTI_PROPERTY("Value", &nap::UniformUInt::mValue, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::UniformIVec4)
+	RTTI_PROPERTY("Value", &nap::UniformIVec4::mValue, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformUVec4)
+	RTTI_PROPERTY("Value", &nap::UniformUVec4::mValue, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::UniformInt)
 	RTTI_PROPERTY("Value", &nap::UniformInt::mValue, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -72,6 +80,14 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformVec4Array)
 	RTTI_PROPERTY("Values", &nap::UniformVec4Array::mValues, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformIVec4Array)
+	RTTI_PROPERTY("Values", &nap::UniformIVec4Array::mValues, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::UniformUVec4Array)
+	RTTI_PROPERTY("Values", &nap::UniformUVec4Array::mValues, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UniformMat4Array)

@@ -44,6 +44,8 @@ namespace nap
 		Vec2,				///< 2 float vector
 		Vec3,				///< 3 float vector
 		Vec4,				///< 4 float vector
+		IVec4,				///< 4 int vector
+		UVec4,				///< 4 uint vector
 		Mat2,				///< 2x2 float matrix
 		Mat3,				///< 3x3 float matrix
 		Mat4				///< 4x4 float matrix

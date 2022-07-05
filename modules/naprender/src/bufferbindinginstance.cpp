@@ -35,6 +35,14 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingVec4Instance)
 	RTTI_CONSTRUCTOR(const std::string&, const nap::ShaderVariableValueArrayDeclaration&, const nap::BufferBindingChangedCallback&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingIVec4Instance)
+	RTTI_CONSTRUCTOR(const std::string&, const nap::ShaderVariableValueArrayDeclaration&, const nap::BufferBindingChangedCallback&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingUVec4Instance)
+	RTTI_CONSTRUCTOR(const std::string&, const nap::ShaderVariableValueArrayDeclaration&, const nap::BufferBindingChangedCallback&)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BufferBindingMat4Instance)
 	RTTI_CONSTRUCTOR(const std::string&, const nap::ShaderVariableValueArrayDeclaration&, const nap::BufferBindingChangedCallback&)
 RTTI_END_CLASS
@@ -157,6 +165,16 @@ namespace nap
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec4)
 			{
 				return createBufferBindingInstance<BufferBindingVec4Instance, BufferBindingVec4, ShaderVariableValueArrayDeclaration>(
+					binding_name, binding, *value_array_declaration, bufferChangedCallback, errorState);
+			}
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::IVec4)
+			{
+				return createBufferBindingInstance<BufferBindingIVec4Instance, BufferBindingIVec4, ShaderVariableValueArrayDeclaration>(
+					binding_name, binding, *value_array_declaration, bufferChangedCallback, errorState);
+			}
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::UVec4)
+			{
+				return createBufferBindingInstance<BufferBindingUVec4Instance, BufferBindingUVec4, ShaderVariableValueArrayDeclaration>(
 					binding_name, binding, *value_array_declaration, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Mat4)
