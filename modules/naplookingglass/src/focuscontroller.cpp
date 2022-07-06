@@ -96,13 +96,16 @@ namespace nap
 
 		glm::vec3 movement_up = up * movement;
 
+
 		if (mMoveForward)
 		{
-			mTransformComponent->setTranslate(mTransformComponent->getTranslate() - movement_forward);
+		    zoom(-movement * 2.f);
+//			mTransformComponent->setTranslate(mTransformComponent->getTranslate() - movement_forward);
 		}
 		if (mMoveBackward)
 		{
-			mTransformComponent->setTranslate(mTransformComponent->getTranslate() + movement_forward);
+		    zoom(movement * 2.f);
+//			mTransformComponent->setTranslate(mTransformComponent->getTranslate() + movement_forward);
 		}
 		if (mMoveLeft)
 		{
@@ -120,6 +123,24 @@ namespace nap
 		{
 			mTransformComponent->setTranslate(mTransformComponent->getTranslate() - movement_up);
 		}
+
+        if (mRotateLeft)
+        {
+            rotate(-getComponent<FocusController>()->mRotateSpeed * 2.f, 0.f);
+        }
+        if (mRotateRight)
+        {
+            rotate(getComponent<FocusController>()->mRotateSpeed * 2.f, 0.f);
+        }
+
+        if (mRotateUp)
+        {
+            rotate(0.f, -getComponent<FocusController>()->mRotateSpeed * 2.f);
+        }
+        if (mRotateDown)
+        {
+            rotate(0.f, getComponent<FocusController>()->mRotateSpeed * 2.f);
+        }
 	}
 
 
@@ -183,30 +204,12 @@ namespace nap
 
 		FocusController* resource = getComponent<FocusController>();
 
-		auto focal_position = getFocalPosition();
 		if (mMode == EMode::Rotating)
 		{
 			// We are using the relative movement of the mouse to update the camera
-			float yaw = -(pointerMoveEvent.mRelX)  * getComponent<FocusController>()->mRotateSpeed;
-			float pitch = pointerMoveEvent.mRelY * getComponent<FocusController>()->mRotateSpeed;
-
-			// We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
-			// we rotate around the y axis (yaw).
-			glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::vec4 right = mTransformComponent->getLocalTransform()[0];
-			glm::mat4 pitch_rotation = glm::rotate(pitch, glm::vec3(right.x, right.y, right.z));
-
-			// To rotate around the target point, we take the current transform, then bring it into local target space (only translation), then first rotate pitch,
-			// then rotate yaw, and then bring it back to worldspace.
-			glm::mat4 transform = glm::translate(focal_position) * yaw_rotation * pitch_rotation * glm::translate(-focal_position) * mTransformComponent->getLocalTransform();
-
-			// Our transform class always has the same sequence of applying translate, rotate, scale, so it can only rotate around it's own pivot. Therefore, we take
-			// the worldtransform that we calculated and apply it backwards.
-			glm::quat rotate = glm::normalize(glm::quat_cast(transform));
-			glm::vec3 translate = math::extractPosition(transform);
-
-			mTransformComponent->setTranslate(translate);
-			mTransformComponent->setRotate(rotate);
+			float yaw = -(pointerMoveEvent.mRelX)  * resource->mRotateSpeed;
+			float pitch = pointerMoveEvent.mRelY * resource->mRotateSpeed;
+            rotate(yaw, pitch);
 		}
 		else if (mMode == EMode::Zooming)
 		{
@@ -217,33 +220,7 @@ namespace nap
 
 			// Increase/decrease distance to target
 			float distance = pointer_move * resource->mZoomSpeed;
-
-			if (mAutoFocus)
-			{
-				// Pointer distance in pixel coordinates can be a bit harsh on the zoom movement,
-				// therefore we multiply by a coefficient to make it less so.
-				const float pointer_distance_mult = 1/16.f;
-				(*mQuiltCameraComponent).setCameraSize((*mQuiltCameraComponent).getCameraSize() + distance * pointer_distance_mult);
-				focus();
-			}
-			else
-			{
-				const glm::vec3& direction = mTransformComponent->getLocalTransform()[2];
-				const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
-				glm::vec3 new_translate = translate - direction * distance;
-
-				// Ensure the look direction does not flip
-				const glm::vec3 lookdir_prevframe = focal_position - translate;
-				const glm::vec3 lookdir1_curframe = focal_position - new_translate;
-				if (glm::dot(lookdir_prevframe, lookdir1_curframe) < 0.0f)
-					return;
-
-				// Ensure the distance from the target does not exceed the specified minimum
-				if (glm::length(new_translate) < resource->mMinZoomDistance)
-					new_translate = glm::normalize(new_translate) * resource->mMinZoomDistance;
-
-				mTransformComponent->setTranslate(new_translate);
-			}
+            zoom(distance);
 		}
 	}
 
@@ -252,36 +229,57 @@ namespace nap
 	{
 		switch (keyPressEvent.mKey)
 		{
-		case EKeyCode::KEY_w:
+		case EKeyCode::KEY_EQUALS:
 		{
 			mMoveForward = true;
 			break;
 		}
-		case EKeyCode::KEY_s:
+		case EKeyCode::KEY_MINUS:
 		{
 			mMoveBackward = true;
 			break;
 		}
-		case EKeyCode::KEY_a:
-		{
-			mMoveLeft = true;
-			break;
-		}
-		case EKeyCode::KEY_d:
-		{
-			mMoveRight = true;
-			break;
-		}
-		case EKeyCode::KEY_q:
-		{
-			mMoveDown = true;
-			break;
-		}
-		case EKeyCode::KEY_e:
-		{
-			mMoveUp = true;
-			break;
-		}
+//		case EKeyCode::KEY_a:
+//		{
+//			mMoveLeft = true;
+//			break;
+//		}
+//		case EKeyCode::KEY_d:
+//		{
+//			mMoveRight = true;
+//			break;
+//		}
+//		case EKeyCode::KEY_q:
+//		{
+//			mMoveDown = true;
+//			break;
+//		}
+//		case EKeyCode::KEY_e:
+//		{
+//			mMoveUp = true;
+//			break;
+//		}
+        case EKeyCode::KEY_UP:
+        {
+            mRotateUp = true;
+            break;
+        }
+        case EKeyCode::KEY_DOWN:
+        {
+            mRotateDown = true;
+            break;
+        }
+        case EKeyCode::KEY_LEFT:
+        {
+            mRotateLeft = true;
+            break;
+        }
+        case EKeyCode::KEY_RIGHT:
+        {
+            mRotateRight = true;
+            break;
+        }
+
 		}
 	}
 
@@ -290,36 +288,56 @@ namespace nap
 	{
 		switch (keyReleaseEvent.mKey)
 		{
-		case EKeyCode::KEY_w:
+		case EKeyCode::KEY_EQUALS:
 		{
 			mMoveForward = false;
 			break;
 		}
-		case EKeyCode::KEY_s:
+		case EKeyCode::KEY_MINUS:
 		{
 			mMoveBackward = false;
 			break;
 		}
-		case EKeyCode::KEY_a:
-		{
-			mMoveLeft = false;
-			break;
-		}
-		case EKeyCode::KEY_d:
-		{
-			mMoveRight = false;
-			break;
-		}
-		case EKeyCode::KEY_q:
-		{
-			mMoveDown = false;
-			break;
-		}
-		case EKeyCode::KEY_e:
-		{
-			mMoveUp = false;
-			break;
-		}
+//		case EKeyCode::KEY_a:
+//		{
+//			mMoveLeft = false;
+//			break;
+//		}
+//		case EKeyCode::KEY_d:
+//		{
+//			mMoveRight = false;
+//			break;
+//		}
+//		case EKeyCode::KEY_q:
+//		{
+//			mMoveDown = false;
+//			break;
+//		}
+//		case EKeyCode::KEY_e:
+//		{
+//			mMoveUp = false;
+//			break;
+//		}
+        case EKeyCode::KEY_UP:
+        {
+            mRotateUp = false;
+            break;
+        }
+        case EKeyCode::KEY_DOWN:
+        {
+            mRotateDown = false;
+            break;
+        }
+        case EKeyCode::KEY_LEFT:
+        {
+            mRotateLeft = false;
+            break;
+        }
+        case EKeyCode::KEY_RIGHT:
+        {
+            mRotateRight = false;
+            break;
+        }
 		}
 	}
 
@@ -336,7 +354,64 @@ namespace nap
 	}
 
 
-	void FocusController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+    void FocusControllerInstance::rotate(float yaw, float pitch)
+    {
+        auto focal_position = getFocalPosition();
+
+        // We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
+        // we rotate around the y axis (yaw).
+        glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::vec4 right = mTransformComponent->getLocalTransform()[0];
+        glm::mat4 pitch_rotation = glm::rotate(pitch, glm::vec3(right.x, right.y, right.z));
+
+        // To rotate around the target point, we take the current transform, then bring it into local target space (only translation), then first rotate pitch,
+        // then rotate yaw, and then bring it back to worldspace.
+        glm::mat4 transform = glm::translate(focal_position) * yaw_rotation * pitch_rotation * glm::translate(-focal_position) * mTransformComponent->getLocalTransform();
+
+        // Our transform class always has the same sequence of applying translate, rotate, scale, so it can only rotate around it's own pivot. Therefore, we take
+        // the worldtransform that we calculated and apply it backwards.
+        glm::quat rotate = glm::normalize(glm::quat_cast(transform));
+        glm::vec3 translate = math::extractPosition(transform);
+
+        mTransformComponent->setTranslate(translate);
+        mTransformComponent->setRotate(rotate);
+    }
+
+
+    void FocusControllerInstance::zoom(float distance)
+    {
+        if (mAutoFocus)
+        {
+            // Pointer distance in pixel coordinates can be a bit harsh on the zoom movement,
+            // therefore we multiply by a coefficient to make it less so.
+            const float pointer_distance_mult = 1/16.f;
+            (*mQuiltCameraComponent).setCameraSize((*mQuiltCameraComponent).getCameraSize() + distance * pointer_distance_mult);
+            focus();
+        }
+        else
+        {
+            FocusController* resource = getComponent<FocusController>();
+            auto focal_position = getFocalPosition();
+            const glm::vec3& direction = mTransformComponent->getLocalTransform()[2];
+            const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
+            glm::vec3 new_translate = translate - direction * distance;
+
+            // Ensure the look direction does not flip
+            const glm::vec3 lookdir_prevframe = focal_position - translate;
+            const glm::vec3 lookdir1_curframe = focal_position - new_translate;
+            if (glm::dot(lookdir_prevframe, lookdir1_curframe) < 0.0f)
+                return;
+
+            // Ensure the distance from the target does not exceed the specified minimum
+            if (glm::length(new_translate) < resource->mMinZoomDistance)
+                new_translate = glm::normalize(new_translate) * resource->mMinZoomDistance;
+
+            mTransformComponent->setTranslate(new_translate);
+        }
+    }
+
+
+    void FocusController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.push_back(RTTI_OF(QuiltCameraComponent));
 		components.push_back(RTTI_OF(TransformComponent));

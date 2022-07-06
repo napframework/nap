@@ -147,6 +147,9 @@ namespace nap
 		void onKeyRelease(const KeyReleaseEvent& keyReleaseEvent);
 
 	private:
+	    void rotate(float yaw, float pitch);
+	    void zoom(float distance);
+
 		// Camera mode
 		enum class EMode
 		{
@@ -172,6 +175,10 @@ namespace nap
 		bool										mMoveRight = false;					// Whether we're moving right
 		bool										mMoveUp = false;					// Whether we're moving up
 		bool										mMoveDown = false;					// Whether we're moving down
+        bool										mRotateLeft = false;				// Whether we're rotating left
+        bool										mRotateRight = false;				// Whether we're rotating right
+        bool										mRotateUp = false;					// Whether we're rotating up
+        bool										mRotateDown = false;				// Whether we're rotating down
 	};
 
 }
