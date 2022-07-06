@@ -218,6 +218,7 @@ endif()
 #add_subdirectory(modules/napsequencegui)
 #add_subdirectory(modules/naplicense)
 add_subdirectory(modules/nappythonparameter)
+add_subdirectory(modules/naplookingglass)
 
 # 4dsound modules
 add_subdirectory(4dsound_modules/spatialdsp)
