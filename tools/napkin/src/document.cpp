@@ -37,6 +37,7 @@ void splitNameIndex(const std::string& str, std::string& name, int& index)
 Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
 	: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects))
 {
+	nap::Logger::info("Loading");
 }
 
 nap::Entity* Document::getParent(const nap::Entity& child) const
@@ -305,30 +306,29 @@ std::string Document::getUniqueName(const std::string& suggestedName, const nap:
 
 Object* Document::getObject(const std::string& name)
 {
-	for (auto obj : getObjectPointers())
-		if (obj->mID == name)
-			return obj;
-	return nullptr;
+	// TODO: Replace list of owned_objects with an unordered_map
+	// Ensures constant insertion and lookup times per element
+	const nap::rtti::OwnedObjectList& all_objs = getObjects();
+	auto it = std::find_if(all_objs.begin(), all_objs.end(), [&](const auto& obj)
+		{
+			return obj->mID == name;
+		});
+	return it != all_objs.end() ? it->get() : nullptr;
 }
 
 
 Object* Document::getObject(const std::string& name, const rttr::type& type)
 {
 	auto object = getObject(name);
-
-	if (object == nullptr)
-		return nullptr;
-
-	if (object->get_type().is_derived_from(type))
-		return object;
-
-	return nullptr;
+	return object != nullptr && object->get_type().is_derived_from(type) ?
+		object : nullptr;
 }
 
 
 ObjectList Document::getObjectPointers() const
 {
-	ObjectList ret;
+	const auto& owned_objs = getObjects();
+	ObjectList ret; ret.reserve(owned_objs.size());
 	for (auto& ob : getObjects())
 		ret.emplace_back(ob.get());
 	return ret;
