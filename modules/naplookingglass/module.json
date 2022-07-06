@@ -1,0 +1,13 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "mod_napmath",
+        "mod_naprender",
+        "mod_napscene"
+    ],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/../thirdparty/holoplaycore/bin/msvc",
+        "{ROOT}/thirdparty/holoplaycore/bin/msvc"
+    ]
+}
