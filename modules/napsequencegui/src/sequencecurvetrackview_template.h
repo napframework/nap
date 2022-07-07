@@ -1018,7 +1018,7 @@ namespace nap
 
 
 	template<typename T>
-	void SequenceCurveTrackView::pasteClipboardSegments(const std::string& trackId, double time)
+	bool SequenceCurveTrackView::pasteClipboardSegments(const std::string& trackId, double time, utility::ErrorState& errorState)
 	{
 		// get clipboard action
 		auto* curve_segment_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::CurveSegmentClipboard>();
@@ -1027,12 +1027,12 @@ namespace nap
 		std::vector<std::unique_ptr<rtti::Object>> read_objects;
 
 		// continue upon succesfull de-serialization
-		utility::ErrorState errorState;
 		std::vector<T*> curve_segments = curve_segment_clipboard->deserialize<T>(read_objects, errorState);
 
 		if(errorState.hasErrors())
 		{
 			nap::Logger::error(errorState.toString());
+			return false;
 		}else
 		{
 			assert(curve_segments.size() > 0 ); // no curve segments deserialized
@@ -1112,6 +1112,8 @@ namespace nap
 				updateSegmentsInClipboard(trackId);
 			}
 		}
+
+		return true;
 	}
 
 

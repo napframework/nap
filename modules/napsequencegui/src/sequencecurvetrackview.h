@@ -198,6 +198,11 @@ namespace nap
 		 */
 		void handleDraggingControlPoints();
 
+        /**
+         * handles loading of popups
+         */
+        void handleLoadPresetPopup();
+
 		/**
 		 * Draws min/max range of inspector
 		 * @tparam T type
@@ -244,9 +249,11 @@ namespace nap
 		 * @tparam T the segment type
 		 * @param trackId the track id of the track to insert into
 		 * @param time the time at which to create new segment
+		 * @param errorState contains any errors
+		 * @return true on success
 		 */
 		template<typename T>
-		void pasteClipboardSegments(const std::string& trackId, double time);
+		bool pasteClipboardSegments(const std::string& trackId, double time, utility::ErrorState& errorState);
 
 		/**
 		 * pastes content of clipboard segment into another segment

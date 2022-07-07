@@ -28,6 +28,7 @@ namespace nap
 		registerActionHandler(RTTI_OF(EditingSegmentPopup), [this] { handleEditSegmentValuePopup(); });
 		registerActionHandler(RTTI_OF(AssignOutputIDToTrack), [this]{ handleAssignOutputIDToTrack(); });
 		registerActionHandler(RTTI_OF(DraggingSegment), [this]{ handleSegmentDrag(); });
+        registerActionHandler(RTTI_OF(ShowLoadPresetPopup), [this]{ handleLoadPresetPopup(); });
 
 		/**
 		 * register all edit popups for all registered views for possible event actions
@@ -225,7 +226,7 @@ namespace nap
 					std::string type_str = utility::stripNamespace(type.get_name().to_string());
 					std::string btn_str = "Insert " + type_str;
 					ImGui::PushID(type_str.c_str());
-					if( ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_str.c_str()))
+					if(ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_str.c_str()))
 					{
 						auto it = mSegmentViews.find(type);
 						assert(it!=mSegmentViews.end()); // type not found
@@ -240,19 +241,49 @@ namespace nap
 				}
 
 				// handle paste if event segment is in clipboard
-				if( mState.mClipboard->isClipboard<EventSegmentClipboard>())
+				if(mState.mClipboard->isClipboard<EventSegmentClipboard>())
 				{
-					if( ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
+					if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
 					{
 						// call appropriate paste method
-						pasteEventsFromClipboard(action->mTrackID, action->mTime);
-
-						// exit popup
-						ImGui::CloseCurrentPopup();
-						mState.mAction = createAction<None>();
+                        utility::ErrorState error_state;
+						if(!pasteEventsFromClipboard(action->mTrackID, action->mTime, error_state))
+                        {
+                            ImGui::OpenPopup("Error");
+                            action->mErrorString = error_state.toString();
+                        }else
+                        {
+                            // exit popup
+                            ImGui::CloseCurrentPopup();
+                            mState.mAction = createAction<None>();
+                        }
 					}
 					ImGui::SameLine();
 				}
+
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
+                {
+                    if(mState.mClipboard->getTrackType()!=RTTI_OF(SequenceTrackEvent))
+                    {
+                        mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent),
+                                getEditor().mSequencePlayer->getSequenceFilename());
+                    }
+                    mState.mAction = createAction<ShowLoadPresetPopup>(action->mTrackID, action->mTime, RTTI_OF(SequenceTrackEvent));
+                    ImGui::CloseCurrentPopup();
+                }
+
+                if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    ImGui::Text(action->mErrorString.c_str());
+                    if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+                    {
+                        mState.mDirty = true;
+                        mState.mAction = createAction<None>();
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
+                }
 
 				if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
 				{
@@ -583,7 +614,7 @@ namespace nap
 	}
 
 
-	void SequenceEventTrackView::pasteEventsFromClipboard(const std::string& trackID, double time)
+	bool SequenceEventTrackView::pasteEventsFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState)
 	{
 		auto* paste_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::EventSegmentClipboard>();
 
@@ -592,10 +623,7 @@ namespace nap
 		SequenceTrackSegmentEventBase* event_segment = nullptr;
 
 		// continue upon successful de-serialization
-		utility::ErrorState errorState;
 		std::vector<SequenceTrackSegmentEventBase*> deserialized_event_segments = paste_clipboard->deserialize<SequenceTrackSegmentEventBase>(read_objects, errorState);
-
-		assert(!deserialized_event_segments.empty() ); // no event segments de serialized
 
 		// no errors ? continue
 		if(!errorState.hasErrors() && !deserialized_event_segments.empty())
@@ -625,7 +653,18 @@ namespace nap
 			{
 				mService.invokePasteEvent(event->get_type(), *this, trackID, *event, time);
 			}
-		}
+		}else
+        {
+            if(!errorState.hasErrors())
+            {
+                if(errorState.check(!deserialized_event_segments.empty(), "No events de-serialized"))
+                    return false;
+            }
+
+            return false;
+        }
+
+        return true;
 	}
 
 
@@ -689,6 +728,99 @@ namespace nap
 			mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
 		}
 	}
+
+
+    void SequenceEventTrackView::handleLoadPresetPopup()
+    {
+        if (mState.mAction->isAction<ShowLoadPresetPopup>())
+        {
+            auto* load_action = mState.mAction->getDerived<ShowLoadPresetPopup>();
+            auto* controller = getEditor().getControllerWithTrackType(load_action->mTrackType);
+
+            if (controller->get_type().is_derived_from<SequenceControllerEvent>())
+            {
+                const std::string popup_name = "Load preset";
+                if (!ImGui::IsPopupOpen(popup_name.c_str()))
+                    ImGui::OpenPopup(popup_name.c_str());
+
+                //
+                if (ImGui::BeginPopupModal(popup_name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    //
+                    const std::string presets_dir = utility::joinPath({"sequences", "presets"});
+
+                    // Find all files in the preset directory
+                    std::vector<std::string> files_in_directory;
+                    utility::listDir(presets_dir.c_str(), files_in_directory);
+
+                    std::vector<std::string> presets;
+                    std::vector<std::string> preset_files;
+                    for (const auto& filename: files_in_directory)
+                    {
+                        // Ignore directories
+                        if (utility::dirExists(filename))
+                            continue;
+
+                        if (utility::getFileExtension(filename)=="json")
+                        {
+                            presets.emplace_back(utility::getFileName(filename));
+                            preset_files.emplace_back(filename);
+                        }
+                    }
+
+                    SequenceTrackView::Combo("Presets", &load_action->mSelectedPresetIndex, presets);
+
+                    utility::ErrorState error_state;
+                    auto& gui = mService.getGui();
+                    if (ImGui::ImageButton(gui.getIcon(icon::ok), "load preset"))
+                    {
+                        if (mState.mClipboard->load(preset_files[load_action->mSelectedPresetIndex], error_state))
+                        {
+                            if (pasteEventsFromClipboard(load_action->mTrackID, load_action->mTime, error_state))
+                            {
+                                mState.mAction = createAction<None>();
+                                mState.mDirty = true;
+                                mState.mClipboard = createClipboard<Empty>();
+                                ImGui::CloseCurrentPopup();
+                            }
+                            else
+                            {
+                                mState.mClipboard = createClipboard<Empty>();
+                                ImGui::OpenPopup("Error");
+                                load_action->mErrorString = error_state.toString();
+                            }
+                        }
+                        else
+                        {
+                            ImGui::OpenPopup("Error");
+                            load_action->mErrorString = error_state.toString();
+                        }
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
+                    {
+                        mState.mAction = createAction<None>();
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                    {
+                        ImGui::Text(load_action->mErrorString.c_str());
+                        if (ImGui::ImageButton(gui.getIcon(icon::ok)))
+                        {
+                            mState.mDirty = true;
+                            mState.mAction = createAction<None>();
+                            ImGui::CloseCurrentPopup();
+                        }
+
+                        ImGui::EndPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+        }
+    }
 
 	//////////////////////////////////////////////////////////////////////////
 	// std::string event segment view specialization

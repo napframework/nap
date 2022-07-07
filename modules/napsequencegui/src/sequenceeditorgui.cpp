@@ -280,6 +280,16 @@ namespace nap
 
 			ImGui::SameLine();
 
+            if(mState.mClipboard->getObjectCount() > 0)
+            {
+                if(ImGui::Button("Save Preset"))
+                {
+                    mState.mAction = createAction<ShowSaveClipboardPopup>("segments");
+                }
+            }
+
+            ImGui::SameLine();
+
 			if (ImGui::ImageButton(gui.getIcon(icon::help)))
 			{
 				mState.mAction = createAction<OpenHelpPopup>();
@@ -1311,6 +1321,158 @@ namespace nap
 	}
 
 
+    void SequenceEditorGUIView::handleSaveClipboardPopup()
+    {
+        if (mState.mAction->isAction<ShowSaveClipboardPopup>())
+        {
+            const std::string popup_name = "Save segments in clipboard as preset..";
+            auto* save_as_action = mState.mAction->getDerived<ShowSaveClipboardPopup>();
+
+            if(!ImGui::IsPopupOpen(popup_name.c_str()))
+                ImGui::OpenPopup(popup_name.c_str());
+
+            // save as popup
+            if (ImGui::BeginPopupModal(
+                    popup_name.c_str(),
+                    nullptr,
+                    ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                // create presets dir
+                const std::string presets_dir = utility::joinPath({ "sequences", "presets" });
+
+                // Find all files in the preset directory
+                std::vector<std::string> files_in_directory;
+                utility::listDir(presets_dir.c_str(), files_in_directory);
+
+                std::vector<std::string> presets;
+                for (const auto& filename : files_in_directory)
+                {
+                    // Ignore directories
+                    if (utility::dirExists(filename))
+                        continue;
+
+                    if (utility::getFileExtension(filename) == "json")
+                    {
+                        presets.push_back(utility::getFileName(filename));
+                    }
+                }
+                presets.emplace_back("<New...>");
+
+                if (SequenceTrackView::Combo("Presets",
+                        &save_as_action->mSelectedPresetIndex,
+                        presets))
+                {
+                    if (save_as_action->mSelectedPresetIndex == presets.size() - 1)
+                    {
+                        ImGui::OpenPopup("New");
+                    }
+                    else
+                    {
+                        ImGui::OpenPopup("Overwrite");
+                    }
+                }
+
+                // new preset popup
+                std::string new_show_filename;
+                bool done = false;
+                if (ImGui::BeginPopupModal("New", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    static char name[256] = { 0 };
+                    ImGui::InputText("Name", name, 256);
+
+                    auto& gui = mService.getGui();
+                    if (ImGui::ImageButton(gui.getIcon(icon::ok)) && strlen(name) != 0)
+                    {
+                        new_show_filename = std::string(name, strlen(name));
+                        new_show_filename += ".json";
+
+                        ImGui::CloseCurrentPopup();
+                        done = true;
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
+                        ImGui::CloseCurrentPopup();
+
+                    ImGui::EndPopup();
+                }
+                if (done)
+                {
+                    // Insert before the '<new...>' item
+                    presets.insert(presets.end() - 1, new_show_filename);
+
+                    utility::ErrorState error_state;
+
+                    if (mState.mClipboard->save(utility::joinPath({ presets_dir, new_show_filename }), error_state))
+                    {
+                        save_as_action->mSelectedPresetIndex = (int) presets.size() - 2;
+                        mState.mDirty = true;
+                    }
+                    else
+                    {
+                        mState.mDirty = true;
+                        save_as_action->mErrorString = error_state.toString();
+                        ImGui::OpenPopup("Error");
+                    }
+                }
+
+                if (ImGui::BeginPopupModal("Overwrite"))
+                {
+                    utility::ErrorState error_state;
+                    ImGui::Text(("Are you sure you want to overwrite " +
+                            presets[save_as_action->mSelectedPresetIndex] + " ?").c_str());
+
+                    auto& gui = mService.getGui();
+                    if (ImGui::ImageButton(gui.getIcon(icon::ok)))
+                    {
+                        if (mState.mClipboard->save(utility::joinPath({ presets_dir, presets[save_as_action->mSelectedPresetIndex] }), error_state))
+                        {
+                        }
+                        else
+                        {
+                            save_as_action->mErrorString = error_state.toString();
+                            ImGui::OpenPopup("Error");
+                        }
+
+                        mState.mDirty = true;
+
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+
+                if (ImGui::BeginPopupModal("Error"))
+                {
+                    ImGui::Text(save_as_action->mErrorString.c_str());
+                    auto& gui = mService.getGui();
+                    if (ImGui::ImageButton(gui.getIcon(icon::ok)))
+                    {
+                        mState.mDirty = true;
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    ImGui::EndPopup();
+                }
+
+                ImGui::SameLine();
+                auto& gui = mService.getGui();
+                if (ImGui::ImageButton(gui.getIcon(icon::ok)))
+                {
+                    mState.mAction = createAction<None>();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+        }
+    }
+
 	void SequenceEditorGUIView::handleInsertTrackPopup()
 	{
 		if (mState.mAction->isAction<OpenInsertTrackPopup>())
@@ -1635,6 +1797,7 @@ namespace nap
         registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
         registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
         registerActionHandler(RTTI_OF(ShowHelpPopup), [this]{ handleHelpPopup(); });
+        registerActionHandler(RTTI_OF(ShowSaveClipboardPopup), [this] { handleSaveClipboardPopup(); });
 
         /**
          * action handlers for changing horizontal resolution (zoom)

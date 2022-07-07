@@ -56,6 +56,16 @@ namespace nap
 
     private:
         /**
+         * Pastes clipboard contents to track from given time on given track with track id. Return true on success.
+         * Given errorState contains any errors
+         * @param trackID the track id of the track to paste on
+         * @param time the time from which to insert the first clipboard segment
+         * @param errorState contains any errors
+         * @return true on success
+         */
+        bool pasteClipboard(const std::string& trackID, double time, utility::ErrorState& errorState);
+
+        /**
          * handles action when output id of track needs to be changed
          */
         void handleAssignOutputIDToTrack();
@@ -84,6 +94,11 @@ namespace nap
          * handles dragging of right handler of audio segment
          */
         void handleRightHandlerDrag();
+
+        /**
+         * handles load preset popup
+         */
+        void handleLoadPresetPopup();
 
         /**
          * cache of drawn waveforms

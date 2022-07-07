@@ -193,6 +193,11 @@ namespace nap
 		  */
 		 void handleHelpPopup();
 
+         /**
+          * when save clipboard is pressed, show save clipboard popup
+          */
+         void handleSaveClipboardPopup();
+
 		 /**
 		  * registers handlers for actions
 		  * @param actionType the action type to register a handler function for

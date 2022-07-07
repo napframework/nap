@@ -145,6 +145,7 @@ namespace nap
 
 			double mTime;
 			rttr::type mTrackType;
+            std::string mErrorString;
 		};
 
 
@@ -553,15 +554,40 @@ namespace nap
         /**
          * A TrackAction that tells the GUI we're dragging the bottom extension handler for trackheight
          */
-        class DraggingTrackExtensionHandler : public TrackAction
-        {
+        class DraggingTrackExtensionHandler : public TrackAction {
         RTTI_ENABLE(TrackAction)
         public:
             /**
              * Constructor
              * @param trackID track id of the track holding the segment being edited
              */
-            DraggingTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId)){}
+            DraggingTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId)) {}
+        };
+
+        class ShowSaveClipboardPopup : public Action
+        {
+        RTTI_ENABLE(Action)
+        public:
+            ShowSaveClipboardPopup(const std::string& filePath)
+                : mFilePath(filePath){}
+
+            std::string mFilePath;
+            int mSelectedPresetIndex = 0;
+            std::string mErrorString;
+        };
+
+        class ShowLoadPresetPopup : public TrackAction
+        {
+            RTTI_ENABLE(TrackAction)
+        public:
+            ShowLoadPresetPopup(const std::string& id, double time, rtti::TypeInfo trackType)
+                : TrackAction(id), mTime(time), mTrackType(trackType) {}
+
+            std::string mFilePath;
+            rtti::TypeInfo mTrackType;
+            int mSelectedPresetIndex = 0;
+            std::string mErrorString;
+            double mTime;
         };
 	}
 }

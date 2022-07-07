@@ -62,6 +62,7 @@ namespace nap
 		registerActionHandler(RTTI_OF(AssignOutputIDToTrack), std::bind(&SequenceCurveTrackView::handleAssignOutputIDToTrack, this));
 		registerActionHandler(RTTI_OF(DraggingSegmentValue), std::bind(&SequenceCurveTrackView::handleDraggingSegmentValue, this));
 		registerActionHandler(RTTI_OF(DraggingControlPoint), std::bind(&SequenceCurveTrackView::handleDraggingControlPoints, this));
+        registerActionHandler(RTTI_OF(ShowLoadPresetPopup), std::bind(&SequenceCurveTrackView::handleLoadPresetPopup, this));
 	}
 
 
@@ -531,27 +532,46 @@ namespace nap
 					}
 
 					// handle paste
-					if(mState.mClipboard->isClipboard<CurveSegmentClipboard>())
+					if(mState.mClipboard->isClipboard<CurveSegmentClipboard>() && mState.mClipboard->getObjectCount() > 0)
 					{
 						ImGui::SameLine();
 						if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
 						{
-                            static const std::unordered_map<rtti::TypeInfo, void(SequenceCurveTrackView::*)(const std::string&, double)> paste_map =
+                            static const std::unordered_map<rtti::TypeInfo, bool(SequenceCurveTrackView::*)(const std::string&, double, utility::ErrorState&)> paste_map =
                                     { { RTTI_OF(SequenceTrackCurveFloat), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveFloat> },
                                       { RTTI_OF(SequenceTrackCurveVec2), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec2> },
                                       { RTTI_OF(SequenceTrackCurveVec3), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec3> },
                                       { RTTI_OF(SequenceTrackCurveVec4), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec4> } };
 
                             // call the correct pasteClipboardSegments method for this track-type
+                            utility::ErrorState error_state;
                             auto paste_map_it = paste_map.find(action->mTrackType);
                             assert(paste_map_it!=paste_map.end()); // type not found
-                            (*this.*paste_map_it->second)(action->mTrackID, action->mTime);
-
-							mState.mDirty = true;
-							mState.mAction = createAction<None>();
-							ImGui::CloseCurrentPopup();
+                            if((*this.*paste_map_it->second)(action->mTrackID, action->mTime, error_state))
+                            {
+                                mState.mDirty = true;
+                                mState.mAction = createAction<None>();
+                                ImGui::CloseCurrentPopup();
+                            }else
+                            {
+                                ImGui::OpenPopup("Error");
+                                action->mErrorString = error_state.toString();
+                            }
 						}
 					}
+
+                    ImGui::SameLine();
+                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
+                    {
+                        if(mState.mClipboard->getTrackType()!=action->mTrackType)
+                        {
+                            mState.mClipboard = createClipboard<CurveSegmentClipboard>(action->mTrackType,
+                                                                                       action->mTrackID,
+                                                                                       getEditor().mSequencePlayer->getSequenceFilename());
+                        }
+                        mState.mAction = createAction<ShowLoadPresetPopup>(action->mTrackID, action->mTime, action->mTrackType);
+                        ImGui::CloseCurrentPopup();
+                    }
 
 					ImGui::SameLine();
 					if (ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
@@ -559,6 +579,19 @@ namespace nap
 						ImGui::CloseCurrentPopup();
 						mState.mAction = createAction<None>();
 					}
+
+                    if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                    {
+                        ImGui::Text(action->mErrorString.c_str());
+                        if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+                        {
+                            mState.mDirty = true;
+                            mState.mAction = createAction<None>();
+                            ImGui::CloseCurrentPopup();
+                        }
+
+                        ImGui::EndPopup();
+                    }
 
 					ImGui::EndPopup();
 				}
@@ -1380,7 +1413,7 @@ namespace nap
 
 	void SequenceCurveTrackView::updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID)
 	{
-		if( mState.mClipboard->isClipboard<CurveSegmentClipboard>())
+		if(mState.mClipboard->isClipboard<CurveSegmentClipboard>())
 		{
 			auto* curve_segment_clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 
@@ -1401,7 +1434,7 @@ namespace nap
 
 	void SequenceCurveTrackView::updateSegmentsInClipboard(const std::string& trackID)
 	{
-		if( mState.mClipboard->isClipboard<CurveSegmentClipboard>() )
+		if(mState.mClipboard->isClipboard<CurveSegmentClipboard>() )
 		{
 			auto* clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
 			if(clipboard->getTrackID() == trackID )
@@ -1587,9 +1620,116 @@ namespace nap
 	}
 
 
+
 	void CurveSegmentClipboard::changeTrackID(const std::string& newTrackID)
 	{
 		mTrackID = newTrackID;
 	}
+
+
+    void SequenceCurveTrackView::handleLoadPresetPopup()
+    {
+        if (mState.mAction->isAction<ShowLoadPresetPopup>())
+        {
+            auto* load_action = mState.mAction->getDerived<ShowLoadPresetPopup>();
+            auto* controller = getEditor().getControllerWithTrackID(load_action->mTrackID);
+
+            if (controller->get_type().is_derived_from<SequenceControllerCurve>())
+            {
+                const std::string popup_name = "Load preset";
+                if(!ImGui::IsPopupOpen(popup_name.c_str()))
+                    ImGui::OpenPopup(popup_name.c_str());
+
+                //
+                if (ImGui::BeginPopupModal(
+                        popup_name.c_str(),
+                        nullptr,
+                        ImGuiWindowFlags_AlwaysAutoResize))
+                {
+                    //
+                    const std::string presets_dir = utility::joinPath({ "sequences", "presets" });
+
+                    // Find all files in the preset directory
+                    std::vector<std::string> files_in_directory;
+                    utility::listDir(presets_dir.c_str(), files_in_directory);
+
+                    std::vector<std::string> presets;
+                    std::vector<std::string> preset_files;
+                    for (const auto& filename : files_in_directory)
+                    {
+                        // Ignore directories
+                        if (utility::dirExists(filename))
+                            continue;
+
+                        if (utility::getFileExtension(filename) == "json")
+                        {
+                            presets.emplace_back(utility::getFileName(filename));
+                            preset_files.emplace_back(filename);
+                        }
+                    }
+
+                    SequenceTrackView::Combo("Presets",
+                            &load_action->mSelectedPresetIndex,
+                            presets);
+
+                    utility::ErrorState error_state;
+                    auto& gui = mService.getGui();
+                    if (ImGui::ImageButton(gui.getIcon(icon::ok)))
+                    {
+                        if (mState.mClipboard->load(preset_files[load_action->mSelectedPresetIndex], error_state))
+                        {
+                            static const std::unordered_map<rtti::TypeInfo, bool(SequenceCurveTrackView::*)(const std::string&, double, utility::ErrorState&)> paste_map =
+                                    { { RTTI_OF(SequenceTrackCurveFloat), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveFloat> },
+                                      { RTTI_OF(SequenceTrackCurveVec2), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec2> },
+                                      { RTTI_OF(SequenceTrackCurveVec3), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec3> },
+                                      { RTTI_OF(SequenceTrackCurveVec4), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec4> } };
+
+                            // call the correct pasteClipboardSegments method for this track-type
+                            auto paste_map_it = paste_map.find(load_action->mTrackType);
+                            assert(paste_map_it!=paste_map.end()); // type not found
+                            if((*this.*paste_map_it->second)(load_action->mTrackID, load_action->mTime, error_state))
+                            {
+                                mState.mAction = createAction<None>();
+                                mState.mDirty = true;
+                                mState.mClipboard = createClipboard<Empty>();
+                                ImGui::CloseCurrentPopup();
+                            }else
+                            {
+                                mState.mClipboard = createClipboard<Empty>();
+                                ImGui::OpenPopup("Error");
+                                load_action->mErrorString = error_state.toString();
+                            }
+                        }
+                        else
+                        {
+                            ImGui::OpenPopup("Error");
+                            load_action->mErrorString = error_state.toString();
+                        }
+                    }
+
+                    ImGui::SameLine();
+                    if (ImGui::ImageButton(gui.getIcon(icon::cancel)))
+                    {
+                        mState.mAction = createAction<None>();
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                    if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+                    {
+                        ImGui::Text(load_action->mErrorString.c_str());
+                        if (ImGui::ImageButton(gui.getIcon(icon::ok)))
+                        {
+                            mState.mDirty = true;
+                            mState.mAction = createAction<None>();
+                            ImGui::CloseCurrentPopup();
+                        }
+
+                        ImGui::EndPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+            }
+        }
+    }
 }
 
