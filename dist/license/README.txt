@@ -32,9 +32,9 @@ Central to NAP are a couple of key philosophies:
 LINKS
 -----
 
-NAP Documentation: https://www.napframework.com/doxygen
+NAP Documentation: https://docs.nap.tech/
 NAP Source Code and Releases: https://github.com/napframework/nap
-NAP Website: https://www.napframework.com
+NAP Website: https://nap.tech
 
 LICENSE
 -------
