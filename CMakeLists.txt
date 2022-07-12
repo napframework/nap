@@ -39,7 +39,7 @@ if(WIN32)
         #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
     endif()
 elseif(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch -fvisibility=hidden")
     if(DEFINED INCLUDE_DEBUG_SYMBOLS AND NOT INCLUDE_DEBUG_SYMBOLS)
         if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             # Verified for AppleClang, expected to also potentially work (at a later date) for Clang on Linux
@@ -55,6 +55,7 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
+# enable python
 set(NAP_ENABLE_PYTHON 1)
 add_definitions(-DNAP_ENABLE_PYTHON)
 cmake_policy(SET CMP0020 NEW)
@@ -65,7 +66,6 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
 
 include(cmake/configure.cmake)
 include(cmake/cross_context_macros.cmake)
