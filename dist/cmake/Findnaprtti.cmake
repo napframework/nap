@@ -46,7 +46,7 @@ endif()
 add_library(naprtti INTERFACE)
 target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG} RTTR::Core)
 target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE} RTTR::Core)
-target_link_directories(naprtti PUBLIC ${PYTHON_LIB_DIR})
+target_link_directories(naprtti INTERFACE ${PYTHON_LIB_DIR})
 set_target_properties(naprtti PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NAP_ROOT}/include;${pybind11_INCLUDE_DIRS};${RAPIDJSON_INCLUDE_DIRS}")
 
 # Show headers in IDE
