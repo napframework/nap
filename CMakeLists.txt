@@ -1,18 +1,6 @@
 cmake_minimum_required(VERSION 3.18.4)
 project(NAP)
 
-#if(WIN32)
-#    find_file(PYEXE
-#              NAMES python.exe
-#              HINTS
-#              c:/python35
-#              c:/python36
-#              )
-#    if(PYEXE)
-#        set(PYTHON_EXECUTABLE ${PYEXE})
-#    endif()
-#endif()
-
 # Keep the current directory as project root
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "Using NAP Root: ${CMAKE_CURRENT_LIST_DIR}")

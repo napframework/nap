@@ -187,14 +187,11 @@ endmacro()
 
 # Set our environment so that find_package finds our pre-packaged Python in thirdparty
 macro(find_python_in_thirdparty)   
-    set(PYTHONLIBS_FOUND 1)
     set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python)
     if(UNIX)
-        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/lib/libpython3.6m${CMAKE_SHARED_LIBRARY_SUFFIX})
-        set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include/python3.6m)
+        set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/bin/python3)
     else()
-        set(PYTHON_LIBRARIES ${PYTHON_PREFIX}/libs/python36.lib)
-        set(PYTHON_INCLUDE_DIRS ${PYTHON_PREFIX}/include)
+        set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/python.exe)
     endif()
 endmacro()
 
