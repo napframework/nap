@@ -68,7 +68,7 @@ if __name__ == '__main__':
             help="Linux build type (default: %s)" % DEFAULT_LINUX_BUILD_TYPE.lower())
 
     parser.add_argument('-p', '--enable-python', action="store_true", 
-        help="Enable python integration using pybind")
+        help="Enable python integration using pybind (deprecated)")
 
     parser.add_argument('-d', '--additional-dirs', 
         nargs='+',
