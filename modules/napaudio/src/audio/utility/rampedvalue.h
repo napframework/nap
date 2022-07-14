@@ -7,6 +7,7 @@
 // Std includes
 #include <atomic>
 #include <iostream>
+#include <assert.h>
 
 // Nap includes
 #include <nap/signalslot.h>
