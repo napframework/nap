@@ -55,10 +55,11 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
-# Select pybind version
-#if(NAP_ENABLE_PYTHON)
-#    add_definitions(-DPYBIND11_PYTHON_VERSION=3.6)
-#endif()
+# Compile with python support if requested
+if(NAP_ENABLE_PYTHON)
+    message(DEPRECATION "Python is no longer officially supported")
+    add_definitions(-DNAP_ENABLE_PYTHON)
+endif()
 
 # Automatically link Qt executables to qtmain target on Windows.
 cmake_policy(SET CMP0020 NEW)

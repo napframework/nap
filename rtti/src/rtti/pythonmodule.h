@@ -4,6 +4,8 @@
 
 #pragma once
 
+#ifdef NAP_ENABLE_PYTHON
+
 #include <functional>
 #include <vector>
 #include <utility/dllexport.h>
@@ -226,3 +228,5 @@ namespace nap
 		};
 	}
 }
+
+#endif
