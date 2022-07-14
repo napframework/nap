@@ -100,9 +100,20 @@ namespace nap
 		mState.mInspectorWidth = 300.0f * mState.mScale;
 		mState.mMousePos = ImGui::GetMousePos();
 		mState.mMouseDelta = ImGui::GetIO().MouseDelta;
+
+        // obtain sequence & sequence player
 		const Sequence& sequence = mEditor.mSequencePlayer->getSequenceConst();
 		SequencePlayer& sequence_player = *mEditor.mSequencePlayer.get();
 
+        // hotkeys
+        
+        // Start stop player with keyboard
+        if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+        {
+            sequence_player.setIsPlaying(!sequence_player.getIsPlaying());
+        }
+
+        // calc track spacing
         const float track_spacing = 30.0f * mState.mScale;
 
 		// push id
