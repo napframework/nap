@@ -19,7 +19,7 @@ namespace nap
 	SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
 		mView(view), mState(state), mService(view.getService())
 	{
-
+        registerActionHandler(RTTI_OF(ResizeTrackHeight), [this]{ handleResizeTrackHeight(); });
 	}
 
 
@@ -84,6 +84,73 @@ namespace nap
 		// Push style
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0.0f, 0.0f, 0.0f, 0.0f });
 
+        // draw extend/minimize child
+        const ImVec2 extend_box_size{ 40.0f * mState.mScale, 22.0f * mState.mScale };
+        const ImVec2 extend_box_pos_offset{ -5.0f * mState.mScale, 2.0f * mState.mScale };
+        ImGui::SetCursorPos({ cursor_pos.x + mState.mInspectorWidth - extend_box_size.x + extend_box_pos_offset.x,
+                              cursor_pos.y - extend_box_size.y + extend_box_pos_offset.y });
+
+        if(ImGui::BeginChild(std::string(inspector_id + "_resizebox").c_str(),
+                             { extend_box_size.x, extend_box_size.y },
+                             false,
+                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar))
+        {
+            const ImVec2 window_pos = ImGui::GetWindowPos();
+
+            // obtain drawlist
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+            // draw background & box
+            draw_list->AddRectFilled
+            (
+                window_pos,
+                { window_pos.x + extend_box_size.x, window_pos.y + extend_box_size.y },
+                ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])
+            );
+
+            draw_list->AddRect
+            (
+                window_pos,
+                { window_pos.x + extend_box_size.x, window_pos.y + extend_box_size.y },
+                mService.getColors().mFro1
+            );
+
+            // scale down everything
+            float global_scale = 0.25f;
+            ImGui::GetStyle().ScaleAllSizes(global_scale);
+
+            // push track id
+            ImGui::PushID(track.mID.c_str());
+
+            // Remove background
+            ImVec4 frame_bg = { 0.0f, 0.0f, 0.0f, 0.0f };
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, frame_bg);
+            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, frame_bg);
+            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, frame_bg);
+
+            auto& gui = mService.getGui();
+            if (ImGui::ImageButton(gui.getIcon(icon::subtract), "Minimize"))
+            {
+                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getMinimumTrackHeight());
+            }
+            ImGui::SameLine(0.0f);
+            if (ImGui::ImageButton(gui.getIcon(icon::add), "Extend"))
+            {
+                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getExtendedTrackHeight());
+            }
+
+            // Pop gui style elements
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+
+            ImGui::PopID();
+
+            ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
+        }
+        ImGui::EndChild();
+
+        ImGui::SetCursorPos(cursor_pos);
 		if (ImGui::BeginChild(	inspector_id.c_str(), // id
                                 { mState.mInspectorWidth , track_height + offset }, // size
                                 false, // no border
@@ -369,6 +436,24 @@ namespace nap
 			}
 		}
 	}
+
+
+    void SequenceTrackView::handleResizeTrackHeight()
+    {
+        // obtain action
+        assert(mState.mAction->isAction<ResizeTrackHeight>());
+        auto* action = mState.mAction->getDerived<ResizeTrackHeight>();
+
+        // obtain controller
+        auto* controller = getEditor().getControllerWithTrackID(action->mTrackID);
+
+        // change the trackheight
+        controller->changeTrackHeight(action->mTrackID, action->mNewTrackHeight);
+
+        // content needs to be redrawn so set dirty flag
+        mState.mAction = createAction<None>();
+        mState.mDirty = true;
+    }
 
 
 	const SequencePlayer& SequenceTrackView::getPlayer() { return *mView.mEditor.mSequencePlayer.get(); }

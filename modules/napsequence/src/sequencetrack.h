@@ -33,7 +33,25 @@ namespace nap
         std::string mName; ///< Property : 'Name' Assigned name to this track
         std::string mAssignedOutputID;    ///< Property: 'Assigned Output ID' Assigned output to this track id
         std::vector<ResourcePtr<SequenceTrackSegment>>    mSegments;    ///< Property: 'Segments' Vector holding track segments
+        float mTrackHeight = 200.0f; ///< Property: 'TrackHeight' holds track height as shown in gui
 
-        float mTrackHeight = 200.0f;
+        /**
+         * Returns minimum track height
+         * @return minimum track height
+         */
+        virtual float getMinimumTrackHeight() const{ return 30.0f; }
+
+        /**
+         * Returns extended track height
+         * @return extended track height
+         */
+        virtual float getExtendedTrackHeight() const{ return 250.0f; }
+
+        /**
+         * Returns usable track height, if track height is smaller then this, don't draw certain controls
+         * @return usable track height
+         */
+        virtual float getUsableTrackHeight() const{ return 100.0f; }
+    protected:
     };
 }

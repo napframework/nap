@@ -564,11 +564,14 @@ namespace nap
             DraggingTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId)) {}
         };
 
-        class ShowSaveClipboardPopup : public Action
+        /**
+         * An action that tells the GUI to show the save clipboard contents popup (presets)
+         */
+        class ShowSavePresetPopup : public Action
         {
         RTTI_ENABLE(Action)
         public:
-            ShowSaveClipboardPopup(const std::string& filePath)
+            ShowSavePresetPopup(const std::string& filePath)
                 : mFilePath(filePath){}
 
             std::string mFilePath;
@@ -576,6 +579,9 @@ namespace nap
             std::string mErrorString;
         };
 
+        /**
+         * An action that tells the GUI to show to load clipboard contents popup (presets)
+         */
         class ShowLoadPresetPopup : public TrackAction
         {
             RTTI_ENABLE(TrackAction)
@@ -588,6 +594,18 @@ namespace nap
             int mSelectedPresetIndex = 0;
             std::string mErrorString;
             double mTime;
+        };
+
+        /**
+         * A TrackAction that tells the GUI we're dragging a segment value
+         */
+        class ResizeTrackHeight : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            ResizeTrackHeight(const std::string& trackID, float newHeight) : TrackAction(trackID), mNewTrackHeight(newHeight){}
+
+            float mNewTrackHeight;
         };
 	}
 }

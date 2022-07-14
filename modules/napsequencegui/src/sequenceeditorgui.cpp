@@ -103,6 +103,8 @@ namespace nap
 		const Sequence& sequence = mEditor.mSequencePlayer->getSequenceConst();
 		SequencePlayer& sequence_player = *mEditor.mSequencePlayer.get();
 
+        const float track_spacing = 30.0f * mState.mScale;
+
 		// push id
 		ImGui::PushID(mID.c_str());
 
@@ -118,7 +120,7 @@ namespace nap
         {
             mState.mTotalTracksHeight += track->mTrackHeight * mState.mScale;
         }
-        mState.mTotalTracksHeight += (10.0f * mState.mScale) * (sequence.mTracks.size() + 1);
+        mState.mTotalTracksHeight += (30.0f * mState.mScale) * sequence.mTracks.size() - 10.0f * mState.mScale;
 
         // set content width of next window
 		ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth, 0.0f));
@@ -284,7 +286,7 @@ namespace nap
             {
                 if(ImGui::Button("Save Preset"))
                 {
-                    mState.mAction = createAction<ShowSaveClipboardPopup>("segments");
+                    mState.mAction = createAction<ShowSavePresetPopup>("segments");
                 }
             }
 
@@ -336,17 +338,16 @@ namespace nap
 			// store position of next window (player controller), we need it later to draw the timelineplayer position
 			mState.mTimelineControllerPos   = ImGui::GetCursorPos();
 
-			float top_size			= 70.0f * mState.mScale; // area of markers and player controller combined
-			float offset			= 10.0f * mState.mScale;
-			float clip_start_y		= ImGui::GetWindowPos().y + ImGui::GetCursorPosY() + top_size; 	// clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
-			float end_clip_y 		= ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - offset;    // bottom scrollbar overlaps clipping area
-			float end_clip_x		= ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - offset; 	// right scrollbar overlaps clipping area
+			float top_size			= 70.0f * mState.mScale ; // area of markers and player controller combined
+			float clip_start_y		= ImGui::GetWindowPos().y + ImGui::GetCursorPosY() + top_size; // clipping area starts at current cursor position plus top size, which is the area of comments, playercontroller and error messages
+			float end_clip_y 		= ImGui::GetWindowPos().y + ImGui::GetWindowHeight() - 10.0f * mState.mScale; // bottom scrollbar overlaps clipping area
+			float end_clip_x		= ImGui::GetWindowPos().x + ImGui::GetWindowWidth() - 10.0f * mState.mScale; // right scrollbar overlaps clipping area
 
             // get total height
             float total_height = 0;
             for(const auto& track : sequence.mTracks)
             {
-                total_height += track->mTrackHeight * mState.mScale + offset;
+                total_height += track->mTrackHeight * mState.mScale + track_spacing;
             }
 
 			// timeline window properties
@@ -358,7 +359,7 @@ namespace nap
 			ImVec2 timeline_window_size =
 			{
 				mState.mTimelineWidth + (50.0f * mState.mScale),
-				total_height + top_size + offset
+				total_height + top_size
 			};
 
 			// inspector window properties
@@ -406,9 +407,9 @@ namespace nap
 				ImGui::SetCursorPosY(top_size);
 
 				// calc clipping rectangle
-				ImVec2 clip_rect_min_tracks = {	inspector_window_pos.x + inspector_window_size.x,timeline_window_pos.y > clip_start_y ? timeline_window_pos.y : clip_start_y };
+				ImVec2 clip_rect_min_tracks = {	inspector_window_pos.x + inspector_window_size.x, timeline_window_pos.y > clip_start_y ? timeline_window_pos.y : clip_start_y };
 				ImVec2 clip_rect_max_tracks = {	timeline_window_pos.x + timeline_window_size.x < end_clip_x ? timeline_window_pos.x + timeline_window_size.x : end_clip_x,
-												   timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y };
+                                                timeline_window_pos.y + timeline_window_size.y < end_clip_y ? timeline_window_pos.y + timeline_window_size.y : end_clip_y };
 
 
 				// push it
@@ -450,8 +451,9 @@ namespace nap
                                  false,
                                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMouseInputs) )
 			{
+                const float inspector_clip_start_y = clip_start_y - 25.0f * mState.mScale;
 				ImGui::PushClipRect({inspector_window_pos.x,
-									 inspector_window_pos.y > clip_start_y ? inspector_window_pos.y : clip_start_y},
+									 inspector_window_pos.y > inspector_clip_start_y ? inspector_window_pos.y : inspector_clip_start_y},
 									{inspector_window_pos.x + inspector_window_size.x < end_clip_x ? inspector_window_pos.x + inspector_window_size.x : end_clip_x,
 									 inspector_window_pos.y + inspector_window_size.y < end_clip_y ? inspector_window_pos.y + inspector_window_size.y : end_clip_y}, false);
 
@@ -515,7 +517,7 @@ namespace nap
             {
                 for(int j = 0; j < i; j++)
                 {
-                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (10.0f * mState.mScale);
+                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (30.0f * mState.mScale);
                 }
             }
 			ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + height});
@@ -544,7 +546,7 @@ namespace nap
             {
                 for(int j = 0; j < i; j++)
                 {
-                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (10.0f * mState.mScale);
+                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (30.0f * mState.mScale);
                 }
             }
             ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + height});
@@ -1064,7 +1066,7 @@ namespace nap
 		ImVec2 cursor_pos = ImGui::GetCursorPos();
 
         ImVec2 offset = { 5.0f * mState.mScale, 15.0f * mState.mScale };
-        const float bottom_y = mState.mTotalTracksHeight + (10.0f * mState.mScale);
+        const float bottom_y = mState.mTotalTracksHeight + (30.0f * mState.mScale);
 
 		ImGui::SetCursorPos(
 		{
@@ -1323,10 +1325,10 @@ namespace nap
 
     void SequenceEditorGUIView::handleSaveClipboardPopup()
     {
-        if (mState.mAction->isAction<ShowSaveClipboardPopup>())
+        if (mState.mAction->isAction<ShowSavePresetPopup>())
         {
             const std::string popup_name = "Save segments in clipboard as preset..";
-            auto* save_as_action = mState.mAction->getDerived<ShowSaveClipboardPopup>();
+            auto* save_as_action = mState.mAction->getDerived<ShowSavePresetPopup>();
 
             if(!ImGui::IsPopupOpen(popup_name.c_str()))
                 ImGui::OpenPopup(popup_name.c_str());
@@ -1797,7 +1799,7 @@ namespace nap
         registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this]{ handleInsertMarkerPopup(); });
         registerActionHandler(RTTI_OF(OpenHelpPopup), [this]{ handleHelpPopup(); });
         registerActionHandler(RTTI_OF(ShowHelpPopup), [this]{ handleHelpPopup(); });
-        registerActionHandler(RTTI_OF(ShowSaveClipboardPopup), [this] { handleSaveClipboardPopup(); });
+        registerActionHandler(RTTI_OF(ShowSavePresetPopup), [this] { handleSaveClipboardPopup(); });
 
         /**
          * action handlers for changing horizontal resolution (zoom)
@@ -1871,9 +1873,9 @@ namespace nap
                 float move = mState.mMouseDelta.y / mState.mScale;
                 float new_track_height = track->mTrackHeight + move;
 
-                // clip the track height to 30 pixels
-                if(new_track_height < 30.0f)
-                    new_track_height = 30.0f;
+                // clip the track height to minimum track height
+                if(new_track_height < track->getMinimumTrackHeight())
+                    new_track_height = track->getMinimumTrackHeight();
 
                 controller->changeTrackHeight(action->mTrackID, new_track_height);
 

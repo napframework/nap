@@ -888,7 +888,7 @@ namespace nap
 
 					if (display_copy)
 					{
-						if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy)))
+						if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Copy"))
 						{
 							// create new clipboard
 							mState.mClipboard = createClipboard<CurveSegmentClipboard>(track->get_type(), track->mID, getEditor().mSequencePlayer->getSequenceFilename());
@@ -979,7 +979,7 @@ namespace nap
 					// display the replace option
 					if( display_replace )
 					{
-						if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
+						if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste), "Paste into this"))
 						{
                             static const std::unordered_map<rtti::TypeInfo, void(SequenceCurveTrackView::*)(const std::string&, const std::string&)> paste_map =
                                     { { RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveFloat> },
@@ -1002,7 +1002,7 @@ namespace nap
 						ImGui::SameLine();
 					}
 
-					if (ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
+					if (ImGui::ImageButton(mService.getGui().getIcon(icon::del), "Delete"))
 					{
 						controller.deleteSegment(
 							action->mTrackID,
@@ -1069,7 +1069,7 @@ namespace nap
 
 						ImGui::PopItemWidth();
 						ImGui::Separator();
-						if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+						if (ImGui::ImageButton(mService.getGui().getIcon(icon::ok), "Done"))
 						{
 							ImGui::CloseCurrentPopup();
 							mState.mAction = createAction<None>();
