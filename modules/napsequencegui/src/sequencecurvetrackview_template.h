@@ -905,9 +905,9 @@ namespace nap
 			const math::FComplex<float, float>& tan_complex = (type == sequencecurveenums::ETanPointTypes::IN) ? curvePoint.mInTan : curvePoint.mOutTan;
 
 			// get the offset from the tan
-			ImVec2 offset =
-				{ (segmentWidth * tan_complex.mTime) / (float)segment.mDuration,
-				  (track_height *  (float)tan_complex.mValue * -1.0f) };
+            const float tan_constant_size = 100.0f * mState.mScale;
+            ImVec2 offset = { tan_complex.mTime * tan_constant_size,
+                              static_cast<float>(tan_complex.mValue) * -1.0f * tan_constant_size };
 			ImVec2 tan_point = { circlePoint.x + offset.x, circlePoint.y + offset.y };
 
 			// set if we are hoverting this point with the mouse
@@ -984,8 +984,8 @@ namespace nap
 					{
 						tan_point_hovered = true;
 
-						float delta_time = mState.mMouseDelta.x / mState.mStepSize;
-						float delta_value = (mState.mMouseDelta.y / track_height) * -1.0f;
+						float delta_time = mState.mMouseDelta.x / tan_constant_size;
+						float delta_value = (mState.mMouseDelta.y / tan_constant_size) * -1.0f;
 
 						const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
 

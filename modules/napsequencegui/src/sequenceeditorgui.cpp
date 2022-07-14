@@ -106,7 +106,7 @@ namespace nap
 		SequencePlayer& sequence_player = *mEditor.mSequencePlayer.get();
 
         // hotkeys
-        
+
         // Start stop player with keyboard
         if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
         {
