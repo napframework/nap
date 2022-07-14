@@ -134,6 +134,10 @@ namespace nap
 
     void SequenceEditor::changeMarkerTime(const std::string &markerID, double time)
     {
+        // clamp time
+        if(time < 0.0)
+            time = 0.0;
+        
         performEdit([this, markerID, time]()
                     {
                         auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](
