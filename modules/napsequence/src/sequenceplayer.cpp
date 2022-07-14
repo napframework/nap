@@ -147,6 +147,9 @@ namespace nap
         std::string json = writer.GetJSON();
         output.write(json.data(), json.size());
 
+        // update sequence file name
+        mSequenceFileName = name;
+
         return true;
     }
 

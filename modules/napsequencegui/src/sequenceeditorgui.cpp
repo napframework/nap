@@ -1353,6 +1353,8 @@ namespace nap
                 auto &gui = mService.getGui();
                 if(ImGui::ImageButton(gui.getIcon(icon::ok)))
                 {
+                    // update title and close popup
+                    mRenderWindow->setTitle(mEditor.mSequencePlayer->getSequenceFilename());
                     mState.mAction = createAction<None>();
                     ImGui::CloseCurrentPopup();
                 }
