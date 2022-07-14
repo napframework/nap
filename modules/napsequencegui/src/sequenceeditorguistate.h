@@ -16,74 +16,74 @@ namespace nap
 {
     //////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * Holds information about the state of the editor
-	 * Shared between GUI editor and view classes
-	 */
-	struct NAPAPI SequenceEditorGUIState
-	{
-	public:
-		// action 
-		sequenceguiactions::SequenceActionPtr mAction = nullptr;
+    /**
+     * Holds information about the state of the editor
+     * Shared between GUI editor and view classes
+     */
+    struct NAPAPI SequenceEditorGUIState
+    {
+    public:
+        // action
+        sequenceguiactions::SequenceActionPtr mAction = nullptr;
 
-		// clipboard
-		sequenceguiclipboard::SequenceClipboardPtr mClipboard = nullptr;
+        // clipboard
+        sequenceguiclipboard::SequenceClipboardPtr mClipboard = nullptr;
 
-		// dirty means view has changed, and content of tracks need to be redrawn and cached
-		bool mDirty = false;
+        // dirty means view has changed, and content of tracks need to be redrawn and cached
+        bool mDirty = false;
 
-		// window focused
-		bool mIsWindowFocused = false;
+        // window focused
+        bool mIsWindowFocused = false;
 
-		// mouse delte
-		ImVec2 mMouseDelta;
+        // mouse delte
+        ImVec2 mMouseDelta;
 
-		// current mouse position
-		ImVec2 mMousePos;
+        // current mouse position
+        ImVec2 mMousePos;
 
-		// current window position
-		ImVec2 mWindowPos;
+        // current window position
+        ImVec2 mWindowPos;
 
-		// current window size
-		ImVec2 mWindowSize;
+        // current window size
+        ImVec2 mWindowSize;
 
-		// current timeline controller position
-		ImVec2 mTimelineControllerPos;
+        // current timeline controller position
+        ImVec2 mTimelineControllerPos;
 
-		// current timelinewidth
-		float mTimelineWidth;
+        // current timelinewidth
+        float mTimelineWidth;
 
         // height of all tracks with their respective heights
         float mTotalTracksHeight;
 
-		// stepsize amount pixels per second
-		float mStepSize;
+        // stepsize amount pixels per second
+        float mStepSize;
 
-		// width of inspector box
-		float mInspectorWidth;
+        // width of inspector box
+        float mInspectorWidth;
 
-		// previous window position
-		ImVec2 mPrevWindowPos;
+        // previous window position
+        ImVec2 mPrevWindowPos;
 
-		// previous window scroll
-		ImVec2 mScroll;
+        // previous window scroll
+        ImVec2 mScroll;
 
-		// horizontal resolution (not scaled)
-		float mHorizontalResolution = 100.0f;
+        // horizontal resolution (not scaled)
+        float mHorizontalResolution = 100.0f;
 
-		// current time in sequence of mouse cursor
-		double mMouseCursorTime;
+        // current time in sequence of mouse cursor
+        double mMouseCursorTime;
 
-		// current cursor pos
-		ImVec2 mCursorPos;
+        // current cursor pos
+        ImVec2 mCursorPos;
 
-		// scroll follows player position
-		bool mFollow = false;
+        // scroll follows player position
+        bool mFollow = false;
 
-		// current gui scaling factor 
-		float mScale = 1.0f;
+        // current gui scaling factor
+        float mScale = 1.0f;
 
-		// current sequence name
-		std::string mSequenceName;
-	};
+        // current sequence name
+        std::string mSequenceName;
+    };
 }

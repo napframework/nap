@@ -23,5 +23,5 @@ namespace nap
      * @param timeArray reference to the time array
      * @return the time value in seconds
      */
-    double NAPAPI convertMMSSMSArrayToTime(const std::vector<int>& timeArray);
+    double NAPAPI convertMMSSMSArrayToTime(const std::vector<int> &timeArray);
 }

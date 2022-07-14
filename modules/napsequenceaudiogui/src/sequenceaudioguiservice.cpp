@@ -17,25 +17,25 @@
 #include "sequenceaudiotrackview.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceAudioGUIService)
-    RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+        RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
 namespace nap
 {
-    static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceAudioGUIService*)>& getObjectCreators()
+    static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceAudioGUIService *)> &getObjectCreators()
     {
-        static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceAudioGUIService* service)> vector;
+        static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceAudioGUIService *service)> vector;
         return vector;
     }
 
 
-    SequenceAudioGUIService::SequenceAudioGUIService(ServiceConfiguration* configuration)
-            :Service(configuration)
+    SequenceAudioGUIService::SequenceAudioGUIService(ServiceConfiguration *configuration)
+        : Service(configuration)
     {
     }
 
 
-    void SequenceAudioGUIService::Colors::init(const SequenceGUIService::Colors& palette)
+    void SequenceAudioGUIService::Colors::init(const SequenceGUIService::Colors &palette)
     {
         // audio segment background
         ImVec4 audio_segment_background_float4 = ImGui::ColorConvertU32ToFloat4(palette.mFro1);
@@ -62,31 +62,31 @@ namespace nap
     SequenceAudioGUIService::~SequenceAudioGUIService() = default;
 
 
-    void SequenceAudioGUIService::registerObjectCreators(rtti::Factory& factory)
+    void SequenceAudioGUIService::registerObjectCreators(rtti::Factory &factory)
     {
-        for (auto& objectCreator: getObjectCreators())
+        for(auto &objectCreator: getObjectCreators())
         {
             factory.addObjectCreator(objectCreator(this));
         }
     }
 
 
-    bool SequenceAudioGUIService::init(nap::utility::ErrorState& errorState)
+    bool SequenceAudioGUIService::init(nap::utility::ErrorState &errorState)
     {
-        auto* service_gui = getCore().getService<SequenceGUIService>();
-        assert(service_gui!=nullptr);
+        auto *service_gui = getCore().getService<SequenceGUIService>();
+        assert(service_gui != nullptr);
 
         // init colors base on colors of
         mColors.init(service_gui->getColors());
 
         // register track view type for SequenceTrackAudio
-        if (!errorState.check(service_gui->registerTrackTypeForView(RTTI_OF(SequenceTrackAudio), RTTI_OF(SequenceAudioTrackView)), "Error registering track view"))
+        if(!errorState.check(service_gui->registerTrackTypeForView(RTTI_OF(SequenceTrackAudio), RTTI_OF(SequenceAudioTrackView)), "Error registering track view"))
             return false;
 
         // register factory method of SequenceAudioTrackView
-        if (!service_gui->registerTrackViewFactory(RTTI_OF(SequenceAudioTrackView), [](SequenceGUIService& service,
-                                                                                       SequenceEditorGUIView& editorGuiView,
-                                                                                       SequenceEditorGUIState& state) -> std::unique_ptr<SequenceTrackView>
+        if(!service_gui->registerTrackViewFactory(RTTI_OF(SequenceAudioTrackView), [](SequenceGUIService &service,
+                                                                                      SequenceEditorGUIView &editorGuiView,
+                                                                                      SequenceEditorGUIState &state) -> std::unique_ptr<SequenceTrackView>
         {
             return std::make_unique<SequenceAudioTrackView>(service, editorGuiView, state);
         }))
@@ -99,7 +99,7 @@ namespace nap
     }
 
 
-    void SequenceAudioGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+    void SequenceAudioGUIService::getDependentServices(std::vector<rtti::TypeInfo> &dependencies)
     {
         dependencies.emplace_back(RTTI_OF(SequenceGUIService));
         dependencies.emplace_back(RTTI_OF(SequenceServiceAudio));

@@ -30,8 +30,8 @@ namespace nap
          * @param output reference to event receiver
          * @param player reference to the sequence player
          */
-        SequencePlayerEventAdapter(const SequenceTrack& track, SequencePlayerEventOutput& output,
-                                   const SequencePlayer& player);
+        SequencePlayerEventAdapter(const SequenceTrack &track, SequencePlayerEventOutput &output,
+                                   const SequencePlayer &player);
 
         /**
          * called from sequence player thread
@@ -48,13 +48,13 @@ namespace nap
         };
     private:
         // reference to track linked to adapter
-        const SequenceTrack& mTrack;
+        const SequenceTrack &mTrack;
 
         // reference to output linked to adapter
-        SequencePlayerEventOutput& mOutput;
+        SequencePlayerEventOutput &mOutput;
 
         // list of dispatched events
-        std::unordered_set<SequenceTrackSegmentEventBase*> mDispatchedEvents;
+        std::unordered_set<SequenceTrackSegmentEventBase *> mDispatchedEvents;
 
         //
         bool mPlayingBackwards = false;

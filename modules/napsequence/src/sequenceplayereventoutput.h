@@ -30,18 +30,18 @@ namespace nap
     {
         friend class SequencePlayerEventAdapter;
 
-        RTTI_ENABLE(SequencePlayerOutput);
+    RTTI_ENABLE(SequencePlayerOutput);
     public:
         /**
          * Constructor
          * @param service reference to SequenceService
          */
-        SequencePlayerEventOutput(SequenceService& service);
+        SequencePlayerEventOutput(SequenceService &service);
 
         /**
          * Signal will be triggered from main thread
          */
-        nap::Signal<const SequenceEventBase&> mSignal;
+        nap::Signal<const SequenceEventBase &> mSignal;
     protected:
         /**
          * called from sequence service main thread

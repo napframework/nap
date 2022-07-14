@@ -25,22 +25,24 @@ namespace nap
      */
     class NAPAPI SequencePlayerClock : public Resource
     {
-        RTTI_ENABLE(Resource)
+    RTTI_ENABLE(Resource)
     public:
         // default constructor and deconstructor
         SequencePlayerClock() = default;
+
         ~SequencePlayerClock() = default;
 
         // make this class explicitly non-copyable
-        SequencePlayerClock(const SequencePlayerClock&) = delete;
-        SequencePlayerClock& operator =(const SequencePlayerClock&) = delete;
+        SequencePlayerClock(const SequencePlayerClock &) = delete;
+
+        SequencePlayerClock &operator=(const SequencePlayerClock &) = delete;
 
         /**
          * Start needs to be overloaded. The update slot is the slot that needs to be called on update with a delta time
          * DeltaTime needs to be in seconds
          * @param updateSlot the update slot from the SequencePlayer that needs to be called
          */
-        virtual void start(Slot<double>& updateSlot) = 0;
+        virtual void start(Slot<double> &updateSlot) = 0;
 
         /**
          * Called by the SequencePlayer when player is deconstructed
@@ -60,23 +62,24 @@ namespace nap
     {
         friend class SequenceService;
 
-        RTTI_ENABLE(SequencePlayerClock)
+    RTTI_ENABLE(SequencePlayerClock)
     public:
         /**
          * Constructor
          * @param service reference to sequence service
          */
-        SequencePlayerStandardClock(SequenceService& service);
+        SequencePlayerStandardClock(SequenceService &service);
 
         // make this class explicitly non-copyable
-        SequencePlayerStandardClock(const SequencePlayerStandardClock&) = delete;
-        SequencePlayerStandardClock& operator =(const SequencePlayerStandardClock&) = delete;
+        SequencePlayerStandardClock(const SequencePlayerStandardClock &) = delete;
+
+        SequencePlayerStandardClock &operator=(const SequencePlayerStandardClock &) = delete;
 
         /**
          * Called by sequence player upon initialization
          * @param updateSlot the update slot from the SequencePlayer that needs to be called
          */
-        void start(Slot<double>& updateSlot) override;
+        void start(Slot<double> &updateSlot) override;
 
         /**
          * Called by the SequencePlayer when player is deconstructed
@@ -91,7 +94,7 @@ namespace nap
         void update(double deltaTime);
 
         // reference to service
-        SequenceService& mService;
+        SequenceService &mService;
     };
 
     // factory method shortcut
@@ -103,7 +106,7 @@ namespace nap
      */
     class NAPAPI SequencePlayerIndependentClock : public SequencePlayerClock
     {
-        RTTI_ENABLE(SequencePlayerClock)
+    RTTI_ENABLE(SequencePlayerClock)
     public:
         /**
          * Constructor
@@ -116,21 +119,22 @@ namespace nap
         ~SequencePlayerIndependentClock() = default;
 
         // make this class explicitly non-copyable
-        SequencePlayerIndependentClock(const SequencePlayerIndependentClock&) = delete;
-        SequencePlayerIndependentClock& operator =(const SequencePlayerIndependentClock&) = delete;
+        SequencePlayerIndependentClock(const SequencePlayerIndependentClock &) = delete;
+
+        SequencePlayerIndependentClock &operator=(const SequencePlayerIndependentClock &) = delete;
 
         /**
          * Initialization method
          * @param errorState contains any errors
          * @return true on success
          */
-        bool init(utility::ErrorState& errorState) override;
+        bool init(utility::ErrorState &errorState) override;
 
         /**
          * Called by sequence player upon initialization
          * @param updateSlot the update slot from the SequencePlayer that needs to be called
          */
-        void start(Slot<double>& updateSlot) override;
+        void start(Slot<double> &updateSlot) override;
 
         /**
          * Called by the SequencePlayer when player is deconstructed

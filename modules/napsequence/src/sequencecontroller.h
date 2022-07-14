@@ -24,7 +24,7 @@ namespace nap
      */
     class NAPAPI SequenceController
     {
-        RTTI_ENABLE()
+    RTTI_ENABLE()
     public:
         /**
          * Constructor
@@ -33,7 +33,7 @@ namespace nap
          * @param editor reference to editor
          */
         SequenceController(SequenceService &service, SequencePlayer &player, SequenceEditor &editor) : mService(
-                service), mPlayer(player), mEditor(editor)
+            service), mPlayer(player), mEditor(editor)
         {};
 
         /**
@@ -48,13 +48,13 @@ namespace nap
          */
         void changeTrackName(const std::string &trackID, const std::string &name);
 
-		/**
-		 * Change segment label
-		 * @param trackID the track id
-		 * @param segmentID the segment id
-		 * @param newLabel the new segment label
-		 */
-		void changeSegmentLabel(const std::string& trackID, const std::string& segmentID, const std::string& newLabel);
+        /**
+         * Change segment label
+         * @param trackID the track id
+         * @param segmentID the segment id
+         * @param newLabel the new segment label
+         */
+        void changeSegmentLabel(const std::string &trackID, const std::string &segmentID, const std::string &newLabel);
 
         /**
          * assign track to specific output, the SequencePlayer will create an adapter linking the track to output with
@@ -132,6 +132,7 @@ namespace nap
         Sequence &getSequence()
         { return mPlayer.getSequence(); }
 
+
         /**
          * finds segment
          * @param trackID the trackID
@@ -164,9 +165,11 @@ namespace nap
          */
         void performEditAction(std::function<void()> action);
 
+
         // objects owned by sequence player
         std::vector<std::unique_ptr<rtti::Object>> &getPlayerOwnedObjects()
         { return mPlayer.mReadObjects; };
+
 
         // read object ids from sequence
         std::unordered_set<std::string> &getPlayerReadObjectIDs()

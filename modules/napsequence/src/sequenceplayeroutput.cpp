@@ -11,13 +11,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    SequencePlayerOutput::SequencePlayerOutput(SequenceService& service)
-            : mService(&service)
+    SequencePlayerOutput::SequencePlayerOutput(SequenceService &service)
+        : mService(&service)
     {
     }
 
 
-    bool SequencePlayerOutput::init(utility::ErrorState& errorState)
+    bool SequencePlayerOutput::init(utility::ErrorState &errorState)
     {
         mService->registerOutput(*this);
 

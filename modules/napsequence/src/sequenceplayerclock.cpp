@@ -6,7 +6,7 @@
 #include "sequenceservice.h"
 
 RTTI_BEGIN_CLASS(nap::SequencePlayerIndependentClock)
-    RTTI_PROPERTY("Frequency", &nap::SequencePlayerIndependentClock::mFrequency, nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("Frequency", &nap::SequencePlayerIndependentClock::mFrequency, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerStandardClock)
@@ -14,13 +14,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    SequencePlayerStandardClock::SequencePlayerStandardClock(SequenceService& service)
-            :mService(service)
+    SequencePlayerStandardClock::SequencePlayerStandardClock(SequenceService &service)
+        : mService(service)
     {
     }
 
 
-    void SequencePlayerStandardClock::start(Slot<double>& updateSlot)
+    void SequencePlayerStandardClock::start(Slot<double> &updateSlot)
     {
         mSlot = updateSlot;
         mService.registerStandardClock(this);
@@ -39,7 +39,7 @@ namespace nap
     }
 
 
-    bool SequencePlayerIndependentClock::init(utility::ErrorState& errorState)
+    bool SequencePlayerIndependentClock::init(utility::ErrorState &errorState)
     {
         if(!errorState.check(mFrequency > 0.0f, "Frequency must be bigger then zero!"))
         {
@@ -50,7 +50,7 @@ namespace nap
     }
 
 
-    void SequencePlayerIndependentClock::start(Slot<double>& updateSlot)
+    void SequencePlayerIndependentClock::start(Slot<double> &updateSlot)
     {
         mRunning.store(true);
         mSlot = updateSlot;
@@ -65,7 +65,7 @@ namespace nap
     {
         // stop running thread
         mRunning.store(false);
-        if (mUpdateTask.valid())
+        if(mUpdateTask.valid())
         {
             mUpdateTask.wait();
         }
@@ -75,14 +75,14 @@ namespace nap
     void SequencePlayerIndependentClock::onUpdate()
     {
         // Compute sleep time in microseconds
-        float sleep_time_microf = 1000.0f/static_cast<float>(mFrequency);
-        long sleep_time_micro = static_cast<long>(sleep_time_microf*1000.0f);
+        float sleep_time_microf = 1000.0f / static_cast<float>(mFrequency);
+        long sleep_time_micro = static_cast<long>(sleep_time_microf * 1000.0f);
 
-        while (mRunning.load())
+        while(mRunning.load())
         {
             // advance time
-            SteadyTimeStamp now = SteadyClock ::now();
-            double delta_time = std::chrono::duration<double>(now-mBefore).count();
+            SteadyTimeStamp now = SteadyClock::now();
+            double delta_time = std::chrono::duration<double>(now - mBefore).count();
             mBefore = now;
 
             mSlot.trigger(delta_time);

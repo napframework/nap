@@ -18,7 +18,7 @@ namespace nap
     template<typename T>
     class SequenceTrackSegmentCurve : public SequenceTrackSegment
     {
-        RTTI_ENABLE(SequenceTrackSegment)
+    RTTI_ENABLE(SequenceTrackSegment)
     public:
         // properties
         std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;        ///< Property: 'Curves' vector holding curves
@@ -29,7 +29,7 @@ namespace nap
          * @param errorState contains information about eventual failure of evaluation
          * @return bool indicating successfull initialization
          */
-        bool init(utility::ErrorState& errorState) override;
+        bool init(utility::ErrorState &errorState) override;
 
         /**
          * Gets the value of the first point of the curve, translated into the type
@@ -83,20 +83,22 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 
     template<typename T>
-    bool nap::SequenceTrackSegmentCurve<T>::init(utility::ErrorState& errorState)
+    bool nap::SequenceTrackSegmentCurve<T>::init(utility::ErrorState &errorState)
     {
-        if (!SequenceTrackSegment::init(errorState))
+        if(!SequenceTrackSegment::init(errorState))
             return false;
 
-        if (!errorState.check(mCurves.size()==this->getCurveCount(), "size of curves must be %i", this->getCurveCount()))
+        if(!errorState.check(
+            mCurves.size() == this->getCurveCount(), "size of curves must be %i", this->getCurveCount()))
             return false;
 
-        if (!errorState.check(mCurveTypes.size()==this->getCurveCount(), "size of curvetypes must be %i", this->getCurveCount()))
+        if(!errorState.check(
+            mCurveTypes.size() == this->getCurveCount(), "size of curvetypes must be %i", this->getCurveCount()))
             return false;
 
-        for (int i = 0; i<mCurves.size(); i++)
+        for(int i = 0; i < mCurves.size(); i++)
         {
-            if (!errorState.check(mCurves[i]->mPoints.size()>=2, "curve %i has invalid amount of points", i))
+            if(!errorState.check(mCurves[i]->mPoints.size() >= 2, "curve %i has invalid amount of points", i))
             {
                 return false;
             }

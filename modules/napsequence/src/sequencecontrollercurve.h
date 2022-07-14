@@ -12,8 +12,7 @@
 // External Includes
 #include <mathutils.h>
 
-namespace nap
-{
+namespace nap {
     //////////////////////////////////////////////////////////////////////////
 
     // forward declares
@@ -22,9 +21,8 @@ namespace nap
     /**
      * Controller class for curve tracks
      */
-    class NAPAPI SequenceControllerCurve : public SequenceController
-    {
-        RTTI_ENABLE(SequenceController)
+    class NAPAPI SequenceControllerCurve : public SequenceController {
+    RTTI_ENABLE(SequenceController)
     public:
         /**
          * Constructor
@@ -246,16 +244,30 @@ namespace nap
         std::unordered_map<rttr::type, std::function<void(SequenceTrack &)>> mUpdateSegmentFunctionMap;
 
         // map for inserting segments
-        std::unordered_map<rttr::type, std::function<const SequenceTrackSegment *(const std::string &, double)>> mInsertSegmentFunctionMap;
+        std::unordered_map<rttr::type, std::function<const SequenceTrackSegment *(const std::string &,
+                                                                                  double)>> mInsertSegmentFunctionMap;
 
-        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceControllerCurve*)>> mInsertTrackFunctionMap;
-        std::unordered_map<rttr::type, bool (SequenceControllerCurve::*)(SequenceTrackSegment&, const std::string&, const int, const int, sequencecurveenums::ETanPointTypes, float, float)> mChangeTanPointFunctionMap;
-        std::unordered_map<rttr::type, void (SequenceControllerCurve::*)(SequenceTrackSegment&, const int, const int, float, float)> mChangeCurvePointFunctionMap;
-        std::unordered_map<rttr::type, void (SequenceControllerCurve::*)(SequenceTrackSegment&, const int, float, float)> mChangeLastCurvePointFunctionMap;
-        std::unordered_map<rttr::type, void (SequenceControllerCurve::*)(SequenceTrackSegment&, const int, int)> mDeleteCurvePointFunctionMap;
-        std::unordered_map<rttr::type, void (SequenceControllerCurve::*)(SequenceTrackSegment&, float, int)> mInsertCurvePointFunctionMap;
-        std::unordered_map<rttr::type, void (SequenceControllerCurve::*)(SequenceTrack&, SequenceTrackSegment& segment, float, int, sequencecurveenums::ESegmentValueTypes)> mChangeSegmentValueFunctionMap;
-        std::unordered_map<rttr::type, void (SequenceControllerCurve::*)(SequenceTrackSegment&, math::ECurveInterp type, int curveIndex)> mChangeCurveTypeFunctionMap;
+        // maps containing function pointers to templated functions
+        // the reason for this is that actions are not templated and when handled by the gui contain rtti type information
+        // in order to call the right templated controller function, function calls are stored in a map with type information as key value
+        // this makes it also possible to add other curved tracks when extending the controller
+        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceControllerCurve *)>> mInsertTrackFunctionMap;
+        std::unordered_map<rtti::TypeInfo, std::function<bool(SequenceTrackSegment &, const std::string &, const int,
+                                                              const int, sequencecurveenums::ETanPointTypes, float,
+                                                              float)>> mChangeTanPointFunctionMap;
+        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceTrackSegment &, const int, const int, float,
+                                                              float)>> mChangeCurvePointFunctionMap;
+        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceTrackSegment &, const int, float,
+                                                              float)>> mChangeLastCurvePointFunctionMap;
+        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceTrackSegment &, const int,
+                                                              int)>> mDeleteCurvePointFunctionMap;
+        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceTrackSegment &, float,
+                                                              int)>> mInsertCurvePointFunctionMap;
+        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceTrack &, SequenceTrackSegment &segment, float,
+                                                              int,
+                                                              sequencecurveenums::ESegmentValueTypes)>> mChangeSegmentValueFunctionMap;
+        std::unordered_map<rtti::TypeInfo, std::function<void(SequenceTrackSegment &, math::ECurveInterp type,
+                                                              int curveIndex)>> mChangeCurveTypeFunctionMap;
     };
 
     //////////////////////////////////////////////////////////////////////////
