@@ -138,11 +138,13 @@ macro(package_python)
                 CONFIGURATIONS Release)
 
         # Install framework for Napkin
-        install(FILES ${THIRDPARTY_DIR}/python/msvc/x86_64/python36.zip
-                DESTINATION tools/napkin/
-                CONFIGURATIONS Release)
+        if(NAP_ENABLE_PYTHON)
+                install(FILES ${THIRDPARTY_DIR}/python/msvc/x86_64/python36.zip
+                        DESTINATION tools/napkin/
+                        CONFIGURATIONS Release)
+        endif()
 
-        # Install license
+        # Install license   
         install(FILES ${THIRDPARTY_DIR}/python/msvc/LICENSE.txt
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
