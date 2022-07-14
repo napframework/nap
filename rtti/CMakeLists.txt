@@ -30,7 +30,6 @@ if (NAP_ENABLE_PYTHON)
     # Find the python interpreter in thirdparty
     find_python_in_thirdparty()
 
-    # Find pybind.
     # Pybind uses the interpreter to locate the python libraries and includes, next to pybind includes
     set(pybind11_DIR ${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11)
     find_package(pybind11 REQUIRED)
@@ -56,7 +55,9 @@ if(WIN32)
     copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
 
     # Python
-    copy_windows_python_dlls_to_bin()
+    if(NAP_ENABLE_PYTHON)
+        copy_windows_python_dlls_to_bin()
+    endif()
 endif()
 
 if(APPLE)
@@ -95,8 +96,10 @@ else()
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
 endif()
 
+# RTTI headers
 install(DIRECTORY src/rtti/ DESTINATION include/rtti/
         FILES_MATCHING PATTERN "*.h")
+
 
 # Package dependent lib into platform release --
 
@@ -121,6 +124,5 @@ endif()
 # Package rapidjson
 install(FILES ${THIRDPARTY_DIR}/rapidjson/license.txt 
               ${THIRDPARTY_DIR}/rapidjson/readme.md
-        DESTINATION thirdparty/rapidjson
-        )
+        DESTINATION thirdparty/rapidjson)
 install(DIRECTORY ${THIRDPARTY_DIR}/rapidjson/include DESTINATION thirdparty/rapidjson)

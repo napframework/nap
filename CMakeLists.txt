@@ -55,10 +55,15 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
-# enable python
-#set(NAP_ENABLE_PYTHON 0)
-#add_definitions(-DNAP_ENABLE_PYTHON)
+# Select pybind version
+#if(NAP_ENABLE_PYTHON)
+#    add_definitions(-DPYBIND11_PYTHON_VERSION=3.6)
+#endif()
+
+# Automatically link Qt executables to qtmain target on Windows.
 cmake_policy(SET CMP0020 NEW)
+
+# Ignore COMPILE_DEFINITIONS
 cmake_policy(SET CMP0043 NEW)
 
 # Restrict to debug and release build types
@@ -128,7 +133,6 @@ add_subdirectory(demos/curveball)
 add_subdirectory(demos/curveball/module)
 add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
-#add_subdirectory(demos/python)
 add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
@@ -142,6 +146,7 @@ add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/artnetreceive/module)
 add_subdirectory(demos/pipins)
 add_subdirectory(demos/webportal)
+add_subdirectory(demos/python)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.18.4)
+if(NOT NAP_ENABLE_PYTHON)
+	return()
+endif()
+
+# Python demo
 project(python)
 
-#add all cpp files to SOURCES
+# Add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
 file(GLOB DATA data/*)

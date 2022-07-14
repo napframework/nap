@@ -304,7 +304,6 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
                        '-B%s' % BUILD_DIR, 
                        '-G', 'Visual Studio 16 2019',
                        '-DNAP_PACKAGED_BUILD=1',
-                       '-DPYBIND11_PYTHON_VERSION=3.5',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,

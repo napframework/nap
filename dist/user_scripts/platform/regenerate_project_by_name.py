@@ -49,7 +49,7 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
             os.makedirs(full_build_dir)
 
         # Generate project
-        exit_code = call([cmake, '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 16 2019', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=project_path)
+        exit_code = call([cmake, '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 16 2019'], cwd=project_path)
 
         # Show in Explorer
         if exit_code == 0 and show_solution:
