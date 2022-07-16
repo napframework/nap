@@ -51,13 +51,19 @@ elseif(UNIX)
     endif()
 endif()
 
+# We don't actively support and work on macOS anymore.
+# This is not because we don't like their hardware, but because of the continuous tightening of restrictions of macOS,
+# Including aggressive gate-keeping, required app singing, forcing specific data structures, vague licence policies,
+# proprietary APIs, etc. It's simply not in line with our policies and what we stand for.
+# Feel free to continue support for macOS on your end.
 if(APPLE)
+    message(DEPRECATION "macOS (as a target) is no longer in active development or supported")
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
-# Compile with python support if requested
+# We don't actively support and work on python bindings anymore.
 if(NAP_ENABLE_PYTHON)
-    message(DEPRECATION "Python is no longer officially supported")
+    message(DEPRECATION "Python bindings are no longer in active development or supported")
     add_definitions(-DNAP_ENABLE_PYTHON)
 endif()
 
