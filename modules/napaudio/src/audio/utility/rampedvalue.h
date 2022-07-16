@@ -16,6 +16,7 @@
 // Audo includes
 #include <audio/utility/audiotypes.h>
 #include <audio/utility/dirtyflag.h>
+#include <cmath>
 
 namespace nap
 {

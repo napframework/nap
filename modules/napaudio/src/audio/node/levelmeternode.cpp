@@ -5,6 +5,7 @@
 #include "levelmeternode.h"
 
 #include <audio/core/audionodemanager.h>
+#include <cmath>
 
 RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
 	RTTI_ENUM_VALUE(nap::audio::LevelMeterNode::Type::RMS, "RMS"),
