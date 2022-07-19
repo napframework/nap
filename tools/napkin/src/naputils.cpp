@@ -25,6 +25,8 @@ using namespace nap::rtti;
 using namespace nap::utility;
 using namespace napkin;
 
+RTTI_DEFINE_BASE(napkin::RTTITypeItem)
+
 std::vector<rttr::type> napkin::getImmediateDerivedTypes(const rttr::type& type)
 {
 	// Cycle over all derived types. This includes all derived types,
@@ -149,7 +151,7 @@ nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
 
 		// Only non-embedded objects can be roots
 		if (!is_embedded_object)
-			topLevelObjects.push_back(object);
+			topLevelObjects.emplace_back(object);
 	}
 
     return topLevelObjects;
@@ -303,7 +305,7 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 	{
 		const auto sourceIndex = tree->getProxyModel().mapToSource(idx);
 		auto item = tree->getModel()->itemFromIndex(sourceIndex);
-		auto propitem = dynamic_cast<PropertyDisplayItem*>(item);
+		auto propitem = qitem_cast<PropertyDisplayItem*>(item);
 		assert(propitem);
 		napkin::AppContext::get().propertySelectionChanged(propitem->getPath());
 		dialog.close();

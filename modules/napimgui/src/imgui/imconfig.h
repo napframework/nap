@@ -22,7 +22,7 @@
 	#define IMGUI_API __declspec(dllimport)    // Import the symbols
 #endif // NAP_SHARED_LIBRARY
 #else
-	#define IMGUI_API                          // Empty statement, does nothing
+    #define IMGUI_API __attribute__ ((visibility ("default")))	// Export the symbols
 #endif // _WIN32
 
 //---- Don't define obsolete functions names. Consider enabling from time to time or when updating to reduce like hood of using already obsolete function/names

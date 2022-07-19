@@ -183,10 +183,9 @@ namespace nap
         mReadObjectIDs.clear();
         for(auto &read_object: result.mReadObjects)
         {
-            //
-            if(read_object->get_type().is_derived_from<Sequence>())
+            if (read_object->get_type().is_derived_from<Sequence>())
             {
-                mSequence = dynamic_cast<Sequence *>(read_object.get());
+                mSequence = static_cast<Sequence*>(read_object.get());
             }
 
             mReadObjectIDs.emplace(read_object->mID);

@@ -17,8 +17,8 @@ namespace nap
 	 *
 	 * For example: Say the file contains 2 meshes, mesh 1 has color data but mesh 2 does not. This means that the color 
 	 * data of mesh 2 will be initialized to 0. If both meshes carry no color data at all no color attribute is created.
-	 * 
-	 * The operator attempts to extract Vertex, Normal, Color, UV and Tangent information. Up to 8 Color and 
+	 *
+	 * The operator attempts to extract Vertex, Normal, Color, UV and Tangent information. Up to 8 Color and
 	 * UV channels are supported. You can choose to generate normals, tangents and bi-tangents. These are only
 	 * generated when not already present on the mesh and 'GenerateNormals' / 'CalculateTangents' is set to true.
 	 * 

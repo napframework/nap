@@ -697,10 +697,10 @@ namespace nap
         assert(action != nullptr);
 
         // get curve controller
-        auto &curve_controller = getEditor().getController<SequenceControllerEvent>();
+        auto &event_controller = getEditor().getController<SequenceControllerEvent>();
 
         // call function to controller
-        curve_controller.assignNewOutputID(action->mTrackID, action->mOutputID);
+        event_controller.assignNewOutputID(action->mTrackID, action->mOutputID);
 
         // action is done
         mState.mAction = sequenceguiactions::createAction<None>();

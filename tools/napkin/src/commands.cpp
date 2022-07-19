@@ -113,11 +113,10 @@ void SetPointerValueCommand::redo()
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent)
-		: mType(type), QUndoCommand()
+AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent) : mType(type), QUndoCommand()
 {
 	auto type_name = QString::fromUtf8(type.get_name().data());
 
@@ -140,13 +139,13 @@ void AddObjectCommand::redo()
 
 	// Create object
 	auto parent = ctx.getDocument()->getObject(mParentName);
-	auto object = ctx.getDocument()->addObject(mType, parent, true);
+	auto object = ctx.getDocument()->addObject(mType, parent);
 
 	// Remember for undo
 	mObjectName = object->mID;
-
 	ctx.selectionChanged({object});
 }
+
 
 void AddObjectCommand::undo()
 {
@@ -376,7 +375,6 @@ ArrayRemoveElementCommand::ArrayRemoveElementCommand(const PropertyPath& array_p
 
 void ArrayRemoveElementCommand::redo()
 {
-	mValue = AppContext::get().getDocument()->arrayGetElement(mPath, mIndex);
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
 
@@ -385,6 +383,27 @@ void ArrayRemoveElementCommand::undo()
 	// TODO: Need store on redo and be able to reinstate the original value
 	nap::Logger::fatal("No undo supported");
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+
+GroupReparentCommand::GroupReparentCommand(nap::rtti::Object& object, PropertyPath currentPath, PropertyPath newPath) :
+	mObject(&object), mCurrentPath(currentPath), mNewPath(newPath)
+{ }
+
+
+void napkin::GroupReparentCommand::redo()
+{
+	AppContext::get().getDocument()->reparentObject(*mObject, mCurrentPath, mNewPath);
+}
+
+
+void napkin::GroupReparentCommand::undo()
+{
+	// TODO: Need store on redo and be able to reinstate the original value
+	nap::Logger::fatal("No undo supported");
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -447,7 +466,7 @@ void ReplaceEmbeddedPointerCommand::redo()
 	if (pointee) // TODO: Serialize and store for undo
 		doc->removeObject(*pointee);
 
-	auto obj = doc->addObject(mType, nullptr, false);
+	auto obj = doc->addObject(mType, nullptr);
 	mCreatedObject = {*obj, *doc};
 	mPath.setPointee(obj);
 	doc->propertyValueChanged(mPath);

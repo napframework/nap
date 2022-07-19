@@ -49,6 +49,16 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec4Instance)
 	RTTI_FUNCTION("setValue", &nap::UniformVec4Instance::setValue)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIVec4Instance)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformIVec4Instance::setValue)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformUVec4Instance)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformUVec4Instance::setValue)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformMat4Instance)
 	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformMat4Instance::setValue)
@@ -88,6 +98,18 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformVec4ArrayInstance)
 	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
 	RTTI_FUNCTION("setValue", &nap::UniformVec4ArrayInstance::setValue)
 	RTTI_FUNCTION("getNumElements", &nap::UniformVec4ArrayInstance::getNumElements)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformIVec4ArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformIVec4ArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformIVec4ArrayInstance::getNumElements)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformUVec4ArrayInstance)
+	RTTI_CONSTRUCTOR(const nap::ShaderVariableValueArrayDeclaration&)
+	RTTI_FUNCTION("setValue", &nap::UniformUVec4ArrayInstance::setValue)
+	RTTI_FUNCTION("getNumElements", &nap::UniformUVec4ArrayInstance::getNumElements)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UniformMat4ArrayInstance)
@@ -140,43 +162,55 @@ namespace nap
 
 			if (value_array_declaration->mElementType == EShaderVariableValueType::UInt)
 			{
-				std::unique_ptr<UniformUIntArrayInstance> array_instance = std::make_unique<UniformUIntArrayInstance>(*value_array_declaration);
+				auto array_instance = std::make_unique<UniformUIntArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Int)
 			{
-				std::unique_ptr<UniformIntArrayInstance> array_instance = std::make_unique<UniformIntArrayInstance>(*value_array_declaration);
+				auto array_instance = std::make_unique<UniformIntArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Float)
 			{
-				std::unique_ptr<UniformFloatArrayInstance> array_instance = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration);
+				auto array_instance = std::make_unique<UniformFloatArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec2)
 			{
-				std::unique_ptr<UniformVec2ArrayInstance> array_instance = std::make_unique<UniformVec2ArrayInstance>(*value_array_declaration);
+				auto array_instance = std::make_unique<UniformVec2ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec3)
 			{
-				std::unique_ptr<UniformVec3ArrayInstance> array_instance = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration);
+				auto array_instance = std::make_unique<UniformVec3ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec4)
 			{
-				std::unique_ptr<UniformVec4ArrayInstance> array_instance = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration);
+				auto array_instance = std::make_unique<UniformVec4ArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
+				return std::move(array_instance);
+			}
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::IVec4)
+			{
+				auto array_instance = std::make_unique<UniformIVec4ArrayInstance>(*value_array_declaration);
+				array_instance->getValues().resize(value_array_declaration->mNumElements);
+				return std::move(array_instance);
+			}
+			else if (value_array_declaration->mElementType == EShaderVariableValueType::UVec4)
+			{
+				auto array_instance = std::make_unique<UniformUVec4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Mat4)
 			{
-				std::unique_ptr<UniformMat4ArrayInstance> array_instance = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration);
+				auto array_instance = std::make_unique<UniformMat4ArrayInstance>(*value_array_declaration);
 				array_instance->getValues().resize(value_array_declaration->mNumElements);
 				return std::move(array_instance);
 			}
@@ -213,6 +247,14 @@ namespace nap
 			else if (value_declaration->mType == EShaderVariableValueType::Vec4)
 			{
 				return std::make_unique<UniformVec4Instance>(*value_declaration);
+			}
+			else if (value_declaration->mType == EShaderVariableValueType::IVec4)
+			{
+				return std::make_unique<UniformIVec4Instance>(*value_declaration);
+			}
+			else if (value_declaration->mType == EShaderVariableValueType::UVec4)
+			{
+				return std::make_unique<UniformUVec4Instance>(*value_declaration);
 			}
 			else if (value_declaration->mType == EShaderVariableValueType::Mat4)
 			{
@@ -309,6 +351,14 @@ namespace nap
 				{
 					instance_value_array = createUniformValueInstance<UniformVec4ArrayInstance, UniformVec4Array>(resource, *value_declaration, errorState);
 				}
+				else if (value_declaration->mElementType == EShaderVariableValueType::IVec4)
+				{
+					instance_value_array = createUniformValueInstance<UniformIVec4ArrayInstance, UniformIVec4Array>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mElementType == EShaderVariableValueType::UVec4)
+				{
+					instance_value_array = createUniformValueInstance<UniformUVec4ArrayInstance, UniformUVec4Array>(resource, *value_declaration, errorState);
+				}
 				else if (value_declaration->mElementType == EShaderVariableValueType::Mat4)
 				{
 					instance_value_array = createUniformValueInstance<UniformMat4ArrayInstance, UniformMat4Array>(resource, *value_declaration, errorState);
@@ -370,6 +420,14 @@ namespace nap
 				else if (value_declaration->mType == EShaderVariableValueType::Vec4)
 				{
 					value_instance = createUniformValueInstance<UniformVec4Instance, UniformVec4>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == EShaderVariableValueType::IVec4)
+				{
+					value_instance = createUniformValueInstance<UniformIVec4Instance, UniformIVec4>(resource, *value_declaration, errorState);
+				}
+				else if (value_declaration->mType == EShaderVariableValueType::UVec4)
+				{
+					value_instance = createUniformValueInstance<UniformUVec4Instance, UniformUVec4>(resource, *value_declaration, errorState);
 				}
 				else if (value_declaration->mType == EShaderVariableValueType::Mat4)
 				{

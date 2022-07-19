@@ -63,10 +63,10 @@ void FilterTreeView::setModel(QAbstractItemModel* model)
 
 QStandardItemModel* FilterTreeView::getModel() const
 {
-	return dynamic_cast<QStandardItemModel*>(mProxyModel.sourceModel());
+	return qobject_cast<QStandardItemModel*>(mProxyModel.sourceModel());
 }
 
-void FilterTreeView::selectAndReveal(QStandardItem* item)
+void FilterTreeView::selectAndReveal(const QStandardItem* item)
 {
 	if (item == nullptr)
 		return;
@@ -143,16 +143,8 @@ void FilterTreeView::onCollapseSelected()
 void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 {
 	QMenu menu;
-
 	if (mMenuHookFn != nullptr)
 		mMenuHookFn(menu);
-
-	auto expandAllAction = menu.addAction("Expand All");
-	connect(expandAllAction, &QAction::triggered, this, &FilterTreeView::onExpandSelected);
-
-	auto collapseAllAction = menu.addAction("Collapse");
-	connect(collapseAllAction, &QAction::triggered, this, &FilterTreeView::onCollapseSelected);
-
 	menu.exec(mapToGlobal(pos));
 }
 
@@ -192,5 +184,11 @@ void nap::qt::FilterTreeView::enableSorting(LeafFilterProxyModel::SortingFunctio
 void nap::qt::FilterTreeView::disableSorting()
 {
 	mTreeView->setSortingEnabled(false);
+}
+
+
+void nap::qt::FilterTreeView::expand(const QStandardItem& item) const
+{
+	mTreeView->expand(getProxyModel().mapFromSource(item.index()));
 }
 

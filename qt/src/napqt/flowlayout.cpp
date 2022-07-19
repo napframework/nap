@@ -149,9 +149,8 @@ int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const
 
 	if (parent->isWidgetType())
 	{
-		auto pw = dynamic_cast<QWidget*>(parent);
+		auto pw = qobject_cast<QWidget*>(parent);
 		return pw->style()->pixelMetric(pm, nullptr, pw);
 	}
-
-	return dynamic_cast<QLayout*>(parent)->spacing();
+	return qobject_cast<QLayout*>(parent)->spacing();
 }

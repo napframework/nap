@@ -5,6 +5,7 @@
 #pragma once
 
 #include "propertypath.h"
+#include "rttiitem.h"
 
 #include <QStandardItem>
 #include <QFileInfo>
@@ -19,16 +20,14 @@ namespace napkin
 	/**
 	* An item that displays an RTTI Type
 	*/
-	class RTTITypeItem : public QStandardItem
+	class RTTITypeItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		RTTITypeItem(const nap::rtti::TypeInfo& type);
-
 		QVariant data(int role) const override;
-
 	private:
 		void refresh();
-
 	private:
 		const nap::rtti::TypeInfo& mType;
 	};
@@ -108,13 +107,12 @@ namespace napkin
 	T* findItemInModel(const QStandardItemModel& model, const nap::rtti::Object& obj, int column = 0)
 	{
 		T* foundItem = nullptr;
-
 		nap::qt::findIndexInModel(model, [&model, &foundItem, &obj](const QModelIndex& idx) -> bool {
-			QStandardItem* item = model.itemFromIndex(idx);
+			auto* item = qitem_cast<RTTIItem*>(model.itemFromIndex(idx));
 			if (item == nullptr)
 				return false;
 
-			auto objItem = dynamic_cast<T*>(item);
+			auto objItem = qobject_cast<T*>(item);
 			if (objItem == nullptr)
 				return false;
 
@@ -123,12 +121,9 @@ namespace napkin
 				foundItem = objItem;
 				return true;
 			}
-
 			return false;
 		}, column);
-
 		return foundItem;
-
 	}
 
 	/**

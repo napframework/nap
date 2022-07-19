@@ -316,6 +316,8 @@ namespace nap
 	using BufferBindingVec2Instance		= TypedBufferBindingNumericInstance<glm::vec2>;
 	using BufferBindingVec3Instance		= TypedBufferBindingNumericInstance<glm::vec3>;
 	using BufferBindingVec4Instance		= TypedBufferBindingNumericInstance<glm::vec4>;
+	using BufferBindingIVec4Instance	= TypedBufferBindingNumericInstance<glm::ivec4>;
+	using BufferBindingUVec4Instance	= TypedBufferBindingNumericInstance<glm::uvec4>;
 	using BufferBindingMat4Instance		= TypedBufferBindingNumericInstance<glm::mat4>;
 
 
