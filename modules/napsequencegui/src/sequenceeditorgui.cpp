@@ -97,7 +97,7 @@ namespace nap
         // Store scale
         mState.mScale = mService.getGui().getScale();
         bool reset_dirty_flag = mState.mDirty;
-        mState.mInspectorWidth = 300.0f * mState.mScale;
+        mState.mInspectorWidth = 350.0f * mState.mScale;
         mState.mMousePos = ImGui::GetMousePos();
         mState.mMouseDelta = ImGui::GetIO().MouseDelta;
 
@@ -114,7 +114,7 @@ namespace nap
         }
 
         // calc track spacing
-        const float track_spacing = 30.0f * mState.mScale;
+        const float track_spacing = 20.0f * mState.mScale;
 
         // push id
         ImGui::PushID(mID.c_str());
@@ -131,7 +131,7 @@ namespace nap
         {
             mState.mTotalTracksHeight += track->mTrackHeight * mState.mScale;
         }
-        mState.mTotalTracksHeight += (30.0f * mState.mScale) * sequence.mTracks.size() - 10.0f * mState.mScale;
+        mState.mTotalTracksHeight += track_spacing * sequence.mTracks.size();
 
         // set content width of next window
         ImGui::SetNextWindowContentSize(ImVec2(mState.mTimelineWidth + mState.mInspectorWidth, 0.0f));
@@ -536,6 +536,9 @@ namespace nap
     void SequenceEditorGUIView::drawTracks(const SequencePlayer &sequencePlayer, const Sequence &sequence)
     {
         // define consts
+        const float track_spacing = 20.0f * mState.mScale;
+
+        // get cursor pos
         auto cursor_pos = ImGui::GetCursorPos();
 
         // draw tracks
@@ -547,7 +550,7 @@ namespace nap
             {
                 for(int j = 0; j < i; j++)
                 {
-                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (30.0f * mState.mScale);
+                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + track_spacing;
                 }
             }
             ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + height});
@@ -565,6 +568,10 @@ namespace nap
 
     void SequenceEditorGUIView::drawInspectors(const SequencePlayer &sequencePlayer, const Sequence &sequence)
     {
+        // define consts
+        const float track_spacing = 20.0f * mState.mScale;
+
+        // get cursor pos
         auto cursor_pos = ImGui::GetCursorPos();
 
         // draw tracks
@@ -576,7 +583,7 @@ namespace nap
             {
                 for(int j = 0; j < i; j++)
                 {
-                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + (30.0f * mState.mScale);
+                    height += sequence.mTracks[j]->mTrackHeight * mState.mScale + track_spacing;
                 }
             }
             ImGui::SetCursorPos({cursor_pos.x, cursor_pos.y + height});

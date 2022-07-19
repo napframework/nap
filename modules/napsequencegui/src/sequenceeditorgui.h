@@ -57,8 +57,7 @@ namespace nap
         /**
          * @return sequence editor gui service
          */
-        SequenceGUIService &getService()
-        { return mService; }
+        SequenceGUIService &getService(){ return mService; }
 
 
         // properties
@@ -104,12 +103,10 @@ namespace nap
          * Hides marker labels when not hovered
          * @param hide when true, hides marker labels when not hovered
          */
-        void hideMarkerLabels(bool hide)
-        { mHideMarkerLabels = hide; }
+        void hideMarkerLabels(bool hide){ mHideMarkerLabels = hide; }
 
 
-        SequenceGUIService &getService()
-        { return mService; }
+        SequenceGUIService &getService(){ return mService; }
 
 
     protected:

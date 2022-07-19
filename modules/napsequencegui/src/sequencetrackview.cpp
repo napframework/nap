@@ -82,81 +82,19 @@ namespace nap
         ImVec2 inspector_cursor_pos = cursor_pos;
 
         // draw inspector window
-        float offset = 5.0f * mState.mScale;
+        float x_offset = 5.0f * mState.mScale;
+        float y_offset = 0.5f * mState.mScale;
 
-        // Push style
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, {0.0f, 0.0f, 0.0f, 0.0f});
+        // Push Style Color Child Border
+        ImGui::PushStyleColor(ImGuiCol_Border, mService.getColors().mFro1);
 
-        // draw extend/minimize child
-        const ImVec2 extend_box_size{40.0f * mState.mScale, 22.0f * mState.mScale};
-        const ImVec2 extend_box_pos_offset{-5.0f * mState.mScale, 2.0f * mState.mScale};
-        ImGui::SetCursorPos({cursor_pos.x + mState.mInspectorWidth - extend_box_size.x + extend_box_pos_offset.x,
-                             cursor_pos.y - extend_box_size.y + extend_box_pos_offset.y});
-
-        if(ImGui::BeginChild(std::string(inspector_id + "_resizebox").c_str(),
-                             {extend_box_size.x, extend_box_size.y},
-                             false,
-                             ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar))
-        {
-            const ImVec2 window_pos = ImGui::GetWindowPos();
-
-            // obtain drawlist
-            ImDrawList *draw_list = ImGui::GetWindowDrawList();
-
-            // draw background & box
-            draw_list->AddRectFilled
-                (
-                    window_pos,
-                    {window_pos.x + extend_box_size.x, window_pos.y + extend_box_size.y},
-                    ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])
-                );
-
-            draw_list->AddRect
-                (
-                    window_pos,
-                    {window_pos.x + extend_box_size.x, window_pos.y + extend_box_size.y},
-                    mService.getColors().mFro1
-                );
-
-            // scale down everything
-            float global_scale = 0.25f;
-            ImGui::GetStyle().ScaleAllSizes(global_scale);
-
-            // push track id
-            ImGui::PushID(track.mID.c_str());
-
-            // Remove background
-            ImVec4 frame_bg = {0.0f, 0.0f, 0.0f, 0.0f};
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, frame_bg);
-            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, frame_bg);
-            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, frame_bg);
-
-            auto &gui = mService.getGui();
-            if(ImGui::ImageButton(gui.getIcon(icon::subtract), "Minimize"))
-            {
-                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getMinimumTrackHeight());
-            }
-            ImGui::SameLine(0.0f);
-            if(ImGui::ImageButton(gui.getIcon(icon::add), "Extend"))
-            {
-                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getExtendedTrackHeight());
-            }
-
-            // Pop gui style elements
-            ImGui::PopStyleColor();
-            ImGui::PopStyleColor();
-            ImGui::PopStyleColor();
-
-            ImGui::PopID();
-
-            ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
-        }
-        ImGui::EndChild();
+        // Push Style Child Background
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_FrameBg]);
 
         ImGui::SetCursorPos(cursor_pos);
         if(ImGui::BeginChild(inspector_id.c_str(), // id
-                             {mState.mInspectorWidth, track_height + offset}, // size
-                             false, // no border
+                             {mState.mInspectorWidth, track_height + y_offset}, // size
+                             true, // border
                              ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar)) // window flags
         {
             // push track id
@@ -169,23 +107,8 @@ namespace nap
             const ImVec2 window_pos = ImGui::GetWindowPos();
             const ImVec2 window_size = ImGui::GetWindowSize();
 
-            // draw background & box
-            draw_list->AddRectFilled
-                (
-                    window_pos,
-                    {window_pos.x + window_size.x - offset, window_pos.y + track_height},
-                    ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg])
-                );
-
-            draw_list->AddRect
-                (
-                    window_pos,
-                    {window_pos.x + window_size.x - offset, window_pos.y + track_height},
-                    mService.getColors().mFro1
-                );
-
             // push clipping rectangle
-            ImGui::PushClipRect(window_pos, {window_pos.x + window_size.x - offset, window_pos.y + track_height}, true);
+            ImGui::PushClipRect(window_pos, {window_pos.x + window_size.x - x_offset, window_pos.y + track_height}, true);
 
             /**
              * Helper function for offsetting inspector
@@ -201,7 +124,7 @@ namespace nap
             };
 
             // offset inspector cursor
-            inspector_cursor_pos = offset_inspector(offset);
+            inspector_cursor_pos = offset_inspector(x_offset);
 
             // scale down everything
             float global_scale = 0.25f;
@@ -224,17 +147,28 @@ namespace nap
             ImGui::PopID();
 
             // draw move and delete controls aligned to upper right corner of inspector
-            const float upper_right_alignment = ImGui::GetWindowWidth() - 75.0f * mState.mScale;
+            const float upper_right_alignment = ImGui::GetWindowWidth() - 115.0f * mState.mScale;
             ImGui::SameLine(upper_right_alignment);
             auto &gui = mService.getGui();
+
+            if(ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
+            {
+                move_track_down = true;
+            }
+            ImGui::SameLine();
             if(ImGui::ImageButton(gui.getIcon(icon::sequencer::up), "Move track up"))
             {
                 move_track_up = true;
             }
             ImGui::SameLine();
-            if(ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
+            if(ImGui::ImageButton(gui.getIcon(icon::subtract), "Minimize"))
             {
-                move_track_down = true;
+                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getMinimumTrackHeight());
+            }
+            ImGui::SameLine();
+            if(ImGui::ImageButton(gui.getIcon(icon::add), "Extend"))
+            {
+                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getExtendedTrackHeight());
             }
             ImGui::SameLine();
             if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete track"))
@@ -243,7 +177,7 @@ namespace nap
             }
 
             // offset inspector cursor
-            inspector_cursor_pos = offset_inspector(offset);
+            inspector_cursor_pos = offset_inspector(x_offset);
 
             // show inspector content
             showInspectorContent(track);
@@ -265,6 +199,9 @@ namespace nap
         ImGui::EndChild();
 
         // Pop background style
+        ImGui::PopStyleColor();
+
+        // Pop border style
         ImGui::PopStyleColor();
 
         ImGui::SetCursorPos(cursor_pos);
@@ -327,9 +264,9 @@ namespace nap
             draw_list->AddRect(track_top_left, track_bottom_right, mService.getColors().mFro1);
 
             // draw timestamp every 100 pixels
-            const float timestamp_interval = 100.0f;
+            const float timestamp_interval = 100.0f * mState.mScale;
             int steps = mState.mTimelineWidth / timestamp_interval;
-            int i = (math::max<int>(mState.mScroll.x - mState.mInspectorWidth + (100.0f * mState.mScale), 0) /
+            int i = (math::max<int>(mState.mScroll.x - mState.mInspectorWidth + timestamp_interval, 0) /
                      timestamp_interval);
             for(; i < steps; i++)
             {
