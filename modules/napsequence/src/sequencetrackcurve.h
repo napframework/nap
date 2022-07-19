@@ -75,8 +75,8 @@ namespace nap
         {
             if(!errorState.check(segment->get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>(),
                                  "segment not derived from correct type, expected: %s, got: %s",
-                                 RTTI_OF(SequenceTrackSegmentCurve<T>).get_name().template to_string().c_str(),
-                                 segment->get_type().get_name().to_string().c_str()))
+                                 RTTI_OF(SequenceTrackSegmentCurve<T>).get_name().data(),
+                                 segment->get_type().get_name().data()))
             {
                 return false;
             }
