@@ -21,6 +21,8 @@ RTTI_BEGIN_CLASS(nap::OrbitController)
 	RTTI_PROPERTY("RotateSpeed",			&nap::OrbitController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PerspCameraComponent",	&nap::OrbitController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LookAtPosition",			&nap::OrbitController::mLookAtPos,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MinimumZoomDistance",	&nap::OrbitController::mMinZoomDistance,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LimitZoomDistance",		&nap::OrbitController::mLimitZoomDistance,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbitControllerInstance)
@@ -115,11 +117,12 @@ namespace nap
 		if (!mEnabled)
 			return;
 
+		auto* resource = getComponent<OrbitController>();
 		if (mMode == EMode::Rotating)
 		{
 			// We are using the relative movement of the mouse to update the camera
-			float yaw = -(pointerMoveEvent.mRelX)  * getComponent<OrbitController>()->mRotateSpeed;
-			float pitch = pointerMoveEvent.mRelY * getComponent<OrbitController>()->mRotateSpeed;
+			float yaw = -(pointerMoveEvent.mRelX)  * resource->mRotateSpeed;
+			float pitch = pointerMoveEvent.mRelY * resource->mRotateSpeed;
 
 			// We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
 			// we rotate around the y axis (yaw).
@@ -152,7 +155,25 @@ namespace nap
 			const glm::vec3& direction = mTransformComponent->getLocalTransform()[2];
 			const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
 
-			mTransformComponent->setTranslate(translate - direction * distance);
+			glm::vec3 new_translate = translate - direction * distance;
+
+			// Limit the zoom distance
+			if (resource->mLimitZoomDistance)
+			{
+				// Evaluate the change in translation
+				const glm::vec3 lookdir_prevframe = glm::normalize(mLookAtPos - translate);
+				const glm::vec3 lookdir_curframe = glm::normalize(mLookAtPos - new_translate);
+
+				// Ensure the look direction does not flip
+				if (glm::dot(lookdir_prevframe, lookdir_curframe) < 0.0f)
+					return;
+
+				// Ensure the distance to the target does not exceed the specified minimum
+				if (glm::length(mLookAtPos - new_translate) < resource->mMinZoomDistance)
+					new_translate = -lookdir_prevframe * resource->mMinZoomDistance;
+			}
+
+			mTransformComponent->setTranslate(new_translate);
 		}
 	}
 
